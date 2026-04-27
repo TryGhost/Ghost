@@ -60,19 +60,22 @@ describe('Unit - services/routing/controllers/rss', function () {
         sinon.restore();
     });
 
-    it('should fetch data and attempt to send XML', function (done) {
-        fetchDataStub.withArgs({page: 1, slug: undefined}).resolves({
-            posts: posts
-        });
+    it('should fetch data and attempt to send XML', async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            fetchDataStub.withArgs({page: 1, slug: undefined}).resolves({
+                posts: posts
+            });
 
-        rssServiceRenderStub.callsFake(function (_res, baseUrl, data) {
-            assert.equal(baseUrl, '/rss/');
-            assert.equal(data.posts, posts);
-            assert.equal(data.title, 'Ghost');
-            assert.equal(data.description, 'Ghost is cool!');
-            done();
-        });
+            rssServiceRenderStub.callsFake(function (_res, baseUrl, data) {
+                assert.equal(baseUrl, '/rss/');
+                assert.equal(data.posts, posts);
+                assert.equal(data.title, 'Ghost');
+                assert.equal(data.description, 'Ghost is cool!');
+                done();
+            });
 
-        controllers.rss(req, res, failTest(done));
+            controllers.rss(req, res, failTest(done));
+        });
     });
 });

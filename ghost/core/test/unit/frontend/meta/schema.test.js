@@ -40,350 +40,362 @@ const BASE_METADATA = {
 };
 
 describe('getSchema', function () {
-    it('should return post schema if context starts with post', function (done) {
-        const metadata = {
-            site: {
-                title: 'Site Title',
-                url: 'http://mysite.com',
-                logo: {
-                    url: 'http://mysite.com/author/image/url/logo.jpg',
+    it('should return post schema if context starts with post', async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            const metadata = {
+                site: {
+                    title: 'Site Title',
+                    url: 'http://mysite.com',
+                    logo: {
+                        url: 'http://mysite.com/author/image/url/logo.jpg',
+                        dimensions: {
+                            width: 500,
+                            height: 500
+                        }
+                    }
+                },
+                authorImage: {
+                    url: 'http://mysite.com/author/image/url/me.jpg',
                     dimensions: {
                         width: 500,
                         height: 500
                     }
-                }
-            },
-            authorImage: {
-                url: 'http://mysite.com/author/image/url/me.jpg',
-                dimensions: {
-                    width: 500,
-                    height: 500
-                }
-            },
-            authorFacebook: 'testuser',
-            creatorTwitter: '@testuser',
-            authorUrl: 'http://mysite.com/author/me/',
-            metaTitle: 'Post Title',
-            url: 'http://mysite.com/post/my-post-slug/',
-            publishedDate: '2015-12-25T05:35:01.234Z',
-            modifiedDate: '2016-01-21T22:13:05.412Z',
-            coverImage: {
-                url: 'http://mysite.com/content/image/mypostcoverimage.jpg',
-                dimensions: {
-                    width: 500,
-                    height: 500
-                }
-            },
-            keywords: ['one', 'two', 'tag'],
-            metaDescription: 'Post meta description',
-            excerpt: 'Custom excerpt for description'
-        };
+                },
+                authorFacebook: 'testuser',
+                creatorTwitter: '@testuser',
+                authorUrl: 'http://mysite.com/author/me/',
+                metaTitle: 'Post Title',
+                url: 'http://mysite.com/post/my-post-slug/',
+                publishedDate: '2015-12-25T05:35:01.234Z',
+                modifiedDate: '2016-01-21T22:13:05.412Z',
+                coverImage: {
+                    url: 'http://mysite.com/content/image/mypostcoverimage.jpg',
+                    dimensions: {
+                        width: 500,
+                        height: 500
+                    }
+                },
+                keywords: ['one', 'two', 'tag'],
+                metaDescription: 'Post meta description',
+                excerpt: 'Custom excerpt for description'
+            };
 
-        const data = {
-            context: ['post'],
-            post: {
-                primary_author: {
+            const data = {
+                context: ['post'],
+                post: {
+                    primary_author: {
+                        name: 'Post Author',
+                        website: 'http://myblogsite.com/',
+                        bio: 'My author bio.',
+                        facebook: 'testuser',
+                        twitter: '@testuser'
+                    }
+                }
+            };
+
+            const schema = getSchema(metadata, data);
+
+            assert.deepEqual(schema, {
+                '@context': 'https://schema.org',
+                '@type': 'Article',
+                author: {
+                    '@type': 'Person',
+                    image: {
+                        '@type': 'ImageObject',
+                        url: 'http://mysite.com/author/image/url/me.jpg',
+                        width: 500,
+                        height: 500
+                    },
                     name: 'Post Author',
-                    website: 'http://myblogsite.com/',
-                    bio: 'My author bio.',
-                    facebook: 'testuser',
-                    twitter: '@testuser'
-                }
-            }
-        };
-
-        const schema = getSchema(metadata, data);
-
-        assert.deepEqual(schema, {
-            '@context': 'https://schema.org',
-            '@type': 'Article',
-            author: {
-                '@type': 'Person',
+                    sameAs: [
+                        'http://myblogsite.com/',
+                        'https://www.facebook.com/testuser',
+                        'https://x.com/testuser'
+                    ],
+                    url: 'http://mysite.com/author/me/'
+                },
+                dateModified: '2016-01-21T22:13:05.412Z',
+                datePublished: '2015-12-25T05:35:01.234Z',
+                description: 'Custom excerpt for description',
+                headline: 'Post Title',
                 image: {
                     '@type': 'ImageObject',
-                    url: 'http://mysite.com/author/image/url/me.jpg',
+                    url: 'http://mysite.com/content/image/mypostcoverimage.jpg',
                     width: 500,
                     height: 500
                 },
-                name: 'Post Author',
-                sameAs: [
-                    'http://myblogsite.com/',
-                    'https://www.facebook.com/testuser',
-                    'https://x.com/testuser'
-                ],
-                url: 'http://mysite.com/author/me/'
-            },
-            dateModified: '2016-01-21T22:13:05.412Z',
-            datePublished: '2015-12-25T05:35:01.234Z',
-            description: 'Custom excerpt for description',
-            headline: 'Post Title',
-            image: {
-                '@type': 'ImageObject',
-                url: 'http://mysite.com/content/image/mypostcoverimage.jpg',
-                width: 500,
-                height: 500
-            },
-            keywords: 'one, two, tag',
-            mainEntityOfPage: 'http://mysite.com/post/my-post-slug/',
-            publisher: {
-                '@type': 'Organization',
-                name: 'Site Title',
-                url: 'http://mysite.com',
-                logo: {
-                    '@type': 'ImageObject',
-                    url: 'http://mysite.com/author/image/url/logo.jpg',
-                    width: 500,
-                    height: 500
-                }
-            },
-            url: 'http://mysite.com/post/my-post-slug/'
+                keywords: 'one, two, tag',
+                mainEntityOfPage: 'http://mysite.com/post/my-post-slug/',
+                publisher: {
+                    '@type': 'Organization',
+                    name: 'Site Title',
+                    url: 'http://mysite.com',
+                    logo: {
+                        '@type': 'ImageObject',
+                        url: 'http://mysite.com/author/image/url/logo.jpg',
+                        width: 500,
+                        height: 500
+                    }
+                },
+                url: 'http://mysite.com/post/my-post-slug/'
+            });
+            done();
         });
-        done();
     });
 
-    it('should return page schema if context starts with page', function (done) {
-        const metadata = {
-            site: {
-                title: 'Site Title',
-                url: 'http://mysite.com',
-                logo: {
-                    url: 'http://mysite.com/author/image/url/logo.jpg',
+    it('should return page schema if context starts with page', async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            const metadata = {
+                site: {
+                    title: 'Site Title',
+                    url: 'http://mysite.com',
+                    logo: {
+                        url: 'http://mysite.com/author/image/url/logo.jpg',
+                        dimensions: {
+                            width: 500,
+                            height: 500
+                        }
+                    }
+                },
+                authorImage: {
+                    url: 'http://mysite.com/author/image/url/me.jpg',
                     dimensions: {
                         width: 500,
                         height: 500
                     }
-                }
-            },
-            authorImage: {
-                url: 'http://mysite.com/author/image/url/me.jpg',
-                dimensions: {
-                    width: 500,
-                    height: 500
-                }
-            },
-            authorFacebook: 'testuser',
-            creatorTwitter: '@testuser',
-            authorUrl: 'http://mysite.com/author/me/',
-            metaTitle: 'Page Title',
-            url: 'http://mysite.com/post/my-page-slug/',
-            publishedDate: '2015-12-25T05:35:01.234Z',
-            modifiedDate: '2016-01-21T22:13:05.412Z',
-            coverImage: {
-                url: 'http://mysite.com/content/image/mypagecoverimage.jpg',
-                dimensions: {
-                    width: 500,
-                    height: 500
-                }
-            },
-            keywords: ['one', 'two'],
-            metaDescription: 'Post meta description',
-            excerpt: 'Custom excerpt for description'
-        };
+                },
+                authorFacebook: 'testuser',
+                creatorTwitter: '@testuser',
+                authorUrl: 'http://mysite.com/author/me/',
+                metaTitle: 'Page Title',
+                url: 'http://mysite.com/post/my-page-slug/',
+                publishedDate: '2015-12-25T05:35:01.234Z',
+                modifiedDate: '2016-01-21T22:13:05.412Z',
+                coverImage: {
+                    url: 'http://mysite.com/content/image/mypagecoverimage.jpg',
+                    dimensions: {
+                        width: 500,
+                        height: 500
+                    }
+                },
+                keywords: ['one', 'two'],
+                metaDescription: 'Post meta description',
+                excerpt: 'Custom excerpt for description'
+            };
 
-        const data = {
-            context: ['page'],
-            page: {
-                primary_author: {
+            const data = {
+                context: ['page'],
+                page: {
+                    primary_author: {
+                        name: 'Page Author',
+                        website: 'http://myblogsite.com/',
+                        bio: 'My author bio.',
+                        facebook: 'testuser',
+                        twitter: '@testuser'
+                    }
+                }
+            };
+
+            const schema = getSchema(metadata, data);
+
+            assert.deepEqual(schema, {
+                '@context': 'https://schema.org',
+                '@type': 'Article',
+                author: {
+                    '@type': 'Person',
+                    image: {
+                        '@type': 'ImageObject',
+                        url: 'http://mysite.com/author/image/url/me.jpg',
+                        width: 500,
+                        height: 500
+                    },
                     name: 'Page Author',
-                    website: 'http://myblogsite.com/',
-                    bio: 'My author bio.',
-                    facebook: 'testuser',
-                    twitter: '@testuser'
-                }
-            }
-        };
-
-        const schema = getSchema(metadata, data);
-
-        assert.deepEqual(schema, {
-            '@context': 'https://schema.org',
-            '@type': 'Article',
-            author: {
-                '@type': 'Person',
+                    sameAs: [
+                        'http://myblogsite.com/',
+                        'https://www.facebook.com/testuser',
+                        'https://x.com/testuser'
+                    ],
+                    url: 'http://mysite.com/author/me/'
+                },
+                dateModified: '2016-01-21T22:13:05.412Z',
+                datePublished: '2015-12-25T05:35:01.234Z',
+                description: 'Custom excerpt for description',
+                headline: 'Page Title',
                 image: {
                     '@type': 'ImageObject',
-                    url: 'http://mysite.com/author/image/url/me.jpg',
+                    url: 'http://mysite.com/content/image/mypagecoverimage.jpg',
                     width: 500,
                     height: 500
                 },
-                name: 'Page Author',
-                sameAs: [
-                    'http://myblogsite.com/',
-                    'https://www.facebook.com/testuser',
-                    'https://x.com/testuser'
-                ],
-                url: 'http://mysite.com/author/me/'
-            },
-            dateModified: '2016-01-21T22:13:05.412Z',
-            datePublished: '2015-12-25T05:35:01.234Z',
-            description: 'Custom excerpt for description',
-            headline: 'Page Title',
-            image: {
-                '@type': 'ImageObject',
-                url: 'http://mysite.com/content/image/mypagecoverimage.jpg',
-                width: 500,
-                height: 500
-            },
-            keywords: 'one, two',
-            mainEntityOfPage: 'http://mysite.com/post/my-page-slug/',
-            publisher: {
-                '@type': 'Organization',
-                name: 'Site Title',
-                url: 'http://mysite.com',
-                logo: {
-                    '@type': 'ImageObject',
-                    url: 'http://mysite.com/author/image/url/logo.jpg',
-                    width: 500,
-                    height: 500
-                }
-            },
-            url: 'http://mysite.com/post/my-page-slug/'
+                keywords: 'one, two',
+                mainEntityOfPage: 'http://mysite.com/post/my-page-slug/',
+                publisher: {
+                    '@type': 'Organization',
+                    name: 'Site Title',
+                    url: 'http://mysite.com',
+                    logo: {
+                        '@type': 'ImageObject',
+                        url: 'http://mysite.com/author/image/url/logo.jpg',
+                        width: 500,
+                        height: 500
+                    }
+                },
+                url: 'http://mysite.com/post/my-page-slug/'
+            });
+            done();
         });
-        done();
     });
 
-    it('should return post schema removing null or undefined values', function (done) {
-        const metadata = {
-            site: {
-                title: 'Site Title'
-            },
-            authorImage: null,
-            authorFacebook: undefined,
-            creatorTwitter: undefined,
-            authorUrl: 'http://mysite.com/author/me/',
-            metaTitle: 'Post Title',
-            url: 'http://mysite.com/post/my-post-slug/',
-            publishedDate: '2015-12-25T05:35:01.234Z',
-            modifiedDate: '2016-01-21T22:13:05.412Z',
-            coverImage: undefined,
-            keywords: [],
-            metaDescription: '',
-            excerpt: 'Post meta description'
-        };
+    it('should return post schema removing null or undefined values', async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            const metadata = {
+                site: {
+                    title: 'Site Title'
+                },
+                authorImage: null,
+                authorFacebook: undefined,
+                creatorTwitter: undefined,
+                authorUrl: 'http://mysite.com/author/me/',
+                metaTitle: 'Post Title',
+                url: 'http://mysite.com/post/my-post-slug/',
+                publishedDate: '2015-12-25T05:35:01.234Z',
+                modifiedDate: '2016-01-21T22:13:05.412Z',
+                coverImage: undefined,
+                keywords: [],
+                metaDescription: '',
+                excerpt: 'Post meta description'
+            };
 
-        const data = {
-            context: ['post'],
-            post: {
-                primary_author: {
-                    name: 'Post Author',
-                    website: undefined,
-                    bio: null,
-                    facebook: null,
-                    twitter: null
+            const data = {
+                context: ['post'],
+                post: {
+                    primary_author: {
+                        name: 'Post Author',
+                        website: undefined,
+                        bio: null,
+                        facebook: null,
+                        twitter: null
+                    }
                 }
-            }
-        };
+            };
 
-        const schema = getSchema(metadata, data);
+            const schema = getSchema(metadata, data);
 
-        assert.deepEqual(schema, {
-            '@context': 'https://schema.org',
-            '@type': 'Article',
-            author: {
-                '@type': 'Person',
-                name: 'Post Author',
-                sameAs: [],
-                url: 'http://mysite.com/author/me/'
-            },
-            dateModified: '2016-01-21T22:13:05.412Z',
-            datePublished: '2015-12-25T05:35:01.234Z',
-            description: 'Post meta description',
-            headline: 'Post Title',
-            mainEntityOfPage: 'http://mysite.com/post/my-post-slug/',
-            publisher: {
-                '@type': 'Organization',
-                name: 'Site Title',
-                url: null,
-                logo: null
-            },
-            url: 'http://mysite.com/post/my-post-slug/'
+            assert.deepEqual(schema, {
+                '@context': 'https://schema.org',
+                '@type': 'Article',
+                author: {
+                    '@type': 'Person',
+                    name: 'Post Author',
+                    sameAs: [],
+                    url: 'http://mysite.com/author/me/'
+                },
+                dateModified: '2016-01-21T22:13:05.412Z',
+                datePublished: '2015-12-25T05:35:01.234Z',
+                description: 'Post meta description',
+                headline: 'Post Title',
+                mainEntityOfPage: 'http://mysite.com/post/my-post-slug/',
+                publisher: {
+                    '@type': 'Organization',
+                    name: 'Site Title',
+                    url: null,
+                    logo: null
+                },
+                url: 'http://mysite.com/post/my-post-slug/'
+            });
+            done();
         });
-        done();
     });
 
-    it('should return image url instead of ImageObjects if no dimensions supplied', function (done) {
-        const metadata = {
-            site: {
-                title: 'Site Title',
-                url: 'http://mysite.com',
-                logo: {
-                    url: 'http://mysite.com/author/image/url/logo.jpg'
-                }
-            },
-            authorImage: {
-                url: 'http://mysite.com/author/image/url/me.jpg'
-            },
-            authorFacebook: 'testuser',
-            creatorTwitter: '@testuser',
-            authorUrl: 'http://mysite.com/author/me/',
-            metaTitle: 'Post Title',
-            url: 'http://mysite.com/post/my-post-slug/',
-            publishedDate: '2015-12-25T05:35:01.234Z',
-            modifiedDate: '2016-01-21T22:13:05.412Z',
-            coverImage: {
-                url: 'http://mysite.com/content/image/mypostcoverimage.jpg'
-            },
-            keywords: ['one', 'two', 'tag'],
-            metaDescription: 'Post meta description',
-            excerpt: 'Post meta description'
-        };
-
-        const data = {
-            context: ['post'],
-            post: {
-                primary_author: {
-                    name: 'Post Author',
-                    website: 'http://myblogsite.com/',
-                    bio: 'My author bio.',
-                    facebook: 'testuser',
-                    twitter: '@testuser',
-                    metaDescription: 'My author bio.'
-                }
-            }
-        };
-
-        const schema = getSchema(metadata, data);
-
-        assert.deepEqual(schema, {
-            '@context': 'https://schema.org',
-            '@type': 'Article',
-            author: {
-                '@type': 'Person',
-                description: 'My author bio.',
-                image: {
-                    '@type': 'ImageObject',
+    it('should return image url instead of ImageObjects if no dimensions supplied', async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            const metadata = {
+                site: {
+                    title: 'Site Title',
+                    url: 'http://mysite.com',
+                    logo: {
+                        url: 'http://mysite.com/author/image/url/logo.jpg'
+                    }
+                },
+                authorImage: {
                     url: 'http://mysite.com/author/image/url/me.jpg'
                 },
-                name: 'Post Author',
-                sameAs: [
-                    'http://myblogsite.com/',
-                    'https://www.facebook.com/testuser',
-                    'https://x.com/testuser'
-                ],
-                url: 'http://mysite.com/author/me/'
-            },
-            dateModified: '2016-01-21T22:13:05.412Z',
-            datePublished: '2015-12-25T05:35:01.234Z',
-            description: 'Post meta description',
-            headline: 'Post Title',
-            image: {
-                '@type': 'ImageObject',
-                url: 'http://mysite.com/content/image/mypostcoverimage.jpg'
-            },
-            keywords: 'one, two, tag',
-            mainEntityOfPage: 'http://mysite.com/post/my-post-slug/',
-            publisher: {
-                '@type': 'Organization',
-                name: 'Site Title',
-                url: 'http://mysite.com',
-                logo: {
-                    '@type': 'ImageObject',
-                    url: 'http://mysite.com/author/image/url/logo.jpg'
+                authorFacebook: 'testuser',
+                creatorTwitter: '@testuser',
+                authorUrl: 'http://mysite.com/author/me/',
+                metaTitle: 'Post Title',
+                url: 'http://mysite.com/post/my-post-slug/',
+                publishedDate: '2015-12-25T05:35:01.234Z',
+                modifiedDate: '2016-01-21T22:13:05.412Z',
+                coverImage: {
+                    url: 'http://mysite.com/content/image/mypostcoverimage.jpg'
+                },
+                keywords: ['one', 'two', 'tag'],
+                metaDescription: 'Post meta description',
+                excerpt: 'Post meta description'
+            };
+
+            const data = {
+                context: ['post'],
+                post: {
+                    primary_author: {
+                        name: 'Post Author',
+                        website: 'http://myblogsite.com/',
+                        bio: 'My author bio.',
+                        facebook: 'testuser',
+                        twitter: '@testuser',
+                        metaDescription: 'My author bio.'
+                    }
                 }
-            },
-            url: 'http://mysite.com/post/my-post-slug/'
+            };
+
+            const schema = getSchema(metadata, data);
+
+            assert.deepEqual(schema, {
+                '@context': 'https://schema.org',
+                '@type': 'Article',
+                author: {
+                    '@type': 'Person',
+                    description: 'My author bio.',
+                    image: {
+                        '@type': 'ImageObject',
+                        url: 'http://mysite.com/author/image/url/me.jpg'
+                    },
+                    name: 'Post Author',
+                    sameAs: [
+                        'http://myblogsite.com/',
+                        'https://www.facebook.com/testuser',
+                        'https://x.com/testuser'
+                    ],
+                    url: 'http://mysite.com/author/me/'
+                },
+                dateModified: '2016-01-21T22:13:05.412Z',
+                datePublished: '2015-12-25T05:35:01.234Z',
+                description: 'Post meta description',
+                headline: 'Post Title',
+                image: {
+                    '@type': 'ImageObject',
+                    url: 'http://mysite.com/content/image/mypostcoverimage.jpg'
+                },
+                keywords: 'one, two, tag',
+                mainEntityOfPage: 'http://mysite.com/post/my-post-slug/',
+                publisher: {
+                    '@type': 'Organization',
+                    name: 'Site Title',
+                    url: 'http://mysite.com',
+                    logo: {
+                        '@type': 'ImageObject',
+                        url: 'http://mysite.com/author/image/url/logo.jpg'
+                    }
+                },
+                url: 'http://mysite.com/post/my-post-slug/'
+            });
+            done();
         });
-        done();
     });
 
     it('should return home schema if context starts with home', function () {

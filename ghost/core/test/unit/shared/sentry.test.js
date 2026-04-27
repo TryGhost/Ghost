@@ -69,7 +69,7 @@ describe('UNIT: sentry', function () {
     });
 
     describe('beforeSend', function () {
-        this.beforeEach(function () {
+        beforeEach(function () {
             configUtils.set({sentry: {disabled: false, dsn: fakeDSN}});
             delete require.cache[require.resolve('../../../core/shared/sentry')];
 

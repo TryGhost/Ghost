@@ -20,7 +20,7 @@ describe('MentionDiscoveryService', function () {
         nock.cleanAll();
     });
 
-    after(function () {
+    afterAll(function () {
         nock.cleanAll();
         nock.enableNetConnect();
     });

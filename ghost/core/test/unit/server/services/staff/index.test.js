@@ -4,6 +4,7 @@ const staffService = require('../../../../../core/server/services/staff');
 const DomainEvents = require('@tryghost/domain-events');
 const {mockManager} = require('../../../../utils/e2e-framework');
 const models = require('../../../../../core/server/models');
+const emailAddress = require('../../../../../core/server/services/email-address');
 
 const {SubscriptionCancelledEvent, MemberCreatedEvent, SubscriptionActivatedEvent} = require('../../../../../core/shared/events');
 const MilestoneCreatedEvent = require('../../../../../core/server/services/milestones/milestone-created-event');
@@ -11,8 +12,9 @@ const MilestoneCreatedEvent = require('../../../../../core/server/services/miles
 describe('Staff Service:', function () {
     let emailMockReceiver;
 
-    before(function () {
+    beforeAll(function () {
         models.init();
+        emailAddress.init();
     });
 
     beforeEach(function () {

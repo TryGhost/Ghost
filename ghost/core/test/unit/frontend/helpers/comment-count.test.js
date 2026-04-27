@@ -11,7 +11,7 @@ const {registerHelper, shouldCompileToExpected} = require('./utils/handlebars');
 describe('{{comment_count}} helper', function () {
     let keyStub;
 
-    before(function () {
+    beforeAll(function () {
         keyStub = sinon.stub().resolves('xyz');
         const dataService = {
             getFrontendKey: keyStub

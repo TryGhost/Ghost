@@ -6,7 +6,7 @@ const {Store} = require('express-session');
 const sinon = require('sinon');
 
 describe('Auth Service SessionStore', function () {
-    before(function () {
+    beforeAll(function () {
         models.init();
     });
     afterEach(function () {
@@ -26,147 +26,177 @@ describe('Auth Service SessionStore', function () {
     });
 
     describe('SessionStore#destroy', function () {
-        it('calls destroy on the model with the session_id `sid`', function (done) {
-            const destroyStub = sinon.stub(models.Session, 'destroy')
-                .resolves();
+        it('calls destroy on the model with the session_id `sid`', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                const destroyStub = sinon.stub(models.Session, 'destroy')
+                    .resolves();
 
-            const store = new SessionStore(models.Session);
-            const sid = 1;
-            store.destroy(sid, function () {
-                const destroyStubCall = destroyStub.getCall(0);
-                assert.equal(destroyStubCall.args[0].session_id, sid);
-                done();
+                const store = new SessionStore(models.Session);
+                const sid = 1;
+                store.destroy(sid, function () {
+                    const destroyStubCall = destroyStub.getCall(0);
+                    assert.equal(destroyStubCall.args[0].session_id, sid);
+                    done();
+                });
             });
         });
 
-        it('calls back with null if destroy resolve', function (done) {
-            sinon.stub(models.Session, 'destroy')
-                .resolves();
+        it('calls back with null if destroy resolve', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                sinon.stub(models.Session, 'destroy')
+                    .resolves();
 
-            const store = new SessionStore(models.Session);
-            const sid = 1;
-            store.destroy(sid, function (err) {
-                assert.equal(err, null);
-                done();
+                const store = new SessionStore(models.Session);
+                const sid = 1;
+                store.destroy(sid, function (err) {
+                    assert.equal(err, null);
+                    done();
+                });
             });
         });
 
-        it('calls back with the error if destroy errors', function (done) {
-            const error = new Error('beam me up scotty');
-            sinon.stub(models.Session, 'destroy')
-                .rejects(error);
+        it('calls back with the error if destroy errors', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                const error = new Error('beam me up scotty');
+                sinon.stub(models.Session, 'destroy')
+                    .rejects(error);
 
-            const store = new SessionStore(models.Session);
-            const sid = 1;
-            store.destroy(sid, function (err) {
-                assert.equal(err, error);
-                done();
+                const store = new SessionStore(models.Session);
+                const sid = 1;
+                store.destroy(sid, function (err) {
+                    assert.equal(err, error);
+                    done();
+                });
             });
         });
     });
 
     describe('SessionStore#get', function () {
-        it('calls findOne on the model with the session_id `sid`', function (done) {
-            const findOneStub = sinon.stub(models.Session, 'findOne')
-                .resolves();
+        it('calls findOne on the model with the session_id `sid`', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                const findOneStub = sinon.stub(models.Session, 'findOne')
+                    .resolves();
 
-            const store = new SessionStore(models.Session);
-            const sid = 1;
-            store.get(sid, function () {
-                const findOneStubCall = findOneStub.getCall(0);
-                assert.equal(findOneStubCall.args[0].session_id, sid);
-                done();
-            });
-        });
-
-        it('callsback with null, null if findOne does not return a model', function (done) {
-            sinon.stub(models.Session, 'findOne')
-                .resolves(null);
-
-            const store = new SessionStore(models.Session);
-            const sid = 1;
-            store.get(sid, function (err, session) {
-                assert.equal(err, null);
-                assert.equal(session, null);
-                done();
-            });
-        });
-
-        it('callsback with null, model.session_data if findOne does return a model', function (done) {
-            const model = models.Session.forge({
-                session_data: {
-                    ice: 'cube'
-                }
-            });
-            sinon.stub(models.Session, 'findOne')
-                .resolves(model);
-
-            const store = new SessionStore(models.Session);
-            const sid = 1;
-            store.get(sid, function (err, session) {
-                assert.equal(err, null);
-                assert.deepEqual(session, {
-                    ice: 'cube'
+                const store = new SessionStore(models.Session);
+                const sid = 1;
+                store.get(sid, function () {
+                    const findOneStubCall = findOneStub.getCall(0);
+                    assert.equal(findOneStubCall.args[0].session_id, sid);
+                    done();
                 });
-                done();
             });
         });
 
-        it('callsback with an error if the findOne does error', function (done) {
-            const error = new Error('hot damn');
-            sinon.stub(models.Session, 'findOne')
-                .rejects(error);
+        it('callsback with null, null if findOne does not return a model', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                sinon.stub(models.Session, 'findOne')
+                    .resolves(null);
 
-            const store = new SessionStore(models.Session);
-            const sid = 1;
-            store.get(sid, function (err) {
-                assert.equal(err, error);
-                done();
+                const store = new SessionStore(models.Session);
+                const sid = 1;
+                store.get(sid, function (err, session) {
+                    assert.equal(err, null);
+                    assert.equal(session, null);
+                    done();
+                });
+            });
+        });
+
+        it('callsback with null, model.session_data if findOne does return a model', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                const model = models.Session.forge({
+                    session_data: {
+                        ice: 'cube'
+                    }
+                });
+                sinon.stub(models.Session, 'findOne')
+                    .resolves(model);
+
+                const store = new SessionStore(models.Session);
+                const sid = 1;
+                store.get(sid, function (err, session) {
+                    assert.equal(err, null);
+                    assert.deepEqual(session, {
+                        ice: 'cube'
+                    });
+                    done();
+                });
+            });
+        });
+
+        it('callsback with an error if the findOne does error', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                const error = new Error('hot damn');
+                sinon.stub(models.Session, 'findOne')
+                    .rejects(error);
+
+                const store = new SessionStore(models.Session);
+                const sid = 1;
+                store.get(sid, function (err) {
+                    assert.equal(err, error);
+                    done();
+                });
             });
         });
     });
 
     describe('SessionStore#set', function () {
-        it('calls upsert on the model with the session_id and the session_data', function (done) {
-            const upsertStub = sinon.stub(models.Session, 'upsert')
-                .resolves();
+        it('calls upsert on the model with the session_id and the session_data', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                const upsertStub = sinon.stub(models.Session, 'upsert')
+                    .resolves();
 
-            const store = new SessionStore(models.Session);
-            const sid = 1;
-            const session_data = {user_id: 100};
-            store.set(sid, session_data, function () {
-                const upsertStubCall = upsertStub.getCall(0);
-                assert.equal(upsertStubCall.args[0].session_data, session_data);
-                assert.equal(upsertStubCall.args[1].session_id, sid);
-                done();
+                const store = new SessionStore(models.Session);
+                const sid = 1;
+                const session_data = {user_id: 100};
+                store.set(sid, session_data, function () {
+                    const upsertStubCall = upsertStub.getCall(0);
+                    assert.equal(upsertStubCall.args[0].session_data, session_data);
+                    assert.equal(upsertStubCall.args[1].session_id, sid);
+                    done();
+                });
             });
         });
 
-        it('calls back with an error if upsert errors', function (done) {
-            const error = new Error('huuuuuurrr');
-            sinon.stub(models.Session, 'upsert')
-                .rejects(error);
+        it('calls back with an error if upsert errors', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                const error = new Error('huuuuuurrr');
+                sinon.stub(models.Session, 'upsert')
+                    .rejects(error);
 
-            const store = new SessionStore(models.Session);
-            const sid = 1;
-            const session_data = {user_id: 100};
-            store.set(sid, session_data, function (err) {
-                assert.equal(err, error);
-                done();
+                const store = new SessionStore(models.Session);
+                const sid = 1;
+                const session_data = {user_id: 100};
+                store.set(sid, session_data, function (err) {
+                    assert.equal(err, error);
+                    done();
+                });
             });
         });
 
-        it('calls back with null, null if upsert succeed', function (done) {
-            sinon.stub(models.Session, 'upsert')
-                .resolves('success');
+        it('calls back with null, null if upsert succeed', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                sinon.stub(models.Session, 'upsert')
+                    .resolves('success');
 
-            const store = new SessionStore(models.Session);
-            const sid = 1;
-            const session_data = {user_id: 100};
-            store.set(sid, session_data, function (err, data) {
-                assert.equal(err, null);
-                assert.equal(data, undefined);
-                done();
+                const store = new SessionStore(models.Session);
+                const sid = 1;
+                const session_data = {user_id: 100};
+                store.set(sid, session_data, function (err, data) {
+                    assert.equal(err, null);
+                    assert.equal(data, undefined);
+                    done();
+                });
             });
         });
     });

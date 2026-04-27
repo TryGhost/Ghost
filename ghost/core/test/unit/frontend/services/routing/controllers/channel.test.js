@@ -67,132 +67,150 @@ describe('Unit - services/routing/controllers/channel', function () {
         sinon.restore();
     });
 
-    it('no params', function (done) {
-        fetchDataStub.withArgs({page: 1, slug: undefined, limit: postsPerPage}, res.routerOptions)
-            .resolves({
-                posts: posts,
-                meta: {
-                    pagination: {
-                        pages: 5
+    it('no params', async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            fetchDataStub.withArgs({page: 1, slug: undefined, limit: postsPerPage}, res.routerOptions)
+                .resolves({
+                    posts: posts,
+                    meta: {
+                        pagination: {
+                            pages: 5
+                        }
                     }
-                }
-            });
+                });
 
-        controllers.channel(req, res, failTest(done)).then(function () {
-            sinon.assert.calledOnce(themeEngine.getActive);
-            sinon.assert.notCalled(security.string.safe);
-            sinon.assert.calledOnce(fetchDataStub);
-            done();
-        }).catch(done);
-    });
-
-    it('pass page param', function (done) {
-        req.params.page = 2;
-
-        fetchDataStub.withArgs({page: 2, slug: undefined, limit: postsPerPage}, res.routerOptions)
-            .resolves({
-                posts: posts,
-                meta: {
-                    pagination: {
-                        pages: 5
-                    }
-                }
-            });
-
-        controllers.channel(req, res, failTest(done)).then(function () {
-            sinon.assert.calledOnce(themeEngine.getActive);
-            sinon.assert.notCalled(security.string.safe);
-            sinon.assert.calledOnce(fetchDataStub);
-            done();
-        }).catch(done);
-    });
-
-    it('update hbs engine: router defines limit', function (done) {
-        res.routerOptions.limit = 3;
-        req.params.page = 2;
-
-        fetchDataStub.withArgs({page: 2, slug: undefined, limit: 3}, res.routerOptions)
-            .resolves({
-                posts: posts,
-                meta: {
-                    pagination: {
-                        pages: 3
-                    }
-                }
-            });
-
-        controllers.channel(req, res, failTest(done)).then(function () {
-            sinon.assert.calledOnce(themeEngine.getActive);
-            sinon.assert.calledOnce(themeEngine.getActive().updateTemplateOptions.withArgs({data: {config: {posts_per_page: 3}}}));
-            sinon.assert.notCalled(security.string.safe);
-            sinon.assert.calledOnce(fetchDataStub);
-            done();
-        }).catch(done);
-    });
-
-    it('page param too big', function (done) {
-        req.params.page = 6;
-
-        fetchDataStub.withArgs({page: 6, slug: undefined, limit: postsPerPage}, res.routerOptions)
-            .resolves({
-                posts: posts,
-                meta: {
-                    pagination: {
-                        pages: 5
-                    }
-                }
-            });
-
-        controllers.channel(req, res, function (err) {
-            assert.equal((err instanceof errors.NotFoundError), true);
-
-            sinon.assert.calledOnce(themeEngine.getActive);
-            sinon.assert.notCalled(security.string.safe);
-            sinon.assert.calledOnce(fetchDataStub);
-            sinon.assert.notCalled(renderStub);
-            done();
+            controllers.channel(req, res, failTest(done)).then(function () {
+                sinon.assert.calledOnce(themeEngine.getActive);
+                sinon.assert.notCalled(security.string.safe);
+                sinon.assert.calledOnce(fetchDataStub);
+                done();
+            }).catch(done);
         });
     });
 
-    it('slug param', function (done) {
-        req.params.slug = 'unsafe';
+    it('pass page param', async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            req.params.page = 2;
 
-        fetchDataStub.withArgs({page: 1, slug: 'safe', limit: postsPerPage}, res.routerOptions)
-            .resolves({
-                posts: posts,
-                meta: {
-                    pagination: {
-                        pages: 5
+            fetchDataStub.withArgs({page: 2, slug: undefined, limit: postsPerPage}, res.routerOptions)
+                .resolves({
+                    posts: posts,
+                    meta: {
+                        pagination: {
+                            pages: 5
+                        }
                     }
-                }
-            });
+                });
 
-        controllers.channel(req, res, failTest(done)).then(function () {
-            sinon.assert.calledOnce(themeEngine.getActive);
-            sinon.assert.calledOnce(security.string.safe);
-            sinon.assert.calledOnce(fetchDataStub);
-            done();
-        }).catch(done);
+            controllers.channel(req, res, failTest(done)).then(function () {
+                sinon.assert.calledOnce(themeEngine.getActive);
+                sinon.assert.notCalled(security.string.safe);
+                sinon.assert.calledOnce(fetchDataStub);
+                done();
+            }).catch(done);
+        });
     });
 
-    it('invalid posts per page', function (done) {
-        postsPerPage = -1;
+    it('update hbs engine: router defines limit', async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            res.routerOptions.limit = 3;
+            req.params.page = 2;
 
-        fetchDataStub.withArgs({page: 1, slug: undefined}, res.routerOptions)
-            .resolves({
-                posts: posts,
-                meta: {
-                    pagination: {
-                        pages: 5
+            fetchDataStub.withArgs({page: 2, slug: undefined, limit: 3}, res.routerOptions)
+                .resolves({
+                    posts: posts,
+                    meta: {
+                        pagination: {
+                            pages: 3
+                        }
                     }
-                }
-            });
+                });
 
-        controllers.channel(req, res, failTest(done)).then(function () {
-            sinon.assert.calledOnce(themeEngine.getActive);
-            sinon.assert.notCalled(security.string.safe);
-            sinon.assert.calledOnce(fetchDataStub);
-            done();
-        }).catch(done);
+            controllers.channel(req, res, failTest(done)).then(function () {
+                sinon.assert.calledOnce(themeEngine.getActive);
+                sinon.assert.calledOnce(themeEngine.getActive().updateTemplateOptions.withArgs({data: {config: {posts_per_page: 3}}}));
+                sinon.assert.notCalled(security.string.safe);
+                sinon.assert.calledOnce(fetchDataStub);
+                done();
+            }).catch(done);
+        });
+    });
+
+    it('page param too big', async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            req.params.page = 6;
+
+            fetchDataStub.withArgs({page: 6, slug: undefined, limit: postsPerPage}, res.routerOptions)
+                .resolves({
+                    posts: posts,
+                    meta: {
+                        pagination: {
+                            pages: 5
+                        }
+                    }
+                });
+
+            controllers.channel(req, res, function (err) {
+                assert.equal((err instanceof errors.NotFoundError), true);
+
+                sinon.assert.calledOnce(themeEngine.getActive);
+                sinon.assert.notCalled(security.string.safe);
+                sinon.assert.calledOnce(fetchDataStub);
+                sinon.assert.notCalled(renderStub);
+                done();
+            });
+        });
+    });
+
+    it('slug param', async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            req.params.slug = 'unsafe';
+
+            fetchDataStub.withArgs({page: 1, slug: 'safe', limit: postsPerPage}, res.routerOptions)
+                .resolves({
+                    posts: posts,
+                    meta: {
+                        pagination: {
+                            pages: 5
+                        }
+                    }
+                });
+
+            controllers.channel(req, res, failTest(done)).then(function () {
+                sinon.assert.calledOnce(themeEngine.getActive);
+                sinon.assert.calledOnce(security.string.safe);
+                sinon.assert.calledOnce(fetchDataStub);
+                done();
+            }).catch(done);
+        });
+    });
+
+    it('invalid posts per page', async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            postsPerPage = -1;
+
+            fetchDataStub.withArgs({page: 1, slug: undefined}, res.routerOptions)
+                .resolves({
+                    posts: posts,
+                    meta: {
+                        pagination: {
+                            pages: 5
+                        }
+                    }
+                });
+
+            controllers.channel(req, res, failTest(done)).then(function () {
+                sinon.assert.calledOnce(themeEngine.getActive);
+                sinon.assert.notCalled(security.string.safe);
+                sinon.assert.calledOnce(fetchDataStub);
+                done();
+            }).catch(done);
+        });
     });
 });

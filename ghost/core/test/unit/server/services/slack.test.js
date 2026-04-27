@@ -192,23 +192,26 @@ describe('Slack', function () {
             assert.equal(requestData.unfurl_links, true);
         });
 
-        it('makes a request and errors', function (done) {
-            loggingStub = sinon.stub(logging, 'error');
-            makeRequestStub.rejects();
-            settingsCacheStub.withArgs('slack_url').returns(slackURL);
+        it('makes a request and errors', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                loggingStub = sinon.stub(logging, 'error');
+                makeRequestStub.rejects();
+                settingsCacheStub.withArgs('slack_url').returns(slackURL);
 
-            // execute code
-            ping({});
+                // execute code
+                ping({});
 
-            (function retry() {
-                if (loggingStub.calledOnce) {
-                    sinon.assert.calledOnce(makeRequestStub);
-                    sinon.assert.calledOnce(loggingStub);
-                    return done();
-                }
+                (function retry() {
+                    if (loggingStub.calledOnce) {
+                        sinon.assert.calledOnce(makeRequestStub);
+                        sinon.assert.calledOnce(loggingStub);
+                        return done();
+                    }
 
-                setTimeout(retry, 50);
-            }());
+                    setTimeout(retry, 50);
+                }());
+            });
         });
 
         it('does not make a request if post is a page', function () {

@@ -9,11 +9,14 @@ const logging = require('@tryghost/logging');
 
 describe('{{cancel_link}} helper', function () {
     let labsStub;
-    before(function (done) {
-        hbs.express4({partialsDir: [configUtils.config.get('paths').helperTemplates]});
+    beforeAll(async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            hbs.express4({partialsDir: [configUtils.config.get('paths').helperTemplates]});
 
-        hbs.cachePartials(function () {
-            done();
+            hbs.cachePartials(function () {
+                done();
+            });
         });
     });
 

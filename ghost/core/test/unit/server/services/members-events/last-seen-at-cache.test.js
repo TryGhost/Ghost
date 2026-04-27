@@ -5,7 +5,7 @@ const moment = require('moment-timezone');
 
 describe('LastSeenAtCache', function () {
     let clock;
-    before(function () {
+    beforeAll(function () {
         clock = sinon.useFakeTimers();
     });
 

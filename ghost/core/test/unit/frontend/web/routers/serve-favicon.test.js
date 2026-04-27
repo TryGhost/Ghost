@@ -1,11 +1,74 @@
 const sinon = require('sinon');
-const request = require('supertest');
+const assert = require('node:assert/strict');
+const {Readable} = require('stream');
 const express = require('../../../../../core/shared/express');
 const serveFavicon = require('../../../../../core/frontend/web/routers/serve-favicon');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const storage = require('../../../../../core/server/adapters/storage');
 const configUtils = require('../../../../utils/config-utils');
 const path = require('path');
+
+function request(app, url) {
+    return new Promise((resolve, reject) => {
+        const req = new Readable({
+            read() {
+                this.push(null);
+            }
+        });
+        const headers = {};
+        const chunks = [];
+        let finished = false;
+        const finish = (response) => {
+            if (!finished) {
+                finished = true;
+                resolve(response);
+            }
+        };
+
+        req.method = 'GET';
+        req.url = url;
+        req.originalUrl = url;
+        req.headers = {
+            host: '127.0.0.1'
+        };
+        req.connection = {};
+        req.socket = req.connection;
+
+        const res = {
+            statusCode: 200,
+            setHeader(name, value) {
+                headers[name.toLowerCase()] = value;
+            },
+            getHeader(name) {
+                return headers[name.toLowerCase()];
+            },
+            removeHeader(name) {
+                delete headers[name.toLowerCase()];
+            },
+            writeHead(statusCode, headerValues) {
+                this.statusCode = statusCode;
+                for (const [name, value] of Object.entries(headerValues)) {
+                    this.setHeader(name, value);
+                }
+            },
+            write(chunk) {
+                chunks.push(Buffer.from(chunk));
+            },
+            end(chunk) {
+                if (chunk) {
+                    chunks.push(Buffer.from(chunk));
+                }
+                finish({
+                    body: Buffer.concat(chunks),
+                    headers,
+                    statusCode: this.statusCode
+                });
+            }
+        };
+
+        app.handle(req, res, reject);
+    });
+}
 
 describe('Serve Favicon', function () {
     let blogApp;
@@ -33,61 +96,56 @@ describe('Serve Favicon', function () {
 
     describe('serveFavicon', function () {
         describe('serves', function () {
-            it('default favicon.ico', function (done) {
+            it('default favicon.ico', async function () {
                 localSettingsCache.icon = '';
 
-                request(blogApp)
-                    .get('/favicon.ico')
-                    .expect(200)
-                    .expect('Content-Type', /image\/x-icon/)
-                    .expect('Content-Length', '15406')
-                    .end(done);
+                const response = await request(blogApp, '/favicon.ico');
+
+                assert.equal(response.statusCode, 200);
+                assert.match(response.headers['content-type'], /image\/x-icon/);
+                assert.equal(response.headers['content-length'], 15406);
             });
         });
 
         describe('redirects', function () {
-            it('custom uploaded favicon.png', function (done) {
+            it('custom uploaded favicon.png', async function () {
                 storage.getStorage().storagePath = path.join(__dirname, '../../../../utils/fixtures/images/');
                 localSettingsCache.icon = '/content/images/favicon.png';
 
-                request(blogApp)
-                    .get('/favicon.png')
-                    .expect(302)
-                    .expect('Location', '/content/images/size/w256h256/favicon.png')
-                    .end(done);
+                const response = await request(blogApp, '/favicon.png');
+
+                assert.equal(response.statusCode, 302);
+                assert.equal(response.headers.location, '/content/images/size/w256h256/favicon.png');
             });
 
-            it('custom uploaded favicon.webp', function (done) {
+            it('custom uploaded favicon.webp', async function () {
                 storage.getStorage().storagePath = path.join(__dirname, '../../../../utils/fixtures/images/');
                 localSettingsCache.icon = '/content/images/favicon.webp';
 
-                request(blogApp)
-                    .get('/favicon.png')
-                    .expect(302)
-                    .expect('Location', '/content/images/size/w256h256/format/png/favicon.webp')
-                    .end(done);
+                const response = await request(blogApp, '/favicon.png');
+
+                assert.equal(response.statusCode, 302);
+                assert.equal(response.headers.location, '/content/images/size/w256h256/format/png/favicon.webp');
             });
 
-            it('custom uploaded favicon.ico', function (done) {
+            it('custom uploaded favicon.ico', async function () {
                 storage.getStorage().storagePath = path.join(__dirname, '../../../../utils/fixtures/images/');
                 localSettingsCache.icon = '/content/images/favicon.ico';
 
-                request(blogApp)
-                    .get('/favicon.ico')
-                    .expect(302)
-                    .expect('Location', '/content/images/favicon.ico')
-                    .end(done);
+                const response = await request(blogApp, '/favicon.ico');
+
+                assert.equal(response.statusCode, 302);
+                assert.equal(response.headers.location, '/content/images/favicon.ico');
             });
 
-            it('to favicon.ico when favicon.png is requested', function (done) {
+            it('to favicon.ico when favicon.png is requested', async function () {
                 configUtils.set('paths:publicFilePath', path.join(__dirname, '../../../../test/utils/fixtures/'));
                 localSettingsCache.icon = null;
 
-                request(blogApp)
-                    .get('/favicon.png')
-                    .expect(302)
-                    .expect('Location', '/favicon.ico')
-                    .end(done);
+                const response = await request(blogApp, '/favicon.png');
+
+                assert.equal(response.statusCode, 302);
+                assert.equal(response.headers.location, '/favicon.ico');
             });
         });
     });

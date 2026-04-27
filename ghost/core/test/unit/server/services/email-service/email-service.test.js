@@ -461,7 +461,7 @@ describe('Email Service', function () {
             });
 
             limited.emails = true;
-            assert.rejects(service.retryEmail(email));
+            await assert.rejects(service.retryEmail(email));
             sinon.assert.notCalled(scheduleEmail);
         });
     });

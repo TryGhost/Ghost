@@ -13,7 +13,7 @@ describe('Unit: models/post', function () {
     const mockDb = require('mock-knex');
     let tracker;
 
-    before(function () {
+    beforeAll(function () {
         models.init();
         mockDb.mock(knex);
         tracker = mockDb.getTracker();
@@ -23,7 +23,7 @@ describe('Unit: models/post', function () {
         sinon.restore();
     });
 
-    after(function () {
+    afterAll(function () {
         mockDb.unmock(knex);
     });
 
@@ -411,7 +411,7 @@ describe('Unit: models/post', function () {
 });
 
 describe('Unit: models/post: uses database (@TODO: fix me)', function () {
-    before(function () {
+    beforeAll(function () {
         models.init();
     });
 
@@ -424,182 +424,200 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
         sinon.restore();
     });
 
-    after(function () {
+    afterAll(function () {
         sinon.restore();
     });
 
     describe('Permissible', function () {
         describe('As Contributor', function () {
             describe('Editing', function () {
-                it('rejects if changing status', function (done) {
-                    const mockPostObj = {
-                        get: sinon.stub(),
-                        related: sinon.stub()
-                    };
-                    const context = {user: 1};
-                    const unsafeAttrs = {status: 'published'};
+                it('rejects if changing status', async function () {
+                    await new Promise((resolve, reject) => {
+                        const done = err => (err ? reject(err) : resolve());
+                        const mockPostObj = {
+                            get: sinon.stub(),
+                            related: sinon.stub()
+                        };
+                        const context = {user: 1};
+                        const unsafeAttrs = {status: 'published'};
 
-                    mockPostObj.get.withArgs('status').returns('draft');
-                    mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
+                        mockPostObj.get.withArgs('status').returns('draft');
+                        mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
 
-                    models.Post.permissible(
-                        mockPostObj,
-                        'edit',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.contributor,
-                        true,
-                        true,
-                        false
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        assert(error instanceof errors.NoPermissionError);
-                        done();
-                    }).catch(done);
-                });
-
-                it('rejects if changing visibility', function (done) {
-                    const mockPostObj = {
-                        get: sinon.stub(),
-                        related: sinon.stub()
-                    };
-                    const context = {user: 1};
-                    const unsafeAttrs = {visibility: 'public'};
-
-                    mockPostObj.get.withArgs('visibility').returns('paid');
-                    mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
-
-                    models.Post.permissible(
-                        mockPostObj,
-                        'edit',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.contributor,
-                        true,
-                        true,
-                        false
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        assert(error instanceof errors.NoPermissionError);
-                        done();
-                    }).catch(done);
-                });
-
-                it('rejects if changing authors.0', function (done) {
-                    const mockPostObj = {
-                        get: sinon.stub(),
-                        related: sinon.stub()
-                    };
-                    const context = {user: 1};
-                    const unsafeAttrs = {status: 'draft', authors: [{id: 2}]};
-
-                    mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
-
-                    models.Post.permissible(
-                        mockPostObj,
-                        'edit',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.contributor,
-                        true,
-                        true,
-                        false
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        assert(error instanceof errors.NoPermissionError);
-                        sinon.assert.notCalled(mockPostObj.get);
-                        assert.equal(mockPostObj.related.calledTwice, false);
-                        done();
+                        models.Post.permissible(
+                            mockPostObj,
+                            'edit',
+                            context,
+                            unsafeAttrs,
+                            testUtils.permissions.contributor,
+                            true,
+                            true,
+                            false
+                        ).then(() => {
+                            done(new Error('Permissible function should have rejected.'));
+                        }).catch((error) => {
+                            assert(error instanceof errors.NoPermissionError);
+                            done();
+                        }).catch(done);
                     });
                 });
 
-                it('ignores if changes authors.1', function (done) {
-                    const mockPostObj = {
-                        get: sinon.stub(),
-                        related: sinon.stub()
-                    };
-                    const context = {user: 1};
-                    const unsafeAttrs = {status: 'draft', authors: [{id: 1}, {id: 2}]};
+                it('rejects if changing visibility', async function () {
+                    await new Promise((resolve, reject) => {
+                        const done = err => (err ? reject(err) : resolve());
+                        const mockPostObj = {
+                            get: sinon.stub(),
+                            related: sinon.stub()
+                        };
+                        const context = {user: 1};
+                        const unsafeAttrs = {visibility: 'public'};
 
-                    mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
-                    mockPostObj.get.withArgs('status').returns('draft');
+                        mockPostObj.get.withArgs('visibility').returns('paid');
+                        mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
 
-                    models.Post.permissible(
-                        mockPostObj,
-                        'edit',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.contributor,
-                        true,
-                        true,
-                        false
-                    ).then((result) => {
-                        assertExists(result);
-                        assert.deepEqual(result.excludedAttrs, ['authors', 'tags']);
-                        sinon.assert.calledTwice(mockPostObj.get);
-                        sinon.assert.calledTwice(mockPostObj.related);
-                        done();
-                    }).catch(done);
-                });
-
-                it('rejects if post is not draft', function (done) {
-                    const mockPostObj = {
-                        get: sinon.stub(),
-                        related: sinon.stub()
-                    };
-                    const context = {user: 1};
-                    const unsafeAttrs = {status: 'published'};
-
-                    mockPostObj.get.withArgs('status').returns('published');
-                    mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
-
-                    models.Post.permissible(
-                        mockPostObj,
-                        'edit',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.contributor,
-                        true,
-                        true,
-                        false
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        assert(error instanceof errors.NoPermissionError);
-                        sinon.assert.calledTwice(mockPostObj.get);
-                        sinon.assert.calledOnce(mockPostObj.related);
-                        done();
+                        models.Post.permissible(
+                            mockPostObj,
+                            'edit',
+                            context,
+                            unsafeAttrs,
+                            testUtils.permissions.contributor,
+                            true,
+                            true,
+                            false
+                        ).then(() => {
+                            done(new Error('Permissible function should have rejected.'));
+                        }).catch((error) => {
+                            assert(error instanceof errors.NoPermissionError);
+                            done();
+                        }).catch(done);
                     });
                 });
 
-                it('rejects if contributor is not author of post', function (done) {
-                    const mockPostObj = {
-                        get: sinon.stub(),
-                        related: sinon.stub()
-                    };
-                    const context = {user: 1};
-                    const unsafeAttrs = {status: 'draft', authors: [{id: 2}]};
+                it('rejects if changing authors.0', async function () {
+                    await new Promise((resolve, reject) => {
+                        const done = err => (err ? reject(err) : resolve());
+                        const mockPostObj = {
+                            get: sinon.stub(),
+                            related: sinon.stub()
+                        };
+                        const context = {user: 1};
+                        const unsafeAttrs = {status: 'draft', authors: [{id: 2}]};
 
-                    mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
+                        mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
 
-                    models.Post.permissible(
-                        mockPostObj,
-                        'edit',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.contributor,
-                        true,
-                        true,
-                        false
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        assert(error instanceof errors.NoPermissionError);
-                        sinon.assert.calledOnce(mockPostObj.related);
-                        done();
+                        models.Post.permissible(
+                            mockPostObj,
+                            'edit',
+                            context,
+                            unsafeAttrs,
+                            testUtils.permissions.contributor,
+                            true,
+                            true,
+                            false
+                        ).then(() => {
+                            done(new Error('Permissible function should have rejected.'));
+                        }).catch((error) => {
+                            assert(error instanceof errors.NoPermissionError);
+                            sinon.assert.notCalled(mockPostObj.get);
+                            assert.equal(mockPostObj.related.calledTwice, false);
+                            done();
+                        });
+                    });
+                });
+
+                it('ignores if changes authors.1', async function () {
+                    await new Promise((resolve, reject) => {
+                        const done = err => (err ? reject(err) : resolve());
+                        const mockPostObj = {
+                            get: sinon.stub(),
+                            related: sinon.stub()
+                        };
+                        const context = {user: 1};
+                        const unsafeAttrs = {status: 'draft', authors: [{id: 1}, {id: 2}]};
+
+                        mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
+                        mockPostObj.get.withArgs('status').returns('draft');
+
+                        models.Post.permissible(
+                            mockPostObj,
+                            'edit',
+                            context,
+                            unsafeAttrs,
+                            testUtils.permissions.contributor,
+                            true,
+                            true,
+                            false
+                        ).then((result) => {
+                            assertExists(result);
+                            assert.deepEqual(result.excludedAttrs, ['authors', 'tags']);
+                            sinon.assert.calledTwice(mockPostObj.get);
+                            sinon.assert.calledTwice(mockPostObj.related);
+                            done();
+                        }).catch(done);
+                    });
+                });
+
+                it('rejects if post is not draft', async function () {
+                    await new Promise((resolve, reject) => {
+                        const done = err => (err ? reject(err) : resolve());
+                        const mockPostObj = {
+                            get: sinon.stub(),
+                            related: sinon.stub()
+                        };
+                        const context = {user: 1};
+                        const unsafeAttrs = {status: 'published'};
+
+                        mockPostObj.get.withArgs('status').returns('published');
+                        mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
+
+                        models.Post.permissible(
+                            mockPostObj,
+                            'edit',
+                            context,
+                            unsafeAttrs,
+                            testUtils.permissions.contributor,
+                            true,
+                            true,
+                            false
+                        ).then(() => {
+                            done(new Error('Permissible function should have rejected.'));
+                        }).catch((error) => {
+                            assert(error instanceof errors.NoPermissionError);
+                            sinon.assert.calledTwice(mockPostObj.get);
+                            sinon.assert.calledOnce(mockPostObj.related);
+                            done();
+                        });
+                    });
+                });
+
+                it('rejects if contributor is not author of post', async function () {
+                    await new Promise((resolve, reject) => {
+                        const done = err => (err ? reject(err) : resolve());
+                        const mockPostObj = {
+                            get: sinon.stub(),
+                            related: sinon.stub()
+                        };
+                        const context = {user: 1};
+                        const unsafeAttrs = {status: 'draft', authors: [{id: 2}]};
+
+                        mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
+
+                        models.Post.permissible(
+                            mockPostObj,
+                            'edit',
+                            context,
+                            unsafeAttrs,
+                            testUtils.permissions.contributor,
+                            true,
+                            true,
+                            false
+                        ).then(() => {
+                            done(new Error('Permissible function should have rejected.'));
+                        }).catch((error) => {
+                            assert(error instanceof errors.NoPermissionError);
+                            sinon.assert.calledOnce(mockPostObj.related);
+                            done();
+                        });
                     });
                 });
 
@@ -633,161 +651,179 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
             });
 
             describe('Adding', function () {
-                it('rejects if "published" status', function (done) {
-                    const mockPostObj = {
-                        get: sinon.stub()
-                    };
-                    const context = {user: 1};
-                    const unsafeAttrs = {status: 'published', authors: [{id: 1}]};
+                it('rejects if "published" status', async function () {
+                    await new Promise((resolve, reject) => {
+                        const done = err => (err ? reject(err) : resolve());
+                        const mockPostObj = {
+                            get: sinon.stub()
+                        };
+                        const context = {user: 1};
+                        const unsafeAttrs = {status: 'published', authors: [{id: 1}]};
 
-                    models.Post.permissible(
-                        mockPostObj,
-                        'add',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.contributor,
-                        true,
-                        true,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        assert(error instanceof errors.NoPermissionError);
-                        sinon.assert.notCalled(mockPostObj.get);
-                        done();
+                        models.Post.permissible(
+                            mockPostObj,
+                            'add',
+                            context,
+                            unsafeAttrs,
+                            testUtils.permissions.contributor,
+                            true,
+                            true,
+                            true
+                        ).then(() => {
+                            done(new Error('Permissible function should have rejected.'));
+                        }).catch((error) => {
+                            assert(error instanceof errors.NoPermissionError);
+                            sinon.assert.notCalled(mockPostObj.get);
+                            done();
+                        });
                     });
                 });
 
-                it('rejects if different author id', function (done) {
-                    const mockPostObj = {
-                        get: sinon.stub()
-                    };
-                    const context = {user: 1};
-                    const unsafeAttrs = {status: 'draft', authors: [{id: 2}]};
+                it('rejects if different author id', async function () {
+                    await new Promise((resolve, reject) => {
+                        const done = err => (err ? reject(err) : resolve());
+                        const mockPostObj = {
+                            get: sinon.stub()
+                        };
+                        const context = {user: 1};
+                        const unsafeAttrs = {status: 'draft', authors: [{id: 2}]};
 
-                    models.Post.permissible(
-                        mockPostObj,
-                        'add',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.contributor,
-                        true,
-                        true,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        assert(error instanceof errors.NoPermissionError);
-                        sinon.assert.notCalled(mockPostObj.get);
-                        done();
+                        models.Post.permissible(
+                            mockPostObj,
+                            'add',
+                            context,
+                            unsafeAttrs,
+                            testUtils.permissions.contributor,
+                            true,
+                            true,
+                            true
+                        ).then(() => {
+                            done(new Error('Permissible function should have rejected.'));
+                        }).catch((error) => {
+                            assert(error instanceof errors.NoPermissionError);
+                            sinon.assert.notCalled(mockPostObj.get);
+                            done();
+                        });
                     });
                 });
 
-                it('rejects if different logged in user and `authors.0`', function (done) {
-                    const mockPostObj = {
-                        get: sinon.stub()
-                    };
-                    const context = {user: 1};
-                    const unsafeAttrs = {status: 'draft', authors: [{id: 2}]};
+                it('rejects if different logged in user and `authors.0`', async function () {
+                    await new Promise((resolve, reject) => {
+                        const done = err => (err ? reject(err) : resolve());
+                        const mockPostObj = {
+                            get: sinon.stub()
+                        };
+                        const context = {user: 1};
+                        const unsafeAttrs = {status: 'draft', authors: [{id: 2}]};
 
-                    models.Post.permissible(
-                        mockPostObj,
-                        'add',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.contributor,
-                        true,
-                        true,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        assert(error instanceof errors.NoPermissionError);
-                        sinon.assert.notCalled(mockPostObj.get);
-                        done();
+                        models.Post.permissible(
+                            mockPostObj,
+                            'add',
+                            context,
+                            unsafeAttrs,
+                            testUtils.permissions.contributor,
+                            true,
+                            true,
+                            true
+                        ).then(() => {
+                            done(new Error('Permissible function should have rejected.'));
+                        }).catch((error) => {
+                            assert(error instanceof errors.NoPermissionError);
+                            sinon.assert.notCalled(mockPostObj.get);
+                            done();
+                        });
                     });
                 });
 
-                it('resolves if same logged in user and `authors.0`', function (done) {
-                    const mockPostObj = {
-                        get: sinon.stub()
-                    };
-                    const context = {user: 1};
-                    const unsafeAttrs = {status: 'draft', authors: [{id: 1}]};
+                it('resolves if same logged in user and `authors.0`', async function () {
+                    await new Promise((resolve, reject) => {
+                        const done = err => (err ? reject(err) : resolve());
+                        const mockPostObj = {
+                            get: sinon.stub()
+                        };
+                        const context = {user: 1};
+                        const unsafeAttrs = {status: 'draft', authors: [{id: 1}]};
 
-                    models.Post.permissible(
-                        mockPostObj,
-                        'add',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.contributor,
-                        true,
-                        true,
-                        true
-                    ).then((result) => {
-                        assertExists(result);
-                        assert.deepEqual(result.excludedAttrs, ['authors', 'tags']);
-                        sinon.assert.notCalled(mockPostObj.get);
-                        done();
-                    }).catch(done);
+                        models.Post.permissible(
+                            mockPostObj,
+                            'add',
+                            context,
+                            unsafeAttrs,
+                            testUtils.permissions.contributor,
+                            true,
+                            true,
+                            true
+                        ).then((result) => {
+                            assertExists(result);
+                            assert.deepEqual(result.excludedAttrs, ['authors', 'tags']);
+                            sinon.assert.notCalled(mockPostObj.get);
+                            done();
+                        }).catch(done);
+                    });
                 });
             });
 
             describe('Destroying', function () {
-                it('rejects if destroying another author\'s post', function (done) {
-                    const mockPostObj = {
-                        get: sinon.stub(),
-                        related: sinon.stub()
-                    };
-                    const context = {user: 1};
+                it('rejects if destroying another author\'s post', async function () {
+                    await new Promise((resolve, reject) => {
+                        const done = err => (err ? reject(err) : resolve());
+                        const mockPostObj = {
+                            get: sinon.stub(),
+                            related: sinon.stub()
+                        };
+                        const context = {user: 1};
 
-                    mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
+                        mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
 
-                    models.Post.permissible(
-                        mockPostObj,
-                        'destroy',
-                        context,
-                        {},
-                        testUtils.permissions.contributor,
-                        true,
-                        true,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        assert(error instanceof errors.NoPermissionError);
-                        sinon.assert.calledOnce(mockPostObj.get);
-                        sinon.assert.calledOnce(mockPostObj.related);
-                        done();
+                        models.Post.permissible(
+                            mockPostObj,
+                            'destroy',
+                            context,
+                            {},
+                            testUtils.permissions.contributor,
+                            true,
+                            true,
+                            true
+                        ).then(() => {
+                            done(new Error('Permissible function should have rejected.'));
+                        }).catch((error) => {
+                            assert(error instanceof errors.NoPermissionError);
+                            sinon.assert.calledOnce(mockPostObj.get);
+                            sinon.assert.calledOnce(mockPostObj.related);
+                            done();
+                        });
                     });
                 });
 
-                it('rejects if destroying a published post', function (done) {
-                    const mockPostObj = {
-                        get: sinon.stub(),
-                        related: sinon.stub()
-                    };
-                    const context = {user: 1};
+                it('rejects if destroying a published post', async function () {
+                    await new Promise((resolve, reject) => {
+                        const done = err => (err ? reject(err) : resolve());
+                        const mockPostObj = {
+                            get: sinon.stub(),
+                            related: sinon.stub()
+                        };
+                        const context = {user: 1};
 
-                    mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
-                    mockPostObj.get.withArgs('status').returns('published');
+                        mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
+                        mockPostObj.get.withArgs('status').returns('published');
 
-                    models.Post.permissible(
-                        mockPostObj,
-                        'destroy',
-                        context,
-                        {},
-                        testUtils.permissions.contributor,
-                        true,
-                        true,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        assert(error instanceof errors.NoPermissionError);
-                        sinon.assert.calledOnce(mockPostObj.get);
-                        sinon.assert.calledOnce(mockPostObj.related);
-                        done();
+                        models.Post.permissible(
+                            mockPostObj,
+                            'destroy',
+                            context,
+                            {},
+                            testUtils.permissions.contributor,
+                            true,
+                            true,
+                            true
+                        ).then(() => {
+                            done(new Error('Permissible function should have rejected.'));
+                        }).catch((error) => {
+                            assert(error instanceof errors.NoPermissionError);
+                            sinon.assert.calledOnce(mockPostObj.get);
+                            sinon.assert.calledOnce(mockPostObj.related);
+                            done();
+                        });
                     });
                 });
 
@@ -822,120 +858,132 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
         describe('As Author', function () {
             describe('Editing', function () {
-                it('rejects if editing another\'s post', function (done) {
-                    const mockPostObj = {
-                        get: sinon.stub(),
-                        related: sinon.stub()
-                    };
-                    const context = {user: 1};
-                    const unsafeAttrs = {authors: {id: 2}};
+                it('rejects if editing another\'s post', async function () {
+                    await new Promise((resolve, reject) => {
+                        const done = err => (err ? reject(err) : resolve());
+                        const mockPostObj = {
+                            get: sinon.stub(),
+                            related: sinon.stub()
+                        };
+                        const context = {user: 1};
+                        const unsafeAttrs = {authors: {id: 2}};
 
-                    mockPostObj.related.withArgs('authors').returns({models: [{id: 2}]});
+                        mockPostObj.related.withArgs('authors').returns({models: [{id: 2}]});
 
-                    models.Post.permissible(
-                        mockPostObj,
-                        'edit',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.author,
-                        false,
-                        true,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        assert(error instanceof errors.NoPermissionError);
-                        sinon.assert.notCalled(mockPostObj.get);
-                        sinon.assert.calledOnce(mockPostObj.related);
-                        done();
+                        models.Post.permissible(
+                            mockPostObj,
+                            'edit',
+                            context,
+                            unsafeAttrs,
+                            testUtils.permissions.author,
+                            false,
+                            true,
+                            true
+                        ).then(() => {
+                            done(new Error('Permissible function should have rejected.'));
+                        }).catch((error) => {
+                            assert(error instanceof errors.NoPermissionError);
+                            sinon.assert.notCalled(mockPostObj.get);
+                            sinon.assert.calledOnce(mockPostObj.related);
+                            done();
+                        });
                     });
                 });
 
-                it('rejects if changing visibility', function (done) {
-                    const mockPostObj = {
-                        get: sinon.stub(),
-                        related: sinon.stub()
-                    };
-                    const context = {user: 1};
-                    const unsafeAttrs = {visibility: 'public'};
+                it('rejects if changing visibility', async function () {
+                    await new Promise((resolve, reject) => {
+                        const done = err => (err ? reject(err) : resolve());
+                        const mockPostObj = {
+                            get: sinon.stub(),
+                            related: sinon.stub()
+                        };
+                        const context = {user: 1};
+                        const unsafeAttrs = {visibility: 'public'};
 
-                    mockPostObj.get.withArgs('visibility').returns('paid');
-                    mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
+                        mockPostObj.get.withArgs('visibility').returns('paid');
+                        mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
 
-                    models.Post.permissible(
-                        mockPostObj,
-                        'edit',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.author,
-                        false,
-                        false,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        assert(error instanceof errors.NoPermissionError);
-                        sinon.assert.notCalled(mockPostObj.get);
-                        sinon.assert.calledOnce(mockPostObj.related);
-                        done();
+                        models.Post.permissible(
+                            mockPostObj,
+                            'edit',
+                            context,
+                            unsafeAttrs,
+                            testUtils.permissions.author,
+                            false,
+                            false,
+                            true
+                        ).then(() => {
+                            done(new Error('Permissible function should have rejected.'));
+                        }).catch((error) => {
+                            assert(error instanceof errors.NoPermissionError);
+                            sinon.assert.notCalled(mockPostObj.get);
+                            sinon.assert.calledOnce(mockPostObj.related);
+                            done();
+                        });
                     });
                 });
 
-                it('rejects if editing another\'s post (using `authors`)', function (done) {
-                    const mockPostObj = {
-                        get: sinon.stub(),
-                        related: sinon.stub()
-                    };
-                    const context = {user: 1};
-                    const unsafeAttrs = {authors: [{id: 2}]};
+                it('rejects if editing another\'s post (using `authors`)', async function () {
+                    await new Promise((resolve, reject) => {
+                        const done = err => (err ? reject(err) : resolve());
+                        const mockPostObj = {
+                            get: sinon.stub(),
+                            related: sinon.stub()
+                        };
+                        const context = {user: 1};
+                        const unsafeAttrs = {authors: [{id: 2}]};
 
-                    mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
+                        mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
 
-                    models.Post.permissible(
-                        mockPostObj,
-                        'edit',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.author,
-                        false,
-                        true,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        assert(error instanceof errors.NoPermissionError);
-                        sinon.assert.notCalled(mockPostObj.get);
-                        sinon.assert.calledTwice(mockPostObj.related);
-                        done();
+                        models.Post.permissible(
+                            mockPostObj,
+                            'edit',
+                            context,
+                            unsafeAttrs,
+                            testUtils.permissions.author,
+                            false,
+                            true,
+                            true
+                        ).then(() => {
+                            done(new Error('Permissible function should have rejected.'));
+                        }).catch((error) => {
+                            assert(error instanceof errors.NoPermissionError);
+                            sinon.assert.notCalled(mockPostObj.get);
+                            sinon.assert.calledTwice(mockPostObj.related);
+                            done();
+                        });
                     });
                 });
 
-                it('rejects if changing authors', function (done) {
-                    const mockPostObj = {
-                        get: sinon.stub(),
-                        related: sinon.stub()
-                    };
-                    const context = {user: 1};
-                    const unsafeAttrs = {authors: [{id: 2}]};
+                it('rejects if changing authors', async function () {
+                    await new Promise((resolve, reject) => {
+                        const done = err => (err ? reject(err) : resolve());
+                        const mockPostObj = {
+                            get: sinon.stub(),
+                            related: sinon.stub()
+                        };
+                        const context = {user: 1};
+                        const unsafeAttrs = {authors: [{id: 2}]};
 
-                    mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
+                        mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
 
-                    models.Post.permissible(
-                        mockPostObj,
-                        'edit',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.author,
-                        false,
-                        true,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        assert(error instanceof errors.NoPermissionError);
-                        sinon.assert.notCalled(mockPostObj.get);
-                        sinon.assert.calledTwice(mockPostObj.related);
-                        done();
+                        models.Post.permissible(
+                            mockPostObj,
+                            'edit',
+                            context,
+                            unsafeAttrs,
+                            testUtils.permissions.author,
+                            false,
+                            true,
+                            true
+                        ).then(() => {
+                            done(new Error('Permissible function should have rejected.'));
+                        }).catch((error) => {
+                            assert(error instanceof errors.NoPermissionError);
+                            sinon.assert.notCalled(mockPostObj.get);
+                            sinon.assert.calledTwice(mockPostObj.related);
+                            done();
+                        });
                     });
                 });
 
@@ -964,32 +1012,71 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
             });
 
             describe('Adding', function () {
-                it('rejects if different author id', function (done) {
-                    const mockPostObj = {
-                        get: sinon.stub()
-                    };
-                    const context = {user: 1};
-                    const unsafeAttrs = {authors: [{id: 2}]};
+                it('rejects if different author id', async function () {
+                    await new Promise((resolve, reject) => {
+                        const done = err => (err ? reject(err) : resolve());
+                        const mockPostObj = {
+                            get: sinon.stub()
+                        };
+                        const context = {user: 1};
+                        const unsafeAttrs = {authors: [{id: 2}]};
 
-                    models.Post.permissible(
-                        mockPostObj,
-                        'add',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.author,
-                        false,
-                        true,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        assert(error instanceof errors.NoPermissionError);
-                        sinon.assert.notCalled(mockPostObj.get);
-                        done();
+                        models.Post.permissible(
+                            mockPostObj,
+                            'add',
+                            context,
+                            unsafeAttrs,
+                            testUtils.permissions.author,
+                            false,
+                            true,
+                            true
+                        ).then(() => {
+                            done(new Error('Permissible function should have rejected.'));
+                        }).catch((error) => {
+                            assert(error instanceof errors.NoPermissionError);
+                            sinon.assert.notCalled(mockPostObj.get);
+                            done();
+                        });
                     });
                 });
 
-                it('rejects if different authors', function (done) {
+                it('rejects if different authors', async function () {
+                    await new Promise((resolve, reject) => {
+                        const done = err => (err ? reject(err) : resolve());
+                        const mockPostObj = {
+                            get: sinon.stub(),
+                            related: sinon.stub()
+                        };
+                        const context = {user: 1};
+                        const unsafeAttrs = {authors: [{id: 2}]};
+
+                        mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
+
+                        models.Post.permissible(
+                            mockPostObj,
+                            'add',
+                            context,
+                            unsafeAttrs,
+                            testUtils.permissions.author,
+                            false,
+                            true,
+                            true
+                        ).then(() => {
+                            done(new Error('Permissible function should have rejected.'));
+                        }).catch((error) => {
+                            assert(error instanceof errors.NoPermissionError);
+                            sinon.assert.notCalled(mockPostObj.get);
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+
+        describe('Everyone Else', function () {
+            it('rejects if hasUserPermissions is false and not current owner', async function () {
+                await new Promise((resolve, reject) => {
+                    const done = err => (err ? reject(err) : resolve());
                     const mockPostObj = {
                         get: sinon.stub(),
                         related: sinon.stub()
@@ -997,14 +1084,14 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     const context = {user: 1};
                     const unsafeAttrs = {authors: [{id: 2}]};
 
-                    mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
+                    mockPostObj.related.withArgs('authors').returns({models: [{id: 2}]});
 
                     models.Post.permissible(
                         mockPostObj,
-                        'add',
+                        'edit',
                         context,
                         unsafeAttrs,
-                        testUtils.permissions.author,
+                        testUtils.permissions.editor,
                         false,
                         true,
                         true
@@ -1013,39 +1100,9 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     }).catch((error) => {
                         assert(error instanceof errors.NoPermissionError);
                         sinon.assert.notCalled(mockPostObj.get);
+                        sinon.assert.calledOnce(mockPostObj.related);
                         done();
                     });
-                });
-            });
-        });
-
-        describe('Everyone Else', function () {
-            it('rejects if hasUserPermissions is false and not current owner', function (done) {
-                const mockPostObj = {
-                    get: sinon.stub(),
-                    related: sinon.stub()
-                };
-                const context = {user: 1};
-                const unsafeAttrs = {authors: [{id: 2}]};
-
-                mockPostObj.related.withArgs('authors').returns({models: [{id: 2}]});
-
-                models.Post.permissible(
-                    mockPostObj,
-                    'edit',
-                    context,
-                    unsafeAttrs,
-                    testUtils.permissions.editor,
-                    false,
-                    true,
-                    true
-                ).then(() => {
-                    done(new Error('Permissible function should have rejected.'));
-                }).catch((error) => {
-                    assert(error instanceof errors.NoPermissionError);
-                    sinon.assert.notCalled(mockPostObj.get);
-                    sinon.assert.calledOnce(mockPostObj.related);
-                    done();
                 });
             });
 
@@ -1070,61 +1127,67 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                 });
             });
 
-            it('resolves if changing visibility as owner', function (done) {
-                const mockPostObj = {
-                    get: sinon.stub(),
-                    related: sinon.stub()
-                };
-                const context = {user: 1};
-                const unsafeAttrs = {visibility: 'public'};
+            it('resolves if changing visibility as owner', async function () {
+                await new Promise((resolve, reject) => {
+                    const done = err => (err ? reject(err) : resolve());
+                    const mockPostObj = {
+                        get: sinon.stub(),
+                        related: sinon.stub()
+                    };
+                    const context = {user: 1};
+                    const unsafeAttrs = {visibility: 'public'};
 
-                mockPostObj.get.withArgs('visibility').returns('paid');
-                mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
+                    mockPostObj.get.withArgs('visibility').returns('paid');
+                    mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
 
-                models.Post.permissible(
-                    mockPostObj,
-                    'edit',
-                    context,
-                    unsafeAttrs,
-                    testUtils.permissions.owner,
-                    false,
-                    true,
-                    true
-                ).then(() => {
-                    sinon.assert.notCalled(mockPostObj.get);
-                    sinon.assert.calledOnce(mockPostObj.related);
-                    done();
-                }).catch(() => {
-                    done(new Error('Permissible function should have passed for owner.'));
+                    models.Post.permissible(
+                        mockPostObj,
+                        'edit',
+                        context,
+                        unsafeAttrs,
+                        testUtils.permissions.owner,
+                        false,
+                        true,
+                        true
+                    ).then(() => {
+                        sinon.assert.notCalled(mockPostObj.get);
+                        sinon.assert.calledOnce(mockPostObj.related);
+                        done();
+                    }).catch(() => {
+                        done(new Error('Permissible function should have passed for owner.'));
+                    });
                 });
             });
 
-            it('resolves if changing visibility as administrator', function (done) {
-                const mockPostObj = {
-                    get: sinon.stub(),
-                    related: sinon.stub()
-                };
-                const context = {user: 1};
-                const unsafeAttrs = {visibility: 'public'};
+            it('resolves if changing visibility as administrator', async function () {
+                await new Promise((resolve, reject) => {
+                    const done = err => (err ? reject(err) : resolve());
+                    const mockPostObj = {
+                        get: sinon.stub(),
+                        related: sinon.stub()
+                    };
+                    const context = {user: 1};
+                    const unsafeAttrs = {visibility: 'public'};
 
-                mockPostObj.get.withArgs('visibility').returns('paid');
-                mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
+                    mockPostObj.get.withArgs('visibility').returns('paid');
+                    mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
 
-                models.Post.permissible(
-                    mockPostObj,
-                    'edit',
-                    context,
-                    unsafeAttrs,
-                    testUtils.permissions.admin,
-                    false,
-                    true,
-                    true
-                ).then(() => {
-                    sinon.assert.notCalled(mockPostObj.get);
-                    sinon.assert.calledOnce(mockPostObj.related);
-                    done();
-                }).catch(() => {
-                    done(new Error('Permissible function should have passed for administrator.'));
+                    models.Post.permissible(
+                        mockPostObj,
+                        'edit',
+                        context,
+                        unsafeAttrs,
+                        testUtils.permissions.admin,
+                        false,
+                        true,
+                        true
+                    ).then(() => {
+                        sinon.assert.notCalled(mockPostObj.get);
+                        sinon.assert.calledOnce(mockPostObj.related);
+                        done();
+                    }).catch(() => {
+                        done(new Error('Permissible function should have passed for administrator.'));
+                    });
                 });
             });
         });

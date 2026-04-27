@@ -4,7 +4,7 @@ const models = require('../../../../core/server/models');
 const previewsController = require('../../../../core/server/api/endpoints/previews');
 
 describe('Previews controller', function () {
-    before(function () {
+    beforeAll(function () {
         models.init();
     });
 

@@ -62,38 +62,47 @@ describe('Private Controller', function () {
         await configUtils.restore();
     });
 
-    it('Should render default password page when theme has no password template', function (done) {
-        res.render = function (view, context) {
-            assert.equal(view, defaultPath);
-            assertExists(context);
-            done();
-        };
+    it('Should render default password page when theme has no password template', async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            res.render = function (view, context) {
+                assert.equal(view, defaultPath);
+                assertExists(context);
+                done();
+            };
 
-        privateController.renderer(req, res, failTest(done));
+            privateController.renderer(req, res, failTest(done));
+        });
     });
 
-    it('Should render theme password page when it exists', function (done) {
-        hasTemplateStub.withArgs('private').returns(true);
+    it('Should render theme password page when it exists', async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            hasTemplateStub.withArgs('private').returns(true);
 
-        res.render = function (view, context) {
-            assert.equal(view, 'private');
-            assertExists(context);
-            done();
-        };
+            res.render = function (view, context) {
+                assert.equal(view, 'private');
+                assertExists(context);
+                done();
+            };
 
-        privateController.renderer(req, res, failTest(done));
+            privateController.renderer(req, res, failTest(done));
+        });
     });
 
-    it('Should render with error when error is passed in', function (done) {
-        res.error = 'Test Error';
+    it('Should render with error when error is passed in', async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            res.error = 'Test Error';
 
-        res.render = function (view, context) {
-            assert.equal(view, defaultPath);
-            assert.deepEqual(context, {error: 'Test Error'});
-            done();
-        };
+            res.render = function (view, context) {
+                assert.equal(view, defaultPath);
+                assert.deepEqual(context, {error: 'Test Error'});
+                done();
+            };
 
-        privateController.renderer(req, res, failTest(done));
+            privateController.renderer(req, res, failTest(done));
+        });
     });
 });
 
@@ -101,7 +110,7 @@ describe('private.hbs template translation', function () {
     const privateViewPath = path.join(__dirname, '../../../../../core/frontend/apps/private-blogging/lib/views/private.hbs');
     let compiledTemplate;
 
-    before(function () {
+    beforeAll(function () {
         const templateStr = fs.readFileSync(privateViewPath, 'utf8');
         compiledTemplate = hbs.handlebars.compile(templateStr);
 
@@ -118,7 +127,7 @@ describe('private.hbs template translation', function () {
         });
     });
 
-    after(function () {
+    afterAll(function () {
         hbs.handlebars.unregisterHelper('input_password');
         hbs.handlebars.unregisterHelper('color_to_rgba');
         hbs.handlebars.unregisterHelper('contrast_text_color');
@@ -142,7 +151,7 @@ describe('private.hbs template translation', function () {
         describe(`with ${name}`, function () {
             let i18nSetup;
 
-            before(function () {
+            beforeAll(function () {
                 i18nSetup = setupI18nTest({useNewTranslation, locale: 'en'});
             });
 
@@ -151,7 +160,7 @@ describe('private.hbs template translation', function () {
                 initLocale({useNewTranslation, locale: 'en'});
             });
 
-            after(function () {
+            afterAll(function () {
                 i18nSetup.teardown();
                 sinon.restore();
             });

@@ -7,7 +7,7 @@ const labs = require('../../../../core/shared/labs');
 const config = configUtils.config;
 
 describe('Unit: models/member', function () {
-    before(function () {
+    beforeAll(function () {
         models.init();
     });
 

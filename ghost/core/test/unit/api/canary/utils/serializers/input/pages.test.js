@@ -246,10 +246,8 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
         assert.deepEqual(frame.data.pages[0].tags, [{slug: 'slug1', name: 'hey'}, {slug: 'slug2'}]);
     });
 
-    it('throws error if HTML conversion fails', function () {
+    it('throws error if HTML conversion fails', {timeout: 4000}, function () {
         // JSDOM require is sometimes very slow on CI causing random timeouts
-        this.timeout(4000);
-
         const frame = {
             options: {
                 source: 'html'

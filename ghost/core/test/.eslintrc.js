@@ -4,6 +4,10 @@ module.exports = {
         node: true,
         mocha: true
     },
+    globals: {
+        afterAll: 'readonly',
+        beforeAll: 'readonly'
+    },
     plugins: [
         'ghost'
     ],

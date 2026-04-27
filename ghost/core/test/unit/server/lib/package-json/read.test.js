@@ -7,135 +7,147 @@ const packageJSON = require('../../../../../core/server/lib/package-json');
 
 describe('package-json read', function () {
     describe('readPackages', function () {
-        it('should read directory and ignore unneeded items', function (done) {
-            const packagePath = tmp.dirSync({unsafeCleanup: true});
+        it('should read directory and ignore unneeded items', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                const packagePath = tmp.dirSync({unsafeCleanup: true});
 
-            // create example theme
-            fs.mkdirSync(join(packagePath.name, 'casper'));
-            fs.writeFileSync(join(packagePath.name, 'casper', 'index.hbs'), '');
+                // create example theme
+                fs.mkdirSync(join(packagePath.name, 'casper'));
+                fs.writeFileSync(join(packagePath.name, 'casper', 'index.hbs'), '');
 
-            // create some trash
-            fs.mkdirSync(join(packagePath.name, 'node_modules'));
-            fs.mkdirSync(join(packagePath.name, 'bower_components'));
-            fs.mkdirSync(join(packagePath.name, '.git'));
-            fs.writeFileSync(join(packagePath.name, '.DS_Store'), '');
+                // create some trash
+                fs.mkdirSync(join(packagePath.name, 'node_modules'));
+                fs.mkdirSync(join(packagePath.name, 'bower_components'));
+                fs.mkdirSync(join(packagePath.name, '.git'));
+                fs.writeFileSync(join(packagePath.name, '.DS_Store'), '');
 
-            packageJSON.readPackages(packagePath.name)
-                .then(function (pkgs) {
-                    assert.deepEqual(pkgs, {
-                        casper: {
-                            name: 'casper',
-                            path: join(packagePath.name, 'casper'),
-                            'package.json': null
-                        }
-                    });
-
-                    done();
-                })
-                .catch(done)
-                .finally(packagePath.removeCallback);
-        });
-
-        it('should read directory and parse package.json files', function (done) {
-            let packagePath;
-            let pkgJson;
-
-            packagePath = tmp.dirSync({unsafeCleanup: true});
-            pkgJson = JSON.stringify({
-                name: 'test',
-                version: '0.0.0'
-            });
-
-            // create example theme
-            fs.mkdirSync(join(packagePath.name, 'testtheme'));
-            fs.writeFileSync(join(packagePath.name, 'testtheme', 'package.json'), pkgJson);
-            fs.writeFileSync(join(packagePath.name, 'testtheme', 'index.hbs'), '');
-
-            packageJSON.readPackages(packagePath.name)
-                .then(function (pkgs) {
-                    assert.deepEqual(pkgs, {
-                        testtheme: {
-                            name: 'testtheme',
-                            path: join(packagePath.name, 'testtheme'),
-                            'package.json': {
-                                name: 'test',
-                                version: '0.0.0'
+                packageJSON.readPackages(packagePath.name)
+                    .then(function (pkgs) {
+                        assert.deepEqual(pkgs, {
+                            casper: {
+                                name: 'casper',
+                                path: join(packagePath.name, 'casper'),
+                                'package.json': null
                             }
-                        }
-                    });
+                        });
 
-                    done();
-                })
-                .catch(done)
-                .finally(packagePath.removeCallback);
+                        done();
+                    })
+                    .catch(done)
+                    .finally(packagePath.removeCallback);
+            });
         });
 
-        it('should read directory and ignore invalid package.json files', function (done) {
-            let packagePath;
-            let pkgJson;
+        it('should read directory and parse package.json files', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                let packagePath;
+                let pkgJson;
 
-            packagePath = tmp.dirSync({unsafeCleanup: true});
-            pkgJson = JSON.stringify({
-                name: 'test'
+                packagePath = tmp.dirSync({unsafeCleanup: true});
+                pkgJson = JSON.stringify({
+                    name: 'test',
+                    version: '0.0.0'
+                });
+
+                // create example theme
+                fs.mkdirSync(join(packagePath.name, 'testtheme'));
+                fs.writeFileSync(join(packagePath.name, 'testtheme', 'package.json'), pkgJson);
+                fs.writeFileSync(join(packagePath.name, 'testtheme', 'index.hbs'), '');
+
+                packageJSON.readPackages(packagePath.name)
+                    .then(function (pkgs) {
+                        assert.deepEqual(pkgs, {
+                            testtheme: {
+                                name: 'testtheme',
+                                path: join(packagePath.name, 'testtheme'),
+                                'package.json': {
+                                    name: 'test',
+                                    version: '0.0.0'
+                                }
+                            }
+                        });
+
+                        done();
+                    })
+                    .catch(done)
+                    .finally(packagePath.removeCallback);
             });
-
-            // create example theme
-            fs.mkdirSync(join(packagePath.name, 'testtheme'));
-            fs.writeFileSync(join(packagePath.name, 'testtheme', 'package.json'), pkgJson);
-            fs.writeFileSync(join(packagePath.name, 'testtheme', 'index.hbs'), '');
-
-            packageJSON.readPackages(packagePath.name)
-                .then(function (pkgs) {
-                    assert.deepEqual(pkgs, {
-                        testtheme: {
-                            name: 'testtheme',
-                            path: join(packagePath.name, 'testtheme'),
-                            'package.json': null
-                        }
-                    });
-
-                    done();
-                })
-                .catch(done)
-                .finally(packagePath.removeCallback);
         });
 
-        it('should read directory and include symlinked directories', function (done) {
-            let packagePath;
-            let pkgJson;
+        it('should read directory and ignore invalid package.json files', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                let packagePath;
+                let pkgJson;
 
-            packagePath = tmp.dirSync({unsafeCleanup: true});
-            pkgJson = JSON.stringify({
-                name: 'test'
+                packagePath = tmp.dirSync({unsafeCleanup: true});
+                pkgJson = JSON.stringify({
+                    name: 'test'
+                });
+
+                // create example theme
+                fs.mkdirSync(join(packagePath.name, 'testtheme'));
+                fs.writeFileSync(join(packagePath.name, 'testtheme', 'package.json'), pkgJson);
+                fs.writeFileSync(join(packagePath.name, 'testtheme', 'index.hbs'), '');
+
+                packageJSON.readPackages(packagePath.name)
+                    .then(function (pkgs) {
+                        assert.deepEqual(pkgs, {
+                            testtheme: {
+                                name: 'testtheme',
+                                path: join(packagePath.name, 'testtheme'),
+                                'package.json': null
+                            }
+                        });
+
+                        done();
+                    })
+                    .catch(done)
+                    .finally(packagePath.removeCallback);
             });
+        });
 
-            // create example theme
-            fs.mkdirSync(join(packagePath.name, 'testtheme'));
-            fs.writeFileSync(join(packagePath.name, 'testtheme', 'package.json'), pkgJson);
-            fs.writeFileSync(join(packagePath.name, 'testtheme', 'index.hbs'), '');
+        it('should read directory and include symlinked directories', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                let packagePath;
+                let pkgJson;
 
-            // Symlink one theme to the other so we should have 2 themes
-            fs.symlinkSync(join(packagePath.name, 'testtheme'), join(packagePath.name, 'testtheme2'));
+                packagePath = tmp.dirSync({unsafeCleanup: true});
+                pkgJson = JSON.stringify({
+                    name: 'test'
+                });
 
-            packageJSON.readPackages(packagePath.name)
-                .then(function (pkgs) {
-                    assert.deepEqual(pkgs, {
-                        testtheme: {
-                            name: 'testtheme',
-                            path: join(packagePath.name, 'testtheme'),
-                            'package.json': null
-                        },
-                        testtheme2: {
-                            name: 'testtheme2',
-                            path: join(packagePath.name, 'testtheme2'),
-                            'package.json': null
-                        }
-                    });
+                // create example theme
+                fs.mkdirSync(join(packagePath.name, 'testtheme'));
+                fs.writeFileSync(join(packagePath.name, 'testtheme', 'package.json'), pkgJson);
+                fs.writeFileSync(join(packagePath.name, 'testtheme', 'index.hbs'), '');
 
-                    done();
-                })
-                .catch(done)
-                .finally(packagePath.removeCallback);
+                // Symlink one theme to the other so we should have 2 themes
+                fs.symlinkSync(join(packagePath.name, 'testtheme'), join(packagePath.name, 'testtheme2'));
+
+                packageJSON.readPackages(packagePath.name)
+                    .then(function (pkgs) {
+                        assert.deepEqual(pkgs, {
+                            testtheme: {
+                                name: 'testtheme',
+                                path: join(packagePath.name, 'testtheme'),
+                                'package.json': null
+                            },
+                            testtheme2: {
+                                name: 'testtheme2',
+                                path: join(packagePath.name, 'testtheme2'),
+                                'package.json': null
+                            }
+                        });
+
+                        done();
+                    })
+                    .catch(done)
+                    .finally(packagePath.removeCallback);
+            });
         });
 
         it('should read directory and ignore invalid symlinks', async function () {
@@ -168,163 +180,181 @@ describe('package-json read', function () {
     });
 
     describe('readPackage', function () {
-        it('should read directory and ignore unneeded items', function (done) {
-            const packagePath = tmp.dirSync({unsafeCleanup: true});
+        it('should read directory and ignore unneeded items', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                const packagePath = tmp.dirSync({unsafeCleanup: true});
 
-            // create example theme
-            fs.mkdirSync(join(packagePath.name, 'casper'));
-            fs.writeFileSync(join(packagePath.name, 'casper', 'index.hbs'), '');
+                // create example theme
+                fs.mkdirSync(join(packagePath.name, 'casper'));
+                fs.writeFileSync(join(packagePath.name, 'casper', 'index.hbs'), '');
 
-            // create some trash
-            fs.mkdirSync(join(packagePath.name, 'node_modules'));
-            fs.mkdirSync(join(packagePath.name, 'bower_components'));
-            fs.mkdirSync(join(packagePath.name, '.git'));
-            fs.writeFileSync(join(packagePath.name, '.DS_Store'), '');
+                // create some trash
+                fs.mkdirSync(join(packagePath.name, 'node_modules'));
+                fs.mkdirSync(join(packagePath.name, 'bower_components'));
+                fs.mkdirSync(join(packagePath.name, '.git'));
+                fs.writeFileSync(join(packagePath.name, '.DS_Store'), '');
 
-            packageJSON.readPackage(packagePath.name, 'casper')
-                .then(function (pkgs) {
-                    assert.deepEqual(pkgs, {
-                        casper: {
-                            name: 'casper',
-                            path: join(packagePath.name, 'casper'),
-                            'package.json': null
-                        }
-                    });
-
-                    done();
-                })
-                .catch(done)
-                .finally(packagePath.removeCallback);
-        });
-
-        it('should read directory and parse package.json files', function (done) {
-            let packagePath;
-            let pkgJson;
-
-            packagePath = tmp.dirSync({unsafeCleanup: true});
-            pkgJson = JSON.stringify({
-                name: 'test',
-                version: '0.0.0'
-            });
-
-            // create example theme
-            fs.mkdirSync(join(packagePath.name, 'testtheme'));
-            fs.writeFileSync(join(packagePath.name, 'testtheme', 'package.json'), pkgJson);
-            fs.writeFileSync(join(packagePath.name, 'testtheme', 'index.hbs'), '');
-
-            packageJSON.readPackage(packagePath.name, 'testtheme')
-                .then(function (pkgs) {
-                    assert.deepEqual(pkgs, {
-                        testtheme: {
-                            name: 'testtheme',
-                            path: join(packagePath.name, 'testtheme'),
-                            'package.json': {
-                                name: 'test',
-                                version: '0.0.0'
+                packageJSON.readPackage(packagePath.name, 'casper')
+                    .then(function (pkgs) {
+                        assert.deepEqual(pkgs, {
+                            casper: {
+                                name: 'casper',
+                                path: join(packagePath.name, 'casper'),
+                                'package.json': null
                             }
-                        }
-                    });
+                        });
 
-                    done();
-                })
-                .catch(done)
-                .finally(packagePath.removeCallback);
-        });
-
-        it('should read directory and ignore invalid package.json files', function (done) {
-            let packagePath;
-            let pkgJson;
-
-            packagePath = tmp.dirSync({unsafeCleanup: true});
-            pkgJson = JSON.stringify({
-                name: 'test'
+                        done();
+                    })
+                    .catch(done)
+                    .finally(packagePath.removeCallback);
             });
-
-            // create example theme
-            fs.mkdirSync(join(packagePath.name, 'testtheme'));
-            fs.writeFileSync(join(packagePath.name, 'testtheme', 'package.json'), pkgJson);
-            fs.writeFileSync(join(packagePath.name, 'testtheme', 'index.hbs'), '');
-
-            packageJSON.readPackage(packagePath.name, 'testtheme')
-                .then(function (pkgs) {
-                    assert.deepEqual(pkgs, {
-                        testtheme: {
-                            name: 'testtheme',
-                            path: join(packagePath.name, 'testtheme'),
-                            'package.json': null
-                        }
-                    });
-
-                    done();
-                })
-                .catch(done)
-                .finally(packagePath.removeCallback);
         });
 
-        it('should read directory and include only single requested package', function (done) {
-            const packagePath = tmp.dirSync({unsafeCleanup: true});
+        it('should read directory and parse package.json files', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                let packagePath;
+                let pkgJson;
 
-            // create trash
-            fs.writeFileSync(join(packagePath.name, 'casper.zip'), '');
-            fs.writeFileSync(join(packagePath.name, '.DS_Store'), '');
+                packagePath = tmp.dirSync({unsafeCleanup: true});
+                pkgJson = JSON.stringify({
+                    name: 'test',
+                    version: '0.0.0'
+                });
 
-            // create actual theme
-            fs.mkdirSync(join(packagePath.name, 'casper'));
-            fs.mkdirSync(join(packagePath.name, 'casper', 'partials'));
-            fs.writeFileSync(join(packagePath.name, 'casper', 'index.hbs'), '');
-            fs.writeFileSync(join(packagePath.name, 'casper', 'partials', 'navigation.hbs'), '');
-            fs.mkdirSync(join(packagePath.name, 'not-casper'));
-            fs.writeFileSync(join(packagePath.name, 'not-casper', 'index.hbs'), '');
+                // create example theme
+                fs.mkdirSync(join(packagePath.name, 'testtheme'));
+                fs.writeFileSync(join(packagePath.name, 'testtheme', 'package.json'), pkgJson);
+                fs.writeFileSync(join(packagePath.name, 'testtheme', 'index.hbs'), '');
 
-            packageJSON.readPackage(packagePath.name, 'casper')
-                .then(function (pkgs) {
-                    assert.deepEqual(pkgs, {
-                        casper: {
-                            name: 'casper',
-                            path: join(packagePath.name, 'casper'),
-                            'package.json': null
-                        }
-                    });
+                packageJSON.readPackage(packagePath.name, 'testtheme')
+                    .then(function (pkgs) {
+                        assert.deepEqual(pkgs, {
+                            testtheme: {
+                                name: 'testtheme',
+                                path: join(packagePath.name, 'testtheme'),
+                                'package.json': {
+                                    name: 'test',
+                                    version: '0.0.0'
+                                }
+                            }
+                        });
 
-                    done();
-                })
-                .catch(done)
-                .finally(packagePath.removeCallback);
+                        done();
+                    })
+                    .catch(done)
+                    .finally(packagePath.removeCallback);
+            });
         });
 
-        it('should return an error if package cannot be found', function (done) {
-            const packagePath = tmp.dirSync({unsafeCleanup: true});
+        it('should read directory and ignore invalid package.json files', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                let packagePath;
+                let pkgJson;
 
-            // create trash
-            fs.writeFileSync(join(packagePath.name, 'casper.zip'), '');
-            fs.writeFileSync(join(packagePath.name, '.DS_Store'), '');
+                packagePath = tmp.dirSync({unsafeCleanup: true});
+                pkgJson = JSON.stringify({
+                    name: 'test'
+                });
 
-            packageJSON.readPackage(packagePath.name, 'casper')
-                .then(function () {
-                    done('Should have thrown an error');
-                })
-                .catch(function (err) {
-                    assert.equal(err.message, 'Package not found');
-                    done();
-                })
-                .finally(packagePath.removeCallback);
+                // create example theme
+                fs.mkdirSync(join(packagePath.name, 'testtheme'));
+                fs.writeFileSync(join(packagePath.name, 'testtheme', 'package.json'), pkgJson);
+                fs.writeFileSync(join(packagePath.name, 'testtheme', 'index.hbs'), '');
+
+                packageJSON.readPackage(packagePath.name, 'testtheme')
+                    .then(function (pkgs) {
+                        assert.deepEqual(pkgs, {
+                            testtheme: {
+                                name: 'testtheme',
+                                path: join(packagePath.name, 'testtheme'),
+                                'package.json': null
+                            }
+                        });
+
+                        done();
+                    })
+                    .catch(done)
+                    .finally(packagePath.removeCallback);
+            });
         });
 
-        it('should return empty object if package is not a directory', function (done) {
-            const packagePath = tmp.dirSync({unsafeCleanup: true});
+        it('should read directory and include only single requested package', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                const packagePath = tmp.dirSync({unsafeCleanup: true});
 
-            // create trash
-            fs.writeFileSync(join(packagePath.name, 'casper.zip'), '');
-            fs.writeFileSync(join(packagePath.name, '.DS_Store'), '');
+                // create trash
+                fs.writeFileSync(join(packagePath.name, 'casper.zip'), '');
+                fs.writeFileSync(join(packagePath.name, '.DS_Store'), '');
 
-            packageJSON.readPackage(packagePath.name, 'casper.zip')
-                .then(function (pkg) {
-                    assert.deepEqual(pkg, {});
+                // create actual theme
+                fs.mkdirSync(join(packagePath.name, 'casper'));
+                fs.mkdirSync(join(packagePath.name, 'casper', 'partials'));
+                fs.writeFileSync(join(packagePath.name, 'casper', 'index.hbs'), '');
+                fs.writeFileSync(join(packagePath.name, 'casper', 'partials', 'navigation.hbs'), '');
+                fs.mkdirSync(join(packagePath.name, 'not-casper'));
+                fs.writeFileSync(join(packagePath.name, 'not-casper', 'index.hbs'), '');
 
-                    done();
-                })
-                .catch(done)
-                .finally(packagePath.removeCallback);
+                packageJSON.readPackage(packagePath.name, 'casper')
+                    .then(function (pkgs) {
+                        assert.deepEqual(pkgs, {
+                            casper: {
+                                name: 'casper',
+                                path: join(packagePath.name, 'casper'),
+                                'package.json': null
+                            }
+                        });
+
+                        done();
+                    })
+                    .catch(done)
+                    .finally(packagePath.removeCallback);
+            });
+        });
+
+        it('should return an error if package cannot be found', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                const packagePath = tmp.dirSync({unsafeCleanup: true});
+
+                // create trash
+                fs.writeFileSync(join(packagePath.name, 'casper.zip'), '');
+                fs.writeFileSync(join(packagePath.name, '.DS_Store'), '');
+
+                packageJSON.readPackage(packagePath.name, 'casper')
+                    .then(function () {
+                        done('Should have thrown an error');
+                    })
+                    .catch(function (err) {
+                        assert.equal(err.message, 'Package not found');
+                        done();
+                    })
+                    .finally(packagePath.removeCallback);
+            });
+        });
+
+        it('should return empty object if package is not a directory', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                const packagePath = tmp.dirSync({unsafeCleanup: true});
+
+                // create trash
+                fs.writeFileSync(join(packagePath.name, 'casper.zip'), '');
+                fs.writeFileSync(join(packagePath.name, '.DS_Store'), '');
+
+                packageJSON.readPackage(packagePath.name, 'casper.zip')
+                    .then(function (pkg) {
+                        assert.deepEqual(pkg, {});
+
+                        done();
+                    })
+                    .catch(done)
+                    .finally(packagePath.removeCallback);
+            });
         });
     });
 });

@@ -9,7 +9,7 @@ const tagsHelper = require('../../../../core/frontend/helpers/tags');
 describe('{{tags}} helper', function () {
     let urlServiceGetUrlByResourceIdStub;
 
-    before(function () {
+    beforeAll(function () {
         models.init();
     });
 

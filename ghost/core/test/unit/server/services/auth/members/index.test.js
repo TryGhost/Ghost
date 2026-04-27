@@ -1,9 +1,36 @@
 const assert = require('node:assert/strict');
 const jwt = require('jsonwebtoken');
+const sinon = require('sinon');
 const {UnauthorizedError} = require('@tryghost/errors');
+const membersService = require('../../../../../../core/server/services/members');
 const members = require('../../../../../../core/server/services/auth/members');
 
 describe('Auth Service - Members', function () {
+    beforeAll(function () {
+        sinon.stub(membersService, 'api').get(function () {
+            return {
+                getPublicConfig: sinon.stub().resolves({
+                    issuer: 'test-issuer',
+                    publicKey: 'test-public-key'
+                })
+            };
+        });
+    });
+
+    afterAll(function () {
+        sinon.restore();
+    });
+
+    function authenticateMembersToken(req) {
+        return new Promise((resolve, reject) => {
+            const result = members.authenticateMembersToken(req, {}, function next(err) {
+                resolve(err);
+            });
+
+            Promise.resolve(result).catch(reject);
+        });
+    }
+
     it('exports an authenticateMembersToken method', function () {
         const actual = typeof members.authenticateMembersToken;
         const expected = 'function';
@@ -11,45 +38,36 @@ describe('Auth Service - Members', function () {
     });
 
     describe('authenticateMembersToken', function () {
-        it('calls next without an error if there is no authorization header', function () {
-            members.authenticateMembersToken({
+        it('calls next without an error if there is no authorization header', async function () {
+            const err = await authenticateMembersToken({
                 get() {
                     return null;
                 }
-            }, {}, function next(err) {
-                const actual = err;
-                const expected = undefined;
-
-                assert.equal(actual, expected);
             });
+
+            assert.equal(err, undefined);
         });
 
-        it('calls next without an error if the authorization header does not match the GhostMembers scheme', function () {
-            members.authenticateMembersToken({
+        it('calls next without an error if the authorization header does not match the GhostMembers scheme', async function () {
+            const err = await authenticateMembersToken({
                 get() {
                     return 'DodgyScheme credscredscreds';
                 }
-            }, {}, function next(err) {
-                const actual = err;
-                const expected = undefined;
-
-                assert.equal(actual, expected);
             });
+
+            assert.equal(err, undefined);
         });
         describe('attempts to verify the credentials as a JWT, not allowing the "NONE" algorithm', function () {
-            it('calls next with an UnauthorizedError if the verification fails', function () {
-                members.authenticateMembersToken({
+            it('calls next with an UnauthorizedError if the verification fails', async function () {
+                const err = await authenticateMembersToken({
                     get() {
                         return 'GhostMembers notafuckentoken';
                     }
-                }, {}, function next(err) {
-                    const actual = err instanceof UnauthorizedError;
-                    const expected = true;
-
-                    assert.equal(actual, expected);
                 });
+
+                assert.equal(err instanceof UnauthorizedError, true);
             });
-            it('calls next with an error if the token is using the "none" algorithm', function () {
+            it('calls next with an error if the token is using the "none" algorithm', async function () {
                 const claims = {
                     rumpel: 'stiltskin'
                 };
@@ -61,12 +79,9 @@ describe('Auth Service - Members', function () {
                         return `GhostMembers ${token}`;
                     }
                 };
-                members.authenticateMembersToken(req, {}, function next(err) {
-                    const actual = err instanceof UnauthorizedError;
-                    const expected = true;
+                const err = await authenticateMembersToken(req);
 
-                    assert.equal(actual, expected);
-                });
+                assert.equal(err instanceof UnauthorizedError, true);
             });
         });
     });

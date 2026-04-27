@@ -290,7 +290,7 @@ describe('{{#foreach}} helper', function () {
             world: 'world'
         };
 
-        before(function () {
+        beforeAll(function () {
             registerHelper('foreach');
         });
 

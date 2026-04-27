@@ -10,7 +10,7 @@ describe('Backup', function () {
     let filenameStub;
     let fsStub;
 
-    before(function () {
+    beforeAll(function () {
         models.init();
     });
 
@@ -24,25 +24,31 @@ describe('Backup', function () {
         fsStub = sinon.stub(fs, 'writeFile').resolves();
     });
 
-    it('should create a backup JSON file', function (done) {
-        dbBackup.backup().then(function () {
-            sinon.assert.calledOnce(exportStub);
-            sinon.assert.calledOnce(filenameStub);
-            sinon.assert.calledOnce(fsStub);
+    it('should create a backup JSON file', async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            dbBackup.backup().then(function () {
+                sinon.assert.calledOnce(exportStub);
+                sinon.assert.calledOnce(filenameStub);
+                sinon.assert.calledOnce(fsStub);
 
-            done();
-        }).catch(done);
+                done();
+            }).catch(done);
+        });
     });
 
-    it('should not create a backup JSON file if disabled', function (done) {
-        configUtils.set('disableJSBackups', true);
+    it('should not create a backup JSON file if disabled', async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            configUtils.set('disableJSBackups', true);
 
-        dbBackup.backup().then(function () {
-            sinon.assert.notCalled(exportStub);
-            sinon.assert.notCalled(filenameStub);
-            sinon.assert.notCalled(fsStub);
+            dbBackup.backup().then(function () {
+                sinon.assert.notCalled(exportStub);
+                sinon.assert.notCalled(filenameStub);
+                sinon.assert.notCalled(fsStub);
 
-            done();
-        }).catch(done);
+                done();
+            }).catch(done);
+        });
     });
 });

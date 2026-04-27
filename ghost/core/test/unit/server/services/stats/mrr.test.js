@@ -95,12 +95,12 @@ describe('MrrStatsService', function () {
             };
         }
 
-        before(function () {
+        beforeAll(function () {
             // Set fake timers to our test "today"
             sinon.useFakeTimers(testToday.toDate().getTime());
         });
 
-        after(function () {
+        afterAll(function () {
             sinon.restore();
         });
 

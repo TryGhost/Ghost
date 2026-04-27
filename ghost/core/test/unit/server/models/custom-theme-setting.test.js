@@ -3,7 +3,7 @@ const models = require('../../../../core/server/models');
 const config = require('../../../../core/shared/config');
 
 describe('Unit: models/custom-theme-setting', function () {
-    before(function () {
+    beforeAll(function () {
         models.init();
     });
 

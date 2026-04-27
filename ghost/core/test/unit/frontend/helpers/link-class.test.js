@@ -19,7 +19,7 @@ function compile(templateString) {
 }
 
 describe('{{link_class}} helper', function () {
-    before(function () {
+    beforeAll(function () {
         handlebars.registerHelper('link_class', link_class);
         handlebars.registerHelper('concat', concat);
         configUtils.config.set('url', 'https://siteurl.com');
@@ -32,7 +32,7 @@ describe('{{link_class}} helper', function () {
         };
     });
 
-    after(async function () {
+    afterAll(async function () {
         await configUtils.restore();
     });
 

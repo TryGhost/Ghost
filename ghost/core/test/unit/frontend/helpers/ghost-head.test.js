@@ -361,7 +361,7 @@ describe('{{ghost_head}} helper', function () {
         }));
     };
 
-    before(function () {
+    beforeAll(function () {
         // @TODO: remove when visibility is refactored out of models
         models.init();
 

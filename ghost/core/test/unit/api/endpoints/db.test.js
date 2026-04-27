@@ -5,7 +5,7 @@ const dbController = require('../../../../core/server/api/endpoints/db');
 describe('DB controller', function () {
     let settingsCache, importer;
 
-    before(function () {
+    beforeAll(function () {
         models.init();
     });
 

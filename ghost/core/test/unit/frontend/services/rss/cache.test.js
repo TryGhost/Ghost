@@ -21,36 +21,39 @@ describe('RSS: Cache', function () {
         generateFeedReset = rssCache.__set__('generateFeed', generateSpy);
     });
 
-    it('should not rebuild xml for same data and url', function (done) {
-        const data = {
-            title: 'Test Title',
-            description: 'Testing Desc',
-            posts: [],
-            meta: {pagination: {pages: 1}}
-        };
-        let xmlData1;
+    it('should not rebuild xml for same data and url', async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            const data = {
+                title: 'Test Title',
+                description: 'Testing Desc',
+                posts: [],
+                meta: {pagination: {pages: 1}}
+            };
+            let xmlData1;
 
-        rssCache.getXML('/rss/', data)
-            .then(function (_xmlData) {
-                xmlData1 = _xmlData;
+            rssCache.getXML('/rss/', data)
+                .then(function (_xmlData) {
+                    xmlData1 = _xmlData;
 
-                // We should have called generateFeed
-                sinon.assert.calledOnce(generateSpy);
+                    // We should have called generateFeed
+                    sinon.assert.calledOnce(generateSpy);
 
-                // Call RSS again to check that we didn't rebuild
-                return rssCache.getXML('/rss/', data);
-            })
-            .then(function (xmlData2) {
-                // Assertions
+                    // Call RSS again to check that we didn't rebuild
+                    return rssCache.getXML('/rss/', data);
+                })
+                .then(function (xmlData2) {
+                    // Assertions
 
-                // We should not have called generateFeed again
-                sinon.assert.calledOnce(generateSpy);
+                    // We should not have called generateFeed again
+                    sinon.assert.calledOnce(generateSpy);
 
-                // The data should be identical, no changing lastBuildDate
-                assert.equal(xmlData1, xmlData2);
+                    // The data should be identical, no changing lastBuildDate
+                    assert.equal(xmlData1, xmlData2);
 
-                done();
-            })
-            .catch(done);
+                    done();
+                })
+                .catch(done);
+        });
     });
 });

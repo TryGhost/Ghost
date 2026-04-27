@@ -17,7 +17,7 @@ describe('{{price}} helper', function () {
         sinon.restore();
     });
 
-    before(function () {
+    beforeAll(function () {
         registerHelper('price');
     });
 

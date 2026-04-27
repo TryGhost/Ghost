@@ -271,11 +271,14 @@ describe('CheckoutSessionEventService', function () {
     });
 
     describe('handleSetupEvent', function () {
-        it('fires getSetupIntent', function () {
+        it('fires getSetupIntent', async function () {
             const service = createService();
             const session = {setup_intent: 'si_123'};
+            const setupIntent = {metadata: {customer_id: 'cust_123'}};
 
-            service.handleSetupEvent(session);
+            api.getSetupIntent.resolves(setupIntent);
+
+            await service.handleSetupEvent(session);
 
             sinon.assert.calledWith(api.getSetupIntent, 'si_123');
         });

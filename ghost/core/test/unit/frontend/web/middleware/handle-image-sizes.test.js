@@ -10,74 +10,77 @@ const fakeResBase = {
     setHeader() {}
 };
 
+function urlWithThrowingMatch(url) {
+    const value = Object(url);
+    value.match = function () {
+        throw new Error('Should have exited immediately');
+    };
+    return value;
+}
+
 // @TODO make these tests lovely and non specific to implementation
 describe('handleImageSizes middleware', function () {
-    this.afterEach(function () {
+    afterEach(function () {
         sinon.restore();
     });
 
-    it('calls next immediately if the url does not match /size/something/', function (done) {
-        const fakeReq = {
-            url: '/size/something'
-        };
-        // CASE: second thing middleware does is try to match to a regex
-        fakeReq.url.match = function () {
-            throw new Error('Should have exited immediately');
-        };
-        handleImageSizes(fakeReq, fakeResBase, function next() {
-            done();
+    it('calls next immediately if the url does not match /size/something/', async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            const fakeReq = {
+                url: urlWithThrowingMatch('/size/something')
+            };
+            handleImageSizes(fakeReq, fakeResBase, function next() {
+                done();
+            });
         });
     });
 
-    it('calls next immediately if the url does not match /size/whatever/', function (done) {
-        const fakeReq = {
-            url: '/url/whatever/'
-        };
-        // CASE: second thing middleware does is try to match to a regex
-        fakeReq.url.match = function () {
-            throw new Error('Should have exited immediately');
-        };
-        handleImageSizes(fakeReq, fakeResBase, function next() {
-            done();
+    it('calls next immediately if the url does not match /size/whatever/', async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            const fakeReq = {
+                url: urlWithThrowingMatch('/url/whatever/')
+            };
+            handleImageSizes(fakeReq, fakeResBase, function next() {
+                done();
+            });
         });
     });
 
-    it('calls next immediately if the file extension is missing', function (done) {
-        const fakeReq = {
-            url: '/size/something/file'
-        };
-        // CASE: second thing middleware does is try to match to a regex
-        fakeReq.url.match = function () {
-            throw new Error('Should have exited immediately');
-        };
-        handleImageSizes(fakeReq, fakeResBase, function next() {
-            done();
+    it('calls next immediately if the file extension is missing', async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            const fakeReq = {
+                url: '/size/something/file'
+            };
+            handleImageSizes(fakeReq, fakeResBase, function next() {
+                done();
+            });
         });
     });
 
-    it('calls next immediately if the file has a trailing slash', function (done) {
-        const fakeReq = {
-            url: '/size/something/file.jpg/'
-        };
-        // CASE: second thing middleware does is try to match to a regex
-        fakeReq.url.match = function () {
-            throw new Error('Should have exited immediately');
-        };
-        handleImageSizes(fakeReq, fakeResBase, function next() {
-            done();
+    it('calls next immediately if the file has a trailing slash', async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            const fakeReq = {
+                url: urlWithThrowingMatch('/size/something/file.jpg/')
+            };
+            handleImageSizes(fakeReq, fakeResBase, function next() {
+                done();
+            });
         });
     });
 
-    it('calls next immediately if the url does not match /size//', function (done) {
-        const fakeReq = {
-            url: '/size//'
-        };
-        // CASE: second thing middleware does is try to match to a regex
-        fakeReq.url.match = function () {
-            throw new Error('Should have exited immediately');
-        };
-        handleImageSizes(fakeReq, fakeResBase, function next() {
-            done();
+    it('calls next immediately if the url does not match /size//', async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            const fakeReq = {
+                url: urlWithThrowingMatch('/size//')
+            };
+            handleImageSizes(fakeReq, fakeResBase, function next() {
+                done();
+            });
         });
     });
 
@@ -87,7 +90,7 @@ describe('handleImageSizes middleware', function () {
         let resizeFromBufferStub;
         let buffer;
 
-        this.beforeEach(function () {
+        beforeEach(function () {
             buffer = Buffer.from([0]);
             dummyStorage = {
                 async exists() {
@@ -131,644 +134,704 @@ describe('handleImageSizes middleware', function () {
             resizeFromBufferStub = sinon.stub(imageTransform, 'resizeFromBuffer').resolves(Buffer.from([]));
         });
 
-        it('redirects for invalid format extension', function (done) {
-            const fakeReq = {
-                url: '/size/w1000/format/test/image.jpg',
-                originalUrl: '/blog/content/images/size/w1000/format/test/image.jpg'
-            };
-            const fakeRes = {
-                redirect(url) {
-                    try {
-                        assert.equal(url, '/blog/content/images/image.jpg');
-                    } catch (e) {
-                        return done(e);
+        it('redirects for invalid format extension', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                const fakeReq = {
+                    url: '/size/w1000/format/test/image.jpg',
+                    originalUrl: '/blog/content/images/size/w1000/format/test/image.jpg'
+                };
+                const fakeRes = {
+                    redirect(url) {
+                        try {
+                            assert.equal(url, '/blog/content/images/image.jpg');
+                        } catch (e) {
+                            return done(e);
+                        }
+                        done();
+                    },
+                    setHeader() {}
+                };
+                handleImageSizes(fakeReq, fakeRes, function next(err) {
+                    if (err) {
+                        return done(err);
                     }
-                    done();
-                },
-                setHeader() {}
-            };
-            handleImageSizes(fakeReq, fakeRes, function next(err) {
-                if (err) {
-                    return done(err);
-                }
-                done(new Error('Should not have called next'));
-            });
-        });
-
-        it('redirects for invalid sizes', function (done) {
-            const fakeReq = {
-                url: '/size/w123/image.jpg',
-                originalUrl: '/blog/content/images/size/w123/image.jpg'
-            };
-            const fakeRes = {
-                redirect(url) {
-                    try {
-                        assert.equal(url, '/blog/content/images/image.jpg');
-                    } catch (e) {
-                        return done(e);
-                    }
-                    done();
-                },
-                setHeader() {}
-            };
-            handleImageSizes(fakeReq, fakeRes, function next(err) {
-                if (err) {
-                    return done(err);
-                }
-                done(new Error('Should not have called next'));
-            });
-        });
-
-        it('redirects for invalid configured size', function (done) {
-            const fakeReq = {
-                url: '/size/missing/image.jpg',
-                originalUrl: '/blog/content/images/size/missing/image.jpg'
-            };
-            const fakeRes = {
-                redirect(url) {
-                    try {
-                        assert.equal(url, '/blog/content/images/image.jpg');
-                    } catch (e) {
-                        return done(e);
-                    }
-                    done();
-                },
-                setHeader() {}
-            };
-            handleImageSizes(fakeReq, fakeRes, function next(err) {
-                if (err) {
-                    return done(err);
-                }
-                done(new Error('Should not have called next'));
-            });
-        });
-
-        it('returns original URL if file is empty', function (done) {
-            dummyStorage.exists = async function (path) {
-                if (path === '/blank_o.png') {
-                    return true;
-                }
-                if (path === '/size/w1000/blank.png') {
-                    return false;
-                }
-            };
-            dummyStorage.read = async function () {
-                return Buffer.from([]);
-            };
-
-            const fakeReq = {
-                url: '/size/w1000/blank.png',
-                originalUrl: '/blog/content/images/size/w1000/blank.png'
-            };
-            const fakeRes = {
-                redirect(url) {
-                    try {
-                        assert.equal(url, '/blog/content/images/blank.png');
-                    } catch (e) {
-                        return done(e);
-                    }
-                    done();
-                },
-                setHeader() {}
-            };
-
-            handleImageSizes(fakeReq, fakeRes, function next(err) {
-                if (err) {
-                    return done(err);
-                }
-                done(new Error('Should not have called next'));
-            });
-        });
-
-        it('returns original URL if unsupported storage adapter', function (done) {
-            dummyStorage.saveRaw = undefined;
-
-            const fakeReq = {
-                url: '/size/w1000/blank.png',
-                originalUrl: '/blog/content/images/size/w1000/blank.png'
-            };
-            const fakeRes = {
-                redirect(url) {
-                    try {
-                        assert.equal(url, '/blog/content/images/blank.png');
-                    } catch (e) {
-                        return done(e);
-                    }
-                    done();
-                },
-                setHeader() {}
-            };
-
-            handleImageSizes(fakeReq, fakeRes, function next(err) {
-                if (err) {
-                    return done(err);
-                }
-                done(new Error('Should not have called next'));
-            });
-        });
-
-        it('redirects if sharp is not installed', function (done) {
-            sinon.stub(imageTransform, 'canTransformFiles').returns(false);
-
-            const fakeReq = {
-                url: '/size/w1000/blank.png',
-                originalUrl: '/blog/content/images/size/w1000/blank.png'
-            };
-            const fakeRes = {
-                redirect(url) {
-                    try {
-                        assert.equal(url, '/blog/content/images/blank.png');
-                    } catch (e) {
-                        return done(e);
-                    }
-                    done();
-                },
-                setHeader() {}
-            };
-
-            handleImageSizes(fakeReq, fakeRes, function next(err) {
-                if (err) {
-                    return done(err);
-                }
-                done(new Error('Should not have called next'));
-            });
-        });
-
-        it('redirects if timeout is exceeded', function (done) {
-            sinon.stub(imageTransform, 'canTransformFiles').returns(true);
-
-            dummyStorage.exists = async function () {
-                return false;
-            };
-
-            dummyStorage.read = async function () {
-                return buffer;
-            };
-
-            const error = new Error('Resize timeout');
-            error.code = 'IMAGE_PROCESSING';
-
-            resizeFromBufferStub.throws(error);
-
-            const fakeReq = {
-                url: '/size/w1000/blank.png',
-                originalUrl: '/blog/content/images/size/w1000/blank.png'
-            };
-
-            const fakeRes = {
-                redirect(url) {
-                    try {
-                        assert.equal(url, '/blog/content/images/blank.png');
-                    } catch (e) {
-                        return done(e);
-                    }
-                    done();
-                },
-                setHeader() {}
-            };
-
-            handleImageSizes(fakeReq, fakeRes, function next(err) {
-                if (err) {
-                    return done(err);
-                }
-                done(new Error('Should not have called next'));
-            });
-        });
-
-        it('continues if file exists', function (done) {
-            dummyStorage.exists = async function (path) {
-                if (path === '/size/w1000/blank.png') {
-                    return true;
-                }
-            };
-
-            const fakeReq = {
-                url: '/size/w1000/blank.png',
-                originalUrl: '/size/w1000/blank.png'
-            };
-            const fakeRes = {
-                redirect() {
-                    done(new Error('Should not have called redirect'));
-                },
-                setHeader() {}
-            };
-
-            handleImageSizes(fakeReq, fakeRes, function next(err) {
-                if (err) {
-                    return done(err);
-                }
-                done();
-            });
-        });
-
-        it('uses unoptimizedImageExists if it exists', function (done) {
-            dummyStorage.exists = async function (path) {
-                if (path === '/blank_o.png') {
-                    return true;
-                }
-            };
-            const spy = sinon.spy(dummyStorage, 'read');
-
-            const fakeReq = {
-                url: '/size/h100/blank.png',
-                originalUrl: '/size/h100/blank.png'
-            };
-            const fakeRes = {
-                redirect() {
-                    done(new Error('Should not have called redirect'));
-                },
-                setHeader() {}
-            };
-
-            handleImageSizes(fakeReq, fakeRes, function next(err) {
-                if (err) {
-                    return done(err);
-                }
-                try {
-                    sinon.assert.calledOnceWithExactly(spy, {path: '/blank_o.png'});
-                } catch (e) {
-                    return done(e);
-                }
-                done();
-            });
-        });
-
-        it('uses unoptimizedImageExists if it exists with formatting', function (done) {
-            dummyStorage.exists = async function (path) {
-                if (path === '/blank_o.png') {
-                    return true;
-                }
-            };
-            const spy = sinon.spy(dummyStorage, 'read');
-
-            const fakeReq = {
-                url: '/size/w1000/format/webp/blank.png',
-                originalUrl: '/size/w1000/format/webp/blank.png'
-            };
-            const fakeRes = {
-                redirect() {
-                    done(new Error('Should not have called redirect'));
-                },
-                type: function () {},
-                setHeader() {}
-            };
-            const typeStub = sinon.spy(fakeRes, 'type');
-
-            handleImageSizes(fakeReq, fakeRes, function next(err) {
-                if (err) {
-                    return done(err);
-                }
-                try {
-                    sinon.assert.calledOnceWithExactly(spy, {path: '/blank_o.png'});
-                    sinon.assert.calledOnceWithExactly(typeStub, 'webp');
-                } catch (e) {
-                    return done(e);
-                }
-                done();
-            });
-        });
-
-        it('skips SVG if not formatted', function (done) {
-            dummyStorage.exists = async function () {
-                return false;
-            };
-
-            const fakeReq = {
-                url: '/size/w1000/blank.svg',
-                originalUrl: '/blog/content/images/size/w1000/blank.svg'
-            };
-            const fakeRes = {
-                redirect(url) {
-                    try {
-                        assert.equal(url, '/blog/content/images/blank.svg');
-                    } catch (e) {
-                        return done(e);
-                    }
-                    done();
-                },
-                setHeader() {}
-            };
-
-            handleImageSizes(fakeReq, fakeRes, function next(err) {
-                if (err) {
-                    return done(err);
-                }
-                done(new Error('Should not have called next'));
-            });
-        });
-
-        it('skips formatting to ico', function (done) {
-            dummyStorage.exists = async function () {
-                return false;
-            };
-
-            const fakeReq = {
-                url: '/size/w1000/format/ico/blank.png',
-                originalUrl: '/blog/content/images/size/w1000/format/ico/blank.png'
-            };
-            const fakeRes = {
-                redirect(url) {
-                    try {
-                        assert.equal(url, '/blog/content/images/blank.png');
-                    } catch (e) {
-                        return done(e);
-                    }
-                    done();
-                },
-                setHeader() {}
-            };
-
-            handleImageSizes(fakeReq, fakeRes, function next(err) {
-                if (err) {
-                    return done(err);
-                }
-                done(new Error('Should not have called next'));
-            });
-        });
-
-        it('skips formatting from ico', function (done) {
-            dummyStorage.exists = async function () {
-                return false;
-            };
-
-            const fakeReq = {
-                url: '/size/w1000/format/png/blank.ico',
-                originalUrl: '/blog/content/images/size/w1000/format/png/blank.ico'
-            };
-            const fakeRes = {
-                redirect(url) {
-                    try {
-                        assert.equal(url, '/blog/content/images/blank.ico');
-                    } catch (e) {
-                        return done(e);
-                    }
-                    done();
-                },
-                setHeader() {}
-            };
-
-            handleImageSizes(fakeReq, fakeRes, function next(err) {
-                if (err) {
-                    return done(err);
-                }
-                done(new Error('Should not have called next'));
-            });
-        });
-
-        it('skips formatting to svg', function (done) {
-            dummyStorage.exists = async function () {
-                return false;
-            };
-
-            const fakeReq = {
-                url: '/size/w1000/format/svg/blank.png',
-                originalUrl: '/blog/content/images/size/w1000/format/svg/blank.png'
-            };
-            const fakeRes = {
-                redirect(url) {
-                    try {
-                        assert.equal(url, '/blog/content/images/blank.png');
-                    } catch (e) {
-                        return done(e);
-                    }
-                    done();
-                },
-                setHeader() {}
-            };
-
-            handleImageSizes(fakeReq, fakeRes, function next(err) {
-                if (err) {
-                    return done(err);
-                }
-                done(new Error('Should not have called next'));
-            });
-        });
-
-        it('doesn\'t skip SVGs if formatted to PNG', function (done) {
-            dummyStorage.exists = async function () {
-                return false;
-            };
-
-            const fakeReq = {
-                url: '/size/w1000/format/png/blank.svg',
-                originalUrl: '/size/w1000/format/png/blank.svg'
-            };
-            const fakeRes = {
-                redirect() {
-                    done(new Error('Should not have called redirect'));
-                },
-                setHeader() {},
-                type: function () {}
-            };
-            const typeStub = sinon.spy(fakeRes, 'type');
-
-            handleImageSizes(fakeReq, fakeRes, function next(err) {
-                if (err) {
-                    return done(err);
-                }
-                try {
-                    sinon.assert.calledOnceWithExactly(resizeFromBufferStub, buffer, {
-                        withoutEnlargement: false,
-                        width: 1000,
-                        format: 'png',
-                        timeout: handleImageSizes.RESIZE_TIMEOUT_SECONDS
-                    });
-                    sinon.assert.calledOnceWithExactly(typeStub, 'png');
-                } catch (e) {
-                    return done(e);
-                }
-                done();
-            });
-        });
-
-        it('can format PNG to WEBP', function (done) {
-            dummyStorage.exists = async function () {
-                return false;
-            };
-            dummyStorage.read = async function () {
-                return buffer;
-            };
-
-            const fakeReq = {
-                url: '/size/w1000/format/webp/blank.png',
-                originalUrl: '/size/w1000/format/webp/blank.png'
-            };
-            const fakeRes = {
-                redirect() {
-                    done(new Error('Should not have called redirect'));
-                },
-                setHeader() {},
-                type: function () {}
-            };
-            const typeStub = sinon.spy(fakeRes, 'type');
-
-            handleImageSizes(fakeReq, fakeRes, function next(err) {
-                if (err) {
-                    return done(err);
-                }
-                try {
-                    sinon.assert.calledOnceWithExactly(resizeFromBufferStub, buffer, {
-                        withoutEnlargement: true,
-                        width: 1000,
-                        format: 'webp',
-                        timeout: handleImageSizes.RESIZE_TIMEOUT_SECONDS
-                    });
-                    sinon.assert.calledOnceWithExactly(typeStub, 'webp');
-                } catch (e) {
-                    return done(e);
-                }
-                done();
-            });
-        });
-
-        it('can format PNG to AVIF', function (done) {
-            dummyStorage.exists = async function () {
-                return false;
-            };
-            dummyStorage.read = async function () {
-                return buffer;
-            };
-
-            const fakeReq = {
-                url: '/size/w1000/format/avif/blank.png',
-                originalUrl: '/size/w1000/format/avif/blank.png'
-            };
-            const fakeRes = {
-                redirect() {
-                    done(new Error('Should not have called redirect'));
-                },
-                setHeader() {},
-                type: function () {}
-            };
-            const typeStub = sinon.spy(fakeRes, 'type');
-
-            handleImageSizes(fakeReq, fakeRes, function next(err) {
-                if (err) {
-                    return done(err);
-                }
-                try {
-                    sinon.assert.calledOnceWithExactly(resizeFromBufferStub, buffer, {
-                        withoutEnlargement: true,
-                        width: 1000,
-                        format: 'avif',
-                        timeout: handleImageSizes.RESIZE_TIMEOUT_SECONDS
-                    });
-                    sinon.assert.calledOnceWithExactly(typeStub, 'image/avif');
-                } catch (e) {
-                    return done(e);
-                }
-                done();
-            });
-        });
-
-        it('can format GIF to WEBP', function (done) {
-            dummyStorage.exists = async function () {
-                return false;
-            };
-            dummyStorage.read = async function () {
-                return buffer;
-            };
-
-            const fakeReq = {
-                url: '/size/w1000/format/webp/blank.gif',
-                originalUrl: '/size/w1000/format/webp/blank.gif'
-            };
-            const fakeRes = {
-                redirect() {
-                    done(new Error('Should not have called redirect'));
-                },
-                setHeader() {},
-                type: function () {}
-            };
-            const typeStub = sinon.spy(fakeRes, 'type');
-
-            handleImageSizes(fakeReq, fakeRes, function next(err) {
-                if (err) {
-                    return done(err);
-                }
-                try {
-                    sinon.assert.calledOnceWithExactly(resizeFromBufferStub, buffer, {
-                        withoutEnlargement: true,
-                        width: 1000,
-                        format: 'webp',
-                        timeout: handleImageSizes.RESIZE_TIMEOUT_SECONDS
-                    });
-                    sinon.assert.calledOnceWithExactly(typeStub, 'webp');
-                } catch (e) {
-                    return done(e);
-                }
-                done();
-            });
-        });
-
-        it('can format WEBP to GIF', function (done) {
-            dummyStorage.exists = async function () {
-                return false;
-            };
-            dummyStorage.read = async function () {
-                return buffer;
-            };
-
-            const fakeReq = {
-                url: '/size/w1000/format/gif/blank.webp',
-                originalUrl: '/size/w1000/format/gif/blank.webp'
-            };
-            const fakeRes = {
-                redirect() {
-                    done(new Error('Should not have called redirect'));
-                },
-                setHeader() {},
-                type: function () {}
-            };
-            const typeStub = sinon.spy(fakeRes, 'type');
-
-            handleImageSizes(fakeReq, fakeRes, function next(err) {
-                if (err) {
-                    return done(err);
-                }
-                try {
-                    sinon.assert.calledOnceWithExactly(resizeFromBufferStub, buffer, {
-                        withoutEnlargement: true,
-                        width: 1000,
-                        format: 'gif',
-                        timeout: handleImageSizes.RESIZE_TIMEOUT_SECONDS
-                    });
-                    sinon.assert.calledOnceWithExactly(typeStub, 'gif');
-                } catch (e) {
-                    return done(e);
-                }
-                done();
-            });
-        });
-
-        it('goes to next middleware with no error if source and resized image 404', function (done) {
-            dummyStorage.exists = async function () {
-                return false;
-            };
-            dummyStorage.read = async function () {
-                throw new errors.NotFoundError({
-                    message: 'File not found'
+                    done(new Error('Should not have called next'));
                 });
-            };
+            });
+        });
 
-            const fakeReq = {
-                url: '/size/w1000/2020/02/test.png',
-                originalUrl: '/2020/02/test.png'
-            };
+        it('redirects for invalid sizes', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                const fakeReq = {
+                    url: '/size/w123/image.jpg',
+                    originalUrl: '/blog/content/images/size/w123/image.jpg'
+                };
+                const fakeRes = {
+                    redirect(url) {
+                        try {
+                            assert.equal(url, '/blog/content/images/image.jpg');
+                        } catch (e) {
+                            return done(e);
+                        }
+                        done();
+                    },
+                    setHeader() {}
+                };
+                handleImageSizes(fakeReq, fakeRes, function next(err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    done(new Error('Should not have called next'));
+                });
+            });
+        });
 
-            const fakeRes = {
-                redirect() {
-                    done(new Error('Should not have called redirect'));
-                },
-                setHeader() {},
-                type: function () {}
-            };
+        it('redirects for invalid configured size', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                const fakeReq = {
+                    url: '/size/missing/image.jpg',
+                    originalUrl: '/blog/content/images/size/missing/image.jpg'
+                };
+                const fakeRes = {
+                    redirect(url) {
+                        try {
+                            assert.equal(url, '/blog/content/images/image.jpg');
+                        } catch (e) {
+                            return done(e);
+                        }
+                        done();
+                    },
+                    setHeader() {}
+                };
+                handleImageSizes(fakeReq, fakeRes, function next(err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    done(new Error('Should not have called next'));
+                });
+            });
+        });
 
-            handleImageSizes(fakeReq, fakeRes, function next(err) {
-                if (err) {
-                    return done(err);
-                }
-                done();
+        it('returns original URL if file is empty', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                dummyStorage.exists = async function (path) {
+                    if (path === '/blank_o.png') {
+                        return true;
+                    }
+                    if (path === '/size/w1000/blank.png') {
+                        return false;
+                    }
+                };
+                dummyStorage.read = async function () {
+                    return Buffer.from([]);
+                };
+
+                const fakeReq = {
+                    url: '/size/w1000/blank.png',
+                    originalUrl: '/blog/content/images/size/w1000/blank.png'
+                };
+                const fakeRes = {
+                    redirect(url) {
+                        try {
+                            assert.equal(url, '/blog/content/images/blank.png');
+                        } catch (e) {
+                            return done(e);
+                        }
+                        done();
+                    },
+                    setHeader() {}
+                };
+
+                handleImageSizes(fakeReq, fakeRes, function next(err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    done(new Error('Should not have called next'));
+                });
+            });
+        });
+
+        it('returns original URL if unsupported storage adapter', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                dummyStorage.saveRaw = undefined;
+
+                const fakeReq = {
+                    url: '/size/w1000/blank.png',
+                    originalUrl: '/blog/content/images/size/w1000/blank.png'
+                };
+                const fakeRes = {
+                    redirect(url) {
+                        try {
+                            assert.equal(url, '/blog/content/images/blank.png');
+                        } catch (e) {
+                            return done(e);
+                        }
+                        done();
+                    },
+                    setHeader() {}
+                };
+
+                handleImageSizes(fakeReq, fakeRes, function next(err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    done(new Error('Should not have called next'));
+                });
+            });
+        });
+
+        it('redirects if sharp is not installed', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                sinon.stub(imageTransform, 'canTransformFiles').returns(false);
+
+                const fakeReq = {
+                    url: '/size/w1000/blank.png',
+                    originalUrl: '/blog/content/images/size/w1000/blank.png'
+                };
+                const fakeRes = {
+                    redirect(url) {
+                        try {
+                            assert.equal(url, '/blog/content/images/blank.png');
+                        } catch (e) {
+                            return done(e);
+                        }
+                        done();
+                    },
+                    setHeader() {}
+                };
+
+                handleImageSizes(fakeReq, fakeRes, function next(err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    done(new Error('Should not have called next'));
+                });
+            });
+        });
+
+        it('redirects if timeout is exceeded', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                sinon.stub(imageTransform, 'canTransformFiles').returns(true);
+
+                dummyStorage.exists = async function () {
+                    return false;
+                };
+
+                dummyStorage.read = async function () {
+                    return buffer;
+                };
+
+                const error = new Error('Resize timeout');
+                error.code = 'IMAGE_PROCESSING';
+
+                resizeFromBufferStub.throws(error);
+
+                const fakeReq = {
+                    url: '/size/w1000/blank.png',
+                    originalUrl: '/blog/content/images/size/w1000/blank.png'
+                };
+
+                const fakeRes = {
+                    redirect(url) {
+                        try {
+                            assert.equal(url, '/blog/content/images/blank.png');
+                        } catch (e) {
+                            return done(e);
+                        }
+                        done();
+                    },
+                    setHeader() {}
+                };
+
+                handleImageSizes(fakeReq, fakeRes, function next(err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    done(new Error('Should not have called next'));
+                });
+            });
+        });
+
+        it('continues if file exists', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                dummyStorage.exists = async function (path) {
+                    if (path === '/size/w1000/blank.png') {
+                        return true;
+                    }
+                };
+
+                const fakeReq = {
+                    url: '/size/w1000/blank.png',
+                    originalUrl: '/size/w1000/blank.png'
+                };
+                const fakeRes = {
+                    redirect() {
+                        done(new Error('Should not have called redirect'));
+                    },
+                    setHeader() {}
+                };
+
+                handleImageSizes(fakeReq, fakeRes, function next(err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    done();
+                });
+            });
+        });
+
+        it('uses unoptimizedImageExists if it exists', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                dummyStorage.exists = async function (path) {
+                    if (path === '/blank_o.png') {
+                        return true;
+                    }
+                };
+                const spy = sinon.spy(dummyStorage, 'read');
+
+                const fakeReq = {
+                    url: '/size/h100/blank.png',
+                    originalUrl: '/size/h100/blank.png'
+                };
+                const fakeRes = {
+                    redirect() {
+                        done(new Error('Should not have called redirect'));
+                    },
+                    setHeader() {}
+                };
+
+                handleImageSizes(fakeReq, fakeRes, function next(err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    try {
+                        sinon.assert.calledOnceWithExactly(spy, {path: '/blank_o.png'});
+                    } catch (e) {
+                        return done(e);
+                    }
+                    done();
+                });
+            });
+        });
+
+        it('uses unoptimizedImageExists if it exists with formatting', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                dummyStorage.exists = async function (path) {
+                    if (path === '/blank_o.png') {
+                        return true;
+                    }
+                };
+                const spy = sinon.spy(dummyStorage, 'read');
+
+                const fakeReq = {
+                    url: '/size/w1000/format/webp/blank.png',
+                    originalUrl: '/size/w1000/format/webp/blank.png'
+                };
+                const fakeRes = {
+                    redirect() {
+                        done(new Error('Should not have called redirect'));
+                    },
+                    type: function () {},
+                    setHeader() {}
+                };
+                const typeStub = sinon.spy(fakeRes, 'type');
+
+                handleImageSizes(fakeReq, fakeRes, function next(err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    try {
+                        sinon.assert.calledOnceWithExactly(spy, {path: '/blank_o.png'});
+                        sinon.assert.calledOnceWithExactly(typeStub, 'webp');
+                    } catch (e) {
+                        return done(e);
+                    }
+                    done();
+                });
+            });
+        });
+
+        it('skips SVG if not formatted', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                dummyStorage.exists = async function () {
+                    return false;
+                };
+
+                const fakeReq = {
+                    url: '/size/w1000/blank.svg',
+                    originalUrl: '/blog/content/images/size/w1000/blank.svg'
+                };
+                const fakeRes = {
+                    redirect(url) {
+                        try {
+                            assert.equal(url, '/blog/content/images/blank.svg');
+                        } catch (e) {
+                            return done(e);
+                        }
+                        done();
+                    },
+                    setHeader() {}
+                };
+
+                handleImageSizes(fakeReq, fakeRes, function next(err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    done(new Error('Should not have called next'));
+                });
+            });
+        });
+
+        it('skips formatting to ico', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                dummyStorage.exists = async function () {
+                    return false;
+                };
+
+                const fakeReq = {
+                    url: '/size/w1000/format/ico/blank.png',
+                    originalUrl: '/blog/content/images/size/w1000/format/ico/blank.png'
+                };
+                const fakeRes = {
+                    redirect(url) {
+                        try {
+                            assert.equal(url, '/blog/content/images/blank.png');
+                        } catch (e) {
+                            return done(e);
+                        }
+                        done();
+                    },
+                    setHeader() {}
+                };
+
+                handleImageSizes(fakeReq, fakeRes, function next(err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    done(new Error('Should not have called next'));
+                });
+            });
+        });
+
+        it('skips formatting from ico', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                dummyStorage.exists = async function () {
+                    return false;
+                };
+
+                const fakeReq = {
+                    url: '/size/w1000/format/png/blank.ico',
+                    originalUrl: '/blog/content/images/size/w1000/format/png/blank.ico'
+                };
+                const fakeRes = {
+                    redirect(url) {
+                        try {
+                            assert.equal(url, '/blog/content/images/blank.ico');
+                        } catch (e) {
+                            return done(e);
+                        }
+                        done();
+                    },
+                    setHeader() {}
+                };
+
+                handleImageSizes(fakeReq, fakeRes, function next(err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    done(new Error('Should not have called next'));
+                });
+            });
+        });
+
+        it('skips formatting to svg', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                dummyStorage.exists = async function () {
+                    return false;
+                };
+
+                const fakeReq = {
+                    url: '/size/w1000/format/svg/blank.png',
+                    originalUrl: '/blog/content/images/size/w1000/format/svg/blank.png'
+                };
+                const fakeRes = {
+                    redirect(url) {
+                        try {
+                            assert.equal(url, '/blog/content/images/blank.png');
+                        } catch (e) {
+                            return done(e);
+                        }
+                        done();
+                    },
+                    setHeader() {}
+                };
+
+                handleImageSizes(fakeReq, fakeRes, function next(err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    done(new Error('Should not have called next'));
+                });
+            });
+        });
+
+        it('doesn\'t skip SVGs if formatted to PNG', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                dummyStorage.exists = async function () {
+                    return false;
+                };
+
+                const fakeReq = {
+                    url: '/size/w1000/format/png/blank.svg',
+                    originalUrl: '/size/w1000/format/png/blank.svg'
+                };
+                const fakeRes = {
+                    redirect() {
+                        done(new Error('Should not have called redirect'));
+                    },
+                    setHeader() {},
+                    type: function () {}
+                };
+                const typeStub = sinon.spy(fakeRes, 'type');
+
+                handleImageSizes(fakeReq, fakeRes, function next(err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    try {
+                        sinon.assert.calledOnceWithExactly(resizeFromBufferStub, buffer, {
+                            withoutEnlargement: false,
+                            width: 1000,
+                            format: 'png',
+                            timeout: handleImageSizes.RESIZE_TIMEOUT_SECONDS
+                        });
+                        sinon.assert.calledOnceWithExactly(typeStub, 'png');
+                    } catch (e) {
+                        return done(e);
+                    }
+                    done();
+                });
+            });
+        });
+
+        it('can format PNG to WEBP', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                dummyStorage.exists = async function () {
+                    return false;
+                };
+                dummyStorage.read = async function () {
+                    return buffer;
+                };
+
+                const fakeReq = {
+                    url: '/size/w1000/format/webp/blank.png',
+                    originalUrl: '/size/w1000/format/webp/blank.png'
+                };
+                const fakeRes = {
+                    redirect() {
+                        done(new Error('Should not have called redirect'));
+                    },
+                    setHeader() {},
+                    type: function () {}
+                };
+                const typeStub = sinon.spy(fakeRes, 'type');
+
+                handleImageSizes(fakeReq, fakeRes, function next(err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    try {
+                        sinon.assert.calledOnceWithExactly(resizeFromBufferStub, buffer, {
+                            withoutEnlargement: true,
+                            width: 1000,
+                            format: 'webp',
+                            timeout: handleImageSizes.RESIZE_TIMEOUT_SECONDS
+                        });
+                        sinon.assert.calledOnceWithExactly(typeStub, 'webp');
+                    } catch (e) {
+                        return done(e);
+                    }
+                    done();
+                });
+            });
+        });
+
+        it('can format PNG to AVIF', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                dummyStorage.exists = async function () {
+                    return false;
+                };
+                dummyStorage.read = async function () {
+                    return buffer;
+                };
+
+                const fakeReq = {
+                    url: '/size/w1000/format/avif/blank.png',
+                    originalUrl: '/size/w1000/format/avif/blank.png'
+                };
+                const fakeRes = {
+                    redirect() {
+                        done(new Error('Should not have called redirect'));
+                    },
+                    setHeader() {},
+                    type: function () {}
+                };
+                const typeStub = sinon.spy(fakeRes, 'type');
+
+                handleImageSizes(fakeReq, fakeRes, function next(err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    try {
+                        sinon.assert.calledOnceWithExactly(resizeFromBufferStub, buffer, {
+                            withoutEnlargement: true,
+                            width: 1000,
+                            format: 'avif',
+                            timeout: handleImageSizes.RESIZE_TIMEOUT_SECONDS
+                        });
+                        sinon.assert.calledOnceWithExactly(typeStub, 'image/avif');
+                    } catch (e) {
+                        return done(e);
+                    }
+                    done();
+                });
+            });
+        });
+
+        it('can format GIF to WEBP', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                dummyStorage.exists = async function () {
+                    return false;
+                };
+                dummyStorage.read = async function () {
+                    return buffer;
+                };
+
+                const fakeReq = {
+                    url: '/size/w1000/format/webp/blank.gif',
+                    originalUrl: '/size/w1000/format/webp/blank.gif'
+                };
+                const fakeRes = {
+                    redirect() {
+                        done(new Error('Should not have called redirect'));
+                    },
+                    setHeader() {},
+                    type: function () {}
+                };
+                const typeStub = sinon.spy(fakeRes, 'type');
+
+                handleImageSizes(fakeReq, fakeRes, function next(err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    try {
+                        sinon.assert.calledOnceWithExactly(resizeFromBufferStub, buffer, {
+                            withoutEnlargement: true,
+                            width: 1000,
+                            format: 'webp',
+                            timeout: handleImageSizes.RESIZE_TIMEOUT_SECONDS
+                        });
+                        sinon.assert.calledOnceWithExactly(typeStub, 'webp');
+                    } catch (e) {
+                        return done(e);
+                    }
+                    done();
+                });
+            });
+        });
+
+        it('can format WEBP to GIF', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                dummyStorage.exists = async function () {
+                    return false;
+                };
+                dummyStorage.read = async function () {
+                    return buffer;
+                };
+
+                const fakeReq = {
+                    url: '/size/w1000/format/gif/blank.webp',
+                    originalUrl: '/size/w1000/format/gif/blank.webp'
+                };
+                const fakeRes = {
+                    redirect() {
+                        done(new Error('Should not have called redirect'));
+                    },
+                    setHeader() {},
+                    type: function () {}
+                };
+                const typeStub = sinon.spy(fakeRes, 'type');
+
+                handleImageSizes(fakeReq, fakeRes, function next(err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    try {
+                        sinon.assert.calledOnceWithExactly(resizeFromBufferStub, buffer, {
+                            withoutEnlargement: true,
+                            width: 1000,
+                            format: 'gif',
+                            timeout: handleImageSizes.RESIZE_TIMEOUT_SECONDS
+                        });
+                        sinon.assert.calledOnceWithExactly(typeStub, 'gif');
+                    } catch (e) {
+                        return done(e);
+                    }
+                    done();
+                });
+            });
+        });
+
+        it('goes to next middleware with no error if source and resized image 404', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                dummyStorage.exists = async function () {
+                    return false;
+                };
+                dummyStorage.read = async function () {
+                    throw new errors.NotFoundError({
+                        message: 'File not found'
+                    });
+                };
+
+                const fakeReq = {
+                    url: '/size/w1000/2020/02/test.png',
+                    originalUrl: '/2020/02/test.png'
+                };
+
+                const fakeRes = {
+                    redirect() {
+                        done(new Error('Should not have called redirect'));
+                    },
+                    setHeader() {},
+                    type: function () {}
+                };
+
+                handleImageSizes(fakeReq, fakeRes, function next(err) {
+                    if (err) {
+                        return done(err);
+                    }
+                    done();
+                });
             });
         });
     });

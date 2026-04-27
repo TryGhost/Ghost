@@ -8,7 +8,7 @@ const configUtils = require('../../../utils/config-utils');
  */
 
 describe('Adapter Config', function () {
-    before(async function () {
+    beforeAll(async function () {
         await configUtils.restore();
     });
 

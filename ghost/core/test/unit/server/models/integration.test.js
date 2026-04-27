@@ -4,7 +4,7 @@ const models = require('../../../../core/server/models');
 const {knex} = require('../../../../core/server/data/db');
 
 describe('Unit: models/integration', function () {
-    before(function () {
+    beforeAll(function () {
         models.init();
     });
 
@@ -36,12 +36,12 @@ describe('Unit: models/integration', function () {
         const mockDb = require('mock-knex');
         let tracker;
 
-        before(function () {
+        beforeAll(function () {
             mockDb.mock(knex);
             tracker = mockDb.getTracker();
         });
 
-        after(function () {
+        afterAll(function () {
             mockDb.unmock(knex);
         });
 
@@ -70,12 +70,12 @@ describe('Unit: models/integration', function () {
         const mockDb = require('mock-knex');
         let tracker;
 
-        before(function () {
+        beforeAll(function () {
             mockDb.mock(knex);
             tracker = mockDb.getTracker();
         });
 
-        after(function () {
+        afterAll(function () {
             mockDb.unmock(knex);
         });
 

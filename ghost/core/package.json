@@ -57,16 +57,16 @@
     "test:single": "f() { q=$(echo \"$1\" | sed 's/\\.test\\.[jt]s$//'); case \"$q\" in */*) pnpm test:base --timeout=60000 \"$1\" ;; *) pnpm test:base --timeout=60000 \"test/**/*$q*.test.{js,ts}\" ;; esac; }; f",
     "test:all": "pnpm test:unit && pnpm test:integration && pnpm test:e2e && pnpm lint",
     "test:debug": "DEBUG=ghost:test* pnpm test",
-    "test:unit": "c8 pnpm test:unit:${GHOST_UNIT_TEST_VARIANT:-base}",
-    "test:unit:base": "pnpm test:base './test/unit' --timeout=2000",
-    "test:unit:ci": "pnpm test:unit:base --reporter=min",
+    "test:unit": "NODE_OPTIONS='--import=tsx' vitest run --coverage --config vitest.config.js",
+    "test:unit:base": "NODE_OPTIONS='--import=tsx' vitest run --config vitest.config.js",
+    "test:unit:ci": "NODE_OPTIONS='--import=tsx' vitest run --config vitest.config.js --reporter=dot",
     "test:integration": "pnpm test:base './test/integration' --timeout=10000",
     "test:e2e": "pnpm test:base ./test/e2e-* --timeout=15000",
     "test:legacy": "pnpm test:base './test/legacy' --timeout=60000",
     "test:ci:e2e": "c8 -c ./.c8rc.e2e.json -o coverage-e2e pnpm test:e2e -b",
     "test:ci:legacy": "pnpm test:legacy -b",
     "test:ci:integration": "c8 -c ./.c8rc.e2e.json -o coverage-integration --lines 52 --functions 47 --branches 73 --statements 52 pnpm test:integration -b",
-    "test:unit:slow": "pnpm test:unit --reporter=mocha-slow-test-reporter",
+    "test:unit:slow": "NODE_OPTIONS='--import=tsx' vitest run --config vitest.config.js --reporter=verbose --slowTestThreshold=100",
     "test:int:slow": "pnpm test:integration --reporter=mocha-slow-test-reporter",
     "test:e2e:slow": "pnpm test:e2e --reporter=mocha-slow-test-reporter",
     "test:leg:slow": "mocha --reporter dot --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js  './test/legacy' --timeout=60000 --reporter=mocha-slow-test-reporter",
@@ -270,6 +270,7 @@
     "@types/on-headers": "1.0.4",
     "@types/sinon": "17.0.4",
     "@types/supertest": "6.0.3",
+    "@vitest/coverage-v8": "4.1.5",
     "c8": "10.1.3",
     "cli-progress": "3.12.0",
     "cssnano": "7.1.1",
@@ -299,7 +300,8 @@
     "tmp": "0.2.5",
     "toml": "3.0.0",
     "tsx": "4.21.0",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "4.1.5"
   },
   "nx": {
     "tags": [

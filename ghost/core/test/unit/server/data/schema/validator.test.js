@@ -7,7 +7,7 @@ const models = require('../../../../../core/server/models');
 const validateSchema = require('../../../../../core/server/data/schema/validator');
 
 describe('Validate Schema', function () {
-    before(function () {
+    beforeAll(function () {
         models.init();
     });
 

@@ -54,7 +54,7 @@ describe('MagicLink', function () {
                 referrer: 'https://whatever.com'
             };
 
-            assert.rejects(service.sendMagicLink(args));
+            await assert.rejects(service.sendMagicLink(args));
         });
 
         it('Sends an email to the user with a link generated from getSigninURL(token, type)', async function () {

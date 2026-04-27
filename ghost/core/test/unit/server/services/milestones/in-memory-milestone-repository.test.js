@@ -9,7 +9,7 @@ describe('InMemoryMilestoneRepository', function () {
     let repository;
     let domainEventsSpy;
 
-    before(async function () {
+    beforeAll(async function () {
         const resourceId = new ObjectID();
         domainEventsSpy = sinon.spy(DomainEvents, 'dispatch');
         repository = new InMemoryMilestoneRepository({DomainEvents});
@@ -78,7 +78,7 @@ describe('InMemoryMilestoneRepository', function () {
         }
     });
 
-    after(function () {
+    afterAll(function () {
         sinon.restore();
     });
 
@@ -108,7 +108,7 @@ describe('InMemoryMilestoneRepository', function () {
         const timeDiff = new Date(latestArrMilestone.createdAt).getTime() - new Date('2023-01-30T00:00:00Z').getTime();
         assert(timeDiff === 0);
         assert(latestArrMilestone.value === 2000);
-        assert(latestArrMilestone.type = 'arr');
+        assert(latestArrMilestone.type === 'arr');
         assert(latestArrMilestone.currency === 'gbp');
     });
 

@@ -645,7 +645,7 @@ describe('LastSeenAtUpdater', function () {
             });
             sinon.stub(events, 'emit');
             sinon.spy(updater, 'updateLastSeenAt');
-            assert.rejects(updater.cachedUpdateLastSeenAt('1', previousLastSeen, now.toDate()));
+            await assert.rejects(updater.cachedUpdateLastSeenAt('1', previousLastSeen, now.toDate()));
             await updater.cachedUpdateLastSeenAt('1', previousLastSeen, now.toDate());
             assert(updater.updateLastSeenAt.calledTwice, 'The LastSeenAtUpdater should attempt to update a member again if the first update fails.');
             clock.restore();

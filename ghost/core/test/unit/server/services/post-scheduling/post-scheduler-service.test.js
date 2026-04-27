@@ -14,7 +14,7 @@ const nock = require('nock');
 describe('Post Scheduler Service', function () {
     let adapter;
 
-    before(function () {
+    beforeAll(function () {
         models.init();
     });
 

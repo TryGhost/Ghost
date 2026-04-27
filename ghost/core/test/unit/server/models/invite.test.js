@@ -5,7 +5,7 @@ const models = require('../../../../core/server/models');
 const settingsCache = require('../../../../core/shared/settings-cache');
 
 describe('Unit: models/invite', function () {
-    before(function () {
+    beforeAll(function () {
         models.init();
     });
 
@@ -25,7 +25,7 @@ describe('Unit: models/invite', function () {
             let roleModel;
             let loadedPermissions;
 
-            before(function () {
+            beforeAll(function () {
                 inviteModel = {};
                 context = {};
                 unsafeAttrs = {role_id: 'role_id'};

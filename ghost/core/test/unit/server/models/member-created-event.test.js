@@ -4,7 +4,7 @@ const errors = require('@tryghost/errors');
 const models = require('../../../../core/server/models');
 
 describe('Unit: models/MemberCreatedEvent', function () {
-    before(function () {
+    beforeAll(function () {
         models.init();
     });
 

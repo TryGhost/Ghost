@@ -14,7 +14,7 @@ describe('Members Service Middleware', function () {
         let res;
         let next;
 
-        before(function () {
+        beforeAll(function () {
             models.init();
         });
 
@@ -215,7 +215,7 @@ describe('Members Service Middleware', function () {
         let req;
         let res;
 
-        before(function () {
+        beforeAll(function () {
             models.init();
         });
 

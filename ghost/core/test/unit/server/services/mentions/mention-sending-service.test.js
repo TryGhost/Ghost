@@ -29,7 +29,7 @@ describe('MentionSendingService', function () {
         sinon.restore();
     });
 
-    after(function () {
+    afterAll(function () {
         nock.cleanAll();
         nock.enableNetConnect();
     });
@@ -232,8 +232,7 @@ describe('MentionSendingService', function () {
     });
 
     describe('sendForHTMLResource', function () {
-        it('Sends to all links', async function () {
-            this.retries(1);
+        it('Sends to all links', {retry: 1}, async function () {
             let counter = 0;
             const scope = nock('https://example.org')
                 .persist()
@@ -265,8 +264,7 @@ describe('MentionSendingService', function () {
             assert.equal(counter, 3);
         });
 
-        it('Catches and logs errors', async function () {
-            this.retries(1);
+        it('Catches and logs errors', {retry: 1}, async function () {
             let counter = 0;
             const scope = nock('https://example.org')
                 .persist()
@@ -302,8 +300,7 @@ describe('MentionSendingService', function () {
             sinon.assert.calledOnce(errorLogStub);
         });
 
-        it('Sends to deleted links', async function () {
-            this.retries(1);
+        it('Sends to deleted links', {retry: 1}, async function () {
             let counter = 0;
             const scope = nock('https://example.org')
                 .persist()
@@ -405,8 +402,7 @@ describe('MentionSendingService', function () {
     });
 
     describe('send', function () {
-        it('Can handle 202 accepted responses', async function () {
-            this.retries(1);
+        it('Can handle 202 accepted responses', {retry: 1}, async function () {
             const source = new URL('https://example.com/source');
             const target = new URL('https://target.com/target');
             const endpoint = new URL('https://example.org/webmentions-test');
@@ -424,8 +420,7 @@ describe('MentionSendingService', function () {
             assert(scope.isDone());
         });
 
-        it('Can handle 201 created responses', async function () {
-            this.retries(1);
+        it('Can handle 201 created responses', {retry: 1}, async function () {
             const source = new URL('https://example.com/source');
             const target = new URL('https://target.com/target');
             const endpoint = new URL('https://example.org/webmentions-test');
@@ -443,8 +438,7 @@ describe('MentionSendingService', function () {
             assert(scope.isDone());
         });
 
-        it('Can handle 400 responses', async function () {
-            this.retries(1);
+        it('Can handle 400 responses', {retry: 1}, async function () {
             const scope = nock('https://example.org')
                 .persist()
                 .post('/webmentions-test')
@@ -459,8 +453,7 @@ describe('MentionSendingService', function () {
             assert(scope.isDone());
         });
 
-        it('Can handle 500 responses', async function () {
-            this.retries(1);
+        it('Can handle 500 responses', {retry: 1}, async function () {
             const scope = nock('https://example.org')
                 .persist()
                 .post('/webmentions-test')
@@ -475,8 +468,7 @@ describe('MentionSendingService', function () {
             assert(scope.isDone());
         });
 
-        it('Can handle redirect responses', async function () {
-            this.retries(1);
+        it('Can handle redirect responses', {retry: 1}, async function () {
             const scope = nock('https://example.org')
                 .persist()
                 .post('/webmentions-test')
@@ -498,8 +490,7 @@ describe('MentionSendingService', function () {
             assert(scope2.isDone());
         });
 
-        it('Can handle network errors', async function () {
-            this.retries(1);
+        it('Can handle network errors', {retry: 1}, async function () {
             const scope = nock('https://example.org')
                 .persist()
                 .post('/webmentions-test')

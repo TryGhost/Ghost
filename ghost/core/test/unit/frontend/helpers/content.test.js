@@ -13,11 +13,14 @@ const t = require('../../../../core/frontend/helpers/t');
 const {setupI18nTest, initLocale} = require('../../../utils/i18n-test-utils');
 
 describe('{{content}} helper', function () {
-    before(function (done) {
-        hbs.express4({partialsDir: [configUtils.config.get('paths').helperTemplates]});
+    beforeAll(async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            hbs.express4({partialsDir: [configUtils.config.get('paths').helperTemplates]});
 
-        hbs.cachePartials(function () {
-            done();
+            hbs.cachePartials(function () {
+                done();
+            });
         });
     });
 
@@ -84,16 +87,19 @@ describe('{{content}} helper', function () {
 });
 
 describe('{{content}} helper with no access', function () {
-    before(function (done) {
-        hbs.express4({partialsDir: [configUtils.config.get('paths').helperTemplates]});
+    beforeAll(async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            hbs.express4({partialsDir: [configUtils.config.get('paths').helperTemplates]});
 
-        hbs.cachePartials(function () {
-            done();
+            hbs.cachePartials(function () {
+                done();
+            });
+
+            hbs.registerHelper('has', has);
+            hbs.registerHelper('is', is);
+            hbs.registerHelper('t', t);
         });
-
-        hbs.registerHelper('has', has);
-        hbs.registerHelper('is', is);
-        hbs.registerHelper('t', t);
     });
 
     // Run tests with both i18n implementations
@@ -107,7 +113,7 @@ describe('{{content}} helper with no access', function () {
             let optionsData;
             let i18nSetup;
 
-            before(function () {
+            beforeAll(function () {
                 i18nSetup = setupI18nTest({useNewTranslation, locale: 'en'});
             });
 
@@ -116,7 +122,7 @@ describe('{{content}} helper with no access', function () {
                 initLocale({useNewTranslation, locale: 'en'});
             });
 
-            after(function () {
+            afterAll(function () {
                 i18nSetup.teardown();
                 sinon.restore();
             });
@@ -222,15 +228,18 @@ describe('{{content}} helper with no access', function () {
 
 describe('{{content}} helper with custom template', function () {
     let optionsData;
-    before(function (done) {
-        hbs.express4({partialsDir: [path.resolve(__dirname, './test_tpl')]});
+    beforeAll(async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            hbs.express4({partialsDir: [path.resolve(__dirname, './test_tpl')]});
 
-        hbs.cachePartials(function () {
-            done();
+            hbs.cachePartials(function () {
+                done();
+            });
+
+            hbs.registerHelper('has', has);
+            hbs.registerHelper('is', is);
         });
-
-        hbs.registerHelper('has', has);
-        hbs.registerHelper('is', is);
     });
 
     it('can render custom template', function () {

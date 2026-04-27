@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const models = require('../../../../core/server/models');
 
 describe('Unit: models/stripe-customer-subscription', function () {
-    before(function () {
+    beforeAll(function () {
         models.init();
     });
 

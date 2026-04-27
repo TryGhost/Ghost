@@ -4,7 +4,7 @@ const sinon = require('sinon');
 const models = require('../../../../../core/server/models');
 
 describe('Models: crud', function () {
-    before(function () {
+    beforeAll(function () {
         models.init();
     });
 

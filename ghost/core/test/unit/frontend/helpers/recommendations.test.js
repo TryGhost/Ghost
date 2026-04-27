@@ -20,14 +20,22 @@ function trimSpaces(string) {
 describe('{{#recommendations}} helper', function () {
     let logging;
 
-    before(function () {
+    beforeAll(async function () {
         models.init();
 
         hbs.express4({
             partialsDir: [configUtils.config.get('paths').helperTemplates]
         });
 
-        hbs.cachePartials();
+        await new Promise((resolve, reject) => {
+            hbs.cachePartials((err) => {
+                if (err) {
+                    return reject(err);
+                }
+
+                resolve();
+            });
+        });
 
         // The recommendation template expects this helper
         hbs.registerHelper('foreach', foreach);
@@ -56,7 +64,7 @@ describe('{{#recommendations}} helper', function () {
         };
     });
 
-    after(function () {
+    afterAll(function () {
         sinon.restore();
     });
 
@@ -103,7 +111,7 @@ describe('{{#recommendations}} helper', function () {
     });
 
     describe('when there are no recommendations', function () {
-        before(function () {
+        beforeAll(function () {
             sinon.stub(api, 'recommendationsPublic').get(() => {
                 return {
                     browse: () => {
@@ -129,7 +137,7 @@ describe('{{#recommendations}} helper', function () {
     });
 
     describe('when recommendations_enabled is false', function () {
-        before(function () {
+        beforeAll(function () {
             // @ts-ignore
             settingsCache.get.withArgs('recommendations_enabled').returns(true);
         });
@@ -146,7 +154,7 @@ describe('{{#recommendations}} helper', function () {
     });
 
     describe('when timeout is exceeded', function () {
-        before(function () {
+        beforeAll(function () {
             sinon.stub(api, 'recommendationsPublic').get(() => {
                 return {
                     browse: () => {
@@ -159,7 +167,7 @@ describe('{{#recommendations}} helper', function () {
                 };
             });
         });
-        after(async function () {
+        afterAll(async function () {
             await configUtils.restore();
         });
 

@@ -52,85 +52,97 @@ describe('Unit: services/url/Queue', function () {
     });
 
     describe('fn: start (no tolerance)', function () {
-        it('no subscribers', function (done) {
-            queue.addListener('ended', function (event) {
-                assert.equal(event, 'nachos');
-                sinon.assert.calledOnce(queueRunSpy);
-                done();
-            });
+        it('no subscribers', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                queue.addListener('ended', function (event) {
+                    assert.equal(event, 'nachos');
+                    sinon.assert.calledOnce(queueRunSpy);
+                    done();
+                });
 
-            queue.start({
-                event: 'nachos'
-            });
-        });
-
-        it('1 subscriber', function (done) {
-            let notified = 0;
-
-            queue.addListener('ended', function (event) {
-                assert.equal(event, 'nachos');
-                sinon.assert.calledTwice(queueRunSpy);
-                assert.equal(notified, 1);
-                done();
-            });
-
-            queue.register({
-                event: 'nachos'
-            }, function () {
-                notified = notified + 1;
-            });
-
-            queue.start({
-                event: 'nachos'
+                queue.start({
+                    event: 'nachos'
+                });
             });
         });
 
-        it('x subscriber', function (done) {
-            let notified = 0;
-            let order = [];
+        it('1 subscriber', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                let notified = 0;
 
-            queue.addListener('ended', function (event) {
-                assert.equal(event, 'nachos');
+                queue.addListener('ended', function (event) {
+                    assert.equal(event, 'nachos');
+                    sinon.assert.calledTwice(queueRunSpy);
+                    assert.equal(notified, 1);
+                    done();
+                });
 
-                // 9 subscribers + start triggers run
-                sinon.assert.callCount(queueRunSpy, 10);
-                assert.equal(notified, 9);
-                assert.deepEqual(order, [0, 1, 2, 3, 4, 5, 6, 7, 8]);
-                done();
-            });
-
-            _.each(_.range(9), function (i) {
                 queue.register({
                     event: 'nachos'
                 }, function () {
-                    order.push(i);
                     notified = notified + 1;
                 });
-            });
 
-            queue.start({
-                event: 'nachos'
+                queue.start({
+                    event: 'nachos'
+                });
             });
         });
 
-        it('late subscriber', function (done) {
-            let notified = 0;
+        it('x subscriber', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                let notified = 0;
+                let order = [];
 
-            queue.addListener('ended', function (event) {
-                assert.equal(event, 'nachos');
-                sinon.assert.calledOnce(queueRunSpy);
-                assert.equal(notified, 0);
-                done();
+                queue.addListener('ended', function (event) {
+                    assert.equal(event, 'nachos');
+
+                    // 9 subscribers + start triggers run
+                    sinon.assert.callCount(queueRunSpy, 10);
+                    assert.equal(notified, 9);
+                    assert.deepEqual(order, [0, 1, 2, 3, 4, 5, 6, 7, 8]);
+                    done();
+                });
+
+                _.each(_.range(9), function (i) {
+                    queue.register({
+                        event: 'nachos'
+                    }, function () {
+                        order.push(i);
+                        notified = notified + 1;
+                    });
+                });
+
+                queue.start({
+                    event: 'nachos'
+                });
             });
+        });
 
-            queue.start({
-                event: 'nachos'
-            });
+        it('late subscriber', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                let notified = 0;
 
-            queue.register({
-                event: 'nachos'
-            }, function () {
-                notified = notified + 1;
+                queue.addListener('ended', function (event) {
+                    assert.equal(event, 'nachos');
+                    sinon.assert.calledOnce(queueRunSpy);
+                    assert.equal(notified, 0);
+                    done();
+                });
+
+                queue.start({
+                    event: 'nachos'
+                });
+
+                queue.register({
+                    event: 'nachos'
+                }, function () {
+                    notified = notified + 1;
+                });
             });
         });
 
@@ -151,116 +163,128 @@ describe('Unit: services/url/Queue', function () {
     });
 
     describe('fn: start (with tolerance)', function () {
-        it('late subscriber', function (done) {
-            let notified = 0;
+        it('late subscriber', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                let notified = 0;
 
-            queue.addListener('ended', function (event) {
-                assert.equal(event, 'nachos');
-                assert.equal(notified, 1);
-                done();
-            });
+                queue.addListener('ended', function (event) {
+                    assert.equal(event, 'nachos');
+                    assert.equal(notified, 1);
+                    done();
+                });
 
-            queue.start({
-                event: 'nachos',
-                tolerance: 20,
-                timeoutInMS: 20
-            });
+                queue.start({
+                    event: 'nachos',
+                    tolerance: 20,
+                    timeoutInMS: 20
+                });
 
-            queue.register({
-                event: 'nachos',
-                tolerance: 20
-            }, function () {
-                notified = notified + 1;
-            });
-        });
-
-        it('start twice with subscriber between starts', function (done) {
-            let notified = 0;
-            let called = 0;
-
-            queue.addListener('ended', function (event) {
-                assert.equal(event, 'nachos');
-                assert.equal(notified, 1);
-                assert.equal(called, 1);
-                done();
-            });
-
-            queue.start({
-                event: 'nachos',
-                tolerance: 20,
-                timeoutInMS: 20
-            });
-
-            queue.register({
-                event: 'nachos',
-                tolerance: 70
-            }, function () {
-                if (called !== 0) {
-                    return done(new Error('Should only be triggered once.'));
-                }
-
-                called = called + 1;
-                notified = notified + 1;
-            });
-
-            queue.start({
-                event: 'nachos',
-                tolerance: 20,
-                timeoutInMS: 20
-            });
-        });
-
-        it('start twice', function (done) {
-            let notified = 0;
-            let called = 0;
-
-            queue.addListener('ended', function (event) {
-                assert.equal(event, 'nachos');
-                assert.equal(notified, 0);
-                assert.equal(called, 0);
-                done();
-            });
-
-            queue.start({
-                event: 'nachos',
-                tolerance: 20,
-                timeoutInMS: 20
-            });
-
-            queue.start({
-                event: 'nachos',
-                tolerance: 20,
-                timeoutInMS: 20
-            });
-        });
-
-        it('late subscribers', function (done) {
-            let notified = 0;
-            let called = 0;
-
-            queue.addListener('ended', function (event) {
-                assert.equal(event, 'nachos');
-                assert.equal(notified, 1);
-                assert.equal(called, 1);
-                done();
-            });
-
-            setTimeout(function () {
                 queue.register({
                     event: 'nachos',
-                    tolerance: 100,
-                    requiredSubscriberCount: 1
+                    tolerance: 20
                 }, function () {
+                    notified = notified + 1;
+                });
+            });
+        });
+
+        it('start twice with subscriber between starts', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                let notified = 0;
+                let called = 0;
+
+                queue.addListener('ended', function (event) {
+                    assert.equal(event, 'nachos');
+                    assert.equal(notified, 1);
+                    assert.equal(called, 1);
+                    done();
+                });
+
+                queue.start({
+                    event: 'nachos',
+                    tolerance: 20,
+                    timeoutInMS: 20
+                });
+
+                queue.register({
+                    event: 'nachos',
+                    tolerance: 70
+                }, function () {
+                    if (called !== 0) {
+                        return done(new Error('Should only be triggered once.'));
+                    }
+
                     called = called + 1;
                     notified = notified + 1;
                 });
-            }, 500);
 
-            queue.start({
-                event: 'nachos',
-                tolerance: 60,
-                timeoutInMS: 20,
-                requiredSubscriberCount: 1
+                queue.start({
+                    event: 'nachos',
+                    tolerance: 20,
+                    timeoutInMS: 20
+                });
+            });
+        });
+
+        it('start twice', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                let notified = 0;
+                let called = 0;
+
+                queue.addListener('ended', function (event) {
+                    assert.equal(event, 'nachos');
+                    assert.equal(notified, 0);
+                    assert.equal(called, 0);
+                    done();
+                });
+
+                queue.start({
+                    event: 'nachos',
+                    tolerance: 20,
+                    timeoutInMS: 20
+                });
+
+                queue.start({
+                    event: 'nachos',
+                    tolerance: 20,
+                    timeoutInMS: 20
+                });
+            });
+        });
+
+        it('late subscribers', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                let notified = 0;
+                let called = 0;
+
+                queue.addListener('ended', function (event) {
+                    assert.equal(event, 'nachos');
+                    assert.equal(notified, 1);
+                    assert.equal(called, 1);
+                    done();
+                });
+
+                setTimeout(function () {
+                    queue.register({
+                        event: 'nachos',
+                        tolerance: 100,
+                        requiredSubscriberCount: 1
+                    }, function () {
+                        called = called + 1;
+                        notified = notified + 1;
+                    });
+                }, 500);
+
+                queue.start({
+                    event: 'nachos',
+                    tolerance: 60,
+                    timeoutInMS: 20,
+                    requiredSubscriberCount: 1
+                });
             });
         });
     });

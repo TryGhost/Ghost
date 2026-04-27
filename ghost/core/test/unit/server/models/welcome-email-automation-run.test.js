@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const models = require('../../../../core/server/models');
 
 describe('Unit: models/welcome-email-automation-run', function () {
-    before(function () {
+    beforeAll(function () {
         models.init();
     });
 

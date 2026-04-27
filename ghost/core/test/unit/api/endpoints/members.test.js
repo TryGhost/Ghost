@@ -4,7 +4,7 @@ const rewire = require('rewire');
 describe('Members controller', function () {
     let models, membersController, mockMembersService, mockSettingsCache, mockMoment;
 
-    before(function () {
+    beforeAll(function () {
         models = require('../../../../core/server/models');
         models.init();
     });

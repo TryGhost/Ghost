@@ -21,43 +21,49 @@ describe('lib/image: gravatar', function () {
         }), 'https://www.gravatar.com/avatar/ef6dcde5c99bb8f685dd451ccc3e050a?s=180&r=r&d=blank');
     });
 
-    it('can successfully lookup a gravatar url', function (done) {
-        const gravatar = new Gravatar({config: {
-            isPrivacyDisabled: () => false,
-            get: (config) => {
-                return config === 'gravatar' ? {
-                    url: gravatarUrl
-                } : null;
-            }
-        }, request: () => {}});
+    it('can successfully lookup a gravatar url', async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            const gravatar = new Gravatar({config: {
+                isPrivacyDisabled: () => false,
+                get: (config) => {
+                    return config === 'gravatar' ? {
+                        url: gravatarUrl
+                    } : null;
+                }
+            }, request: () => {}});
 
-        gravatar.lookup({email: 'exists@example.com'}).then(function (result) {
-            assertExists(result);
-            assertExists(result.image);
-            assert.equal(result.image, 'https://www.gravatar.com/avatar/ef6dcde5c99bb8f685dd451ccc3e050a?s=250&r=x&d=mp');
+            gravatar.lookup({email: 'exists@example.com'}).then(function (result) {
+                assertExists(result);
+                assertExists(result.image);
+                assert.equal(result.image, 'https://www.gravatar.com/avatar/ef6dcde5c99bb8f685dd451ccc3e050a?s=250&r=x&d=mp');
 
-            done();
-        }).catch(done);
+                done();
+            }).catch(done);
+        });
     });
 
-    it('can handle a non existant gravatar', function (done) {
-        const gravatar = new Gravatar({config: {
-            isPrivacyDisabled: () => false,
-            get: (config) => {
-                return config === 'gravatar' ? {
-                    url: gravatarUrl
-                } : null;
-            }
-        }, request: () => {
-            return Promise.reject({statusCode: 404});
-        }});
+    it('can handle a non existant gravatar', async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            const gravatar = new Gravatar({config: {
+                isPrivacyDisabled: () => false,
+                get: (config) => {
+                    return config === 'gravatar' ? {
+                        url: gravatarUrl
+                    } : null;
+                }
+            }, request: () => {
+                return Promise.reject({statusCode: 404});
+            }});
 
-        gravatar.lookup({email: 'invalid@example.com'}).then(function (result) {
-            assertExists(result);
-            assert.equal(result.image, undefined);
+            gravatar.lookup({email: 'invalid@example.com'}).then(function (result) {
+                assertExists(result);
+                assert.equal(result.image, undefined);
 
-            done();
-        }).catch(done);
+                done();
+            }).catch(done);
+        });
     });
 
     it('will timeout', function () {

@@ -42,7 +42,7 @@ const mailDataIncomplete = {
 const sandbox = sinon.createSandbox();
 
 describe('Mail: Ghostmailer', function () {
-    before(function () {
+    beforeAll(function () {
         emailAddress.init();
         sinon.restore();
     });
@@ -78,35 +78,41 @@ describe('Mail: Ghostmailer', function () {
         assert.equal(mailer.transport.transporter.name, 'SMTP (direct)');
     });
 
-    it('sends valid message successfully ', function (done) {
-        configUtils.set({mail: {transport: 'stub'}});
+    it('sends valid message successfully ', async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            configUtils.set({mail: {transport: 'stub'}});
 
-        mailer = new mail.GhostMailer();
+            mailer = new mail.GhostMailer();
 
-        assert.equal(mailer.transport.transporter.name, 'Stub');
+            assert.equal(mailer.transport.transporter.name, 'Stub');
 
-        mailer.send(mailDataNoServer).then(function (response) {
-            assertExists(response.response);
-            assertExists(response.envelope);
-            assert(response.envelope.to.includes('joe@example.com'));
+            mailer.send(mailDataNoServer).then(function (response) {
+                assertExists(response.response);
+                assertExists(response.envelope);
+                assert(response.envelope.to.includes('joe@example.com'));
 
-            done();
-        }).catch(done);
+                done();
+            }).catch(done);
+        });
     });
 
-    it('handles failure', function (done) {
-        configUtils.set({mail: {transport: 'stub', options: {error: 'Stub made a boo boo :('}}});
+    it('handles failure', async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            configUtils.set({mail: {transport: 'stub', options: {error: 'Stub made a boo boo :('}}});
 
-        mailer = new mail.GhostMailer();
+            mailer = new mail.GhostMailer();
 
-        assert.equal(mailer.transport.transporter.name, 'Stub');
+            assert.equal(mailer.transport.transporter.name, 'Stub');
 
-        mailer.send(mailDataNoServer).then(function () {
-            done(new Error('Stub did not error'));
-        }).catch(function (error) {
-            assert(error.message.includes('Stub made a boo boo :('));
-            done();
-        }).catch(done);
+            mailer.send(mailDataNoServer).then(function () {
+                done(new Error('Stub did not error'));
+            }).catch(function (error) {
+                assert(error.message.includes('Stub made a boo boo :('));
+                done();
+            }).catch(done);
+        });
     });
 
     it('should fail to send messages when given insufficient data', async function () {

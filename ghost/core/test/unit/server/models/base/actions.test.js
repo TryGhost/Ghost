@@ -5,7 +5,7 @@ const models = require('../../../../../core/server/models');
 describe('Unit: models/base/plugins/actions', function () {
     let TestModel;
 
-    before(function () {
+    beforeAll(function () {
         models.init();
     });
 

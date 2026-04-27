@@ -7,7 +7,7 @@ describe('MilestoneQueries', function () {
     let queryMock;
     let knexMock;
 
-    before(function () {
+    beforeAll(function () {
         queryMock = {
             groupBy: sinon.stub(),
             select: sinon.stub(),

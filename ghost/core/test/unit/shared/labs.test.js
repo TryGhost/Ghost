@@ -28,9 +28,9 @@ describe('Labs Service', function () {
         }));
     });
 
-    it('respects the value in config over settings', function () {
+    it('respects the value in config over settings', function ({skip}) {
         if (labs.WRITABLE_KEYS_ALLOWLIST.length === 0) {
-            this.skip();
+            skip();
             return;
         }
 
@@ -53,9 +53,9 @@ describe('Labs Service', function () {
         assert.equal(labs.isSet(flag), false);
     });
 
-    it('respects the value in config over GA keys', function () {
+    it('respects the value in config over GA keys', function ({skip}) {
         if (labs.GA_KEYS.length === 0) {
-            this.skip();
+            skip();
             return;
         }
 
@@ -84,9 +84,9 @@ describe('Labs Service', function () {
         assert.equal(labs.isSet('members'), true);
     });
 
-    it('returns other allowlisted flags along with members', function () {
+    it('returns other allowlisted flags along with members', function ({skip}) {
         if (labs.WRITABLE_KEYS_ALLOWLIST.length === 0) {
-            this.skip();
+            skip();
             return;
         }
 

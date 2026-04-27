@@ -8,7 +8,7 @@ const sessionController = require('../../../../core/server/api/endpoints/session
 const sessionServiceMiddleware = require('../../../../core/server/services/auth/session');
 
 describe('Session controller', function () {
-    before(function () {
+    beforeAll(function () {
         models.init();
     });
 

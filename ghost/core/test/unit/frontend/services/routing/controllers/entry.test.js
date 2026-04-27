@@ -59,124 +59,25 @@ describe('Unit - services/routing/controllers/entry', function () {
         sinon.restore();
     });
 
-    it('resource not found', function (done) {
-        req.path = '/does-not-exist/';
-
-        entryLookUpStub.withArgs(req.path, res.routerOptions)
-            .resolves(null);
-
-        controllers.entry(req, res, function (err) {
-            assert.equal(err, undefined);
-            done();
-        });
-    });
-
-    it('resource found', function (done) {
-        req.path = post.url;
-        req.originalUrl = req.path;
-
-        res.routerOptions.resourceType = 'posts';
-
-        routerManagerGetResourceByIdStub.withArgs(post.id).returns({
-            config: {
-                type: 'posts'
-            }
-        });
-
-        entryLookUpStub.withArgs(req.path, res.routerOptions)
-            .resolves({
-                entry: post
-            });
-
-        controllers.entry(req, res, function () {
-            done();
-        }).catch(done);
-    });
-
-    describe('[edge cases] resource found', function () {
-        it('isUnknownOption: true', function (done) {
-            req.path = post.url;
+    it('resource not found', async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            req.path = '/does-not-exist/';
 
             entryLookUpStub.withArgs(req.path, res.routerOptions)
-                .resolves({
-                    isUnknownOption: true,
-                    entry: post
-                });
+                .resolves(null);
 
             controllers.entry(req, res, function (err) {
                 assert.equal(err, undefined);
                 done();
             });
         });
+    });
 
-        it('isEditURL: true', function (done) {
+    it('resource found', async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
             req.path = post.url;
-
-            entryLookUpStub.withArgs(req.path, res.routerOptions)
-                .resolves({
-                    isEditURL: true,
-                    entry: post
-                });
-
-            urlUtilsRedirectToAdminStub.callsFake(function (statusCode, _res, editorUrl) {
-                assert.equal(statusCode, 302);
-                assert.equal(editorUrl, EDITOR_URL + post.id);
-                done();
-            });
-
-            controllers.entry(req, res, (err) => {
-                done(err);
-            });
-        });
-
-        it('isEditURL: true with admin redirects disabled', function (done) {
-            configUtils.set('admin:redirects', false);
-
-            req.path = post.url;
-
-            entryLookUpStub.withArgs(req.path, res.routerOptions)
-                .resolves({
-                    isEditURL: true,
-                    entry: post
-                });
-
-            urlUtilsRedirectToAdminStub.callsFake(async function () {
-                await configUtils.restore();
-                done(new Error('redirectToAdmin was called'));
-            });
-
-            controllers.entry(req, res, async (err) => {
-                await configUtils.restore();
-                sinon.assert.notCalled(urlUtilsRedirectToAdminStub);
-                assert.equal(err, undefined);
-                done(err);
-            });
-        });
-
-        it('type of router !== type of resource', function (done) {
-            req.path = post.url;
-            res.routerOptions.resourceType = 'posts';
-
-            routerManagerGetResourceByIdStub.withArgs(post.id).returns({
-                config: {
-                    type: 'pages'
-                }
-            });
-
-            entryLookUpStub.withArgs(req.path, res.routerOptions)
-                .resolves({
-                    entry: post
-                });
-
-            controllers.entry(req, res, function (err) {
-                assert.equal(err, undefined);
-                done();
-            });
-        });
-
-        it('requested url !== resource url', function (done) {
-            post.url = '/2017/08' + post.url;
-            req.path = '/2017/07' + post.url;
             req.originalUrl = req.path;
 
             res.routerOptions.resourceType = 'posts';
@@ -192,42 +93,165 @@ describe('Unit - services/routing/controllers/entry', function () {
                     entry: post
                 });
 
-            urlUtilsRedirect301Stub.callsFake(function (_res, postUrl) {
-                assert.equal(postUrl, post.url);
+            controllers.entry(req, res, function () {
                 done();
-            });
+            }).catch(done);
+        });
+    });
 
-            controllers.entry(req, res, function (err) {
-                assertExists(err);
-                done(err);
+    describe('[edge cases] resource found', function () {
+        it('isUnknownOption: true', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                req.path = post.url;
+
+                entryLookUpStub.withArgs(req.path, res.routerOptions)
+                    .resolves({
+                        isUnknownOption: true,
+                        entry: post
+                    });
+
+                controllers.entry(req, res, function (err) {
+                    assert.equal(err, undefined);
+                    done();
+                });
             });
         });
 
-        it('requested url !== resource url: with query params', function (done) {
-            post.url = '/2017/08' + post.url;
-            req.path = '/2017/07' + post.url;
-            req.originalUrl = req.path + '?query=true';
+        it('isEditURL: true', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                req.path = post.url;
 
-            res.routerOptions.resourceType = 'posts';
+                entryLookUpStub.withArgs(req.path, res.routerOptions)
+                    .resolves({
+                        isEditURL: true,
+                        entry: post
+                    });
 
-            routerManagerGetResourceByIdStub.withArgs(post.id).returns({
-                config: {
-                    type: 'posts'
-                }
-            });
-
-            entryLookUpStub.withArgs(req.path, res.routerOptions)
-                .resolves({
-                    entry: post
+                urlUtilsRedirectToAdminStub.callsFake(function (statusCode, _res, editorUrl) {
+                    assert.equal(statusCode, 302);
+                    assert.equal(editorUrl, EDITOR_URL + post.id);
+                    done();
                 });
 
-            urlUtilsRedirect301Stub.callsFake(function (_res, postUrl) {
-                assert.equal(postUrl, post.url + '?query=true');
-                done();
+                controllers.entry(req, res, (err) => {
+                    done(err);
+                });
             });
+        });
 
-            controllers.entry(req, res, function (err) {
-                done(err);
+        it('isEditURL: true with admin redirects disabled', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                configUtils.set('admin:redirects', false);
+
+                req.path = post.url;
+
+                entryLookUpStub.withArgs(req.path, res.routerOptions)
+                    .resolves({
+                        isEditURL: true,
+                        entry: post
+                    });
+
+                urlUtilsRedirectToAdminStub.callsFake(async function () {
+                    await configUtils.restore();
+                    done(new Error('redirectToAdmin was called'));
+                });
+
+                controllers.entry(req, res, async (err) => {
+                    await configUtils.restore();
+                    sinon.assert.notCalled(urlUtilsRedirectToAdminStub);
+                    assert.equal(err, undefined);
+                    done(err);
+                });
+            });
+        });
+
+        it('type of router !== type of resource', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                req.path = post.url;
+                res.routerOptions.resourceType = 'posts';
+
+                routerManagerGetResourceByIdStub.withArgs(post.id).returns({
+                    config: {
+                        type: 'pages'
+                    }
+                });
+
+                entryLookUpStub.withArgs(req.path, res.routerOptions)
+                    .resolves({
+                        entry: post
+                    });
+
+                controllers.entry(req, res, function (err) {
+                    assert.equal(err, undefined);
+                    done();
+                });
+            });
+        });
+
+        it('requested url !== resource url', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                post.url = '/2017/08' + post.url;
+                req.path = '/2017/07' + post.url;
+                req.originalUrl = req.path;
+
+                res.routerOptions.resourceType = 'posts';
+
+                routerManagerGetResourceByIdStub.withArgs(post.id).returns({
+                    config: {
+                        type: 'posts'
+                    }
+                });
+
+                entryLookUpStub.withArgs(req.path, res.routerOptions)
+                    .resolves({
+                        entry: post
+                    });
+
+                urlUtilsRedirect301Stub.callsFake(function (_res, postUrl) {
+                    assert.equal(postUrl, post.url);
+                    done();
+                });
+
+                controllers.entry(req, res, function (err) {
+                    assertExists(err);
+                    done(err);
+                });
+            });
+        });
+
+        it('requested url !== resource url: with query params', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                post.url = '/2017/08' + post.url;
+                req.path = '/2017/07' + post.url;
+                req.originalUrl = req.path + '?query=true';
+
+                res.routerOptions.resourceType = 'posts';
+
+                routerManagerGetResourceByIdStub.withArgs(post.id).returns({
+                    config: {
+                        type: 'posts'
+                    }
+                });
+
+                entryLookUpStub.withArgs(req.path, res.routerOptions)
+                    .resolves({
+                        entry: post
+                    });
+
+                urlUtilsRedirect301Stub.callsFake(function (_res, postUrl) {
+                    assert.equal(postUrl, post.url + '?query=true');
+                    done();
+                });
+
+                controllers.entry(req, res, function (err) {
+                    done(err);
+                });
             });
         });
     });

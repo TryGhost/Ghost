@@ -11,7 +11,7 @@ describe('ReferrerTranslator', function () {
 
     describe('getReferrerDetails', function () {
         let translator;
-        before(function () {
+        beforeAll(function () {
             translator = new ReferrerTranslator({
                 siteUrl: 'https://example.com',
                 adminUrl: 'https://admin.example.com/ghost'

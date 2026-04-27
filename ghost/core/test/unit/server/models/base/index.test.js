@@ -6,7 +6,7 @@ const urlUtils = require('../../../../../core/shared/url-utils');
 const testUtils = require('../../../../utils');
 
 describe('Models: base', function () {
-    before(function () {
+    beforeAll(function () {
         models.init();
     });
 

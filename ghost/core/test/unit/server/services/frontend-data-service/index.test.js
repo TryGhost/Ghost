@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 describe('Frontend Data Service', function () {
     let frontendDataService;
 
-    before(function () {
+    beforeAll(function () {
         models.init();
     });
 

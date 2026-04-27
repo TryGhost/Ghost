@@ -17,7 +17,7 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
     let fsWriteFileStub;
     const basePath = path.join(__dirname, '../../../../utils/fixtures/data/');
 
-    before(function () {
+    beforeAll(function () {
         customRedirectsAPI = new CustomRedirectsAPI({
             basePath,
             redirectManager,

@@ -6,7 +6,7 @@ const preview = require('../../../../../core/frontend/services/theme-engine/prev
 describe('Theme Preview', function () {
     let req, previewString = '';
 
-    before(function () {
+    beforeAll(function () {
         req = {
             header: () => {
                 return previewString;

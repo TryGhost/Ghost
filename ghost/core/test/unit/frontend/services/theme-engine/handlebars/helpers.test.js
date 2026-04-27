@@ -20,7 +20,7 @@ describe('Helpers', function () {
     const expectedHelpers = _.concat(hbsHelpers, ghostHelpers, experimentalHelpers);
 
     describe('Load Core Helpers', function () {
-        before(function () {
+        beforeAll(function () {
             hbs.express4();
             helpers.init();
         });

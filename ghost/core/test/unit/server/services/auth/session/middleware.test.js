@@ -6,7 +6,7 @@ const sinon = require('sinon');
 const labs = require('../../../../../../core/shared/labs');
 
 describe('Session Service', function () {
-    before(function () {
+    beforeAll(function () {
         models.init();
     });
 
@@ -30,49 +30,55 @@ describe('Session Service', function () {
     };
 
     describe('createSession', function () {
-        it('sets req.session.origin from the Referer header', function (done) {
-            const req = fakeReq();
-            const res = fakeRes();
+        it('sets req.session.origin from the Referer header', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                const req = fakeReq();
+                const res = fakeRes();
 
-            sinon.stub(req, 'get')
-                .withArgs('user-agent').returns('')
-                .withArgs('origin').returns('')
-                .withArgs('referrer').returns('http://ghost.org/path');
+                sinon.stub(req, 'get')
+                    .withArgs('user-agent').returns('')
+                    .withArgs('origin').returns('')
+                    .withArgs('referrer').returns('http://ghost.org/path');
 
-            req.ip = '127.0.0.1';
-            req.user = models.User.forge({id: 23});
+                req.ip = '127.0.0.1';
+                req.user = models.User.forge({id: 23});
 
-            sinon.stub(res, 'sendStatus')
-                .callsFake(function () {
-                    assert.equal(req.session.origin, 'http://ghost.org');
-                    done();
-                });
+                sinon.stub(res, 'sendStatus')
+                    .callsFake(function () {
+                        assert.equal(req.session.origin, 'http://ghost.org');
+                        done();
+                    });
 
-            sessionMiddleware.createSession(req, res);
+                sessionMiddleware.createSession(req, res);
+            });
         });
 
-        it('sets req.session.user_id,origin,user_agent,ip and calls sendStatus with 201 if the check succeeds', function (done) {
-            const req = fakeReq();
-            const res = fakeRes();
+        it('sets req.session.user_id,origin,user_agent,ip and calls sendStatus with 201 if the check succeeds', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                const req = fakeReq();
+                const res = fakeRes();
 
-            sinon.stub(req, 'get')
-                .withArgs('origin').returns('http://host.tld')
-                .withArgs('user-agent').returns('bububang');
+                sinon.stub(req, 'get')
+                    .withArgs('origin').returns('http://host.tld')
+                    .withArgs('user-agent').returns('bububang');
 
-            req.ip = '127.0.0.1';
-            req.user = models.User.forge({id: 23});
+                req.ip = '127.0.0.1';
+                req.user = models.User.forge({id: 23});
 
-            sinon.stub(res, 'sendStatus')
-                .callsFake(function (statusCode) {
-                    assert.equal(req.session.user_id, 23);
-                    assert.equal(req.session.origin, 'http://host.tld');
-                    assert.equal(req.session.user_agent, 'bububang');
-                    assert.equal(req.session.ip, '127.0.0.1');
-                    assert.equal(statusCode, 201);
-                    done();
-                });
+                sinon.stub(res, 'sendStatus')
+                    .callsFake(function (statusCode) {
+                        assert.equal(req.session.user_id, 23);
+                        assert.equal(req.session.origin, 'http://host.tld');
+                        assert.equal(req.session.user_agent, 'bububang');
+                        assert.equal(req.session.ip, '127.0.0.1');
+                        assert.equal(statusCode, 201);
+                        done();
+                    });
 
-            sessionMiddleware.createSession(req, res);
+                sessionMiddleware.createSession(req, res);
+            });
         });
 
         it('errors with a 403 when signing in while not verified', async function () {
@@ -148,41 +154,47 @@ describe('Session Service', function () {
     });
 
     describe('logout', function () {
-        it('calls next with InternalServerError if removeSessionForUser errors', function (done) {
-            const req = fakeReq();
-            const res = fakeRes();
-            const middleware = SessionMiddlware({
-                sessionService: {
-                    removeUserForSession: function () {
-                        return Promise.reject(new Error('oops'));
+        it('calls next with InternalServerError if removeSessionForUser errors', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                const req = fakeReq();
+                const res = fakeRes();
+                const middleware = SessionMiddlware({
+                    sessionService: {
+                        removeUserForSession: function () {
+                            return Promise.reject(new Error('oops'));
+                        }
                     }
-                }
-            });
+                });
 
-            middleware.logout(req, res, function next(err) {
-                assert.equal(err.errorType, 'InternalServerError');
-                done();
+                middleware.logout(req, res, function next(err) {
+                    assert.equal(err.errorType, 'InternalServerError');
+                    done();
+                });
             });
         });
 
-        it('calls sendStatus with 204 if removeUserForSession does not error', function (done) {
-            const req = fakeReq();
-            const res = fakeRes();
-            sinon.stub(res, 'sendStatus')
-                .callsFake(function (status) {
-                    assert.equal(status, 204);
-                    done();
+        it('calls sendStatus with 204 if removeUserForSession does not error', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                const req = fakeReq();
+                const res = fakeRes();
+                sinon.stub(res, 'sendStatus')
+                    .callsFake(function (status) {
+                        assert.equal(status, 204);
+                        done();
+                    });
+
+                const middleware = SessionMiddlware({
+                    sessionService: {
+                        removeUserForSession: function () {
+                            return Promise.resolve();
+                        }
+                    }
                 });
 
-            const middleware = SessionMiddlware({
-                sessionService: {
-                    removeUserForSession: function () {
-                        return Promise.resolve();
-                    }
-                }
+                middleware.logout(req, res);
             });
-
-            middleware.logout(req, res);
         });
     });
 

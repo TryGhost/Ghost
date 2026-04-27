@@ -12,7 +12,7 @@ const {settingsCache} = proxy;
 
 describe('{{body_class}} helper', function () {
     let options = {};
-    before(function () {
+    beforeAll(function () {
         themeList.init({
             casper: {
                 assets: null,
@@ -37,7 +37,7 @@ describe('{{body_class}} helper', function () {
         };
     });
 
-    after(function () {
+    afterAll(function () {
         themeList.init();
     });
 

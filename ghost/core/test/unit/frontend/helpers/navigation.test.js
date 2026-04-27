@@ -18,21 +18,24 @@ const runHelperThunk = data => () => runHelper(data);
 describe('{{navigation}} helper', function () {
     let optionsData;
 
-    before(function (done) {
-        hbs.express4({
-            partialsDir: [configUtils.config.get('paths').helperTemplates]
-        });
+    beforeAll(async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            hbs.express4({
+                partialsDir: [configUtils.config.get('paths').helperTemplates]
+            });
 
-        hbs.cachePartials(function () {
-            done();
-        });
+            hbs.cachePartials(function () {
+                done();
+            });
 
-        // The navigation partial expects this helper
-        // @TODO: change to register with Ghost's own registration tools
-        hbs.registerHelper('link_class', link_class);
-        hbs.registerHelper('concat', concat);
-        hbs.registerHelper('url', url);
-        hbs.registerHelper('foreach', foreach);
+            // The navigation partial expects this helper
+            // @TODO: change to register with Ghost's own registration tools
+            hbs.registerHelper('link_class', link_class);
+            hbs.registerHelper('concat', concat);
+            hbs.registerHelper('url', url);
+            hbs.registerHelper('foreach', foreach);
+        });
     });
 
     beforeEach(function () {
@@ -226,11 +229,14 @@ describe('{{navigation}} helper', function () {
 describe('{{navigation}} helper with custom template', function () {
     let optionsData;
 
-    before(function (done) {
-        hbs.express4({partialsDir: [path.resolve(__dirname, './test_tpl')]});
+    beforeAll(async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            hbs.express4({partialsDir: [path.resolve(__dirname, './test_tpl')]});
 
-        hbs.cachePartials(function () {
-            done();
+            hbs.cachePartials(function () {
+                done();
+            });
         });
     });
 
@@ -312,7 +318,7 @@ describe('{{navigation}} helper with custom template', function () {
             return template;
         }
 
-        before(function () {
+        beforeAll(function () {
             handlebars.registerHelper('link_class', link_class);
             handlebars.registerHelper('concat', concat);
             handlebars.registerHelper('url', concat);

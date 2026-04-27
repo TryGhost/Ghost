@@ -9,7 +9,7 @@ const testUtils = require('../../../utils');
 describe('{{authors}} helper', function () {
     let urlServiceGetUrlByResourceIdStub;
 
-    before(function () {
+    beforeAll(function () {
         models.init();
     });
 

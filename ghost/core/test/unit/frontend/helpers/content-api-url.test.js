@@ -18,11 +18,11 @@ describe('{{content_api_url}} helper', function () {
     });
 
     describe('without sub-directory', function () {
-        before(function () {
+        beforeAll(function () {
             configUtils.set({url: 'http://localhost:65535/', 'admin:url': 'https://admin.tld:65535'});
         });
 
-        after(async function () {
+        afterAll(async function () {
             await configUtils.restore();
         });
 
@@ -46,11 +46,11 @@ describe('{{content_api_url}} helper', function () {
         });
     });
     describe('with a sub-directory', function () {
-        before(function () {
+        beforeAll(function () {
             configUtils.set({url: 'http://localhost:65535/blog', 'admin:url': 'https://admin.tld:65535/blog'});
         });
 
-        after(async function () {
+        afterAll(async function () {
             await configUtils.restore();
         });
 
@@ -74,11 +74,11 @@ describe('{{content_api_url}} helper', function () {
         });
     });
     describe('uses the site url if no admin:url is set', function () {
-        before(function () {
+        beforeAll(function () {
             configUtils.set({url: 'http://localhost:65535/'});
         });
 
-        after(async function () {
+        afterAll(async function () {
             await configUtils.restore();
         });
 

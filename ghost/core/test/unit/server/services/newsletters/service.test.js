@@ -27,7 +27,7 @@ describe('NewslettersService', function () {
     let limitService;
     let emailMockReceiver;
 
-    before(function () {
+    beforeAll(function () {
         models.init();
 
         tokenProvider = new TestTokenProvider();
@@ -81,7 +81,7 @@ describe('NewslettersService', function () {
         mockManager.restore();
     });
 
-    after(async function () {
+    afterAll(async function () {
         await urlUtils.restore();
     });
 

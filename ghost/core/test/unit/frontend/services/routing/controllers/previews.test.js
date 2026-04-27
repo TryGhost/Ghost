@@ -80,10 +80,13 @@ describe('Unit - services/routing/controllers/previews', function () {
         });
     });
 
-    it('should render post', function (done) {
-        controllers.previews(req, res, failTest(done)).then(function () {
-            sinon.assert.called(renderStub);
-            done();
-        }).catch(done);
+    it('should render post', async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            controllers.previews(req, res, failTest(done)).then(function () {
+                sinon.assert.called(renderStub);
+                done();
+            }).catch(done);
+        });
     });
 });

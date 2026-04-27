@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 describe('Newsletters Service', function () {
     let newslettersService;
 
-    before(function () {
+    beforeAll(function () {
         models.init();
     });
 

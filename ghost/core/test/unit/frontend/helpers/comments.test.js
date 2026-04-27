@@ -12,7 +12,7 @@ describe('{{comments}} helper', function () {
     let keyStub;
     let settingsCacheGetStub;
 
-    before(function () {
+    beforeAll(function () {
         keyStub = sinon.stub().resolves('xyz');
         const dataService = {
             getFrontendKey: keyStub
@@ -32,14 +32,17 @@ describe('{{comments}} helper', function () {
         await configUtils.restore();
     });
 
-    it('returns undefined if not used withing post context', function (done) {
-        settingsCacheGetStub.withArgs('members_enabled').returns(true);
-        settingsCacheGetStub.withArgs('comments_enabled').returns('all');
+    it('returns undefined if not used withing post context', async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            settingsCacheGetStub.withArgs('members_enabled').returns(true);
+            settingsCacheGetStub.withArgs('comments_enabled').returns('all');
 
-        comments({}).then(function (rendered) {
-            assert.equal(rendered, undefined);
-            done();
-        }).catch(done);
+            comments({}).then(function (rendered) {
+                assert.equal(rendered, undefined);
+                done();
+            }).catch(done);
+        });
     });
 
     it('returns a script tag', async function () {

@@ -9,7 +9,7 @@ const events = require('../../../../core/server/lib/common/events');
 const errors = require('@tryghost/errors');
 
 describe('Unit: models/settings', function () {
-    before(function () {
+    beforeAll(function () {
         models.init();
     });
 

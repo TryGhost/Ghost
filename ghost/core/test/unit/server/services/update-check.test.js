@@ -4,6 +4,7 @@ const moment = require('moment');
 const crypto = require('crypto');
 const assert = require('node:assert/strict');
 const util = require('util');
+const {exec} = require('child_process');
 const logging = require('@tryghost/logging');
 const request = require('@tryghost/request');
 const UpdateCheckService = require('../../../../core/server/services/update-check/update-check-service');
@@ -28,9 +29,16 @@ describe('Update Check', function () {
             }]
         });
 
-        sinon.stub(util, 'promisify').returns(async () => ({
-            stdout: '10.8.2'
-        }));
+        const originalPromisify = util.promisify;
+        sinon.stub(util, 'promisify').callsFake(function (fn) {
+            if (fn === exec) {
+                return async () => ({
+                    stdout: '10.8.2'
+                });
+            }
+
+            return originalPromisify(fn);
+        });
 
         sinon.stub(logging, 'error');
 

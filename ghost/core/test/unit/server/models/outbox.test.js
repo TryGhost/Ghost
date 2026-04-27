@@ -4,7 +4,7 @@ const models = require('../../../../core/server/models');
 const {OUTBOX_STATUSES} = require('../../../../core/server/models/outbox');
 
 describe('Unit: models/outbox', function () {
-    before(function () {
+    beforeAll(function () {
         models.init();
     });
 

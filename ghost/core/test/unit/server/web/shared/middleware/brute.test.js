@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const brute = require('../../../../../../core/server/web/shared/middleware/brute');
 
 describe('brute middleware', function () {
-    after(function () {
+    afterAll(function () {
         sinon.restore();
     });
 

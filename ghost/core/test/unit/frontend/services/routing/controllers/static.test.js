@@ -75,36 +75,42 @@ describe('Unit - services/routing/controllers/static', function () {
         sinon.restore();
     });
 
-    it('no extra data to fetch', function (done) {
-        renderer.renderer.callsFake(function () {
-            sinon.assert.calledOnce(renderer.formatResponse.entries);
-            sinon.assert.notCalled(tagsReadStub);
-            done();
-        });
+    it('no extra data to fetch', async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            renderer.renderer.callsFake(function () {
+                sinon.assert.calledOnce(renderer.formatResponse.entries);
+                sinon.assert.notCalled(tagsReadStub);
+                done();
+            });
 
-        controllers.static(req, res, failTest(done));
+            controllers.static(req, res, failTest(done));
+        });
     });
 
-    it('extra data to fetch', function (done) {
-        res.routerOptions.data = {
-            tag: {
-                controller: 'tagsPublic',
-                resource: 'tags',
-                type: 'read',
-                options: {
-                    slug: 'bacon'
+    it('extra data to fetch', async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            res.routerOptions.data = {
+                tag: {
+                    controller: 'tagsPublic',
+                    resource: 'tags',
+                    type: 'read',
+                    options: {
+                        slug: 'bacon'
+                    }
                 }
-            }
-        };
+            };
 
-        tagsReadStub = sinon.stub().resolves({tags: [{slug: 'bacon'}]});
+            tagsReadStub = sinon.stub().resolves({tags: [{slug: 'bacon'}]});
 
-        renderer.renderer.callsFake(function () {
-            sinon.assert.called(tagsReadStub);
-            sinon.assert.calledOnce(renderer.formatResponse.entries);
-            done();
+            renderer.renderer.callsFake(function () {
+                sinon.assert.called(tagsReadStub);
+                sinon.assert.calledOnce(renderer.formatResponse.entries);
+                done();
+            });
+
+            controllers.static(req, res, failTest(done));
         });
-
-        controllers.static(req, res, failTest(done));
     });
 });

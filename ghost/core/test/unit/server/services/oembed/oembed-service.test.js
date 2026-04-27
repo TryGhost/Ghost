@@ -9,7 +9,7 @@ describe('oembed-service', function () {
     /** @type {OembedService} */
     let oembedService;
 
-    before(function () {
+    beforeAll(function () {
         oembedService = new OembedService({
             config: {get() {
                 return true;

@@ -4,7 +4,7 @@ const models = require('../../../../core/server/models');
 const config = require('../../../../core/shared/config');
 
 describe('Unit: models/welcome-email-automated-email', function () {
-    before(function () {
+    beforeAll(function () {
         models.init();
     });
 

@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
 
 describe('Unit: models/milestone', function () {
-    before(function () {
+    beforeAll(function () {
         models.init();
     });
 

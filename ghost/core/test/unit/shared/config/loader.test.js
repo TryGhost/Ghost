@@ -6,7 +6,7 @@ const configUtils = require('../../../utils/config-utils');
 const sinon = require('sinon');
 const localUtils = require('../../../../core/shared/config/utils');
 describe('Config Loader', function () {
-    before(async function () {
+    beforeAll(async function () {
         await configUtils.restore();
     });
 

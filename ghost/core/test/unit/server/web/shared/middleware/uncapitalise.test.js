@@ -22,106 +22,133 @@ describe('Middleware: uncapitalise', function () {
     });
 
     describe('Signup or reset request', function () {
-        it('[signup] does nothing if there are no capitals in req.path', function (done) {
-            req.path = '/ghost/signup/';
-            uncapitalise(req, res, next);
+        it('[signup] does nothing if there are no capitals in req.path', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                req.path = '/ghost/signup/';
+                uncapitalise(req, res, next);
 
-            sinon.assert.calledOnce(next);
-            done();
+                sinon.assert.calledOnce(next);
+                done();
+            });
         });
 
-        it('[signup] does nothing if there are no capitals in the baseUrl', function (done) {
-            req.baseUrl = '/ghost/signup/';
-            req.path = '';
-            uncapitalise(req, res, next);
+        it('[signup] does nothing if there are no capitals in the baseUrl', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                req.baseUrl = '/ghost/signup/';
+                req.path = '';
+                uncapitalise(req, res, next);
 
-            sinon.assert.calledOnce(next);
-            done();
+                sinon.assert.calledOnce(next);
+                done();
+            });
         });
 
-        it('[signup] does nothing if there are no capitals except in a token', function (done) {
-            req.baseUrl = '/blog';
-            req.path = '/ghost/signup/XEB123';
+        it('[signup] does nothing if there are no capitals except in a token', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                req.baseUrl = '/blog';
+                req.path = '/ghost/signup/XEB123';
 
-            uncapitalise(req, res, next);
+                uncapitalise(req, res, next);
 
-            sinon.assert.calledOnce(next);
-            done();
+                sinon.assert.calledOnce(next);
+                done();
+            });
         });
 
-        it('[reset] does nothing if there are no capitals except in a token', function (done) {
-            req.baseUrl = '/blog';
-            req.path = '/ghost/reset/NCR3NjY4NzI1ODI1OHzlcmlzZHNAZ51haWwuY29tfEpWeGxRWHUzZ3Y0cEpQRkNYYzQvbUZyc2xFSVozU3lIZHZWeFJLRml6cY54';
-            uncapitalise(req, res, next);
+        it('[reset] does nothing if there are no capitals except in a token', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                req.baseUrl = '/blog';
+                req.path = '/ghost/reset/NCR3NjY4NzI1ODI1OHzlcmlzZHNAZ51haWwuY29tfEpWeGxRWHUzZ3Y0cEpQRkNYYzQvbUZyc2xFSVozU3lIZHZWeFJLRml6cY54';
+                uncapitalise(req, res, next);
 
-            sinon.assert.calledOnce(next);
-            done();
+                sinon.assert.calledOnce(next);
+                done();
+            });
         });
 
-        it('[signup] redirects if there are capitals in req.path', function (done) {
-            req.path = '/ghost/SignUP/';
-            req.url = req.path;
+        it('[signup] redirects if there are capitals in req.path', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                req.path = '/ghost/SignUP/';
+                req.url = req.path;
 
-            uncapitalise(req, res, next);
+                uncapitalise(req, res, next);
 
-            sinon.assert.notCalled(next);
-            sinon.assert.calledOnce(res.redirect);
-            sinon.assert.calledWith(res.redirect, 301, '/ghost/signup/');
-            done();
+                sinon.assert.notCalled(next);
+                sinon.assert.calledOnce(res.redirect);
+                sinon.assert.calledWith(res.redirect, 301, '/ghost/signup/');
+                done();
+            });
         });
 
-        it('[signup] redirects if there are capitals in req.baseUrl', function (done) {
-            req.baseUrl = '/ghost/SignUP/';
-            req.path = '';
-            req.url = req.path;
-            req.originalUrl = req.baseUrl + req.path;
+        it('[signup] redirects if there are capitals in req.baseUrl', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                req.baseUrl = '/ghost/SignUP/';
+                req.path = '';
+                req.url = req.path;
+                req.originalUrl = req.baseUrl + req.path;
 
-            uncapitalise(req, res, next);
+                uncapitalise(req, res, next);
 
-            sinon.assert.notCalled(next);
-            sinon.assert.calledOnce(res.redirect);
-            sinon.assert.calledWith(res.redirect, 301, '/ghost/signup/');
-            done();
+                sinon.assert.notCalled(next);
+                sinon.assert.calledOnce(res.redirect);
+                sinon.assert.calledWith(res.redirect, 301, '/ghost/signup/');
+                done();
+            });
         });
 
-        it('[signup] redirects correctly if there are capitals in req.path and req.baseUrl', function (done) {
-            req.baseUrl = '/Blog';
-            req.path = '/ghosT/signUp/';
-            req.url = req.path;
-            req.originalUrl = req.baseUrl + req.path;
+        it('[signup] redirects correctly if there are capitals in req.path and req.baseUrl', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                req.baseUrl = '/Blog';
+                req.path = '/ghosT/signUp/';
+                req.url = req.path;
+                req.originalUrl = req.baseUrl + req.path;
 
-            uncapitalise(req, res, next);
+                uncapitalise(req, res, next);
 
-            sinon.assert.notCalled(next);
-            sinon.assert.calledOnce(res.redirect);
-            sinon.assert.calledWith(res.redirect, 301, '/blog/ghost/signup/');
-            done();
+                sinon.assert.notCalled(next);
+                sinon.assert.calledOnce(res.redirect);
+                sinon.assert.calledWith(res.redirect, 301, '/blog/ghost/signup/');
+                done();
+            });
         });
 
-        it('[signup] redirects correctly with capitals in req.path if there is a token', function (done) {
-            req.path = '/ghosT/sigNup/XEB123';
-            req.url = req.path;
+        it('[signup] redirects correctly with capitals in req.path if there is a token', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                req.path = '/ghosT/sigNup/XEB123';
+                req.url = req.path;
 
-            uncapitalise(req, res, next);
+                uncapitalise(req, res, next);
 
-            sinon.assert.notCalled(next);
-            sinon.assert.calledOnce(res.redirect);
-            sinon.assert.calledWith(res.redirect, 301, '/ghost/signup/XEB123');
-            done();
+                sinon.assert.notCalled(next);
+                sinon.assert.calledOnce(res.redirect);
+                sinon.assert.calledWith(res.redirect, 301, '/ghost/signup/XEB123');
+                done();
+            });
         });
 
-        it('[reset] redirects correctly with capitals in req.path & req.baseUrl if there is a token', function (done) {
-            req.baseUrl = '/Blog';
-            req.path = '/Ghost/Reset/NCR3NjY4NzI1ODI1OHzlcmlzZHNAZ51haWwuY29tfEpWeGxRWHUzZ3Y0cEpQRkNYYzQvbUZyc2xFSVozU3lIZHZWeFJLRml6cY54';
-            req.url = req.path;
-            req.originalUrl = req.baseUrl + req.path;
+        it('[reset] redirects correctly with capitals in req.path & req.baseUrl if there is a token', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                req.baseUrl = '/Blog';
+                req.path = '/Ghost/Reset/NCR3NjY4NzI1ODI1OHzlcmlzZHNAZ51haWwuY29tfEpWeGxRWHUzZ3Y0cEpQRkNYYzQvbUZyc2xFSVozU3lIZHZWeFJLRml6cY54';
+                req.url = req.path;
+                req.originalUrl = req.baseUrl + req.path;
 
-            uncapitalise(req, res, next);
+                uncapitalise(req, res, next);
 
-            sinon.assert.notCalled(next);
-            sinon.assert.calledOnce(res.redirect);
-            sinon.assert.calledWith(res.redirect, 301, '/blog/ghost/reset/NCR3NjY4NzI1ODI1OHzlcmlzZHNAZ51haWwuY29tfEpWeGxRWHUzZ3Y0cEpQRkNYYzQvbUZyc2xFSVozU3lIZHZWeFJLRml6cY54');
-            done();
+                sinon.assert.notCalled(next);
+                sinon.assert.calledOnce(res.redirect);
+                sinon.assert.calledWith(res.redirect, 301, '/blog/ghost/reset/NCR3NjY4NzI1ODI1OHzlcmlzZHNAZ51haWwuY29tfEpWeGxRWHUzZ3Y0cEpQRkNYYzQvbUZyc2xFSVozU3lIZHZWeFJLRml6cY54');
+                done();
+            });
         });
     });
 
@@ -132,108 +159,132 @@ describe('Middleware: uncapitalise', function () {
             };
 
             describe(`for ${apiVersion}`, function () {
-                it('does nothing if there are no capitals', function (done) {
-                    req.path = `/ghost/api${getApiPath(apiVersion)}/endpoint/`;
-                    uncapitalise(req, res, next);
+                it('does nothing if there are no capitals', async function () {
+                    await new Promise((resolve, reject) => {
+                        const done = err => (err ? reject(err) : resolve());
+                        req.path = `/ghost/api${getApiPath(apiVersion)}/endpoint/`;
+                        uncapitalise(req, res, next);
 
-                    sinon.assert.calledOnce(next);
-                    done();
-                });
-
-                it('version identifier is uppercase', function (done) {
-                    // CASE: capitalizing "empty" string does not make sense
-                    if (apiVersion === null) {
+                        sinon.assert.calledOnce(next);
                         done();
-                        return;
-                    }
-
-                    req.path = `/ghost/api${getApiPath(apiVersion).toUpperCase()}/endpoint/`;
-                    req.url = req.path;
-
-                    uncapitalise(req, res, next);
-
-                    sinon.assert.notCalled(next);
-                    sinon.assert.calledOnce(res.redirect);
-                    sinon.assert.calledWith(res.redirect, 301, `/ghost/api${getApiPath(apiVersion)}/endpoint/`);
-                    done();
+                    });
                 });
 
-                it('redirects to the lower case slug if there are capitals', function (done) {
-                    req.path = `/ghost/api${getApiPath(apiVersion)}/ASDfJ/`;
-                    req.url = req.path;
+                it('version identifier is uppercase', async function () {
+                    await new Promise((resolve, reject) => {
+                        const done = err => (err ? reject(err) : resolve());
+                        // CASE: capitalizing "empty" string does not make sense
+                        if (apiVersion === null) {
+                            done();
+                            return;
+                        }
 
-                    uncapitalise(req, res, next);
+                        req.path = `/ghost/api${getApiPath(apiVersion).toUpperCase()}/endpoint/`;
+                        req.url = req.path;
 
-                    sinon.assert.notCalled(next);
-                    sinon.assert.calledOnce(res.redirect);
-                    sinon.assert.calledWith(res.redirect, 301, `/ghost/api${getApiPath(apiVersion)}/asdfj/`);
-                    done();
+                        uncapitalise(req, res, next);
+
+                        sinon.assert.notCalled(next);
+                        sinon.assert.calledOnce(res.redirect);
+                        sinon.assert.calledWith(res.redirect, 301, `/ghost/api${getApiPath(apiVersion)}/endpoint/`);
+                        done();
+                    });
                 });
 
-                it('redirects to the lower case slug if there are capitals in req.baseUrl', function (done) {
-                    req.baseUrl = '/Blog';
-                    req.path = `/ghost/api${getApiPath(apiVersion)}/ASDfJ/`;
-                    req.url = req.path;
-                    req.originalUrl = req.baseUrl + req.path;
+                it('redirects to the lower case slug if there are capitals', async function () {
+                    await new Promise((resolve, reject) => {
+                        const done = err => (err ? reject(err) : resolve());
+                        req.path = `/ghost/api${getApiPath(apiVersion)}/ASDfJ/`;
+                        req.url = req.path;
 
-                    uncapitalise(req, res, next);
+                        uncapitalise(req, res, next);
 
-                    sinon.assert.notCalled(next);
-                    sinon.assert.calledOnce(res.redirect);
-                    sinon.assert.calledWith(res.redirect, 301, `/blog/ghost/api${getApiPath(apiVersion)}/asdfj/`);
-                    done();
+                        sinon.assert.notCalled(next);
+                        sinon.assert.calledOnce(res.redirect);
+                        sinon.assert.calledWith(res.redirect, 301, `/ghost/api${getApiPath(apiVersion)}/asdfj/`);
+                        done();
+                    });
                 });
 
-                it('does not convert any capitals after the endpoint', function (done) {
-                    const query = '?filter=mAgic';
-                    req.path = `/Ghost/API${getApiPath(apiVersion)}/settings/is_private/`;
-                    req.url = `${req.path}${query}`;
+                it('redirects to the lower case slug if there are capitals in req.baseUrl', async function () {
+                    await new Promise((resolve, reject) => {
+                        const done = err => (err ? reject(err) : resolve());
+                        req.baseUrl = '/Blog';
+                        req.path = `/ghost/api${getApiPath(apiVersion)}/ASDfJ/`;
+                        req.url = req.path;
+                        req.originalUrl = req.baseUrl + req.path;
 
-                    uncapitalise(req, res, next);
+                        uncapitalise(req, res, next);
 
-                    sinon.assert.notCalled(next);
-                    sinon.assert.calledOnce(res.redirect);
-                    sinon.assert.calledWith(res.redirect, 301, `/ghost/api${getApiPath(apiVersion)}/settings/is_private/${query}`);
-                    done();
+                        sinon.assert.notCalled(next);
+                        sinon.assert.calledOnce(res.redirect);
+                        sinon.assert.calledWith(res.redirect, 301, `/blog/ghost/api${getApiPath(apiVersion)}/asdfj/`);
+                        done();
+                    });
                 });
 
-                it('does not convert any capitals after the endpoint with baseUrl', function (done) {
-                    const query = '?filter=mAgic';
-                    req.baseUrl = '/Blog';
-                    req.path = `/ghost/api${getApiPath(apiVersion)}/mail/test@example.COM/`;
-                    req.url = `${req.path}${query}`;
-                    req.originalUrl = `${req.baseUrl}${req.path}${query}`;
+                it('does not convert any capitals after the endpoint', async function () {
+                    await new Promise((resolve, reject) => {
+                        const done = err => (err ? reject(err) : resolve());
+                        const query = '?filter=mAgic';
+                        req.path = `/Ghost/API${getApiPath(apiVersion)}/settings/is_private/`;
+                        req.url = `${req.path}${query}`;
 
-                    uncapitalise(req, res, next);
+                        uncapitalise(req, res, next);
 
-                    sinon.assert.notCalled(next);
-                    sinon.assert.calledOnce(res.redirect);
-                    sinon.assert.calledWith(res.redirect, 301, `/blog/ghost/api${getApiPath(apiVersion)}/mail/test@example.COM/${query}`);
-                    done();
+                        sinon.assert.notCalled(next);
+                        sinon.assert.calledOnce(res.redirect);
+                        sinon.assert.calledWith(res.redirect, 301, `/ghost/api${getApiPath(apiVersion)}/settings/is_private/${query}`);
+                        done();
+                    });
+                });
+
+                it('does not convert any capitals after the endpoint with baseUrl', async function () {
+                    await new Promise((resolve, reject) => {
+                        const done = err => (err ? reject(err) : resolve());
+                        const query = '?filter=mAgic';
+                        req.baseUrl = '/Blog';
+                        req.path = `/ghost/api${getApiPath(apiVersion)}/mail/test@example.COM/`;
+                        req.url = `${req.path}${query}`;
+                        req.originalUrl = `${req.baseUrl}${req.path}${query}`;
+
+                        uncapitalise(req, res, next);
+
+                        sinon.assert.notCalled(next);
+                        sinon.assert.calledOnce(res.redirect);
+                        sinon.assert.calledWith(res.redirect, 301, `/blog/ghost/api${getApiPath(apiVersion)}/mail/test@example.COM/${query}`);
+                        done();
+                    });
                 });
             });
         });
     });
 
     describe('Any other request', function () {
-        it('does nothing if there are no capitals', function (done) {
-            req.path = '/this-is-my-blog-post';
-            uncapitalise(req, res, next);
+        it('does nothing if there are no capitals', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                req.path = '/this-is-my-blog-post';
+                uncapitalise(req, res, next);
 
-            sinon.assert.calledOnce(next);
-            done();
+                sinon.assert.calledOnce(next);
+                done();
+            });
         });
 
-        it('redirects to the lower case slug if there are capitals', function (done) {
-            req.path = '/THis-iS-my-BLOg-poSt';
-            req.url = req.path;
+        it('redirects to the lower case slug if there are capitals', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                req.path = '/THis-iS-my-BLOg-poSt';
+                req.url = req.path;
 
-            uncapitalise(req, res, next);
+                uncapitalise(req, res, next);
 
-            sinon.assert.notCalled(next);
-            sinon.assert.calledOnce(res.redirect);
-            sinon.assert.calledWith(res.redirect, 301, '/this-is-my-blog-post');
-            done();
+                sinon.assert.notCalled(next);
+                sinon.assert.calledOnce(res.redirect);
+                sinon.assert.calledWith(res.redirect, 301, '/this-is-my-blog-post');
+                done();
+            });
         });
     });
 });

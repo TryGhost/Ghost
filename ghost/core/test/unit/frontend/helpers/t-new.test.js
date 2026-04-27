@@ -8,12 +8,12 @@ const labs = require('../../../../core/shared/labs');
 describe('NEW{{t}} helper', function () {
     let ogBasePath = themeI18next.basePath;
 
-    before(function () {
+    beforeAll(function () {
         sinon.stub(labs, 'isSet').withArgs('themeTranslation').returns(true);
         themeI18next.basePath = path.join(__dirname, '../../../utils/fixtures/themes/');
     });
 
-    after(function () {
+    afterAll(function () {
         sinon.restore();
         themeI18next.basePath = ogBasePath;
     });

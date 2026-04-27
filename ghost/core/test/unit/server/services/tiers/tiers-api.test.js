@@ -10,7 +10,7 @@ describe('TiersAPI', function () {
     /** @type {TiersAPI} */
     let api;
 
-    before(function () {
+    beforeAll(function () {
         repository = new InMemoryTierRepository();
         api = new TiersAPI({
             repository,

@@ -10,17 +10,20 @@ const {setupI18nTest, initLocale} = require('../../../utils/i18n-test-utils');
 const pagination = require('../../../../core/frontend/helpers/pagination');
 
 describe('{{pagination}} helper', function () {
-    before(function (done) {
-        hbs.express4({partialsDir: [configUtils.config.get('paths').helperTemplates]});
+    beforeAll(async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            hbs.express4({partialsDir: [configUtils.config.get('paths').helperTemplates]});
 
-        hbs.cachePartials(function () {
-            done();
+            hbs.cachePartials(function () {
+                done();
+            });
+
+            // The pagination partial expects these helpers
+            // @TODO: change to register with Ghost's own registration tools
+            hbs.registerHelper('page_url', page_url);
+            hbs.registerHelper('t', t);
         });
-
-        // The pagination partial expects these helpers
-        // @TODO: change to register with Ghost's own registration tools
-        hbs.registerHelper('page_url', page_url);
-        hbs.registerHelper('t', t);
     });
 
     const paginationRegex = /class="pagination"/;
@@ -53,7 +56,7 @@ describe('{{pagination}} helper', function () {
         describe(`rendering with ${name}`, function () {
             let i18nSetup;
 
-            before(function () {
+            beforeAll(function () {
                 i18nSetup = setupI18nTest({useNewTranslation, locale: 'en'});
             });
 
@@ -62,7 +65,7 @@ describe('{{pagination}} helper', function () {
                 initLocale({useNewTranslation, locale: 'en'});
             });
 
-            after(function () {
+            afterAll(function () {
                 i18nSetup.teardown();
                 sinon.restore();
             });
@@ -165,11 +168,14 @@ describe('{{pagination}} helper', function () {
 });
 
 describe('{{pagination}} helper with custom template', function () {
-    before(function (done) {
-        hbs.express4({partialsDir: [path.resolve(__dirname, './test_tpl')]});
+    beforeAll(async function () {
+        await new Promise((resolve, reject) => {
+            const done = err => (err ? reject(err) : resolve());
+            hbs.express4({partialsDir: [path.resolve(__dirname, './test_tpl')]});
 
-        hbs.cachePartials(function () {
-            done();
+            hbs.cachePartials(function () {
+                done();
+            });
         });
     });
 

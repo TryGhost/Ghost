@@ -224,55 +224,67 @@ describe('lib/image: blog icon', function () {
     });
 
     describe('getIconDimensions', function () {
-        it('[success] returns .ico dimensions', function (done) {
-            const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {}, settingsCache: {}});
-            blogIcon.getIconDimensions(path.join(__dirname, '../../../../utils/fixtures/images/favicon.ico'))
-                .then(function (result) {
-                    assertExists(result);
-                    assert.deepEqual(result, {
-                        width: 48,
-                        height: 48
-                    });
-                    done();
-                }).catch(done);
+        it('[success] returns .ico dimensions', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {}, settingsCache: {}});
+                blogIcon.getIconDimensions(path.join(__dirname, '../../../../utils/fixtures/images/favicon.ico'))
+                    .then(function (result) {
+                        assertExists(result);
+                        assert.deepEqual(result, {
+                            width: 48,
+                            height: 48
+                        });
+                        done();
+                    }).catch(done);
+            });
         });
 
-        it('[success] returns .png dimensions', function (done) {
-            const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {}, settingsCache: {}});
-            blogIcon.getIconDimensions(path.join(__dirname, '../../../../utils/fixtures/images/favicon.png'))
-                .then(function (result) {
-                    assertExists(result);
-                    assert.deepEqual(result, {
-                        width: 100,
-                        height: 100
-                    });
-                    done();
-                }).catch(done);
+        it('[success] returns .png dimensions', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {}, settingsCache: {}});
+                blogIcon.getIconDimensions(path.join(__dirname, '../../../../utils/fixtures/images/favicon.png'))
+                    .then(function (result) {
+                        assertExists(result);
+                        assert.deepEqual(result, {
+                            width: 100,
+                            height: 100
+                        });
+                        done();
+                    }).catch(done);
+            });
         });
 
-        it('[success] returns .ico dimensions for icon with multiple sizes', function (done) {
-            const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {}, settingsCache: {}});
-            blogIcon.getIconDimensions(path.join(__dirname, '../../../../utils/fixtures/images/favicon_multi_sizes.ico'))
-                .then(function (result) {
-                    assertExists(result);
-                    assert.deepEqual(result, {
-                        width: 64,
-                        height: 64
-                    });
-                    done();
-                }).catch(done);
+        it('[success] returns .ico dimensions for icon with multiple sizes', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                const blogIcon = new BlogIcon({config: {}, storageUtils: {}, urlUtils: {}, settingsCache: {}});
+                blogIcon.getIconDimensions(path.join(__dirname, '../../../../utils/fixtures/images/favicon_multi_sizes.ico'))
+                    .then(function (result) {
+                        assertExists(result);
+                        assert.deepEqual(result, {
+                            width: 64,
+                            height: 64
+                        });
+                        done();
+                    }).catch(done);
+            });
         });
 
-        it('[failure] return error message', function (done) {
-            const blogIcon = new BlogIcon({config: {}, tpl: key => key
-                , storageUtils: {}, urlUtils: {}, settingsCache: {}});
+        it('[failure] return error message', async function () {
+            await new Promise((resolve, reject) => {
+                const done = err => (err ? reject(err) : resolve());
+                const blogIcon = new BlogIcon({config: {}, tpl: key => key
+                    , storageUtils: {}, urlUtils: {}, settingsCache: {}});
 
-            blogIcon.getIconDimensions(path.join(__dirname, '../../../../utils/fixtures/images/favicon_multi_sizes_FILE_DOES_NOT_EXIST.ico'))
-                .catch(function (error) {
-                    assertExists(error);
-                    assert.equal(error.message, 'Could not fetch icon dimensions.');
-                    done();
-                });
+                blogIcon.getIconDimensions(path.join(__dirname, '../../../../utils/fixtures/images/favicon_multi_sizes_FILE_DOES_NOT_EXIST.ico'))
+                    .catch(function (error) {
+                        assertExists(error);
+                        assert.equal(error.message, 'Could not fetch icon dimensions.');
+                        done();
+                    });
+            });
         });
     });
 });

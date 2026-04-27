@@ -2,7 +2,7 @@ const sinon = require('sinon');
 const models = require('../../../../core/server/models');
 
 describe('Unit: models/MemberPaidSubscriptionEvent', function () {
-    before(function () {
+    beforeAll(function () {
         models.init();
     });
 
