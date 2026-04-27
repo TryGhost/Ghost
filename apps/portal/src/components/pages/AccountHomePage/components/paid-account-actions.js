@@ -97,10 +97,21 @@ const PaidAccountActions = () => {
     };
 
     const PlanUpdateButton = ({isPaid}) => {
-        if (hasOnlyFreePlan({site}) && !isPaid) {
+        const hasGiftSubscription = isGiftMember({member});
+        const canContinueGiftSubscription = hasGiftSubscription && !isArchivedTier({member, site});
+
+        // If no paid tiers are available, hide the plan update button for:
+        // - Free members, as they have no paid plans to upgrade to
+        // - Gift members on archived tiers, as they have no paid plans to upgrade to
+        //
+        // In constrast, still render the button for:
+        // - Paid members so that they can adjust the cadence on their existing sub
+        // - Comped members so that they can contact publishers to make changes to their complimentary access
+        if (hasOnlyFreePlan({site}) && (!isPaid || (hasGiftSubscription && !canContinueGiftSubscription))) {
             return null;
         }
-        if (isGiftMember({member}) && !isArchivedTier({member, site})) {
+
+        if (canContinueGiftSubscription) {
             return (
                 <button
                     className='gh-portal-btn gh-portal-btn-list' onClick={() => doAction('continueGiftSubscription')}
