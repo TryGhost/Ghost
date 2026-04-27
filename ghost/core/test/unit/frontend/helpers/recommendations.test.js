@@ -7,6 +7,7 @@ const configUtils = require('../../../utils/config-utils');
 const {html} = require('common-tags');
 const loggingLib = require('@tryghost/logging');
 const proxy = require('../../../../core/frontend/services/proxy');
+const {promisify} = require('node:util');
 
 const recommendations = require('../../../../core/frontend/helpers/recommendations');
 const foreach = require('../../../../core/frontend/helpers/foreach');
@@ -20,14 +21,15 @@ function trimSpaces(string) {
 describe('{{#recommendations}} helper', function () {
     let logging;
 
-    before(function () {
+    before(async function () {
         models.init();
 
         hbs.express4({
             partialsDir: [configUtils.config.get('paths').helperTemplates]
         });
 
-        hbs.cachePartials();
+        const cachePartials = promisify(hbs.cachePartials.bind(hbs));
+        await cachePartials();
 
         // The recommendation template expects this helper
         hbs.registerHelper('foreach', foreach);
