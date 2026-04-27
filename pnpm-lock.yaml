@@ -36,6 +36,7 @@ overrides:
   ember-svg-jar>cheerio: 1.0.0-rc.12
   juice>cheerio: 0.22.0
   lodash.template: 4.5.0
+  axios: 1.15.0
 
 importers:
 
@@ -30130,6 +30131,7 @@ snapshots:
   '@tryghost/tpl@0.1.40':
     dependencies:
       lodash.template: 4.5.0
+  axios: 1.15.0
 
   '@tryghost/tpl@2.1.0': {}
 
@@ -33317,6 +33319,7 @@ snapshots:
       broccoli-plugin: 1.3.1
       fs-tree-diff: 0.5.9
       lodash.template: 4.5.0
+  axios: 1.15.0
       rimraf: 2.7.1
       walk-sync: 0.3.4
     transitivePeerDependencies:
@@ -36023,6 +36026,7 @@ snapshots:
       json-stable-stringify: 1.3.0
       leek: 0.0.24
       lodash.template: 4.5.0
+  axios: 1.15.0
       markdown-it: 12.3.2
       markdown-it-terminal: 0.2.1
       minimatch: 3.1.5
@@ -42790,7 +42794,7 @@ snapshots:
       '@yarnpkg/lockfile': 1.1.0
       '@yarnpkg/parsers': 3.0.2
       '@zkochan/js-yaml': 0.0.7
-      axios: 1.13.6
+      axios: 1.15.0
       chalk: 4.1.2
       cli-cursor: 3.1.0
       cli-spinners: 2.6.1
@@ -45888,6 +45892,7 @@ snapshots:
       jsesc: 0.3.0
       lodash.foreach: 4.5.0
       lodash.template: 4.5.0
+  axios: 1.15.0
       source-map: 0.1.43
 
   spawn-args@0.2.0: {}
