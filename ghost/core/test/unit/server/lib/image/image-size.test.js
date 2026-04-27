@@ -461,7 +461,7 @@ describe('lib/image: image size', function () {
             assert.equal(requestMock.isDone(), true);
         });
 
-        it('[failure] returns error if \`probe-image-size`\ module throws error', async function () {
+        it('[failure] returns error if `probe-image-size` module throws error', async function () {
             const url = 'https://static.wixstatic.com/media/355241_d31358572a2542c5a44738ddcb59e7ea.jpg';
 
             const requestMock = nock('https://static.wixstatic.com')
@@ -478,7 +478,7 @@ describe('lib/image: image size', function () {
             assert.equal(requestMock.isDone(), true);
         });
 
-        it('[failure] returns error if \`image-size`\ module throws error', async function () {
+        it('[failure] returns error if `image-size` module throws error', async function () {
             const url = 'https://static.wixstatic.com/media/355241_d31358572a2542c5a44738ddcb59e7ea.cur';
 
             const requestMock = nock('https://static.wixstatic.com')
@@ -637,15 +637,9 @@ describe('lib/image: image size', function () {
                 })
             }, storageUtils: createFixtureStorageUtils(), urlUtils: createLocalUrlUtils('http://myblog.com/content/images/not-existing-image.png'), request: () => Promise.reject(new Error('request should not be used'))});
 
-            let thrownError;
-            try {
+            await assert.rejects(async () => {
                 await imageSize.getImageSizeFromStoragePath(url);
-            } catch (err) {
-                thrownError = err;
-                assertExists(err);
-                assert.equal((err instanceof errors.NotFoundError), true);
-            }
-            assert(thrownError);
+            }, errors.NotFoundError);
         });
 
         it('[failure] rejects traversal outside the image storage root', async function () {
@@ -674,7 +668,7 @@ describe('lib/image: image size', function () {
             );
         });
 
-        it('[failure] returns error if \`image-size`\ module throws error', async function () {
+        it('[failure] returns error if `image-size` module throws error', async function () {
             const url = '/content/images/malformed.svg';
 
             const imageSize = createImageSize({storage: {
