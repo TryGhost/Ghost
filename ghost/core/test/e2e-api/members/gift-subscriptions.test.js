@@ -1041,7 +1041,7 @@ describe('Gift Subscriptions', function () {
             return {member, identityToken, gift, paidTier, consumesAt};
         }
 
-        it('applies remaining gift days as trial and continues on the same tier/cadence as gift', async function () {
+        it('applies remaining gift days as trial and continues to checkout on the same tier/cadence', async function () {
             const {identityToken, gift, paidTier} = await setupGiftMember({cadence: 'month', consumesInDays: 30});
 
             await membersAgent.post('/api/create-stripe-checkout-session/')
@@ -1073,6 +1073,25 @@ describe('Gift Subscriptions', function () {
             const giftRecord = await models.Gift.findOne({token: gift.get('token')}, {require: true});
             assert.equal(giftRecord.get('status'), 'redeemed');
             assert.equal(giftRecord.get('tier_id'), paidTier.id);
+        });
+
+        it('marks the gift as consumed once the paid subscription activates', async function () {
+            const {member, gift} = await setupGiftMember({cadence: 'month', consumesInDays: 30});
+
+            // Starting point: gift redeemed, not yet consumed
+            assert.equal(gift.get('status'), 'redeemed');
+            assert.equal(gift.get('consumed_at'), null);
+
+            const customer = stripeMocker.createCustomer({email: member.get('email')});
+            const price = await stripeMocker.getPriceForTier('default-product', 'month');
+
+            await stripeMocker.createSubscription({customer, price});
+            await DomainEvents.allSettled();
+
+            // Gift should now be consumed
+            const giftAfterActivation = await models.Gift.findOne({token: gift.get('token')}, {require: true});
+            assert.equal(giftAfterActivation.get('status'), 'consumed');
+            assert.ok(giftAfterActivation.get('consumed_at'), 'Gift should have consumed_at set');
         });
 
         it('Returns 401 for unauthenticated members', async function () {
