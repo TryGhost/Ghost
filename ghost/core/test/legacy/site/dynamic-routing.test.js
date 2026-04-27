@@ -16,19 +16,14 @@ const themeEngine = require('../../../core/frontend/services/theme-engine');
 let request;
 
 describe('Dynamic Routing', function () {
-    function doEnd(done) {
-        return function (err, res) {
-            if (err) {
-                return done(err);
-            }
-
-            assert.equal(res.headers['x-cache-invalidate'], undefined);
-            assert.equal(res.headers['X-CSRF-Token'], undefined);
-            assert.equal(res.headers['set-cookie'], undefined);
-            assertExists(res.headers.date);
-
-            done();
-        };
+    /**
+     * @param {Readonly<Record<string, string>>} headers
+     */
+    function assertCorrectHeaders(headers) {
+        assert.equal(headers['x-cache-invalidate'], undefined);
+        assert.equal(headers['X-CSRF-Token'], undefined);
+        assert.equal(headers['set-cookie'], undefined);
+        assertExists(headers.date);
     }
 
     before(async function () {
@@ -47,37 +42,26 @@ describe('Dynamic Routing', function () {
     });
 
     describe('Collection Index', function () {
-        it('should respond with html', function (done) {
-            request.get('/')
+        it('should respond with html', async function () {
+            const res = await request.get('/')
                 .expect('Content-Type', /html/)
                 .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(200);
 
-                    const $ = cheerio.load(res.text);
+            assertCorrectHeaders(res.headers);
 
-                    assert.equal(res.headers['x-cache-invalidate'], undefined);
-                    assert.equal(res.headers['X-CSRF-Token'], undefined);
-                    assert.equal(res.headers['set-cookie'], undefined);
-                    assertExists(res.headers.date);
-
-                    assert.equal($('title').text(), 'Ghost');
-                    assert.equal($('body.home-template').length, 1);
-                    assert.equal($('article.post').length, 7);
-
-                    done();
-                });
+            const $ = cheerio.load(res.text);
+            assert.equal($('title').text(), 'Ghost');
+            assert.equal($('body.home-template').length, 1);
+            assert.equal($('article.post').length, 7);
         });
 
-        it('should not have a third page', function (done) {
-            request.get('/page/3/')
+        it('should not have a third page', async function () {
+            const res = await request.get('/page/3/')
                 .expect('Cache-Control', testUtils.cacheRules.noCache)
                 .expect(404)
-                .expect(/Page not found/)
-                .end(doEnd(done));
+                .expect(/Page not found/);
+            assertCorrectHeaders(res.headers);
         });
     });
 
@@ -90,22 +74,22 @@ describe('Dynamic Routing', function () {
             });
         });
 
-        it('should render page with slug permalink', function (done) {
-            request.get('/static-page-test/')
+        it('should render page with slug permalink', async function () {
+            const res = await request.get('/static-page-test/')
                 .expect('Content-Type', /html/)
                 .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect(200)
-                .end(doEnd(done));
+                .expect(200);
+            assertCorrectHeaders(res.headers);
         });
 
-        it('should not render page with dated permalink', function (done) {
+        it('should not render page with dated permalink', async function () {
             const date = moment().format('YYYY/MM/DD');
 
-            request.get('/' + date + '/static-page-test/')
+            const res = await request.get('/' + date + '/static-page-test/')
                 .expect('Content-Type', /html/)
                 .expect('Cache-Control', testUtils.cacheRules.noCache)
-                .expect(404)
-                .end(doEnd(done));
+                .expect(404);
+            assertCorrectHeaders(res.headers);
         });
     });
 
@@ -118,97 +102,86 @@ describe('Dynamic Routing', function () {
 
         after(testUtils.teardownDb);
 
-        it('should return HTML for valid route', function (done) {
-            request.get('/tag/getting-started/')
+        it('should return HTML for valid route', async function () {
+            const res = await request.get('/tag/getting-started/')
                 .expect(200)
                 .expect('Content-Type', /html/)
                 .expect('Content-Type', /html/)
                 .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
+                .expect(200);
 
-                    const $ = cheerio.load(res.text);
+            assertCorrectHeaders(res.headers);
 
-                    assert.equal(res.headers['x-cache-invalidate'], undefined);
-                    assert.equal(res.headers['X-CSRF-Token'], undefined);
-                    assert.equal(res.headers['set-cookie'], undefined);
-                    assertExists(res.headers.date);
-
-                    assert.equal($('body').attr('class'), 'tag-template tag-getting-started has-sans-title has-sans-body');
-                    assert.equal($('article.post').length, 5);
-
-                    done();
-                });
+            const $ = cheerio.load(res.text);
+            assert.equal($('body').attr('class'), 'tag-template tag-getting-started has-sans-title has-sans-body');
+            assert.equal($('article.post').length, 5);
         });
 
-        it('should 404 for /tag/ route', function (done) {
-            request.get('/tag/')
+        it('should 404 for /tag/ route', async function () {
+            const res = await request.get('/tag/')
                 .expect('Cache-Control', testUtils.cacheRules.noCache)
                 .expect(404)
-                .expect(/Page not found/)
-                .end(doEnd(done));
+                .expect(/Page not found/);
+            assertCorrectHeaders(res.headers);
         });
 
-        it('should 404 for unknown tag', function (done) {
-            request.get('/tag/spectacular/')
+        it('should 404 for unknown tag', async function () {
+            const res = await request.get('/tag/spectacular/')
                 .expect('Cache-Control', testUtils.cacheRules.noCache)
                 .expect(404)
-                .expect(/Page not found/)
-                .end(doEnd(done));
+                .expect(/Page not found/);
+            assertCorrectHeaders(res.headers);
         });
 
-        it('should 404 for unknown tag with invalid characters', function (done) {
-            request.get('/tag/~$pectacular~/')
+        it('should 404 for unknown tag with invalid characters', async function () {
+            const res = await request.get('/tag/~$pectacular~/')
                 .expect('Cache-Control', testUtils.cacheRules.noCache)
                 .expect(404)
-                .expect(/Page not found/)
-                .end(doEnd(done));
+                .expect(/Page not found/);
+            assertCorrectHeaders(res.headers);
         });
 
         describe('RSS', function () {
-            it('should redirect without slash', function (done) {
-                request.get('/tag/getting-started/rss')
+            it('should redirect without slash', async function () {
+                const res = await request.get('/tag/getting-started/rss')
                     .expect('Location', '/tag/getting-started/rss/')
                     .expect('Cache-Control', testUtils.cacheRules.year)
-                    .expect(301)
-                    .end(doEnd(done));
+                    .expect(301);
+                assertCorrectHeaders(res.headers);
             });
 
-            it('should respond with xml', function (done) {
-                request.get('/tag/getting-started/rss/')
+            it('should respond with xml', async function () {
+                const res = await request.get('/tag/getting-started/rss/')
                     .expect('Content-Type', /xml/)
                     .expect('Cache-Control', testUtils.cacheRules.public)
-                    .expect(200)
-                    .end(doEnd(done));
+                    .expect(200);
+                assertCorrectHeaders(res.headers);
             });
         });
 
         describe('Edit', function () {
-            it('should redirect without slash', function (done) {
-                request.get('/tag/getting-started/edit')
+            it('should redirect without slash', async function () {
+                const res = await request.get('/tag/getting-started/edit')
                     .expect('Location', '/tag/getting-started/edit/')
                     .expect('Cache-Control', testUtils.cacheRules.year)
-                    .expect(301)
-                    .end(doEnd(done));
+                    .expect(301);
+                assertCorrectHeaders(res.headers);
             });
 
-            it('should redirect to tag settings', function (done) {
-                request.get('/tag/getting-started/edit/')
+            it('should redirect to tag settings', async function () {
+                const res = await request.get('/tag/getting-started/edit/')
                     .expect('Location', /\/ghost\/#\/tags\/getting-started\//)
                     .expect('Cache-Control', testUtils.cacheRules.public)
-                    .expect(302)
-                    .end(doEnd(done));
+                    .expect(302);
+                assertCorrectHeaders(res.headers);
             });
 
-            it('should 404 for non-edit parameter', function (done) {
-                request.get('/tag/getting-started/notedit/')
+            it('should 404 for non-edit parameter', async function () {
+                const res = await request.get('/tag/getting-started/notedit/')
                     .expect('Cache-Control', testUtils.cacheRules.noCache)
                     .expect(404)
-                    .expect(/Page not found/)
-                    .end(doEnd(done));
+                    .expect(/Page not found/);
+                assertCorrectHeaders(res.headers);
             });
         });
 
@@ -231,19 +204,19 @@ describe('Dynamic Routing', function () {
                 request = supertest.agent(config.get('url'));
             });
 
-            it('should redirect without slash', function (done) {
-                request.get('/tag/getting-started/edit')
+            it('should redirect without slash', async function () {
+                const res = await request.get('/tag/getting-started/edit')
                     .expect('Location', '/tag/getting-started/edit/')
                     .expect('Cache-Control', testUtils.cacheRules.year)
-                    .expect(301)
-                    .end(doEnd(done));
+                    .expect(301);
+                assertCorrectHeaders(res.headers);
             });
 
-            it('should not redirect to admin', function (done) {
-                request.get('/tag/getting-started/edit/')
+            it('should not redirect to admin', async function () {
+                const res = await request.get('/tag/getting-started/edit/')
                     .expect(404)
-                    .expect('Cache-Control', testUtils.cacheRules.noCache)
-                    .end(doEnd(done));
+                    .expect('Cache-Control', testUtils.cacheRules.noCache);
+                assertCorrectHeaders(res.headers);
             });
         });
     });
@@ -265,150 +238,148 @@ describe('Dynamic Routing', function () {
 
         const ownerSlug = 'ghost-owner';
 
-        before(function (done) {
-            testUtils.teardownDb().then(function () {
-                // we initialise data, but not a user. No user should be required for navigating the frontend
-                return testUtils.initData();
-            }).then(function () {
-                return testUtils.fixtures.overrideOwnerUser(ownerSlug);
-            }).then(function (insertedUser) {
-                return testUtils.fixtures.insertPosts([
+        before(async function () {
+            await testUtils.teardownDb();
+            // we initialise data, but not a user. No user should be required for navigating the frontend
+            await testUtils.initData();
+
+            {
+                const insertedUser = await testUtils.fixtures.overrideOwnerUser(ownerSlug);
+                await testUtils.fixtures.insertPosts([
                     testUtils.DataGenerator.forKnex.createPost({
                         authors: [{
                             id: insertedUser.id
                         }]
                     })
                 ]);
-            }).then(function () {
-                return testUtils.fixtures.insertOneUser(lockedUser);
-            }).then(function (insertedUser) {
-                return testUtils.fixtures.insertPosts([
+            }
+
+            {
+                const insertedUser = await testUtils.fixtures.insertOneUser(lockedUser);
+                await testUtils.fixtures.insertPosts([
                     testUtils.DataGenerator.forKnex.createPost({
                         authors: [{
                             id: insertedUser.id
                         }]
                     })
                 ]);
-            }).then(() => {
-                return testUtils.fixtures.insertOneUser(suspendedUser);
-            }).then(function (insertedUser) {
-                return testUtils.fixtures.insertPosts([
+            }
+
+            {
+                const insertedUser = await testUtils.fixtures.insertOneUser(suspendedUser);
+                await testUtils.fixtures.insertPosts([
                     testUtils.DataGenerator.forKnex.createPost({
                         authors: [{
                             id: insertedUser.id
                         }]
                     })
                 ]);
-            }).then(function () {
-                done();
-            }).catch(done);
+            }
         });
 
         after(testUtils.teardownDb);
 
-        it('should 404 for /author/ route', function (done) {
-            request.get('/author/')
+        it('should 404 for /author/ route', async function () {
+            const res = await request.get('/author/')
                 .expect('Cache-Control', testUtils.cacheRules.noCache)
                 .expect(404)
-                .expect(/Page not found/)
-                .end(doEnd(done));
+                .expect(/Page not found/);
+            assertCorrectHeaders(res.headers);
         });
 
-        it('should 404 for unknown author', function (done) {
-            request.get('/author/spectacular/')
+        it('should 404 for unknown author', async function () {
+            const res = await request.get('/author/spectacular/')
                 .expect('Cache-Control', testUtils.cacheRules.noCache)
                 .expect(404)
-                .expect(/Page not found/)
-                .end(doEnd(done));
+                .expect(/Page not found/);
+            assertCorrectHeaders(res.headers);
         });
 
-        it('should 404 for unknown author with invalid characters', function (done) {
-            request.get('/author/ghost!user^/')
+        it('should 404 for unknown author with invalid characters', async function () {
+            const res = await request.get('/author/ghost!user^/')
                 .expect('Cache-Control', testUtils.cacheRules.noCache)
                 .expect(404)
-                .expect(/Page not found/)
-                .end(doEnd(done));
+                .expect(/Page not found/);
+            assertCorrectHeaders(res.headers);
         });
 
-        it('[success] author is locked', function (done) {
-            request.get('/author/' + lockedUser.slug + '/')
+        it('[success] author is locked', async function () {
+            const res = await request.get('/author/' + lockedUser.slug + '/')
                 .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect(200)
-                .end(doEnd(done));
+                .expect(200);
+            assertCorrectHeaders(res.headers);
         });
 
-        it('[success] author is suspended', function (done) {
-            request.get('/author/' + suspendedUser.slug + '/')
+        it('[success] author is suspended', async function () {
+            const res = await request.get('/author/' + suspendedUser.slug + '/')
                 .expect('Cache-Control', testUtils.cacheRules.public)
-                .expect(200)
-                .end(doEnd(done));
+                .expect(200);
+            assertCorrectHeaders(res.headers);
         });
 
-        it('[failure] ghost owner before blog setup', function (done) {
-            testUtils.fixtures.changeOwnerUserStatus({
+        it('[failure] ghost owner before blog setup', async function () {
+            await testUtils.fixtures.changeOwnerUserStatus({
                 slug: ownerSlug,
                 status: 'inactive'
-            }).then(function () {
-                request.get('/author/ghost-owner/')
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    .expect(200)
-                    .end(doEnd(done));
-            }).catch(done);
+            });
+            const res = await request.get('/author/ghost-owner/')
+                .expect('Cache-Control', testUtils.cacheRules.public)
+                .expect(200);
+            assertCorrectHeaders(res.headers);
         });
 
-        it('[success] ghost owner after blog setup', function (done) {
-            testUtils.fixtures.changeOwnerUserStatus({
+        it('[success] ghost owner after blog setup', async function () {
+            await testUtils.fixtures.changeOwnerUserStatus({
                 slug: ownerSlug,
                 status: 'active'
-            }).then(function () {
-                request.get('/author/ghost-owner/')
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    .expect(200)
-                    .end(doEnd(done));
             });
+            const res = await request.get('/author/ghost-owner/')
+                .expect('Cache-Control', testUtils.cacheRules.public)
+                .expect(200);
+            assertCorrectHeaders(res.headers);
         });
 
         describe('RSS', function () {
-            it('should redirect without slash', function (done) {
-                request.get('/author/ghost-owner/rss')
+            it('should redirect without slash', async function () {
+                const res = await request.get('/author/ghost-owner/rss')
                     .expect('Location', '/author/ghost-owner/rss/')
                     .expect('Cache-Control', testUtils.cacheRules.year)
-                    .expect(301)
-                    .end(doEnd(done));
+                    .expect(301);
+                assertCorrectHeaders(res.headers);
             });
 
-            it('should respond with xml', function (done) {
-                request.get('/author/ghost-owner/rss/')
+            it('should respond with xml', async function () {
+                const res = await request.get('/author/ghost-owner/rss/')
                     .expect('Content-Type', /xml/)
                     .expect('Cache-Control', testUtils.cacheRules.public)
-                    .expect(200)
-                    .end(doEnd(done));
+                    .expect(200);
+                assertCorrectHeaders(res.headers);
             });
         });
 
         describe('Edit', function () {
-            it('should redirect without slash', function (done) {
-                request.get('/author/ghost-owner/edit')
+            it('should redirect without slash', async function () {
+                const res = await request.get('/author/ghost-owner/edit')
                     .expect('Location', '/author/ghost-owner/edit/')
                     .expect('Cache-Control', testUtils.cacheRules.year)
-                    .expect(301)
-                    .end(doEnd(done));
+                    .expect(301);
+                assertCorrectHeaders(res.headers);
             });
 
-            it('should redirect to editor', function (done) {
-                request.get('/author/ghost-owner/edit/')
+            it('should redirect to editor', async function () {
+                const res = await request.get('/author/ghost-owner/edit/')
                     .expect('Location', /\/ghost\/#\/settings\/staff\/ghost-owner\//)
                     .expect('Cache-Control', testUtils.cacheRules.public)
-                    .expect(302)
-                    .end(doEnd(done));
+                    .expect(302);
+                assertCorrectHeaders(res.headers);
             });
 
-            it('should 404 for something that isn\'t edit', function (done) {
-                request.get('/author/ghost-owner/notedit/')
+            it('should 404 for something that isn\'t edit', async function () {
+                const res = await request.get('/author/ghost-owner/notedit/')
                     .expect('Cache-Control', testUtils.cacheRules.noCache)
                     .expect(404)
-                    .expect(/Page not found/)
-                    .end(doEnd(done));
+                    .expect(/Page not found/);
+                assertCorrectHeaders(res.headers);
             });
         });
 
@@ -431,104 +402,98 @@ describe('Dynamic Routing', function () {
                 request = supertest.agent(config.get('url'));
             });
 
-            it('should redirect without slash', function (done) {
-                request.get('/author/ghost-owner/edit')
+            it('should redirect without slash', async function () {
+                const res = await request.get('/author/ghost-owner/edit')
                     .expect('Location', '/author/ghost-owner/edit/')
                     .expect('Cache-Control', testUtils.cacheRules.year)
-                    .expect(301)
-                    .end(doEnd(done));
+                    .expect(301);
+                assertCorrectHeaders(res.headers);
             });
 
-            it('should not redirect to admin', function (done) {
-                request.get('/author/ghost-owner/edit/')
+            it('should not redirect to admin', async function () {
+                const res = await request.get('/author/ghost-owner/edit/')
                     .expect('Cache-Control', testUtils.cacheRules.noCache)
-                    .expect(404)
-                    .end(doEnd(done));
+                    .expect(404);
+                assertCorrectHeaders(res.headers);
             });
         });
 
         describe('Paged', function () {
             // Add enough posts to trigger pages
-            before(function (done) {
-                testUtils.teardownDb().then(function () {
-                    // we initialize data, but not a user. No user should be required for navigating the frontend
-                    return testUtils.initData();
-                }).then(function () {
-                    return testUtils.fixtures.insertPostsAndTags();
-                }).then(function () {
-                    return testUtils.fixtures.insertExtraPosts(9);
-                }).then(function () {
-                    return testUtils.fixtures.overrideOwnerUser('ghost-owner');
-                }).then(function () {
-                    done();
-                }).catch(done);
+            before(async function () {
+                await testUtils.teardownDb();
+                // we initialize data, but not a user. No user should be required for navigating the frontend
+                await testUtils.initData();
+                await testUtils.fixtures.insertPostsAndTags();
+                await testUtils.fixtures.insertExtraPosts(9);
+                await testUtils.fixtures.overrideOwnerUser('ghost-owner');
             });
 
             after(testUtils.teardownDb);
 
-            it('should redirect without slash', function (done) {
-                request.get('/author/ghost-owner/page/2')
+            it('should redirect without slash', async function () {
+                const res = await request.get('/author/ghost-owner/page/2')
                     .expect('Location', '/author/ghost-owner/page/2/')
                     .expect('Cache-Control', testUtils.cacheRules.year)
-                    .expect(301)
-                    .end(doEnd(done));
+                    .expect(301);
+                assertCorrectHeaders(res.headers);
             });
 
-            it('should respond with html', function (done) {
-                request.get('/author/ghost-owner/page/2/')
+            it('should respond with html', async function () {
+                const res = await request.get('/author/ghost-owner/page/2/')
                     .expect('Content-Type', /html/)
                     .expect('Cache-Control', testUtils.cacheRules.public)
-                    .expect(200)
-                    .end(doEnd(done));
+                    .expect(200);
+                assertCorrectHeaders(res.headers);
             });
 
-            it('should redirect page 1', function (done) {
-                request.get('/author/ghost-owner/page/1/')
+            it('should redirect page 1', async function () {
+                const res = await request.get('/author/ghost-owner/page/1/')
                     .expect('Location', '/author/ghost-owner/')
                     .expect('Cache-Control', testUtils.cacheRules.year)
-                    .expect(301)
-                    .end(doEnd(done));
+                    .expect(301);
+                assertCorrectHeaders(res.headers);
             });
 
-            it('should 404 if page too high', function (done) {
-                request.get('/author/ghost-owner/page/6/')
+            it('should 404 if page too high', async function () {
+                const res = await request.get('/author/ghost-owner/page/6/')
                     .expect('Cache-Control', testUtils.cacheRules.noCache)
                     .expect(404)
-                    .expect(/Page not found/)
-                    .end(doEnd(done));
+                    .expect(/Page not found/);
+                assertCorrectHeaders(res.headers);
             });
 
-            it('should 404 if page too low', function (done) {
-                request.get('/author/ghost-owner/page/0/')
+            it('should 404 if page too low', async function () {
+                const res = await request.get('/author/ghost-owner/page/0/')
                     .expect('Cache-Control', testUtils.cacheRules.noCache)
                     .expect(404)
-                    .expect(/Page not found/)
-                    .end(doEnd(done));
+                    .expect(/Page not found/);
+                assertCorrectHeaders(res.headers);
             });
 
             describe('RSS', function () {
-                it('should 404 if index attempted with 0', function (done) {
-                    request.get('/author/ghost-owner/rss/0/')
+                it('should 404 if index attempted with 0', async function () {
+                    const res = await request.get('/author/ghost-owner/rss/0/')
                         .expect('Cache-Control', testUtils.cacheRules.noCache)
                         .expect(404)
-                        .expect(/Page not found/)
-                        .end(doEnd(done));
+                        .expect(/Page not found/);
+                    assertCorrectHeaders(res.headers);
                 });
 
-                it('should 404 if index attempted with 1', function (done) {
-                    request.get('/author/ghost-owner/rss/1/')
+                it('should 404 if index attempted with 1', async function () {
+                    const res = await request.get('/author/ghost-owner/rss/1/')
                         .expect('Cache-Control', testUtils.cacheRules.noCache)
                         .expect(404)
-                        .expect(/Page not found/)
-                        .end(doEnd(done));
+                        .expect(/Page not found/);
+                    assertCorrectHeaders(res.headers);
                 });
 
-                it('should 404 for other pages', function (done) {
-                    request.get('/author/ghost-owner/rss/2/')
+                it('should 404 for other pages', async function () {
+                    const res = await request.get('/author/ghost-owner/rss/2/')
                         .expect('Cache-Control', testUtils.cacheRules.noCache)
                         .expect(404)
-                        .expect(/Page not found/)
-                        .end(doEnd(done));
+                        .expect(/Page not found/);
+                    assertCorrectHeaders(res.headers);
                 });
             });
         });
