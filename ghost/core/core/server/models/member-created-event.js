@@ -15,18 +15,26 @@ const MemberCreatedEvent = ghostBookshelf.Model.extend({
         return this.belongsTo('SubscriptionCreatedEvent', 'batch_id', 'batch_id');
     },
 
+    /**
+     * The status event recorded at member creation time (if any)
+     */
+    signupStatusEvent() {
+        return this.belongsTo('MemberStatusEvent', 'batch_id', 'batch_id')
+            .query(qb => qb.whereNull('from_status'));
+    },
+
     postAttribution() {
-        return this.belongsTo('Post', 'attribution_id', 'id');   
+        return this.belongsTo('Post', 'attribution_id', 'id');
     },
 
     userAttribution() {
-        return this.belongsTo('User', 'attribution_id', 'id');   
+        return this.belongsTo('User', 'attribution_id', 'id');
     },
 
     tagAttribution() {
-        return this.belongsTo('Tag', 'attribution_id', 'id');   
+        return this.belongsTo('Tag', 'attribution_id', 'id');
     },
-    
+
     filterRelations() {
         return {
             subscriptionCreatedEvent: {

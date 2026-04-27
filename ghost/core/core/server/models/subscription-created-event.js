@@ -15,20 +15,29 @@ const SubscriptionCreatedEvent = ghostBookshelf.Model.extend({
         return this.belongsTo('MemberCreatedEvent', 'batch_id', 'batch_id');
     },
 
+    /**
+     * The status transition recorded at subscription creation time (if any)
+     * (e.g. free -> paid, or gift -> paid)
+     */
+    paidStatusEvent() {
+        return this.belongsTo('MemberStatusEvent', 'batch_id', 'batch_id')
+            .query(qb => qb.where('to_status', 'paid'));
+    },
+
     subscription() {
         return this.belongsTo('StripeCustomerSubscription', 'subscription_id', 'id');
     },
 
     postAttribution() {
-        return this.belongsTo('Post', 'attribution_id', 'id');   
+        return this.belongsTo('Post', 'attribution_id', 'id');
     },
 
     userAttribution() {
-        return this.belongsTo('User', 'attribution_id', 'id');   
+        return this.belongsTo('User', 'attribution_id', 'id');
     },
 
     tagAttribution() {
-        return this.belongsTo('Tag', 'attribution_id', 'id');   
+        return this.belongsTo('Tag', 'attribution_id', 'id');
     }
 }, {
     async edit() {
