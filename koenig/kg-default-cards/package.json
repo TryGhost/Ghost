@@ -52,8 +52,8 @@
   "dependencies": {
     "@tryghost/kg-markdown-html-renderer": "7.2.0",
     "@tryghost/kg-utils": "1.1.0",
-    "@tryghost/string": "0.3.2",
-    "@tryghost/url-utils": "5.2.2",
+    "@tryghost/string": "0.3.3",
+    "@tryghost/url-utils": "5.2.3",
     "handlebars": "4.7.9",
     "juice": "11.1.1",
     "luxon": "3.7.2"
