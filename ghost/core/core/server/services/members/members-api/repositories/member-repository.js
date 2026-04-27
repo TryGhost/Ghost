@@ -330,19 +330,6 @@ module.exports = class MemberRepository {
 
         memberData.email_disabled = !!memberData.email_disabled;
 
-        if (memberData.products && memberData.products.length > 1) {
-            throw new errors.BadRequestError({message: tpl(messages.moreThanOneProduct)});
-        }
-
-        if (memberData.products) {
-            for (const productData of memberData.products) {
-                const product = await this._productRepository.get(productData);
-                if (product.get('active') !== true) {
-                    throw new errors.BadRequestError({message: tpl(messages.tierArchived)});
-                }
-            }
-        }
-
         if (memberData.status && !MEMBER_STATUSES.includes(memberData.status)) {
             throw new errors.ValidationError({
                 message: tpl(messages.invalidMemberStatus, {statuses: MEMBER_STATUSES.join(', ')}),
@@ -355,6 +342,21 @@ module.exports = class MemberRepository {
                 memberData.status = 'comped';
             } else {
                 memberData.status = 'free';
+            }
+        }
+
+        if (memberData.products && memberData.products.length > 1) {
+            throw new errors.BadRequestError({message: tpl(messages.moreThanOneProduct)});
+        }
+
+        // Don't allow to use archived tiers
+        // Exception: Gifts remain redeemable even if the tier is later archived, since the entitlement has already been paid for
+        if (memberData.products && memberData.status !== 'gift') {
+            for (const productData of memberData.products) {
+                const product = await this._productRepository.get(productData);
+                if (product.get('active') !== true) {
+                    throw new errors.BadRequestError({message: tpl(messages.tierArchived)});
+                }
             }
         }
 
@@ -674,7 +676,9 @@ module.exports = class MemberRepository {
                 });
             }
 
-            if (product.get('active') !== true) {
+            // Don't allow to use archived tiers
+            // Exception: Gifts remain redeemable even if the tier is later archived, since the entitlement has already been paid for
+            if (product.get('active') !== true && memberStatusData.status !== 'gift') {
                 throw new errors.BadRequestError({message: tpl(messages.tierArchived)});
             }
         }

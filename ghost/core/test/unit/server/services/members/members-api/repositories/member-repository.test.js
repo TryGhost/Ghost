@@ -2137,6 +2137,45 @@ describe('MemberRepository', function () {
             sinon.assert.notCalled(Member.add);
             sinon.assert.notCalled(Member.transaction);
         });
+
+        it('allows gift members to be created on an archived tier (gift was valid at purchase time)', async function () {
+            productRepository.get = sinon.stub().resolves({
+                id: 'tier_1',
+                get: sinon.stub().withArgs('active').returns(false)
+            });
+
+            await buildRepo().create({
+                email: 'test@example.com',
+                name: 'Test Member',
+                status: 'gift',
+                products: [{id: 'tier_1'}]
+            }, {});
+
+            sinon.assert.calledOnce(memberAdd);
+            assert.equal(memberAdd.firstCall.args[0].status, 'gift');
+        });
+
+        it('rejects non-gift members being created on an archived tier', async function () {
+            productRepository.get = sinon.stub().resolves({
+                id: 'tier_1',
+                get: sinon.stub().withArgs('active').returns(false)
+            });
+
+            try {
+                await buildRepo().create({
+                    email: 'test@example.com',
+                    name: 'Test Member',
+                    products: [{id: 'tier_1'}]
+                }, {});
+
+                assert.fail('Expected create to reject archived tier for non-gift member');
+            } catch (err) {
+                assert.equal(err instanceof errors.BadRequestError, true);
+                assert.equal(err.message, 'Cannot use archived Tiers');
+            }
+
+            sinon.assert.notCalled(memberAdd);
+        });
     });
 
     describe('update - member status', function () {
@@ -2308,6 +2347,47 @@ describe('MemberRepository', function () {
 
             sinon.assert.calledOnce(memberEdit);
             assert.equal(memberEdit.firstCall.args[0].status, 'free');
+        });
+
+        it('allows gift redemption on an archived tier (gift was valid at purchase time)', async function () {
+            productRepository.get = sinon.stub().resolves({
+                id: 'tier_1',
+                get: sinon.stub().withArgs('active').returns(false)
+            });
+            stripeAPIService.configured = true;
+
+            await buildRepo().update({
+                status: 'gift',
+                products: [{id: 'tier_1'}]
+            }, {
+                id: 'member_id_123'
+            });
+
+            sinon.assert.calledOnce(memberEdit);
+            assert.equal(memberEdit.firstCall.args[0].status, 'gift');
+        });
+
+        it('rejects adding an archived tier to a non-gift member', async function () {
+            productRepository.get = sinon.stub().resolves({
+                id: 'tier_1',
+                get: sinon.stub().withArgs('active').returns(false)
+            });
+            stripeAPIService.configured = true;
+
+            try {
+                await buildRepo().update({
+                    products: [{id: 'tier_1'}]
+                }, {
+                    id: 'member_id_123'
+                });
+
+                assert.fail('Expected update to reject archived tier for non-gift member');
+            } catch (err) {
+                assert.equal(err instanceof errors.BadRequestError, true);
+                assert.equal(err.message, 'Cannot use archived Tiers');
+            }
+
+            sinon.assert.notCalled(memberEdit);
         });
     });
 
