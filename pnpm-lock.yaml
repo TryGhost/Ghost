@@ -195,8 +195,8 @@ importers:
         specifier: workspace:*
         version: link:../admin-x-settings
       '@tryghost/koenig-lexical':
-        specifier: 1.8.0
-        version: 1.8.0
+        specifier: 1.8.1
+        version: 1.8.1
       '@tryghost/posts':
         specifier: workspace:*
         version: link:../posts
@@ -510,8 +510,8 @@ importers:
         specifier: 14.3.1
         version: 14.3.1(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tryghost/koenig-lexical':
-        specifier: 1.8.0
-        version: 1.8.0
+        specifier: 1.8.1
+        version: 1.8.1
       '@types/react':
         specifier: 18.3.28
         version: 18.3.28
@@ -588,8 +588,8 @@ importers:
         specifier: workspace:*
         version: link:../../ghost/i18n
       '@tryghost/kg-unsplash-selector':
-        specifier: 0.4.0
-        version: 0.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: 0.4.1
+        version: 0.4.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tryghost/limit-service':
         specifier: 1.5.2
         version: 1.5.2
@@ -1624,14 +1624,14 @@ importers:
         specifier: 1.1.103
         version: 1.1.103
       '@tryghost/kg-clean-basic-html':
-        specifier: 4.3.0
-        version: 4.3.0
+        specifier: 4.3.1
+        version: 4.3.1
       '@tryghost/kg-converters':
-        specifier: 1.2.0
-        version: 1.2.0
+        specifier: 1.2.1
+        version: 1.2.1
       '@tryghost/koenig-lexical':
-        specifier: 1.8.0
-        version: 1.8.0
+        specifier: 1.8.1
+        version: 1.8.1
       '@tryghost/limit-service':
         specifier: 1.5.2
         version: 1.5.2
@@ -2020,38 +2020,38 @@ importers:
         specifier: 1.0.9
         version: 1.0.9
       '@tryghost/kg-card-factory':
-        specifier: 5.2.0
-        version: 5.2.0
+        specifier: 5.2.1
+        version: 5.2.1
       '@tryghost/kg-clean-basic-html':
-        specifier: 4.3.0
-        version: 4.3.0
+        specifier: 4.3.1
+        version: 4.3.1
       '@tryghost/kg-converters':
-        specifier: 1.2.0
-        version: 1.2.0
+        specifier: 1.2.1
+        version: 1.2.1
       '@tryghost/kg-default-atoms':
-        specifier: 5.2.0
-        version: 5.2.0
+        specifier: 5.2.1
+        version: 5.2.1
       '@tryghost/kg-default-cards':
-        specifier: 10.3.0
-        version: 10.3.0(encoding@0.1.13)
+        specifier: 10.3.1
+        version: 10.3.1(encoding@0.1.13)
       '@tryghost/kg-default-nodes':
-        specifier: 2.1.0
-        version: 2.1.0(@noble/hashes@1.8.0)
+        specifier: 2.1.1
+        version: 2.1.1(@noble/hashes@1.8.0)
       '@tryghost/kg-default-transforms':
-        specifier: 1.3.0
-        version: 1.3.0(@lexical/clipboard@0.13.1(lexical@0.13.1))(@lexical/selection@0.13.1(lexical@0.13.1))(@noble/hashes@1.8.0)
+        specifier: 1.3.1
+        version: 1.3.1(@lexical/clipboard@0.13.1(lexical@0.13.1))(@lexical/selection@0.13.1(lexical@0.13.1))(@noble/hashes@1.8.0)
       '@tryghost/kg-html-to-lexical':
-        specifier: 1.3.0
-        version: 1.3.0(@lexical/selection@0.13.1(lexical@0.13.1))(@lexical/utils@0.13.1(lexical@0.13.1))(@noble/hashes@1.8.0)
+        specifier: 1.3.1
+        version: 1.3.1(@lexical/selection@0.13.1(lexical@0.13.1))(@lexical/utils@0.13.1(lexical@0.13.1))(@noble/hashes@1.8.0)
       '@tryghost/kg-lexical-html-renderer':
-        specifier: 1.4.0
-        version: 1.4.0(@lexical/selection@0.13.1(lexical@0.13.1))(@lexical/utils@0.13.1(lexical@0.13.1))(@noble/hashes@1.8.0)
+        specifier: 1.4.1
+        version: 1.4.1(@lexical/selection@0.13.1(lexical@0.13.1))(@lexical/utils@0.13.1(lexical@0.13.1))(@noble/hashes@1.8.0)
       '@tryghost/kg-markdown-html-renderer':
-        specifier: 7.2.0
-        version: 7.2.0
+        specifier: 7.2.1
+        version: 7.2.1
       '@tryghost/kg-mobiledoc-html-renderer':
-        specifier: 7.2.0
-        version: 7.2.0
+        specifier: 7.2.1
+        version: 7.2.1
       '@tryghost/limit-service':
         specifier: 1.5.2
         version: 1.5.2
@@ -2568,8 +2568,8 @@ importers:
         version: 5.9.3
     optionalDependencies:
       '@tryghost/html-to-mobiledoc':
-        specifier: 3.3.0
-        version: 3.3.0(@noble/hashes@1.8.0)
+        specifier: 3.3.1
+        version: 3.3.1(@noble/hashes@1.8.0)
       sqlite3:
         specifier: 5.1.7
         version: 5.1.7
@@ -3660,22 +3660,8 @@ packages:
     resolution: {integrity: sha512-5a6wqoJV/xEdbRNKVo6I4hO3VjyDq//8q2f9I6PBAvMesJHFauXDorcNCsr9RzvsZnaWi5NYCcfyqP1QeFHFbw==}
     engines: {node: '>=4.0.0'}
 
-  '@csstools/css-calc@3.1.1':
-    resolution: {integrity: sha512-HJ26Z/vmsZQqs/o3a6bgKslXGFAungXGbinULZO3eMsOyNJHeBBZfup5FiZInOghgoM4Hwnmw+OgbJCNg1wwUQ==}
-    engines: {node: '>=20.19.0'}
-    peerDependencies:
-      '@csstools/css-parser-algorithms': ^4.0.0
-      '@csstools/css-tokenizer': ^4.0.0
-
   '@csstools/css-calc@3.2.0':
     resolution: {integrity: sha512-bR9e6o2BDB12jzN/gIbjHa5wLJ4UjD1CB9pM7ehlc0ddk6EBz+yYS1EV2MF55/HUxrHcB/hehAyt5vhsA3hx7w==}
-    engines: {node: '>=20.19.0'}
-    peerDependencies:
-      '@csstools/css-parser-algorithms': ^4.0.0
-      '@csstools/css-tokenizer': ^4.0.0
-
-  '@csstools/css-color-parser@4.0.2':
-    resolution: {integrity: sha512-0GEfbBLmTFf0dJlpsNU7zwxRIH0/BGEMuXLTCvFYxuL1tNhqzTbtnFICyJLTNK4a+RechKP75e7w42ClXSnJQw==}
     engines: {node: '>=20.19.0'}
     peerDependencies:
       '@csstools/css-parser-algorithms': ^4.0.0
@@ -8476,8 +8462,8 @@ packages:
   '@tryghost/helpers@1.1.103':
     resolution: {integrity: sha512-ako7nvUKySOaTMSZXUXnrg6pVTkxW1ZVKbJj0t0HGG+ndt0pjLBdnzdZW3BMGEj4Qvf0MWxGdUcLrW/OFyHzsg==}
 
-  '@tryghost/html-to-mobiledoc@3.3.0':
-    resolution: {integrity: sha512-Hw/nu9QC5gu1bNvQ3+ls6vEUUDDQDC5S13Zqw96OU2ripPcTOG60ngOEGBhP6eCkU1vwXs8ShAQn/FBIRNLvqQ==}
+  '@tryghost/html-to-mobiledoc@3.3.1':
+    resolution: {integrity: sha512-VH9JVk/2Mt+FTjNUQYT4zbO3XkDGNiuBFuF+f2HYFB050c12FftTPtCF578Lj+zUm+slZLljaJMW+czl7aH/7g==}
 
   '@tryghost/html-to-plaintext@1.0.8':
     resolution: {integrity: sha512-CIXoOlmpp9SVrb0BPQ/+cBaSHFpGv53Gew3VFLw0w1v1q04+0e0FRKjl8Cv6oUl+c1I9LwxbwdcV6rxRCgVbIw==}
@@ -8497,61 +8483,61 @@ packages:
   '@tryghost/job-manager@1.0.9':
     resolution: {integrity: sha512-Wlwr1R8oeU6HLB7RB1g6VxAH6VEZIaXTVV2GdvCbipK+TA0MIo6YOQUgrIky25RpyRqKXR0UuDIfXDB4+S+GgQ==}
 
-  '@tryghost/kg-card-factory@5.2.0':
-    resolution: {integrity: sha512-hjhUusuSDZUl4ZCNVx37od6ejjy6nrhjZm6lhhEdF1vXX2sjhc0j7KjT5sjPHxCxV0gN+Td3TAAg21RRiKh4tg==}
+  '@tryghost/kg-card-factory@5.2.1':
+    resolution: {integrity: sha512-6fS2dmL5h+UIwTH4rJRJxDiOF5UzJtHCh+pGoEZhG0g+JUoguBW1/e1uf8N6xRIO2VsNnQuYoHdKq+RbLqrFVA==}
     engines: {node: ^22.13.1 || ^24.0.0}
 
-  '@tryghost/kg-clean-basic-html@4.3.0':
-    resolution: {integrity: sha512-wPSV1zs3JBFt6b7iyL7LHx0A4twDacgo7t7PRiR6dA/t6U5ekI5JSs1Ko9boggjzhwK+N9y/xDCOlcbwo6K5dw==}
+  '@tryghost/kg-clean-basic-html@4.3.1':
+    resolution: {integrity: sha512-yYAheQjp26TYHgl7UuZj8sQ+e+XdEp3YMF/qgMoInbnJAsAFhIFoLe2EQ7tYbk4YKsmLCDCgnW1iazuB21XrSg==}
     engines: {node: ^22.13.1 || ^24.0.0}
 
-  '@tryghost/kg-converters@1.2.0':
-    resolution: {integrity: sha512-OfUWM3PSM72vKmhMndGBL2tG/Lxka+l5+8j6zF6LpvQw8pAUNJvC4YQ1G53qg89hVSlX0myJQtjBMJNZ5wsn7g==}
+  '@tryghost/kg-converters@1.2.1':
+    resolution: {integrity: sha512-MaBJMMJZ8k3PH/BD3DhO6Dt7SEUPDi+NlUGv5zbZQHb96mD1H9jIsYl38vYhSiYRDU1T0YIrVS3UuQS8O5UpuQ==}
 
-  '@tryghost/kg-default-atoms@5.2.0':
-    resolution: {integrity: sha512-TxDfierd78p6y343trWZICInDV/gB942eq7eG48d5GWiy9Fhi2Iy19UYZAeX8n+X4u6SOKbWGVEhmwjvsF0KMw==}
+  '@tryghost/kg-default-atoms@5.2.1':
+    resolution: {integrity: sha512-NEF489Y4Q9y4jGL+4x017T9O6hwp2CAIb9bRVejtegilA6VhMSSO9uzhEIkmoso1RH7vahub0mocMtOrv7bHjQ==}
     engines: {node: ^22.13.1 || ^24.0.0}
 
-  '@tryghost/kg-default-cards@10.3.0':
-    resolution: {integrity: sha512-eaDePk+Eoek+V1qS/i3uDawpm2xQezwqba5XiAH2BSmRS9gZTVqb1lWlRdL+QXmcqaIlbPWPxrYHSM/JjbA38Q==}
+  '@tryghost/kg-default-cards@10.3.1':
+    resolution: {integrity: sha512-L6nbmpP9/DmocJRIqHmSd00nV+knem+0I6SlEaPlXjvpGlesVMX+fsDP0I67CkKBBelvmlkvK4MzT2zJp5e9nQ==}
     engines: {node: ^22.13.1 || ^24.0.0}
 
-  '@tryghost/kg-default-nodes@2.1.0':
-    resolution: {integrity: sha512-9XpYBur2i5S4Mtnc1LPlnHM0v9z3p8XhUWzA3CR+f08ecZQmlnsby3vIIhhf2dvmvlWHGN5oWh/Z+6VwW+uQPw==}
+  '@tryghost/kg-default-nodes@2.1.1':
+    resolution: {integrity: sha512-OLabnd0jKkW0hRQENXoWm0XhLRkzMdUdw4zB01RCUQiQ3rKdWeHjibDB8xlRoUqHdVj9MBC+NVjEGw9oic85Mw==}
     engines: {node: ^22.13.1 || ^24.0.0}
 
-  '@tryghost/kg-default-transforms@1.3.0':
-    resolution: {integrity: sha512-i1EQtbFg5VVxOaSAEZC+1dEqVDUBDOqzve4g2GzEA9s+axFGRWqwnu+vj5f8XLGWX3Jcb8qTS8pzPouMgWqN9w==}
+  '@tryghost/kg-default-transforms@1.3.1':
+    resolution: {integrity: sha512-GL23u0CACoU6XvetzKvxnhfVZE93pznbePQ9pbIeiYuKnitMovuUo40G553kMHvQ7C1NK7YkozhocBsLGkl0RQ==}
 
-  '@tryghost/kg-html-to-lexical@1.3.0':
-    resolution: {integrity: sha512-7Ly2wFxeYcZw4eCKZPtpZ6/hHmR6qgZy1w+Sb5UyNxJqBVLFnOMdSN6QC7r6IONJunEVbRNCrqNRxLZlMTFuvw==}
+  '@tryghost/kg-html-to-lexical@1.3.1':
+    resolution: {integrity: sha512-IjLONFywAmwqcPMfX20YAkaPq4fgOv0ME5ahboirkdztAjCGXhY6oq9bgkrrZPNdbAtl6LyMvZ1w3wI1Hq2jeg==}
 
-  '@tryghost/kg-lexical-html-renderer@1.4.0':
-    resolution: {integrity: sha512-9qGIo8eNbrBBxY4TIvVvkQbdqjJFU9KNwqp37FSm69nLm4MNKX4hnKlPF2nINdiUgFtzFxCu+4wmH4htaO7U3g==}
+  '@tryghost/kg-lexical-html-renderer@1.4.1':
+    resolution: {integrity: sha512-mPbhGQSYNrYENm3caQeD70bAjlE13ct+hp+GvShDTuGE+DsrRiif0MIL12tV9Hp2iFwhutlwFpMXRQXwI+2lIQ==}
 
-  '@tryghost/kg-markdown-html-renderer@7.2.0':
-    resolution: {integrity: sha512-ZPf0o0VdfmkBqUuwLAhmeZCtM7EAJEUDvGyAMQy/WPvI0TSs+Z3narE3AL1JFwx/MffBwUt/qvwO4HVOcHgQrQ==}
+  '@tryghost/kg-markdown-html-renderer@7.2.1':
+    resolution: {integrity: sha512-1PH7L/k+aEzFTYnvikH5U0qEetcglOZcGjqbfVXL6wD66BUzxeKOeLq51lLc00fjKLZtZa2Qr4zj1DqObPO3Mw==}
     engines: {node: ^22.13.1 || ^24.0.0}
 
-  '@tryghost/kg-mobiledoc-html-renderer@7.2.0':
-    resolution: {integrity: sha512-N9XwfmlZuWdZf6FEcmM495N+S7erJXqbqiH1cXDKnD4I4orL6HcYpYcmaeTJ4A1CGZ7wEcUTjt2BIrSP4pz0tg==}
+  '@tryghost/kg-mobiledoc-html-renderer@7.2.1':
+    resolution: {integrity: sha512-7qTnIWCzBZEEjZQpGKlCaJ9kbYrhnmG6/ttlOtFHUrhbfoIYts1uiVRXiP0VB3xELIPuu34aFdslpX2ANIzhCQ==}
     engines: {node: ^22.13.1 || ^24.0.0}
 
-  '@tryghost/kg-parser-plugins@4.3.0':
-    resolution: {integrity: sha512-uMI+JKG3K4PgVOADjWkxr3Tz4UwSEUs0ZycaDC2bjunrBBrLe7A2fHjMVuPbs4gIz7QZKMV0jRtucCZkBT7PvQ==}
+  '@tryghost/kg-parser-plugins@4.3.1':
+    resolution: {integrity: sha512-E8M+jlPmuU9OHa1SWtU5Pc+zP5dbZetXrNVuxlzlBdysAUh9MPfz1C9bxaZ7um7TuqNechl6t2WSUJezueYN2g==}
     engines: {node: ^22.13.1}
 
-  '@tryghost/kg-unsplash-selector@0.4.0':
-    resolution: {integrity: sha512-c/tUcQddM6YVazJeRmXJOS1dEWL1v6Fr5is5VvdfwtDAaQHp32iFjeb4d0H3miyfJ3DYXXEDtt1l5iQ3dOdDVw==}
+  '@tryghost/kg-unsplash-selector@0.4.1':
+    resolution: {integrity: sha512-9W2cuTBr3xo5SsCPC3ujxWrLj1q23xmLRLIaWgxYyyPTCXj2XP3Bu1aOOd9u6y2hkS3TdUt6ma3LPTi8K/IHEg==}
     peerDependencies:
       react: ^18.2.0
       react-dom: ^18.2.0
 
-  '@tryghost/kg-utils@1.1.0':
-    resolution: {integrity: sha512-PrOmK9zoEVraQZ9IOza5sUiExLifbNjmcJJmXRr5clUg/Zx1SUWWGcH49bb12+uqTYGLqc7LknvsqB14euuBYw==}
+  '@tryghost/kg-utils@1.1.1':
+    resolution: {integrity: sha512-qUEQwA4RB0DXwBKaxWknRGiYFdzpW/LYugsgFyhxSZ4k/EX8eWmZSUNaLK0LodCr+I5+VNuFoCllngvM1IhR6A==}
 
-  '@tryghost/koenig-lexical@1.8.0':
-    resolution: {integrity: sha512-AD0PBZAx1nnw48T2xbALwTtaJuJWcAw4awJOWI975Xh/ZV2rupNmmdzgpfdHke6pJhvhbJbXeBMOzb/AsRYKXA==}
+  '@tryghost/koenig-lexical@1.8.1':
+    resolution: {integrity: sha512-cVIM2Iknhz/cZFiczgpX6oBWmeJwo0MIkG6NR6VLxncS6QnF+EJloHGrjQW7j2Uge3ly2BpRWHsJP4YV0PtpzA==}
 
   '@tryghost/limit-service@1.5.2':
     resolution: {integrity: sha512-BTSnMpVMRauSkxi0yL/V2qVy9nRlAL9maALFAe5MDNTSCvg4zjV2b2S4o6+tgCyGDRkMPeePfrgSuH2YTTbD5Q==}
@@ -8644,6 +8630,9 @@ packages:
   '@tryghost/string@0.3.2':
     resolution: {integrity: sha512-tPgTU4o/4m1TBMoSChHm4n7XvXq+x6GJ//B0MdVPK57Rb0GEThsV347C2Fr5+1q71EdICrLbFPYh0vAqEM/eoA==}
 
+  '@tryghost/string@0.3.3':
+    resolution: {integrity: sha512-VCJKoj+bHd5TKpNu02ce1lMLTDfg+Uv077i8TdijequrmcEayZTYSLVnNJ1320tu9+2rB+yzdadS/3BCTtACEA==}
+
   '@tryghost/timezone-data@0.4.18':
     resolution: {integrity: sha512-yawVt4pBmbsw2Uwsxd/8rjwyucQX6cefHH48X5Qe5eMQH3mnla5Q+gJ+By9a3Sza1qECvhIG3jUhDM3cLhILzQ==}
 
@@ -8656,8 +8645,8 @@ packages:
   '@tryghost/url-utils@5.1.2':
     resolution: {integrity: sha512-GGZRfdVdk7jE1puqfBCeaAMeQ/Gd0NUkbqhj4gRSCWKW97JDpoiu5Fwyutt3vq3U3X4ZsfLfKs0NtAfUez0oog==}
 
-  '@tryghost/url-utils@5.2.2':
-    resolution: {integrity: sha512-KlDLms43V9j3LAft3bhHYuywhaAob9fO1htbSOH++hGEP9nQLL9FHLYqeuWzXvKTb+ZjGZ+HNRpeErc7G6dgCw==}
+  '@tryghost/url-utils@5.2.3':
+    resolution: {integrity: sha512-1+1sUfJuXlD0OWYiM/N7mNp2BSNCKb0PVTBjER6bEq/owa8Et9W2MDMQ1H3/dIOvlSq+7swGCoKX/IrXNeaWmA==}
 
   '@tryghost/validator@0.2.22':
     resolution: {integrity: sha512-dmobNVEKXMi3K4OdAXLBFwa78hVgy8cYvCPJgfV4h3NtYIyRHqwARr3upT3/ASpVBpKGVBu7XexfSv+tibzsuQ==}
@@ -22375,16 +22364,16 @@ snapshots:
 
   '@asamuzakjp/css-color@4.1.2':
     dependencies:
-      '@csstools/css-calc': 3.1.1(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)
-      '@csstools/css-color-parser': 4.0.2(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)
+      '@csstools/css-calc': 3.2.0(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)
+      '@csstools/css-color-parser': 4.1.0(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)
       '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.0)
       '@csstools/css-tokenizer': 4.0.0
-      lru-cache: 11.2.7
+      lru-cache: 11.3.5
 
   '@asamuzakjp/css-color@5.0.1':
     dependencies:
-      '@csstools/css-calc': 3.1.1(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)
-      '@csstools/css-color-parser': 4.0.2(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)
+      '@csstools/css-calc': 3.2.0(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)
+      '@csstools/css-color-parser': 4.1.0(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)
       '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.0)
       '@csstools/css-tokenizer': 4.0.0
       lru-cache: 11.2.7
@@ -24085,20 +24074,8 @@ snapshots:
 
   '@csstools/convert-colors@1.4.0': {}
 
-  '@csstools/css-calc@3.1.1(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)':
-    dependencies:
-      '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.0)
-      '@csstools/css-tokenizer': 4.0.0
-
   '@csstools/css-calc@3.2.0(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)':
     dependencies:
-      '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.0)
-      '@csstools/css-tokenizer': 4.0.0
-
-  '@csstools/css-color-parser@4.0.2(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)':
-    dependencies:
-      '@csstools/color-helpers': 6.0.2
-      '@csstools/css-calc': 3.1.1(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)
       '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.0)
       '@csstools/css-tokenizer': 4.0.0
 
@@ -24561,7 +24538,7 @@ snapshots:
       js-string-escape: 1.0.1
       jsdom: 16.7.0
       json-stable-stringify: 1.3.0
-      lodash: 4.17.23
+      lodash: 4.18.1
       pkg-up: 2.0.0
       resolve: 1.22.11
       resolve-package-path: 1.2.7
@@ -24584,7 +24561,7 @@ snapshots:
       '@embroider/core': 0.29.0
       assert-never: 1.4.0
       ember-cli-babel: 7.26.11
-      lodash: 4.17.23
+      lodash: 4.18.1
       resolve: 1.22.11
       semver: 7.7.4
     transitivePeerDependencies:
@@ -24598,7 +24575,7 @@ snapshots:
       '@embroider/shared-internals': 0.41.0
       assert-never: 1.4.0
       ember-cli-babel: 7.26.11
-      lodash: 4.17.23
+      lodash: 4.18.1
       resolve: 1.22.11
       semver: 7.7.4
     transitivePeerDependencies:
@@ -24624,7 +24601,7 @@ snapshots:
       babel-import-util: 3.0.1
       ember-cli-babel: 7.26.11
       find-up: 5.0.0
-      lodash: 4.17.23
+      lodash: 4.18.1
       resolve: 1.22.11
       semver: 7.7.4
     transitivePeerDependencies:
@@ -24634,7 +24611,7 @@ snapshots:
     dependencies:
       ember-rfc176-data: 0.3.18
       fs-extra: 7.0.1
-      lodash: 4.17.23
+      lodash: 4.18.1
       pkg-up: 3.1.0
       resolve-package-path: 1.2.7
       semver: 7.7.4
@@ -24646,7 +24623,7 @@ snapshots:
       ember-rfc176-data: 0.3.18
       fs-extra: 9.1.0
       js-string-escape: 1.0.1
-      lodash: 4.17.23
+      lodash: 4.18.1
       resolve-package-path: 4.0.3
       semver: 7.7.4
       typescript-memoize: 1.1.1
@@ -24693,7 +24670,7 @@ snapshots:
       fs-extra: 9.1.0
       is-subdir: 1.2.0
       js-string-escape: 1.0.1
-      lodash: 4.17.23
+      lodash: 4.18.1
       minimatch: 3.1.5
       pkg-entry-points: 1.1.1
       resolve-package-path: 4.0.3
@@ -26088,7 +26065,7 @@ snapshots:
       agent-base: 7.1.4
       http-proxy-agent: 7.0.2
       https-proxy-agent: 7.0.6
-      lru-cache: 11.2.7
+      lru-cache: 11.3.5
       socks-proxy-agent: 8.0.5
     transitivePeerDependencies:
       - supports-color
@@ -29641,9 +29618,9 @@ snapshots:
     dependencies:
       lodash-es: 4.17.23
 
-  '@tryghost/html-to-mobiledoc@3.3.0(@noble/hashes@1.8.0)':
+  '@tryghost/html-to-mobiledoc@3.3.1(@noble/hashes@1.8.0)':
     dependencies:
-      '@tryghost/kg-parser-plugins': 4.3.0
+      '@tryghost/kg-parser-plugins': 4.3.1
       '@tryghost/mobiledoc-kit': 0.12.4-ghost.1
       jsdom: 29.0.2(@noble/hashes@1.8.0)
     transitivePeerDependencies:
@@ -29697,36 +29674,36 @@ snapshots:
       - '@75lb/nature'
       - supports-color
 
-  '@tryghost/kg-card-factory@5.2.0': {}
+  '@tryghost/kg-card-factory@5.2.1': {}
 
-  '@tryghost/kg-clean-basic-html@4.3.0': {}
+  '@tryghost/kg-clean-basic-html@4.3.1': {}
 
-  '@tryghost/kg-converters@1.2.0':
+  '@tryghost/kg-converters@1.2.1':
     dependencies:
       lodash: 4.18.1
 
-  '@tryghost/kg-default-atoms@5.2.0': {}
+  '@tryghost/kg-default-atoms@5.2.1': {}
 
-  '@tryghost/kg-default-cards@10.3.0(encoding@0.1.13)':
+  '@tryghost/kg-default-cards@10.3.1(encoding@0.1.13)':
     dependencies:
-      '@tryghost/kg-markdown-html-renderer': 7.2.0
-      '@tryghost/kg-utils': 1.1.0
-      '@tryghost/string': 0.3.2
-      '@tryghost/url-utils': 5.2.2
+      '@tryghost/kg-markdown-html-renderer': 7.2.1
+      '@tryghost/kg-utils': 1.1.1
+      '@tryghost/string': 0.3.3
+      '@tryghost/url-utils': 5.2.3
       handlebars: 4.7.9
       juice: 9.1.0(encoding@0.1.13)
       luxon: 3.7.2
     transitivePeerDependencies:
       - encoding
 
-  '@tryghost/kg-default-nodes@2.1.0(@noble/hashes@1.8.0)':
+  '@tryghost/kg-default-nodes@2.1.1(@noble/hashes@1.8.0)':
     dependencies:
       '@lexical/clipboard': 0.13.1(lexical@0.13.1)
       '@lexical/rich-text': 0.13.1(@lexical/clipboard@0.13.1(lexical@0.13.1))(@lexical/selection@0.13.1(lexical@0.13.1))(@lexical/utils@0.13.1(lexical@0.13.1))(lexical@0.13.1)
       '@lexical/selection': 0.13.1(lexical@0.13.1)
       '@lexical/utils': 0.13.1(lexical@0.13.1)
-      '@tryghost/kg-clean-basic-html': 4.3.0
-      '@tryghost/kg-markdown-html-renderer': 7.2.0
+      '@tryghost/kg-clean-basic-html': 4.3.1
+      '@tryghost/kg-markdown-html-renderer': 7.2.1
       clsx: 2.1.1
       html-minifier: 4.0.0
       jsdom: 29.0.2(@noble/hashes@1.8.0)
@@ -29737,12 +29714,12 @@ snapshots:
       - '@noble/hashes'
       - canvas
 
-  '@tryghost/kg-default-transforms@1.3.0(@lexical/clipboard@0.13.1(lexical@0.13.1))(@lexical/selection@0.13.1(lexical@0.13.1))(@noble/hashes@1.8.0)':
+  '@tryghost/kg-default-transforms@1.3.1(@lexical/clipboard@0.13.1(lexical@0.13.1))(@lexical/selection@0.13.1(lexical@0.13.1))(@noble/hashes@1.8.0)':
     dependencies:
       '@lexical/list': 0.13.1(lexical@0.13.1)
       '@lexical/rich-text': 0.13.1(@lexical/clipboard@0.13.1(lexical@0.13.1))(@lexical/selection@0.13.1(lexical@0.13.1))(@lexical/utils@0.13.1(lexical@0.13.1))(lexical@0.13.1)
       '@lexical/utils': 0.13.1(lexical@0.13.1)
-      '@tryghost/kg-default-nodes': 2.1.0(@noble/hashes@1.8.0)
+      '@tryghost/kg-default-nodes': 2.1.1(@noble/hashes@1.8.0)
       lexical: 0.13.1
     transitivePeerDependencies:
       - '@lexical/clipboard'
@@ -29750,7 +29727,7 @@ snapshots:
       - '@noble/hashes'
       - canvas
 
-  '@tryghost/kg-html-to-lexical@1.3.0(@lexical/selection@0.13.1(lexical@0.13.1))(@lexical/utils@0.13.1(lexical@0.13.1))(@noble/hashes@1.8.0)':
+  '@tryghost/kg-html-to-lexical@1.3.1(@lexical/selection@0.13.1(lexical@0.13.1))(@lexical/utils@0.13.1(lexical@0.13.1))(@noble/hashes@1.8.0)':
     dependencies:
       '@lexical/clipboard': 0.13.1(lexical@0.13.1)
       '@lexical/headless': 0.13.1(lexical@0.13.1)
@@ -29758,8 +29735,8 @@ snapshots:
       '@lexical/link': 0.13.1(lexical@0.13.1)
       '@lexical/list': 0.13.1(lexical@0.13.1)
       '@lexical/rich-text': 0.13.1(@lexical/clipboard@0.13.1(lexical@0.13.1))(@lexical/selection@0.13.1(lexical@0.13.1))(@lexical/utils@0.13.1(lexical@0.13.1))(lexical@0.13.1)
-      '@tryghost/kg-default-nodes': 2.1.0(@noble/hashes@1.8.0)
-      '@tryghost/kg-default-transforms': 1.3.0(@lexical/clipboard@0.13.1(lexical@0.13.1))(@lexical/selection@0.13.1(lexical@0.13.1))(@noble/hashes@1.8.0)
+      '@tryghost/kg-default-nodes': 2.1.1(@noble/hashes@1.8.0)
+      '@tryghost/kg-default-transforms': 1.3.1(@lexical/clipboard@0.13.1(lexical@0.13.1))(@lexical/selection@0.13.1(lexical@0.13.1))(@noble/hashes@1.8.0)
       jsdom: 29.0.2(@noble/hashes@1.8.0)
       lexical: 0.13.1
     transitivePeerDependencies:
@@ -29768,7 +29745,7 @@ snapshots:
       - '@noble/hashes'
       - canvas
 
-  '@tryghost/kg-lexical-html-renderer@1.4.0(@lexical/selection@0.13.1(lexical@0.13.1))(@lexical/utils@0.13.1(lexical@0.13.1))(@noble/hashes@1.8.0)':
+  '@tryghost/kg-lexical-html-renderer@1.4.1(@lexical/selection@0.13.1(lexical@0.13.1))(@lexical/utils@0.13.1(lexical@0.13.1))(@noble/hashes@1.8.0)':
     dependencies:
       '@lexical/clipboard': 0.13.1(lexical@0.13.1)
       '@lexical/code': 0.13.1(lexical@0.13.1)
@@ -29776,8 +29753,8 @@ snapshots:
       '@lexical/link': 0.13.1(lexical@0.13.1)
       '@lexical/list': 0.13.1(lexical@0.13.1)
       '@lexical/rich-text': 0.13.1(@lexical/clipboard@0.13.1(lexical@0.13.1))(@lexical/selection@0.13.1(lexical@0.13.1))(@lexical/utils@0.13.1(lexical@0.13.1))(lexical@0.13.1)
-      '@tryghost/kg-default-nodes': 2.1.0(@noble/hashes@1.8.0)
-      '@tryghost/kg-default-transforms': 1.3.0(@lexical/clipboard@0.13.1(lexical@0.13.1))(@lexical/selection@0.13.1(lexical@0.13.1))(@noble/hashes@1.8.0)
+      '@tryghost/kg-default-nodes': 2.1.1(@noble/hashes@1.8.0)
+      '@tryghost/kg-default-transforms': 1.3.1(@lexical/clipboard@0.13.1(lexical@0.13.1))(@lexical/selection@0.13.1(lexical@0.13.1))(@noble/hashes@1.8.0)
       jsdom: 29.0.2(@noble/hashes@1.8.0)
       lexical: 0.13.1
     transitivePeerDependencies:
@@ -29786,9 +29763,9 @@ snapshots:
       - '@noble/hashes'
       - canvas
 
-  '@tryghost/kg-markdown-html-renderer@7.2.0':
+  '@tryghost/kg-markdown-html-renderer@7.2.1':
     dependencies:
-      '@tryghost/kg-utils': 1.1.0
+      '@tryghost/kg-utils': 1.1.1
       markdown-it: 14.1.1
       markdown-it-footnote: 4.0.0
       markdown-it-image-lazy-loading: 2.0.1
@@ -29798,27 +29775,27 @@ snapshots:
       markdown-it-sup: 2.0.0
       semver: 7.7.4
 
-  '@tryghost/kg-mobiledoc-html-renderer@7.2.0':
+  '@tryghost/kg-mobiledoc-html-renderer@7.2.1':
     dependencies:
-      '@tryghost/kg-utils': 1.1.0
+      '@tryghost/kg-utils': 1.1.1
       mobiledoc-dom-renderer: 0.7.2
       simple-dom: 1.4.0
 
-  '@tryghost/kg-parser-plugins@4.3.0':
+  '@tryghost/kg-parser-plugins@4.3.1':
     dependencies:
-      '@tryghost/kg-clean-basic-html': 4.3.0
+      '@tryghost/kg-clean-basic-html': 4.3.1
     optional: true
 
-  '@tryghost/kg-unsplash-selector@0.4.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@tryghost/kg-unsplash-selector@0.4.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  '@tryghost/kg-utils@1.1.0':
+  '@tryghost/kg-utils@1.1.1':
     dependencies:
       semver: 7.7.4
 
-  '@tryghost/koenig-lexical@1.8.0': {}
+  '@tryghost/koenig-lexical@1.8.1': {}
 
   '@tryghost/limit-service@1.5.2':
     dependencies:
@@ -29870,7 +29847,7 @@ snapshots:
   '@tryghost/mongo-knex@0.9.4':
     dependencies:
       debug: 4.4.3(supports-color@5.5.0)
-      lodash: 4.17.23
+      lodash: 4.18.1
     transitivePeerDependencies:
       - supports-color
 
@@ -30065,6 +30042,10 @@ snapshots:
     dependencies:
       unidecode: 1.1.0
 
+  '@tryghost/string@0.3.3':
+    dependencies:
+      unidecode: 1.1.0
+
   '@tryghost/timezone-data@0.4.18': {}
 
   '@tryghost/tpl@0.1.40':
@@ -30083,10 +30064,10 @@ snapshots:
       remark-footnotes: 1.0.0
       unist-util-visit: 2.0.3
 
-  '@tryghost/url-utils@5.2.2':
+  '@tryghost/url-utils@5.2.3':
     dependencies:
       cheerio: 1.2.0
-      lodash: 4.17.23
+      lodash: 4.18.1
       moment: 2.24.0
       moment-timezone: 0.5.45
       remark: 11.0.2
@@ -31801,7 +31782,7 @@ snapshots:
 
   async@2.6.4:
     dependencies:
-      lodash: 4.17.23
+      lodash: 4.18.1
 
   async@3.2.3: {}
 
@@ -31886,7 +31867,7 @@ snapshots:
       convert-source-map: 1.9.0
       debug: 2.6.9(supports-color@1.2.0)
       json5: 0.5.1
-      lodash: 4.17.23
+      lodash: 4.18.1
       minimatch: 3.1.5
       path-is-absolute: 1.0.1
       private: 0.1.8
@@ -31902,7 +31883,7 @@ snapshots:
       babel-types: 6.26.0
       detect-indent: 4.0.0
       jsesc: 1.3.0
-      lodash: 4.17.23
+      lodash: 4.18.1
       source-map: 0.5.7
       trim-right: 1.0.1
 
@@ -31934,7 +31915,7 @@ snapshots:
       babel-helper-function-name: 6.24.1
       babel-runtime: 6.26.0
       babel-types: 6.26.0
-      lodash: 4.17.23
+      lodash: 4.18.1
     transitivePeerDependencies:
       - supports-color
 
@@ -31975,7 +31956,7 @@ snapshots:
     dependencies:
       babel-runtime: 6.26.0
       babel-types: 6.26.0
-      lodash: 4.17.23
+      lodash: 4.18.1
 
   babel-helper-remap-async-to-generator@6.24.1:
     dependencies:
@@ -32082,7 +32063,7 @@ snapshots:
   babel-plugin-filter-imports@4.0.0:
     dependencies:
       '@babel/types': 7.29.0
-      lodash: 4.17.23
+      lodash: 4.18.1
 
   babel-plugin-htmlbars-inline-precompile@1.0.0: {}
 
@@ -32228,7 +32209,7 @@ snapshots:
       babel-template: 6.26.0
       babel-traverse: 6.26.0
       babel-types: 6.26.0
-      lodash: 4.17.23
+      lodash: 4.18.1
     transitivePeerDependencies:
       - supports-color
 
@@ -32453,7 +32434,7 @@ snapshots:
       babel-runtime: 6.26.0
       core-js: 2.6.12
       home-or-tmp: 2.0.0
-      lodash: 4.17.23
+      lodash: 4.18.1
       mkdirp: 0.5.6
       source-map-support: 0.4.18
     transitivePeerDependencies:
@@ -32470,7 +32451,7 @@ snapshots:
       babel-traverse: 6.26.0
       babel-types: 6.26.0
       babylon: 6.18.0
-      lodash: 4.17.23
+      lodash: 4.18.1
     transitivePeerDependencies:
       - supports-color
 
@@ -32484,7 +32465,7 @@ snapshots:
       debug: 2.6.9(supports-color@1.2.0)
       globals: 9.18.0
       invariant: 2.2.4
-      lodash: 4.17.23
+      lodash: 4.18.1
     transitivePeerDependencies:
       - supports-color
 
@@ -32492,7 +32473,7 @@ snapshots:
     dependencies:
       babel-runtime: 6.26.0
       esutils: 2.0.3
-      lodash: 4.17.23
+      lodash: 4.18.1
       to-fast-properties: 1.0.3
 
   babel6-plugin-strip-class-callcheck@6.0.0: {}
@@ -33530,7 +33511,7 @@ snapshots:
       '@npmcli/fs': 5.0.0
       fs-minipass: 3.0.3
       glob: 13.0.6
-      lru-cache: 11.2.7
+      lru-cache: 11.3.5
       minipass: 7.1.3
       minipass-collect: 2.0.1
       minipass-flush: 1.0.7
@@ -34713,9 +34694,9 @@ snapshots:
   cssstyle@5.3.7:
     dependencies:
       '@asamuzakjp/css-color': 4.1.2
-      '@csstools/css-syntax-patches-for-csstree': 1.1.2(css-tree@3.2.1)
+      '@csstools/css-syntax-patches-for-csstree': 1.1.3(css-tree@3.2.1)
       css-tree: 3.2.1
-      lru-cache: 11.2.7
+      lru-cache: 11.3.5
 
   cssstyle@6.2.0:
     dependencies:
@@ -35330,7 +35311,7 @@ snapshots:
       fs-tree-diff: 2.0.1
       handlebars: 4.7.9
       js-string-escape: 1.0.1
-      lodash: 4.17.23
+      lodash: 4.18.1
       mkdirp: 0.5.6
       resolve-package-path: 3.1.0
       rimraf: 2.7.1
@@ -37227,7 +37208,7 @@ snapshots:
       esquery: 1.7.0
       indent-string: 4.0.0
       is-builtin-module: 3.2.1
-      lodash: 4.17.23
+      lodash: 4.18.1
       pluralize: 8.0.0
       read-pkg-up: 7.0.1
       regexp-tree: 0.1.27
@@ -39275,7 +39256,7 @@ snapshots:
       cli-width: 2.2.1
       external-editor: 3.1.0
       figures: 2.0.0
-      lodash: 4.17.23
+      lodash: 4.18.1
       mute-stream: 0.0.7
       run-async: 2.4.1
       rxjs: 6.6.7
@@ -39291,7 +39272,7 @@ snapshots:
       cli-width: 3.0.0
       external-editor: 3.1.0
       figures: 3.2.0
-      lodash: 4.17.23
+      lodash: 4.18.1
       mute-stream: 0.0.8
       run-async: 2.4.1
       rxjs: 6.6.7
@@ -40456,7 +40437,7 @@ snapshots:
       http-proxy-agent: 7.0.2
       https-proxy-agent: 7.0.6
       is-potential-custom-element-name: 1.0.1
-      parse5: 8.0.0
+      parse5: 8.0.1
       saxes: 6.0.0
       symbol-tree: 3.2.4
       tough-cookie: 6.0.1
@@ -42223,7 +42204,7 @@ snapshots:
   najax@1.0.7:
     dependencies:
       jquery-deferred: 0.3.1
-      lodash: 4.17.23
+      lodash: 4.18.1
       qs: 6.15.0
 
   named-placeholders@1.1.6:
@@ -43183,7 +43164,7 @@ snapshots:
 
   path-scurry@2.0.2:
     dependencies:
-      lru-cache: 11.2.7
+      lru-cache: 11.3.5
       minipass: 7.1.3
 
   path-to-regexp@0.1.12: {}
@@ -48137,7 +48118,7 @@ snapshots:
 
   whatwg-url@8.7.0:
     dependencies:
-      lodash: 4.17.23
+      lodash: 4.18.1
       tr46: 2.1.0
       webidl-conversions: 6.1.0
 
@@ -48206,7 +48187,7 @@ snapshots:
 
   wide-align@1.1.5:
     dependencies:
-      string-width: 4.2.3
+      string-width: 1.0.2
 
   word-wrap@1.2.5: {}
 
