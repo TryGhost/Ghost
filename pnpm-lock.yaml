@@ -123,8 +123,8 @@ importers:
         specifier: 2.1.1
         version: 2.1.1
       dompurify:
-        specifier: 3.3.1
-        version: 3.3.1
+        specifier: 3.4.1
+        version: 3.4.1
       html2canvas-objectfit-fix:
         specifier: 1.2.0
         version: 1.2.0
@@ -902,8 +902,8 @@ importers:
         specifier: 4.1.0
         version: 4.1.0(encoding@0.1.13)
       dompurify:
-        specifier: 3.3.1
-        version: 3.3.1
+        specifier: 3.4.1
+        version: 3.4.1
       eslint:
         specifier: 'catalog:'
         version: 8.57.1
@@ -2201,8 +2201,8 @@ importers:
         specifier: 2.30.0
         version: 2.30.0
       dompurify:
-        specifier: 3.3.0
-        version: 3.3.0
+        specifier: 3.4.1
+        version: 3.4.1
       downsize:
         specifier: 0.0.8
         version: 0.0.8
@@ -12622,11 +12622,8 @@ packages:
     resolution: {integrity: sha512-cgwlv/1iFQiFnU96XXgROh8xTeetsnJiDsTc7TYCLFd9+/WNkIqPTxiM/8pSd8VIrhXGTf1Ny1q1hquVqDJB5w==}
     engines: {node: '>= 4'}
 
-  dompurify@3.3.0:
-    resolution: {integrity: sha512-r+f6MYR1gGN1eJv0TVQbhA7if/U7P87cdPl3HN5rikqaBSBxLiCb/b9O+2eG0cxz0ghyU+mU1QkbsOwERMYlWQ==}
-
-  dompurify@3.3.1:
-    resolution: {integrity: sha512-qkdCKzLNtrgPFP1Vo+98FRzJnBRGe4ffyCea9IwHB1fyxPOeNTHpLKYGd4Uk9xvNoH0ZoOjwZxNptyMwqrId1Q==}
+  dompurify@3.4.1:
+    resolution: {integrity: sha512-JahakDAIg1gyOm7dlgWSDjV4n7Ip2PKR55NIT6jrMfIgLFgWo81vdr1/QGqWtFNRqXP9UV71oVePtjqS2ebnPw==}
 
   domutils@1.5.1:
     resolution: {integrity: sha512-gSu5Oi/I+3wDENBsOWBiRK1eoGxcywYSqg3rR960/+EfY0CF4EX1VPkgHOZ3WiS/Jg2DtliF6BhWcHlfpYUcGw==}
@@ -30263,7 +30260,7 @@ snapshots:
 
   '@types/dompurify@3.2.0':
     dependencies:
-      dompurify: 3.3.1
+      dompurify: 3.4.1
 
   '@types/eslint-scope@3.7.7':
     dependencies:
@@ -35094,11 +35091,7 @@ snapshots:
     dependencies:
       domelementtype: 2.3.0
 
-  dompurify@3.3.0:
-    optionalDependencies:
-      '@types/trusted-types': 2.0.7
-
-  dompurify@3.3.1:
+  dompurify@3.4.1:
     optionalDependencies:
       '@types/trusted-types': 2.0.7
 
