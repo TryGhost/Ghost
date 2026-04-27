@@ -40,13 +40,13 @@ class GhostServer {
     /**
      *
      * @param {Object}  options
-     * @param {String}  options.url
-     * @param {String}  options.env development|production|testing
+     * @param {string}  options.url
+     * @param {string}  options.env development|production|testing
      * @param {Object}  options.serverConfig
-     * @param {String}  options.serverConfig.host
-     * @param {Number}  options.serverConfig.port
-     * @param {Number}  options.serverConfig.shutdownTimeout
-     * @param {Boolean} options.serverConfig.testmode
+     * @param {string}  options.serverConfig.host
+     * @param {number}  options.serverConfig.port
+     * @param {number}  options.serverConfig.shutdownTimeout
+     * @param {boolean} options.serverConfig.testmode
      */
     constructor({url, env, serverConfig}) {
         this.url = url;

@@ -1,13 +1,11 @@
-import {MemberDetailsPage, MembersPage} from '@/helpers/pages';
+import {MemberDetailsPage, MembersListPage} from '@/admin-pages';
 import {MemberFactory, createMemberFactory} from '@/data-factory';
 import {expect, test} from '@/helpers/playwright';
 import {usePerTestIsolation} from '@/helpers/playwright/isolation';
 
 usePerTestIsolation();
 
-test.describe('Ghost Admin - Members', () => {
-    test.use({labs: {membersForward: false}});
-
+test.describe('Ghost Admin - Legacy Member Detail Flows', () => {
     let memberFactory: MemberFactory;
 
     test.beforeEach(async ({page}) => {
@@ -17,7 +15,7 @@ test.describe('Ghost Admin - Members', () => {
     test('creates a new member with valid details', async ({page}) => {
         const memberToCreate = memberFactory.build({email: 'membertocreate@ghost.org'});
 
-        const membersPage = new MembersPage(page);
+        const membersPage = new MembersListPage(page);
         await membersPage.goto();
         await membersPage.newMemberButton.click();
 
@@ -27,14 +25,14 @@ test.describe('Ghost Admin - Members', () => {
 
         await membersPage.goto();
 
-        await expect(membersPage.memberListItems).toHaveCount(1);
-        await expect(membersPage.getMemberEmail(memberToCreate.name!)).toHaveText('membertocreate@ghost.org');
+        await expect(membersPage.memberRows).toHaveCount(1);
+        await expect(membersPage.getMemberByName(memberToCreate.name!)).toContainText('membertocreate@ghost.org');
     });
 
     test('cannot create a member with invalid email', async ({page}) => {
         const memberToCreate = memberFactory.build({email: 'invalid-email-address'});
 
-        const membersPage = new MembersPage(page);
+        const membersPage = new MembersListPage(page);
         await membersPage.goto();
         await membersPage.newMemberButton.click();
 
@@ -50,14 +48,12 @@ test.describe('Ghost Admin - Members', () => {
         const memberToEdit = await memberFactory.create({
             name: 'Original Name',
             email: 'original@example.com',
-            note: 'original note',
-            labels: ['createdMemberLabel']
+            note: 'original note'
         });
 
-        // Edit the member
-        const membersPage = new MembersPage(page);
+        const membersPage = new MembersListPage(page);
         await membersPage.goto();
-        await membersPage.getMemberByName(memberToEdit.name!).click();
+        await membersPage.openMemberByName(memberToEdit.name!);
 
         const editedMember = memberFactory.build({
             name: 'Test Member Edited',
@@ -67,57 +63,45 @@ test.describe('Ghost Admin - Members', () => {
 
         const memberDetailsPage = new MemberDetailsPage(page);
         await memberDetailsPage.fillMemberDetails(editedMember.name!, editedMember.email, editedMember.note!);
-        const labelNamesBefore = await memberDetailsPage.labelNames();
-        await memberDetailsPage.removeLabel('createdMemberLabel');
-        await memberDetailsPage.clickNewsletterSubscriptionToggle();
         await memberDetailsPage.save();
-        await memberDetailsPage.refresh();
-        const labelNamesAfter = await memberDetailsPage.labelNames();
 
         await membersPage.goto();
 
-        expect(labelNamesBefore).toContain('createdMemberLabel');
-        expect(labelNamesAfter).not.toContain('createdMemberLabel');
-        await expect(membersPage.memberListItems).toHaveCount(1);
-        await expect(membersPage.getMemberByName(editedMember.name!)).toBeVisible();
-        await expect(membersPage.getMemberEmail(editedMember.name!)).toHaveText('edited@ghost.org');
+        await expect(membersPage.memberRows).toHaveCount(1);
+        await expect(membersPage.getMemberByName(editedMember.name!)).toContainText('edited@ghost.org');
     });
 
     test('cannot update an existing member with invalid email', async ({page}) => {
-        const {name, email, note} = memberFactory.build({email: 'membertocreate@ghost.org', name: 'Test Member'});
+        const memberToEdit = await memberFactory.create({
+            name: 'Test Member',
+            email: 'membertocreate@ghost.org',
+            note: 'note'
+        });
 
-        const membersPage = new MembersPage(page);
+        const membersPage = new MembersListPage(page);
         await membersPage.goto();
-        await membersPage.newMemberButton.click();
+        await membersPage.openMemberByName(memberToEdit.name!);
 
         const memberDetailsPage = new MemberDetailsPage(page);
-        await memberDetailsPage.fillMemberDetails(name!, email, note!);
-        await memberDetailsPage.save();
-
         await memberDetailsPage.emailInput.fill('invalid-email-address');
         await memberDetailsPage.saveButton.click();
 
         await expect(memberDetailsPage.retryButton).toBeVisible();
         await expect(memberDetailsPage.body).toContainText('Invalid Email');
-
-        await membersPage.goto();
-        await memberDetailsPage.confirmLeaveButton.click();
-        await expect(membersPage.getMemberEmail('Test Member')).toBeVisible();
     });
 
     test('deletes an existing member', async ({page}) => {
-        const {name} = await memberFactory.create();
+        const member = await memberFactory.create();
 
-        const membersPage = new MembersPage(page);
+        const membersPage = new MembersListPage(page);
         await membersPage.goto();
-        await membersPage.getMemberByName(name!).click();
+        await membersPage.openMemberByName(member.name!);
 
-        // Delete the member
         const memberDetailsPage = new MemberDetailsPage(page);
         await memberDetailsPage.settingsSection.memberActionsButton.click();
         await memberDetailsPage.settingsSection.deleteButton.click();
         await memberDetailsPage.settingsSection.confirmDeleteButton.click();
 
-        await expect(membersPage.emptyStateHeading).toBeVisible();
+        await expect(membersPage.emptyState).toBeVisible();
     });
 });

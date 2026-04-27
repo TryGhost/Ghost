@@ -1,4 +1,4 @@
-import type {Meta, StoryObj} from '@storybook/react';
+import type {Meta, StoryObj} from '@storybook/react-vite';
 
 // import BoilerPlate from './Boilerplate';
 import Button from './button';

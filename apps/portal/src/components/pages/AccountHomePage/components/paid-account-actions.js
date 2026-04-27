@@ -1,6 +1,7 @@
 import AppContext from '../../../../app-context';
-import {getSubscriptionExpiry, getMemberSubscription, getMemberTierName, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember, isPaidMember, subscriptionHasFreeTrial} from '../../../../utils/helpers';
+import {getSubscriptionExpiry, getMemberSubscription, getMemberTierName, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember, isGiftMember, isPaidMember, subscriptionHasFreeTrial} from '../../../../utils/helpers';
 import {getDateString} from '../../../../utils/date-time';
+import {ReactComponent as GiftIcon} from '../../../../images/icons/gift.svg';
 import {ReactComponent as LoaderIcon} from '../../../../images/icons/loader.svg';
 import {ReactComponent as OfferTagIcon} from '../../../../images/icons/offer-tag.svg';
 import {useContext} from 'react';
@@ -34,10 +35,14 @@ const PaidAccountActions = () => {
         }
 
         const subscriptionExpiry = getSubscriptionExpiry({member});
-        const isGiftMember = member?.status === 'gift';
 
-        if (isGiftMember && subscriptionExpiry) {
-            label = `${t('Gift subscription')} - ${t('Expires {expiryDate}', {expiryDate: subscriptionExpiry})}`;
+        if (isGiftMember({member}) && subscriptionExpiry) {
+            return (
+                <p className="gh-portal-account-discountcontainer">
+                    <GiftIcon className="gh-portal-account-tagicon" />
+                    <span>{`${t('Gift subscription')} - ${t('Expires {expiryDate}', {expiryDate: subscriptionExpiry})}`}</span>
+                </p>
+            );
         } else if (isComplimentary) {
             if (subscriptionExpiry) {
                 label = `${t('Complimentary')} - ${t('Expires {expiryDate}', {expiryDate: subscriptionExpiry})}`;
@@ -94,6 +99,16 @@ const PaidAccountActions = () => {
     const PlanUpdateButton = ({isPaid}) => {
         if (hasOnlyFreePlan({site}) && !isPaid) {
             return null;
+        }
+        if (isGiftMember({member})) {
+            return (
+                <button
+                    className='gh-portal-btn gh-portal-btn-list' onClick={() => doAction('continueGiftSubscription')}
+                    data-test-button='continue-gift-subscription'
+                >
+                    {t('Continue')}
+                </button>
+            );
         }
         return (
             <button

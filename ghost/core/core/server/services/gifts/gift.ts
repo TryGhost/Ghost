@@ -28,6 +28,7 @@ interface GiftData {
     consumedAt: Date | null;
     expiredAt: Date | null;
     refundedAt: Date | null;
+    consumesSoonReminderSentAt: Date | null;
 }
 
 export interface GiftFromPurchaseData {
@@ -63,6 +64,7 @@ export class Gift {
     consumedAt: Date | null;
     expiredAt: Date | null;
     refundedAt: Date | null;
+    consumesSoonReminderSentAt: Date | null;
 
     constructor(data: GiftData) {
         this.token = data.token;
@@ -84,6 +86,7 @@ export class Gift {
         this.consumedAt = data.consumedAt;
         this.expiredAt = data.expiredAt;
         this.refundedAt = data.refundedAt;
+        this.consumesSoonReminderSentAt = data.consumesSoonReminderSentAt;
     }
 
     static fromPurchase(data: GiftFromPurchaseData) {
@@ -102,7 +105,8 @@ export class Gift {
             redeemedAt: null,
             consumedAt: null,
             expiredAt: null,
-            refundedAt: null
+            refundedAt: null,
+            consumesSoonReminderSentAt: null
         });
     }
 
@@ -173,6 +177,41 @@ export class Gift {
             ...this,
             status: 'refunded',
             refundedAt: new Date()
+        });
+    }
+
+    consume(): Gift | null {
+        if (this.isConsumed()) {
+            return null;
+        }
+
+        return new Gift({
+            ...this,
+            status: 'consumed',
+            consumedAt: new Date()
+        });
+    }
+
+    expire(): Gift | null {
+        if (this.isExpired()) {
+            return null;
+        }
+
+        return new Gift({
+            ...this,
+            status: 'expired',
+            expiredAt: new Date()
+        });
+    }
+
+    remind(): Gift | null {
+        if (this.consumesSoonReminderSentAt !== null) {
+            return null;
+        }
+
+        return new Gift({
+            ...this,
+            consumesSoonReminderSentAt: new Date()
         });
     }
 }

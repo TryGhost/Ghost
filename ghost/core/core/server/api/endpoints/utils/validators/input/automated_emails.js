@@ -70,6 +70,34 @@ const validateOptionalStringField = (value, errorMessage) => {
     }
 };
 
+const validatePreviewData = (frame) => {
+    const subject = frame.data.subject;
+    const lexical = frame.data.lexical;
+
+    if (typeof subject !== 'string' || !subject.trim()) {
+        throw new ValidationError({
+            message: tpl(messages.subjectRequired),
+            property: 'subject'
+        });
+    }
+
+    if (typeof lexical !== 'string' || !lexical.trim()) {
+        throw new ValidationError({
+            message: tpl(messages.lexicalRequired),
+            property: 'lexical'
+        });
+    }
+
+    try {
+        JSON.parse(lexical);
+    } catch (e) {
+        throw new ValidationError({
+            message: tpl(messages.invalidLexical),
+            property: 'lexical'
+        });
+    }
+};
+
 module.exports = {
     async add(apiConfig, frame) {
         await validateAutomatedEmail(frame);
@@ -93,10 +121,11 @@ module.exports = {
             });
         }
     },
+    preview(apiConfig, frame) {
+        validatePreviewData(frame);
+    },
     sendTestEmail(apiConfig, frame) {
         const email = frame.data.email;
-        const subject = frame.data.subject;
-        const lexical = frame.data.lexical;
 
         if (typeof email !== 'string' || !validator.isEmail(email)) {
             throw new ValidationError({
@@ -104,24 +133,6 @@ module.exports = {
             });
         }
 
-        if (typeof subject !== 'string' || !subject.trim()) {
-            throw new ValidationError({
-                message: tpl(messages.subjectRequired)
-            });
-        }
-
-        if (typeof lexical !== 'string' || !lexical.trim()) {
-            throw new ValidationError({
-                message: tpl(messages.lexicalRequired)
-            });
-        }
-
-        try {
-            JSON.parse(lexical);
-        } catch (e) {
-            throw new ValidationError({
-                message: tpl(messages.invalidLexical)
-            });
-        }
+        validatePreviewData(frame);
     }
 };

@@ -1,6 +1,6 @@
 import errors from '@tryghost/errors';
 import {Gift, type GiftCadence, type GiftStatus} from './gift';
-import type {GiftRepository, RepositoryTransactionOptions} from './gift-repository';
+import type {FindPendingReminderOptions, GiftRepository, RepositoryTransactionOptions} from './gift-repository';
 
 type BookshelfDocument<T> = {
     save(data: Partial<T>, options?: unknown): Promise<unknown>;
@@ -8,10 +8,15 @@ type BookshelfDocument<T> = {
     toJSON(): T;
 };
 
+type BookshelfCollection<T> = {
+    models: BookshelfDocument<T>[];
+};
+
 type BookshelfModel<T> = {
     add(data: Partial<T>, unfilteredOptions?: unknown): Promise<T>;
     transaction<R>(callback: (transacting: unknown) => Promise<R>): Promise<R>;
     findOne(data: Record<string, unknown>, unfilteredOptions?: unknown): Promise<BookshelfDocument<T> | null>;
+    findAll(unfilteredOptions?: unknown): Promise<BookshelfCollection<T>>;
 };
 
 type GiftRow = {
@@ -35,6 +40,7 @@ type GiftRow = {
     consumed_at: Date | null;
     expired_at: Date | null;
     refunded_at: Date | null;
+    consumes_soon_reminder_sent_at: Date | null;
 };
 
 type GiftBookshelfModel = BookshelfModel<GiftRow>;
@@ -59,7 +65,7 @@ export class GiftBookshelfRepository implements GiftRepository {
             token
         }, {require: false, ...options});
 
-        return this.toGift(model);
+        return model ? this.toGift(model) : null;
     }
 
     async getByPaymentIntentId(paymentIntentId: string): Promise<Gift | null> {
@@ -67,7 +73,48 @@ export class GiftBookshelfRepository implements GiftRepository {
             stripe_payment_intent_id: paymentIntentId
         }, {require: false});
 
-        return this.toGift(model);
+        return model ? this.toGift(model) : null;
+    }
+
+    async getActiveByMember(memberId: string): Promise<Gift | null> {
+        const model = await this.model.findOne({
+            redeemer_member_id: memberId,
+            status: 'redeemed'
+        }, {require: false});
+
+        return model ? this.toGift(model) : null;
+    }
+
+    async findPendingConsumption(): Promise<Gift[]> {
+        const now = new Date();
+
+        const collection = await this.model.findAll({
+            filter: `status:redeemed+consumes_at:<'${now.toISOString()}'`
+        });
+
+        return collection.models.map(model => this.toGift(model));
+    }
+
+    async findPendingExpiration(): Promise<Gift[]> {
+        const now = new Date();
+
+        const collection = await this.model.findAll({
+            filter: `status:purchased+expires_at:<'${now.toISOString()}'`
+        });
+
+        return collection.models.map(model => this.toGift(model));
+    }
+
+    async findPendingReminder({now, reminderLeadMs, reminderFloorMs, transacting}: FindPendingReminderOptions): Promise<Gift[]> {
+        const upper = new Date(now.getTime() + reminderLeadMs).toISOString();
+        const lower = new Date(now.getTime() + reminderFloorMs).toISOString();
+
+        const collection = await this.model.findAll({
+            filter: `status:redeemed+consumes_at:<='${upper}'+consumes_at:>'${lower}'+consumes_soon_reminder_sent_at:null`,
+            transacting
+        });
+
+        return collection.models.map(model => this.toGift(model));
     }
 
     async create(gift: Gift, options: RepositoryTransactionOptions = {}) {
@@ -115,15 +162,12 @@ export class GiftBookshelfRepository implements GiftRepository {
             redeemed_at: gift.redeemedAt,
             consumed_at: gift.consumedAt,
             expired_at: gift.expiredAt,
-            refunded_at: gift.refundedAt
+            refunded_at: gift.refundedAt,
+            consumes_soon_reminder_sent_at: gift.consumesSoonReminderSentAt
         };
     }
 
-    private toGift(model: BookshelfDocument<GiftRow> | null): Gift | null {
-        if (!model) {
-            return null;
-        }
-
+    private toGift(model: BookshelfDocument<GiftRow>): Gift {
         const json = model.toJSON();
 
         return new Gift({
@@ -145,7 +189,8 @@ export class GiftBookshelfRepository implements GiftRepository {
             redeemedAt: json.redeemed_at,
             consumedAt: json.consumed_at,
             expiredAt: json.expired_at,
-            refundedAt: json.refunded_at
+            refundedAt: json.refunded_at,
+            consumesSoonReminderSentAt: json.consumes_soon_reminder_sent_at ?? null
         });
     }
 }

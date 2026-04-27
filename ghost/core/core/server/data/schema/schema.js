@@ -1199,7 +1199,7 @@ module.exports = {
         ready_at: {type: 'dateTime', nullable: true},
         step_started_at: {type: 'dateTime', nullable: true},
         step_attempts: {type: 'integer', unsigned: true, nullable: false, defaultTo: 0},
-        exit_reason: {type: 'string', maxlength: 50, nullable: true, validations: {isIn: [['member not found', 'email send failed', 'member unsubscribed', 'member changed status', 'finished']]}},
+        exit_reason: {type: 'string', maxlength: 50, nullable: true, validations: {isIn: [['email send failed', 'member unsubscribed', 'member changed status', 'finished']]}},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         '@@INDEXES@@': [
@@ -1251,6 +1251,11 @@ module.exports = {
         redeemed_at: {type: 'dateTime', nullable: true},
         consumed_at: {type: 'dateTime', nullable: true},
         expired_at: {type: 'dateTime', nullable: true},
-        refunded_at: {type: 'dateTime', nullable: true}
+        refunded_at: {type: 'dateTime', nullable: true},
+        consumes_soon_reminder_sent_at: {type: 'dateTime', nullable: true},
+        '@@INDEXES@@': [
+            ['status', 'consumes_at'],
+            ['status', 'expires_at']
+        ]
     }
 };

@@ -51,6 +51,7 @@ describe('Gift', function () {
             assert.equal(gift.consumedAt, null);
             assert.equal(gift.expiredAt, null);
             assert.equal(gift.refundedAt, null);
+            assert.equal(gift.consumesSoonReminderSentAt, null);
         });
 
         it('passes through purchase data', function () {
@@ -141,6 +142,52 @@ describe('Gift', function () {
         }
     });
 
+    describe('consume', function () {
+        it('returns a consumed gift without mutating the original gift', function () {
+            const gift = buildGift({
+                status: 'redeemed',
+                redeemerMemberId: 'member_2',
+                redeemedAt: new Date('2026-04-11T12:00:00.000Z'),
+                consumesAt: new Date('2027-04-11T12:00:00.000Z')
+            });
+            const before = new Date();
+            const consumed = gift.consume();
+            const after = new Date();
+
+            assert.notEqual(consumed, gift);
+            assert.equal(gift.status, 'redeemed');
+            assert.equal(gift.consumedAt, null);
+            assert.equal(consumed!.status, 'consumed');
+            assert.ok(consumed!.consumedAt! >= before);
+            assert.ok(consumed!.consumedAt! <= after);
+        });
+
+        it('preserves all other fields', function () {
+            const gift = buildGift({
+                status: 'redeemed',
+                redeemerMemberId: 'member_2',
+                redeemedAt: new Date('2026-04-11T12:00:00.000Z'),
+                consumesAt: new Date('2027-04-11T12:00:00.000Z')
+            });
+            const consumed = gift.consume();
+
+            assert.ok(consumed);
+            assert.equal(consumed!.token, gift.token);
+            assert.equal(consumed!.redeemerMemberId, gift.redeemerMemberId);
+            assert.equal(consumed!.tierId, gift.tierId);
+            assert.equal(consumed!.consumesAt?.toISOString(), gift.consumesAt?.toISOString());
+        });
+
+        it('returns null when the gift is already consumed', function () {
+            const gift = buildGift({
+                status: 'consumed',
+                consumedAt: new Date('2026-04-12T00:00:00.000Z')
+            });
+
+            assert.equal(gift.consume(), null);
+        });
+    });
+
     describe('redeem', function () {
         it('returns a redeemed gift for the member without mutating the original gift', function () {
             const gift = buildGift();
@@ -203,6 +250,37 @@ describe('Gift', function () {
         });
     });
 
+    describe('expire', function () {
+        it('returns an expired gift without mutating the original', function () {
+            const gift = buildGift();
+            const before = new Date();
+
+            const expired = gift.expire();
+
+            const after = new Date();
+
+            assert.ok(expired);
+            assert.notEqual(expired, gift);
+            assert.equal(gift.status, 'purchased');
+            assert.equal(gift.expiredAt, null);
+            assert.equal(expired.status, 'expired');
+            assert.ok(expired.expiredAt);
+            assert.ok(expired.expiredAt >= before);
+            assert.ok(expired.expiredAt <= after);
+        });
+
+        it('returns null if already expired', function () {
+            const gift = buildGift({
+                status: 'expired',
+                expiredAt: new Date('2026-02-01T00:00:00.000Z')
+            });
+
+            const result = gift.expire();
+
+            assert.equal(result, null);
+        });
+    });
+
     describe('refund', function () {
         it('returns a refunded gift without mutating the original', function () {
             const gift = buildGift();
@@ -229,6 +307,43 @@ describe('Gift', function () {
             });
 
             const result = gift.refund();
+
+            assert.equal(result, null);
+        });
+    });
+
+    describe('remind', function () {
+        it('returns a gift with consumesSoonReminderSentAt set without mutating the original', function () {
+            const gift = buildGift({
+                status: 'redeemed',
+                redeemerMemberId: 'member_2',
+                redeemedAt: new Date('2026-04-11T12:00:00.000Z'),
+                consumesAt: new Date('2027-04-11T12:00:00.000Z')
+            });
+            const before = new Date();
+
+            const reminded = gift.remind();
+
+            const after = new Date();
+
+            assert.ok(reminded);
+            assert.notEqual(reminded, gift);
+            assert.equal(gift.consumesSoonReminderSentAt, null);
+            assert.ok(reminded.consumesSoonReminderSentAt);
+            assert.ok(reminded.consumesSoonReminderSentAt >= before);
+            assert.ok(reminded.consumesSoonReminderSentAt <= after);
+        });
+
+        it('returns null if already reminded', function () {
+            const gift = buildGift({
+                status: 'redeemed',
+                redeemerMemberId: 'member_2',
+                redeemedAt: new Date('2026-04-11T12:00:00.000Z'),
+                consumesAt: new Date('2027-04-11T12:00:00.000Z'),
+                consumesSoonReminderSentAt: new Date('2027-04-01T12:00:00.000Z')
+            });
+
+            const result = gift.remind();
 
             assert.equal(result, null);
         });

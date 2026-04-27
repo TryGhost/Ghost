@@ -208,7 +208,7 @@ module.exports = class MailgunClient {
      * @param {Object} mailgunOptions
      * @param {Function} batchHandler
      * @param {Object} options
-     * @param {Number} options.maxEvents
+     * @param {number} options.maxEvents
      * @returns {Promise<void>}
      */
     async #fetchEventsFromDomain(domain, mailgunInstance, mailgunOptions, batchHandler, {maxEvents}) {

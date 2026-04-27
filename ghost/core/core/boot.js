@@ -225,8 +225,8 @@ async function initFrontend(dataService) {
  * What we want is to be able to optionally load various components and mount them
  * So eventually this function should go away
  * @param {Object} options
- * @param {Boolean} options.backend
- * @param {Boolean} options.frontend
+ * @param {boolean} options.backend
+ * @param {boolean} options.frontend
  * @param {Object} options.config
  */
 async function initExpressApps({frontend, backend, config}) {
@@ -318,7 +318,7 @@ async function initServices() {
     const indexnow = require('./server/services/indexnow');
     const slack = require('./server/services/slack');
     const webhooks = require('./server/services/webhooks');
-    const scheduling = require('./server/adapters/scheduling');
+    const postScheduling = require('./server/services/post-scheduling');
     const comments = require('./server/services/comments');
     const staffService = require('./server/services/staff');
     const memberAttribution = require('./server/services/member-attribution');
@@ -339,15 +339,23 @@ async function initServices() {
     const emailAddressService = require('./server/services/email-address');
     const statsService = require('./server/services/stats');
     const explorePingService = require('./server/services/explore-ping');
+    const domainEvents = require('@tryghost/domain-events');
+    const WelcomeEmailAutomationsService = require('./server/services/welcome-email-automations');
 
+    const {
+        createAdapter: createSchedulerAdapter,
+        getSchedulerIntegration
+    } = require('./server/adapters/scheduling/utils');
     const urlUtils = require('./shared/url-utils');
 
-    // NOTE: Members service depends on these
-    //       so they are initialized before it.
-    await stripe.init();
-
-    // NOTE: newsletter service and email service depend on email address service
-    await emailAddressService.init(),
+    // Initialize things that other services depend on first.
+    const apiUrl = urlUtils.urlFor('api', {type: 'admin'}, true);
+    const schedulerAdapter = createSchedulerAdapter();
+    const [schedulerIntegration] = await Promise.all([
+        getSchedulerIntegration(),
+        stripe.init(),
+        emailAddressService.init()
+    ]);
 
     await Promise.all([
         identityTokens.init(),
@@ -366,8 +374,10 @@ async function initServices() {
         emailService.init(),
         emailAnalytics.init(),
         webhooks.listen(),
-        scheduling.init({
-            apiUrl: urlUtils.urlFor('api', {type: 'admin'}, true)
+        postScheduling.init({
+            apiUrl,
+            adapter: schedulerAdapter,
+            integration: schedulerIntegration
         }),
         comments.init(),
         linkTracking.init(),
@@ -378,7 +388,13 @@ async function initServices() {
         recommendationsService.init(),
         statsService.init(),
         explorePingService.init(),
-        giftService.init()
+        giftService.init(),
+        new WelcomeEmailAutomationsService().init({
+            domainEvents,
+            apiUrl,
+            schedulerAdapter,
+            schedulerIntegration
+        })
     ]);
 
     debug('End: Services');
@@ -423,10 +439,6 @@ async function initBackgroundServices({config}) {
     // TODO(NY-1220): The outbox is deprecated and will soon be removed.
     const outboxService = require('./server/services/outbox');
     outboxService.init();
-
-    const domainEvents = require('@tryghost/domain-events');
-    const WelcomeEmailAutomationsService = require('./server/services/welcome-email-automations');
-    new WelcomeEmailAutomationsService().init(domainEvents);
 
     debug('End: initBackgroundServices');
 }

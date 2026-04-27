@@ -12,17 +12,12 @@ const getURLParam = ({searchParams, hashParams}, name) => {
     return searchParams.get(name) ?? hashParams.get(name);
 };
 
-export const handleGiftRedemptionAction = ({status}) => {
-    const successStatus = JSON.parse(status);
-
+export const handleGiftRedemptionAction = ({success}) => {
     return {
         type: 'giftRedeem',
-        status: successStatus ? 'success' : 'error',
-        duration: successStatus ? 5000 : 3000,
-        autoHide: successStatus,
-        ...(successStatus ? {
-            message: 'Gift redeemed! You\'re all set.' // TODO: Add translation strings once copy has been finalised
-        } : {})
+        status: success ? 'success' : 'error',
+        duration: success ? 5000 : 3000,
+        autoHide: success
     };
 };
 
@@ -100,8 +95,9 @@ export default function NotificationParser({billingOnly = false} = {}) {
         return handleStripeActions({status: stripeStatus, billingOnly});
     }
 
-    if ((giftRedemption || action === 'giftRedeem') && successStatus && !billingOnly) {
-        return handleGiftRedemptionAction({status: successStatus});
+    if (giftRedemption && successStatus) {
+        const success = successStatus === 'true';
+        return handleGiftRedemptionAction({success});
     }
 
     if (action && successStatus && !billingOnly) {

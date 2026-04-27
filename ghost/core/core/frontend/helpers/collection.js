@@ -36,9 +36,9 @@ function parseOptions(options) {
 
 /**
  *
- * @param {String} resource
- * @param {String} controllerName
- * @param {String} action
+ * @param {string} resource
+ * @param {string} controllerName
+ * @param {string} action
  * @param {Object} apiOptions
  * @returns {Promise<Object>}
  */

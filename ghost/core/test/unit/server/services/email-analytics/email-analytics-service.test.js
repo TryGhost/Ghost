@@ -188,15 +188,18 @@ describe('EmailAnalyticsService', function () {
             let aggregateStatsStub;
             let setJobTimestampStub;
             let setJobStatusStub;
+            let setJobMetadataStub;
 
             beforeEach(function () {
                 setJobTimestampStub = sinon.stub().resolves();
                 setJobStatusStub = sinon.stub().resolves();
+                setJobMetadataStub = sinon.stub().resolves();
                 service = new EmailAnalyticsService({
                     config: createMockConfig(),
                     queries: {
                         setJobTimestamp: setJobTimestampStub,
-                        setJobStatus: setJobStatusStub
+                        setJobStatus: setJobStatusStub,
+                        setJobMetadata: setJobMetadataStub
                     },
                     providers: [{
                         fetchLatest: (fn) => {
@@ -206,7 +209,7 @@ describe('EmailAnalyticsService', function () {
                     }]
                 });
                 processEventBatchStub = sinon.stub(service, 'processEventBatch').resolves();
-                aggregateStatsStub = sinon.stub(service, 'aggregateStats').resolves();
+                aggregateStatsStub = sinon.stub(service, 'aggregateStats').resolves({emailAggregationTimeMs: 0, memberAggregationTimeMs: 0});
             });
 
             afterEach(function () {
@@ -221,7 +224,7 @@ describe('EmailAnalyticsService', function () {
             });
 
             it('returns 0 when fetch is canceled', async function () {
-                service.schedule({
+                await service.schedule({
                     begin: new Date(2023, 0, 1),
                     end: new Date(2023, 0, 2)
                 });
@@ -233,7 +236,7 @@ describe('EmailAnalyticsService', function () {
             });
 
             it('fetches events with correct parameters', async function () {
-                service.schedule({
+                await service.schedule({
                     begin: new Date(2023, 0, 1),
                     end: new Date(2023, 0, 2)
                 });
@@ -246,7 +249,7 @@ describe('EmailAnalyticsService', function () {
             });
 
             it('bails when end date is before begin date', async function () {
-                service.schedule({
+                await service.schedule({
                     begin: new Date(2023, 0, 2),
                     end: new Date(2023, 0, 1)
                 });
@@ -259,7 +262,8 @@ describe('EmailAnalyticsService', function () {
                     config: createMockConfig(),
                     queries: {
                         setJobTimestamp: sinon.stub().resolves(),
-                        setJobStatus: sinon.stub().resolves()
+                        setJobStatus: sinon.stub().resolves(),
+                        setJobMetadata: sinon.stub().resolves()
                     },
                     providers: [{
                         fetchLatest: (fn) => {
@@ -268,12 +272,220 @@ describe('EmailAnalyticsService', function () {
                     }]
                 });
 
-                service.schedule({
+                await service.schedule({
                     begin: new Date(2023, 0, 1),
                     end: new Date(2023, 0, 2)
                 });
                 const result = await service.fetchScheduled({maxEvents: 100});
                 assert.equal(result.eventCount, 0);
+            });
+        });
+
+        describe('schedule persistence', function () {
+            let setJobMetadataStub;
+            let service;
+
+            beforeEach(function () {
+                setJobMetadataStub = sinon.stub().resolves();
+                service = new EmailAnalyticsService({
+                    config: createMockConfig(),
+                    queries: {
+                        setJobMetadata: setJobMetadataStub,
+                        setJobTimestamp: sinon.stub().resolves(),
+                        setJobStatus: sinon.stub().resolves()
+                    },
+                    providers: [{
+                        fetchLatest: (fn) => {
+                            fn([]);
+                        }
+                    }]
+                });
+            });
+
+            afterEach(function () {
+                sinon.restore();
+            });
+
+            it('persists metadata when scheduling', async function () {
+                const begin = new Date(2023, 0, 1);
+                const end = new Date(2023, 0, 2);
+                await service.schedule({begin, end});
+
+                sinon.assert.calledOnce(setJobMetadataStub);
+                sinon.assert.calledWith(setJobMetadataStub, 'email-analytics-scheduled', {
+                    begin: begin.toISOString(),
+                    end: end.toISOString()
+                });
+            });
+
+            it('clears metadata when canceling a non-running schedule', async function () {
+                await service.schedule({
+                    begin: new Date(2023, 0, 1),
+                    end: new Date(2023, 0, 2)
+                });
+                setJobMetadataStub.resetHistory();
+
+                service.cancelScheduled();
+
+                sinon.assert.calledOnce(setJobMetadataStub);
+                sinon.assert.calledWith(setJobMetadataStub, 'email-analytics-scheduled', null);
+            });
+
+            it('clears metadata when fetchScheduled completes with no events', async function () {
+                await service.schedule({
+                    begin: new Date(2023, 0, 1),
+                    end: new Date(2023, 0, 2)
+                });
+                setJobMetadataStub.resetHistory();
+
+                await service.fetchScheduled({maxEvents: 100});
+
+                sinon.assert.calledOnce(setJobMetadataStub);
+                sinon.assert.calledWith(setJobMetadataStub, 'email-analytics-scheduled', null);
+            });
+
+            it('clears metadata when fetchScheduled finds end before begin', async function () {
+                await service.schedule({
+                    begin: new Date(2023, 0, 2),
+                    end: new Date(2023, 0, 1)
+                });
+                setJobMetadataStub.resetHistory();
+
+                await service.fetchScheduled({maxEvents: 100});
+
+                sinon.assert.calledOnce(setJobMetadataStub);
+                sinon.assert.calledWith(setJobMetadataStub, 'email-analytics-scheduled', null);
+            });
+
+            it('clears metadata when cancel is called on a non-running schedule', async function () {
+                await service.schedule({
+                    begin: new Date(2023, 0, 1),
+                    end: new Date(2023, 0, 2)
+                });
+                setJobMetadataStub.resetHistory();
+
+                service.cancelScheduled();
+
+                // cancelScheduled on non-running calls #clearScheduledData which clears metadata
+                sinon.assert.calledOnce(setJobMetadataStub);
+                sinon.assert.calledWith(setJobMetadataStub, 'email-analytics-scheduled', null);
+
+                // Subsequent fetchScheduled should be a no-op (nothing scheduled)
+                const result = await service.fetchScheduled();
+                assert.equal(result.eventCount, 0);
+            });
+        });
+
+        describe('restoreScheduled', function () {
+            afterEach(function () {
+                sinon.restore();
+            });
+
+            it('restores schedule from persisted metadata', async function () {
+                const begin = new Date(2023, 0, 1);
+                const end = new Date(2023, 0, 8);
+                const finishedAt = new Date(2023, 0, 3);
+
+                const service = new EmailAnalyticsService({
+                    config: createMockConfig(),
+                    queries: {
+                        getJobData: sinon.stub().resolves({
+                            finished_at: finishedAt,
+                            started_at: null,
+                            metadata: JSON.stringify({
+                                begin: begin.toISOString(),
+                                end: end.toISOString()
+                            })
+                        }),
+                        setJobMetadata: sinon.stub().resolves()
+                    }
+                });
+
+                await service.restoreScheduled();
+
+                const status = service.getStatus();
+                assert.deepEqual(status.scheduled.schedule, {begin, end});
+                assert.deepEqual(status.scheduled.lastEventTimestamp, finishedAt);
+                assert.equal(status.scheduled.running, false);
+            });
+
+            it('does nothing when no job data exists', async function () {
+                const service = new EmailAnalyticsService({
+                    config: createMockConfig(),
+                    queries: {
+                        getJobData: sinon.stub().resolves(null),
+                        setJobMetadata: sinon.stub().resolves()
+                    }
+                });
+
+                await service.restoreScheduled();
+
+                const status = service.getStatus();
+                assert.equal(status.scheduled.schedule, undefined);
+            });
+
+            it('does nothing when metadata is null', async function () {
+                const service = new EmailAnalyticsService({
+                    config: createMockConfig(),
+                    queries: {
+                        getJobData: sinon.stub().resolves({
+                            finished_at: null,
+                            started_at: null,
+                            metadata: null
+                        }),
+                        setJobMetadata: sinon.stub().resolves()
+                    }
+                });
+
+                await service.restoreScheduled();
+
+                const status = service.getStatus();
+                assert.equal(status.scheduled.schedule, undefined);
+            });
+
+            it('restores without resume cursor when finished_at is null', async function () {
+                const begin = new Date(2023, 0, 1);
+                const end = new Date(2023, 0, 8);
+
+                const service = new EmailAnalyticsService({
+                    config: createMockConfig(),
+                    queries: {
+                        getJobData: sinon.stub().resolves({
+                            finished_at: null,
+                            started_at: null,
+                            metadata: JSON.stringify({
+                                begin: begin.toISOString(),
+                                end: end.toISOString()
+                            })
+                        }),
+                        setJobMetadata: sinon.stub().resolves()
+                    }
+                });
+
+                await service.restoreScheduled();
+
+                const status = service.getStatus();
+                assert.deepEqual(status.scheduled.schedule, {begin, end});
+                assert.equal(status.scheduled.lastEventTimestamp, undefined);
+            });
+
+            it('handles corrupt metadata gracefully', async function () {
+                const service = new EmailAnalyticsService({
+                    config: createMockConfig(),
+                    queries: {
+                        getJobData: sinon.stub().resolves({
+                            finished_at: null,
+                            started_at: null,
+                            metadata: 'not-valid-json'
+                        }),
+                        setJobMetadata: sinon.stub().resolves()
+                    }
+                });
+
+                await service.restoreScheduled();
+
+                const status = service.getStatus();
+                assert.equal(status.scheduled.schedule, undefined);
             });
         });
 

@@ -44,6 +44,8 @@ const MembersActions: React.FC<MembersActionsProps> = ({
     const navigate = useNavigate();
     const isImportRoute = location.pathname === '/members/import';
     const currentSearch = location.search ?? '';
+    const membersBackPath = location.pathname === '/members' ? `${location.pathname}${currentSearch}` : '/members';
+    const newMemberHref = `#/members/new?back=${encodeURIComponent(membersBackPath)}`;
     const [showAddLabelModal, setShowAddLabelModal] = useState(false);
     const [showRemoveLabelModal, setShowRemoveLabelModal] = useState(false);
     const [showUnsubscribeModal, setShowUnsubscribeModal] = useState(false);
@@ -264,7 +266,7 @@ const MembersActions: React.FC<MembersActionsProps> = ({
 
             {/* New Member Button - styled like Tags */}
             <Button asChild>
-                <a aria-label="New member" className="inline-flex items-center gap-2 font-bold" href="#/members/new">
+                <a aria-label="New member" className="inline-flex items-center gap-2 font-bold" href={newMemberHref}>
                     <LucideIcon.Plus className="size-4" />
                     <span className="hidden sm:inline">New member</span>
                 </a>

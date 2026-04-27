@@ -11,8 +11,11 @@ import { NavCustomViews } from "./nav-custom-views";
 import { NavMemberViews } from "./nav-member-views";
 import { useMemberSidebarViews } from "./member-sidebar-views";
 import { useCustomSidebarViews } from "./use-custom-sidebar-views";
+import { useIsActiveLink } from "./use-is-active-link";
 import { useEmberRouting } from "@/ember-bridge";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
+
+const LEGACY_MEMBERS_ACTIVE_ROUTES = ['member', 'member.new', 'members-activity'];
 
 function PostsNavItemContent({isActive, to}: {isActive: boolean; to: string}) {
     return (
@@ -70,12 +73,12 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const [savedMembersExpanded, setMembersExpanded] = useNavigationExpanded('members');
     const postCustomViews = useCustomSidebarViews('posts');
     const memberViews = useMemberSidebarViews();
+    const hasMemberViews = memberViews.length > 0;
     const memberCount = useMemberCount();
     const routing = useEmberRouting();
     const commentModerationEnabled = useFeatureFlag('commentModeration');
-    const membersForwardEnabled = useFeatureFlag('membersForward');
-    const visibleMemberViews = membersForwardEnabled ? memberViews : [];
-    const hasMemberViews = visibleMemberViews.length > 0;
+    const automationsEnabled = useFeatureFlag('automations');
+    const isMembersRouteActive = useIsActiveLink({path: 'members', activeOnSubpath: true});
 
     const showTags = currentUser && canManageTags(currentUser);
     const showMembers = currentUser && canManageMembers(currentUser);
@@ -84,15 +87,14 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const isPublishedPostsRouteActive = routing.isRouteActive('posts', {type: 'published'});
     const hasActivePostChild = isDraftPostsRouteActive || isScheduledPostsRouteActive || isPublishedPostsRouteActive || postCustomViews.some(view => view.isActive);
     const postsExpanded = savedPostsExpanded;
-    const hasActiveMemberChild = visibleMemberViews.some(view => view.isActive);
+    const hasActiveMemberView = hasMemberViews && memberViews.some(view => view.isActive);
     const membersExpanded = savedMembersExpanded;
-    const isMembersBaseRouteActive = routing.isRouteActive(['members', 'member', 'member.new', 'members-activity']);
+    const membersNavActive = isMembersRouteActive
+        ? (!hasActiveMemberView || !membersExpanded)
+        : routing.isRouteActive(LEGACY_MEMBERS_ACTIVE_ROUTES);
     const postsRoute = routing.getRouteUrl('posts');
     const isPostsRouteActive = routing.isRouteActive('posts');
     const postsNavActive = isPostsRouteActive || (!postsExpanded && hasActivePostChild);
-    const membersNavActive = (isMembersBaseRouteActive && !hasActiveMemberChild) || (!membersExpanded && hasActiveMemberChild);
-    const membersRoute = routing.getRouteUrl('members');
-
     return (
         <SidebarGroup {...props}>
             <SidebarGroupContent>
@@ -179,7 +181,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                                             collapsible={true}
                                             count={memberCount}
                                             isActive={membersNavActive}
-                                            to={membersRoute}
+                                            to="members"
                                         />
                                     </NavMenuItem.CollapsibleItem>
 
@@ -193,7 +195,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                                         collapsible={false}
                                         count={memberCount}
                                         isActive={membersNavActive}
-                                        to={membersRoute}
+                                        to="members"
                                     />
                                 </NavMenuItem>
                             )}
@@ -208,6 +210,18 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             >
                                 <LucideIcon.MessagesSquare />
                                 <NavMenuItem.Label>Comments</NavMenuItem.Label>
+                            </NavMenuItem.Link>
+                        </NavMenuItem>
+                    )}
+
+                    {showMembers && automationsEnabled && (
+                        <NavMenuItem>
+                            <NavMenuItem.Link
+                                to="automations"
+                                activeOnSubpath
+                            >
+                                <LucideIcon.Zap />
+                                <NavMenuItem.Label>Automations</NavMenuItem.Label>
                             </NavMenuItem.Link>
                         </NavMenuItem>
                     )}

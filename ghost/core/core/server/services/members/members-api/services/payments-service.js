@@ -1,4 +1,3 @@
-const crypto = require('node:crypto');
 const logging = require('@tryghost/logging');
 const DomainEvents = require('@tryghost/domain-events');
 const TierCreatedEvent = require('../../../tiers/tier-created-event');
@@ -14,6 +13,7 @@ class PaymentsService {
      * @param {import('../../../offers/application/offers-api')} deps.offersAPI
      * @param {import('../../../stripe/stripe-api')} deps.stripeAPIService
      * @param {{get(key: string): any}} deps.settingsCache
+     * @param {{service: import('../../../gifts/gift-service').GiftService}} deps.giftService
      */
     constructor(deps) {
         /** @private */
@@ -30,6 +30,8 @@ class PaymentsService {
         this.stripeAPIService = deps.stripeAPIService;
         /** @private */
         this.settingsCache = deps.settingsCache;
+        /** @private */
+        this.giftService = deps.giftService;
 
         DomainEvents.subscribe(OfferCreatedEvent, async (event) => {
             await this.getCouponForOffer(event.data.offer.id);
@@ -62,6 +64,7 @@ class PaymentsService {
      * @param {Tier.Cadence} params.cadence
      * @param {Offer} [params.offer]
      * @param {Member} [params.member]
+     * @param {import('../../../gifts/gift').Gift} [params.gift]
      * @param {Object.<string, any>} [params.metadata]
      * @param {string} params.successUrl
      * @param {string} params.cancelUrl
@@ -69,7 +72,7 @@ class PaymentsService {
      *
      * @returns {Promise<URL>}
      */
-    async getPaymentLink({tier, cadence, offer, member, metadata, successUrl, cancelUrl, email}) {
+    async getPaymentLink({tier, cadence, offer, member, gift, metadata, successUrl, cancelUrl, email}) {
         let coupon = null;
         let trialDays = null;
         if (offer) {
@@ -87,6 +90,14 @@ class PaymentsService {
                 trialDays = offer.amount;
             } else {
                 coupon = await this.getCouponForOffer(offer.id);
+            }
+        }
+
+        // If continuing from a gift subscription, add gift remaining days as trial
+        if (trialDays === null && gift) {
+            const remainingDays = this.giftService.service.getRemainingActiveDays(gift);
+            if (remainingDays > 0) {
+                trialDays = Math.min(remainingDays, 730); // Stripe max trial period
             }
         }
 
@@ -173,7 +184,7 @@ class PaymentsService {
         const amount = tier.getPrice(cadence);
         const currency = tier.currency.toLowerCase();
 
-        const token = crypto.randomBytes(6).toString('base64url');
+        const token = this.giftService.service.generateToken();
 
         const successUrlObj = new URL(successUrl);
         successUrlObj.searchParams.set('stripe', 'gift-purchase-success');

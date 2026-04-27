@@ -20,6 +20,9 @@ export default class Debug extends Component {
     @tracked loading = true;
     @tracked analyticsStatus = null;
     @tracked latestEmail = null;
+    @tracked showCustomSchedule = false;
+    @tracked customBeginDate = null;
+    @tracked customEndDate = null;
 
     get post() {
         return this.args.post;
@@ -294,6 +297,30 @@ export default class Debug extends Component {
     }
 
     @action
+    toggleCustomSchedule() {
+        this.showCustomSchedule = !this.showCustomSchedule;
+        if (this.showCustomSchedule) {
+            this.customBeginDate = moment(this.email?.createdAtUTC).format('YYYY-MM-DDTHH:mm');
+            const createdAt = moment(this.email?.createdAtUTC);
+            const maxEnd = moment.min(moment().subtract(1, 'hour'), createdAt.clone().add(7, 'days'));
+            this.customEndDate = maxEnd.format('YYYY-MM-DDTHH:mm');
+        } else {
+            this.customBeginDate = null;
+            this.customEndDate = null;
+        }
+    }
+
+    @action
+    updateCustomBeginDate(event) {
+        this.customBeginDate = event.target.value;
+    }
+
+    @action
+    updateCustomEndDate(event) {
+        this.customEndDate = event.target.value;
+    }
+
+    @action
     scheduleAnalytics() {
         try {
             if (this._scheduleAnalytics.isRunning) {
@@ -310,9 +337,16 @@ export default class Debug extends Component {
 
     @task
     *_scheduleAnalytics() {
-        let statsUrl = this.ghostPaths.url.api(`/emails/${this.post.email.id}/analytics`);
-        yield this.ajax.put(statsUrl, {});
+        const url = new URL(this.ghostPaths.url.api(`/emails/${this.post.email.id}/analytics`), window.location.origin);
+        if (this.customBeginDate) {
+            url.searchParams.set('begin', new Date(this.customBeginDate).toISOString());
+        }
+        if (this.customEndDate) {
+            url.searchParams.set('end', new Date(this.customEndDate).toISOString());
+        }
+        yield this.ajax.put(url.pathname + url.search, {});
         yield this.fetchAnalyticsStatus();
+        this.showCustomSchedule = false;
     }
 
     @action

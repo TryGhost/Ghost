@@ -1,7 +1,7 @@
 import MembersActions from '@src/views/members/components/members-actions';
 import React from 'react';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {render} from '@testing-library/react';
+import {render, screen} from '@testing-library/react';
 
 const importModalPropsRef: {current: Record<string, unknown> | null} = {current: null};
 const {mockUseLocation, mockUseNavigate} = vi.hoisted(() => ({
@@ -70,6 +70,15 @@ describe('MembersActions', () => {
         mockUseNavigate.mockReturnValue(vi.fn());
     });
 
+    it('opens the import modal on the import route', () => {
+        setLocation('/members/import');
+
+        renderMembersActions({onImportComplete: vi.fn()});
+
+        expect(importModalPropsRef.current).not.toBeNull();
+        expect(importModalPropsRef.current?.open).toBe(true);
+    });
+
     it('navigates back to members when the import route modal closes', () => {
         const navigate = vi.fn();
         setLocation('/members/import', '?filter=label%3AVIP&search=alice');
@@ -101,5 +110,26 @@ describe('MembersActions', () => {
             importLabel: {slug: 'import-2026-03-17'}
         });
         expect(navigate).toHaveBeenCalledWith('/members?filter=label%3A%5Bimport-2026-03-17%5D', {replace: true});
+    });
+
+    it('preserves the current members list URL in the new member link', () => {
+        mockUseLocation.mockReturnValue({
+            pathname: '/members',
+            search: '?filter=label%3AVIP&search=alice'
+        });
+
+        render(
+            <MembersActions
+                hasFilterOrSearch={false}
+                memberCount={10}
+                search=""
+                canBulkDelete
+            />
+        );
+
+        expect(screen.getByRole('link', {name: 'New member'})).toHaveAttribute(
+            'href',
+            '#/members/new?back=%2Fmembers%3Ffilter%3Dlabel%253AVIP%26search%3Dalice'
+        );
     });
 });

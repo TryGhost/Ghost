@@ -41,7 +41,8 @@ const messages = {
         active: t('Your subscription will renew on {date}.'),
         trial: t('Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.'),
         complimentaryExpires: t('Your subscription will expire on {date}.'),
-        complimentaryInfinite: ''
+        complimentaryInfinite: '',
+        giftExpires: t('Your subscription will expire on {date}.')
     }
 };
 
@@ -117,10 +118,10 @@ function cheerioLoad(html) {
  * @prop {string} uuid
  * @prop {string} email
  * @prop {string} name
- * @prop {'free'|'paid'|'comped'} status
+ * @prop {'free'|'paid'|'comped'|'gift'} status
  * @prop {Date|null} createdAt This can be null if the member has been deleted for older email recipient rows
  * @prop {MemberLikeSubscription[]} subscriptions Required to get trial end / next renewal date / expire at date for paid member
- * @prop {MemberLikeTier[]} tiers Required to get the expiry date in case of a comped member
+ * @prop {MemberLikeTier[]} tiers Required to get the expiry date in case of a comped or gift member
  *
  * @typedef {object} MemberLikeSubscription
  * @prop {string} status
@@ -647,6 +648,16 @@ class EmailRenderer {
             return t(messages.subscriptionStatus.free);
         }
 
+        if (member.status === 'gift') {
+            const expires = member.tiers[0]?.expiry_at ?? null;
+            if (expires) {
+                const timezone = this.#settingsCache.get('timezone');
+                const date = formatDateLong(expires, timezone, locale);
+                return t(messages.subscriptionStatus.giftExpires, {date});
+            }
+            return '';
+        }
+
         // Do we have an active subscription?
         if (member.status === 'paid') {
             let activeSubscription = member.subscriptions.find((subscription) => {
@@ -1035,8 +1046,8 @@ class EmailRenderer {
         }
 
         const postUrl = this.#getPostUrl(post);
-        const isPublicPost = post.get('visibility') === 'public';
-        const showShareButton = isPublicPost && newsletter.get('show_share_button');
+        const hasEmailOnlyFlag = post.related('posts_meta')?.get('email_only') ?? false;
+        const showShareButton = newsletter.get('show_share_button') && !hasEmailOnlyFlag;
         const shareUrl = new URL(postUrl);
         shareUrl.hash = '/share';
 
@@ -1061,7 +1072,6 @@ class EmailRenderer {
         const commentUrl = new URL(postUrl);
         commentUrl.hash = '#ghost-comments-root';
 
-        const hasEmailOnlyFlag = post.related('posts_meta')?.get('email_only') ?? false;
         const hasFeedbackButtons = newsletter.get('feedback_enabled');
         const showCommentCta = newsletter.get('show_comment_cta') && this.#settingsCache.get('comments_enabled') !== 'off' && !hasEmailOnlyFlag;
         const feedbackButtonCount = (hasFeedbackButtons ? 2 : 0) + (showCommentCta ? 1 : 0) + (showShareButton ? 1 : 0);

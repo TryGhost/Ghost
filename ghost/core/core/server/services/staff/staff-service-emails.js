@@ -337,6 +337,31 @@ class StaffServiceEmails {
         });
     }
 
+    async notifyGiftSubscriptionStarted({memberId, memberName, memberEmail, tierName, cadence, duration, buyerEmail}, options = {}) {
+        const users = await this.models.User.getEmailAlertUsers('paid-started', options);
+        const memberData = this.getMemberData({
+            id: memberId,
+            name: memberName ?? null,
+            email: memberEmail
+        });
+        const subject = `🎁 Paid subscription started: ${memberData.name}`;
+        const cadenceLabel = duration === 1 ? `1 ${cadence}` : `${duration} ${cadence}s`;
+
+        await this.sendToStaff({
+            users,
+            subject,
+            template: 'new-gift-subscription',
+            memberData,
+            templateData: {
+                tierData: {
+                    name: tierName,
+                    details: cadenceLabel
+                },
+                giftedByEmail: buyerEmail
+            }
+        });
+    }
+
     // Utils
 
     /** @private */

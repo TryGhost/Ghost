@@ -1,5 +1,4 @@
 import Access from './access';
-import DripSequences from './drip-sequences';
 import MemberEmails from './member-emails';
 import Portal from './portal';
 import React from 'react';
@@ -7,7 +6,6 @@ import SearchableSection from '../../searchable-section';
 import SpamFilters from '../advanced/spam-filters';
 import Tiers from './tiers';
 import TipsAndDonations from '../growth/tips-and-donations';
-import useFeatureFlag from '../../../hooks/use-feature-flag';
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/global-data-provider';
 
@@ -23,7 +21,6 @@ const MembershipSettings: React.FC = () => {
     const {config, settings} = useGlobalData();
     const [hasTipsAndDonations] = getSettingValues(settings, ['donations_enabled']) as [boolean];
     const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
-    const hasDripSequences = useFeatureFlag('dripSequences');
 
     return (
         <SearchableSection keywords={Object.values(searchKeywords).flat()} title='Membership'>
@@ -32,7 +29,6 @@ const MembershipSettings: React.FC = () => {
             <Tiers keywords={searchKeywords.tiers} />
             <Portal keywords={searchKeywords.portal} />
             <MemberEmails keywords={searchKeywords.memberEmails} />
-            {hasDripSequences && <DripSequences keywords={searchKeywords.memberEmails} />}
             {hasTipsAndDonations && hasStripeEnabled && <TipsAndDonations keywords={searchKeywords.tips} />}
         </SearchableSection>
     );

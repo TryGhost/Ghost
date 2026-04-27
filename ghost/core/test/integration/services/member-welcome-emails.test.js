@@ -9,7 +9,6 @@ const mailService = require('../../../core/server/services/mail');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../core/server/services/member-welcome-emails/constants');
 const memberWelcomeEmailService = require('../../../core/server/services/member-welcome-emails/service');
 const processOutbox = require('../../../core/server/services/outbox/jobs/lib/process-outbox');
-const labs = require('../../../core/shared/labs');
 
 function parseDatabaseDate(date) {
     if (date instanceof Date) {
@@ -27,7 +26,6 @@ describe('Member Welcome Emails Integration', function () {
     let membersService;
     let defaultNewsletterSenderState = null;
     let defaultEmailDesignSettingId;
-    let originalLabsIsSet;
 
     before(async function () {
         await testUtils.setup('default')();
@@ -40,15 +38,6 @@ describe('Member Welcome Emails Integration', function () {
     });
 
     beforeEach(async function () {
-        originalLabsIsSet = labs.isSet;
-        sinon.stub(labs, 'isSet').callsFake((flag) => {
-            if (flag === 'welcomeEmailsDesignCustomization') {
-                return false;
-            }
-
-            return originalLabsIsSet(flag);
-        });
-
         const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
         if (defaultNewsletter) {
             defaultNewsletterSenderState = {
@@ -141,23 +130,32 @@ describe('Member Welcome Emails Integration', function () {
         });
 
         it('creates automation run when member source is "member"', async function () {
-            const member = await membersService.api.members.create({
-                email: 'welcome-test@example.com',
-                name: 'Welcome Test Member'
-            }, {});
+            await db.knex.transaction(async (trx) => {
+                const before = new Date(Date.now() - 1000);
 
-            const runs = await db.knex('welcome_email_automation_runs')
-                .where('member_id', member.id);
+                const member = await membersService.api.members.create({
+                    email: 'welcome-test@example.com',
+                    name: 'Welcome Test Member'
+                }, {transacting: trx});
 
-            assert.equal(runs.length, 1);
-            const run = runs[0];
-            assert.equal(run.member_id, member.id);
-            assert.ok(run.welcome_email_automation_id);
-            assert.ok(run.next_welcome_email_automated_email_id);
-            assert.ok(run.ready_at);
-            assert.equal(run.step_started_at, null);
-            assert.equal(run.step_attempts, 0);
-            assert.equal(run.exit_reason, null);
+                const after = new Date(Date.now() + 1000);
+
+                const runs = await trx('welcome_email_automation_runs')
+                    .where('member_id', member.id);
+
+                assert.equal(runs.length, 1);
+                const run = runs[0];
+                assert.equal(run.member_id, member.id);
+                assert.ok(run.welcome_email_automation_id);
+                assert.ok(run.next_welcome_email_automated_email_id);
+                assert.equal(run.step_started_at, null);
+                assert.equal(run.step_attempts, 0);
+                assert.equal(run.exit_reason, null);
+
+                const timestamp = parseDatabaseDate(run.ready_at);
+                assert(timestamp >= before);
+                assert(timestamp <= after);
+            });
         });
 
         it('does NOT create automation run when member is imported', async function () {
@@ -178,26 +176,6 @@ describe('Member Welcome Emails Integration', function () {
 
             const runs = await db.knex('welcome_email_automation_runs');
             assert.equal(runs.length, 0);
-        });
-
-        it('creates automation run with correct ready_at timestamp', async function () {
-            const beforeCreation = new Date(Date.now() - 1000);
-
-            const member = await membersService.api.members.create({
-                email: 'timestamp-test@example.com',
-                name: 'Timestamp Test'
-            }, {});
-
-            const afterCreation = new Date(Date.now() + 1000);
-
-            const runs = await db.knex('welcome_email_automation_runs')
-                .where('member_id', member.id);
-
-            assert.equal(runs.length, 1);
-
-            const timestamp = parseDatabaseDate(runs[0]?.ready_at);
-            assert.ok(timestamp >= beforeCreation);
-            assert.ok(timestamp <= afterCreation);
         });
     });
 
@@ -553,48 +531,11 @@ describe('Member Welcome Emails Integration', function () {
         });
     });
 
-    describe('labs flag on', function () {
+    describe('design settings', function () {
         beforeEach(function () {
-            labs.isSet.restore();
-            sinon.stub(labs, 'isSet').callsFake((flag) => {
-                if (flag === 'welcomeEmailsDesignCustomization') {
-                    return true;
-                }
-
-                return originalLabsIsSet(flag);
-            });
             memberWelcomeEmailService.api = null;
             memberWelcomeEmailService.init();
             sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail sent');
-        });
-
-        it('reinitializes the service when the labs mode changes', function () {
-            labs.isSet.restore();
-            sinon.stub(labs, 'isSet').callsFake((flag) => {
-                if (flag === 'welcomeEmailsDesignCustomization') {
-                    return false;
-                }
-
-                return originalLabsIsSet(flag);
-            });
-
-            memberWelcomeEmailService.api = null;
-            memberWelcomeEmailService.useDesignCustomization = undefined;
-            memberWelcomeEmailService.init();
-            const labsOffApi = memberWelcomeEmailService.api;
-
-            labs.isSet.restore();
-            sinon.stub(labs, 'isSet').callsFake((flag) => {
-                if (flag === 'welcomeEmailsDesignCustomization') {
-                    return true;
-                }
-
-                return originalLabsIsSet(flag);
-            });
-
-            memberWelcomeEmailService.init();
-
-            assert.notEqual(memberWelcomeEmailService.api, labsOffApi);
         });
 
         it('uses cached design settings after welcome emails are loaded', async function () {

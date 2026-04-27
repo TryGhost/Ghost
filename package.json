@@ -40,7 +40,7 @@
     "docker:clean": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile all down -v --remove-orphans --rmi local",
     "docker:down": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} down",
     "lint": "pnpm nx run-many -t lint",
-    "test": "pnpm nx run-many -t test",
+    "test": "pnpm nx run-many -t test --exclude @tryghost/e2e --exclude ghost-admin",
     "test:unit": "pnpm nx run-many -t test:unit",
     "test:e2e": "pnpm --filter @tryghost/e2e test",
     "test:e2e:analytics": "pnpm --filter @tryghost/e2e test:analytics",
@@ -61,7 +61,7 @@
   "pnpm": {
     "overrides": {
       "@tryghost/errors": "^1.3.7",
-      "@tryghost/logging": "2.5.5",
+      "@tryghost/logging": "4.1.0",
       "jackspeak": "2.3.6",
       "moment": "2.24.0",
       "moment-timezone": "0.5.45",
