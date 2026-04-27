@@ -80,21 +80,9 @@ class MembersImporter extends TableImporter {
             name: name,
             expertise: luck(30) ? faker.name.jobTitle() : undefined,
             geolocation: JSON.stringify({
-                organization_name: faker.company.name(),
-                region: faker.address.state(),
-                accuracy: 50,
-                asn: parseInt(faker.random.numeric(4)),
-                organization: `${faker.random.alpha({count: 2, casing: 'upper'})}${faker.random.numeric(4)} ${faker.company.name()}`,
-                timezone: faker.address.timeZone(),
-                longitude: faker.address.longitude(),
-                country_code3: faker.address.countryCode('alpha-3'),
-                area_code: '0',
-                ip: faker.internet.ipv4(),
-                city: faker.address.cityName(),
                 country: faker.address.country(),
-                continent_code: 'EU',
                 country_code: faker.address.countryCode('alpha-2'),
-                latitude: faker.address.latitude()
+                region: faker.address.state()
             }),
             email_count: 0, // Depends on number of emails sent since created_at, the newsletter they're a part of and subscription status
             email_opened_count: 0,

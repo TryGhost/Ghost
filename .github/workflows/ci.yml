@@ -135,6 +135,8 @@ jobs:
               - '!ghost/core/core/server/data/tinybird/**/*.md'
             any-code:
               - '!**/*.md'
+              - '!.devcontainer/**'
+              - '!.vscode/**'
 
       - name: Define Node test matrix
         id: node_matrix

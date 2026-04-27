@@ -1,0 +1,58 @@
+name: Devcontainer image
+
+# Builds the dev container base image used by .devcontainer/devcontainer.json
+# (VS Code Dev Containers + GitHub Codespaces) and publishes it to GHCR.
+#
+# Currently triggered only by manual dispatch — auto-triggers on
+# pull_request and push were removed pending a one-time TryGhost org-admin
+# bootstrap of the ghost-devcontainer package on GHCR. Until then,
+# GITHUB_TOKEN can't create the package on first push (`denied:
+# permission_denied: write_package`), and we don't want every PR's CI to
+# show a noisy failed check.
+#
+# Once the package shell exists at github.com/orgs/TryGhost/packages and
+# is linked to this repo with Actions write access, restore the
+# `pull_request:` and `push:` triggers in a tiny follow-up PR so the
+# image rebuilds automatically on changes to docker/ghost-dev/** and
+# pnpm-install inputs.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    name: Build & push
+    runs-on: ubuntu-latest
+    if: github.repository == 'TryGhost/Ghost'
+    concurrency:
+      group: devcontainer-image-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push
+        uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7
+        with:
+          context: .
+          file: docker/ghost-dev/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/tryghost/ghost-devcontainer:latest
+            ghcr.io/tryghost/ghost-devcontainer:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

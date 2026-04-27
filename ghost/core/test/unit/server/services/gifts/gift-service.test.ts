@@ -629,6 +629,89 @@ describe('GiftService', function () {
         });
     });
 
+    describe('consume', function () {
+        it('marks a redeemed gift as consumed and returns it', async function () {
+            const gift = buildRedeemedGift();
+
+            giftRepository.getByToken.resolves(gift);
+
+            const service = createService();
+            const result = await service.consume('gift-token');
+
+            assert.ok(result);
+            assert.equal(result.status, 'consumed');
+            assert.notEqual(result.consumedAt, null);
+
+            sinon.assert.calledOnce(giftRepository.transaction);
+            sinon.assert.calledOnceWithExactly(giftRepository.getByToken, 'gift-token', {transacting: 'trx', forUpdate: true});
+
+            sinon.assert.calledOnce(giftRepository.update);
+
+            const [saved, options] = giftRepository.update.getCall(0).args;
+
+            assert.equal(saved.status, 'consumed');
+            assert.notEqual(saved.consumedAt, null);
+            assert.deepEqual(options, {transacting: 'trx'});
+        });
+
+        it('returns null when the token does not exist', async function () {
+            giftRepository.getByToken.resolves(null);
+
+            const service = createService();
+            const result = await service.consume('missing-token');
+
+            assert.equal(result, null);
+            sinon.assert.notCalled(giftRepository.update);
+        });
+
+        it('returns null when the gift is no longer in redeemed status', async function () {
+            giftRepository.getByToken.resolves(buildGift({
+                status: 'consumed',
+                redeemerMemberId: 'member_1',
+                redeemedAt: new Date('2025-04-01T00:00:00.000Z'),
+                consumesAt: new Date('2026-04-01T00:00:00.000Z'),
+                consumedAt: new Date('2026-04-01T00:00:00.000Z')
+            }));
+
+            const service = createService();
+            const result = await service.consume('gift-token');
+
+            assert.equal(result, null);
+            sinon.assert.notCalled(giftRepository.update);
+        });
+
+        it('uses an external transaction when provided instead of creating its own', async function () {
+            const gift = buildRedeemedGift();
+
+            giftRepository.getByToken.resolves(gift);
+
+            const service = createService();
+            const externalTrx = 'external-trx';
+            const result = await service.consume('gift-token', {transacting: externalTrx});
+
+            assert.ok(result);
+            assert.equal(result.status, 'consumed');
+
+            sinon.assert.notCalled(giftRepository.transaction);
+            sinon.assert.calledOnceWithExactly(giftRepository.getByToken, 'gift-token', {transacting: externalTrx, forUpdate: true});
+            sinon.assert.calledOnceWithExactly(giftRepository.update, sinon.match.any, {transacting: externalTrx});
+        });
+
+        it('propagates errors from the repository update', async function () {
+            const gift = buildRedeemedGift();
+
+            giftRepository.getByToken.resolves(gift);
+            giftRepository.update.rejects(new Error('DB error'));
+
+            const service = createService();
+
+            await assert.rejects(
+                () => service.consume('gift-token'),
+                {message: 'DB error'}
+            );
+        });
+    });
+
     describe('processExpired', function () {
         it('returns zero count when no gifts are pending expiration', async function () {
             giftRepository.findPendingExpiration.resolves([]);

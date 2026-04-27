@@ -1,0 +1,84 @@
+{
+    "name": "Ghost",
+    "dockerComposeFile": [
+        "../compose.dev.yaml",
+        "compose.devcontainer.yaml"
+    ],
+    "service": "ghost-dev",
+    "workspaceFolder": "/workspaces/Ghost",
+    "shutdownAction": "stopCompose",
+    "remoteUser": "root",
+
+    // Installs docker CLI and mounts the host docker socket into ghost-dev so
+    // developers can run `docker ps / logs / inspect / exec` against peer
+    // compose services (mysql, redis, mailpit, gateway) from inside the dev
+    // container. Without this, diagnosing any compose-peer failure requires
+    // SSHing to the Codespaces host, which our image doesn't support out of
+    // the box.
+    //
+    // Security note: mounting the host's docker socket combined with
+    // `remoteUser: "root"` effectively gives the dev container root-equivalent
+    // control over the host Docker daemon (spawn privileged containers, mount
+    // host paths, etc.). This is the standard pattern for local / Codespaces
+    // dev containers where the host is the developer's own machine, but do
+    // NOT replicate this pattern in shared build agents, CI runners, or
+    // environments where untrusted code runs in the container.
+    "features": {
+        "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+    },
+
+    // Codespaces prebuild step — runs once when the image is built.
+    // Primes the pnpm store so first-open is fast.
+    "onCreateCommand": "corepack enable && corepack prepare --activate && cd /workspaces/Ghost && pnpm install --prefer-offline || true",
+
+    // Runs after the workspace mount is ready on every container create.
+    "postCreateCommand": ".devcontainer/postCreate.sh",
+
+    // Runs whenever VS Code attaches to the container. Fires only inside the
+    // container, so this is safe (unlike a tasks.json runOn: folderOpen which
+    // also fires on host VS Code where node_modules doesn't exist yet).
+    // The script guards against double-starting if the stack is already up.
+    "postAttachCommand": "bash .devcontainer/start-dev-stack.sh",
+
+    "forwardPorts": [
+        2368,
+        3306,
+        6379,
+        1025,
+        8025,
+        5174,
+        4200,
+        4175,
+        7173,
+        6174,
+        4178,
+        4177,
+        4173
+    ],
+    "portsAttributes": {
+        "2368": {"label": "Ghost (via gateway)", "onAutoForward": "notify"},
+        "3306": {"label": "MySQL"},
+        "6379": {"label": "Redis"},
+        "1025": {"label": "Mailpit SMTP"},
+        "8025": {"label": "Mailpit Web"},
+        "5174": {"label": "Admin (Vite)"},
+        "4200": {"label": "Ember live-reload"},
+        "4175": {"label": "Portal"},
+        "7173": {"label": "Comments UI"},
+        "6174": {"label": "Signup Form"},
+        "4178": {"label": "Sodo Search"},
+        "4177": {"label": "Announcement Bar"},
+        "4173": {"label": "Koenig Lexical"}
+    },
+
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "dbaeumer.vscode-eslint",
+                "bradlc.vscode-tailwindcss",
+                "ms-playwright.playwright",
+                "editorconfig.editorconfig"
+            ]
+        }
+    }
+}

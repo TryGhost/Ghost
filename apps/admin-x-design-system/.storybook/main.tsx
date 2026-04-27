@@ -4,23 +4,27 @@ const config: StorybookConfig = {
 	stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|ts|tsx)"],
 	addons: [
 		"@storybook/addon-links",
-		"@storybook/addon-essentials",
-		"@storybook/addon-interactions",
 		{
-			name: '@storybook/addon-styling',
-		},
+			name: "@storybook/addon-docs",
+			options: {
+				mdxPluginOptions: {
+					mdxCompileOptions: {
+						providerImportSource: "@storybook/addon-docs/mdx-react-shim"
+					}
+				}
+			}
+		}
 	],
 	framework: {
 		name: "@storybook/react-vite",
 		options: {},
 	},
-	docs: {
-		autodocs: "tag",
-	},
-    async viteFinal(config, options) {
-		config.resolve!.alias = {
-			crypto: require.resolve('rollup-plugin-node-builtins')
-		}
+	async viteFinal(config) {
+		config.resolve = config.resolve ?? {};
+		config.build = config.build ?? {};
+		config.build.rollupOptions = config.build.rollupOptions ?? {};
+
+		delete config.build.rollupOptions.external;
 		return config;
 	}
 };
