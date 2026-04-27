@@ -39,7 +39,7 @@ overrides:
   '@tootallnate/once@<3.0.1': ^3.0.1
   clean-css@<4.1.11: ^4.1.11
   debug@>=4.0.0 <4.3.1: ^4.3.1
-  debug@<2.6.9: ^2.6.9
+  debug@<2.6.9: ^4.3.1
   diff@<3.5.1: ^3.5.1
   diff@>=6.0.0 <8.0.3: ^8.0.3
   handlebars@>=4.0.0 <=4.7.8: ^4.7.9
@@ -12700,6 +12700,7 @@ packages:
   ee-argv@0.1.4:
     resolution: {integrity: sha512-L/bJ7iteO7JlaOmjwWObBAoy2XnqP9sgazSE25xLenBmkN6HELbcZJISBFwvixL8re7HgCn2KrwuC/Ai0/s6hQ==}
     engines: {node: '>=0.10.7'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   ee-class@1.4.0:
     resolution: {integrity: sha512-0rHVsCh/QNXHkX4HEnh9IR2/VDPc2KoOjvbSp3BqxH/fbvHtniteQOCjYWCTYvkfQj/KRSTcc/eXP7z/Ic20mg==}
@@ -12718,6 +12719,7 @@ packages:
 
   ee-types@2.2.1:
     resolution: {integrity: sha512-ZgShE8RXsE+DFAddCmduKwUwoNLZd7Ik6yv6LFEUDfz/6k2s6rTvABQS8dO2EibJpYFWREOx/ealtwuTUXeeYg==}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   electron-to-chromium@1.5.328:
     resolution: {integrity: sha512-QNQ5l45DzYytThO21403XN3FvK0hOkWDG8viNf6jqS42msJ8I4tGDSpBCgvDRRPnkffafiwAym2X2eHeGD2V0w==}
@@ -19153,6 +19155,7 @@ packages:
     engines: {node: '>=0.6.0', teleport: '>=0.2.0'}
     deprecated: |-
       You or someone you depend on is using Q, the JavaScript Promise library that gave JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript promise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
+
       (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
 
   qs@6.14.2:
@@ -28767,7 +28770,7 @@ snapshots:
     dependencies:
       '@stdlib/fs-resolve-parent-path': 0.2.3
       '@stdlib/utils-convert-path': 0.2.3
-      debug: 2.6.9(supports-color@1.2.0)
+      debug: 2.6.9
       resolve: 1.22.11
     transitivePeerDependencies:
       - supports-color
@@ -31737,7 +31740,7 @@ snapshots:
 
   async-disk-cache@1.3.5:
     dependencies:
-      debug: 2.6.9(supports-color@1.2.0)
+      debug: 4.4.3(supports-color@5.5.0)
       heimdalljs: 0.2.6
       istextorbinary: 2.1.0
       mkdirp: 0.5.6
@@ -31755,7 +31758,7 @@ snapshots:
   async-promise-queue@1.0.5:
     dependencies:
       async: 2.6.4
-      debug: 2.6.9(supports-color@1.2.0)
+      debug: 4.4.3(supports-color@5.5.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -31846,7 +31849,7 @@ snapshots:
       babel-types: 6.26.0
       babylon: 6.18.0
       convert-source-map: 1.9.0
-      debug: 2.6.9(supports-color@1.2.0)
+      debug: 2.6.9
       json5: 0.5.1
       lodash: 4.17.23
       minimatch: 3.1.5
@@ -32443,7 +32446,7 @@ snapshots:
       babel-runtime: 6.26.0
       babel-types: 6.26.0
       babylon: 6.18.0
-      debug: 2.6.9(supports-color@1.2.0)
+      debug: 4.4.3(supports-color@5.5.0)
       globals: 9.18.0
       invariant: 2.2.4
       lodash: 4.17.23
@@ -32591,7 +32594,7 @@ snapshots:
     dependencies:
       bytes: 3.1.2
       content-type: 1.0.5
-      debug: 2.6.9(supports-color@1.2.0)
+      debug: 2.6.9
       depd: 2.0.0
       destroy: 1.2.0
       http-errors: 2.0.0
@@ -32608,7 +32611,7 @@ snapshots:
     dependencies:
       bytes: 3.1.2
       content-type: 1.0.5
-      debug: 2.6.9(supports-color@1.2.0)
+      debug: 2.6.9
       depd: 2.0.0
       destroy: 1.2.0
       http-errors: 2.0.1
@@ -32848,7 +32851,7 @@ snapshots:
   broccoli-config-replace@1.1.3:
     dependencies:
       broccoli-plugin: 1.3.1
-      debug: 2.6.9(supports-color@1.2.0)
+      debug: 4.4.3(supports-color@5.5.0)
       fs-extra: 0.24.0
     transitivePeerDependencies:
       - supports-color
@@ -32879,7 +32882,7 @@ snapshots:
       broccoli-kitchen-sink-helpers: 0.3.1
       broccoli-plugin: 1.3.1
       copy-dereference: 1.0.0
-      debug: 2.6.9(supports-color@1.2.0)
+      debug: 4.4.3(supports-color@5.5.0)
       mkdirp: 0.5.6
       promise-map-series: 0.2.3
       rsvp: 3.6.2
@@ -32895,7 +32898,7 @@ snapshots:
       array-equal: 1.0.2
       blank-object: 1.0.2
       broccoli-plugin: 1.3.1
-      debug: 2.6.9(supports-color@1.2.0)
+      debug: 4.4.3(supports-color@5.5.0)
       exists-sync: 0.0.4
       fast-ordered-set: 1.0.3
       fs-tree-diff: 0.5.9
@@ -32914,7 +32917,7 @@ snapshots:
       array-equal: 1.0.2
       blank-object: 1.0.2
       broccoli-plugin: 1.3.1
-      debug: 2.6.9(supports-color@1.2.0)
+      debug: 4.4.3(supports-color@5.5.0)
       fast-ordered-set: 1.0.3
       fs-tree-diff: 0.5.9
       heimdalljs: 0.2.6
@@ -32932,7 +32935,7 @@ snapshots:
       array-equal: 1.0.2
       blank-object: 1.0.2
       broccoli-plugin: 1.3.1
-      debug: 2.6.9(supports-color@1.2.0)
+      debug: 4.4.3(supports-color@5.5.0)
       fast-ordered-set: 1.0.3
       fs-tree-diff: 0.5.9
       heimdalljs: 0.2.6
@@ -34114,7 +34117,7 @@ snapshots:
     dependencies:
       bytes: 3.1.2
       compressible: 2.0.18
-      debug: 2.6.9(supports-color@1.2.0)
+      debug: 2.6.9
       negotiator: 0.6.4
       on-headers: 1.1.0
       safe-buffer: 5.2.1
@@ -34175,7 +34178,7 @@ snapshots:
 
   connect@3.7.0:
     dependencies:
-      debug: 2.6.9(supports-color@1.2.0)
+      debug: 2.6.9
       finalhandler: 1.1.2
       parseurl: 1.3.3
       utils-merge: 1.0.1
@@ -34798,11 +34801,9 @@ snapshots:
       null-prototype-object: 1.2.6
       pretty-ms: 7.0.1
 
-  debug@2.6.9(supports-color@1.2.0):
+  debug@2.6.9:
     dependencies:
       ms: 2.0.0
-    optionalDependencies:
-      supports-color: 1.2.0
 
   debug@3.2.7:
     dependencies:
@@ -34819,6 +34820,12 @@ snapshots:
   debug@4.4.1:
     dependencies:
       ms: 2.1.3
+
+  debug@4.4.3(supports-color@1.2.0):
+    dependencies:
+      ms: 2.1.3
+    optionalDependencies:
+      supports-color: 1.2.0
 
   debug@4.4.3(supports-color@5.5.0):
     dependencies:
@@ -35651,7 +35658,7 @@ snapshots:
       broccoli-funnel: 1.2.0
       broccoli-merge-trees: 1.2.4
       broccoli-source: 1.1.0
-      debug: 2.6.9(supports-color@1.2.0)
+      debug: 4.4.3(supports-color@5.5.0)
       lodash: 4.17.23
       resolve: 1.22.11
     transitivePeerDependencies:
@@ -37482,7 +37489,7 @@ snapshots:
 
   expand-brackets@2.1.4:
     dependencies:
-      debug: 2.6.9(supports-color@1.2.0)
+      debug: 4.4.3(supports-color@5.5.0)
       define-property: 0.2.5
       extend-shallow: 2.0.1
       posix-character-classes: 0.1.1
@@ -37528,7 +37535,7 @@ snapshots:
 
   express-end@0.0.8:
     dependencies:
-      debug: 2.6.9(supports-color@1.2.0)
+      debug: 4.4.3(supports-color@5.5.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -37570,7 +37577,7 @@ snapshots:
     dependencies:
       cookie: 0.7.2
       cookie-signature: 1.0.7
-      debug: 2.6.9(supports-color@1.2.0)
+      debug: 2.6.9
       depd: 2.0.0
       on-headers: 1.1.0
       parseurl: 1.3.3
@@ -37590,7 +37597,7 @@ snapshots:
       content-type: 1.0.5
       cookie: 0.7.1
       cookie-signature: 1.0.6
-      debug: 2.6.9(supports-color@1.2.0)
+      debug: 2.6.9
       depd: 2.0.0
       encodeurl: 2.0.0
       escape-html: 1.0.3
@@ -37626,7 +37633,7 @@ snapshots:
       content-type: 1.0.5
       cookie: 0.7.2
       cookie-signature: 1.0.7
-      debug: 2.6.9(supports-color@1.2.0)
+      debug: 2.6.9
       depd: 2.0.0
       encodeurl: 2.0.0
       escape-html: 1.0.3
@@ -37886,7 +37893,7 @@ snapshots:
 
   finalhandler@1.1.2:
     dependencies:
-      debug: 2.6.9(supports-color@1.2.0)
+      debug: 2.6.9
       encodeurl: 1.0.2
       escape-html: 1.0.3
       on-finished: 2.3.0
@@ -37898,7 +37905,7 @@ snapshots:
 
   finalhandler@1.3.1:
     dependencies:
-      debug: 2.6.9(supports-color@1.2.0)
+      debug: 2.6.9
       encodeurl: 2.0.0
       escape-html: 1.0.3
       on-finished: 2.4.1
@@ -38819,7 +38826,7 @@ snapshots:
 
   heimdalljs-logger@0.1.10:
     dependencies:
-      debug: 2.6.9(supports-color@1.2.0)
+      debug: 4.4.3(supports-color@5.5.0)
       heimdalljs: 0.2.6
     transitivePeerDependencies:
       - supports-color
@@ -40832,7 +40839,7 @@ snapshots:
 
   leek@0.0.24:
     dependencies:
-      debug: 2.6.9(supports-color@1.2.0)
+      debug: 4.4.3(supports-color@5.5.0)
       lodash.assign: 3.2.0
       rsvp: 3.6.2
     transitivePeerDependencies:
@@ -42024,7 +42031,7 @@ snapshots:
   mocha@2.5.3:
     dependencies:
       commander: 2.3.0
-      debug: 2.6.9(supports-color@1.2.0)
+      debug: 4.4.3(supports-color@1.2.0)
       diff: 3.5.1
       escape-string-regexp: 1.0.2
       glob: 3.2.11
@@ -42054,7 +42061,7 @@ snapshots:
   morgan@1.10.1:
     dependencies:
       basic-auth: 2.0.1
-      debug: 2.6.9(supports-color@1.2.0)
+      debug: 2.6.9
       depd: 2.0.0
       on-finished: 2.3.0
       on-headers: 1.1.0
@@ -45267,7 +45274,7 @@ snapshots:
 
   send@0.19.0:
     dependencies:
-      debug: 2.6.9(supports-color@1.2.0)
+      debug: 2.6.9
       depd: 2.0.0
       destroy: 1.2.0
       encodeurl: 1.0.2
@@ -45465,7 +45472,7 @@ snapshots:
 
   silent-error@1.1.1:
     dependencies:
-      debug: 2.6.9(supports-color@1.2.0)
+      debug: 4.4.3(supports-color@5.5.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -45597,7 +45604,7 @@ snapshots:
   snapdragon@0.8.2:
     dependencies:
       base: 0.11.2
-      debug: 2.6.9(supports-color@1.2.0)
+      debug: 4.4.3(supports-color@5.5.0)
       define-property: 0.2.5
       extend-shallow: 2.0.1
       map-cache: 0.2.2
@@ -45901,7 +45908,7 @@ snapshots:
 
   stream-parser@0.3.1:
     dependencies:
-      debug: 2.6.9(supports-color@1.2.0)
+      debug: 4.4.3(supports-color@5.5.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -46320,7 +46327,7 @@ snapshots:
 
   sync-disk-cache@1.3.4:
     dependencies:
-      debug: 2.6.9(supports-color@1.2.0)
+      debug: 4.4.3(supports-color@5.5.0)
       heimdalljs: 0.2.6
       mkdirp: 0.5.6
       rimraf: 2.7.1
@@ -46807,7 +46814,7 @@ snapshots:
 
   tree-sync@1.4.0:
     dependencies:
-      debug: 2.6.9(supports-color@1.2.0)
+      debug: 4.4.3(supports-color@5.5.0)
       fs-tree-diff: 0.5.9
       mkdirp: 0.5.6
       quick-temp: 0.1.9
