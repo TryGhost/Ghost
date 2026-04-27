@@ -38,7 +38,7 @@ describe('ImageHandler', function () {
         assert.equal(typeof ImageHandler.loadFile, 'function');
     });
 
-    it('can load a single file', function (done) {
+    it('can load a single file', async function () {
         const filename = 'test-image.jpeg';
 
         const file = [{
@@ -49,18 +49,15 @@ describe('ImageHandler', function () {
         const storeSpy = sinon.spy(store, 'getUniqueFileName');
         const storageSpy = sinon.spy(storage, 'getStorage');
 
-        ImageHandler.loadFile(_.clone(file)).then(function () {
-            sinon.assert.calledOnce(storageSpy);
-            sinon.assert.calledOnce(storeSpy);
-            assert.equal(storeSpy.firstCall.args[0].originalPath, 'test-image.jpeg');
-            assert.match(storeSpy.firstCall.args[0].targetDir, /(\/|\\)content(\/|\\)images$/);
-            assert.equal(storeSpy.firstCall.args[0].newPath, '/content/images/test-image.jpeg');
-
-            done();
-        }).catch(done);
+        await ImageHandler.loadFile(_.clone(file));
+        sinon.assert.calledOnce(storageSpy);
+        sinon.assert.calledOnce(storeSpy);
+        assert.equal(storeSpy.firstCall.args[0].originalPath, 'test-image.jpeg');
+        assert.match(storeSpy.firstCall.args[0].targetDir, /(\/|\\)content(\/|\\)images$/);
+        assert.equal(storeSpy.firstCall.args[0].newPath, '/content/images/test-image.jpeg');
     });
 
-    it('can load a single file, maintaining structure', function (done) {
+    it('can load a single file, maintaining structure', async function () {
         const filename = 'photos/my-cat.jpeg';
 
         const file = [{
@@ -71,18 +68,15 @@ describe('ImageHandler', function () {
         const storeSpy = sinon.spy(store, 'getUniqueFileName');
         const storageSpy = sinon.spy(storage, 'getStorage');
 
-        ImageHandler.loadFile(_.clone(file)).then(function () {
-            sinon.assert.calledOnce(storageSpy);
-            sinon.assert.calledOnce(storeSpy);
-            assert.equal(storeSpy.firstCall.args[0].originalPath, 'photos/my-cat.jpeg');
-            assert.match(storeSpy.firstCall.args[0].targetDir, /(\/|\\)content(\/|\\)images(\/|\\)photos$/);
-            assert.equal(storeSpy.firstCall.args[0].newPath, '/content/images/photos/my-cat.jpeg');
-
-            done();
-        }).catch(done);
+        await ImageHandler.loadFile(_.clone(file));
+        sinon.assert.calledOnce(storageSpy);
+        sinon.assert.calledOnce(storeSpy);
+        assert.equal(storeSpy.firstCall.args[0].originalPath, 'photos/my-cat.jpeg');
+        assert.match(storeSpy.firstCall.args[0].targetDir, /(\/|\\)content(\/|\\)images(\/|\\)photos$/);
+        assert.equal(storeSpy.firstCall.args[0].newPath, '/content/images/photos/my-cat.jpeg');
     });
 
-    it('can load a single file, removing ghost dirs', function (done) {
+    it('can load a single file, removing ghost dirs', async function () {
         const filename = 'content/images/my-cat.jpeg';
 
         const file = [{
@@ -93,18 +87,15 @@ describe('ImageHandler', function () {
         const storeSpy = sinon.spy(store, 'getUniqueFileName');
         const storageSpy = sinon.spy(storage, 'getStorage');
 
-        ImageHandler.loadFile(_.clone(file)).then(function () {
-            sinon.assert.calledOnce(storageSpy);
-            sinon.assert.calledOnce(storeSpy);
-            assert.equal(storeSpy.firstCall.args[0].originalPath, 'content/images/my-cat.jpeg');
-            assert.match(storeSpy.firstCall.args[0].targetDir, /(\/|\\)content(\/|\\)images$/);
-            assert.equal(storeSpy.firstCall.args[0].newPath, '/content/images/my-cat.jpeg');
-
-            done();
-        }).catch(done);
+        await ImageHandler.loadFile(_.clone(file));
+        sinon.assert.calledOnce(storageSpy);
+        sinon.assert.calledOnce(storeSpy);
+        assert.equal(storeSpy.firstCall.args[0].originalPath, 'content/images/my-cat.jpeg');
+        assert.match(storeSpy.firstCall.args[0].targetDir, /(\/|\\)content(\/|\\)images$/);
+        assert.equal(storeSpy.firstCall.args[0].newPath, '/content/images/my-cat.jpeg');
     });
 
-    it('can load a file (subdirectory)', function (done) {
+    it('can load a file (subdirectory)', async function () {
         configUtils.set({url: 'http://localhost:65535/subdir'});
 
         const filename = 'test-image.jpeg';
@@ -117,18 +108,15 @@ describe('ImageHandler', function () {
         const storeSpy = sinon.spy(store, 'getUniqueFileName');
         const storageSpy = sinon.spy(storage, 'getStorage');
 
-        ImageHandler.loadFile(_.clone(file)).then(function () {
-            sinon.assert.calledOnce(storageSpy);
-            sinon.assert.calledOnce(storeSpy);
-            assert.equal(storeSpy.firstCall.args[0].originalPath, 'test-image.jpeg');
-            assert.match(storeSpy.firstCall.args[0].targetDir, /(\/|\\)content(\/|\\)images$/);
-            assert.equal(storeSpy.firstCall.args[0].newPath, '/subdir/content/images/test-image.jpeg');
-
-            done();
-        }).catch(done);
+        await ImageHandler.loadFile(_.clone(file));
+        sinon.assert.calledOnce(storageSpy);
+        sinon.assert.calledOnce(storeSpy);
+        assert.equal(storeSpy.firstCall.args[0].originalPath, 'test-image.jpeg');
+        assert.match(storeSpy.firstCall.args[0].targetDir, /(\/|\\)content(\/|\\)images$/);
+        assert.equal(storeSpy.firstCall.args[0].newPath, '/subdir/content/images/test-image.jpeg');
     });
 
-    it('can load multiple files', function (done) {
+    it('can load multiple files', async function () {
         const files = [{
             path: '/my/test/testing.png',
             name: 'testing.png'
@@ -149,23 +137,20 @@ describe('ImageHandler', function () {
         const storeSpy = sinon.spy(store, 'getUniqueFileName');
         const storageSpy = sinon.spy(storage, 'getStorage');
 
-        ImageHandler.loadFile(_.clone(files)).then(function () {
-            sinon.assert.calledOnce(storageSpy);
-            sinon.assert.callCount(storeSpy, 4);
-            assert.equal(storeSpy.firstCall.args[0].originalPath, 'testing.png');
-            assert.match(storeSpy.firstCall.args[0].targetDir, /(\/|\\)content(\/|\\)images$/);
-            assert.equal(storeSpy.firstCall.args[0].newPath, '/content/images/testing.png');
-            assert.equal(storeSpy.secondCall.args[0].originalPath, 'photo/kitten.jpg');
-            assert.match(storeSpy.secondCall.args[0].targetDir, /(\/|\\)content(\/|\\)images(\/|\\)photo$/);
-            assert.equal(storeSpy.secondCall.args[0].newPath, '/content/images/photo/kitten.jpg');
-            assert.equal(storeSpy.thirdCall.args[0].originalPath, 'content/images/animated/bunny.gif');
-            assert.match(storeSpy.thirdCall.args[0].targetDir, /(\/|\\)content(\/|\\)images(\/|\\)animated$/);
-            assert.equal(storeSpy.thirdCall.args[0].newPath, '/content/images/animated/bunny.gif');
-            assert.equal(storeSpy.lastCall.args[0].originalPath, 'images/puppy.jpg');
-            assert.match(storeSpy.lastCall.args[0].targetDir, /(\/|\\)content(\/|\\)images$/);
-            assert.equal(storeSpy.lastCall.args[0].newPath, '/content/images/puppy.jpg');
-
-            done();
-        }).catch(done);
+        await ImageHandler.loadFile(_.clone(files));
+        sinon.assert.calledOnce(storageSpy);
+        sinon.assert.callCount(storeSpy, 4);
+        assert.equal(storeSpy.firstCall.args[0].originalPath, 'testing.png');
+        assert.match(storeSpy.firstCall.args[0].targetDir, /(\/|\\)content(\/|\\)images$/);
+        assert.equal(storeSpy.firstCall.args[0].newPath, '/content/images/testing.png');
+        assert.equal(storeSpy.secondCall.args[0].originalPath, 'photo/kitten.jpg');
+        assert.match(storeSpy.secondCall.args[0].targetDir, /(\/|\\)content(\/|\\)images(\/|\\)photo$/);
+        assert.equal(storeSpy.secondCall.args[0].newPath, '/content/images/photo/kitten.jpg');
+        assert.equal(storeSpy.thirdCall.args[0].originalPath, 'content/images/animated/bunny.gif');
+        assert.match(storeSpy.thirdCall.args[0].targetDir, /(\/|\\)content(\/|\\)images(\/|\\)animated$/);
+        assert.equal(storeSpy.thirdCall.args[0].newPath, '/content/images/animated/bunny.gif');
+        assert.equal(storeSpy.lastCall.args[0].originalPath, 'images/puppy.jpg');
+        assert.match(storeSpy.lastCall.args[0].targetDir, /(\/|\\)content(\/|\\)images$/);
+        assert.equal(storeSpy.lastCall.args[0].newPath, '/content/images/puppy.jpg');
     });
 });

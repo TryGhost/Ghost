@@ -1,4 +1,3 @@
-const {assertExists} = require('../../../../../utils/assertions');
 const sinon = require('sinon');
 const testUtils = require('../../../../../utils');
 const configUtils = require('../../../../../utils/config-utils');
@@ -14,13 +13,6 @@ describe('Unit - services/routing/controllers/previews', function () {
     let res;
     let post;
     let apiResponse;
-
-    function failTest(done) {
-        return function (err) {
-            assertExists(err);
-            done(err);
-        };
-    }
 
     afterEach(async function () {
         sinon.restore();
@@ -80,10 +72,10 @@ describe('Unit - services/routing/controllers/previews', function () {
         });
     });
 
-    it('should render post', function (done) {
-        controllers.previews(req, res, failTest(done)).then(function () {
-            sinon.assert.called(renderStub);
-            done();
-        }).catch(done);
+    it('should render post', async function () {
+        const next = sinon.stub();
+        await controllers.previews(req, res, next);
+        sinon.assert.called(renderStub);
+        sinon.assert.notCalled(next);
     });
 });
