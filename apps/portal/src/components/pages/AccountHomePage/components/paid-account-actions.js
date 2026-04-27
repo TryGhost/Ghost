@@ -1,5 +1,5 @@
 import AppContext from '../../../../app-context';
-import {getSubscriptionExpiry, getMemberSubscription, getMemberTierName, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember, isGiftMember, isPaidMember, subscriptionHasFreeTrial} from '../../../../utils/helpers';
+import {getSubscriptionExpiry, getMemberSubscription, getMemberTierName, hasMultipleProductsFeature, hasOnlyFreePlan, isArchivedTier, isComplimentaryMember, isGiftMember, isPaidMember, subscriptionHasFreeTrial} from '../../../../utils/helpers';
 import {getDateString} from '../../../../utils/date-time';
 import {ReactComponent as GiftIcon} from '../../../../images/icons/gift.svg';
 import {ReactComponent as LoaderIcon} from '../../../../images/icons/loader.svg';
@@ -100,7 +100,7 @@ const PaidAccountActions = () => {
         if (hasOnlyFreePlan({site}) && !isPaid) {
             return null;
         }
-        if (isGiftMember({member})) {
+        if (isGiftMember({member}) && !isArchivedTier({member, site})) {
             return (
                 <button
                     className='gh-portal-btn gh-portal-btn-list' onClick={() => doAction('continueGiftSubscription')}
