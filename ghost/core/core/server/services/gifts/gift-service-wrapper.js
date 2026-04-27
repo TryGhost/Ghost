@@ -59,7 +59,13 @@ class GiftServiceWrapper {
 
         DomainEvents.subscribe(SubscriptionActivatedEvent, async (event) => {
             try {
-                await this.service.consumeOnPaidSubscription(event.data.memberId);
+                const gift = await this.service.getActiveByMember(event.data.memberId);
+
+                if (!gift) {
+                    return;
+                }
+
+                await this.service.consume(gift.token);
             } catch (err) {
                 logging.error(err, 'Failed to consume gift on paid subscription activation');
             }

@@ -32,7 +32,7 @@ describe('GiftService', function () {
         existsByCheckoutSessionId: sinon.SinonStub<[string], Promise<boolean>>;
         getByToken: sinon.SinonStub<Parameters<GiftRepository['getByToken']>, ReturnType<GiftRepository['getByToken']>>;
         getByPaymentIntentId: sinon.SinonStub<[string], Promise<Gift | null>>;
-        getActiveByMember: sinon.SinonStub<Parameters<GiftRepository['getActiveByMember']>, ReturnType<GiftRepository['getActiveByMember']>>;
+        getActiveByMember: sinon.SinonStub<[string], Promise<Gift | null>>;
         findPendingConsumption: sinon.SinonStub<[], Promise<Gift[]>>;
         findPendingExpiration: sinon.SinonStub<[], Promise<Gift[]>>;
         findPendingReminder: sinon.SinonStub<[FindPendingReminderOptions], Promise<Gift[]>>;
@@ -77,7 +77,7 @@ describe('GiftService', function () {
             existsByCheckoutSessionId: sinon.stub<[string], Promise<boolean>>().resolves(false),
             getByToken: sinon.stub<Parameters<GiftRepository['getByToken']>, ReturnType<GiftRepository['getByToken']>>().resolves(null),
             getByPaymentIntentId: sinon.stub<[string], Promise<Gift | null>>().resolves(null),
-            getActiveByMember: sinon.stub<Parameters<GiftRepository['getActiveByMember']>, ReturnType<GiftRepository['getActiveByMember']>>().resolves(null),
+            getActiveByMember: sinon.stub<[string], Promise<Gift | null>>().resolves(null),
             findPendingConsumption: sinon.stub<[], Promise<Gift[]>>().resolves([]),
             findPendingExpiration: sinon.stub<[], Promise<Gift[]>>().resolves([]),
             findPendingReminder: sinon.stub<[FindPendingReminderOptions], Promise<Gift[]>>().resolves([]),
@@ -629,19 +629,21 @@ describe('GiftService', function () {
         });
     });
 
-    describe('consumeOnPaidSubscription', function () {
-        it('marks the gift redeemed by the member as consumed', async function () {
+    describe('consume', function () {
+        it('marks a redeemed gift as consumed and returns it', async function () {
             const gift = buildRedeemedGift();
 
-            giftRepository.getActiveByMember.resolves(gift);
+            giftRepository.getByToken.resolves(gift);
 
             const service = createService();
-            const result = await service.consumeOnPaidSubscription('member_1');
+            const result = await service.consume('gift-token');
 
-            assert.equal(result, true);
+            assert.ok(result);
+            assert.equal(result.status, 'consumed');
+            assert.notEqual(result.consumedAt, null);
 
             sinon.assert.calledOnce(giftRepository.transaction);
-            sinon.assert.calledOnceWithExactly(giftRepository.getActiveByMember, 'member_1', {transacting: 'trx', forUpdate: true});
+            sinon.assert.calledOnceWithExactly(giftRepository.getByToken, 'gift-token', {transacting: 'trx', forUpdate: true});
 
             sinon.assert.calledOnce(giftRepository.update);
 
@@ -652,18 +654,18 @@ describe('GiftService', function () {
             assert.deepEqual(options, {transacting: 'trx'});
         });
 
-        it('returns false when the member has no active gift', async function () {
-            giftRepository.getActiveByMember.resolves(null);
+        it('returns null when the token does not exist', async function () {
+            giftRepository.getByToken.resolves(null);
 
             const service = createService();
-            const result = await service.consumeOnPaidSubscription('member_without_gift');
+            const result = await service.consume('missing-token');
 
-            assert.equal(result, false);
+            assert.equal(result, null);
             sinon.assert.notCalled(giftRepository.update);
         });
 
-        it('returns false when the gift is no longer in redeemed status', async function () {
-            giftRepository.getActiveByMember.resolves(buildGift({
+        it('returns null when the gift is no longer in redeemed status', async function () {
+            giftRepository.getByToken.resolves(buildGift({
                 status: 'consumed',
                 redeemerMemberId: 'member_1',
                 redeemedAt: new Date('2025-04-01T00:00:00.000Z'),
@@ -672,32 +674,39 @@ describe('GiftService', function () {
             }));
 
             const service = createService();
-            const result = await service.consumeOnPaidSubscription('member_1');
+            const result = await service.consume('gift-token');
 
-            assert.equal(result, false);
+            assert.equal(result, null);
             sinon.assert.notCalled(giftRepository.update);
         });
 
-        it('returns false without hitting the repository when memberId is falsy', async function () {
-            const service = createService();
-            const result = await service.consumeOnPaidSubscription('');
+        it('uses an external transaction when provided instead of creating its own', async function () {
+            const gift = buildRedeemedGift();
 
-            assert.equal(result, false);
+            giftRepository.getByToken.resolves(gift);
+
+            const service = createService();
+            const externalTrx = 'external-trx';
+            const result = await service.consume('gift-token', {transacting: externalTrx});
+
+            assert.ok(result);
+            assert.equal(result.status, 'consumed');
+
             sinon.assert.notCalled(giftRepository.transaction);
-            sinon.assert.notCalled(giftRepository.getActiveByMember);
-            sinon.assert.notCalled(giftRepository.update);
+            sinon.assert.calledOnceWithExactly(giftRepository.getByToken, 'gift-token', {transacting: externalTrx, forUpdate: true});
+            sinon.assert.calledOnceWithExactly(giftRepository.update, sinon.match.any, {transacting: externalTrx});
         });
 
         it('propagates errors from the repository update', async function () {
             const gift = buildRedeemedGift();
 
-            giftRepository.getActiveByMember.resolves(gift);
+            giftRepository.getByToken.resolves(gift);
             giftRepository.update.rejects(new Error('DB error'));
 
             const service = createService();
 
             await assert.rejects(
-                () => service.consumeOnPaidSubscription('member_1'),
+                () => service.consume('gift-token'),
                 {message: 'DB error'}
             );
         });

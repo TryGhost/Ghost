@@ -383,28 +383,29 @@ export class GiftService {
         return true;
     }
 
-    async consumeOnPaidSubscription(memberId: string): Promise<boolean> {
-        if (!memberId) {
-            return false;
-        }
-
-        return this.deps.giftRepository.transaction(async (transacting) => {
-            const gift = await this.deps.giftRepository.getActiveByMember(memberId, {transacting, forUpdate: true});
+    async consume(token: string, options: {transacting?: unknown} = {}): Promise<Gift | null> {
+        const run = async (transacting: unknown) => {
+            // Fetch with a row lock to prevent race conditions under concurrency
+            const gift = await this.deps.giftRepository.getByToken(token, {transacting, forUpdate: true});
 
             if (!gift || gift.status !== 'redeemed') {
-                return false;
+                return null;
             }
 
             const consumed = gift.consume();
 
             if (!consumed) {
-                return false;
+                return null;
             }
 
             await this.deps.giftRepository.update(consumed, {transacting});
 
-            return true;
-        });
+            return consumed;
+        };
+
+        return options.transacting
+            ? await run(options.transacting)
+            : await this.deps.giftRepository.transaction(run);
     }
 
     async processConsumed(): Promise<{consumedCount: number; updatedMemberCount: number}> {
@@ -419,31 +420,22 @@ export class GiftService {
 
         for (const gift of toConsume) {
             await this.deps.giftRepository.transaction(async (transacting) => {
-                // Re-fetch with a row lock to prevent races with concurrent refunds
-                const locked = await this.deps.giftRepository.getByToken(gift.token, {transacting, forUpdate: true});
-
-                if (locked?.status !== 'redeemed') {
-                    return;
-                }
-
-                const consumed = locked.consume();
+                const consumed = await this.consume(gift.token, {transacting});
 
                 if (!consumed) {
                     return;
                 }
 
-                const member = await this.deps.memberRepository.get({id: locked.redeemerMemberId}, {transacting, forUpdate: true});
+                const member = await this.deps.memberRepository.get({id: consumed.redeemerMemberId}, {transacting, forUpdate: true});
 
                 if (member && member.get('status') === 'gift') {
                     await this.deps.memberRepository.update({
                         products: [],
                         status: 'free'
-                    }, {id: locked.redeemerMemberId, transacting});
+                    }, {id: consumed.redeemerMemberId, transacting});
 
                     updatedMemberCount += 1;
                 }
-
-                await this.deps.giftRepository.update(consumed, {transacting});
 
                 consumedCount += 1;
             });
