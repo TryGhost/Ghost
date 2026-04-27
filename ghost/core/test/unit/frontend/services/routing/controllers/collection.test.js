@@ -17,6 +17,7 @@ describe('Unit - services/routing/controllers/collection', function () {
     let posts;
     let postsPerPage;
     let ownsStub;
+    let next;
 
     beforeEach(function () {
         postsPerPage = 5;
@@ -27,6 +28,7 @@ describe('Unit - services/routing/controllers/collection', function () {
 
         fetchDataStub = sinon.stub();
         renderStub = sinon.stub();
+        next = sinon.stub();
 
         sinon.stub(dataService, 'fetchData').get(function () {
             return fetchDataStub;
@@ -77,11 +79,12 @@ describe('Unit - services/routing/controllers/collection', function () {
                 }
             });
 
-        await controllers.collection(req, res, function () {});
+        await controllers.collection(req, res, next);
         sinon.assert.calledOnce(themeEngine.getActive);
         sinon.assert.notCalled(security.string.safe);
         sinon.assert.calledOnce(fetchDataStub);
         sinon.assert.calledOnce(ownsStub);
+        sinon.assert.notCalled(next);
     });
 
     it('pass page param', async function () {
@@ -97,11 +100,12 @@ describe('Unit - services/routing/controllers/collection', function () {
                 }
             });
 
-        await controllers.collection(req, res, function () {});
+        await controllers.collection(req, res, next);
         sinon.assert.calledOnce(themeEngine.getActive);
         sinon.assert.notCalled(security.string.safe);
         sinon.assert.calledOnce(fetchDataStub);
         sinon.assert.calledOnce(ownsStub);
+        sinon.assert.notCalled(next);
     });
 
     it('update hbs engine: router defines limit', async function () {
@@ -118,12 +122,13 @@ describe('Unit - services/routing/controllers/collection', function () {
                 }
             });
 
-        await controllers.collection(req, res, function () {});
+        await controllers.collection(req, res, next);
         sinon.assert.calledOnce(themeEngine.getActive);
         sinon.assert.calledOnce(themeEngine.getActive().updateTemplateOptions.withArgs({data: {config: {posts_per_page: 3}}}));
         sinon.assert.notCalled(security.string.safe);
         sinon.assert.calledOnce(fetchDataStub);
         sinon.assert.calledOnce(ownsStub);
+        sinon.assert.notCalled(next);
     });
 
     it('page param too big', async function () {
@@ -139,42 +144,13 @@ describe('Unit - services/routing/controllers/collection', function () {
                 }
             });
 
-        let called = false;
-
-        await new Promise((resolve, reject) => {
-            const next = (err) => {
-                if (called) {
-                    return;
-                }
-
-                called = true;
-
-                try {
-                    assert.equal((err instanceof errors.NotFoundError), true);
-                    sinon.assert.calledOnce(themeEngine.getActive);
-                    sinon.assert.notCalled(security.string.safe);
-                    sinon.assert.calledOnce(fetchDataStub);
-                    sinon.assert.notCalled(renderStub);
-                    sinon.assert.notCalled(ownsStub);
-                    resolve();
-                } catch (error) {
-                    reject(error);
-                }
-            };
-
-            controllers.collection(req, res, next)
-                .then(() => {
-                    if (!called) {
-                        reject(new Error('Expected callback to be called with NotFoundError.'));
-                    }
-                })
-                .catch((error) => {
-                    if (!called) {
-                        reject(error);
-                    }
-                });
-        });
-        assert.equal(called, true);
+        await controllers.collection(req, res, next);
+        sinon.assert.calledWith(next, sinon.match.instanceOf(errors.NotFoundError));
+        sinon.assert.calledOnce(themeEngine.getActive);
+        sinon.assert.notCalled(security.string.safe);
+        sinon.assert.calledOnce(fetchDataStub);
+        sinon.assert.notCalled(renderStub);
+        sinon.assert.notCalled(ownsStub);
     });
 
     it('slug param', async function () {
@@ -190,11 +166,12 @@ describe('Unit - services/routing/controllers/collection', function () {
                 }
             });
 
-        await controllers.collection(req, res, function () {});
+        await controllers.collection(req, res, next);
         sinon.assert.calledOnce(themeEngine.getActive);
         sinon.assert.calledOnce(security.string.safe);
         sinon.assert.calledOnce(fetchDataStub);
         sinon.assert.calledOnce(ownsStub);
+        sinon.assert.notCalled(next);
     });
 
     it('invalid posts per page', async function () {
@@ -210,11 +187,12 @@ describe('Unit - services/routing/controllers/collection', function () {
                 }
             });
 
-        await controllers.collection(req, res, function () {});
+        await controllers.collection(req, res, next);
         sinon.assert.calledOnce(themeEngine.getActive);
         sinon.assert.notCalled(security.string.safe);
         sinon.assert.calledOnce(fetchDataStub);
         sinon.assert.calledOnce(ownsStub);
+        sinon.assert.notCalled(next);
     });
 
     it('should verify if post belongs to collection', async function () {
@@ -246,10 +224,11 @@ describe('Unit - services/routing/controllers/collection', function () {
                 }
             });
 
-        await controllers.collection(req, res, function () {});
+        await controllers.collection(req, res, next);
         sinon.assert.calledOnce(themeEngine.getActive);
         sinon.assert.notCalled(security.string.safe);
         sinon.assert.calledOnce(fetchDataStub);
         sinon.assert.callCount(ownsStub, 4);
+        sinon.assert.notCalled(next);
     });
 });
