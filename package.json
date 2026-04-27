@@ -56,7 +56,8 @@
     "data:analytics:generate": "node ghost/core/core/server/data/tinybird/scripts/docker-analytics-manager.js generate",
     "data:analytics:clear": "node ghost/core/core/server/data/tinybird/scripts/docker-analytics-manager.js clear",
     "release": "node scripts/release.js",
-    "test:release": "node --test 'scripts/test/*.js'"
+    "test:release": "node --test 'scripts/test/*.js'",
+    "audit:overrides": "node scripts/audit-overrides.js"
   },
   "pnpm": {
     "overrides": {
