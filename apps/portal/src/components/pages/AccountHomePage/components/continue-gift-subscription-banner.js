@@ -1,12 +1,12 @@
 import AppContext from '../../../../app-context';
 import ActionButton from '../../../common/action-button';
-import {getSubscriptionExpiry, isGiftMember} from '../../../../utils/helpers';
+import {getSubscriptionExpiry, isArchivedTier, isGiftMember} from '../../../../utils/helpers';
 import {useContext} from 'react';
 
 const ContinueGiftSubscriptionBanner = () => {
-    const {member, doAction, action, brandColor} = useContext(AppContext);
+    const {member, site, doAction, action, brandColor} = useContext(AppContext);
 
-    if (!isGiftMember({member})) {
+    if (!isGiftMember({member}) || isArchivedTier({member, site})) {
         return null;
     }
 
