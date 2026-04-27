@@ -42,14 +42,19 @@ overrides:
   debug@<2.6.9: ^2.6.9
   diff@<3.5.1: ^3.5.1
   diff@>=6.0.0 <8.0.3: ^8.0.3
+  form-data@<2.5.4: ^2.5.4
+  growl@<1.10.0: ^1.10.0
   handlebars@>=4.0.0 <=4.7.8: ^4.7.9
   lodash@<4.18.0: ^4.18.0
   minimatch@<3.1.4: ^3.1.4
   minimatch@>=9.0.0 <9.0.7: ^9.0.7
+  minimist@<0.2.4: ^0.2.4
+  protobufjs@<7.5.5: ^7.5.5
   qs@>=6.7.0 <=6.14.1: ^6.14.2
   tar@<7.5.11: ^7.5.11
   tmp@<=0.2.3: ^0.2.4
   undici@<6.24.0: ^6.24.0
+  underscore@>=1.3.2 <1.12.1: ^1.12.1
   '@xmldom/xmldom@<0.8.13': ^0.8.13
 
 importers:
@@ -11547,7 +11552,7 @@ packages:
       toffee: ^0.3.6
       twig: ^1.15.2
       twing: ^5.0.2
-      underscore: ^1.11.0
+      underscore: ^1.12.1
       vash: ^0.13.0
       velocityjs: ^2.0.1
       walrus: ^0.10.1
@@ -11707,7 +11712,7 @@ packages:
       toffee: ^0.3.6
       twig: ^1.15.2
       twing: ^5.0.2
-      underscore: ^1.11.0
+      underscore: ^1.12.1
       vash: ^0.13.0
       velocityjs: ^2.0.1
       walrus: ^0.10.1
@@ -14175,8 +14180,8 @@ packages:
     resolution: {integrity: sha512-G6NsmEW15s0Uw9XnCg+33H3ViYRyiM0hMrMhhqQOR8NFc5GhYrI+6I3u7OTw7b91J2g8rtvMBZJDbcGb2YUniw==}
     engines: {node: '>= 18'}
 
-  form-data@2.3.3:
-    resolution: {integrity: sha512-1lLKB2Mu3aGP1Q/2eCOx0fNbRMe7XdwktwOruhfqqd0rIJWwN4Dh+E3hrPSlDCXnSR7UtZ1N38rVXm+6+MEhJQ==}
+  form-data@2.5.5:
+    resolution: {integrity: sha512-jqdObeR2rxZZbPSGL+3VckHMYtu+f9//KXBsVny6JSX/pa38Fy+bGjuG8eW/H6USNQWhLi8Num++cU2yOCNz4A==}
     engines: {node: '>= 0.12'}
 
   form-data@3.0.4:
@@ -14590,8 +14595,9 @@ packages:
     resolution: {integrity: sha512-5bJ+nf/UCpAjHM8i06fl7eLyVC9iuNAjm9qzkiu2ZGhM0VscSvS6WDPfAwkdkBuoXGM9FJSbKl6wylMwP9Ktig==}
     engines: {node: ^12.22.0 || ^14.16.0 || ^16.0.0 || >=17.0.0}
 
-  growl@1.9.2:
-    resolution: {integrity: sha512-RTBwDHhNuOx4F0hqzItc/siXCasGfC4DeWcBamclWd+6jWtBaeB/SGbMkGf0eiQoW7ib8JpvOgnUsmgMHI3Mfw==}
+  growl@1.10.5:
+    resolution: {integrity: sha512-qBr4OuELkhPenW6goKVXiv47US3clb3/IbuWF9KNKEijAy9oeHxU9IgzjvJhHkUzhaj7rOUD7+YGWqUjLp5oSA==}
+    engines: {node: '>=4.x'}
 
   growly@1.3.0:
     resolution: {integrity: sha512-+xGQY0YyAWCnqy7Cd++hc2JqMYzlm0dG30Jd0beaA64sROr8C4nt8Yc9V5Ro3avlSUDTN0ulqP/VBKi1/lLygw==}
@@ -17117,9 +17123,6 @@ packages:
     resolution: {integrity: sha512-Q4r8ghd80yhO/0j1O3B2BjweX3fiHg9cdOwjJd2J76Q135c+NDxGCqdYKQ1SKBuFfgWbAUzBfvYjPUEeNgqN1A==}
     engines: {node: '>= 6'}
 
-  minimist@0.0.8:
-    resolution: {integrity: sha512-miQKw5Hv4NS1Psg2517mV4e4dYNaO3++hjAvLOAzKqZ61rH8NS1SK+vbfBWZ5PY/Me/bEWhUwqMghEW5Fb9T7Q==}
-
   minimist@0.2.4:
     resolution: {integrity: sha512-Pkrrm8NjyQ8yVt8Am9M+yUt74zE3iokhzbG1bFVNjLB92vwM71hf40RkEsryg98BujhVOncKm/C1xROxZ030LQ==}
 
@@ -19080,8 +19083,8 @@ packages:
   proto-list@1.2.4:
     resolution: {integrity: sha512-vtK/94akxsTMhe0/cbfpR+syPuszcuwhqVjJq26CuNDgFGj682oRBXOP5MJpv2r7JtE8MsiepGIqvvOTBwn2vA==}
 
-  protobufjs@7.5.4:
-    resolution: {integrity: sha512-CvexbZtbov6jW2eXAvLukXjXUW1TzFaivC46BpWc/3BpcCysb5Vffu+B3XHMm8lVEuy2Mm4XGex8hBSg1yapPg==}
+  protobufjs@7.5.5:
+    resolution: {integrity: sha512-3wY1AxV+VBNW8Yypfd1yQY9pXnqTAN+KwQxL8iYm3/BjKYMNg4i0owhEe26PWDOMaIrzeeF98Lqd5NGz4omiIg==}
     engines: {node: '>=12.0.0'}
 
   proxy-addr@2.0.7:
@@ -21327,12 +21330,6 @@ packages:
 
   underscore@1.13.8:
     resolution: {integrity: sha512-DXtD3ZtEQzc7M8m4cXotyHR+FAS18C64asBYY5vqZexfYryNNnDc02W4hKg3rdQuqOYas1jkseX0+nZXjTXnvQ==}
-
-  underscore@1.7.0:
-    resolution: {integrity: sha512-cp0oQQyZhUM1kpJDLdGO1jPZHgS/MpzoWYfe9+CM2h/QGDZlqwT2T3YGukuBdaNJ/CAPoeyAZRRHz8JFo176vA==}
-
-  underscore@1.8.3:
-    resolution: {integrity: sha512-5WsVTFcH1ut/kkhAaHf4PVgI8c7++GiVcpCGxPouI6ZVjsqPnSDf8h/8HtVqc0t4fzRXwnMK70EcZeAs3PIddg==}
 
   undici-types@5.26.5:
     resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
@@ -25299,14 +25296,14 @@ snapshots:
     dependencies:
       lodash.camelcase: 4.3.0
       long: 5.3.2
-      protobufjs: 7.5.4
+      protobufjs: 7.5.5
       yargs: 17.7.2
 
   '@grpc/proto-loader@0.8.0':
     dependencies:
       lodash.camelcase: 4.3.0
       long: 5.3.2
-      protobufjs: 7.5.4
+      protobufjs: 7.5.5
       yargs: 17.7.2
 
   '@gulpjs/to-absolute-glob@4.0.0':
@@ -35025,7 +35022,7 @@ snapshots:
       '@grpc/grpc-js': 1.14.3
       '@grpc/proto-loader': 0.7.15
       docker-modem: 5.0.7
-      protobufjs: 7.5.4
+      protobufjs: 7.5.5
       tar-fs: 2.1.4
       uuid: 10.0.0
     transitivePeerDependencies:
@@ -37512,7 +37509,7 @@ snapshots:
     dependencies:
       express: 4.21.2
       long-timeout: 0.1.1
-      underscore: 1.8.3
+      underscore: 1.13.8
 
   express-end@0.0.8:
     dependencies:
@@ -38087,11 +38084,14 @@ snapshots:
 
   form-data-encoder@4.1.0: {}
 
-  form-data@2.3.3:
+  form-data@2.5.5:
     dependencies:
       asynckit: 0.4.0
       combined-stream: 1.0.8
+      es-set-tostringtag: 2.1.0
+      hasown: 2.0.2
       mime-types: 2.1.35
+      safe-buffer: 5.2.1
 
   form-data@3.0.4:
     dependencies:
@@ -38641,7 +38641,7 @@ snapshots:
 
   graphql@16.13.2: {}
 
-  growl@1.9.2: {}
+  growl@1.10.5: {}
 
   growly@1.3.0: {}
 
@@ -39028,7 +39028,7 @@ snapshots:
   httpntlm@1.6.1:
     dependencies:
       httpreq: 1.1.1
-      underscore: 1.7.0
+      underscore: 1.13.8
 
   httpreq@1.1.1: {}
 
@@ -41844,8 +41844,6 @@ snapshots:
       is-plain-obj: 1.1.0
       kind-of: 6.0.3
 
-  minimist@0.0.8: {}
-
   minimist@0.2.4: {}
 
   minimist@1.2.8: {}
@@ -41947,7 +41945,7 @@ snapshots:
 
   mkdirp@0.5.1:
     dependencies:
-      minimist: 0.0.8
+      minimist: 0.2.4
 
   mkdirp@0.5.6:
     dependencies:
@@ -42012,7 +42010,7 @@ snapshots:
       diff: 3.5.1
       escape-string-regexp: 1.0.2
       glob: 3.2.11
-      growl: 1.9.2
+      growl: 1.10.5
       jade: 0.26.3
       mkdirp: 0.5.1
       supports-color: 1.2.0
@@ -44177,7 +44175,7 @@ snapshots:
   proto-list@1.2.4:
     optional: true
 
-  protobufjs@7.5.4:
+  protobufjs@7.5.5:
     dependencies:
       '@protobufjs/aspromise': 1.1.2
       '@protobufjs/base64': 1.1.2
@@ -44813,7 +44811,7 @@ snapshots:
       combined-stream: 1.0.8
       extend: 3.0.2
       forever-agent: 0.6.1
-      form-data: 2.3.3
+      form-data: 2.5.5
       har-validator: 5.1.5
       http-signature: 1.2.0
       is-typedarray: 1.0.0
@@ -47067,10 +47065,6 @@ snapshots:
       util-deprecate: 1.0.2
 
   underscore@1.13.8: {}
-
-  underscore@1.7.0: {}
-
-  underscore@1.8.3: {}
 
   undici-types@5.26.5: {}
 
