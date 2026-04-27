@@ -43,6 +43,7 @@ overrides:
   diff@<3.5.1: ^3.5.1
   diff@>=6.0.0 <8.0.3: ^8.0.3
   handlebars@>=4.0.0 <=4.7.8: ^4.7.9
+  lodash@<4.18.0: ^4.18.0
   minimatch@<3.1.4: ^3.1.4
   minimatch@>=9.0.0 <9.0.7: ^9.0.7
   qs@>=6.7.0 <=6.14.1: ^6.14.2
@@ -2081,7 +2082,7 @@ importers:
         version: 1.0.6
       '@tryghost/nodemailer':
         specifier: 0.3.48
-        version: 0.3.48(babel-core@6.26.3)(handlebars@4.7.9)(lodash@4.17.23)(underscore@1.13.8)
+        version: 0.3.48(babel-core@6.26.3)(handlebars@4.7.9)(lodash@4.18.1)(underscore@1.13.8)
       '@tryghost/nql':
         specifier: 0.12.10
         version: 0.12.10
@@ -2308,8 +2309,8 @@ importers:
         specifier: 2.2.0
         version: 2.2.0
       lodash:
-        specifier: 4.17.23
-        version: 4.17.23
+        specifier: 4.18.1
+        version: 4.18.1
       luxon:
         specifier: 3.7.2
         version: 3.7.2
@@ -11522,7 +11523,7 @@ packages:
       just: ^0.1.8
       liquid-node: ^3.0.1
       liquor: ^0.0.5
-      lodash: ^4.17.20
+      lodash: ^4.18.0
       marko: ^3.14.4
       mote: ^0.2.0
       mustache: ^3.0.0
@@ -11686,7 +11687,7 @@ packages:
       just: ^0.1.8
       liquid-node: ^3.0.1
       liquor: ^0.0.5
-      lodash: ^4.17.20
+      lodash: ^4.18.0
       mote: ^0.2.0
       mustache: ^4.0.1
       nunjucks: ^3.2.2
@@ -16633,12 +16634,6 @@ packages:
 
   lodash.upperfirst@4.3.1:
     resolution: {integrity: sha512-sReKOYJIJf74dhJONhU4e0/shzi1trVbSWDOhKYE5XV2O+H7Sb2Dihwuc7xWxVl+DgFPyTqIN3zMfT9cq5iWDg==}
-
-  lodash@4.17.21:
-    resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
-
-  lodash@4.17.23:
-    resolution: {integrity: sha512-LgVTMpQtIopCi79SJeDiP0TfWi5CNEc/L/aRdTh3yIvmZXTnheWpKjSZhnvMl8iXbC1tFg9gdHHDMLoV7CnG+w==}
 
   lodash@4.18.1:
     resolution: {integrity: sha512-dMInicTPVE8d1e5otfwmmjlxkZoUpiVLwyeTdUsi/Caj/gfzzblBcCE5sRHV/AsjuCmxWrte2TNGSYuCeCq+0Q==}
@@ -24521,7 +24516,7 @@ snapshots:
       js-string-escape: 1.0.1
       jsdom: 16.7.0
       json-stable-stringify: 1.3.0
-      lodash: 4.17.23
+      lodash: 4.18.1
       pkg-up: 2.0.0
       resolve: 1.22.11
       resolve-package-path: 1.2.7
@@ -24571,7 +24566,7 @@ snapshots:
       babel-import-util: 2.1.1
       ember-cli-babel: 7.26.11
       find-up: 5.0.0
-      lodash: 4.17.23
+      lodash: 4.18.1
       resolve: 1.22.11
       semver: 7.7.4
     transitivePeerDependencies:
@@ -24584,7 +24579,7 @@ snapshots:
       babel-import-util: 3.0.1
       ember-cli-babel: 7.26.11
       find-up: 5.0.0
-      lodash: 4.17.23
+      lodash: 4.18.1
       resolve: 1.22.11
       semver: 7.7.4
     transitivePeerDependencies:
@@ -24594,7 +24589,7 @@ snapshots:
     dependencies:
       ember-rfc176-data: 0.3.18
       fs-extra: 7.0.1
-      lodash: 4.17.23
+      lodash: 4.18.1
       pkg-up: 3.1.0
       resolve-package-path: 1.2.7
       semver: 7.7.4
@@ -24606,7 +24601,7 @@ snapshots:
       ember-rfc176-data: 0.3.18
       fs-extra: 9.1.0
       js-string-escape: 1.0.1
-      lodash: 4.17.23
+      lodash: 4.18.1
       resolve-package-path: 4.0.3
       semver: 7.7.4
       typescript-memoize: 1.1.1
@@ -24619,7 +24614,7 @@ snapshots:
       fs-extra: 9.1.0
       is-subdir: 1.2.0
       js-string-escape: 1.0.1
-      lodash: 4.17.23
+      lodash: 4.18.1
       minimatch: 3.1.5
       pkg-entry-points: 1.1.1
       resolve-package-path: 4.0.3
@@ -24636,7 +24631,7 @@ snapshots:
       fs-extra: 9.1.0
       is-subdir: 1.2.0
       js-string-escape: 1.0.1
-      lodash: 4.17.23
+      lodash: 4.18.1
       minimatch: 3.1.5
       pkg-entry-points: 1.1.1
       resolve-package-path: 4.0.3
@@ -24653,7 +24648,7 @@ snapshots:
       fs-extra: 9.1.0
       is-subdir: 1.2.0
       js-string-escape: 1.0.1
-      lodash: 4.17.23
+      lodash: 4.18.1
       minimatch: 3.1.5
       pkg-entry-points: 1.1.1
       resolve-package-path: 4.0.3
@@ -25989,7 +25984,7 @@ snapshots:
       isostring: 0.0.1
       jsdom: 27.4.0(@noble/hashes@1.8.0)
       jsonrepair: 3.13.3
-      lodash: 4.17.23
+      lodash: 4.18.1
       memoize-one: 6.0.0
       microsoft-capitalize: 1.0.7
       mime: 3.0.0
@@ -29257,7 +29252,7 @@ snapshots:
       chalk: 3.0.0
       css.escape: 1.5.1
       dom-accessibility-api: 0.5.16
-      lodash: 4.17.21
+      lodash: 4.18.1
       redent: 3.0.0
 
   '@testing-library/jest-dom@6.9.1':
@@ -29400,7 +29395,7 @@ snapshots:
       '@tryghost/errors': 1.3.13
       ajv: 8.18.0
       ajv-formats: 3.0.1(ajv@8.18.0)
-      lodash: 4.17.23
+      lodash: 4.18.1
     transitivePeerDependencies:
       - supports-color
 
@@ -29412,14 +29407,14 @@ snapshots:
       '@tryghost/tpl': 0.1.40
       '@tryghost/validator': 0.2.22
       json-stable-stringify: 1.3.0
-      lodash: 4.17.23
+      lodash: 4.18.1
     transitivePeerDependencies:
       - supports-color
 
   '@tryghost/bookshelf-collision@2.0.3':
     dependencies:
       '@tryghost/errors': 1.3.13
-      lodash: 4.17.23
+      lodash: 4.18.1
       moment-timezone: 0.5.45
     transitivePeerDependencies:
       - supports-color
@@ -29429,7 +29424,7 @@ snapshots:
   '@tryghost/bookshelf-eager-load@2.0.3':
     dependencies:
       '@tryghost/debug': 2.1.0
-      lodash: 4.17.23
+      lodash: 4.18.1
     transitivePeerDependencies:
       - supports-color
 
@@ -29445,26 +29440,26 @@ snapshots:
   '@tryghost/bookshelf-has-posts@2.1.0':
     dependencies:
       '@tryghost/debug': 2.1.0
-      lodash: 4.17.23
+      lodash: 4.18.1
     transitivePeerDependencies:
       - supports-color
 
   '@tryghost/bookshelf-include-count@2.0.3':
     dependencies:
       '@tryghost/debug': 2.1.0
-      lodash: 4.17.23
+      lodash: 4.18.1
     transitivePeerDependencies:
       - supports-color
 
   '@tryghost/bookshelf-order@2.0.3':
     dependencies:
-      lodash: 4.17.23
+      lodash: 4.18.1
 
   '@tryghost/bookshelf-pagination@2.0.3':
     dependencies:
       '@tryghost/errors': 1.3.13
       '@tryghost/tpl': 2.1.0
-      lodash: 4.17.23
+      lodash: 4.18.1
     transitivePeerDependencies:
       - supports-color
 
@@ -29612,7 +29607,7 @@ snapshots:
   '@tryghost/html-to-plaintext@1.0.8':
     dependencies:
       html-to-text: 8.2.1
-      lodash: 4.17.23
+      lodash: 4.18.1
 
   '@tryghost/http-cache-utils@0.1.25': {}
 
@@ -29781,7 +29776,7 @@ snapshots:
   '@tryghost/limit-service@1.5.2':
     dependencies:
       '@tryghost/errors': 1.3.13
-      lodash: 4.17.23
+      lodash: 4.18.1
       luxon: 3.7.2
     transitivePeerDependencies:
       - supports-color
@@ -29806,7 +29801,7 @@ snapshots:
   '@tryghost/members-csv@2.0.5':
     dependencies:
       fs-extra: 11.3.0
-      lodash: 4.17.21
+      lodash: 4.18.1
       papaparse: 5.3.2
       pump: 3.0.2
 
@@ -29834,7 +29829,7 @@ snapshots:
 
   '@tryghost/mongo-utils@0.6.3':
     dependencies:
-      lodash: 4.17.23
+      lodash: 4.18.1
 
   '@tryghost/mw-error-handler@1.0.13':
     dependencies:
@@ -29842,20 +29837,20 @@ snapshots:
       '@tryghost/errors': 1.3.13
       '@tryghost/http-cache-utils': 0.1.25
       '@tryghost/tpl': 0.1.40
-      lodash: 4.17.23
+      lodash: 4.18.1
       semver: 7.7.4
     transitivePeerDependencies:
       - supports-color
 
   '@tryghost/mw-vhost@1.0.6': {}
 
-  '@tryghost/nodemailer@0.3.48(babel-core@6.26.3)(handlebars@4.7.9)(lodash@4.17.23)(underscore@1.13.8)':
+  '@tryghost/nodemailer@0.3.48(babel-core@6.26.3)(handlebars@4.7.9)(lodash@4.18.1)(underscore@1.13.8)':
     dependencies:
       '@aws-sdk/client-ses': 3.1018.0
       '@tryghost/errors': 1.3.13
       nodemailer: 6.10.1
       nodemailer-direct-transport: 3.3.2
-      nodemailer-mailgun-transport: 2.1.5(babel-core@6.26.3)(handlebars@4.7.9)(lodash@4.17.23)(underscore@1.13.8)
+      nodemailer-mailgun-transport: 2.1.5(babel-core@6.26.3)(handlebars@4.7.9)(lodash@4.18.1)(underscore@1.13.8)
       nodemailer-stub-transport: 1.1.0
     transitivePeerDependencies:
       - arc-templates
@@ -29941,7 +29936,7 @@ snapshots:
   '@tryghost/pretty-stream@0.2.5':
     dependencies:
       date-format: 4.0.14
-      lodash: 4.17.23
+      lodash: 4.18.1
       prettyjson: 1.2.5
 
   '@tryghost/pretty-stream@2.1.0':
@@ -29975,7 +29970,7 @@ snapshots:
       '@tryghost/version': 0.1.38
       cacheable-lookup: 7.0.0
       got: 13.0.0
-      lodash: 4.17.23
+      lodash: 4.18.1
     transitivePeerDependencies:
       - supports-color
 
@@ -30038,7 +30033,7 @@ snapshots:
   '@tryghost/url-utils@5.1.2':
     dependencies:
       cheerio: 0.22.0
-      lodash: 4.17.23
+      lodash: 4.18.1
       moment: 2.24.0
       moment-timezone: 0.5.45
       remark: 11.0.2
@@ -30059,7 +30054,7 @@ snapshots:
     dependencies:
       '@tryghost/errors': 1.3.13
       '@tryghost/tpl': 0.1.40
-      lodash: 4.17.23
+      lodash: 4.18.1
       moment-timezone: 0.5.45
       validator: 7.2.0
     transitivePeerDependencies:
@@ -31521,7 +31516,7 @@ snapshots:
 
   applause@2.0.4:
     dependencies:
-      lodash: 4.17.23
+      lodash: 4.18.1
       optional-require: 1.1.10
     optionalDependencies:
       cson-parser: 4.0.9
@@ -31538,7 +31533,7 @@ snapshots:
       graceful-fs: 4.2.11
       is-stream: 2.0.1
       lazystream: 1.0.1
-      lodash: 4.17.23
+      lodash: 4.18.1
       normalize-path: 3.0.0
       readable-stream: 4.7.0
 
@@ -31763,7 +31758,7 @@ snapshots:
 
   async@2.6.4:
     dependencies:
-      lodash: 4.17.23
+      lodash: 4.18.1
 
   async@3.2.3: {}
 
@@ -31848,7 +31843,7 @@ snapshots:
       convert-source-map: 1.9.0
       debug: 2.6.9(supports-color@1.2.0)
       json5: 0.5.1
-      lodash: 4.17.23
+      lodash: 4.18.1
       minimatch: 3.1.5
       path-is-absolute: 1.0.1
       private: 0.1.8
@@ -31864,7 +31859,7 @@ snapshots:
       babel-types: 6.26.0
       detect-indent: 4.0.0
       jsesc: 1.3.0
-      lodash: 4.17.23
+      lodash: 4.18.1
       source-map: 0.5.7
       trim-right: 1.0.1
 
@@ -31896,7 +31891,7 @@ snapshots:
       babel-helper-function-name: 6.24.1
       babel-runtime: 6.26.0
       babel-types: 6.26.0
-      lodash: 4.17.23
+      lodash: 4.18.1
     transitivePeerDependencies:
       - supports-color
 
@@ -31937,7 +31932,7 @@ snapshots:
     dependencies:
       babel-runtime: 6.26.0
       babel-types: 6.26.0
-      lodash: 4.17.23
+      lodash: 4.18.1
 
   babel-helper-remap-async-to-generator@6.24.1:
     dependencies:
@@ -32190,7 +32185,7 @@ snapshots:
       babel-template: 6.26.0
       babel-traverse: 6.26.0
       babel-types: 6.26.0
-      lodash: 4.17.23
+      lodash: 4.18.1
     transitivePeerDependencies:
       - supports-color
 
@@ -32415,7 +32410,7 @@ snapshots:
       babel-runtime: 6.26.0
       core-js: 2.6.12
       home-or-tmp: 2.0.0
-      lodash: 4.17.23
+      lodash: 4.18.1
       mkdirp: 0.5.6
       source-map-support: 0.4.18
     transitivePeerDependencies:
@@ -32446,7 +32441,7 @@ snapshots:
       debug: 2.6.9(supports-color@1.2.0)
       globals: 9.18.0
       invariant: 2.2.4
-      lodash: 4.17.23
+      lodash: 4.18.1
     transitivePeerDependencies:
       - supports-color
 
@@ -32454,7 +32449,7 @@ snapshots:
     dependencies:
       babel-runtime: 6.26.0
       esutils: 2.0.3
-      lodash: 4.17.23
+      lodash: 4.18.1
       to-fast-properties: 1.0.3
 
   babel6-plugin-strip-class-callcheck@6.0.0: {}
@@ -32648,7 +32643,7 @@ snapshots:
       '@tryghost/errors': 1.3.13
       bluebird: 3.7.2
       bookshelf: 1.2.0(knex@2.4.2(mysql2@3.18.1(@types/node@22.19.17))(sqlite3@5.1.7))
-      lodash: 4.17.23
+      lodash: 4.18.1
     transitivePeerDependencies:
       - supports-color
 
@@ -32658,7 +32653,7 @@ snapshots:
       create-error: 0.3.1
       inflection: 1.13.4
       knex: 2.4.2(mysql2@3.18.1(@types/node@22.19.17))(sqlite3@5.1.7)
-      lodash: 4.17.23
+      lodash: 4.18.1
 
   boolbase@1.0.0: {}
 
@@ -32835,7 +32830,7 @@ snapshots:
       find-index: 1.1.1
       fs-extra: 8.1.0
       fs-tree-diff: 2.0.1
-      lodash: 4.17.23
+      lodash: 4.18.1
     transitivePeerDependencies:
       - supports-color
 
@@ -34142,7 +34137,7 @@ snapshots:
     dependencies:
       chalk: 4.1.2
       date-fns: 2.30.0
-      lodash: 4.17.23
+      lodash: 4.18.1
       rxjs: 7.8.2
       shell-quote: 1.8.3
       spawn-command: 0.0.2
@@ -34194,20 +34189,20 @@ snapshots:
       ora: 3.4.0
       through2: 3.0.2
 
-  consolidate@0.15.1(babel-core@6.26.3)(handlebars@4.7.9)(lodash@4.17.23)(underscore@1.13.8):
+  consolidate@0.15.1(babel-core@6.26.3)(handlebars@4.7.9)(lodash@4.18.1)(underscore@1.13.8):
     dependencies:
       bluebird: 3.7.2
     optionalDependencies:
       babel-core: 6.26.3
       handlebars: 4.7.9
-      lodash: 4.17.23
+      lodash: 4.18.1
       underscore: 1.13.8
 
-  consolidate@1.0.4(@babel/core@7.29.0)(handlebars@4.7.9)(lodash@4.17.23)(mustache@4.2.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(underscore@1.13.8):
+  consolidate@1.0.4(@babel/core@7.29.0)(handlebars@4.7.9)(lodash@4.18.1)(mustache@4.2.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(underscore@1.13.8):
     optionalDependencies:
       '@babel/core': 7.29.0
       handlebars: 4.7.9
-      lodash: 4.17.23
+      lodash: 4.18.1
       mustache: 4.2.0
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
@@ -35333,7 +35328,7 @@ snapshots:
       handlebars: 4.7.9
       is-subdir: 1.2.0
       js-string-escape: 1.0.1
-      lodash: 4.17.23
+      lodash: 4.18.1
       mini-css-extract-plugin: 2.10.2(webpack@5.105.4(@swc/core@1.15.21(@swc/helpers@0.5.21)))
       minimatch: 3.1.5
       parse5: 6.0.1
@@ -35652,7 +35647,7 @@ snapshots:
       broccoli-merge-trees: 1.2.4
       broccoli-source: 1.1.0
       debug: 2.6.9(supports-color@1.2.0)
-      lodash: 4.17.23
+      lodash: 4.18.1
       resolve: 1.22.11
     transitivePeerDependencies:
       - supports-color
@@ -36536,7 +36531,7 @@ snapshots:
       console-ui: 3.1.2
       ember-cli-babel: 7.26.11
       ember-cli-htmlbars: 5.7.2
-      lodash: 4.17.23
+      lodash: 4.18.1
       safe-stable-stringify: 2.5.0
     transitivePeerDependencies:
       - '@glint/template'
@@ -37075,7 +37070,7 @@ snapshots:
 
   eslint-plugin-i18next@6.1.3:
     dependencies:
-      lodash: 4.17.21
+      lodash: 4.18.1
       requireindex: 1.1.0
 
   eslint-plugin-mocha@7.0.1(eslint@8.57.1):
@@ -37189,7 +37184,7 @@ snapshots:
       esquery: 1.7.0
       indent-string: 4.0.0
       is-builtin-module: 3.2.1
-      lodash: 4.17.23
+      lodash: 4.18.1
       pluralize: 8.0.0
       read-pkg-up: 7.0.1
       regexp-tree: 0.1.27
@@ -37541,7 +37536,7 @@ snapshots:
   express-hbs@2.5.0:
     dependencies:
       handlebars: 4.7.9
-      lodash: 4.17.23
+      lodash: 4.18.1
       readdirp: 3.6.0
     optionalDependencies:
       js-beautify: 1.15.4
@@ -38893,7 +38888,7 @@ snapshots:
     dependencies:
       he: 1.2.0
       htmlparser2: 3.10.1
-      lodash: 4.17.23
+      lodash: 4.18.1
       minimist: 1.2.8
 
   html-to-text@8.2.1:
@@ -39237,7 +39232,7 @@ snapshots:
       cli-width: 2.2.1
       external-editor: 3.1.0
       figures: 2.0.0
-      lodash: 4.17.23
+      lodash: 4.18.1
       mute-stream: 0.0.7
       run-async: 2.4.1
       rxjs: 6.6.7
@@ -39269,7 +39264,7 @@ snapshots:
       cli-cursor: 3.1.0
       cli-width: 3.0.0
       figures: 3.2.0
-      lodash: 4.17.23
+      lodash: 4.18.1
       mute-stream: 0.0.8
       ora: 5.4.1
       run-async: 2.4.1
@@ -39289,7 +39284,7 @@ snapshots:
       cli-cursor: 3.1.0
       cli-width: 3.0.0
       figures: 3.2.0
-      lodash: 4.17.23
+      lodash: 4.18.1
       mute-stream: 0.0.8
       ora: 5.4.1
       run-async: 2.4.1
@@ -40684,7 +40679,7 @@ snapshots:
       compare-ver: 2.0.2
       debug: 4.4.1
       knex: 2.4.2(mysql2@3.14.1)(sqlite3@5.1.7)
-      lodash: 4.17.21
+      lodash: 4.18.1
       moment: 2.24.0
       mysql2: 3.14.1
       nconf: 0.12.1
@@ -40711,7 +40706,7 @@ snapshots:
       inherits: 2.0.4
       interpret: 2.2.0
       liftoff: 3.1.0
-      lodash: 4.17.23
+      lodash: 4.18.1
       mkdirp: 0.5.6
       pg-connection-string: 2.1.0
       tarn: 2.0.0
@@ -40733,7 +40728,7 @@ snapshots:
       getopts: 2.2.5
       interpret: 2.2.0
       liftoff: 3.1.0
-      lodash: 4.17.23
+      lodash: 4.18.1
       pg-connection-string: 2.4.0
       tarn: 3.0.2
       tildify: 2.0.0
@@ -40754,7 +40749,7 @@ snapshots:
       get-package-type: 0.1.0
       getopts: 2.3.0
       interpret: 2.2.0
-      lodash: 4.17.23
+      lodash: 4.18.1
       pg-connection-string: 2.5.0
       rechoir: 0.8.0
       resolve-from: 5.0.0
@@ -40776,7 +40771,7 @@ snapshots:
       get-package-type: 0.1.0
       getopts: 2.3.0
       interpret: 2.2.0
-      lodash: 4.17.23
+      lodash: 4.18.1
       pg-connection-string: 2.5.0
       rechoir: 0.8.0
       resolve-from: 5.0.0
@@ -40798,7 +40793,7 @@ snapshots:
       get-package-type: 0.1.0
       getopts: 2.3.0
       interpret: 2.2.0
-      lodash: 4.17.21
+      lodash: 4.18.1
       pg-connection-string: 2.6.2
       rechoir: 0.8.0
       resolve-from: 5.0.0
@@ -41284,10 +41279,6 @@ snapshots:
 
   lodash.upperfirst@4.3.1: {}
 
-  lodash@4.17.21: {}
-
-  lodash@4.17.23: {}
-
   lodash@4.18.1: {}
 
   log-symbols@2.2.0:
@@ -41675,7 +41666,7 @@ snapshots:
     dependencies:
       '@keyvhq/memoize': 2.0.3
       '@metascraper/helpers': 5.50.0(@noble/hashes@1.8.0)
-      lodash: 4.17.23
+      lodash: 4.18.1
       reachable-url: 1.7.2
     transitivePeerDependencies:
       - '@noble/hashes'
@@ -41687,7 +41678,7 @@ snapshots:
   metascraper-logo@5.45.10(@noble/hashes@1.8.0):
     dependencies:
       '@metascraper/helpers': 5.50.0(@noble/hashes@1.8.0)
-      lodash: 4.17.23
+      lodash: 4.18.1
     transitivePeerDependencies:
       - '@noble/hashes'
       - bufferutil
@@ -41729,7 +41720,7 @@ snapshots:
     dependencies:
       '@metascraper/helpers': 5.50.0(@noble/hashes@1.8.0)
       cheerio: 1.0.0-rc.12
-      lodash: 4.17.23
+      lodash: 4.18.1
       whoops: 4.1.8
     transitivePeerDependencies:
       - '@noble/hashes'
@@ -41936,7 +41927,7 @@ snapshots:
     dependencies:
       '@miragejs/pretender-node-polyfill': 0.1.2
       inflected: 2.1.0
-      lodash: 4.17.23
+      lodash: 4.18.1
       pretender: 3.4.7
 
   mississippi@3.0.0:
@@ -42038,7 +42029,7 @@ snapshots:
     dependencies:
       bluebird: 3.7.2
       knex: 2.4.2(mysql2@3.18.1(@types/node@22.19.17))(sqlite3@5.1.7)
-      lodash: 4.17.23
+      lodash: 4.18.1
       semver: 5.7.2
 
   module-details-from-path@1.0.4: {}
@@ -42357,7 +42348,7 @@ snapshots:
       base64url: 3.0.1
       buffer: 6.0.3
       es6-promise: 4.2.8
-      lodash: 4.17.23
+      lodash: 4.18.1
       long: 5.3.2
       node-forge: 1.4.0
       pako: 2.1.0
@@ -42418,9 +42409,9 @@ snapshots:
 
   nodemailer-fetch@1.6.0: {}
 
-  nodemailer-mailgun-transport@2.1.5(babel-core@6.26.3)(handlebars@4.7.9)(lodash@4.17.23)(underscore@1.13.8):
+  nodemailer-mailgun-transport@2.1.5(babel-core@6.26.3)(handlebars@4.7.9)(lodash@4.18.1)(underscore@1.13.8):
     dependencies:
-      consolidate: 0.15.1(babel-core@6.26.3)(handlebars@4.7.9)(lodash@4.17.23)(underscore@1.13.8)
+      consolidate: 0.15.1(babel-core@6.26.3)(handlebars@4.7.9)(lodash@4.18.1)(underscore@1.13.8)
       form-data: 4.0.5
       mailgun.js: 8.2.2
     transitivePeerDependencies:
@@ -44651,7 +44642,7 @@ snapshots:
     dependencies:
       clsx: 2.1.1
       eventemitter3: 4.0.7
-      lodash: 4.17.21
+      lodash: 4.18.1
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       react-is: 18.3.1
@@ -46538,14 +46529,14 @@ snapshots:
       charm: 1.0.2
       commander: 2.20.3
       compression: 1.8.1
-      consolidate: 1.0.4(@babel/core@7.29.0)(handlebars@4.7.9)(lodash@4.17.23)(mustache@4.2.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(underscore@1.13.8)
+      consolidate: 1.0.4(@babel/core@7.29.0)(handlebars@4.7.9)(lodash@4.18.1)(mustache@4.2.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(underscore@1.13.8)
       execa: 9.6.1
       express: 4.21.2
       fireworm: 0.7.2
       glob: 13.0.6
       http-proxy: 1.18.1
       js-yaml: 3.14.2
-      lodash: 4.17.23
+      lodash: 4.18.1
       mkdirp: 3.0.1
       mustache: 4.2.0
       node-notifier: 10.0.1
@@ -48072,7 +48063,7 @@ snapshots:
 
   whatwg-url@8.7.0:
     dependencies:
-      lodash: 4.17.23
+      lodash: 4.18.1
       tr46: 2.1.0
       webidl-conversions: 6.1.0
 
@@ -48329,7 +48320,7 @@ snapshots:
     dependencies:
       '@babel/runtime': 7.29.2
       '@types/lodash': 4.17.24
-      lodash: 4.17.23
+      lodash: 4.18.1
       lodash-es: 4.18.1
       nanoclone: 0.2.1
       property-expr: 2.0.6
