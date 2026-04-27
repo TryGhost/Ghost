@@ -424,7 +424,8 @@ export class GiftService {
                 throw new errors.NotFoundError({message: `Member not found: ${memberId}`});
             }
 
-            if (member.get('status') === 'paid') {
+            const memberStatus = member.get('status');
+            if (memberStatus !== 'free' && memberStatus !== 'gift') {
                 throw new errors.BadRequestError({message: tpl(errorMessages.paidMember)});
             }
 

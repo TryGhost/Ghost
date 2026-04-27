@@ -90,7 +90,11 @@ describe('GiftService', function () {
             })
         };
         memberRepository = {
-            get: sinon.stub().resolves({id: 'member_1', get: sinon.stub().returns(null)}),
+            get: sinon.stub().callsFake(() => {
+                const memberGet = sinon.stub().returns(null);
+                memberGet.withArgs('status').returns('free');
+                return Promise.resolve({id: 'member_1', get: memberGet});
+            }),
             update: sinon.stub().resolves(undefined)
         };
         staffServiceEmails = {
@@ -1866,6 +1870,38 @@ describe('GiftService', function () {
             );
             sinon.assert.notCalled(memberRepository.update);
             sinon.assert.notCalled(giftRepository.update);
+        });
+
+        it('throws BadRequestError when the destination member has a comped subscription', async function () {
+            giftRepository.getById.resolves(buildOrphanedGift());
+
+            const memberGet = sinon.stub();
+            memberGet.withArgs('status').returns('comped');
+            memberRepository.get.resolves({id: 'member_new', get: memberGet});
+
+            const service = createService();
+
+            await assert.rejects(
+                service.reassignRedeemer('gift_id_1', 'member_new'),
+                (err: Error) => err instanceof errors.BadRequestError && /active subscription/.test(err.message)
+            );
+            sinon.assert.notCalled(memberRepository.update);
+            sinon.assert.notCalled(giftRepository.update);
+        });
+
+        it('allows reassignment when the destination member already has gift status', async function () {
+            giftRepository.getById.resolves(buildOrphanedGift());
+
+            const memberGet = sinon.stub();
+            memberGet.withArgs('status').returns('gift');
+            memberRepository.get.resolves({id: 'member_new', get: memberGet});
+
+            const service = createService();
+            const result = await service.reassignRedeemer('gift_id_1', 'member_new');
+
+            assert.equal(result.redeemerMemberId, 'member_new');
+            sinon.assert.calledOnce(memberRepository.update);
+            sinon.assert.calledOnce(giftRepository.update);
         });
 
         it('throws NotFoundError when the destination member does not exist', async function () {
