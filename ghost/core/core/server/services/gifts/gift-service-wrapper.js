@@ -16,6 +16,9 @@ class GiftServiceWrapper {
         const tiersService = require('../tiers');
         const staffService = require('../staff');
         const labsService = require('../../../shared/labs');
+        const DomainEvents = require('@tryghost/domain-events');
+        const logging = require('@tryghost/logging');
+        const {SubscriptionActivatedEvent} = require('../../../shared/events');
 
         const {GhostMailer} = require('../mail');
         const settingsCache = require('../../../shared/settings-cache');
@@ -52,6 +55,20 @@ class GiftServiceWrapper {
             service: this.service,
             tiersService,
             labsService: labsService
+        });
+
+        DomainEvents.subscribe(SubscriptionActivatedEvent, async (event) => {
+            try {
+                const gift = await this.service.getActiveByMember(event.data.memberId);
+
+                if (!gift) {
+                    return;
+                }
+
+                await this.service.consume(gift.token);
+            } catch (err) {
+                logging.error(err, 'Failed to consume gift on paid subscription activation');
+            }
         });
     }
 }
