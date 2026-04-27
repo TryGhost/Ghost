@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const {assertExists} = require('../../../../../utils/assertions');
 const errors = require('@tryghost/errors');
 const sinon = require('sinon');
 const testUtils = require('../../../../../utils');
@@ -8,13 +7,6 @@ const themeEngine = require('../../../../../../core/frontend/services/theme-engi
 const controllers = require('../../../../../../core/frontend/services/routing/controllers');
 const renderer = require('../../../../../../core/frontend/services/rendering');
 const dataService = require('../../../../../../core/frontend/services/data');
-
-function failTest(done) {
-    return function (err) {
-        assertExists(err);
-        done(err);
-    };
-}
 
 describe('Unit - services/routing/controllers/channel', function () {
     let req;
@@ -67,7 +59,9 @@ describe('Unit - services/routing/controllers/channel', function () {
         sinon.restore();
     });
 
-    it('no params', function (done) {
+    it('no params', async function () {
+        let next = sinon.stub();
+
         fetchDataStub.withArgs({page: 1, slug: undefined, limit: postsPerPage}, res.routerOptions)
             .resolves({
                 posts: posts,
@@ -78,15 +72,15 @@ describe('Unit - services/routing/controllers/channel', function () {
                 }
             });
 
-        controllers.channel(req, res, failTest(done)).then(function () {
-            sinon.assert.calledOnce(themeEngine.getActive);
-            sinon.assert.notCalled(security.string.safe);
-            sinon.assert.calledOnce(fetchDataStub);
-            done();
-        }).catch(done);
+        await controllers.channel(req, res, next);
+        sinon.assert.calledOnce(themeEngine.getActive);
+        sinon.assert.notCalled(security.string.safe);
+        sinon.assert.calledOnce(fetchDataStub);
+        sinon.assert.notCalled(next);
     });
 
-    it('pass page param', function (done) {
+    it('pass page param', async function () {
+        let next = sinon.stub();
         req.params.page = 2;
 
         fetchDataStub.withArgs({page: 2, slug: undefined, limit: postsPerPage}, res.routerOptions)
@@ -99,15 +93,15 @@ describe('Unit - services/routing/controllers/channel', function () {
                 }
             });
 
-        controllers.channel(req, res, failTest(done)).then(function () {
-            sinon.assert.calledOnce(themeEngine.getActive);
-            sinon.assert.notCalled(security.string.safe);
-            sinon.assert.calledOnce(fetchDataStub);
-            done();
-        }).catch(done);
+        await controllers.channel(req, res, next);
+        sinon.assert.calledOnce(themeEngine.getActive);
+        sinon.assert.notCalled(security.string.safe);
+        sinon.assert.calledOnce(fetchDataStub);
+        sinon.assert.notCalled(next);
     });
 
-    it('update hbs engine: router defines limit', function (done) {
+    it('update hbs engine: router defines limit', async function () {
+        let next = sinon.stub();
         res.routerOptions.limit = 3;
         req.params.page = 2;
 
@@ -121,16 +115,16 @@ describe('Unit - services/routing/controllers/channel', function () {
                 }
             });
 
-        controllers.channel(req, res, failTest(done)).then(function () {
-            sinon.assert.calledOnce(themeEngine.getActive);
-            sinon.assert.calledOnce(themeEngine.getActive().updateTemplateOptions.withArgs({data: {config: {posts_per_page: 3}}}));
-            sinon.assert.notCalled(security.string.safe);
-            sinon.assert.calledOnce(fetchDataStub);
-            done();
-        }).catch(done);
+        await controllers.channel(req, res, next);
+        sinon.assert.calledOnce(themeEngine.getActive);
+        sinon.assert.calledOnce(themeEngine.getActive().updateTemplateOptions.withArgs({data: {config: {posts_per_page: 3}}}));
+        sinon.assert.notCalled(security.string.safe);
+        sinon.assert.calledOnce(fetchDataStub);
+        sinon.assert.notCalled(next);
     });
 
-    it('page param too big', function (done) {
+    it('page param too big', async function () {
+        let next = sinon.stub();
         req.params.page = 6;
 
         fetchDataStub.withArgs({page: 6, slug: undefined, limit: postsPerPage}, res.routerOptions)
@@ -143,18 +137,15 @@ describe('Unit - services/routing/controllers/channel', function () {
                 }
             });
 
-        controllers.channel(req, res, function (err) {
-            assert.equal((err instanceof errors.NotFoundError), true);
-
-            sinon.assert.calledOnce(themeEngine.getActive);
-            sinon.assert.notCalled(security.string.safe);
-            sinon.assert.calledOnce(fetchDataStub);
-            sinon.assert.notCalled(renderStub);
-            done();
-        });
+        await controllers.channel(req, res, next);
+        sinon.assert.calledOnce(themeEngine.getActive);
+        sinon.assert.notCalled(security.string.safe);
+        sinon.assert.calledOnce(fetchDataStub);
+        sinon.assert.calledWith(next, sinon.match.instanceOf(errors.NotFoundError));
     });
 
-    it('slug param', function (done) {
+    it('slug param', async function () {
+        let next = sinon.stub();
         req.params.slug = 'unsafe';
 
         fetchDataStub.withArgs({page: 1, slug: 'safe', limit: postsPerPage}, res.routerOptions)
@@ -167,15 +158,15 @@ describe('Unit - services/routing/controllers/channel', function () {
                 }
             });
 
-        controllers.channel(req, res, failTest(done)).then(function () {
-            sinon.assert.calledOnce(themeEngine.getActive);
-            sinon.assert.calledOnce(security.string.safe);
-            sinon.assert.calledOnce(fetchDataStub);
-            done();
-        }).catch(done);
+        await controllers.channel(req, res, next);
+        sinon.assert.calledOnce(themeEngine.getActive);
+        sinon.assert.calledOnce(security.string.safe);
+        sinon.assert.calledOnce(fetchDataStub);
+        sinon.assert.notCalled(next);
     });
 
-    it('invalid posts per page', function (done) {
+    it('invalid posts per page', async function () {
+        let next = sinon.stub();
         postsPerPage = -1;
 
         fetchDataStub.withArgs({page: 1, slug: undefined}, res.routerOptions)
@@ -188,11 +179,10 @@ describe('Unit - services/routing/controllers/channel', function () {
                 }
             });
 
-        controllers.channel(req, res, failTest(done)).then(function () {
-            sinon.assert.calledOnce(themeEngine.getActive);
-            sinon.assert.notCalled(security.string.safe);
-            sinon.assert.calledOnce(fetchDataStub);
-            done();
-        }).catch(done);
+        await controllers.channel(req, res, next);
+        sinon.assert.calledOnce(themeEngine.getActive);
+        sinon.assert.notCalled(security.string.safe);
+        sinon.assert.calledOnce(fetchDataStub);
+        sinon.assert.notCalled(next);
     });
 });
