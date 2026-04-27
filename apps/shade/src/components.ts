@@ -26,6 +26,7 @@ export * from './components/ui/input-group';
 export * from './components/ui/kbd';
 export * from './components/ui/label';
 export * from './components/ui/loading-indicator';
+export * from './components/ui/metric-value';
 export * from './components/ui/multi-select-combobox';
 export * from './components/ui/navbar';
 export * from './components/ui/no-value-label';
@@ -39,12 +40,14 @@ export * from './components/ui/sheet';
 export * from './components/ui/sidebar';
 export * from './components/ui/skeleton';
 export * from './components/ui/sonner';
+export * from './components/ui/surface-field';
 export * from './components/ui/switch';
 export * from './components/ui/table';
 export * from './components/ui/tabs';
 export * from './components/ui/textarea';
 export * from './components/ui/toggle-group';
 export * from './components/ui/tooltip';
+export * from './components/ui/trend-badge';
 
 export type {DropdownMenuCheckboxItemProps as DropdownMenuCheckboxItemProps} from '@radix-ui/react-dropdown-menu';
 
