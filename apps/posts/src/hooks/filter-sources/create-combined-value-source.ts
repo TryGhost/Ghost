@@ -26,6 +26,7 @@ export function createCombinedValueSource<T = string>(
                 loadMore: () => {
                     if (firstState.hasMore) {
                         firstState.loadMore();
+                        return;
                     }
 
                     if (secondState.hasMore) {
