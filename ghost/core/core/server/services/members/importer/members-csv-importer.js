@@ -19,11 +19,10 @@ const messages = {
 };
 
 function wrapGiftError(error) {
-    if (error instanceof errors.DataImportError) {
-        return error;
-    }
     const message = (error && typeof error.message === 'string' && error.message) || tpl(messages.giftReassignFailed);
-    return new errors.DataImportError({message});
+    return new errors.DataImportError({
+        message: `Member cannot be assigned to a gift: ${message}`
+    });
 }
 
 // The key should correspond to a member model field (unless it's a special purpose field like 'complimentary_plan')
@@ -172,10 +171,10 @@ module.exports = class MembersCSVImporter {
                 // any member/tier work.
                 if (row.gift_id) {
                     if (row.import_tier) {
-                        throw new errors.DataImportError({message: tpl(messages.giftCannotCombineWithImportTier)});
+                        throw wrapGiftError(new errors.DataImportError({message: tpl(messages.giftCannotCombineWithImportTier)}));
                     }
                     if (row.complimentary_plan) {
-                        throw new errors.DataImportError({message: tpl(messages.giftCannotCombineWithComplimentary)});
+                        throw wrapGiftError(new errors.DataImportError({message: tpl(messages.giftCannotCombineWithComplimentary)}));
                     }
                 }
 
@@ -291,7 +290,7 @@ module.exports = class MembersCSVImporter {
 
                 if (row.gift_id) {
                     if (!giftService) {
-                        throw new errors.DataImportError({message: tpl(messages.giftServiceUnavailable)});
+                        throw wrapGiftError(new errors.DataImportError({message: tpl(messages.giftServiceUnavailable)}));
                     }
 
                     try {

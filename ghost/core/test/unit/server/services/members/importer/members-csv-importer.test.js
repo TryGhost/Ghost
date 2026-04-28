@@ -790,7 +790,7 @@ describe('MembersCSVImporter', function () {
 
             assert.equal(result.imported, 0);
             assert.equal(result.errors.length, 1);
-            assert.equal(result.errors[0].error, 'Cannot specify both gift_id and import_tier.');
+            assert.equal(result.errors[0].error, 'Member cannot be assigned to a gift: Cannot specify both gift_id and import_tier.');
             sinon.assert.notCalled(giftServiceStub.reassignRedeemer);
         });
 
@@ -806,7 +806,7 @@ describe('MembersCSVImporter', function () {
 
             assert.equal(result.imported, 0);
             assert.equal(result.errors.length, 1);
-            assert.equal(result.errors[0].error, 'Cannot specify both gift_id and complimentary_plan.');
+            assert.equal(result.errors[0].error, 'Member cannot be assigned to a gift: Cannot specify both gift_id and complimentary_plan.');
             sinon.assert.notCalled(giftServiceStub.reassignRedeemer);
         });
 
@@ -828,7 +828,7 @@ describe('MembersCSVImporter', function () {
 
             assert.equal(result.imported, 0);
             assert.equal(result.errors.length, 1);
-            assert.equal(result.errors[0].error, 'This gift does not exist.');
+            assert.equal(result.errors[0].error, 'Member cannot be assigned to a gift: This gift does not exist.');
         });
 
         it('surfaces already-assigned error from GiftService as a row error', async function () {
@@ -843,7 +843,7 @@ describe('MembersCSVImporter', function () {
 
             assert.equal(result.imported, 0);
             assert.equal(result.errors.length, 1);
-            assert.equal(result.errors[0].error, 'This gift is already assigned to another member.');
+            assert.equal(result.errors[0].error, 'Member cannot be assigned to a gift: This gift is already assigned to another member.');
         });
 
         it('surfaces not-reassignable error from GiftService as a row error', async function () {
@@ -858,7 +858,7 @@ describe('MembersCSVImporter', function () {
 
             assert.equal(result.imported, 0);
             assert.equal(result.errors.length, 1);
-            assert.equal(result.errors[0].error, 'This gift does not have a reassignable status.');
+            assert.equal(result.errors[0].error, 'Member cannot be assigned to a gift: This gift does not have a reassignable status.');
         });
 
         it('surfaces existing-gift conflict from GiftService as a row error', async function () {
@@ -873,7 +873,7 @@ describe('MembersCSVImporter', function () {
 
             assert.equal(result.imported, 0);
             assert.equal(result.errors.length, 1);
-            assert.equal(result.errors[0].error, 'Member already has a different active gift attached.');
+            assert.equal(result.errors[0].error, 'Member cannot be assigned to a gift: Member already has a different active gift attached.');
         });
 
         it('imports a paid member with an import tier', async function () {
