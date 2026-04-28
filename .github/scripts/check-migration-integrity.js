@@ -47,6 +47,33 @@ function getSafeVersion() {
 }
 
 /**
+ * Resolve the last published stable version from git tags (matching the logic
+ * used by ghost/core/bin/create-migration.js). Returns null if no stable tag is
+ * found (e.g. a shallow checkout without tags).
+ */
+function getLastPublishedMinor() {
+    try {
+        const tag = runGit([
+            'describe', '--tags', '--abbrev=0',
+            '--match', 'v[0-9]*.[0-9]*.[0-9]*',
+            '--exclude', 'v*-*'
+        ]);
+        const match = tag.match(/^v(\d+)\.(\d+)/);
+        if (!match) {
+            return null;
+        }
+        return {
+            major: Number(match[1]),
+            minor: Number(match[2]),
+            tag
+        };
+    } catch (error) {
+        console.log(`Unable to resolve last published tag: ${error.message}`);
+        return null;
+    }
+}
+
+/**
  * Compare two {major, minor} version objects.
  * Returns -1 if a < b, 0 if equal, 1 if a > b.
  */
@@ -77,19 +104,29 @@ function checkOrphanedFolders(safeVersion) {
 
     if (orphaned.length > 0) {
         return `Migration folders exceed package.json version (${safeVersion.raw}, safe: ${safeVersion.safe}): ${orphaned.join(', ')}\n` +
-            'Run `yarn migrate:create` which handles the version bump automatically, ' +
+            'Run `pnpm migrate:create <slug>` from ghost/core (ghost/core/bin/create-migration.js handles the version bump automatically), ' +
             'or manually bump package.json to the next minor rc.';
     }
     return null;
 }
 
 /**
- * Check 2: New migration files in this PR should not be in version folders
- * older than the current package.json safe version.
- * This catches migrations that would be silently skipped by knex-migrator
- * for users who have already migrated past that version.
+ * Check 2: New migration files in this PR must be placed in a folder that is
+ * strictly greater than the last published stable version's minor.
+ *
+ * knex-migrator filters migrations by the installed Ghost version's
+ * major.minor — so a migration added to a folder that's already been published
+ * (e.g. dropping a 6.35/ migration into a PR after v6.35.0 has shipped) will
+ * be silently skipped for any user who has already migrated past 6.35.
+ *
+ * This mirrors ghost/core/bin/create-migration.js, which always targets at
+ * least lastPublishedMinor + 1 when picking the folder for a new migration.
+ *
+ * Falls back to the package.json safe version as a floor if the last published
+ * tag can't be resolved (e.g. a checkout without tags), which is the looser
+ * pre-patch-RC check.
  */
-function checkStalePlacements(safeVersion, baseSha, compareSha) {
+function checkStalePlacements(safeVersion, lastPublishedMinor, baseSha, compareSha) {
     let mergeBaseSha;
     try {
         mergeBaseSha = runGit(['merge-base', baseSha, compareSha]);
@@ -123,18 +160,27 @@ function checkStalePlacements(safeVersion, baseSha, compareSha) {
             continue;
         }
 
-        if (compareVersions(folderVersion, safeVersion) < 0) {
+        // A migration is stale if it's in a folder at or below lastPublishedMinor
+        // (i.e. already shipped). When lastPublishedMinor is unavailable, fall
+        // back to safeVersion - any folder strictly below safe is still wrong.
+        const isStale = lastPublishedMinor
+            ? compareVersions(folderVersion, lastPublishedMinor) <= 0
+            : compareVersions(folderVersion, safeVersion) < 0;
+
+        if (isStale) {
             stale.push({file, folder: folderName});
         }
     }
 
     if (stale.length > 0) {
         const fileList = stale.map(s => `  ${s.file} (in ${s.folder}/)`).join('\n');
+        const versionContext = lastPublishedMinor
+            ? `Last published version is ${lastPublishedMinor.tag}, so new migrations must be in a folder above ${lastPublishedMinor.major}.${lastPublishedMinor.minor}/.`
+            : `The current package version is ${safeVersion.raw} (safe: ${safeVersion.safe}), so new migrations should be in the ${safeVersion.safe}/ folder.`;
         return `New migration(s) added to already-released version folders:\n${fileList}\n\n` +
-            `The current package version is ${safeVersion.raw} (safe: ${safeVersion.safe}), ` +
-            `so new migrations should be in the ${safeVersion.safe}/ folder.\n` +
+            `${versionContext}\n` +
             'Migrations in older folders will not run for users who have already migrated past that version.\n' +
-            `Use \`yarn migrate:create\` to create new migrations in the correct folder.`;
+            'Run `pnpm migrate:create <slug>` from ghost/core to create new migrations in the correct folder.';
     }
 
     return null;
@@ -142,6 +188,7 @@ function checkStalePlacements(safeVersion, baseSha, compareSha) {
 
 function main() {
     const safeVersion = getSafeVersion();
+    const lastPublishedMinor = getLastPublishedMinor();
     const errors = [];
 
     // Check 1: Orphaned folders (no git context needed)
@@ -155,7 +202,7 @@ function main() {
     const compareSha = process.env.PR_COMPARE_SHA || process.env.GITHUB_SHA;
 
     if (baseSha && compareSha) {
-        const staleError = checkStalePlacements(safeVersion, baseSha, compareSha);
+        const staleError = checkStalePlacements(safeVersion, lastPublishedMinor, baseSha, compareSha);
         if (staleError) {
             errors.push(staleError);
         }
@@ -167,7 +214,8 @@ function main() {
         throw new Error(`Migration integrity check failed:\n\n${errors.join('\n\n')}`);
     }
 
-    console.log(`Migration integrity checks passed (package version: ${safeVersion.raw}, safe: ${safeVersion.safe}).`);
+    const lastPublishedSummary = lastPublishedMinor ? `, last published: ${lastPublishedMinor.tag}` : '';
+    console.log(`Migration integrity checks passed (package version: ${safeVersion.raw}, safe: ${safeVersion.safe}${lastPublishedSummary}).`);
 }
 
 try {
