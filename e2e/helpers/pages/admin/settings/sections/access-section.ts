@@ -17,15 +17,20 @@ export class AccessSection extends BasePage {
     }
 
     async enablePrivateMode(password: string): Promise<void> {
-        await this.visibilitySelect.click();
-        await this.page.getByTestId('select-option').filter({hasText: /^Private$/}).click();
+        await this.selectVisibility('Private');
         await this.passwordInput.fill(password);
         await this.saveButton.click();
     }
 
     async disablePrivateMode(): Promise<void> {
-        await this.visibilitySelect.click();
-        await this.page.getByTestId('select-option').filter({hasText: /^Public$/}).click();
+        await this.selectVisibility('Public');
         await this.saveButton.click();
+    }
+
+    private async selectVisibility(label: 'Public' | 'Private'): Promise<void> {
+        await this.visibilitySelect.click();
+        const option = this.section.getByTestId('select-option').filter({hasText: new RegExp(`^${label}$`)});
+        await option.waitFor({state: 'visible'});
+        await option.click();
     }
 }
