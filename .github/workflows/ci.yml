@@ -9,9 +9,8 @@ on:
       - main
       - 'v[0-9]+.*' # Matches any release branch, e.g. v6.0.3, v12.1.0
       - '[0-9]+.x' # Matches any major version branch, e.g. 5.x, 23.x
-    tags-ignore:
-      - '**' # Tags handled by ci-release.yml
-  workflow_call: # Called by ci-release.yml for uninterruptible release CI
+    tags:
+      - 'v[0-9]*' # Version tags trigger release publishing (npm, GitHub Release, Docker)
 
 env:
   FORCE_COLOR: 1
@@ -25,8 +24,10 @@ env:
   DISABLE_V8_COMPILE_CACHE: 1
 
 concurrency:
-  group: ${{ github.head_ref || github.ref }}
-  cancel-in-progress: true
+  # Tag pushes get a unique uninterruptible group so a release CI run always
+  # finishes; branch / PR pushes keep cancel-on-newer behavior.
+  group: ${{ startsWith(github.ref, 'refs/tags/') && format('release-{0}', github.ref) || github.head_ref || github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
 
 jobs:
   job_setup:
