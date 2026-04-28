@@ -9,6 +9,7 @@ import setupGhostApi from './utils/api';
 import {ActionHandler, SyncActionHandler, isSyncAction} from './actions';
 import {AppContext, Comment, DispatchActionType, EditableAppContext} from './app-context';
 import {CommentsFrame} from './components/frame';
+import {hydrateVisibleReplies} from './utils/reply-hydration';
 import {setupAdminAPI} from './utils/admin-api';
 import {useOptions} from './utils/options';
 
@@ -141,6 +142,11 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
                 if (admin) {
                     // this is a bit of a hack, but we need to fetch the comments fully populated if the user is an admin
                     const adminComments = await adminApi.browse({page: 1, postId: options.postId, order: state.order, memberUuid: state.member?.uuid});
+                    const hydratedAdminComments = await hydrateVisibleReplies({
+                        comments: adminComments.comments,
+                        adminApi,
+                        memberUuid: state.member?.uuid
+                    });
                     setState((currentState) => {
                         // Don't overwrite comments when initSetup loaded extra data
                         // for permalink scrolling (multiple pages or expanded replies)
@@ -155,7 +161,7 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
                             adminApi,
                             admin,
                             isAdmin: true,
-                            comments: adminComments.comments,
+                            comments: hydratedAdminComments,
                             pagination: adminComments.meta.pagination
                         };
                     });
@@ -183,9 +189,13 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
         const countPromise = api.comments.count({postId: options.postId});
 
         const [data, count] = await Promise.all([dataPromise, countPromise]);
+        const comments = await hydrateVisibleReplies({
+            comments: data.comments,
+            api
+        });
 
         return {
-            comments: data.comments,
+            comments,
             pagination: data.meta.pagination,
             count: count
         };
@@ -227,7 +237,11 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
                 postId: options.postId,
                 order: state.order
             });
-            comments = [...comments, ...nextPage.comments];
+            const nextComments = await hydrateVisibleReplies({
+                comments: nextPage.comments,
+                api
+            });
+            comments = [...comments, ...nextComments];
             pagination = nextPage.meta.pagination;
         }
 

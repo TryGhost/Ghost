@@ -2,6 +2,7 @@ import {AddComment, Comment, CommentsOptions, DispatchActionType, EditableAppCon
 import {AdminApi} from './utils/admin-api';
 import {GhostApi} from './utils/api';
 import {Page} from './pages';
+import {hydrateVisibleReplies} from './utils/reply-hydration';
 
 async function loadMoreComments({state, api, options, order}: {state: EditableAppContext, api: GhostApi, options: CommentsOptions, order?:string}): Promise<Partial<EditableAppContext>> {
     let page = 1;
@@ -15,7 +16,13 @@ async function loadMoreComments({state, api, options, order}: {state: EditableAp
         data = await api.comments.browse({page, postId: options.postId, order: order || state.order});
     }
 
-    const updatedComments = [...state.comments, ...data.comments];
+    const hydratedComments = await hydrateVisibleReplies({
+        comments: data.comments,
+        api,
+        adminApi: state.admin ? state.adminApi : null,
+        memberUuid: state.member?.uuid
+    });
+    const updatedComments = [...state.comments, ...hydratedComments];
     const dedupedComments = updatedComments.filter((comment, index, self) => self.findIndex(c => c.id === comment.id) === index);
 
     // Note: we store the comments from new to old, and show them in reverse order
@@ -42,8 +49,15 @@ async function setOrder({state, data: {order}, options, api, dispatchAction}: {s
             data = await api.comments.browse({page: 1, postId: options.postId, order});
         }
 
+        const hydratedComments = await hydrateVisibleReplies({
+            comments: data.comments,
+            api,
+            adminApi: state.admin ? state.adminApi : null,
+            memberUuid: state.member?.uuid
+        });
+
         return {
-            comments: [...data.comments],
+            comments: hydratedComments,
             pagination: data.meta.pagination,
             order,
             commentsIsLoading: false

@@ -2,7 +2,7 @@ import EditForm from './forms/edit-form';
 import LikeButton from './buttons/like-button';
 import LikeCount from './buttons/like-count';
 import MoreButton from './buttons/more-button';
-import React, {useCallback} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import Replies, {RepliesProps} from './replies';
 import ReplyButton from './buttons/reply-button';
 import ReplyForm from './forms/reply-form';
@@ -15,9 +15,16 @@ import {useRelativeTime} from '../../utils/hooks';
 type AnimatedCommentProps = {
     comment: Comment;
     parent?: Comment;
+    hideConnectedReplySnippet?: boolean;
+    hasThreadChildren?: boolean;
+    renderReplies?: boolean;
+    layoutVariant?: CommentLayoutVariant;
+    showRepliesLine?: boolean;
 };
 
-const AnimatedComment: React.FC<AnimatedCommentProps> = ({comment, parent}) => {
+export type CommentLayoutVariant = 'default' | 'compact-thread';
+
+const AnimatedComment: React.FC<AnimatedCommentProps> = ({comment, parent, hideConnectedReplySnippet, hasThreadChildren, renderReplies, layoutVariant, showRepliesLine}) => {
     const {commentsIsLoading} = useAppContext();
 
     return (
@@ -34,14 +41,23 @@ const AnimatedComment: React.FC<AnimatedCommentProps> = ({comment, parent}) => {
             show={true}
             appear
         >
-            <CommentComponent comment={comment} parent={parent} />
+            <CommentComponent
+                comment={comment}
+                hasThreadChildren={hasThreadChildren}
+                hideConnectedReplySnippet={hideConnectedReplySnippet}
+                layoutVariant={layoutVariant}
+                parent={parent}
+                renderReplies={renderReplies}
+                showRepliesLine={showRepliesLine}
+            />
         </Transition>
     );
 };
 
-export const CommentComponent: React.FC<CommentProps> = ({comment, parent}) => {
+export const CommentComponent: React.FC<CommentProps> = ({comment, parent, hideConnectedReplySnippet, hasThreadChildren, renderReplies, layoutVariant, showRepliesLine}) => {
     const {dispatchAction, isAdmin} = useAppContext();
     const {showDeletedMessage, showHiddenMessage, showCommentContent} = useCommentVisibility(comment, isAdmin);
+    const effectiveShowRepliesLine = showRepliesLine ?? Boolean(parent || !renderReplies);
 
     const openEditMode = useCallback(() => {
         const newForm: OpenCommentForm = {
@@ -55,9 +71,20 @@ export const CommentComponent: React.FC<CommentProps> = ({comment, parent}) => {
     }, [comment.id, dispatchAction]);
 
     if (showDeletedMessage || showHiddenMessage) {
-        return <UnpublishedComment comment={comment} openEditMode={openEditMode} />;
+        return <UnpublishedComment comment={comment} hasThreadChildren={hasThreadChildren} layoutVariant={layoutVariant} openEditMode={openEditMode} renderReplies={renderReplies} showRepliesLine={effectiveShowRepliesLine} />;
     } else if (showCommentContent && !showHiddenMessage) {
-        return <PublishedComment comment={comment} openEditMode={openEditMode} parent={parent} />;
+        return (
+            <PublishedComment
+                comment={comment}
+                hasThreadChildren={hasThreadChildren}
+                hideConnectedReplySnippet={hideConnectedReplySnippet}
+                layoutVariant={layoutVariant}
+                openEditMode={openEditMode}
+                parent={parent}
+                renderReplies={renderReplies}
+                showRepliesLine={effectiveShowRepliesLine}
+            />
+        );
     }
 
     return null;
@@ -82,7 +109,7 @@ const useCommentVisibility = (comment: Comment, admin: boolean) => {
 type PublishedCommentProps = CommentProps & {
     openEditMode: () => void;
 }
-const PublishedComment: React.FC<PublishedCommentProps> = ({comment, parent, openEditMode}) => {
+const PublishedComment: React.FC<PublishedCommentProps> = ({comment, parent, openEditMode, hideConnectedReplySnippet = false, hasThreadChildren = false, renderReplies = true, layoutVariant = 'default', showRepliesLine}) => {
     const {dispatchAction, openCommentForms, isAdmin, commentIdToHighlight} = useAppContext();
 
     // Determine if the comment should be displayed with reduced opacity
@@ -124,20 +151,20 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({comment, parent, ope
         }
     }, [comment, parent, openForm, dispatchAction]);
 
-    const hasReplies = displayReplyForm || (comment.replies && comment.replies.length > 0);
+    const hasReplies = displayReplyForm || hasThreadChildren || (renderReplies && comment.replies && comment.replies.length > 0);
     const avatar = (<Avatar member={comment.member} />);
 
     return (
-        <CommentLayout avatar={avatar} className={hiddenClass} hasReplies={hasReplies} memberUuid={comment.member?.uuid}>
+        <CommentLayout avatar={avatar} className={hiddenClass} hasReplies={hasReplies} layoutVariant={layoutVariant} memberUuid={comment.member?.uuid} showRepliesLine={showRepliesLine}>
             <div>
                 {isInEditMode ? (
                     <>
-                        <CommentHeader className={hiddenClass} comment={comment} />
+                        <CommentHeader className={hiddenClass} comment={comment} hideConnectedReplySnippet={hideConnectedReplySnippet} />
                         <EditForm comment={comment} openForm={editForm} parent={parent} />
                     </>
                 ) : (
                     <>
-                        <CommentHeader className={hiddenClass} comment={comment} />
+                        <CommentHeader className={hiddenClass} comment={comment} hideConnectedReplySnippet={hideConnectedReplySnippet} />
                         <CommentBody className={hiddenClass} html={comment.html} isHighlighted={comment.id === commentIdToHighlight} />
                         <CommentMenu
                             comment={comment}
@@ -149,7 +176,7 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({comment, parent, ope
                     </>
                 )}
             </div>
-            <RepliesContainer comment={comment} />
+            {renderReplies && <RepliesContainer comment={comment} connectToParentAvatar={showRepliesLine === false && layoutVariant === 'default'} layoutVariant={layoutVariant} />}
             {displayReplyForm && <ReplyFormBox comment={comment} openForm={openForm} />}
         </CommentLayout>
     );
@@ -157,15 +184,19 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({comment, parent, ope
 
 type UnpublishedCommentProps = {
     comment: Comment;
+    hasThreadChildren?: boolean;
     openEditMode: () => void;
+    renderReplies?: boolean;
+    layoutVariant?: CommentLayoutVariant;
+    showRepliesLine?: boolean;
 }
-const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, openEditMode}) => {
+const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, hasThreadChildren = false, openEditMode, renderReplies = true, layoutVariant = 'default', showRepliesLine}) => {
     const {isAdmin, openCommentForms, t} = useAppContext();
 
     const avatar = (isAdmin && comment.status !== 'deleted')
         ? <Avatar member={comment.member} />
         : <BlankAvatar />;
-    const hasReplies = comment.replies && comment.replies.length > 0;
+    const hasReplies = hasThreadChildren || (renderReplies && comment.replies && comment.replies.length > 0);
 
     const notPublishedMessage = comment.status === 'hidden' ?
         t('This comment has been hidden.') :
@@ -183,7 +214,7 @@ const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, openEdi
     const showMoreButton = isAdmin && comment.status === 'hidden';
 
     return (
-        <CommentLayout avatar={avatar} hasReplies={hasReplies}>
+        <CommentLayout avatar={avatar} hasReplies={hasReplies} layoutVariant={layoutVariant} showRepliesLine={showRepliesLine}>
             <div className="mt-[-3px] flex items-start">
                 <div className="flex h-10 flex-row items-center gap-4 pb-[8px] pr-4">
                     <p className="text-md mt-[4px] font-sans leading-normal text-neutral-900/40 sm:text-lg dark:text-white/60">
@@ -196,7 +227,7 @@ const UnpublishedComment: React.FC<UnpublishedCommentProps> = ({comment, openEdi
                     )}
                 </div>
             </div>
-            <RepliesContainer comment={comment} />
+            {renderReplies && <RepliesContainer comment={comment} connectToParentAvatar={showRepliesLine === false && layoutVariant === 'default'} layoutVariant={layoutVariant} />}
             {displayReplyForm && <ReplyFormBox comment={comment} openForm={openForm} />}
         </CommentLayout>
     );
@@ -228,16 +259,82 @@ const EditedInfo: React.FC<{comment: Comment}> = ({comment}) => {
         </span>
     );
 };
-const RepliesContainer: React.FC<RepliesProps & {className?: string}> = ({comment, className = ''}) => {
+const RepliesContainer: React.FC<RepliesProps & {className?: string; connectToParentAvatar?: boolean; layoutVariant?: CommentLayoutVariant}> = ({comment, className = '', connectToParentAvatar = false, layoutVariant = 'default'}) => {
     const hasReplies = comment.replies && comment.replies.length > 0;
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [rootConnectorLineStyle, setRootConnectorLineStyle] = useState<React.CSSProperties | undefined>();
+
+    useEffect(() => {
+        if (!connectToParentAvatar) {
+            setRootConnectorLineStyle(undefined);
+            return;
+        }
+
+        const container = containerRef.current;
+        if (!container) {
+            return;
+        }
+
+        const updateRootConnector = () => {
+            const rootComment = container.closest<HTMLElement>('[data-testid="comment-component"]');
+            const rootAvatarColumn = rootComment?.firstElementChild as HTMLElement | null;
+            const rootAvatar = rootAvatarColumn?.querySelector<HTMLElement>('[data-testid="avatar"], [data-testid="blank-avatar"]');
+            const firstReply = container.querySelector<HTMLElement>('[data-testid="thread-primary-connector"]');
+            const firstReplyAvatar = firstReply?.querySelector<HTMLElement>('[data-testid="avatar"], [data-testid="blank-avatar"]');
+
+            if (!rootAvatar || !firstReplyAvatar) {
+                setRootConnectorLineStyle(undefined);
+                return;
+            }
+
+            const containerRect = container.getBoundingClientRect();
+            const rootAvatarRect = rootAvatar.getBoundingClientRect();
+            const firstReplyAvatarRect = firstReplyAvatar.getBoundingClientRect();
+            const top = rootAvatarRect.bottom - containerRect.top;
+            const height = firstReplyAvatarRect.top - rootAvatarRect.bottom;
+
+            if (height <= 0) {
+                setRootConnectorLineStyle(undefined);
+                return;
+            }
+
+            setRootConnectorLineStyle({
+                height: `${Math.round(height)}px`,
+                top: `${Math.round(top)}px`
+            });
+        };
+
+        updateRootConnector();
+
+        const frame = window.requestAnimationFrame(updateRootConnector);
+        const resizeObserver = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(updateRootConnector);
+        resizeObserver?.observe(container);
+
+        const rootComment = container.closest<HTMLElement>('[data-testid="comment-component"]');
+        if (rootComment) {
+            resizeObserver?.observe(rootComment);
+        }
+
+        window.addEventListener('resize', updateRootConnector);
+
+        return () => {
+            window.cancelAnimationFrame(frame);
+            resizeObserver?.disconnect();
+            window.removeEventListener('resize', updateRootConnector);
+        };
+    }, [comment.id, comment.replies.length, connectToParentAvatar]);
 
     if (!hasReplies) {
         return null;
     }
 
+    const spacingClassName = layoutVariant === 'compact-thread'
+        ? 'mb-2 mt-5 sm:mb-1 sm:mt-6'
+        : '-ml-11 mb-4 mt-7 sm:mb-0 sm:mt-8';
+
     return (
-        <div className={`-ml-2 mb-4 mt-7 sm:mb-0 sm:mt-8 ${className}`}>
-            <Replies comment={comment} />
+        <div ref={containerRef} className={`${spacingClassName} ${className}`}>
+            <Replies comment={comment} rootConnectorLineStyle={rootConnectorLineStyle} />
         </div>
     );
 };
@@ -295,13 +392,15 @@ export const RepliedToSnippet: React.FC<{comment: Comment}> = ({comment}) => {
 type CommentHeaderProps = {
     comment: Comment;
     className?: string;
+    hideConnectedReplySnippet?: boolean;
 }
 
-const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = ''}) => {
+const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = '', hideConnectedReplySnippet = false}) => {
     const {member, t, pageUrl} = useAppContext();
     const createdAtRelative = useRelativeTime(comment.created_at);
     const memberExpertise = member && comment.member && comment.member.uuid === member.uuid ? member.expertise : comment?.member?.expertise;
     const isReplyToReply = comment.in_reply_to_id && comment.in_reply_to_snippet;
+    const showReplyToSnippet = isReplyToReply && !hideConnectedReplySnippet;
 
     const timestampElement = (
         <a
@@ -316,7 +415,7 @@ const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = ''}) 
 
     return (
         <>
-            <div className={`mt-0.5 flex flex-wrap items-start sm:flex-row ${memberExpertise ? 'flex-col' : 'flex-row'} ${isReplyToReply ? 'mb-0.5' : 'mb-2'} ${className}`}>
+            <div className={`mt-0.5 flex flex-wrap items-start sm:flex-row ${memberExpertise ? 'flex-col' : 'flex-row'} ${showReplyToSnippet ? 'mb-0.5' : 'mb-2'} ${className}`}>
                 <AuthorName comment={comment} />
                 <div className="flex items-baseline pr-4 font-sans text-base leading-snug text-neutral-900/50 sm:text-sm dark:text-white/60">
                     <span>
@@ -326,7 +425,7 @@ const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = ''}) 
                     </span>
                 </div>
             </div>
-            {(isReplyToReply &&
+            {(showReplyToSnippet &&
                 <div className="mb-2 line-clamp-1 font-sans text-base leading-snug text-neutral-900/50 sm:text-sm dark:text-white/60">
                     <span>{t('Replied to')}</span>:&nbsp;<RepliedToSnippet comment={comment} />
                 </div>
@@ -433,15 +532,23 @@ type CommentLayoutProps = {
     hasReplies: boolean;
     className?: string;
     memberUuid?: string;
+    layoutVariant?: CommentLayoutVariant;
+    showRepliesLine?: boolean;
 }
-const CommentLayout: React.FC<CommentLayoutProps> = ({children, avatar, hasReplies, className = '', memberUuid = ''}) => {
+const CommentLayout: React.FC<CommentLayoutProps> = ({children, avatar, hasReplies, className = '', memberUuid = '', layoutVariant = 'default', showRepliesLine}) => {
+    const compactThread = layoutVariant === 'compact-thread';
+    const bottomMarginClassName = hasReplies ? 'mb-0' : compactThread ? 'mb-6' : 'mb-7';
+    const avatarColumnClassName = compactThread ? 'mr-2 flex flex-col items-center justify-start sm:mr-2.5' : 'mr-2 flex flex-col items-center justify-start sm:mr-3';
+    const avatarSpacingClassName = 'flex-0';
+    const displayRepliesLine = showRepliesLine ?? hasReplies;
+
     return (
-        <div className={`flex w-full flex-row ${hasReplies === true ? 'mb-0' : 'mb-7'}`} data-member-uuid={memberUuid} data-testid="comment-component">
-            <div className="mr-2 flex flex-col items-center justify-start sm:mr-3">
-                <div className={`flex-0 mb-3 sm:mb-4 ${className}`}>
+        <div className={`flex w-full flex-row ${bottomMarginClassName}`} data-member-uuid={memberUuid} data-testid="comment-component">
+            <div className={avatarColumnClassName}>
+                <div className={`${avatarSpacingClassName} ${className}`}>
                     {avatar}
                 </div>
-                <RepliesLine hasReplies={hasReplies} />
+                <RepliesLine hasReplies={displayRepliesLine} />
             </div>
             <div className="grow">
                 {children}
