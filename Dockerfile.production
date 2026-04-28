@@ -1,9 +1,10 @@
 # syntax=docker/dockerfile:1-labs@sha256:7eca9451d94f9b8ad22e44988b92d595d3e4d65163794237949a8c3413fbed5d
 
 # Production Dockerfile for Ghost
-# Two targets:
-#   core — server + production deps, no admin (Ghost-Pro base)
-#   full — core + built admin (self-hosting)
+# Three targets:
+#   core      — server + production deps, no admin (Ghost-Pro base)
+#   full      — core + built admin (E2E, review environments)
+#   community — full + entrypoint + volume (future Docker Hub image)
 #
 # Build context: extracted `npm pack` output from ghost/core
 
@@ -23,7 +24,7 @@ RUN apt-get update && \
     usermod -u 1001 node && \
     adduser --disabled-password --gecos "" -u 1000 ghost
 
-WORKDIR /home/ghost
+WORKDIR /var/lib/ghost
 
 COPY --exclude=core/built/admin . .
 
@@ -37,13 +38,10 @@ RUN --mount=type=cache,target=/root/.local/share/pnpm/store,id=pnpm-store \
     apt-get purge -y build-essential python3 && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/* && \
-    mkdir -p default log && \
     cp -R content base_content && \
-    cp -R content/themes/casper default/casper && \
-    ([ -d content/themes/source ] && cp -R content/themes/source default/source || true) && \
-    chown ghost:ghost /home/ghost && \
-    chown -R nobody:nogroup /home/ghost/* && \
-    chown -R ghost:ghost /home/ghost/content /home/ghost/log
+    chown ghost:ghost /var/lib/ghost && \
+    chown -R nobody:nogroup /var/lib/ghost/* && \
+    chown -R ghost:ghost /var/lib/ghost/content
 
 USER ghost
 ENV LD_PRELOAD=libjemalloc.so.2
@@ -59,3 +57,21 @@ USER root
 COPY core/built/admin core/built/admin
 RUN chown -R nobody:nogroup core/built/admin
 USER ghost
+
+# ---- Community: full + entrypoint + volume (Docker Hub) ----
+FROM full AS community
+
+ENV GHOST_INSTALL=/var/lib/ghost \
+    GHOST_CONTENT=/var/lib/ghost/content
+
+USER root
+COPY docker-entrypoint.sh /usr/local/bin/
+COPY config.production.json config.production.json
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh && \
+    chown nobody:nogroup config.production.json
+USER ghost
+
+VOLUME /var/lib/ghost/content
+
+ENTRYPOINT ["docker-entrypoint.sh"]
+CMD ["node", "index.js"]
