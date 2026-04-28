@@ -41,7 +41,6 @@
 @import "components/browser-preview.css";
 @import "components/stacks.css";
 @import "components/browser-preview.css";
-@import "components/filter-builder.css";
 @import "components/modal-about.css";
 
 
@@ -883,34 +882,6 @@ input:focus,
     }
 }
 
-/* Members */
-.members-header .view-actions input.gh-members-list-searchfield {
-    border-color: var(--lightgrey)
-}
-
-.gh-members-help-card {
-    background: var(--dark-main-bg-color);
-}
-
-.gh-members-chart-header {
-    background: var(--white);
-}
-.gh-members-chart-header .gh-contentfilter-type .gh-contentfilter-menu-trigger {
-    box-shadow: 0 0 0 1px color-mod(var(--darkgrey) l(-27%) blackness(+15%) alpha(50%));
-}
-
-.gh-members-import-table::before {
-    background: #191b1f;
-}
-
-.gh-members-import-table::after {
-    background: #191b1f;
-}
-.gh-import-member-select,
-.gh-import-member-select select {
-    background: none !important;
-}
-
 .fullscreen-modal-email-preview .gh-pe-mobile-container,
 .fullscreen-modal-email-preview .gh-pe-desktop-container{
     background: var(--dark-main-bg-color);
@@ -932,10 +903,6 @@ input:focus,
 
 .gh-email-design-typography .gh-radio-content {
     border: 1px solid var(--hairline-color-1);
-}
-
-.members-list .gh-list-header {
-    background: var(--dark-main-bg-color);
 }
 
 /* Members activity */
@@ -1054,10 +1021,6 @@ input:focus,
     background: linear-gradient(90deg, rgba(21,23,26,1) 90%, rgba(21,23,26,0) 100%);
 }
 
-.gh-filter-builder .gh-filters {
-    background: var(--whitegrey);
-}
-
 .kg-settings-headerstyle-btn-group .gh-btn {
     border-color: var(--midlightgrey);
 }
@@ -1166,7 +1129,6 @@ kbd {
 .gh-pages-placeholder,
 .gh-posts-placeholder,
 .gh-tags-placeholder,
-.gh-members-empty .gh-members-placeholder,
 .no-posts .gh-members-placeholder {
     fill: var(--midgrey-d2);
 }
