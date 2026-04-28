@@ -93,12 +93,6 @@ module.exports = class MembersCSVImporter {
      */
     async prepare(inputFilePath, headerMapping, defaultLabels) {
         headerMapping = headerMapping || DEFAULT_CSV_HEADER_MAPPING;
-        // Force-recognise `gift_id` so the importer can reassign gift rows even when the
-        // user-supplied mapping doesn't include it (the column is not exposed in the UI).
-        headerMapping = {
-            ...headerMapping,
-            gift_id: 'gift_id'
-        };
         // @NOTE: investigate why is it "1" and do we even need this concept anymore?
         const batchSize = 1;
 
