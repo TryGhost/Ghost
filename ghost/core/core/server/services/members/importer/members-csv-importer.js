@@ -15,16 +15,16 @@ const messages = {
     giftServiceUnavailable: 'Gift service is not available.',
     giftCannotCombineWithImportTier: 'Cannot specify both gift_id and import_tier.',
     giftCannotCombineWithComplimentary: 'Cannot specify both gift_id and complimentary_plan.',
-    giftMemberAlreadyHasGift: 'Cannot reassign gift to a member with an existing gift.'
+    giftMemberAlreadyHasGift: 'Cannot reassign gift to a member with an existing gift.',
+    giftReassignFailed: 'Failed to reassign gift to member.'
 };
 
 function wrapGiftError(error) {
     if (error instanceof errors.DataImportError) {
         return error;
     }
-    return new errors.DataImportError({
-        message: (error && typeof error.message === 'string' && error.message) || ''
-    });
+    const message = (error && typeof error.message === 'string' && error.message) || tpl(messages.giftReassignFailed);
+    return new errors.DataImportError({message});
 }
 
 // The key should correspond to a member model field (unless it's a special purpose field like 'complimentary_plan')
