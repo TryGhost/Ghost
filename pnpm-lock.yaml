@@ -2381,8 +2381,8 @@ importers:
         specifier: 2.2.0
         version: 2.2.0
       nodemailer:
-        specifier: 6.10.1
-        version: 6.10.1
+        specifier: 8.0.5
+        version: 8.0.5
       on-headers:
         specifier: ^1.1.0
         version: 1.1.0
@@ -12707,6 +12707,7 @@ packages:
   ee-argv@0.1.4:
     resolution: {integrity: sha512-L/bJ7iteO7JlaOmjwWObBAoy2XnqP9sgazSE25xLenBmkN6HELbcZJISBFwvixL8re7HgCn2KrwuC/Ai0/s6hQ==}
     engines: {node: '>=0.10.7'}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   ee-class@1.4.0:
     resolution: {integrity: sha512-0rHVsCh/QNXHkX4HEnh9IR2/VDPc2KoOjvbSp3BqxH/fbvHtniteQOCjYWCTYvkfQj/KRSTcc/eXP7z/Ic20mg==}
@@ -12725,6 +12726,7 @@ packages:
 
   ee-types@2.2.1:
     resolution: {integrity: sha512-ZgShE8RXsE+DFAddCmduKwUwoNLZd7Ik6yv6LFEUDfz/6k2s6rTvABQS8dO2EibJpYFWREOx/ealtwuTUXeeYg==}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   electron-to-chromium@1.5.328:
     resolution: {integrity: sha512-QNQ5l45DzYytThO21403XN3FvK0hOkWDG8viNf6jqS42msJ8I4tGDSpBCgvDRRPnkffafiwAym2X2eHeGD2V0w==}
@@ -17515,6 +17517,10 @@ packages:
     resolution: {integrity: sha512-Z+iLaBGVaSjbIzQ4pX6XV41HrooLsQ10ZWPUehGmuantvzWoDVBnmsdUcOIDM1t+yPor5pDhVlDESgOMEGxhHA==}
     engines: {node: '>=6.0.0'}
 
+  nodemailer@8.0.5:
+    resolution: {integrity: sha512-0PF8Yb1yZuQfQbq+5/pZJrtF6WQcjTd5/S4JOHs9PGFxuTqoB/icwuB44pOdURHJbRKX1PPoJZtY7R4VUoCC8w==}
+    engines: {node: '>=6.0.0'}
+
   nodemon@3.1.14:
     resolution: {integrity: sha512-jakjZi93UtB3jHMWsXL68FXSAosbLfY0In5gtKq3niLSkrWznrVBzXFNOEMJUfc9+Ke7SHWoAZsiMkNP3vq6Jw==}
     engines: {node: '>=10'}
@@ -19145,6 +19151,7 @@ packages:
     engines: {node: '>=0.6.0', teleport: '>=0.2.0'}
     deprecated: |-
       You or someone you depend on is using Q, the JavaScript Promise library that gave JavaScript developers strong feelings about promises. They can almost certainly migrate to the native JavaScript promise now. Thank you literally everyone for joining me in this bet against the odds. Be excellent to each other.
+
       (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
 
   qs@6.14.2:
@@ -42461,6 +42468,8 @@ snapshots:
   nodemailer-stub-transport@1.1.0: {}
 
   nodemailer@6.10.1: {}
+
+  nodemailer@8.0.5: {}
 
   nodemon@3.1.14:
     dependencies:
