@@ -1,9 +1,8 @@
 import MainLayout from '@components/layout/main-layout';
 import React from 'react';
 import {Automation, AutomationStatus, mockAutomations} from './mock-data';
-import {Badge, Button, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
+import {Badge, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
 import {Header} from '@tryghost/shade/primitives';
-import {LucideIcon} from '@tryghost/shade/utils';
 import {useNavigate} from '@tryghost/admin-x-framework';
 import {useVersionLink} from '../../use-version-link';
 
@@ -12,6 +11,13 @@ function statusVariant(status: AutomationStatus): 'default' | 'outline' {
         return 'default';
     }
     return 'outline';
+}
+
+function statusLabel(status: AutomationStatus): string {
+    if (status === 'active') {
+        return 'Published';
+    }
+    return status;
 }
 
 function formatUpdated(iso: string): string {
@@ -33,7 +39,7 @@ const AutomationRow: React.FC<{automation: Automation}> = ({automation}) => {
                     className={`capitalize ${automation.status === 'active' ? 'bg-green-100 text-green-800 hover:bg-green-100' : ''}`}
                     variant={statusVariant(automation.status)}
                 >
-                    {automation.status}
+                    {statusLabel(automation.status)}
                 </Badge>
             </TableCell>
             <TableCell className="p-4 text-muted-foreground">
@@ -48,14 +54,6 @@ const AutomationsList: React.FC = () => {
         <MainLayout>
             <Header>
                 <Header.Title>Automations</Header.Title>
-                <Header.Actions>
-                    <Header.ActionGroup>
-                        <Button className="font-bold">
-                            <LucideIcon.Plus />
-                            New automation
-                        </Button>
-                    </Header.ActionGroup>
-                </Header.Actions>
             </Header>
             <section className="flex size-full grow flex-col gap-6 p-4 lg:p-8">
                 <Table data-testid="automations-list">
