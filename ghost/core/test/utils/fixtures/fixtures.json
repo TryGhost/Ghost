@@ -779,6 +779,11 @@
                     "name": "Poll automations",
                     "action_type": "poll",
                     "object_type": "automation"
+                },
+                {
+                    "name": "Flush gift reminders",
+                    "action_type": "flushReminders",
+                    "object_type": "gift"
                 }
             ]
         },
@@ -1108,7 +1113,8 @@
                 },
                 "Scheduler Integration": {
                     "post": "publish",
-                    "automation": "poll"
+                    "automation": "poll",
+                    "gift": "flushReminders"
                 },
                 "Ghost Explore Integration": {
                     "explore": "read"
