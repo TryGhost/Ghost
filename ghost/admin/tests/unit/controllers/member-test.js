@@ -7,12 +7,15 @@ describe('Unit: Controller: member', function () {
     setupTest();
 
     let controller;
-    let stateBridge;
+    let triggerEmberDataChange;
 
     beforeEach(function () {
+        triggerEmberDataChange = sinon.spy();
         controller = this.owner.lookup('controller:member');
-        stateBridge = this.owner.lookup('service:state-bridge');
-        sinon.spy(stateBridge, 'triggerEmberDataChange');
+        Object.defineProperty(controller, 'stateBridge', {
+            configurable: true,
+            value: {triggerEmberDataChange}
+        });
         controller.member = {id: 'member-1'};
     });
 
@@ -23,7 +26,7 @@ describe('Unit: Controller: member', function () {
     it('invalidates the React members cache through the Ember bridge when member data changes', function () {
         controller.invalidateMembersCache();
 
-        expect(stateBridge.triggerEmberDataChange.calledOnce).to.be.true;
-        expect(stateBridge.triggerEmberDataChange.calledWith('update', 'member', 'member-1', null)).to.be.true;
+        expect(triggerEmberDataChange.calledOnce).to.be.true;
+        expect(triggerEmberDataChange.calledWith('update', 'member', 'member-1', null)).to.be.true;
     });
 });
