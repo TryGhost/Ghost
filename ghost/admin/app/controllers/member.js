@@ -1,4 +1,4 @@
-import Controller, {inject as controller} from '@ember/controller';
+import Controller from '@ember/controller';
 import DeleteMemberModal from '../components/members/modals/delete-member';
 import DisableCommentingModal from '../components/members/modals/disable-commenting';
 import EmberObject, {action, defineProperty} from '@ember/object';
@@ -12,7 +12,6 @@ import {tracked} from '@glimmer/tracking';
 const SCRATCH_PROPS = ['name', 'email', 'note'];
 
 export default class MemberController extends Controller {
-    @controller members;
     @service ajax;
     @service session;
     @service dropdown;
@@ -127,6 +126,10 @@ export default class MemberController extends Controller {
         return `${createdDate} (${memberSince})`;
     }
 
+    invalidateMembersCache() {
+        window.adminXQueryClient?.invalidateQueries({queryKey: ['MembersResponseType']});
+    }
+
     // Actions -----------------------------------------------------------------
 
     @action
@@ -162,7 +165,7 @@ export default class MemberController extends Controller {
             member: this.member,
             afterDelete: () => {
                 this.membersStats.invalidate();
-                this.members.refreshData();
+                this.invalidateMembersCache();
                 this.membersCountCache.clear();
                 this.router.transitionTo(this.membersListPath);
             }
@@ -174,7 +177,7 @@ export default class MemberController extends Controller {
         this.modals.open(LogoutMemberModal, {
             member: this.member,
             afterLogout: () => {
-                this.members.refreshData();
+                this.invalidateMembersCache();
             }
         });
     }
@@ -199,8 +202,8 @@ export default class MemberController extends Controller {
             // Invalidate React Query cache so comments list reflects changes
             if (window.adminXQueryClient) {
                 window.adminXQueryClient.invalidateQueries({queryKey: ['CommentsResponseType']});
-                window.adminXQueryClient.invalidateQueries({queryKey: ['MembersResponseType']});
             }
+            this.invalidateMembersCache();
 
             await this.fetchMemberTask.perform(this.member.id);
             this.notifications.showNotification(`Commenting has been enabled for ${this.member.name || this.member.email}.`, {type: 'success'});
@@ -241,7 +244,7 @@ export default class MemberController extends Controller {
             yield member.save();
             member.updateLabels();
             member.labels.forEach(label => this.labelsManager.addLabel(label));
-            this.members.refreshData();
+            this.invalidateMembersCache();
 
             this.setInitialRelationshipValues();
 
