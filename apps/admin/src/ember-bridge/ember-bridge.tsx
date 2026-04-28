@@ -77,7 +77,6 @@ const EMBER_TO_REACT_TYPE_MAPPING: Record<string, string> = {
     'user': 'UsersResponseType',
     'post': 'PostsResponseType',
     'member': 'MembersResponseType',
-    'comment': 'CommentsResponseType',
     'tag': 'TagsResponseType',
     'label': 'LabelsResponseType',
     'webhook': 'WebhooksResponseType'

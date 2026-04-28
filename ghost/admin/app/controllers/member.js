@@ -131,10 +131,6 @@ export default class MemberController extends Controller {
         this.stateBridge.triggerEmberDataChange('update', 'member', this.member.id, null);
     }
 
-    invalidateCommentsCache() {
-        this.stateBridge.triggerEmberDataChange('update', 'comment', this.member.id, null);
-    }
-
     // Actions -----------------------------------------------------------------
 
     @action
@@ -204,7 +200,6 @@ export default class MemberController extends Controller {
             const url = this.ghostPaths.url.api('members', this.member.id, 'commenting', 'enable');
             await this.ajax.post(url);
 
-            this.invalidateCommentsCache();
             this.invalidateMembersCache();
 
             await this.fetchMemberTask.perform(this.member.id);

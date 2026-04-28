@@ -26,11 +26,4 @@ describe('Unit: Controller: member', function () {
         expect(stateBridge.triggerEmberDataChange.calledOnce).to.be.true;
         expect(stateBridge.triggerEmberDataChange.calledWith('update', 'member', 'member-1', null)).to.be.true;
     });
-
-    it('invalidates the React comments cache through the Ember bridge when commenting changes', function () {
-        controller.invalidateCommentsCache();
-
-        expect(stateBridge.triggerEmberDataChange.calledOnce).to.be.true;
-        expect(stateBridge.triggerEmberDataChange.calledWith('update', 'comment', 'member-1', null)).to.be.true;
-    });
 });
