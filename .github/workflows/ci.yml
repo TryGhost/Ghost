@@ -12,6 +12,11 @@ on:
     tags-ignore:
       - '**' # Tags handled by ci-release.yml
   workflow_call: # Called by ci-release.yml for uninterruptible release CI
+    inputs:
+      dry-run:
+        description: 'When true, npm publish runs with --dry-run and external side effects (GitHub Release, CD dispatch) are skipped'
+        type: boolean
+        default: false
 
 env:
   FORCE_COLOR: 1
@@ -1723,6 +1728,7 @@ jobs:
       && needs.job_setup.result == 'success'
       && needs.job_build_artifacts.result == 'success'
       && needs.job_build_artifacts.outputs.use-artifact != 'true'
+      && !inputs.dry-run
     steps:
       - name: Determine dispatch parameters
         id: params
@@ -1772,10 +1778,13 @@ jobs:
     name: Publish Ghost to npm
     runs-on: ubuntu-latest
     if: |
-      startsWith(github.ref, 'refs/tags/v')
+      (startsWith(github.ref, 'refs/tags/v') || inputs.dry-run)
       && github.repository == 'TryGhost/Ghost'
       && needs.job_build_artifacts.result == 'success'
-    environment: npm-release
+    # npm-release has a branch policy restricted to tag refs. On a dry-run we
+    # may be running from main or a feature branch, so skip the environment
+    # (empty string = no environment). OIDC still works via id-token: write.
+    environment: ${{ !inputs.dry-run && 'npm-release' || '' }}
     permissions:
       id-token: write
     steps:
@@ -1798,7 +1807,7 @@ jobs:
         run: tar -xOf ghost-*.tgz package/package.json | jq -e '.packageManager' >/dev/null
 
       - name: Publish to npm
-        run: npm publish ghost-*.tgz --access public
+        run: npm publish ghost-*.tgz --access public ${{ inputs.dry-run && '--dry-run' || '' }}
 
       - uses: tryghost/actions/actions/slack-build@20b5ae5f266e86f7b5f0815d92731d6388b8ce46 # main
         if: failure()
@@ -1814,7 +1823,7 @@ jobs:
     needs: [publish_ghost]
     name: Create GitHub Release
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v') && !inputs.dry-run
     permissions:
       contents: write
     env:

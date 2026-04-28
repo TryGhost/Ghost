@@ -3,11 +3,18 @@ on:
   push:
     tags:
       - 'v[0-9]*'
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: 'Skip actual npm publish / GitHub Release / CD dispatch; validate everything else'
+        type: boolean
+        default: true
 
-# Tags must never be cancelled — each is a public release
+# Real tag runs are never cancelled (each is a public release).
+# Dispatched dry-runs can be cancelled so iterating is cheap.
 concurrency:
-  group: ci-release-${{ github.ref_name }}
-  cancel-in-progress: false
+  group: ci-release-${{ github.event_name }}-${{ github.ref_name }}
+  cancel-in-progress: ${{ github.event_name == 'workflow_dispatch' }}
 
 # Workflow-level permissions set the ceiling for the reusable ci.yml.
 # id-token is never in the default token, so it must be granted explicitly
@@ -28,3 +35,5 @@ jobs:
       contents: write
       packages: write
       id-token: write
+    with:
+      dry-run: ${{ inputs.dry-run == true }}
