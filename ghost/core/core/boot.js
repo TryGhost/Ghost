@@ -398,7 +398,11 @@ async function initServices() {
         recommendationsService.init(),
         statsService.init(),
         explorePingService.init(),
-        giftService.init(),
+        giftService.init({
+            apiUrl,
+            schedulerAdapter,
+            schedulerIntegration
+        }),
         new WelcomeEmailAutomationsService().init({
             domainEvents,
             apiUrl,
