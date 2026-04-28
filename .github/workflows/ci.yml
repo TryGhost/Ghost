@@ -1760,13 +1760,12 @@ jobs:
   # Publish Ghost npm package — runs on version tags only (OIDC, no stored token)
   # --------------------------------------------------------------------------- #
   publish_ghost:
-    needs: [job_setup, job_build_artifacts, job_ghost-cli]
+    needs: [job_ghost-cli]
     name: Publish Ghost to npm
     runs-on: ubuntu-latest
     if: |
       startsWith(github.ref, 'refs/tags/v')
       && github.repository == 'TryGhost/Ghost'
-      && needs.job_build_artifacts.result == 'success'
     environment: npm-release
     permissions:
       id-token: write
