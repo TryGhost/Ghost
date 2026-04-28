@@ -7,6 +7,8 @@ import tpl from '@tryghost/tpl';
 import {GIFT_REMINDER_FLOOR_DAYS, GIFT_REMINDER_LEAD_DAYS} from './constants';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
+const GIFT_REMINDER_LEAD_MS = GIFT_REMINDER_LEAD_DAYS * MS_PER_DAY;
+const GIFT_REMINDER_FLOOR_MS = GIFT_REMINDER_FLOOR_DAYS * MS_PER_DAY;
 
 const errorMessages = {
     giftSubscriptionsNotEnabled: 'Gift subscriptions are not enabled on this site.',
@@ -107,12 +109,33 @@ export interface GiftPurchaseData {
     stripePaymentIntentId: string;
 }
 
+interface SchedulerAdapter {
+    schedule(job: {time: number; url: string; extra: {httpMethod: string}}): void;
+}
+
+interface SchedulerIntegration {
+    api_keys: Array<{id: string; secret: string}>;
+}
+
+type GetSignedAdminToken = (options: {
+    publishedAt: string;
+    apiUrl: string;
+    integration: SchedulerIntegration;
+}) => string;
+
+type UrlJoin = (...parts: string[]) => string;
+
 interface GiftServiceDeps {
     giftRepository: GiftRepository;
     memberRepository: MemberRepository;
     tiersService: TiersService;
     giftEmailService: GiftEmailService;
     staffServiceEmails: StaffServiceEmails;
+    schedulerAdapter: SchedulerAdapter | null;
+    schedulerIntegration: SchedulerIntegration | null;
+    getSignedAdminToken: GetSignedAdminToken | null;
+    urlJoin: UrlJoin | null;
+    apiUrl: string | null;
 }
 
 interface ReminderSend {
@@ -323,6 +346,8 @@ export class GiftService {
             } catch (err) {
                 logging.error('Failed to notify staff of gift redemption', err);
             }
+
+            this.scheduleReminder(redeemed);
         };
 
         if (options.transacting) {
@@ -477,12 +502,49 @@ export class GiftService {
         return {expiredCount};
     }
 
+    private scheduleReminder(gift: Gift): void {
+        const {schedulerAdapter, schedulerIntegration, getSignedAdminToken, urlJoin, apiUrl} = this.deps;
+
+        if (!schedulerAdapter || !schedulerIntegration || !getSignedAdminToken || !urlJoin || !apiUrl) {
+            return;
+        }
+
+        if (!gift.consumesAt) {
+            return;
+        }
+
+        const time = gift.consumesAt.getTime() - GIFT_REMINDER_LEAD_MS;
+
+        if (time <= Date.now()) {
+            return;
+        }
+
+        try {
+            const signedAdminToken = getSignedAdminToken({
+                publishedAt: new Date(time).toISOString(),
+                apiUrl,
+                integration: schedulerIntegration
+            });
+
+            const url = new URL(urlJoin(apiUrl, 'gifts', 'flush_reminders'));
+            url.searchParams.set('token', signedAdminToken);
+
+            schedulerAdapter.schedule({
+                time,
+                url: url.toString(),
+                extra: {httpMethod: 'PUT'}
+            });
+        } catch (err) {
+            logging.error('Failed to schedule gift reminder', err);
+        }
+    }
+
     async processReminders(): Promise<{remindedCount: number; skippedCount: number; failedCount: number}> {
         const now = new Date();
         const toRemind = await this.deps.giftRepository.findPendingReminder({
             now,
-            reminderLeadMs: GIFT_REMINDER_LEAD_DAYS * MS_PER_DAY,
-            reminderFloorMs: GIFT_REMINDER_FLOOR_DAYS * MS_PER_DAY
+            reminderLeadMs: GIFT_REMINDER_LEAD_MS,
+            reminderFloorMs: GIFT_REMINDER_FLOOR_MS
         });
 
         if (toRemind.length === 0) {
