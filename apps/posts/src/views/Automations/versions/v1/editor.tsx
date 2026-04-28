@@ -440,7 +440,22 @@ const V1Editor: React.FC = () => {
                     <span className="font-medium">{title}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button onClick={goBack}>{isDraft ? 'Publish' : 'Unpublish'}</Button>
+                    {!isDraft && (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button aria-label="More actions" size="icon" variant="ghost">
+                                    <LucideIcon.MoreHorizontal strokeWidth={2} />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem>
+                                    <LucideIcon.Undo2 /> Revert to draft
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
+                    <Button variant="outline" onClick={goBack}>Cancel</Button>
+                    <Button onClick={goBack}>{isDraft ? 'Publish' : 'Publish changes'}</Button>
                 </div>
             </header>
             <style>{`
