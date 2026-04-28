@@ -11,6 +11,8 @@ import {
     CommandList,
     CommandSeparator
 } from '@/components/ui/command';
+import {FilterOptionsLoadMore} from '@/components/ui/filter-options-load-more';
+import {useFilterOptionsInfiniteScroll} from '@/components/ui/use-filter-options-infinite-scroll';
 import {Check, Loader2} from 'lucide-react';
 import {cn} from '@/lib/utils';
 import type {FilterOption, ValueSource} from '@/components/patterns/filters';
@@ -236,6 +238,13 @@ export function MultiSelectCombobox<T = unknown>({
         () => resolvedOptions.filter(opt => !values.includes(opt.value)),
         [resolvedOptions, values]
     );
+    const renderedOptionsCount = visibleSelectedOptions.length + unselectedOptions.length;
+    const loadMoreSentinelRef = useFilterOptionsInfiniteScroll({
+        optionSource: source,
+        optionsCount: renderedOptionsCount,
+        resetKey: searchInput
+    });
+
     // --- Handlers ---
 
     const handleDeselect = useCallback((option: FilterOption<T>) => {
@@ -352,17 +361,13 @@ export function MultiSelectCombobox<T = unknown>({
                     {source.hasMore && (
                         <>
                             {(visibleSelectedOptions.length > 0 || unselectedOptions.length > 0) && <CommandSeparator />}
-                            <div className="p-1.5">
-                                <button
-                                    className="flex w-full items-center justify-center rounded-xs px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
-                                    disabled={source.isLoadingMore}
-                                    type="button"
-                                    onClick={source.loadMore}
-                                >
-                                    {source.isLoadingMore && <Loader2 className="mr-2 size-4 animate-spin" />}
-                                    {source.isLoadingMore ? i18n.loading : i18n.loadMore}
-                                </button>
-                            </div>
+                            <FilterOptionsLoadMore
+                                isLoadingMore={source.isLoadingMore}
+                                label={i18n.loadMore}
+                                loadingLabel={i18n.loading}
+                                sentinelRef={loadMoreSentinelRef}
+                                onLoadMore={source.loadMore}
+                            />
                         </>
                     )}
                 </CommandList>

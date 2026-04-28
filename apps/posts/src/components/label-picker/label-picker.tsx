@@ -6,7 +6,9 @@ import {
     CommandEmpty,
     CommandGroup,
     CommandItem,
-    CommandList
+    CommandList,
+    FilterOptionsLoadMore,
+    useFilterOptionsInfiniteScroll
 } from '@tryghost/shade/components';
 import {EditRow} from './edit-row';
 import {Label} from '@tryghost/admin-x-framework/api/labels';
@@ -72,6 +74,7 @@ interface LabelListItemsProps {
     labels: Label[];
     selectedSlugs: string[];
     search: string;
+    optionSource: ComboboxOptionSource<string>;
     onToggle: (slug: string) => void;
     onEdit?: (id: string, name: string) => Promise<void>;
     onDelete?: (id: string) => Promise<void>;
@@ -84,6 +87,7 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
     labels,
     selectedSlugs,
     search,
+    optionSource,
     onToggle,
     onEdit,
     onDelete,
@@ -98,6 +102,12 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
         : labels;
     const showCreate = !!onCreate && canCreateLabel(labels, search);
     const showEdit = !!onEdit;
+    const loadMoreSentinelRef = useFilterOptionsInfiniteScroll({
+        optionSource,
+        optionsCount: visibleLabels.length,
+        resetKey: search
+    });
+
     const handleCreate = async () => {
         if (!onCreate) {
             return;
@@ -127,7 +137,7 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
 
     return (
         <>
-            {!showCreate && visibleLabels.length === 0 && (
+            {!showCreate && visibleLabels.length === 0 && !optionSource.hasMore && (
                 <CommandEmpty>No labels found</CommandEmpty>
             )}
             {visibleLabels.length > 0 && (
@@ -164,6 +174,15 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
                         {isCreating ? 'Creating...' : `Create "${search.trim()}"`}
                     </CommandItem>
                 </CommandGroup>
+            )}
+            {optionSource.hasMore && (
+                <FilterOptionsLoadMore
+                    isLoadingMore={optionSource.isLoadingMore}
+                    label="Load more"
+                    loadingLabel="Loading labels..."
+                    sentinelRef={loadMoreSentinelRef}
+                    onLoadMore={optionSource.loadMore}
+                />
             )}
         </>
     );
@@ -326,6 +345,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
                                 <LabelListItems
                                     isCreating={isCreating}
                                     labels={labels}
+                                    optionSource={optionSource}
                                     search={search}
                                     selectedSlugs={selectedSlugs}
                                     onCreate={onCreate}

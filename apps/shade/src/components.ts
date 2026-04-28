@@ -48,7 +48,9 @@ export * from './components/ui/tabs';
 export * from './components/ui/textarea';
 export * from './components/ui/toggle-group';
 export * from './components/ui/tooltip';
+export * from './components/ui/filter-options-load-more';
 export * from './components/ui/trend-badge';
+export * from './components/ui/use-filter-options-infinite-scroll';
 
 export type {DropdownMenuCheckboxItemProps as DropdownMenuCheckboxItemProps} from '@radix-ui/react-dropdown-menu';
 export type {ContextMenuCheckboxItemProps as ContextMenuCheckboxItemProps} from '@radix-ui/react-context-menu';

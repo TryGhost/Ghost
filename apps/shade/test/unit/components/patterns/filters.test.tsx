@@ -33,6 +33,12 @@ const ALL_OPTIONS: TestOption[] = [
     {value: 'draft', label: 'Draft'}
 ];
 
+type IntersectionObserverCallback = ConstructorParameters<typeof IntersectionObserver>[0];
+
+let intersectionObserverCallback: IntersectionObserverCallback | undefined;
+const observe = vi.fn();
+const disconnect = vi.fn();
+
 interface DateFiltersProps {
     initialValue?: string;
     onFiltersChange: ReturnType<typeof vi.fn<(value: string) => void>>;
@@ -125,6 +131,21 @@ function createMatchingValueSource() {
     return {id: 'status', useOptions};
 }
 
+async function intersectLoadMoreSentinel() {
+    await act(async () => {
+        intersectionObserverCallback?.(
+            [{isIntersecting: true} as IntersectionObserverEntry],
+            {} as IntersectionObserver
+        );
+    });
+}
+
+async function expectLoadMoreObserverToAttach() {
+    await waitFor(() => {
+        expect(observe).toHaveBeenCalled();
+    });
+}
+
 function openCalendar() {
     fireEvent.click(screen.getByRole('button', {name: 'Open calendar'}));
 }
@@ -146,10 +167,26 @@ describe('Filters', () => {
                 }
             } as unknown as typeof ResizeObserver;
             HTMLElement.prototype.scrollIntoView = vi.fn();
+            global.IntersectionObserver = class {
+                readonly root = null;
+                readonly rootMargin = '';
+                readonly thresholds = [];
+
+                constructor(callback: IntersectionObserverCallback) {
+                    intersectionObserverCallback = callback;
+                }
+
+                observe = observe;
+                disconnect = disconnect;
+                takeRecords = () => [];
+                unobserve = vi.fn();
+            } as unknown as typeof IntersectionObserver;
         });
 
         afterEach(() => {
             vi.useRealTimers();
+            vi.clearAllMocks();
+            intersectionObserverCallback = undefined;
         });
 
         it('calls the value source with local query state and selected values', async () => {
@@ -261,6 +298,76 @@ describe('Filters', () => {
             fireEvent.click(loadMoreButton);
 
             expect(loadMore).toHaveBeenCalledTimes(1);
+        });
+
+        it('automatically loads more when the end of the option list is reached', async () => {
+            const loadMore = vi.fn();
+            const useOptions = vi.fn(() => ({
+                options: ALL_OPTIONS,
+                isInitialLoad: false,
+                isSearching: false,
+                isLoadingMore: false,
+                hasMore: true,
+                loadMore
+            }));
+
+            render(<TestFilters valueSource={{id: 'status', useOptions}} />);
+
+            openSelectedValuePopover();
+            await expectLoadMoreObserverToAttach();
+
+            await intersectLoadMoreSentinel();
+
+            expect(loadMore).toHaveBeenCalledTimes(1);
+        });
+
+        it('does not automatically load more while a page is already loading', async () => {
+            const loadMore = vi.fn();
+            const useOptions = vi.fn(() => ({
+                options: ALL_OPTIONS,
+                isInitialLoad: false,
+                isSearching: false,
+                isLoadingMore: true,
+                hasMore: true,
+                loadMore
+            }));
+
+            render(<TestFilters valueSource={{id: 'status', useOptions}} />);
+
+            openSelectedValuePopover();
+            await expectLoadMoreObserverToAttach();
+
+            await intersectLoadMoreSentinel();
+
+            expect(loadMore).not.toHaveBeenCalled();
+        });
+
+        it('waits for rendered options before automatically loading more after a search change', async () => {
+            const loadMore = vi.fn();
+            const useOptions = vi.fn(({query, selectedValues}: {query: string; selectedValues: string[]}) => ({
+                options: query ? [] : ALL_OPTIONS.filter(option => selectedValues.includes(option.value) || option.value === 'draft'),
+                isInitialLoad: false,
+                isSearching: !!query,
+                isLoadingMore: false,
+                hasMore: true,
+                loadMore
+            }));
+
+            render(<TestFilters valueSource={{id: 'status', useOptions}} />);
+
+            openSelectedValuePopover();
+            await expectLoadMoreObserverToAttach();
+
+            const input = await screen.findByPlaceholderText('Search status...');
+            fireEvent.change(input, {target: {value: 'missing'}});
+
+            await waitFor(() => {
+                expect(screen.queryByText('Draft')).toBeNull();
+            });
+
+            await intersectLoadMoreSentinel();
+
+            expect(loadMore).not.toHaveBeenCalled();
         });
 
         it('shows loading states for static select fields', async () => {

@@ -19,8 +19,10 @@ import {
     DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import {Popover, PopoverContent, PopoverTrigger} from '@/components/ui/popover';
+import {FilterOptionsLoadMore} from '@/components/ui/filter-options-load-more';
 import {Switch} from '@/components/ui/switch';
 import {Tooltip, TooltipContent, TooltipTrigger} from '@/components/ui/tooltip';
+import {type FilterOptionsInfiniteScrollSource, useFilterOptionsInfiniteScroll} from '@/components/ui/use-filter-options-infinite-scroll';
 import {cva, type VariantProps} from 'class-variance-authority';
 import {AlertCircle, Calendar as CalendarIcon, Check, Loader2, Plus, X} from 'lucide-react';
 import {cn} from '@/lib/utils';
@@ -1317,10 +1319,8 @@ interface SelectOptionsListProps<T = unknown> {
     contextLabel?: string;
     selectedOptions: FilterOption<T>[];
     unselectedOptions: FilterOption<T>[];
-    isInitialLoad: boolean;
-    isLoadingMore: boolean;
-    hasMore: boolean;
-    onLoadMore: () => void;
+    optionSource: FilterOptionsInfiniteScrollSource;
+    searchInput: string;
     onSelectSelected: (option: FilterOption<T>) => void;
     onSelectUnselected: (option: FilterOption<T>) => void;
 }
@@ -1329,19 +1329,23 @@ function SelectOptionsList<T = unknown>({
     contextLabel,
     selectedOptions,
     unselectedOptions,
-    isInitialLoad,
-    isLoadingMore,
-    hasMore,
-    onLoadMore,
+    optionSource,
+    searchInput,
     onSelectSelected,
     onSelectUnselected
 }: Readonly<SelectOptionsListProps<T>>) {
     const context = useFilterContext();
+    const renderedOptionsCount = selectedOptions.length + unselectedOptions.length;
+    const loadMoreSentinelRef = useFilterOptionsInfiniteScroll({
+        optionSource,
+        optionsCount: renderedOptionsCount,
+        resetKey: searchInput
+    });
 
     return (
         <CommandList className="outline-hidden">
-            {isInitialLoad ? (
-                <div className="flex items-center justify-center py-6 text-muted-foreground">
+            {optionSource.isInitialLoad ? (
+                <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
                     <Loader2 className="mr-2 size-4 animate-spin" />
                     {context.i18n.loading}
                 </div>
@@ -1390,20 +1394,16 @@ function SelectOptionsList<T = unknown>({
                     </CommandGroup>
                 </>
             )}
-            {hasMore && (
+            {optionSource.hasMore && (
                 <>
                     {(selectedOptions.length > 0 || unselectedOptions.length > 0) && <CommandSeparator />}
-                    <div className="p-1.5">
-                        <button
-                            className="flex w-full items-center justify-center rounded-xs px-2.5 py-1.5 text-muted-foreground hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
-                            disabled={isLoadingMore}
-                            type="button"
-                            onClick={onLoadMore}
-                        >
-                            {isLoadingMore && <Loader2 className="mr-2 size-4 animate-spin" />}
-                            {isLoadingMore ? context.i18n.loading : context.i18n.loadMore}
-                        </button>
-                    </div>
+                    <FilterOptionsLoadMore
+                        isLoadingMore={optionSource.isLoadingMore}
+                        label={context.i18n.loadMore}
+                        loadingLabel={context.i18n.loading}
+                        sentinelRef={loadMoreSentinelRef}
+                        onLoadMore={optionSource.loadMore}
+                    />
                 </>
             )}
         </CommandList>
@@ -1429,6 +1429,13 @@ function ResolvedSelectOptionsPopover<T = unknown>({
     // Track selected options separately so they persist during async search
     const [cachedSelectedOptions, setCachedSelectedOptions] = useState<FilterOption<T>[]>([]);
     const context = useFilterContext();
+    const optionSource: FilterOptionsInfiniteScrollSource = {
+        hasMore,
+        isInitialLoad,
+        isLoadingMore,
+        isSearching,
+        loadMore: onLoadMore
+    };
 
     const isMultiSelect = field.type === 'multiselect' || values.length > 1;
     const effectiveValues = useMemo(() => field.value ?? values, [field.value, values]);
@@ -1518,12 +1525,10 @@ function ResolvedSelectOptionsPopover<T = unknown>({
                     />
                     <SelectOptionsList
                         contextLabel={field.label || 'Selected'}
-                        hasMore={hasMore}
-                        isInitialLoad={isInitialLoad}
-                        isLoadingMore={isLoadingMore}
+                        optionSource={optionSource}
+                        searchInput={searchInput}
                         selectedOptions={visibleSelectedOptions}
                         unselectedOptions={unselectedOptions}
-                        onLoadMore={onLoadMore}
                         onSelectSelected={(option) => {
                             if (isMultiSelect) {
                                 const next = effectiveValues.filter(v => v !== option.value) as T[];
@@ -1624,12 +1629,10 @@ function ResolvedSelectOptionsPopover<T = unknown>({
                         onSearchChange={handleSearchChange}
                     />
                     <SelectOptionsList
-                        hasMore={hasMore}
-                        isInitialLoad={isInitialLoad}
-                        isLoadingMore={isLoadingMore}
+                        optionSource={optionSource}
+                        searchInput={searchInput}
                         selectedOptions={visibleSelectedOptions}
                         unselectedOptions={unselectedOptions}
-                        onLoadMore={onLoadMore}
                         onSelectSelected={(option) => {
                             if (isMultiSelect) {
                                 onChange(values.filter(v => v !== option.value) as T[]);

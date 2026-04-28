@@ -63,6 +63,58 @@ async function createOfferAndRedeem(page: Page, request: APIRequestContext, stri
     return {offer, suffix};
 }
 
+async function mockPaginatedLabels(page: Page, totalLabels: number): Promise<Set<number>> {
+    const labels = Array.from({length: totalLabels}, (_label, index) => {
+        const paddedIndex = index.toString().padStart(3, '0');
+
+        return {
+            id: `label-${paddedIndex}`,
+            name: `Infinite Label ${paddedIndex}`,
+            slug: `infinite-label-${paddedIndex}`,
+            created_at: '2026-01-01T00:00:00.000Z',
+            updated_at: '2026-01-01T00:00:00.000Z'
+        };
+    });
+    const requestedPages = new Set<number>();
+
+    await page.route('**/ghost/api/admin/labels/**', async (route) => {
+        const request = route.request();
+
+        if (request.method() !== 'GET') {
+            await route.fallback();
+            return;
+        }
+
+        const requestUrl = new URL(request.url());
+        const limit = Number(requestUrl.searchParams.get('limit') ?? 100);
+        const pageNumber = Number(requestUrl.searchParams.get('page') ?? 1);
+        requestedPages.add(pageNumber);
+        const start = (pageNumber - 1) * limit;
+        const pageLabels = labels.slice(start, start + limit);
+        const pages = Math.ceil(labels.length / limit);
+        const next = pageNumber < pages ? pageNumber + 1 : null;
+
+        await route.fulfill({
+            contentType: 'application/json',
+            body: JSON.stringify({
+                labels: pageLabels,
+                meta: {
+                    pagination: {
+                        page: pageNumber,
+                        limit,
+                        pages,
+                        total: labels.length,
+                        next,
+                        prev: pageNumber > 1 ? pageNumber - 1 : null
+                    }
+                }
+            })
+        });
+    });
+
+    return requestedPages;
+}
+
 test.describe('Ghost Admin - Members Label Multiselect Filter', () => {
     let memberFactory: MemberFactory;
 
@@ -113,6 +165,22 @@ test.describe('Ghost Admin - Members Label Multiselect Filter', () => {
 
         await expect(membersPage.memberRows).toHaveCount(1);
         await expect(membersPage.getMemberByName('Targeted Member')).toBeVisible();
+    });
+
+    test('label filter value options load more remote labels', async ({page}) => {
+        const requestedLabelPages = await mockPaginatedLabels(page, 120);
+        const membersPage = await seedMembersAndNavigate(memberFactory, page, [
+            {name: 'Visible Member', email: 'visible@example.com'}
+        ]);
+
+        await membersPage.openFilterField('Label');
+        await membersPage.getFilterOption(/Infinite Label 000/).click();
+        await membersPage.openFilterValue('Label');
+
+        await page.getByRole('button', {name: 'Load more'}).click();
+
+        await expect.poll(() => requestedLabelPages.has(2)).toBe(true);
+        await expect(membersPage.getFilterOption(/Infinite Label 105/)).toBeVisible();
     });
 
     test('deselects a label from the combobox to update results', async ({page}) => {

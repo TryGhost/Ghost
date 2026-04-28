@@ -15,7 +15,14 @@ export function createCombinedValueSource<T = string>(
         const useOptions = useCallback(({query, selectedValues}: ValueSourceParams<T>): ValueSourceState<T> => {
             const firstState = firstSource.useOptions({query, selectedValues});
             const secondState = secondSource.useOptions({query, selectedValues});
-            const mergedOptions = mergeFilterOptions(firstState.options, secondState.options);
+            // Withhold the second source's options until the first has no more pages.
+            // Both sources fetch their first page eagerly, but rendering the second
+            // source's options while the first can still grow would push freshly
+            // loaded first-source pages in above options already in view - revealing
+            // the (pre-fetched) second source only once the first is exhausted keeps
+            // every load appending below the fold.
+            const visibleSecondOptions = firstState.hasMore ? [] : secondState.options;
+            const mergedOptions = mergeFilterOptions(firstState.options, visibleSecondOptions);
             const fallbackOptions = getMissingSelectedOption ? selectedValues.flatMap((selectedValue) => {
                 const hasMatch = mergedOptions.some(option => option.value === selectedValue);
 
@@ -35,8 +42,11 @@ export function createCombinedValueSource<T = string>(
                 isLoadingMore: firstState.isLoadingMore || secondState.isLoadingMore,
                 hasMore: firstState.hasMore || secondState.hasMore,
                 loadMore: () => {
+                    // Paginate one source at a time, matching the render order above:
+                    // advance the first until it runs out, then the second.
                     if (firstState.hasMore) {
                         firstState.loadMore();
+                        return;
                     }
 
                     if (secondState.hasMore) {
