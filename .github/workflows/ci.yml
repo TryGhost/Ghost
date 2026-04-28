@@ -800,8 +800,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - run: node .github/scripts/bump-version.js canary
-
       - run: pnpm archive
 
       - run: mv ghost-*.tgz ghost.tgz
