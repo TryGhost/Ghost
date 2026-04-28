@@ -1654,15 +1654,9 @@ importers:
       '@tryghost/limit-service':
         specifier: 1.5.2
         version: 1.5.2
-      '@tryghost/members-csv':
-        specifier: 2.0.5
-        version: 2.0.5
       '@tryghost/nql':
         specifier: 0.12.10
         version: 0.12.10
-      '@tryghost/nql-lang':
-        specifier: 0.6.4
-        version: 0.6.4
       '@tryghost/string':
         specifier: 0.3.2
         version: 0.3.2
@@ -1792,9 +1786,6 @@ importers:
       ember-drag-drop:
         specifier: 0.4.8
         version: 0.4.8(@babel/core@7.29.0)
-      ember-ella-sparse:
-        specifier: 0.16.0
-        version: 0.16.0(@babel/core@7.29.0)
       ember-exam:
         specifier: 6.0.1
         version: 6.0.1(ember-mocha@0.16.2(@babel/core@7.29.0))
@@ -1909,9 +1900,6 @@ importers:
       normalize.css:
         specifier: 3.0.3
         version: 3.0.3
-      papaparse:
-        specifier: 5.5.3
-        version: 5.5.3
       postcss-color-mod-function:
         specifier: 3.0.3
         version: 3.0.3
@@ -13021,10 +13009,6 @@ packages:
     engines: {node: 12.* || 14.* || >= 16}
     peerDependencies:
       ember-source: ^3.8 || 4
-
-  ember-ella-sparse@0.16.0:
-    resolution: {integrity: sha512-JLea/LYH3Juy0XzDCulmmpVXSOEiJIT6Pg4M3yXNVBQasU0eNj+ssO9Orpd7AHq5X4aFGWcKUnsVod3JFuMOfw==}
-    engines: {node: 8.* || >= 10.*}
 
   ember-eslint-parser@0.5.13:
     resolution: {integrity: sha512-b6ALDaxs9Bb4v0uagWud/5lECb78qpXHFv7M340dUHFW4Y0RuhlsfA4Rb+765X1+6KHp8G7TaAs0UgggWUqD3g==}
@@ -36126,14 +36110,6 @@ snapshots:
     transitivePeerDependencies:
       - '@glint/environment-ember-loose'
       - '@glint/template'
-      - supports-color
-
-  ember-ella-sparse@0.16.0(@babel/core@7.29.0):
-    dependencies:
-      ember-cli-babel: 7.26.11
-      ember-concurrency: 1.3.0(@babel/core@7.29.0)
-    transitivePeerDependencies:
-      - '@babel/core'
       - supports-color
 
   ember-eslint-parser@0.5.13(@babel/core@7.29.0)(@typescript-eslint/parser@8.56.1(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3):
