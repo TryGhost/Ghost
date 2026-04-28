@@ -7,9 +7,8 @@ test.describe('Ghost Admin - Access', () => {
         const settingsPage = new SettingsPage(page);
         await settingsPage.goto();
 
-        const privateSiteSettings = new AccessSection(page);
-        await privateSiteSettings.enablePrivateMode('password');
-        await expect(privateSiteSettings.passwordInput).toHaveCount(0);
+        const accessSettings = new AccessSection(page);
+        await accessSettings.enablePrivateMode('password');
 
         await withIsolatedPage(browser, {baseURL}, async ({page: frontendPage}) => {
             const privateSite = new PrivateSitePage(frontendPage);
@@ -23,8 +22,8 @@ test.describe('Ghost Admin - Access', () => {
             await expect(privateSite.enterButton).toBeVisible();
         });
 
-        await privateSiteSettings.disablePrivateMode();
-        await expect(privateSiteSettings.passwordInput).toHaveCount(0);
+        await accessSettings.disablePrivateMode();
+        await expect(accessSettings.passwordInput).toHaveCount(0);
 
         await withIsolatedPage(browser, {baseURL}, async ({page: frontendPage}) => {
             const site = new HomePage(frontendPage);
