@@ -15,7 +15,6 @@ const messages = {
     giftServiceUnavailable: 'Gift service is not available.',
     giftCannotCombineWithImportTier: 'Cannot specify both gift_id and import_tier.',
     giftCannotCombineWithComplimentary: 'Cannot specify both gift_id and complimentary_plan.',
-    giftMemberAlreadyHasGift: 'Cannot reassign gift to a member with an existing gift.',
     giftReassignFailed: 'Failed to reassign gift to member.'
 };
 
@@ -295,13 +294,6 @@ module.exports = class MembersCSVImporter {
                         throw new errors.DataImportError({message: tpl(messages.giftServiceUnavailable)});
                     }
 
-                    // Reject if the member already has a different gift attached; we don't
-                    // want to silently orphan or overwrite the existing one.
-                    const conflictingGift = await this.#findConflictingGift(member.id, row.gift_id, trx);
-                    if (conflictingGift) {
-                        throw new errors.DataImportError({message: tpl(messages.giftMemberAlreadyHasGift)});
-                    }
-
                     try {
                         await giftService.reassignRedeemer(row.gift_id, member.id, {transacting: trx});
                     } catch (giftError) {
@@ -513,25 +505,5 @@ module.exports = class MembersCSVImporter {
         }
 
         return this._tierIdCache.get(name);
-    }
-
-    /**
-     * Returns the id of any gift already attached to `memberId` that is not `incomingGiftId`,
-     * or null if no conflict exists. Uses the caller-supplied transaction so the check is
-     * part of the same atomic unit as the subsequent reassignment.
-     *
-     * @param {string} memberId
-     * @param {string} incomingGiftId
-     * @param {import('knex').Knex.Transaction} trx
-     * @returns {Promise<string|null>}
-     */
-    async #findConflictingGift(memberId, incomingGiftId, trx) {
-        const row = await trx('gifts')
-            .where({redeemer_member_id: memberId})
-            .whereNot({id: incomingGiftId})
-            .select('id')
-            .first();
-
-        return row ? row.id : null;
     }
 };

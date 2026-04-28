@@ -84,11 +84,11 @@ export class GiftBookshelfRepository implements GiftRepository {
         return model ? this.toGift(model) : null;
     }
 
-    async getActiveByMember(memberId: string): Promise<Gift | null> {
+    async getActiveByMember(memberId: string, options: RepositoryTransactionOptions = {}): Promise<Gift | null> {
         const model = await this.model.findOne({
             redeemer_member_id: memberId,
             status: 'redeemed'
-        }, {require: false});
+        }, {require: false, ...options});
 
         return model ? this.toGift(model) : null;
     }

@@ -21,7 +21,8 @@ const errorMessages = {
     giftInvalidReassignStatus: 'This gift does not have a reassignable status.',
     giftInvalidReassignMember: 'Member already has an active subscription.',
     giftAlreadyAssigned: 'This gift is already assigned to another member.',
-    giftMissingConsumesAt: 'This gift is missing a "consumes at" date.'
+    giftMissingConsumesAt: 'This gift is missing a "consumes at" date.',
+    giftMemberAlreadyHasGift: 'Member already has a different active gift attached.'
 };
 
 interface MemberModel {
@@ -364,11 +365,11 @@ export class GiftService {
         return redeemed;
     }
 
-    async getActiveByMember(memberId: string): Promise<Gift | null> {
+    async getActiveByMember(memberId: string, options: {transacting?: unknown} = {}): Promise<Gift | null> {
         if (!memberId) {
             return null;
         }
-        return this.deps.giftRepository.getActiveByMember(memberId);
+        return this.deps.giftRepository.getActiveByMember(memberId, options);
     }
 
     getRemainingActiveDays(gift: Gift, now: Date = new Date()): number {
@@ -432,6 +433,11 @@ export class GiftService {
             const memberStatus = member.get('status');
             if (memberStatus !== 'free' && memberStatus !== 'gift') {
                 throw new errors.BadRequestError({message: tpl(errorMessages.giftInvalidReassignMember)});
+            }
+
+            const existingActiveGift = await this.deps.giftRepository.getActiveByMember(memberId, {transacting});
+            if (existingActiveGift && existingActiveGift.token !== gift.token) {
+                throw new errors.BadRequestError({message: tpl(errorMessages.giftMemberAlreadyHasGift)});
             }
 
             const reassignedGift = gift.reassignRedeemer(memberId);

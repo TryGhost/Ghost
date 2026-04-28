@@ -62,17 +62,7 @@ describe('MembersCSVImporter', function () {
             linkStripeCustomer: sinon.stub().resolves(null),
             getCustomerIdByEmail: sinon.stub().resolves('cus_mock_123456')
         };
-        // The `trx` returned by knex.transaction() is used both as a commit/rollback handle
-        // AND as a callable knex query builder (e.g. trx('gifts').where(...)). The stubbed
-        // callable returns a minimal chainable query builder whose terminators resolve to
-        // `null`, simulating "no rows found". Tests that care about a specific result can
-        // override via deps.knex.
-        const trxStub = sinon.stub().callsFake(() => ({
-            where: sinon.stub().returnsThis(),
-            whereNot: sinon.stub().returnsThis(),
-            select: sinon.stub().returnsThis(),
-            first: sinon.stub().resolves(null)
-        }));
+        const trxStub = sinon.stub();
         trxStub.rollback = () => {};
         trxStub.commit = () => {};
 
@@ -871,36 +861,19 @@ describe('MembersCSVImporter', function () {
             assert.equal(result.errors[0].error, 'This gift does not have a reassignable status.');
         });
 
-        it('rejects when the matched member already has a different gift attached', async function () {
+        it('surfaces existing-gift conflict from GiftService as a row error', async function () {
             const giftServiceStub = {
-                reassignRedeemer: sinon.stub().resolves({})
+                reassignRedeemer: sinon.stub().rejects(new Error('Member already has a different active gift attached.'))
             };
-
-            // Simulate a conflicting gift already attached to the existing member.
-            const conflictingTrx = sinon.stub().callsFake(() => ({
-                where: sinon.stub().returnsThis(),
-                whereNot: sinon.stub().returnsThis(),
-                select: sinon.stub().returnsThis(),
-                first: sinon.stub().resolves({id: 'other_gift_id'})
-            }));
-            conflictingTrx.rollback = () => {};
-            conflictingTrx.commit = () => {};
-
-            const knexWithConflict = {
-                transaction: sinon.stub().resolves(conflictingTrx)
-            };
-
             const importer = buildMockImporterInstance({
-                getGiftService: async () => giftServiceStub,
-                knex: knexWithConflict
+                getGiftService: async () => giftServiceStub
             });
 
             const result = await importer.perform(`${csvPath}/gift-member-reassign.csv`);
 
             assert.equal(result.imported, 0);
             assert.equal(result.errors.length, 1);
-            assert.equal(result.errors[0].error, 'Cannot reassign gift to a member with an existing gift.');
-            sinon.assert.notCalled(giftServiceStub.reassignRedeemer);
+            assert.equal(result.errors[0].error, 'Member already has a different active gift attached.');
         });
 
         it('imports a paid member with an import tier', async function () {
