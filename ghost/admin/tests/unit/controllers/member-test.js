@@ -1,5 +1,5 @@
 import sinon from 'sinon';
-import {describe, it, beforeEach, afterEach} from 'mocha';
+import {afterEach, beforeEach, describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupTest} from 'ember-mocha';
 
@@ -7,25 +7,30 @@ describe('Unit: Controller: member', function () {
     setupTest();
 
     let controller;
-    let queryClient;
+    let stateBridge;
 
     beforeEach(function () {
         controller = this.owner.lookup('controller:member');
-        queryClient = {
-            invalidateQueries: sinon.spy()
-        };
-        window.adminXQueryClient = queryClient;
+        stateBridge = this.owner.lookup('service:state-bridge');
+        sinon.spy(stateBridge, 'triggerEmberDataChange');
+        controller.member = {id: 'member-1'};
     });
 
     afterEach(function () {
-        delete window.adminXQueryClient;
         sinon.restore();
     });
 
-    it('invalidates the React members cache when member data changes', function () {
+    it('invalidates the React members cache through the Ember bridge when member data changes', function () {
         controller.invalidateMembersCache();
 
-        expect(queryClient.invalidateQueries.calledOnce).to.be.true;
-        expect(queryClient.invalidateQueries.calledWith({queryKey: ['MembersResponseType']})).to.be.true;
+        expect(stateBridge.triggerEmberDataChange.calledOnce).to.be.true;
+        expect(stateBridge.triggerEmberDataChange.calledWith('update', 'member', 'member-1', null)).to.be.true;
+    });
+
+    it('invalidates the React comments cache through the Ember bridge when commenting changes', function () {
+        controller.invalidateCommentsCache();
+
+        expect(stateBridge.triggerEmberDataChange.calledOnce).to.be.true;
+        expect(stateBridge.triggerEmberDataChange.calledWith('update', 'comment', 'member-1', null)).to.be.true;
     });
 });

@@ -23,6 +23,7 @@ export default class MemberController extends Controller {
     @service notifications;
     @service router;
     @service labelsManager;
+    @service stateBridge;
     @service store;
 
     queryParams = [
@@ -127,7 +128,11 @@ export default class MemberController extends Controller {
     }
 
     invalidateMembersCache() {
-        window.adminXQueryClient?.invalidateQueries({queryKey: ['MembersResponseType']});
+        this.stateBridge.triggerEmberDataChange('update', 'member', this.member.id, null);
+    }
+
+    invalidateCommentsCache() {
+        this.stateBridge.triggerEmberDataChange('update', 'comment', this.member.id, null);
     }
 
     // Actions -----------------------------------------------------------------
@@ -199,10 +204,7 @@ export default class MemberController extends Controller {
             const url = this.ghostPaths.url.api('members', this.member.id, 'commenting', 'enable');
             await this.ajax.post(url);
 
-            // Invalidate React Query cache so comments list reflects changes
-            if (window.adminXQueryClient) {
-                window.adminXQueryClient.invalidateQueries({queryKey: ['CommentsResponseType']});
-            }
+            this.invalidateCommentsCache();
             this.invalidateMembersCache();
 
             await this.fetchMemberTask.perform(this.member.id);
