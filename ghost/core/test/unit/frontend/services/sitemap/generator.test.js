@@ -357,12 +357,6 @@ describe('Generators', function () {
         });
     });
 
-    describe('TagGenerator', function () {
-        beforeEach(function () {
-            generator = new TagGenerator();
-        });
-    });
-
     describe('UserGenerator', function () {
         beforeEach(function () {
             generator = new UserGenerator();
