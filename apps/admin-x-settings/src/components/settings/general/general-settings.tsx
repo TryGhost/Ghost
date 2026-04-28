@@ -1,7 +1,6 @@
 import React from 'react';
 
 import Analytics from '../membership/analytics';
-import LockSite from './lock-site';
 import PublicationLanguage from './publication-language';
 import SEOMeta from './seo-meta';
 import SearchableSection from '../../searchable-section';
@@ -17,7 +16,6 @@ export const searchKeywords = {
     users: ['general', 'users and permissions', 'roles', 'staff', 'invite people', 'contributors', 'editors', 'authors', 'administrators'],
     metadata: ['general', 'metadata', 'title', 'description', 'search', 'engine', 'google', 'meta data', 'twitter card', 'structured data', 'rich cards', 'x card', 'social', 'facebook card'],
     socialAccounts: ['general', 'social accounts', 'facebook', 'twitter', 'structured data', 'rich cards'],
-    lockSite: ['general', 'password protection', 'lock site', 'make this site private'],
     analytics: ['membership', 'analytics', 'tracking', 'privacy', 'membership']
 };
 
@@ -33,7 +31,6 @@ const GeneralSettings: React.FC = () => {
             <SEOMeta keywords={searchKeywords.metadata} />
             <SocialAccounts keywords={searchKeywords.socialAccounts} />
             <Analytics keywords={searchKeywords.analytics} />
-            <LockSite keywords={searchKeywords.lockSite} />
         </SearchableSection>
     );
 };
