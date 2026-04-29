@@ -12,9 +12,7 @@ const controller = {
         },
         permissions: true,
         async query() {
-            const automations = await models.WelcomeEmailAutomation.findAll({
-                order: 'created_at ASC'
-            });
+            const automations = await models.WelcomeEmailAutomation.findAll();
             return {
                 data: automations.map(automation => ({
                     id: automation.get('id'),

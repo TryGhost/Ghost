@@ -41,16 +41,18 @@ describe('Automations API', function () {
             await dbUtils.truncate('welcome_email_automations');
         });
 
-        it('returns welcome email automations with only id, name, and status', async function () {
-            const first = await models.WelcomeEmailAutomation.add({
-                name: 'Welcome Email (Free)',
-                slug: 'member-welcome-email-free',
-                status: 'active'
-            });
+        it('returns welcome email automations ordered by creation time', async function () {
             const second = await models.WelcomeEmailAutomation.add({
                 name: 'Welcome Email (Premium)',
                 slug: 'member-welcome-email-premium',
-                status: 'inactive'
+                status: 'inactive',
+                created_at: new Date('2025-01-02T00:00:00Z')
+            });
+            const first = await models.WelcomeEmailAutomation.add({
+                name: 'Welcome Email (Free)',
+                slug: 'member-welcome-email-free',
+                status: 'active',
+                created_at: new Date('2025-01-01T00:00:00Z')
             });
 
             const {body} = await agent
