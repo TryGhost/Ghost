@@ -426,6 +426,25 @@ describe('SubscriptionStatsService', function () {
             assert.equal(sumWhere('basic', 'year', '1970-01-02', 'cancellations'), 1);
         });
 
+        it('Includes active gifts in the current totals so rolled-back snapshots stay accurate', async function () {
+            await createTiers(['basic']);
+
+            // Two active redeemed gifts, no paid subs.
+            await db('gifts').insert([
+                {id: 'g1', tier_id: 'basic', cadence: 'year', status: 'redeemed', redeemed_at: '1970-01-01T00:00:00.000Z'},
+                {id: 'g2', tier_id: 'basic', cadence: 'year', status: 'redeemed', redeemed_at: '1970-01-02T00:00:00.000Z'}
+            ]);
+
+            const stats = new SubscriptionStatsService({knex: db});
+            const result = await stats.getSubscriptionHistory();
+
+            // Without including gifts in totals, the baseline would be 0 and rolled-back
+            // counts would all be negative (clamped to 0), undercounting history.
+            const yearlyTotal = result.meta.totals.find(t => t.tier === 'basic' && t.cadence === 'year');
+            assert(yearlyTotal);
+            assert.equal(yearlyTotal.count, 2);
+        });
+
         it('Aggregates paid and gift deltas that share (date, tier, cadence) into a single row', async function () {
             const tiers = await createTiers(['basic']);
 
@@ -504,21 +523,19 @@ describe('SubscriptionStatsService', function () {
             const stats = new SubscriptionStatsService({knex: db});
             const result = await stats.getSubscriptionHistory();
 
-            // fetchSubscriptionCounts() only counts paid subs (1 yearly), not gifts.
-            // Walking backwards from countData=1:
-            //   day 3 (paid signup):  emit count=1, then countData -= 1 → 0
-            //   day 1 (gift signup):  emit count=0, then countData -= 1 → -1
-            // Both snapshots clamp to non-negative on the frontend, but the ordering
-            // is what matters: each row should reflect the count *at* that moment.
+            // fetchSubscriptionCounts() returns 2 yearly basic subs (1 paid + 1 active gift).
+            // Walking backwards from countData=2 in ascending date order:
+            //   day 3 (paid signup):  emit count=2, then countData -= 1 → 1
+            //   day 1 (gift signup):  emit count=1, then countData -= 1 → 0
             const day1Yearly = result.data.find(r => r.tier === 'basic' && r.cadence === 'year' && r.date === '1970-01-01');
             const day3Yearly = result.data.find(r => r.tier === 'basic' && r.cadence === 'year' && r.date === '1970-01-03');
 
             assert(day1Yearly);
             assert(day3Yearly);
-            // After paid signup on day 3: count is 1 (current total)
-            assert.equal(day3Yearly.count, 1);
-            // After gift signup on day 1, before paid signup: count is 0
-            assert.equal(day1Yearly.count, 0);
+            // After both signups: 2 yearly subs total
+            assert.equal(day3Yearly.count, 2);
+            // After only the gift signup, before the paid signup: 1 yearly sub
+            assert.equal(day1Yearly.count, 1);
         });
     });
 });
