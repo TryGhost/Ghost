@@ -595,7 +595,8 @@ module.exports = {
                 isIn: [['free', 'paid', 'comped', 'gift']]
             }
         },
-        created_at: {type: 'dateTime', nullable: false}
+        created_at: {type: 'dateTime', nullable: false},
+        batch_id: {type: 'string', maxlength: 24, nullable: true}
     },
     members_product_events: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
