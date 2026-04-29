@@ -82,8 +82,8 @@ export const fixtures = {
     // Stats fixtures (from our previous work)
     memberCountHistory: {
         stats: [
-            {date: '2024-01-01', paid: 100, free: 500, comped: 10, paid_subscribed: 5, paid_canceled: 2},
-            {date: '2024-01-02', paid: 102, free: 505, comped: 10, paid_subscribed: 3, paid_canceled: 1}
+            {date: '2024-01-01', paid: 100, free: 500, comped: 10, gift: 7, paid_subscribed: 5, paid_canceled: 2},
+            {date: '2024-01-02', paid: 102, free: 505, comped: 10, gift: 8, paid_subscribed: 3, paid_canceled: 1}
         ],
         meta: {totals: {paid: 102, free: 505, comped: 10, gift: 8}}
     },

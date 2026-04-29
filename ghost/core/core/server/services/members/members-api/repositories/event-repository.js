@@ -1132,14 +1132,16 @@ module.exports = class EventRepository {
                     date: result.date,
                     paid: result.paid_delta,
                     comped: result.comped_delta,
-                    free: result.free_delta
+                    free: result.free_delta,
+                    gift: result.gift_delta
                 }];
             }
             return accumulator.concat([{
                 date: result.date,
                 paid: result.paid_delta + accumulator[index - 1].paid,
                 comped: result.comped_delta + accumulator[index - 1].comped,
-                free: result.free_delta + accumulator[index - 1].free
+                free: result.free_delta + accumulator[index - 1].free,
+                gift: result.gift_delta + accumulator[index - 1].gift
             }]);
         }, []);
 

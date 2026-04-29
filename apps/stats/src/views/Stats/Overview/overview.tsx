@@ -61,6 +61,7 @@ type GrowthChartDataItem = {
     free: number;
     paid: number;
     comped: number;
+    gift: number;
     mrr: number;
     formattedValue: string;
     label?: string;
