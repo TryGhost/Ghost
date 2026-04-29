@@ -45,9 +45,9 @@ const mockedGetRangeDates = getRangeDates as ReturnType<typeof vi.fn>;
 
 // Mock data for testing
 const mockMemberData = [
-    {date: '2024-06-25', free: 100, paid: 50, comped: 5, paid_subscribed: 5, paid_canceled: 2},
-    {date: '2024-06-26', free: 105, paid: 52, comped: 5, paid_subscribed: 3, paid_canceled: 1},
-    {date: '2024-06-27', free: 110, paid: 55, comped: 5, paid_subscribed: 4, paid_canceled: 1}
+    {date: '2024-06-25', free: 100, paid: 50, comped: 5, gift: 6, paid_subscribed: 5, paid_canceled: 2},
+    {date: '2024-06-26', free: 105, paid: 52, comped: 5, gift: 7, paid_subscribed: 3, paid_canceled: 1},
+    {date: '2024-06-27', free: 110, paid: 55, comped: 5, gift: 8, paid_subscribed: 4, paid_canceled: 1}
 ];
 
 const mockMrrData = [
@@ -80,7 +80,7 @@ describe('useGrowthStats', () => {
         mockSuccess(mockedUseMemberCountHistory, {
             stats: mockMemberData,
             meta: {
-                totals: {paid: 55, free: 110, comped: 5}
+                totals: {paid: 55, free: 110, comped: 5, gift: 8}
             }
         });
 
@@ -129,9 +129,9 @@ describe('useGrowthStats', () => {
                 expect(result.current.isLoading).toBe(false);
             });
 
-            expect(result.current.totals.totalMembers).toBe(170); // 110 + 55 + 5
+            expect(result.current.totals.totalMembers).toBe(178); // 110 + 55 + 5 + 8
             expect(result.current.totals.freeMembers).toBe(110);
-            expect(result.current.totals.paidMembers).toBe(60); // 55 + 5
+            expect(result.current.totals.paidMembers).toBe(68); // 55 + 5 + 8 (gift treated like comped)
             expect(result.current.totals.mrr).toBe(5500);
         });
 
@@ -151,7 +151,7 @@ describe('useGrowthStats', () => {
         it('handles empty member data response', async () => {
             mockSuccess(mockedUseMemberCountHistory, {
                 stats: [],
-                meta: {totals: {paid: 0, free: 0, comped: 0}}
+                meta: {totals: {paid: 0, free: 0, comped: 0, gift: 0}}
             });
 
             const {result} = renderHook(() => useGrowthStats(30));
@@ -391,6 +391,7 @@ describe('useGrowthStats', () => {
             expect(firstPoint).toHaveProperty('free');
             expect(firstPoint).toHaveProperty('paid');
             expect(firstPoint).toHaveProperty('comped');
+            expect(firstPoint).toHaveProperty('gift');
             expect(firstPoint).toHaveProperty('mrr');
             expect(firstPoint).toHaveProperty('formattedValue');
         });
@@ -481,9 +482,9 @@ describe('useGrowthStats', () => {
             });
 
             // Should use meta totals when available
-            expect(result.current.totals.totalMembers).toBe(170);
+            expect(result.current.totals.totalMembers).toBe(178);
             expect(result.current.totals.freeMembers).toBe(110);
-            expect(result.current.totals.paidMembers).toBe(60);
+            expect(result.current.totals.paidMembers).toBe(68);
         });
     });
 
