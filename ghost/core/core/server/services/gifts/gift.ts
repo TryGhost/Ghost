@@ -8,6 +8,11 @@ export type RedeemableCheckResult =
     | {redeemable: true}
     | {redeemable: false; reason: RedeemableCheckFailureReason};
 
+export type ReassignableCheckFailureReason = 'unredeemed' | 'assigned' | 'consumed' | 'expired' | 'refunded' | 'missing-consumes-at';
+export type ReassignableCheckResult =
+    | {reassignable: true}
+    | {reassignable: false; reason: ReassignableCheckFailureReason};
+
 interface GiftData {
     token: string;
     buyerEmail: string;
@@ -165,6 +170,41 @@ export class Gift {
             redeemedAt,
             consumesAt,
             status: 'redeemed'
+        });
+    }
+
+    checkReassignable(): ReassignableCheckResult {
+        if (this.isRefunded()) {
+            return {reassignable: false, reason: 'refunded'};
+        }
+
+        if (this.isConsumed()) {
+            return {reassignable: false, reason: 'consumed'};
+        }
+
+        if (this.isExpired()) {
+            return {reassignable: false, reason: 'expired'};
+        }
+
+        if (this.status !== 'redeemed' || this.redeemedAt === null) {
+            return {reassignable: false, reason: 'unredeemed'};
+        }
+
+        if (this.consumesAt === null) {
+            return {reassignable: false, reason: 'missing-consumes-at'};
+        }
+
+        if (this.redeemerMemberId !== null) {
+            return {reassignable: false, reason: 'assigned'};
+        }
+
+        return {reassignable: true};
+    }
+
+    reassignRedeemer(newMemberId: string): Gift {
+        return new Gift({
+            ...this,
+            redeemerMemberId: newMemberId
         });
     }
 

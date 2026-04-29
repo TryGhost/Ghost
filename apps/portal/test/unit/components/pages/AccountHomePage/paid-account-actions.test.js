@@ -1,6 +1,6 @@
 import {render} from '../../../../utils/test-utils';
 import PaidAccountActions from '../../../../../src/components/pages/AccountHomePage/components/paid-account-actions';
-import {getDiscountData, getMemberData, getNextPaymentData, getSubscriptionData, getSiteData, getProductsData} from '../../../../../src/utils/fixtures-generator';
+import {getDiscountData, getMemberData, getNextPaymentData, getSubscriptionData, getSiteData, getProductsData, getProductData} from '../../../../../src/utils/fixtures-generator';
 
 const setup = (overrides) => {
     const {mockDoActionFn, ...utils} = render(
@@ -504,6 +504,173 @@ describe('PaidAccountActions', () => {
             expect(queryByTestId('offer-label')).toBeInTheDocument();
             // Should show the discounted yearly price
             expect(queryByText('$45.00/year — Forever')).toBeInTheDocument();
+        });
+    });
+
+    describe('PlanUpdateButton', () => {
+        const buildPaidSite = () => {
+            const products = getProductsData({numOfProducts: 1});
+            return {
+                site: getSiteData({products, portalProducts: products.map(p => p.id)}),
+                products
+            };
+        };
+
+        const buildFreeOnlySite = () => {
+            const products = getProductsData({numOfProducts: 1});
+            return getSiteData({
+                products,
+                portalProducts: products.map(p => p.id),
+                portalPlans: ['free']
+            });
+        };
+
+        const buildGiftMember = ({tierId}) => getMemberData({
+            paid: true,
+            status: 'gift',
+            subscriptions: [
+                getSubscriptionData({
+                    status: 'active',
+                    amount: 0,
+                    currency: 'USD',
+                    interval: 'month',
+                    tier: {id: tierId, expiry_at: new Date('2099-01-01T12:00:00.000Z')}
+                })
+            ]
+        });
+
+        test('renders "Continue" for a gift member whose tier is still active', () => {
+            const {site, products} = buildPaidSite();
+            const member = buildGiftMember({tierId: products[0].id});
+
+            const {container} = setup({site, member});
+
+            expect(container.querySelector('[data-test-button="continue-gift-subscription"]')).toBeInTheDocument();
+            expect(container.querySelector('[data-test-button="change-plan"]')).not.toBeInTheDocument();
+        });
+
+        test('renders "Change" for a gift member when the tier has been archived', () => {
+            // Archived tier = tier id absent from site.products
+            const {site} = buildPaidSite();
+            const archivedTier = getProductData({name: 'Archived'});
+            const member = buildGiftMember({tierId: archivedTier.id});
+
+            const {container} = setup({site, member});
+
+            expect(container.querySelector('[data-test-button="change-plan"]')).toBeInTheDocument();
+            expect(container.querySelector('[data-test-button="continue-gift-subscription"]')).not.toBeInTheDocument();
+        });
+
+        test('renders nothing for a gift on an archived tier when no paid plans are available', () => {
+            const site = buildFreeOnlySite();
+            const archivedTier = getProductData({name: 'Archived'});
+            const member = buildGiftMember({tierId: archivedTier.id});
+
+            const {container} = setup({site, member});
+
+            expect(container.querySelector('[data-test-button="continue-gift-subscription"]')).not.toBeInTheDocument();
+            expect(container.querySelector('[data-test-button="change-plan"]')).not.toBeInTheDocument();
+        });
+
+        test('renders "Change" for a regular paid member when paid plans are available', () => {
+            const {site} = buildPaidSite();
+            const member = getMemberData({
+                paid: true,
+                subscriptions: [
+                    getSubscriptionData({
+                        status: 'active',
+                        amount: 500,
+                        currency: 'USD',
+                        interval: 'month'
+                    })
+                ]
+            });
+
+            const {container} = setup({site, member});
+
+            expect(container.querySelector('[data-test-button="change-plan"]')).toBeInTheDocument();
+        });
+
+        test('still renders "Change" for a regular paid member on a free-only site', () => {
+            // Paid members keep the Change button even when no paid plans are
+            // exposed in Portal — the upgrade page is the only place they can
+            // see the contact-publisher message.
+            const site = buildFreeOnlySite();
+            const member = getMemberData({
+                paid: true,
+                subscriptions: [
+                    getSubscriptionData({
+                        status: 'active',
+                        amount: 500,
+                        currency: 'USD',
+                        interval: 'month'
+                    })
+                ]
+            });
+
+            const {container} = setup({site, member});
+
+            expect(container.querySelector('[data-test-button="change-plan"]')).toBeInTheDocument();
+        });
+
+        test('renders "Change" for a comped member when paid plans are available', () => {
+            const {site} = buildPaidSite();
+            const member = getMemberData({
+                paid: true,
+                status: 'comped',
+                subscriptions: [
+                    getSubscriptionData({
+                        status: 'active',
+                        amount: 0,
+                        currency: 'USD',
+                        interval: 'month'
+                    })
+                ]
+            });
+
+            const {container} = setup({site, member});
+
+            expect(container.querySelector('[data-test-button="change-plan"]')).toBeInTheDocument();
+            expect(container.querySelector('[data-test-button="continue-gift-subscription"]')).not.toBeInTheDocument();
+        });
+
+        test('still renders "Change" for a comped member on a free-only site', () => {
+            // Comped members keep the Change button so they can reach the
+            // upgrade page and see the contact-publisher message.
+            const site = buildFreeOnlySite();
+            const member = getMemberData({
+                paid: true,
+                status: 'comped',
+                subscriptions: [
+                    getSubscriptionData({
+                        status: 'active',
+                        amount: 0,
+                        currency: 'USD',
+                        interval: 'month'
+                    })
+                ]
+            });
+
+            const {container} = setup({site, member});
+
+            expect(container.querySelector('[data-test-button="change-plan"]')).toBeInTheDocument();
+        });
+
+        test('renders nothing for a free member', () => {
+            // Free members have no subscription and aren't complimentary, so
+            // PaidAccountActions short-circuits before PlanUpdateButton is reached.
+            const {site} = buildPaidSite();
+            const member = getMemberData({
+                paid: false,
+                status: 'free',
+                subscriptions: []
+            });
+
+            const {container} = setup({site, member});
+
+            expect(container.querySelector('[data-test-button="change-plan"]')).not.toBeInTheDocument();
+            expect(container.querySelector('[data-test-button="continue-gift-subscription"]')).not.toBeInTheDocument();
+            expect(container.querySelector('[data-test-button="manage-billing"]')).not.toBeInTheDocument();
         });
     });
 

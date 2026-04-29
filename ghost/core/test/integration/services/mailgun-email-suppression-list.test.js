@@ -5,6 +5,7 @@ const DomainEvents = require('@tryghost/domain-events');
 
 const MailgunClient = require('../../../core/server/services/lib/mailgun-client');
 const emailAnalytics = require('../../../core/server/services/email-analytics');
+const models = require('../../../core/server/models');
 
 describe('MailgunEmailSuppressionList', function () {
     let agent;
@@ -12,7 +13,7 @@ describe('MailgunEmailSuppressionList', function () {
 
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
-        await fixtureManager.init('newsletters', 'members:newsletters', 'members:emails');
+        await fixtureManager.init('newsletters', 'members:newsletters', 'members:emails:failed');
         await agent.loginAsOwner();
 
         sinon.stub(MailgunClient.prototype, 'fetchEvents').callsFake(async function (_, batchHandler) {
@@ -170,6 +171,46 @@ describe('MailgunEmailSuppressionList', function () {
         const {body: {members: [memberAfter]}} = await agent.get(`/members/${memberId}`);
         assert.equal(memberAfter.email_suppression.suppressed, true, 'The member should have a suppressed email');
         assert.equal(memberAfter.email_suppression.info.reason, 'spam');
+    });
+
+    it('Sets email_disabled on the member when a suppression record already exists (ONC-1640)', async function () {
+        // Regression test: if a Suppression record already exists for the address
+        // (e.g. from a deleted previous member), a bounce event for a new member
+        // with the same address used to silently ER_DUP_ENTRY and never dispatch
+        // EmailSuppressedEvent, leaving the member with email_disabled=false forever.
+        const emailBatch = fixtureManager.get('email_batches', 0);
+        const emailRecipient = fixtureManager.get('email_recipients', 5);
+        assert(emailRecipient.batch_id === emailBatch.id);
+        const memberId = emailRecipient.member_id;
+        const providerId = emailBatch.provider_id;
+        const recipient = emailRecipient.member_email;
+        const timestamp = new Date(2000, 0, 1);
+
+        await models.Suppression.add({
+            email: recipient,
+            email_id: emailBatch.email_id,
+            reason: 'bounce',
+            created_at: new Date(1999, 0, 1)
+        });
+
+        const memberBefore = await models.Member.findOne({id: memberId}, {require: true});
+        assert.equal(memberBefore.get('email_disabled'), false, 'Test setup: the member should start with email_disabled=false');
+
+        events = [createPermanentFailedEvent({
+            errorCode: 605,
+            providerId,
+            timestamp,
+            recipient
+        })];
+
+        await emailAnalytics.fetchLatestOpenedEvents();
+        await DomainEvents.allSettled();
+
+        const memberAfter = await models.Member.findOne({id: memberId}, {require: true});
+        assert.equal(memberAfter.get('email_disabled'), true, 'Member should be disabled even when the Suppression record already existed');
+
+        // Clean up so subsequent tests using this email aren't affected
+        await models.Suppression.destroy({destroyBy: {email: recipient}});
     });
 });
 

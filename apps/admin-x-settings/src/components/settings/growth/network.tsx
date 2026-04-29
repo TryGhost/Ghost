@@ -81,7 +81,7 @@ const Network: React.FC<{ keywords: string[] }> = ({keywords}) => {
                                 <Icon name='info' size={16} />
                                 <div className='-mt-0.5'>
                                     {isDisabledByPrivateMode
-                                        ? <>Network is automatically disabled while your site is in <span className='cursor-pointer text-green' onClick={() => updateRoute('locksite')}>private mode</span></>
+                                        ? <>Network is automatically disabled while your site is in <span className='cursor-pointer text-green' onClick={() => updateRoute('members')}>private mode</span></>
                                         : <>You need to configure a supported custom domain to use this feature. <a className='text-green' href="https://ghost.org/help/social-web/#custom-domain-required" rel="noopener noreferrer" target="_blank">Help &rarr;</a></>
                                     }
                                 </div>

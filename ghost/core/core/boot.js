@@ -16,11 +16,20 @@ const debug = require('@tryghost/debug')('boot');
  * Helper class to create consistent log messages
  */
 class BootLogger {
+    /**
+     * @param {{info: (message: string) => unknown}} logging
+     * @param {{metric: (name: string, time: number) => unknown}} metrics
+     * @param {number} startTime
+     */
     constructor(logging, metrics, startTime) {
         this.logging = logging;
         this.metrics = metrics;
         this.startTime = startTime;
     }
+    /**
+     * @param {string} message
+     * @returns {void}
+     */
     log(message) {
         let {logging, startTime} = this;
         logging.info(`Ghost ${message} in ${(Date.now() - startTime) / 1000}s`);
@@ -28,6 +37,7 @@ class BootLogger {
     /**
      * @param {string} name
      * @param {number} [initialTime]
+     * @returns {void}
      */
     metric(name, initialTime) {
         let {metrics, startTime} = this;
@@ -161,7 +171,7 @@ async function initCore({ghostServer, config, frontend}) {
 /**
  * These are services required by Ghost's frontend.
  * @param {object} options
- * @param {object} options.bootLogger
+ * @param {BootLogger} options.bootLogger
 
  */
 async function initServicesForFrontend({bootLogger}) {
@@ -349,12 +359,12 @@ async function initServices() {
     const urlUtils = require('./shared/url-utils');
 
     // Initialize things that other services depend on first.
+    emailAddressService.init();
     const apiUrl = urlUtils.urlFor('api', {type: 'admin'}, true);
     const schedulerAdapter = createSchedulerAdapter();
     const [schedulerIntegration] = await Promise.all([
         getSchedulerIntegration(),
-        stripe.init(),
-        emailAddressService.init()
+        stripe.init()
     ]);
 
     await Promise.all([
@@ -388,7 +398,11 @@ async function initServices() {
         recommendationsService.init(),
         statsService.init(),
         explorePingService.init(),
-        giftService.init(),
+        giftService.init({
+            apiUrl,
+            schedulerAdapter,
+            schedulerIntegration
+        }),
         new WelcomeEmailAutomationsService().init({
             domainEvents,
             apiUrl,
