@@ -232,8 +232,8 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Fetch main branch
-        run: git fetch --no-tags origin main
+      - name: Fetch PR base branch
+        run: git fetch --no-tags origin "${{ github.event.pull_request.base.ref }}"
 
       - name: Check migration integrity
         env:
