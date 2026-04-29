@@ -25,6 +25,24 @@
       "source": "./.agents",
       "sourceType": "local",
       "computedHash": "f2f9a52e210a32ad42d4bf5826ce7cec265a2c472de03bee3840a5b295d734d7"
+    },
+    "tinybird": {
+      "source": "tinybirdco/tinybird-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tinybird-best-practices/SKILL.md",
+      "computedHash": "9a3ed9630867759e995fd881f488a97bb28c123a9c73a4312305171d0fc86b9a"
+    },
+    "tinybird-cli-guidelines": {
+      "source": "tinybirdco/tinybird-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tinybird-cli-guidelines/SKILL.md",
+      "computedHash": "8d36a5e33cecfb092fd0fb194140a248d3901de10b5b7d03e4e60a9942f0a930"
+    },
+    "tinybird-typescript-sdk-guidelines": {
+      "source": "tinybirdco/tinybird-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tinybird-typescript-sdk-guidelines/SKILL.md",
+      "computedHash": "b05e3924ea0f220fea4bb98bc0c3cdb7317384c4e8e40809dcf7e6c999bff351"
     }
   }
 }
