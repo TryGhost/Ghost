@@ -1,24 +1,26 @@
 import MainLayout from '@components/layout/main-layout';
 import React from 'react';
 import {Automation, AutomationStatus, mockAutomations} from './mock-data';
-import {Badge, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
 import {Header} from '@tryghost/shade/primitives';
+import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
 import {useNavigate} from '@tryghost/admin-x-framework';
 import {useVersionLink} from '../../use-version-link';
 
-function statusVariant(status: AutomationStatus): 'default' | 'outline' {
-    if (status === 'active') {
-        return 'default';
+const StatusPill: React.FC<{status: AutomationStatus}> = ({status}) => {
+    if (status === 'live') {
+        return (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
+                <span className="size-1.5 rounded-full bg-green-500" />
+                LIVE
+            </span>
+        );
     }
-    return 'outline';
-}
-
-function statusLabel(status: AutomationStatus): string {
-    if (status === 'active') {
-        return 'Published';
-    }
-    return status;
-}
+    return (
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-grey-100 px-2 py-0.5 text-xs font-medium text-grey-700">
+            OFF
+        </span>
+    );
+};
 
 function formatUpdated(iso: string): string {
     return new Date(iso).toLocaleDateString(undefined, {year: 'numeric', month: 'short', day: 'numeric'});
@@ -35,12 +37,7 @@ const AutomationRow: React.FC<{automation: Automation}> = ({automation}) => {
                 <div className="text-muted-foreground">{automation.description}</div>
             </TableCell>
             <TableCell className="p-4">
-                <Badge
-                    className={`capitalize ${automation.status === 'active' ? 'bg-green-100 text-green-800 hover:bg-green-100' : ''}`}
-                    variant={statusVariant(automation.status)}
-                >
-                    {statusLabel(automation.status)}
-                </Badge>
+                <StatusPill status={automation.status} />
             </TableCell>
             <TableCell className="p-4 text-muted-foreground">
                 {formatUpdated(automation.updatedAt)}

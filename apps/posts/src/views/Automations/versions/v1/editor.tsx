@@ -1,5 +1,6 @@
 import '@xyflow/react/dist/style.css';
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {AutomationStatus, getAutomationById, setAutomationStatus} from './mock-data';
 import {
     Background,
     BaseEdge,
@@ -14,11 +15,9 @@ import {
     useEdgesState,
     useNodesState
 } from '@xyflow/react';
-import {Button, Checkbox, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Input, Label, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue} from '@tryghost/shade/components';
+import {Button, Checkbox, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Input, Label, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
-import {getAutomationById} from './mock-data';
 import {useNavigate, useParams} from '@tryghost/admin-x-framework';
-import {useRef} from 'react';
 import {useVersionLink} from '../../use-version-link';
 
 type StepMeta = {icon: React.ElementType; type: string; value?: string};
@@ -62,6 +61,18 @@ const buildNode = (id: string, position: {x: number; y: number}, type?: 'input' 
     };
 };
 
+const buildEmailNode = (id: string, position: {x: number; y: number}, value: string): Node => ({
+    id,
+    position,
+    data: {
+        icon: LucideIcon.Mail,
+        type: 'Send email',
+        value,
+        label: <NodeLabel icon={LucideIcon.Mail} type="Send email" value={value} />
+    },
+    ...nodeDefaults
+});
+
 const initialNodes: Node[] = [
     buildNode('trigger', {x: 240, y: 0}, 'input'),
     buildNode('email-1', {x: 240, y: 180}),
@@ -77,6 +88,24 @@ const initialEdges: Edge[] = [
 
 const TAIL_NODE_ID = '__tail__';
 
+// Per-automation in-memory graph store. Survives navigation within a session.
+type GraphSnapshot = {nodes: Node[]; edges: Edge[]};
+const graphStore = new Map<string, GraphSnapshot>();
+
+const loadGraph = (id: string): GraphSnapshot => {
+    const stored = graphStore.get(id);
+    if (stored) {
+        return {nodes: stored.nodes.map(n => ({...n})), edges: stored.edges.map(e => ({...e}))};
+    }
+    return {nodes: initialNodes.map(n => ({...n})), edges: initialEdges.map(e => ({...e}))};
+};
+
+const saveGraph = (id: string, nodes: Node[], edges: Edge[]): void => {
+    // Strip the tail-only node so it doesn't get persisted as part of the flow
+    const persistedNodes = nodes.filter(n => n.id !== TAIL_NODE_ID).map(n => ({...n}));
+    graphStore.set(id, {nodes: persistedNodes, edges: edges.filter(e => e.target !== TAIL_NODE_ID).map(e => ({...e}))});
+};
+
 type AddStepOption = {id: string; icon: React.ElementType; title: string; description: string};
 
 const addStepOptions: AddStepOption[] = [
@@ -84,7 +113,11 @@ const addStepOptions: AddStepOption[] = [
     {id: 'delay', icon: LucideIcon.Clock, title: 'Delay', description: 'Wait for a time or a date'}
 ];
 
-const AddStepMenu: React.FC<{children: React.ReactNode; disabledIds?: string[]}> = ({children, disabledIds = []}) => (
+const AddStepMenu: React.FC<{
+    children: React.ReactNode;
+    disabledIds?: string[];
+    onSelect?: (kind: string) => void;
+}> = ({children, disabledIds = [], onSelect}) => (
     <DropdownMenu>
         <DropdownMenuTrigger asChild>
             {children}
@@ -93,7 +126,12 @@ const AddStepMenu: React.FC<{children: React.ReactNode; disabledIds?: string[]}>
             {addStepOptions.map(({id, icon: Icon, title, description}) => {
                 const isDisabled = disabledIds.includes(id);
                 return (
-                    <DropdownMenuItem key={id} className="gap-3 py-2" disabled={isDisabled}>
+                    <DropdownMenuItem
+                        key={id}
+                        className="gap-3 py-2"
+                        disabled={isDisabled}
+                        onSelect={() => onSelect?.(id)}
+                    >
                         <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-grey-100 text-grey-700">
                             <Icon className="size-4" />
                         </div>
@@ -108,7 +146,8 @@ const AddStepMenu: React.FC<{children: React.ReactNode; disabledIds?: string[]}>
     </DropdownMenu>
 );
 
-const PlusEdge: React.FC<EdgeProps> = ({source, target, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, style, markerEnd}) => {
+const PlusEdge: React.FC<EdgeProps & {data?: {onAddStep?: (source: string, target: string, kind: string) => void}}> = (props) => {
+    const {source, target, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, style, markerEnd, data} = props;
     const [path, labelX, labelY] = getSmoothStepPath({
         sourceX,
         sourceY,
@@ -121,6 +160,7 @@ const PlusEdge: React.FC<EdgeProps> = ({source, target, sourceX, sourceY, target
     const sourceMeta = stepMeta[source];
     const targetMeta = stepMeta[target];
     const disabledIds = sourceMeta?.type === 'Wait' || targetMeta?.type === 'Wait' ? ['delay'] : [];
+    const onAddStep = data?.onAddStep;
 
     return (
         <>
@@ -132,7 +172,10 @@ const PlusEdge: React.FC<EdgeProps> = ({source, target, sourceX, sourceY, target
                 x={labelX - 10}
                 y={labelY - 10}
             >
-                <AddStepMenu disabledIds={disabledIds}>
+                <AddStepMenu
+                    disabledIds={disabledIds}
+                    onSelect={kind => onAddStep?.(source, target, kind)}
+                >
                     <button
                         aria-label="Add step"
                         className="pointer-events-auto flex size-5 items-center justify-center rounded-full bg-blue-500 text-white opacity-0 shadow-md transition-opacity hover:bg-blue-600"
@@ -311,6 +354,42 @@ const SendEmailStepBody: React.FC<{initialSubject?: string; onEdit: () => void}>
     );
 };
 
+const StepSidebarBody: React.FC<{
+    nodeData: {type: string; value?: string} | undefined;
+    nodeIcon: React.ElementType | undefined;
+    onDelete: () => void;
+    onEditEmail: () => void;
+}> = ({nodeData, nodeIcon: Icon, onDelete, onEditEmail}) => {
+    if (!nodeData || !Icon) {
+        return null;
+    }
+    return (
+        <>
+            <div className="flex items-center gap-2">
+                <div className="flex size-8 items-center justify-center rounded-md bg-grey-100 text-grey-700">
+                    <Icon className="size-4" />
+                </div>
+                <div className="flex flex-col">
+                    <span className="text-xs font-medium text-grey-600">Step</span>
+                    <h2 className="text-base leading-tight font-semibold">{nodeData.type}</h2>
+                </div>
+            </div>
+            {nodeData.type === 'Trigger' && <TriggerStepBody />}
+            {nodeData.type === 'Wait' && <DelayStepBody initialValue={nodeData.value} />}
+            {nodeData.type === 'Send email' && <SendEmailStepBody initialSubject={nodeData.value} onEdit={onEditEmail} />}
+            <div className="mt-auto pt-6">
+                <Button
+                    className="w-full border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700"
+                    variant="outline"
+                    onClick={onDelete}
+                >
+                    <LucideIcon.Trash2 /> Delete step
+                </Button>
+            </div>
+        </>
+    );
+};
+
 const EmailEditorModal: React.FC<{onClose: () => void}> = ({onClose}) => (
     <div className="fixed inset-0 z-[60] flex animate-in flex-col bg-background duration-200 fade-in-0">
         <header className="relative z-10 flex h-14 shrink-0 items-center justify-between bg-background px-4 shadow-sm">
@@ -346,36 +425,32 @@ const EmailEditorModal: React.FC<{onClose: () => void}> = ({onClose}) => (
     </div>
 );
 
-const StepSidebarBody: React.FC<{nodeId: string; onDelete: () => void; onEditEmail: () => void}> = ({nodeId, onDelete, onEditEmail}) => {
-    const meta = stepMeta[nodeId];
-    if (!meta) {
+const StatusPill: React.FC<{status: AutomationStatus}> = ({status}) => {
+    if (status === 'live') {
+        return (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
+                <span className="size-1.5 rounded-full bg-green-500" />
+                LIVE
+            </span>
+        );
+    }
+    return (
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-grey-100 px-2 py-0.5 text-xs font-medium text-grey-700">
+            OFF
+        </span>
+    );
+};
+
+const SaveIndicator: React.FC<{state: 'idle' | 'saving' | 'saved'}> = ({state}) => {
+    if (state === 'idle') {
         return null;
     }
-    const Icon = meta.icon;
     return (
-        <>
-            <div className="flex items-center gap-2">
-                <div className="flex size-8 items-center justify-center rounded-md bg-grey-100 text-grey-700">
-                    <Icon className="size-4" />
-                </div>
-                <div className="flex flex-col">
-                    <span className="text-xs font-medium text-grey-600">Step</span>
-                    <h2 className="text-base leading-tight font-semibold">{meta.type}</h2>
-                </div>
-            </div>
-            {meta.type === 'Trigger' && <TriggerStepBody />}
-            {meta.type === 'Wait' && <DelayStepBody initialValue={meta.value} />}
-            {meta.type === 'Send email' && <SendEmailStepBody initialSubject={meta.value} onEdit={onEditEmail} />}
-            <div className="mt-auto pt-6">
-                <Button
-                    className="w-full border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700"
-                    variant="outline"
-                    onClick={onDelete}
-                >
-                    <LucideIcon.Trash2 /> Delete step
-                </Button>
-            </div>
-        </>
+        <span className="flex items-center gap-1 text-xs text-grey-600">
+            {state === 'saving' && <LucideIcon.Loader2 className="size-3 animate-spin" />}
+            {state === 'saved' && <LucideIcon.Check className="size-3" />}
+            {state === 'saving' ? 'Saving…' : 'Saved'}
+        </span>
     );
 };
 
@@ -387,25 +462,143 @@ const V1Editor: React.FC = () => {
     const {id} = useParams<{id: string}>();
     const automation = id ? getAutomationById(id) : undefined;
     const title = automation?.name ?? 'Automation';
-    const isDraft = automation?.status === 'draft';
     const canvasRef = useRef<HTMLDivElement>(null);
 
-    const [nodes, setNodes, onNodesChange] = useNodesState<Node>(initialNodes);
-    const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
+    const [status, setStatus] = useState<AutomationStatus>(automation?.status ?? 'off');
+    const [isDirty, setIsDirty] = useState(false);
+    const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle');
+    const [publishing, setPublishing] = useState(false);
+    const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const initialGraph = useMemo(() => (id ? loadGraph(id) : {nodes: initialNodes, edges: initialEdges}), [id]);
+    const [nodes, setNodes, onNodesChange] = useNodesState<Node>(initialGraph.nodes);
+    const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialGraph.edges);
     const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
     const [emailEditorOpen, setEmailEditorOpen] = useState(false);
+    const [turnOffOpen, setTurnOffOpen] = useState(false);
+    const [discardOpen, setDiscardOpen] = useState(false);
+
+    useEffect(() => () => {
+        if (saveTimeoutRef.current) {
+            clearTimeout(saveTimeoutRef.current);
+        }
+    }, []);
+
     const onConnect = useCallback(
         (connection: Connection) => setEdges(eds => addEdge(connection, eds)),
         [setEdges]
     );
 
-    const goBack = () => navigate(toVersioned('/automations'));
+    const triggerSaveIndicator = () => {
+        if (saveTimeoutRef.current) {
+            clearTimeout(saveTimeoutRef.current);
+        }
+        setSaveState('saving');
+        saveTimeoutRef.current = setTimeout(() => setSaveState('saved'), 600);
+    };
+
+    const handleAddStep = (sourceId: string, targetId: string, kind: string) => {
+        if (kind !== 'email' || !id) {
+            return;
+        }
+        const newId = `email-${Date.now()}`;
+        const sourceNode = nodes.find(n => n.id === sourceId);
+        const targetNode = nodes.find(n => n.id === targetId);
+        if (!sourceNode || !targetNode) {
+            return;
+        }
+        const insertY = sourceNode.position.y + 180;
+        const newNode = buildEmailNode(newId, {x: 240, y: insertY}, 'New email');
+
+        const nextNodes = nodes.map((n) => {
+            if (n.position.y >= insertY) {
+                return {...n, position: {x: n.position.x, y: n.position.y + 180}};
+            }
+            return n;
+        });
+        nextNodes.push(newNode);
+
+        const nextEdges = edges
+            .filter(e => !(e.source === sourceId && e.target === targetId))
+            .concat([
+                {id: `e-${Date.now()}-a`, source: sourceId, target: newId},
+                {id: `e-${Date.now()}-b`, source: newId, target: targetId}
+            ]);
+
+        setNodes(nextNodes);
+        setEdges(nextEdges);
+
+        if (status === 'off') {
+            saveGraph(id, nextNodes, nextEdges);
+            triggerSaveIndicator();
+        } else {
+            setIsDirty(true);
+        }
+    };
+
+    const handlePublish = () => {
+        if (!id) {
+            return;
+        }
+        setPublishing(true);
+        setTimeout(() => {
+            saveGraph(id, nodes, edges);
+            setAutomationStatus(id, 'live');
+            setStatus('live');
+            setIsDirty(false);
+            setPublishing(false);
+        }, 800);
+    };
+
+    const handlePublishChanges = () => {
+        if (!id) {
+            return;
+        }
+        setPublishing(true);
+        setTimeout(() => {
+            saveGraph(id, nodes, edges);
+            setIsDirty(false);
+            setPublishing(false);
+        }, 800);
+    };
+
+    const handleConfirmTurnOff = () => {
+        if (!id) {
+            return;
+        }
+        setAutomationStatus(id, 'off');
+        setStatus('off');
+        setIsDirty(false);
+        setTurnOffOpen(false);
+    };
+
+    const handleConfirmDiscard = () => {
+        if (!id) {
+            setDiscardOpen(false);
+            navigate(toVersioned('/automations'));
+            return;
+        }
+        const stored = loadGraph(id);
+        setNodes(stored.nodes);
+        setEdges(stored.edges);
+        setIsDirty(false);
+        setDiscardOpen(false);
+        navigate(toVersioned('/automations'));
+    };
+
+    const handleBack = () => {
+        if (status === 'live' && isDirty) {
+            setDiscardOpen(true);
+            return;
+        }
+        navigate(toVersioned('/automations'));
+    };
 
     const workflowNodes: Node[] = (() => {
         if (nodes.length === 0) {
             return nodes;
         }
-        const last = nodes[nodes.length - 1];
+        const last = [...nodes].sort((a, b) => b.position.y - a.position.y)[0];
         return [...nodes, {
             id: TAIL_NODE_ID,
             position: {x: 240, y: last.position.y + 180},
@@ -416,46 +609,70 @@ const V1Editor: React.FC = () => {
         }];
     })();
 
-    const workflowEdges: Edge[] = (() => {
+    const workflowEdges: Edge[] = useMemo(() => {
+        const decoratedEdges = edges.map(e => ({
+            ...e,
+            data: {...e.data, onAddStep: handleAddStep}
+        }));
         if (nodes.length === 0) {
-            return edges;
+            return decoratedEdges;
         }
-        const last = nodes[nodes.length - 1];
-        return [...edges, {
+        const last = [...nodes].sort((a, b) => b.position.y - a.position.y)[0];
+        return [...decoratedEdges, {
             id: 'e-tail',
             source: last.id,
             target: TAIL_NODE_ID,
             type: 'smooth',
             style: {stroke: 'var(--color-grey-500)'}
         }];
-    })();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [edges, nodes, status, isDirty]);
+
+    const selectedNode = selectedNodeId ? nodes.find(n => n.id === selectedNodeId) : null;
+    const selectedNodeData = selectedNode?.data as {type: string; value?: string; icon?: React.ElementType} | undefined;
 
     return (
         <div className="fixed inset-0 z-50 flex flex-col bg-background">
             <header className="relative z-10 flex h-14 shrink-0 items-center justify-between bg-background px-4 shadow-sm">
                 <div className="flex items-center gap-3">
-                    <Button aria-label="Back to automations" size="icon" variant="ghost" onClick={goBack}>
+                    <Button aria-label="Back to automations" size="icon" variant="ghost" onClick={handleBack}>
                         <LucideIcon.ArrowLeft strokeWidth={2} />
                     </Button>
                     <span className="font-medium">{title}</span>
+                    <StatusPill status={status} />
                 </div>
-                <div className="flex items-center gap-2">
-                    {!isDraft && (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button aria-label="More actions" size="icon" variant="ghost">
-                                    <LucideIcon.MoreHorizontal strokeWidth={2} />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem>
-                                    <LucideIcon.Undo2 /> Revert to draft
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                <div className="flex items-center gap-3">
+                    {status === 'off' && <SaveIndicator state={saveState} />}
+                    {status === 'off' && (
+                        <Button disabled={publishing} onClick={handlePublish}>
+                            {publishing ? <LucideIcon.Loader2 className="size-4 animate-spin" strokeWidth={2.5} /> : 'Publish'}
+                        </Button>
                     )}
-                    <Button variant="outline" onClick={goBack}>Cancel</Button>
-                    <Button onClick={goBack}>{isDraft ? 'Publish' : 'Publish changes'}</Button>
+                    {status === 'live' && (
+                        <>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button aria-label="More actions" size="icon" variant="ghost">
+                                        <LucideIcon.MoreHorizontal strokeWidth={2} />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onSelect={() => setTurnOffOpen(true)}>
+                                        <LucideIcon.Power /> Turn off
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            {publishing ? (
+                                <Button disabled>
+                                    <LucideIcon.Loader2 className="size-4 animate-spin" strokeWidth={2.5} />
+                                </Button>
+                            ) : isDirty ? (
+                                <Button onClick={handlePublishChanges}>Publish changes</Button>
+                            ) : (
+                                <Button variant="outline" disabled>Published</Button>
+                            )}
+                        </>
+                    )}
                 </div>
             </header>
             <style>{`
@@ -501,12 +718,21 @@ const V1Editor: React.FC = () => {
                 {selectedNodeId && (
                     <SidebarShell>
                         <StepSidebarBody
-                            nodeId={selectedNodeId}
+                            nodeData={selectedNodeData}
+                            nodeIcon={selectedNodeData?.icon}
                             onDelete={() => {
                                 const targetId = selectedNodeId;
-                                setNodes(curr => curr.filter(n => n.id !== targetId));
-                                setEdges(curr => curr.filter(e => e.source !== targetId && e.target !== targetId));
+                                const nextNodes = nodes.filter(n => n.id !== targetId);
+                                const nextEdges = edges.filter(e => e.source !== targetId && e.target !== targetId);
+                                setNodes(nextNodes);
+                                setEdges(nextEdges);
                                 setSelectedNodeId(null);
+                                if (id && status === 'off') {
+                                    saveGraph(id, nextNodes, nextEdges);
+                                    triggerSaveIndicator();
+                                } else if (status === 'live') {
+                                    setIsDirty(true);
+                                }
                             }}
                             onEditEmail={() => setEmailEditorOpen(true)}
                         />
@@ -514,6 +740,36 @@ const V1Editor: React.FC = () => {
                 )}
             </div>
             {emailEditorOpen && <EmailEditorModal onClose={() => setEmailEditorOpen(false)} />}
+            <Dialog open={turnOffOpen} onOpenChange={setTurnOffOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Turn off this automation?</DialogTitle>
+                        <DialogDescription>It will stop running until you turn it back on.</DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setTurnOffOpen(false)}>Cancel</Button>
+                        <Button onClick={handleConfirmTurnOff}>Turn off</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+            <Dialog open={discardOpen} onOpenChange={setDiscardOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Discard changes?</DialogTitle>
+                        <DialogDescription>You have unpublished changes that will be lost.</DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setDiscardOpen(false)}>Cancel</Button>
+                        <Button
+                            className="border-red-500 text-red-600 hover:bg-red-50 hover:text-red-700"
+                            variant="outline"
+                            onClick={handleConfirmDiscard}
+                        >
+                            Discard
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 };
