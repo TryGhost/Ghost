@@ -36,7 +36,7 @@ class MembersStatsService {
      * Get the member deltas by status for all days, sorted ascending
      * @param {Object} options
      * @param {string|Date} [options.startDate] - Start date for fetching deltas (ISO format or Date object, defaults to 91 days ago)
-     * @returns {Promise<MemberStatusDelta[]>} The deltas of paid, free and comped users per day, sorted ascending
+     * @returns {Promise<MemberStatusDelta[]>} The deltas of paid, free, comped and gift users per day, sorted ascending
      */
     async fetchAllStatusDeltas(options = {}) {
         const knex = this.knex;
