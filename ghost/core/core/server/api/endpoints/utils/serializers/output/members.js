@@ -270,7 +270,7 @@ function createSerializer(debugString, serialize) {
  * @prop {number} email_opened_count
  * @prop {number} email_open_rate
  * @prop {null|SerializedEmailRecipient[]} email_recipients
- * @prop {'free'|'paid'|'comped'} status
+ * @prop {'free'|'paid'|'comped'|'gift'} status
  * @prop {boolean} can_comment
  * @prop {null|{disabled: boolean, disabled_reason: string, disabled_until: string|null}} commenting
  */
