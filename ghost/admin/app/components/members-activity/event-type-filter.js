@@ -25,7 +25,7 @@ export default class MembersActivityEventTypeFilter extends Component {
 
     @action
     toggleEventType(eventType) {
-        const newExcludedEvents = toggleEventType(eventType, this.eventTypes);
+        const newExcludedEvents = toggleEventType(eventType, this.args.excludedEvents);
         this.args.onChange(newExcludedEvents || null);
     }
 }

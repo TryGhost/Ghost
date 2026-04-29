@@ -400,6 +400,36 @@ describe('welcome email automations poll', function () {
         assert.equal(updatedRun.step_attempts, 0);
     });
 
+    it('bails if the automation is disabled', async function () {
+        const automation = await createAutomation({
+            status: 'inactive'
+        });
+        const automatedEmail = await createAutomatedEmail({
+            welcome_email_automation_id: automation.id
+        });
+        const member = await createMember();
+        const run = await createRun({
+            welcome_email_automation_id: automation.id,
+            member_id: member.id,
+            next_welcome_email_automated_email_id: automatedEmail.id,
+            ready_at: new Date(Date.now() - 1000)
+        });
+
+        await poll(options);
+
+        sinon.assert.notCalled(options.memberWelcomeEmailService.api.send);
+        sinon.assert.notCalled(options.enqueueAnotherPollNow);
+        sinon.assert.notCalled(options.enqueueAnotherPollAt);
+        assert.deepEqual(await readTrackedRecipients(), []);
+
+        const updatedRun = await readRun(run.id);
+        assert.equal(updatedRun.exit_reason, 'automation disabled');
+        assert.equal(updatedRun.next_welcome_email_automated_email_id, null);
+        assert.equal(updatedRun.ready_at, null);
+        assert.equal(updatedRun.step_started_at, null);
+        assert.equal(updatedRun.step_attempts, 0);
+    });
+
     it('does not send email if member is deleted mid-run (race condition)', async function () {
         const automation = await createAutomation();
         const automatedEmail = await createAutomatedEmail({
