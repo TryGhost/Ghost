@@ -73,10 +73,7 @@ const initMembersCSVImporter = ({stripeAPIService}) => {
 
             return null;
         },
-        getGiftService: async () => {
-            await giftService.init();
-            return giftService.service;
-        },
+        getGiftService: () => giftService.service,
         sendEmail: ghostMailer.send.bind(ghostMailer),
         isSet: flag => labsService.isSet(flag),
         addJob: jobsService.addJob.bind(jobsService),
