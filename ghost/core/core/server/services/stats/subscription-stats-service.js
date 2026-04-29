@@ -14,7 +14,12 @@ class SubscriptionStatsService {
     async getSubscriptionHistory() {
         const paidDeltas = await this.fetchAllSubscriptionDeltas();
         const giftDeltas = await this.fetchAllGiftDeltas();
-        const subscriptionDeltaEntries = paidDeltas.concat(giftDeltas);
+        // The loop below walks deltas backwards to roll the running `count`
+        // back through history, so the merged array must be in ascending
+        // date order for those snapshots to be correct.
+        const subscriptionDeltaEntries = paidDeltas.concat(giftDeltas).sort((a, b) => {
+            return moment(a.date).valueOf() - moment(b.date).valueOf();
+        });
         const counts = await this.fetchSubscriptionCounts();
 
         /** @type {Object.<string, Object.<string, number>>} */
