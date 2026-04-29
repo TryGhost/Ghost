@@ -76,20 +76,21 @@ describe('Cache-Control middleware', function () {
 
         await runMiddleware(publicCC);
         sinon.assert.calledOnce(res.set);
-        sinon.assert.calledWith(res.set, {'Cache-Control': 'public, max-age=0'});
+        sinon.assert.calledWith(res.set.getCall(0), {'Cache-Control': 'public, max-age=0'});
 
         await runMiddleware(privateCC);
         sinon.assert.calledTwice(res.set);
-        sinon.assert.calledWith(res.set, {
+        sinon.assert.calledWith(res.set.getCall(1), {
             'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
         });
 
         await runMiddleware(publicCC);
         sinon.assert.calledThrice(res.set);
-        sinon.assert.calledWith(res.set, {'Cache-Control': 'public, max-age=0'});
+        sinon.assert.calledWith(res.set.getCall(2), {'Cache-Control': 'public, max-age=0'});
 
         await runMiddleware(privateCC);
-        sinon.assert.calledWith(res.set, {
+        sinon.assert.callCount(res.set, 4);
+        sinon.assert.calledWith(res.set.getCall(3), {
             'Cache-Control': 'no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'
         });
     });
