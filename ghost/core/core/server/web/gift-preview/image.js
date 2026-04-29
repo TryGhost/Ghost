@@ -44,14 +44,15 @@ function getBackgroundColor(accentColor) {
     return `rgb(${blend(r)}, ${blend(g)}, ${blend(b)})`;
 }
 
-function buildSvg({tierName, cadenceLabel, accentColor}) {
-    const displayTier = tierName.length > 30 ? tierName.slice(0, 28) + '...' : tierName;
+function buildSvg({accentColor}) {
     const bgColor = getBackgroundColor(accentColor);
+    const escapedAccentColor = escapeXml(accentColor);
 
     // Gift box icon from Portal (apps/portal/src/images/icons/gift.svg)
-    // Original viewBox 0 0 24 24, scaled 4x and centered at x=600
+    // Original viewBox 0 0 24 24, scaled and centered in the seal.
     const giftIcon = `
-        <g transform="translate(552, 145) scale(4)" fill="none" stroke="${escapeXml(accentColor)}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <g transform="translate(564, 279) scale(3)" fill="none" stroke="#FFFFFF"
+            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="8" width="18" height="4" rx="1"/>
             <path d="M12 8v13"/>
             <path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/>
@@ -62,37 +63,27 @@ function buildSvg({tierName, cadenceLabel, accentColor}) {
 
     return `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
-    <!-- Background: accent color at 6% opacity over white -->
     <rect width="1200" height="630" fill="${bgColor}"/>
 
+    <rect x="0" y="303" width="1200" height="24" fill="${escapedAccentColor}"/>
+    <rect x="588" y="0" width="24" height="630" fill="${escapedAccentColor}"/>
+
+    <circle cx="600" cy="315" r="70" fill="${bgColor}"/>
+    <circle cx="600" cy="315" r="58" fill="${escapedAccentColor}"/>
+
     ${giftIcon}
-
-    <!-- GIFT MEMBERSHIP label -->
-    <text x="600" y="303" text-anchor="middle"
-          font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700"
-          letter-spacing="2" fill="${escapeXml(accentColor)}">GIFT MEMBERSHIP</text>
-
-    <!-- Main heading -->
-    <text x="600" y="380" text-anchor="middle"
-          font-family="Arial, Helvetica, sans-serif" font-size="54" font-weight="800"
-          letter-spacing="-1" fill="#15171A">You&#x2019;ve been gifted a membership</text>
-
-    <!-- Tier and duration -->
-    <text x="600" y="445" text-anchor="middle"
-          font-family="Arial, Helvetica, sans-serif" font-size="36"
-          fill="#666666"><tspan font-weight="700">${escapeXml(displayTier)}</tspan> &#x00B7; ${escapeXml(cadenceLabel)}</text>
 </svg>`;
 }
 
-async function generateGiftPreviewImage({tierName, cadenceLabel, accentColor}) {
-    const cacheKey = `${tierName}:${cadenceLabel}:${accentColor}`;
+async function generateGiftPreviewImage({accentColor}) {
+    const cacheKey = accentColor;
 
     if (cache.has(cacheKey)) {
         return cache.get(cacheKey);
     }
 
     const imageTransform = require('@tryghost/image-transform');
-    const svg = buildSvg({tierName, cadenceLabel, accentColor});
+    const svg = buildSvg({accentColor});
     const image = await imageTransform.resizeFromBuffer(Buffer.from(svg), {
         width: 1200,
         format: 'png',

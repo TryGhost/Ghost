@@ -5,14 +5,12 @@ const labs = require('../../../../../core/shared/labs');
 const urlUtils = require('../../../../../core/shared/url-utils');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const giftServiceWrapper = require('../../../../../core/server/services/gifts');
-const tiersService = require('../../../../../core/server/services/tiers');
 
 const controller = require('../../../../../core/server/web/gift-preview/controller');
 
 describe('Gift Preview Controller', function () {
     let req;
     let res;
-    let originalTiersServiceAPI;
     let originalGiftService;
 
     beforeEach(function () {
@@ -27,7 +25,6 @@ describe('Gift Preview Controller', function () {
             sendStatus: sinon.stub(),
             set: sinon.stub()
         };
-        originalTiersServiceAPI = tiersService.api;
         originalGiftService = giftServiceWrapper.service;
 
         sinon.stub(urlUtils, 'getSiteUrl').returns('https://example.com/');
@@ -37,7 +34,6 @@ describe('Gift Preview Controller', function () {
     });
 
     afterEach(function () {
-        tiersService.api = originalTiersServiceAPI;
         giftServiceWrapper.service = originalGiftService;
 
         sinon.restore();
@@ -65,25 +61,6 @@ describe('Gift Preview Controller', function () {
             sinon.assert.calledWith(res.redirect, 302, 'https://example.com/');
         });
 
-        it('redirects to homepage when tier lookup fails', async function () {
-            sinon.stub(labs, 'isSet').withArgs('giftSubscriptions').returns(true);
-            giftServiceWrapper.service = {
-                getByToken: sinon.stub().resolves({
-                    tierId: 'tier_1',
-                    cadence: 'year',
-                    duration: 1
-                })
-            };
-            tiersService.api = {
-                read: sinon.stub().rejects(new Error('Tier not found'))
-            };
-
-            await controller.giftPreview(req, res);
-
-            sinon.assert.calledOnce(res.redirect);
-            sinon.assert.calledWith(res.redirect, 302, 'https://example.com/');
-        });
-
         it('returns HTML with OG tags for a valid gift', async function () {
             sinon.stub(labs, 'isSet').withArgs('giftSubscriptions').returns(true);
             giftServiceWrapper.service = {
@@ -93,9 +70,6 @@ describe('Gift Preview Controller', function () {
                     duration: 1
                 })
             };
-            tiersService.api = {
-                read: sinon.stub().resolves({name: 'Gold'})
-            };
 
             await controller.giftPreview(req, res);
 
@@ -104,10 +78,14 @@ describe('Gift Preview Controller', function () {
             sinon.assert.calledOnce(res.send);
 
             const html = res.send.firstCall.args[0];
+            const expectedTitle = '<meta property="og:title" content="You\'ve been gifted 1 year of Test Blog">';
+            const expectedDescription = '<meta property="og:description" content="' +
+                'Open this link to redeem your gift.">';
+            const expectedImage = '<meta property="og:image" content="https://example.com/gift/test-token-123/image">';
 
-            assert.ok(html.includes('<meta property="og:title" content="A gift membership to Test Blog">'));
-            assert.ok(html.includes('<meta property="og:description" content="Gold \u00B7 1 year">'));
-            assert.ok(html.includes('<meta property="og:image" content="https://example.com/gift/test-token-123/image">'));
+            assert.ok(html.includes(expectedTitle));
+            assert.ok(html.includes(expectedDescription));
+            assert.ok(html.includes(expectedImage));
             assert.ok(html.includes('<meta property="og:url" content="https://example.com/gift/test-token-123">'));
             assert.ok(html.includes('content="0;url=https://example.com/#/portal/gift/redeem/test-token-123"'));
         });
@@ -121,9 +99,6 @@ describe('Gift Preview Controller', function () {
                     cadence: 'month',
                     duration: 3
                 })
-            };
-            tiersService.api = {
-                read: sinon.stub().resolves({name: 'Silver'})
             };
 
             await controller.giftPreview(req, res);
@@ -143,15 +118,13 @@ describe('Gift Preview Controller', function () {
                     duration: 3
                 })
             };
-            tiersService.api = {
-                read: sinon.stub().resolves({name: 'Bronze'})
-            };
 
             await controller.giftPreview(req, res);
 
             const html = res.send.firstCall.args[0];
 
-            assert.ok(html.includes('Bronze \u00B7 3 months'));
+            assert.ok(html.includes('You\'ve been gifted 3 months of Test Blog'));
+            assert.ok(html.includes('Open this link to redeem your gift.'));
         });
 
         it('defaults site title to Ghost', async function () {
@@ -164,52 +137,18 @@ describe('Gift Preview Controller', function () {
                     duration: 1
                 })
             };
-            tiersService.api = {
-                read: sinon.stub().resolves({name: 'Premium'})
-            };
 
             await controller.giftPreview(req, res);
 
             const html = res.send.firstCall.args[0];
 
-            assert.ok(html.includes('A gift membership to Ghost'));
+            assert.ok(html.includes('You\'ve been gifted 1 year of Ghost'));
         });
     });
 
     describe('giftPreviewImage', function () {
         it('returns 404 when lab flag is disabled', async function () {
             sinon.stub(labs, 'isSet').withArgs('giftSubscriptions').returns(false);
-
-            await controller.giftPreviewImage(req, res);
-
-            sinon.assert.calledOnce(res.sendStatus);
-            sinon.assert.calledWith(res.sendStatus, 404);
-        });
-
-        it('returns 404 when gift token is invalid', async function () {
-            sinon.stub(labs, 'isSet').withArgs('giftSubscriptions').returns(true);
-            giftServiceWrapper.service = {
-                getByToken: sinon.stub().rejects(new Error('Not found'))
-            };
-
-            await controller.giftPreviewImage(req, res);
-
-            sinon.assert.calledOnce(res.sendStatus);
-            sinon.assert.calledWith(res.sendStatus, 404);
-        });
-
-        it('returns 404 when tier lookup fails', async function () {
-            sinon.stub(labs, 'isSet').withArgs('giftSubscriptions').returns(true);
-            giftServiceWrapper.service = {
-                getByToken: sinon.stub().resolves({
-                    tierId: 'tier_1',
-                    cadence: 'year',
-                    duration: 1
-                })
-            };
-            tiersService.api = {
-                read: sinon.stub().rejects(new Error('Tier not found'))
-            };
 
             await controller.giftPreviewImage(req, res);
 
