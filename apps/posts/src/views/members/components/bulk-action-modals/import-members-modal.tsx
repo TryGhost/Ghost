@@ -1,12 +1,13 @@
 import {CompleteStep, ErrorStep, InitStep, MappingStep, ProcessingStep} from './import-members/components';
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from '@tryghost/shade/components';
 import {type ImportResponse} from './import-members/state';
-import {MembersFieldMapping, detectFieldTypes} from './import-members/mapping';
+import {MembersFieldMapping, detectFieldTypes, getFieldMappings} from './import-members/mapping';
 import {buildImportResponse} from './import-members/upload';
 import {cn} from '@tryghost/shade/utils';
 import {createInitialImportState, importReducer} from './import-members/reducer';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {parseCSV} from './import-members/csv';
+import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useCallback, useEffect, useMemo, useReducer, useRef} from 'react';
 import {useLabelPicker} from '@src/hooks/use-label-picker';
 
@@ -25,6 +26,9 @@ export function ImportMembersModal({
 }: ImportMembersModalProps) {
     const [state, dispatch] = useReducer(importReducer, undefined, createInitialImportState);
     const errorCsvUrlRef = useRef<string | null>(null);
+    const {data: configData} = useBrowseConfig();
+    const importMemberTier = configData?.config?.labs?.importMemberTier === true;
+    const fieldMappings = useMemo(() => getFieldMappings({importMemberTier}), [importMemberTier]);
 
     const labelPicker = useLabelPicker({
         selectedSlugs: state.selectedLabelSlugs,
@@ -79,7 +83,7 @@ export function ImportMembersModal({
                 const data = parseCSV(text);
 
                 if (data.length > 0) {
-                    const detectedMapping = detectFieldTypes(data);
+                    const detectedMapping = detectFieldTypes(data, {importMemberTier});
                     const fieldMapping = new MembersFieldMapping(detectedMapping);
 
                     dispatch({
@@ -131,7 +135,7 @@ export function ImportMembersModal({
                 reader.abort();
             }
         };
-    }, [state.file]);
+    }, [importMemberTier, state.file]);
 
     const validateFile = useCallback((file: File): boolean => {
         const match = /(?:\.([^.]+))?$/.exec(file.name);
@@ -325,6 +329,7 @@ export function ImportMembersModal({
                 {(state.status === 'MAPPING' || state.status === 'UPLOADING') && (
                     <MappingStep
                         dataPreviewIndex={state.dataPreviewIndex}
+                        fieldMappings={fieldMappings}
                         fileData={state.fileData}
                         hasNextRecord={hasNextRecord}
                         hasPrevRecord={hasPrevRecord}
