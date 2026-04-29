@@ -84,12 +84,6 @@ const PaidMembersTooltipContent = ({active, payload, range, color, showBreakdown
                                 <div className="font-mono text-xs">{formatNumber(paidSubscriptions)}</div>
                             </div>
                         </div>
-                        <div className='flex items-center gap-2'>
-                            <div className='flex grow items-center justify-between gap-5'>
-                                <div className="text-sm text-muted-foreground">Complimentary</div>
-                                <div className="font-mono text-xs">{(comped !== undefined && comped > 0) ? (formatNumber(comped)) : '0'}</div>
-                            </div>
-                        </div>
                         {showGift && (
                             <div className='flex items-center gap-2'>
                                 <div className='flex grow items-center justify-between gap-5'>
@@ -98,6 +92,12 @@ const PaidMembersTooltipContent = ({active, payload, range, color, showBreakdown
                                 </div>
                             </div>
                         )}
+                        <div className='flex items-center gap-2'>
+                            <div className='flex grow items-center justify-between gap-5'>
+                                <div className="text-sm text-muted-foreground">Complimentary</div>
+                                <div className="font-mono text-xs">{(comped !== undefined && comped > 0) ? (formatNumber(comped)) : '0'}</div>
+                            </div>
+                        </div>
                         <Separator />
                     </>
                 )}
