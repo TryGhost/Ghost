@@ -60,6 +60,14 @@ export class GiftBookshelfRepository implements GiftRepository {
         return !!existing;
     }
 
+    async getById(id: string, options: RepositoryTransactionOptions = {}): Promise<Gift | null> {
+        const model = await this.model.findOne({
+            id
+        }, {require: false, ...options});
+
+        return model ? this.toGift(model) : null;
+    }
+
     async getByToken(token: string, options: RepositoryTransactionOptions = {}): Promise<Gift | null> {
         const model = await this.model.findOne({
             token
@@ -76,11 +84,11 @@ export class GiftBookshelfRepository implements GiftRepository {
         return model ? this.toGift(model) : null;
     }
 
-    async getActiveByMember(memberId: string): Promise<Gift | null> {
+    async getActiveByMember(memberId: string, options: RepositoryTransactionOptions = {}): Promise<Gift | null> {
         const model = await this.model.findOne({
             redeemer_member_id: memberId,
             status: 'redeemed'
-        }, {require: false});
+        }, {require: false, ...options});
 
         return model ? this.toGift(model) : null;
     }

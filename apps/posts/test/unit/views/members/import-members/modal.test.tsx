@@ -7,7 +7,8 @@ vi.mock('@tryghost/admin-x-framework/api/config', () => ({
         data: {
             config: {
                 labs: {
-                    importMemberTier: true
+                    importMemberTier: true,
+                    giftSubscriptions: true
                 }
             }
         }

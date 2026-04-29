@@ -92,6 +92,10 @@ export default class MemberImportValidatorService extends Service {
             supportedTypes.push('import_tier');
         }
 
+        if (this.feature.giftSubscriptions) {
+            supportedTypes.push('gift_id');
+        }
+
         const autoDetectedTypes = [
             'email'
         ];

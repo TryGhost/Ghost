@@ -17,7 +17,12 @@ const errorMessages = {
     giftConsumed: 'This gift has already been consumed.',
     giftExpired: 'This gift has expired.',
     giftRefunded: 'This gift has been refunded.',
-    paidMember: 'You already have an active subscription.'
+    paidMember: 'You already have an active subscription.',
+    giftInvalidReassignStatus: 'This gift does not have a reassignable status.',
+    giftInvalidReassignMember: 'Member already has an active subscription.',
+    giftAlreadyAssigned: 'This gift is already assigned to another member.',
+    giftMissingConsumesAt: 'This gift is missing a "consumes at" date.',
+    giftMemberAlreadyHasGift: 'Member already has a different active gift attached.'
 };
 
 interface MemberModel {
@@ -360,11 +365,11 @@ export class GiftService {
         return redeemed;
     }
 
-    async getActiveByMember(memberId: string): Promise<Gift | null> {
+    async getActiveByMember(memberId: string, options: {transacting?: unknown} = {}): Promise<Gift | null> {
         if (!memberId) {
             return null;
         }
-        return this.deps.giftRepository.getActiveByMember(memberId);
+        return this.deps.giftRepository.getActiveByMember(memberId, options);
     }
 
     getRemainingActiveDays(gift: Gift, now: Date = new Date()): number {
@@ -375,6 +380,84 @@ export class GiftService {
         const diffDays = Math.ceil((gift.consumesAt.getTime() - now.getTime()) / MS_PER_DAY);
 
         return Math.max(0, diffDays);
+    }
+
+    async reassignRedeemer(
+        giftId: string,
+        memberId: string,
+        options: {transacting?: unknown} = {}
+    ): Promise<Gift> {
+        const run = async (transacting: unknown): Promise<Gift> => {
+            const gift = await this.deps.giftRepository.getById(giftId, {transacting, forUpdate: true});
+
+            if (!gift) {
+                throw new errors.NotFoundError({message: tpl(errorMessages.giftNotFound)});
+            }
+
+            if (gift.redeemerMemberId === memberId) {
+                return gift;
+            }
+
+            const check = gift.checkReassignable();
+
+            if (!check.reassignable) {
+                switch (check.reason) {
+                case 'assigned':
+                    throw new errors.BadRequestError({message: tpl(errorMessages.giftAlreadyAssigned)});
+                case 'unredeemed':
+                case 'consumed':
+                case 'expired':
+                case 'refunded':
+                    throw new errors.BadRequestError({message: tpl(errorMessages.giftInvalidReassignStatus)});
+                case 'missing-consumes-at':
+                    throw new errors.BadRequestError({message: tpl(errorMessages.giftMissingConsumesAt)});
+                default: {
+                    const exhaustiveCheck: never = check.reason;
+
+                    throw new errors.InternalServerError({
+                        message: `Unhandled reassign failure reason: ${exhaustiveCheck}`
+                    });
+                }
+                }
+            }
+
+            const member = await this.deps.memberRepository.get(
+                {id: memberId},
+                {transacting, forUpdate: true}
+            );
+
+            if (!member) {
+                throw new errors.NotFoundError({message: `Member not found: ${memberId}`});
+            }
+
+            const memberStatus = member.get('status');
+            if (memberStatus !== 'free' && memberStatus !== 'gift') {
+                throw new errors.BadRequestError({message: tpl(errorMessages.giftInvalidReassignMember)});
+            }
+
+            const existingActiveGift = await this.deps.giftRepository.getActiveByMember(memberId, {transacting});
+            if (existingActiveGift && existingActiveGift.token !== gift.token) {
+                throw new errors.BadRequestError({message: tpl(errorMessages.giftMemberAlreadyHasGift)});
+            }
+
+            const reassignedGift = gift.reassignRedeemer(memberId);
+
+            await this.deps.memberRepository.update({
+                products: [{
+                    id: reassignedGift.tierId,
+                    expiry_at: reassignedGift.consumesAt
+                }],
+                status: 'gift'
+            }, {id: memberId, transacting});
+
+            await this.deps.giftRepository.update(reassignedGift, {transacting});
+
+            return reassignedGift;
+        };
+
+        return options.transacting
+            ? run(options.transacting)
+            : this.deps.giftRepository.transaction(run);
     }
 
     async refund(paymentIntentId: string): Promise<boolean> {

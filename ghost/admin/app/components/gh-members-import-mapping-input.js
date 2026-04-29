@@ -20,6 +20,9 @@ export default class extends Component {
         ...FIELD_MAPPINGS,
         ...(
             this.feature.importMemberTier ? [{label: 'Tier', value: 'import_tier'}] : []
+        ),
+        ...(
+            this.feature.giftSubscriptions ? [{label: 'Gift ID', value: 'gift_id'}] : []
         )
     ];
 
