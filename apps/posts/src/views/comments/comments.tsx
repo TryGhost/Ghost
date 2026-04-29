@@ -28,7 +28,6 @@ const CommentsPage: React.FC<{timezone: string; singleCommentId?: string}> = ({
 }) => {
     const [searchParams, setSearchParams] = useSearchParams();
     const {filters, nql, setFilters} = useFilterState(timezone);
-    const threadParam = searchParams.get('thread') ?? undefined;
     const handleAddFilter = useCallback((field: string, value: string, operator: string = 'is') => {
         const nextFilters = [
             ...filters.filter(filter => filter.field !== field),
@@ -74,7 +73,6 @@ const CommentsPage: React.FC<{timezone: string; singleCommentId?: string}> = ({
         hasNextPage
     } = useBrowseComments({
         searchParams: {
-            ...(threadParam && !singleCommentId ? {thread: threadParam} : {}),
             ...(effectiveFilter ? {filter: effectiveFilter} : {})
         },
         keepPreviousData: true
@@ -88,6 +86,7 @@ const CommentsPage: React.FC<{timezone: string; singleCommentId?: string}> = ({
                 {!singleCommentId && (
                     <CommentsFilters
                         filters={filters}
+                        siteTimezone={timezone}
                         onFiltersChange={setFilters}
                     />
                 )}

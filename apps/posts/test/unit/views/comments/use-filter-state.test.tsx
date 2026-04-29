@@ -40,6 +40,40 @@ describe('use-filter-state', () => {
             expect(result.current.nql).toBe('status:published');
         });
 
+        it('migrates legacy per-field filter params to canonical filters', () => {
+            const {result} = renderHook(() => {
+                const state = useFilterState('UTC');
+                const [searchParams] = useSearchParams();
+
+                return {
+                    ...state,
+                    query: searchParams.toString()
+                };
+            }, {wrapper: createWrapper('/?status=is:hidden&body=not_contains:spam&author=is_not:member_123')});
+
+            expect(result.current.filters).toEqual([
+                {
+                    id: 'status:1',
+                    field: 'status',
+                    operator: 'is',
+                    values: ['hidden']
+                },
+                {
+                    id: 'body:2',
+                    field: 'body',
+                    operator: 'does-not-contain',
+                    values: ['spam']
+                },
+                {
+                    id: 'author:3',
+                    field: 'author',
+                    operator: 'is-not',
+                    values: ['member_123']
+                }
+            ]);
+            expect(result.current.query).toBe('filter=html%3A-%7E%27spam%27%2Bmember_id%3A-member_123%2Bstatus%3Ahidden');
+        });
+
         it('ignores legacy id params because single-comment mode is handled outside filter state', () => {
             const {result} = renderHook(() => useFilterState('UTC'), {
                 wrapper: createWrapper('/?id=is:comment_123')
@@ -72,6 +106,40 @@ describe('use-filter-state', () => {
             });
 
             expect(result.current.query).toBe('thread=is%3Acomment_123&filter=count.reports%3A%3E0');
+        });
+
+        it('keeps draft filters that are not serializable yet', () => {
+            const {result} = renderHook(() => {
+                const state = useFilterState('UTC');
+                const [searchParams] = useSearchParams();
+
+                return {
+                    ...state,
+                    query: searchParams.toString()
+                };
+            }, {wrapper: createWrapper('/?thread=is:comment_123')});
+
+            act(() => {
+                result.current.setFilters([
+                    {
+                        id: '1',
+                        field: 'body',
+                        operator: 'contains',
+                        values: ['']
+                    }
+                ], {replace: false});
+            });
+
+            expect(result.current.filters).toEqual([
+                {
+                    id: '1',
+                    field: 'body',
+                    operator: 'contains',
+                    values: ['']
+                }
+            ]);
+            expect(result.current.nql).toBeUndefined();
+            expect(result.current.query).toBe('thread=is%3Acomment_123');
         });
 
         it('removes only the canonical filter param when clearing filters', () => {

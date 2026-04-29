@@ -7,18 +7,21 @@ import {usePostResourceValueSource} from '@src/hooks/filter-sources/use-post-res
 
 interface CommentsFiltersProps {
     filters: Filter[];
+    siteTimezone: string;
     onFiltersChange: (filters: Filter[]) => void;
 }
 
 const CommentsFilters: React.FC<CommentsFiltersProps> = ({
     filters,
+    siteTimezone,
     onFiltersChange
 }) => {
     const postValueSource = usePostResourceValueSource();
     const memberValueSource = useMemberValueSource();
     const filterFields = useCommentFilterFields({
         memberValueSource,
-        postValueSource
+        postValueSource,
+        siteTimezone
     });
 
     const hasFilters = filters.length > 0;

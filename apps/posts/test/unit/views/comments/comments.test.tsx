@@ -119,8 +119,8 @@ describe('Comments', () => {
             keepPreviousData: true,
             searchParams: {filter: 'id:\'comment_123\''}
         }));
-        expect(screen.queryByTestId('apply-filter')).not.toBeInTheDocument();
-        expect(screen.getByRole('button', {name: 'Show all comments'})).toBeInTheDocument();
+        expect(screen.queryByTestId('apply-filter')).toBeNull();
+        expect(screen.getByRole('button', {name: 'Show all comments'})).not.toBeNull();
     });
 
     it('clears the full query string when leaving single-comment mode', async () => {
@@ -128,27 +128,24 @@ describe('Comments', () => {
 
         fireEvent.click(screen.getByRole('button', {name: 'Show all comments'}));
 
-        expect(screen.getByTestId('location-search')).toHaveTextContent('');
+        expect(screen.getByTestId('location-search').textContent).toBe('');
     });
 
     it('keeps thread state separate from canonical filter state updates', async () => {
         await renderComments('/?thread=is:comment_456');
 
         expect(useBrowseCommentsMock).toHaveBeenCalledWith(expect.objectContaining({
-            searchParams: {
-                thread: 'is:comment_456'
-            }
+            searchParams: {}
         }));
 
         fireEvent.click(screen.getByTestId('apply-filter'));
 
         expect(useBrowseCommentsMock).toHaveBeenLastCalledWith(expect.objectContaining({
             searchParams: {
-                filter: 'status:published',
-                thread: 'is:comment_456'
+                filter: 'status:published'
             }
         }));
-        expect(screen.getByTestId('location-search')).toHaveTextContent('?thread=is%3Acomment_456&filter=status%3Apublished');
+        expect(screen.getByTestId('location-search').textContent).toBe('?thread=is%3Acomment_456&filter=status%3Apublished');
     });
 
     it('leaves single-comment mode when applying a row-level filter', async () => {
@@ -161,7 +158,7 @@ describe('Comments', () => {
                 filter: 'member_id:member_456'
             }
         }));
-        expect(screen.getByTestId('location-search')).toHaveTextContent('?filter=member_id%3Amember_456');
+        expect(screen.getByTestId('location-search').textContent).toBe('?filter=member_id%3Amember_456');
     });
 
     it('delays date-filter hydration until the site timezone is resolved', async () => {
