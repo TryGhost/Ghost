@@ -113,7 +113,7 @@ describe('Unit: models/session', function () {
             assert.equal(returnVal, baseDestroyReturnVal);
         });
 
-        it('calls forge with the session_id, fetchs with the filtered options and then destroys with the options', function (done) {
+        it('calls forge with the session_id, fetchs with the filtered options and then destroys with the options', async function () {
             const model = models.Session.forge({});
             const session_id = 23;
             const unfilteredOptions = {session_id};
@@ -128,22 +128,20 @@ describe('Unit: models/session', function () {
             const destroyStub = sinon.stub(model, 'destroy')
                 .resolves();
 
-            models.Session.destroy(unfilteredOptions).then(() => {
-                assert.equal(filterOptionsStub.args[0][0], unfilteredOptions);
-                assert.equal(filterOptionsStub.args[0][1], 'destroy');
+            await models.Session.destroy(unfilteredOptions);
 
-                assert.deepEqual(forgeStub.args[0][0], {session_id});
+            assert.equal(filterOptionsStub.args[0][0], unfilteredOptions);
+            assert.equal(filterOptionsStub.args[0][1], 'destroy');
 
-                assert.equal(fetchStub.args[0][0], filteredOptions);
-                assert.equal(destroyStub.args[0][0], filteredOptions);
+            assert.deepEqual(forgeStub.args[0][0], {session_id});
 
-                done();
-            });
+            assert.equal(fetchStub.args[0][0], filteredOptions);
+            assert.equal(destroyStub.args[0][0], filteredOptions);
         });
     });
 
     describe('upsert', function () {
-        it('calls findOne and then add if findOne results in nothing', function (done) {
+        it('calls findOne and then add if findOne results in nothing', async function () {
             const session_id = 314;
             const unfilteredOptions = {session_id};
             const filteredOptions = {session_id};
@@ -161,27 +159,26 @@ describe('Unit: models/session', function () {
 
             const addStub = sinon.stub(models.Session, 'add');
 
-            models.Session.upsert(data, unfilteredOptions).then(() => {
-                assert.equal(filterOptionsStub.args[0][0], unfilteredOptions);
-                assert.equal(filterOptionsStub.args[0][1], 'upsert');
+            await models.Session.upsert(data, unfilteredOptions);
 
-                assert.deepEqual(findOneStub.args[0][0], {
-                    session_id
-                });
-                assert.equal(findOneStub.args[0][1], filteredOptions);
+            assert.equal(filterOptionsStub.args[0][0], unfilteredOptions);
+            assert.equal(filterOptionsStub.args[0][1], 'upsert');
 
-                assert.deepEqual(addStub.args[0][0], {
-                    session_id: filteredOptions.session_id,
-                    session_data: data.session_data,
-                    user_id: data.session_data.user_id
-                });
-
-                assert.equal(addStub.args[0][1], filteredOptions);
-                done();
+            assert.deepEqual(findOneStub.args[0][0], {
+                session_id
             });
+            assert.equal(findOneStub.args[0][1], filteredOptions);
+
+            assert.deepEqual(addStub.args[0][0], {
+                session_id: filteredOptions.session_id,
+                session_data: data.session_data,
+                user_id: data.session_data.user_id
+            });
+
+            assert.equal(addStub.args[0][1], filteredOptions);
         });
 
-        it('calls findOne and then edit if findOne results in nothing', function (done) {
+        it('calls findOne and then edit if findOne results in nothing', async function () {
             const model = models.Session.forge({id: 2});
             const session_id = 314;
             const unfilteredOptions = {session_id};
@@ -200,27 +197,26 @@ describe('Unit: models/session', function () {
 
             const editStub = sinon.stub(models.Session, 'edit');
 
-            models.Session.upsert(data, unfilteredOptions).then(() => {
-                assert.equal(filterOptionsStub.args[0][0], unfilteredOptions);
-                assert.equal(filterOptionsStub.args[0][1], 'upsert');
+            await models.Session.upsert(data, unfilteredOptions);
 
-                assert.deepEqual(findOneStub.args[0][0], {
-                    session_id
-                });
-                assert.equal(findOneStub.args[0][1], filteredOptions);
+            assert.equal(filterOptionsStub.args[0][0], unfilteredOptions);
+            assert.equal(filterOptionsStub.args[0][1], 'upsert');
 
-                assert.deepEqual(editStub.args[0][0], {
-                    session_data: data.session_data
-                });
-
-                assert.deepEqual(editStub.args[0][1], {
-                    session_id,
-                    id: model.id
-                });
-
-                assert.equal(editStub.args[0][1], filteredOptions);
-                done();
+            assert.deepEqual(findOneStub.args[0][0], {
+                session_id
             });
+            assert.equal(findOneStub.args[0][1], filteredOptions);
+
+            assert.deepEqual(editStub.args[0][0], {
+                session_data: data.session_data
+            });
+
+            assert.deepEqual(editStub.args[0][1], {
+                session_id,
+                id: model.id
+            });
+
+            assert.equal(editStub.args[0][1], filteredOptions);
         });
     });
 });

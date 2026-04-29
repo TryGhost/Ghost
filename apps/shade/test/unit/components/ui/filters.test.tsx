@@ -141,7 +141,7 @@ describe('Filters ValueSource', () => {
         });
     });
 
-    it('resets the local query when the popover closes', async () => {
+    it('resets the local query and visible options when the popover closes', async () => {
         const valueSource = createMatchingValueSource();
         const {useOptions} = valueSource;
 
@@ -175,6 +175,11 @@ describe('Filters ValueSource', () => {
 
         const reopenedInput = await screen.findByPlaceholderText('Search status...');
         expect((reopenedInput as HTMLInputElement).value).toBe('');
+        expect(screen.getByText('Draft')).toBeDefined();
+        expect(useOptions).toHaveBeenLastCalledWith({
+            query: '',
+            selectedValues: ['published']
+        });
     });
 
     it('renders and triggers load more when the value source supports pagination', async () => {
