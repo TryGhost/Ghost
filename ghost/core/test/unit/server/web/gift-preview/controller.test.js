@@ -104,7 +104,7 @@ describe('Gift Preview Controller', function () {
             sinon.assert.calledOnce(res.send);
 
             const html = res.send.firstCall.args[0];
-            const expectedTitle = '<meta property="og:title" content="Enjoy your gift to Test Blog for 1 year">';
+            const expectedTitle = '<meta property="og:title" content="You\'ve been gifted 1 year of Test Blog">';
             const expectedDescription = '<meta property="og:description" content="' +
                 'Open this link to redeem your gift.">';
             const expectedImage = '<meta property="og:image" content="https://example.com/gift/test-token-123/image">';
@@ -155,7 +155,7 @@ describe('Gift Preview Controller', function () {
 
             const html = res.send.firstCall.args[0];
 
-            assert.ok(html.includes('Enjoy your gift to Test Blog for 3 months'));
+            assert.ok(html.includes('You\'ve been gifted 3 months of Test Blog'));
             assert.ok(html.includes('Open this link to redeem your gift.'));
         });
 
@@ -177,7 +177,7 @@ describe('Gift Preview Controller', function () {
 
             const html = res.send.firstCall.args[0];
 
-            assert.ok(html.includes('Enjoy your gift to Ghost for 1 year'));
+            assert.ok(html.includes('You\'ve been gifted 1 year of Ghost'));
         });
     });
 

@@ -47,7 +47,7 @@ async function giftPreview(req, res) {
     }
 
     const cadenceLabel = getCadenceLabel(gift.cadence, gift.duration);
-    const ogTitle = `Enjoy your gift to ${siteTitle} for ${cadenceLabel}`;
+    const ogTitle = `You've been gifted ${cadenceLabel} of ${siteTitle}`;
     const ogDescription = 'Open this link to redeem your gift.';
     const ogImage = `${siteUrl}/gift/${encodeURIComponent(token)}/image`;
     const ogUrl = `${siteUrl}/gift/${encodeURIComponent(token)}`;
