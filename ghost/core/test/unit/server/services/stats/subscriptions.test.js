@@ -40,6 +40,16 @@ describe('SubscriptionStatsService', function () {
                 table.string('stripe_price_id');
                 table.integer('mrr');
             });
+            await db.schema.createTable('gifts', function (table) {
+                table.string('id');
+                table.string('tier_id');
+                table.string('cadence');
+                table.string('status');
+                table.dateTime('redeemed_at');
+                table.dateTime('consumed_at');
+                table.dateTime('expired_at');
+                table.dateTime('refunded_at');
+            });
         });
 
         afterEach(async function () {
@@ -381,6 +391,39 @@ describe('SubscriptionStatsService', function () {
             assert.equal(days[1].beyond.yearly.negative_delta, 0);
             assert.equal(days[1].beyond.yearly.signups, 1);
             assert.equal(days[1].beyond.yearly.cancellations, 0);
+        });
+
+        it('Includes gift redemptions and end-of-life events alongside paid deltas', async function () {
+            const tiers = await createTiers(['basic']);
+
+            // One paid monthly signup on day 1
+            const NEW = createEvent('created');
+            await insertEvents([
+                [NEW('A', tiers.basic.monthly)]
+            ]);
+
+            // Two gifts: monthly redeemed day 1 (still active), yearly redeemed
+            // day 1 then consumed day 2.
+            await db('gifts').insert([
+                {id: 'g-month', tier_id: 'basic', cadence: 'month', status: 'redeemed', redeemed_at: '1970-01-01T00:00:00.000Z'},
+                {id: 'g-year', tier_id: 'basic', cadence: 'year', status: 'consumed', redeemed_at: '1970-01-01T00:00:00.000Z', consumed_at: '1970-01-02T00:00:00.000Z'}
+            ]);
+
+            const stats = new SubscriptionStatsService({knex: db});
+            const result = await stats.getSubscriptionHistory();
+
+            // Sum signups/cancellations across all rows for a given (tier, cadence, date).
+            // Paid and gift contribute separate rows that aggregate downstream.
+            const sumWhere = (tier, cadence, date, field) => result.data
+                .filter(r => r.tier === tier && r.cadence === cadence && r.date === date)
+                .reduce((acc, r) => acc + r[field], 0);
+
+            // Day 1 monthly: 1 paid + 1 gift = 2 signups
+            assert.equal(sumWhere('basic', 'month', '1970-01-01', 'signups'), 2);
+            // Day 1 yearly: 1 gift signup
+            assert.equal(sumWhere('basic', 'year', '1970-01-01', 'signups'), 1);
+            // Day 2 yearly: 1 gift cancellation (consumed)
+            assert.equal(sumWhere('basic', 'year', '1970-01-02', 'cancellations'), 1);
         });
     });
 });
