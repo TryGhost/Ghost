@@ -1,4 +1,3 @@
-const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const {generateGiftPreviewImage} = require('./image');
 
@@ -17,7 +16,6 @@ function escapeHtml(str) {
 async function giftPreview(req, res) {
     const labs = require('../../../shared/labs');
     const giftService = require('../../services/gifts').service;
-    const tiersService = require('../../services/tiers');
     const urlUtils = require('../../../shared/url-utils');
     const settingsCache = require('../../../shared/settings-cache');
 
@@ -31,15 +29,9 @@ async function giftPreview(req, res) {
     const siteTitle = settingsCache.get('title') || 'Ghost';
 
     let gift;
-    let tier;
 
     try {
         gift = await giftService.getByToken(token);
-        tier = await tiersService.api.read(gift.tierId);
-
-        if (!tier) {
-            throw new errors.NotFoundError({message: `Tier not found: ${gift.tierId}`});
-        }
     } catch (err) {
         logging.warn(`Gift preview: failed to load required gift data, redirecting to homepage`, err);
 
@@ -92,20 +84,9 @@ async function giftPreview(req, res) {
 
 async function giftPreviewImage(req, res) {
     const labs = require('../../../shared/labs');
-    const giftService = require('../../services/gifts').service;
     const settingsCache = require('../../../shared/settings-cache');
 
     if (!labs.isSet('giftSubscriptions')) {
-        return res.sendStatus(404);
-    }
-
-    const token = req.params.token;
-
-    try {
-        await giftService.getByToken(token);
-    } catch (err) {
-        logging.warn('Gift preview image: failed to load required gift data', err);
-
         return res.sendStatus(404);
     }
 

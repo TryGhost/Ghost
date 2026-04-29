@@ -5,14 +5,12 @@ const labs = require('../../../../../core/shared/labs');
 const urlUtils = require('../../../../../core/shared/url-utils');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const giftServiceWrapper = require('../../../../../core/server/services/gifts');
-const tiersService = require('../../../../../core/server/services/tiers');
 
 const controller = require('../../../../../core/server/web/gift-preview/controller');
 
 describe('Gift Preview Controller', function () {
     let req;
     let res;
-    let originalTiersServiceAPI;
     let originalGiftService;
 
     beforeEach(function () {
@@ -27,7 +25,6 @@ describe('Gift Preview Controller', function () {
             sendStatus: sinon.stub(),
             set: sinon.stub()
         };
-        originalTiersServiceAPI = tiersService.api;
         originalGiftService = giftServiceWrapper.service;
 
         sinon.stub(urlUtils, 'getSiteUrl').returns('https://example.com/');
@@ -37,7 +34,6 @@ describe('Gift Preview Controller', function () {
     });
 
     afterEach(function () {
-        tiersService.api = originalTiersServiceAPI;
         giftServiceWrapper.service = originalGiftService;
 
         sinon.restore();
@@ -65,25 +61,6 @@ describe('Gift Preview Controller', function () {
             sinon.assert.calledWith(res.redirect, 302, 'https://example.com/');
         });
 
-        it('redirects to homepage when tier lookup fails', async function () {
-            sinon.stub(labs, 'isSet').withArgs('giftSubscriptions').returns(true);
-            giftServiceWrapper.service = {
-                getByToken: sinon.stub().resolves({
-                    tierId: 'tier_1',
-                    cadence: 'year',
-                    duration: 1
-                })
-            };
-            tiersService.api = {
-                read: sinon.stub().rejects(new Error('Tier not found'))
-            };
-
-            await controller.giftPreview(req, res);
-
-            sinon.assert.calledOnce(res.redirect);
-            sinon.assert.calledWith(res.redirect, 302, 'https://example.com/');
-        });
-
         it('returns HTML with OG tags for a valid gift', async function () {
             sinon.stub(labs, 'isSet').withArgs('giftSubscriptions').returns(true);
             giftServiceWrapper.service = {
@@ -92,9 +69,6 @@ describe('Gift Preview Controller', function () {
                     cadence: 'year',
                     duration: 1
                 })
-            };
-            tiersService.api = {
-                read: sinon.stub().resolves({name: 'Gold'})
             };
 
             await controller.giftPreview(req, res);
@@ -126,9 +100,6 @@ describe('Gift Preview Controller', function () {
                     duration: 3
                 })
             };
-            tiersService.api = {
-                read: sinon.stub().resolves({name: 'Silver'})
-            };
 
             await controller.giftPreview(req, res);
 
@@ -146,9 +117,6 @@ describe('Gift Preview Controller', function () {
                     cadence: 'month',
                     duration: 3
                 })
-            };
-            tiersService.api = {
-                read: sinon.stub().resolves({name: 'Bronze'})
             };
 
             await controller.giftPreview(req, res);
@@ -169,9 +137,6 @@ describe('Gift Preview Controller', function () {
                     duration: 1
                 })
             };
-            tiersService.api = {
-                read: sinon.stub().resolves({name: 'Premium'})
-            };
 
             await controller.giftPreview(req, res);
 
@@ -189,39 +154,6 @@ describe('Gift Preview Controller', function () {
 
             sinon.assert.calledOnce(res.sendStatus);
             sinon.assert.calledWith(res.sendStatus, 404);
-        });
-
-        it('returns 404 when gift token is invalid', async function () {
-            sinon.stub(labs, 'isSet').withArgs('giftSubscriptions').returns(true);
-            giftServiceWrapper.service = {
-                getByToken: sinon.stub().rejects(new Error('Not found'))
-            };
-
-            await controller.giftPreviewImage(req, res);
-
-            sinon.assert.calledOnce(res.sendStatus);
-            sinon.assert.calledWith(res.sendStatus, 404);
-        });
-
-        it('does not require tier data for the decorative image', async function () {
-            sinon.stub(labs, 'isSet').withArgs('giftSubscriptions').returns(true);
-            giftServiceWrapper.service = {
-                getByToken: sinon.stub().resolves({
-                    tierId: 'tier_1',
-                    cadence: 'year',
-                    duration: 1
-                })
-            };
-            tiersService.api = {
-                read: sinon.stub().rejects(new Error('Tier should not be read'))
-            };
-
-            await controller.giftPreviewImage(req, res);
-
-            sinon.assert.notCalled(tiersService.api.read);
-            sinon.assert.calledWith(res.set, 'Content-Type', 'image/png');
-            sinon.assert.calledWith(res.set, 'Cache-Control', 'public, max-age=86400');
-            sinon.assert.calledOnce(res.send);
         });
     });
 });
