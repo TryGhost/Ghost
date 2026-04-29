@@ -130,9 +130,8 @@ module.exports = class EventRepository {
                     if (diff !== 0) {
                         return diff;
                     }
-                    // Tiebreaker for events sharing the same created_at. Lower number = higher in
-                    // the (newest-first) feed. Display order top → bottom:
-                    // login → subscription / gift redemption → newsletter → signup.
+                    // Tiebreaker for events sharing the same created_at:
+                    // Signup > Newsletter subscription > Subscription / gift redemption event > Login
                     const tieOrder = {
                         login_event: 0,
                         subscription_event: 1,
@@ -140,9 +139,9 @@ module.exports = class EventRepository {
                         newsletter_event: 2,
                         signup_event: 3
                     };
-                    const orderA = tieOrder[a.type] ?? Infinity;
-                    const orderB = tieOrder[b.type] ?? Infinity;
-                    if (orderA !== orderB) {
+                    const orderA = tieOrder[a.type];
+                    const orderB = tieOrder[b.type];
+                    if (orderA !== undefined && orderB !== undefined && orderA !== orderB) {
                         return orderA - orderB;
                     }
                     return b.data.id.localeCompare(a.data.id);
@@ -254,6 +253,10 @@ module.exports = class EventRepository {
 
             // Prevent toJSON on stripeSubscription (we don't have everything loaded)
             delete model.relations.stripeSubscription;
+            // paidStatusEvent is a helper relation only used to derive previous_status above
+            if (subscriptionCreatedEvent && subscriptionCreatedEvent.id) {
+                delete subscriptionCreatedEvent.relations.paidStatusEvent;
+            }
             const d = {
                 ...model.toJSON(options),
                 attribution: model.get('type') === 'created' && subscriptionCreatedEvent && subscriptionCreatedEvent.id ? this._memberAttributionService.getEventAttribution(subscriptionCreatedEvent) : null,

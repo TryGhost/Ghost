@@ -16,11 +16,12 @@ const MemberCreatedEvent = ghostBookshelf.Model.extend({
     },
 
     /**
-     * The status event recorded at member creation time (if any)
+     * The status event recorded at member creation time (if any).
+     * Should only ever match one row per batch_id today; orderBy makes the choice deterministic if not.
      */
     signupStatusEvent() {
         return this.belongsTo('MemberStatusEvent', 'batch_id', 'batch_id')
-            .query(qb => qb.whereNull('from_status'));
+            .query(qb => qb.whereNull('from_status').orderBy('created_at', 'desc'));
     },
 
     postAttribution() {

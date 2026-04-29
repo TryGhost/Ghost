@@ -17,11 +17,12 @@ const SubscriptionCreatedEvent = ghostBookshelf.Model.extend({
 
     /**
      * The status transition recorded at subscription creation time (if any)
-     * (e.g. free -> paid, or gift -> paid)
+     * (e.g. free -> paid, or gift -> paid).
+     * Should only ever match one row per batch_id today; orderBy makes the choice deterministic if not.
      */
     paidStatusEvent() {
         return this.belongsTo('MemberStatusEvent', 'batch_id', 'batch_id')
-            .query(qb => qb.where('to_status', 'paid'));
+            .query(qb => qb.where('to_status', 'paid').orderBy('created_at', 'desc'));
     },
 
     subscription() {

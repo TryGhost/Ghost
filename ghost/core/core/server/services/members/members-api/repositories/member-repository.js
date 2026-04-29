@@ -451,7 +451,7 @@ module.exports = class MemberRepository {
             member_id: member.id,
             from_status: null,
             to_status: member.get('status'),
-            batch_id: options.batch_id,
+            batch_id: options.batch_id ?? null,
             ...eventData
         }, options);
 
