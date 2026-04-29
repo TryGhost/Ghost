@@ -17,22 +17,42 @@ describe('Unit | Utility | event-type-utils', function () {
         expect(eventTypes).to.deep.include({event: 'click_event', icon: 'filter-dropdown-clicked-in-email', name: 'Clicked link in email', group: 'others'});
     });
 
-    it('should toggle both payment_event and donation_event when toggling payment_event', function () {
+    it('should toggle payment_event together with donation_event and gift_purchase_event when toggling payment_event', function () {
         const eventTypes = [
             {event: 'payment_event', isSelected: true}
         ];
 
         const newExcludedEvents = toggleEventType('payment_event', eventTypes);
 
-        expect(newExcludedEvents).to.equal('payment_event,donation_event,gift_purchase_event,gift_redemption_event');
+        expect(newExcludedEvents).to.equal('payment_event,donation_event,gift_purchase_event');
     });
 
-    it('should toggle both payment_event and donation_event off when toggling payment_event off', function () {
+    it('should toggle payment_event group off when toggling payment_event off', function () {
         const eventTypes = [
             {event: 'payment_event', isSelected: false}
         ];
 
         const newExcludedEvents = toggleEventType('payment_event', eventTypes);
+
+        expect(newExcludedEvents).to.equal('');
+    });
+
+    it('should toggle subscription_event together with gift_redemption_event', function () {
+        const eventTypes = [
+            {event: 'subscription_event', isSelected: true}
+        ];
+
+        const newExcludedEvents = toggleEventType('subscription_event', eventTypes);
+
+        expect(newExcludedEvents).to.equal('subscription_event,gift_redemption_event');
+    });
+
+    it('should toggle subscription_event group off when toggling subscription_event off', function () {
+        const eventTypes = [
+            {event: 'subscription_event', isSelected: false}
+        ];
+
+        const newExcludedEvents = toggleEventType('subscription_event', eventTypes);
 
         expect(newExcludedEvents).to.equal('');
     });
