@@ -3,15 +3,8 @@ const path = require('path');
 
 const glob = require('glob');
 
-const models = require('../../../core/server/models');
-
 describe('API', function () {
     describe('Cache Invalidation', function () {
-        before(async function () {
-            // Initialise models - Utilised by various endpoints to reference static fields (i.e models.Post.allowedFormats) when required in
-            models.init();
-        });
-
         it('Controller actions explicitly declare cacheInvalidate header', async function () {
             const controllersRootPath = path.join(__dirname, '../../../core/server/api/endpoints');
             const controllerPaths = glob.sync('*.js', {
