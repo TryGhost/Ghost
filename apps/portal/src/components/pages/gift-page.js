@@ -359,7 +359,7 @@ const GiftPage = () => {
                         </section>
 
                         <div className='gh-portal-signup-message'>
-                            <div>Gift can only be redeemed by members without an active paid subscription.</div>
+                            <div>Only redeemable by free or new members.</div>
                         </div>
                     </div>
                 </section>
