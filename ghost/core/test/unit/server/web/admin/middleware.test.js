@@ -73,6 +73,14 @@ describe('Admin App', function () {
 
                 sinon.assert.calledWith(res.redirect, '/ghost/#/members/import?source=link');
             });
+
+            it('should preserve trailing slashes inside query values', function () {
+                req.originalUrl = '/ghost/members/import?next=/settings/';
+
+                redirectAdminUrls(req, res, next);
+
+                sinon.assert.calledWith(res.redirect, '/ghost/#/members/import?next=/settings/');
+            });
         });
     });
 });
