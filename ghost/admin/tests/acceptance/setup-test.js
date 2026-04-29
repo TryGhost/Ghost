@@ -2,7 +2,7 @@ import {Response} from 'miragejs';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
-import {click, currentURL, fillIn, find, findAll} from '@ember/test-helpers';
+import {click, currentURL, fillIn, find, findAll, waitUntil} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -31,6 +31,9 @@ describe('Acceptance: Setup', function () {
         }
         if (!server.schema.settings.all().length) {
             server.loadFixtures('settings');
+        }
+        if (!server.schema.themes.all().length) {
+            server.loadFixtures('themes');
         }
         
         // mimick a new blog
@@ -120,9 +123,10 @@ describe('Acceptance: Setup', function () {
             await fillIn('[data-test-blog-title-input]', 'Blog Title');
             await click('[data-test-button="setup"]');
 
-            // it redirects to the dashboard
-            expect(currentURL(), 'url after submitting account details')
-                .to.equal('/analytics');
+            // it starts onboarding and hands off to the React onboarding route
+            await waitUntil(() => window.location.hash === '#/setup/onboarding?returnTo=/analytics');
+            expect(window.location.hash, 'url after submitting account details')
+                .to.equal('#/setup/onboarding?returnTo=/analytics');
         });
 
         it('handles validation errors in setup', async function () {
@@ -214,15 +218,20 @@ describe('Acceptance: Setup', function () {
 
     describe('?firstStart=true', function () {
         beforeEach(async function () {
+            this.server.loadFixtures('configs');
+            this.server.loadFixtures('settings');
+            this.server.loadFixtures('themes');
+
             let role = this.server.create('role', {name: 'Owner'});
             this.server.create('user', {roles: [role], slug: 'owner'});
 
             await authenticateSession();
         });
 
-        it('transitions to dashboard', async function () {
+        it('transitions to onboarding', async function () {
             await visit('/?firstStart=true');
-            expect(currentURL()).to.equal('/analytics');
+            await waitUntil(() => window.location.hash === '#/setup/onboarding?returnTo=/analytics');
+            expect(window.location.hash).to.equal('#/setup/onboarding?returnTo=/analytics');
         });
     });
 });
