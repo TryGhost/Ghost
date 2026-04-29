@@ -1,0 +1,10 @@
+[
+    {
+        "label": "initialize workspace",
+        "command": "pnpm",
+        "args": ["run", "setup"],
+        "hooks": ["create_worktree"],
+        "reveal": "no_focus",
+        "hide": "on_success"
+    }
+]
