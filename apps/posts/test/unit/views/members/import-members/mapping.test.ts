@@ -74,4 +74,33 @@ describe('mapping helpers', () => {
 
         expect(formatted).toContain('Note is too long');
     });
+
+    it('omits Gift ID from field mappings when giftSubscriptions is disabled', () => {
+        const mappings = getFieldMappings({giftSubscriptionsEnabled: false});
+
+        expect(mappings.find(m => m.value === 'gift_id')).toBeUndefined();
+    });
+
+    it('includes Gift ID in field mappings when giftSubscriptions is enabled', () => {
+        const mappings = getFieldMappings({giftSubscriptionsEnabled: true});
+
+        expect(mappings.find(m => m.value === 'gift_id')).toEqual({label: 'Gift ID', value: 'gift_id'});
+    });
+
+    it('does not auto-detect gift_id when giftSubscriptions is disabled', () => {
+        const mapping = detectFieldTypes([
+            {email: 'user@example.com', gift_id: 'some-gift-uuid'}
+        ]);
+
+        expect(mapping.gift_id).toBeUndefined();
+    });
+
+    it('auto-detects gift_id when giftSubscriptions is enabled', () => {
+        const mapping = detectFieldTypes(
+            [{email: 'user@example.com', gift_id: 'some-gift-uuid'}],
+            {giftSubscriptionsEnabled: true}
+        );
+
+        expect(mapping.gift_id).toBe('gift_id');
+    });
 });
