@@ -22,6 +22,7 @@ import EmailSuppressionFAQ from './pages/email-suppression-faq.css?inline';
 import EmailReceivingFAQ from './pages/email-receiving-faq.css?inline';
 import {TipsAndDonationsSuccessStyle} from './pages/support-success';
 import {GiftRedemptionStyles} from './pages/gift-redemption-page';
+import {GiftPageStyles} from './pages/gift-page';
 import {GiftSuccessStyle} from './pages/gift-success-page';
 import {TipsAndDonationsErrorStyle} from './pages/support-error';
 import {RecommendationsPageStyles} from './pages/recommendations-page';
@@ -1316,6 +1317,7 @@ export function getFrameStyles({site}) {
         EmailReceivingFAQ +
         TipsAndDonationsSuccessStyle +
         GiftRedemptionStyles +
+        GiftPageStyles +
         TipsAndDonationsErrorStyle +
         GiftSuccessStyle +
         RecommendationsPageStyles +
