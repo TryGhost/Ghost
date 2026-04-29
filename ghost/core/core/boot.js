@@ -98,12 +98,6 @@ async function initCore({ghostServer, config, frontend}) {
     require('./shared/url-utils');
     debug('End: Load urlUtils');
 
-    // Models are the heart of Ghost - this is a syncronous operation
-    debug('Begin: models');
-    const models = require('./server/models');
-    models.init();
-    debug('End: models');
-
     // Limit service is booted before settings, so that limits are available for calculated settings
     debug('Begin: limits');
     const limits = require('./server/services/limits');

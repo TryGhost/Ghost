@@ -7,7 +7,6 @@ const loggingLib = require('@tryghost/logging');
 // Stuff we are testing
 const get = require('../../../../core/frontend/helpers/get');
 const {querySimplePath} = get;
-const models = require('../../../../core/server/models');
 const api = require('../../../../core/server/api').endpoints;
 const maxLimitCap = require('../../../../core/shared/max-limit-cap');
 
@@ -16,10 +15,6 @@ describe('{{#get}} helper', function () {
     let inverse;
     let locals = {};
     let logging;
-
-    before(function () {
-        models.init();
-    });
 
     beforeEach(function () {
         fn = sinon.spy();

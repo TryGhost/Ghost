@@ -97,8 +97,8 @@ function ping(post) {
         }
 
         // Don't ping for the default posts.
-        // This also handles the case where during ghost's first run
-        // models.init() inserts this post but permissions.init() hasn't
+        // This also handles the case where during Ghost's first run
+        // model loading inserts this post but permissions.init() hasn't
         // (can't) run yet.
         if (defaultPostSlugs.indexOf(post.slug) > -1) {
             return;

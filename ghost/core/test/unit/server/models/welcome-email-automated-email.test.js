@@ -4,10 +4,6 @@ const models = require('../../../../core/server/models');
 const config = require('../../../../core/shared/config');
 
 describe('Unit: models/welcome-email-automated-email', function () {
-    before(function () {
-        models.init();
-    });
-
     afterEach(function () {
         sinon.restore();
     });
