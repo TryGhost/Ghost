@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const BaseCacheAdapter = require('@tryghost/adapter-base-cache');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
+const metrics = require('@tryghost/metrics');
 const debug = require('@tryghost/debug')('redis-cache');
 const cacheManager = require('cache-manager');
 const redisStoreFactory = require('./redis-store-factory');
@@ -22,6 +23,7 @@ class AdapterCacheRedis extends BaseCacheAdapter {
      * @param {number} [config.getTimeoutMilliseconds] - default timeout for cache get operations in *milliseconds*
      * @param {number} [config.refreshAheadFactor] - 0-1 number to use to determine how old (as a percentage of ttl) an entry should be before refreshing it
      * @param {string} [config.keyPrefix] - prefix to use when building a unique cache key, e.g.: 'some_id:image-sizes:'
+     * @param {string} [config.featureName] - name of the cache feature (e.g. 'postsPublic') used for dashboard filtering
      * @param {boolean} [config.reuseConnection] - specifies if the redis store/connection should be reused within the process
      */
     constructor(config) {
@@ -67,8 +69,22 @@ class AdapterCacheRedis extends BaseCacheAdapter {
         this.currentlyExecutingBackgroundRefreshes = new Set();
         this.currentlyExecutingReads = new Map();
         this._keyPrefix = config.keyPrefix || '';
+        this._featureName = config.featureName;
         this._prefixHashInitInFlight = null;
         this.redisClient.on('error', this.handleRedisError);
+    }
+
+    /**
+     * Underscore-private to survive api-framework's `_.cloneDeep` on the
+     * controller (and this adapter). See the "survives deep cloning"
+     * suite — `#`-private methods break on clones.
+     */
+    _metric(name, extra = {}) {
+        const value = {...extra};
+        if (this._featureName !== undefined) {
+            value.feature = this._featureName;
+        }
+        metrics.metric(name, value);
     }
 
     /**
@@ -192,16 +208,35 @@ class AdapterCacheRedis extends BaseCacheAdapter {
         }
 
         return new Promise((resolve) => {
+            // `lookup` keeps running after the timer fires, so without a
+            // single-settlement guard a slow failing redis read would emit
+            // both `cache-timeout` and `cache-error` for the same request.
+            let settled = false;
             const timer = setTimeout(() => {
+                if (settled) {
+                    return;
+                }
+                settled = true;
                 debug('get', key, 'timeout');
+                this._metric('cache-timeout');
                 resolve({internalKey: null, result: null});
             }, this.getTimeoutMilliseconds);
             lookup.then((value) => {
+                if (settled) {
+                    return;
+                }
+                settled = true;
                 clearTimeout(timer);
                 resolve(value);
-            }, () => {
-                // redis failure during lookup - treat as MISS, same as the timeout path
+            }, (err) => {
+                if (settled) {
+                    return;
+                }
+                settled = true;
                 clearTimeout(timer);
+                // redis failure during lookup - treat as MISS, same as the timeout path
+                this._metric('cache-error', {operation: 'get'});
+                logging.error(err);
                 resolve({internalKey: null, result: null});
             });
         });
@@ -216,6 +251,13 @@ class AdapterCacheRedis extends BaseCacheAdapter {
         try {
             const {internalKey, result} = await this._lookupWithTimeout(key);
             debug(`get ${key}: Cache ${result ? 'HIT' : 'MISS'}`);
+            if (result) {
+                this._metric('cache-hit');
+            } else if (internalKey !== null) {
+                // A real miss; timeouts and lookup errors (internalKey === null)
+                // already emitted their own metric in `_lookupWithTimeout`.
+                this._metric('cache-miss');
+            }
             if (!fetchData) {
                 return result;
             }
@@ -228,11 +270,15 @@ class AdapterCacheRedis extends BaseCacheAdapter {
                 if (!isRefreshing && shouldRefresh) {
                     debug(`Doing background refresh for ${key}`);
                     this.currentlyExecutingBackgroundRefreshes.add(internalKey);
+                    this._metric('cache-background-refresh-triggered');
+                    const refreshStart = performance.now();
                     fetchData().then(async (data) => {
-                        await this.set(key, data); // We don't use `internalKey` here because `set` handles it
+                        await this.set(key, data, {throwOnError: true}); // We don't use `internalKey` here because `set` handles it
                         this.currentlyExecutingBackgroundRefreshes.delete(internalKey);
+                        this._metric('cache-background-refresh-succeeded', {value: performance.now() - refreshStart});
                     }).catch((error) => {
                         this.currentlyExecutingBackgroundRefreshes.delete(internalKey);
+                        this._metric('cache-background-refresh-failed');
                         logging.error({
                             message: 'There was an error refreshing cache data in the background',
                             error: error
@@ -256,6 +302,7 @@ class AdapterCacheRedis extends BaseCacheAdapter {
                         debug('set', internalKey);
                         await this.cache.set(internalKey, data);
                     } catch (err) {
+                        this._metric('cache-error', {operation: 'set'});
                         logging.error(err);
                     }
                 }).catch(() => {
@@ -267,6 +314,7 @@ class AdapterCacheRedis extends BaseCacheAdapter {
                 return resultPromise;
             }
         } catch (err) {
+            this._metric('cache-error', {operation: 'get'});
             logging.error(err);
         }
     }
@@ -275,14 +323,20 @@ class AdapterCacheRedis extends BaseCacheAdapter {
      *
      * @param {string} key
      * @param {*} value
+     * @param {Object} [options]
+     * @param {boolean} [options.throwOnError] - if true, rethrow write errors after logging. Used by the background refresh path so success is only emitted after a write that actually succeeded.
      */
-    async set(key, value) {
+    async set(key, value, {throwOnError = false} = {}) {
         try {
             const internalKey = await this._buildKey(key);
             debug('set', internalKey);
             return await this.cache.set(internalKey, value);
         } catch (err) {
+            this._metric('cache-error', {operation: 'set'});
             logging.error(err);
+            if (throwOnError) {
+                throw err;
+            }
         }
     }
 
@@ -295,9 +349,12 @@ class AdapterCacheRedis extends BaseCacheAdapter {
 
     async reset() {
         debug('reset');
+        const t0 = performance.now();
         try {
             await this.cyclePrefixHash();
+            this._metric('cache-reset', {value: performance.now() - t0});
         } catch (err) {
+            this._metric('cache-error', {operation: 'reset'});
             logging.error(err);
         }
     }

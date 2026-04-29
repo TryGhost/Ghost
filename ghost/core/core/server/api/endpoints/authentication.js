@@ -179,11 +179,12 @@ const controller = {
                 });
             }
 
-            const origin = auth.session.getOriginOfRequest(frame.original);
-            await auth.session.sessionService.assignVerifiedUserToSession({
-                session: frame.original.session,
+            // Rotate the session_id and mint a fresh verified session so that
+            // any stolen or cloned copy of the pre-reset cookie is rejected
+            // on its next request.
+            await auth.session.sessionService.rotateAndAssignVerifiedUserToSession({
+                req: frame.original.session.req,
                 user: doResetParams.user,
-                origin,
                 ip: frame.options.ip
             });
 

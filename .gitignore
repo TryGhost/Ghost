@@ -72,6 +72,8 @@ typings/
 .vscode/*
 !.vscode/launch.json
 !.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/extensions.json
 
 # OSX
 .DS_Store

@@ -104,35 +104,69 @@ describe('oembed-service', function () {
         });
     });
 
-    describe('fetchOembedDataFromUrl', function () {
-        it('allows rich embeds to skip height field', async function () {
-            nock('https://www.example.com')
-                .get('/')
-                .query(true)
-                .reply(200, `<html><head><link type="application/json+oembed" href="https://www.example.com/oembed"></head></html>`);
+    describe('fetchOembedData', function () {
+        const pageHtml = `<html><head><link type="application/json+oembed" href="https://www.example.com/oembed"></head></html>`;
 
+        it('drops rich-type responses from non-allowlisted providers (ONC-1648)', async function () {
+            // Self-declared oEmbed endpoints for arbitrary sites cannot be trusted
+            // to return safe HTML — known providers (Twitter, YouTube, …) go through
+            // `knownProvider` which uses an allowlist. Rich/video responses reaching
+            // this fallback path must not propagate their html into post content.
             nock('https://www.example.com')
                 .get('/oembed')
-                .query(true)
                 .reply(200, {
                     type: 'rich',
                     version: '1.0',
                     title: 'Test Title',
-                    author_name: 'Test Author',
-                    author_url: 'https://example.com/user/testauthor',
-                    html: '<iframe src="https://www.example.com/embed"></iframe>',
+                    html: '<img src=x onerror="alert(1)">',
                     width: 640,
-                    height: null
+                    height: 480
                 });
 
-            const response = await oembedService.fetchOembedDataFromUrl('https://www.example.com');
+            const response = await oembedService.fetchOembedData('https://www.example.com', pageHtml);
 
-            assert.equal(response.title, 'Test Title');
-            assert.equal(response.author_name, 'Test Author');
-            assert.equal(response.author_url, 'https://example.com/user/testauthor');
-            assert.equal(response.html, '<iframe src="https://www.example.com/embed"></iframe>');
+            // Returning undefined signals the caller to fall back to a bookmark
+            // card instead of storing the attacker-controlled html.
+            assert.equal(response, undefined);
         });
 
+        it('drops video-type responses from non-allowlisted providers (ONC-1648)', async function () {
+            nock('https://www.example.com')
+                .get('/oembed')
+                .reply(200, {
+                    type: 'video',
+                    version: '1.0',
+                    title: 'Test Title',
+                    html: '<iframe src="javascript:alert(1)"></iframe>',
+                    width: 640,
+                    height: 480
+                });
+
+            const response = await oembedService.fetchOembedData('https://www.example.com', pageHtml);
+
+            assert.equal(response, undefined);
+        });
+
+        it('still returns photo-type responses from non-allowlisted providers', async function () {
+            nock('https://www.example.com')
+                .get('/oembed')
+                .reply(200, {
+                    type: 'photo',
+                    version: '1.0',
+                    title: 'Test Title',
+                    url: 'https://www.example.com/photo.jpg',
+                    width: 640,
+                    height: 480
+                });
+
+            const response = await oembedService.fetchOembedData('https://www.example.com', pageHtml);
+
+            assert.equal(response.type, 'photo');
+            assert.equal(response.url, 'https://www.example.com/photo.jpg');
+        });
+    });
+
+    describe('fetchOembedDataFromUrl', function () {
         it('uses a known user-agent for bookmark requests', async function () {
             nock('https://www.example.com')
                 .get('/')

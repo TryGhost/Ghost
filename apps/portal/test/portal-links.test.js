@@ -418,7 +418,7 @@ describe('Portal Data links:', () => {
             popupFrame = await utils.findByTitle(/portal-popup/i);
             expect(popupFrame).toBeInTheDocument();
 
-            const giftSubtitle = within(popupFrame.contentDocument).queryByText(/give the gift of a membership/i);
+            const giftSubtitle = within(popupFrame.contentDocument).queryByText(/pick a plan and send it to someone as a gift/i);
             expect(giftSubtitle).toBeInTheDocument();
         });
 

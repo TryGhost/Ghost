@@ -18,6 +18,7 @@ import {
     isActiveOffer,
     isRetentionOffer,
     isInviteOnly,
+    isArchivedTier,
     isGiftMember,
     isPaidMember,
     isPaidMembersOnly,
@@ -757,6 +758,37 @@ describe('Helpers - ', () => {
             delete member.subscriptions[0].tier.expiry_at;
 
             expect(getSubscriptionExpiry({member})).toEqual('');
+        });
+    });
+
+    describe('isArchivedTier', () => {
+        const site = FixturesSite.singleTier.basic;
+        const activeTierId = site.products.find(p => p.type === 'paid').id;
+
+        const buildMemberWithTierId = tierId => ({
+            paid: true,
+            status: 'gift',
+            subscriptions: [
+                {
+                    status: 'active',
+                    price: {amount: 0},
+                    tier: tierId === undefined ? {} : {id: tierId}
+                }
+            ]
+        });
+
+        test('returns false when the member has no subscription', () => {
+            expect(isArchivedTier({member: FixtureMember.free, site})).toBe(false);
+        });
+
+        test('returns false when the subscription tier id is in site.products', () => {
+            const member = buildMemberWithTierId(activeTierId);
+            expect(isArchivedTier({member, site})).toBe(false);
+        });
+
+        test('returns true when the subscription tier id is not in site.products', () => {
+            const member = buildMemberWithTierId('archived_tier_id');
+            expect(isArchivedTier({member, site})).toBe(true);
         });
     });
 
