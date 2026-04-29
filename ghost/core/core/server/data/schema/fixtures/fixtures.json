@@ -775,6 +775,21 @@
                     "object_type": "recommendation"
                 },
                 {
+                    "name": "Browse automations",
+                    "action_type": "browse",
+                    "object_type": "automation"
+                },
+                {
+                    "name": "Read automations",
+                    "action_type": "read",
+                    "object_type": "automation"
+                },
+                {
+                    "name": "Edit automations",
+                    "action_type": "edit",
+                    "object_type": "automation"
+                },
+                {
                     "name": "Poll automations",
                     "action_type": "poll",
                     "object_type": "automation"
@@ -951,6 +966,7 @@
                     "mention": "browse",
                     "collection": "all",
                     "recommendation": "all",
+                    "automation": ["browse", "read", "edit"],
                     "identity": "read"
                 },
                 "DB Backup Integration": {
@@ -1000,6 +1016,7 @@
                     "mention": "browse",
                     "collection": "all",
                     "recommendation": "all",
+                    "automation": ["browse", "read", "edit"],
                     "member_signin_url": "read"
                 },
                 "Super Editor": {
