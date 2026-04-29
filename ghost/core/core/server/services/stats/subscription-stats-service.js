@@ -14,12 +14,11 @@ class SubscriptionStatsService {
     async getSubscriptionHistory() {
         const paidDeltas = await this.fetchAllSubscriptionDeltas();
         const giftDeltas = await this.fetchAllGiftDeltas();
-        // The loop below walks deltas backwards to roll the running `count`
-        // back through history, so the merged array must be in ascending
-        // date order for those snapshots to be correct.
-        const subscriptionDeltaEntries = paidDeltas.concat(giftDeltas).sort((a, b) => {
-            return moment(a.date).valueOf() - moment(b.date).valueOf();
-        });
+        // Sum paid+gift entries that share (date, tier, cadence) so each
+        // row produces a single coherent `count` snapshot. Sort ascending
+        // because the rollback loop below walks the array backwards.
+        const subscriptionDeltaEntries = aggregateDeltas(paidDeltas.concat(giftDeltas))
+            .sort((a, b) => moment(a.date).valueOf() - moment(b.date).valueOf());
         const counts = await this.fetchSubscriptionCounts();
 
         /** @type {Object.<string, Object.<string, number>>} */
@@ -189,6 +188,38 @@ class SubscriptionStatsService {
             ...cancellations.map(r => ({date: r.date, tier: r.tier, cadence: r.cadence, positive_delta: 0, negative_delta: r.count, signups: 0, cancellations: r.count}))
         ];
     }
+}
+
+/**
+ * Sum SubscriptionDelta entries that share the same (date, tier, cadence) key.
+ * @param {SubscriptionDelta[]} deltas
+ * @returns {SubscriptionDelta[]}
+ */
+function aggregateDeltas(deltas) {
+    /** @type {Map<string, SubscriptionDelta>} */
+    const byKey = new Map();
+    for (const entry of deltas) {
+        const date = moment(entry.date).format('YYYY-MM-DD');
+        const key = `${date}|${entry.tier}|${entry.cadence}`;
+        const existing = byKey.get(key);
+        if (existing) {
+            existing.positive_delta += entry.positive_delta;
+            existing.negative_delta += entry.negative_delta;
+            existing.signups += entry.signups;
+            existing.cancellations += entry.cancellations;
+        } else {
+            byKey.set(key, {
+                date,
+                tier: entry.tier,
+                cadence: entry.cadence,
+                positive_delta: entry.positive_delta,
+                negative_delta: entry.negative_delta,
+                signups: entry.signups,
+                cancellations: entry.cancellations
+            });
+        }
+    }
+    return Array.from(byKey.values());
 }
 
 /** @typedef {object} SubscriptionCount

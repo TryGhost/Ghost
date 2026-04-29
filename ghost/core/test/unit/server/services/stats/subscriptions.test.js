@@ -426,6 +426,35 @@ describe('SubscriptionStatsService', function () {
             assert.equal(sumWhere('basic', 'year', '1970-01-02', 'cancellations'), 1);
         });
 
+        it('Aggregates paid and gift deltas that share (date, tier, cadence) into a single row', async function () {
+            const tiers = await createTiers(['basic']);
+
+            // Paid yearly signup on day 1
+            const NEW = createEvent('created');
+            await insertEvents([
+                [NEW('A', tiers.basic.yearly)]
+            ]);
+
+            // Gift yearly signup on the same day (basic tier)
+            await db('gifts').insert({
+                id: 'g-same-day',
+                tier_id: 'basic',
+                cadence: 'year',
+                status: 'redeemed',
+                redeemed_at: '1970-01-01T00:00:00.000Z'
+            });
+
+            const stats = new SubscriptionStatsService({knex: db});
+            const result = await stats.getSubscriptionHistory();
+
+            // There should be exactly one row for (basic, year, day 1) with combined deltas,
+            // not two — otherwise the row's `count` snapshot is ambiguous.
+            const rows = result.data.filter(r => r.tier === 'basic' && r.cadence === 'year' && r.date === '1970-01-01');
+            assert.equal(rows.length, 1);
+            assert.equal(rows[0].signups, 2);
+            assert.equal(rows[0].positive_delta, 2);
+        });
+
         it('Excludes unredeemed gifts (expired/refunded before redemption) from cancellations', async function () {
             await createTiers(['basic']);
 
