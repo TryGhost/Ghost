@@ -1,7 +1,7 @@
 const {renderEmptyContainer} = require('./render-empty-container');
 
 const ALL_MEMBERS_SEGMENT = 'status:free,status:-free';
-const PAID_MEMBERS_SEGMENT = 'status:-free'; // paid + comped
+const PAID_MEMBERS_SEGMENT = 'status:-free'; // paid + comped + gift
 const FREE_MEMBERS_SEGMENT = 'status:free';
 const NO_MEMBERS_SEGMENT = '';
 
@@ -53,9 +53,9 @@ function isVisibilityRestricted(visibility) {
 //
 // segment: '' = everyone
 // segment: 'status:free' = free members
-// segment: 'status:paid' = paid members (incorrect, misses comped)
-// segment: 'status:-free' = paid members (correct, includes comped)
-// segment: 'status:-free+status:-paid' = no-one (incorrect, misses comped)
+// segment: 'status:paid' = paid members (incorrect, misses comped + gift)
+// segment: 'status:-free' = paid members (correct, includes comped + gift)
+// segment: 'status:-free+status:-paid' = no-one (incorrect, misses comped + gift)
 //
 // new format...
 //
@@ -72,7 +72,7 @@ function isVisibilityRestricted(visibility) {
 // memberSegment: '' = no-one
 // memberSegment: 'status:free,status:-free' = everyone
 // memberSegment: 'status:free' = free members
-// memberSegment: 'status:-free' = paid + comped members
+// memberSegment: 'status:-free' = paid + comped + gift members
 function migrateOldVisibilityFormat(visibility) {
     if (!visibility || !isOldVisibilityFormat(visibility)) {
         return visibility;
