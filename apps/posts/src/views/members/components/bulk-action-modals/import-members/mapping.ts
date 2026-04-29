@@ -1,3 +1,7 @@
+type FieldMappingOptions = {
+    importMemberTier?: boolean;
+};
+
 export const FIELD_MAPPINGS = [
     {label: 'Email', value: 'email'},
     {label: 'Name', value: 'name'},
@@ -9,6 +13,8 @@ export const FIELD_MAPPINGS = [
     {label: 'Created at', value: 'created_at'}
 ];
 
+const IMPORT_TIER_FIELD_MAPPING = {label: 'Tier', value: 'import_tier'};
+
 const SUPPORTED_TYPES = [
     'email',
     'name',
@@ -19,6 +25,20 @@ const SUPPORTED_TYPES = [
     'labels',
     'created_at'
 ];
+
+function getSupportedTypes({importMemberTier = false}: FieldMappingOptions = {}): string[] {
+    return [
+        ...SUPPORTED_TYPES,
+        ...(importMemberTier ? [IMPORT_TIER_FIELD_MAPPING.value] : [])
+    ];
+}
+
+export function getFieldMappings({importMemberTier = false}: FieldMappingOptions = {}) {
+    return [
+        ...FIELD_MAPPINGS,
+        ...(importMemberTier ? [IMPORT_TIER_FIELD_MAPPING] : [])
+    ];
+}
 
 const AUTO_DETECTED_TYPES = ['email'];
 
@@ -117,9 +137,10 @@ export function sampleData(data: Record<string, string>[], validationSampleSize 
  *
  * Returned mapping object contains mappings accepted by the members upload API.
  */
-export function detectFieldTypes(data: Record<string, string>[]): Record<string, string> {
+export function detectFieldTypes(data: Record<string, string>[], options: FieldMappingOptions = {}): Record<string, string> {
     const sampledData = sampleData(data);
     const mapping: Record<string, string> = {};
+    const supportedTypes = getSupportedTypes(options);
 
     // Match column headers against supported types using all headers from the
     // original data. sampleData only keeps keys with non-empty values, so
@@ -132,7 +153,7 @@ export function detectFieldTypes(data: Record<string, string>[]): Record<string,
                 continue;
             }
 
-            if (!mapping[key] && SUPPORTED_TYPES.includes(key) && !AUTO_DETECTED_TYPES.includes(key)) {
+            if (!mapping[key] && supportedTypes.includes(key) && !AUTO_DETECTED_TYPES.includes(key)) {
                 mapping[key] = key;
             }
         }

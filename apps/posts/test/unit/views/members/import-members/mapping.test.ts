@@ -1,4 +1,4 @@
-import {MembersFieldMapping, detectFieldTypes, formatImportError, sampleData} from '@src/views/members/components/bulk-action-modals/import-members/mapping';
+import {MembersFieldMapping, detectFieldTypes, formatImportError, getFieldMappings, sampleData} from '@src/views/members/components/bulk-action-modals/import-members/mapping';
 import {describe, expect, it} from 'vitest';
 
 describe('mapping helpers', () => {
@@ -45,6 +45,20 @@ describe('mapping helpers', () => {
         expect(mapping.note).toBe('note');
         expect(mapping.subscribed_to_emails).toBe('subscribed_to_emails');
         expect(mapping.labels).toBe('labels');
+    });
+
+    it('detects import tier mapping when enabled', () => {
+        const mapping = detectFieldTypes([
+            {email: 'member@example.com', import_tier: 'Gold'}
+        ], {importMemberTier: true});
+
+        expect(mapping.import_tier).toBe('import_tier');
+    });
+
+    it('adds tier as an available field mapping when enabled', () => {
+        const fieldMappings = getFieldMappings({importMemberTier: true});
+
+        expect(fieldMappings).toContainEqual({label: 'Tier', value: 'import_tier'});
     });
 
     it('updates mapping while preventing duplicate targets', () => {

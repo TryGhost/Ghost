@@ -32,7 +32,7 @@ const init = async ({adapter, apiUrl, integration}) => {
     let scheduledResources;
 
     if (!adapter.rescheduleOnBoot) {
-        scheduledResources = [];
+        scheduledResources = {};
     } else {
         scheduledResources = await loadScheduledResources();
     }
