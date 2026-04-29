@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const models = require('../../../../core/server/models');
 const api = require('../../../../core/server/api').endpoints;
 const hbs = require('../../../../core/frontend/services/theme-engine/engine');
 const configUtils = require('../../../utils/config-utils');
@@ -22,8 +21,6 @@ describe('{{#recommendations}} helper', function () {
     let logging;
 
     before(async function () {
-        models.init();
-
         hbs.express4({
             partialsDir: [configUtils.config.get('paths').helperTemplates]
         });

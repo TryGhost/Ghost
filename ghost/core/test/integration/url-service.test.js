@@ -2,15 +2,10 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const testUtils = require('../utils');
 const configUtils = require('../utils/config-utils');
-const models = require('../../core/server/models');
 const UrlService = require('../../core/server/services/url/url-service');
 
 describe('Integration: services/url/UrlService', function () {
     let urlService;
-
-    before(function () {
-        models.init();
-    });
 
     before(testUtils.teardownDb);
     before(testUtils.setup('users:roles', 'posts'));

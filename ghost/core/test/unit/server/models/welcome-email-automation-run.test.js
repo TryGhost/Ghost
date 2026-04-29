@@ -2,10 +2,6 @@ const assert = require('node:assert/strict');
 const models = require('../../../../core/server/models');
 
 describe('Unit: models/welcome-email-automation-run', function () {
-    before(function () {
-        models.init();
-    });
-
     describe('tableName', function () {
         it('uses the correct table name', function () {
             const model = new models.WelcomeEmailAutomationRun();
