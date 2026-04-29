@@ -12,6 +12,7 @@ const {AutomatedEmailRecipient, Member, WelcomeEmailAutomationRun} = require('..
  * @prop {number} step_attempts
  * @prop {null | string} next_welcome_email_automated_email_id
  * @prop {string} automation_slug
+ * @prop {string} automation_status
  * @prop {string} automated_email_id
  */
 
@@ -61,7 +62,7 @@ async function fetchAndLockRuns() {
             .where(function () {
                 this.whereNull('r.step_started_at').orWhere('r.step_started_at', '<', lockCutoff);
             })
-            .select('r.id', 'r.member_id', 'r.step_attempts', 'r.next_welcome_email_automated_email_id', 'a.slug as automation_slug', 'e.id as automated_email_id')
+            .select('r.id', 'r.member_id', 'r.step_attempts', 'r.next_welcome_email_automated_email_id', 'a.slug as automation_slug', 'a.status as automation_status', 'e.id as automated_email_id')
             .limit(MAX_RUNS_PER_BATCH);
 
         if (runs.length === 0) {
@@ -103,7 +104,7 @@ async function updateRun(runId, attrs, transacting) {
 
 /**
  * @param {string} runId
- * @param {'finished' | 'email send failed' | 'member changed status' | 'member unsubscribed'} exitReason
+ * @param {'finished' | 'email send failed' | 'member changed status' | 'member unsubscribed' | 'automation disabled'} exitReason
  * @param {Knex.Transaction} [transacting]
  * @returns {Promise<void>}
  */
@@ -161,6 +162,11 @@ async function processRun({
 }) {
     if (run.step_attempts > MAX_ATTEMPTS) {
         await markMaxAttemptsExceeded(run.id);
+        return;
+    }
+
+    if (run.automation_status !== 'active') {
+        await markExited(run.id, 'automation disabled');
         return;
     }
 

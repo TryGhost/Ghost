@@ -1200,7 +1200,7 @@ module.exports = {
         ready_at: {type: 'dateTime', nullable: true},
         step_started_at: {type: 'dateTime', nullable: true},
         step_attempts: {type: 'integer', unsigned: true, nullable: false, defaultTo: 0},
-        exit_reason: {type: 'string', maxlength: 50, nullable: true, validations: {isIn: [['email send failed', 'member unsubscribed', 'member changed status', 'finished']]}},
+        exit_reason: {type: 'string', maxlength: 50, nullable: true, validations: {isIn: [['email send failed', 'member unsubscribed', 'member changed status', 'finished', 'automation disabled']]}},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         '@@INDEXES@@': [
