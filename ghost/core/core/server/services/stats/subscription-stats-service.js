@@ -175,6 +175,7 @@ class SubscriptionStatsService {
                 .groupByRaw('DATE(redeemed_at), tier_id, cadence'),
             knex('gifts')
                 .whereIn('status', ['consumed', 'expired', 'refunded'])
+                .whereNotNull('redeemed_at')
                 .whereRaw(`${cancellationDate} IS NOT NULL`)
                 .select(knex.raw(`DATE(${cancellationDate}) as date`))
                 .select('tier_id as tier')

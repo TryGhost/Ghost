@@ -426,6 +426,28 @@ describe('SubscriptionStatsService', function () {
             assert.equal(sumWhere('basic', 'year', '1970-01-02', 'cancellations'), 1);
         });
 
+        it('Excludes unredeemed gifts (expired/refunded before redemption) from cancellations', async function () {
+            await createTiers(['basic']);
+
+            // A gift that was purchased and refunded without ever being redeemed.
+            // It never produced a signup, so it must not produce a cancellation.
+            await db('gifts').insert({
+                id: 'g-refunded',
+                tier_id: 'basic',
+                cadence: 'year',
+                status: 'refunded',
+                redeemed_at: null,
+                refunded_at: '1970-01-02T00:00:00.000Z'
+            });
+
+            const stats = new SubscriptionStatsService({knex: db});
+            const result = await stats.getSubscriptionHistory();
+
+            // No rows should exist for this gift at all.
+            const giftRows = result.data.filter(r => r.tier === 'basic' && r.cadence === 'year');
+            assert.equal(giftRows.length, 0);
+        });
+
         it('Sorts merged paid+gift deltas by date so running counts roll back correctly', async function () {
             const tiers = await createTiers(['basic']);
 
