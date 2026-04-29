@@ -96,9 +96,11 @@ class DockerAnalyticsManager {
         this.locales = ['en-US', 'en-GB', 'es-ES', 'fr-FR', 'de-DE', 'it-IT', 'pt-BR', 'ja-JP'];
 
         this.memberStatusWeights = [
-            {value: 'undefined', weight: 83},
-            {value: 'paid', weight: 9},
-            {value: 'free', weight: 8}
+            {value: 'undefined', weight: 82},
+            {value: 'paid', weight: 8},
+            {value: 'free', weight: 8},
+            {value: 'comped', weight: 1},
+            {value: 'gift', weight: 1}
         ];
 
         this.locationWeights = [
