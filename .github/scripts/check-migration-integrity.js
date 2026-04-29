@@ -5,6 +5,11 @@ const execFileSync = require('child_process').execFileSync;
 const MIGRATIONS_PATH = 'ghost/core/core/server/data/migrations/versions';
 const PACKAGE_JSON_PATH = 'ghost/core/package.json';
 
+/**
+ * Run a git command with the given arguments and return its trimmed stdout.
+ * Throws an Error including stderr/stdout on failure so callers can surface a
+ * useful message instead of an opaque exec error.
+ */
 function runGit(args) {
     try {
         return execFileSync('git', args, {encoding: 'utf8'}).trim();
@@ -186,6 +191,12 @@ function checkStalePlacements(safeVersion, lastPublishedMinor, baseSha, compareS
     return null;
 }
 
+/**
+ * Entry point. Runs the orphaned-folder check unconditionally and the
+ * stale-placement check when PR_BASE_SHA / PR_COMPARE_SHA env vars are
+ * present. Aggregates failures into a single thrown error so the CI job
+ * reports every problem at once.
+ */
 function main() {
     const safeVersion = getSafeVersion();
     const lastPublishedMinor = getLastPublishedMinor();
