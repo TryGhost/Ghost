@@ -16,6 +16,7 @@ export const GiftRedemptionStyles = `
         max-width: 500px;
         padding: 0;
         overflow: hidden;
+        flex-shrink: 0;
     }
 
     .gh-portal-popup-container.giftRedemption .gh-portal-closeicon-container {
@@ -160,6 +161,10 @@ export const GiftRedemptionStyles = `
     }
 
     @media (max-width: 480px) {
+        .gh-portal-popup-container.giftRedemption {
+            padding: 0 !important;
+        }
+
         .gh-gift-redemption-panel {
             padding: 32px 24px 24px;
         }

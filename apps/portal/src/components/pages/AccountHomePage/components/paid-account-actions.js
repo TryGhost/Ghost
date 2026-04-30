@@ -40,7 +40,9 @@ const PaidAccountActions = () => {
             return (
                 <p className="gh-portal-account-discountcontainer">
                     <GiftIcon className="gh-portal-account-tagicon" />
-                    <span>{`${t('Gift subscription')} - ${t('Expires {expiryDate}', {expiryDate: subscriptionExpiry})}`}</span>
+                    <span>{t('Gift subscription')}</span>
+                    <span className="gh-portal-account-expiry-separator">-</span>
+                    <span className="gh-portal-account-expiry">{t('Expires {expiryDate}', {expiryDate: subscriptionExpiry})}</span>
                 </p>
             );
         } else if (isComplimentary) {
