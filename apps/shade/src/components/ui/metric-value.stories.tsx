@@ -10,7 +10,7 @@ const meta = {
     parameters: {
         docs: {
             description: {
-                component: 'Generic primitive for displaying a numeric metric with an optional label and adornment slot (typically a TrendBadge).'
+                component: 'Generic primitive for displaying a numeric metric with an optional label and a trailing element (typically a TrendBadge).'
             }
         }
     },
@@ -36,7 +36,7 @@ export const WithTrend: Story = {
     args: {
         label: 'Visitors',
         value: '12,540',
-        adornment: <TrendBadge direction='up' value='+5.2%' />
+        trailing: <TrendBadge direction='up' value='+5.2%' />
     }
 };
 
@@ -45,7 +45,7 @@ export const Large: Story = {
         label: 'Members',
         size: 'lg',
         value: '34,210',
-        adornment: <TrendBadge direction='down' value='-1.8%' />
+        trailing: <TrendBadge direction='down' value='-1.8%' />
     }
 };
 
@@ -64,7 +64,7 @@ export const LabelWithIcon: Story = {
             </>
         ),
         value: '12,540',
-        adornment: <TrendBadge direction='up' value='+5.2%' />
+        trailing: <TrendBadge direction='up' value='+5.2%' />
     }
 };
 
@@ -72,12 +72,11 @@ export const Examples: Story = {
     render: () => (
         <div className='flex flex-col gap-8'>
             <MetricValue
-                adornment={<TrendBadge direction='up' value='+5.2%' />}
                 label='Visitors'
+                trailing={<TrendBadge direction='up' value='+5.2%' />}
                 value='12,540'
             />
             <MetricValue
-                adornment={<TrendBadge direction='down' value='-1.8%' />}
                 label={
                     <>
                         <Users />
@@ -85,6 +84,7 @@ export const Examples: Story = {
                     </>
                 }
                 size='lg'
+                trailing={<TrendBadge direction='down' value='-1.8%' />}
                 value='34,210'
             />
             <MetricValue value='1,234' />

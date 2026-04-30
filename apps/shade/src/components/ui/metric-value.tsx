@@ -31,14 +31,14 @@ export interface MetricValueProps
         VariantProps<typeof metricValueNumberVariants> {
     label?: React.ReactNode;
     value: string | number;
-    /** Optional adornment (e.g. TrendBadge) rendered alongside the value. */
-    adornment?: React.ReactNode;
+    /** Optional element (e.g. TrendBadge) rendered after the value. */
+    trailing?: React.ReactNode;
     /** Forwarded to the value element for testing. */
     valueTestId?: string;
 }
 
 const MetricValue = React.forwardRef<HTMLDivElement, MetricValueProps>(
-    ({className, label, value, size = 'md', adornment, valueTestId, ...props}, ref) => {
+    ({className, label, value, size = 'md', trailing, valueTestId, ...props}, ref) => {
         return (
             <div
                 ref={ref}
@@ -58,7 +58,7 @@ const MetricValue = React.forwardRef<HTMLDivElement, MetricValueProps>(
                     >
                         {value}
                     </div>
-                    {adornment}
+                    {trailing}
                 </div>
             </div>
         );

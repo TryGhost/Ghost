@@ -184,11 +184,11 @@ interface KpiCardValueProps {
 }
 
 const KpiCardHeaderValue: React.FC<KpiCardValueProps> = ({value, diffDirection, diffValue, diffTooltip}) => {
-    let adornment: React.ReactNode = null;
+    let trailing: React.ReactNode = null;
     if (diffDirection && diffDirection !== 'hidden') {
         if (diffDirection === 'empty') {
             // Reserves the same vertical space as a real trend badge without showing one.
-            adornment = (
+            trailing = (
                 <div
                     className='flex h-[22px] items-center px-1.5 text-xs leading-none font-medium'
                     data-testid='kpi-card-header-diff'
@@ -197,7 +197,7 @@ const KpiCardHeaderValue: React.FC<KpiCardValueProps> = ({value, diffDirection, 
                 </div>
             );
         } else {
-            adornment = (
+            trailing = (
                 <TrendBadge
                     data-testid='kpi-card-header-diff'
                     direction={diffDirection}
@@ -209,7 +209,7 @@ const KpiCardHeaderValue: React.FC<KpiCardValueProps> = ({value, diffDirection, 
     }
     return (
         <MetricValue
-            adornment={adornment}
+            trailing={trailing}
             value={value}
             valueTestId='kpi-card-header-value'
         />

@@ -212,7 +212,7 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({
         </span>
     );
 
-    const adornment = diffDirection && diffDirection !== 'hidden' ? (
+    const trailing = diffDirection && diffDirection !== 'hidden' ? (
         <TrendBadge
             className='mt-0.5'
             data-testid={testId ? `${testId}-diff` : undefined}
@@ -223,10 +223,10 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({
 
     return (
         <MetricValue
-            adornment={adornment}
             className={cn('group', className)}
             label={labelNode}
             size='lg'
+            trailing={trailing}
             value={value}
             valueTestId={testId}
         />
