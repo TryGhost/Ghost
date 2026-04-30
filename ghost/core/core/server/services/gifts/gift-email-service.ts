@@ -80,13 +80,6 @@ export class GiftEmailService {
 
         const cadenceLabel = duration === 1 ? `1 ${cadence}` : `${duration} ${cadence}s`;
 
-        // Pre-build a mailto: URL the buyer can click to open their default mail
-        // client with a friendly draft already filled in. Recipient is left blank
-        // — that's the one thing only the buyer knows.
-        const mailtoSubject = `I got you a gift subscription to ${siteTitle}`;
-        const mailtoBody = `Hi,\n\nI bought you a subscription to ${siteTitle}. You can redeem it here:\n\n${giftLink}`;
-        const mailtoUrl = `mailto:?subject=${encodeURIComponent(mailtoSubject)}&body=${encodeURIComponent(mailtoBody)}`;
-
         const templateData = {
             siteTitle,
             siteUrl,
@@ -99,7 +92,6 @@ export class GiftEmailService {
                 tierName,
                 cadenceLabel,
                 link: giftLink,
-                mailtoUrl,
                 expiresAt: moment(expiresAt).format('D MMM YYYY')
             }
         };

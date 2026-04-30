@@ -93,24 +93,6 @@ describe('GiftEmailService', function () {
         sinon.assert.calledWith(mailer.send, sinon.match.has('html', sinon.match('1 month')));
     });
 
-    it('includes a mailto link with prefilled subject and body in the HTML', async function () {
-        await service.sendPurchaseConfirmation(defaultData);
-
-        const msg = mailer.send.getCall(0).args[0];
-
-        // Handlebars HTML-escapes some characters (including `=` → `&#x3D;`) when
-        // interpolating into an attribute. The browser decodes these back when the
-        // user clicks the link, so we don't care about the encoding here — we just
-        // verify the link is a mailto and that the encoded subject and body are
-        // present in the rendered output.
-        const expectedSubject = encodeURIComponent('I got you a gift subscription to Test Site');
-        const expectedBody = encodeURIComponent('Hi,\n\nI bought you a subscription to Test Site. You can redeem it here:\n\nhttps://example.com/gift/abc-123');
-
-        sinon.assert.match(msg.html, sinon.match('mailto:'));
-        sinon.assert.match(msg.html, sinon.match(expectedSubject));
-        sinon.assert.match(msg.html, sinon.match(expectedBody));
-    });
-
     it('falls back to site domain when site title is undefined', async function () {
         const noTitleSettingsCache = {
             get: (key) => {
