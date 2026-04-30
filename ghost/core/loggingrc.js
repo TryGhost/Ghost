@@ -8,6 +8,12 @@ if (!loggingConfig.path) {
     loggingConfig.path = config.getContentPath('logs');
 }
 
+if (loggingConfig.rotation) {
+    if (loggingConfig.rotation.threshold || loggingConfig.rotation.gzip || loggingConfig.rotation.rotateExisting) {
+        loggingConfig.rotation.useLibrary = true;
+    }
+}
+
 // Additional values used by logging
 loggingConfig.env = config.get('env');
 loggingConfig.domain = config.get('url');
