@@ -64,6 +64,19 @@ async function createMember(data) {
     return member;
 }
 
+async function createGiftMember(data) {
+    const member = await createMember({
+        ...data,
+        status: 'gift'
+    });
+    await models.MemberStatusEvent.add({
+        member_id: member.id,
+        from_status: null,
+        to_status: 'gift'
+    });
+    return member;
+}
+
 const newsletterSnapshot = {
     id: anyObjectId
 };
@@ -2767,6 +2780,8 @@ describe('Members API', function () {
     // Get stats
 
     it('Can fetch member counts stats', async function () {
+        await createGiftMember({email: 'gift-member@test.com'});
+
         await agent
             .get(`/members/stats/count/`)
             .expectStatus(200)
