@@ -30,6 +30,23 @@ if (parentPort) {
         const startDate = new Date();
         debug('Starting gift reminder send');
 
+        /**
+         * Explicitly initialize services required to run the job - We need to
+         * do this manually because the job is run in a worker thread and not
+         * in the main process
+         */
+        const settings = require('../../settings/settings-service');
+        await settings.init();
+
+        const emailAddressService = require('../../email-address');
+        emailAddressService.init();
+
+        const membersService = require('../../members');
+        await membersService.init();
+
+        const tiersService = require('../../tiers');
+        await tiersService.init();
+
         const giftService = require('../../gifts');
         await giftService.init();
 

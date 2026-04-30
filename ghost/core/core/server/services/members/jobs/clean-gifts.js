@@ -30,6 +30,20 @@ if (parentPort) {
         const cleanupStartDate = new Date();
         debug('Starting gift cleanup');
 
+        /**
+         * Explicitly initialize services required to run the job - We need to
+         * do this manually because the job is run in a worker thread and not
+         * in the main process
+         */
+        const settings = require('../../settings/settings-service');
+        await settings.init();
+
+        const stripeService = require('../../stripe');
+        await stripeService.init();
+
+        const membersService = require('../../members');
+        await membersService.init();
+
         const giftService = require('../../gifts');
         await giftService.init();
 
