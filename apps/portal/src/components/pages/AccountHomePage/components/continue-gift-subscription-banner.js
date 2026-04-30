@@ -22,8 +22,8 @@ const ContinueGiftSubscriptionBanner = () => {
     return (
         <div className='gh-portal-cancelcontinue-container'>
             <div className='gh-portal-cancel-banner'>
-                <p style={{maxWidth: 'none', margin: '0 0 16px', textAlign: 'center'}}>
-                    Your gift subscription ends on <strong>{expiryDate}</strong>. Continue with a paid subscription to keep reading. Any remaining days will be added as free trial time.
+                <p style={{maxWidth: 'none', margin: '0 0 16px', textAlign: 'center', textWrap: 'pretty'}}>
+                    Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.
                 </p>
                 <ActionButton
                     onClick={() => doAction('continueGiftSubscription')}
