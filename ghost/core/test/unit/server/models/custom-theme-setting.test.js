@@ -3,10 +3,6 @@ const models = require('../../../../core/server/models');
 const config = require('../../../../core/shared/config');
 
 describe('Unit: models/custom-theme-setting', function () {
-    before(function () {
-        models.init();
-    });
-
     describe('parse', function () {
         it('ensure correct parsing when fetching from db', function () {
             const setting = models.CustomThemeSetting.forge();

@@ -36,7 +36,8 @@ const CSV_HEADERS = [
     'created_at',
     'deleted_at',
     'labels',
-    'tiers'
+    'tiers',
+    'gift_id'
 ];
 
 /**
@@ -62,7 +63,11 @@ function formatMemberForCSV(member) {
     // Convert boolean 'false' to empty string for tests to pass
     // Only comped = true should result in 'true', otherwise empty string
     const complimentaryPlan = member.comped === true ? 'true' : '';
-    
+
+    // Gift members carry the gift id so an exported CSV can be re-imported and reassigned
+    // back to a (possibly new) member record via the gifts table
+    const giftId = member.gift_id || '';
+
     // Convert subscribed boolean to string representation
     const subscribedToEmails = member.subscribed === true ? 'true' : 'false';
 
@@ -77,7 +82,8 @@ function formatMemberForCSV(member) {
         created_at: member.created_at,
         deleted_at: member.deleted_at || null,
         labels: labels,
-        tiers: tiers
+        tiers: tiers,
+        gift_id: giftId
     };
 }
 
@@ -264,7 +270,7 @@ function createSerializer(debugString, serialize) {
  * @prop {number} email_opened_count
  * @prop {number} email_open_rate
  * @prop {null|SerializedEmailRecipient[]} email_recipients
- * @prop {'free'|'paid'|'comped'} status
+ * @prop {'free'|'paid'|'comped'|'gift'} status
  * @prop {boolean} can_comment
  * @prop {null|{disabled: boolean, disabled_reason: string, disabled_until: string|null}} commenting
  */

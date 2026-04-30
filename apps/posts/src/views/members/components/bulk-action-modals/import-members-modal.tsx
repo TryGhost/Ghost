@@ -28,7 +28,8 @@ export function ImportMembersModal({
     const errorCsvUrlRef = useRef<string | null>(null);
     const {data: configData} = useBrowseConfig();
     const importMemberTier = configData?.config?.labs?.importMemberTier === true;
-    const fieldMappings = useMemo(() => getFieldMappings({importMemberTier}), [importMemberTier]);
+    const giftSubscriptionsEnabled = configData?.config?.labs?.giftSubscriptions === true;
+    const fieldMappings = useMemo(() => getFieldMappings({importMemberTier, giftSubscriptionsEnabled}), [importMemberTier, giftSubscriptionsEnabled]);
 
     const labelPicker = useLabelPicker({
         selectedSlugs: state.selectedLabelSlugs,
@@ -83,7 +84,7 @@ export function ImportMembersModal({
                 const data = parseCSV(text);
 
                 if (data.length > 0) {
-                    const detectedMapping = detectFieldTypes(data, {importMemberTier});
+                    const detectedMapping = detectFieldTypes(data, {importMemberTier, giftSubscriptionsEnabled});
                     const fieldMapping = new MembersFieldMapping(detectedMapping);
 
                     dispatch({
@@ -135,7 +136,7 @@ export function ImportMembersModal({
                 reader.abort();
             }
         };
-    }, [importMemberTier, state.file]);
+    }, [importMemberTier, giftSubscriptionsEnabled, state.file]);
 
     const validateFile = useCallback((file: File): boolean => {
         const match = /(?:\.([^.]+))?$/.exec(file.name);

@@ -3,15 +3,10 @@ const {assertExists} = require('../../../utils/assertions');
 const sinon = require('sinon');
 const testUtils = require('../../../utils');
 const urlService = require('../../../../core/server/services/url');
-const models = require('../../../../core/server/models');
 const tagsHelper = require('../../../../core/frontend/helpers/tags');
 
 describe('{{tags}} helper', function () {
     let urlServiceGetUrlByResourceIdStub;
-
-    before(function () {
-        models.init();
-    });
 
     beforeEach(function () {
         urlServiceGetUrlByResourceIdStub = sinon.stub(urlService, 'getUrlByResourceId');

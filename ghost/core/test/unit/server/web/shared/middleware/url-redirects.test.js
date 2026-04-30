@@ -59,7 +59,7 @@ describe('UNIT: url redirects', function () {
     });
 
     describe('expect redirect', function () {
-        it('site is https, request is http', function (done) {
+        it('site is https, request is http', function () {
             configUtils.set({
                 url: 'https://default.com:2368/'
             });
@@ -72,10 +72,9 @@ describe('UNIT: url redirects', function () {
             sinon.assert.called(res.redirect);
             sinon.assert.calledWith(res.redirect, 301, 'https://default.com:2368/');
             sinon.assert.called(res.set);
-            done();
         });
 
-        it('site host is !== request host', function (done) {
+        it('site host is !== request host', function () {
             configUtils.set({
                 url: 'https://default.com'
             });
@@ -87,11 +86,10 @@ describe('UNIT: url redirects', function () {
             sinon.assert.called(res.redirect);
             sinon.assert.calledWith(res.redirect, 301, 'https://localhost:2368/');
             sinon.assert.called(res.set);
-            done();
         });
 
         describe(`admin redirects`, function () {
-            it('url and admin url are equal, but protocol is different, request is http', function (done) {
+            it('url and admin url are equal, but protocol is different, request is http', function () {
                 configUtils.set({
                     url: 'http://default.com:2368',
                     admin: {
@@ -106,10 +104,9 @@ describe('UNIT: url redirects', function () {
                 sinon.assert.notCalled(next);
                 sinon.assert.calledWith(res.redirect, 301, 'https://default.com:2368/ghost/');
                 sinon.assert.called(res.set);
-                done();
             });
 
-            it('url and admin url are different, request is http', function (done) {
+            it('url and admin url are different, request is http', function () {
                 configUtils.set({
                     url: 'http://default.com:2368',
                     admin: {
@@ -124,10 +121,9 @@ describe('UNIT: url redirects', function () {
                 sinon.assert.notCalled(next);
                 sinon.assert.calledWith(res.redirect, 301, 'https://admin.default.com:2368/ghost/');
                 sinon.assert.called(res.set);
-                done();
             });
 
-            it('subdirectory', function (done) {
+            it('subdirectory', function () {
                 configUtils.set({
                     url: 'http://default.com:2368/blog',
                     admin: {
@@ -149,10 +145,9 @@ describe('UNIT: url redirects', function () {
                 sinon.assert.called(next);
                 sinon.assert.calledOnce(res.redirect);
                 sinon.assert.calledOnce(res.set);
-                done();
             });
 
-            it('keeps query', function (done) {
+            it('keeps query', function () {
                 configUtils.set({
                     url: 'http://default.com:2368',
                     admin: {
@@ -171,10 +166,9 @@ describe('UNIT: url redirects', function () {
                 sinon.assert.notCalled(next);
                 sinon.assert.calledWith(res.redirect, 301, 'https://admin.default.com:2368/ghost/?test=true');
                 sinon.assert.called(res.set);
-                done();
             });
 
-            it('original url has search params', function (done) {
+            it('original url has search params', function () {
                 configUtils.set({
                     url: 'http://default.com:2368',
                     admin: {
@@ -193,10 +187,9 @@ describe('UNIT: url redirects', function () {
                 sinon.assert.notCalled(next);
                 sinon.assert.calledWith(res.redirect, 301, 'https://admin.default.com:2368/ghost/something/?a=b');
                 sinon.assert.called(res.set);
-                done();
             });
 
-            it('ensure redirect loop won\'t happen', function (done) {
+            it('ensure redirect loop won\'t happen', function () {
                 configUtils.set({
                     url: 'http://default.com:2368',
                     admin: {
@@ -220,13 +213,12 @@ describe('UNIT: url redirects', function () {
                 sinon.assert.notCalled(res.redirect);
                 sinon.assert.calledOnce(res.set);
                 sinon.assert.called(next);
-                done();
             });
         });
     });
 
     describe('expect no redirect', function () {
-        it('site is http, request is http', function (done) {
+        it('site is http, request is http', function () {
             configUtils.set({
                 url: 'http://default.com:2368/'
             });
@@ -239,10 +231,9 @@ describe('UNIT: url redirects', function () {
             sinon.assert.notCalled(res.redirect);
             sinon.assert.notCalled(res.set);
             sinon.assert.calledWith(next);
-            done();
         });
 
-        it('site is http, request is https', function (done) {
+        it('site is http, request is https', function () {
             configUtils.set({
                 url: 'http://default.com:2368/'
             });
@@ -255,10 +246,9 @@ describe('UNIT: url redirects', function () {
             sinon.assert.called(next);
             sinon.assert.notCalled(res.redirect);
             sinon.assert.notCalled(res.set);
-            done();
         });
 
-        it('blog is http, request is https (trailing slash is missing)', function (done) {
+        it('blog is http, request is https (trailing slash is missing)', function () {
             configUtils.set({
                 url: 'http://default.com:2368/'
             });
@@ -271,10 +261,9 @@ describe('UNIT: url redirects', function () {
             sinon.assert.called(next);
             sinon.assert.notCalled(res.redirect);
             sinon.assert.notCalled(res.set);
-            done();
         });
 
-        it('blog is https, request is https', function (done) {
+        it('blog is https, request is https', function () {
             configUtils.set({
                 url: 'https://default.com:2368/'
             });
@@ -288,10 +277,9 @@ describe('UNIT: url redirects', function () {
             sinon.assert.calledWith(next);
             sinon.assert.notCalled(res.redirect);
             sinon.assert.notCalled(res.set);
-            done();
         });
 
-        it('blog host is !== request host', function (done) {
+        it('blog host is !== request host', function () {
             configUtils.set({
                 url: 'https://default.com'
             });
@@ -304,11 +292,10 @@ describe('UNIT: url redirects', function () {
             sinon.assert.called(next);
             sinon.assert.notCalled(res.redirect);
             sinon.assert.notCalled(res.set);
-            done();
         });
 
         describe(`admin redirects`, function () {
-            it('admin is blog url and http, requester is http', function (done) {
+            it('admin is blog url and http, requester is http', function () {
                 configUtils.set({
                     url: 'http://default.com:2368'
                 });
@@ -320,10 +307,9 @@ describe('UNIT: url redirects', function () {
                 sinon.assert.called(next);
                 sinon.assert.notCalled(res.redirect);
                 sinon.assert.notCalled(res.set);
-                done();
             });
 
-            it('admin request, no custom admin.url configured', function (done) {
+            it('admin request, no custom admin.url configured', function () {
                 configUtils.set({
                     url: 'http://default.com:2368'
                 });
@@ -335,10 +321,9 @@ describe('UNIT: url redirects', function () {
                 sinon.assert.called(next);
                 sinon.assert.notCalled(res.redirect);
                 sinon.assert.notCalled(res.set);
-                done();
             });
 
-            it('url and admin url are different, protocol is different, request is not secure', function (done) {
+            it('url and admin url are different, protocol is different, request is not secure', function () {
                 configUtils.set({
                     url: 'http://ghost.org/blog/',
                     admin: {
@@ -354,10 +339,9 @@ describe('UNIT: url redirects', function () {
                 sinon.assert.notCalled(res.redirect);
                 sinon.assert.notCalled(res.set);
                 sinon.assert.called(next);
-                done();
             });
 
-            it('url and admin url are different, protocol is different, request is secure', function (done) {
+            it('url and admin url are different, protocol is different, request is secure', function () {
                 configUtils.set({
                     url: 'http://ghost.org/blog/',
                     admin: {
@@ -374,10 +358,9 @@ describe('UNIT: url redirects', function () {
                 sinon.assert.notCalled(res.redirect);
                 sinon.assert.notCalled(res.set);
                 sinon.assert.called(next);
-                done();
             });
 
-            it('url and admin url are different, request matches, uses a port', function (done) {
+            it('url and admin url are different, request matches, uses a port', function () {
                 configUtils.set({
                     url: 'https://default.com:2368',
                     admin: {
@@ -394,8 +377,6 @@ describe('UNIT: url redirects', function () {
                 sinon.assert.notCalled(res.redirect);
                 sinon.assert.notCalled(res.set);
                 sinon.assert.called(next);
-
-                done();
             });
         });
     });

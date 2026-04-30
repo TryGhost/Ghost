@@ -107,6 +107,10 @@ class PopupContent extends React.Component {
         if (hasMode(['preview']) || (otcRef && page === 'magiclink')) {
             return;
         }
+        // Hard-to-trigger flows: require explicit dismissal via the X button
+        if (page === 'giftRedemption' || page === 'giftSuccess') {
+            return;
+        }
         if (e.target === e.currentTarget) {
             this.context.doAction('closePopup');
         }
@@ -266,6 +270,11 @@ export default class PopupModal extends React.Component {
 
     handlePopupClose(e) {
         e.preventDefault();
+        const {page} = this.context;
+        // Hard-to-trigger flows: require explicit dismissal via the X button
+        if (page === 'giftRedemption' || page === 'giftSuccess') {
+            return;
+        }
         if (e.target === e.currentTarget) {
             this.context.doAction('closePopup');
         }

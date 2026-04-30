@@ -5,6 +5,7 @@
             "paid": 100,
             "free": 500,
             "comped": 10,
+            "gift": 3,
             "paid_subscribed": 5,
             "paid_canceled": 2
         },
@@ -13,6 +14,7 @@
             "paid": 103,
             "free": 510,
             "comped": 10,
+            "gift": 4,
             "paid_subscribed": 3,
             "paid_canceled": 0
         },
@@ -21,6 +23,7 @@
             "paid": 105,
             "free": 520,
             "comped": 11,
+            "gift": 5,
             "paid_subscribed": 2,
             "paid_canceled": 0
         },
@@ -29,6 +32,7 @@
             "paid": 108,
             "free": 525,
             "comped": 11,
+            "gift": 6,
             "paid_subscribed": 3,
             "paid_canceled": 0
         },
@@ -37,6 +41,7 @@
             "paid": 110,
             "free": 530,
             "comped": 12,
+            "gift": 8,
             "paid_subscribed": 2,
             "paid_canceled": 0
         }

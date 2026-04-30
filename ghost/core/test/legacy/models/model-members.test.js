@@ -268,12 +268,11 @@ describe('Member Model', function run() {
     describe('findAll', function () {
         beforeEach(testUtils.setup('members'));
 
-        it('can use search query', function (done) {
-            Member.findAll({search: 'egg'}).then(function (queryResult) {
-                assert.equal(queryResult.length, 1);
-                assert.equal(queryResult.models[0].get('name'), 'Mr Egg');
-                done();
-            }).catch(done);
+        it('can use search query', async function () {
+            const queryResult = await Member.findAll({search: 'egg'});
+
+            assert.equal(queryResult.length, 1);
+            assert.equal(queryResult.models[0].get('name'), 'Mr Egg');
         });
     });
 
@@ -587,4 +586,3 @@ describe('Member Model', function run() {
         });
     });
 });
-

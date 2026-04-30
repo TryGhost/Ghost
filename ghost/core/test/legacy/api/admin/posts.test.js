@@ -32,17 +32,13 @@ describe('Posts API', function () {
     });
 
     describe('Browse', function () {
-        it('fields & formats combined', function (done) {
-            request.get(localUtils.API.getApiQuery('posts/?formats=mobiledoc,html&fields=id,title'))
+        it('fields & formats combined', async function () {
+            await request.get(localUtils.API.getApiQuery('posts/?formats=mobiledoc,html&fields=id,title'))
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-
+                .expect(function (res) {
                     assert.equal(res.headers['x-cache-invalidate'], undefined);
                     const jsonResponse = res.body;
                     assertExists(jsonResponse.posts);
@@ -58,22 +54,16 @@ describe('Posts API', function () {
                     );
 
                     localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
-
-                    done();
                 });
         });
 
-        it('combined fields, formats, include and non existing', function (done) {
-            request.get(localUtils.API.getApiQuery('posts/?formats=mobiledoc,html,plaintext&fields=id,title,primary_tag,doesnotexist&include=authors,tags,email'))
+        it('combined fields, formats, include and non existing', async function () {
+            await request.get(localUtils.API.getApiQuery('posts/?formats=mobiledoc,html,plaintext&fields=id,title,primary_tag,doesnotexist&include=authors,tags,email'))
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-
+                .expect(function (res) {
                     assert.equal(res.headers['x-cache-invalidate'], undefined);
                     const jsonResponse = res.body;
                     assertExists(jsonResponse.posts);
@@ -89,22 +79,16 @@ describe('Posts API', function () {
                     );
 
                     localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
-
-                    done();
                 });
         });
 
-        it('can filter by fields coming from posts_meta table non null meta_description', function (done) {
-            request.get(localUtils.API.getApiQuery(`posts/?filter=meta_description:-null`))
+        it('can filter by fields coming from posts_meta table non null meta_description', async function () {
+            await request.get(localUtils.API.getApiQuery(`posts/?filter=meta_description:-null`))
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-
+                .expect(function (res) {
                     assert.equal(res.headers['x-cache-invalidate'], undefined);
                     const jsonResponse = res.body;
                     assertExists(jsonResponse.posts);
@@ -120,22 +104,16 @@ describe('Posts API', function () {
                     );
 
                     localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
-
-                    done();
                 });
         });
 
-        it('can filter by fields coming from posts_meta table by value', function (done) {
-            request.get(localUtils.API.getApiQuery(`posts/?filter=meta_description:'meta description for short and sweet'`))
+        it('can filter by fields coming from posts_meta table by value', async function () {
+            await request.get(localUtils.API.getApiQuery(`posts/?filter=meta_description:'meta description for short and sweet'`))
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-
+                .expect(function (res) {
                     assert.equal(res.headers['x-cache-invalidate'], undefined);
                     const jsonResponse = res.body;
                     assertExists(jsonResponse.posts);
@@ -150,22 +128,16 @@ describe('Posts API', function () {
                     );
 
                     localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
-
-                    done();
                 });
         });
 
-        it('can order by fields coming from posts_meta table', function (done) {
-            request.get(localUtils.API.getApiQuery('posts/?order=meta_description%20ASC'))
+        it('can order by fields coming from posts_meta table', async function () {
+            await request.get(localUtils.API.getApiQuery('posts/?order=meta_description%20ASC'))
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(200)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-
+                .expect(function (res) {
                     assert.equal(res.headers['x-cache-invalidate'], undefined);
                     const jsonResponse = res.body;
                     assertExists(jsonResponse.posts);
@@ -182,8 +154,6 @@ describe('Posts API', function () {
                     );
 
                     localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
-
-                    done();
                 });
         });
 
@@ -257,18 +227,14 @@ describe('Posts API', function () {
     });
 
     describe('Read', function () {
-        it('can\'t retrieve non existent post', function (done) {
-            request.get(localUtils.API.getApiQuery(`posts/${ObjectId().toHexString()}/`))
+        it('can\'t retrieve non existent post', async function () {
+            await request.get(localUtils.API.getApiQuery(`posts/${ObjectId().toHexString()}/`))
                 .set('Origin', config.get('url'))
                 .set('Accept', 'application/json')
                 .expect('Content-Type', /json/)
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(404)
-                .end(function (err, res) {
-                    if (err) {
-                        return done(err);
-                    }
-
+                .expect(function (res) {
                     assert.equal(res.headers['x-cache-invalidate'], undefined);
                     const jsonResponse = res.body;
                     assertExists(jsonResponse);
@@ -284,7 +250,6 @@ describe('Posts API', function () {
                         'id',
                         'ghostErrorCode'
                     ]);
-                    done();
                 });
         });
 
