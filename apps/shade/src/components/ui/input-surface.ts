@@ -6,33 +6,33 @@ import {cn} from '@/lib/utils';
  * The recipe owns: border, background, radius, transition, focus ring, invalid state.
  * Consumers add their own size, padding, typography, and component-specific tweaks.
  *
- * `surfaceField()` covers the two common shapes:
+ * `inputSurface()` covers the two common shapes:
  * - `'self'` — apply directly to the focusable element (e.g. <input>, <textarea>, <button>).
  * - `'within'` — apply to a wrapper that contains a focusable child; focus and invalid
  *   styles are derived from any focusable descendant via `:has()`.
  *
  * For unusual cases (e.g. a wrapper that should only react to a specific control element,
- * not any focusable descendant) compose `surfaceFieldClasses` atoms manually.
+ * not any focusable descendant) compose `inputSurfaceClasses` atoms manually.
  *
  * @example
  *   // Direct on a focusable element
- *   <input className={cn(surfaceField('self'), 'h-9 px-3 ...')} />
+ *   <input className={cn(inputSurface('self'), 'h-9 px-3 ...')} />
  *
  *   // Wrapper with any focused descendant driving focus state
- *   <div className={cn(surfaceField('within'), 'flex h-9 items-center ...')}>
+ *   <div className={cn(inputSurface('within'), 'flex h-9 items-center ...')}>
  *     <input ... />
  *   </div>
  *
  *   // Custom scope: only one specific child triggers focus state. Compose from atoms
  *   // so Tailwind can statically detect the literal class string.
  *   <div className={cn(
- *     surfaceFieldClasses.base,
- *     surfaceFieldClasses.invalidWithin,
+ *     inputSurfaceClasses.base,
+ *     inputSurfaceClasses.invalidWithin,
  *     // literal class string for Tailwind JIT to pick up
  *     'has-[[data-slot=control]:focus-visible]:border-focus-ring ...'
  *   )} />
  */
-export const surfaceFieldClasses = {
+export const inputSurfaceClasses = {
     base: 'rounded-md border border-border-default bg-surface-elevated transition-colors',
     focusSelf:
         'focus-visible:outline-hidden focus-visible:bg-transparent focus-visible:border-focus-ring focus-visible:ring-2 focus-visible:ring-focus-ring/25',
@@ -45,18 +45,18 @@ export const surfaceFieldClasses = {
     disabledSelf: 'disabled:cursor-not-allowed disabled:opacity-50'
 } as const;
 
-export function surfaceField(mode: 'self' | 'within' = 'self') {
+export function inputSurface(mode: 'self' | 'within' = 'self') {
     if (mode === 'self') {
         return cn(
-            surfaceFieldClasses.base,
-            surfaceFieldClasses.focusSelf,
-            surfaceFieldClasses.invalidSelf,
-            surfaceFieldClasses.disabledSelf
+            inputSurfaceClasses.base,
+            inputSurfaceClasses.focusSelf,
+            inputSurfaceClasses.invalidSelf,
+            inputSurfaceClasses.disabledSelf
         );
     }
     return cn(
-        surfaceFieldClasses.base,
-        surfaceFieldClasses.focusWithin,
-        surfaceFieldClasses.invalidWithin
+        inputSurfaceClasses.base,
+        inputSurfaceClasses.focusWithin,
+        inputSurfaceClasses.invalidWithin
     );
 }

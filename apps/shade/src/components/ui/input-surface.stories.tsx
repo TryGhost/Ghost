@@ -1,20 +1,20 @@
 import type {Meta, StoryObj} from '@storybook/react-vite';
 import {cn} from '@/lib/utils';
-import {surfaceField, surfaceFieldClasses} from './surface-field';
+import {inputSurface, inputSurfaceClasses} from './input-surface';
 
 /**
- * Docs-only Storybook entry for the `surfaceField` recipe.
+ * Docs-only Storybook entry for the `inputSurface` recipe.
  * Lives under "Foundations" rather than "Components" because there's no component to render —
  * just a shared visual recipe that powers Input, Textarea, InputGroup and the Select trigger.
  */
 const meta: Meta = {
-    title: 'Foundations / Surface Field',
+    title: 'Foundations / Input Surface',
     tags: ['autodocs'],
     parameters: {
         docs: {
             description: {
                 component:
-                    'Shared visual recipe for input-like surfaces. The same border, background, radius, focus ring, and invalid state used by every form control in Shade. Use `surfaceField(\'self\')` when applying directly to a focusable element (`<input>`, `<textarea>`, `<button>`). Use `surfaceField(\'within\')` when applying to a wrapper that contains a focusable child — the focus and invalid styles are derived from the descendant via `:has()` selectors. For unusual cases that need a custom focus scope (e.g. only one specific control should trigger the surface focus ring), compose `surfaceFieldClasses` atoms manually. Live consumers: `Components / Input`, `Components / Textarea`, `Components / InputGroup`, `Components / Select`.'
+                    'Shared visual recipe for input-like surfaces. The same border, background, radius, focus ring, and invalid state used by every form control in Shade. Use `inputSurface(\'self\')` when applying directly to a focusable element (`<input>`, `<textarea>`, `<button>`). Use `inputSurface(\'within\')` when applying to a wrapper that contains a focusable child — the focus and invalid styles are derived from the descendant via `:has()` selectors. For unusual cases that need a custom focus scope (e.g. only one specific control should trigger the surface focus ring), compose `inputSurfaceClasses` atoms manually. Live consumers: `Components / Input`, `Components / Textarea`, `Components / InputGroup`, `Components / Select`.'
             }
         }
     }
@@ -35,7 +35,7 @@ export const Self: Story = {
     },
     render: () => (
         <input
-            className={cn(surfaceField('self'), inputBase)}
+            className={cn(inputSurface('self'), inputBase)}
             placeholder='Tab to focus me'
         />
     )
@@ -50,7 +50,7 @@ export const Within: Story = {
         }
     },
     render: () => (
-        <div className={cn(surfaceField('within'), 'flex w-[280px] items-center gap-2 px-3')}>
+        <div className={cn(inputSurface('within'), 'flex w-[280px] items-center gap-2 px-3')}>
             <span className='text-sm text-muted-foreground'>$</span>
             <input
                 className='h-9 grow bg-transparent outline-hidden placeholder:text-muted-foreground'
@@ -71,16 +71,16 @@ export const States: Story = {
     render: () => (
         <div className='flex flex-col gap-3'>
             <input
-                className={cn(surfaceField('self'), inputBase)}
+                className={cn(inputSurface('self'), inputBase)}
                 placeholder='Default'
             />
             <input
-                className={cn(surfaceField('self'), inputBase)}
+                className={cn(inputSurface('self'), inputBase)}
                 placeholder='Invalid'
                 aria-invalid
             />
             <input
-                className={cn(surfaceField('self'), inputBase)}
+                className={cn(inputSurface('self'), inputBase)}
                 placeholder='Disabled'
                 disabled
             />
@@ -98,13 +98,13 @@ export const WithinStates: Story = {
     },
     render: () => (
         <div className='flex flex-col gap-3'>
-            <div className={cn(surfaceField('within'), 'flex w-[280px] items-center px-3')}>
+            <div className={cn(inputSurface('within'), 'flex w-[280px] items-center px-3')}>
                 <input
                     className='h-9 grow bg-transparent outline-hidden placeholder:text-muted-foreground'
                     placeholder='Default'
                 />
             </div>
-            <div className={cn(surfaceField('within'), 'flex w-[280px] items-center px-3')}>
+            <div className={cn(inputSurface('within'), 'flex w-[280px] items-center px-3')}>
                 <input
                     className='h-9 grow bg-transparent outline-hidden placeholder:text-muted-foreground'
                     placeholder='Invalid'
@@ -119,7 +119,7 @@ export const CustomFocusScope: Story = {
     parameters: {
         docs: {
             description: {
-                story: 'For wrappers that should only react to a specific descendant (e.g. `InputGroup`, where focusing a button inside the group must NOT trigger the surface ring), compose `surfaceFieldClasses` atoms with a literal `has-[…]:` selector. The literal class string is required so Tailwind can detect it at build time.'
+                story: 'For wrappers that should only react to a specific descendant (e.g. `InputGroup`, where focusing a button inside the group must NOT trigger the surface ring), compose `inputSurfaceClasses` atoms with a literal `has-[…]:` selector. The literal class string is required so Tailwind can detect it at build time.'
             }
         }
     },
@@ -127,8 +127,8 @@ export const CustomFocusScope: Story = {
         <div className='flex flex-col gap-3'>
             <div
                 className={cn(
-                    surfaceFieldClasses.base,
-                    surfaceFieldClasses.invalidWithin,
+                    inputSurfaceClasses.base,
+                    inputSurfaceClasses.invalidWithin,
                     'has-[[data-slot=control]:focus-visible]:outline-hidden has-[[data-slot=control]:focus-visible]:bg-transparent has-[[data-slot=control]:focus-visible]:border-focus-ring has-[[data-slot=control]:focus-visible]:ring-2 has-[[data-slot=control]:focus-visible]:ring-focus-ring/25',
                     'flex w-[320px] items-center gap-2 px-3 outline-hidden'
                 )}
@@ -161,7 +161,7 @@ export const WhatTheRecipeOwns: Story = {
         <table className='border-collapse text-left text-sm [&_td]:border [&_td]:px-3 [&_td]:py-2 [&_th]:border [&_th]:bg-muted [&_th]:px-3 [&_th]:py-2'>
             <thead>
                 <tr>
-                    <th>Owned by `surfaceField`</th>
+                    <th>Owned by `inputSurface`</th>
                     <th>Owned by the consumer</th>
                 </tr>
             </thead>

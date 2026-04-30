@@ -4,7 +4,7 @@ import {cva, type VariantProps} from 'class-variance-authority';
 import {cn} from '@/lib/utils';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
-import {surfaceFieldClasses} from '@/components/ui/surface-field';
+import {inputSurfaceClasses} from '@/components/ui/input-surface';
 import {Textarea} from '@/components/ui/textarea';
 
 function InputGroup({className, ...props}: React.ComponentProps<'div'>) {
@@ -12,8 +12,8 @@ function InputGroup({className, ...props}: React.ComponentProps<'div'>) {
         <div
             className={cn(
                 // Shared surface chrome (border, bg, radius, transition, invalid state).
-                surfaceFieldClasses.base,
-                surfaceFieldClasses.invalidWithin,
+                inputSurfaceClasses.base,
+                inputSurfaceClasses.invalidWithin,
 
                 // Wrapper layout + group context (input-group specific).
                 'group/input-group relative flex w-full items-center outline-hidden',
@@ -27,7 +27,7 @@ function InputGroup({className, ...props}: React.ComponentProps<'div'>) {
 
                 // Focus state — scoped to the input-group control specifically so that
                 // focusing an InputGroupButton inside the group does NOT trigger the surface
-                // focus ring. This is why we don't use surfaceField('within') here.
+                // focus ring. This is why we don't use inputSurface('within') here.
                 'has-[[data-slot=input-group-control]:focus-visible]:outline-hidden has-[[data-slot=input-group-control]:focus-visible]:bg-transparent has-[[data-slot=input-group-control]:focus-visible]:border-focus-ring has-[[data-slot=input-group-control]:focus-visible]:ring-2 has-[[data-slot=input-group-control]:focus-visible]:ring-focus-ring/25',
 
                 className
