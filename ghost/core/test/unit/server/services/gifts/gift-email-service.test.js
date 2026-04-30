@@ -54,7 +54,7 @@ describe('GiftEmailService', function () {
         sinon.assert.calledOnce(mailer.send);
         sinon.assert.calledWith(mailer.send, sinon.match({
             to: 'buyer@example.com',
-            subject: 'Gift subscription purchase confirmation',
+            subject: 'Your gift is ready to share',
             from: 'Test Site <noreply@example.com>'
         }));
     });
