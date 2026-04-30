@@ -152,18 +152,21 @@ describe('UNIT: settings cache', function () {
         cache.set('title', {value: 'hello world'});
         cache.set('timezone', {value: 'PST'});
         cache.set('secondary_navigation', {value: false});
+        cache.set('linkedin', {value: 'ghost-team'});
 
         assert.deepEqual(cache.getAll(), {
             key1: {value: 'something'},
             title: {value: 'hello world'},
             timezone: {value: 'PST'},
-            secondary_navigation: {value: false}
+            secondary_navigation: {value: false},
+            linkedin: {value: 'ghost-team'}
         });
 
         let values = _.zipObject(_.keys(publicSettings), _.fill(Array(_.size(publicSettings)), null));
         values.title = 'hello world';
         values.timezone = 'PST';
         values.secondary_navigation = false;
+        values.linkedin = 'ghost-team';
         // transistor_portal_enabled is computed server-side: transistor && transistor_portal_enabled
         values.transistor_portal_enabled = false;
 
