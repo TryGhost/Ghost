@@ -71,7 +71,7 @@ export const RecommendationsPageStyles = `
     transition: 0.2s ease-in-out opacity;
     }
 
-    .gh-portal-list-detail:hover {
+    .gh-portal-recommendation-item .gh-portal-list-detail:hover {
     cursor: pointer;
     opacity: 0.8;
     }
