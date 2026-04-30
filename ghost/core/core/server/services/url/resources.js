@@ -5,6 +5,7 @@ const {URLResourceUpdatedEvent} = require('../../../shared/events');
 const Resource = require('./resource');
 const config = require('../../../shared/config');
 const models = require('../../models');
+const schema = require('../../data/schema');
 
 // This listens to all manner of model events to find new content that needs a URL...
 const events = require('../../lib/common/events');
@@ -180,9 +181,19 @@ class Resources {
      * @private
      */
     _prepareModelSync(model, resourceConfig) {
-        const exclude = resourceConfig.modelOptions.exclude;
+        const include = resourceConfig.modelOptions.include;
         const withRelatedFields = resourceConfig.modelOptions.withRelatedFields;
-        const obj = _.omit(model.toJSON(), exclude);
+        const withRelatedPrimary = resourceConfig.modelOptions.withRelatedPrimary;
+
+        // Pick column fields + relation keys so relations survive the pick
+        const pickKeys = [...include];
+        if (withRelatedFields) {
+            pickKeys.push(...Object.keys(withRelatedFields));
+        }
+        if (withRelatedPrimary) {
+            pickKeys.push(...Object.keys(withRelatedPrimary));
+        }
+        const obj = _.pick(model.toJSON(), pickKeys);
 
         if (withRelatedFields) {
             _.each(withRelatedFields, (fields, key) => {
@@ -201,8 +212,6 @@ class Resources {
                     return relationToReturn;
                 });
             });
-
-            const withRelatedPrimary = resourceConfig.modelOptions.withRelatedPrimary;
 
             if (withRelatedPrimary) {
                 _.each(withRelatedPrimary, (relation, primaryKey) => {
@@ -318,7 +327,13 @@ class Resources {
         const resourceConfig = _.find(this.resourcesConfig, {type: type});
 
         // NOTE: check if any of the route-related fields were changed and only proceed if so
-        const ignoredProperties = [...resourceConfig.modelOptions.exclude, 'updated_at'];
+        const tableNames = {Post: 'posts', User: 'users', Tag: 'tags'};
+        const include = resourceConfig.modelOptions.include;
+        // With an include list, any field NOT in the list is irrelevant to routing
+        const allColumns = Object.keys(schema.tables[tableNames[resourceConfig.modelOptions.modelName]])
+            .filter(key => !key.startsWith('@@'));
+        const ignoredProperties = allColumns.filter(col => !include.includes(col));
+        ignoredProperties.push('updated_at');
         if (!this._containsRoutingAffectingChanges(model, ignoredProperties)) {
             const cachedResource = this.getByIdAndType(type, model.id);
 
