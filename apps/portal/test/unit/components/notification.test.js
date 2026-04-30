@@ -121,7 +121,7 @@ describe('Notification', () => {
 
         fireEvent.click(container.querySelector('.gh-portal-notification-closeicon'));
 
-        expect(clearURLParams).toHaveBeenCalledWith(['action', 'success', 'giftRedemption']);
+        expect(clearURLParams).toHaveBeenCalledWith(['action', 'success', 'giftRedemption', 'giftRedemptionMessage']);
         expect(doAction).toHaveBeenCalledWith('refreshMemberData');
     });
 
