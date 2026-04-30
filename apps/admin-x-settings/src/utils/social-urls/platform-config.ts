@@ -135,11 +135,13 @@ export const SOCIAL_PLATFORM_CONFIG_BY_KEY = Object.fromEntries(
 ) as Record<SocialPlatformKey, SocialPlatformConfig>;
 
 export const normalizeSocialInput = (key: SocialPlatformKey, value: string) => {
-    const normalizedUrl = SOCIAL_PLATFORM_CONFIG_BY_KEY[key].validate(value);
+    const config = SOCIAL_PLATFORM_CONFIG_BY_KEY[key];
+    const normalizedUrl = config.validate(value);
+    const storedValue = normalizedUrl ? config.toStoredValue(normalizedUrl) : null;
 
     return {
-        displayValue: normalizedUrl,
-        storedValue: normalizedUrl ? SOCIAL_PLATFORM_CONFIG_BY_KEY[key].toStoredValue(normalizedUrl) : null
+        displayValue: config.toDisplayValue(storedValue),
+        storedValue
     };
 };
 
