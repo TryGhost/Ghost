@@ -295,7 +295,7 @@ export default class Notification extends React.Component {
             if (['signin', 'signup', 'giftRedeem'].includes(type)) {
                 deleteParams.push('action', 'success');
                 if (type === 'giftRedeem') {
-                    deleteParams.push('giftRedemption');
+                    deleteParams.push('giftRedemption', 'giftRedemptionMessage');
                 }
             } else if (['stripe:checkout'].includes(type)) {
                 deleteParams.push('stripe');

@@ -427,7 +427,8 @@ describe('GiftService', function () {
                     redeemedAt: new Date('2026-02-01T00:00:00.000Z')
                 },
                 memberStatus: null,
-                message: 'This gift has already been redeemed.'
+                message: 'This gift has already been redeemed.',
+                code: 'GIFT_REDEEMED'
             },
             {
                 name: 'consumed gifts',
@@ -435,7 +436,8 @@ describe('GiftService', function () {
                     consumedAt: new Date('2026-02-01T00:00:00.000Z')
                 },
                 memberStatus: null,
-                message: 'This gift has already been consumed.'
+                message: 'This gift has already been consumed.',
+                code: 'GIFT_CONSUMED'
             },
             {
                 name: 'expired gifts',
@@ -443,7 +445,8 @@ describe('GiftService', function () {
                     expiredAt: new Date('2026-02-01T00:00:00.000Z')
                 },
                 memberStatus: null,
-                message: 'This gift has expired.'
+                message: 'This gift has expired.',
+                code: 'GIFT_EXPIRED'
             },
             {
                 name: 'refunded gifts',
@@ -451,13 +454,15 @@ describe('GiftService', function () {
                     refundedAt: new Date('2026-02-01T00:00:00.000Z')
                 },
                 memberStatus: null,
-                message: 'This gift has been refunded.'
+                message: 'This gift has been refunded.',
+                code: 'GIFT_REFUNDED'
             },
             {
                 name: 'paid members',
                 overrides: {},
                 memberStatus: 'paid',
-                message: 'You already have an active subscription.'
+                message: 'You already have an active subscription.',
+                code: 'GIFT_PAID_MEMBER'
             }
         ];
 
@@ -472,7 +477,7 @@ describe('GiftService', function () {
             assert.equal(result, gift);
         });
 
-        for (const {name, overrides, memberStatus, message} of testCases) {
+        for (const {name, overrides, memberStatus, message, code} of testCases) {
             it(`throws BadRequestError for ${name}`, async function () {
                 const gift = buildGift(overrides);
 
@@ -482,6 +487,7 @@ describe('GiftService', function () {
                     (err: any) => {
                         assert.equal(err.errorType, 'BadRequestError');
                         assert.equal(err.message, message);
+                        assert.equal(err.code, code);
                         return true;
                     }
                 );

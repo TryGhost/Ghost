@@ -1,5 +1,5 @@
 import setupGhostApi from './utils/api';
-import {chooseBestErrorMessage} from './utils/errors';
+import {HumanReadableError, chooseBestErrorMessage} from './utils/errors';
 import {getGiftRedemptionSuccessMessage} from './utils/gift-redemption-notification';
 import {createNotification, createPopupNotification, getMemberEmail, getMemberName, getProductCadenceFromPrice, removePortalLinkFromUrl, getRefDomain} from './utils/helpers';
 import {t} from './utils/i18n';
@@ -284,7 +284,7 @@ async function redeemGift({data, state, api}) {
                 closeable: true,
                 state,
                 status: 'error',
-                message: chooseBestErrorMessage(e, 'Failed to redeem gift, please try again') // TODO: Add translation strings once copy has been finalised
+                message: e instanceof HumanReadableError ? e.message : 'Failed to redeem gift, please try again' // TODO: Add translation strings once copy has been finalised
             })
         };
     }

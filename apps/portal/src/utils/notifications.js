@@ -12,12 +12,13 @@ const getURLParam = ({searchParams, hashParams}, name) => {
     return searchParams.get(name) ?? hashParams.get(name);
 };
 
-export const handleGiftRedemptionAction = ({success}) => {
+export const handleGiftRedemptionAction = ({success, message}) => {
     return {
         type: 'giftRedeem',
         status: success ? 'success' : 'error',
         duration: success ? 5000 : 3000,
-        autoHide: success
+        autoHide: success,
+        ...(!success && message ? {message} : {})
     };
 };
 
@@ -97,7 +98,8 @@ export default function NotificationParser({billingOnly = false} = {}) {
 
     if (giftRedemption && successStatus) {
         const success = successStatus === 'true';
-        return handleGiftRedemptionAction({success});
+        const message = getURLParam({searchParams, hashParams}, 'giftRedemptionMessage');
+        return handleGiftRedemptionAction({success, message});
     }
 
     if (action && successStatus && !billingOnly) {
