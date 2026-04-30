@@ -24,6 +24,17 @@ const EMAIL_VALIDATION_TYPE_BY_FIELD = {
 
 const trimValue = value => value?.trim() || '';
 
+/**
+ * Returns the head of the linked list: the email not referenced as a "next" by any other email.
+ * @param {object[]} emails
+ */
+function findFirstEmail(emails) {
+    const nextIds = new Set(
+        emails.map(e => e.get('next_welcome_email_automated_email_id')).filter(Boolean)
+    );
+    return emails.find(e => !nextIds.has(e.id));
+}
+
 class MemberWelcomeEmailService {
     #mailer;
     #renderer;
@@ -180,7 +191,7 @@ class MemberWelcomeEmailService {
     async #loadWelcomeEmailsCollection() {
         return WelcomeEmailAutomation.findAll({
             filter: WELCOME_EMAIL_FILTER,
-            withRelated: ['welcomeEmailAutomatedEmail']
+            withRelated: ['welcomeEmailAutomatedEmails']
         });
     }
 
@@ -203,7 +214,10 @@ class MemberWelcomeEmailService {
     async #loadRequiredWelcomeEmailRows() {
         const {free, paid} = await this.#loadWelcomeEmailsMap({requireAll: true});
 
-        if (!free.related('welcomeEmailAutomatedEmail')?.id || !paid.related('welcomeEmailAutomatedEmail')?.id) {
+        const freeEmail = findFirstEmail(free.related('welcomeEmailAutomatedEmails').models);
+        const paidEmail = findFirstEmail(paid.related('welcomeEmailAutomatedEmails').models);
+
+        if (!freeEmail?.id || !paidEmail?.id) {
             throw new errors.NotFoundError({
                 message: MESSAGES.NO_MEMBER_WELCOME_EMAIL
             });
@@ -237,7 +251,9 @@ class MemberWelcomeEmailService {
 
     #hasSharedSenderFieldChanged(rows, field, value) {
         return rows.some((row) => {
-            const currentValue = row.related('welcomeEmailAutomatedEmail')?.get(field);
+            const emails = row.related('welcomeEmailAutomatedEmails').models;
+            const firstEmail = findFirstEmail(emails);
+            const currentValue = firstEmail?.get(field);
             return trimValue(currentValue) !== trimValue(value);
         });
     }
@@ -294,7 +310,8 @@ class MemberWelcomeEmailService {
         }
 
         await Promise.all(rows.map((row) => {
-            const email = row.related('welcomeEmailAutomatedEmail');
+            const emails = row.related('welcomeEmailAutomatedEmails').models;
+            const email = findFirstEmail(emails);
             return WelcomeEmailAutomatedEmail.edit(attrs, {id: email.id});
         }));
     }
@@ -337,7 +354,7 @@ class MemberWelcomeEmailService {
 
         for (const [memberStatus, slug] of Object.entries(MEMBER_WELCOME_EMAIL_SLUGS)) {
             const row = await WelcomeEmailAutomation.findOne({slug}, {
-                withRelated: ['welcomeEmailAutomatedEmail', 'welcomeEmailAutomatedEmail.emailDesignSetting']
+                withRelated: ['welcomeEmailAutomatedEmails', 'welcomeEmailAutomatedEmails.emailDesignSetting']
             });
 
             if (!row) {
@@ -345,7 +362,8 @@ class MemberWelcomeEmailService {
                 continue;
             }
 
-            const email = row.related('welcomeEmailAutomatedEmail');
+            const emails = row.related('welcomeEmailAutomatedEmails').models;
+            const email = findFirstEmail(emails);
 
             if (!email || !email.get('lexical')) {
                 this.#memberWelcomeEmails[memberStatus] = null;
@@ -427,20 +445,22 @@ class MemberWelcomeEmailService {
             return false;
         }
 
-        const row = await WelcomeEmailAutomation.findOne({slug}, {withRelated: ['welcomeEmailAutomatedEmail']});
+        const row = await WelcomeEmailAutomation.findOne({slug}, {withRelated: ['welcomeEmailAutomatedEmails']});
         if (!row) {
             return false;
         }
-        const email = row.related('welcomeEmailAutomatedEmail');
+        const emails = row.related('welcomeEmailAutomatedEmails').models;
+        const email = findFirstEmail(emails);
         return Boolean(email && email.get('lexical') && row.get('status') === 'active');
     }
 
     async #renderWelcomeEmailPreview({automatedEmailId, subject, lexical, memberEmail = 'jamie@example.com'}) {
         // Still validate the automated email exists (for permission purposes)
         const automation = await WelcomeEmailAutomation.findOne({id: automatedEmailId}, {
-            withRelated: ['welcomeEmailAutomatedEmail', 'welcomeEmailAutomatedEmail.emailDesignSetting']
+            withRelated: ['welcomeEmailAutomatedEmails', 'welcomeEmailAutomatedEmails.emailDesignSetting']
         });
-        const automatedEmail = automation?.related('welcomeEmailAutomatedEmail');
+        const emails = automation?.related('welcomeEmailAutomatedEmails').models || [];
+        const automatedEmail = findFirstEmail(emails);
 
         if (!automation || !automatedEmail?.id) {
             throw new errors.NotFoundError({
