@@ -1,7 +1,8 @@
 import * as React from 'react';
 import {cn} from '@/lib/utils';
 import {cva} from 'class-variance-authority';
-import {TrendingDown, TrendingUp} from 'lucide-react';
+import {MetricValue} from '@/components/ui/metric-value';
+import {TrendBadge} from '@/components/ui/trend-badge';
 
 type CardsVariant = 'outline' | 'plain';
 const CardsVariantContext = React.createContext<CardsVariant>('outline');
@@ -183,36 +184,35 @@ interface KpiCardValueProps {
 }
 
 const KpiCardHeaderValue: React.FC<KpiCardValueProps> = ({value, diffDirection, diffValue, diffTooltip}) => {
-    const diffContainerClassName = cn(
-        'flex items-center gap-1 text-xs h-[22px] px-1.5 rounded-xs group/diff cursor-default',
-        diffDirection === 'up' && `text-state-success bg-state-success/10 ${diffTooltip && 'hover:bg-state-success/20'}`,
-        diffDirection === 'down' && `text-state-danger bg-state-danger/10 ${diffTooltip && 'hover:bg-state-danger/20'}`,
-        diffDirection === 'same' && 'text-text-secondary bg-muted'
-    );
-    return (
-        <div className='relative flex flex-col items-start gap-2 lg:flex-row lg:gap-3'>
-            <div className='text-[2.2rem] leading-none font-semibold tracking-tighter' data-testid='kpi-card-header-value'>
-                {value}
-            </div>
-            {diffDirection && diffDirection !== 'hidden' &&
-            <>
-                <div className={diffContainerClassName} data-testid='kpi-card-header-diff'>
-                    <span className='leading-none font-medium'>{diffValue}</span>
-                    {diffDirection === 'up' &&
-                        <TrendingUp className='size-[12px]!' size={14} strokeWidth={2} />
-                    }
-                    {diffDirection === 'down' &&
-                        <TrendingDown className='size-[12px]!' size={14} strokeWidth={2} />
-                    }
-                    {diffTooltip &&
-                        <div className='pointer-events-none absolute inset-x-0 top-0 z-50 w-full max-w-[240px] -translate-y-full rounded-xs bg-background px-3 py-2 text-sm text-pretty text-foreground opacity-0 shadow-md transition-all group-hover/diff:translate-y-[calc(-100%-8px)] group-hover/diff:opacity-100'>
-                            {diffTooltip}
-                        </div>
-                    }
+    let adornment: React.ReactNode = null;
+    if (diffDirection && diffDirection !== 'hidden') {
+        if (diffDirection === 'empty') {
+            // Reserves the same vertical space as a real trend badge without showing one.
+            adornment = (
+                <div
+                    className='flex h-[22px] items-center px-1.5 text-xs leading-none font-medium'
+                    data-testid='kpi-card-header-diff'
+                >
+                    {diffValue}
                 </div>
-            </>
-            }
-        </div>
+            );
+        } else {
+            adornment = (
+                <TrendBadge
+                    data-testid='kpi-card-header-diff'
+                    direction={diffDirection}
+                    tooltip={diffTooltip}
+                    value={diffValue ?? ''}
+                />
+            );
+        }
+    }
+    return (
+        <MetricValue
+            adornment={adornment}
+            value={value}
+            valueTestId='kpi-card-header-value'
+        />
     );
 };
 

@@ -4,9 +4,11 @@ import {DropdownMenuTrigger} from './dropdown-menu';
 
 import {cn} from '@/lib/utils';
 import {cva} from 'class-variance-authority';
-import {TrendingDown, TrendingUp, type LucideIcon} from 'lucide-react';
+import {type LucideIcon} from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import {Button, ButtonProps} from './button';
+import {MetricValue} from './metric-value';
+import {TrendBadge} from './trend-badge';
 
 type TabsVariant = 'segmented' | 'segmented-sm' | 'button' | 'button-sm' | 'underline' | 'navbar' | 'pill' | 'kpis';
 
@@ -202,38 +204,32 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({
 }) => {
     const IconComponent = iconName ? LucideIcons[iconName] as LucideIcon : null;
 
-    const diffContainerClassName = cn(
-        'flex items-center gap-1 text-xs h-[22px] px-1.5 rounded-xs group/diff cursor-default mt-0.5',
-        diffDirection === 'up' && 'text-state-success bg-state-success/10',
-        diffDirection === 'down' && 'text-state-danger bg-state-danger/10',
-        diffDirection === 'same' && 'text-text-secondary bg-muted'
+    const labelNode = (
+        <span className='flex items-center gap-1.5 transition-all group-hover:text-foreground' data-type="value">
+            {color && <div className='ml-1 size-2 rounded-full opacity-50' style={{backgroundColor: color}}></div>}
+            {IconComponent && <IconComponent size={16} strokeWidth={1.5} />}
+            {label}
+        </span>
     );
+
+    const adornment = diffDirection && diffDirection !== 'hidden' ? (
+        <TrendBadge
+            className='mt-0.5'
+            data-testid={testId ? `${testId}-diff` : undefined}
+            direction={diffDirection}
+            value={diffValue ?? ''}
+        />
+    ) : null;
+
     return (
-        <div className={cn('group flex w-full flex-col items-start gap-2', className)}>
-            <div className='flex h-[22px] items-center gap-1.5 text-base font-medium text-muted-foreground transition-all group-hover:text-foreground' data-type="value">
-                {color && <div className='ml-1 size-2 rounded-full opacity-50' style={{backgroundColor: color}}></div>}
-                {IconComponent && <IconComponent size={16} strokeWidth={1.5} />}
-                {label}
-            </div>
-            <div className='flex flex-col items-start gap-2 lg:flex-row xl:gap-3'>
-                <div className='text-[2.3rem] leading-none font-semibold tracking-tighter xl:text-[2.6rem]' data-testid={testId}>
-                    {value}
-                </div>
-                {diffDirection && diffDirection !== 'hidden' &&
-                    <>
-                        <div className={diffContainerClassName} data-testid={testId ? `${testId}-diff` : undefined}>
-                            <span className='leading-none font-medium'>{diffValue}</span>
-                            {diffDirection === 'up' &&
-                                <TrendingUp className='size-3!' size={14} strokeWidth={2} />
-                            }
-                            {diffDirection === 'down' &&
-                                <TrendingDown className='size-3!' size={14} strokeWidth={2} />
-                            }
-                        </div>
-                    </>
-                }
-            </div>
-        </div>
+        <MetricValue
+            adornment={adornment}
+            className={cn('group', className)}
+            label={labelNode}
+            size='lg'
+            value={value}
+            valueTestId={testId}
+        />
     );
 };
 

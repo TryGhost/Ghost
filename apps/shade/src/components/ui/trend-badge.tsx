@@ -63,7 +63,7 @@ const TrendBadge = React.forwardRef<HTMLDivElement, TrendBadgeProps>(
                     <TrendingDown className='size-3!' size={14} strokeWidth={2} />
                 )}
                 {tooltip && (
-                    <div className='pointer-events-none absolute inset-x-0 top-0 z-50 w-full max-w-[240px] -translate-y-full rounded-xs bg-background px-3 py-2 text-sm text-pretty text-foreground opacity-0 shadow-md transition-all group-hover/trend-badge:translate-y-[calc(-100%-8px)] group-hover/trend-badge:opacity-100'>
+                    <div className='pointer-events-none absolute top-0 left-0 z-50 w-[240px] -translate-y-full rounded-xs bg-background px-3 py-2 text-sm text-pretty text-foreground opacity-0 shadow-md transition-all group-hover/trend-badge:translate-y-[calc(-100%-8px)] group-hover/trend-badge:opacity-100'>
                         {tooltip}
                     </div>
                 )}
