@@ -5,7 +5,6 @@ import {LucideIcon, Recharts, formatNumber} from '@tryghost/shade/utils';
 import {formatQueryDate, getRangeDates} from '@tryghost/shade/app';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
-import {useGlobalData} from '@src/providers/global-data-provider';
 import {useMemberCountHistory, useSubscriptionStats} from '@tryghost/admin-x-framework/api/stats';
 
 type NewSubscribersCadenceProps = {
@@ -54,8 +53,6 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({isLoading,
         }
     });
     const {data: {tiers: tierObjects = []} = {}} = useBrowseTiers();
-    const {data: globalConfig} = useGlobalData();
-    const giftSubscriptionsEnabled = globalConfig?.labs?.giftSubscriptions === true;
     const [breakdownType, setBreakdownType] = useState<BreakdownType>('billing-period');
 
     // Calculate date range for filtering
@@ -73,9 +70,9 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({isLoading,
             }));
     }, [tierObjects]);
 
-    // Helper: compute positive delta for a given status field (e.g. comped, gift)
+    // Helper: compute positive delta for a given status field (e.g. comped)
     // from the first to the last data point within the date range.
-    const calculateStatusSignups = useCallback((statusField: 'comped' | 'gift') => {
+    const calculateStatusSignups = useCallback((statusField: 'comped') => {
         if (!memberCountResponse?.stats || memberCountResponse.stats.length === 0) {
             return 0;
         }
@@ -107,13 +104,6 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({isLoading,
     // Calculate complimentary member signups (change in comped) within date range
     const compedSignups = useMemo(() => calculateStatusSignups('comped'), [calculateStatusSignups]);
 
-    // Calculate gift member signups (change in gift) within date range.
-    // Skipped when the giftSubscriptions labs flag is off — keeps cadence UI unchanged for sites not using gifts.
-    const giftSignups = useMemo(
-        () => (giftSubscriptionsEnabled ? calculateStatusSignups('gift') : 0),
-        [calculateStatusSignups, giftSubscriptionsEnabled]
-    );
-
     // Process subscription data for billing period breakdown (cadence) - NEW SUBSCRIBERS in date range
     const billingPeriodData = useMemo(() => {
         if (!subscriptionStatsResponse?.stats) {
@@ -143,10 +133,6 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({isLoading,
             cadenceTotals.complimentary = compedSignups;
         }
 
-        if (giftSignups > 0) {
-            cadenceTotals.gift = giftSignups;
-        }
-
         // Convert to array format for pie chart
         const chartData = Object.entries(cadenceTotals).map(([cadence, count], index) => {
             // Map cadence values to display labels and colors
@@ -166,10 +152,6 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({isLoading,
                 label = 'Complimentary';
                 fillGradient = 'url(#gradientBlue)';
                 solidColor = 'var(--chart-blue)';
-            } else if (cadence === 'gift') {
-                label = 'Gift';
-                fillGradient = 'url(#gradientRose)';
-                solidColor = 'var(--chart-rose)';
             }
 
             return {
@@ -182,7 +164,7 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({isLoading,
         });
 
         return chartData;
-    }, [subscriptionStatsResponse, dateFrom, dateTo, compedSignups, giftSignups]);
+    }, [subscriptionStatsResponse, dateFrom, dateTo, compedSignups]);
 
     // Process subscription data for tier breakdown - NEW SUBSCRIBERS in date range
     const tierData = useMemo(() => {
