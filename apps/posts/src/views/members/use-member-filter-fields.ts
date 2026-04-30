@@ -385,7 +385,7 @@ export function useMemberFilterFields({
 
             subscriptionFields.push(
                 createFieldConfig('status', giftSubscriptionsEnabled ? {
-                    options: [...memberFields.status.options, {value: 'gift', label: 'Gift'}]
+                    options: [...memberFields.status.options, {value: 'gift', label: 'Gift subscription'}]
                 } : {}),
                 createFieldConfig('subscriptions.plan_interval'),
                 createFieldConfig('subscriptions.status'),
