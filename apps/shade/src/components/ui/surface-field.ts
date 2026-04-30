@@ -3,41 +3,60 @@ import {cn} from '@/lib/utils';
 /**
  * Shared visual recipe for input-like surfaces (Input, Textarea, InputGroup, Select trigger).
  *
- * - `'self'` — apply directly to the focusable element (e.g. <input>, <textarea>, <button>).
- * - `'within'` — apply to a wrapper that contains a focusable child; focus and invalid
- *   styles are derived from the child via `:has()` selectors.
- *
  * The recipe owns: border, background, radius, transition, focus ring, invalid state.
  * Consumers add their own size, padding, typography, and component-specific tweaks.
+ *
+ * `surfaceField()` covers the two common shapes:
+ * - `'self'` — apply directly to the focusable element (e.g. <input>, <textarea>, <button>).
+ * - `'within'` — apply to a wrapper that contains a focusable child; focus and invalid
+ *   styles are derived from any focusable descendant via `:has()`.
+ *
+ * For unusual cases (e.g. a wrapper that should only react to a specific control element,
+ * not any focusable descendant) compose `surfaceFieldClasses` atoms manually.
  *
  * @example
  *   // Direct on a focusable element
  *   <input className={cn(surfaceField('self'), 'h-9 px-3 ...')} />
  *
- *   // Wrapper that has a focusable child
+ *   // Wrapper with any focused descendant driving focus state
  *   <div className={cn(surfaceField('within'), 'flex h-9 items-center ...')}>
  *     <input ... />
  *   </div>
+ *
+ *   // Custom scope: only one specific child triggers focus state. Compose from atoms
+ *   // so Tailwind can statically detect the literal class string.
+ *   <div className={cn(
+ *     surfaceFieldClasses.base,
+ *     surfaceFieldClasses.invalidWithin,
+ *     // literal class string for Tailwind JIT to pick up
+ *     'has-[[data-slot=control]:focus-visible]:border-focus-ring ...'
+ *   )} />
  */
+export const surfaceFieldClasses = {
+    base: 'rounded-md border border-border-default bg-surface-elevated transition-colors',
+    focusSelf:
+        'focus-visible:outline-hidden focus-visible:bg-transparent focus-visible:border-focus-ring focus-visible:ring-2 focus-visible:ring-focus-ring/25',
+    focusWithin:
+        'has-[:focus-visible]:outline-hidden has-[:focus-visible]:bg-transparent has-[:focus-visible]:border-focus-ring has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-focus-ring/25',
+    invalidSelf:
+        'aria-[invalid=true]:border-destructive aria-[invalid=true]:ring-destructive/20 dark:aria-[invalid=true]:ring-destructive/40',
+    invalidWithin:
+        'has-[[aria-invalid=true]]:border-destructive has-[[aria-invalid=true]]:ring-destructive/20 dark:has-[[aria-invalid=true]]:ring-destructive/40',
+    disabledSelf: 'disabled:cursor-not-allowed disabled:opacity-50'
+} as const;
+
 export function surfaceField(mode: 'self' | 'within' = 'self') {
-    const base = 'rounded-md border border-border-default bg-surface-elevated transition-colors';
-
-    const focusSelf =
-        'focus-visible:outline-hidden focus-visible:bg-transparent focus-visible:border-focus-ring focus-visible:ring-2 focus-visible:ring-focus-ring/25';
-    const focusWithin =
-        'has-[:focus-visible]:outline-hidden has-[:focus-visible]:bg-transparent has-[:focus-visible]:border-focus-ring has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-focus-ring/25';
-
-    const invalidSelf =
-        'aria-[invalid=true]:border-destructive aria-[invalid=true]:ring-destructive/20 dark:aria-[invalid=true]:ring-destructive/40';
-    const invalidWithin =
-        'has-[[aria-invalid=true]]:border-destructive has-[[aria-invalid=true]]:ring-destructive/20 dark:has-[[aria-invalid=true]]:ring-destructive/40';
-
-    const disabledSelf = 'disabled:cursor-not-allowed disabled:opacity-50';
-
+    if (mode === 'self') {
+        return cn(
+            surfaceFieldClasses.base,
+            surfaceFieldClasses.focusSelf,
+            surfaceFieldClasses.invalidSelf,
+            surfaceFieldClasses.disabledSelf
+        );
+    }
     return cn(
-        base,
-        mode === 'self' ? focusSelf : focusWithin,
-        mode === 'self' ? invalidSelf : invalidWithin,
-        mode === 'self' && disabledSelf
+        surfaceFieldClasses.base,
+        surfaceFieldClasses.focusWithin,
+        surfaceFieldClasses.invalidWithin
     );
 }

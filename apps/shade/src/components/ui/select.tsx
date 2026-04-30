@@ -4,6 +4,7 @@ import {Check, ChevronDown, ChevronUp} from 'lucide-react';
 
 import {cn} from '@/lib/utils';
 import {SHADE_APP_NAMESPACES} from '@/shade-app';
+import {surfaceField} from '@/components/ui/surface-field';
 
 const Select = SelectPrimitive.Root;
 
@@ -18,7 +19,8 @@ const SelectTrigger = React.forwardRef<
     <SelectPrimitive.Trigger
         ref={ref}
         className={cn(
-            'flex h-(--control-height) w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent hover:bg-accent px-3 py-2 text-sm ring-offset-background data-[placeholder]:text-muted-foreground focus:outline-hidden focus:ring-1 focus:ring-focus-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1',
+            surfaceField('self'),
+            'flex h-(--control-height) w-full items-center justify-between whitespace-nowrap px-3 py-2 text-sm hover:bg-accent data-[placeholder]:text-muted-foreground [&>span]:line-clamp-1',
             className
         )}
         {...props}
