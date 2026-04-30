@@ -20,6 +20,7 @@
     "@tryghost/posts": "workspace:*",
     "@tryghost/shade": "workspace:*",
     "@tryghost/stats": "workspace:*",
+    "lodash": "4.18.1",
     "mingo": "2.5.3",
     "react": "18.3.1",
     "react-dom": "18.3.1",

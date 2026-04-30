@@ -216,6 +216,9 @@ importers:
       '@tryghost/stats':
         specifier: workspace:*
         version: link:../stats
+      lodash:
+        specifier: 4.18.1
+        version: 4.18.1
       mingo:
         specifier: 2.5.3
         version: 2.5.3
