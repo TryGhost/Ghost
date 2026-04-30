@@ -60,8 +60,15 @@ export class MySQLManager {
         }
     }
 
+    private validateIdentifier(value: string, name: string): void {
+        if (!/^[a-zA-Z0-9_]+$/.test(value)) {
+            throw new Error(`Invalid ${name} "${value}": must contain only alphanumeric characters and underscores`);
+        }
+    }
+
     async createDatabase(databaseName: string): Promise<void> {
         debug('Creating database:', databaseName);
+        this.validateIdentifier(databaseName, 'databaseName');
 
         await this.exec('mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS \\`' + databaseName + '\\`;"');
 
@@ -70,6 +77,7 @@ export class MySQLManager {
 
     async dropDatabase(database: string): Promise<void> {
         debug('Dropping database if exists:', database);
+        this.validateIdentifier(database, 'database');
 
         await this.exec('mysql -uroot -proot -e "DROP DATABASE IF EXISTS \\`' + database + '\\`;"');
 
@@ -92,8 +100,9 @@ export class MySQLManager {
         try {
             debug('Finding all test databases to clean up...');
 
-            const query = `SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'ghost_%' AND schema_name NOT IN ('ghost_testing', 'ghost_e2e_base', '${DEV_PRIMARY_DATABASE}')`;
-            const output = await this.exec(`mysql -uroot -proot -N -e "${query}"`);
+            this.validateIdentifier(DEV_PRIMARY_DATABASE, 'DEV_PRIMARY_DATABASE');
+            const query = 'SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE \'ghost_%\' AND schema_name NOT IN (\'ghost_testing\', \'ghost_e2e_base\', \'' + DEV_PRIMARY_DATABASE + '\')';
+            const output = await this.exec('mysql -uroot -proot -N -e "' + query + '"');
 
             const databaseNames = this.parseDatabaseNames(output);
             if (databaseNames === null) {
@@ -130,6 +139,7 @@ export class MySQLManager {
 
     async restoreDatabaseFromSnapshot(database: string, snapshotPath: string = '/tmp/dump.sql'): Promise<void> {
         debug('Restoring database from snapshot:', database);
+        this.validateIdentifier(database, 'database');
 
         await this.exec('mysql -uroot -proot ' + database + ' < ' + snapshotPath);
 
@@ -165,6 +175,10 @@ export class MySQLManager {
 
     async updateSiteUuid(database: string, siteUuid: string): Promise<void> {
         debug('Updating site_uuid in database settings:', database, siteUuid);
+        this.validateIdentifier(database, 'database');
+        if (!/^[0-9a-f-]+$/i.test(siteUuid)) {
+            throw new Error(`Invalid siteUuid "${siteUuid}": must be a valid UUID`);
+        }
 
         const command = 'mysql -uroot -proot -e "UPDATE \\`' +
             database + '\\`.settings SET value=\'' +
@@ -177,9 +191,10 @@ export class MySQLManager {
 
     async updateStripeSettings(database: string, secretKey: string, publishableKey: string): Promise<void> {
         debug('Updating Stripe settings in database:', database);
+        this.validateIdentifier(database, 'database');
 
-        const escapedSecretKey = secretKey.replace(/'/g, '\\\'');
-        const escapedPublishableKey = publishableKey.replace(/'/g, '\\\'');
+        const escapedSecretKey = secretKey.replace(/\\/g, '\\\\').replace(/'/g, '\\\'');
+        const escapedPublishableKey = publishableKey.replace(/\\/g, '\\\\').replace(/'/g, '\\\'');
 
         // Use INSERT ... ON DUPLICATE KEY UPDATE so this works whether or not
         // the settings rows already exist. In dev mode the base DB is empty
