@@ -451,6 +451,7 @@ module.exports = class MemberRepository {
             member_id: member.id,
             from_status: null,
             to_status: member.get('status'),
+            batch_id: options.batch_id ?? null,
             ...eventData
         }, options);
 
@@ -784,7 +785,8 @@ module.exports = class MemberRepository {
             await this._MemberStatusEvent.add({
                 member_id: member.id,
                 from_status: member._previousAttributes.status,
-                to_status: member.get('status')
+                to_status: member.get('status'),
+                batch_id: options.batch_id ?? null
             }, sharedOptions);
         }
 
@@ -1499,6 +1501,7 @@ module.exports = class MemberRepository {
                 member_id: data.id,
                 from_status: updatedMember._previousAttributes.status,
                 to_status: updatedMember.get('status'),
+                batch_id: options.batch_id ?? null,
                 ...eventData
             }, options);
 

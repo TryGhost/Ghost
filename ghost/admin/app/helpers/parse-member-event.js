@@ -183,6 +183,9 @@ export default class ParseMemberEventHelper extends Helper {
 
         if (event.type === 'subscription_event') {
             if (event.data.type === 'created') {
+                if (event.data.previous_status === 'gift') {
+                    return 'continued paid subscription after gift';
+                }
                 return 'started paid subscription';
             }
             if (event.data.type === 'updated') {
@@ -348,6 +351,9 @@ export default class ParseMemberEventHelper extends Helper {
         }
 
         if (event.type === 'signup_event' && this.membersUtils.paidMembersEnabled) {
+            if (event.data.created_with_status && event.data.created_with_status !== 'free') {
+                return null;
+            }
             return 'Free';
         }
 
