@@ -25,7 +25,7 @@ const AccountWelcome = () => {
             if (subscriptionExpiry) {
                 return (
                     <div className='gh-portal-section' style={{marginBottom: 24}}>
-                        <p className='gh-portal-text-center gh-portal-free-ctatext'>{t(`Your gift subscription will expire on {expiryDate}`, {expiryDate: subscriptionExpiry})}</p>
+                        <p className='gh-portal-text-center gh-portal-free-ctatext'>{t(`Your subscription will expire on {expiryDate}`, {expiryDate: subscriptionExpiry})}</p>
                     </div>
                 );
             }
