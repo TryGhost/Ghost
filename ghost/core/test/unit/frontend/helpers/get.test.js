@@ -7,7 +7,6 @@ const loggingLib = require('@tryghost/logging');
 // Stuff we are testing
 const get = require('../../../../core/frontend/helpers/get');
 const {querySimplePath} = get;
-const models = require('../../../../core/server/models');
 const api = require('../../../../core/server/api').endpoints;
 const maxLimitCap = require('../../../../core/shared/max-limit-cap');
 
@@ -16,10 +15,6 @@ describe('{{#get}} helper', function () {
     let inverse;
     let locals = {};
     let logging;
-
-    before(function () {
-        models.init();
-    });
 
     beforeEach(function () {
         fn = sinon.spy();
@@ -91,21 +86,18 @@ describe('{{#get}} helper', function () {
             });
         });
 
-        it('converts html strings to SafeString', function (done) {
-            get.call(
+        it('converts html strings to SafeString', async function () {
+            await get.call(
                 {},
                 'posts',
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
-            ).then(function () {
-                sinon.assert.called(fn);
-                const args = fn.firstCall.args[0];
-                assert(args && typeof args === 'object');
-                assert('posts' in args);
+            );
+            sinon.assert.called(fn);
+            const args = fn.firstCall.args[0];
+            assert(args && typeof args === 'object');
+            assert('posts' in args);
 
-                assert(fn.firstCall.args[0].posts[0].feature_image_caption instanceof SafeString);
-
-                done();
-            }).catch(done);
+            assert(fn.firstCall.args[0].posts[0].feature_image_caption instanceof SafeString);
         });
     });
 
@@ -122,21 +114,18 @@ describe('{{#get}} helper', function () {
             });
         });
 
-        it('browse authors', function (done) {
-            get.call(
+        it('browse authors', async function () {
+            await get.call(
                 {},
                 'authors',
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
-            ).then(function () {
-                sinon.assert.called(fn);
-                const args = fn.firstCall.args[0];
-                assert(args && typeof args === 'object');
-                assert('authors' in args);
-                assert.deepEqual(fn.firstCall.args[0].authors, []);
-                sinon.assert.notCalled(inverse);
-
-                done();
-            }).catch(done);
+            );
+            sinon.assert.called(fn);
+            const args = fn.firstCall.args[0];
+            assert(args && typeof args === 'object');
+            assert('authors' in args);
+            assert.deepEqual(fn.firstCall.args[0].authors, []);
+            sinon.assert.notCalled(inverse);
         });
     });
 
@@ -153,76 +142,64 @@ describe('{{#get}} helper', function () {
             });
         });
 
-        it('browse newsletters', function (done) {
-            get.call(
+        it('browse newsletters', async function () {
+            await get.call(
                 {},
                 'newsletters',
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
-            ).then(function () {
-                sinon.assert.called(fn);
-                const args = fn.firstCall.args[0];
-                assert(args && typeof args === 'object');
-                assert('newsletters' in args);
-                assert.deepEqual(fn.firstCall.args[0].newsletters, []);
-                sinon.assert.notCalled(inverse);
-
-                done();
-            }).catch(done);
+            );
+            sinon.assert.called(fn);
+            const args = fn.firstCall.args[0];
+            assert(args && typeof args === 'object');
+            assert('newsletters' in args);
+            assert.deepEqual(fn.firstCall.args[0].newsletters, []);
+            sinon.assert.notCalled(inverse);
         });
     });
 
     describe('general error handling', function () {
-        it('should return an error for an unknown resource', function (done) {
-            get.call(
+        it('should return an error for an unknown resource', async function () {
+            await get.call(
                 {},
                 'magic',
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
-            ).then(function () {
-                sinon.assert.notCalled(fn);
-                sinon.assert.calledOnce(inverse);
-                const args = inverse.firstCall.args[1];
-                assert(args && typeof args === 'object');
-                assert('data' in args);
-                const data = args.data;
-                assert(data && typeof data === 'object');
-                assert('error' in data);
-                assert.equal(data.error, 'Invalid "magic" resource given to get helper');
-
-                done();
-            }).catch(done);
+            );
+            sinon.assert.notCalled(fn);
+            sinon.assert.calledOnce(inverse);
+            const args = inverse.firstCall.args[1];
+            assert(args && typeof args === 'object');
+            assert('data' in args);
+            const data = args.data;
+            assert(data && typeof data === 'object');
+            assert('error' in data);
+            assert.equal(data.error, 'Invalid "magic" resource given to get helper');
         });
 
-        it('should handle error from the API', function (done) {
-            get.call(
+        it('should handle error from the API', async function () {
+            await get.call(
                 {},
                 'posts',
                 {hash: {slug: 'thing!'}, data: locals, fn: fn, inverse: inverse}
-            ).then(function () {
-                sinon.assert.notCalled(fn);
-                sinon.assert.calledOnce(inverse);
-                const args = inverse.firstCall.args[1];
-                assert(args && typeof args === 'object');
-                assert('data' in args);
-                const data = args.data;
-                assert(data && typeof data === 'object');
-                assert('error' in data);
-                assert.match(data.error, /^Validation/);
-
-                done();
-            }).catch(done);
+            );
+            sinon.assert.notCalled(fn);
+            sinon.assert.calledOnce(inverse);
+            const args = inverse.firstCall.args[1];
+            assert(args && typeof args === 'object');
+            assert('data' in args);
+            const data = args.data;
+            assert(data && typeof data === 'object');
+            assert('error' in data);
+            assert.match(data.error, /^Validation/);
         });
 
-        it('should show warning for call without any options', function (done) {
-            get.call(
+        it('should show warning for call without any options', async function () {
+            await get.call(
                 {},
                 'posts',
                 {data: locals}
-            ).then(function () {
-                sinon.assert.notCalled(fn);
-                sinon.assert.notCalled(inverse);
-
-                done();
-            }).catch(done);
+            );
+            sinon.assert.notCalled(fn);
+            sinon.assert.notCalled(inverse);
         });
     });
 
@@ -246,123 +223,102 @@ describe('{{#get}} helper', function () {
             });
         });
 
-        it('should resolve post.tags alias', function (done) {
-            get.call(
+        it('should resolve post.tags alias', async function () {
+            await get.call(
                 resource,
                 'posts',
                 {hash: {filter: 'tags:[{{post.tags}}]'}, data: locals, fn: fn, inverse: inverse}
-            ).then(function () {
-                assert(Array.isArray(browseStub.firstCall.args));
-                assert.equal(browseStub.firstCall.args.length, 1);
-                const options = browseStub.firstCall.args[0];
-                assert(options && typeof options === 'object');
-                assert('filter' in options);
-                assert.equal(options.filter, 'tags:[test,magic]');
-
-                done();
-            }).catch(done);
+            );
+            assert(Array.isArray(browseStub.firstCall.args));
+            assert.equal(browseStub.firstCall.args.length, 1);
+            const options = browseStub.firstCall.args[0];
+            assert(options && typeof options === 'object');
+            assert('filter' in options);
+            assert.equal(options.filter, 'tags:[test,magic]');
         });
 
-        it('should resolve post.author alias', function (done) {
-            get.call(
+        it('should resolve post.author alias', async function () {
+            await get.call(
                 resource,
                 'posts',
                 {hash: {filter: 'author:{{post.author}}'}, data: locals, fn: fn, inverse: inverse}
-            ).then(function () {
-                assert(Array.isArray(browseStub.firstCall.args));
-                assert.equal(browseStub.firstCall.args.length, 1);
-                const options = browseStub.firstCall.args[0];
-                assert(options && typeof options === 'object');
-                assert('filter' in options);
-                assert.equal(options.filter, 'author:cameron');
-
-                done();
-            }).catch(done);
+            );
+            assert(Array.isArray(browseStub.firstCall.args));
+            assert.equal(browseStub.firstCall.args.length, 1);
+            const options = browseStub.firstCall.args[0];
+            assert(options && typeof options === 'object');
+            assert('filter' in options);
+            assert.equal(options.filter, 'author:cameron');
         });
 
-        it('should resolve basic path', function (done) {
-            get.call(
+        it('should resolve basic path', async function () {
+            await get.call(
                 resource,
                 'posts',
                 {hash: {filter: 'id:-{{post.id}}'}, data: locals, fn: fn, inverse: inverse}
-            ).then(function () {
-                assert(Array.isArray(browseStub.firstCall.args));
-                assert.equal(browseStub.firstCall.args.length, 1);
-                const options = browseStub.firstCall.args[0];
-                assert(options && typeof options === 'object');
-                assert('filter' in options);
-                assert.equal(options.filter, 'id:-3');
-
-                done();
-            }).catch(done);
+            );
+            assert(Array.isArray(browseStub.firstCall.args));
+            assert.equal(browseStub.firstCall.args.length, 1);
+            const options = browseStub.firstCall.args[0];
+            assert(options && typeof options === 'object');
+            assert('filter' in options);
+            assert.equal(options.filter, 'id:-3');
         });
 
-        it('should handle arrays the same as handlebars', function (done) {
-            get.call(
+        it('should handle arrays the same as handlebars', async function () {
+            await get.call(
                 resource,
                 'posts',
                 {hash: {filter: 'tags:{{post.tags.[0].slug}}'}, data: locals, fn: fn, inverse: inverse}
-            ).then(function () {
-                assert(Array.isArray(browseStub.firstCall.args));
-                assert.equal(browseStub.firstCall.args.length, 1);
-                const options = browseStub.firstCall.args[0];
-                assert(options && typeof options === 'object');
-                assert('filter' in options);
-                assert.equal(options.filter, 'tags:test');
-
-                done();
-            }).catch(done);
+            );
+            assert(Array.isArray(browseStub.firstCall.args));
+            assert.equal(browseStub.firstCall.args.length, 1);
+            const options = browseStub.firstCall.args[0];
+            assert(options && typeof options === 'object');
+            assert('filter' in options);
+            assert.equal(options.filter, 'tags:test');
         });
 
-        it('should handle dates', function (done) {
-            get.call(
+        it('should handle dates', async function () {
+            await get.call(
                 resource,
                 'posts',
                 {hash: {filter: 'published_at:<=\'{{post.published_at}}\''}, data: locals, fn: fn, inverse: inverse}
-            ).then(function () {
-                assert(Array.isArray(browseStub.firstCall.args));
-                assert.equal(browseStub.firstCall.args.length, 1);
-                const options = browseStub.firstCall.args[0];
-                assert(options && typeof options === 'object');
-                assert('filter' in options);
-                assert.equal(options.filter, `published_at:<='${pubDate.toISOString()}'`);
-
-                done();
-            }).catch(done);
+            );
+            assert(Array.isArray(browseStub.firstCall.args));
+            assert.equal(browseStub.firstCall.args.length, 1);
+            const options = browseStub.firstCall.args[0];
+            assert(options && typeof options === 'object');
+            assert('filter' in options);
+            assert.equal(options.filter, `published_at:<='${pubDate.toISOString()}'`);
         });
 
-        it('should output nothing if path does not resolve', function (done) {
-            get.call(
+        it('should output nothing if path does not resolve', async function () {
+            await get.call(
                 resource,
                 'posts',
                 {hash: {filter: 'id:{{post.thing}}'}, data: locals, fn: fn, inverse: inverse}
-            ).then(function () {
-                assert(Array.isArray(browseStub.firstCall.args));
-                assert.equal(browseStub.firstCall.args.length, 1);
-                const options = browseStub.firstCall.args[0];
-                assert(options && typeof options === 'object');
-                assert('filter' in options);
-                assert.equal(options.filter, 'id:');
-
-                done();
-            }).catch(done);
+            );
+            assert(Array.isArray(browseStub.firstCall.args));
+            assert.equal(browseStub.firstCall.args.length, 1);
+            const options = browseStub.firstCall.args[0];
+            assert(options && typeof options === 'object');
+            assert('filter' in options);
+            assert.equal(options.filter, 'id:');
         });
 
-        it('should resolve global props', function (done) {
-            get.call(
+        it('should resolve global props', async function () {
+            await get.call(
                 resource,
                 'posts',
                 {hash: {filter: 'slug:{{@globalProp.foo}}'}, data: locals, fn: fn, inverse: inverse}
-            ).then(function () {
-                assert(Array.isArray(browseStub.firstCall.args));
-                assert.equal(browseStub.firstCall.args.length, 1);
-                const options = browseStub.firstCall.args[0];
-                assert(options && typeof options === 'object');
-                assert('filter' in options);
-                assert.equal(options.filter, 'slug:bar');
-
-                done();
-            }).catch(done);
+            );
+            assert(Array.isArray(browseStub.firstCall.args));
+            assert.equal(browseStub.firstCall.args.length, 1);
+            const options = browseStub.firstCall.args[0];
+            assert(options && typeof options === 'object');
+            assert('filter' in options);
+            assert.equal(options.filter, 'slug:bar');
         });
     });
 

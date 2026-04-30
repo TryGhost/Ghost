@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/activitypub",
-  "version": "3.1.13",
+  "version": "3.1.14",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -82,7 +82,7 @@
     "@tryghost/admin-x-framework": "workspace:*",
     "@tryghost/shade": "workspace:*",
     "clsx": "2.1.1",
-    "dompurify": "3.3.1",
+    "dompurify": "3.4.1",
     "html2canvas-objectfit-fix": "1.2.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",

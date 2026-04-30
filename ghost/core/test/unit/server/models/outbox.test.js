@@ -4,10 +4,6 @@ const models = require('../../../../core/server/models');
 const {OUTBOX_STATUSES} = require('../../../../core/server/models/outbox');
 
 describe('Unit: models/outbox', function () {
-    before(function () {
-        models.init();
-    });
-
     describe('OUTBOX_STATUSES constant', function () {
         it('exports the expected status values', function () {
             assert.equal(OUTBOX_STATUSES.PENDING, 'pending');

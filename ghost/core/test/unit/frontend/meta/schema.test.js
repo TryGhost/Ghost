@@ -40,7 +40,7 @@ const BASE_METADATA = {
 };
 
 describe('getSchema', function () {
-    it('should return post schema if context starts with post', function (done) {
+    it('should return post schema if context starts with post', function () {
         const metadata = {
             site: {
                 title: 'Site Title',
@@ -138,10 +138,9 @@ describe('getSchema', function () {
             },
             url: 'http://mysite.com/post/my-post-slug/'
         });
-        done();
     });
 
-    it('should return page schema if context starts with page', function (done) {
+    it('should return page schema if context starts with page', function () {
         const metadata = {
             site: {
                 title: 'Site Title',
@@ -239,10 +238,9 @@ describe('getSchema', function () {
             },
             url: 'http://mysite.com/post/my-page-slug/'
         });
-        done();
     });
 
-    it('should return post schema removing null or undefined values', function (done) {
+    it('should return post schema removing null or undefined values', function () {
         const metadata = {
             site: {
                 title: 'Site Title'
@@ -298,10 +296,9 @@ describe('getSchema', function () {
             },
             url: 'http://mysite.com/post/my-post-slug/'
         });
-        done();
     });
 
-    it('should return image url instead of ImageObjects if no dimensions supplied', function (done) {
+    it('should return image url instead of ImageObjects if no dimensions supplied', function () {
         const metadata = {
             site: {
                 title: 'Site Title',
@@ -383,7 +380,6 @@ describe('getSchema', function () {
             },
             url: 'http://mysite.com/post/my-post-slug/'
         });
-        done();
     });
 
     it('should return home schema if context starts with home', function () {

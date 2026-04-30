@@ -105,6 +105,18 @@ export function getSubscriptionExpiry({member}) {
     return '';
 }
 
+export function isArchivedTier({member, site}) {
+    const subscription = getMemberSubscription({member});
+    const tierId = subscription?.tier?.id;
+
+    if (!tierId) {
+        return false;
+    }
+
+    // Archived tiers are filtered out of site.products
+    return !getProductFromId({site, productId: tierId});
+}
+
 export function getUpgradeProducts({site, member}) {
     const activePrice = getMemberActivePrice({member});
     const activePriceCurrency = activePrice?.currency;
