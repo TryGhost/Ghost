@@ -3,7 +3,6 @@ export interface GiftPurchaseConfirmationData {
     siteDomain: string;
     toEmail: string;
     gift: {
-        amount: string;
         tierName: string;
         cadenceLabel: string;
         link: string;
@@ -17,7 +16,6 @@ export function renderText(data: GiftPurchaseConfirmationData): string {
 Thank you for supporting ${data.siteTitle}. Send the link below to share your gift with whoever you'd like.
 
 Gift subscription: ${data.gift.tierName} • ${data.gift.cadenceLabel}
-Amount paid: ${data.gift.amount}
 
 Gift link: ${data.gift.link}
 

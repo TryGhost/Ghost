@@ -26,8 +26,6 @@ interface BlogIcon {
 
 interface PurchaseConfirmationData {
     buyerEmail: string;
-    amount: number;
-    currency: string;
     token: string;
     tierName: string;
     cadence: 'month' | 'year';
@@ -70,8 +68,7 @@ export class GiftEmailService {
         }
     }
 
-    async sendPurchaseConfirmation({buyerEmail, amount, currency, token, tierName, cadence, duration, expiresAt}: PurchaseConfirmationData): Promise<void> {
-        const formattedAmount = this.formatAmount({currency, amount: amount / 100});
+    async sendPurchaseConfirmation({buyerEmail, token, tierName, cadence, duration, expiresAt}: PurchaseConfirmationData): Promise<void> {
         const siteDomain = this.siteDomain;
         const siteUrl = this.urlUtils.getSiteUrl();
         const siteTitle = this.settingsCache.get('title') ?? siteDomain;
@@ -88,7 +85,6 @@ export class GiftEmailService {
             accentColor: this.settingsCache.get('accent_color'),
             toEmail: buyerEmail,
             gift: {
-                amount: formattedAmount,
                 tierName,
                 cadenceLabel,
                 link: giftLink,

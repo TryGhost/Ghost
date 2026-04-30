@@ -30,8 +30,6 @@ describe('GiftEmailService', function () {
 
     const defaultData = {
         buyerEmail: 'buyer@example.com',
-        amount: 5000,
-        currency: 'usd',
         token: 'abc-123',
         tierName: 'Gold',
         cadence: 'year',
@@ -69,22 +67,6 @@ describe('GiftEmailService', function () {
             sinon.assert.match(msg[field], sinon.match('Gold'));
             sinon.assert.match(msg[field], sinon.match('1 year'));
         }
-    });
-
-    it('includes formatted amount in both HTML and text', async function () {
-        await service.sendPurchaseConfirmation(defaultData);
-
-        const msg = mailer.send.getCall(0).args[0];
-
-        for (const field of ['html', 'text']) {
-            sinon.assert.match(msg[field], sinon.match('$50.00'));
-        }
-    });
-
-    it('formats non-USD currency correctly', async function () {
-        await service.sendPurchaseConfirmation({...defaultData, amount: 1500, currency: 'eur'});
-
-        sinon.assert.calledWith(mailer.send, sinon.match.has('html', sinon.match('€15.00')));
     });
 
     it('formats month cadence correctly', async function () {
