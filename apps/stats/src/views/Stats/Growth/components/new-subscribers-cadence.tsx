@@ -1,4 +1,4 @@
-import React, {useMemo, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import moment from 'moment';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, EmptyIndicator, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {LucideIcon, Recharts, formatNumber} from '@tryghost/shade/utils';
@@ -70,8 +70,9 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({isLoading,
             }));
     }, [tierObjects]);
 
-    // Calculate complimentary member signups (change in comped) within date range
-    const compedSignups = useMemo(() => {
+    // Helper: compute positive delta for a given status field (e.g. comped)
+    // from the first to the last data point within the date range.
+    const calculateStatusSignups = useCallback((statusField: 'comped') => {
         if (!memberCountResponse?.stats || memberCountResponse.stats.length === 0) {
             return 0;
         }
@@ -80,7 +81,6 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({isLoading,
         const dateFromMoment = moment(dateFrom);
         const dateToMoment = moment(dateTo);
 
-        // Filter stats to the date range
         const filteredStats = stats.filter((item) => {
             const itemDate = moment(item.date);
             return itemDate.isSameOrAfter(dateFromMoment) && itemDate.isSameOrBefore(dateToMoment);
@@ -90,18 +90,19 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({isLoading,
             return 0;
         }
 
-        // Sort by date to get first and last in range
         const sortedStats = [...filteredStats].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
         );
 
-        const firstComped = sortedStats[0].comped;
-        const lastComped = sortedStats[sortedStats.length - 1].comped;
+        const firstValue = sortedStats[0][statusField] ?? 0;
+        const lastValue = sortedStats[sortedStats.length - 1][statusField] ?? 0;
 
-        // Return the delta (new complimentary signups in the period)
-        // Only return positive values (new signups, not removals)
-        const delta = lastComped - firstComped;
+        // Only count positive deltas (new signups, not removals)
+        const delta = lastValue - firstValue;
         return delta > 0 ? delta : 0;
     }, [memberCountResponse, dateFrom, dateTo]);
+
+    // Calculate complimentary member signups (change in comped) within date range
+    const compedSignups = useMemo(() => calculateStatusSignups('comped'), [calculateStatusSignups]);
 
     // Process subscription data for billing period breakdown (cadence) - NEW SUBSCRIBERS in date range
     const billingPeriodData = useMemo(() => {

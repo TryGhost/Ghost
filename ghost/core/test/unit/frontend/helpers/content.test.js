@@ -4,6 +4,7 @@ const sinon = require('sinon');
 const hbs = require('../../../../core/frontend/services/theme-engine/engine');
 const configUtils = require('../../../utils/config-utils');
 const path = require('path');
+const {promisify} = require('node:util');
 
 // Stuff we are testing
 const content = require('../../../../core/frontend/helpers/content');
@@ -13,12 +14,11 @@ const t = require('../../../../core/frontend/helpers/t');
 const {setupI18nTest, initLocale} = require('../../../utils/i18n-test-utils');
 
 describe('{{content}} helper', function () {
-    before(function (done) {
+    before(async function () {
         hbs.express4({partialsDir: [configUtils.config.get('paths').helperTemplates]});
 
-        hbs.cachePartials(function () {
-            done();
-        });
+        const cachePartials = promisify(hbs.cachePartials.bind(hbs));
+        await cachePartials();
     });
 
     it('renders empty string when null', function () {
@@ -84,12 +84,11 @@ describe('{{content}} helper', function () {
 });
 
 describe('{{content}} helper with no access', function () {
-    before(function (done) {
+    before(async function () {
         hbs.express4({partialsDir: [configUtils.config.get('paths').helperTemplates]});
 
-        hbs.cachePartials(function () {
-            done();
-        });
+        const cachePartials = promisify(hbs.cachePartials.bind(hbs));
+        await cachePartials();
 
         hbs.registerHelper('has', has);
         hbs.registerHelper('is', is);
@@ -222,12 +221,11 @@ describe('{{content}} helper with no access', function () {
 
 describe('{{content}} helper with custom template', function () {
     let optionsData;
-    before(function (done) {
+    before(async function () {
         hbs.express4({partialsDir: [path.resolve(__dirname, './test_tpl')]});
 
-        hbs.cachePartials(function () {
-            done();
-        });
+        const cachePartials = promisify(hbs.cachePartials.bind(hbs));
+        await cachePartials();
 
         hbs.registerHelper('has', has);
         hbs.registerHelper('is', is);

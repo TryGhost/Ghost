@@ -11,10 +11,6 @@ const fixtures = require('../../../../../utils/fixtures/fixtures.json');
 const fixtureManager = new FixtureManager(fixtures);
 
 describe('Migration Fixture Utils', function () {
-    beforeEach(function () {
-        models.init();
-    });
-
     afterEach(function () {
         sinon.restore();
     });
@@ -328,7 +324,7 @@ describe('Migration Fixture Utils', function () {
     });
 
     describe('Add Fixtures For Model', function () {
-        it('should call add for main post fixture', function (done) {
+        it('should call add for main post fixture', async function () {
             const postOneStub = sinon.stub(models.Post, 'findOne').returns(Promise.resolve());
             const postAddStub = sinon.stub(models.Post, 'add').returns(Promise.resolve({}));
 
@@ -336,20 +332,17 @@ describe('Migration Fixture Utils', function () {
                 return modelFixture.name === 'Post';
             });
 
-            fixtureManager.addFixturesForModel(postFixtures).then(function (result) {
-                assertExists(result);
-                assert(_.isPlainObject(result));
-                assert.equal(result.expected, 11);
-                assert.equal(result.done, 11);
+            const result = await fixtureManager.addFixturesForModel(postFixtures);
+            assertExists(result);
+            assert(_.isPlainObject(result));
+            assert.equal(result.expected, 11);
+            assert.equal(result.done, 11);
 
-                sinon.assert.callCount(postOneStub, 11);
-                sinon.assert.callCount(postAddStub, 11);
-
-                done();
-            }).catch(done);
+            sinon.assert.callCount(postOneStub, 11);
+            sinon.assert.callCount(postAddStub, 11);
         });
 
-        it('should call add for main newsletter fixture', function (done) {
+        it('should call add for main newsletter fixture', async function () {
             const newsletterOneStub = sinon.stub(models.Newsletter, 'findOne').returns(Promise.resolve());
             const newsletterAddStub = sinon.stub(models.Newsletter, 'add').returns(Promise.resolve({}));
 
@@ -357,20 +350,17 @@ describe('Migration Fixture Utils', function () {
                 return modelFixture.name === 'Newsletter';
             });
 
-            fixtureManager.addFixturesForModel(newsletterFixtures).then(function (result) {
-                assertExists(result);
-                assert(_.isPlainObject(result));
-                assert.equal(result.expected, 1);
-                assert.equal(result.done, 1);
+            const result = await fixtureManager.addFixturesForModel(newsletterFixtures);
+            assertExists(result);
+            assert(_.isPlainObject(result));
+            assert.equal(result.expected, 1);
+            assert.equal(result.done, 1);
 
-                sinon.assert.calledOnce(newsletterOneStub);
-                sinon.assert.calledOnce(newsletterAddStub);
-
-                done();
-            }).catch(done);
+            sinon.assert.calledOnce(newsletterOneStub);
+            sinon.assert.calledOnce(newsletterAddStub);
         });
 
-        it('should not call add for main post fixture if it is already found', function (done) {
+        it('should not call add for main post fixture if it is already found', async function () {
             const postOneStub = sinon.stub(models.Post, 'findOne').returns(Promise.resolve({}));
             const postAddStub = sinon.stub(models.Post, 'add').returns(Promise.resolve({}));
 
@@ -378,22 +368,19 @@ describe('Migration Fixture Utils', function () {
                 return modelFixture.name === 'Post';
             });
 
-            fixtureManager.addFixturesForModel(postFixtures).then(function (result) {
-                assertExists(result);
-                assert(_.isPlainObject(result));
-                assert.equal(result.expected, 11);
-                assert.equal(result.done, 0);
+            const result = await fixtureManager.addFixturesForModel(postFixtures);
+            assertExists(result);
+            assert(_.isPlainObject(result));
+            assert.equal(result.expected, 11);
+            assert.equal(result.done, 0);
 
-                sinon.assert.callCount(postOneStub, 11);
-                sinon.assert.notCalled(postAddStub);
-
-                done();
-            }).catch(done);
+            sinon.assert.callCount(postOneStub, 11);
+            sinon.assert.notCalled(postAddStub);
         });
     });
 
     describe('Add Fixtures For Relation', function () {
-        it('should call attach for permissions-roles', function (done) {
+        it('should call attach for permissions-roles', async function () {
             const fromItem = {
                 related: sinon.stub().returnsThis(),
                 find: sinon.stub().returns()
@@ -410,28 +397,25 @@ describe('Migration Fixture Utils', function () {
             const permsAllStub = sinon.stub(models.Permission, 'findAll').returns(Promise.resolve(dataMethodStub));
             const rolesAllStub = sinon.stub(models.Role, 'findAll').returns(Promise.resolve(dataMethodStub));
 
-            fixtureManager.addFixturesForRelation(fixtures.relations[0]).then(function (result) {
-                const FIXTURE_COUNT = 140;
-                assertExists(result);
-                assert(_.isPlainObject(result));
-                assert.equal(result.expected, FIXTURE_COUNT);
-                assert.equal(result.done, FIXTURE_COUNT);
+            const result = await fixtureManager.addFixturesForRelation(fixtures.relations[0]);
+            const FIXTURE_COUNT = 143;
+            assertExists(result);
+            assert(_.isPlainObject(result));
+            assert.equal(result.expected, FIXTURE_COUNT);
+            assert.equal(result.done, FIXTURE_COUNT);
 
-                // Permissions & Roles
-                sinon.assert.calledOnce(permsAllStub);
-                sinon.assert.calledOnce(rolesAllStub);
-                sinon.assert.callCount(dataMethodStub.filter, FIXTURE_COUNT);
-                sinon.assert.callCount(dataMethodStub.find, 10);
-                sinon.assert.callCount(baseUtilAttachStub, FIXTURE_COUNT);
+            // Permissions & Roles
+            sinon.assert.calledOnce(permsAllStub);
+            sinon.assert.calledOnce(rolesAllStub);
+            sinon.assert.callCount(dataMethodStub.filter, FIXTURE_COUNT);
+            sinon.assert.callCount(dataMethodStub.find, 10);
+            sinon.assert.callCount(baseUtilAttachStub, FIXTURE_COUNT);
 
-                sinon.assert.callCount(fromItem.related, FIXTURE_COUNT);
-                sinon.assert.callCount(fromItem.find, FIXTURE_COUNT);
-
-                done();
-            }).catch(done);
+            sinon.assert.callCount(fromItem.related, FIXTURE_COUNT);
+            sinon.assert.callCount(fromItem.find, FIXTURE_COUNT);
         });
 
-        it('should call attach for posts-tags', function (done) {
+        it('should call attach for posts-tags', async function () {
             const fromItem = {
                 related: sinon.stub().returnsThis(),
                 find: sinon.stub().returns()
@@ -448,26 +432,23 @@ describe('Migration Fixture Utils', function () {
             const postsAllStub = sinon.stub(models.Post, 'findAll').returns(Promise.resolve(dataMethodStub));
             const tagsAllStub = sinon.stub(models.Tag, 'findAll').returns(Promise.resolve(dataMethodStub));
 
-            fixtureManager.addFixturesForRelation(fixtures.relations[1]).then(function (result) {
-                assertExists(result);
-                assert(_.isPlainObject(result));
-                assert.equal(result.expected, 7);
-                assert.equal(result.done, 7);
+            const result = await fixtureManager.addFixturesForRelation(fixtures.relations[1]);
+            assertExists(result);
+            assert(_.isPlainObject(result));
+            assert.equal(result.expected, 7);
+            assert.equal(result.done, 7);
 
-                // Posts & Tags
-                sinon.assert.calledOnce(postsAllStub);
-                sinon.assert.calledOnce(tagsAllStub);
-                sinon.assert.callCount(dataMethodStub.filter, 7);
-                sinon.assert.callCount(dataMethodStub.find, 7);
-                sinon.assert.callCount(fromItem.related, 7);
-                sinon.assert.callCount(fromItem.find, 7);
-                sinon.assert.callCount(baseUtilAttachStub, 7);
-
-                done();
-            }).catch(done);
+            // Posts & Tags
+            sinon.assert.calledOnce(postsAllStub);
+            sinon.assert.calledOnce(tagsAllStub);
+            sinon.assert.callCount(dataMethodStub.filter, 7);
+            sinon.assert.callCount(dataMethodStub.find, 7);
+            sinon.assert.callCount(fromItem.related, 7);
+            sinon.assert.callCount(fromItem.find, 7);
+            sinon.assert.callCount(baseUtilAttachStub, 7);
         });
 
-        it('will not call attach for posts-tags if already present', function (done) {
+        it('will not call attach for posts-tags if already present', async function () {
             const fromItem = {
                 related: sinon.stub().returnsThis(),
                 find: sinon.stub().returns({}),
@@ -485,26 +466,23 @@ describe('Migration Fixture Utils', function () {
             const postsAllStub = sinon.stub(models.Post, 'findAll').returns(Promise.resolve(dataMethodStub));
             const tagsAllStub = sinon.stub(models.Tag, 'findAll').returns(Promise.resolve(dataMethodStub));
 
-            fixtureManager.addFixturesForRelation(fixtures.relations[1]).then(function (result) {
-                assertExists(result);
-                assert(_.isPlainObject(result));
-                assert.equal(result.expected, 7);
-                assert.equal(result.done, 0);
+            const result = await fixtureManager.addFixturesForRelation(fixtures.relations[1]);
+            assertExists(result);
+            assert(_.isPlainObject(result));
+            assert.equal(result.expected, 7);
+            assert.equal(result.done, 0);
 
-                // Posts & Tags
-                sinon.assert.calledOnce(postsAllStub);
-                sinon.assert.calledOnce(tagsAllStub);
-                sinon.assert.callCount(dataMethodStub.filter, 7);
-                sinon.assert.callCount(dataMethodStub.find, 7);
+            // Posts & Tags
+            sinon.assert.calledOnce(postsAllStub);
+            sinon.assert.calledOnce(tagsAllStub);
+            sinon.assert.callCount(dataMethodStub.filter, 7);
+            sinon.assert.callCount(dataMethodStub.find, 7);
 
-                sinon.assert.callCount(fromItem.related, 7);
-                sinon.assert.callCount(fromItem.find, 7);
+            sinon.assert.callCount(fromItem.related, 7);
+            sinon.assert.callCount(fromItem.find, 7);
 
-                sinon.assert.notCalled(fromItem.tags);
-                sinon.assert.notCalled(fromItem.attach);
-
-                done();
-            }).catch(done);
+            sinon.assert.notCalled(fromItem.tags);
+            sinon.assert.notCalled(fromItem.attach);
         });
     });
 

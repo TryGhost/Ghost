@@ -64,6 +64,19 @@ async function createMember(data) {
     return member;
 }
 
+async function createGiftMember(data) {
+    const member = await createMember({
+        ...data,
+        status: 'gift'
+    });
+    await models.MemberStatusEvent.add({
+        member_id: member.id,
+        from_status: null,
+        to_status: 'gift'
+    });
+    return member;
+}
+
 const newsletterSnapshot = {
     id: anyObjectId
 };
@@ -2658,7 +2671,7 @@ describe('Members API', function () {
                 'content-disposition': anyString
             });
 
-        assert.match(res.text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers/);
+        assert.match(res.text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/);
 
         const csv = Papa.parse(res.text, {header: true});
         assertExists(csv.data.find(row => row.name === 'Mr Egg'));
@@ -2679,7 +2692,7 @@ describe('Members API', function () {
                 'content-disposition': anyString
             });
 
-        assert.match(res.text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers/);
+        assert.match(res.text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/);
 
         const csv = Papa.parse(res.text, {header: true});
         assertExists(csv.data.find(row => row.name === 'Mr Egg'));
@@ -2767,6 +2780,8 @@ describe('Members API', function () {
     // Get stats
 
     it('Can fetch member counts stats', async function () {
+        await createGiftMember({email: 'gift-member@test.com'});
+
         await agent
             .get(`/members/stats/count/`)
             .expectStatus(200)

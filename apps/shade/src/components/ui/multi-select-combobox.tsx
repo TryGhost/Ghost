@@ -48,7 +48,20 @@ export interface FooterRenderProps {
     clearSearch: () => void;
 }
 
+export interface ComboboxOptionSource<T = unknown> {
+    options: FilterOption<T>[];
+    isInitialLoad: boolean;
+    isSearching: boolean;
+    isLoadingMore: boolean;
+    hasMore: boolean;
+    loadMore: () => void;
+    shouldClientFilter: boolean;
+    onSearchChange?: (value: string) => void;
+}
+
 export interface MultiSelectComboboxProps<T = unknown> {
+    /** Normalized option source used for custom/static/async options */
+    optionSource?: ComboboxOptionSource<T>;
     /** All available options (used for static/client-filtered mode) */
     options?: FilterOption<T>[];
     /** Currently selected values */
@@ -100,32 +113,30 @@ function filterOptionsBySearch<T = unknown>(options: FilterOption<T>[], search: 
 
 // --- Hooks ---
 
-interface ResolvedSourceState<T> {
-    options: FilterOption<T>[];
-    isInitialLoad: boolean;
-    isSearching: boolean;
-    hasMore: boolean;
-    isLoadingMore: boolean;
-    loadMore: () => void;
-    shouldClientFilter: boolean;
-}
-
 function useResolvedSource<T>(
+    optionSource: ComboboxOptionSource<T> | undefined,
     valueSource: ValueSource<string> | undefined,
     staticOptions: FilterOption<T>[] | undefined,
     searchInput: string,
     values: T[],
     isLoading: boolean,
     shouldFilterProp: boolean | undefined
-): ResolvedSourceState<T> {
+): ComboboxOptionSource<T> {
+    if (optionSource) {
+        return {
+            ...optionSource,
+            shouldClientFilter: shouldFilterProp ?? optionSource.shouldClientFilter
+        };
+    }
+
     const isAsync = Boolean(valueSource);
     const sourceState = valueSource?.useOptions({
         query: searchInput,
         selectedValues: values as string[]
     });
-    const options = useMemo(() => (isAsync
+    const options = isAsync
         ? (sourceState?.options as FilterOption<T>[] | undefined) ?? []
-        : staticOptions ?? []), [isAsync, sourceState?.options, staticOptions]);
+        : staticOptions ?? [];
 
     return {
         options,
@@ -145,6 +156,7 @@ function useResolvedSource<T>(
 // --- Component ---
 
 export function MultiSelectCombobox<T = unknown>({
+    optionSource,
     options: staticOptions,
     values,
     onChange,
@@ -172,11 +184,12 @@ export function MultiSelectCombobox<T = unknown>({
     const [searchInput, setSearchInput] = useState('');
     const updateSearchInput = useCallback((value: string) => {
         setSearchInput(value);
+        optionSource?.onSearchChange?.(value);
         onSearchChangeProp?.(value);
-    }, [onSearchChangeProp]);
+    }, [onSearchChangeProp, optionSource]);
 
     // --- ValueSource integration ---
-    const source = useResolvedSource(valueSource, staticOptions, searchInput, values, isLoading, shouldFilterProp);
+    const source = useResolvedSource(optionSource, valueSource, staticOptions, searchInput, values, isLoading, shouldFilterProp);
     const resolvedOptions = source.options;
 
     // --- Option caching (preserve selected options during async search) ---
@@ -219,8 +232,10 @@ export function MultiSelectCombobox<T = unknown>({
         [searchInput, selectedOptions]
     );
 
-    const unselectedOptions = resolvedOptions.filter(opt => !values.includes(opt.value));
-
+    const unselectedOptions = useMemo(
+        () => resolvedOptions.filter(opt => !values.includes(opt.value)),
+        [resolvedOptions, values]
+    );
     // --- Handlers ---
 
     const handleDeselect = useCallback((option: FilterOption<T>) => {

@@ -1,5 +1,5 @@
 import AppContext from '../../../../app-context';
-import {getSubscriptionExpiry, getMemberSubscription, getMemberTierName, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember, isGiftMember, isPaidMember, subscriptionHasFreeTrial} from '../../../../utils/helpers';
+import {getSubscriptionExpiry, getMemberSubscription, getMemberTierName, hasMultipleProductsFeature, hasOnlyFreePlan, isArchivedTier, isComplimentaryMember, isGiftMember, isPaidMember, subscriptionHasFreeTrial} from '../../../../utils/helpers';
 import {getDateString} from '../../../../utils/date-time';
 import {ReactComponent as GiftIcon} from '../../../../images/icons/gift.svg';
 import {ReactComponent as LoaderIcon} from '../../../../images/icons/loader.svg';
@@ -40,7 +40,9 @@ const PaidAccountActions = () => {
             return (
                 <p className="gh-portal-account-discountcontainer">
                     <GiftIcon className="gh-portal-account-tagicon" />
-                    <span>{`${t('Gift subscription')} - ${t('Expires {expiryDate}', {expiryDate: subscriptionExpiry})}`}</span>
+                    <span>{t('Gift subscription')}</span>
+                    <span className="gh-portal-account-expiry-separator">-</span>
+                    <span className="gh-portal-account-expiry">{t('Expires {expiryDate}', {expiryDate: subscriptionExpiry})}</span>
                 </p>
             );
         } else if (isComplimentary) {
@@ -97,10 +99,21 @@ const PaidAccountActions = () => {
     };
 
     const PlanUpdateButton = ({isPaid}) => {
-        if (hasOnlyFreePlan({site}) && !isPaid) {
+        const hasGiftSubscription = isGiftMember({member});
+        const canContinueGiftSubscription = hasGiftSubscription && !isArchivedTier({member, site});
+
+        // If no paid tiers are available, hide the plan update button for:
+        // - Free members, as they have no paid plans to upgrade to
+        // - Gift members on archived tiers, as they have no paid plans to upgrade to
+        //
+        // In constrast, still render the button for:
+        // - Paid members so that they can adjust the cadence on their existing sub
+        // - Comped members so that they can contact publishers to make changes to their complimentary access
+        if (hasOnlyFreePlan({site}) && (!isPaid || (hasGiftSubscription && !canContinueGiftSubscription))) {
             return null;
         }
-        if (isGiftMember({member})) {
+
+        if (canContinueGiftSubscription) {
             return (
                 <button
                     className='gh-portal-btn gh-portal-btn-list' onClick={() => doAction('continueGiftSubscription')}

@@ -40,12 +40,13 @@ const Session = ghostBookshelf.Model.extend({
         }
         const options = this.filterOptions(unfilteredOptions, 'destroy');
 
-        // Fetch the object before destroying it, so that the changed data is available to events
+        // Fetch the object before destroying it, so that the changed data is available to events.
+        // A missing row is treated as success: password-change flows destroy
+        // every session for the user, then call req.session.regenerate(), which
+        // asks the store to destroy the same session_id a second time.
         return this.forge({session_id: options.session_id})
             .fetch(options)
-            .then((obj) => {
-                return obj.destroy(options);
-            });
+            .then(obj => obj?.destroy(options));
     },
 
     destroyAll() {

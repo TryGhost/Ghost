@@ -151,6 +151,25 @@ footer.gh-portal-account-footer {
     position: relative;
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
+}
+
+.gh-portal-account-expiry {
+    white-space: nowrap;
+}
+
+.gh-portal-account-expiry-separator {
+    margin: 0 4px;
+}
+
+@media (max-width: 480px) {
+    .gh-portal-account-expiry-separator {
+        display: none;
+    }
+
+    .gh-portal-account-expiry {
+        flex-basis: 100%;
+    }
 }
 
 .gh-portal-account-old-price {

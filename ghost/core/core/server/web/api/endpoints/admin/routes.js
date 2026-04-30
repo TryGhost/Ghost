@@ -73,6 +73,9 @@ module.exports = function apiRoutes() {
     // ## Schedules
     router.put('/schedules/:resource/:id', mw.authAdminApiWithUrl, http(api.schedules.publish));
 
+    // ## Gift Reminders
+    router.put('/gifts/flush_reminders', mw.authAdminApiWithUrl, http(api.giftReminders.flushReminders));
+
     // ## Settings
     router.get('/settings/routes/yaml', mw.authAdminApi, http(api.settings.download));
     router.post('/settings/routes/yaml',
@@ -183,6 +186,7 @@ module.exports = function apiRoutes() {
     router.delete('/labels/:id', mw.authAdminApi, http(api.labels.destroy));
 
     // ## Automations
+    router.get('/automations', mw.authAdminApi, http(api.automations.browse));
     router.put('/automations/poll', mw.authAdminApiWithUrl, http(api.automations.poll));
 
     // ## Automated Emails

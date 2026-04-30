@@ -207,6 +207,33 @@ describe('NewSubscribersCadence Component', () => {
         expect(screen.getByText('20%')).toBeInTheDocument();
     });
 
+    it('folds gift signups into the matching cadence bucket', () => {
+        mockSuccess(mockedUseSubscriptionStats, {
+            stats: [
+                // 30 paid monthly + 6 monthly gifts = 36 total monthly signups
+                {date: '2024-01-15', tier: 'tier-1', cadence: 'month', signups: 36, cancellations: 0, count: 100},
+                // 10 paid yearly + 4 yearly gifts = 14 total yearly signups
+                {date: '2024-01-15', tier: 'tier-1', cadence: 'year', signups: 14, cancellations: 0, count: 50}
+            ],
+            meta: {
+                totals: [
+                    {tier: 'tier-1', cadence: 'month', count: 100},
+                    {tier: 'tier-1', cadence: 'year', count: 50}
+                ]
+            }
+        });
+
+        render(<NewSubscribersCadence isLoading={false} range={30} />);
+
+        expect(screen.getByText('Monthly')).toBeInTheDocument();
+        expect(screen.getByText('Annual')).toBeInTheDocument();
+        expect(screen.queryByText('Gift')).not.toBeInTheDocument();
+
+        // 36/50 = 72%, 14/50 = 28%
+        expect(screen.getByText('72%')).toBeInTheDocument();
+        expect(screen.getByText('28%')).toBeInTheDocument();
+    });
+
     it('does not show complimentary when comped count does not increase', () => {
         const mockSubscriptionData = {
             stats: [

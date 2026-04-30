@@ -453,16 +453,17 @@ const controller = {
         },
         async query() {
             const memberStats = await membersService.api.events.getStatuses();
-            let totalMembers = _.last(memberStats) ? (_.last(memberStats).paid + _.last(memberStats).free + _.last(memberStats).comped) : 0;
+            const last = _.last(memberStats);
+            let totalMembers = last ? (last.paid + last.free + last.comped + last.gift) : 0;
 
             return {
                 resource: 'members',
                 total: totalMembers,
                 data: memberStats.map((d) => {
-                    const {paid, free, comped} = d;
+                    const {paid, free, comped, gift} = d;
                     return {
                         date: moment(d.date).format('YYYY-MM-DD'),
-                        paid, free, comped
+                        paid, free, comped, gift
                     };
                 })
             };

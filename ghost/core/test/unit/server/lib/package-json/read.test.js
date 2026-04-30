@@ -7,7 +7,7 @@ const packageJSON = require('../../../../../core/server/lib/package-json');
 
 describe('package-json read', function () {
     describe('readPackages', function () {
-        it('should read directory and ignore unneeded items', function (done) {
+        it('should read directory and ignore unneeded items', async function () {
             const packagePath = tmp.dirSync({unsafeCleanup: true});
 
             // create example theme
@@ -20,23 +20,21 @@ describe('package-json read', function () {
             fs.mkdirSync(join(packagePath.name, '.git'));
             fs.writeFileSync(join(packagePath.name, '.DS_Store'), '');
 
-            packageJSON.readPackages(packagePath.name)
-                .then(function (pkgs) {
-                    assert.deepEqual(pkgs, {
-                        casper: {
-                            name: 'casper',
-                            path: join(packagePath.name, 'casper'),
-                            'package.json': null
-                        }
-                    });
-
-                    done();
-                })
-                .catch(done)
-                .finally(packagePath.removeCallback);
+            try {
+                const pkgs = await packageJSON.readPackages(packagePath.name);
+                assert.deepEqual(pkgs, {
+                    casper: {
+                        name: 'casper',
+                        path: join(packagePath.name, 'casper'),
+                        'package.json': null
+                    }
+                });
+            } finally {
+                await packagePath.removeCallback();
+            }
         });
 
-        it('should read directory and parse package.json files', function (done) {
+        it('should read directory and parse package.json files', async function () {
             let packagePath;
             let pkgJson;
 
@@ -51,26 +49,24 @@ describe('package-json read', function () {
             fs.writeFileSync(join(packagePath.name, 'testtheme', 'package.json'), pkgJson);
             fs.writeFileSync(join(packagePath.name, 'testtheme', 'index.hbs'), '');
 
-            packageJSON.readPackages(packagePath.name)
-                .then(function (pkgs) {
-                    assert.deepEqual(pkgs, {
-                        testtheme: {
-                            name: 'testtheme',
-                            path: join(packagePath.name, 'testtheme'),
-                            'package.json': {
-                                name: 'test',
-                                version: '0.0.0'
-                            }
+            try {
+                const pkgs = await packageJSON.readPackages(packagePath.name);
+                assert.deepEqual(pkgs, {
+                    testtheme: {
+                        name: 'testtheme',
+                        path: join(packagePath.name, 'testtheme'),
+                        'package.json': {
+                            name: 'test',
+                            version: '0.0.0'
                         }
-                    });
-
-                    done();
-                })
-                .catch(done)
-                .finally(packagePath.removeCallback);
+                    }
+                });
+            } finally {
+                await packagePath.removeCallback();
+            }
         });
 
-        it('should read directory and ignore invalid package.json files', function (done) {
+        it('should read directory and ignore invalid package.json files', async function () {
             let packagePath;
             let pkgJson;
 
@@ -84,23 +80,21 @@ describe('package-json read', function () {
             fs.writeFileSync(join(packagePath.name, 'testtheme', 'package.json'), pkgJson);
             fs.writeFileSync(join(packagePath.name, 'testtheme', 'index.hbs'), '');
 
-            packageJSON.readPackages(packagePath.name)
-                .then(function (pkgs) {
-                    assert.deepEqual(pkgs, {
-                        testtheme: {
-                            name: 'testtheme',
-                            path: join(packagePath.name, 'testtheme'),
-                            'package.json': null
-                        }
-                    });
-
-                    done();
-                })
-                .catch(done)
-                .finally(packagePath.removeCallback);
+            try {
+                const pkgs = await packageJSON.readPackages(packagePath.name);
+                assert.deepEqual(pkgs, {
+                    testtheme: {
+                        name: 'testtheme',
+                        path: join(packagePath.name, 'testtheme'),
+                        'package.json': null
+                    }
+                });
+            } finally {
+                await packagePath.removeCallback();
+            }
         });
 
-        it('should read directory and include symlinked directories', function (done) {
+        it('should read directory and include symlinked directories', async function () {
             let packagePath;
             let pkgJson;
 
@@ -117,25 +111,23 @@ describe('package-json read', function () {
             // Symlink one theme to the other so we should have 2 themes
             fs.symlinkSync(join(packagePath.name, 'testtheme'), join(packagePath.name, 'testtheme2'));
 
-            packageJSON.readPackages(packagePath.name)
-                .then(function (pkgs) {
-                    assert.deepEqual(pkgs, {
-                        testtheme: {
-                            name: 'testtheme',
-                            path: join(packagePath.name, 'testtheme'),
-                            'package.json': null
-                        },
-                        testtheme2: {
-                            name: 'testtheme2',
-                            path: join(packagePath.name, 'testtheme2'),
-                            'package.json': null
-                        }
-                    });
-
-                    done();
-                })
-                .catch(done)
-                .finally(packagePath.removeCallback);
+            try {
+                const pkgs = await packageJSON.readPackages(packagePath.name);
+                assert.deepEqual(pkgs, {
+                    testtheme: {
+                        name: 'testtheme',
+                        path: join(packagePath.name, 'testtheme'),
+                        'package.json': null
+                    },
+                    testtheme2: {
+                        name: 'testtheme2',
+                        path: join(packagePath.name, 'testtheme2'),
+                        'package.json': null
+                    }
+                });
+            } finally {
+                await packagePath.removeCallback();
+            }
         });
 
         it('should read directory and ignore invalid symlinks', async function () {
@@ -168,7 +160,7 @@ describe('package-json read', function () {
     });
 
     describe('readPackage', function () {
-        it('should read directory and ignore unneeded items', function (done) {
+        it('should read directory and ignore unneeded items', async function () {
             const packagePath = tmp.dirSync({unsafeCleanup: true});
 
             // create example theme
@@ -181,23 +173,21 @@ describe('package-json read', function () {
             fs.mkdirSync(join(packagePath.name, '.git'));
             fs.writeFileSync(join(packagePath.name, '.DS_Store'), '');
 
-            packageJSON.readPackage(packagePath.name, 'casper')
-                .then(function (pkgs) {
-                    assert.deepEqual(pkgs, {
-                        casper: {
-                            name: 'casper',
-                            path: join(packagePath.name, 'casper'),
-                            'package.json': null
-                        }
-                    });
-
-                    done();
-                })
-                .catch(done)
-                .finally(packagePath.removeCallback);
+            try {
+                const pkgs = await packageJSON.readPackage(packagePath.name, 'casper');
+                assert.deepEqual(pkgs, {
+                    casper: {
+                        name: 'casper',
+                        path: join(packagePath.name, 'casper'),
+                        'package.json': null
+                    }
+                });
+            } finally {
+                await packagePath.removeCallback();
+            }
         });
 
-        it('should read directory and parse package.json files', function (done) {
+        it('should read directory and parse package.json files', async function () {
             let packagePath;
             let pkgJson;
 
@@ -212,26 +202,24 @@ describe('package-json read', function () {
             fs.writeFileSync(join(packagePath.name, 'testtheme', 'package.json'), pkgJson);
             fs.writeFileSync(join(packagePath.name, 'testtheme', 'index.hbs'), '');
 
-            packageJSON.readPackage(packagePath.name, 'testtheme')
-                .then(function (pkgs) {
-                    assert.deepEqual(pkgs, {
-                        testtheme: {
-                            name: 'testtheme',
-                            path: join(packagePath.name, 'testtheme'),
-                            'package.json': {
-                                name: 'test',
-                                version: '0.0.0'
-                            }
+            try {
+                const pkgs = await packageJSON.readPackage(packagePath.name, 'testtheme');
+                assert.deepEqual(pkgs, {
+                    testtheme: {
+                        name: 'testtheme',
+                        path: join(packagePath.name, 'testtheme'),
+                        'package.json': {
+                            name: 'test',
+                            version: '0.0.0'
                         }
-                    });
-
-                    done();
-                })
-                .catch(done)
-                .finally(packagePath.removeCallback);
+                    }
+                });
+            } finally {
+                await packagePath.removeCallback();
+            }
         });
 
-        it('should read directory and ignore invalid package.json files', function (done) {
+        it('should read directory and ignore invalid package.json files', async function () {
             let packagePath;
             let pkgJson;
 
@@ -245,23 +233,21 @@ describe('package-json read', function () {
             fs.writeFileSync(join(packagePath.name, 'testtheme', 'package.json'), pkgJson);
             fs.writeFileSync(join(packagePath.name, 'testtheme', 'index.hbs'), '');
 
-            packageJSON.readPackage(packagePath.name, 'testtheme')
-                .then(function (pkgs) {
-                    assert.deepEqual(pkgs, {
-                        testtheme: {
-                            name: 'testtheme',
-                            path: join(packagePath.name, 'testtheme'),
-                            'package.json': null
-                        }
-                    });
-
-                    done();
-                })
-                .catch(done)
-                .finally(packagePath.removeCallback);
+            try {
+                const pkgs = await packageJSON.readPackage(packagePath.name, 'testtheme');
+                assert.deepEqual(pkgs, {
+                    testtheme: {
+                        name: 'testtheme',
+                        path: join(packagePath.name, 'testtheme'),
+                        'package.json': null
+                    }
+                });
+            } finally {
+                await packagePath.removeCallback();
+            }
         });
 
-        it('should read directory and include only single requested package', function (done) {
+        it('should read directory and include only single requested package', async function () {
             const packagePath = tmp.dirSync({unsafeCleanup: true});
 
             // create trash
@@ -276,55 +262,46 @@ describe('package-json read', function () {
             fs.mkdirSync(join(packagePath.name, 'not-casper'));
             fs.writeFileSync(join(packagePath.name, 'not-casper', 'index.hbs'), '');
 
-            packageJSON.readPackage(packagePath.name, 'casper')
-                .then(function (pkgs) {
-                    assert.deepEqual(pkgs, {
-                        casper: {
-                            name: 'casper',
-                            path: join(packagePath.name, 'casper'),
-                            'package.json': null
-                        }
-                    });
-
-                    done();
-                })
-                .catch(done)
-                .finally(packagePath.removeCallback);
+            try {
+                const pkgs = await packageJSON.readPackage(packagePath.name, 'casper');
+                assert.deepEqual(pkgs, {
+                    casper: {
+                        name: 'casper',
+                        path: join(packagePath.name, 'casper'),
+                        'package.json': null
+                    }
+                });
+            } finally {
+                await packagePath.removeCallback();
+            }
         });
 
-        it('should return an error if package cannot be found', function (done) {
+        it('should return an error if package cannot be found', async function () {
             const packagePath = tmp.dirSync({unsafeCleanup: true});
 
             // create trash
             fs.writeFileSync(join(packagePath.name, 'casper.zip'), '');
             fs.writeFileSync(join(packagePath.name, '.DS_Store'), '');
 
-            packageJSON.readPackage(packagePath.name, 'casper')
-                .then(function () {
-                    done('Should have thrown an error');
-                })
-                .catch(function (err) {
-                    assert.equal(err.message, 'Package not found');
-                    done();
-                })
-                .finally(packagePath.removeCallback);
+            await assert.rejects(async () => {
+                await packageJSON.readPackage(packagePath.name, 'casper');
+            }, /Package not found/);
+            await packagePath.removeCallback();
         });
 
-        it('should return empty object if package is not a directory', function (done) {
+        it('should return empty object if package is not a directory', async function () {
             const packagePath = tmp.dirSync({unsafeCleanup: true});
 
             // create trash
             fs.writeFileSync(join(packagePath.name, 'casper.zip'), '');
             fs.writeFileSync(join(packagePath.name, '.DS_Store'), '');
 
-            packageJSON.readPackage(packagePath.name, 'casper.zip')
-                .then(function (pkg) {
-                    assert.deepEqual(pkg, {});
-
-                    done();
-                })
-                .catch(done)
-                .finally(packagePath.removeCallback);
+            try {
+                const pkgs = await packageJSON.readPackage(packagePath.name, 'casper.zip');
+                assert.deepEqual(pkgs, {});
+            } finally {
+                await packagePath.removeCallback();
+            }
         });
     });
 });

@@ -259,6 +259,34 @@ module.exports = function createSessionService({
     }
 
     /**
+     * rotateAndAssignVerifiedUserToSession
+     * Regenerates the Express session (issuing a new session_id) and then
+     * assigns the verified user to the new session. Used after a password
+     * change or reset so that any cloned or stolen copy of the pre-change
+     * cookie is rejected on its next request.
+     *
+     * @param {{req: Req, user: User, ip?: string}} options
+     * @returns {Promise<void>}
+     */
+    async function rotateAndAssignVerifiedUserToSession({req, user, ip}) {
+        await new Promise((resolve, reject) => {
+            req.session.regenerate((err) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                resolve();
+            });
+        });
+        await assignVerifiedUserToSession({
+            session: req.session,
+            user,
+            origin: getOriginOfRequest(req),
+            ip
+        });
+    }
+
+    /**
      * generateAuthCodeForUser
      *
      * @param {Req} req
@@ -494,6 +522,7 @@ module.exports = function createSessionService({
         createSessionForUser,
         createVerifiedSessionForUser,
         assignVerifiedUserToSession,
+        rotateAndAssignVerifiedUserToSession,
         removeUserForSession,
         verifySession,
         isVerifiedSession,
