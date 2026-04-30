@@ -64,7 +64,8 @@ export function mockMembersStats(server) {
                     date: key,
                     free: arr[key],
                     paid: 0,
-                    comped: 0
+                    comped: 0,
+                    gift: 0
                 };
             })
         };
