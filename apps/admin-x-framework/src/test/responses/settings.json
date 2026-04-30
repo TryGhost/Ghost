@@ -49,6 +49,34 @@
             "value": "@ghost"
         },
         {
+            "key": "threads",
+            "value": null
+        },
+        {
+            "key": "bluesky",
+            "value": null
+        },
+        {
+            "key": "mastodon",
+            "value": null
+        },
+        {
+            "key": "tiktok",
+            "value": null
+        },
+        {
+            "key": "youtube",
+            "value": null
+        },
+        {
+            "key": "instagram",
+            "value": null
+        },
+        {
+            "key": "linkedin",
+            "value": null
+        },
+        {
             "key": "navigation",
             "value": "[{\"label\":\"Home\",\"url\":\"/\"},{\"label\":\"About\",\"url\":\"/about/\"}]"
         },
