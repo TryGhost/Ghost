@@ -12,7 +12,13 @@ class SubscriptionStatsService {
      * @returns {Promise<{data: SubscriptionHistoryEntry[]}>}
      **/
     async getSubscriptionHistory() {
-        const subscriptionDeltaEntries = await this.fetchAllSubscriptionDeltas();
+        const paidDeltas = await this.fetchAllSubscriptionDeltas();
+        const giftDeltas = await this.fetchAllGiftDeltas();
+        // Sum paid+gift entries that share (date, tier, cadence) so each
+        // row produces a single coherent `count` snapshot. Sort ascending
+        // because the rollback loop below walks the array backwards.
+        const subscriptionDeltaEntries = aggregateDeltas(paidDeltas.concat(giftDeltas))
+            .sort((a, b) => moment(a.date).valueOf() - moment(b.date).valueOf());
         const counts = await this.fetchSubscriptionCounts();
 
         /** @type {Object.<string, Object.<string, number>>} */
@@ -126,26 +132,124 @@ class SubscriptionStatsService {
     }
 
     /**
-      * Get the current total subscriptions grouped by Cadence and Tier
+      * Get the current total subscriptions grouped by Cadence and Tier.
+      * Includes both paid subscriptions and currently-redeemed gifts so the
+      * totals stay consistent with the gift-aware delta stream.
       * @returns {Promise<SubscriptionCount[]>}
       **/
     async fetchSubscriptionCounts() {
         const knex = this.knex;
 
-        const data = await knex('members_stripe_customers_subscriptions')
-            .select(knex.raw(`
-                  COUNT(members_stripe_customers_subscriptions.id) AS count,
-                  products.id AS tier,
-                  stripe_prices.interval AS cadence
-             `))
-            .join('stripe_prices', 'stripe_prices.stripe_price_id', '=', 'members_stripe_customers_subscriptions.stripe_price_id')
-            .join('stripe_products', 'stripe_products.stripe_product_id', '=', 'stripe_prices.stripe_product_id')
-            .join('products', 'products.id', '=', 'stripe_products.product_id')
-            .whereNot('members_stripe_customers_subscriptions.mrr', 0)
-            .groupBy('tier', 'cadence');
+        const [paidCounts, giftCounts] = await Promise.all([
+            knex('members_stripe_customers_subscriptions')
+                .select(knex.raw(`
+                      COUNT(members_stripe_customers_subscriptions.id) AS count,
+                      products.id AS tier,
+                      stripe_prices.interval AS cadence
+                 `))
+                .join('stripe_prices', 'stripe_prices.stripe_price_id', '=', 'members_stripe_customers_subscriptions.stripe_price_id')
+                .join('stripe_products', 'stripe_products.stripe_product_id', '=', 'stripe_prices.stripe_product_id')
+                .join('products', 'products.id', '=', 'stripe_products.product_id')
+                .whereNot('members_stripe_customers_subscriptions.mrr', 0)
+                .groupBy('tier', 'cadence'),
+            knex('gifts')
+                .where('status', 'redeemed')
+                .select(knex.raw('COUNT(id) as count'))
+                .select('tier_id as tier')
+                .select('cadence')
+                .groupBy('tier_id', 'cadence')
+        ]);
 
-        return data;
+        return aggregateCounts(paidCounts.concat(giftCounts));
     }
+
+    /**
+     * Gift redemptions (signups) and gifts that have been consumed, expired,
+     * or refunded (cancellations), shaped as SubscriptionDelta rows so they
+     * appear alongside paid subscription deltas in the cadence breakdown.
+     * @returns {Promise<SubscriptionDelta[]>}
+     */
+    async fetchAllGiftDeltas() {
+        const knex = this.knex;
+        // A gift is no longer active once it has been consumed, expired, or refunded.
+        // Use whichever of those timestamps was set as the cancellation date.
+        const cancellationDate = 'COALESCE(consumed_at, expired_at, refunded_at)';
+        const [signups, cancellations] = await Promise.all([
+            knex('gifts')
+                .whereNotNull('redeemed_at')
+                .select(knex.raw('DATE(redeemed_at) as date'))
+                .select('tier_id as tier')
+                .select('cadence')
+                .select(knex.raw('COUNT(id) as count'))
+                .groupByRaw('DATE(redeemed_at), tier_id, cadence'),
+            knex('gifts')
+                .whereIn('status', ['consumed', 'expired', 'refunded'])
+                .whereNotNull('redeemed_at')
+                .whereRaw(`${cancellationDate} IS NOT NULL`)
+                .select(knex.raw(`DATE(${cancellationDate}) as date`))
+                .select('tier_id as tier')
+                .select('cadence')
+                .select(knex.raw('COUNT(id) as count'))
+                .groupByRaw(`DATE(${cancellationDate}), tier_id, cadence`)
+        ]);
+
+        return [
+            ...signups.map(r => ({date: r.date, tier: r.tier, cadence: r.cadence, positive_delta: r.count, negative_delta: 0, signups: r.count, cancellations: 0})),
+            ...cancellations.map(r => ({date: r.date, tier: r.tier, cadence: r.cadence, positive_delta: 0, negative_delta: r.count, signups: 0, cancellations: r.count}))
+        ];
+    }
+}
+
+/**
+ * Sum SubscriptionCount entries that share the same (tier, cadence) key.
+ * @param {SubscriptionCount[]} counts
+ * @returns {SubscriptionCount[]}
+ */
+function aggregateCounts(counts) {
+    /** @type {Map<string, SubscriptionCount>} */
+    const byKey = new Map();
+    for (const entry of counts) {
+        const key = `${entry.tier}|${entry.cadence}`;
+        const existing = byKey.get(key);
+        if (existing) {
+            existing.count += entry.count;
+        } else {
+            byKey.set(key, {tier: entry.tier, cadence: entry.cadence, count: entry.count});
+        }
+    }
+    return Array.from(byKey.values());
+}
+
+/**
+ * Sum SubscriptionDelta entries that share the same (date, tier, cadence) key.
+ * @param {SubscriptionDelta[]} deltas
+ * @returns {SubscriptionDelta[]}
+ */
+function aggregateDeltas(deltas) {
+    /** @type {Map<string, SubscriptionDelta>} */
+    const byKey = new Map();
+    for (const entry of deltas) {
+        const date = moment(entry.date).format('YYYY-MM-DD');
+        const key = `${date}|${entry.tier}|${entry.cadence}`;
+        const existing = byKey.get(key);
+        if (existing) {
+            existing.positive_delta += entry.positive_delta;
+            existing.negative_delta += entry.negative_delta;
+            existing.signups += entry.signups;
+            existing.cancellations += entry.cancellations;
+        } else {
+            byKey.set(key, {
+                date,
+                tier: entry.tier,
+                cadence: entry.cadence,
+                positive_delta: entry.positive_delta,
+                negative_delta: entry.negative_delta,
+                signups: entry.signups,
+                cancellations: entry.cancellations
+            });
+        }
+    }
+    return Array.from(byKey.values());
 }
 
 /** @typedef {object} SubscriptionCount
