@@ -1370,7 +1370,8 @@ describe('Email renderer', function () {
                         return labsEnabled;
                     }
                 },
-                t: t
+                t: t,
+                dir: i18n.dir.bind(i18n)
             });
         });
 
@@ -1393,6 +1394,26 @@ describe('Email renderer', function () {
                 segment,
                 options
             );
+        });
+
+        it('Renders LTR <html> attributes by default', async function () {
+            const post = createModel(basePost);
+            const newsletter = createModel(baseNewsletter);
+            const response = await emailRenderer.renderBody(post, newsletter, null, {});
+            assert.match(response.html, /<html lang="en-gb" dir="ltr">/);
+            assert.match(response.html, /direction:\s*ltr/);
+        });
+
+        it('Renders RTL <html> attributes for Persian, Arabic, Hebrew, and Urdu', async function () {
+            for (const locale of ['fa', 'ar', 'he', 'ur']) {
+                customSettings.locale = locale;
+                const post = createModel(basePost);
+                const newsletter = createModel(baseNewsletter);
+                const response = await emailRenderer.renderBody(post, newsletter, null, {});
+                assert.match(response.html, new RegExp(`<html lang="${locale}" dir="rtl">`), `expected rtl <html> for ${locale}`);
+                assert.match(response.html, /direction:\s*rtl/, `expected direction: rtl in body for ${locale}`);
+                assert.match(response.html, /class="feedback-buttons-container" dir="rtl"/, `expected feedback buttons dir="rtl" for ${locale}`);
+            }
         });
 
         it('preserves multiline code block whitespace in the shared email wrapper', async function () {
@@ -2424,7 +2445,8 @@ describe('Email renderer', function () {
                         ]
                     })
                 },
-                t: t
+                t: t,
+                dir: i18n.dir.bind(i18n)
             });
         });
 
@@ -2447,6 +2469,21 @@ describe('Email renderer', function () {
             const data = await templateDataWithSettings({});
             assert.equal(data.accentColor, '#15212A');
             assert.equal(data.accentContrastColor, '#FFFFFF');
+        });
+
+        it('Exposes site.locale and site.direction (LTR by default)', async function () {
+            const data = await templateDataWithSettings({});
+            assert.equal(data.site.locale, 'en-gb');
+            assert.equal(data.site.direction, 'ltr');
+        });
+
+        it('Sets site.direction to rtl for Persian, Arabic, Hebrew, and Urdu', async function () {
+            for (const locale of ['fa', 'ar', 'he', 'ur']) {
+                settings.locale = locale;
+                const data = await templateDataWithSettings({});
+                assert.equal(data.site.locale, locale, `expected locale ${locale}`);
+                assert.equal(data.site.direction, 'rtl', `expected rtl for ${locale}`);
+            }
         });
 
         it('Includes list of cta background colors', async function () {
@@ -3602,7 +3639,8 @@ describe('Email renderer', function () {
                         return labsEnabled;
                     }
                 },
-                t: tFr
+                t: tFr,
+                dir: i18n.dir.bind(i18n)
             });
         });
         it('correctly include the site name in the paywall (in French)', async function () {

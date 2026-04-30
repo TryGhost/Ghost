@@ -15,8 +15,10 @@ const UNMATCHED_TOKEN_REGEX = /%%\{.*?\}%%/g;
 
 class MemberWelcomeEmailRenderer {
     #wrapperTemplate;
+    #dir;
 
-    constructor({t}) {
+    constructor({t, dir}) {
+        this.#dir = dir;
         this.Handlebars = require('handlebars').create();
         registerHelpers(this.Handlebars, labs, t);
         const baseStylesSource = fs.readFileSync(
@@ -182,7 +184,9 @@ class MemberWelcomeEmailRenderer {
             site: {
                 iconUrl: siteSettings.iconUrl || null,
                 title: siteSettings.title,
-                url: siteSettings.url
+                url: siteSettings.url,
+                locale: siteSettings.locale || 'en',
+                direction: (this.#dir && this.#dir(siteSettings.locale || 'en')) || 'ltr'
             },
             siteTitle: siteSettings.title,
             siteUrl: siteSettings.url,
