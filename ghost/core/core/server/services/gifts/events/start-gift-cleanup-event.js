@@ -1,4 +1,4 @@
-module.exports = class StartGiftReminderFlushEvent {
+module.exports = class StartGiftCleanupEvent {
     /**
      * @param {any} data
      * @param {Date} timestamp
@@ -13,6 +13,6 @@ module.exports = class StartGiftReminderFlushEvent {
      * @param {Date} [timestamp]
      */
     static create(data, timestamp) {
-        return new StartGiftReminderFlushEvent(data, timestamp ?? new Date());
+        return new StartGiftCleanupEvent(data, timestamp ?? new Date());
     }
 };
