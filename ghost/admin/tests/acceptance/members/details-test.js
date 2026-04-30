@@ -327,6 +327,9 @@ describe('Acceptance: Member details', function () {
             description: null,
             monthly_price_id: 'gift-monthly-price',
             yearly_price_id: 'gift-yearly-price',
+            monthly_price: 500,
+            yearly_price: 5000,
+            currency: 'usd',
             type: 'paid',
             active: true,
             welcome_page_url: '/',
@@ -386,6 +389,9 @@ describe('Acceptance: Member details', function () {
         expect(subscriptionSummaryText(giftTier.id)).to.equal('Gift subscription - Expires 3 Apr 2022');
         expect(tierCard).to.contain.text('Gift subscription');
         expect(find(`[data-test-tier="${giftTier.id}"] [data-test-button="subscription-actions"]`)).to.not.exist;
+
+        const amountElement = find(`[data-test-tier="${giftTier.id}"] .gh-tier-card-price .amount`);
+        expect(amountElement.textContent.trim()).to.equal('50');
     });
 
     it('displays comped subscriptions with expiry text and a complimentary action menu', async function () {

@@ -533,11 +533,15 @@ describe('Unit: Util: subscription-data', function () {
                     nickname: 'Gift subscription'
                 },
                 tier: {
-                    expiry_at: moment.utc('2021-05-31').toISOString()
+                    expiry_at: moment.utc('2021-05-31').toISOString(),
+                    monthly_price: 500,
+                    yearly_price: 5000,
+                    currency: 'usd'
                 },
                 price: {
                     currency: 'usd',
                     amount: 0,
+                    interval: 'year',
                     nickname: 'Gift subscription'
                 }
             };
@@ -555,6 +559,36 @@ describe('Unit: Util: subscription-data', function () {
                 priceLabel: 'Gift subscription',
                 validityDetails: ' – Expires 31 May 2021'
             });
+            expect(data.price.amount).to.equal(5000);
+            expect(data.price.currency).to.equal('usd');
+        });
+
+        it('uses the tier monthly price for monthly gift subscriptions', function () {
+            let sub = {
+                id: null,
+                status: 'active',
+                cancel_at_period_end: false,
+                current_period_end: '2021-05-31',
+                trial_end_at: null,
+                plan: {
+                    nickname: 'Gift subscription'
+                },
+                tier: {
+                    expiry_at: moment.utc('2021-05-31').toISOString(),
+                    monthly_price: 500,
+                    yearly_price: 5000,
+                    currency: 'usd'
+                },
+                price: {
+                    currency: 'usd',
+                    amount: 0,
+                    interval: 'month',
+                    nickname: 'Gift subscription'
+                }
+            };
+            let data = getSubscriptionData(sub);
+
+            expect(data.price.amount).to.equal(500);
         });
 
         it('sets hasActiveDiscount with discounted and original prices', function () {

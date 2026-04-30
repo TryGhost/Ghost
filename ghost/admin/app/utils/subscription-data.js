@@ -2,6 +2,10 @@ import moment from 'moment-timezone';
 import {getNonDecimal, getSymbol} from 'ghost-admin/utils/currency';
 
 export function getSubscriptionData(sub) {
+    const giftTierPrice = isGift(sub) ? getGiftTierPrice(sub) : null;
+    const priceAmount = giftTierPrice?.amount ?? sub.price.amount;
+    const priceCurrency = giftTierPrice?.currency ?? sub.price.currency;
+
     const data = {
         ...sub,
         attribution: {
@@ -16,8 +20,10 @@ export function getSubscriptionData(sub) {
         cancellationReason: sub.cancellation_reason,
         price: {
             ...sub.price,
-            currencySymbol: getSymbol(sub.price.currency),
-            nonDecimalAmount: getNonDecimal(sub.price.amount)
+            amount: priceAmount,
+            currency: priceCurrency,
+            currencySymbol: getSymbol(priceCurrency),
+            nonDecimalAmount: getNonDecimal(priceAmount)
         },
         isComplimentary: isComplimentary(sub),
         isGift: isGift(sub),
@@ -68,6 +74,24 @@ export function isGift(sub) {
     const giftNickname = sub.plan?.nickname?.toLowerCase() === 'gift subscription';
 
     return !sub.id && giftNickname;
+}
+
+export function getGiftTierPrice(sub) {
+    if (!sub.tier) {
+        return null;
+    }
+
+    const interval = sub.price?.interval;
+    const amount = interval === 'month' ? sub.tier.monthly_price : sub.tier.yearly_price;
+
+    if (!amount) {
+        return null;
+    }
+
+    return {
+        amount,
+        currency: sub.tier.currency || sub.price?.currency
+    };
 }
 
 export function isCanceled(sub) {
