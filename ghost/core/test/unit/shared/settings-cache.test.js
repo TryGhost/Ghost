@@ -148,22 +148,35 @@ describe('UNIT: settings cache', function () {
     });
 
     it('.getPublic() correctly filters and formats public values', function () {
+        const socialAccounts = {
+            threads: '@ghost',
+            bluesky: 'ghost.bsky.social',
+            mastodon: 'mastodon.social/@ghost',
+            tiktok: '@ghost',
+            youtube: '@ghost',
+            instagram: 'ghost',
+            linkedin: 'ghost-team'
+        };
+
         cache.set('key1', {value: 'something'});
         cache.set('title', {value: 'hello world'});
         cache.set('timezone', {value: 'PST'});
         cache.set('secondary_navigation', {value: false});
+        Object.entries(socialAccounts).forEach(([key, value]) => cache.set(key, {value}));
 
         assert.deepEqual(cache.getAll(), {
             key1: {value: 'something'},
             title: {value: 'hello world'},
             timezone: {value: 'PST'},
-            secondary_navigation: {value: false}
+            secondary_navigation: {value: false},
+            ..._.mapValues(socialAccounts, value => ({value}))
         });
 
         let values = _.zipObject(_.keys(publicSettings), _.fill(Array(_.size(publicSettings)), null));
         values.title = 'hello world';
         values.timezone = 'PST';
         values.secondary_navigation = false;
+        Object.assign(values, socialAccounts);
         // transistor_portal_enabled is computed server-side: transistor && transistor_portal_enabled
         values.transistor_portal_enabled = false;
 
