@@ -1,4 +1,5 @@
 const logging = require('@tryghost/logging');
+const errors = require('@tryghost/errors');
 const {generateGiftPreviewImage} = require('./image');
 
 function getCadenceLabel(cadence, duration) {
@@ -32,6 +33,10 @@ async function giftPreview(req, res) {
 
     try {
         gift = await giftService.getByToken(token);
+
+        if (!gift) {
+            throw new errors.NotFoundError({message: `Gift not found for token`});
+        }
     } catch (err) {
         logging.warn(`Gift preview: failed to load required gift data, redirecting to homepage`, err);
 
