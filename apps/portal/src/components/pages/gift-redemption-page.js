@@ -95,8 +95,9 @@ export const GiftRedemptionStyles = `
         margin: 20px 0 0;
         font-size: 2.4rem;
         font-weight: 700;
-        line-height: 1.1;
+        line-height: 1.3;
         letter-spacing: -0.015em;
+        text-wrap: pretty;
         color: var(--grey0);
     }
 
@@ -314,7 +315,11 @@ const GiftRedemptionPage = () => {
     const isRedeeming = action === 'redeemGift:running';
     const buttonLabel = isRedeeming
         ? 'Redeeming gift...' // TODO: Add translation strings once copy has been finalised
-        : 'Redeem gift membership'; // TODO: Add translation strings once copy has been finalised
+        : 'Redeem your membership'; // TODO: Add translation strings once copy has been finalised
+    const siteTitle = site?.title;
+    const headerText = siteTitle
+        ? `You've been gifted a membership to ${siteTitle}`
+        : 'You\'ve been gifted a membership';
 
     return (
         <div className='gh-portal-content gh-portal-gift-redemption'>
@@ -324,7 +329,7 @@ const GiftRedemptionPage = () => {
             <div className='gh-gift-redemption-panel'>
                 <div className='gh-gift-redemption-icon'><GiftIcon /></div>
                 <div className='gh-gift-redemption-kicker'>{'Gift membership'}</div>
-                <h1 className='gh-gift-redemption-title'>{'You\'ve been gifted a membership'}</h1>
+                <h1 className='gh-gift-redemption-title'>{headerText}</h1>
 
                 <div className='gh-gift-redemption-plan'>
                     <span className='gh-gift-redemption-tier'>{gift.tier.name}</span>

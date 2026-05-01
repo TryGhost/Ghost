@@ -116,13 +116,6 @@ export const GiftPageStyles = `
     border-color: transparent;
 }
 
-.gh-portal-content.gift .gh-portal-signup-message {
-    margin: 32px 0 40px;
-    color: var(--grey5);
-    text-align: center;
-    text-wrap: pretty;
-}
-
 @media (max-width: 480px) {
     .gh-portal-gift-hero {
         padding: 40px 24px 32px;
@@ -208,7 +201,7 @@ function GiftProductCard({brandColor, product, selectedInterval, isDisabled, isP
                 <div className='gh-portal-btn-product'>
                     <ActionButton
                         dataTestId='purchase-gift'
-                        label='Gift this'
+                        label='Continue'
                         onClick={e => onPurchase(e, product)}
                         disabled={isDisabled}
                         isRunning={isPurchasing}
@@ -285,8 +278,8 @@ const GiftPage = () => {
                 <div className='gh-portal-gift-hero-icon'>
                     <GiftIcon />
                 </div>
-                <h1 className='gh-portal-main-title'>Gift someone a membership</h1>
-                <p className='gh-portal-main-subtitle'>Pick a plan and send it to someone as a gift</p>
+                <h1 className='gh-portal-main-title'>Gift a membership</h1>
+                <p className='gh-portal-main-subtitle'>Share a full membership to {siteTitle} with a friend or colleague</p>
             </div>
         </>
     );
@@ -357,10 +350,6 @@ const GiftPage = () => {
                                 ))}
                             </div>
                         </section>
-
-                        <div className='gh-portal-signup-message'>
-                            <div>Only redeemable by free or new members.</div>
-                        </div>
                     </div>
                 </section>
             </div>

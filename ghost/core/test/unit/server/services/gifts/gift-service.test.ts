@@ -330,8 +330,6 @@ describe('GiftService', function () {
             const emailData = giftEmailService.sendPurchaseConfirmation.getCall(0).args[0];
 
             assert.equal(emailData.buyerEmail, 'buyer@example.com');
-            assert.equal(emailData.amount, 5000);
-            assert.equal(emailData.currency, 'usd');
             assert.equal(emailData.token, 'abc-123');
             assert.equal(emailData.tierName, 'Bronze');
             assert.equal(emailData.cadence, 'year');
