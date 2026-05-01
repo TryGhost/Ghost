@@ -242,6 +242,54 @@ export const useSubscriptionStats = createQuery<SubscriptionStatsResponseType>({
     path: '/stats/subscriptions/'
 });
 
+// Comments analytics overview
+
+export type CommentsOverviewTotals = {
+    comments: number;
+    commenters: number;
+    reported: number;
+};
+
+export type CommentsOverviewSeriesItem = {
+    date: string;
+    count: number;
+    commenters: number;
+    reported: number;
+};
+
+export type CommentsOverviewTopPost = {
+    id: string;
+    title: string;
+    slug: string;
+    count: number;
+};
+
+export type CommentsOverviewTopMember = {
+    id: string;
+    name: string | null;
+    email: string;
+    count: number;
+};
+
+export type CommentsOverview = {
+    totals: CommentsOverviewTotals;
+    series: CommentsOverviewSeriesItem[];
+    topPosts: CommentsOverviewTopPost[];
+    topMembers: CommentsOverviewTopMember[];
+};
+
+export type CommentsOverviewResponseType = {
+    stats: CommentsOverview[];
+    meta?: Meta;
+};
+
+const commentsOverviewDataType = 'CommentsOverviewResponseType';
+
+export const useCommentsOverview = createQuery<CommentsOverviewResponseType>({
+    dataType: commentsOverviewDataType,
+    path: '/stats/comments/'
+});
+
 export const usePostStats = createQueryWithId<PostStatsResponseType>({
     dataType: 'PostStatsResponseType',
     path: id => `/stats/posts/${id}/stats/`

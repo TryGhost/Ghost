@@ -50,7 +50,8 @@ const PRIVATE_FEATURES = [
     'indexnow',
     'pictureImageFormats',
     'smarterCounts',
-    'giftSubscriptions'
+    'giftSubscriptions',
+    'commentAnalytics'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

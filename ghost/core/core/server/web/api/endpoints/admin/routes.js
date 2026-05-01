@@ -173,6 +173,7 @@ module.exports = function apiRoutes() {
     router.get('/stats/top-sources-growth', mw.authAdminApi, http(api.stats.topSourcesGrowth));
     router.post('/stats/posts-visitor-counts', mw.authAdminApi, http(api.stats.postsVisitorCounts));
     router.post('/stats/posts-member-counts', mw.authAdminApi, http(api.stats.postsMemberCounts));
+    router.get('/stats/comments', mw.authAdminApi, http(api.stats.commentsOverview));
 
     // ## Labels
     router.get('/labels', mw.authAdminApi, http(api.labels.browse));

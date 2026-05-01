@@ -67,6 +67,10 @@ const features: Feature[] = [{
     title: 'Gift Subscriptions',
     description: 'Allow site visitors to purchase gift subscriptions for others',
     flag: 'giftSubscriptions'
+}, {
+    title: 'Comment Analytics',
+    description: 'Show an analytics overview (KPIs, chart, top posts & commenters) above the comments moderation list',
+    flag: 'commentAnalytics'
 }];
 
 const AlphaFeatures: React.FC = () => {

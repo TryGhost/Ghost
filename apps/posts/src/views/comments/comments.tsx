@@ -1,3 +1,4 @@
+import CommentsAnalytics from './components/comments-analytics';
 import CommentsContent from './components/comments-content';
 import CommentsFilters from './components/comments-filters';
 import CommentsHeader from './components/comments-header';
@@ -8,10 +9,17 @@ import {Button, EmptyIndicator, LoadingIndicator} from '@tryghost/shade/componen
 import {LucideIcon} from '@tryghost/shade/utils';
 import {createFilter} from '@tryghost/shade/patterns';
 import {useBrowseComments} from '@tryghost/admin-x-framework/api/comments';
+import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useFilterState} from './hooks/use-filter-state';
+import {useOverviewRange} from './hooks/use-overview-range';
 
 const Comments: React.FC = () => {
     const {filters, nql, setFilters, clearFilters, isSingleIdFilter} = useFilterState();
+    const {data: configData} = useBrowseConfig();
+    const analyticsEnabled = configData?.config?.labs?.commentAnalytics === true;
+
+    const {range, setRange, dateFrom, dateTo} = useOverviewRange();
+
     const handleAddFilter = useCallback((field: string, value: string, operator: string = 'is') => {
         setFilters((prevFilters) => {
             // Remove any existing filter for the same field
@@ -36,8 +44,18 @@ const Comments: React.FC = () => {
     // If we are fetching comments, but not fetching the next page and not refetching, we should show the loading indicator
     const shouldShowLoading = isFetching && !isFetchingNextPage && !isRefetching;
 
+    const rail = analyticsEnabled ? (
+        <CommentsAnalytics
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+            range={range}
+            setRange={setRange}
+            onAddFilter={handleAddFilter}
+        />
+    ) : undefined;
+
     return (
-        <CommentsLayout>
+        <CommentsLayout rail={rail}>
             <CommentsHeader>
                 {!isSingleIdFilter && (
                     <CommentsFilters

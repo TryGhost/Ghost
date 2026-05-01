@@ -1,4 +1,7 @@
+const errors = require('@tryghost/errors');
+const labs = require('../../../shared/labs');
 const statsService = require('../../services/stats');
+const commentsService = require('../../services/comments');
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -524,6 +527,29 @@ const controller = {
         },
         async query(frame) {
             return await statsService.api.getTopSourcesWithRange(frame.options);
+        }
+    },
+    commentsOverview: {
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'date_from',
+            'date_to'
+        ],
+        permissions: {
+            docName: 'comments',
+            method: 'browse'
+        },
+        async query(frame) {
+            if (!labs.isSet('commentAnalytics')) {
+                throw new errors.NotFoundError();
+            }
+            const overview = await commentsService.stats.getOverview({
+                dateFrom: frame?.options?.date_from,
+                dateTo: frame?.options?.date_to
+            });
+            return {data: [overview]};
         }
     }
 

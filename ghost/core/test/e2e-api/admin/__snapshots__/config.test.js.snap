@@ -12,6 +12,7 @@ Object {
       "additionalPaymentMethods": true,
       "adminUIRefresh": true,
       "automations": true,
+      "commentAnalytics": true,
       "commentModeration": true,
       "customFonts": true,
       "editorExcerpt": true,
