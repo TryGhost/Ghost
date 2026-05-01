@@ -1,3 +1,5 @@
+import {getGiftRedemptionErrorMessage} from './gift-redemption-notification';
+
 const getHashData = () => {
     const hash = window.location.hash || '';
     const [hashPath = '', hashQueryString = ''] = hash.replace(/^#/, '').split('?');
@@ -12,12 +14,13 @@ const getURLParam = ({searchParams, hashParams}, name) => {
     return searchParams.get(name) ?? hashParams.get(name);
 };
 
-export const handleGiftRedemptionAction = ({success}) => {
+export const handleGiftRedemptionAction = ({success, errorCode}) => {
     return {
         type: 'giftRedeem',
         status: success ? 'success' : 'error',
         duration: success ? 5000 : 3000,
-        autoHide: success
+        autoHide: success,
+        ...(!success ? {message: getGiftRedemptionErrorMessage({code: errorCode})} : {})
     };
 };
 
@@ -97,7 +100,8 @@ export default function NotificationParser({billingOnly = false} = {}) {
 
     if (giftRedemption && successStatus) {
         const success = successStatus === 'true';
-        return handleGiftRedemptionAction({success});
+        const errorCode = getURLParam({searchParams, hashParams}, 'errorCode');
+        return handleGiftRedemptionAction({success, errorCode});
     }
 
     if (action && successStatus && !billingOnly) {

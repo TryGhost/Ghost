@@ -112,7 +112,7 @@ describe('GiftRedemptionPage', () => {
                 closeable: true,
                 message: {
                     title: 'Gift could not be redeemed',
-                    subtitle: 'Gift link is not valid'
+                    subtitle: 'Something went wrong, please try again later.'
                 }
             });
         });

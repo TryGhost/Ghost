@@ -433,6 +433,10 @@ const createSessionFromMagicLink = async function createSessionFromMagicLink(req
     } catch (err) {
         logging.warn(err.message);
 
+        if (err.code && typeof err.code === 'string') {
+            searchParams.set('errorCode', err.code);
+        }
+
         const referrer = req.query.r;
         const siteUrl = urlUtils.getSiteUrl();
         if (referrer && referrer.startsWith(siteUrl)) {
