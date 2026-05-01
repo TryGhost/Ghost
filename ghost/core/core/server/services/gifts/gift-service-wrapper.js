@@ -41,6 +41,8 @@ class GiftServiceWrapper {
         const logging = require('@tryghost/logging');
         const {SubscriptionActivatedEvent} = require('../../../shared/events');
         const StartGiftReminderFlushEvent = require('./events/start-gift-reminder-flush-event');
+        const StartGiftCleanupEvent = require('./events/start-gift-cleanup-event');
+        const jobs = require('./jobs');
 
         const {GhostMailer} = require('../mail');
         const settingsCache = require('../../../shared/settings-cache');
@@ -100,12 +102,40 @@ class GiftServiceWrapper {
         });
 
         DomainEvents.subscribe(StartGiftReminderFlushEvent, async () => {
+            const start = Date.now();
             try {
-                await this.service.processReminders();
+                const {remindedCount, skippedCount, failedCount} = await this.service.processReminders();
+
+                logging.info(`Sent ${remindedCount} gift reminders, skipped ${skippedCount}, failed ${failedCount} in ${Date.now() - start}ms`);
             } catch (err) {
-                logging.error(err, 'Failed to flush gift reminders');
+                logging.error(err, 'Failed to process gift reminders');
             }
         });
+
+        DomainEvents.subscribe(StartGiftCleanupEvent, async () => {
+            const consumedStart = Date.now();
+            try {
+                const {consumedCount, updatedMemberCount} = await this.service.processConsumed();
+
+                logging.info(`Consumed ${consumedCount} gifts, updated ${updatedMemberCount} members in ${Date.now() - consumedStart}ms`);
+            } catch (err) {
+                logging.error(err, 'Failed to process consumed gifts');
+            }
+
+            const expiredStart = Date.now();
+            try {
+                const {expiredCount} = await this.service.processExpired();
+
+                logging.info(`Expired ${expiredCount} gifts in ${Date.now() - expiredStart}ms`);
+            } catch (err) {
+                logging.error(err, 'Failed to process expired gifts');
+            }
+        });
+
+        if (labsService.isSet('giftSubscriptions')) {
+            jobs.scheduleGiftCleanupJob();
+            jobs.scheduleGiftReminderJob();
+        }
 
         this.#initialized = true;
     }
