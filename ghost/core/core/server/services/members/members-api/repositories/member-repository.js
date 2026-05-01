@@ -382,26 +382,47 @@ module.exports = class MemberRepository {
         let member;
 
         const isFreeSignup = !stripeCustomer && memberData.status === 'free';
-        const shouldCheckFreeWelcomeEmail = WELCOME_EMAIL_SOURCES.includes(source) && isFreeSignup;
-        let isFreeWelcomeEmailActive = false;
-        let freeWelcomeAutomation = null;
-        let freeWelcomeEmail = null;
+        const isGiftSignup = !stripeCustomer && memberData.status === 'gift';
+        let welcomeEmailToEnqueue = null;
 
-        if (shouldCheckFreeWelcomeEmail && this._WelcomeEmailAutomation) {
-            freeWelcomeAutomation = await this._WelcomeEmailAutomation.findOne(
-                {slug: MEMBER_WELCOME_EMAIL_SLUGS.free},
-                {...options, withRelated: ['welcomeEmailAutomatedEmail']}
-            );
-            freeWelcomeEmail = freeWelcomeAutomation?.related('welcomeEmailAutomatedEmail');
-            isFreeWelcomeEmailActive = Boolean(
-                freeWelcomeAutomation &&
-                freeWelcomeEmail &&
-                freeWelcomeEmail.get('lexical') &&
-                freeWelcomeAutomation.get('status') === 'active'
-            );
+        if (this._WelcomeEmailAutomation && WELCOME_EMAIL_SOURCES.includes(source)) {
+            if (isFreeSignup) {
+                const freeWelcomeAutomation = await this._WelcomeEmailAutomation.findOne(
+                    {slug: MEMBER_WELCOME_EMAIL_SLUGS.free},
+                    {...options, withRelated: ['welcomeEmailAutomatedEmail']}
+                );
+                const freeWelcomeEmail = freeWelcomeAutomation?.related('welcomeEmailAutomatedEmail');
+                const isFreeWelcomeEmailActive = Boolean(
+                    freeWelcomeAutomation &&
+                    freeWelcomeEmail &&
+                    freeWelcomeEmail.get('lexical') &&
+                    freeWelcomeAutomation.get('status') === 'active'
+                );
+
+                if (isFreeWelcomeEmailActive) {
+                    welcomeEmailToEnqueue = {automation: freeWelcomeAutomation, email: freeWelcomeEmail};
+                }
+            } else if (isGiftSignup) {
+                // As gift members get access to a paid tier, they receive the paid welcome email
+                const paidWelcomeAutomation = await this._WelcomeEmailAutomation.findOne(
+                    {slug: MEMBER_WELCOME_EMAIL_SLUGS.paid},
+                    {...options, withRelated: ['welcomeEmailAutomatedEmail']}
+                );
+                const paidWelcomeEmail = paidWelcomeAutomation?.related('welcomeEmailAutomatedEmail');
+                const isPaidWelcomeEmailActive = Boolean(
+                    paidWelcomeAutomation &&
+                    paidWelcomeEmail &&
+                    paidWelcomeEmail.get('lexical') &&
+                    paidWelcomeAutomation.get('status') === 'active'
+                );
+
+                if (isPaidWelcomeEmailActive) {
+                    welcomeEmailToEnqueue = {automation: paidWelcomeAutomation, email: paidWelcomeEmail};
+                }
+            }
         }
 
-        if (isFreeWelcomeEmailActive && isFreeSignup) {
+        if (welcomeEmailToEnqueue) {
             const runMemberCreation = async (transacting) => {
                 const newMember = await this._Member.add({
                     ...memberData,
@@ -409,9 +430,9 @@ module.exports = class MemberRepository {
                 }, {...memberAddOptions, transacting});
 
                 await this._WelcomeEmailAutomationRun.add({
-                    welcome_email_automation_id: freeWelcomeAutomation.id,
+                    welcome_email_automation_id: welcomeEmailToEnqueue.automation.id,
                     member_id: newMember.id,
-                    next_welcome_email_automated_email_id: freeWelcomeEmail.id,
+                    next_welcome_email_automated_email_id: welcomeEmailToEnqueue.email.id,
                     ready_at: new Date(),
                     step_started_at: null,
                     step_attempts: 0,
@@ -1527,7 +1548,8 @@ module.exports = class MemberRepository {
             // Send paid welcome email if:
             // 1. The paid welcome email is active
             // 2. The member status changed to 'paid'
-            if (updatedMember.get('status') === 'paid' && isPaidWelcomeEmailActive) {
+            // 3. The previous status wasn't 'gift', as gift members already received the paid welcome email on signup
+            if (updatedMember.get('status') === 'paid' && updatedMember._previousAttributes.status !== 'gift' && isPaidWelcomeEmailActive) {
                 await this._WelcomeEmailAutomationRun.add({
                     welcome_email_automation_id: paidWelcomeAutomation.id,
                     member_id: memberModel.id,

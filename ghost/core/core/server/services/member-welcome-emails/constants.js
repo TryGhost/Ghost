@@ -7,6 +7,11 @@ const MEMBER_WELCOME_EMAIL_SLUGS = {
     paid: 'member-welcome-email-paid'
 };
 
+const MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES = {
+    free: ['free'],
+    paid: ['paid', 'gift']
+};
+
 const MEMBER_WELCOME_EMAIL_TAG = 'member-welcome-email';
 
 const MESSAGES = {
@@ -23,5 +28,6 @@ module.exports = {
     MEMBER_WELCOME_EMAIL_LOG_KEY,
     MEMBER_WELCOME_EMAIL_TAG,
     MEMBER_WELCOME_EMAIL_SLUGS,
+    MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES,
     MESSAGES
 };
