@@ -61,8 +61,6 @@ interface TiersService {
 interface GiftEmailService {
     sendPurchaseConfirmation(data: {
         buyerEmail: string;
-        amount: number;
-        currency: string;
         token: string;
         tierName: string;
         cadence: 'month' | 'year';
@@ -225,8 +223,6 @@ export class GiftService {
         try {
             await this.deps.giftEmailService.sendPurchaseConfirmation({
                 buyerEmail: data.buyerEmail,
-                amount: data.amount,
-                currency: data.currency,
                 token: data.token,
                 tierName: tier.name,
                 cadence: data.cadence,
