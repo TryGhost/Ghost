@@ -38,7 +38,7 @@ describe('Members Signin', function () {
     it('Will not set a cookie if the token is invalid', async function () {
         await membersAgent.get('/?token=blah')
             .expectStatus(302)
-            .expectHeader('Location', /\?\w*success=false/);
+            .expectHeader('Location', /\?[^#]*success=false/);
     });
 
     it('Will set a cookie if the token is valid', async function () {
@@ -280,7 +280,7 @@ describe('Members Signin', function () {
 
             await membersAgent.get('/?token=blah')
                 .expectStatus(302)
-                .expectHeader('Location', /\?\w*success=false/);
+                .expectHeader('Location', /\?[^#]*success=false/);
 
             // No changes expected
             await model.refresh();
@@ -322,7 +322,7 @@ describe('Members Signin', function () {
             // Failed 4th usage
             await membersAgent.get('/?token=blah')
                 .expectStatus(302)
-                .expectHeader('Location', /\?\w*success=false/);
+                .expectHeader('Location', /\?[^#]*success=false/);
 
             // No changes expected
             await model.refresh();
@@ -342,7 +342,7 @@ describe('Members Signin', function () {
 
             await membersAgent.get('/?token=blah')
                 .expectStatus(302)
-                .expectHeader('Location', /\?\w*success=false/);
+                .expectHeader('Location', /\?[^#]*success=false/);
 
             // No changes expected
             const model = await models.SingleUseToken.findOne({token});

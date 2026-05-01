@@ -97,6 +97,33 @@ describe('Members Service Middleware', function () {
             assert.equal(res.redirect.firstCall.args[0], '/blah/?action=signup&success=false');
         });
 
+        it('appends errorCode to the redirect when the rejection has a string code', async function () {
+            req.url = '/members?token=test&action=subscribe';
+            req.query = {token: 'test', action: 'subscribe'};
+
+            const err = new Error('This gift has expired.');
+            err.code = 'GIFT_EXPIRED';
+            membersService.ssr.exchangeTokenForSession.rejects(err);
+
+            await membersMiddleware.createSessionFromMagicLink(req, res, next);
+
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(res.redirect);
+            assert.equal(res.redirect.firstCall.args[0], '/blah/?action=subscribe&errorCode=GIFT_EXPIRED&success=false');
+        });
+
+        it('does not append errorCode when the rejection has no code', async function () {
+            req.url = '/members?token=test&action=subscribe';
+            req.query = {token: 'test', action: 'subscribe'};
+
+            membersService.ssr.exchangeTokenForSession.rejects(new Error('boom'));
+
+            await membersMiddleware.createSessionFromMagicLink(req, res, next);
+
+            sinon.assert.calledOnce(res.redirect);
+            assert.equal(res.redirect.firstCall.args[0], '/blah/?action=subscribe&success=false');
+        });
+
         it('redirects free member to custom redirect on signup', async function () {
             req.url = '/members?token=test&action=signup';
             req.query = {token: 'test', action: 'signup'};
