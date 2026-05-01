@@ -93,6 +93,29 @@ export class GiftBookshelfRepository implements GiftRepository {
         return model ? this.toGift(model) : null;
     }
 
+    async getActiveByMembers(memberIds: string[], options: RepositoryTransactionOptions = {}): Promise<Map<string, Gift>> {
+        const map = new Map<string, Gift>();
+
+        if (memberIds.length === 0) {
+            return map;
+        }
+
+        const idList = memberIds.map(id => `'${id}'`).join(',');
+        const collection = await this.model.findAll({
+            filter: `redeemer_member_id:[${idList}]+status:redeemed`,
+            ...options
+        });
+
+        for (const model of collection.models) {
+            const gift = this.toGift(model);
+            if (gift.redeemerMemberId) {
+                map.set(gift.redeemerMemberId, gift);
+            }
+        }
+
+        return map;
+    }
+
     async findPendingConsumption(): Promise<Gift[]> {
         const now = new Date();
 

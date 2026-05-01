@@ -373,6 +373,13 @@ export class GiftService {
         return this.deps.giftRepository.getActiveByMember(memberId, options);
     }
 
+    async getActiveByMembers(memberIds: string[], options: {transacting?: unknown} = {}): Promise<Map<string, Gift>> {
+        if (!memberIds || memberIds.length === 0) {
+            return new Map();
+        }
+        return this.deps.giftRepository.getActiveByMembers(memberIds, options);
+    }
+
     getRemainingActiveDays(gift: Gift, now: Date = new Date()): number {
         if (!gift.isRedeemed() || !gift.consumesAt || gift.isConsumed()) {
             return 0;

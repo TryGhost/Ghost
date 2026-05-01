@@ -296,6 +296,12 @@ describe('MemberBreadService', function () {
             getRedeemedOfferIdsForSubscriptions: sinon.stub().resolves([])
         };
 
+        const defaultGiftService = {
+            service: {
+                getActiveByMembers: sinon.stub().resolves(new Map())
+            }
+        };
+
         const getService = (options = {}) => {
             return new MemberBreadService({
                 settingsHelpers: {
@@ -305,7 +311,8 @@ describe('MemberBreadService', function () {
                 memberAttributionService: memberAttributionServiceStub,
                 emailSuppressionList: emailSuppressionListStub,
                 nextPaymentCalculator: options.nextPaymentCalculator || nextPaymentCalculator,
-                offersAPI: options.offersAPI || defaultOffersAPI
+                offersAPI: options.offersAPI || defaultOffersAPI,
+                giftService: options.giftService || defaultGiftService
             });
         };
 
@@ -637,12 +644,24 @@ describe('MemberBreadService', function () {
                 productEvents: productEventsJSON
             });
 
+            memberModelStub.status = 'gift';
+
             memberRepositoryStub.isActiveSubscriptionStatus = sinon.stub().returns(true);
 
-            const memberBreadService = getService();
+            const giftServiceStub = {
+                service: {
+                    getActiveByMembers: sinon.stub().resolves(new Map([
+                        [MEMBER_ID, {cadence: 'month', currency: 'eur', amount: 1500}]
+                    ]))
+                }
+            };
+
+            const memberBreadService = getService({giftService: giftServiceStub});
             const member = await memberBreadService.read({id: MEMBER_ID});
 
             assert.equal(member.subscriptions.length, 1);
+
+            sinon.assert.calledOnceWithExactly(giftServiceStub.service.getActiveByMembers, [MEMBER_ID]);
 
             sinon.assert.match(member.subscriptions[0], {
                 id: '',
@@ -655,9 +674,9 @@ describe('MemberBreadService', function () {
                 plan: {
                     id: '',
                     nickname: 'Gift subscription',
-                    interval: 'year',
-                    currency: 'USD',
-                    amount: 0
+                    interval: 'month',
+                    currency: 'eur',
+                    amount: 1500
                 },
                 status: 'active',
                 start_date: moment(productEventsJSON[0].created_at),
@@ -669,16 +688,37 @@ describe('MemberBreadService', function () {
                     id: '',
                     price_id: '',
                     nickname: 'Gift subscription',
-                    amount: 0,
-                    interval: 'year',
+                    amount: 1500,
+                    interval: 'month',
                     type: 'recurring',
-                    currency: 'USD',
+                    currency: 'eur',
                     product: {
                         id: '',
                         product_id: productsJSON[0].id
                     }
                 }
             });
+        });
+
+        it('does not call giftService for non-gift members', async function () {
+            memberModelStub.toJSON.returns({
+                ...memberModelJSON,
+                status: 'free',
+                subscriptions: [],
+                products: [],
+                productEvents: []
+            });
+
+            const giftServiceStub = {
+                service: {
+                    getActiveByMembers: sinon.stub().resolves(new Map())
+                }
+            };
+
+            const memberBreadService = getService({giftService: giftServiceStub});
+            await memberBreadService.read({id: MEMBER_ID});
+
+            sinon.assert.notCalled(giftServiceStub.service.getActiveByMembers);
         });
 
         it('returns a member with attribution data', async function () {
