@@ -84,14 +84,10 @@ describe('{{social_url}} helper', function () {
             }), '');
     });
 
-    it('falls back to site data for publication social accounts', function () {
-        assert.equal(compile(`{{social_url type="facebook"}}`)
-            .with({}), 'https://www.facebook.com/testuser-fb');
-
-        assert.equal(compile(`{{social_url type="twitter"}}`)
-            .with({}), 'https://x.com/testuser-tw');
-
-        assert.equal(compile(`{{social_url type="linkedin"}}`)
-            .with({}), 'https://www.linkedin.com/in/testuser-li');
+    platforms.forEach((platform) => {
+        it(`falls back to site data for publication ${platform.name} when post-context is empty`, function () {
+            assert.equal(compile(`{{social_url type="${platform.name}"}}`)
+                .with({}), platform.expectedUrl);
+        });
     });
 });
