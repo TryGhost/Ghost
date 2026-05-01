@@ -167,7 +167,7 @@ export const CardHead: Story = {
                 <TableCaption>A list of your recent invoices.</TableCaption>
                 <TableHeader>
                     <TableRow>
-                        <TableHead variant='cardhead'>
+                        <TableHead variant='section'>
                             <CardHeader>
                                 <CardTitle>Invoice</CardTitle>
                                 <CardDescription>All invoices from the last 30 days</CardDescription>

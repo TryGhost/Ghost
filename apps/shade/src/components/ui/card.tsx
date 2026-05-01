@@ -151,7 +151,7 @@ const CardFooter = React.forwardRef<
 });
 CardFooter.displayName = 'CardFooter';
 
-const KpiCardHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
+const MetricCardHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
     return (
         <div
             className={
@@ -166,7 +166,7 @@ const KpiCardHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children
     );
 };
 
-const KpiCardHeaderLabel: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, color, ...props}) => {
+const MetricCardHeaderLabel: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, color, ...props}) => {
     return (
         <div className={cn('[&_svg]:size-4 flex items-center gap-1.5 text-base text-muted-foreground h-[22px] font-medium', className)} {...props}>
             {color && <div className='ml-1 size-2 rounded-full opacity-50' style={{backgroundColor: color}}></div>}
@@ -175,14 +175,14 @@ const KpiCardHeaderLabel: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({chi
     );
 };
 
-interface KpiCardValueProps {
+interface MetricCardValueProps {
     value: string | number;
     diffDirection?: 'up' | 'down' | 'same' | 'empty' | 'hidden';
     diffValue?: string | number;
     diffTooltip?: React.ReactNode;
 }
 
-const KpiCardHeaderValue: React.FC<KpiCardValueProps> = ({value, diffDirection, diffValue, diffTooltip}) => {
+const MetricCardHeaderValue: React.FC<MetricCardValueProps> = ({value, diffDirection, diffValue, diffTooltip}) => {
     const diffContainerClassName = cn(
         'flex items-center gap-1 text-xs h-[22px] px-1.5 rounded-xs group/diff cursor-default',
         diffDirection === 'up' && `text-state-success bg-state-success/10 ${diffTooltip && 'hover:bg-state-success/20'}`,
@@ -231,6 +231,15 @@ const EmptyCard = React.forwardRef<
 ));
 EmptyCard.displayName = 'EmptyCard';
 
+/** @deprecated Use `MetricCardHeader` instead. */
+const KpiCardHeader = MetricCardHeader;
+
+/** @deprecated Use `MetricCardHeaderLabel` instead. */
+const KpiCardHeaderLabel = MetricCardHeaderLabel;
+
+/** @deprecated Use `MetricCardHeaderValue` instead. */
+const KpiCardHeaderValue = MetricCardHeaderValue;
+
 export {
     Card,
     CardHeader,
@@ -238,6 +247,9 @@ export {
     CardTitle,
     CardDescription,
     CardContent,
+    MetricCardHeader,
+    MetricCardHeaderLabel,
+    MetricCardHeaderValue,
     KpiCardHeader,
     KpiCardHeaderLabel,
     KpiCardHeaderValue,

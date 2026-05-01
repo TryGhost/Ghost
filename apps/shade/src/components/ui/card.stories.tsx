@@ -1,5 +1,5 @@
 import type {Meta, StoryObj} from '@storybook/react-vite';
-import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue} from './card';
+import {Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, MetricCardHeader, MetricCardHeaderLabel, MetricCardHeaderValue} from './card';
 import {Button} from './button';
 import {Eye, User, Coins} from 'lucide-react';
 
@@ -44,19 +44,19 @@ export const KpiCardWithUpTrend: Story = {
     args: {
         className: 'w-[350px]',
         children: [
-            <KpiCardHeader key="kpi-header" className='relative flex grow flex-row items-start justify-between gap-5 border-none pb-4'>
+            <MetricCardHeader key="kpi-header" className='relative flex grow flex-row items-start justify-between gap-5 border-none pb-4'>
                 <div className='flex grow flex-col gap-1.5 border-none pb-0'>
-                    <KpiCardHeaderLabel>
+                    <MetricCardHeaderLabel>
                         <Eye size={16} strokeWidth={1.5} />
                         Unique visitors
-                    </KpiCardHeaderLabel>
-                    <KpiCardHeaderValue
+                    </MetricCardHeaderLabel>
+                    <MetricCardHeaderValue
                         diffDirection="up"
                         diffValue="+12.5%"
                         value="2,547"
                     />
                 </div>
-            </KpiCardHeader>,
+            </MetricCardHeader>,
             <CardContent key="content">
                 Chart placeholder content
             </CardContent>
@@ -68,20 +68,20 @@ export const KpiCardWithTrendTooltip: Story = {
     args: {
         className: 'w-[350px] mt-20',
         children: [
-            <KpiCardHeader key="kpi-header" className='relative flex grow flex-row items-start justify-between gap-5 border-none pb-4'>
+            <MetricCardHeader key="kpi-header" className='relative flex grow flex-row items-start justify-between gap-5 border-none pb-4'>
                 <div className='flex grow flex-col gap-1.5 border-none pb-0'>
-                    <KpiCardHeaderLabel>
+                    <MetricCardHeaderLabel>
                         <Eye size={16} strokeWidth={1.5} />
                         Unique visitors
-                    </KpiCardHeaderLabel>
-                    <KpiCardHeaderValue
+                    </MetricCardHeaderLabel>
+                    <MetricCardHeaderValue
                         diffDirection="up"
                         diffTooltip="You’re trending up 12.5% from 3,538 compared to the last 30 days"
                         diffValue="+12.5%"
                         value="2,547"
                     />
                 </div>
-            </KpiCardHeader>,
+            </MetricCardHeader>,
             <CardContent key="content">
                 Chart placeholder content
             </CardContent>
@@ -93,19 +93,19 @@ export const KpiCardWithDownTrend: Story = {
     args: {
         className: 'w-[350px]',
         children: [
-            <KpiCardHeader key="kpi-header" className='relative flex grow flex-row items-start justify-between gap-5 border-none pb-4'>
+            <MetricCardHeader key="kpi-header" className='relative flex grow flex-row items-start justify-between gap-5 border-none pb-4'>
                 <div className='flex grow flex-col gap-1.5 border-none pb-0'>
-                    <KpiCardHeaderLabel>
+                    <MetricCardHeaderLabel>
                         <User size={16} strokeWidth={1.5} />
                         Members
-                    </KpiCardHeaderLabel>
-                    <KpiCardHeaderValue
+                    </MetricCardHeaderLabel>
+                    <MetricCardHeaderValue
                         diffDirection="down"
                         diffValue="-3.2%"
                         value="1,234"
                     />
                 </div>
-            </KpiCardHeader>,
+            </MetricCardHeader>,
             <CardContent key="content">
                 Chart placeholder content
             </CardContent>
@@ -117,20 +117,20 @@ export const KpiCardWithColorIndicator: Story = {
     args: {
         className: 'w-[350px]',
         children: [
-            <KpiCardHeader key="kpi-header" className='relative flex grow flex-row items-start justify-between gap-5 border-none pb-4'>
+            <MetricCardHeader key="kpi-header" className='relative flex grow flex-row items-start justify-between gap-5 border-none pb-4'>
                 <div className='flex grow flex-col gap-1.5 border-none pb-0'>
-                    <KpiCardHeaderLabel>
+                    <MetricCardHeaderLabel>
                         <span className='inline-block size-2 rounded-full opacity-50' style={{backgroundColor: 'var(--chart-purple)'}}></span>
                         <Coins size={16} strokeWidth={1.5} />
                         MRR
-                    </KpiCardHeaderLabel>
-                    <KpiCardHeaderValue
+                    </MetricCardHeaderLabel>
+                    <MetricCardHeaderValue
                         diffDirection="up"
                         diffValue="+8.7%"
                         value="$4,567"
                     />
                 </div>
-            </KpiCardHeader>,
+            </MetricCardHeader>,
             <CardContent key="content">
                 Chart placeholder content
             </CardContent>
@@ -142,18 +142,18 @@ export const KpiCardNoTrend: Story = {
     args: {
         className: 'w-[350px]',
         children: [
-            <KpiCardHeader key="kpi-header" className='relative flex grow flex-row items-start justify-between gap-5 border-none pb-4'>
+            <MetricCardHeader key="kpi-header" className='relative flex grow flex-row items-start justify-between gap-5 border-none pb-4'>
                 <div className='flex grow flex-col gap-1.5 border-none pb-0'>
-                    <KpiCardHeaderLabel>
+                    <MetricCardHeaderLabel>
                         <Eye size={16} strokeWidth={1.5} />
                         Page views
-                    </KpiCardHeaderLabel>
-                    <KpiCardHeaderValue
+                    </MetricCardHeaderLabel>
+                    <MetricCardHeaderValue
                         diffDirection="empty"
                         value="15,789"
                     />
                 </div>
-            </KpiCardHeader>,
+            </MetricCardHeader>,
             <CardContent key="content">
                 Chart placeholder content
             </CardContent>
@@ -165,14 +165,14 @@ export const KpiCardWithHoverButton: Story = {
     args: {
         className: 'w-[350px] group',
         children: [
-            <KpiCardHeader key="kpi-header" className='relative flex grow flex-row items-start justify-between gap-5 border-none pb-4'>
+            <MetricCardHeader key="kpi-header" className='relative flex grow flex-row items-start justify-between gap-5 border-none pb-4'>
                 <div className='flex grow flex-col gap-1.5 border-none pb-0'>
-                    <KpiCardHeaderLabel className='transition-all group-hover:text-foreground'>
+                    <MetricCardHeaderLabel className='transition-all group-hover:text-foreground'>
                         <span className='inline-block size-2 rounded-full opacity-50' style={{backgroundColor: 'var(--chart-teal)'}}></span>
                         <User size={16} strokeWidth={1.5} />
                         Members
-                    </KpiCardHeaderLabel>
-                    <KpiCardHeaderValue
+                    </MetricCardHeaderLabel>
+                    <MetricCardHeaderValue
                         diffDirection="same"
                         diffValue="0%"
                         value="2,456"
@@ -185,7 +185,7 @@ export const KpiCardWithHoverButton: Story = {
                 >
                     View more
                 </Button>
-            </KpiCardHeader>,
+            </MetricCardHeader>,
             <CardContent key="content">
                 Chart placeholder content
             </CardContent>
@@ -197,18 +197,18 @@ export const KpiCardHiddenTrend: Story = {
     args: {
         className: 'w-[350px]',
         children: [
-            <KpiCardHeader key="kpi-header" className='relative flex grow flex-row items-start justify-between gap-5 border-none pb-4'>
+            <MetricCardHeader key="kpi-header" className='relative flex grow flex-row items-start justify-between gap-5 border-none pb-4'>
                 <div className='flex grow flex-col gap-1.5 border-none pb-0'>
-                    <KpiCardHeaderLabel>
+                    <MetricCardHeaderLabel>
                         <Coins size={16} strokeWidth={1.5} />
                         All-time revenue
-                    </KpiCardHeaderLabel>
-                    <KpiCardHeaderValue
+                    </MetricCardHeaderLabel>
+                    <MetricCardHeaderValue
                         diffDirection="hidden"
                         value="$125,890"
                     />
                 </div>
-            </KpiCardHeader>,
+            </MetricCardHeader>,
             <CardContent key="content">
                 Chart placeholder content
             </CardContent>

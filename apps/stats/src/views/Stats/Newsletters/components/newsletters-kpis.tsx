@@ -1,6 +1,6 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {AvgsDataItem} from '../newsletters';
-import {BarChartLoadingIndicator, ChartConfig, ChartContainer, ChartTooltip, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, EmptyIndicator, GhAreaChart, KpiDropdownButton, KpiTabTrigger, KpiTabValue, Tabs, TabsList} from '@tryghost/shade/components';
+import {BarChartLoadingIndicator, ChartConfig, ChartContainer, ChartTooltip, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, EmptyIndicator, GhAreaChart, MetricDropdownButton, MetricTabTrigger, MetricTabValue, Tabs, TabsList} from '@tryghost/shade/components';
 import {LucideIcon, Recharts, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade/utils';
 import {calculateYAxisWidth} from '@tryghost/shade/app';
 import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
@@ -237,12 +237,12 @@ const NewsletterKPIs: React.FC<{
     const avgValue = currentTab === 'avg-open-rate' ? avgOpenRate : avgClickRate;
 
     return (
-        <Tabs defaultValue={initialTab} variant='kpis'>
+        <Tabs defaultValue={initialTab} variant='metrics'>
             <TabsList className={`-mx-6 hidden grid-cols-3 md:visible! md:grid! ${gridClass}`}>
-                <KpiTabTrigger className={`${!emailTrackOpensEnabled && !emailTrackClicksEnabled && 'cursor-auto after:hidden'}`} value="total-subscribers" onClick={() => {
+                <MetricTabTrigger className={`${!emailTrackOpensEnabled && !emailTrackClicksEnabled && 'cursor-auto after:hidden'}`} value="total-subscribers" onClick={() => {
                     handleTabChange('total-subscribers');
                 }}>
-                    <KpiTabValue
+                    <MetricTabValue
                         color={tabConfig['total-subscribers'].color}
                         data-testid="total-subscribers-value"
                         diffDirection={subscribersDiff.direction}
@@ -250,46 +250,46 @@ const NewsletterKPIs: React.FC<{
                         label="Total subscribers"
                         value={formatNumber(totalSubscribers)}
                     />
-                </KpiTabTrigger>
+                </MetricTabTrigger>
 
                 {emailTrackOpensEnabled &&
-                    <KpiTabTrigger value="avg-open-rate" onClick={() => {
+                    <MetricTabTrigger value="avg-open-rate" onClick={() => {
                         handleTabChange('avg-open-rate');
                     }}>
-                        <KpiTabValue
+                        <MetricTabValue
                             className={isAvgsLoading ? 'opacity-50' : ''}
                             color={tabConfig['avg-open-rate'].color}
                             label="Avg. open rate"
                             value={formatPercentage(avgOpenRate)}
                         />
-                    </KpiTabTrigger>
+                    </MetricTabTrigger>
                 }
 
                 {emailTrackClicksEnabled &&
-                    <KpiTabTrigger value="avg-click-rate" onClick={() => {
+                    <MetricTabTrigger value="avg-click-rate" onClick={() => {
                         handleTabChange('avg-click-rate');
                     }}>
-                        <KpiTabValue
+                        <MetricTabValue
                             className={isAvgsLoading ? 'opacity-50' : ''}
                             color={tabConfig['avg-click-rate'].color}
                             label="Avg. click rate"
                             value={formatPercentage(avgClickRate)}
                         />
-                    </KpiTabTrigger>
+                    </MetricTabTrigger>
                 }
             </TabsList>
             <DropdownMenu>
                 <DropdownMenuTrigger className='md:hidden' asChild>
-                    <KpiDropdownButton>
+                    <MetricDropdownButton>
                         {currentTab === 'total-subscribers' &&
-                                <KpiTabValue
+                                <MetricTabValue
                                     color={tabConfig['total-subscribers'].color}
                                     label="Total subscribers"
                                     value={formatNumber(totalSubscribers)}
                                 />
                         }
                         {currentTab === 'avg-open-rate' && emailTrackOpensEnabled &&
-                                <KpiTabValue
+                                <MetricTabValue
                                     className={isAvgsLoading ? 'opacity-50' : ''}
                                     color={tabConfig['avg-open-rate'].color}
                                     label="Avg. open rate"
@@ -297,14 +297,14 @@ const NewsletterKPIs: React.FC<{
                                 />
                         }
                         {currentTab === 'avg-click-rate' && emailTrackClicksEnabled &&
-                                <KpiTabValue
+                                <MetricTabValue
                                     className={isAvgsLoading ? 'opacity-50' : ''}
                                     color={tabConfig['avg-click-rate'].color}
                                     label="Avg. click rate"
                                     value={formatPercentage(avgClickRate)}
                                 />
                         }
-                    </KpiDropdownButton>
+                    </MetricDropdownButton>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align='end' className="w-56">
                     <DropdownMenuItem onClick={() => handleTabChange('total-subscribers')}>Total subscribers</DropdownMenuItem>

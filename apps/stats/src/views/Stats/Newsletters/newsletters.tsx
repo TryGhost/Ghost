@@ -161,7 +161,7 @@ const NewsletterTableHeader: React.FC<{
     return (
         <TableHeader>
             <TableRow>
-                <TableHead className='min-w-[320px]' variant='cardhead'>
+                <TableHead className='min-w-[320px]' variant='section'>
                     {cardHeaderContent}
                 </TableHead>
                 <TableHead className='w-[65px]'>
