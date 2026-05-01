@@ -466,7 +466,7 @@ describe('Portal Data links:', () => {
             let {
                 ghostApi, triggerButtonFrame, ...utils
             } = await setupGiftRedemption({
-                giftError: new Error('This gift has expired.')
+                giftError: Object.assign(new Error('This gift has expired.'), {code: 'GIFT_EXPIRED'})
             });
 
             expect(triggerButtonFrame).toBeInTheDocument();
@@ -482,7 +482,7 @@ describe('Portal Data links:', () => {
             let {
                 ghostApi, triggerButtonFrame, ...utils
             } = await setupGiftRedemption({
-                giftError: new Error('This gift has already been redeemed.')
+                giftError: Object.assign(new Error('This gift has already been redeemed.'), {code: 'GIFT_REDEEMED'})
             });
 
             expect(triggerButtonFrame).toBeInTheDocument();
@@ -498,7 +498,7 @@ describe('Portal Data links:', () => {
             let {
                 ghostApi, triggerButtonFrame, ...utils
             } = await setupGiftRedemption({
-                giftError: new Error('You already have an active subscription.')
+                giftError: Object.assign(new Error('You already have an active subscription.'), {code: 'GIFT_PAID_MEMBER'})
             });
 
             expect(triggerButtonFrame).toBeInTheDocument();
@@ -514,7 +514,7 @@ describe('Portal Data links:', () => {
             let {
                 ghostApi, triggerButtonFrame, ...utils
             } = await setupGiftRedemption({
-                giftError: new Error('Failed to load gift data')
+                giftError: new Error('Gift not found')
             });
 
             expect(triggerButtonFrame).toBeInTheDocument();
@@ -522,7 +522,7 @@ describe('Portal Data links:', () => {
 
             await expectGiftRedemptionErrorToast({
                 utils,
-                subtitle: /Gift link is not valid/i
+                subtitle: /Something went wrong, please try again later\./i
             });
         });
 

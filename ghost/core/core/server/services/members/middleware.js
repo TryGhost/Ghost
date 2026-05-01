@@ -433,8 +433,8 @@ const createSessionFromMagicLink = async function createSessionFromMagicLink(req
     } catch (err) {
         logging.warn(err.message);
 
-        if (err.code && typeof err.code === 'string' && err.code.startsWith('GIFT_')) {
-            searchParams.set('giftRedemptionMessage', err.message);
+        if (err.code && typeof err.code === 'string') {
+            searchParams.set('errorCode', err.code);
         }
 
         const referrer = req.query.r;
