@@ -386,39 +386,27 @@ module.exports = class MemberRepository {
         let welcomeEmailToEnqueue = null;
 
         if (this._WelcomeEmailAutomation && WELCOME_EMAIL_SOURCES.includes(source)) {
-            if (isFreeSignup) {
-                const freeWelcomeAutomation = await this._WelcomeEmailAutomation.findOne(
-                    {slug: MEMBER_WELCOME_EMAIL_SLUGS.free},
+            const getActiveWelcomeEmailToEnqueue = async (slug) => {
+                const automation = await this._WelcomeEmailAutomation.findOne(
+                    {slug},
                     {...options, withRelated: ['welcomeEmailAutomatedEmail']}
                 );
-                const freeWelcomeEmail = freeWelcomeAutomation?.related('welcomeEmailAutomatedEmail');
-                const isFreeWelcomeEmailActive = Boolean(
-                    freeWelcomeAutomation &&
-                    freeWelcomeEmail &&
-                    freeWelcomeEmail.get('lexical') &&
-                    freeWelcomeAutomation.get('status') === 'active'
+                const email = automation?.related('welcomeEmailAutomatedEmail');
+                const isActive = Boolean(
+                    automation &&
+                    email &&
+                    email.get('lexical') &&
+                    automation.get('status') === 'active'
                 );
 
-                if (isFreeWelcomeEmailActive) {
-                    welcomeEmailToEnqueue = {automation: freeWelcomeAutomation, email: freeWelcomeEmail};
-                }
+                return isActive ? {automation, email} : null;
+            };
+
+            if (isFreeSignup) {
+                welcomeEmailToEnqueue = await getActiveWelcomeEmailToEnqueue(MEMBER_WELCOME_EMAIL_SLUGS.free);
             } else if (isGiftSignup) {
                 // As gift members get access to a paid tier, they receive the paid welcome email
-                const paidWelcomeAutomation = await this._WelcomeEmailAutomation.findOne(
-                    {slug: MEMBER_WELCOME_EMAIL_SLUGS.paid},
-                    {...options, withRelated: ['welcomeEmailAutomatedEmail']}
-                );
-                const paidWelcomeEmail = paidWelcomeAutomation?.related('welcomeEmailAutomatedEmail');
-                const isPaidWelcomeEmailActive = Boolean(
-                    paidWelcomeAutomation &&
-                    paidWelcomeEmail &&
-                    paidWelcomeEmail.get('lexical') &&
-                    paidWelcomeAutomation.get('status') === 'active'
-                );
-
-                if (isPaidWelcomeEmailActive) {
-                    welcomeEmailToEnqueue = {automation: paidWelcomeAutomation, email: paidWelcomeEmail};
-                }
+                welcomeEmailToEnqueue = await getActiveWelcomeEmailToEnqueue(MEMBER_WELCOME_EMAIL_SLUGS.paid);
             }
         }
 
