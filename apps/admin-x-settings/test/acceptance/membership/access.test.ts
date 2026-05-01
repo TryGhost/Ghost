@@ -127,7 +127,7 @@ test.describe('Access settings', async () => {
         await expect(section.getByTestId('subscription-access-select')).toContainText('Nobody');
 
         await expect(page.getByTestId('portal').getByRole('button', {name: 'Customize'})).toBeDisabled();
-        await expect(page.getByTestId('enable-newsletters')).toContainText('only existing members will receive newsletters');
+        await expect(page.getByTestId('enable-newsletters')).toContainText('which disables all newsletter sending');
     });
 
     test('Supports selecting specific tiers', async ({page}) => {
