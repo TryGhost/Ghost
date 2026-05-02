@@ -1,4 +1,4 @@
-module.exports = ({result, siteUrl, postsUrl, emailRecipient}) => `
+module.exports = ({result, siteUrl, postsUrl, emailRecipient}) => \`
 <!doctype html>
 <html>
   <head>
@@ -128,7 +128,9 @@ module.exports = ({result, siteUrl, postsUrl, emailRecipient}) => `
                     \${result?.data?.errors ? \`
                     <tr>
                       <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; padding-bottom: 16px;">
-                        The following error occurred while importing your content: <strong>\${result.data.errors[0].message}</strong>. 
+                        \${result.data.errors[0]?.message 
+                            ? \`The following error occurred while importing your content: <strong>\${result.data.errors[0].message}</strong>.\` 
+                            : 'One or more errors occurred while importing your content.'}
                         Please contact support or report on the <a href="https://forum.ghost.org/">Ghost Community Forum</a>.
                       </td>
                     </tr>
