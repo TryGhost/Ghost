@@ -9,6 +9,8 @@ import ReplyForm from './forms/reply-form';
 import ThreadedReplies from './threaded-replies';
 import {Avatar, BlankAvatar} from './avatar';
 import {Comment, OpenCommentForm, useAppContext} from '../../app-context';
+import {ReactComponent as PinIcon} from '../../images/icons/pin.svg';
+import {ReactComponent as PinOffIcon} from '../../images/icons/pin-off.svg';
 import {Transition} from '@headlessui/react';
 import {buildCommentPermalink, findCommentById, formatExplicitTime, getCommentInReplyToSnippet, getMemberNameFromComment} from '../../utils/helpers';
 import {useRelativeTime} from '../../utils/hooks';
@@ -161,6 +163,7 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({children, comment, p
             className={hiddenClass}
             hasReplies={hasReplies}
             isLastSibling={isLastSibling}
+            isPinned={comment.pinned}
             layoutVariant={layoutVariant}
             memberUuid={comment.member?.uuid}
             replies={<RepliesContainer comment={comment} parent={parent} useThreading={useThreading}>{children}</RepliesContainer>}
@@ -225,6 +228,7 @@ const UnpublishedComment: React.FC<React.PropsWithChildren<UnpublishedCommentPro
             avatar={avatar}
             hasReplies={hasReplies}
             isLastSibling={isLastSibling}
+            isPinned={comment.pinned}
             layoutVariant={layoutVariant}
             replies={<RepliesContainer comment={comment} parent={parent} useThreading={useThreading}>{children}</RepliesContainer>}
             replyForm={displayReplyForm ? <ReplyFormBox continueLine={hasChildReplies} openForm={openForm} parent={replyFormParent} useThreading={useThreading} /> : null}
@@ -232,6 +236,7 @@ const UnpublishedComment: React.FC<React.PropsWithChildren<UnpublishedCommentPro
         >
             <div className="mt-[-3px] flex items-start" id={comment.id}>
                 <div className="flex h-10 flex-row items-center gap-4 pb-[8px] pr-4">
+                    <PinnedLabel comment={comment} />
                     <p className="text-md mt-[4px] font-sans leading-normal text-neutral-900/40 sm:text-lg dark:text-white/60">
                         {notPublishedMessage}
                     </p>
@@ -272,6 +277,44 @@ const EditedInfo: React.FC<{comment: Comment}> = ({comment}) => {
         </span>
     );
 };
+
+const PinnedLabel: React.FC<{comment: Comment}> = ({comment}) => {
+    const {dispatchAction, isAdmin, t} = useAppContext();
+
+    if (!comment.pinned) {
+        return null;
+    }
+
+    const labelClassName = 'inline-flex items-center gap-1 rounded-full border border-amber-300/70 bg-amber-50 px-2 py-0.5 font-sans text-xs font-medium leading-none text-amber-800 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-100';
+
+    if (isAdmin) {
+        const handleUnpinClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+            event.stopPropagation();
+            dispatchAction('unpinComment', comment);
+        };
+
+        return (
+            <button aria-label={t('Unpin comment')} className={`${labelClassName} group hover:border-amber-400 hover:bg-amber-100 dark:hover:border-amber-400/50 dark:hover:bg-amber-400/20`} data-testid="pinned-comment-label" type="button" onClick={handleUnpinClick}>
+                <span className="grid size-3 shrink-0">
+                    <PinIcon aria-hidden="true" className="col-start-1 row-start-1 size-3 group-hover:opacity-0 group-focus-visible:opacity-0" />
+                    <PinOffIcon aria-hidden="true" className="col-start-1 row-start-1 size-3 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100" />
+                </span>
+                <span className="grid justify-items-start text-left">
+                    <span className="col-start-1 row-start-1 group-hover:opacity-0 group-focus-visible:opacity-0">{t('Pinned')}</span>
+                    <span className="col-start-1 row-start-1 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100">{t('Unpin')}</span>
+                </span>
+            </button>
+        );
+    }
+
+    return (
+        <span className={labelClassName} data-testid="pinned-comment-label">
+            <PinIcon aria-hidden="true" className="size-3" />
+            {t('Pinned')}
+        </span>
+    );
+};
+
 const RepliesContainer: React.FC<React.PropsWithChildren<RepliesProps & {className?: string; parent?: Comment; useThreading?: boolean}>> = ({children, comment, className = '', parent, useThreading = false}) => {
     const hasNestedReplies = React.Children.count(children) > 0;
     const hasReplies = hasNestedReplies || (comment.replies && comment.replies.length > 0);
@@ -393,6 +436,11 @@ const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = '', u
                     <span>
                         <MemberExpertise comment={comment}/>
                         {timestampElement}
+                        {comment.pinned && (
+                            <span className="ml-2 inline-flex align-middle">
+                                <PinnedLabel comment={comment} />
+                            </span>
+                        )}
                         <EditedInfo comment={comment} />
                     </span>
                 </div>
@@ -509,17 +557,24 @@ type CommentLayoutProps = {
     className?: string;
     memberUuid?: string;
     isLastSibling?: boolean;
+    isPinned?: boolean;
     layoutVariant?: CommentLayoutVariant;
     replies?: React.ReactNode;
     replyForm?: React.ReactNode;
     useThreading: boolean;
 }
-const CommentLayout: React.FC<CommentLayoutProps> = ({children, avatar, hasReplies, className = '', memberUuid = '', isLastSibling = false, layoutVariant = 'root', replies, replyForm, useThreading}) => {
+
+const COMMENT_GAP_CLASS_NAME = 'mb-7';
+const PINNED_COMMENT_GAP_CLASS_NAME = 'mb-4';
+const PINNED_COMMENT_BOX_CLASS_NAME = 'bg-amber-50/70 px-3 py-3 dark:bg-amber-400/10';
+
+const CommentLayout: React.FC<CommentLayoutProps> = ({children, avatar, hasReplies, className = '', memberUuid = '', isLastSibling = false, isPinned = false, layoutVariant = 'root', replies, replyForm, useThreading}) => {
     const isReplyLayout = layoutVariant === 'reply';
 
     if (!useThreading) {
+        const bottomMarginClassName = isPinned ? PINNED_COMMENT_GAP_CLASS_NAME : hasReplies ? 'mb-0' : COMMENT_GAP_CLASS_NAME;
         return (
-            <div className={`flex w-full flex-row ${hasReplies === true ? 'mb-0' : 'mb-7'}`} data-member-uuid={memberUuid} data-testid="comment-component">
+            <div className={`flex w-full flex-row rounded-lg ${isPinned ? PINNED_COMMENT_BOX_CLASS_NAME : ''} ${bottomMarginClassName}`} data-member-uuid={memberUuid} data-pinned={isPinned ? 'true' : undefined} data-testid="comment-component">
                 <div className="mr-2 flex flex-col items-center justify-start sm:mr-3">
                     <div className={`flex-0 mb-3 sm:mb-4 ${className}`}>
                         {avatar}

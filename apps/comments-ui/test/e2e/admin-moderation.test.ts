@@ -101,6 +101,32 @@ test.describe('Admin moderation', async () => {
         await expect(frame.getByTestId('hide-button')).toBeVisible();
     });
 
+    test('has pin option when signed in to Ghost admin and viewing own comment', async ({page}) => {
+        mockedApi.addComment({
+            html: `<p>This is comment 1</p>`,
+            member: {id: '1', uuid: '12345'}
+        });
+        const {frame} = await initializeTest(page);
+
+        const moreButtons = frame.getByTestId('more-button');
+        await expect(moreButtons).toHaveCount(1);
+
+        await moreButtons.nth(0).click();
+        await expect(frame.getByTestId('pin-button')).toBeVisible();
+        await expect(frame.getByTestId('edit')).toBeVisible();
+    });
+
+    test('has pin option when signed in to Ghost admin and viewing another member comment', async ({page}) => {
+        mockedApi.addComment({html: `<p>This is comment 1</p>`});
+        const {frame} = await initializeTest(page);
+
+        const moreButtons = frame.getByTestId('more-button');
+        await expect(moreButtons).toHaveCount(1);
+
+        await moreButtons.nth(0).click();
+        await expect(frame.getByTestId('pin-button')).toBeVisible();
+    });
+
     test('member uuid are passed to admin browse api params', async ({page}) => {
         mockedApi.addComment({html: '<p>This is comment 1</p>'});
         const adminBrowseSpy = sinon.spy(mockedApi.adminRequestHandlers, 'browseComments');

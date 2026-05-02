@@ -169,6 +169,35 @@ module.exports = class CommentsController {
         });
     }
 
+    async adminEdit(frame) {
+        const data = frame.data.comments[0];
+        const updates = {};
+        if (Object.prototype.hasOwnProperty.call(data, 'status')) {
+            updates.status = data.status;
+        }
+        if (Object.prototype.hasOwnProperty.call(data, 'pinned')) {
+            updates.pinned = data.pinned;
+        }
+
+        const result = await this.service.moderateComment(
+            frame.options.id,
+            updates,
+            frame.options
+        );
+
+        if (result) {
+            const postId = result.get('post_id');
+            const parentId = result.get('parent_id');
+            const pathsToInvalidate = [
+                postId ? `/api/members/comments/post/${postId}/` : null,
+                parentId ? `/api/members/comments/${parentId}/replies/` : null
+            ].filter(path => path !== null);
+            frame.setHeader('X-Cache-Invalidate', pathsToInvalidate.join(', '));
+        }
+
+        return result;
+    }
+
     /**
      * @param {Frame} frame
      */
