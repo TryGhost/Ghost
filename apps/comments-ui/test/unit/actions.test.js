@@ -33,4 +33,38 @@ describe('Actions', function () {
             ]);
         });
     });
+
+    describe('pinComment', function () {
+        it('pins via admin API and refetches the current order', async function () {
+            const state = {
+                adminApi: {
+                    pinComment: vi.fn(() => Promise.resolve())
+                },
+                order: 'created_at desc'
+            };
+            const dispatchAction = vi.fn();
+
+            await Actions.pinComment({state, data: {id: '1'}, dispatchAction});
+
+            expect(state.adminApi.pinComment).toHaveBeenCalledWith({id: '1'});
+            expect(dispatchAction).toHaveBeenCalledWith('setOrder', {order: 'created_at desc'});
+        });
+    });
+
+    describe('unpinComment', function () {
+        it('unpins via admin API and refetches the current order', async function () {
+            const state = {
+                adminApi: {
+                    unpinComment: vi.fn(() => Promise.resolve())
+                },
+                order: 'created_at asc'
+            };
+            const dispatchAction = vi.fn();
+
+            await Actions.unpinComment({state, data: {id: '1'}, dispatchAction});
+
+            expect(state.adminApi.unpinComment).toHaveBeenCalledWith({id: '1'});
+            expect(dispatchAction).toHaveBeenCalledWith('setOrder', {order: 'created_at asc'});
+        });
+    });
 });

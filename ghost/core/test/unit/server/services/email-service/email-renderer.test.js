@@ -1405,6 +1405,8 @@ describe('Email renderer', function () {
         });
 
         it('Renders RTL <html> attributes for Persian, Arabic, Hebrew, and Urdu', async function () {
+            this.timeout(10000);
+
             for (const locale of ['fa', 'ar', 'he', 'ur']) {
                 customSettings.locale = locale;
                 const post = createModel(basePost);

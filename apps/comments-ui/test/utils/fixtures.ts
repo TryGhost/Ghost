@@ -1,4 +1,4 @@
-const ObjectId = require('bson-objectid').default;
+import ObjectId from 'bson-objectid';
 let memberCounter = 0;
 
 export function buildMember(override: any = {}) {
@@ -42,6 +42,7 @@ export function buildComment(override: any = {}) {
         edited_at: null,
         member: buildMember(),
         status: 'published',
+        pinned: false,
         ...override,
         count: {
             replies: 0,
@@ -67,7 +68,7 @@ export function buildReply(override: any = {}) {
     };
 }
 
-export function buildCommentsReply(override: any = {}) {
+export function buildCommentsReply() {
     return {
         comments: [],
         meta: {

@@ -421,6 +421,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
                     html: 'html1',
                     created_at: 'created_at1',
                     edited_at: 'edited_at1',
+                    pinned: false,
                     member: {
                         id: 'id1',
                         uuid: 'uuid1',
@@ -680,10 +681,12 @@ describe('Unit: utils/serializers/output/mappers', function () {
                         }
                     },
                     in_reply_to_id: null,
-                    in_reply_to_snippet: null
+                    in_reply_to_snippet: null,
+                    pinned: false
                 },
                 in_reply_to_id: 'comment2',
-                in_reply_to_snippet: 'comment 2'
+                in_reply_to_snippet: 'comment 2',
+                pinned: false
             });
         });
 
@@ -705,7 +708,8 @@ describe('Unit: utils/serializers/output/mappers', function () {
 
             assert.deepEqual(mapped, {
                 in_reply_to_snippet: 'First paragraph with link, and new line. Second paragraph',
-                member: null
+                member: null,
+                pinned: false
             });
         });
 
@@ -725,7 +729,8 @@ describe('Unit: utils/serializers/output/mappers', function () {
                 html: '<p>comment 1</p>',
                 member: null,
                 in_reply_to_id: null,
-                in_reply_to_snippet: null
+                in_reply_to_snippet: null,
+                pinned: false
             });
         });
     });

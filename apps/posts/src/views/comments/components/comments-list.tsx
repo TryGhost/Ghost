@@ -2,7 +2,7 @@ import CommentContent from './comment-content';
 import CommentThreadSidebar from './comment-thread-sidebar';
 import LoadMoreButton from '@components/virtual-table/load-more-button';
 import {Button} from '@tryghost/shade/components';
-import {Comment, useHideComment, useShowComment} from '@tryghost/admin-x-framework/api/comments';
+import {Comment, useHideComment, useShowComment, useUnpinComment} from '@tryghost/admin-x-framework/api/comments';
 import {CommentAvatar} from './comment-avatar';
 import {CommentHeader} from './comment-header';
 import {CommentMenu} from './comment-menu';
@@ -66,6 +66,7 @@ function CommentsList({
 
     const {mutate: hideComment} = useHideComment();
     const {mutate: showComment} = useShowComment();
+    const {mutate: unpinComment} = useUnpinComment();
 
     const handleCloseSidebar = (open: boolean) => {
         setThreadSidebarOpen(open);
@@ -131,7 +132,7 @@ function CommentsList({
                             <div
                                 key={key}
                                 {...props}
-                                className="grid w-full grid-cols-1 items-start justify-between gap-4 border-b p-3 hover:bg-muted/50 md:p-5 lg:grid-cols-[minmax(0,1fr)_144px]"
+                                className='grid w-full grid-cols-1 items-start justify-between gap-4 border-b p-3 hover:bg-muted/50 md:p-5 lg:grid-cols-[minmax(0,1fr)_144px]'
                                 data-testid="comment-list-row"
                                 onClick={() => {
                                     // Close sidebar when clicking on a comment in the main list
@@ -152,11 +153,13 @@ function CommentsList({
                                             canComment={item.member?.can_comment}
                                             createdAt={item.created_at}
                                             isHidden={item.status === 'hidden'}
+                                            isPinned={item.pinned}
                                             memberId={item.member?.id}
                                             memberName={item.member?.name}
                                             postTitle={item.post?.title}
                                             onAuthorClick={item.member?.id ? () => onAddFilter('author', item.member!.id) : undefined}
                                             onPostClick={item.post?.id ? () => onAddFilter('post', item.post!.id) : undefined}
+                                            onUnpinClick={() => unpinComment({id: item.id})}
                                         />
 
                                         {item.in_reply_to_snippet && (

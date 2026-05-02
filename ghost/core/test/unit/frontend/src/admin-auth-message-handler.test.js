@@ -74,7 +74,9 @@ const ACTION_CASES = [
     {action: 'getReplies', idField: 'commentId', expectedPath: `/comments/${VALID_ID}/replies/`},
     {action: 'readComment', idField: 'commentId', expectedPath: `/comments/${VALID_ID}/`},
     {action: 'hideComment', idField: 'id', expectedPath: `/comments/${VALID_ID}/`, expectedMethod: 'PUT'},
-    {action: 'showComment', idField: 'id', expectedPath: `/comments/${VALID_ID}/`, expectedMethod: 'PUT'}
+    {action: 'showComment', idField: 'id', expectedPath: `/comments/${VALID_ID}/`, expectedMethod: 'PUT'},
+    {action: 'pinComment', idField: 'id', expectedPath: `/comments/${VALID_ID}/`, expectedMethod: 'PUT'},
+    {action: 'unpinComment', idField: 'id', expectedPath: `/comments/${VALID_ID}/`, expectedMethod: 'PUT'}
 ];
 
 describe('admin-auth message-handler', function () {

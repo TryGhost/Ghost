@@ -1,7 +1,7 @@
 import CommentContent from './comment-content';
 import React from 'react';
 import {Button, LoadingIndicator} from '@tryghost/shade/components';
-import {Comment, useHideComment, useShowComment} from '@tryghost/admin-x-framework/api/comments';
+import {Comment, useHideComment, useShowComment, useUnpinComment} from '@tryghost/admin-x-framework/api/comments';
 import {CommentAvatar} from './comment-avatar';
 import {CommentHeader} from './comment-header';
 import {CommentMenu} from './comment-menu';
@@ -33,6 +33,7 @@ function CommentRow({comment, isReply = false, isSelectedComment = false, select
     const [searchParams] = useSearchParams();
     const {mutate: hideComment} = useHideComment();
     const {mutate: showComment} = useShowComment();
+    const {mutate: unpinComment} = useUnpinComment();
 
     // Check replies array for loaded objects, or count.direct_replies for unloaded
     // TODO: remove count.replies fallback once backend is fully rolled out
@@ -60,8 +61,10 @@ function CommentRow({comment, isReply = false, isSelectedComment = false, select
                             canComment={comment.member?.can_comment}
                             createdAt={comment.created_at}
                             isHidden={comment.status === 'hidden'}
+                            isPinned={comment.pinned}
                             memberId={comment.member?.id}
                             memberName={comment.member?.name}
+                            onUnpinClick={() => unpinComment({id: comment.id})}
                         />
 
                         {comment.in_reply_to_snippet && isSelectedComment && (

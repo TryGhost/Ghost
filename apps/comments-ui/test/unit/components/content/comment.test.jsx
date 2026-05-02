@@ -1,7 +1,7 @@
 import {AppContext} from '../../../../src/app-context';
 import {CommentComponent, RepliedToSnippet} from '../../../../src/components/content/comment';
 import {buildComment} from '../../../utils/fixtures';
-import {render, screen} from '@testing-library/react';
+import {fireEvent, render, screen} from '@testing-library/react';
 
 const contextualRender = (ui, {appContext, ...renderOptions}) => {
     const contextWithDefaults = {
@@ -61,6 +61,55 @@ describe('<CommentComponent>', function () {
 
         const {container} = contextualRender(<CommentComponent comment={comment} />, {appContext});
         expect(container.querySelector('[data-member-uuid="123"]')).not.toBeInTheDocument();
+    });
+
+    it('renders pinned badge inline after the timestamp', function () {
+        const comment = buildComment({
+            pinned: true
+        });
+        const appContext = {comments: [comment]};
+
+        contextualRender(<CommentComponent comment={comment} />, {appContext});
+
+        const label = screen.getByTestId('pinned-comment-label');
+        expect(label.parentElement).toHaveClass('ml-2');
+        expect(label.parentElement?.parentElement?.querySelector('a')).toHaveAttribute('href', `https://example.com/post#ghost-comments-${comment.id}`);
+    });
+
+    it('renders pinned badge as an unpin button for admins', function () {
+        const comment = buildComment({
+            pinned: true
+        });
+        const dispatchAction = vi.fn();
+        const appContext = {comments: [comment], dispatchAction, isAdmin: true};
+
+        contextualRender(<CommentComponent comment={comment} />, {appContext});
+
+        const button = screen.getByRole('button', {name: 'Unpin comment'});
+
+        expect(button).toHaveTextContent('Pinned');
+        expect(button).toHaveTextContent('Unpin');
+
+        fireEvent.click(button);
+
+        expect(dispatchAction).toHaveBeenCalledWith('unpinComment', comment);
+    });
+
+    it('keeps a bottom gap after pinned comments with replies', function () {
+        const reply = buildComment({
+            html: '<p>Reply</p>'
+        });
+        const comment = buildComment({
+            pinned: true,
+            replies: [reply]
+        });
+        const appContext = {comments: [comment]};
+
+        const {container} = contextualRender(<CommentComponent comment={comment} />, {appContext});
+
+        const pinnedComment = container.querySelector('[data-pinned="true"]');
+        expect(pinnedComment).toHaveClass('mb-4');
+        expect(pinnedComment).toHaveClass('py-3');
     });
 });
 

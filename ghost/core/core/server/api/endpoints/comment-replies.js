@@ -39,6 +39,7 @@ const controller = {
         },
         options: [
             'include',
+            'fields',
             'impersonate_member_uuid'
         ],
         data: [

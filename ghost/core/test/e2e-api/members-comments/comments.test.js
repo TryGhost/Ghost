@@ -24,6 +24,7 @@ const dbFns = {
      * @property {string} [html='This is a comment']
      * @property {string} [status]
      * @property {Date} [created_at]
+     * @property {Date} [pinned_at]
      */
     /**
      * @typedef {Object} AddCommentReplyData
@@ -47,6 +48,7 @@ const dbFns = {
             parent_id: data.parent_id,
             html: data.html || '<p>This is a comment</p>',
             created_at: data.created_at,
+            pinned_at: data.pinned_at,
             in_reply_to_id: data.in_reply_to_id,
             status: data.status || 'published'
         });
@@ -112,7 +114,8 @@ const commentMatcher = {
     count: {
         likes: anyNumber
     },
-    liked: anyBoolean
+    liked: anyBoolean,
+    pinned: anyBoolean
 };
 
 const labsCommentMatcher = {
@@ -847,6 +850,150 @@ describe('Comments API', function () {
                 assert.equal(lastComment.id, oldestComment.id);
             });
 
+            it('shows pinned top-level comments first regardless of requested sort order', async function () {
+                const unpinnedOlder = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 0).id,
+                    html: '<p>Older unpinned</p>',
+                    created_at: new Date('2023-01-01T00:00:00.000Z')
+                });
+                const pinnedOlder = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 0).id,
+                    html: '<p>Older pinned</p>',
+                    created_at: new Date('2023-02-01T00:00:00.000Z'),
+                    pinned_at: new Date('2025-01-01T00:00:00.000Z')
+                });
+                const pinnedNewer = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 0).id,
+                    html: '<p>Newer pinned</p>',
+                    created_at: new Date('2023-03-01T00:00:00.000Z'),
+                    pinned_at: new Date('2025-02-01T00:00:00.000Z')
+                });
+                const unpinnedNewer = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 0).id,
+                    html: '<p>Newer unpinned</p>',
+                    created_at: new Date('2023-04-01T00:00:00.000Z')
+                });
+
+                const result = await membersAgent
+                    .get(`/api/comments/post/${postId}/?order=${encodeURIComponent('created_at asc')}`)
+                    .expectStatus(200);
+
+                assert.deepEqual(result.body.comments.map(comment => comment.id), [
+                    pinnedNewer.id,
+                    pinnedOlder.id,
+                    unpinnedOlder.id,
+                    unpinnedNewer.id
+                ]);
+                assert.deepEqual(result.body.comments.map(comment => comment.pinned), [
+                    true,
+                    true,
+                    false,
+                    false
+                ]);
+            });
+
+            it('preserves pinned state when fields are requested', async function () {
+                const pinnedComment = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 0).id,
+                    html: '<p>Pinned with fields</p>',
+                    pinned_at: new Date('2025-01-01T00:00:00.000Z')
+                });
+
+                const result = await membersAgent
+                    .get(`/api/comments/post/${postId}/?fields=id,pinned`)
+                    .expectStatus(200);
+                const [comment] = result.body.comments;
+
+                assert.equal(comment.id, pinnedComment.id);
+                assert.equal(comment.pinned, true);
+                assert.equal(Object.hasOwn(comment, 'parent_id'), false);
+                assert.equal(Object.hasOwn(comment, 'status'), false);
+                assert.equal(Object.hasOwn(comment, 'pinned_at'), false);
+            });
+
+            it('preserves pinned state when fields are requested for a single comment', async function () {
+                const pinnedComment = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 0).id,
+                    html: '<p>Pinned single comment</p>',
+                    pinned_at: new Date('2025-01-01T00:00:00.000Z')
+                });
+
+                const result = await membersAgent
+                    .get(`/api/comments/${pinnedComment.id}/?fields=id,pinned`)
+                    .expectStatus(200);
+                const [comment] = result.body.comments;
+
+                assert.equal(comment.id, pinnedComment.id);
+                assert.equal(comment.pinned, true);
+                assert.equal(Object.hasOwn(comment, 'parent_id'), false);
+                assert.equal(Object.hasOwn(comment, 'status'), false);
+                assert.equal(Object.hasOwn(comment, 'pinned_at'), false);
+            });
+
+            it('does not add redacted html when fields do not request html', async function () {
+                const hiddenComment = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 0).id,
+                    html: '<p>Hidden pinned comment</p>',
+                    status: 'hidden',
+                    pinned_at: new Date('2025-01-01T00:00:00.000Z')
+                });
+                const deletedComment = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 0).id,
+                    html: '<p>Deleted pinned comment</p>',
+                    status: 'deleted',
+                    pinned_at: new Date('2025-01-01T00:00:00.000Z')
+                });
+                await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 1).id,
+                    parent_id: hiddenComment.id,
+                    html: '<p>Visible reply</p>'
+                });
+                await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 1).id,
+                    parent_id: deletedComment.id,
+                    html: '<p>Visible reply</p>'
+                });
+
+                const result = await membersAgent
+                    .get(`/api/comments/post/${postId}/?fields=id,pinned`)
+                    .expectStatus(200);
+                const hiddenResult = result.body.comments.find(comment => comment.id === hiddenComment.id);
+                const deletedResult = result.body.comments.find(comment => comment.id === deletedComment.id);
+
+                assert.equal(hiddenResult.pinned, false);
+                assert.equal(deletedResult.pinned, false);
+                assert.equal(Object.hasOwn(hiddenResult, 'html'), false);
+                assert.equal(Object.hasOwn(deletedResult, 'html'), false);
+            });
+
+            it('does not pin hidden placeholders in public ordering', async function () {
+                const visibleComment = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 0).id,
+                    html: '<p>Visible comment</p>',
+                    created_at: new Date('2023-01-01T00:00:00.000Z')
+                });
+                const hiddenPinnedComment = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 0).id,
+                    html: '<p>Hidden pinned comment</p>',
+                    status: 'hidden',
+                    created_at: new Date('2023-02-01T00:00:00.000Z'),
+                    pinned_at: new Date('2025-01-01T00:00:00.000Z')
+                });
+                await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 1).id,
+                    parent_id: hiddenPinnedComment.id,
+                    html: '<p>Visible reply</p>'
+                });
+
+                const result = await membersAgent
+                    .get(`/api/comments/post/${postId}/?order=${encodeURIComponent('created_at asc')}`)
+                    .expectStatus(200);
+
+                assert.equal(result.body.comments[0].id, visibleComment.id);
+                assert.equal(result.body.comments[1].id, hiddenPinnedComment.id);
+                assert.equal(result.body.comments[1].pinned, false);
+            });
+
             it('Can reply to your own comment', async function () {
                 // Should not update last_seen_at or last_commented_at when both are already set to a value on the same day
                 const timezone = settingsCache.get('timezone');
@@ -1470,6 +1617,25 @@ describe('Comments API', function () {
                     }]});
 
                 assert(!deletedComment.html);
+            });
+
+            it('Clears pinned state when a member deletes their pinned comment', async function () {
+                const commentToDeleteId = (await dbFns.addComment({
+                    member_id: loggedInMember.id,
+                    html: 'Pinned comment to delete',
+                    pinned_at: new Date('2025-01-01T00:00:00.000Z')
+                })).get('id');
+
+                await membersAgent
+                    .put(`/api/comments/${commentToDeleteId}`)
+                    .body({comments: [{
+                        status: 'deleted'
+                    }]})
+                    .expectStatus(200);
+
+                const deletedComment = await models.Comment.findOne({id: commentToDeleteId});
+                assert.equal(deletedComment.get('status'), 'deleted');
+                assert.equal(deletedComment.get('pinned_at'), null);
             });
 
             describe('replies to replies', function () {

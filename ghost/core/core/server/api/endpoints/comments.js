@@ -1,4 +1,3 @@
-const models = require('../../models');
 const commentsService = require('../../services/comments');
 const errors = require('@tryghost/errors');
 function handleCacheHeaders(model, frame) {
@@ -60,14 +59,7 @@ const controller = {
         },
         permissions: true,
         async query(frame) {
-            const result = await models.Comment.edit({
-                id: frame.data.comments[0].id,
-                status: frame.data.comments[0].status
-            }, frame.options);
-
-            handleCacheHeaders(result, frame);
-
-            return result;
+            return await commentsService.controller.adminEdit(frame);
         }
     },
     browse: {
