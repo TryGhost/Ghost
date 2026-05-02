@@ -186,7 +186,8 @@ DataImporter = {
             // Errors preventing import:
             if (errors.length > 0) {
                 debug(errors);
-                throw errors;
+                // Rejections should always be with an Error object, not an array
+                throw errors[0];
             }
 
             return {
