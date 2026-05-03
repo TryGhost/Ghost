@@ -3,6 +3,7 @@ import {cva, type VariantProps} from 'class-variance-authority';
 import {TrendingDown, TrendingUp} from 'lucide-react';
 
 import {cn} from '@/lib/utils';
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@/components/ui/tooltip';
 
 const trendBadgeVariants = cva(
     'group/trend-badge inline-flex h-[22px] cursor-default items-center gap-1 rounded-xs px-1.5 text-xs',
@@ -15,7 +16,7 @@ const trendBadgeVariants = cva(
                 hidden: 'hidden'
             },
             interactive: {
-                true: '',
+                true: 'focus-visible:ring-2 focus-visible:ring-focus-ring/25 focus-visible:outline-hidden',
                 false: ''
             }
         },
@@ -45,29 +46,39 @@ const TrendBadge = React.forwardRef<HTMLDivElement, TrendBadgeProps>(
 
         const interactive = Boolean(tooltip);
 
-        return (
+        const badge = (
             <div
                 ref={ref}
                 className={cn(
                     trendBadgeVariants({direction, interactive}),
-                    tooltip && 'relative',
                     className
                 )}
+                tabIndex={interactive ? 0 : undefined}
                 {...props}
             >
                 <span className='leading-none font-medium'>{value}</span>
                 {direction === 'up' && (
-                    <TrendingUp className='size-3!' size={14} strokeWidth={2} />
+                    <TrendingUp className='size-3!' strokeWidth={2} />
                 )}
                 {direction === 'down' && (
-                    <TrendingDown className='size-3!' size={14} strokeWidth={2} />
-                )}
-                {tooltip && (
-                    <div className='pointer-events-none absolute top-0 left-0 z-50 w-[240px] -translate-y-full rounded-xs bg-background px-3 py-2 text-sm text-pretty text-foreground opacity-0 shadow-md transition-all group-hover/trend-badge:translate-y-[calc(-100%-8px)] group-hover/trend-badge:opacity-100'>
-                        {tooltip}
-                    </div>
+                    <TrendingDown className='size-3!' strokeWidth={2} />
                 )}
             </div>
+        );
+
+        if (!tooltip) {
+            return badge;
+        }
+
+        return (
+            <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                    <TooltipTrigger asChild>{badge}</TooltipTrigger>
+                    <TooltipContent className='max-w-[240px] bg-background text-sm text-pretty text-foreground shadow-md'>
+                        {tooltip}
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
         );
     }
 );
