@@ -2,6 +2,7 @@ import {APIRequestContext, Page} from '@playwright/test';
 import {HomePage, MemberDetailsPage, MembersPage} from '@/helpers/pages';
 import {MemberFactory, createMemberFactory} from '@/data-factory';
 import {PortalAccountHomePage, PortalNewsletterManagementPage} from '@/portal-pages';
+import {SettingsService} from '@/helpers/services/settings/settings-service';
 import {expect, test} from '@/helpers/playwright';
 import {usePerTestIsolation} from '@/helpers/playwright/isolation';
 
@@ -78,6 +79,9 @@ test.describe('Portal - Member Actions', () => {
     });
 
     test('can unsubscribe from newsletter', async ({page}) => {
+        const settingsService = new SettingsService(page.request);
+        await settingsService.setCommentsEnabled('off');
+
         const member = await createSubscribedMember(page.request, memberFactory);
 
         await impersonateMember(page, member.name!);
@@ -120,7 +124,9 @@ test.describe('Portal - Member Actions', () => {
         await expect(newsletterManagement.newsletterToggleCheckbox(0)).not.toBeChecked();
         await expect(newsletterManagement.newsletterToggleCheckbox(1)).not.toBeChecked();
 
-        const memberNewsletters = await getMemberNewsletters(page.request, member.id);
-        expect(memberNewsletters).toHaveLength(0);
+        await expect(async () => {
+            const memberNewsletters = await getMemberNewsletters(page.request, member.id);
+            expect(memberNewsletters).toHaveLength(0);
+        }).toPass();
     });
 });
