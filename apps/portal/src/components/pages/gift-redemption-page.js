@@ -16,6 +16,7 @@ export const GiftRedemptionStyles = `
         max-width: 500px;
         padding: 0;
         overflow: hidden;
+        flex-shrink: 0;
     }
 
     .gh-portal-popup-container.giftRedemption .gh-portal-closeicon-container {
@@ -39,30 +40,26 @@ export const GiftRedemptionStyles = `
     }
 
     .gh-portal-gift-redemption {
+        position: relative;
         overflow: hidden;
+    }
+
+    .gh-gift-redemption-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 400px;
+        background: linear-gradient(180deg, var(--brandcolor), transparent);
+        opacity: 0.08;
+        pointer-events: none;
+        z-index: 0;
     }
 
     .gh-gift-redemption-panel {
         position: relative;
-        background: var(--white);
-    }
-
-    .gh-gift-redemption-summary {
-        position: relative;
-        padding: 32px;
-        text-align: center;
-    }
-
-    .gh-gift-redemption-summary:before {
-        position: absolute;
-        content: "";
-        display: block;
-        background: var(--brandcolor);
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
-        opacity: 0.06;
+        z-index: 1;
+        padding: 40px 32px 32px;
     }
 
     .gh-gift-redemption-icon {
@@ -71,7 +68,12 @@ export const GiftRedemptionStyles = `
         justify-content: center;
         width: 48px;
         height: 48px;
+        margin: -8px 0 0 -3px;
         color: var(--brandcolor);
+    }
+
+    html[dir="rtl"] .gh-gift-redemption-icon {
+        margin: -8px -3px 0 0;
     }
 
     .gh-gift-redemption-icon svg {
@@ -80,6 +82,7 @@ export const GiftRedemptionStyles = `
     }
 
     .gh-gift-redemption-kicker {
+        margin-top: 0;
         font-size: 1.3rem;
         font-weight: 600;
         letter-spacing: 0.02em;
@@ -89,19 +92,19 @@ export const GiftRedemptionStyles = `
 
     .gh-gift-redemption-title {
         max-width: none;
-        margin: 16px auto 0;
-        font-size: 2.6rem;
+        margin: 20px 0 0;
+        font-size: 2.4rem;
         font-weight: 700;
-        line-height: 1.08;
+        line-height: 1.3;
         letter-spacing: -0.015em;
-        white-space: nowrap;
+        text-wrap: pretty;
         color: var(--grey0);
     }
 
     .gh-gift-redemption-plan {
-        margin-top: 10px;
-        font-size: 1.6rem;
-        color: var(--grey2);
+        margin-top: 8px;
+        font-size: 1.5rem;
+        color: var(--grey3);
     }
 
     .gh-gift-redemption-tier {
@@ -116,19 +119,20 @@ export const GiftRedemptionStyles = `
         display: flex;
         flex-direction: column;
         gap: 8px;
-        max-width: 400px;
-        margin: 20px auto 0;
+        margin-top: 20px;
+    }
+
+    .gh-gift-redemption-form {
+        margin-top: 36px;
     }
 
     .gh-gift-redemption-inline-cta {
-        margin: 28px auto 0;
-        max-width: 400px;
+        margin-top: 36px;
     }
 
     .gh-gift-redemption-benefit {
         display: flex;
         align-items: flex-start;
-        justify-content: center;
         gap: 10px;
         color: var(--grey2);
         font-size: 1.45rem;
@@ -139,7 +143,7 @@ export const GiftRedemptionStyles = `
     .gh-gift-redemption-benefit svg {
         width: 14px;
         height: 14px;
-        margin-top: 2px;
+        margin-top: 3px;
         color: var(--grey1);
         flex-shrink: 0;
     }
@@ -149,30 +153,25 @@ export const GiftRedemptionStyles = `
         flex-direction: row-reverse;
     }
 
-    .gh-gift-redemption-form {
-        padding: 22px 28px 28px;
-        background: var(--white);
-    }
-
     .gh-gift-redemption-submit {
         width: 100%;
         height: 44px;
+        margin-top: 20px;
         font-size: 1.5rem;
         font-weight: 600;
     }
 
-    .gh-gift-redemption-form .gh-gift-redemption-submit {
-        margin-top: 22px;
-    }
-
     @media (max-width: 480px) {
-        .gh-gift-redemption-summary {
-            padding: 28px 24px 24px;
+        .gh-portal-popup-container.giftRedemption {
+            padding: 0 !important;
+        }
+
+        .gh-gift-redemption-panel {
+            padding: 32px 24px 24px;
         }
 
         .gh-gift-redemption-title {
             font-size: 2.1rem;
-            white-space: normal;
         }
 
         .gh-gift-redemption-benefit {
@@ -183,8 +182,8 @@ export const GiftRedemptionStyles = `
             text-align: right;
         }
 
-        .gh-gift-redemption-form {
-            padding: 20px 20px 22px;
+        .gh-gift-redemption-bg {
+            height: 300px;
         }
     }
 `;
@@ -316,61 +315,61 @@ const GiftRedemptionPage = () => {
     const isRedeeming = action === 'redeemGift:running';
     const buttonLabel = isRedeeming
         ? 'Redeeming gift...' // TODO: Add translation strings once copy has been finalised
-        : 'Redeem gift membership'; // TODO: Add translation strings once copy has been finalised
+        : 'Redeem your membership'; // TODO: Add translation strings once copy has been finalised
+    const siteTitle = site?.title;
+    const headerText = siteTitle
+        ? `You've been gifted a membership to ${siteTitle}`
+        : 'You\'ve been gifted a membership';
 
     return (
         <div className='gh-portal-content gh-portal-gift-redemption'>
             <CloseButton />
+            <div className='gh-gift-redemption-bg' />
 
             <div className='gh-gift-redemption-panel'>
-                <div className='gh-gift-redemption-summary'>
-                    <div className='gh-gift-redemption-icon'><GiftIcon /></div>
-                    <div className='gh-gift-redemption-kicker'>{'Gift membership'}</div>
-                    <h1 className='gh-gift-redemption-title'>{'You\'ve been gifted a membership'}</h1>
+                <div className='gh-gift-redemption-icon'><GiftIcon /></div>
+                <div className='gh-gift-redemption-kicker'>{'Gift membership'}</div>
+                <h1 className='gh-gift-redemption-title'>{headerText}</h1>
 
-                    <div className='gh-gift-redemption-plan'>
-                        <span className='gh-gift-redemption-tier'>{gift.tier.name}</span>
-                        <span>&nbsp;&middot;&nbsp;</span>
-                        <span className='gh-gift-redemption-cadence'>{getGiftDurationLabel(gift)}</span>
-                    </div>
-
-                    {gift.tier.benefits.length > 0 && (
-                        <div className='gh-gift-redemption-benefits'>
-                            {gift.tier.benefits.map((benefit, index) => {
-                                const benefitName = typeof benefit === 'string' ? benefit : benefit?.name;
-                                const benefitKey = typeof benefit === 'string' ? benefit : benefit?.id || `gift-benefit-${index}`;
-
-                                if (!benefitName) {
-                                    return null;
-                                }
-
-                                return (
-                                    <div className='gh-gift-redemption-benefit' key={benefitKey}>
-                                        <CheckmarkIcon />
-                                        <span>{benefitName}</span>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )}
-
-                    {isLoggedIn && (
-                        <div className='gh-gift-redemption-inline-cta'>
-                            <ActionButton
-                                brandColor={brandColor}
-                                classes='gh-gift-redemption-submit'
-                                label={buttonLabel}
-                                onClick={handleRedeemClick}
-                                style={{width: '100%'}}
-                                disabled={isRedeeming}
-                                isRunning={isRedeeming}
-                            />
-                        </div>
-                    )}
-
+                <div className='gh-gift-redemption-plan'>
+                    <span className='gh-gift-redemption-tier'>{gift.tier.name}</span>
+                    <span>&nbsp;&middot;&nbsp;</span>
+                    <span className='gh-gift-redemption-cadence'>{getGiftDurationLabel(gift)}</span>
                 </div>
 
-                {!isLoggedIn && (
+                {gift.tier.benefits.length > 0 && (
+                    <div className='gh-gift-redemption-benefits'>
+                        {gift.tier.benefits.map((benefit, index) => {
+                            const benefitName = typeof benefit === 'string' ? benefit : benefit?.name;
+                            const benefitKey = typeof benefit === 'string' ? benefit : benefit?.id || `gift-benefit-${index}`;
+
+                            if (!benefitName) {
+                                return null;
+                            }
+
+                            return (
+                                <div className='gh-gift-redemption-benefit' key={benefitKey}>
+                                    <CheckmarkIcon />
+                                    <span>{benefitName}</span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+
+                {isLoggedIn ? (
+                    <div className='gh-gift-redemption-inline-cta'>
+                        <ActionButton
+                            brandColor={brandColor}
+                            classes='gh-gift-redemption-submit'
+                            label={buttonLabel}
+                            onClick={handleRedeemClick}
+                            style={{width: '100%'}}
+                            disabled={isRedeeming}
+                            isRunning={isRedeeming}
+                        />
+                    </div>
+                ) : (
                     <div className='gh-gift-redemption-form'>
                         <InputForm fields={formFields} onChange={handleFieldChange} onKeyDown={handleKeyDown} />
                         <ActionButton

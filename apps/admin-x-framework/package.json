@@ -76,7 +76,7 @@
         "@playwright/test": "1.59.1",
         "@testing-library/jest-dom": "5.17.0",
         "@testing-library/react": "14.3.1",
-        "@tryghost/koenig-lexical": "1.8.0",
+        "@tryghost/koenig-lexical": "1.8.1",
         "@types/react": "18.3.28",
         "@types/react-dom": "18.3.7",
         "@vitejs/plugin-react": "4.7.0",

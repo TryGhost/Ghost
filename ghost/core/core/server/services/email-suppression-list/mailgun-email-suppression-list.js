@@ -117,31 +117,35 @@ class MailgunEmailSuppressionList extends AbstractEmailSuppressionList {
     async init() {
         this.Suppression = models.Suppression;
         const handleEvent = reason => async (event) => {
-            try {
-                if (reason === 'bounce') {
-                    if (!Number.isInteger(event.error?.code)) {
-                        return;
-                    }
-                    if (event.error.code !== 607 && event.error.code !== 605) {
-                        return;
-                    }
+            if (reason === 'bounce') {
+                if (!Number.isInteger(event.error?.code)) {
+                    return;
                 }
+                if (event.error.code !== 607 && event.error.code !== 605) {
+                    return;
+                }
+            }
+            try {
                 await this.Suppression.add({
                     email: event.email,
                     email_id: event.emailId,
                     reason: reason,
                     created_at: event.timestamp
                 });
-                DomainEvents.dispatch(EmailSuppressedEvent.create({
-                    emailAddress: event.email,
-                    emailId: event.emailId,
-                    reason: reason
-                }, event.timestamp));
             } catch (err) {
-                if (err.code !== 'ER_DUP_ENTRY') {
+                if (err.code !== 'ER_DUP_ENTRY' && err.code !== 'SQLITE_CONSTRAINT') {
                     logging.error(err);
+                    return;
                 }
+                // Suppression already exists — still dispatch so any drifted
+                // member state (e.g. email_disabled=false) gets corrected.
+                logging.info(`Re-dispatching EmailSuppressedEvent for existing suppression (${reason}): ${event.email}`);
             }
+            DomainEvents.dispatch(EmailSuppressedEvent.create({
+                emailAddress: event.email,
+                emailId: event.emailId,
+                reason: reason
+            }, event.timestamp));
         };
         DomainEvents.subscribe(EmailBouncedEvent, handleEvent('bounce'));
         DomainEvents.subscribe(SpamComplaintEvent, handleEvent('spam'));

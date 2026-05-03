@@ -2,6 +2,7 @@ import {Label, useCreateLabel, useDeleteLabel, useEditLabel} from '@tryghost/adm
 import {ValueSource} from '@tryghost/shade/patterns';
 import {useCallback, useMemo, useRef, useState} from 'react';
 import {useLabelValueSource} from './filter-sources/use-label-value-source';
+import type {ComboboxOptionSource} from '@tryghost/shade/components';
 
 export interface UseLabelPickerOptions {
     selectedSlugs: string[];
@@ -11,12 +12,10 @@ export interface UseLabelPickerOptions {
 
 export interface UseLabelPickerResult {
     labels: Label[];
+    optionSource: ComboboxOptionSource<string>;
     selectedSlugs: string[];
     resolvedSelectedLabels: Label[];
 
-    isLoading: boolean;
-    searchValue: string;
-    onSearchChange: (search: string) => void;
     toggleLabel: (slug: string) => void;
     createLabel: (name: string) => Promise<Label | undefined>;
     editLabel: (id: string, name: string) => Promise<void>;
@@ -53,6 +52,11 @@ export function useLabelPicker({
             }];
         });
     }, [labelSourceState.options]);
+    const optionSource: ComboboxOptionSource<string> = {
+        ...labelSourceState,
+        shouldClientFilter: false,
+        onSearchChange: setSearchValue
+    };
 
     const {mutateAsync: createLabelMutation, isLoading: isCreating} = useCreateLabel();
     const {mutateAsync: editLabelMutation} = useEditLabel();
@@ -125,15 +129,11 @@ export function useLabelPicker({
 
     return {
         labels,
+        optionSource,
         selectedSlugs,
         resolvedSelectedLabels: selectedSlugs
             .map(slug => labels.find(label => label.slug === slug))
             .filter((label): label is Label => !!label),
-        // Keep the current picker content visible during background refreshes
-        // after create/edit/delete; only block the UI on the initial empty load.
-        isLoading: labelSourceState.isInitialLoad,
-        searchValue,
-        onSearchChange: setSearchValue,
         toggleLabel,
         createLabel,
         editLabel,

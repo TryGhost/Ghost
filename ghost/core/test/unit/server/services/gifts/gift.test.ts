@@ -348,4 +348,102 @@ describe('Gift', function () {
             assert.equal(result, null);
         });
     });
+
+    describe('checkReassignable', function () {
+        // An orphaned gift is one that was redeemed but whose redeemer member was later
+        // deleted (the FK is SET NULL on delete). These should be reassignable on re-import.
+        function orphanedGift() {
+            return buildGift({
+                status: 'redeemed',
+                redeemerMemberId: null,
+                redeemedAt: new Date('2026-04-11T12:00:00.000Z'),
+                consumesAt: new Date('2027-04-11T12:00:00.000Z')
+            });
+        }
+
+        it('returns reassignable=true for a redeemed gift whose redeemer is null', function () {
+            const gift = orphanedGift();
+
+            assert.deepEqual(gift.checkReassignable(), {reassignable: true});
+        });
+
+        it('returns unredeemed for a purchased (never redeemed) gift', function () {
+            const gift = buildGift({status: 'purchased'});
+
+            assert.deepEqual(gift.checkReassignable(), {reassignable: false, reason: 'unredeemed'});
+        });
+
+        it('returns assigned when redeemer is set', function () {
+            const gift = buildGift({
+                status: 'redeemed',
+                redeemerMemberId: 'member_2',
+                redeemedAt: new Date('2026-04-11T12:00:00.000Z'),
+                consumesAt: new Date('2027-04-11T12:00:00.000Z')
+            });
+
+            assert.deepEqual(gift.checkReassignable(), {reassignable: false, reason: 'assigned'});
+        });
+
+        it('returns consumed when consumedAt is set', function () {
+            const gift = buildGift({
+                status: 'consumed',
+                redeemerMemberId: null,
+                redeemedAt: new Date('2026-04-11T12:00:00.000Z'),
+                consumesAt: new Date('2027-04-11T12:00:00.000Z'),
+                consumedAt: new Date('2027-04-11T12:00:00.000Z')
+            });
+
+            assert.deepEqual(gift.checkReassignable(), {reassignable: false, reason: 'consumed'});
+        });
+
+        it('returns expired when expiredAt is set', function () {
+            const gift = buildGift({
+                status: 'expired',
+                redeemerMemberId: null,
+                expiredAt: new Date('2027-04-11T12:00:00.000Z')
+            });
+
+            assert.deepEqual(gift.checkReassignable(), {reassignable: false, reason: 'expired'});
+        });
+
+        it('returns refunded when refundedAt is set', function () {
+            const gift = buildGift({
+                status: 'refunded',
+                redeemerMemberId: null,
+                refundedAt: new Date('2027-04-11T12:00:00.000Z')
+            });
+
+            assert.deepEqual(gift.checkReassignable(), {reassignable: false, reason: 'refunded'});
+        });
+
+        it('returns missing-consumes-at when consumesAt is null on a redeemed gift', function () {
+            const gift = buildGift({
+                status: 'redeemed',
+                redeemerMemberId: null,
+                redeemedAt: new Date('2026-04-11T12:00:00.000Z'),
+                consumesAt: null
+            });
+
+            assert.deepEqual(gift.checkReassignable(), {reassignable: false, reason: 'missing-consumes-at'});
+        });
+    });
+
+    describe('reassignRedeemer', function () {
+        it('returns a new Gift with the supplied redeemer id', function () {
+            const gift = buildGift({
+                status: 'redeemed',
+                redeemerMemberId: null,
+                redeemedAt: new Date('2026-04-11T12:00:00.000Z'),
+                consumesAt: new Date('2027-04-11T12:00:00.000Z')
+            });
+
+            const reassigned = gift.reassignRedeemer('member_new');
+
+            assert.equal(reassigned.redeemerMemberId, 'member_new');
+            // Other lifecycle fields should be untouched
+            assert.equal(reassigned.status, 'redeemed');
+            assert.deepEqual(reassigned.redeemedAt, gift.redeemedAt);
+            assert.deepEqual(reassigned.consumesAt, gift.consumesAt);
+        });
+    });
 });

@@ -1,29 +1,23 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {Badge, Command, CommandEmpty, CommandGroup, CommandItem, CommandList} from '@tryghost/shade/components';
+import {
+    Badge,
+    type ComboboxOptionSource,
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandItem,
+    CommandList
+} from '@tryghost/shade/components';
 import {EditRow} from './edit-row';
 import {Label} from '@tryghost/admin-x-framework/api/labels';
 import {LucideIcon} from '@tryghost/shade/utils';
 
-function useControlledSearch(controlledValue?: string, onControlledChange?: (value: string) => void) {
-    const [localSearch, setLocalSearch] = useState('');
-    const search = controlledValue ?? localSearch;
-
-    const handleSearchChange = useCallback((value: string) => {
-        setLocalSearch(value);
-        onControlledChange?.(value);
-    }, [onControlledChange]);
-
-    return {search, handleSearchChange};
-}
-
 export interface LabelPickerProps {
     labels: Label[];
+    optionSource: ComboboxOptionSource<string>;
     selectedSlugs: string[];
     resolvedSelectedLabels?: Label[];
-    isLoading?: boolean;
     onToggle: (slug: string) => void;
-    searchValue?: string;
-    onSearchChange?: (search: string) => void;
     // Creation
     canCreateFromSearch?: (inputValue: string) => boolean;
     onCreate?: (name: string) => Promise<Label | undefined>;
@@ -109,7 +103,6 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
         : labels;
     const showCreate = !!onCreate && search.trim() && canCreateFromSearch?.(search);
     const showEdit = !!onEdit;
-
     const handleCreate = async () => {
         if (onCreate) {
             const newLabel = await onCreate(search.trim());
@@ -208,12 +201,10 @@ const SelectedPills: React.FC<SelectedPillsProps> = ({labels, onToggle}) => (
 
 const LabelPicker: React.FC<LabelPickerProps> = ({
     labels,
+    optionSource,
     selectedSlugs,
     resolvedSelectedLabels,
-    isLoading,
     onToggle,
-    searchValue,
-    onSearchChange,
     canCreateFromSearch,
     onCreate,
     isCreating,
@@ -230,15 +221,13 @@ const LabelPicker: React.FC<LabelPickerProps> = ({
             canCreateFromSearch={canCreateFromSearch}
             isCreating={isCreating}
             isDuplicateName={isDuplicateName}
-            isLoading={isLoading}
             labels={labels}
-            searchValue={searchValue}
+            optionSource={optionSource}
             selectedLabels={selectedLabels}
             selectedSlugs={selectedSlugs}
             onCreate={onCreate}
             onDelete={onDelete}
             onEdit={onEdit}
-            onSearchChange={onSearchChange}
             onToggle={onToggle}
         />
     );
@@ -248,12 +237,10 @@ const LabelPicker: React.FC<LabelPickerProps> = ({
 
 interface ComboboxPickerProps {
     labels: Label[];
+    optionSource: ComboboxOptionSource<string>;
     selectedLabels: Label[];
     selectedSlugs: string[];
     onToggle: (slug: string) => void;
-    isLoading?: boolean;
-    searchValue?: string;
-    onSearchChange?: (search: string) => void;
     canCreateFromSearch?: (inputValue: string) => boolean;
     onCreate?: (name: string) => Promise<Label | undefined>;
     isCreating?: boolean;
@@ -264,12 +251,10 @@ interface ComboboxPickerProps {
 
 const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
     labels,
+    optionSource,
     selectedLabels,
     selectedSlugs,
     onToggle,
-    isLoading,
-    searchValue,
-    onSearchChange,
     canCreateFromSearch,
     onCreate,
     isCreating,
@@ -278,9 +263,14 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
     isDuplicateName
 }) => {
     const [open, setOpen] = useState(false);
-    const {search, handleSearchChange} = useControlledSearch(searchValue, onSearchChange);
+    const [search, setSearch] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+
+    const handleSearchChange = useCallback((value: string) => {
+        setSearch(value);
+        optionSource.onSearchChange?.(value);
+    }, [optionSource]);
 
     // Close on click outside — no Radix Popover portal needed since this
     // component lives inside a Dialog. Avoiding the portal keeps the dropdown
@@ -336,7 +326,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
             </div>
             {open && (
                 <div className="absolute top-full left-0 z-50 mt-1 w-full rounded-md border bg-white shadow-md dark:bg-gray-950">
-                    {isLoading ? (
+                    {optionSource.isInitialLoad ? (
                         <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
                             Loading labels...
                         </div>

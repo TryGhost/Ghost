@@ -5,11 +5,127 @@ import SiteTitleBackButton from '../common/site-title-back-button';
 import ActionButton from '../common/action-button';
 import LoadingPage from './loading-page';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
+import {ReactComponent as GiftIcon} from '../../images/icons/gift.svg';
 import {getAvailableProducts, getCurrencySymbol, formatNumber, getStripeAmount, isCookiesDisabled, getActiveInterval} from '../../utils/helpers';
 import calculateDiscount from '../../utils/discount';
 
 // TODO: wrap strings with t() once copy is finalised
 /* eslint-disable i18next/no-literal-string */
+
+export const GiftPageStyles = `
+.gh-portal-content.gift {
+    position: relative;
+    padding-top: 0;
+}
+
+.gh-portal-gift-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 320px;
+    background: linear-gradient(180deg, var(--brandcolor), transparent);
+    opacity: 0.08;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.gh-portal-popup-wrapper.full-size .gh-portal-gift-bg {
+    top: -2vmin;
+    left: -6vmin;
+    right: -6vmin;
+    height: calc(320px + 2vmin);
+}
+
+.gh-portal-gift-sitetitle {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 15px 32px 0;
+}
+
+.gh-portal-gift-sitetitle-icon {
+    display: block;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    background-position: 50%;
+    background-size: cover;
+    object-fit: cover;
+}
+
+.gh-portal-gift-sitetitle-name {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: var(--grey0);
+    line-height: 1;
+}
+
+.gh-portal-gift-hero {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 56px 32px 40px;
+}
+
+.gh-portal-gift-hero-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    color: var(--brandcolor);
+    margin-bottom: 20px;
+}
+
+.gh-portal-gift-hero-icon svg {
+    width: 48px;
+    height: 48px;
+    stroke-width: 1.5;
+}
+
+.gh-portal-gift-hero .gh-portal-main-title {
+    margin: 0 0 14px;
+}
+
+.gh-portal-gift-hero .gh-portal-main-subtitle {
+    margin: 0;
+    font-size: 1.7rem;
+    line-height: 1.45em;
+    color: var(--grey3);
+    text-align: center;
+}
+
+.gh-portal-content.gift > section {
+    position: relative;
+    z-index: 1;
+}
+
+.gh-portal-popup-wrapper.gift .gh-portal-btn-site-title-back {
+    background: transparent;
+    border-color: transparent;
+}
+
+.gh-portal-popup-wrapper.gift .gh-portal-btn-site-title-back:hover {
+    border-color: transparent;
+}
+
+@media (max-width: 480px) {
+    .gh-portal-gift-hero {
+        padding: 40px 24px 32px;
+    }
+
+    .gh-portal-gift-bg {
+        height: 240px;
+    }
+}
+`;
 
 function GiftProductCardBenefits({product}) {
     if (!product.benefits || !product.benefits.length) {
@@ -85,7 +201,7 @@ function GiftProductCard({brandColor, product, selectedInterval, isDisabled, isP
                 <div className='gh-portal-btn-product'>
                     <ActionButton
                         dataTestId='purchase-gift'
-                        label={<><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight: '6px', verticalAlign: 'middle'}}><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></svg> Gift this</>}
+                        label='Continue'
                         onClick={e => onPurchase(e, product)}
                         disabled={isDisabled}
                         isRunning={isPurchasing}
@@ -146,21 +262,37 @@ const GiftPage = () => {
 
     const products = getAvailableProducts({site}).filter(p => p.type === 'paid');
 
+    const siteIcon = site.icon;
+    const siteTitle = site.title || '';
+
+    const giftPageHeader = (
+        <>
+            <div className='gh-portal-gift-bg' aria-hidden='true' />
+            <div className='gh-portal-gift-sitetitle'>
+                {siteIcon && (
+                    <img className='gh-portal-gift-sitetitle-icon' src={siteIcon} alt='' />
+                )}
+                <span className='gh-portal-gift-sitetitle-name'>{siteTitle}</span>
+            </div>
+            <div className='gh-portal-gift-hero'>
+                <div className='gh-portal-gift-hero-icon'>
+                    <GiftIcon />
+                </div>
+                <h1 className='gh-portal-main-title'>Gift a membership</h1>
+                <p className='gh-portal-main-subtitle'>Share a full membership to {siteTitle} with a friend or colleague</p>
+            </div>
+        </>
+    );
+
     if (products.length === 0) {
-        const siteIcon = site.icon;
         return (
             <>
                 <div className='gh-portal-back-sitetitle'>
                     <SiteTitleBackButton />
                 </div>
                 <CloseButton />
-                <div className='gh-portal-content signup'>
-                    <header className='gh-portal-signup-header'>
-                        {siteIcon && (
-                            <img className='gh-portal-signup-logo' src={siteIcon} alt={site.title} />
-                        )}
-                        <h1 className="gh-portal-main-title">{site.title || ''}</h1>
-                    </header>
+                <div className='gh-portal-content signup gift'>
+                    {giftPageHeader}
                     <section>
                         <div className='gh-portal-section'>
                             <p className='gh-portal-invite-only-notification'>
@@ -173,8 +305,6 @@ const GiftPage = () => {
         );
     }
 
-    const siteIcon = site.icon;
-    const siteTitle = site.title || '';
     const isPurchasing = action === 'checkoutGift:running';
     const isDisabled = isCookiesDisabled() || isPurchasing;
 
@@ -195,14 +325,8 @@ const GiftPage = () => {
                 <SiteTitleBackButton />
             </div>
             <CloseButton />
-            <div className='gh-portal-content signup'>
-                <header className='gh-portal-signup-header'>
-                    {siteIcon && (
-                        <img className='gh-portal-signup-logo' src={siteIcon} alt={siteTitle} />
-                    )}
-                    <h1 className="gh-portal-main-title">{siteTitle}</h1>
-                    <p className="gh-portal-main-subtitle" style={{fontSize: '1.7rem', marginTop: '8px'}}>Give the gift of a membership</p>
-                </header>
+            <div className='gh-portal-content signup gift'>
+                {giftPageHeader}
 
                 <section className="gh-portal-signup">
                     <div className='gh-portal-section'>
@@ -226,10 +350,6 @@ const GiftPage = () => {
                                 ))}
                             </div>
                         </section>
-
-                        <div className='gh-portal-signup-message'>
-                            <div>Only redeemable by free or new members.</div>
-                        </div>
                     </div>
                 </section>
             </div>

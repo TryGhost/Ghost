@@ -11,8 +11,19 @@ const logging = require('@tryghost/logging');
 const messages = {
     filenameCollision: 'Filename already exists, please try again.',
     freeMemberNotAllowedImportTier: 'You cannot import a free member with a specified tier.',
-    invalidImportTier: '"{tier}" is not a valid tier.'
+    invalidImportTier: '"{tier}" is not a valid tier.',
+    giftServiceUnavailable: 'Gift service is not available.',
+    giftCannotCombineWithImportTier: 'Cannot specify both gift_id and import_tier.',
+    giftCannotCombineWithComplimentary: 'Cannot specify both gift_id and complimentary_plan.',
+    giftReassignFailed: 'Failed to reassign gift to member.'
 };
+
+function wrapGiftError(error) {
+    const message = (error && typeof error.message === 'string' && error.message) || tpl(messages.giftReassignFailed);
+    return new errors.DataImportError({
+        message: `Member cannot be assigned to a gift: ${message}`
+    });
+}
 
 // The key should correspond to a member model field (unless it's a special purpose field like 'complimentary_plan')
 // the value should represent an allowed field name coming from user input
@@ -25,7 +36,8 @@ const DEFAULT_CSV_HEADER_MAPPING = {
     complimentary_plan: 'complimentary_plan',
     stripe_customer_id: 'stripe_customer_id',
     labels: 'labels',
-    import_tier: 'import_tier'
+    import_tier: 'import_tier',
+    gift_id: 'gift_id'
 };
 
 /**
@@ -35,6 +47,7 @@ const DEFAULT_CSV_HEADER_MAPPING = {
  * @property {() => Object} getMembersRepository - member model access instance for data access and manipulation
  * @property {() => Promise<import('../../tiers/tier')>} getDefaultTier - async function returning default Member Tier
  * @property {(string) => Promise<import('../../tiers/tier')>} getTierByName - async function returning Member Tier by name
+ * @property {() => Promise<import('../../gifts/gift-service').GiftService>} getGiftService - async function returning the GiftService instance
  * @property {Function} sendEmail - function sending an email
  * @property {(string) => boolean} isSet - Method checking if specific feature is enabled
  * @property {({job, offloaded, name}) => void} addJob - Method registering an async job
@@ -48,12 +61,13 @@ module.exports = class MembersCSVImporter {
     /**
      * @param {MembersCSVImporterOptions} options
      */
-    constructor({storagePath, getTimezone, getMembersRepository, getDefaultTier, getTierByName, sendEmail, isSet, addJob, knex, urlFor, context, stripeUtils}) {
+    constructor({storagePath, getTimezone, getMembersRepository, getDefaultTier, getTierByName, getGiftService, sendEmail, isSet, addJob, knex, urlFor, context, stripeUtils}) {
         this._storagePath = storagePath;
         this._getTimezone = getTimezone;
         this._getMembersRepository = getMembersRepository;
         this._getDefaultTier = getDefaultTier;
         this._getTierByName = getTierByName;
+        this._getGiftService = getGiftService;
         this._sendEmail = sendEmail;
         this._isSet = isSet;
         this._addJob = addJob;
@@ -125,6 +139,7 @@ module.exports = class MembersCSVImporter {
 
         const defaultTier = await this._getDefaultTier();
         const membersRepository = await this._getMembersRepository();
+        const giftService = this._getGiftService ? await this._getGiftService() : null;
 
         // Clear tier ID cache before each import in-case tiers have been updated since last import
         this._tierIdCache.clear();
@@ -146,6 +161,17 @@ module.exports = class MembersCSVImporter {
             };
 
             try {
+                // Early validation of mutually exclusive columns so we fail the row before
+                // any member/tier work.
+                if (row.gift_id) {
+                    if (row.import_tier) {
+                        throw wrapGiftError(new errors.DataImportError({message: tpl(messages.giftCannotCombineWithImportTier)}));
+                    }
+                    if (row.complimentary_plan) {
+                        throw wrapGiftError(new errors.DataImportError({message: tpl(messages.giftCannotCombineWithComplimentary)}));
+                    }
+                }
+
                 // If the member is created in the future, set created_at to now
                 // Members created in the future will not appear in admin members list
                 // Refs https://github.com/TryGhost/Team/issues/2793
@@ -254,6 +280,18 @@ module.exports = class MembersCSVImporter {
                     });
                 } else if (row.import_tier) {
                     throw new errors.DataImportError({message: tpl(messages.freeMemberNotAllowedImportTier)});
+                }
+
+                if (row.gift_id) {
+                    if (!giftService) {
+                        throw wrapGiftError(new errors.DataImportError({message: tpl(messages.giftServiceUnavailable)}));
+                    }
+
+                    try {
+                        await giftService.reassignRedeemer(row.gift_id, member.id, {transacting: trx});
+                    } catch (giftError) {
+                        throw wrapGiftError(giftError);
+                    }
                 }
 
                 await trx.commit();

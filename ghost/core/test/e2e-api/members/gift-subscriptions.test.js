@@ -634,32 +634,6 @@ describe('Gift Subscriptions', function () {
                 assert.ok(gift.get('redeemed_at'));
                 assert.ok(gift.get('consumes_at'));
 
-                const memberResponse = await agent
-                    .get('/api/member/')
-                    .expectStatus(200);
-
-                assert.equal(memberResponse.body.status, 'gift');
-                assert.equal(
-                    memberResponse.body.subscriptions.length,
-                    1,
-                    'Gift members should receive a synthetic gift subscription in the member API'
-                );
-                assert.equal(
-                    memberResponse.body.subscriptions[0].tier.id,
-                    paidProduct.id,
-                    'The gift subscription should point at the redeemed tier'
-                );
-                assert.equal(
-                    memberResponse.body.subscriptions[0].plan.nickname,
-                    'Gift subscription',
-                    'The synthetic subscription plan should be marked as a gift'
-                );
-                assert.equal(
-                    memberResponse.body.subscriptions[0].price.nickname,
-                    'Gift subscription',
-                    'The synthetic subscription price should be marked as a gift'
-                );
-
                 // Verify staff notification email was sent
                 mockManager.assert.sentEmail({
                     subject: /paid subscription started/i,
@@ -1041,7 +1015,7 @@ describe('Gift Subscriptions', function () {
             return {member, identityToken, gift, paidTier, consumesAt};
         }
 
-        it('applies remaining gift days as trial and continues on the same tier/cadence as gift', async function () {
+        it('applies remaining gift days as trial and continues to checkout on the same tier/cadence', async function () {
             const {identityToken, gift, paidTier} = await setupGiftMember({cadence: 'month', consumesInDays: 30});
 
             await membersAgent.post('/api/create-stripe-checkout-session/')
@@ -1073,6 +1047,25 @@ describe('Gift Subscriptions', function () {
             const giftRecord = await models.Gift.findOne({token: gift.get('token')}, {require: true});
             assert.equal(giftRecord.get('status'), 'redeemed');
             assert.equal(giftRecord.get('tier_id'), paidTier.id);
+        });
+
+        it('marks the gift as consumed once the paid subscription activates', async function () {
+            const {member, gift} = await setupGiftMember({cadence: 'month', consumesInDays: 30});
+
+            // Starting point: gift redeemed, not yet consumed
+            assert.equal(gift.get('status'), 'redeemed');
+            assert.equal(gift.get('consumed_at'), null);
+
+            const customer = stripeMocker.createCustomer({email: member.get('email')});
+            const price = await stripeMocker.getPriceForTier('default-product', 'month');
+
+            await stripeMocker.createSubscription({customer, price});
+            await DomainEvents.allSettled();
+
+            // Gift should now be consumed
+            const giftAfterActivation = await models.Gift.findOne({token: gift.get('token')}, {require: true});
+            assert.equal(giftAfterActivation.get('status'), 'consumed');
+            assert.ok(giftAfterActivation.get('consumed_at'), 'Gift should have consumed_at set');
         });
 
         it('Returns 401 for unauthenticated members', async function () {
@@ -1152,6 +1145,51 @@ describe('Gift Subscriptions', function () {
                     }
                 })
                 .expectStatus(403);
+        });
+    });
+
+    describe('Read a member with an active gift subscription', function () {
+        it('returns gift price details and correct nickname on the member subscription', async function () {
+            const agent = membersAgent.duplicate();
+            const email = `gift-api-shape-${giftSequence + 1}@example.com`;
+
+            await agent.loginAs(email);
+
+            const member = await models.Member.findOne({email}, {require: true});
+            const consumesAt = addYears(new Date('2026-04-07T10:00:00.000Z'), 1);
+
+            const gift = await createGift({
+                cadence: 'month',
+                duration: 1,
+                currency: 'eur',
+                amount: 1500,
+                redeemer_member_id: member.id,
+                redeemed_at: new Date('2026-04-07T10:00:00.000Z'),
+                consumes_at: consumesAt,
+                status: 'redeemed'
+            });
+
+            await models.Member.edit({
+                status: 'gift',
+                products: [{id: paidProduct.id}]
+            }, {id: member.id});
+
+            const {body} = await agent
+                .get('/api/member/')
+                .expectStatus(200);
+
+            assert.equal(body.status, 'gift');
+            assert.equal(body.subscriptions.length, 1, 'Gift members should receive a single synthetic subscription');
+
+            const subscription = body.subscriptions[0];
+            assert.equal(subscription.plan.nickname, 'Gift subscription');
+            assert.equal(subscription.price.nickname, 'Gift subscription');
+            assert.equal(subscription.plan.amount, gift.get('amount'));
+            assert.equal(subscription.plan.currency, gift.get('currency'));
+            assert.equal(subscription.plan.interval, gift.get('cadence'));
+            assert.equal(subscription.price.amount, gift.get('amount'));
+            assert.equal(subscription.price.currency, gift.get('currency'));
+            assert.equal(subscription.price.interval, gift.get('cadence'));
         });
     });
 });

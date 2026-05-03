@@ -130,6 +130,20 @@ module.exports = class EventRepository {
                     if (diff !== 0) {
                         return diff;
                     }
+                    // Tiebreaker for events sharing the same created_at:
+                    // Signup > Newsletter subscription > Subscription / gift redemption event > Login
+                    const tieOrder = {
+                        login_event: 0,
+                        subscription_event: 1,
+                        gift_redemption_event: 1,
+                        newsletter_event: 2,
+                        signup_event: 3
+                    };
+                    const orderA = tieOrder[a.type];
+                    const orderB = tieOrder[b.type];
+                    if (orderA !== undefined && orderB !== undefined && orderA !== orderB) {
+                        return orderA - orderB;
+                    }
                     return b.data.id.localeCompare(a.data.id);
                 }
             ).slice(0, options.limit),
@@ -198,6 +212,7 @@ module.exports = class EventRepository {
                 'subscriptionCreatedEvent.userAttribution',
                 'subscriptionCreatedEvent.tagAttribution',
                 'subscriptionCreatedEvent.memberCreatedEvent',
+                'subscriptionCreatedEvent.paidStatusEvent',
 
                 // This is rediculous, but we need the tier name (we'll be able to shorten this later when we switch to the subscriptions table)
                 'stripeSubscription.stripePrice.stripeProduct.product'
@@ -230,12 +245,23 @@ module.exports = class EventRepository {
         const data = models.map((model) => {
             const tierName = model.related('stripeSubscription') && model.related('stripeSubscription').related('stripePrice') && model.related('stripeSubscription').related('stripePrice').related('stripeProduct') && model.related('stripeSubscription').related('stripePrice').related('stripeProduct').related('product') ? model.related('stripeSubscription').related('stripePrice').related('stripeProduct').related('product').get('name') : null;
 
+            const subscriptionCreatedEvent = model.related('subscriptionCreatedEvent');
+            const paidStatusEvent = subscriptionCreatedEvent && subscriptionCreatedEvent.id
+                ? subscriptionCreatedEvent.related('paidStatusEvent')
+                : null;
+            const previousStatus = paidStatusEvent && paidStatusEvent.id ? paidStatusEvent.get('from_status') : null;
+
             // Prevent toJSON on stripeSubscription (we don't have everything loaded)
             delete model.relations.stripeSubscription;
+            // paidStatusEvent is a helper relation only used to derive previous_status above
+            if (subscriptionCreatedEvent && subscriptionCreatedEvent.id) {
+                delete subscriptionCreatedEvent.relations.paidStatusEvent;
+            }
             const d = {
                 ...model.toJSON(options),
-                attribution: model.get('type') === 'created' && model.related('subscriptionCreatedEvent') && model.related('subscriptionCreatedEvent').id ? this._memberAttributionService.getEventAttribution(model.related('subscriptionCreatedEvent')) : null,
-                signup: model.get('type') === 'created' && model.related('subscriptionCreatedEvent') && model.related('subscriptionCreatedEvent').id && model.related('subscriptionCreatedEvent').related('memberCreatedEvent') && model.related('subscriptionCreatedEvent').related('memberCreatedEvent').id ? true : false,
+                attribution: model.get('type') === 'created' && subscriptionCreatedEvent && subscriptionCreatedEvent.id ? this._memberAttributionService.getEventAttribution(subscriptionCreatedEvent) : null,
+                signup: model.get('type') === 'created' && subscriptionCreatedEvent && subscriptionCreatedEvent.id && subscriptionCreatedEvent.related('memberCreatedEvent') && subscriptionCreatedEvent.related('memberCreatedEvent').id ? true : false,
+                previous_status: previousStatus,
                 tierName
             };
             delete d.stripeSubscription;
@@ -324,7 +350,8 @@ module.exports = class EventRepository {
                 'member',
                 'postAttribution',
                 'userAttribution',
-                'tagAttribution'
+                'tagAttribution',
+                'signupStatusEvent'
             ],
             filter: 'subscriptionCreatedEvent.id:null+custom:true',
             useBasicCount: true,
@@ -357,10 +384,13 @@ module.exports = class EventRepository {
             delete json.postAttribution?.mobiledoc;
             delete json.postAttribution?.lexical;
             delete json.postAttribution?.plaintext;
+            const createdWithStatus = json.signupStatusEvent?.to_status ?? null;
+            delete json.signupStatusEvent;
             return {
                 type: 'signup_event',
                 data: {
                     ...json,
+                    created_with_status: createdWithStatus,
                     attribution: this._memberAttributionService.getEventAttribution(model)
                 }
             };
@@ -1132,14 +1162,16 @@ module.exports = class EventRepository {
                     date: result.date,
                     paid: result.paid_delta,
                     comped: result.comped_delta,
-                    free: result.free_delta
+                    free: result.free_delta,
+                    gift: result.gift_delta
                 }];
             }
             return accumulator.concat([{
                 date: result.date,
                 paid: result.paid_delta + accumulator[index - 1].paid,
                 comped: result.comped_delta + accumulator[index - 1].comped,
-                free: result.free_delta + accumulator[index - 1].free
+                free: result.free_delta + accumulator[index - 1].free,
+                gift: result.gift_delta + accumulator[index - 1].gift
             }]);
         }, []);
 

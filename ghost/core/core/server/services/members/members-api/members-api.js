@@ -164,7 +164,8 @@ module.exports = function MembersAPI({
         emailSuppressionList,
         settingsHelpers,
         nextPaymentCalculator,
-        commentsService
+        commentsService,
+        giftService
     });
 
     const geolocationService = new GeolocationService();

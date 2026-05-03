@@ -536,6 +536,10 @@ describe('Oembed API', function () {
         });
 
         it('strips unknown response fields', async function () {
+            // Uses `photo` because unknown providers returning rich/video are
+            // rejected outright as a security measure (ONC-1648); see the next
+            // test. `photo` still passes through so we can verify the legacy
+            // field-stripping behaviour.
             const pageMock = nock('http://test.com')
                 .get('/')
                 .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://test.com/oembed"></head></html>');
@@ -544,8 +548,8 @@ describe('Oembed API', function () {
                 .get('/oembed')
                 .reply(200, {
                     version: '1.0',
-                    type: 'video',
-                    html: '<p>Test</p>',
+                    type: 'photo',
+                    url: 'http://test.com/photo.jpg',
                     width: 200,
                     height: 100,
                     unknown: 'test'
@@ -563,12 +567,43 @@ describe('Oembed API', function () {
 
             assert.deepEqual(res.body, {
                 version: '1.0',
-                type: 'video',
-                html: '<p>Test</p>',
+                type: 'photo',
+                url: 'http://test.com/photo.jpg',
                 width: 200,
                 height: 100
             });
             assert.equal(res.body.unknown, undefined);
+        });
+
+        it('rejects rich/video responses from non-allowlisted providers (ONC-1648)', async function () {
+            // Self-declared oEmbed endpoints cannot return safe HTML for
+            // embedding in the admin preview or on the public site. Known
+            // providers (YouTube, Twitter, …) go through `knownProvider` with
+            // @extractus's allowlist; anything reaching this fallback path is
+            // an arbitrary site and must not propagate its html.
+            const pageMock = nock('http://test.com')
+                .get('/')
+                .reply(200, '<html><head><link rel="alternate" type="application/json+oembed" href="http://test.com/oembed"></head></html>');
+
+            const oembedMock = nock('http://test.com')
+                .get('/oembed')
+                .reply(200, {
+                    version: '1.0',
+                    type: 'video',
+                    html: '<img src=x onerror="alert(1)">',
+                    width: 200,
+                    height: 100
+                });
+
+            const url = encodeURIComponent('http://test.com');
+            await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}`))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(422);
+
+            assert.equal(pageMock.isDone(), true);
+            assert.equal(oembedMock.isDone(), true);
         });
 
         it('skips fetching IPv4 addresses', async function () {

@@ -26,20 +26,30 @@ export function getAvailableEventTypes(settings, hiddenEvents = []) {
     return extended.filter(t => !hiddenEvents.includes(t.event));
 }
 
-export function toggleEventType(eventType, eventTypes) {
-    const excludedEvents = new Set(eventTypes.filter(type => !type.isSelected).map(type => type.event));
+export function toggleEventType(eventType, currentExcludedEvents = []) {
+    const excludedEvents = new Set(
+        Array.isArray(currentExcludedEvents)
+            ? currentExcludedEvents
+            : (currentExcludedEvents || '').split(',').filter(Boolean)
+    );
 
-    if (eventType === 'payment_event') {
+    if (eventType === 'subscription_event') {
+        if (excludedEvents.has('subscription_event')) {
+            excludedEvents.delete('subscription_event');
+            excludedEvents.delete('gift_redemption_event');
+        } else {
+            excludedEvents.add('subscription_event');
+            excludedEvents.add('gift_redemption_event');
+        }
+    } else if (eventType === 'payment_event') {
         if (excludedEvents.has('payment_event')) {
             excludedEvents.delete('payment_event');
             excludedEvents.delete('donation_event');
             excludedEvents.delete('gift_purchase_event');
-            excludedEvents.delete('gift_redemption_event');
         } else {
             excludedEvents.add('payment_event');
             excludedEvents.add('donation_event');
             excludedEvents.add('gift_purchase_event');
-            excludedEvents.add('gift_redemption_event');
         }
     } else {
         if (excludedEvents.has(eventType)) {

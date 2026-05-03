@@ -570,25 +570,27 @@ test.describe('Ghost Admin - Deleting Posts', () => {
 test.describe('Ghost Admin - Posts List', () => {
     test('lists posts and reflects newly created posts', async ({page}) => {
         const postFactory: PostFactory = createPostFactory(page.request);
+        const title = `Test Post ${Date.now()}`;
 
         const postsPage = new PostsPage(page);
         await postsPage.goto();
 
         await expect(postsPage.postsListItem).toHaveCount(1);
 
-        await postFactory.create({title: 'Test Post'});
+        await postFactory.create({title});
         await postsPage.refreshData();
         await expect(postsPage.postsListItem).toHaveCount(2);
     });
 
     test('shows correct publish date format in post settings', async ({page}) => {
         const postFactory: PostFactory = createPostFactory(page.request);
-        await postFactory.create({title: 'Test Post'});
+        const title = `Test Post ${Date.now()}`;
+        await postFactory.create({title});
 
         const postsPage = new PostsPage(page);
         await postsPage.goto();
 
-        await postsPage.getPostByTitle('Test Post').click();
+        await postsPage.getPostByTitle(title).click();
         const editPage = new PostEditorPage(page);
         await editPage.settingsToggleButton.click();
 

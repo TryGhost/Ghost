@@ -40,6 +40,16 @@ describe('SubscriptionStatsService', function () {
                 table.string('stripe_price_id');
                 table.integer('mrr');
             });
+            await db.schema.createTable('gifts', function (table) {
+                table.string('id');
+                table.string('tier_id');
+                table.string('cadence');
+                table.string('status');
+                table.dateTime('redeemed_at');
+                table.dateTime('consumed_at');
+                table.dateTime('expired_at');
+                table.dateTime('refunded_at');
+            });
         });
 
         afterEach(async function () {
@@ -381,6 +391,159 @@ describe('SubscriptionStatsService', function () {
             assert.equal(days[1].beyond.yearly.negative_delta, 0);
             assert.equal(days[1].beyond.yearly.signups, 1);
             assert.equal(days[1].beyond.yearly.cancellations, 0);
+        });
+
+        it('Includes gift redemptions and end-of-life events alongside paid deltas', async function () {
+            const tiers = await createTiers(['basic']);
+
+            // One paid monthly signup on day 1
+            const NEW = createEvent('created');
+            await insertEvents([
+                [NEW('A', tiers.basic.monthly)]
+            ]);
+
+            // Gifts covering each end-of-life branch:
+            //  - g-month: redeemed day 1, still active
+            //  - g-year-consumed:  redeemed day 1, consumed day 2
+            //  - g-year-expired:   redeemed day 1, expired day 3
+            //  - g-month-refunded: redeemed day 1, refunded day 4
+            await db('gifts').insert([
+                {id: 'g-month', tier_id: 'basic', cadence: 'month', status: 'redeemed', redeemed_at: '1970-01-01T00:00:00.000Z'},
+                {id: 'g-year-consumed', tier_id: 'basic', cadence: 'year', status: 'consumed', redeemed_at: '1970-01-01T00:00:00.000Z', consumed_at: '1970-01-02T00:00:00.000Z'},
+                {id: 'g-year-expired', tier_id: 'basic', cadence: 'year', status: 'expired', redeemed_at: '1970-01-01T00:00:00.000Z', expired_at: '1970-01-03T00:00:00.000Z'},
+                {id: 'g-month-refunded', tier_id: 'basic', cadence: 'month', status: 'refunded', redeemed_at: '1970-01-01T00:00:00.000Z', refunded_at: '1970-01-04T00:00:00.000Z'}
+            ]);
+
+            const stats = new SubscriptionStatsService({knex: db});
+            const result = await stats.getSubscriptionHistory();
+
+            // Sum signups/cancellations across all rows for a given (tier, cadence, date).
+            const sumWhere = (tier, cadence, date, field) => result.data
+                .filter(r => r.tier === tier && r.cadence === cadence && r.date === date)
+                .reduce((acc, r) => acc + r[field], 0);
+
+            // Day 1 monthly: 1 paid + 2 gift redemptions (g-month, g-month-refunded) = 3 signups
+            assert.equal(sumWhere('basic', 'month', '1970-01-01', 'signups'), 3);
+            // Day 1 yearly: 2 gift redemptions (g-year-consumed, g-year-expired)
+            assert.equal(sumWhere('basic', 'year', '1970-01-01', 'signups'), 2);
+
+            // Each end-of-life branch produces a cancellation on its own date:
+            //  - day 2: g-year-consumed
+            assert.equal(sumWhere('basic', 'year', '1970-01-02', 'cancellations'), 1);
+            //  - day 3: g-year-expired
+            assert.equal(sumWhere('basic', 'year', '1970-01-03', 'cancellations'), 1);
+            //  - day 4: g-month-refunded
+            assert.equal(sumWhere('basic', 'month', '1970-01-04', 'cancellations'), 1);
+        });
+
+        it('Includes active gifts in the current totals so rolled-back snapshots stay accurate', async function () {
+            await createTiers(['basic']);
+
+            // Two active redeemed gifts, no paid subs.
+            await db('gifts').insert([
+                {id: 'g1', tier_id: 'basic', cadence: 'year', status: 'redeemed', redeemed_at: '1970-01-01T00:00:00.000Z'},
+                {id: 'g2', tier_id: 'basic', cadence: 'year', status: 'redeemed', redeemed_at: '1970-01-02T00:00:00.000Z'}
+            ]);
+
+            const stats = new SubscriptionStatsService({knex: db});
+            const result = await stats.getSubscriptionHistory();
+
+            // Without including gifts in totals, the baseline would be 0 and rolled-back
+            // counts would all be negative (clamped to 0), undercounting history.
+            const yearlyTotal = result.meta.totals.find(t => t.tier === 'basic' && t.cadence === 'year');
+            assert(yearlyTotal);
+            assert.equal(yearlyTotal.count, 2);
+        });
+
+        it('Aggregates paid and gift deltas that share (date, tier, cadence) into a single row', async function () {
+            const tiers = await createTiers(['basic']);
+
+            // Paid yearly signup on day 1
+            const NEW = createEvent('created');
+            await insertEvents([
+                [NEW('A', tiers.basic.yearly)]
+            ]);
+
+            // Gift yearly signup on the same day (basic tier)
+            await db('gifts').insert({
+                id: 'g-same-day',
+                tier_id: 'basic',
+                cadence: 'year',
+                status: 'redeemed',
+                redeemed_at: '1970-01-01T00:00:00.000Z'
+            });
+
+            const stats = new SubscriptionStatsService({knex: db});
+            const result = await stats.getSubscriptionHistory();
+
+            // There should be exactly one row for (basic, year, day 1) with combined deltas,
+            // not two — otherwise the row's `count` snapshot is ambiguous.
+            const rows = result.data.filter(r => r.tier === 'basic' && r.cadence === 'year' && r.date === '1970-01-01');
+            assert.equal(rows.length, 1);
+            assert.equal(rows[0].signups, 2);
+            assert.equal(rows[0].positive_delta, 2);
+        });
+
+        it('Excludes unredeemed gifts (expired/refunded before redemption) from cancellations', async function () {
+            await createTiers(['basic']);
+
+            // Both branches of "ended without ever being redeemed":
+            //  - refunded before redemption
+            //  - expired before redemption
+            // Neither produced a signup, so neither must produce a cancellation.
+            await db('gifts').insert([
+                {id: 'g-refunded', tier_id: 'basic', cadence: 'year', status: 'refunded', redeemed_at: null, refunded_at: '1970-01-02T00:00:00.000Z'},
+                {id: 'g-expired', tier_id: 'basic', cadence: 'month', status: 'expired', redeemed_at: null, expired_at: '1970-01-03T00:00:00.000Z'}
+            ]);
+
+            const stats = new SubscriptionStatsService({knex: db});
+            const result = await stats.getSubscriptionHistory();
+
+            // No rows should exist for either tier/cadence combination.
+            assert.equal(result.data.filter(r => r.tier === 'basic' && r.cadence === 'year').length, 0);
+            assert.equal(result.data.filter(r => r.tier === 'basic' && r.cadence === 'month').length, 0);
+        });
+
+        it('Sorts merged paid+gift deltas by date so running counts roll back correctly', async function () {
+            const tiers = await createTiers(['basic']);
+
+            // Gift yearly redemption on day 1 (earliest event)
+            await db('gifts').insert({
+                id: 'g-early',
+                tier_id: 'basic',
+                cadence: 'year',
+                status: 'redeemed',
+                redeemed_at: '1970-01-01T00:00:00.000Z'
+            });
+
+            // Paid yearly signup on day 3 (latest event). paidDeltas comes first
+            // in the concat, so without sorting the order would be:
+            //   [paid@day3, gift@day1]
+            // Walking backwards: gift@day1 then paid@day3 — earlier-dated entry
+            // applied to the running count BEFORE the later one, corrupting snapshots.
+            const NEW = createEvent('created');
+            await insertEvents([
+                [],
+                [],
+                [NEW('A', tiers.basic.yearly)]
+            ]);
+
+            const stats = new SubscriptionStatsService({knex: db});
+            const result = await stats.getSubscriptionHistory();
+
+            // fetchSubscriptionCounts() returns 2 yearly basic subs (1 paid + 1 active gift).
+            // Walking backwards from countData=2 in ascending date order:
+            //   day 3 (paid signup):  emit count=2, then countData -= 1 → 1
+            //   day 1 (gift signup):  emit count=1, then countData -= 1 → 0
+            const day1Yearly = result.data.find(r => r.tier === 'basic' && r.cadence === 'year' && r.date === '1970-01-01');
+            const day3Yearly = result.data.find(r => r.tier === 'basic' && r.cadence === 'year' && r.date === '1970-01-03');
+
+            assert(day1Yearly);
+            assert(day3Yearly);
+            // After both signups: 2 yearly subs total
+            assert.equal(day3Yearly.count, 2);
+            // After only the gift signup, before the paid signup: 1 yearly sub
+            assert.equal(day1Yearly.count, 1);
         });
     });
 });

@@ -5,10 +5,9 @@ const db = require('../../../core/server/data/db');
 // Stuff we are testing
 const models = require('../../../core/server/models');
 
-const SETTINGS_LENGTH = 104;
+const SETTINGS_LENGTH = 111;
 
 describe('Settings Model', function () {
-    before(models.init);
     afterEach(testUtils.teardownDb);
 
     describe('defaults', function () {

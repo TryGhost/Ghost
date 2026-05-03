@@ -1,7 +1,10 @@
 const assert = require('node:assert/strict');
+const crypto = require('crypto');
 const sinon = require('sinon');
 
 const urlUtils = require('../../../../../core/shared/url-utils');
+const config = require('../../../../../core/shared/config');
+const tiersService = require('../../../../../core/server/services/tiers/service');
 const membersService = require('../../../../../core/server/services/members');
 const membersMiddleware = require('../../../../../core/server/services/members/middleware');
 const models = require('../../../../../core/server/models');
@@ -13,10 +16,6 @@ describe('Members Service Middleware', function () {
         let req;
         let res;
         let next;
-
-        before(function () {
-            models.init();
-        });
 
         beforeEach(function () {
             req = {};
@@ -96,6 +95,33 @@ describe('Members Service Middleware', function () {
             sinon.assert.notCalled(next);
             sinon.assert.calledOnce(res.redirect);
             assert.equal(res.redirect.firstCall.args[0], '/blah/?action=signup&success=false');
+        });
+
+        it('appends errorCode to the redirect when the rejection has a string code', async function () {
+            req.url = '/members?token=test&action=subscribe';
+            req.query = {token: 'test', action: 'subscribe'};
+
+            const err = new Error('This gift has expired.');
+            err.code = 'GIFT_EXPIRED';
+            membersService.ssr.exchangeTokenForSession.rejects(err);
+
+            await membersMiddleware.createSessionFromMagicLink(req, res, next);
+
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(res.redirect);
+            assert.equal(res.redirect.firstCall.args[0], '/blah/?action=subscribe&errorCode=GIFT_EXPIRED&success=false');
+        });
+
+        it('does not append errorCode when the rejection has no code', async function () {
+            req.url = '/members?token=test&action=subscribe';
+            req.query = {token: 'test', action: 'subscribe'};
+
+            membersService.ssr.exchangeTokenForSession.rejects(new Error('boom'));
+
+            await membersMiddleware.createSessionFromMagicLink(req, res, next);
+
+            sinon.assert.calledOnce(res.redirect);
+            assert.equal(res.redirect.firstCall.args[0], '/blah/?action=subscribe&success=false');
         });
 
         it('redirects free member to custom redirect on signup', async function () {
@@ -215,10 +241,6 @@ describe('Members Service Middleware', function () {
         let req;
         let res;
 
-        before(function () {
-            models.init();
-        });
-
         beforeEach(function () {
             req = {body: {newsletters: [], enable_comment_notifications: null}};
             res = {writeHead: sinon.stub(), end: sinon.stub()};
@@ -314,6 +336,129 @@ describe('Members Service Middleware', function () {
             assert.equal(res.writeHead.firstCall.args[0], 400);
             sinon.assert.calledOnce(res.end);
             assert.equal(res.end.firstCall.args[0], 'Failed to update newsletters');
+        });
+    });
+
+    describe('setAccessCookies (via accessInfoSession)', function () {
+        // setAccessCookies is a private function called via onHeaders inside
+        // accessInfoSession. We test it here by triggering the onHeaders
+        // callback through res.writeHead(), which is how on-headers works.
+
+        let req;
+        let res;
+        let next;
+        const hmacSecret = crypto.randomBytes(64).toString('base64');
+        const freeTierId = '000000000000000000000001';
+
+        let originalTiersApi;
+
+        beforeEach(function () {
+            req = {headers: {}, member: null};
+            res = {
+                _headers: {},
+                getHeader: sinon.stub().returns([]),
+                setHeader: sinon.stub(),
+                writeHead: function (statusCode) {
+                    this.statusCode = statusCode;
+                }
+            };
+            next = sinon.stub();
+
+            // tiersService.api is null until init() runs; assign a mock directly
+            originalTiersApi = tiersService.api;
+            tiersService.api = /** @type {any} */ ({
+                browse: sinon.stub().resolves({
+                    data: [{id: freeTierId, type: 'free'}]
+                })
+            });
+
+            sinon.stub(config, 'get')
+                .withArgs('cacheMembersContent:hmacSecret').returns(hmacSecret)
+                .withArgs('cacheMembersContent:enabled').returns(true);
+        });
+
+        afterEach(function () {
+            tiersService.api = originalTiersApi;
+            sinon.restore();
+        });
+
+        async function runAndFlushHeaders(member) {
+            req.member = member;
+            await membersMiddleware.accessInfoSession(req, res, next);
+            // Trigger onHeaders callbacks by calling writeHead
+            res.writeHead(200);
+        }
+
+        it('uses Path=/ for root site installs', async function () {
+            sinon.stub(urlUtils, 'getSubdir').returns('');
+
+            const member = {
+                subscriptions: [{status: 'active', tier: {id: freeTierId}}]
+            };
+            await runAndFlushHeaders(member);
+
+            const setCookieArgs = res.setHeader.args.find(args => args[0] === 'Set-Cookie');
+            assert.ok(setCookieArgs, 'Set-Cookie header should be set');
+            const cookies = setCookieArgs[1];
+            const accessCookie = cookies.find(c => c.startsWith('ghost-access='));
+            const hmacCookie = cookies.find(c => c.startsWith('ghost-access-hmac='));
+            assert.ok(accessCookie, 'ghost-access cookie should be set');
+            assert.ok(hmacCookie, 'ghost-access-hmac cookie should be set');
+            assert.ok(accessCookie.includes('Path=/;'), `Expected Path=/ in ghost-access: ${accessCookie}`);
+            assert.ok(hmacCookie.includes('Path=/;'), `Expected Path=/ in ghost-access-hmac: ${hmacCookie}`);
+        });
+
+        it('uses Path=/subdir for subdirectory site installs', async function () {
+            sinon.stub(urlUtils, 'getSubdir').returns('/subdir');
+
+            const member = {
+                subscriptions: [{status: 'active', tier: {id: freeTierId}}]
+            };
+            await runAndFlushHeaders(member);
+
+            const setCookieArgs = res.setHeader.args.find(args => args[0] === 'Set-Cookie');
+            assert.ok(setCookieArgs, 'Set-Cookie header should be set');
+            const cookies = setCookieArgs[1];
+            const accessCookie = cookies.find(c => c.startsWith('ghost-access='));
+            const hmacCookie = cookies.find(c => c.startsWith('ghost-access-hmac='));
+            assert.ok(accessCookie, 'ghost-access cookie should be set');
+            assert.ok(hmacCookie, 'ghost-access-hmac cookie should be set');
+            assert.ok(accessCookie.includes('Path=/subdir;'), `Expected Path=/subdir in ghost-access: ${accessCookie}`);
+            assert.ok(hmacCookie.includes('Path=/subdir;'), `Expected Path=/subdir in ghost-access-hmac: ${hmacCookie}`);
+        });
+
+        it('clears cookies with Path=/ for root site installs', async function () {
+            sinon.stub(urlUtils, 'getSubdir').returns('');
+            req.headers.cookie = 'ghost-access=stale';
+
+            await runAndFlushHeaders(null);
+
+            const setCookieArgs = res.setHeader.args.find(args => args[0] === 'Set-Cookie');
+            assert.ok(setCookieArgs, 'Set-Cookie header should be set');
+            const cookies = setCookieArgs[1];
+            const accessCookie = cookies.find(c => c.startsWith('ghost-access='));
+            const hmacCookie = cookies.find(c => c.startsWith('ghost-access-hmac='));
+            assert.ok(accessCookie, 'ghost-access cookie should be set');
+            assert.ok(hmacCookie, 'ghost-access-hmac cookie should be set');
+            assert.match(accessCookie, /^ghost-access=null;.*Path=\/;/, `Expected null with Path=/ in ghost-access: ${accessCookie}`);
+            assert.match(hmacCookie, /^ghost-access-hmac=null;.*Path=\/;/, `Expected null with Path=/ in ghost-access-hmac: ${hmacCookie}`);
+        });
+
+        it('clears cookies with Path=/subdir for subdirectory site installs', async function () {
+            sinon.stub(urlUtils, 'getSubdir').returns('/subdir');
+            req.headers.cookie = 'ghost-access=stale';
+
+            await runAndFlushHeaders(null);
+
+            const setCookieArgs = res.setHeader.args.find(args => args[0] === 'Set-Cookie');
+            assert.ok(setCookieArgs, 'Set-Cookie header should be set');
+            const cookies = setCookieArgs[1];
+            const accessCookie = cookies.find(c => c.startsWith('ghost-access='));
+            const hmacCookie = cookies.find(c => c.startsWith('ghost-access-hmac='));
+            assert.ok(accessCookie, 'ghost-access cookie should be set');
+            assert.ok(hmacCookie, 'ghost-access-hmac cookie should be set');
+            assert.match(accessCookie, /^ghost-access=null;.*Path=\/subdir;/, `Expected null with Path=/subdir in ghost-access: ${accessCookie}`);
+            assert.match(hmacCookie, /^ghost-access-hmac=null;.*Path=\/subdir;/, `Expected null with Path=/subdir in ghost-access-hmac: ${hmacCookie}`);
         });
     });
 });
