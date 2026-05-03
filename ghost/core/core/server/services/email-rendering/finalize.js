@@ -35,7 +35,7 @@ const finalizeHtml = (html) => {
     // Fix unnecessary hex-entity encoding of forward slashes that may
     // be introduced by cheerio/juice serialization.
     // Refs https://github.com/TryGhost/Ghost/issues/26905
-    html = html.replace(/&#[xX]2[fF];/g, '/');
+    html = html.replace(/&#(?:[xX]2[fF]|47);/g, '/');
 
     return html;
 };

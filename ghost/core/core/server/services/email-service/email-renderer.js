@@ -579,7 +579,7 @@ class EmailRenderer {
         // invalid in text/plain email parts and can appear as literal text
         // in inbox previews or plain-text email clients.
         // Refs https://github.com/TryGhost/Ghost/issues/26905
-        html = html.replace(/&#[xX]2[fF];/g, '/');
+        html = html.replace(/&#(?:[xX]2[fF]|47);/g, '/');
 
         // Convert HTML to plaintext (must run after entity fixes above so the
         // plaintext version also contains clean, decoded text)
