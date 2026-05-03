@@ -23,9 +23,9 @@ type GhostEnvOverrides = GhostConfig | Record<string, string>;
  * - dev: Uses dev infrastructure with hot-reloading
  * - build: Uses pre-built image (set GHOST_E2E_IMAGE for registry images)
  * 
- * All modes use the same infrastructure (MySQL, Redis, Mailpit, Tinybird)
- * started via docker compose. Ghost and gateway containers are created
- * dynamically per-worker for test isolation.
+ * All modes use the same core infrastructure (MySQL, Redis, Mailpit) started
+ * via docker compose. Analytics/Tinybird services are optional. Ghost and
+ * gateway containers are created dynamically per-worker for test isolation.
  */
 export class EnvironmentManager {
     private readonly mode: EnvironmentMode;

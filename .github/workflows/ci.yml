@@ -1263,14 +1263,63 @@ jobs:
       use-artifact: ${{ steps.strategy.outputs.use-artifact }}
 
   job_e2e_tests:
-    name: E2E Tests (${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
+    name: E2E Tests (${{ matrix.projectName }} ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
     runs-on: ubuntu-latest
     needs: [job_build_e2e_image, job_setup]
     strategy:
       fail-fast: true
       matrix:
-        shardIndex: [1, 2, 3, 4, 5, 6, 7, 8]
-        shardTotal: [8]
+        include:
+          - projectName: Main
+            projects: main
+            analytics: 'false'
+            shardIndex: 1
+            shardTotal: 8
+          - projectName: Main
+            projects: main
+            analytics: 'false'
+            shardIndex: 2
+            shardTotal: 8
+          - projectName: Main
+            projects: main
+            analytics: 'false'
+            shardIndex: 3
+            shardTotal: 8
+          - projectName: Main
+            projects: main
+            analytics: 'false'
+            shardIndex: 4
+            shardTotal: 8
+          - projectName: Main
+            projects: main
+            analytics: 'false'
+            shardIndex: 5
+            shardTotal: 8
+          - projectName: Main
+            projects: main
+            analytics: 'false'
+            shardIndex: 6
+            shardTotal: 8
+          - projectName: Main
+            projects: main
+            analytics: 'false'
+            shardIndex: 7
+            shardTotal: 8
+          - projectName: Main
+            projects: main
+            analytics: 'false'
+            shardIndex: 8
+            shardTotal: 8
+          - projectName: Analytics
+            projects: analytics
+            analytics: 'true'
+            shardIndex: 1
+            shardTotal: 2
+          - projectName: Analytics
+            projects: analytics
+            analytics: 'true'
+            shardIndex: 2
+            shardTotal: 2
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -1279,6 +1328,7 @@ jobs:
         uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4
 
       - name: Pull or build Tinybird CLI Image
+        if: matrix.analytics == 'true'
         run: |
           COMPOSE_IMAGE="${COMPOSE_PROJECT_NAME:-ghost-dev}-tb-cli"
           # Try pulling pre-built image from GHCR first (fast path)
@@ -1314,6 +1364,7 @@ jobs:
         env:
           GHOST_E2E_IMAGE: ${{ steps.load.outputs.image-tag }}
           GHOST_E2E_SKIP_IMAGE_BUILD: 'true'
+          GHOST_E2E_ANALYTICS: ${{ matrix.analytics }}
         run: bash ./e2e/scripts/prepare-ci-e2e-job.sh
 
       - name: Run e2e tests in Playwright container
@@ -1321,6 +1372,7 @@ jobs:
           TEST_WORKERS_COUNT: 1
           GHOST_E2E_MODE: build
           GHOST_E2E_IMAGE: ${{ steps.load.outputs.image-tag }}
+          E2E_PLAYWRIGHT_PROJECTS: ${{ matrix.projects }}
           E2E_SHARD_INDEX: ${{ matrix.shardIndex }}
           E2E_SHARD_TOTAL: ${{ matrix.shardTotal }}
           E2E_RETRIES: 2
@@ -1332,13 +1384,15 @@ jobs:
 
       - name: Stop E2E infra
         if: always()
+        env:
+          GHOST_E2E_ANALYTICS: ${{ matrix.analytics }}
         run: pnpm --filter @tryghost/e2e infra:down
 
       - name: Upload blob report to GitHub Actions Artifacts
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: blob-report-${{ matrix.shardIndex }}
+          name: blob-report-${{ matrix.projectName }}-${{ matrix.shardIndex }}
           path: e2e/blob-report
           retention-days: 1
 
@@ -1346,7 +1400,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: test-results-${{ matrix.shardIndex }}
+          name: test-results-${{ matrix.projectName }}-${{ matrix.shardIndex }}
           path: e2e/test-results
           retention-days: 7
 
