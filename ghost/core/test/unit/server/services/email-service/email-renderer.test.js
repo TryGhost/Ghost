@@ -2381,6 +2381,54 @@ describe('Email renderer', function () {
                 }
             });
         });
+
+        it('does not encode forward slashes as hex entities in HTML or plaintext', async function () {
+            // Refs https://github.com/TryGhost/Ghost/issues/26905
+            // i18next with escapeValue:true encodes / as &#x2F; in interpolated
+            // values, which appear as literal text in plaintext email parts.
+            const post = createModel(Object.assign({}, basePost, {
+                published_at: new Date(2026, 2, 19),
+                authors: [
+                    createModel({name: 'Author/Name'})
+                ]
+            }));
+            const newsletter = createModel({
+                header_image: null,
+                name: 'Test Newsletter',
+                show_badge: true,
+                feedback_enabled: true,
+                show_share_button: true,
+                show_post_title_section: true
+            });
+            const segment = null;
+            const options = {};
+
+            const response = await emailRenderer.renderBody(
+                post,
+                newsletter,
+                segment,
+                options
+            );
+
+            // Author name and published date must appear with raw characters
+            // and free of slash-related HTML entities.
+            // Compute the expected date the same way the email renderer does.
+            const {DateTime} = require('luxon');
+            const expectedDate = DateTime.fromJSDate(new Date(2026, 2, 19)).setZone('Etc/UTC').setLocale('en-gb').toLocaleString({
+                year: 'numeric', month: 'short', day: 'numeric'
+            });
+
+            const slashEntities = ['&#x2F;', '&#X2F;', '&#x2f;', '&#47;'];
+            for (const entity of slashEntities) {
+                assert.equal(response.html.includes(entity), false, `HTML should not contain ${entity}`);
+                assert.equal(response.plaintext.includes(entity), false, `Plaintext should not contain ${entity}`);
+            }
+
+            assert.equal(response.html.includes('Author/Name'), true, 'HTML should contain author name with raw slash');
+            assert.equal(response.html.includes(expectedDate), true, 'HTML should contain formatted date');
+            assert.equal(response.plaintext.includes('Author/Name'), true, 'Plaintext should contain author name with raw slash');
+            assert.equal(response.plaintext.includes(expectedDate), true, 'Plaintext should contain formatted date');
+        });
     });
 
     describe('getTemplateData', function () {

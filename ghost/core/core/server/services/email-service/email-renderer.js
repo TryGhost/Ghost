@@ -567,15 +567,23 @@ class EmailRenderer {
 
         // TODO: normalizeReplacementStrings (replace unsupported replacement strings)
 
-        // Convert HTML to plaintext
-        const plaintext = htmlToPlaintext.email(html);
-
         // Fix any unsupported chars in Outlook
         html = html.replace(/&apos;/g, '&#39;');
         html = html.replace(/→/g, '&rarr;');
         html = html.replace(/–/g, '&ndash;');
         html = html.replace(/“/g, '&ldquo;');
         html = html.replace(/”/g, '&rdquo;');
+
+        // Fix unnecessary hex-entity encoding of forward slashes that may
+        // be introduced by cheerio/juice serialization. These entities are
+        // invalid in text/plain email parts and can appear as literal text
+        // in inbox previews or plain-text email clients.
+        // Refs https://github.com/TryGhost/Ghost/issues/26905
+        html = html.replace(/&#[xX]2[fF];/g, '/');
+
+        // Convert HTML to plaintext (must run after entity fixes above so the
+        // plaintext version also contains clean, decoded text)
+        const plaintext = htmlToPlaintext.email(html);
 
         return {
             html,

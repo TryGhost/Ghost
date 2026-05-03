@@ -32,6 +32,11 @@ const finalizeHtml = (html) => {
     html = html.replace(/“/g, '&ldquo;');
     html = html.replace(/”/g, '&rdquo;');
 
+    // Fix unnecessary hex-entity encoding of forward slashes that may
+    // be introduced by cheerio/juice serialization.
+    // Refs https://github.com/TryGhost/Ghost/issues/26905
+    html = html.replace(/&#[xX]2[fF];/g, '/');
+
     return html;
 };
 
