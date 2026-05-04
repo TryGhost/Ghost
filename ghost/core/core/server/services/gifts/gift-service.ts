@@ -6,6 +6,11 @@ import type {GiftRepository} from './gift-repository';
 import tpl from '@tryghost/tpl';
 import {GIFT_REMINDER_FLOOR_DAYS, GIFT_REMINDER_LEAD_DAYS} from './constants';
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../member-welcome-emails/constants') as {
+    MEMBER_WELCOME_EMAIL_SLUGS: {free: string; paid: string};
+};
+
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const GIFT_REMINDER_LEAD_MS = GIFT_REMINDER_LEAD_DAYS * MS_PER_DAY;
 const GIFT_REMINDER_FLOOR_MS = GIFT_REMINDER_FLOOR_DAYS * MS_PER_DAY;
@@ -37,6 +42,7 @@ interface MemberModel {
 interface MemberRepository {
     get(filter: Record<string, unknown>, options?: Record<string, unknown>): Promise<MemberModel | null>;
     update(data: Record<string, unknown>, options?: Record<string, unknown>): Promise<unknown>;
+    enqueueWelcomeEmailRun(memberId: string, slug: string, options?: Record<string, unknown>): Promise<unknown>;
 }
 
 type Tier = {
@@ -324,6 +330,9 @@ export class GiftService {
             }, {id: memberId, transacting});
 
             await this.deps.giftRepository.update(redeemed, {transacting});
+
+            // Gift members receive the paid welcome email, as they receive access to paid content
+            await this.deps.memberRepository.enqueueWelcomeEmailRun(memberId, MEMBER_WELCOME_EMAIL_SLUGS.paid, {transacting});
 
             return {redeemed, member};
         };
