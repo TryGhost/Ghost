@@ -119,6 +119,8 @@
   "devDependencies": {
     "@actions/core": "3.0.0",
     "@playwright/test": "1.59.1",
+    "@secretlint/secretlint-rule-pattern": "12.3.1",
+    "@secretlint/secretlint-rule-preset-recommend": "12.3.1",
     "chalk": "4.1.2",
     "chokidar": "3.6.0",
     "eslint": "catalog:",
@@ -130,6 +132,7 @@
     "lint-staged": "16.4.0",
     "nx": "22.0.4",
     "rimraf": "6.1.3",
+    "secretlint": "12.3.1",
     "semver": "7.7.4",
     "typescript": "5.9.3"
   },
