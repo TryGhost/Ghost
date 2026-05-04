@@ -17,7 +17,7 @@ const parseEditingThemeRoute = (path: string): {themeName: string | null; isInva
 
     const encodedThemeName = path.slice('theme/edit/'.length).split('?')[0];
 
-    if (!encodedThemeName) {
+    if (!encodedThemeName || encodedThemeName.includes('/')) {
         return {
             themeName: null,
             isInvalid: true
@@ -25,8 +25,17 @@ const parseEditingThemeRoute = (path: string): {themeName: string | null; isInva
     }
 
     try {
+        const themeName = decodeURIComponent(encodedThemeName);
+
+        if (!themeName || themeName.includes('/')) {
+            return {
+                themeName: null,
+                isInvalid: true
+            };
+        }
+
         return {
-            themeName: decodeURIComponent(encodedThemeName),
+            themeName,
             isInvalid: false
         };
     } catch {

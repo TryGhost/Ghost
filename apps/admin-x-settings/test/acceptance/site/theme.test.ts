@@ -611,6 +611,23 @@ test.describe('Theme settings', async () => {
         expect(pageErrors).toEqual([]);
     });
 
+    test('Redirects encoded-slash theme editor routes back to theme settings', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes}
+        }});
+
+        const pageErrors: string[] = [];
+        page.on('pageerror', error => pageErrors.push(error.message));
+
+        await page.goto('/#/settings/theme/edit/%2Fedition');
+
+        await expect(page).toHaveURL(/#\/settings\/theme$/);
+        await expect(page.getByTestId('theme')).toBeVisible();
+        await expect(page.getByTestId('theme-code-editor-modal')).not.toBeVisible();
+        expect(pageErrors).toEqual([]);
+    });
+
     test('Allows selecting a non-editable file and shows the browser-edit message', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,
