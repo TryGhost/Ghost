@@ -386,9 +386,19 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
     useEffect(() => {
         let isMounted = true;
 
+        const resetLoadedTheme = () => {
+            setCurrentThemeName(themeName);
+            setBaseFiles({});
+            setCurrentFiles({});
+            setRootPrefix('');
+            setSelectedNode(null);
+            setExpandedDirectories(new Set(['']));
+        };
+
         const loadTheme = async () => {
             setIsLoading(true);
             setLoadError(null);
+            resetLoadedTheme();
 
             try {
                 const {apiRoot} = getGhostPaths();

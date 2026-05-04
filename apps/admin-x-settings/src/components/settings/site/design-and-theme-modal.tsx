@@ -7,14 +7,34 @@ import {LimitModal} from '@tryghost/admin-x-design-system';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {useCheckThemeLimitError} from '../../../hooks/use-check-theme-limit-error';
 
-const getEditingThemeName = (path: string) => {
+const parseEditingThemeRoute = (path: string): {themeName: string | null; isInvalid: boolean} => {
     if (!path.startsWith('theme/edit/')) {
-        return null;
+        return {
+            themeName: null,
+            isInvalid: false
+        };
     }
 
-    const encodedThemeName = path.replace('theme/edit/', '').split('?')[0];
+    const encodedThemeName = path.slice('theme/edit/'.length).split('?')[0];
 
-    return encodedThemeName ? decodeURIComponent(encodedThemeName) : null;
+    if (!encodedThemeName) {
+        return {
+            themeName: null,
+            isInvalid: true
+        };
+    }
+
+    try {
+        return {
+            themeName: decodeURIComponent(encodedThemeName),
+            isInvalid: false
+        };
+    } catch {
+        return {
+            themeName: null,
+            isInvalid: true
+        };
+    }
 };
 
 const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
@@ -29,7 +49,7 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
     const {checkThemeLimitError, isThemeLimitCheckReady, noThemeChangesAllowed, isThemeLimited} = useCheckThemeLimitError();
     const [installationAllowed, setInstallationAllowed] = useState<boolean | null>(null);
     const [hasCheckedInstallation, setHasCheckedInstallation] = useState(false);
-    const editingThemeName = getEditingThemeName(currentPath);
+    const {themeName: editingThemeName, isInvalid: hasInvalidEditingThemeRoute} = parseEditingThemeRoute(currentPath);
 
     const showThemeLimitModal = useCallback((error: string) => {
         NiceModal.show(LimitModal, {
@@ -76,6 +96,15 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
             setIsCheckingInstallation(false);
         }
     }, [currentPath]);
+
+    useEffect(() => {
+        if (!hasInvalidEditingThemeRoute) {
+            return;
+        }
+
+        modal.remove();
+        updateRoute('theme');
+    }, [hasInvalidEditingThemeRoute, modal, updateRoute]);
 
     useEffect(() => {
         let isCancelled = false;
@@ -260,14 +289,15 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
 
         // Installation is allowed, render the ChangeThemeModal with the source and ref
         return <ChangeThemeModal source={source} themeRef={ref} />;
-    } else if (editingThemeName) {
-        if (isCheckingEditorLimit || editorThemeError) {
+    } else if (currentPath.startsWith('theme/edit/')) {
+        if (hasInvalidEditingThemeRoute || !editingThemeName || isCheckingEditorLimit || editorThemeError) {
             return null;
         }
 
         return <ThemeCodeEditorModal themeName={editingThemeName} />;
     } else {
         modal.remove();
+        return null;
     }
 };
 

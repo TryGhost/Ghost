@@ -1,3 +1,4 @@
+import JSZip from 'jszip';
 import path from 'path';
 import {expect, test} from '@playwright/test';
 import {expectExternalNavigate, globalDataRequests, limitRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
@@ -30,6 +31,14 @@ const themeDownloadRequest = (themeName: string) => ({
     rawResponse: themeEditorZip,
     responseHeaders: {'content-type': 'application/zip'}
 });
+
+const createArchiveBuffer = async (build: (zip: JSZip) => void) => {
+    const zip = new JSZip();
+
+    build(zip);
+
+    return Buffer.from(await zip.generateAsync({type: 'uint8array'}));
+};
 
 async function openChangeThemeModal(page: Page) {
     await page.goto('/#/settings/theme');
@@ -585,6 +594,23 @@ test.describe('Theme settings', async () => {
         await expect(page.getByTestId('theme-code-editor-modal')).not.toBeVisible();
     });
 
+    test('Redirects malformed theme editor routes back to theme settings', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes}
+        }});
+
+        const pageErrors: string[] = [];
+        page.on('pageerror', error => pageErrors.push(error.message));
+
+        await page.goto('/#/settings/theme/edit/%E0%A4%A');
+
+        await expect(page).toHaveURL(/#\/settings\/theme$/);
+        await expect(page.getByTestId('theme')).toBeVisible();
+        await expect(page.getByTestId('theme-code-editor-modal')).not.toBeVisible();
+        expect(pageErrors).toEqual([]);
+    });
+
     test('Allows selecting a non-editable file and shows the browser-edit message', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,
@@ -598,6 +624,34 @@ test.describe('Theme settings', async () => {
 
         await expect(editorModal).toContainText('This file cannot be edited in the browser.');
         await expect(editorModal.locator('.cm-editor')).toHaveCount(0);
+    });
+
+    test('Shows a controlled error when the downloaded theme archive exceeds editor limits', async ({page}) => {
+        const oversizedThemeZip = await createArchiveBuffer((zip) => {
+            for (let index = 0; index <= 1000; index += 1) {
+                zip.file(`theme/partials/file-${index}.hbs`, `{{! file ${index} }}`);
+            }
+        });
+
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes},
+            downloadTheme: {
+                method: 'GET',
+                path: '/themes/edition/download/',
+                response: '',
+                rawResponse: oversizedThemeZip,
+                responseHeaders: {'content-type': 'application/zip'}
+            }
+        }});
+
+        const editorModal = await openInstalledThemeEditor(page, 'edition');
+
+        await expect(editorModal).toContainText('This theme archive contains too many files for the browser editor');
+        await expect(editorModal.getByRole('button', {name: 'Save'})).toBeEnabled();
+        await editorModal.getByRole('button', {name: 'Save'}).click();
+        await expect(page.getByTestId('toast-info')).toHaveText(/No changes to save/i);
+        await expect(editorModal).toContainText('Select a file from the tree to start editing.');
     });
 
     test('Theme install route works without limits', async ({page}) => {
