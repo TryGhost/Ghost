@@ -81,6 +81,14 @@ const Comment = ghostBookshelf.Model.extend({
                 const subquery = '(SELECT COUNT(*) FROM comment_reports WHERE comment_reports.comment_id = comments.id)';
                 qb.whereRaw(`${subquery} ${options.reportCount.op} ?`, [options.reportCount.value]);
             }
+
+            if (options.pinnedFirst) {
+                if (options.isAdmin) {
+                    qb.orderBy('comments.pinned_at', 'DESC');
+                } else {
+                    qb.orderByRaw('CASE WHEN comments.status = ? THEN comments.pinned_at END DESC', ['published']);
+                }
+            }
         });
     },
 
@@ -263,7 +271,7 @@ const Comment = ghostBookshelf.Model.extend({
         // instead of the previous N+1 per-model model.load() loop
         if (result.data.length > 0 && relationsToLoadInBatch.length > 0) {
             const collection = ghostBookshelf.Collection.forge(result.data, {model: this});
-            await collection.load(relationsToLoadInBatch, _.omit(options, 'withRelated'));
+            await collection.load(relationsToLoadInBatch, _.omit(options, 'withRelated', 'columns', 'selectRaw'));
         }
 
         return result;
@@ -345,6 +353,8 @@ const Comment = ghostBookshelf.Model.extend({
         options.push('isAdmin');
         options.push('browseAll');
         options.push('reportCount');
+        options.push('pinnedFirst');
+        options.push('selectRaw');
 
         return options;
     }

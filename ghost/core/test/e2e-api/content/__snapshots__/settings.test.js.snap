@@ -9,7 +9,7 @@ Object {
     "bluesky": null,
     "codeinjection_foot": null,
     "codeinjection_head": null,
-    "comments_enabled": "off",
+    "comments_enabled": "all",
     "cover_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
     "default_email_address": "noreply@127.0.0.1",
     "description": "Thoughts, stories and ideas",

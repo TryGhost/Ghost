@@ -982,8 +982,12 @@ module.exports = {
         status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'published', validations: {isIn: [['published', 'hidden', 'deleted']]}},
         html: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         edited_at: {type: 'dateTime', nullable: true},
+        pinned_at: {type: 'dateTime', nullable: true},
         created_at: {type: 'dateTime', nullable: false},
-        updated_at: {type: 'dateTime', nullable: false}
+        updated_at: {type: 'dateTime', nullable: false},
+        '@@INDEXES@@': [
+            ['post_id', 'parent_id', 'pinned_at']
+        ]
     },
     comment_likes: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},

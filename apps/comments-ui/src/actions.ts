@@ -214,6 +214,24 @@ async function showComment({state, api, data: comment}: {state: EditableAppConte
     };
 }
 
+async function pinComment({state, data: comment, dispatchAction}: {state: EditableAppContext, data: {id: string}, dispatchAction: DispatchActionType}) {
+    if (state.adminApi) {
+        await state.adminApi.pinComment({id: comment.id});
+        dispatchAction('setOrder', {order: state.order});
+    }
+
+    return null;
+}
+
+async function unpinComment({state, data: comment, dispatchAction}: {state: EditableAppContext, data: {id: string}, dispatchAction: DispatchActionType}) {
+    if (state.adminApi) {
+        await state.adminApi.unpinComment({id: comment.id});
+        dispatchAction('setOrder', {order: state.order});
+    }
+
+    return null;
+}
+
 async function updateCommentLikeState({state, data: comment}: {state: EditableAppContext, data: {id: string, liked: boolean}}) {
     return {
         comments: state.comments.map((c) => {
@@ -501,6 +519,8 @@ export const Actions = {
     addComment,
     editComment,
     hideComment,
+    pinComment,
+    unpinComment,
     deleteComment,
     showComment,
     likeComment,

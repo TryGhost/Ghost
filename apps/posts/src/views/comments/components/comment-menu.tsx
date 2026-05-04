@@ -1,5 +1,5 @@
 import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger} from '@tryghost/shade/components';
-import {Comment} from '@tryghost/admin-x-framework/api/comments';
+import {Comment, usePinComment, useUnpinComment} from '@tryghost/admin-x-framework/api/comments';
 import {DisableCommentingDialog} from './disable-commenting-dialog';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {useDisableMemberCommenting, useEnableMemberCommenting} from '@tryghost/admin-x-framework/api/members';
@@ -14,12 +14,15 @@ export function CommentMenu({
 }: CommentMenuProps) {
     const {mutate: disableCommenting} = useDisableMemberCommenting();
     const {mutate: enableCommenting} = useEnableMemberCommenting();
+    const {mutate: pinComment} = usePinComment();
+    const {mutate: unpinComment} = useUnpinComment();
     const [disableDialogOpen, setDisableDialogOpen] = useState(false);
 
     const {id: commentId, post, member} = comment;
     const postUrl = post?.url;
     const memberId = member?.id;
     const canComment = member?.can_comment;
+    const canPin = !comment.parent_id && comment.status !== 'deleted';
 
     const handleDisableCommenting = (hideComments: boolean) => {
         if (memberId) {
@@ -67,6 +70,19 @@ export function CommentMenu({
                             </a>
                         </DropdownMenuItem>
 
+                    )}
+                    {canPin && (
+                        comment.pinned ? (
+                            <DropdownMenuItem onClick={() => unpinComment({id: commentId})}>
+                                <LucideIcon.PinOff className="size-4" />
+                                Unpin comment
+                            </DropdownMenuItem>
+                        ) : (
+                            <DropdownMenuItem onClick={() => pinComment({id: commentId})}>
+                                <LucideIcon.Pin className="size-4" />
+                                Pin comment
+                            </DropdownMenuItem>
+                        )
                     )}
                     {memberId && (
                         canComment !== false ? (

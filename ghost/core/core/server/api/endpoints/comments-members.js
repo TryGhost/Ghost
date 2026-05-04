@@ -60,7 +60,8 @@ const controller = {
             cacheInvalidate: false
         },
         options: [
-            'include'
+            'include',
+            'fields'
         ],
         data: [
             'id',
