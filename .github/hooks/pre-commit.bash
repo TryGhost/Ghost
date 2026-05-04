@@ -24,14 +24,25 @@ scan_staged_secrets() {
     local file
     local files_scanned=0
     local scan_status=0
+    local tmpfile
+
+    if ! tmpfile=$(mktemp); then
+        echo -e "${red}Could not create temp file for secret scanning${no_color}"
+        return 1
+    fi
 
     echo -e "Scanning staged files for secrets ${grey}(pre-commit hook)${no_color} "
 
     while IFS= read -r -d '' file; do
-        if git show ":$file" | LC_ALL=C grep -Iq .; then
+        if ! git show ":$file" > "$tmpfile"; then
+            scan_status=1
+            continue
+        fi
+
+        if LC_ALL=C grep -Iq . "$tmpfile"; then
             files_scanned=$((files_scanned + 1))
 
-            if ! git show ":$file" | pnpm exec secretlint --format=compact --stdinFileName="$file"; then
+            if ! pnpm exec secretlint --format=compact --stdinFileName="$file" < "$tmpfile"; then
                 scan_status=1
             fi
         fi
@@ -40,6 +51,8 @@ scan_staged_secrets() {
     if [ $files_scanned -eq 0 ]; then
         echo "No staged text files to scan, continuing..."
     fi
+
+    rm -f "$tmpfile"
 
     return $scan_status
 }
