@@ -100,24 +100,30 @@ export default class MagicLinkPage extends React.Component {
                 withOTC: t('If you have an account, an email has been sent to {submittedEmailOrInbox}. Click the link inside or enter your code below.', {submittedEmailOrInbox}),
                 withoutOTC: t('If you have an account, a login link has been sent to your inbox. If it doesn\'t arrive in 3 minutes, be sure to check your spam folder.')
             },
-            signup: t('To complete signup, click the confirmation link in your inbox. If it doesn\'t arrive within 3 minutes, check your spam folder!')
+            signup: t('To complete signup, click the confirmation link in your inbox. If it doesn\'t arrive within 3 minutes, check your spam folder!'),
+            gift: t('Click the confirmation link in your inbox to finish redeeming your membership. If it doesn\'t arrive within 3 minutes, check your spam folder.')
         };
     }
 
     /**
      * Gets the appropriate translated description based on page context
      * @param {Object} params - Configuration object
-     * @param {string} params.lastPage - The previous page ('signin' or 'signup')
+     * @param {string} params.lastPage - The previous page ('signin', 'signup', or 'gift')
      * @param {boolean} params.otcRef - Whether one-time code is being used
      * @param {string} params.submittedEmailOrInbox - The email address or 'your inbox' fallback
      * @returns {string} The translated description
      */
     getTranslatedDescription({lastPage, otcRef, submittedEmailOrInbox}) {
         const descriptionConfig = this.getDescriptionConfig(submittedEmailOrInbox);
-        const normalizedPage = (lastPage === 'signup' || lastPage === 'signin') ? lastPage : 'signin';
+        const allowedPages = ['signup', 'signin', 'gift'];
+        const normalizedPage = allowedPages.includes(lastPage) ? lastPage : 'signin';
 
         if (normalizedPage === 'signup') {
             return descriptionConfig.signup;
+        }
+
+        if (normalizedPage === 'gift') {
+            return descriptionConfig.gift;
         }
 
         return otcRef ? descriptionConfig.signin.withOTC : descriptionConfig.signin.withoutOTC;
