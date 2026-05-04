@@ -23,6 +23,8 @@
 .gh-member-avatar-image {
     display: block;
     position: absolute;
+    display: block;
+    position: absolute;
     top: -1px;
     right: -1px;
     bottom: -1px;
@@ -81,6 +83,10 @@ p.gh-members-list-email {
 
 /* Member details
 /* ----------------------------------------- */
+
+label[for="member-description"] + p {
+    margin: 0 0 4px;
+}
 
 .gh-member-settings .gh-main-section.columns-3 {
     grid-column-gap: 48px;
@@ -263,10 +269,142 @@ textarea.gh-member-details-textarea {
     height: 85px;
 }
 
+.gh-member-info-icon {
+    width: 18px;
+    height: 18px;
+}
+
+.gh-member-email-stats {
+    font-size: 3.6rem;
+    color: var(--darkgrey);
+    line-height: 4.0rem;
+}
+
+.gh-member-header-stripeinfo {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 24px;
+    margin-top: -8px;
+}
+
+.gh-member-stripe-info {
+    margin-top: 24px;
+}
+
+.gh-member-stripe-info p {
+    font-size: 1.25rem;
+    font-weight: 400;
+    margin: 4px 0 0;
+}
+
+.gh-member-stripe-table {
+    width: 100%;
+    margin: 6px 0 12px;
+}
+
+@media (max-width: 1160px) {
+    .gh-member-stripe-table {
+        max-width: 520px;
+    }
+}
+
+.gh-member-stripe-table td {
+    vertical-align: top;
+    font-size: 1.3rem;
+}
+
+.gh-member-stripe-id,
+.gh-member-stripe-email {
+    display: inline-block;
+    word-break: break-all;
+}
+
+.gh-member-stripe-label {
+    color: var(--midgrey-d1);
+    white-space: nowrap;
+    padding: 5px 12px 5px 0;
+    width: 170px;
+}
+
+.gh-member-stripe-data {
+    padding: 5px 12px 5px 0;
+}
+
+@media (max-width: 1400px) and (min-width: 1160px) {
+    .gh-member-stripe-row {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .gh-member-stripe-label {
+        padding-bottom: 0;
+        font-weight: 500;
+    }
+
+    .gh-member-stripe-data {
+        padding-top: 0;
+    }
+    .gh-members-comped {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .gh-members-comped-switch {
+        margin-top: 2rem;
+    }
+}
+
+.gh-members-subscribed-checkbox,
+.gh-members-comped-checkbox {
+    max-width: 100%;
+    margin-top: 24px;
+    margin-bottom: 0;
+}
+
 .gh-new-member-avatar {
     background: var(--midlightgrey-l1);
     width: 81px;
     height: 81px;
+}
+
+.gh-member-cancels-on-label {
+    display: inline-block;
+    background: color-mod(var(--pink) a(10%));
+    border-radius: 4px;
+    padding: 0px 5px;
+    margin: -2px 0 -2px -5px;
+    color: var(--pink);
+    font-size: 1.3rem;
+    font-weight: 400;
+}
+
+.gh-member-stripe-status {
+    display: inline-block;
+    text-transform: capitalize;
+    margin-right: 6px;
+}
+
+.gh-member-btn-contsub {
+    border-color: var(--blue);
+    box-shadow: none;
+}
+
+.gh-member-btn-contsub:hover {
+    border-color: color-mod(var(--blue) l(-7%) saturation(-10%));
+}
+
+.gh-member-btn-contsub span {
+    color: var(--blue);
+}
+
+.gh-member-btn-contsub:hover span {
+    color: color-mod(var(--blue) l(-7%) saturation(-10%));
+}
+
+.gh-member-internal-info,
+.gh-member-stripe {
+    float: right;
 }
 
 @media (max-width: 1160px) {
@@ -381,6 +519,13 @@ textarea.gh-member-details-textarea {
     stroke-width: 1px;
 }
 
+.gh-member-newsletters {
+    padding: 16px 20px;
+    background: var(--main-bg-color);
+    box-shadow: 0 1px 4px -1px rgb(0 0 0 / 10%);
+    border-radius: 3px;
+}
+
 .gh-member-newsletter-row {
     display: flex;
     align-items: center;
@@ -466,9 +611,55 @@ textarea.gh-member-details-textarea {
     padding: 0;
 }
 
+.gh-member-feed-activity {
+    display: flex;
+    align-items: center;
+    padding: 12px 0;
+}
+
+.gh-member-feed-activity svg {
+    width: 16px;
+    margin-right: 1rem;
+}
+
 .gh-member-feed-row a {
     font-weight: 600;
     font-size: 14px;
+    color: var(--darkgrey);
+}
+
+.gh-member-feed-title {
+    display: table-cell;
+    padding: 10px 0;
+    line-height: 1.4em;
+    vertical-align: middle;
+    color: var(--darkgrey);
+    text-align: left;
+    font-weight: 500;
+}
+
+.gh-member-feed-title:hover {
+    color: var(--black);
+}
+
+.gh-member-feed-title a {
+    color: var(--darkgrey);
+}
+
+.gh-member-feed-title a:hover {
+    color: var(--black);
+}
+
+.gh-member-feed-date {
+    margin-left: auto;
+    padding: 10px 0 10px 16px;
+    color: var(--midgrey);
+    font-size: 1.3rem;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.gh-member-feed-row:hover .gh-member-feed-date {
     color: var(--darkgrey);
 }
 
@@ -543,6 +734,779 @@ textarea.gh-member-details-textarea {
     color: #269a34;
 }
 
+
+/* Email newsletter design settings
+/* -------------------------------------------------------- */
+
+.gh-email-design-color-picker .gh-btn-group  {
+    vertical-align: middle;
+
+    /* Required to remove glitches in mouseover during animations */
+    overflow: hidden;
+    padding: 4px;
+    margin-right: -4px;
+    background: none;
+}
+
+.gh-btn-group .gh-email-design-color {
+    display: block;
+    opacity: 1;
+    position: relative;
+    z-index: 2;
+    width: 20px;
+    height: 20px;
+    margin: 0 0 0 8px;
+    border: 1px solid var(--lightgrey-l1);
+    border-radius: 999px;
+}
+
+.gh-btn-group .gh-email-design-color.gh-btn-group-selected {
+    outline: 2px solid var(--green);
+}
+
+.gh-btn-group .gh-email-design-color.gh-btn-group-selected.custom {
+    outline: none;
+}
+
+.gh-btn-group .gh-email-design-color > div {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 999px;
+    z-index: 1;
+}
+
+.gh-btn-group .gh-email-design-color.custom {
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.gh-btn-group .gh-email-design-color.gh-btn-group-selected.custom > div {
+    top: 1px;
+    left: 1px;
+    right: 1px;
+    bottom: 1px;
+    border: 1px solid var(--white);
+}
+
+.gh-btn-group .gh-email-design-color.custom::before {
+    /* Always visible, even when selected */
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: conic-gradient(yellow, red, magenta, blue, aqua, lime, yellow) !important;
+    border: none;
+    border-radius: 999px;
+    transition: all .15s ease-in-out;
+    transition-delay: .03s;
+}
+
+.gh-btn-group .gh-email-design-color.transparent {
+    background: transparent;
+    box-shadow: inset 0 0 0 1px var(--lightgrey);
+}
+
+.gh-email-design-color.transparent::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    right: 0;
+    z-index: 1;
+    border-bottom: 1px solid var(--red);
+    width: 100%;
+    transform: rotate(45deg);
+    transform-origin: left;
+}
+
+.gh-btn-group .gh-email-design-color.white {
+    background: var(--white) !important;
+}
+
+.gh-btn-group .gh-email-design-color.black {
+    background: var(--black) !important;
+}
+
+.gh-btn-group .gh-email-design-color.accent {
+    background: var(--accent-color) !important;
+}
+
+.gh-email-design-color.custom svg {
+    width: 10px;
+    height: 10px;
+    color: var(--white);
+}
+
+.gh-email-design-color.custom input {
+    visibility: hidden;
+}
+
+.gh-email-design-alignment {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: -4px 0 0 0;
+}
+
+.gh-email-design-typography-wrapper {
+    display: flex;
+}
+
+.gh-email-design-typography {
+    width: 100%;
+}
+
+.gh-email-design-typography-wrapper.header .ember-power-select-status-icon {
+    right: 16px !important;
+}
+
+.gh-email-design-typography-wrapper.header .gh-btn-group {
+    background: var(--whitegrey);
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.gh-email-design-typography .gh-btn-group.icons .gh-btn {
+    margin: 4px;
+}
+
+.gh-email-design-typography .gh-radio {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0;
+    padding: 0;
+    margin-bottom: 12px;
+}
+
+.gh-email-design-typography .gh-radio-content {
+    border: 1px solid var(--whitegrey);
+    margin: 0 -32px 0 0;
+}
+
+.gh-email-design-typography .active .gh-radio-content {
+    border: 1px solid transparent;
+    box-shadow: 0px 0px 0px 2px var(--green);
+}
+
+.gh-email-design-typography .gh-radio-button {
+    margin-right: 12px;
+    opacity: 0;
+}
+
+.gh-email-design-typography .gh-radio-label {
+    padding: 8px 4px;
+    display: flex;
+    align-items: center;
+}
+
+.gh-email-design-typography .gh-radio-label .sample {
+    display: block;
+    font-size: 3.2rem;
+    margin-right: 10px;
+    font-weight: 600;
+    width: 44px;
+    text-align: center;
+}
+
+.gh-email-design-typography .gh-radio-label .description h4 {
+    margin: 0;
+    padding: 0;
+    line-height: 1.4em;
+    font-size: 1.3rem;
+    font-weight: 400;
+}
+
+.gh-email-design-typography .gh-radio-label.serif .description h4 {
+    letter-spacing: .4px;
+}
+
+.gh-email-design-typography .gh-radio-label.serif .description h4,
+.gh-email-design-typography .gh-radio-content.serif .description h4 {
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-size: 1.3rem;
+}
+
+.gh-email-design-typography .gh-radio-label .description p {
+    font-size: 1.2rem !important;
+    margin: 0;
+    padding: 0;
+}
+
+.gh-email-design-typography .gh-radio-label.serif .description p {
+    font-size: 1.25rem !important;
+    margin: 0;
+    padding: 0;
+}
+.gh-members-emailsettings-footer-input {
+    height: 120px;
+    padding: 2px 12px 6px 12px;
+    border: 1px solid var(--whitegrey-d1);
+    background: var(--white);
+    border-radius: 4px;
+    word-break: break-word;
+}
+
+.gh-members-emailsettings-footer-input p {
+    height: 108px;
+    overflow-y: auto;
+}
+
+.gh-members-emailsettings-footer-input p {
+    color: var(--darkgrey);
+    font-size: 1.4rem !important;
+    line-height: 1.5em !important;
+}
+
+.gh-members-emailsettings-footer {
+    padding: 0;
+    margin: 0;
+}
+
+.gh-members-emailsettings-footer .form-group {
+    align-items: flex-start;
+}
+
+.gh-members-emailsettings-promotelabel {
+    display: flex;
+    align-items: flex-start;
+}
+
+.gh-members-emailsettings-promotelabel p {
+    margin-right: 20px;
+}
+
+.gh-members-emailsettings-promotelabel svg {
+    width: 20px;
+    margin-right: 8px;
+}
+
+.gh-members-emailsettings-promotelabel svg path {
+    stroke: var(--red);
+}
+
+.gh-members-emailsettings-footer .for-switch {
+    margin-top: -2px;
+}
+
+.gh-members-emailpreview {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--white);
+    height: 100vh;
+    padding: 32px;
+    overflow-y: auto;
+}
+
+.gh-members-emailpreview:after {
+    content: "\00a0";
+    display: block;
+    height: 32px;
+    width: 100%;
+}
+
+.gh-members-emailpreview-container {
+    background: #fff;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+    padding: 0;
+    margin: 32px auto;
+    box-shadow:
+        0 0 0 1px rgba(0,0,0,0.02),
+        0 2.8px 2.2px rgba(0, 0, 0, 0.02),
+        0 6.7px 5.3px rgba(0, 0, 0, 0.028),
+        0 12.5px 10px rgba(0, 0, 0, 0.035),
+        0 22.3px 17.9px rgba(0, 0, 0, 0.042),
+        0 41.8px 33.4px rgba(0, 0, 0, 0.05),
+        0 100px 80px rgba(0, 0, 0, 0.07);
+    ;
+    color: var(--blackgrey);
+    cursor: auto;
+    width: 100%;
+    max-width: 700px;
+}
+
+.gh-members-emailpreview-labs .gh-members-emailpreview-container {
+    max-width: 740px;
+}
+
+.gh-members-emailpreview-container a {
+    color: var(--midgrey);
+    text-decoration: underline;
+    pointer-events: none;
+    cursor: auto;
+}
+
+.gh-members-emailpreview-faux {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin: 0;
+    height: 78px;
+    padding: 0 24px;
+    border-bottom: 1px solid var(--whitegrey);
+    background: var(--white);
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+}
+
+.gh-members-emailpreview-faux p {
+    margin: 0;
+    padding: 0;
+    color: var(--midlightgrey);
+}
+
+.gh-members-emailpreview-faux .strong {
+    font-size: 1.5rem;
+    letter-spacing: 0;
+    font-weight: 500;
+    color: var(--darkgrey);
+}
+
+.gh-members-emailpreview-faux .dark {
+    color: var(--darkgrey);
+}
+
+.gh-members-emailpreview-contents {
+    padding: 0 50px;
+    margin: 0 20px;
+}
+
+.gh-members-emailpreview-labs .gh-members-emailpreview-contents {
+    max-width: 672px;
+    margin: 0 auto;
+    padding: 16px;
+}
+
+.gh-members-emailpreview-border {
+    padding: 0 40px;
+    border: 1px solid transparent;
+}
+
+.gh-members-emailpreview-header-image img {
+    display: block;
+    margin: 24px auto 0;
+}
+
+.gh-members-emailpreview-header-image + .gh-members-emailpreview-featureimage {
+    margin-top: 24px;
+}
+
+.gh-members-emailpreview-featureimage:first-child {
+    margin-top: 24px;
+}
+
+.gh-members-emailpreview-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: -10px;
+    padding: 50px 0 0;
+}
+
+.gh-members-emailpreview-header.bordered {
+    border-bottom: 1px solid #e5eff5;
+    padding: 50px 0;
+}
+
+.gh-members-emailpreview-header.hide {
+    display: none;
+}
+
+.gh-members-emailpreview-header img {
+    width: 48px;
+    height: 48px;
+    border-radius: 4px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.gh-members-emailpreview-header h4 {
+    text-align: center;
+    font-size: 1.6rem;
+    letter-spacing: -0.1px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #15212A;
+}
+
+.gh-members-emailpreview-header h5 {
+    color: var(--midgrey-l1);
+    font-size: 1.4rem;
+    font-weight: 400;
+}
+
+.gh-members-emailpreview-title {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 50px 0 40px;
+}
+
+.gh-members-emailpreview-title-left {
+    align-items: flex-start;
+}
+
+.gh-members-emailpreview-title h2 {
+    margin: 0;
+    padding: 0 0 10px;
+    color: #15212A;
+    font-size: 4.2rem;
+    line-height: 1.1em;
+    font-weight: 700;
+    text-align: center;
+}
+
+.gh-members-emailpreview-title-left h2 {
+    text-align: left;
+}
+
+.gh-members-emailpreview-title h2 {
+    padding: 0 0 16px;
+}
+
+.gh-members-emailpreview-meta {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.gh-members-emailpreview-meta.center-aligned {
+    flex-direction: column;
+}
+
+.gh-members-emailpreview-meta.center-aligned .gh-members-emailpreview-view-online {
+    text-decoration: underline;
+}
+
+.gh-members-emailpreview-title p {
+    margin: 0;
+    padding: 0 0 10px;
+    white-space: nowrap;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica", "Arial, sans-serif", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    font-size: 1.3rem;
+    line-height: 1;
+    letter-spacing: 0.1px;
+    text-transform: uppercase;
+    text-align: center;
+    color: #15212A;
+}
+
+.gh-members-emailpreview-meta p {
+    padding: 0 0 8px;
+    color: var(--midgrey);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica", "Arial, sans-serif", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    text-transform: none;
+}
+
+.gh-members-emailpreview-meta p span::before{
+    content: "•";
+    padding: 0 4px 0 2px;
+    color: currentColor;
+}
+
+.gh-members-emailpreview-title p span {
+    color: var(--midgrey);
+}
+
+.gh-members-emailpreview-title a {
+    text-decoration: none;
+    color: #15212A;
+}
+
+.gh-members-emailpreview-meta a {
+    text-decoration: none;
+    color: var(--midgrey);
+    font-size: 1.3rem;
+    line-height: 1;
+    letter-spacing: 0.2px;
+}
+
+.gh-members-emailpreview-meta a svg {
+    display: inline-block;
+    margin-top: -2px;
+    vertical-align: middle;
+    width: 16px;
+    height: 16px;
+    stroke-width: 1.5px;
+}
+
+.gh-members-emailpreview-comment-link {
+    display: inline-block;
+}
+
+.gh-members-emailpreview-featureimage {
+    width: 100%;
+    max-width: 600px;
+    height: 300px;
+    margin-bottom: 8px;
+    background: #fafafa no-repeat 50%;
+    background-size: cover;
+}
+
+.gh-members-emailpreview-featureimage-caption {
+    width: 100%;
+    max-width: 600px;
+    padding-bottom: 30px;
+    text-align: center;
+    color: var(--midgrey);
+    font-size: 1.3rem;
+}
+
+.gh-members-emailpreview-content {
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e5eff5;
+}
+
+.gh-members-emailpreview-content:first-child {
+    margin-top: 52px;
+}
+
+.gh-members-emailpreview-header-image + .gh-members-emailpreview-content {
+    margin-top: 52px;
+}
+
+.gh-members-emailpreview-content p {
+    font-family: Georgia, serif;
+    font-size: 1.8rem;
+    line-height: 1.5em;
+    color: #15212A;
+    max-width: 600px;
+    width: 100%;
+}
+
+.gh-members-emailpreview-content.sans-serif p {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica", "Arial, sans-serif", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    font-size: 1.7rem;
+    line-height: 1.6em;
+}
+
+.gh-members-emailpreview-footer {
+    padding: 40px 0 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.gh-members-emailpreview-footercontent {
+    font-size: 1.3rem;
+    text-align: center;
+    line-height: 1.5em;
+    color: #738a94;
+    padding: 10px 30px;
+    word-break: break-word;
+}
+
+.gh-members-emailpreview-footercontent p {
+    font-size: 1.3rem;
+    text-align: center;
+    line-height: 1.5em;
+    color: #738a94;
+    margin: 0;
+    padding: 0;
+}
+
+.gh-members-emailpreview-footercontent strong {
+    font-weight: 600;
+}
+
+.gh-members-emailpreview-footersite {
+    padding: 10px 30px 60px;
+    color: #738a94;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica", "Arial, sans-serif", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    font-size: 1.3rem;
+    text-align: center;
+}
+
+.gh-members-emailpreview-footersite span {
+    color: #738a94;
+}
+
+.gh-members-emailpreview-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 0 40px;
+}
+
+.gh-members-emailpreview-badge.hide {
+    display: none;
+}
+
+.gh-members-emailpreview-badge a {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 9px 6px 6px;
+    border: none;
+    font-size: 12.5px;
+    line-height: 12px;
+    letter-spacing: -.3px;
+    font-family: var(--font-family);
+    font-weight: 600;
+    text-decoration: none;
+    color: #383838;
+    background: #fff;
+    border-radius: 5px;
+    cursor: auto;
+    outline: none;
+    pointer-events: none;
+    background: #fff;
+}
+
+.gh-members-emailpreview-badge svg {
+    height: 16px;
+    width: 16px;
+    margin: 0 6px 0 0;
+}
+
+@media (min-height: 1070px) {
+    .gh-members-emailpreview-container {
+        transform: scale(0.9);
+    }
+}
+
+.gh-members-emailpreview-feedback {
+    display: grid;
+    gap: 20px;
+    padding: 24px 40px;
+    border-bottom: 1px solid #e5eff5;
+}
+
+.gh-members-emailpreview-feedback-title {
+    text-align: center;
+    color: #15212a;
+}
+
+.gh-members-emailpreview-feedback-buttons-group {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+.gh-members-emailpreview-feedback-button {
+    background: #fff;
+    font-weight: 600;
+    border-radius: 22px;
+    white-space: nowrap;
+    pointer-events: none;
+    cursor: default;
+}
+
+.gh-members-emailpreview-labs .gh-members-emailpreview-feedback-button {
+    background: none;
+}
+
+.gh-members-emailpreview-feedback-button svg {
+    width: 20px;
+    height: 20px;
+    stroke-width: 1.5px;
+}
+
+.gh-members-emailpreview-feedback-button-body {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 18px;
+}
+
+.gh-members-emailpreview-latest-posts {
+    padding: 24px 0;
+    border-bottom: 1px solid #e5eff5;
+}
+
+.gh-members-emailpreview-latest-posts h3 {
+    margin: 8px 0 16px;
+    color: #15212A;
+    font-size: 1.4rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.gh-members-emailpreview-latest-post {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 8px 0;
+}
+
+.gh-members-emailpreview-latest-post-image {
+    width: 100%;
+    max-width: 100px;
+    height: auto;
+    background: transparent;
+    background-repeat: no-repeat;
+    background-size: cover;
+    aspect-ratio: 1 / 1;
+}
+
+.gh-members-emailpreview-latest-post h4 {
+    margin: 2px 0 4px;
+    color: #15212a;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica", "Arial, sans-serif", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    font-size: 1.9rem;
+}
+
+.gh-members-emailpreview-latest-post p {
+    margin: 0;
+    color: #738a94;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica", "Arial, sans-serif", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    font-size: 1.5rem;
+}
+
+
+.gh-members-emailpreview-subscription-details {
+    padding: 32px 0;
+    border-bottom: 1px solid #e5eff5;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica", "Arial, sans-serif", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    font-weight: 400;
+}
+
+.gh-members-emailpreview-subscription-details h4 {
+    font-size: 1.4rem;
+    text-transform: uppercase;
+}
+
+.gh-members-emailpreview-subscription-details p {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.gh-members-emailpreview-subscription-details p strong {
+    font-weight: 700;
+}
+
+a.gh-members-emailpreview-subscription-link {
+    align-self: flex-end;
+    white-space: nowrap;
+    width: 100%;
+    color: var(--accent-color);
+    font-size: 1.5rem;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: right;
+}
+
+@media (max-width: 1000px) {
+    .gh-members-emailpreview-subscription-details .flex {
+        flex-direction: column;
+    }
+
+    a.gh-members-emailpreview-subscription-link {
+        align-self: flex-start;
+        padding-top: 12px;
+        text-align: left;
+    }
+
+}
+
 /* Custom tier member details */
 .gh-cp-member-email-name {
     display: grid;
@@ -559,6 +1523,21 @@ textarea.gh-member-details-textarea {
 
 .gh-cp-data-summary:not(:last-of-type) {
     margin-bottom: 24px;
+}
+
+.gh-cp-table {
+    margin: -8px 0 0;
+}
+
+.gh-cp-table .gh-member-stripe-label {
+    width: 40px;
+    color: var(--middarkgrey);
+}
+
+.gh-cp-table-link {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 1.3rem;
 }
 
 /* Member's tier list */
@@ -622,6 +1601,17 @@ textarea.gh-member-details-textarea {
     color: var(--darkgrey);
 }
 
+.gh-membertier-separator {
+    color: var(--midgrey-d1);
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0 0.25em;
+}
+
+.gh-membertier-archived .gh-membertier-name {
+    opacity: 0.5;
+}
+
 .gh-membertier-list-footer {
     position:relative;
     margin-top: 8px;
@@ -647,6 +1637,27 @@ textarea.gh-member-details-textarea {
     width: .8em;
     height: .8em;
     color: var(--green-d1);
+}
+
+.gh-member-tier-memberdetails {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 12px 0 24px;
+}
+
+.gh-member-tier-memberdetails .gh-member-gravatar {
+    margin: 0;
+}
+
+.gh-member-tier-memberdetails h3 {
+    margin: 12px 0 0;
+    font-size: 1.9rem;
+    line-height: 1;
+}
+
+.gh-member-tier-memberdetails p {
+    margin: 0;
 }
 
 .gh-cp-membertier-notier {
@@ -685,6 +1696,26 @@ textarea.gh-member-details-textarea {
 
 .gh-membertier-details-container {
     flex: 1;
+}
+
+.gh-membertier-price-container {
+    flex: 0;
+    display: flex;
+    align-items: flex-start;
+}
+
+.gh-membertier-price-container .gh-tier-card-price {
+    margin: 0 12px 2px 0;
+    padding: 12px 8px;
+    border: 1px solid var(--whitegrey);
+}
+
+.gh-cp-membertier .gh-membertier-price-container {
+    margin-top: -19px;
+}
+
+.gh-cp-membertier .gh-tier-card-price {
+    padding: 10px 18px;
 }
 
 .gh-cp-membertier .gh-tier-card-price {
@@ -745,6 +1776,10 @@ textarea.gh-member-details-textarea {
 }
 
 .gh-membertier-subscription .action-menu > .gh-btn svg {
+    margin: 0;
+}
+
+.gh-member-tier-form-block .form-group:last-of-type {
     margin: 0;
 }
 
@@ -886,10 +1921,29 @@ textarea.gh-member-details-textarea {
     font-size: 1.3rem;
 }
 
+.gh-cp-membertier-attribution .gh-membertier-detail-timestamp {
+    font-size: 1.2rem;
+    color: var(--midgrey);
+}
+
 .gh-cp-membertier-attribution .gh-membertier-cancelreason {
     font-weight: 500;
 }
 
 .gh-cp-membertier-attribution .gh-membertier-details a {
     text-transform: capitalize;
+}
+
+.gh-member-details-attribution .gh-member-details-attribution-docs {
+    margin-top: 6px;
+    color: #2bba3c;
+    font-weight: 500;
+    font-size: 1.3rem;
+}
+
+.gh-member-details-attribution .gh-member-details-attribution-docs:hover {
+    margin-top: 6px;
+    color: rgb(38, 154, 52);
+    font-weight: 500;
+    font-size: 1.3rem;
 }
