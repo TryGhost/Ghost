@@ -113,7 +113,7 @@ describe('memberFields', () => {
     });
 });
 
-describe('memberDateCodec', () => {
+describe('dateCodec', () => {
     it('serializes date boundaries in UTC day bounds', () => {
         const predicate: FilterPredicate = {
             id: '1',

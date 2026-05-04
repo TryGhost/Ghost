@@ -49,7 +49,7 @@ describe('use-filter-state', () => {
                     ...state,
                     query: searchParams.toString()
                 };
-            }, {wrapper: createWrapper('/?status=is:hidden&body=not_contains:spam&author=is_not:member_123')});
+            }, {wrapper: createWrapper('/?status=is:hidden&body=not_contains:spam&author=is_not:member_123&created_at=before:2024-02-01')});
 
             expect(result.current.filters).toEqual([
                 {
@@ -69,9 +69,15 @@ describe('use-filter-state', () => {
                     field: 'author',
                     operator: 'is-not',
                     values: ['member_123']
+                },
+                {
+                    id: 'created_at:4',
+                    field: 'created_at',
+                    operator: 'is-less',
+                    values: ['2024-02-01']
                 }
             ]);
-            expect(result.current.query).toBe('filter=html%3A-%7E%27spam%27%2Bmember_id%3A-member_123%2Bstatus%3Ahidden');
+            expect(result.current.query).toBe('filter=created_at%3A%3C%272024-02-01T00%3A00%3A00.000Z%27%2Bhtml%3A-%7E%27spam%27%2Bmember_id%3A-member_123%2Bstatus%3Ahidden');
         });
 
         it('ignores legacy id params because single-comment mode is handled outside filter state', () => {

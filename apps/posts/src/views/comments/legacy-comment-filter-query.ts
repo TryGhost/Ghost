@@ -4,7 +4,11 @@ import {Filter} from '@tryghost/shade/patterns';
 const LEGACY_COMMENT_FILTER_FIELDS = ['status', 'created_at', 'body', 'post', 'author', 'reported'] as const;
 const LEGACY_OPERATOR_MAP: Record<string, string> = {
     is_not: 'is-not',
-    not_contains: 'does-not-contain'
+    not_contains: 'does-not-contain',
+    before: 'is-less',
+    after: 'is-greater',
+    on_or_before: 'is-or-less',
+    on_or_after: 'is-or-greater'
 };
 
 function parseLegacyFilterValue(queryValue: string): {operator: string; value: string} | null {

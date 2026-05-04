@@ -1,6 +1,6 @@
 import {defineFields} from './filter-types';
 import {describe, expect, it} from 'vitest';
-import {dispatchSimpleNodes, parseFilterToAst, serializePredicates} from './filter-query-core';
+import {dispatchSimpleNodes, getFieldKeysByType, hasFieldKey, parseFilterToAst, serializePredicates} from './filter-query-core';
 import {numberCodec, scalarCodec} from './filter-codecs';
 import type {AstNode} from './filter-ast';
 import type {FilterPredicate} from './filter-types';
@@ -38,6 +38,15 @@ const fields = defineFields({
             type: 'select'
         },
         codec: scalarCodec({field: 'member_id'})
+    },
+    created_at: {
+        operators: ['is-or-less'],
+        parseKeys: ['created_at_utc'],
+        ui: {
+            label: 'Created',
+            type: 'date'
+        },
+        codec: scalarCodec({field: 'created_at_utc'})
     }
 });
 
@@ -101,5 +110,13 @@ describe('filter-query-core', () => {
         }));
 
         expect(serializePredicates(parsed, fields, 'UTC')).toBe('email_count:>5+status:paid');
+    });
+
+    it('finds fields by UI type and declared parse aliases in nested AST nodes', () => {
+        const ast = parseFilterToAst('(status:paid,created_at_utc:<\'2024-01-01T00:00:00.000Z\')') as AstNode;
+        const fieldKeys = getFieldKeysByType(fields, 'date');
+
+        expect([...fieldKeys]).toEqual(['created_at', 'created_at_utc']);
+        expect(hasFieldKey(ast, fieldKeys)).toBe(true);
     });
 });

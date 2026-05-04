@@ -38,7 +38,12 @@ describe('commentFields', () => {
 
     it('keeps the expected operators for key comment fields', () => {
         expect(commentFields.status.operators).toEqual(['is']);
-        expect(commentFields.created_at.operators).toEqual(['is', 'before', 'after']);
+        expect(commentFields.created_at.operators).toEqual([
+            'is-less',
+            'is-or-less',
+            'is-greater',
+            'is-or-greater'
+        ]);
         expect(commentFields.body.operators).toEqual(['contains', 'does-not-contain']);
         expect(commentFields.post.operators).toEqual(['is', 'is-not']);
         expect(commentFields.author.operators).toEqual(['is', 'is-not']);
@@ -53,27 +58,26 @@ describe('commentFields', () => {
     });
 
     describe('commentDateCodec', () => {
-        it('serializes exact dates as UTC day bounds', () => {
+        it('serializes dates with member-compatible UTC day boundaries', () => {
             const predicate: FilterPredicate = {
                 id: '1',
                 field: 'created_at',
-                operator: 'is',
+                operator: 'is-or-less',
                 values: ['2024-01-01']
             };
 
             expect(commentFields.created_at.codec.serialize(predicate, createdAtContext)).toEqual([
-                'created_at:>=\'2024-01-01T00:00:00.000Z\'',
                 'created_at:<=\'2024-01-01T23:59:59.999Z\''
             ]);
         });
 
-        it('parses simple before/after comparators back to local dates', () => {
+        it('parses date comparators back to local dates', () => {
             expect(commentFields.created_at.codec.parse(
                 nql.parse('created_at:<\'2024-01-03T00:00:00.000Z\'') as never,
                 createdAtContext
             )).toEqual({
                 field: 'created_at',
-                operator: 'before',
+                operator: 'is-less',
                 values: ['2024-01-03']
             });
 
@@ -82,7 +86,7 @@ describe('commentFields', () => {
                 createdAtContext
             )).toEqual({
                 field: 'created_at',
-                operator: 'after',
+                operator: 'is-greater',
                 values: ['2024-01-01']
             });
         });

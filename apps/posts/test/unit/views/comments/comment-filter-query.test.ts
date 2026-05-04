@@ -11,7 +11,7 @@ function stripIds(predicates: FilterPredicate[]) {
 }
 
 describe('comment-filter-query', () => {
-    it('parses exact-date compounds into a single predicate', () => {
+    it('parses date compounds with member-compatible operators', () => {
         const predicates = parseCommentFilter(
             'created_at:>=\'2024-01-01T00:00:00.000Z\'+created_at:<=\'2024-01-01T23:59:59.999Z\'',
             'UTC'
@@ -20,24 +20,29 @@ describe('comment-filter-query', () => {
         expect(stripIds(predicates)).toEqual([
             {
                 field: 'created_at',
-                operator: 'is',
+                operator: 'is-or-greater',
+                values: ['2024-01-01']
+            },
+            {
+                field: 'created_at',
+                operator: 'is-or-less',
                 values: ['2024-01-01']
             }
         ]);
     });
 
-    it('serializes exact-date compounds canonically', () => {
+    it('serializes date filters canonically', () => {
         const predicates: FilterPredicate[] = [
             {
                 id: '1',
                 field: 'created_at',
-                operator: 'is',
+                operator: 'is-or-less',
                 values: ['2024-01-01']
             }
         ];
 
         expect(serializeCommentFilters(predicates, 'UTC')).toBe(
-            'created_at:<=\'2024-01-01T23:59:59.999Z\'+created_at:>=\'2024-01-01T00:00:00.000Z\''
+            'created_at:<=\'2024-01-01T23:59:59.999Z\''
         );
     });
 
@@ -50,7 +55,12 @@ describe('comment-filter-query', () => {
         expect(stripIds(parsed)).toEqual([
             {
                 field: 'created_at',
-                operator: 'is',
+                operator: 'is-or-greater',
+                values: ['2024-01-01']
+            },
+            {
+                field: 'created_at',
+                operator: 'is-or-less',
                 values: ['2024-01-01']
             },
             {
@@ -70,7 +80,7 @@ describe('comment-filter-query', () => {
         );
     });
 
-    it('round-trips exact dates across DST transitions', () => {
+    it('round-trips date boundaries across DST transitions', () => {
         const parsed = parseCommentFilter(
             'created_at:>=\'2024-03-10T05:00:00.000Z\'+created_at:<=\'2024-03-11T03:59:59.999Z\'',
             'America/New_York'
@@ -79,7 +89,12 @@ describe('comment-filter-query', () => {
         expect(stripIds(parsed)).toEqual([
             {
                 field: 'created_at',
-                operator: 'is',
+                operator: 'is-or-greater',
+                values: ['2024-03-10']
+            },
+            {
+                field: 'created_at',
+                operator: 'is-or-less',
                 values: ['2024-03-10']
             }
         ]);

@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {escapeNqlString, getDayBoundsInUtc} from '@src/views/filters/filter-normalization';
+import {escapeNqlString, formatDateInTimezone, getDayBoundsInUtc} from '@src/views/filters/filter-normalization';
 
 describe('filter-normalization', () => {
     it('escapes single quotes for NQL strings', () => {
@@ -22,5 +22,18 @@ describe('filter-normalization', () => {
             start: '2024-03-10T05:00:00.000Z',
             end: '2024-03-11T03:59:59.999Z'
         });
+    });
+
+    it('formats ISO instants in a site timezone', () => {
+        expect(formatDateInTimezone('2024-02-01T22:59:59.999Z', 'Europe/Stockholm')).toBe('2024-02-01');
+        expect(formatDateInTimezone('2024-02-01T23:00:00.000Z', 'Europe/Stockholm')).toBe('2024-02-02');
+    });
+
+    it('formats legacy UTC date-times in a site timezone', () => {
+        expect(formatDateInTimezone('2022-02-01 23:59:59', 'Europe/Stockholm')).toBe('2022-02-02');
+    });
+
+    it('ignores invalid date values', () => {
+        expect(formatDateInTimezone('not-a-date', 'UTC')).toBeNull();
     });
 });

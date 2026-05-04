@@ -31,7 +31,13 @@ describe('useCommentFilterFields', () => {
         }));
 
         expect(result.current.find(field => field.key === 'created_at')).toMatchObject({
-            defaultValue: '2024-03-09'
+            defaultValue: '2024-03-09',
+            operators: [
+                {value: 'is-less', label: 'before'},
+                {value: 'is-or-less', label: 'on or before'},
+                {value: 'is-greater', label: 'after'},
+                {value: 'is-or-greater', label: 'on or after'}
+            ]
         });
     });
 });

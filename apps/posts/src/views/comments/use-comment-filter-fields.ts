@@ -1,9 +1,10 @@
 import React, {useMemo} from 'react';
-import moment from 'moment-timezone';
+import {DATE_OPERATOR_LABELS} from '../filters/filter-date';
 import {FilterFieldConfig, ValueSource} from '@tryghost/shade/patterns';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {commentFields} from './comment-fields';
 import {createOperatorOptions} from '../filters/filter-operator-options';
+import {getTodayInTimezone} from '../filters/filter-normalization';
 
 interface UseCommentFilterFieldsOptions {
     postValueSource: ValueSource<string>;
@@ -38,7 +39,7 @@ export function useCommentFilterFields({
     siteTimezone = 'UTC'
 }: UseCommentFilterFieldsOptions): FilterFieldConfig[] {
     return useMemo(() => {
-        const today = moment.tz(siteTimezone).format('YYYY-MM-DD');
+        const today = getTodayInTimezone(siteTimezone);
 
         return COMMENT_FIELD_ORDER.map((key) => {
             const field = commentFields[key];
@@ -47,7 +48,7 @@ export function useCommentFilterFields({
                 key,
                 ...field.ui,
                 icon: getFieldIcon(key),
-                operators: createOperatorOptions(field.operators),
+                operators: createOperatorOptions(field.operators, {labels: DATE_OPERATOR_LABELS}),
                 ...('options' in field && field.options ? {options: field.options} : {}),
                 ...(key === 'created_at' ? {defaultValue: today} : {}),
                 ...(key === 'author' ? {valueSource: memberValueSource} : {}),
