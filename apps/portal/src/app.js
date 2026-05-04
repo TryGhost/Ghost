@@ -60,6 +60,8 @@ export default class App extends React.Component {
     constructor(props) {
         super(props);
 
+        this.shareDisabled = this.getShareDisabled();
+
         this.setupCustomTriggerButton();
 
         this.state = {
@@ -705,7 +707,7 @@ export default class App extends React.Component {
 
             return giftLinkData;
         }
-        if (path && shareRegex.test(path)) {
+        if (path && shareRegex.test(path) && !this.shareDisabled) {
             return {
                 showPopup: true,
                 page: 'share'
@@ -778,6 +780,12 @@ export default class App extends React.Component {
             return scriptTag.dataset.accentColor;
         }
         return false;
+    }
+
+    /* Whether the share modal is disabled via the script tag data attribute */
+    getShareDisabled() {
+        const scriptTag = document.querySelector('script[data-ghost]');
+        return scriptTag?.dataset.disableShare === 'true';
     }
 
     /** Fetch site, member session data and member offers with Ghost Apis  */
@@ -1132,6 +1140,9 @@ export default class App extends React.Component {
                 page: 'gift'
             };
         } else if (path === 'share') {
+            if (this.shareDisabled) {
+                return null;
+            }
             return {
                 page: 'share'
             };
@@ -1300,7 +1311,10 @@ export default class App extends React.Component {
      * portal. Especially useful for copy/pasted links from Admin screens.
      */
     transformPortalLinksToRelative() {
-        document.querySelectorAll('a[href*="#/portal"], a[href*="#/share"]').forEach(transformPortalAnchorToRelative);
+        const selector = this.shareDisabled
+            ? 'a[href*="#/portal"]'
+            : 'a[href*="#/portal"], a[href*="#/share"]';
+        document.querySelectorAll(selector).forEach(transformPortalAnchorToRelative);
     }
 
     render() {

@@ -258,7 +258,7 @@ const ConfirmDialog = ({onConfirm, loading, initialScore}) => {
                 isRunning={loading}
                 tabIndex={3}
             />
-            <CloseButton close={() => close(false)} />
+            <CloseButton onClick={() => close(false)} />
         </div>
     );
 };

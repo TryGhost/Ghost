@@ -44,6 +44,7 @@ RUN chmod +x entrypoint.sh
 # Public app assets are served via /ghost/assets/* in dev mode.
 # Caddy forwards these paths to host frontend dev servers.
 ENV portal__url=/ghost/assets/portal/portal.min.js \
+    portal__shareUrl=/ghost/assets/portal/share.min.js \
     comments__url=/ghost/assets/comments-ui/comments-ui.min.js \
     sodoSearch__url=/ghost/assets/sodo-search/sodo-search.min.js \
     sodoSearch__styles=/ghost/assets/sodo-search/main.css \

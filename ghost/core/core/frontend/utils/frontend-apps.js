@@ -3,15 +3,20 @@ const {config} = require('../services/proxy');
 function getFrontendAppConfig(app) {
     const appVersion = config.get(`${app}:version`);
     let scriptUrl = config.get(`${app}:url`);
+    let shareScriptUrl = config.get(`${app}:shareUrl`);
     let stylesUrl = config.get(`${app}:styles`);
     if (typeof scriptUrl === 'string' && scriptUrl.includes('{version}')) {
         scriptUrl = scriptUrl.replace('{version}', appVersion);
+    }
+    if (typeof shareScriptUrl === 'string' && shareScriptUrl.includes('{version}')) {
+        shareScriptUrl = shareScriptUrl.replace('{version}', appVersion);
     }
     if (typeof stylesUrl === 'string' && stylesUrl?.includes('{version}')) {
         stylesUrl = stylesUrl.replace('{version}', appVersion);
     }
     return {
         scriptUrl,
+        shareScriptUrl,
         stylesUrl,
         appVersion
     };

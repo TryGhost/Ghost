@@ -241,6 +241,7 @@
     },
     "portal": {
         "url": "https://cdn.jsdelivr.net/ghost/portal@~{version}/umd/portal.min.js",
+        "shareUrl": "https://cdn.jsdelivr.net/ghost/portal@~{version}/umd/share.min.js",
         "version": "2.68"
     },
     "sodoSearch": {
