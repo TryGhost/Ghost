@@ -24,6 +24,26 @@ const controller = {
         }
     },
 
+    read: {
+        headers: {
+            cacheInvalidate: false
+        },
+        data: [
+            'id'
+        ],
+        permissions: true,
+        query(frame) {
+            return {
+                id: frame.data.id,
+                name: 'Welcome email',
+                description: 'Onboard new free members with a short welcome email.',
+                status: 'active',
+                trigger_type: 'member_signs_up',
+                trigger_mode: 'free'
+            };
+        }
+    },
+
     poll: {
         statusCode: 204,
         headers: {

@@ -62,6 +62,25 @@ describe('Automations controller', function () {
         });
     });
 
+    describe('read', function () {
+        it('returns a placeholder automation for the requested id', function () {
+            const result = automationsController.read.query({
+                data: {
+                    id: '67f3f3f3f3f3f3f3f3f3f3f3'
+                }
+            });
+
+            assert.deepEqual(result, {
+                id: '67f3f3f3f3f3f3f3f3f3f3f3',
+                name: 'Welcome email',
+                description: 'Onboard new free members with a short welcome email.',
+                status: 'active',
+                trigger_type: 'member_signs_up',
+                trigger_mode: 'free'
+            });
+        });
+    });
+
     describe('poll', function () {
         it('dispatches a StartAutomationsPollEvent', function () {
             const result = automationsController.poll.query({});

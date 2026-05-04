@@ -73,6 +73,26 @@ describe('Automations API', function () {
         });
     });
 
+    describe('read', function () {
+        it('returns a placeholder automation for the requested id', async function () {
+            const automationId = '67f3f3f3f3f3f3f3f3f3f3f3';
+
+            const {body} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            assert.deepEqual(body.automations, [{
+                id: automationId,
+                name: 'Welcome email',
+                description: 'Onboard new free members with a short welcome email.',
+                status: 'active',
+                trigger_type: 'member_signs_up',
+                trigger_mode: 'free'
+            }]);
+        });
+    });
+
     describe('poll', function () {
         /** @type {sinon.SinonStub} */
         let dispatchStub;
