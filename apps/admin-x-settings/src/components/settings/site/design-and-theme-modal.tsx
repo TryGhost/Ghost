@@ -1,20 +1,42 @@
 import ChangeThemeModal from './theme-modal';
 import DesignModal from './design-modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
+import ThemeCodeEditorModal from './theme/theme-code-editor-modal';
 import {LimitModal} from '@tryghost/admin-x-design-system';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {useCheckThemeLimitError} from '../../../hooks/use-check-theme-limit-error';
 
+const getEditingThemeName = (path: string) => {
+    if (!path.startsWith('theme/edit/')) {
+        return null;
+    }
+
+    const encodedThemeName = path.replace('theme/edit/', '').split('?')[0];
+
+    return encodedThemeName ? decodeURIComponent(encodedThemeName) : null;
+};
+
 const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
     const modal = useModal();
-    const {updateRoute} = useRouting();
+    const {route, updateRoute} = useRouting();
+    const currentPath = route || pathName;
     const [themeChangeError, setThemeChangeError] = useState<string|null>(null);
     const [isCheckingLimit, setIsCheckingLimit] = useState(false);
     const [isCheckingInstallation, setIsCheckingInstallation] = useState(false);
+    const [editorThemeError, setEditorThemeError] = useState<string | null>(null);
+    const [isCheckingEditorLimit, setIsCheckingEditorLimit] = useState(false);
     const {checkThemeLimitError, isThemeLimitCheckReady, noThemeChangesAllowed, isThemeLimited} = useCheckThemeLimitError();
     const [installationAllowed, setInstallationAllowed] = useState<boolean | null>(null);
     const [hasCheckedInstallation, setHasCheckedInstallation] = useState(false);
+    const editingThemeName = getEditingThemeName(currentPath);
+
+    const showThemeLimitModal = useCallback((error: string) => {
+        NiceModal.show(LimitModal, {
+            prompt: error,
+            onOk: () => updateRoute({route: '/pro', isExternal: true})
+        });
+    }, [updateRoute]);
 
     useEffect(() => {
         const checkIfThemeChangeAllowed = async () => {
@@ -33,30 +55,73 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
 
             // Show limit modal immediately if there's an error
             if (error) {
-                NiceModal.show(LimitModal, {
-                    prompt: error,
-                    onOk: () => updateRoute({route: '/pro', isExternal: true})
-                });
+                showThemeLimitModal(error);
                 modal.remove(); // Close the current modal
             }
         };
 
-        if (pathName === 'design/change-theme' && isThemeLimitCheckReady) {
+        if (currentPath === 'design/change-theme' && isThemeLimitCheckReady) {
             checkIfThemeChangeAllowed();
         } else {
             setThemeChangeError(null);
             setIsCheckingLimit(false);
         }
-    }, [checkThemeLimitError, isThemeLimitCheckReady, pathName, modal, updateRoute, noThemeChangesAllowed]);
+    }, [checkThemeLimitError, currentPath, isThemeLimitCheckReady, modal, noThemeChangesAllowed, showThemeLimitModal]);
 
     // Reset states when pathName changes
     useEffect(() => {
-        if (pathName !== 'theme/install') {
+        if (currentPath !== 'theme/install') {
             setHasCheckedInstallation(false);
             setInstallationAllowed(null);
             setIsCheckingInstallation(false);
         }
-    }, [pathName]);
+    }, [currentPath]);
+
+    useEffect(() => {
+        let isCancelled = false;
+
+        const checkThemeEditorAccess = async () => {
+            if (!editingThemeName) {
+                setEditorThemeError(null);
+                setIsCheckingEditorLimit(false);
+                return;
+            }
+
+            if (!isThemeLimitCheckReady) {
+                setIsCheckingEditorLimit(true);
+                return;
+            }
+
+            if (!isThemeLimited) {
+                setEditorThemeError(null);
+                setIsCheckingEditorLimit(false);
+                return;
+            }
+
+            setIsCheckingEditorLimit(true);
+
+            const error = await checkThemeLimitError(editingThemeName.toLowerCase());
+
+            if (isCancelled) {
+                return;
+            }
+
+            setEditorThemeError(error);
+            setIsCheckingEditorLimit(false);
+
+            if (error) {
+                showThemeLimitModal(error);
+                modal.remove();
+                updateRoute('theme');
+            }
+        };
+
+        void checkThemeEditorAccess();
+
+        return () => {
+            isCancelled = true;
+        };
+    }, [checkThemeLimitError, editingThemeName, isThemeLimitCheckReady, isThemeLimited, modal, showThemeLimitModal, updateRoute]);
 
     // Check theme installation limits
     useEffect(() => {
@@ -79,21 +144,16 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
             // Immediately prevent any installation attempts
             setInstallationAllowed(false);
 
-            const limitModalConfig = {
-                prompt: error,
-                onOk: () => updateRoute({route: '/pro', isExternal: true})
-            };
-
             if (noThemeChangesAllowed) {
                 // Single theme - show limit modal and redirect to /theme
-                NiceModal.show(LimitModal, limitModalConfig);
+                showThemeLimitModal(error);
                 // Clear URL parameters
                 window.history.replaceState({}, '', window.location.pathname + window.location.hash.split('?')[0]);
                 modal.remove();
                 updateRoute('theme');
             } else {
                 // Multiple themes allowed - show limit modal and then redirect
-                NiceModal.show(LimitModal, limitModalConfig);
+                showThemeLimitModal(error);
                 modal.remove();
                 // Don't redirect to change-theme modal - just stay on current route
                 // This prevents both modals from being visible at the same time
@@ -103,7 +163,7 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
 
         const checkThemeInstallation = async () => {
             // Early return if not on theme/install path
-            if (pathName !== 'theme/install') {
+            if (currentPath !== 'theme/install') {
                 setIsCheckingInstallation(false);
                 return;
             }
@@ -140,7 +200,7 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
             const error = await checkThemeLimitError(themeName);
 
             // Double-check again after async operation
-            if (pathName !== 'theme/install') {
+            if (currentPath !== 'theme/install') {
                 setIsCheckingInstallation(false);
                 return;
             }
@@ -160,11 +220,11 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
         };
 
         checkThemeInstallation();
-    }, [pathName, isThemeLimitCheckReady, checkThemeLimitError, noThemeChangesAllowed, isThemeLimited, modal, updateRoute]);
+    }, [checkThemeLimitError, currentPath, isThemeLimitCheckReady, noThemeChangesAllowed, isThemeLimited, modal, showThemeLimitModal, updateRoute]);
 
-    if (pathName === 'design/edit') {
+    if (currentPath === 'design/edit') {
         return <DesignModal />;
-    } else if (pathName === 'design/change-theme') {
+    } else if (currentPath === 'design/change-theme') {
         // Don't show the change theme modal if we're still checking limits or if there's
         // a theme limit error
         if (isCheckingLimit || themeChangeError) {
@@ -172,7 +232,7 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
         }
 
         return <ChangeThemeModal />;
-    } else if (pathName === 'theme/install') {
+    } else if (currentPath === 'theme/install') {
         // Always wait for the installation check to complete
         // This prevents any race conditions
         if (!hasCheckedInstallation || !isThemeLimitCheckReady || isCheckingInstallation || installationAllowed === null) {
@@ -200,6 +260,12 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
 
         // Installation is allowed, render the ChangeThemeModal with the source and ref
         return <ChangeThemeModal source={source} themeRef={ref} />;
+    } else if (editingThemeName) {
+        if (isCheckingEditorLimit || editorThemeError) {
+            return null;
+        }
+
+        return <ThemeCodeEditorModal themeName={editingThemeName} />;
     } else {
         modal.remove();
     }
