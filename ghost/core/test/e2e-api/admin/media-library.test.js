@@ -13,7 +13,8 @@ async function ensureMediaPermissions() {
     const now = new Date();
     const mediaPermissions = [
         {name: 'Browse media', action_type: 'browse', object_type: 'media'},
-        {name: 'Read media', action_type: 'read', object_type: 'media'}
+        {name: 'Read media', action_type: 'read', object_type: 'media'},
+        {name: 'Edit media', action_type: 'edit', object_type: 'media'}
     ];
 
     for (const mediaPermission of mediaPermissions) {
@@ -70,6 +71,7 @@ describe('Media Library API', function () {
 
     after(async function () {
         if (prefix) {
+            await db.knex('media_folders').where('name', 'like', `${prefix}%`).del();
             await db.knex('media_file_usages').whereIn('media_file_id', function () {
                 this.select('id').from('media_files').where('name', 'like', `${prefix}%`);
             }).del();
@@ -91,6 +93,7 @@ describe('Media Library API', function () {
             id: ObjectId().toHexString(),
             url: `https://example.com/content/images/${prefix}-${ObjectId().toHexString()}.jpg`,
             url_hash: null,
+            folder_id: null,
             storage_path: null,
             storage_type: 'images',
             media_type: 'image',
@@ -207,6 +210,47 @@ describe('Media Library API', function () {
                 assert.equal(body.media[0].usages.length, 1);
                 assert.equal(body.media[0].usages[0].field, 'feature_image');
             });
+    });
+
+    it('creates folders and filters media by folder', async function () {
+        const media = await insertMedia({name: `${prefix}-foldered`});
+
+        const folderResponse = await agent
+            .post('media/folders/')
+            .body({
+                media_folders: [{
+                    name: `${prefix} Brand`
+                }]
+            })
+            .expectStatus(201);
+
+        const folder = folderResponse.body.media_folders[0];
+        assert.equal(folder.name, `${prefix} Brand`);
+
+        await agent
+            .put(`media/${media.id}/`)
+            .body({
+                media: [{
+                    folder_id: folder.id
+                }]
+            })
+            .expectStatus(200);
+
+        await agent
+            .get(`media/?filter=${encodeURIComponent(`folder_id:${folder.id}`)}`)
+            .expectStatus(200)
+            .expect(({body}) => {
+                assert.equal(body.media.length, 1);
+                assert.equal(body.media[0].id, media.id);
+                assert.equal(body.media[0].folder_id, folder.id);
+            });
+
+        await agent
+            .delete(`media/folders/${folder.id}/`)
+            .expectStatus(204);
+
+        const updated = await db.knex('media_files').where({id: media.id}).first();
+        assert.equal(updated.folder_id, null);
     });
 
     it('backfills local content files before browsing', async function () {

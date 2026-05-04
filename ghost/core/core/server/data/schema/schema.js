@@ -949,6 +949,7 @@ module.exports = {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         url: {type: 'string', maxlength: 2000, nullable: false},
         url_hash: {type: 'string', maxlength: 64, nullable: false, unique: true},
+        folder_id: {type: 'string', maxlength: 24, nullable: true, references: 'media_folders.id', setNullDelete: true},
         storage_path: {type: 'string', maxlength: 2000, nullable: true},
         storage_type: {type: 'string', maxlength: 50, nullable: false, validations: {isIn: [['images', 'files', 'media']]}},
         media_type: {type: 'string', maxlength: 50, nullable: false, validations: {isIn: [['image', 'video', 'audio', 'file']]}},
@@ -965,11 +966,21 @@ module.exports = {
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         '@@INDEXES@@': [
+            ['folder_id'],
             ['storage_type'],
             ['media_type'],
             ['source'],
             ['created_at']
         ]
+    },
+    media_folders: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        name: {type: 'string', maxlength: 191, nullable: false},
+        slug: {type: 'string', maxlength: 191, nullable: false, unique: true},
+        // eslint-disable-next-line no-restricted-syntax
+        created_by: {type: 'string', maxlength: 24, nullable: true, references: 'users.id', setNullDelete: true},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true}
     },
     media_file_usages: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},

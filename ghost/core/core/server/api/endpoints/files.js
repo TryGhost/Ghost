@@ -10,6 +10,9 @@ const controller = {
         headers: {
             cacheInvalidate: false
         },
+        data: [
+            'folder_id'
+        ],
         permissions: false,
         async query(frame) {
             const file = {
@@ -22,7 +25,8 @@ const controller = {
                 url: filePath,
                 storageType: 'files',
                 file,
-                createdBy: frame.options.context?.user
+                createdBy: frame.options.context?.user,
+                folderId: frame.data.folder_id || null
             });
 
             return {

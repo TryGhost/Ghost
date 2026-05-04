@@ -29,6 +29,31 @@ module.exports = {
         };
     },
 
+    edit(response, apiConfig, frame) {
+        frame.response = {
+            media: [response.toJSON(frame.options)]
+        };
+    },
+
+    browseFolders(response, apiConfig, frame) {
+        frame.response = {
+            media_folders: response.data.map(model => model.toJSON(frame.options)),
+            meta: response.meta
+        };
+    },
+
+    addFolder(response, apiConfig, frame) {
+        frame.response = {
+            media_folders: [response.toJSON(frame.options)]
+        };
+    },
+
+    editFolder(response, apiConfig, frame) {
+        frame.response = {
+            media_folders: [response.toJSON(frame.options)]
+        };
+    },
+
     upload({filePath, thumbnailPath}, apiConfig, frame) {
         return frame.response = {
             media: [{

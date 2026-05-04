@@ -165,6 +165,7 @@ async function upsertMediaFile(data) {
 
     if (existing) {
         await knex('media_files').where({id: existing.id}).update({
+            folder_id: data.folder_id ?? existing.folder_id,
             storage_path: data.storage_path ?? existing.storage_path,
             storage_type: data.storage_type ?? existing.storage_type,
             media_type: data.media_type ?? existing.media_type,
@@ -188,6 +189,7 @@ async function upsertMediaFile(data) {
         id,
         url: data.url,
         url_hash: urlHash,
+        folder_id: data.folder_id || null,
         storage_path: data.storage_path,
         storage_type: data.storage_type,
         media_type: data.media_type,
@@ -207,7 +209,7 @@ async function upsertMediaFile(data) {
     return id;
 }
 
-async function indexUrl(url, {source = 'reference', createdBy = null, thumbnailUrl = null, filePath = null} = {}) {
+async function indexUrl(url, {source = 'reference', createdBy = null, thumbnailUrl = null, filePath = null, folderId = null} = {}) {
     const absoluteUrl = toAbsoluteUrl(trimUrl(url));
     const storageType = getStorageType(absoluteUrl);
 
@@ -228,6 +230,7 @@ async function indexUrl(url, {source = 'reference', createdBy = null, thumbnailU
         storage_path: storagePath,
         storage_type: storageType,
         media_type: mediaType,
+        folder_id: folderId,
         mime_type: mimeType,
         extension,
         name: path.basename(storagePath || absoluteUrl).slice(0, 191),
@@ -241,7 +244,7 @@ async function indexUrl(url, {source = 'reference', createdBy = null, thumbnailU
     });
 }
 
-async function indexUpload({url, storageType, file, thumbnailUrl = null, createdBy = null}) {
+async function indexUpload({url, storageType, file, thumbnailUrl = null, createdBy = null, folderId = null}) {
     let absoluteUrl = url;
 
     if (storageType === 'images') {
@@ -271,6 +274,7 @@ async function indexUpload({url, storageType, file, thumbnailUrl = null, created
         storage_path: storagePath,
         storage_type: storageType,
         media_type: mediaType,
+        folder_id: folderId,
         mime_type: mimeType,
         extension,
         name: path.basename(storagePath || file?.name || absoluteUrl).slice(0, 191),

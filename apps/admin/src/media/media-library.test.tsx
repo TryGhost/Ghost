@@ -4,21 +4,36 @@ import {fireEvent, render, screen, waitFor} from '@testing-library/react';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import MediaLibrary from './media-library';
 
-const {mockUseBrowseMedia, mockUseUploadMediaFile, uploadMutation} = vi.hoisted(() => {
+const {addFolderMutation, editMediaMutation, mockUseAddMediaFolder, mockUseBrowseMedia, mockUseBrowseMediaFolders, mockUseEditMedia, mockUseUploadMediaFile, uploadMutation} = vi.hoisted(() => {
     const uploadMutation = {
         isLoading: false,
         mutateAsync: vi.fn()
     };
+    const addFolderMutation = {
+        isLoading: false,
+        mutateAsync: vi.fn()
+    };
+    const editMediaMutation = {
+        mutateAsync: vi.fn()
+    };
 
     return {
+        addFolderMutation,
+        editMediaMutation,
+        mockUseAddMediaFolder: vi.fn(() => addFolderMutation),
         mockUseBrowseMedia: vi.fn(),
+        mockUseBrowseMediaFolders: vi.fn(),
+        mockUseEditMedia: vi.fn(() => editMediaMutation),
         mockUseUploadMediaFile: vi.fn(() => uploadMutation),
         uploadMutation
     };
 });
 
 vi.mock('@tryghost/admin-x-framework/api/media', () => ({
+    useAddMediaFolder: mockUseAddMediaFolder,
     useBrowseMedia: mockUseBrowseMedia,
+    useBrowseMediaFolders: mockUseBrowseMediaFolders,
+    useEditMedia: mockUseEditMedia,
     useUploadMediaFile: mockUseUploadMediaFile
 }));
 
@@ -27,6 +42,7 @@ let clipboardWriteText: ReturnType<typeof vi.fn>;
 const mediaItem = {
     id: 'media-id',
     url: 'https://example.com/content/images/2026/05/hero.jpg',
+    folder_id: null,
     storage_path: '2026/05/hero.jpg',
     storage_type: 'images',
     media_type: 'image',
@@ -80,6 +96,29 @@ describe('MediaLibrary', () => {
             isLoading: false,
             refetch: vi.fn()
         });
+        mockUseBrowseMediaFolders.mockReturnValue({
+            data: {
+                media_folders: [{
+                    id: 'folder-id',
+                    name: 'Brand',
+                    slug: 'brand',
+                    created_by: null,
+                    created_at: '2026-05-01T00:00:00.000Z',
+                    updated_at: '2026-05-01T00:00:00.000Z'
+                }]
+            }
+        });
+        addFolderMutation.mutateAsync.mockResolvedValue({
+            media_folders: [{
+                id: 'new-folder-id',
+                name: 'New folder',
+                slug: 'new-folder',
+                created_by: null,
+                created_at: '2026-05-01T00:00:00.000Z',
+                updated_at: '2026-05-01T00:00:00.000Z'
+            }]
+        });
+        editMediaMutation.mutateAsync.mockResolvedValue({});
     });
 
     it('renders the media library grid', () => {
@@ -139,8 +178,9 @@ describe('MediaLibrary', () => {
         });
 
         await waitFor(() => {
-            const uploadArg = uploadMutation.mutateAsync.mock.calls[0]?.[0] as {file: File};
+            const uploadArg = uploadMutation.mutateAsync.mock.calls[0]?.[0] as {file: File; folderId?: string | null};
             expect(uploadArg.file.name).toBe('hero.jpg');
+            expect(uploadArg.folderId).toBeNull();
             expect(refetch).toHaveBeenCalled();
         });
     });

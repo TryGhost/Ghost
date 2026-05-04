@@ -15,6 +15,9 @@ const controller = {
         headers: {
             cacheInvalidate: false
         },
+        data: [
+            'folder_id'
+        ],
         permissions: false,
         async query(frame) {
             const store = storage.getStorage('images');
@@ -60,7 +63,8 @@ const controller = {
                         ...frame.file,
                         path: out
                     },
-                    createdBy: frame.options.context?.user
+                    createdBy: frame.options.context?.user,
+                    folderId: frame.data.folder_id || null
                 });
 
                 let processedImageName = path.basename(processedImageUrl);
@@ -92,7 +96,8 @@ const controller = {
                 url: imageUrl,
                 storageType: 'images',
                 file: frame.file,
-                createdBy: frame.options.context?.user
+                createdBy: frame.options.context?.user,
+                folderId: frame.data.folder_id || null
             });
 
             return imageUrl;

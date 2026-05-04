@@ -795,6 +795,11 @@
                     "object_type": "media"
                 },
                 {
+                    "name": "Edit media",
+                    "action_type": "edit",
+                    "object_type": "media"
+                },
+                {
                     "name": "Edit automations",
                     "action_type": "edit",
                     "object_type": "automation"
@@ -977,7 +982,7 @@
                     "collection": "all",
                     "recommendation": "all",
                     "automation": ["browse", "read", "edit"],
-                    "media": ["browse", "read"],
+                    "media": ["browse", "read", "edit"],
                     "identity": "read"
                 },
                 "DB Backup Integration": {
@@ -1029,7 +1034,7 @@
                     "recommendation": "all",
                     "automation": ["browse", "read", "edit"],
                     "member_signin_url": "read",
-                    "media": ["browse", "read"]
+                    "media": ["browse", "read", "edit"]
                 },
                 "Super Editor": {
                     "notification": "all",
@@ -1053,7 +1058,7 @@
                     "member_signin_url": "read",
                     "offer": ["browse", "read"],
                     "comment": "all",
-                    "media": ["browse", "read"]
+                    "media": ["browse", "read", "edit"]
                 },
                 "Editor": {
                     "notification": "all",
@@ -1073,7 +1078,7 @@
                     "newsletter": ["browse", "read"],
                     "collection": "all",
                     "recommendation": ["browse", "read"],
-                    "media": ["browse", "read"]
+                    "media": ["browse", "read", "edit"]
                 },
                 "Author": {
                     "post": ["browse", "read", "edit", "add", "destroy"],

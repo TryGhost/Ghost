@@ -7,6 +7,10 @@ const MediaFile = ghostBookshelf.Model.extend({
         return this.hasMany('MediaFileUsage', 'media_file_id', 'id');
     },
 
+    folder() {
+        return this.belongsTo('MediaFolder', 'folder_id', 'id');
+    },
+
     searchQuery(queryBuilder, query) {
         queryBuilder.where(function () {
             this.where('media_files.name', 'like', `%${query}%`)

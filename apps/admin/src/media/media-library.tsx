@@ -1,12 +1,12 @@
 import {useDeferredValue, useEffect, useMemo, useRef, useState} from "react";
-import type {ChangeEvent, ReactNode} from "react";
-import {Button, DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger, InputGroup, InputGroupAddon, InputGroupInput, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle} from "@tryghost/shade/components";
+import type {ChangeEvent, FormEvent, ReactNode} from "react";
+import {Button, DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, Input, InputGroup, InputGroupAddon, InputGroupInput, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle} from "@tryghost/shade/components";
 import {Filters} from "@tryghost/shade/patterns";
 import type {Filter, FilterFieldConfig} from "@tryghost/shade/patterns";
 import {ListHeader} from "@tryghost/shade/primitives";
 import {formatNumber, LucideIcon} from "@tryghost/shade/utils";
-import {useBrowseMedia, useUploadMediaFile} from "@tryghost/admin-x-framework/api/media";
-import type {MediaFile, MediaSource, MediaType} from "@tryghost/admin-x-framework/api/media";
+import {useAddMediaFolder, useBrowseMedia, useBrowseMediaFolders, useEditMedia, useUploadMediaFile} from "@tryghost/admin-x-framework/api/media";
+import type {MediaFile, MediaFolder, MediaSource, MediaType} from "@tryghost/admin-x-framework/api/media";
 
 type ViewMode = "grid" | "list";
 
@@ -157,7 +157,7 @@ function MediaCard({media, onSelect, selected, view}: {media: MediaFile; onSelec
     );
 }
 
-function MediaDetails({media, onClose}: {media: MediaFile | null; onClose: () => void}) {
+function MediaDetails({folders, media, onClose, onFolderChange}: {folders: MediaFolder[]; media: MediaFile | null; onClose: () => void; onFolderChange: (media: MediaFile, folderId: string | null) => void}) {
     const [copied, setCopied] = useState(false);
 
     useEffect(() => {
@@ -210,6 +210,35 @@ function MediaDetails({media, onClose}: {media: MediaFile | null; onClose: () =>
                                 <MetadataRow label="Size" value={formatBytes(media.size_bytes)} />
                                 <MetadataRow label="Source" value={media.source} />
                                 <MetadataRow label="Storage" value={media.storage_type} />
+                                <MetadataRow
+                                    label="Folder"
+                                    value={(
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button className="h-8 px-2" type="button" variant="outline">
+                                                    {folders.find(folder => folder.id === media.folder_id)?.name || "All"}
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="start">
+                                                <DropdownMenuCheckboxItem
+                                                    checked={!media.folder_id}
+                                                    onCheckedChange={() => onFolderChange(media, null)}
+                                                >
+                                                    All
+                                                </DropdownMenuCheckboxItem>
+                                                {folders.map(folder => (
+                                                    <DropdownMenuCheckboxItem
+                                                        checked={media.folder_id === folder.id}
+                                                        key={folder.id}
+                                                        onCheckedChange={() => onFolderChange(media, folder.id)}
+                                                    >
+                                                        {folder.name}
+                                                    </DropdownMenuCheckboxItem>
+                                                ))}
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    )}
+                                />
                                 <MetadataRow label="Added" value={formatDate(media.created_at)} />
                             </dl>
 
@@ -246,12 +275,26 @@ export default function MediaLibrary() {
     const [view, setView] = useState<ViewMode>("grid");
     const [page, setPage] = useState(1);
     const [selectedMedia, setSelectedMedia] = useState<MediaFile | null>(null);
+    const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
+    const [isCreatingFolder, setIsCreatingFolder] = useState(false);
+    const [newFolderName, setNewFolderName] = useState("");
     const inputRef = useRef<HTMLInputElement>(null);
     const upload = useUploadMediaFile();
+    const addFolder = useAddMediaFolder();
+    const editMedia = useEditMedia();
+    const {data: foldersData} = useBrowseMediaFolders();
+    const folders = useMemo(() => foldersData?.media_folders || [], [foldersData?.media_folders]);
+    const activeFolder = folders.find(folder => folder.id === activeFolderId) || null;
 
     useEffect(() => {
         setPage(1);
-    }, [deferredSearch, filters, order]);
+    }, [activeFolderId, deferredSearch, filters, order]);
+
+    useEffect(() => {
+        if (activeFolderId && folders.length > 0 && !folders.some(folder => folder.id === activeFolderId)) {
+            setActiveFolderId(null);
+        }
+    }, [activeFolderId, folders]);
 
     const filterFields = useMemo<FilterFieldConfig<string>[]>(
         () => [
@@ -287,6 +330,7 @@ export default function MediaLibrary() {
         const filter = filters
             .map(filterToApiParam)
             .filter(Boolean)
+            .concat(activeFolderId ? [`folder_id:${activeFolderId}`] : [])
             .join("+");
 
         return {
@@ -296,7 +340,7 @@ export default function MediaLibrary() {
             ...(deferredSearch ? {search: deferredSearch} : {}),
             ...(filter ? {filter} : {})
         };
-    }, [deferredSearch, filters, order, page]);
+    }, [activeFolderId, deferredSearch, filters, order, page]);
 
     const {data, isFetching, isLoading, isError, refetch} = useBrowseMedia({searchParams});
     const media = data?.media || [];
@@ -321,11 +365,35 @@ export default function MediaLibrary() {
         const files = Array.from(event.target.files || []);
 
         for (const file of files) {
-            await upload.mutateAsync({file});
+            await upload.mutateAsync({file, folderId: activeFolderId});
         }
 
         await refetch();
         event.target.value = "";
+    };
+
+    const onCreateFolder = async (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        const name = newFolderName.trim();
+        if (!name) {
+            return;
+        }
+
+        const response = await addFolder.mutateAsync({name});
+        const folder = response.media_folders[0];
+        setNewFolderName("");
+        setIsCreatingFolder(false);
+        setActiveFolderId(folder.id);
+    };
+
+    const onFolderChange = (media: MediaFile, folderId: string | null) => {
+        void editMedia.mutateAsync({
+            id: media.id,
+            folder_id: folderId
+        }).then(() => {
+            setSelectedMedia({...media, folder_id: folderId});
+            void refetch();
+        });
     };
 
     return (
@@ -356,6 +424,66 @@ export default function MediaLibrary() {
                                     onChange={event => setSearch(event.target.value)}
                                 />
                             </InputGroup>
+
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button className="h-[34px] min-w-20 justify-between px-3" type="button" variant="outline">
+                                        <span className="max-w-28 truncate">{activeFolder?.name || "All"}</span>
+                                        <LucideIcon.ChevronDown className="ml-2 size-4 text-muted-foreground" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-56">
+                                    <DropdownMenuCheckboxItem
+                                        checked={!activeFolderId}
+                                        onCheckedChange={() => setActiveFolderId(null)}
+                                    >
+                                        All
+                                    </DropdownMenuCheckboxItem>
+                                    {folders.map(folder => (
+                                        <DropdownMenuCheckboxItem
+                                            checked={activeFolderId === folder.id}
+                                            key={folder.id}
+                                            onCheckedChange={() => setActiveFolderId(folder.id)}
+                                        >
+                                            {folder.name}
+                                        </DropdownMenuCheckboxItem>
+                                    ))}
+                                    <DropdownMenuSeparator />
+                                    {isCreatingFolder ? (
+                                        <form className="space-y-2 p-2" onSubmit={(event) => {
+                                            void onCreateFolder(event);
+                                        }}>
+                                            <Input
+                                                autoFocus
+                                                className="h-8"
+                                                placeholder="Folder name"
+                                                value={newFolderName}
+                                                onChange={event => setNewFolderName(event.target.value)}
+                                                onKeyDown={event => event.stopPropagation()}
+                                            />
+                                            <div className="flex gap-2">
+                                                <Button className="h-8 grow" disabled={addFolder.isLoading} type="submit">
+                                                    Create
+                                                </Button>
+                                                <Button className="h-8" type="button" variant="ghost" onClick={() => {
+                                                    setIsCreatingFolder(false);
+                                                    setNewFolderName("");
+                                                }}>
+                                                    Cancel
+                                                </Button>
+                                            </div>
+                                        </form>
+                                    ) : (
+                                        <DropdownMenuItem onSelect={(event) => {
+                                            event.preventDefault();
+                                            setIsCreatingFolder(true);
+                                        }}>
+                                            <LucideIcon.FolderPlus className="mr-2 size-4" />
+                                            Create folder
+                                        </DropdownMenuItem>
+                                    )}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
 
                             {!hasFilters && (
                                 <Filters
@@ -516,7 +644,7 @@ export default function MediaLibrary() {
                 </section>
             </div>
 
-            <MediaDetails media={selectedMedia} onClose={() => setSelectedMedia(null)} />
+            <MediaDetails folders={folders} media={selectedMedia} onClose={() => setSelectedMedia(null)} onFolderChange={onFolderChange} />
         </main>
     );
 }

@@ -315,7 +315,12 @@ module.exports = function apiRoutes() {
 
     // ## media
     router.get('/media', mw.authAdminApi, http(api.media.browse));
+    router.get('/media/folders', mw.authAdminApi, http(api.media.browseFolders));
+    router.post('/media/folders', mw.authAdminApi, http(api.media.addFolder));
+    router.put('/media/folders/:id', mw.authAdminApi, http(api.media.editFolder));
+    router.delete('/media/folders/:id', mw.authAdminApi, http(api.media.destroyFolder));
     router.get('/media/:id', mw.authAdminApi, http(api.media.read));
+    router.put('/media/:id', mw.authAdminApi, http(api.media.edit));
     router.post('/media/upload',
         mw.authAdminApi,
         apiMw.upload.media('file', 'thumbnail'),
