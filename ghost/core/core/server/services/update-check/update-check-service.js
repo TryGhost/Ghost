@@ -329,8 +329,7 @@ class UpdateCheckService {
 
         for (const message of notification.messages) {
             const toAdd = {
-                // @NOTE: the update check service returns "0" or "1" (https://github.com/TryGhost/UpdateCheck/issues/43)
-                custom: !!notification.custom,
+                custom: notification.custom,
                 createdAt: moment(notification.created_at).toDate(),
                 status: message.status || 'alert',
                 type: message.type || 'info',
