@@ -1404,8 +1404,8 @@ describe('Email renderer', function () {
             assert.match(response.html, /direction:\s*ltr/);
         });
 
-        it('Renders RTL <html> attributes for Persian, Arabic, Hebrew, and Urdu', async function () {
-            for (const locale of ['fa', 'ar', 'he', 'ur']) {
+        for (const locale of ['fa', 'ar', 'he', 'ur']) {
+            it(`Renders RTL <html> attributes for ${locale}`, async function () {
                 customSettings.locale = locale;
                 const post = createModel(basePost);
                 const newsletter = createModel(baseNewsletter);
@@ -1413,8 +1413,8 @@ describe('Email renderer', function () {
                 assert.match(response.html, new RegExp(`<html lang="${locale}" dir="rtl">`), `expected rtl <html> for ${locale}`);
                 assert.match(response.html, /direction:\s*rtl/, `expected direction: rtl in body for ${locale}`);
                 assert.match(response.html, /class="feedback-buttons-container" dir="rtl"/, `expected feedback buttons dir="rtl" for ${locale}`);
-            }
-        });
+            });
+        }
 
         it('preserves multiline code block whitespace in the shared email wrapper', async function () {
             renderedPost = '<pre><code>const firstLine = 1;\nconst secondLine = 2;</code></pre>';
