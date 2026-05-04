@@ -897,14 +897,6 @@ input:focus,
     background: var(--lightgrey-l2);
 }
 
-.gh-members-emailsettings-footer-input {
-    background: color-mod(var(--lightgrey));
-}
-
-.gh-email-design-typography .gh-radio-content {
-    border: 1px solid var(--hairline-color-1);
-}
-
 /* Members activity */
 .gh-member-newsletter-row {
     border-bottom: 1px solid var(--grey-900);
