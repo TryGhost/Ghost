@@ -1,42 +1,27 @@
 import React from 'react';
-import {Badge, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
-import {formatNumber, formatTimestamp} from '@tryghost/shade/utils';
+import {Automation} from '@tryghost/admin-x-framework/api/automations';
+import {Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
 
-type AutomationStatus = 'active' | 'inactive';
+const AUTOMATION_DESCRIPTIONS: Record<string, string> = {
+    'member-welcome-email-free': 'Onboard new free members with a short welcome email.',
+    'member-welcome-email-paid': 'Greet new paid members and point them at member-only content.'
+};
 
-interface AutomationRow {
-    id: string;
-    name: string;
-    steps: number;
-    status: AutomationStatus;
-    lastRun: string;
-}
-
-// TODO(NY-1196): This is sample data, which we'll replace with real data once
-// we have the API in place.
-const automations: AutomationRow[] = [
-    {
-        id: 'free-members-welcome-email',
-        name: 'Free members welcome email',
-        steps: 2,
-        status: 'active',
-        lastRun: new Date(Date.now() - (2 * 60 * 60 * 1000)).toISOString()
-    },
-    {
-        id: 'paid-members-welcome-email',
-        name: 'Paid members welcome email',
-        steps: 3,
-        status: 'active',
-        lastRun: new Date(Date.now() - (24 * 60 * 60 * 1000)).toISOString()
-    }
-];
-
-const AutomationsStatusBadge: React.FC<{status: AutomationStatus}> = ({status}) => {
+const AutomationsStatusBadge: React.FC<{status: Automation['status']}> = ({status}) => {
     switch (status) {
     case 'active':
-        return <Badge variant="success">Active</Badge>;
+        return (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-green/20 px-2 py-0.5 text-xs font-medium text-green">
+                <span className="size-1.5 rounded-full bg-green" />
+                LIVE
+            </span>
+        );
     case 'inactive':
-        return <Badge variant="secondary">Inactive</Badge>;
+        return (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                OFF
+            </span>
+        );
     default: {
         const invalidStatus: never = status;
         throw new Error(`Unhandled status: ${invalidStatus}`);
@@ -44,47 +29,85 @@ const AutomationsStatusBadge: React.FC<{status: AutomationStatus}> = ({status}) 
     }
 };
 
-const AutomationsList: React.FC = () => {
+interface AutomationsListProps {
+    automations?: Automation[];
+    isLoading?: boolean;
+}
+
+const AutomationsListSkeleton: React.FC = () => {
     return (
-        <Table className="flex table-fixed flex-col lg:table" data-testid="automations-list">
-            <TableHeader className="hidden lg:visible! lg:table-header-group!">
+        <Table className="flex table-fixed flex-col lg:table" data-testid="automations-list-loading">
+            <TableHeader className="hidden lg:table-header-group!">
                 <TableRow>
-                    <TableHead className="w-auto px-4">Name</TableHead>
-                    <TableHead className="w-24 px-4">Steps</TableHead>
-                    <TableHead className="w-28 px-4">Status</TableHead>
-                    <TableHead className="w-32 px-4">Last run</TableHead>
+                    <TableHead className="w-auto px-4">Automation</TableHead>
+                    <TableHead className="w-32 px-4">Status</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody className="flex flex-col lg:table-row-group">
-                {automations.map(automation => (
+                {Array.from({length: 2}, (_, index) => (
                     <TableRow
-                        key={automation.id}
-                        className="group relative grid w-full cursor-pointer grid-cols-2 items-center gap-x-4 p-2 hover:bg-muted/50 lg:table-row lg:p-0"
-                        data-testid="automation-list-row"
+                        key={index}
+                        aria-hidden="true"
+                        className="grid w-full grid-cols-[1fr_auto] items-center gap-x-4 p-2 lg:table-row lg:p-0"
                     >
-                        <TableCell className="lg:w-auto lg:p-4">
-                            <a
-                                className="before:absolute before:top-0 before:left-0 before:z-10 before:h-full before:w-full"
-                                href={`#/automations/${automation.id}`}
-                            >
-                                <span className="block truncate text-lg font-medium">
-                                    {automation.name}
-                                </span>
-                            </a>
+                        <TableCell className="min-w-0 lg:p-4">
+                            <Skeleton className="mb-1 h-5 w-48 max-w-full" />
+                            <Skeleton className="h-5 w-80 max-w-full" />
                         </TableCell>
-                        <TableCell className="lg:p-4">
-                            <span className="text-muted-foreground">
-                                {formatNumber(automation.steps)} {automation.steps === 1 ? 'step' : 'steps'}
-                            </span>
-                        </TableCell>
-                        <TableCell className="lg:p-4">
-                            <AutomationsStatusBadge status={automation.status} />
-                        </TableCell>
-                        <TableCell className="lg:p-4">
-                            <span className="text-muted-foreground">{formatTimestamp(automation.lastRun)}</span>
+                        <TableCell className="lg:w-32 lg:p-4">
+                            <Skeleton className="h-5 w-16" />
                         </TableCell>
                     </TableRow>
                 ))}
+            </TableBody>
+        </Table>
+    );
+};
+
+const AutomationsList: React.FC<AutomationsListProps> = ({automations = [], isLoading = false}) => {
+    if (isLoading) {
+        return <AutomationsListSkeleton />;
+    }
+
+    return (
+        <Table className="flex table-fixed flex-col lg:table" data-testid="automations-list">
+            <TableHeader className="hidden lg:table-header-group!">
+                <TableRow>
+                    <TableHead className="w-auto px-4">Automation</TableHead>
+                    <TableHead className="w-32 px-4">Status</TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody className="flex flex-col lg:table-row-group">
+                {automations.map((automation) => {
+                    const description = AUTOMATION_DESCRIPTIONS[automation.slug];
+
+                    return (
+                        <TableRow
+                            key={automation.slug}
+                            className="grid w-full cursor-pointer grid-cols-[1fr_auto] items-center gap-x-4 p-2 lg:table-row lg:p-0"
+                            data-testid="automation-list-row"
+                        >
+                            <TableCell className="static min-w-0 lg:p-4">
+                                <a
+                                    className="before:absolute before:inset-0 before:z-10 before:rounded-sm focus-visible:outline-hidden focus-visible:before:ring-2 focus-visible:before:ring-focus-ring"
+                                    href={`#/automations/${automation.slug}`}
+                                >
+                                    <span className="block font-medium">
+                                        {automation.name}
+                                    </span>
+                                </a>
+                                {description && (
+                                    <span className="block text-muted-foreground">
+                                        {description}
+                                    </span>
+                                )}
+                            </TableCell>
+                            <TableCell className="lg:w-32 lg:p-4">
+                                <AutomationsStatusBadge status={automation.status} />
+                            </TableCell>
+                        </TableRow>
+                    );
+                })}
             </TableBody>
         </Table>
     );
