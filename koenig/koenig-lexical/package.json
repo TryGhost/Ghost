@@ -53,7 +53,7 @@
     "@codemirror/lang-javascript": "6.2.5",
     "@emoji-mart/data": "1.2.1",
     "@emoji-mart/react": "1.1.1",
-    "@etchteam/storybook-addon-status": "8.0.0",
+    "@etchteam/storybook-addon-status": "8.1.0",
     "@lexical/clipboard": "0.13.1",
     "@lexical/list": "0.13.1",
     "@lexical/react": "0.13.1",
