@@ -26,6 +26,11 @@ scan_staged_secrets() {
     local scan_status=0
     local tmpfile
 
+    if ! pnpm exec secretlint --version >/dev/null 2>&1; then
+        echo -e "${red}secretlint is not available. Run pnpm install from the repository root.${no_color}"
+        return 1
+    fi
+
     if ! tmpfile=$(mktemp); then
         echo -e "${red}Could not create temp file for secret scanning${no_color}"
         return 1
