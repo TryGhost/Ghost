@@ -118,6 +118,23 @@ describe('theme-editor-utils', function () {
                 }
             );
         });
+
+        it('rejects archives with non-normalized entry paths', async function () {
+            const archive = await createArchiveBuffer((zip) => {
+                zip.file('/post-card.hbs', '{{title}}');
+            });
+
+            await assert.rejects(
+                extractThemeArchive(archive),
+                (error: unknown) => {
+                    assert.ok(error instanceof ThemeArchiveExtractionError);
+                    assert.equal(error.reason, 'invalid_archive');
+                    assert.match(error.message, /failed to open the theme archive/i);
+
+                    return true;
+                }
+            );
+        });
     });
 
     describe('packThemeArchive', function () {

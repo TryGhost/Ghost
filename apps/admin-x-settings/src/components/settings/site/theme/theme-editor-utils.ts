@@ -20,14 +20,6 @@ export const THEME_EDITOR_ARCHIVE_LIMITS = {
     maxExtractedBytes: 32 * 1024 * 1024
 } as const;
 
-type ThemeArchiveMetadata = {
-    uncompressedSize?: number;
-};
-
-type ThemeArchiveEntry = JSZip.JSZipObject & {
-    _data?: ThemeArchiveMetadata;
-};
-
 export class ThemeArchiveExtractionError extends Error {
     reason: 'invalid_archive' | 'too_many_files' | 'too_large';
 
@@ -150,16 +142,6 @@ export const cloneThemeFiles = (files: Record<string, ThemeEditorFile>) => {
 
 const invalidArchiveMessage = 'Failed to open the theme archive. Download the theme again and retry.';
 
-const getEntryUncompressedSize = (entry: JSZip.JSZipObject) => {
-    const size = (entry as ThemeArchiveEntry)._data?.uncompressedSize;
-
-    if (typeof size !== 'number' || !Number.isFinite(size) || size < 0) {
-        throw new ThemeArchiveExtractionError('invalid_archive', invalidArchiveMessage);
-    }
-
-    return size;
-};
-
 const getThemeArchiveSizeLabel = (bytes: number) => {
     const megabytes = bytes / (1024 * 1024);
 
@@ -189,19 +171,6 @@ const assertThemeArchiveLimits = (entries: Array<[string, JSZip.JSZipObject]>) =
             `This theme archive contains too many files for the browser editor (${entries.length}/${THEME_EDITOR_ARCHIVE_LIMITS.maxFiles}).`
         );
     }
-
-    let extractedBytes = 0;
-
-    for (const [, entry] of entries) {
-        extractedBytes += getEntryUncompressedSize(entry);
-
-        if (extractedBytes > THEME_EDITOR_ARCHIVE_LIMITS.maxExtractedBytes) {
-            throw new ThemeArchiveExtractionError(
-                'too_large',
-                `This theme archive is too large to open in the browser editor. Extracted files must stay under ${getThemeArchiveSizeLabel(THEME_EDITOR_ARCHIVE_LIMITS.maxExtractedBytes)}.`
-            );
-        }
-    }
 };
 
 const loadThemeArchive = async (arrayBuffer: ArrayBuffer) => {
@@ -220,6 +189,37 @@ const readThemeBinaryFile = async (entry: JSZip.JSZipObject) => {
     }
 };
 
+const readThemeTextFile = async (entry: JSZip.JSZipObject) => {
+    try {
+        return await entry.async('string');
+    } catch {
+        throw new ThemeArchiveExtractionError('invalid_archive', invalidArchiveMessage);
+    }
+};
+
+const getNormalizedArchivePath = (path: string) => {
+    const normalizedPath = normaliseRelativePath(path);
+
+    if (!normalizedPath || normalizedPath !== path) {
+        throw new ThemeArchiveExtractionError('invalid_archive', invalidArchiveMessage);
+    }
+
+    return normalizedPath;
+};
+
+const trackExtractedBytes = (totalBytes: number, fileBytes: number) => {
+    const nextTotal = totalBytes + fileBytes;
+
+    if (nextTotal > THEME_EDITOR_ARCHIVE_LIMITS.maxExtractedBytes) {
+        throw new ThemeArchiveExtractionError(
+            'too_large',
+            `This theme archive is too large to open in the browser editor. Extracted files must stay under ${getThemeArchiveSizeLabel(THEME_EDITOR_ARCHIVE_LIMITS.maxExtractedBytes)}.`
+        );
+    }
+
+    return nextTotal;
+};
+
 export const extractThemeArchive = async (arrayBuffer: ArrayBuffer): Promise<ThemeEditorSnapshot> => {
     const zip = await loadThemeArchive(arrayBuffer);
     const entries = collectArchiveEntries(zip);
@@ -228,6 +228,8 @@ export const extractThemeArchive = async (arrayBuffer: ArrayBuffer): Promise<The
 
     const rootPrefix = detectCommonRoot(entries.map(([path]) => path));
     const files: Record<string, ThemeEditorFile> = {};
+    const textEncoder = new TextEncoder();
+    let extractedBytes = 0;
 
     for (const [zipPath, entry] of entries) {
         const displayPath = rootPrefix ? zipPath.slice(rootPrefix.length) : zipPath;
@@ -236,14 +238,16 @@ export const extractThemeArchive = async (arrayBuffer: ArrayBuffer): Promise<The
             continue;
         }
 
-        const editable = isEditablePath(displayPath);
+        const normalizedPath = getNormalizedArchivePath(displayPath);
+        const editable = isEditablePath(normalizedPath);
 
         if (editable) {
             try {
-                const content = await entry.async('string');
+                const content = await readThemeTextFile(entry);
+                extractedBytes = trackExtractedBytes(extractedBytes, textEncoder.encode(content).byteLength);
 
-                files[displayPath] = {
-                    path: displayPath,
+                files[normalizedPath] = {
+                    path: normalizedPath,
                     editable: true,
                     content,
                     binary: null,
@@ -257,11 +261,14 @@ export const extractThemeArchive = async (arrayBuffer: ArrayBuffer): Promise<The
             }
         }
 
-        files[displayPath] = {
-            path: displayPath,
+        const binary = await readThemeBinaryFile(entry);
+        extractedBytes = trackExtractedBytes(extractedBytes, binary.byteLength);
+
+        files[normalizedPath] = {
+            path: normalizedPath,
             editable: false,
             content: null,
-            binary: await readThemeBinaryFile(entry),
+            binary,
             date: entry.date || new Date(),
             unixPermissions: typeof entry.unixPermissions === 'number' ? entry.unixPermissions : null,
             dosPermissions: typeof entry.dosPermissions === 'number' ? entry.dosPermissions : null
