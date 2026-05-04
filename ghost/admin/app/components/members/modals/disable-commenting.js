@@ -26,12 +26,6 @@ export default class DisableCommentingModal extends Component {
                 contentType: 'application/json'
             });
 
-            // Invalidate React Query cache so comments list reflects changes
-            if (window.adminXQueryClient) {
-                window.adminXQueryClient.invalidateQueries({queryKey: ['CommentsResponseType']});
-                window.adminXQueryClient.invalidateQueries({queryKey: ['MembersResponseType']});
-            }
-
             this.args.data.afterDisable?.();
             this.notifications.showNotification(`Commenting has been disabled for ${this.member.name || this.member.email}.`, {type: 'success'});
             this.args.close(true);

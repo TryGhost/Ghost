@@ -137,6 +137,39 @@ describe('useEmberDataSync', () => {
         expect(invalidateSpy).not.toHaveBeenCalled();
     });
 
+    queryTest('invalidates comment queries for mapped Ember comment events', async ({ queryClient, wrapper }) => {
+        const mock = createMockStateBridge();
+        window.EmberBridge = { state: mock.stateBridge };
+
+        queryClient.setQueryData(['MembersResponseType', '/members'], { members: [] });
+        queryClient.setQueryData(['CommentsResponseType', '/comments'], { comments: [] });
+        queryClient.setQueryData(['PostsResponseType', '/posts'], { posts: [] });
+
+        renderHook(() => useEmberDataSync(), { wrapper });
+
+        await waitFor(() => {
+            expect(mock.onSpy).toHaveBeenCalledWith('emberDataChange', expect.any(Function));
+        });
+
+        act(() => {
+            mock.emit('emberDataChange', {
+                operation: 'update',
+                modelName: 'comment',
+                id: 'member-1',
+                data: null
+            });
+        });
+
+        await waitFor(() => {
+            const queries = queryClient.getQueryCache().getAll();
+            const commentQueries = queries.filter(q => q.queryKey[0] === 'CommentsResponseType');
+            const nonCommentQueries = queries.filter(q => q.queryKey[0] !== 'CommentsResponseType');
+
+            expect(commentQueries.every(q => q.state.isInvalidated)).toBe(true);
+            expect(nonCommentQueries.every(q => !q.state.isInvalidated)).toBe(true);
+        });
+    });
+
     queryTest('does not subscribe if unmounted before the bridge becomes available', async ({ wrapper }) => {
         vi.useFakeTimers();
         const mock = createMockStateBridge();

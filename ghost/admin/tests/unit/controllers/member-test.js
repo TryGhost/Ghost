@@ -29,4 +29,12 @@ describe('Unit: Controller: member', function () {
         expect(triggerEmberDataChange.calledOnce).to.be.true;
         expect(triggerEmberDataChange.calledWith('update', 'member', 'member-1', null)).to.be.true;
     });
+
+    it('notifies the Ember bridge when member commenting changes', function () {
+        controller.invalidateMemberCommenting();
+
+        expect(triggerEmberDataChange.calledTwice).to.be.true;
+        expect(triggerEmberDataChange.firstCall.calledWith('update', 'member', 'member-1', null)).to.be.true;
+        expect(triggerEmberDataChange.secondCall.calledWith('update', 'comment', 'member-1', null)).to.be.true;
+    });
 });

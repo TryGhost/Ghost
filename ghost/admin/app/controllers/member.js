@@ -131,6 +131,11 @@ export default class MemberController extends Controller {
         this.stateBridge.triggerEmberDataChange('update', 'member', this.member.id, null);
     }
 
+    invalidateMemberCommenting() {
+        this.invalidateMembersCache();
+        this.stateBridge.triggerEmberDataChange('update', 'comment', this.member.id, null);
+    }
+
     // Actions -----------------------------------------------------------------
 
     @action
@@ -188,6 +193,7 @@ export default class MemberController extends Controller {
         this.modals.open(DisableCommentingModal, {
             member: this.member,
             afterDisable: () => {
+                this.invalidateMemberCommenting();
                 this.fetchMemberTask.perform(this.member.id);
             }
         });
@@ -200,7 +206,7 @@ export default class MemberController extends Controller {
             const url = this.ghostPaths.url.api('members', this.member.id, 'commenting', 'enable');
             await this.ajax.post(url);
 
-            this.invalidateMembersCache();
+            this.invalidateMemberCommenting();
 
             await this.fetchMemberTask.perform(this.member.id);
             this.notifications.showNotification(`Commenting has been enabled for ${this.member.name || this.member.email}.`, {type: 'success'});
