@@ -12,7 +12,7 @@ const controller = {
         },
         permissions: true,
         async query() {
-            const automations = await models.WelcomeEmailAutomation.findAll();
+            const automations = await models.Automation.findAll();
             return {
                 data: automations.map(automation => ({
                     id: automation.get('id'),

@@ -9,6 +9,7 @@ const {Action} = require('./action');
 const {ApiKey, ApiKeys} = require('./api-key');
 const {Author, Authors} = require('./author');
 const {AutomatedEmailRecipient, AutomatedEmailRecipients} = require('./automated-email-recipient');
+const {Automation} = require('./automation');
 const {Benefit, Benefits} = require('./benefit');
 const {CollectionPost} = require('./collection-post');
 const {Collection} = require('./collection');
@@ -75,7 +76,6 @@ const {User, Users} = require('./user');
 const {Webhook, Webhooks} = require('./webhook');
 const {WelcomeEmailAutomatedEmail} = require('./welcome-email-automated-email');
 const {WelcomeEmailAutomationRun} = require('./welcome-email-automation-run');
-const {WelcomeEmailAutomation} = require('./welcome-email-automation');
 
 // enable event listeners
 require('./base/listeners');
@@ -91,6 +91,7 @@ exports.Author = Author;
 exports.Authors = Authors;
 exports.AutomatedEmailRecipient = AutomatedEmailRecipient;
 exports.AutomatedEmailRecipients = AutomatedEmailRecipients;
+exports.Automation = Automation;
 exports.Benefit = Benefit;
 exports.Benefits = Benefits;
 exports.CollectionPost = CollectionPost;
@@ -188,7 +189,6 @@ exports.Webhook = Webhook;
 exports.Webhooks = Webhooks;
 exports.WelcomeEmailAutomatedEmail = WelcomeEmailAutomatedEmail;
 exports.WelcomeEmailAutomationRun = WelcomeEmailAutomationRun;
-exports.WelcomeEmailAutomation = WelcomeEmailAutomation;
 
 function init() {
     // `init` used to be a necessary call, but now it's unnecessary.

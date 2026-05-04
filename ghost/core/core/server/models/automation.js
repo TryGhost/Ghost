@@ -4,8 +4,8 @@ const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../services/member-welcome-emails/
 
 const MEMBER_WELCOME_EMAIL_SLUG_SET = new Set(Object.values(MEMBER_WELCOME_EMAIL_SLUGS));
 
-const WelcomeEmailAutomation = ghostBookshelf.Model.extend({
-    tableName: 'welcome_email_automations',
+const Automation = ghostBookshelf.Model.extend({
+    tableName: 'automations',
 
     defaults() {
         return {
@@ -57,5 +57,5 @@ const WelcomeEmailAutomation = ghostBookshelf.Model.extend({
 });
 
 module.exports = {
-    WelcomeEmailAutomation: ghostBookshelf.model('WelcomeEmailAutomation', WelcomeEmailAutomation)
+    Automation: ghostBookshelf.model('Automation', Automation)
 };

@@ -1170,7 +1170,7 @@ module.exports = {
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
     },
-    welcome_email_automations: {
+    automations: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'inactive', validations: {isIn: [['active', 'inactive']]}},
         name: {type: 'string', maxlength: 191, nullable: false, unique: true},
@@ -1180,7 +1180,7 @@ module.exports = {
     },
     welcome_email_automated_emails: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        welcome_email_automation_id: {type: 'string', maxlength: 24, nullable: false, references: 'welcome_email_automations.id', constraintName: 'weae_automation_id_foreign', cascadeDelete: true},
+        welcome_email_automation_id: {type: 'string', maxlength: 24, nullable: false, references: 'automations.id', constraintName: 'weae_automation_id_foreign', cascadeDelete: true},
         next_welcome_email_automated_email_id: {type: 'string', maxlength: 24, nullable: true, references: 'welcome_email_automated_emails.id', constraintName: 'weae_next_email_id_foreign', cascadeDelete: false},
         delay_days: {type: 'integer', nullable: false, unsigned: true},
         subject: {type: 'string', maxlength: 300, nullable: false},
@@ -1194,7 +1194,7 @@ module.exports = {
     },
     welcome_email_automation_runs: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        welcome_email_automation_id: {type: 'string', maxlength: 24, nullable: false, references: 'welcome_email_automations.id', constraintName: 'wear_automation_id_foreign', cascadeDelete: true},
+        welcome_email_automation_id: {type: 'string', maxlength: 24, nullable: false, references: 'automations.id', constraintName: 'wear_automation_id_foreign', cascadeDelete: true},
         member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', constraintName: 'wear_member_id_foreign', cascadeDelete: true},
         next_welcome_email_automated_email_id: {type: 'string', maxlength: 24, nullable: true, references: 'welcome_email_automated_emails.id', constraintName: 'wear_next_email_id_foreign', cascadeDelete: false},
         ready_at: {type: 'dateTime', nullable: true},

@@ -28,7 +28,7 @@ describe('Process Outbox Job', function () {
     afterEach(async function () {
         sinon.restore();
         await db.knex('outbox').del();
-        await db.knex('welcome_email_automations').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
+        await db.knex('automations').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
         try {
             await jobService.removeJob(JOB_NAME);
         } catch (err) {
@@ -65,7 +65,7 @@ describe('Process Outbox Job', function () {
             });
 
             const automationId = ObjectId().toHexString();
-            await db.knex('welcome_email_automations').insert({
+            await db.knex('automations').insert({
                 id: automationId,
                 status: 'active',
                 name: 'Free Member Welcome Email',

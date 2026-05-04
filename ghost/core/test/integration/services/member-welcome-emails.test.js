@@ -68,7 +68,7 @@ describe('Member Welcome Emails Integration', function () {
         });
 
         const freeAutomationId = ObjectId().toHexString();
-        await db.knex('welcome_email_automations').insert({
+        await db.knex('automations').insert({
             id: freeAutomationId,
             status: 'active',
             name: 'Free Member Welcome Email',
@@ -86,7 +86,7 @@ describe('Member Welcome Emails Integration', function () {
         });
 
         const paidAutomationId = ObjectId().toHexString();
-        await db.knex('welcome_email_automations').insert({
+        await db.knex('automations').insert({
             id: paidAutomationId,
             status: 'active',
             name: 'Paid Member Welcome Email',
@@ -120,8 +120,8 @@ describe('Member Welcome Emails Integration', function () {
         await db.knex('automated_email_recipients').del();
         await db.knex('outbox').del();
         await db.knex('members').del();
-        await db.knex('welcome_email_automations').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
-        await db.knex('welcome_email_automations').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.paid).del();
+        await db.knex('automations').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
+        await db.knex('automations').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.paid).del();
     });
 
     describe('Member creation with welcome emails', function () {
@@ -211,13 +211,13 @@ describe('Member Welcome Emails Integration', function () {
 
         async function getAutomatedEmailBySlug(slug) {
             return db.knex('welcome_email_automated_emails')
-                .join('welcome_email_automations', 'welcome_email_automated_emails.welcome_email_automation_id', 'welcome_email_automations.id')
-                .where('welcome_email_automations.slug', slug)
+                .join('automations', 'welcome_email_automated_emails.welcome_email_automation_id', 'automations.id')
+                .where('automations.slug', slug)
                 .first('welcome_email_automated_emails.*');
         }
 
         it('does not send email when template is inactive', async function () {
-            await db.knex('welcome_email_automations')
+            await db.knex('automations')
                 .where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free)
                 .update({status: 'inactive'});
 
@@ -243,7 +243,7 @@ describe('Member Welcome Emails Integration', function () {
         });
 
         it('does not send email when no template exists', async function () {
-            await db.knex('welcome_email_automations').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
+            await db.knex('automations').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
 
             await models.Outbox.add({
                 event_type: 'MemberCreatedEvent',
@@ -267,7 +267,7 @@ describe('Member Welcome Emails Integration', function () {
         });
 
         it('does not send email when paid template is inactive but entry has status paid', async function () {
-            await db.knex('welcome_email_automations')
+            await db.knex('automations')
                 .where('slug', MEMBER_WELCOME_EMAIL_SLUGS.paid)
                 .update({status: 'inactive'});
 
@@ -293,7 +293,7 @@ describe('Member Welcome Emails Integration', function () {
         });
 
         it('does not send email when no paid template exists but entry has status paid', async function () {
-            await db.knex('welcome_email_automations').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.paid).del();
+            await db.knex('automations').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.paid).del();
 
             await models.Outbox.add({
                 event_type: 'MemberCreatedEvent',
@@ -350,8 +350,8 @@ describe('Member Welcome Emails Integration', function () {
             assert.equal(record.member_name, memberName);
 
             const automatedEmail = await db.knex('welcome_email_automated_emails')
-                .join('welcome_email_automations', 'welcome_email_automated_emails.welcome_email_automation_id', 'welcome_email_automations.id')
-                .where('welcome_email_automations.slug', MEMBER_WELCOME_EMAIL_SLUGS.free)
+                .join('automations', 'welcome_email_automated_emails.welcome_email_automation_id', 'automations.id')
+                .where('automations.slug', MEMBER_WELCOME_EMAIL_SLUGS.free)
                 .first('welcome_email_automated_emails.id');
             assert.equal(record.automated_email_id, automatedEmail.id);
         });
@@ -454,7 +454,7 @@ describe('Member Welcome Emails Integration', function () {
         });
 
         it('uses mock member UUID when sending test welcome emails', async function () {
-            const automation = await db.knex('welcome_email_automations')
+            const automation = await db.knex('automations')
                 .where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free)
                 .first();
 
@@ -492,7 +492,7 @@ describe('Member Welcome Emails Integration', function () {
         it('uses automated sender overrides for test welcome emails', async function () {
             memberWelcomeEmailService.init();
 
-            const automation = await db.knex('welcome_email_automations')
+            const automation = await db.knex('automations')
                 .where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free)
                 .first();
             const automatedEmail = await getAutomatedEmailBySlug(MEMBER_WELCOME_EMAIL_SLUGS.free);

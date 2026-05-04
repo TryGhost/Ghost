@@ -10,7 +10,7 @@ const settingsHelpers = require('../settings-helpers');
 const EmailAddressParser = require('../email-address/email-address-parser');
 const mail = require('../mail');
 // @ts-expect-error type checker has trouble with the dynamic exporting in models
-const {WelcomeEmailAutomation, WelcomeEmailAutomatedEmail, Newsletter} = require('../../models');
+const {Automation, WelcomeEmailAutomatedEmail, Newsletter} = require('../../models');
 const MemberWelcomeEmailRenderer = require('./member-welcome-email-renderer');
 const {MEMBER_WELCOME_EMAIL_LOG_KEY, MEMBER_WELCOME_EMAIL_TAG, MEMBER_WELCOME_EMAIL_SLUGS, MESSAGES} = require('./constants');
 
@@ -179,7 +179,7 @@ class MemberWelcomeEmailService {
     }
 
     async #loadWelcomeEmailsCollection() {
-        return WelcomeEmailAutomation.findAll({
+        return Automation.findAll({
             filter: WELCOME_EMAIL_FILTER,
             withRelated: ['welcomeEmailAutomatedEmail']
         });
@@ -337,7 +337,7 @@ class MemberWelcomeEmailService {
         this.#defaultNewsletterSenderOptions = await this.#getDefaultNewsletterSenderOptions();
 
         for (const [memberStatus, slug] of Object.entries(MEMBER_WELCOME_EMAIL_SLUGS)) {
-            const row = await WelcomeEmailAutomation.findOne({slug}, {
+            const row = await Automation.findOne({slug}, {
                 withRelated: ['welcomeEmailAutomatedEmail', 'welcomeEmailAutomatedEmail.emailDesignSetting']
             });
 
@@ -428,7 +428,7 @@ class MemberWelcomeEmailService {
             return false;
         }
 
-        const row = await WelcomeEmailAutomation.findOne({slug}, {withRelated: ['welcomeEmailAutomatedEmail']});
+        const row = await Automation.findOne({slug}, {withRelated: ['welcomeEmailAutomatedEmail']});
         if (!row) {
             return false;
         }
@@ -438,7 +438,7 @@ class MemberWelcomeEmailService {
 
     async #renderWelcomeEmailPreview({automatedEmailId, subject, lexical, memberEmail = 'jamie@example.com'}) {
         // Still validate the automated email exists (for permission purposes)
-        const automation = await WelcomeEmailAutomation.findOne({id: automatedEmailId}, {
+        const automation = await Automation.findOne({id: automatedEmailId}, {
             withRelated: ['welcomeEmailAutomatedEmail', 'welcomeEmailAutomatedEmail.emailDesignSetting']
         });
         const automatedEmail = automation?.related('welcomeEmailAutomatedEmail');
