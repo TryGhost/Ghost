@@ -1,7 +1,8 @@
 'use client';
 
 import type React from 'react';
-import {createContext, useCallback, useContext, useEffect, useMemo, useState} from 'react';
+import {createContext, useCallback, useContext, useEffect, useMemo, useRef, useState} from 'react';
+import {Calendar} from '@/components/ui/calendar';
 import {
     Command,
     CommandEmpty,
@@ -21,7 +22,7 @@ import {Popover, PopoverContent, PopoverTrigger} from '@/components/ui/popover';
 import {Switch} from '@/components/ui/switch';
 import {Tooltip, TooltipContent, TooltipTrigger} from '@/components/ui/tooltip';
 import {cva, type VariantProps} from 'class-variance-authority';
-import {AlertCircle, Check, Loader2, Plus, X} from 'lucide-react';
+import {AlertCircle, Calendar as CalendarIcon, Check, Loader2, Plus, X} from 'lucide-react';
 import {cn} from '@/lib/utils';
 
 // i18n Configuration Interface
@@ -638,6 +639,181 @@ function FilterInput<T = unknown>({
                     {field.suffix}
                 </div>
             )}
+        </div>
+    );
+}
+
+// Parses an HTML-date-input value (YYYY-MM-DD) into a local-time Date so it
+// matches what the native control would have produced. Returns undefined for
+// empty / unparseable input rather than throwing.
+const parseFilterDateValue = (value: string): Date | undefined => {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+    if (!match) {
+        return undefined;
+    }
+    const [, yearPart, monthPart, dayPart] = match;
+    const year = Number(yearPart);
+    const month = Number(monthPart);
+    const day = Number(dayPart);
+    const date = new Date(year, month - 1, day);
+
+    if (
+        date.getFullYear() !== year ||
+        date.getMonth() !== month - 1 ||
+        date.getDate() !== day
+    ) {
+        return undefined;
+    }
+
+    return date;
+};
+
+const formatFilterDateValue = (date: Date | undefined): string => {
+    if (!date) {
+        return '';
+    }
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
+interface FilterDatePickerProps<T = unknown> {
+    field?: FilterFieldConfig<T>;
+    value: string;
+    onChange: (value: string) => void;
+    className?: string;
+}
+
+// Composes a native <input type="date"> (so segment editing & locale
+// formatting come for free, and onChange fires whenever the value becomes a
+// complete valid date) with a Shade Calendar popover triggered from a sibling
+// button. The native browser calendar indicator is hidden so the popover is
+// the only visible picker affordance.
+function FilterDatePicker<T = unknown>({
+    field,
+    value,
+    onChange,
+    className
+}: FilterDatePickerProps<T>) {
+    const context = useFilterContext();
+    const [open, setOpen] = useState(false);
+    const parsed = useMemo(() => parseFilterDateValue(value), [value]);
+    const [month, setMonth] = useState<Date | undefined>(parsed);
+    const inputRef = useRef<HTMLInputElement>(null);
+    // Local buffer for the input's value so the controlled element follows the
+    // user's segment-edit state instead of the filter state. This insulates the
+    // input from upstream re-renders triggered by URL roundtrips on Comments —
+    // each keystroke updates `localValue` (which matches what the browser put in
+    // the DOM), so React never has to force the DOM back to the committed
+    // value mid-edit and the segment-edit cursor stays intact.
+    const [localValue, setLocalValue] = useState(value);
+
+    useEffect(() => {
+        if (parsed) {
+            setMonth(parsed);
+        }
+    }, [parsed]);
+
+    // Sync the buffer from the committed filter value only when the user
+    // isn't editing — calendar picks, "Clear filters", URL deep-links, etc.
+    useEffect(() => {
+        if (document.activeElement !== inputRef.current) {
+            setLocalValue(value);
+        }
+    }, [value]);
+
+    const notifyInputChange = (nextValue: string, input: HTMLInputElement | null = inputRef.current) => {
+        if (!field?.onInputChange || !input) {
+            return;
+        }
+
+        field.onInputChange({
+            target: {...input, value: nextValue},
+            currentTarget: {...input, value: nextValue}
+        } as React.ChangeEvent<HTMLInputElement>);
+    };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setLocalValue(e.target.value);
+    };
+
+    const handleInputBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+        if (e.target.value !== value) {
+            onChange(e.target.value);
+        }
+        notifyInputChange(e.target.value, e.target);
+    };
+
+    const handleSelect = (date: Date | undefined) => {
+        if (!date) {
+            setLocalValue('');
+            onChange('');
+            notifyInputChange('');
+            return;
+        }
+        const formatted = formatFilterDateValue(date);
+        setMonth(date);
+        setLocalValue(formatted);
+        onChange(formatted);
+        notifyInputChange(formatted);
+        setOpen(false);
+    };
+
+    return (
+        <div
+            className={cn(
+                'w-36',
+                filterInputVariants({variant: context.variant, size: context.size, cursorPointer: false}),
+                className
+            )}
+            data-slot="filters-input-wrapper"
+        >
+            {field?.prefix && (
+                <div
+                    className={filterFieldAddonVariants({variant: context.variant, size: context.size})}
+                    data-slot="filters-prefix"
+                >
+                    {field.prefix}
+                </div>
+            )}
+            <div className="flex w-full min-w-0 items-stretch">
+                <input
+                    ref={inputRef}
+                    autoComplete="off"
+                    className="w-full min-w-0 bg-transparent outline-hidden dark:!bg-transparent [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none [&::-webkit-clear-button]:hidden [&::-webkit-inner-spin-button]:hidden"
+                    data-slot="filters-input"
+                    type="date"
+                    value={localValue}
+                    onBlur={handleInputBlur}
+                    onChange={handleInputChange}
+                />
+            </div>
+            <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger asChild>
+                    <button
+                        aria-label="Open calendar"
+                        className={cn(
+                            filterFieldAddonVariants({variant: context.variant, size: context.size}),
+                            'cursor-pointer text-muted-foreground transition-colors hover:text-foreground'
+                        )}
+                        data-slot="filters-suffix"
+                        type="button"
+                    >
+                        <CalendarIcon className="size-3.5" />
+                    </button>
+                </PopoverTrigger>
+                <PopoverContent align="center" className="w-auto overflow-hidden p-0" sideOffset={4}>
+                    <Calendar
+                        captionLayout="dropdown"
+                        mode="single"
+                        month={month}
+                        selected={parsed}
+                        onMonthChange={setMonth}
+                        onSelect={handleSelect}
+                    />
+                </PopoverContent>
+            </Popover>
         </div>
     );
 }
@@ -1733,13 +1909,11 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                     cursorPointer: context.cursorPointer
                 })}
             >
-                <FilterInput
-                    className={cn('w-24 max-w-full', field.className)}
+                <FilterDatePicker
+                    className={cn('max-w-full', field.className)}
                     field={field}
-                    type="date"
                     value={startDate}
-                    onChange={e => onChange([e.target.value, endDate] as T[])}
-                    onInputChange={field.onInputChange}
+                    onChange={v => onChange([v, endDate] as T[])}
                 />
                 <div
                     className={filterFieldBetweenVariants({variant: context.variant, size: context.size})}
@@ -1747,13 +1921,11 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                 >
                     {context.i18n.to}
                 </div>
-                <FilterInput
-                    className={cn('w-24 max-w-full', field.className)}
+                <FilterDatePicker
+                    className={cn('max-w-full', field.className)}
                     field={field}
-                    type="date"
                     value={endDate}
-                    onChange={e => onChange([startDate, e.target.value] as T[])}
-                    onInputChange={field.onInputChange}
+                    onChange={v => onChange([startDate, v] as T[])}
                 />
             </div>
         );
@@ -1824,13 +1996,11 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
 
     if (field.type === 'date') {
         return (
-            <FilterInput
-                className={cn('w-16', field.className)}
+            <FilterDatePicker
+                className={field.className}
                 field={field}
-                type="date"
                 value={(values[0] as string) || ''}
-                onChange={e => onChange([e.target.value] as T[])}
-                onInputChange={field.onInputChange}
+                onChange={v => onChange([v] as T[])}
             />
         );
     }
