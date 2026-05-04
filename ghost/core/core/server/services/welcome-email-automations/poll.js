@@ -1,6 +1,6 @@
 const logging = require('@tryghost/logging');
 const db = require('../../data/db');
-const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../member-welcome-emails/constants');
+const {MEMBER_WELCOME_EMAIL_SLUGS, MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES} = require('../member-welcome-emails/constants');
 const {AutomatedEmailRecipient, Member, WelcomeEmailAutomationRun} = require('../../models');
 /** @import {Knex} from 'knex' */
 
@@ -206,7 +206,8 @@ async function processRun({
 
         // TODO(NY-1193): Bail if member is unsubscribed
 
-        if (member.get('status') !== memberStatus) {
+        const eligibleStatuses = MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES[memberStatus];
+        if (!eligibleStatuses.includes(member.get('status'))) {
             await markExited(run.id, 'member changed status');
             return;
         }
