@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
 import {SOCIAL_PLATFORM_CONFIGS, SOCIAL_PLATFORM_KEYS, getSocialValidationError, normalizeSocialInput} from '../../../utils/social-urls';
@@ -6,6 +6,16 @@ import {SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import type {Setting} from '@tryghost/admin-x-framework/api/settings';
 import type {SocialPlatformKey} from '../../../utils/social-urls';
+
+// facebook + twitter are the original publication-level social settings;
+// the other 7 ship with the backend in a separate release. Use the presence
+// of `linkedin` in the API response as a canary for "backend has the new
+// settings" — the migration adds all 7 in one transaction, so any one of
+// them works as the signal. Without this gate, an admin running ahead of
+// its backend would render fields, accept user input, and silently lose
+// the value on save (the backend drops unknown keys without erroring).
+const LEGACY_PLATFORM_KEYS: SocialPlatformKey[] = ['facebook', 'twitter'];
+const CAPABILITY_CANARY_KEY = 'linkedin';
 
 const getSocialUrls = (localSettings: Setting[] | null) => {
     const socialHandles = getSettingValues<string | null>(localSettings, [...SOCIAL_PLATFORM_KEYS]);
@@ -29,6 +39,13 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const [errors, setErrors] = useState<Partial<Record<SocialPlatformKey, string>>>({});
     const [urls, setUrls] = useState<Record<SocialPlatformKey, string>>(() => getSocialUrls(localSettings));
+
+    const visiblePlatforms = useMemo(() => {
+        const backendSupportsNewPlatforms = localSettings?.some(s => s.key === CAPABILITY_CANARY_KEY) ?? false;
+        return backendSupportsNewPlatforms
+            ? SOCIAL_PLATFORM_CONFIGS
+            : SOCIAL_PLATFORM_CONFIGS.filter(config => LEGACY_PLATFORM_KEYS.includes(config.key));
+    }, [localSettings]);
 
     useEffect(() => {
         setUrls(getSocialUrls(localSettings));
@@ -55,7 +72,7 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     const handleSaveClick = () => {
-        const formErrors = SOCIAL_PLATFORM_CONFIGS.reduce<Partial<Record<SocialPlatformKey, string>>>((current, config) => {
+        const formErrors = visiblePlatforms.reduce<Partial<Record<SocialPlatformKey, string>>>((current, config) => {
             const error = getSocialValidationError(config.key, urls[config.key]);
             if (error) {
                 current[config.key] = error;
@@ -85,7 +102,7 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
             onSave={handleSaveClick}
         >
             <SettingGroupContent>
-                {SOCIAL_PLATFORM_CONFIGS.map(config => (
+                {visiblePlatforms.map(config => (
                     <TextField
                         key={config.key}
                         data-testid={config.testId}

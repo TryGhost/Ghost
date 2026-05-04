@@ -1,5 +1,7 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, testUrlValidation, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
+import {globalDataRequests, mockApi, responseFixtures, testUrlValidation, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
+
+const NEW_PLATFORM_KEYS = ['threads', 'bluesky', 'mastodon', 'tiktok', 'youtube', 'instagram', 'linkedin'];
 
 const editedSocialSettings = [
     {key: 'facebook', value: 'fb', label: 'Facebook', displayValue: 'https://www.facebook.com/fb'},
@@ -44,6 +46,34 @@ test.describe('Social account settings', async () => {
         expect(sortSettings((lastApiRequests.editSettings?.body as {settings: Array<{key: string; value: string}>} | undefined)?.settings ?? [])).toEqual(
             sortSettings(editedSocialSettings.map(({key, value}) => ({key, value})))
         );
+    });
+
+    test('Hides the new platform fields when the backend has not deployed the migration yet', async ({page}) => {
+        // Simulates an admin running ahead of its backend: the settings response
+        // is missing the keys added by the publication-social-account-settings
+        // migration. The UI should fall back to facebook + twitter only so the
+        // user can't enter values that would be silently dropped by a backend
+        // that doesn't list them in EDITABLE_SETTINGS.
+        const settingsWithoutNewKeys = {
+            ...responseFixtures.settings,
+            settings: responseFixtures.settings.settings.filter(s => !NEW_PLATFORM_KEYS.includes(s.key))
+        };
+
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseSettings: {method: 'GET', path: /^\/settings\/\?group=/, response: settingsWithoutNewKeys}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('social-accounts');
+
+        await expect(section.getByLabel('Facebook')).toBeVisible();
+        await expect(section.getByLabel('X')).toBeVisible();
+
+        for (const label of ['LinkedIn', 'Bluesky', 'Threads', 'Mastodon', 'TikTok', 'YouTube', 'Instagram']) {
+            await expect(section.getByLabel(label)).toHaveCount(0);
+        }
     });
 
     test('Restores values on cancel', async ({page}) => {
