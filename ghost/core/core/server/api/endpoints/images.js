@@ -5,6 +5,7 @@ const imageTransform = require('@tryghost/image-transform');
 
 const storage = require('../../adapters/storage');
 const config = require('../../../shared/config');
+const mediaLibrary = require('../../services/media-library');
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -52,6 +53,15 @@ const controller = {
                     ...frame.file,
                     path: out
                 });
+                await mediaLibrary.indexUpload({
+                    url: processedImageUrl,
+                    storageType: 'images',
+                    file: {
+                        ...frame.file,
+                        path: out
+                    },
+                    createdBy: frame.options.context?.user
+                });
 
                 let processedImageName = path.basename(processedImageUrl);
                 let processedImageDir = undefined;
@@ -77,7 +87,15 @@ const controller = {
                 return processedImageUrl;
             }
 
-            return store.save(frame.file);
+            const imageUrl = await store.save(frame.file);
+            await mediaLibrary.indexUpload({
+                url: imageUrl,
+                storageType: 'images',
+                file: frame.file,
+                createdBy: frame.options.context?.user
+            });
+
+            return imageUrl;
         }
     }
 };

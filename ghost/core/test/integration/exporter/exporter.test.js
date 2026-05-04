@@ -64,6 +64,8 @@ describe('Exporter', function () {
             'members_stripe_customers_subscriptions',
             'members_subscribe_events',
             'members_subscription_created_events',
+            'media_file_usages',
+            'media_files',
             'mentions',
             'migrations',
             'migrations_lock',
@@ -136,6 +138,8 @@ describe('Exporter', function () {
             'members_status_events',
             'members_paid_subscription_events',
             'members_subscribe_events',
+            'media_file_usages',
+            'media_files',
             'outbox',
             'gifts'
         ];

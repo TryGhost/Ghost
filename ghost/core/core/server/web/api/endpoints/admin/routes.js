@@ -314,6 +314,8 @@ module.exports = function apiRoutes() {
     );
 
     // ## media
+    router.get('/media', mw.authAdminApi, http(api.media.browse));
+    router.get('/media/:id', mw.authAdminApi, http(api.media.read));
     router.post('/media/upload',
         mw.authAdminApi,
         apiMw.upload.media('file', 'thumbnail'),

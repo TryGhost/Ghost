@@ -3,7 +3,7 @@ import React from "react"
 import {SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuBadge} from "@tryghost/shade/components"
 import {formatNumber, LucideIcon} from "@tryghost/shade/utils"
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
-import { canManageMembers, canManageTags } from "@tryghost/admin-x-framework/api/users";
+import { canManageMedia, canManageMembers, canManageTags } from "@tryghost/admin-x-framework/api/users";
 import { NavMenuItem } from "./nav-menu-item";
 import { useMemberCount } from "./hooks/use-member-count";
 import { useNavigationExpanded } from "./hooks/use-navigation-preferences";
@@ -81,6 +81,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const isMembersRouteActive = useIsActiveLink({path: 'members', activeOnSubpath: true});
 
     const showTags = currentUser && canManageTags(currentUser);
+    const showMedia = currentUser && canManageMedia(currentUser);
     const showMembers = currentUser && canManageMembers(currentUser);
     const isDraftPostsRouteActive = routing.isRouteActive('posts', {type: 'draft'});
     const isScheduledPostsRouteActive = routing.isRouteActive('posts', {type: 'scheduled'});
@@ -155,6 +156,18 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             <NavMenuItem.Label>Pages</NavMenuItem.Label>
                         </NavMenuItem.Link>
                     </NavMenuItem>
+
+                    {showMedia && (
+                        <NavMenuItem>
+                            <NavMenuItem.Link
+                                to="media"
+                                activeOnSubpath
+                            >
+                                <LucideIcon.Image />
+                                <NavMenuItem.Label>Media</NavMenuItem.Label>
+                            </NavMenuItem.Link>
+                        </NavMenuItem>
+                    )}
 
                     {showTags && (
                         <NavMenuItem>

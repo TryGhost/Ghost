@@ -785,6 +785,16 @@
                     "object_type": "automation"
                 },
                 {
+                    "name": "Browse media",
+                    "action_type": "browse",
+                    "object_type": "media"
+                },
+                {
+                    "name": "Read media",
+                    "action_type": "read",
+                    "object_type": "media"
+                },
+                {
                     "name": "Edit automations",
                     "action_type": "edit",
                     "object_type": "automation"
@@ -967,6 +977,7 @@
                     "collection": "all",
                     "recommendation": "all",
                     "automation": ["browse", "read", "edit"],
+                    "media": ["browse", "read"],
                     "identity": "read"
                 },
                 "DB Backup Integration": {
@@ -1017,7 +1028,8 @@
                     "collection": "all",
                     "recommendation": "all",
                     "automation": ["browse", "read", "edit"],
-                    "member_signin_url": "read"
+                    "member_signin_url": "read",
+                    "media": ["browse", "read"]
                 },
                 "Super Editor": {
                     "notification": "all",
@@ -1040,7 +1052,8 @@
                     "member": ["browse", "read", "add", "edit", "destroy"],
                     "member_signin_url": "read",
                     "offer": ["browse", "read"],
-                    "comment": "all"
+                    "comment": "all",
+                    "media": ["browse", "read"]
                 },
                 "Editor": {
                     "notification": "all",
@@ -1059,7 +1072,8 @@
                     "product": ["browse", "read"],
                     "newsletter": ["browse", "read"],
                     "collection": "all",
-                    "recommendation": ["browse", "read"]
+                    "recommendation": ["browse", "read"],
+                    "media": ["browse", "read"]
                 },
                 "Author": {
                     "post": ["browse", "read", "edit", "add", "destroy"],

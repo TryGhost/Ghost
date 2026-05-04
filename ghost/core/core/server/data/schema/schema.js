@@ -945,6 +945,44 @@ module.exports = {
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
     },
+    media_files: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        url: {type: 'string', maxlength: 2000, nullable: false},
+        url_hash: {type: 'string', maxlength: 64, nullable: false, unique: true},
+        storage_path: {type: 'string', maxlength: 2000, nullable: true},
+        storage_type: {type: 'string', maxlength: 50, nullable: false, validations: {isIn: [['images', 'files', 'media']]}},
+        media_type: {type: 'string', maxlength: 50, nullable: false, validations: {isIn: [['image', 'video', 'audio', 'file']]}},
+        mime_type: {type: 'string', maxlength: 191, nullable: true},
+        extension: {type: 'string', maxlength: 50, nullable: true},
+        name: {type: 'string', maxlength: 191, nullable: false},
+        size_bytes: {type: 'bigInteger', nullable: true, unsigned: true},
+        width: {type: 'integer', nullable: true, unsigned: true},
+        height: {type: 'integer', nullable: true, unsigned: true},
+        thumbnail_url: {type: 'string', maxlength: 2000, nullable: true},
+        source: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'upload', validations: {isIn: [['upload', 'backfill', 'reference']]}},
+        // eslint-disable-next-line no-restricted-syntax
+        created_by: {type: 'string', maxlength: 24, nullable: true, references: 'users.id', setNullDelete: true},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true},
+        '@@INDEXES@@': [
+            ['storage_type'],
+            ['media_type'],
+            ['source'],
+            ['created_at']
+        ]
+    },
+    media_file_usages: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        media_file_id: {type: 'string', maxlength: 24, nullable: false, references: 'media_files.id', cascadeDelete: true},
+        resource_type: {type: 'string', maxlength: 50, nullable: false},
+        resource_id: {type: 'string', maxlength: 24, nullable: true},
+        field: {type: 'string', maxlength: 191, nullable: true},
+        created_at: {type: 'dateTime', nullable: false},
+        '@@INDEXES@@': [
+            ['media_file_id'],
+            ['resource_type', 'resource_id']
+        ]
+    },
     custom_theme_settings: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         theme: {type: 'string', maxlength: 191, nullable: false},

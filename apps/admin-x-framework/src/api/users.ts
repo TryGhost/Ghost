@@ -201,6 +201,11 @@ export function canManageTags(user: User) {
     return isOwnerUser(user) || isAdminUser(user) || isEditorUser(user);
 }
 
+export function canManageMedia(user: User) {
+    // Owner, Admin or Editor can browse and upload media
+    return isOwnerUser(user) || isAdminUser(user) || isEditorUser(user);
+}
+
 export function hasAdminAccess(user: User) {
     return isOwnerUser(user) || isAdminUser(user);
 }

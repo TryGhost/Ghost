@@ -16,6 +16,19 @@ function getURL(urlPath) {
 }
 
 module.exports = {
+    browse(response, apiConfig, frame) {
+        frame.response = {
+            media: response.data.map(model => model.toJSON(frame.options)),
+            meta: response.meta
+        };
+    },
+
+    read(response, apiConfig, frame) {
+        frame.response = {
+            media: [response.toJSON(frame.options)]
+        };
+    },
+
     upload({filePath, thumbnailPath}, apiConfig, frame) {
         return frame.response = {
             media: [{

@@ -66,7 +66,7 @@ const tokenPermissionCheck = function tokenPermissionCheck(req, res, next) {
         schedules: ['PUT'],
         gifts: ['PUT'],
         files: ['POST'],
-        media: ['POST'],
+        media: ['GET', 'POST'],
         db: ['GET', 'POST'],
         settings: ['GET'],
         comments: ['GET', 'POST', 'PUT'],

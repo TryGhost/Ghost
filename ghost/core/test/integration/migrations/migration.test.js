@@ -91,7 +91,7 @@ describe('Migrations', function () {
         // Custom assertion to wrap all permissions
         function assertCompletePermissions(permissions) {
             // If you have to change this number, please add the relevant `assertHavePermission` checks below
-            assert.equal(permissions.length, 135);
+            assert.equal(permissions.length, 137);
 
             assertHavePermission(permissions, 'Export database', ['Administrator', 'DB Backup Integration']);
             assertHavePermission(permissions, 'Import database', ['Administrator', 'Self-Serve Migration Integration', 'DB Backup Integration']);
@@ -246,6 +246,8 @@ describe('Migrations', function () {
             assertHavePermission(permissions, 'Read automations', ['Administrator', 'Admin Integration']);
             assertHavePermission(permissions, 'Edit automations', ['Administrator', 'Admin Integration']);
             assertHavePermission(permissions, 'Poll automations', ['Scheduler Integration']);
+            assertHavePermission(permissions, 'Browse media', ['Administrator', 'Editor', 'Admin Integration', 'Super Editor']);
+            assertHavePermission(permissions, 'Read media', ['Administrator', 'Editor', 'Admin Integration', 'Super Editor']);
 
             assertHavePermission(permissions, 'Browse email design settings', ['Administrator', 'Admin Integration']);
             assertHavePermission(permissions, 'Read email design settings', ['Administrator', 'Admin Integration']);

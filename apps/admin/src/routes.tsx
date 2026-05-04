@@ -114,6 +114,10 @@ export const routes: RouteObject[] = [
                 handle: { allowInForceUpgrade: true } satisfies RouteHandle,
             },
             {
+                path: "media",
+                lazy: lazyComponent(() => import("./media/media-library")),
+            },
+            {
                 path: "",
                 element: (
                     <FeatureFlagsProvider>
