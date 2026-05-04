@@ -317,7 +317,7 @@ describe('EventRepository', function () {
                         return {
                             id: 'ae123',
                             related: (rel) => {
-                                if (rel === 'welcomeEmailAutomation') {
+                                if (rel === 'automation') {
                                     return {
                                         id: 'auto123',
                                         get: key => (key === 'slug' ? 'member-welcome-email-free' : undefined)
@@ -356,7 +356,7 @@ describe('EventRepository', function () {
             });
 
             sinon.assert.calledOnceWithMatch(fake, {
-                withRelated: ['member', 'automatedEmail.welcomeEmailAutomation'],
+                withRelated: ['member', 'automatedEmail.automation'],
                 filter: 'custom:true',
                 order: 'created_at desc, id desc'
             });
@@ -370,7 +370,7 @@ describe('EventRepository', function () {
             });
 
             sinon.assert.calledOnceWithMatch(fake, {
-                withRelated: ['member', 'automatedEmail.welcomeEmailAutomation'],
+                withRelated: ['member', 'automatedEmail.automation'],
                 filter: 'custom:true',
                 order: 'created_at desc, id desc'
             });
@@ -385,7 +385,7 @@ describe('EventRepository', function () {
             });
 
             sinon.assert.calledOnceWithMatch(fake, {
-                withRelated: ['member', 'automatedEmail.welcomeEmailAutomation'],
+                withRelated: ['member', 'automatedEmail.automation'],
                 filter: 'custom:true',
                 order: 'created_at desc, id desc'
             });

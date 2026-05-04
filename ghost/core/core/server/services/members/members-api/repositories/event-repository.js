@@ -1051,7 +1051,7 @@ module.exports = class EventRepository {
     async getAutomatedEmailSentEvents(options = {}, filter) {
         options = {
             ...options,
-            withRelated: ['member', 'automatedEmail.welcomeEmailAutomation'],
+            withRelated: ['member', 'automatedEmail.automation'],
             filter: 'custom:true',
             useBasicCount: true,
             mongoTransformer: chainTransformers(
@@ -1067,10 +1067,10 @@ module.exports = class EventRepository {
 
         const data = models.map((model) => {
             const automatedEmail = model.related('automatedEmail');
-            const automation = automatedEmail.related('welcomeEmailAutomation');
+            const automation = automatedEmail.related('automation');
             if (!automation || !automation.id) {
                 throw new errors.InternalServerError({
-                    message: `Automated email recipient ${model.id} has no associated welcome email automation`
+                    message: `Automated email recipient ${model.id} has no associated automation`
                 });
             }
 

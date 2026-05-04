@@ -66,7 +66,7 @@ module.exports = class MemberRepository {
      * @param {any} deps.offersAPI
      * @param {ITokenService} deps.tokenService
      * @param {any} deps.newslettersService
-     * @param {any} deps.WelcomeEmailAutomation
+     * @param {any} deps.Automation
      * @param {any} deps.WelcomeEmailAutomationRun
      */
     constructor({
@@ -87,7 +87,7 @@ module.exports = class MemberRepository {
         offersAPI,
         tokenService,
         newslettersService,
-        WelcomeEmailAutomation,
+        Automation,
         WelcomeEmailAutomationRun
     }) {
         this._Member = Member;
@@ -107,7 +107,7 @@ module.exports = class MemberRepository {
         this._offersAPI = offersAPI;
         this.tokenService = tokenService;
         this._newslettersService = newslettersService;
-        this._WelcomeEmailAutomation = WelcomeEmailAutomation;
+        this._Automation = Automation;
         this._WelcomeEmailAutomationRun = WelcomeEmailAutomationRun;
 
         DomainEvents.subscribe(OfferRedemptionEvent, async function (event) {
@@ -189,11 +189,11 @@ module.exports = class MemberRepository {
      * @param {object} [options] bookshelf options (transacting, context, etc.)
      */
     async enqueueWelcomeEmailRun(memberId, slug, options = {}) {
-        if (!this._WelcomeEmailAutomation || !this._WelcomeEmailAutomationRun) {
+        if (!this._Automation || !this._WelcomeEmailAutomationRun) {
             return null;
         }
 
-        const automation = await this._WelcomeEmailAutomation.findOne(
+        const automation = await this._Automation.findOne(
             {slug},
             {...options, withRelated: ['welcomeEmailAutomatedEmail']}
         );
