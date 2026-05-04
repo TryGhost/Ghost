@@ -266,7 +266,7 @@ async function redeemGift({data, state, api}) {
 
         return {
             page: 'magiclink',
-            lastPage: 'giftRedemption',
+            lastPage: 'gift',
             ...(otcRef ? {otcRef} : {}),
             inboxLinks,
             pageData: {

@@ -48,6 +48,7 @@
     "Choose a plan": "Header for the plan selection screen in Portal",
     "Choose your newsletters": "A title for a screen where members can choose which email newsletters to receive",
     "Click here to retry": "A link to retry the login process",
+    "Click the confirmation link in your inbox to finish redeeming your membership. If it doesn't arrive within 3 minutes, check your spam folder.": "Confirmation message shown on the magic link popup during gift redemption.",
     "Close": "A button to close or dismiss portal and other UI components",
     "Code": "Aria-label for the one-time code input field on the verification page in Portal",
     "Comment": "Button text to post your comment, on smaller devices",
