@@ -3,14 +3,14 @@
   description: All fixture data
   parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC
   expected_result: |
-    {"device":"desktop","visits":15}
+    {"device":"desktop","visits":16}
     {"device":"bot","visits":1}
 
 - name: Filtered by device - desktop
   description: Filtered by device - desktop
   parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&device=desktop
   expected_result: |
-    {"device":"desktop","visits":15}
+    {"device":"desktop","visits":16}
 
 - name: Filtered by device - bot
   description: Filtered by device - bot
@@ -32,10 +32,10 @@
     {"device":"desktop","visits":2}
 
 - name: Filtered by member status - paid
-  description: Filtered by member status - paid (includes comped)
+  description: Filtered by member status - paid (includes comped and gift)
   parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&member_status=paid
   expected_result: |
-    {"device":"desktop","visits":5}
+    {"device":"desktop","visits":6}
 
 - name: Filtered by member status - free
   description: Filtered by member status - free
