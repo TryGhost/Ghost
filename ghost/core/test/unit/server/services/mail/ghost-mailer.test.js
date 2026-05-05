@@ -75,7 +75,8 @@ describe('Mail: Ghostmailer', function () {
         mailer = new mail.GhostMailer();
 
         assert('transport' in mailer);
-        assert.equal(mailer.transport.transporter.name, 'SMTP (direct)');
+        assert.equal(mailer.transport.transporter.name, 'SMTP');
+        assert.equal(mailer.transport.transporter.options.direct, true);
     });
 
     it('sends valid message successfully ', function (done) {
@@ -130,17 +131,20 @@ describe('Mail: Ghostmailer', function () {
         });
 
         it('return correct failure message for domain doesn\'t exist', async function () {
-            assert.equal(mailer.transport.transporter.name, 'SMTP (direct)');
+            assert.equal(mailer.transport.transporter.name, 'SMTP');
+            assert.equal(mailer.transport.transporter.options.direct, true);
             await assert.rejects(mailer.send(mailDataNoDomain), /Failed to send email/);
         });
 
         it('return correct failure message for no mail server at this address', async function () {
-            assert.equal(mailer.transport.transporter.name, 'SMTP (direct)');
+            assert.equal(mailer.transport.transporter.name, 'SMTP');
+            assert.equal(mailer.transport.transporter.options.direct, true);
             await assert.rejects(mailer.send(mailDataNoServer), /Failed to send email/);
         });
 
         it('return correct failure message for incomplete data', async function () {
-            assert.equal(mailer.transport.transporter.name, 'SMTP (direct)');
+            assert.equal(mailer.transport.transporter.name, 'SMTP');
+            assert.equal(mailer.transport.transporter.options.direct, true);
             await assert.rejects(mailer.send(mailDataIncomplete), /Incomplete message data/);
         });
     });
