@@ -494,6 +494,102 @@ describe('S3Storage', function () {
         );
     });
 
+    describe('absolute and pre-prefixed paths are normalised before building keys', function () {
+        // Some legacy callers build their target by joining `getContentPath(...)`
+        // with an extra segment, producing an absolute filesystem path. Without
+        // normalisation the absolute prefix gets concatenated into the bucket
+        // key. These tests pin the behaviour so the keys produced for an
+        // absolute or pre-prefixed input match the keys for the equivalent
+        // relative input, mirroring `LocalStorageBase`.
+
+        it('strips an absolute filesystem prefix that contains the storagePath segment', function () {
+            const {storage} = createStorage();
+
+            const fromAbsolute = (storage as any).buildKey('/var/lib/ghost/content/files/2024/06/image.jpg');
+            const fromRelative = (storage as any).buildKey('2024/06/image.jpg');
+
+            assert.equal(fromAbsolute, fromRelative);
+            assert.equal(fromAbsolute, 'configurable/prefix/content/files/2024/06/image.jpg');
+        });
+
+        it('strips a leading <storagePath>/ when callers pass it via `getTargetDir(storagePath)`', function () {
+            const {storage} = createStorage();
+
+            // External-media-inliner shape: targetDir = `storagePath/year/month`,
+            // joined with a filename and handed to exists()/save().
+            const fromPrefixed = (storage as any).buildKey('content/files/2024/06/image.jpg');
+            const fromRelative = (storage as any).buildKey('2024/06/image.jpg');
+
+            assert.equal(fromPrefixed, fromRelative);
+        });
+
+        it('preserves the historical leading-slash-as-decoration behaviour when the path has no storagePath segment', function () {
+            // handle-image-sizes calls exists(req.url) with values like
+            // `/size/w1200/...`. These are conceptually relative to the storage
+            // root and must continue to map to the same key as before.
+            const {storage} = createStorage();
+
+            const key = (storage as any).buildKey('/size/w1200/2024/06/photo.jpg');
+
+            assert.equal(key, 'configurable/prefix/content/files/size/w1200/2024/06/photo.jpg');
+        });
+
+        it('exists() probes the same key for absolute, pre-prefixed and relative inputs', async function () {
+            const {storage, sendStub} = createStorage();
+            const {HeadObjectCommand: HeadObjectCmd} = await import('@aws-sdk/client-s3');
+
+            sendStub.rejects(createNotFoundError());
+
+            await storage.exists('image.jpg', '/var/lib/ghost/content/files/2024/06');
+            await storage.exists('image.jpg', 'content/files/2024/06');
+            await storage.exists('image.jpg', '2024/06');
+
+            const keys = sendStub.getCalls().map(call => (call.args[0] as InstanceType<typeof HeadObjectCmd>).input.Key);
+            assert.equal(keys.length, 3);
+            assert.ok(keys.every(k => k === 'configurable/prefix/content/files/2024/06/image.jpg'),
+                `expected all three exists() probes to target the same key, got: ${JSON.stringify(keys)}`);
+        });
+
+        it('save() writes to the same key whether targetDir is absolute, pre-prefixed or relative', async function () {
+            const {storage, sendStub} = createStorage();
+
+            sinon.stub(storage, 'exists').resolves(false);
+            sinon.stub(fs.promises, 'stat').resolves({size: 256} as fs.Stats);
+            sinon.stub(fs.promises, 'readFile').resolves(Buffer.from('image-bytes'));
+
+            const targetDirs = [
+                '/var/lib/ghost/content/files/2024/06',
+                'content/files/2024/06',
+                '2024/06'
+            ];
+
+            const keys: (string | undefined)[] = [];
+            for (const targetDir of targetDirs) {
+                sendStub.resetHistory();
+                await storage.save({path: '/tmp/image.jpg', name: 'image.jpg'}, targetDir);
+                const command = sendStub.firstCall.args[0] as PutObjectCommand;
+                keys.push(command.input.Key);
+            }
+
+            assert.ok(keys.every(k => k === 'configurable/prefix/content/files/2024/06/image.jpg'),
+                `expected all save()s to land at the same key, got: ${JSON.stringify(keys)}`);
+        });
+
+        it('still rejects path traversal that would escape the storage root', function () {
+            const {storage} = createStorage();
+
+            // Belt and braces: the existing `..` protection still fires when
+            // the input passes through normalisation.
+            assert.throws(() => {
+                (storage as any).buildKey('/var/lib/ghost/content/files/../../../etc/passwd');
+            }, /not a valid URL/);
+
+            assert.throws(() => {
+                (storage as any).buildKey('content/files/../../etc/passwd');
+            }, /not a valid URL/);
+        });
+    });
+
     describe('Multipart Upload', function () {
         function createMockReadStream(fileContent: Buffer) {
             return Readable.from(fileContent);

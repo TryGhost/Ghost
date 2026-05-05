@@ -395,7 +395,7 @@ export default class S3Storage extends StorageBase {
             });
         }
 
-        const pathWithStorage = path.posix.join(this.storagePath, relativePath);
+        const pathWithStorage = path.posix.join(this.storagePath, this.toCanonicalRelativePath(relativePath));
 
         if (!pathWithStorage.startsWith(this.storagePath + '/') && pathWithStorage !== this.storagePath) {
             throw new errors.IncorrectUsageError({
@@ -408,6 +408,42 @@ export default class S3Storage extends StorageBase {
         }
 
         return `${this.tenantPrefix}/${pathWithStorage}`;
+    }
+
+    private toCanonicalRelativePath(input: string): string {
+        return this.fromAbsoluteFilesystemPath(input)
+            ?? this.fromStoragePathPrefixed(input)
+            ?? this.fromLeadingSlashPath(input)
+            ?? input;
+    }
+
+    private fromAbsoluteFilesystemPath(input: string): string | null {
+        if (!path.posix.isAbsolute(input)) {
+            return null;
+        }
+        const marker = `/${this.storagePath}/`;
+        const idx = input.lastIndexOf(marker);
+        if (idx !== -1) {
+            return input.slice(idx + marker.length);
+        }
+        if (input.endsWith(`/${this.storagePath}`)) {
+            return '';
+        }
+        return null;
+    }
+
+    private fromStoragePathPrefixed(input: string): string | null {
+        if (input === this.storagePath || input.startsWith(`${this.storagePath}/`)) {
+            return path.posix.relative(this.storagePath, input);
+        }
+        return null;
+    }
+
+    private fromLeadingSlashPath(input: string): string | null {
+        if (!path.posix.isAbsolute(input)) {
+            return null;
+        }
+        return input.replace(/^\/+/, '');
     }
 
     private isNotFound(error: unknown): boolean {
