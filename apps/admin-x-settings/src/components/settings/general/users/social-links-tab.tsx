@@ -25,7 +25,7 @@ export const DetailsInputs: React.FC<UserDetailProps> = ({errors, clearError, va
                 onChange={(event) => {
                     setUserData({...user, website: event.target.value});
                 }}
-                onKeyDown={() => clearError('url')} />
+                onKeyDown={() => clearError('website')} />
             {SOCIAL_PLATFORM_CONFIGS.map(config => (
                 <TextField
                     key={config.key}
