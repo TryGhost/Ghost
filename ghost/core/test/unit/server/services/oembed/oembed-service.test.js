@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const path = require('node:path');
 const nock = require('nock');
 const got = require('got').default;
 const sinon = require('sinon');
@@ -264,7 +265,7 @@ describe('oembed-service', function () {
     describe('processImageFromUrl', function () {
         it('stores downloaded bookmark assets via image storage and returns stored URL', async function () {
             const saveRaw = sinon.stub().resolves('https://storage.ghost.is/c/6f/a3/site/content/images/thumbnail/sample.png');
-            const generateUnique = sinon.stub().resolves('/tmp/content/images/thumbnail/sample.png');
+            const generateUnique = sinon.stub().resolves('thumbnail/sample.png');
             const getSanitizedFileName = sinon.stub().returns('sample');
 
             const service = new OembedService({
@@ -294,13 +295,14 @@ describe('oembed-service', function () {
             assert.equal(storedUrl, 'https://storage.ghost.is/c/6f/a3/site/content/images/thumbnail/sample.png');
             sinon.assert.calledOnce(getSanitizedFileName);
             sinon.assert.calledOnce(generateUnique);
+            assert.equal(generateUnique.firstCall.args[0], 'thumbnail');
             sinon.assert.calledOnce(saveRaw);
             assert.equal(saveRaw.firstCall.args[1], 'thumbnail/sample.png');
         });
 
         it('works when saveRaw returns a relative path (local storage)', async function () {
             const saveRaw = sinon.stub().resolves('/content/images/icon/favicon.ico');
-            const generateUnique = sinon.stub().resolves('/tmp/content/images/icon/favicon.ico');
+            const generateUnique = sinon.stub().resolves('icon/favicon.ico');
             const getSanitizedFileName = sinon.stub().returns('favicon');
 
             const service = new OembedService({
@@ -328,7 +330,58 @@ describe('oembed-service', function () {
             const storedUrl = await service.processImageFromUrl('https://example.com/favicon.ico', 'icon');
 
             assert.equal(storedUrl, '/content/images/icon/favicon.ico');
+            assert.equal(generateUnique.firstCall.args[0], 'icon');
             assert.equal(saveRaw.firstCall.args[1], 'icon/favicon.ico');
+        });
+
+        it('passes a relative targetDir to generateUnique so the exists() probe and saveRaw target the same key', async function () {
+            // Object-storage adapters (e.g. S3) build keys with path.posix.join,
+            // which preserves an absolute second argument and produces a key
+            // that includes the local filesystem prefix. Asserting that
+            // generateUnique receives a relative dir keeps the exists() probe
+            // and the later saveRaw call aligned on the same key.
+            const observedCalls = [];
+            const fakeStore = {
+                getSanitizedFileName: name => name,
+                generateUnique: async (dir, name, ext) => {
+                    observedCalls.push({op: 'generateUnique', dir, name, ext});
+                    return `${dir}/${name}${ext}`;
+                },
+                saveRaw: async (_buffer, targetPath) => {
+                    observedCalls.push({op: 'saveRaw', targetPath});
+                    return `https://cdn.example.com/${targetPath}`;
+                }
+            };
+
+            const service = new OembedService({
+                config: {
+                    // getContentPath returns an absolute filesystem path; the
+                    // service must not let it leak into the storage targetDir.
+                    getContentPath: () => '/var/lib/ghost/content/images/'
+                },
+                storage: {
+                    getStorage: () => fakeStore
+                },
+                externalRequest: () => ({
+                    buffer: async () => Buffer.from('icon-bytes')
+                })
+            });
+
+            await service.processImageFromUrl('https://www.theguardian.com/favicon.ico', 'icon');
+
+            assert.deepEqual(observedCalls, [
+                {op: 'generateUnique', dir: 'icon', name: 'favicon', ext: '.ico'},
+                {op: 'saveRaw', targetPath: 'icon/favicon.ico'}
+            ]);
+
+            // Belt-and-braces: explicitly assert nothing absolute leaked anywhere.
+            for (const call of observedCalls) {
+                const candidate = call.dir ?? call.targetPath;
+                assert.ok(
+                    !path.isAbsolute(candidate),
+                    `${call.op} received absolute path "${candidate}"; storage adapters must receive relative paths`
+                );
+            }
         });
 
         it('throws when storage lacks saveRaw', async function () {

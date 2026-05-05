@@ -164,9 +164,11 @@ class OEmbedService {
             name = store.getSanitizedFileName(path.basename(fileName));
         }
 
-        let targetDir = path.join(this.config.getContentPath('images'), imageType);
-        const uniqueFilePath = await store.generateUnique(targetDir, name, ext, 0);
-        const targetPath = path.join(imageType, path.basename(uniqueFilePath));
+        // targetDir must be relative so the exists() probe and the later
+        // saveRaw() target the same storage key. Object-storage adapters
+        // (e.g. S3) use path.posix.join under the hood, which preserves
+        // absolute paths in the second arg and produces malformed keys.
+        const targetPath = await store.generateUnique(imageType, name, ext, 0);
 
         const imageStoredUrl = await store.saveRaw(imageBuffer, targetPath);
 
@@ -235,7 +237,11 @@ class OEmbedService {
                 contentType: headers['content-type']
             };
         } catch (err) {
-            logging.error(err);
+            logging.error({
+                event: {name: 'oembed.decode-page.error'},
+                err,
+                pageUrl: responseUrl
+            }, 'Failed to decode oembed page body');
             //return non decoded body anyway
             return {
                 body: body.toString(),
@@ -325,7 +331,11 @@ class OEmbedService {
             });
         } catch (err) {
             // Log to avoid being blind to errors happening in metascraper
-            logging.error(err);
+            logging.error({
+                event: {name: 'oembed.metascraper.error'},
+                err,
+                bookmarkUrl: url
+            }, 'Metascraper failed to extract bookmark metadata');
             return this.unknownProvider(url);
         }
 
@@ -346,26 +356,44 @@ class OEmbedService {
 
         if (type === 'mention') {
             if (metadata.icon) {
+                const originalIconUrl = metadata.icon;
                 try {
                     await this.externalRequest.head(metadata.icon);
                 } catch (err) {
                     metadata.icon = 'https://static.ghost.org/v5.0.0/images/link-icon.svg';
-                    logging.error(err);
+                    logging.error({
+                        event: {name: 'oembed.fetch-mention-icon.error'},
+                        err,
+                        bookmarkUrl: url,
+                        iconUrl: originalIconUrl
+                    }, 'Failed HEAD probe for mention icon');
                 }
             }
         } else {
+            const originalIconUrl = metadata.icon;
             await this.processImageFromUrl(metadata.icon, 'icon')
                 .then((processedImageUrl) => {
                     metadata.icon = processedImageUrl;
                 }).catch((err) => {
                     metadata.icon = 'https://static.ghost.org/v5.0.0/images/link-icon.svg';
-                    logging.error(err);
+                    logging.error({
+                        event: {name: 'oembed.fetch-bookmark-icon.error'},
+                        err,
+                        bookmarkUrl: url,
+                        iconUrl: originalIconUrl
+                    }, 'Failed to fetch and store bookmark icon');
                 });
+            const originalThumbnailUrl = metadata.thumbnail;
             await this.processImageFromUrl(metadata.thumbnail, 'thumbnail')
                 .then((processedImageUrl) => {
                     metadata.thumbnail = processedImageUrl;
                 }).catch((err) => {
-                    logging.error(err);
+                    logging.error({
+                        event: {name: 'oembed.fetch-bookmark-thumbnail.error'},
+                        err,
+                        bookmarkUrl: url,
+                        thumbnailUrl: originalThumbnailUrl
+                    }, 'Failed to fetch and store bookmark thumbnail');
                 });
         }
 
@@ -571,10 +599,11 @@ class OEmbedService {
             }
 
             // log the real error because we're going to throw a generic "Unknown provider" error
-            logging.error(new errors.InternalServerError({
-                message: 'Encountered error when fetching oembed',
-                err
-            }));
+            logging.error({
+                event: {name: 'oembed.fetch-oembed.error'},
+                err,
+                oembedUrl: url
+            }, 'Encountered error when fetching oembed');
 
             // default to unknown provider to avoid leaking any app specifics
             return this.unknownProvider(url);
