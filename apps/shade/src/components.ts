@@ -49,6 +49,10 @@ export * from './components/ui/toggle-group';
 export * from './components/ui/tooltip';
 export * from './components/ui/trend-badge';
 
+// Feature components — product-shaped compositions of UI primitives
+export * from './components/features/kpi/kpi-card';
+export * from './components/features/kpi/kpi-tabs';
+
 export type {DropdownMenuCheckboxItemProps as DropdownMenuCheckboxItemProps} from '@radix-ui/react-dropdown-menu';
 
 export {IconComponents as Icon} from './components/ui/icon';
