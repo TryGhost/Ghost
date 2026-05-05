@@ -565,9 +565,7 @@ describe('{{#get}} helper', function () {
                 const result = await resultPromise;
 
                 assert(result.toString().includes('data-aborted-get-helper'));
-                // A log message will be output
                 sinon.assert.calledOnce(logging.error);
-                // The get helper gets called with an empty array of results
                 sinon.assert.calledOnce(fn);
                 const args = fn.firstCall.args[0];
                 assert(args && typeof args === 'object');
