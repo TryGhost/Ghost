@@ -19,7 +19,7 @@ const generateTags = function generateTags(data) {
 const generateItem = function generateItem(post) {
     const cheerio = require('cheerio');
 
-    const itemUrl = routerManager.getUrlByResourceId(post.id, {absolute: true});
+    const itemUrl = routerManager.getUrlForResource(post, {absolute: true});
     const htmlContent = cheerio.load(post.html || '');
     const item = {
         title: post.title,

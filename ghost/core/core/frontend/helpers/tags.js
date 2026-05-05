@@ -27,7 +27,7 @@ module.exports = function tags(options) {
     function createTagList(tagsList) {
         function processTag(tag) {
             return autolink ? templates.link({
-                url: urlService.getUrlByResourceId(tag.id, {withSubdirectory: true}),
+                url: urlService.facade.getUrlForResource({...tag, type: 'tags'}, {withSubdirectory: true}),
                 text: escapeExpression(tag.name)
             }) : escapeExpression(tag.name);
         }
