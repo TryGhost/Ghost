@@ -1,7 +1,18 @@
 const path = require('path');
 const logging = require('@tryghost/logging');
+const DomainEvents = require('@tryghost/domain-events');
 const express = require('../../../../shared/express');
 const jobsService = require('../../../services/jobs');
+const StartGiftReminderFlushEvent = require('../../../services/gifts/events/start-gift-reminder-flush-event');
+const StartGiftCleanupEvent = require('../../../services/gifts/events/start-gift-cleanup-event');
+
+const triggerGiftEvent = EventClass => (req, res) => {
+    logging.info(`Dispatching ${EventClass.name} via testmode endpoint`);
+
+    DomainEvents.dispatch(EventClass.create());
+
+    res.sendStatus(202);
+};
 
 /** A bunch of helper routes for testing purposes */
 module.exports = function testRoutes() {
@@ -114,6 +125,9 @@ module.exports = function testRoutes() {
         // eslint-disable-next-line no-console
         console.log('Request received but not responding');
     });
+
+    router.post('/gifts/trigger-reminders', triggerGiftEvent(StartGiftReminderFlushEvent));
+    router.post('/gifts/trigger-cleanup', triggerGiftEvent(StartGiftCleanupEvent));
 
     return router;
 };
