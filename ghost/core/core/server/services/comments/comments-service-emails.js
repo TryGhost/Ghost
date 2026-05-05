@@ -20,12 +20,12 @@ class CommentsServiceEmails {
 
     /**
      * Build the post URL with comment fragment for email links
-     * @param {string} postId - The ID of the post
+     * @param {{id: string}} post - The post (model or plain object with `id`)
      * @param {string} commentId - The ID of the comment to link to
      * @returns {string} The post URL with appropriate comment fragment
      */
-    getPostUrl(postId, commentId) {
-        const baseUrl = this.urlService.getUrlByResourceId(postId, {absolute: true});
+    getPostUrl(post, commentId) {
+        const baseUrl = this.urlService.getUrlByResourceId(post.id, {absolute: true});
         return `${baseUrl}#ghost-comments-${commentId}`;
     }
 
@@ -48,7 +48,7 @@ class CommentsServiceEmails {
                 siteUrl: this.urlUtils.getSiteUrl(),
                 siteDomain: this.siteDomain,
                 postTitle: post.get('title'),
-                postUrl: this.getPostUrl(post.get('id'), comment.get('id')),
+                postUrl: this.getPostUrl(post, comment.get('id')),
                 commentHtml: comment.get('html'),
                 commentDate: moment(comment.get('created_at')).tz(this.settingsCache.get('timezone')).format('D MMM YYYY'),
                 memberName: memberName,
@@ -110,7 +110,7 @@ class CommentsServiceEmails {
             siteUrl: this.urlUtils.getSiteUrl(),
             siteDomain: this.siteDomain,
             postTitle: post.get('title'),
-            postUrl: this.getPostUrl(post.get('id'), reply.get('id')),
+            postUrl: this.getPostUrl(post, reply.get('id')),
             replyHtml: reply.get('html'),
             replyDate: moment(reply.get('created_at')).tz(this.settingsCache.get('timezone')).format('D MMM YYYY'),
             memberName: memberName,
@@ -158,7 +158,7 @@ class CommentsServiceEmails {
             siteUrl: this.urlUtils.getSiteUrl(),
             siteDomain: this.siteDomain,
             postTitle: post.get('title'),
-            postUrl: this.getPostUrl(post.get('id'), comment.get('id')),
+            postUrl: this.getPostUrl(post, comment.get('id')),
             commentHtml: comment.get('html'),
             commentText: htmlToPlaintext.comment(comment.get('html')),
             commentDate: moment(comment.get('created_at')).tz(this.settingsCache.get('timezone')).format('D MMM YYYY'),
