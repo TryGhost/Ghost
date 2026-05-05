@@ -4,39 +4,48 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 <div className="sb-doc">
 
-# Primitives Guide
+# Working with primitives
 
-<p className="excerpt">Use primitives to make layout intent explicit. This page explains when to use each primitive, which props matter, and how to migrate from raw layout classes.</p>
+<p className="excerpt">Primitives are how Shade replaces the endless string of `flex flex-col gap-4 items-start` utilities with something a human can read and an AI agent can generate consistently. This page is a practical guide to the six primitives, their props, and how to migrate existing layouts.</p>
 
-## Why Primitives
+## Why primitives exist
 
-Primitives solve a simple problem: repeated `flex/grid/gap` class strings hide intent.
+Most layout code in any React codebase looks the same: a `<div>` with five Tailwind layout utilities. After a while it becomes invisible. Reviewers stop reading those classes; agents glue together their own variants of "vertical stack with medium gap"; small spacing inconsistencies accumulate across the product.
 
-Use primitives so that:
+Primitives solve that by giving the structural concepts names. Instead of inferring "this is a vertical stack" from `flex flex-col gap-4`, you write `<Stack gap="md">` and the intent is right there.
 
-- humans can read structure quickly
-- AI agents can generate consistent layout trees
-- spacing/alignment decisions stay explicit
+The benefits are practical:
 
-## Primitive Selection
+- A reviewer skimming a screen can tell in one second what its structure is.
+- An AI agent generating UI doesn't have to re-derive flex syntax every time.
+- Spacing decisions become semantic (`gap="lg"`) rather than numeric (`gap-6`), so we can tune the spacing scale without touching every component.
 
-- `Stack`: vertical grouping and vertical spacing
-- `Inline`: horizontal grouping, action rows, wrapped inline controls
-- `Box`: padding and radius framing without layout semantics
-- `Container`: width constraints and horizontal page padding
-- `Grid`: two-dimensional column layout
-- `Text`: semantic text element + typography rules
+## The six primitives
 
-Fast rule:
+You only need to remember six. They cover essentially every layout situation that doesn't involve writing a custom component.
 
-- vertical composition -> `Stack`
-- horizontal composition -> `Inline`
-- framed region -> `Box`
-- max width shell -> `Container`
-- columns/cards -> `Grid`
-- copy/headings/labels -> `Text`
+**`Stack`** is for vertical groupings. Use it whenever you have a column of children that need consistent spacing between them.
 
-## Prop Reference
+**`Inline`** is for horizontal groupings — toolbars, action rows, sequences of inline controls.
+
+**`Box`** is a framing primitive. Use it when you want padding or radius without imposing a layout direction.
+
+**`Container`** constrains width — for page shells where content shouldn't span the full viewport.
+
+**`Grid`** is for actual two-dimensional grids: card grids, multi-column lists.
+
+**`Text`** is the typographic primitive. Use it for paragraphs, headings, labels, captions — anything that's "rendered text".
+
+The fast version of when to reach for each:
+
+- Vertical composition? `Stack`.
+- Horizontal composition? `Inline`.
+- A framed region? `Box`.
+- A page shell with a max width? `Container`.
+- Cards or columns? `Grid`.
+- Words on the screen? `Text`.
+
+## Props at a glance
 
 ### Stack
 
@@ -51,10 +60,10 @@ Fast rule:
 | Prop | Type | Default | Purpose |
 | --- | --- | --- | --- |
 | `as` | `div|header|section|footer|nav|span` | `div` | Render element |
-| `gap` | `none|xs|sm|md|lg|xl|2xl` | `md` | Horizontal spacing |
+| `gap` | `none|xs|sm|md|lg|xl|2xl` | `md` | Horizontal spacing between children |
 | `align` | `start|center|end|stretch|baseline` | `center` | Cross-axis alignment |
 | `justify` | `start|center|end|between|around|evenly` | `start` | Main-axis distribution |
-| `wrap` | `boolean` | `false` | Wrap items to multiple rows |
+| `wrap` | `boolean` | `false` | Wrap children to multiple rows |
 
 ### Box
 
@@ -91,11 +100,11 @@ Fast rule:
 | `weight` | `regular|medium|semibold|bold` | `regular` | Font weight |
 | `tone` | `primary|secondary|tertiary|inverse` | `primary` | Text tone token |
 | `leading` | `none|snug|normal|relaxed|tight|tighter|supertight|body|heading` | `body` | Line-height token |
-| `truncate` | `boolean` | `false` | Single-line truncation |
+| `truncate` | `boolean` | `false` | Single-line truncation with ellipsis |
 
-## Composition Examples
+## Putting them together
 
-### Page Shell
+A typical page shell, all primitives:
 
 ```tsx
 import {Button} from '@tryghost/shade/components';
@@ -109,18 +118,17 @@ import {Container, Inline, Stack, Text} from '@tryghost/shade/primitives';
         </Inline>
 
         <Stack gap="md">
-            <Text tone="secondary">Core content goes here.</Text>
+            <Text tone="secondary">Manage your audience.</Text>
         </Stack>
     </Stack>
 </Container>
 ```
 
-### Header Shell
+Read that out loud and it tells you what's there: a page-width container; vertically stacked content; the top row is a horizontal inline split with the title on the left and the action button on the right; the body below is another vertical stack of text.
+
+A header with actions and a count:
 
 ```tsx
-import {Button} from '@tryghost/shade/components';
-import {Inline, Stack, Text} from '@tryghost/shade/primitives';
-
 <Stack gap="sm">
     <Text as="h2" size="xl" weight="semibold" leading="heading">Posts</Text>
     <Inline justify="between" align="center" wrap>
@@ -133,11 +141,9 @@ import {Inline, Stack, Text} from '@tryghost/shade/primitives';
 </Stack>
 ```
 
-### List Shell
+A list of framed rows:
 
 ```tsx
-import {Box, Grid, Stack, Text} from '@tryghost/shade/primitives';
-
 <Stack gap="sm">
     <Text as="h3" size="lg" weight="semibold">Drafts</Text>
     <Grid columns={1} gap="sm">
@@ -151,9 +157,9 @@ import {Box, Grid, Stack, Text} from '@tryghost/shade/primitives';
 </Stack>
 ```
 
-## Migration Examples
+## Migrating existing layouts
 
-### Before -> After: Vertical Layout
+The migration is mechanical, and almost always shorter:
 
 ```tsx
 // Before
@@ -175,7 +181,7 @@ import {Box, Grid, Stack, Text} from '@tryghost/shade/primitives';
 </Stack>
 ```
 
-### Before -> After: Framed Grid
+Or for a card grid:
 
 ```tsx
 // Before
@@ -193,10 +199,14 @@ import {Box, Grid, Stack, Text} from '@tryghost/shade/primitives';
 </Grid>
 ```
 
-## Practical Guardrails
+## Things to avoid
 
-- Do not add anonymous wrappers that only carry `flex/grid/gap` utilities.
-- Prefer semantic spacing (`sm`, `md`, `lg`) over ad-hoc spacing choices.
-- Keep primitives layout-focused; do not put product workflow logic in primitives.
+Don't add anonymous `<div>` wrappers that only carry `flex/grid/gap` utilities. If you need that structure, reach for a primitive instead.
+
+Don't use raw spacing numbers (`gap-6`, `p-3`) in primitive APIs. Use the semantic scale (`gap="lg"`, `padding="sm"`) — it's what the spacing tokens are for.
+
+Don't put product workflow logic inside a primitive. Primitives are layout vocabulary; if a component is starting to know about Ghost-specific data, it belongs in a Feature, not a primitive.
+
+Don't reach for `Box` when `Stack` or `Inline` would do. `Box` is the right tool when you genuinely don't want a layout direction — just framing.
 
 </div>

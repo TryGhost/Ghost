@@ -4,112 +4,83 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 <div className="sb-doc">
 
-# Shade Design System
+# Welcome to Shade
 
-<p className="excerpt">Shade is Ghost's design system for product design. Built on ShadCN/UI and TailwindCSS, it provides a complete set of components and patterns for building consistent user experiences.</p>
+<p className="excerpt">Shade is the design system that powers Ghost's product surfaces. It exists so that engineers, designers, and AI agents can build admin UI quickly without reinventing the same components, spacing decisions, or color choices each time.</p>
 
-## Overview
+## What Shade gives you
 
-Shade is built on three powerful foundations:
-- [ShadCN/UI](https://ui.shadcn.com/) - Reusable components built with Radix UI
-- [TailwindCSS](https://tailwindcss.com/) - Utility-first CSS framework
-- [Radix UI](https://www.radix-ui.com/) - Accessible component primitives
+If you're shipping admin features, Shade gives you four things:
 
-### Scope & Reuse
+A **set of visual values** (color, type, spacing, radius, motion) that automatically work in light and dark mode.
 
-Shade contains reusable, system-wide components and patterns. Keep one-off, app-specific components in the consuming application rather than adding them to Shade.
+A **set of layout primitives** (`Stack`, `Inline`, `Box`, `Grid`, `Container`, `Text`) that replace the endless `flex flex-col gap-4` strings with something readable.
 
-### Target Audience
+A **library of generic UI controls** (Button, Input, Dialog, Tabs, and so on) built on Radix and ShadCN, accessible by default.
 
-- **Designers**: Understand our design language and component capabilities
-- **Engineers**: Find implementation details and integration examples
-- **AI Agents**: Access machine-readable metadata for automation
+A **smaller set of product-shaped compositions** for things Ghost does over and over — KPI cards, filter builders, the area chart on Stats — where the generic controls aren't enough.
 
-### Core Surfaces
+The line between those four layers is the most important thing to understand about Shade. We cover it in detail on the [Architecture](?path=/docs/architecture--docs) page, including a glossary of terms.
 
-Shade components are used across:
-- Admin interfaces
-- Settings panels
-- Portal experiences
-- Email templates
-- Documentation sites
+## Who it's for
 
-## Getting Started
+**Designers** working in code use Shade to compose screens fast. The primitives and components do the heavy lifting; you focus on the structure and content of the surface you're designing.
 
-### Installation
+**Engineers** use it as a reliable substrate. If a control already exists in Shade, use it — it's accessible, themed, and tested. If it doesn't, the design system tells you which layer to build into.
 
-```bash
-# Install Shade
-yarn add @tryghost/shade
+**AI agents** generating UI code use Shade as a constraint. The layer rules and the typed component APIs let the agent pick the right tool without inventing components or making up tokens.
 
-# Install peer dependencies
-yarn add react react-dom tailwindcss
-```
+## Getting set up
 
-> Note: The package is currently private and primarily consumed internally in the monorepo. The snippet above reflects usage once published.
-
-### Basic Usage
+Shade lives in the Ghost monorepo (`apps/shade`) and is consumed by the React admin apps via `@tryghost/shade/*` entrypoints. There's nothing to install separately — just import:
 
 ```tsx
 import {Button} from '@tryghost/shade/components';
 
 function MyComponent() {
-    return (
-        <Button variant="solid">
-            Continue
-        </Button>
-    );
+    return <Button>Continue</Button>;
 }
 ```
 
-### Configure Styles (CSS-first)
-
-Import Shade's styles in your app entry CSS:
+To pick up Shade's CSS in your app, import its stylesheet once at your entry point:
 
 ```css
 @import "@tryghost/shade/styles.css";
 ```
 
-For Tailwind v4 utility generation, scan both your app files and Shade component usage paths with `@source`.
+If you're using Tailwind v4, add Shade's source paths to your `@source` directives so utility generation picks up classes used inside Shade components.
 
-### Scope Styles & Dark Mode
+## Light and dark mode
 
-Shade scopes all styles to a `.shade` container and toggles dark mode with a `.dark` class inside that scope.
-
-Use `ShadeApp` to handle scoping and provide context:
+Every Shade component is themed. To toggle modes, wrap your tree in `ShadeApp`:
 
 ```tsx
 import {ShadeApp} from '@tryghost/shade/app';
 import {Button} from '@tryghost/shade/components';
 
 export default function App() {
-    // Toggle dark mode by switching the `darkMode` prop
     return (
         <ShadeApp darkMode={false}>
-            <div>
-                <Button>Continue</Button>
-            </div>
+            <Button>Continue</Button>
         </ShadeApp>
     );
 }
 ```
 
-Alternatively, wrap your UI in a div with `className="shade"` and toggle a nested `.dark` class when needed.
+`ShadeApp` adds a `.shade` scope to your tree and toggles a `.dark` class inside it. If you'd rather not use the wrapper, you can apply those two classes manually — the components will respond.
 
-## Documentation Structure
+## Where to go next
 
-Our documentation is organized into:
+If you're new here, read the [Architecture](?path=/docs/architecture--docs) page next. It explains the layers (tokens, primitives, components, recipes, features) with a glossary so the vocabulary makes sense, and a short decision rule for choosing where new code belongs.
 
-1. **Components** - Individual UI elements with variants and usage
-2. **Patterns** - Common UI patterns and compositions
-3. **Tokens** - Design tokens via TailwindCSS
-4. **Guidelines** - Best practices and standards
+If you already know your way around and just want to ship, browse:
 
-## Resources
+- **Foundations** — visual recipes like `inputSurface` that shape every form control's chrome.
+- **Primitives** — `Stack`, `Inline`, `Box`, `Grid`, `Container`, `Text`. The structural vocabulary.
+- **Components** — generic controls (Button, Input, Dialog, etc.).
+- **Layout** — page shells (Page, ListHeader, ViewHeader).
+- **Features** — product compositions (KPI cards, charts, filters).
 
-- [GitHub Repository](https://github.com/TryGhost/Ghost)
-- [ShadCN/UI Documentation](https://ui.shadcn.com)
-- [TailwindCSS Documentation](https://tailwindcss.com/docs)
-- [Radix UI Documentation](https://www.radix-ui.com/docs/primitives)
+Each section's pages have a description, props, and live examples.
 
 </div>
