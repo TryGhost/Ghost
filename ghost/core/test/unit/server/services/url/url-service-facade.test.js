@@ -93,4 +93,60 @@ describe('UrlServiceFacade', function () {
             sinon.assert.calledWith(urlService.onRouterUpdated, 'id');
         });
     });
+
+    describe('lazy mode (lazyUrlService backend)', function () {
+        let lazyUrlService;
+        let lazyFacade;
+
+        beforeEach(function () {
+            lazyUrlService = {
+                getUrlForResource: sinon.stub().returns('/lazy/'),
+                ownsResource: sinon.stub().returns(true),
+                resolveUrl: sinon.stub().resolves({type: 'posts', id: 'p1'}),
+                hasFinished: sinon.stub().returns(true),
+                onRouterAddedType: sinon.stub(),
+                onRouterUpdated: sinon.stub(),
+                reset: sinon.stub()
+            };
+            lazyFacade = new UrlServiceFacade({urlService, lazyUrlService});
+        });
+
+        it('isLazy() reports true', function () {
+            assert.equal(lazyFacade.isLazy(), true);
+        });
+
+        it('routes getUrlForResource through the lazy backend', function () {
+            const url = lazyFacade.getUrlForResource({type: 'posts', id: 'a'}, {absolute: true});
+            sinon.assert.calledWith(lazyUrlService.getUrlForResource, {type: 'posts', id: 'a'}, {absolute: true});
+            sinon.assert.notCalled(urlService.getUrlByResourceId);
+            assert.equal(url, '/lazy/');
+        });
+
+        it('routes ownsResource through the lazy backend', function () {
+            lazyFacade.ownsResource('routerA', {type: 'posts', id: 'a'});
+            sinon.assert.calledWith(lazyUrlService.ownsResource, 'routerA', {type: 'posts', id: 'a'});
+            sinon.assert.notCalled(urlService.owns);
+        });
+
+        it('returns the lazy backend resource directly from resolveUrl', async function () {
+            const result = await lazyFacade.resolveUrl('/x/');
+            sinon.assert.calledWith(lazyUrlService.resolveUrl, '/x/');
+            sinon.assert.notCalled(urlService.getResource);
+            assert.deepEqual(result, {type: 'posts', id: 'p1'});
+        });
+
+        it('forwards lifecycle hooks to the lazy backend', function () {
+            lazyFacade.onRouterAddedType('id', 'filter', 'posts', '/{slug}/');
+            lazyFacade.onRouterUpdated('id');
+            sinon.assert.calledWith(lazyUrlService.onRouterAddedType, 'id', 'filter', 'posts', '/{slug}/');
+            sinon.assert.calledWith(lazyUrlService.onRouterUpdated, 'id');
+            sinon.assert.notCalled(urlService.onRouterAddedType);
+            sinon.assert.notCalled(urlService.onRouterUpdated);
+        });
+
+        it('reset() drops registered router configs on the lazy backend', function () {
+            lazyFacade.reset();
+            sinon.assert.calledOnce(lazyUrlService.reset);
+        });
+    });
 });
