@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {cn} from '@/lib/utils';
-import {MetricValue} from '../../ui/metric-value';
-import {TrendBadge} from '../../ui/trend-badge';
+import {MetricValue} from '@/components/ui/metric-value';
+import {TrendBadge} from '@/components/ui/trend-badge';
 
 const KpiCardHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
     return (

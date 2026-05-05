@@ -10,16 +10,16 @@ import {
     CommandItem,
     CommandList,
     CommandSeparator
-} from '../../ui/command';
+} from '@/components/ui/command';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger
-} from '../../ui/dropdown-menu';
-import {Popover, PopoverContent, PopoverTrigger} from '../../ui/popover';
-import {Switch} from '../../ui/switch';
-import {Tooltip, TooltipContent, TooltipTrigger} from '../../ui/tooltip';
+} from '@/components/ui/dropdown-menu';
+import {Popover, PopoverContent, PopoverTrigger} from '@/components/ui/popover';
+import {Switch} from '@/components/ui/switch';
+import {Tooltip, TooltipContent, TooltipTrigger} from '@/components/ui/tooltip';
 import {cva, type VariantProps} from 'class-variance-authority';
 import {AlertCircle, Check, Loader2, Plus, X} from 'lucide-react';
 import {cn} from '@/lib/utils';

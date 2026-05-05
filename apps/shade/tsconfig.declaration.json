@@ -6,6 +6,7 @@
         "declaration": true,
         "declarationMap": true,
         "declarationDir": "./types",
+        "outDir": "./types",
         "emitDeclarationOnly": true,
         "tsBuildInfoFile": "./types/tsconfig.tsbuildinfo",
         "rootDir": "./src"

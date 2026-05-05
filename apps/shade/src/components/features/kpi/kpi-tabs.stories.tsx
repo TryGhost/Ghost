@@ -1,6 +1,6 @@
 import type {Meta, StoryObj} from '@storybook/react-vite';
 
-import {Tabs, TabsContent, TabsList} from '../../ui/tabs';
+import {Tabs, TabsContent, TabsList} from '@/components/ui/tabs';
 import {KpiTabTrigger, KpiTabValue} from './kpi-tabs';
 
 const meta = {

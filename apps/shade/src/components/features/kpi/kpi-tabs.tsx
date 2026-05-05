@@ -3,10 +3,10 @@ import * as LucideIcons from 'lucide-react';
 import {type LucideIcon} from 'lucide-react';
 
 import {cn} from '@/lib/utils';
-import {Button, ButtonProps} from '../../ui/button';
-import {MetricValue} from '../../ui/metric-value';
-import {Tabs, TabsContent, TabsList, TabsProps, TabsTrigger} from '../../ui/tabs';
-import {TrendBadge} from '../../ui/trend-badge';
+import {Button, ButtonProps} from '@/components/ui/button';
+import {MetricValue} from '@/components/ui/metric-value';
+import {Tabs, TabsContent, TabsList, TabsProps, TabsTrigger} from '@/components/ui/tabs';
+import {TrendBadge} from '@/components/ui/trend-badge';
 
 /**
  * KPI variant of the Tabs primitives. Wraps the generic Tabs / TabsList /

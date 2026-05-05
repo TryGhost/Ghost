@@ -1,8 +1,8 @@
 import type {Meta, StoryObj} from '@storybook/react-vite';
 import {Coins, Eye, User} from 'lucide-react';
 
-import {Button} from '../../ui/button';
-import {Card, CardContent} from '../../ui/card';
+import {Button} from '@/components/ui/button';
+import {Card, CardContent} from '@/components/ui/card';
 import {KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue} from './kpi-card';
 
 const meta = {
