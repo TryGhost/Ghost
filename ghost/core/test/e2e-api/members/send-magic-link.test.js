@@ -768,11 +768,7 @@ describe('sendMagicLink', function () {
         function assertNoOTCInEmailContent(mail) {
             const otcRegex = /\d{6}|\scode\s|\sotc\s/i;
 
-            // Magic-link tokens are random alphanumerics and can incidentally
-            // contain six consecutive digits, which would false-positive the
-            // \d{6} check. Replace URLs with whitespace before scanning so a
-            // URL in one text node can't merge with a real OTC in the next
-            // when cheerio concatenates without separators.
+            // \d{6} would otherwise match digits inside the magic-link token.
             const stripUrls = string => string.replace(/https?:\/\/\S+/g, ' ');
 
             const subjectMatch = mail.subject.match(otcRegex);
@@ -782,8 +778,8 @@ describe('sendMagicLink', function () {
             const textMatch = text.match(otcRegex);
             assert(!textMatch, `Email text should not contain OTC. Found: "${textMatch?.[0]}" near: "${text.substring(text.search(otcRegex) - 50, text.search(otcRegex) + 100)}"`);
 
-            // Per text node, so a URL in one node can't merge with digits
-            // in the next via cheerio's separator-less .text().
+            // Per text node — cheerio's .text() concatenates without
+            // separators, so URLs could otherwise merge with adjacent digits.
             const $ = cheerio.load(mail.html);
             const htmlText = $('*').contents()
                 .toArray()
