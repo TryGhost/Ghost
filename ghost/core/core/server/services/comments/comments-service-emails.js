@@ -2,6 +2,7 @@ const moment = require('moment');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const emailService = require('../email-service');
 const CommentsServiceEmailRenderer = require('./comments-service-email-renderer');
+const toPlain = require('../../lib/common/to-plain');
 const {t} = require('../i18n');
 
 class CommentsServiceEmails {
@@ -25,7 +26,8 @@ class CommentsServiceEmails {
      * @returns {string} The post URL with appropriate comment fragment
      */
     getPostUrl(post, commentId) {
-        const baseUrl = this.urlService.getUrlByResourceId(post.id, {absolute: true});
+        const postData = toPlain(post);
+        const baseUrl = this.urlService.facade.getUrlForResource({...postData, type: 'posts'}, {absolute: true});
         return `${baseUrl}#ghost-comments-${commentId}`;
     }
 

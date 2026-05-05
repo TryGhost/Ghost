@@ -1,9 +1,17 @@
 /**
  * @typedef {Object} UrlService
  * @prop {(resourceId: string, options) => Object} getResource
- *  @prop {(resourceId: string, options) => string} getUrlByResourceId
- *
+ * @prop {{getUrlForResource: (resource: Object, options: Object) => string}} facade
  */
+
+const toPlain = require('../../lib/common/to-plain');
+
+const TYPE_TO_RESOURCE = {
+    post: 'posts',
+    page: 'pages',
+    tag: 'tags',
+    author: 'authors'
+};
 
 /**
  * Translate a url into, (id+type), or a resource, and vice versa
@@ -124,10 +132,6 @@ class UrlTranslator {
         }
     }
 
-    getUrlByResourceId(id, options = {absolute: true}) {
-        return this.urlService.getUrlByResourceId(id, options);
-    }
-
     /**
      * Get the URL for a resource, handling email-only posts which have no
      * public URL (the URL service returns /404/ for them).
@@ -138,14 +142,26 @@ class UrlTranslator {
             const emailPath = `/email/${model.get('uuid')}/`;
             return absolute ? this.relativeToAbsolute(emailPath) : emailPath;
         }
-        return this.getUrlByResourceId(id, {absolute});
+        // Lazy URL service evaluates permalink templates against resource fields
+        // (slug, published_at, primary_tag, ...). Caller already loaded the model,
+        // so spread its plain data so those fields reach the facade.
+        const data = toPlain(model);
+        const resource = {...data, id, type: TYPE_TO_RESOURCE[type]};
+        return this.urlService.facade.getUrlForResource(resource, {absolute});
     }
 
     async getResourceById(id, type) {
         switch (type) {
         case 'post':
         case 'page': {
-            const post = await this.models.Post.findOne({id}, {require: false, filter: 'type:[post,page]+status:[published,sent]'});
+            // withRelated: tags+authors so the lazy URL service can evaluate
+            // `:primary_tag` / `:primary_author` permalink templates against
+            // the resource. Mirrors services/url/config.js's posts config.
+            const post = await this.models.Post.findOne({id}, {
+                require: false,
+                filter: 'type:[post,page]+status:[published,sent]',
+                withRelated: ['tags', 'authors']
+            });
             if (!post) {
                 return null;
             }

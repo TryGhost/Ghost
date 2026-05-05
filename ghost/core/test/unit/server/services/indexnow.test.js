@@ -412,11 +412,18 @@ describe('IndexNow', function () {
     describe('ping() URL output', function () {
         const ping = indexnow.__get__('ping');
         const POST_URL = 'https://my-blog.example/some-post/';
+        let getUrlForResourceStub;
         let requestStub;
         let resetIndexNow;
 
         beforeEach(function () {
-            sinon.stub(urlService, 'getUrlByResourceId').returns(POST_URL);
+            // Bind the stub to the exact resource shape production passes
+            // (`{...post, type: 'posts'}`) so a regression that drops the
+            // type override or the spread surfaces here.
+            getUrlForResourceStub = sinon.stub(urlService.facade, 'getUrlForResource');
+            getUrlForResourceStub
+                .withArgs(sinon.match({id: 'abc', type: 'posts'}), {absolute: true})
+                .returns(POST_URL);
 
             requestStub = sinon.stub().resolves({statusCode: 200});
             resetIndexNow = indexnow.__set__('request', requestStub);
@@ -433,6 +440,7 @@ describe('IndexNow', function () {
 
             await ping(post);
 
+            sinon.assert.calledOnce(getUrlForResourceStub);
             sinon.assert.calledOnce(requestStub);
             const indexNowUrl = new URL(requestStub.firstCall.args[0]);
             assert.equal(indexNowUrl.searchParams.get('url'), POST_URL);

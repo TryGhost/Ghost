@@ -5,7 +5,9 @@ const CommentsServiceEmails = require('../../../../../core/server/services/comme
 describe('Comments Service: CommentsServiceEmails', function () {
     function createClassInstance({labs = {}}) {
         const urlService = {
-            getUrlByResourceId: sinon.stub().returns('https://example.com/my-post/')
+            facade: {
+                getUrlForResource: sinon.stub().returns('https://example.com/my-post/')
+            }
         };
         const labsStub = {
             isSet: sinon.stub().callsFake(flag => labs[flag] || false)
@@ -35,12 +37,34 @@ describe('Comments Service: CommentsServiceEmails', function () {
             assert.equal(result, 'https://example.com/my-post/#ghost-comments-456');
         });
 
-        it('passes the post id (not the post object) to the url service', function () {
+        it('passes a posts resource to the facade', function () {
             const {instance, urlService} = createClassInstance({});
 
             instance.getPostUrl({id: '123'}, '456');
 
-            sinon.assert.calledWith(urlService.getUrlByResourceId, '123', {absolute: true});
+            sinon.assert.calledWith(
+                urlService.facade.getUrlForResource,
+                sinon.match({id: '123', type: 'posts'}),
+                {absolute: true}
+            );
+        });
+
+        it('serialises Bookshelf-model input so spread does not lose the id', function () {
+            // Real callers (notify*Authors / notifyParentCommentAuthor / notifyReport)
+            // pass a Bookshelf model from Post.findOne. Spreading one with
+            // `{...model}` skips prototype getters like `.id`.
+            const {instance, urlService} = createClassInstance({});
+            const fakeBookshelfModel = {
+                toJSON: () => ({id: '123', slug: 'my-post'})
+            };
+
+            instance.getPostUrl(fakeBookshelfModel, '456');
+
+            sinon.assert.calledWith(
+                urlService.facade.getUrlForResource,
+                sinon.match({id: '123', slug: 'my-post', type: 'posts'}),
+                {absolute: true}
+            );
         });
     });
 
@@ -97,15 +121,15 @@ describe('Comments Service: CommentsServiceEmails', function () {
             const renderStub = sinon.stub().resolves({html: 'h', text: 't'});
             const mailerSendStub = sinon.stub().resolves();
 
-            // Stub `getUrlByResourceId` with a withArgs match: the URL only
-            // resolves when the post's id is passed. Anything else returns
-            // undefined, so a regression that drops `post.id` somewhere
-            // between notifyX and the URL service surfaces as a bad URL
-            // landing in templateData.
-            const getUrlByResourceIdStub = sinon.stub().returns(undefined);
-            getUrlByResourceIdStub.withArgs('post-id', sinon.match.any)
+            // Stub the facade's getUrlForResource with a withArgs match:
+            // the URL only resolves when a resource carrying the post's id
+            // is passed. Anything else returns undefined, so a regression
+            // that drops `post.id` somewhere between notifyX and the URL
+            // service surfaces as a bad URL landing in templateData.
+            const getUrlForResourceStub = sinon.stub().returns(undefined);
+            getUrlForResourceStub.withArgs(sinon.match({id: 'post-id'}), sinon.match.any)
                 .returns('https://example.com/my-post/');
-            const urlService = {getUrlByResourceId: getUrlByResourceIdStub};
+            const urlService = {facade: {getUrlForResource: getUrlForResourceStub}};
 
             const instance = new CommentsServiceEmails({
                 config: {},
@@ -145,11 +169,11 @@ describe('Comments Service: CommentsServiceEmails', function () {
             // After this commit's migration the call always passes a model.
             assert.notEqual(typeof postArg, 'string');
 
-            // End-to-end pin: getUrlByResourceId must receive the post's id,
-            // not whatever shape happens to render to a string. The stub
-            // only returns the canonical URL for 'post-id', so a regression
-            // that drops the id somewhere in the chain surfaces here.
-            sinon.assert.calledWith(urlService.getUrlByResourceId, 'post-id');
+            // End-to-end pin: the facade must receive a resource carrying
+            // the post's id. The stub only returns the canonical URL for
+            // {id: 'post-id'}, so a regression that drops the id somewhere
+            // in the chain surfaces here.
+            sinon.assert.calledWith(urlService.facade.getUrlForResource, sinon.match({id: 'post-id'}));
 
             sinon.assert.calledOnce(renderStub);
             const [, templateData] = renderStub.firstCall.args;
@@ -180,7 +204,7 @@ describe('Comments Service: CommentsServiceEmails', function () {
             // After this commit's migration the call always passes a model.
             assert.notEqual(typeof postArg, 'string');
 
-            sinon.assert.calledWith(urlService.getUrlByResourceId, 'post-id');
+            sinon.assert.calledWith(urlService.facade.getUrlForResource, sinon.match({id: 'post-id'}));
 
             sinon.assert.calledOnce(renderStub);
             const [, templateData] = renderStub.firstCall.args;
