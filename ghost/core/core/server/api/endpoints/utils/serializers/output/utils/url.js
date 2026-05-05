@@ -3,7 +3,11 @@ const urlUtils = require('../../../../../../../shared/url-utils');
 const localUtils = require('../../../index');
 
 const forPost = (id, attrs, frame) => {
-    attrs.url = urlService.getUrlByResourceId(id, {absolute: true});
+    // `id` is passed separately because callers may filter `attrs` via
+    // `fields=url`, which strips every attribute except the requested ones.
+    // Without this explicit `id`, the eager facade's id-based fallback hits
+    // /404/ for every post.
+    attrs.url = urlService.facade.getUrlForResource({...attrs, id, type: 'posts'}, {absolute: true});
 
     /**
      * CASE: admin api should serve preview urls
@@ -44,7 +48,7 @@ const forPost = (id, attrs, frame) => {
 
 const forUser = (id, attrs, options) => {
     if (!options.columns || (options.columns && options.columns.includes('url'))) {
-        attrs.url = urlService.getUrlByResourceId(id, {absolute: true});
+        attrs.url = urlService.facade.getUrlForResource({...attrs, id, type: 'authors'}, {absolute: true});
     }
 
     return attrs;
@@ -52,7 +56,7 @@ const forUser = (id, attrs, options) => {
 
 const forTag = (id, attrs, options) => {
     if (!options.columns || (options.columns && options.columns.includes('url'))) {
-        attrs.url = urlService.getUrlByResourceId(id, {absolute: true});
+        attrs.url = urlService.facade.getUrlForResource({...attrs, id, type: 'tags'}, {absolute: true});
     }
 
     return attrs;
