@@ -3,7 +3,16 @@ const urlUtils = require('../../../../../../../shared/url-utils');
 const localUtils = require('../../../index');
 
 const forPost = (id, attrs, frame) => {
-    attrs.url = urlService.getUrlByResourceId(id, {absolute: true});
+    // `forPost` is shared between the posts and pages mappers (pages.js
+    // delegates to posts.js). The router-level resource type therefore has
+    // to be derived from `attrs.type` ('post' / 'page') rather than hardcoded
+    // — otherwise the facade would dispatch a page record against the posts
+    // router. `id` is passed separately because callers may filter `attrs`
+    // via `fields=url`, which strips every attribute except the requested
+    // ones; without the explicit `id`, the eager facade's id-based fallback
+    // hits /404/ for every record.
+    const type = attrs.type === 'page' ? 'pages' : 'posts';
+    attrs.url = urlService.facade.getUrlForResource({...attrs, id, type}, {absolute: true});
 
     /**
      * CASE: admin api should serve preview urls
@@ -44,7 +53,7 @@ const forPost = (id, attrs, frame) => {
 
 const forUser = (id, attrs, options) => {
     if (!options.columns || (options.columns && options.columns.includes('url'))) {
-        attrs.url = urlService.getUrlByResourceId(id, {absolute: true});
+        attrs.url = urlService.facade.getUrlForResource({...attrs, id, type: 'authors'}, {absolute: true});
     }
 
     return attrs;
@@ -52,7 +61,7 @@ const forUser = (id, attrs, options) => {
 
 const forTag = (id, attrs, options) => {
     if (!options.columns || (options.columns && options.columns.includes('url'))) {
-        attrs.url = urlService.getUrlByResourceId(id, {absolute: true});
+        attrs.url = urlService.facade.getUrlForResource({...attrs, id, type: 'tags'}, {absolute: true});
     }
 
     return attrs;
