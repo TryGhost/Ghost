@@ -600,13 +600,17 @@ export default class App extends React.Component {
 
         if (qParams.get('stripe') === 'gift-purchase-success') {
             const token = qParams.get('gift_token');
-            clearURLParams(['stripe', 'gift_token']);
+            const tierId = qParams.get('gift_tier');
+            const cadence = qParams.get('gift_cadence');
+            clearURLParams(['stripe', 'gift_token', 'gift_tier', 'gift_cadence']);
             if (token) {
                 return {
                     showPopup: true,
                     page: 'giftSuccess',
                     pageData: {
-                        token
+                        token,
+                        tierId,
+                        cadence
                     }
                 };
             }
