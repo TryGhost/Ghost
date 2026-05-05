@@ -4,13 +4,19 @@ import {cva, type VariantProps} from 'class-variance-authority';
 import {cn} from '@/lib/utils';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
+import {inputSurfaceClasses} from '@/components/ui/input-surface';
 import {Textarea} from '@/components/ui/textarea';
 
 function InputGroup({className, ...props}: React.ComponentProps<'div'>) {
     return (
         <div
             className={cn(
-                'group/input-group border-border-default bg-surface-elevated relative flex w-full items-center rounded-md border outline-hidden transition-colors',
+                // Shared surface chrome (border, bg, radius, transition, invalid state).
+                inputSurfaceClasses.base,
+                inputSurfaceClasses.invalidWithin,
+
+                // Wrapper layout + group context (input-group specific).
+                'group/input-group relative flex w-full items-center outline-hidden',
                 'h-9 has-[>textarea]:h-auto',
 
                 // Variants based on alignment.
@@ -19,11 +25,10 @@ function InputGroup({className, ...props}: React.ComponentProps<'div'>) {
                 'has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>[data-align=block-start]]:[&>input]:pb-3',
                 'has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-end]]:[&>input]:pt-3',
 
-                // Focus state.
+                // Focus state — scoped to the input-group control specifically so that
+                // focusing an InputGroupButton inside the group does NOT trigger the surface
+                // focus ring. This is why we don't use inputSurface('within') here.
                 'has-[[data-slot=input-group-control]:focus-visible]:outline-hidden has-[[data-slot=input-group-control]:focus-visible]:bg-transparent has-[[data-slot=input-group-control]:focus-visible]:border-focus-ring has-[[data-slot=input-group-control]:focus-visible]:ring-2 has-[[data-slot=input-group-control]:focus-visible]:ring-focus-ring/25',
-
-                // Error state.
-                'has-[[data-slot][aria-invalid=true]]:ring-destructive/20 has-[[data-slot][aria-invalid=true]]:border-destructive dark:has-[[data-slot][aria-invalid=true]]:ring-destructive/40',
 
                 className
             )}
