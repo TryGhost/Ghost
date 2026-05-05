@@ -322,7 +322,7 @@ describe('Front-end members behavior', function () {
         it('should redirect invalid token on members endpoint', async function () {
             await request.get('/members/?token=abc&action=signup')
                 .expect(302)
-                .expect('Location', '/?action=signup&success=false');
+                .expect('Location', '/?action=signup&errorCode=INVALID_TOKEN&success=false');
         });
     });
 

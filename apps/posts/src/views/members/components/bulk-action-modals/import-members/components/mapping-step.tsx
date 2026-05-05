@@ -166,15 +166,13 @@ export function MappingStep({
                                 canCreateFromSearch={labelPicker.canCreateFromSearch}
                                 isCreating={labelPicker.isCreating}
                                 isDuplicateName={labelPicker.isDuplicateName}
-                                isLoading={labelPicker.isLoading}
                                 labels={labelPicker.labels}
+                                optionSource={labelPicker.optionSource}
                                 resolvedSelectedLabels={labelPicker.resolvedSelectedLabels}
-                                searchValue={labelPicker.searchValue}
                                 selectedSlugs={labelPicker.selectedSlugs}
                                 onCreate={labelPicker.createLabel}
                                 onDelete={labelPicker.deleteLabel}
                                 onEdit={labelPicker.editLabel}
-                                onSearchChange={labelPicker.onSearchChange}
                                 onToggle={labelPicker.toggleLabel}
                             />
                         </div>

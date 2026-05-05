@@ -122,9 +122,9 @@ const GiftSuccessPage = () => {
 
             <div className="gh-portal-signup-header">
                 <div className="gh-gift-success-icon"><GiftIcon /></div>
-                <h1 className="gh-portal-main-title">Gift ready to share!</h1>
+                <h1 className="gh-portal-main-title">Your gift is ready!</h1>
                 <p className="gh-portal-main-subtitle gh-portal-text-center">
-                    Share this link with the recipient to let them redeem their gift membership.
+                    Send the link below to share it with whoever you&apos;d like.
                 </p>
             </div>
 
@@ -137,8 +137,7 @@ const GiftSuccessPage = () => {
             </div>
 
             <p className="gh-gift-footer-text">
-                This link can be redeemed once and expires in 365 days.<br />
-                We&apos;ve also sent a confirmation to your email with this link.
+                Not ready to share? We&apos;ve also emailed a copy to your inbox.
             </p>
         </div>
     );

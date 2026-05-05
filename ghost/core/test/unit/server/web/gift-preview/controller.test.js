@@ -61,6 +61,18 @@ describe('Gift Preview Controller', function () {
             sinon.assert.calledWith(res.redirect, 302, 'https://example.com/');
         });
 
+        it('redirects to homepage when gift token is not found (null)', async function () {
+            sinon.stub(labs, 'isSet').withArgs('giftSubscriptions').returns(true);
+            giftServiceWrapper.service = {
+                getByToken: sinon.stub().resolves(null)
+            };
+
+            await controller.giftPreview(req, res);
+
+            sinon.assert.calledOnce(res.redirect);
+            sinon.assert.calledWith(res.redirect, 302, 'https://example.com/');
+        });
+
         it('returns HTML with OG tags for a valid gift', async function () {
             sinon.stub(labs, 'isSet').withArgs('giftSubscriptions').returns(true);
             giftServiceWrapper.service = {

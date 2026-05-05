@@ -22,6 +22,13 @@ const AccountWelcome = () => {
         const currentPeriodEnd = subscription?.current_period_end;
         const subscriptionExpiry = getSubscriptionExpiry({member});
         if (isGiftMember({member})) {
+            if (subscriptionExpiry) {
+                return (
+                    <div className='gh-portal-section' style={{marginBottom: 24}}>
+                        <p className='gh-portal-text-center gh-portal-free-ctatext'>{t(`Your gift subscription will expire on {expiryDate}`, {expiryDate: subscriptionExpiry})}</p>
+                    </div>
+                );
+            }
             return null;
         }
         if (isComplimentary && subscriptionExpiry) {

@@ -3,7 +3,7 @@
 exports[`Can send cards via email Paragraphs 1 1`] = `
 Object {
   "html": "<!doctype html>
-<html>
+<html lang=\\"en-gb\\" dir=\\"ltr\\">
     <head>
         <meta name=\\"viewport\\" content=\\"width=device-width\\">
         <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
@@ -546,7 +546,7 @@ table.body h2 span {
         </style>
         <![endif]-->
     </head>
-    <body data-testid=\\"email-preview-body\\" style=\\"background-color: #fff; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; font-size: 18px; line-height: 0; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #15212A;\\">
+    <body data-testid=\\"email-preview-body\\" style=\\"background-color: #fff; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; font-size: 18px; line-height: 0; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #15212A; direction: ltr;\\">
         <span class=\\"preheader\\" style=\\"color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;\\">This is a paragraph test.</span>
         <!-- SPACING TO AVOID BODY TEXT BEING DUPLICATED IN PREVIEW TEXT -->
         <div style=\\"display:none; max-height:0; overflow:hidden; mso-hide: all;\\" aria-hidden=\\"true\\" role=\\"presentation\\">
@@ -870,7 +870,7 @@ https://ghost.org/?via=pbg-newsletter&ref=127.0.0.1
 exports[`Can send cards via email Signup Card 1 1`] = `
 Object {
   "html": "<!doctype html>
-<html>
+<html lang=\\"en-gb\\" dir=\\"ltr\\">
     <head>
         <meta name=\\"viewport\\" content=\\"width=device-width\\">
         <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
@@ -1413,7 +1413,7 @@ table.body h2 span {
         </style>
         <![endif]-->
     </head>
-    <body data-testid=\\"email-preview-body\\" style=\\"background-color: #fff; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; font-size: 18px; line-height: 0; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #15212A;\\">
+    <body data-testid=\\"email-preview-body\\" style=\\"background-color: #fff; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; font-size: 18px; line-height: 0; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #15212A; direction: ltr;\\">
         <span class=\\"preheader\\" style=\\"color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;\\">This is a paragraph</span>
         <!-- SPACING TO AVOID BODY TEXT BEING DUPLICATED IN PREVIEW TEXT -->
         <div style=\\"display:none; max-height:0; overflow:hidden; mso-hide: all;\\" aria-hidden=\\"true\\" role=\\"presentation\\">
@@ -7533,7 +7533,7 @@ https://ghost.org/?via=pbg-newsletter&ref=127.0.0.1
 exports[`Can send cards via email renders the golden post correctly (status:-free) 1 1`] = `
 Object {
   "html": "<!doctype html>
-<html>
+<html lang=\\"en-gb\\" dir=\\"ltr\\">
     <head>
         <meta name=\\"viewport\\" content=\\"width=device-width\\">
         <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
@@ -8076,7 +8076,7 @@ table.body h2 span {
         </style>
         <![endif]-->
     </head>
-    <body data-testid=\\"email-preview-body\\" style=\\"background-color: #fff; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; font-size: 18px; line-height: 0; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #15212A;\\">
+    <body data-testid=\\"email-preview-body\\" style=\\"background-color: #fff; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; font-size: 18px; line-height: 0; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #15212A; direction: ltr;\\">
         <span class=\\"preheader\\" style=\\"color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;\\">This is just a simple paragraph, no frills.
 
 This is block quote
@@ -9066,7 +9066,7 @@ https://ghost.org/?via=pbg-newsletter&ref=127.0.0.1
 exports[`Can send cards via email renders the golden post correctly (status:free) 1 1`] = `
 Object {
   "html": "<!doctype html>
-<html>
+<html lang=\\"en-gb\\" dir=\\"ltr\\">
     <head>
         <meta name=\\"viewport\\" content=\\"width=device-width\\">
         <meta http-equiv=\\"Content-Type\\" content=\\"text/html; charset=UTF-8\\">
@@ -9609,7 +9609,7 @@ table.body h2 span {
         </style>
         <![endif]-->
     </head>
-    <body data-testid=\\"email-preview-body\\" style=\\"background-color: #fff; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; font-size: 18px; line-height: 0; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #15212A;\\">
+    <body data-testid=\\"email-preview-body\\" style=\\"background-color: #fff; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; font-size: 18px; line-height: 0; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #15212A; direction: ltr;\\">
         <span class=\\"preheader\\" style=\\"color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;\\">This is just a simple paragraph, no frills.
 
 &gt; This is block quote

@@ -3,7 +3,7 @@
   description: All fixture data
   parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC
   expected_result: |
-    {"source":"","visits":6}
+    {"source":"","visits":7}
     {"source":"bing.com","visits":2}
     {"source":"search.yahoo.com","visits":2}
     {"source":"google.com","visits":1}
@@ -49,10 +49,10 @@
     {"source":"bing.com","visits":2}
 
 - name: Filtered by member status - paid
-  description: Filtered by member status - paid
+  description: Filtered by member status - paid (includes comped and gift)
   parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&member_status=paid
   expected_result: |
-    {"source":"","visits":2}
+    {"source":"","visits":3}
     {"source":"bing.com","visits":1}
     {"source":"google.com","visits":1}
     {"source":"search.yahoo.com","visits":1}
@@ -72,7 +72,7 @@
   description: Filtered by timezone - America/Los_Angeles
   parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=America/Los_Angeles
   expected_result: |
-    {"source":"","visits":5}
+    {"source":"","visits":6}
     {"source":"search.yahoo.com","visits":2}
     {"source":"bing.com","visits":1}
     {"source":"google.com","visits":1}

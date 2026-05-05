@@ -496,6 +496,45 @@ describe('welcome email automations poll', function () {
         assert.equal(updatedRun.step_attempts, 0);
     });
 
+    it('allows the paid welcome email to be sent to a gift member', async function () {
+        const automation = await createAutomation({
+            slug: MEMBER_WELCOME_EMAIL_SLUGS.paid
+        });
+        const automatedEmail = await createAutomatedEmail({
+            welcome_email_automation_id: automation.id
+        });
+        const member = await createMember({
+            email: 'gift-member@example.com',
+            name: 'Gift Member',
+            status: 'gift'
+        });
+        const run = await createRun({
+            welcome_email_automation_id: automation.id,
+            member_id: member.id,
+            next_welcome_email_automated_email_id: automatedEmail.id,
+            ready_at: new Date(Date.now() - 1000)
+        });
+
+        await poll(options);
+
+        sinon.assert.calledWith(options.memberWelcomeEmailService.api.send, sinon.match({
+            member: {
+                name: 'Gift Member',
+                email: 'gift-member@example.com',
+                uuid: member.uuid
+            },
+            memberStatus: 'paid'
+        }));
+
+        const updatedRun = await readRun(run.id);
+        assert.equal(updatedRun.exit_reason, 'finished');
+        assert.equal(updatedRun.next_welcome_email_automated_email_id, null);
+
+        const recipients = await readTrackedRecipients();
+        assert.equal(recipients.length, 1);
+        assert.equal(recipients[0].member_email, 'gift-member@example.com');
+    });
+
     it('fails if run stored with more attempts than now supported', async function () {
         const automation = await createAutomation();
         const automatedEmail = await createAutomatedEmail({

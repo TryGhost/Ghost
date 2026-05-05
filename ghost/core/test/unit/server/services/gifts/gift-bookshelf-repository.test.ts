@@ -612,4 +612,121 @@ describe('GiftBookshelfRepository', function () {
             assert.equal(gift, null);
         });
     });
+
+    describe('getActiveByMembers', function () {
+        function buildGiftRow(overrides: Record<string, unknown> = {}) {
+            return {
+                token: 'gift-token',
+                buyer_email: 'buyer@example.com',
+                buyer_member_id: 'buyer_member_1',
+                redeemer_member_id: 'member_2',
+                tier_id: 'tier_1',
+                cadence: 'year',
+                duration: 1,
+                currency: 'usd',
+                amount: 5000,
+                stripe_checkout_session_id: 'cs_123',
+                stripe_payment_intent_id: 'pi_456',
+                consumes_at: new Date('2027-01-01T00:00:00.000Z'),
+                expires_at: new Date('2030-01-01T00:00:00.000Z'),
+                status: 'redeemed',
+                purchased_at: new Date('2026-01-01T00:00:00.000Z'),
+                redeemed_at: new Date('2026-06-01T00:00:00.000Z'),
+                consumed_at: null,
+                expired_at: null,
+                refunded_at: null,
+                ...overrides
+            };
+        }
+
+        it('returns an empty map without hitting the model when memberIds is empty', async function () {
+            const GiftModel = {
+                add: sinon.stub(),
+                transaction: sinon.stub(),
+                findOne: sinon.stub(),
+                findAll: sinon.stub()
+            };
+            const repository = new GiftBookshelfRepository({GiftModel});
+
+            const result = await repository.getActiveByMembers([]);
+
+            assert.equal(result.size, 0);
+            sinon.assert.notCalled(GiftModel.findAll);
+        });
+
+        it('queries with an NQL filter for redeemed status and the supplied member ids', async function () {
+            const GiftModel = {
+                add: sinon.stub(),
+                transaction: sinon.stub(),
+                findOne: sinon.stub(),
+                findAll: sinon.stub().resolves({models: []})
+            };
+            const repository = new GiftBookshelfRepository({GiftModel});
+
+            await repository.getActiveByMembers(['member_1', 'member_2']);
+
+            sinon.assert.calledOnce(GiftModel.findAll);
+            const callArg = GiftModel.findAll.firstCall.args[0];
+            assert.equal(
+                callArg.filter,
+                `redeemer_member_id:['member_1','member_2']+status:redeemed`
+            );
+        });
+
+        it('keys returned gifts by their redeemer_member_id', async function () {
+            const GiftModel = {
+                add: sinon.stub(),
+                transaction: sinon.stub(),
+                findOne: sinon.stub(),
+                findAll: sinon.stub().resolves({
+                    models: [
+                        {toJSON: () => buildGiftRow({token: 'token-a', redeemer_member_id: 'member_1'})},
+                        {toJSON: () => buildGiftRow({token: 'token-b', redeemer_member_id: 'member_2'})}
+                    ]
+                })
+            };
+            const repository = new GiftBookshelfRepository({GiftModel});
+
+            const result = await repository.getActiveByMembers(['member_1', 'member_2']);
+
+            assert.equal(result.size, 2);
+            assert.equal(result.get('member_1')?.token, 'token-a');
+            assert.equal(result.get('member_2')?.token, 'token-b');
+        });
+
+        it('skips rows without a redeemer_member_id', async function () {
+            const GiftModel = {
+                add: sinon.stub(),
+                transaction: sinon.stub(),
+                findOne: sinon.stub(),
+                findAll: sinon.stub().resolves({
+                    models: [
+                        {toJSON: () => buildGiftRow({token: 'token-a', redeemer_member_id: 'member_1'})},
+                        {toJSON: () => buildGiftRow({token: 'token-orphan', redeemer_member_id: null})}
+                    ]
+                })
+            };
+            const repository = new GiftBookshelfRepository({GiftModel});
+
+            const result = await repository.getActiveByMembers(['member_1']);
+
+            assert.equal(result.size, 1);
+            assert.equal(result.get('member_1')?.token, 'token-a');
+        });
+
+        it('forwards transacting options to the model', async function () {
+            const GiftModel = {
+                add: sinon.stub(),
+                transaction: sinon.stub(),
+                findOne: sinon.stub(),
+                findAll: sinon.stub().resolves({models: []})
+            };
+            const repository = new GiftBookshelfRepository({GiftModel});
+
+            await repository.getActiveByMembers(['member_1'], {transacting: 'trx'});
+
+            const callArg = GiftModel.findAll.firstCall.args[0];
+            assert.equal(callArg.transacting, 'trx');
+        });
+    });
 });
