@@ -145,6 +145,8 @@ describe('{{#recommendations}} helper', function () {
     });
 
     describe('when timeout is exceeded', function () {
+        let clock;
+
         before(function () {
             sinon.stub(api, 'recommendationsPublic').get(() => {
                 return {
@@ -158,6 +160,15 @@ describe('{{#recommendations}} helper', function () {
                 };
             });
         });
+
+        beforeEach(function () {
+            clock = sinon.useFakeTimers({toFake: ['setTimeout', 'clearTimeout']});
+        });
+
+        afterEach(function () {
+            clock.restore();
+        });
+
         after(async function () {
             await configUtils.restore();
         });
@@ -165,9 +176,13 @@ describe('{{#recommendations}} helper', function () {
         it('should log an error and return safely if it hits the timeout threshold', async function () {
             configUtils.set('optimization:getHelper:timeout:threshold', 1);
 
-            const response = await recommendations.call(
+            const responsePromise = recommendations.call(
                 'recommendations'
             );
+            // Advance past the 1ms threshold but not the stub's 5ms timer,
+            // so the helper's timeout branch wins deterministically.
+            await clock.tickAsync(2);
+            const response = await responsePromise;
 
             // An error message is logged
             sinon.assert.calledOnce(logging.error);

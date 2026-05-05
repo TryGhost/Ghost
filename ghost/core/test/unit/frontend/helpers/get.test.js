@@ -551,23 +551,32 @@ describe('{{#get}} helper', function () {
         });
 
         it('should log an error and return safely if it hits the timeout threshold', async function () {
-            configUtils.set('optimization:getHelper:timeout:threshold', 1);
+            const clock = sinon.useFakeTimers({toFake: ['setTimeout', 'clearTimeout']});
+            try {
+                configUtils.set('optimization:getHelper:timeout:threshold', 1);
 
-            const result = await get.call(
-                {},
-                'posts',
-                {hash: {}, data: locals, fn: fn, inverse: inverse}
-            );
+                const resultPromise = get.call(
+                    {},
+                    'posts',
+                    {hash: {}, data: locals, fn: fn, inverse: inverse}
+                );
+                // Advance past the 1ms threshold but not the stub's 5ms timer,
+                // so the helper's timeout branch wins deterministically.
+                await clock.tickAsync(2);
+                const result = await resultPromise;
 
-            assert(result.toString().includes('data-aborted-get-helper'));
-            // A log message will be output
-            sinon.assert.calledOnce(logging.error);
-            // The get helper gets called with an empty array of results
-            sinon.assert.calledOnce(fn);
-            const args = fn.firstCall.args[0];
-            assert(args && typeof args === 'object');
-            assert('posts' in args);
-            assert.deepEqual(args.posts, []);
+                assert(result.toString().includes('data-aborted-get-helper'));
+                // A log message will be output
+                sinon.assert.calledOnce(logging.error);
+                // The get helper gets called with an empty array of results
+                sinon.assert.calledOnce(fn);
+                const args = fn.firstCall.args[0];
+                assert(args && typeof args === 'object');
+                assert('posts' in args);
+                assert.deepEqual(args.posts, []);
+            } finally {
+                clock.restore();
+            }
         });
     });
 
