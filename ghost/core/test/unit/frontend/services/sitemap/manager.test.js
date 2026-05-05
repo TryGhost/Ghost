@@ -126,4 +126,295 @@ describe('Unit: sitemap/manager', function () {
             sinon.assert.calledOnce(IndexGenerator.prototype.getXml);
         });
     });
+
+    describe('SiteMapManager (lazyRouting mode)', function () {
+        let lazyEvents;
+
+        before(function () {
+            lazyEvents = {};
+            // Replace the events.on stub for this block so we can capture
+            // subscriptions made by a manager constructed with lazyRouting on.
+            events.on.restore();
+            sinon.stub(events, 'on').callsFake((eventName, callback) => {
+                lazyEvents[eventName] = callback;
+            });
+
+            new SiteMapManager({
+                posts: new PostGenerator(),
+                pages: new PageGenerator(),
+                tags: new TagGenerator(),
+                authors: new UserGenerator(),
+                lazyRouting: true
+            });
+        });
+
+        it('skips url.added and url.removed event subscriptions', function () {
+            assert.equal(lazyEvents['url.added'], undefined);
+            assert.equal(lazyEvents['url.removed'], undefined);
+        });
+
+        it('still subscribes to router.created and routers.reset', function () {
+            assertExists(lazyEvents['router.created']);
+            assertExists(lazyEvents['routers.reset']);
+        });
+
+        it('ensurePopulatedFromDatabase is a no-op when lazyRouting is off', async function () {
+            const eagerManager = new SiteMapManager({
+                posts: new PostGenerator(),
+                pages: new PageGenerator(),
+                tags: new TagGenerator(),
+                authors: new UserGenerator(),
+                lazyRouting: false
+            });
+            // Should resolve without touching the DB.
+            await eagerManager.ensurePopulatedFromDatabase();
+        });
+    });
+
+    // The lazy populate path is the only mechanism that fills the sitemap when
+    // url.added/url.removed events do not fire. These tests exercise it as a
+    // unit: stub the model layer + the URL facade and assert addUrl is called
+    // for the right resources.
+    describe('_populateFromDatabase', function () {
+        let sandbox;
+        let postFindPage;
+        let tagFindPage;
+        let userFindPage;
+        let getUrlForResource;
+
+        const models = require('../../../../../core/server/models');
+        const urlServiceModule = require('../../../../../core/server/services/url');
+
+        // The outer suite stubs PostGenerator.prototype.addUrl globally, so
+        // we can't (re)stub it on a fresh instance. Reset the shared post
+        // stub and use a per-test sandbox for everything else so a partial
+        // beforeEach failure can't leak stubs across cases.
+        beforeEach(function () {
+            sandbox = sinon.createSandbox();
+            postFindPage = sandbox.stub(models.Post, 'findPage');
+            // Sitemap populate uses TagPublic and Author (the scoped models
+            // with shouldHavePosts gating) instead of Tag/User.
+            tagFindPage = sandbox.stub(models.TagPublic, 'findPage');
+            userFindPage = sandbox.stub(models.Author, 'findPage');
+
+            sandbox.stub(PageGenerator.prototype, 'addUrl');
+            sandbox.stub(TagGenerator.prototype, 'addUrl');
+            sandbox.stub(UserGenerator.prototype, 'addUrl');
+            PostGenerator.prototype.addUrl.resetHistory();
+
+            // Method-level stub on the singleton facade method the sitemap
+            // actually reads. Sandbox.restore() puts it back even if a sibling
+            // beforeEach throws partway.
+            getUrlForResource = sandbox.stub(urlServiceModule.facade, 'getUrlForResource');
+        });
+
+        afterEach(function () {
+            sandbox.restore();
+        });
+
+        function paged(rows) {
+            return {
+                data: rows.map(r => ({...r, toJSON: () => r})),
+                meta: {pagination: {pages: 1}}
+            };
+        }
+
+        function makeLazyManager() {
+            return new SiteMapManager({
+                posts: new PostGenerator(),
+                pages: new PageGenerator(),
+                tags: new TagGenerator(),
+                authors: new UserGenerator(),
+                lazyRouting: true
+            });
+        }
+
+        it('feeds non-/404/ URLs into the per-type generators', async function () {
+            postFindPage
+                .withArgs(sinon.match({filter: 'type:post'}))
+                .resolves(paged([{id: 'p1', slug: 'hello', type: 'post'}]));
+            postFindPage
+                .withArgs(sinon.match({filter: 'type:page'}))
+                .resolves(paged([{id: 'pg1', slug: 'about', type: 'page'}]));
+            tagFindPage.resolves(paged([{id: 't1', slug: 'food'}]));
+            userFindPage.resolves(paged([{id: 'u1', slug: 'jane'}]));
+
+            getUrlForResource.callsFake((resource) => {
+                if (resource.id === 'p1') {
+                    return 'http://example.com/hello/';
+                }
+                if (resource.id === 'pg1') {
+                    return 'http://example.com/about/';
+                }
+                if (resource.id === 't1') {
+                    return 'http://example.com/tag/food/';
+                }
+                if (resource.id === 'u1') {
+                    return 'http://example.com/author/jane/';
+                }
+                return '/404/';
+            });
+
+            const manager = makeLazyManager();
+            await manager.ensurePopulatedFromDatabase();
+
+            sinon.assert.calledWith(PostGenerator.prototype.addUrl, 'http://example.com/hello/', sinon.match({id: 'p1'}));
+            sinon.assert.calledWith(PageGenerator.prototype.addUrl, 'http://example.com/about/', sinon.match({id: 'pg1'}));
+            sinon.assert.calledWith(TagGenerator.prototype.addUrl, 'http://example.com/tag/food/', sinon.match({id: 't1'}));
+            sinon.assert.calledWith(UserGenerator.prototype.addUrl, 'http://example.com/author/jane/', sinon.match({id: 'u1'}));
+        });
+
+        it('preloads tags+authors for posts so primary_tag permalinks resolve', async function () {
+            postFindPage.resolves(paged([]));
+            tagFindPage.resolves(paged([]));
+            userFindPage.resolves(paged([]));
+            getUrlForResource.returns('http://example.com/x/');
+
+            await makeLazyManager().ensurePopulatedFromDatabase();
+
+            // Sites using `/:primary_tag/:slug/` permalinks need
+            // `primary_tag` populated on the resource. Bookshelf only fills
+            // it in toJSON when the `tags` relation is loaded.
+            sinon.assert.calledWith(postFindPage, sinon.match({
+                filter: 'type:post',
+                withRelated: ['tags', 'authors']
+            }));
+        });
+
+        it('queries tags and authors with visibility:public to mirror the eager URL service', async function () {
+            postFindPage.resolves(paged([]));
+            tagFindPage.resolves(paged([]));
+            userFindPage.resolves(paged([]));
+            getUrlForResource.returns('http://example.com/x/');
+
+            await makeLazyManager().ensurePopulatedFromDatabase();
+
+            // Pin the full options shape so a future drop of `limit` or a
+            // change in the filter expression still fails this test. The
+            // tag schema permits visibility:'internal' and the user schema
+            // defaults to 'public' but doesn't enforce it; without these
+            // filters the lazy sitemap diverges from the eager URL service
+            // (services/url/config.js applies both).
+            sinon.assert.calledWith(tagFindPage, sinon.match({
+                limit: 200,
+                filter: 'visibility:public'
+            }));
+            sinon.assert.calledWith(userFindPage, sinon.match({
+                limit: 200,
+                filter: 'visibility:public'
+            }));
+        });
+
+        it('skips resources whose URL would be /404/', async function () {
+            postFindPage.resolves(paged([
+                {id: 'p1', slug: 'good', type: 'post'},
+                {id: 'p2', slug: 'orphan', type: 'post'}
+            ]));
+            tagFindPage.resolves(paged([]));
+            userFindPage.resolves(paged([]));
+
+            getUrlForResource.callsFake((resource) => {
+                return resource.id === 'p1' ? 'http://example.com/good/' : '/404/';
+            });
+
+            const manager = makeLazyManager();
+            await manager.ensurePopulatedFromDatabase();
+
+            sinon.assert.calledWith(PostGenerator.prototype.addUrl, 'http://example.com/good/', sinon.match({id: 'p1'}));
+            const p2Calls = PostGenerator.prototype.addUrl.getCalls().filter(c => c.args[1] && c.args[1].id === 'p2');
+            assert.equal(p2Calls.length, 0, 'p2 should be skipped because its URL is /404/');
+        });
+
+        it('a settled stale populate does not clobber a successor populate handle', async function () {
+            // T1 starts populate (slow), T1 awaits DB.
+            // routers.reset fires → _populating cleared, generation bumped.
+            // T2 starts populate (also slow) → owns _populating now.
+            // T1 finally settles. Bug: T1's `.then` would set _populating=null,
+            // orphaning T2 and letting a T3 race in alongside T2.
+            // Fix: only clear _populating if it still points to T1's promise.
+            let unblockT1;
+            let unblockT2;
+            postFindPage
+                .withArgs(sinon.match({filter: 'type:post'}))
+                .onFirstCall().returns(new Promise((resolve) => {
+                    unblockT1 = () => resolve(paged([]));
+                }))
+                .onSecondCall().returns(new Promise((resolve) => {
+                    unblockT2 = () => resolve(paged([]));
+                }));
+            postFindPage
+                .withArgs(sinon.match({filter: 'type:page'}))
+                .resolves(paged([]));
+            tagFindPage.resolves(paged([]));
+            userFindPage.resolves(paged([]));
+            getUrlForResource.returns('http://example.com/x/');
+
+            const manager = makeLazyManager();
+
+            const t1 = manager.ensurePopulatedFromDatabase();
+            const resetHandlers = events.on
+                .getCalls()
+                .filter(c => c.args[0] === 'routers.reset')
+                .map(c => c.args[1]);
+            resetHandlers.forEach(handler => handler());
+
+            const t2 = manager.ensurePopulatedFromDatabase();
+            assertExists(manager._populating, 'T2 must own the populate handle after reset');
+            const t2Handle = manager._populating;
+
+            // T1 settles before T2. The buggy version null'd _populating here.
+            unblockT1();
+            await t1;
+            assert.equal(
+                manager._populating,
+                t2Handle,
+                'T1 settling must not clobber T2\'s in-flight populate handle'
+            );
+
+            unblockT2();
+            await t2;
+        });
+
+        it('routers.reset during a populate cancels the populate via the generation token', async function () {
+            // The "post" findPage call hangs until we explicitly resolve it,
+            // simulating a slow DB load that races with a routes.yaml reload.
+            let unblockPopulate;
+            postFindPage
+                .withArgs(sinon.match({filter: 'type:post'}))
+                .returns(new Promise((resolve) => {
+                    unblockPopulate = () => resolve(paged([]));
+                }));
+            postFindPage
+                .withArgs(sinon.match({filter: 'type:page'}))
+                .resolves(paged([]));
+            tagFindPage.resolves(paged([]));
+            userFindPage.resolves(paged([]));
+            getUrlForResource.returns('http://example.com/x/');
+
+            const manager = makeLazyManager();
+
+            const inFlight = manager.ensurePopulatedFromDatabase();
+            // The outer suite has stubbed events.on; the manager registered
+            // its routers.reset handler via that stub. Locate and invoke it.
+            const resetHandlers = events.on
+                .getCalls()
+                .filter(c => c.args[0] === 'routers.reset')
+                .map(c => c.args[1]);
+            resetHandlers.forEach(handler => handler());
+
+            unblockPopulate();
+            await inFlight;
+
+            // Behavioural assertion: a subsequent ensurePopulatedFromDatabase
+            // must re-issue the DB queries because the previous populate's
+            // result was invalidated by the routers.reset. (Asserting on the
+            // private `_populated` flag would couple to internal state.)
+            const callsBefore = postFindPage.callCount;
+            await manager.ensurePopulatedFromDatabase();
+            assert.ok(
+                postFindPage.callCount > callsBefore,
+                'A reset mid-populate must invalidate the in-flight result so the next call re-queries'
+            );
+        });
+    });
 });
