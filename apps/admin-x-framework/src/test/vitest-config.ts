@@ -42,6 +42,11 @@ export function createVitestConfig(options: VitestConfigOptions = {}) {
         test: {
             globals: true,
             environment: 'jsdom',
+            // Forks over threads (vitest#1494) — threads pool shares the
+            // V8 isolate, and jsdom + testing-library + MSW corrupt across
+            // workers under that.
+            pool: 'forks',
+            isolate: true,
             setupFiles,
             include,
             silent,
