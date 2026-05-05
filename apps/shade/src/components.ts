@@ -18,7 +18,6 @@ export * from './components/ui/empty-indicator';
 export * from './components/ui/field';
 export * from './components/ui/flag';
 export * from './components/ui/form';
-export * from './components/ui/gh-chart';
 export * from './components/ui/hover-card';
 export * from './components/ui/indicator';
 export * from './components/ui/input';
@@ -50,6 +49,7 @@ export * from './components/ui/tooltip';
 export * from './components/ui/trend-badge';
 
 // Feature components — product-shaped compositions of UI primitives
+export * from './components/features/charts/gh-chart';
 export * from './components/features/kpi/kpi-card';
 export * from './components/features/kpi/kpi-tabs';
 
