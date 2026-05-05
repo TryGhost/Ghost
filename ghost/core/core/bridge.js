@@ -114,7 +114,7 @@ class Bridge {
 
         const routerConfig = {
             routeSettings: await routeSettings.loadRouteSettings(),
-            urlService
+            urlService: urlService.facade
         };
 
         await siteApp.reload(routerConfig);
