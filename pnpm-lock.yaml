@@ -37,6 +37,7 @@ overrides:
   juice>cheerio: 0.22.0
   lodash.template: 4.5.0
   '@tootallnate/once@<3.0.1': ^3.0.1
+  axios@<1.15.2: ^1.15.2
   clean-css@<4.1.11: ^4.1.11
   debug@>=4.0.0 <4.3.1: ^4.3.1
   debug@<2.6.9: ^2.6.9
@@ -10073,11 +10074,8 @@ packages:
   aws4@1.13.2:
     resolution: {integrity: sha512-lHe62zvbTB5eEABUVi/AwVh0ZKY9rMMDhmm+eeyuuUQbQ3+J+fONVQOZyj+DdrvD4BY33uYniyRJ4UJIaSKAfw==}
 
-  axios@1.13.6:
-    resolution: {integrity: sha512-ChTCHMouEe2kn713WHbQGcuYrr6fXTBiu460OTwWrWob16g1bXn4vtz07Ope7ewMozJAnEquLk5lWQWtBig9DQ==}
-
-  axios@1.15.0:
-    resolution: {integrity: sha512-wWyJDlAatxk30ZJer+GeCWS209sA42X+N5jU2jy6oHTp7ufw8uzUTVFBX9+wTfAlhiJXGS0Bq7X6efruWjuK9Q==}
+  axios@1.16.0:
+    resolution: {integrity: sha512-6hp5CwvTPlN2A31g5dxnwAX0orzM7pmCRDLnZSX772mv8WDqICwFjowHuPs04Mc8deIld1+ejhtaMn5vp6b+1w==}
 
   b4a@1.8.0:
     resolution: {integrity: sha512-qRuSmNSkGQaHwNbM7J78Wwy+ghLEYF1zNrSeMxj4Kgw6y33O3mXcQ6Ie9fRvfU/YnxWkOchPXbaLb73TkIsfdg==}
@@ -19242,9 +19240,6 @@ packages:
     resolution: {integrity: sha512-llQsMLSUDUPT44jdrU/O37qlnifitDP+ZwrmmZcoSKyLKvtZxpyV0n2/bD/N4tBAAZ/gJEdZU7KMraoK1+XYAg==}
     engines: {node: '>= 0.10'}
 
-  proxy-from-env@1.1.0:
-    resolution: {integrity: sha512-D+zkORCbA9f1tdWRK0RaCR3GPv50cMxcrz4X8k5LTSUD1Dkw47mKJEZQNunItRTkWwgtaUSo1RVFRIG9ZXiFYg==}
-
   proxy-from-env@2.1.0:
     resolution: {integrity: sha512-cJ+oHTW1VAEa8cJslgmUZrc+sjRKgAKl3Zyse6+PV38hZe/V6Z14TbCuXcan9F9ghlz4QrFr2c92TNF82UkYHA==}
     engines: {node: '>=10'}
@@ -27784,7 +27779,7 @@ snapshots:
     dependencies:
       '@slack/types': 2.20.1
       '@types/node': 25.6.0
-      axios: 1.15.0
+      axios: 1.16.0
     transitivePeerDependencies:
       - debug
 
@@ -29820,7 +29815,7 @@ snapshots:
 
   '@tryghost/content-api@1.12.6':
     dependencies:
-      axios: 1.13.6
+      axios: 1.16.0
     transitivePeerDependencies:
       - debug
 
@@ -32131,15 +32126,7 @@ snapshots:
 
   aws4@1.13.2: {}
 
-  axios@1.13.6:
-    dependencies:
-      follow-redirects: 1.16.0
-      form-data: 4.0.5
-      proxy-from-env: 1.1.0
-    transitivePeerDependencies:
-      - debug
-
-  axios@1.15.0:
+  axios@1.16.0:
     dependencies:
       follow-redirects: 1.16.0
       form-data: 4.0.5
@@ -41745,7 +41732,7 @@ snapshots:
 
   mailgun.js@10.4.0:
     dependencies:
-      axios: 1.13.6
+      axios: 1.16.0
       base-64: 1.0.0
       url-join: 4.0.1
     transitivePeerDependencies:
@@ -41753,7 +41740,7 @@ snapshots:
 
   mailgun.js@8.2.2:
     dependencies:
-      axios: 1.13.6
+      axios: 1.16.0
       base-64: 1.0.0
       url-join: 4.0.1
     transitivePeerDependencies:
@@ -42992,7 +42979,7 @@ snapshots:
       '@yarnpkg/lockfile': 1.1.0
       '@yarnpkg/parsers': 3.0.2
       '@zkochan/js-yaml': 0.0.7
-      axios: 1.13.6
+      axios: 1.16.0
       chalk: 4.1.2
       cli-cursor: 3.1.0
       cli-spinners: 2.6.1
@@ -44580,8 +44567,6 @@ snapshots:
     dependencies:
       forwarded: 0.2.0
       ipaddr.js: 1.9.1
-
-  proxy-from-env@1.1.0: {}
 
   proxy-from-env@2.1.0: {}
 
