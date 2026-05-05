@@ -252,6 +252,47 @@ describe('LazyUrlService', function () {
             assert.equal(hot.id, 'p3');
         });
 
+        // The next two tests pin the contract for findResource: tag/author
+        // filters expand to `tags.slug` / `authors.slug` lookups via
+        // EXPANSIONS, and NQL evaluates them against the loaded record. If
+        // findResource returns posts without their tags/authors relations,
+        // every tag- or author-filtered collection silently 404s.
+        it('returns null for a tag-filtered router when findResource omits the tags relation', async function () {
+            const findResource = sinon.stub();
+            findResource.withArgs('posts', {slug: 'hello'}).resolves({id: 'p1', slug: 'hello'});
+
+            const service = new LazyUrlService({urlUtils, findResource});
+            service.onRouterAddedType('news', 'tag:news', 'posts', '/:slug/');
+
+            assert.equal(await service.resolveUrl('/hello/'), null);
+        });
+
+        it('resolves a tag-filtered router when findResource populates the tags relation', async function () {
+            const findResource = sinon.stub();
+            findResource
+                .withArgs('posts', {slug: 'hello'})
+                .resolves({id: 'p1', slug: 'hello', tags: [{slug: 'news'}]});
+
+            const service = new LazyUrlService({urlUtils, findResource});
+            service.onRouterAddedType('news', 'tag:news', 'posts', '/:slug/');
+
+            const result = await service.resolveUrl('/hello/');
+            assert.equal(result.id, 'p1');
+        });
+
+        it('resolves an author-filtered router when findResource populates the authors relation', async function () {
+            const findResource = sinon.stub();
+            findResource
+                .withArgs('posts', {slug: 'hello'})
+                .resolves({id: 'p1', slug: 'hello', authors: [{slug: 'jane'}]});
+
+            const service = new LazyUrlService({urlUtils, findResource});
+            service.onRouterAddedType('jane', 'author:jane', 'posts', '/:slug/');
+
+            const result = await service.resolveUrl('/hello/');
+            assert.equal(result.id, 'p1');
+        });
+
         it('returns null when no router template matches the URL', async function () {
             const findResource = sinon.stub();
             const service = new LazyUrlService({urlUtils, findResource});
