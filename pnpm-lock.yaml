@@ -55,7 +55,7 @@ overrides:
   nth-check@<2.0.1: ^2.0.1
   path-to-regexp@<0.1.13: ^0.1.13
   protobufjs@<7.5.5: ^7.5.5
-  qs@>=6.7.0 <=6.14.1: ^6.14.2
+  qs@<6.14.1: ^6.14.2
   tar@<7.5.11: ^7.5.11
   tmp@<=0.2.3: ^0.2.4
   trim@<0.0.3: ^0.0.3
@@ -19143,10 +19143,6 @@ packages:
 
   qs@6.15.0:
     resolution: {integrity: sha512-mAZTtNCeetKMH+pSjrb76NAM8V9a05I9aBZOHztWy/UqcJdQYNsf59vrRKWnojAT9Y+GbIvoTBC++CPHqpDBhQ==}
-    engines: {node: '>=0.6'}
-
-  qs@6.5.5:
-    resolution: {integrity: sha512-mzR4sElr1bfCaPJe7m8ilJ6ZXdDaGoObcYR0ZHSsktM/Lt21MVHj5De30GQH2eiZ1qGRTO7LCAzQsUeXTNexWQ==}
     engines: {node: '>=0.6'}
 
   quansync@0.2.11:
@@ -44363,8 +44359,6 @@ snapshots:
     dependencies:
       side-channel: 1.1.0
 
-  qs@6.5.5: {}
-
   quansync@0.2.11: {}
 
   querystring-es3@0.2.1: {}
@@ -44943,7 +44937,7 @@ snapshots:
       mime-types: 2.1.35
       oauth-sign: 0.9.0
       performance-now: 2.1.0
-      qs: 6.5.5
+      qs: 6.15.0
       safe-buffer: 5.2.1
       tough-cookie: 2.5.0
       tunnel-agent: 0.6.0
