@@ -16,15 +16,20 @@ function getUrl(data, absolute) {
          *
          * A long term solution should be part of the final version of Dynamic Routing.
          */
-        if (data.status !== 'published' && urlService.getUrlByResourceId(data.id) === '/404/') {
+        const postResource = {...data, type: 'posts'};
+        if (data.status !== 'published' && urlService.facade.getUrlForResource(postResource) === '/404/') {
             return urlUtils.urlFor({relativeUrl: urlUtils.urlJoin('/p', data.uuid, '/')}, null, absolute);
         }
 
-        return urlService.getUrlByResourceId(data.id, {absolute: absolute, withSubdirectory: true});
+        return urlService.facade.getUrlForResource(postResource, {absolute: absolute, withSubdirectory: true});
     }
 
-    if (checks.isTag(data) || checks.isUser(data)) {
-        return urlService.getUrlByResourceId(data.id, {absolute: absolute, withSubdirectory: true});
+    if (checks.isTag(data)) {
+        return urlService.facade.getUrlForResource({...data, type: 'tags'}, {absolute: absolute, withSubdirectory: true});
+    }
+
+    if (checks.isUser(data)) {
+        return urlService.facade.getUrlForResource({...data, type: 'authors'}, {absolute: absolute, withSubdirectory: true});
     }
 
     if (checks.isNav(data)) {
