@@ -1,5 +1,14 @@
 const logging = require('@tryghost/logging');
 
+// Pre-migration the resourceType field on this service's response was the
+// raw `data.type` column on the underlying record: 'post' / 'page' for
+// posts and pages, undefined for tags / authors (those tables have no type
+// column). Preserve that contract by only mapping the two singular types.
+const ROUTER_TYPE_TO_SINGULAR = {
+    posts: 'post',
+    pages: 'page'
+};
+
 /**
  * @typedef {Object} TopContentDataItem
  * @property {string} pathname - Page path
@@ -176,27 +185,31 @@ class ContentStatsService {
     /**
      * Get resource title using UrlService
      * @param {string} pathname - Path to look up
-     * @returns {Object|null} Resource title and type, or null if not found
+     * @returns {Promise<Object|null>} Resource title and type, or null if not found
      */
-    getResourceTitle(pathname) {
+    async getResourceTitle(pathname) {
         if (!this.urlService) {
             return null;
         }
 
         try {
-            const resource = this.urlService.getResource(pathname);
+            const resource = await this.urlService.facade.resolveUrl(pathname);
 
-            if (resource && resource.data) {
-                if (resource.data.title) {
+            if (resource) {
+                // resource.type is the routing-level plural form (posts/pages/tags/authors).
+                // Keep singular/undefined here for backwards-compatibility with the previous
+                // data.type semantics (post/page/undefined).
+                const resourceType = ROUTER_TYPE_TO_SINGULAR[resource.type];
+                if (resource.title) {
                     return {
-                        title: resource.data.title,
-                        resourceType: resource.data.type
+                        title: resource.title,
+                        resourceType
                     };
-                } else if (resource.data.name) {
+                } else if (resource.name) {
                     // For authors, tags, etc.
                     return {
-                        title: resource.data.name,
-                        resourceType: resource.data.type
+                        title: resource.name,
+                        resourceType
                     };
                 }
             }
@@ -232,8 +245,8 @@ class ContentStatsService {
             if (this.urlService && item.pathname) {
                 try {
                     // Check if URL service is ready
-                    if (this.urlService.hasFinished && this.urlService.hasFinished()) {
-                        const resource = this.urlService.getResource(item.pathname);
+                    if (this.urlService.facade.hasFinished && this.urlService.facade.hasFinished()) {
+                        const resource = await this.urlService.facade.resolveUrl(item.pathname);
                         urlExists = !!resource; // Convert to boolean
                     }
                     // If URL service isn't ready, we default to true (clickable)
@@ -255,7 +268,7 @@ class ContentStatsService {
             }
 
             // Use UrlService for pages without post_uuid
-            const resourceInfo = this.getResourceTitle(item.pathname);
+            const resourceInfo = await this.getResourceTitle(item.pathname);
             if (resourceInfo) {
                 return {
                     ...item,

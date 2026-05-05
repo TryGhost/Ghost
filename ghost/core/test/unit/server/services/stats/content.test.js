@@ -22,8 +22,10 @@ describe('ContentStatsService', function () {
         };
 
         mockUrlService = {
-            getResource: sinon.stub(),
-            hasFinished: sinon.stub().returns(true)
+            facade: {
+                resolveUrl: sinon.stub().resolves(null),
+                hasFinished: sinon.stub().returns(true)
+            }
         };
 
         // Create mock Tinybird client
@@ -160,56 +162,54 @@ describe('ContentStatsService', function () {
     });
 
     describe('getResourceTitle', function () {
-        it('returns null if urlService is not available', function () {
+        it('returns null if urlService is not available', async function () {
             // Create service without urlService
             const serviceNoUrl = new ContentStatsService({
                 knex: mockKnex,
                 urlService: null
             });
 
-            const result = serviceNoUrl.getResourceTitle('/about/');
+            const result = await serviceNoUrl.getResourceTitle('/about/');
             assert.equal(result, null);
         });
 
-        it('returns title from resource with title property', function () {
-            mockUrlService.getResource.withArgs('/about/').returns({
-                data: {
-                    title: 'About Us',
-                    type: 'page'
-                }
+        it('returns title from resource with title property', async function () {
+            mockUrlService.facade.resolveUrl.withArgs('/about/').resolves({
+                title: 'About Us',
+                type: 'pages'
             });
 
-            const result = service.getResourceTitle('/about/');
+            const result = await service.getResourceTitle('/about/');
             assertExists(result);
             assert.equal(result.title, 'About Us');
             assert.equal(result.resourceType, 'page');
         });
 
-        it('returns name from resource with name property (tags, authors)', function () {
-            mockUrlService.getResource.withArgs('/tag/news/').returns({
-                data: {
-                    name: 'News',
-                    type: 'tag'
-                }
+        it('returns name from resource with name property (tags, authors)', async function () {
+            mockUrlService.facade.resolveUrl.withArgs('/tag/news/').resolves({
+                name: 'News',
+                type: 'tags'
             });
 
-            const result = service.getResourceTitle('/tag/news/');
+            const result = await service.getResourceTitle('/tag/news/');
             assertExists(result);
             assert.equal(result.title, 'News');
-            assert.equal(result.resourceType, 'tag');
+            // Pre-migration tags/authors had no `data.type` column so this
+            // surfaced as undefined; keep that contract for API consumers.
+            assert.equal(result.resourceType, undefined);
         });
 
-        it('returns null if resource lookup fails', function () {
-            mockUrlService.getResource.withArgs('/not-found/').throws(new Error('Resource not found'));
+        it('returns null if resource lookup fails', async function () {
+            mockUrlService.facade.resolveUrl.withArgs('/not-found/').rejects(new Error('Resource not found'));
 
-            const result = service.getResourceTitle('/not-found/');
+            const result = await service.getResourceTitle('/not-found/');
             assert.equal(result, null);
         });
 
-        it('returns null if resource has no data or title/name', function () {
-            mockUrlService.getResource.withArgs('/empty/').returns({});
+        it('returns null if resource has no title or name', async function () {
+            mockUrlService.facade.resolveUrl.withArgs('/empty/').resolves({type: 'posts'});
 
-            const result = service.getResourceTitle('/empty/');
+            const result = await service.getResourceTitle('/empty/');
             assert.equal(result, null);
         });
     });
@@ -238,8 +238,8 @@ describe('ContentStatsService', function () {
             ];
 
             // Mock urlService to return resources for these paths
-            mockUrlService.getResource.withArgs('/post-1/').returns({data: {title: 'Post 1'}});
-            mockUrlService.getResource.withArgs('/post-2/').returns({data: {title: 'Post 2'}});
+            mockUrlService.facade.resolveUrl.withArgs('/post-1/').resolves({title: 'Post 1', type: 'posts'});
+            mockUrlService.facade.resolveUrl.withArgs('/post-2/').resolves({title: 'Post 2', type: 'posts'});
 
             const result = await service.enrichTopContentData(data);
 
@@ -262,11 +262,9 @@ describe('ContentStatsService', function () {
                 {pathname: '/about/', visits: 100}
             ];
 
-            mockUrlService.getResource.withArgs('/about/').returns({
-                data: {
-                    title: 'About Us',
-                    type: 'page'
-                }
+            mockUrlService.facade.resolveUrl.withArgs('/about/').resolves({
+                title: 'About Us',
+                type: 'pages'
             });
 
             const result = await service.enrichTopContentData(data);
@@ -286,7 +284,7 @@ describe('ContentStatsService', function () {
                 {pathname: '/unknown-page/', visits: 100}
             ];
 
-            mockUrlService.getResource.withArgs('/unknown-page/').returns(null);
+            mockUrlService.facade.resolveUrl.withArgs('/unknown-page/').resolves(null);
 
             const result = await service.enrichTopContentData(data);
 
@@ -304,7 +302,7 @@ describe('ContentStatsService', function () {
                 {pathname: '/', visits: 100}
             ];
 
-            mockUrlService.getResource.withArgs('/').returns(null);
+            mockUrlService.facade.resolveUrl.withArgs('/').resolves(null);
 
             const result = await service.enrichTopContentData(data);
 
