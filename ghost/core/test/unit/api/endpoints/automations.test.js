@@ -10,7 +10,7 @@ describe('Automations controller', function () {
         models.init();
     });
 
-    function createMockAutomation(id, name, status) {
+    function createMockAutomation(id, name, slug, status) {
         return {
             get(key) {
                 switch (key) {
@@ -18,6 +18,8 @@ describe('Automations controller', function () {
                     return id;
                 case 'name':
                     return name;
+                case 'slug':
+                    return slug;
                 case 'status':
                     return status;
                 default:
@@ -31,8 +33,8 @@ describe('Automations controller', function () {
 
     beforeEach(function () {
         sinon.stub(models.WelcomeEmailAutomation, 'findAll').resolves([
-            createMockAutomation('automation-id-1', 'Welcome Email (Free)', 'active'),
-            createMockAutomation('automation-id-2', 'Welcome Email (Premium)', 'inactive')
+            createMockAutomation('automation-id-1', 'Welcome Email (Free)', 'member-welcome-email-free', 'active'),
+            createMockAutomation('automation-id-2', 'Welcome Email (Premium)', 'member-welcome-email-premium', 'inactive')
         ]);
 
         dispatchStub = sinon.stub(domainEvents, 'dispatch');
@@ -43,16 +45,18 @@ describe('Automations controller', function () {
     });
 
     describe('browse', function () {
-        it('returns only id, name, and status fields', async function () {
+        it('returns only id, name, slug, and status fields', async function () {
             const result = await automationsController.browse.query({});
 
             assert.deepEqual(result.data, [{
                 id: 'automation-id-1',
                 name: 'Welcome Email (Free)',
+                slug: 'member-welcome-email-free',
                 status: 'active'
             }, {
                 id: 'automation-id-2',
                 name: 'Welcome Email (Premium)',
+                slug: 'member-welcome-email-premium',
                 status: 'inactive'
             }]);
         });
