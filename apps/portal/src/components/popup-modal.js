@@ -146,7 +146,7 @@ class PopupContent extends React.Component {
     }
 
     render() {
-        const {page, pageQuery, site, customSiteUrl} = this.context;
+        const {page, pageQuery, site, customSiteUrl, lastPage} = this.context;
         const products = getSiteProducts({site, pageQuery});
         const noOfProducts = products.length;
 
@@ -189,8 +189,17 @@ class PopupContent extends React.Component {
             }
         }
 
-        if (page === 'gift') {
+        if (page === 'gift' || page === 'giftSuccess' || page === 'giftRedemption') {
             pageClass += ' full-size';
+            popupSize = 'full';
+        }
+
+        // Magic link page reached via gift redemption: render in the same
+        // 50/50 layout (gift card stays visible on the right) instead of as
+        // a small centered modal. Reuses the giftRedemption class so the
+        // existing full-size CSS rules apply.
+        if (page === 'magiclink' && lastPage === 'gift') {
+            pageClass += ' full-size giftRedemption';
             popupSize = 'full';
         }
 
