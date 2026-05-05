@@ -7,15 +7,10 @@ import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import type {Setting} from '@tryghost/admin-x-framework/api/settings';
 import type {SocialPlatformKey} from '../../../utils/social-urls';
 
-// facebook + twitter are the original publication-level social settings;
-// the other 7 ship with the backend in a separate release. Use the presence
-// of `linkedin` in the API response as a canary for "backend has the new
-// settings" — the migration adds all 7 in one transaction, so any one of
-// them works as the signal. Without this gate, an admin running ahead of
-// its backend would render fields, accept user input, and silently lose
-// the value on save (the backend drops unknown keys without erroring).
 const LEGACY_PLATFORM_KEYS: SocialPlatformKey[] = ['facebook', 'twitter'];
-const CAPABILITY_CANARY_KEY = 'linkedin';
+const NEW_PLATFORM_KEYS: SocialPlatformKey[] = SOCIAL_PLATFORM_KEYS.filter(
+    key => !LEGACY_PLATFORM_KEYS.includes(key)
+);
 
 const getSocialUrls = (localSettings: Setting[] | null) => {
     const socialHandles = getSettingValues<string | null>(localSettings, [...SOCIAL_PLATFORM_KEYS]);
@@ -40,16 +35,20 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [errors, setErrors] = useState<Partial<Record<SocialPlatformKey, string>>>({});
     const [urls, setUrls] = useState<Record<SocialPlatformKey, string>>(() => getSocialUrls(localSettings));
 
+    const handles = getSettingValues<string | null>(localSettings, [...SOCIAL_PLATFORM_KEYS]);
+    const backendSupportsNewPlatforms = NEW_PLATFORM_KEYS.some(key => localSettings?.some(s => s.key === key));
+
     const visiblePlatforms = useMemo(() => {
-        const backendSupportsNewPlatforms = localSettings?.some(s => s.key === CAPABILITY_CANARY_KEY) ?? false;
         return backendSupportsNewPlatforms
             ? SOCIAL_PLATFORM_CONFIGS
             : SOCIAL_PLATFORM_CONFIGS.filter(config => LEGACY_PLATFORM_KEYS.includes(config.key));
-    }, [localSettings]);
+    }, [backendSupportsNewPlatforms]);
 
+    // Depend on stored values, not the localSettings reference (which churns on every updateSetting).
     useEffect(() => {
         setUrls(getSocialUrls(localSettings));
-    }, [localSettings]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [handles.map(value => value ?? '').join('|')]);
 
     const handleSocialChange = (key: SocialPlatformKey, value: string) => {
         setUrls(current => ({...current, [key]: value}));

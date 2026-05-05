@@ -76,6 +76,30 @@ test.describe('Social account settings', async () => {
         }
     });
 
+    test('Shows all new platform fields when any new key is present, even if linkedin is missing', async ({page}) => {
+        // Defends against the canary being a single hardcoded key. The migration adds
+        // all 7 keys atomically today, but the UI gate should treat the presence of
+        // any of them as sufficient — so a future migration that drops/renames just
+        // one key doesn't silently hide the entire panel.
+        const settingsWithoutLinkedin = {
+            ...responseFixtures.settings,
+            settings: responseFixtures.settings.settings.filter(s => s.key !== 'linkedin')
+        };
+
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseSettings: {method: 'GET', path: /^\/settings\/\?group=/, response: settingsWithoutLinkedin}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('social-accounts');
+
+        for (const label of ['Facebook', 'X', 'Bluesky', 'Threads', 'Mastodon', 'TikTok', 'YouTube', 'Instagram']) {
+            await expect(section.getByLabel(label)).toBeVisible();
+        }
+    });
+
     test('Restores values on cancel', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests
