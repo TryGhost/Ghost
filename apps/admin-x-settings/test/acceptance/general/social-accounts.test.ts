@@ -95,7 +95,7 @@ test.describe('Social account settings', async () => {
 
         const section = page.getByTestId('social-accounts');
 
-        for (const label of ['Facebook', 'X', 'Bluesky', 'Threads', 'Mastodon', 'TikTok', 'YouTube', 'Instagram']) {
+        for (const label of ['Facebook', 'X', 'LinkedIn', 'Bluesky', 'Threads', 'Mastodon', 'TikTok', 'YouTube', 'Instagram']) {
             await expect(section.getByLabel(label)).toBeVisible();
         }
     });
