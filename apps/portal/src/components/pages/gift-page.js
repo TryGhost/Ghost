@@ -15,6 +15,9 @@ export const GiftPageStyles = `
 .gh-portal-popup-container.full-size.giftSuccess,
 .gh-portal-popup-container.full-size.giftRedemption {
     padding: 0;
+    /* The default opacity/translate popup-in animation feels heavy on the
+       full-bleed 50/50 layout — let the page render in place instead. */
+    animation: none;
 }
 
 .gh-portal-content.gift,
