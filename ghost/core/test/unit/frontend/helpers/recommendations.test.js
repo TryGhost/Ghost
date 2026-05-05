@@ -179,8 +179,7 @@ describe('{{#recommendations}} helper', function () {
             const responsePromise = recommendations.call(
                 'recommendations'
             );
-            // Advance past the 1ms threshold but not the stub's 5ms timer,
-            // so the helper's timeout branch wins deterministically.
+            // 2 > threshold (1), < stub's 5 — fires only the helper's timer.
             await clock.tickAsync(2);
             const response = await responsePromise;
 
