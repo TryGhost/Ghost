@@ -74,6 +74,40 @@ describe('Adapter Cache Redis', function () {
         assert.equal(cache.redisClient.options.retryStrategy, false);
     });
 
+    describe('retryStrategy', function () {
+        it('does not throw and defaults to 10 seconds when storeConfig is not provided', function () {
+            const cache = new RedisCache({
+                reuseConnection: false
+            });
+            // retryStrategy is invoked by ioredis whenever Redis becomes unavailable.
+            // It must not crash even when storeConfig is omitted from the adapter config.
+            assert.doesNotThrow(() => cache.redisClient.options.retryStrategy(1));
+            assert.equal(cache.redisClient.options.retryStrategy(1), 10000);
+            cache.redisClient.disconnect();
+        });
+
+        it('defaults to 10 seconds when retryConnectSeconds is not set in storeConfig', function () {
+            const cache = new RedisCache({
+                storeConfig: {
+                    lazyConnect: true
+                },
+                reuseConnection: false
+            });
+            assert.equal(cache.redisClient.options.retryStrategy(1), 10000);
+        });
+
+        it('uses retryConnectSeconds from storeConfig when provided', function () {
+            const cache = new RedisCache({
+                storeConfig: {
+                    lazyConnect: true,
+                    retryConnectSeconds: 5
+                },
+                reuseConnection: false
+            });
+            assert.equal(cache.redisClient.options.retryStrategy(1), 5000);
+        });
+    });
+
     describe('get', function () {
         it('can get a value from the cache', async function () {
             const cacheStub = createCacheStub();
