@@ -95,6 +95,15 @@ export class MembersListPage extends AdminPage implements MembersListSurface {
         }
     }
 
+    async openFilterField(fieldName: string): Promise<void> {
+        await this.filterButton.click();
+        await this.page.getByRole('option', {name: fieldName, exact: true}).click();
+    }
+
+    getFilterOption(name: string | RegExp): Locator {
+        return this.page.getByRole('option', {name});
+    }
+
     async addSearchableFilter(fieldName: string, searchText: string, optionName: string): Promise<void> {
         await this.filterButton.click();
         await this.page.getByRole('option', {name: fieldName, exact: true}).click();
