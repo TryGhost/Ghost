@@ -29,6 +29,7 @@ const fixtures = {
         setting: "value",
     },
     defaults: {
+        nightShift: 'system',
         navigation: DEFAULT_NAVIGATION_PREFERENCES,
     }
 };
@@ -244,6 +245,64 @@ describe("useUserPreferences", () => {
         });
     });
 
+    describe("nightShift migration", () => {
+        queryTest("migrates legacy boolean true to 'dark'", async ({ setup }) => {
+            const result = await setup({
+                accessibility: JSON.stringify({ nightShift: true }),
+            });
+
+            expect(result.current.data?.nightShift).toBe('dark');
+        });
+
+        queryTest("migrates legacy boolean false to 'light'", async ({ setup }) => {
+            const result = await setup({
+                accessibility: JSON.stringify({ nightShift: false }),
+            });
+
+            expect(result.current.data?.nightShift).toBe('light');
+        });
+
+        queryTest("defaults to 'system' when nightShift is absent", async ({ setup }) => {
+            const result = await setup({
+                accessibility: JSON.stringify({}),
+            });
+
+            expect(result.current.data?.nightShift).toBe('system');
+        });
+
+        queryTest("preserves 'dark' string value", async ({ setup }) => {
+            const result = await setup({
+                accessibility: JSON.stringify({ nightShift: 'dark' }),
+            });
+
+            expect(result.current.data?.nightShift).toBe('dark');
+        });
+
+        queryTest("preserves 'light' string value", async ({ setup }) => {
+            const result = await setup({
+                accessibility: JSON.stringify({ nightShift: 'light' }),
+            });
+
+            expect(result.current.data?.nightShift).toBe('light');
+        });
+
+        queryTest("preserves 'system' string value", async ({ setup }) => {
+            const result = await setup({
+                accessibility: JSON.stringify({ nightShift: 'system' }),
+            });
+
+            expect(result.current.data?.nightShift).toBe('system');
+        });
+
+        queryTest("falls back to 'system' for invalid nightShift value", async ({ setup }) => {
+            const result = await setup({
+                accessibility: JSON.stringify({ nightShift: 'invalid' }),
+            });
+
+            expect(result.current.data?.nightShift).toBe('system');
+        });
+    });
+
     describe("query options", () => {
         queryTest("supports select option to transform data", async ({ server, wrapper }) => {
             server.use(
@@ -256,7 +315,7 @@ describe("useUserPreferences", () => {
                                     expanded: { posts: false },
                                     menu: { visible: true },
                                 },
-                                nightShift: true,
+                                nightShift: 'dark',
                             }),
                         }],
                     });
@@ -321,6 +380,7 @@ describe("useUserPreferences", () => {
 
             await waitFor(() => {
                 expect(result.current.query.data).toEqual({
+                    nightShift: 'system',
                     navigation: DEFAULT_NAVIGATION_PREFERENCES,
                     whatsNew: {
                         lastSeenDate: new Date("2025-01-01T00:00:00.000Z"),
@@ -342,6 +402,7 @@ describe("useUserPreferences", () => {
 
             await waitFor(() => {
                 expect(result.current.query.data).toEqual({
+                    nightShift: 'system',
                     navigation: {
                         ...DEFAULT_NAVIGATION_PREFERENCES,
                         expanded: {
@@ -423,7 +484,7 @@ describe("useEditUserPreferences", () => {
                         expanded: { posts: false, members: false },
                         menu: { visible: true },
                     },
-                    nightShift: true,
+                    nightShift: 'dark',
                 }),
             });
 
@@ -439,7 +500,7 @@ describe("useEditUserPreferences", () => {
                         expanded: { posts: true, members: false },
                         menu: { visible: true }, // Preserved
                     },
-                    nightShift: true, // Preserved
+                    nightShift: 'dark', // Preserved
                 });
             });
         });

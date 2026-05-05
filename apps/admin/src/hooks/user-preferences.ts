@@ -27,7 +27,7 @@ export const NavigationPreferencesSchema = z.looseObject({
 
 const PreferencesSchema = z.looseObject({
     whatsNew: WhatsNewPreferencesSchema.optional().catch(undefined),
-    nightShift: z.boolean().optional(),
+    nightShift: z.enum(['light', 'dark', 'system']).default('system').catch('system'),
     navigation: NavigationPreferencesSchema.default(DEFAULT_NAVIGATION_PREFERENCES).catch(DEFAULT_NAVIGATION_PREFERENCES),
 });
 
@@ -51,7 +51,17 @@ export function useUserPreferences<TData = Preferences>(
             }
 
             const raw = user.accessibility || "{}";
-            const parsed = JSON.parse(raw) as unknown;
+            const parsedRaw: unknown = JSON.parse(raw);
+            const parsed: Record<string, unknown> =
+                parsedRaw && typeof parsedRaw === 'object' && !Array.isArray(parsedRaw)
+                    ? parsedRaw as Record<string, unknown>
+                    : {};
+
+            if (parsed.nightShift === true) {
+                parsed.nightShift = 'dark';
+            } else if (parsed.nightShift === false) {
+                parsed.nightShift = 'light';
+            }
 
             return PreferencesSchema.parse(parsed);
         },
