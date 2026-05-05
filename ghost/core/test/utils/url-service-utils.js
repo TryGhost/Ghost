@@ -7,7 +7,7 @@ module.exports.isFinished = async () => {
         (function retry() {
             clearTimeout(timeout);
 
-            if (urlService.hasFinished()) {
+            if (urlService.facade.hasFinished()) {
                 return resolve();
             }
 
