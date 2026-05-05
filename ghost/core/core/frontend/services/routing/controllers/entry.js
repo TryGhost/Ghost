@@ -1,7 +1,6 @@
 const debug = require('@tryghost/debug')('services:routing:controllers:entry');
 const url = require('url');
 const config = require('../../../../shared/config');
-const {routerManager} = require('../');
 const urlUtils = require('../../../../shared/url-utils');
 const dataService = require('../../data');
 const renderer = require('../../rendering');
@@ -43,27 +42,6 @@ module.exports = function entryController(req, res, next) {
                 const resourceType = res.routerOptions?.context?.includes('page') ? 'page' : 'post';
 
                 return urlUtils.redirectToAdmin(302, res, `/#/editor/${resourceType}/${entry.id}`);
-            }
-
-            /**
-             * CASE: check if type of router owns this resource
-             *
-             * Static pages have a hardcoded permalink, which is `/:slug/`.
-             * Imagine you define a collection under `/` with the permalink `/:slug/`.
-             *
-             * The router hierarchy is:
-             *
-             * 1. collections
-             * 2. static pages
-             *
-             * Both permalinks are registered in express. If you serve a static page, the
-             * collection router will try to serve this as a post resource.
-             *
-             * That's why we have to check against the router type.
-             */
-            if (routerManager.getResourceById(entry.id).config.type !== res.routerOptions.resourceType) {
-                debug('not my resource type');
-                return next();
             }
 
             /**
