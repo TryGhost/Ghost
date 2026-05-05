@@ -47,7 +47,7 @@ describe('welcome email automations poll', function () {
         await testUtils.knex('automated_email_recipients').del();
         await testUtils.knex('welcome_email_automation_runs').del();
         await testUtils.knex('welcome_email_automated_emails').del();
-        await testUtils.knex('welcome_email_automations').del();
+        await testUtils.knex('automations').del();
         await testUtils.knex('members').del();
         await testUtils.knex('email_design_settings')
             .where('slug', 'like', 'default-automated-email-%')
@@ -105,7 +105,7 @@ describe('welcome email automations poll', function () {
 
     async function createAutomation(attrs = {}) {
         const currentTime = new Date();
-        return insert('welcome_email_automations', {
+        return insert('automations', {
             id: ObjectId().toHexString(),
             status: 'active',
             name: `Automation ${ObjectId().toHexString()}`,

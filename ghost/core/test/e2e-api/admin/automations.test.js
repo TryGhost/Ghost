@@ -38,17 +38,17 @@ describe('Automations API', function () {
     describe('browse', function () {
         beforeEach(async function () {
             await dbUtils.truncate('welcome_email_automated_emails');
-            await dbUtils.truncate('welcome_email_automations');
+            await dbUtils.truncate('automations');
         });
 
-        it('returns welcome email automations ordered by creation time', async function () {
-            const second = await models.WelcomeEmailAutomation.add({
+        it('returns automations ordered by creation time', async function () {
+            const second = await models.Automation.add({
                 name: 'Welcome Email (Premium)',
                 slug: 'member-welcome-email-premium',
                 status: 'inactive',
                 created_at: new Date('2025-01-02T00:00:00Z')
             });
-            const first = await models.WelcomeEmailAutomation.add({
+            const first = await models.Automation.add({
                 name: 'Welcome Email (Free)',
                 slug: 'member-welcome-email-free',
                 status: 'active',

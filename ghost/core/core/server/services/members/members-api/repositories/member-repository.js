@@ -66,7 +66,7 @@ module.exports = class MemberRepository {
      * @param {any} deps.offersAPI
      * @param {ITokenService} deps.tokenService
      * @param {any} deps.newslettersService
-     * @param {any} deps.WelcomeEmailAutomation
+     * @param {any} deps.Automation
      * @param {any} deps.WelcomeEmailAutomationRun
      */
     constructor({
@@ -87,7 +87,7 @@ module.exports = class MemberRepository {
         offersAPI,
         tokenService,
         newslettersService,
-        WelcomeEmailAutomation,
+        Automation,
         WelcomeEmailAutomationRun
     }) {
         this._Member = Member;
@@ -107,7 +107,7 @@ module.exports = class MemberRepository {
         this._offersAPI = offersAPI;
         this.tokenService = tokenService;
         this._newslettersService = newslettersService;
-        this._WelcomeEmailAutomation = WelcomeEmailAutomation;
+        this._Automation = Automation;
         this._WelcomeEmailAutomationRun = WelcomeEmailAutomationRun;
 
         DomainEvents.subscribe(OfferRedemptionEvent, async function (event) {
@@ -385,9 +385,9 @@ module.exports = class MemberRepository {
         const isGiftSignup = !stripeCustomer && memberData.status === 'gift';
         let welcomeEmailToEnqueue = null;
 
-        if (this._WelcomeEmailAutomation && WELCOME_EMAIL_SOURCES.includes(source)) {
+        if (this._Automation && WELCOME_EMAIL_SOURCES.includes(source)) {
             const getActiveWelcomeEmailToEnqueue = async (slug) => {
-                const automation = await this._WelcomeEmailAutomation.findOne(
+                const automation = await this._Automation.findOne(
                     {slug},
                     {...options, withRelated: ['welcomeEmailAutomatedEmail']}
                 );
@@ -1520,8 +1520,8 @@ module.exports = class MemberRepository {
             let isPaidWelcomeEmailActive = false;
             let paidWelcomeAutomation = null;
             let paidWelcomeEmail = null;
-            if (shouldSendPaidWelcomeEmail && this._WelcomeEmailAutomation) {
-                paidWelcomeAutomation = await this._WelcomeEmailAutomation.findOne(
+            if (shouldSendPaidWelcomeEmail && this._Automation) {
+                paidWelcomeAutomation = await this._Automation.findOne(
                     {slug: MEMBER_WELCOME_EMAIL_SLUGS.paid},
                     {...options, withRelated: ['welcomeEmailAutomatedEmail']}
                 );

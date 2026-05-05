@@ -1455,7 +1455,7 @@ describe('MemberRepository', function () {
         let MemberStatusEvent;
         let MemberSubscribeEvent;
         let newslettersService;
-        let WelcomeEmailAutomation;
+        let Automation;
         const oldNodeEnv = process.env.NODE_ENV;
 
         beforeEach(function () {
@@ -1513,7 +1513,7 @@ describe('MemberRepository', function () {
                 getAll: sinon.stub().resolves([])
             };
 
-            WelcomeEmailAutomation = {
+            Automation = {
                 findOne: sinon.stub().resolves({
                     id: 'automation_id_free',
                     get: sinon.stub().callsFake((key) => {
@@ -1546,7 +1546,7 @@ describe('MemberRepository', function () {
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
-                WelcomeEmailAutomation,
+                Automation,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1565,7 +1565,7 @@ describe('MemberRepository', function () {
 
         it('creates automation run for gift member signup (paid welcome email)', async function () {
             // Override stub with paid welcome email
-            WelcomeEmailAutomation.findOne = sinon.stub().resolves({
+            Automation.findOne = sinon.stub().resolves({
                 id: 'automation_id_paid',
                 get: sinon.stub().callsFake((key) => {
                     const data = {status: 'active'};
@@ -1590,14 +1590,14 @@ describe('MemberRepository', function () {
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
-                WelcomeEmailAutomation,
+                Automation,
                 OfferRedemption: mockOfferRedemption
             });
 
             await repo.create({email: 'test@example.com', name: 'Test Member', status: 'gift'}, {});
 
-            sinon.assert.calledOnce(WelcomeEmailAutomation.findOne);
-            assert.equal(WelcomeEmailAutomation.findOne.firstCall.args[0].slug, 'member-welcome-email-paid');
+            sinon.assert.calledOnce(Automation.findOne);
+            assert.equal(Automation.findOne.firstCall.args[0].slug, 'member-welcome-email-paid');
 
             sinon.assert.calledOnce(WelcomeEmailAutomationRun.add);
             const runCall = WelcomeEmailAutomationRun.add.firstCall.args[0];
@@ -1608,7 +1608,7 @@ describe('MemberRepository', function () {
 
         it('does NOT create automation run for a gift signup when the paid welcome email is inactive', async function () {
             // Override stub with inactive paid welcome email
-            WelcomeEmailAutomation.findOne = sinon.stub().resolves({
+            Automation.findOne = sinon.stub().resolves({
                 id: 'automation_id_paid',
                 get: sinon.stub().callsFake((key) => {
                     const data = {status: 'inactive'};
@@ -1630,7 +1630,7 @@ describe('MemberRepository', function () {
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
-                WelcomeEmailAutomation,
+                Automation,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1648,7 +1648,7 @@ describe('MemberRepository', function () {
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
-                WelcomeEmailAutomation,
+                Automation,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1673,7 +1673,7 @@ describe('MemberRepository', function () {
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
-                WelcomeEmailAutomation,
+                Automation,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1684,7 +1684,7 @@ describe('MemberRepository', function () {
         });
 
         it('does NOT create automation run when welcome email is inactive', async function () {
-            WelcomeEmailAutomation.findOne.resolves({
+            Automation.findOne.resolves({
                 get: sinon.stub().callsFake((key) => {
                     const data = {status: 'inactive'};
                     return data[key];
@@ -1707,7 +1707,7 @@ describe('MemberRepository', function () {
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
-                WelcomeEmailAutomation,
+                Automation,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1728,7 +1728,7 @@ describe('MemberRepository', function () {
                 MemberStatusEvent,
                 MemberSubscribeEventModel: MemberSubscribeEvent,
                 newslettersService,
-                WelcomeEmailAutomation,
+                Automation,
                 StripeCustomer,
                 OfferRedemption: mockOfferRedemption
             });
@@ -1757,7 +1757,7 @@ describe('MemberRepository', function () {
 
             // The free welcome email should NOT be sent when stripeCustomer is present
             sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
-            sinon.assert.notCalled(WelcomeEmailAutomation.findOne);
+            sinon.assert.notCalled(Automation.findOne);
             sinon.assert.notCalled(Member.transaction);
         });
     });
@@ -1772,7 +1772,7 @@ describe('MemberRepository', function () {
         let MemberStatusEvent;
         let stripeAPIService;
         let productRepository;
-        let WelcomeEmailAutomation;
+        let Automation;
         let subscriptionData;
 
         beforeEach(function () {
@@ -1898,7 +1898,7 @@ describe('MemberRepository', function () {
                 update: sinon.stub().resolves({})
             };
 
-            WelcomeEmailAutomation = {
+            Automation = {
                 findOne: sinon.stub().resolves({
                     id: 'automation_id_paid',
                     get: sinon.stub().callsFake((key) => {
@@ -1943,7 +1943,7 @@ describe('MemberRepository', function () {
                 MemberStatusEvent,
                 stripeAPIService,
                 productRepository,
-                WelcomeEmailAutomation,
+                Automation,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -1990,7 +1990,7 @@ describe('MemberRepository', function () {
                 MemberStatusEvent,
                 stripeAPIService,
                 productRepository,
-                WelcomeEmailAutomation,
+                Automation,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -2027,7 +2027,7 @@ describe('MemberRepository', function () {
                 })
             });
 
-            WelcomeEmailAutomation.findOne.resolves({
+            Automation.findOne.resolves({
                 id: 'automation_id_paid',
                 get: sinon.stub().callsFake((key) => {
                     const data = {status: 'inactive'};
@@ -2055,7 +2055,7 @@ describe('MemberRepository', function () {
                 MemberStatusEvent,
                 stripeAPIService,
                 productRepository,
-                WelcomeEmailAutomation,
+                Automation,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -2094,7 +2094,7 @@ describe('MemberRepository', function () {
                 MemberStatusEvent,
                 stripeAPIService,
                 productRepository,
-                WelcomeEmailAutomation,
+                Automation,
                 OfferRedemption: mockOfferRedemption
             });
 
@@ -2119,7 +2119,7 @@ describe('MemberRepository', function () {
         let MemberStatusEvent;
         let MemberSubscribeEvent;
         let newslettersService;
-        let WelcomeEmailAutomation;
+        let Automation;
         let productRepository;
         let memberAdd;
 
@@ -2152,7 +2152,7 @@ describe('MemberRepository', function () {
                 getAll: sinon.stub().resolves([])
             };
 
-            WelcomeEmailAutomation = {
+            Automation = {
                 findOne: sinon.stub().resolves(null)
             };
 
@@ -2169,7 +2169,7 @@ describe('MemberRepository', function () {
             MemberStatusEvent,
             MemberSubscribeEventModel: MemberSubscribeEvent,
             newslettersService,
-            WelcomeEmailAutomation,
+            Automation,
             productRepository,
             OfferRedemption: mockOfferRedemption
         });
@@ -2282,7 +2282,7 @@ describe('MemberRepository', function () {
         let MemberStatusEvent;
         let MemberSubscribeEvent;
         let newslettersService;
-        let WelcomeEmailAutomation;
+        let Automation;
         let productRepository;
         let stripeAPIService;
         let memberEdit;
@@ -2355,7 +2355,7 @@ describe('MemberRepository', function () {
                 getAll: sinon.stub().resolves([])
             };
 
-            WelcomeEmailAutomation = {
+            Automation = {
                 findOne: sinon.stub().resolves(null)
             };
 
@@ -2377,7 +2377,7 @@ describe('MemberRepository', function () {
             MemberStatusEvent,
             MemberSubscribeEventModel: MemberSubscribeEvent,
             newslettersService,
-            WelcomeEmailAutomation,
+            Automation,
             productRepository,
             stripeAPIService,
             OfferRedemption: mockOfferRedemption

@@ -32,7 +32,7 @@ describe('Automations controller', function () {
     let dispatchStub;
 
     beforeEach(function () {
-        sinon.stub(models.WelcomeEmailAutomation, 'findAll').resolves([
+        sinon.stub(models.Automation, 'findAll').resolves([
             createMockAutomation('automation-id-1', 'Welcome Email (Free)', 'member-welcome-email-free', 'active'),
             createMockAutomation('automation-id-2', 'Welcome Email (Premium)', 'member-welcome-email-premium', 'inactive')
         ]);
