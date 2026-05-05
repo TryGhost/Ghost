@@ -49,8 +49,10 @@ describe('UrlTranslator', function () {
                     }
                 },
                 urlService: {
-                    getUrlByResourceId: (id) => {
-                        return '/path/' + id;
+                    facade: {
+                        getUrlForResource: (resource) => {
+                            return '/path/' + resource.id;
+                        }
                     },
                     getResource: (path) => {
                         switch (path) {
@@ -212,8 +214,8 @@ describe('UrlTranslator', function () {
         before(function () {
             translator = new UrlTranslator({
                 urlService: {
-                    getUrlByResourceId: () => {
-                        return '/path';
+                    facade: {
+                        getUrlForResource: () => '/path'
                     }
                 },
                 models
@@ -258,6 +260,69 @@ describe('UrlTranslator', function () {
 
         it('returns null for not found tag', async function () {
             assert.equal(await translator.getResourceById('invalid', 'tag'), null);
+        });
+    });
+
+    describe('getResourceUrl', function () {
+        // Lazy URL service evaluates permalink templates against resource fields
+        // (slug, published_at, primary_tag, ...). The facade contract requires
+        // the full resource shape, not just `{id, type}`.
+        it('passes the model\'s plain data (slug, etc.) to the facade', function () {
+            let captured;
+            const translator = new UrlTranslator({
+                urlUtils: {
+                    relativeToAbsolute: t => 'https://abs' + t
+                },
+                urlService: {
+                    facade: {
+                        getUrlForResource: (resource) => {
+                            captured = resource;
+                            return '/' + resource.slug + '/';
+                        }
+                    }
+                },
+                models: {}
+            });
+
+            const tag = {
+                get: () => undefined,
+                toJSON: () => ({id: 'abc', slug: 'changelog', visibility: 'public'})
+            };
+
+            const url = translator.getResourceUrl('abc', 'tag', tag, {absolute: false});
+
+            assert.equal(url, '/changelog/');
+            assert.equal(captured.id, 'abc');
+            assert.equal(captured.type, 'tags');
+            assert.equal(captured.slug, 'changelog');
+        });
+
+        it('keeps the email-only short-circuit for sent posts', function () {
+            const translator = new UrlTranslator({
+                urlUtils: {
+                    relativeToAbsolute: t => 'https://abs' + t
+                },
+                urlService: {
+                    facade: {
+                        getUrlForResource: () => {
+                            throw new Error('facade should not be consulted for email-only posts');
+                        }
+                    }
+                },
+                models: {}
+            });
+
+            const post = {
+                get(k) {
+                    return k === 'status' ? 'sent' : 'uuid-123';
+                },
+                toJSON: () => ({id: 'pid', uuid: 'uuid-123', status: 'sent'})
+            };
+
+            assert.equal(
+                translator.getResourceUrl('pid', 'post', post, {absolute: false}),
+                '/email/uuid-123/'
+            );
         });
     });
 

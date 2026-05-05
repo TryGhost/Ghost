@@ -15,7 +15,9 @@ describe('audienceFeedbackService', function () {
         it('Can build link to post', async function () {
             const instance = new AudienceFeedbackService({
                 urlService: {
-                    getUrlByResourceId: () => `https://localhost:2368/${mockData.postTitle}/`
+                    facade: {
+                        getUrlForResource: () => `https://localhost:2368/${mockData.postTitle}/`
+                    }
                 },
                 config: {
                     baseURL: new URL('https://localhost:2368')
@@ -29,7 +31,9 @@ describe('audienceFeedbackService', function () {
         it('Can build link to home page if post wasn\'t published', async function () {
             const instance = new AudienceFeedbackService({
                 urlService: {
-                    getUrlByResourceId: () => `https://localhost:2368/${mockData.postTitle}/404/`
+                    facade: {
+                        getUrlForResource: () => `https://localhost:2368/${mockData.postTitle}/404/`
+                    }
                 },
                 config: {
                     baseURL: new URL('https://localhost:2368')
@@ -40,13 +44,15 @@ describe('audienceFeedbackService', function () {
             assert.equal(link.href, expectedLink);
         });
 
-        it('Passes post id (not the post object) to the url service', async function () {
-            let receivedId;
+        it('Passes a posts resource (with id) to the facade', async function () {
+            let receivedResource;
             const instance = new AudienceFeedbackService({
                 urlService: {
-                    getUrlByResourceId: (id) => {
-                        receivedId = id;
-                        return `https://localhost:2368/${mockData.postTitle}/`;
+                    facade: {
+                        getUrlForResource: (resource) => {
+                            receivedResource = resource;
+                            return `https://localhost:2368/${mockData.postTitle}/`;
+                        }
                     }
                 },
                 config: {
@@ -54,7 +60,44 @@ describe('audienceFeedbackService', function () {
                 }
             });
             instance.buildLink(mockData.uuid, mockPost, mockData.score, mockData.key);
-            assert.equal(receivedId, mockData.postId);
+            assert.equal(receivedResource.id, mockData.postId);
+            assert.equal(receivedResource.type, 'posts');
+        });
+
+        it('Serialises Bookshelf-model input so spread does not lose the id', async function () {
+            // Real callers (email-renderer) pass a Bookshelf model. Spreading
+            // one with `{...model}` skips prototype getters like `.id`. The
+            // service must call `.toJSON()` first; this test pins that.
+            //
+            // toJSON also returns the DB-level `type: 'post'` (singular). The
+            // service must override that to the routing-level `'posts'`
+            // (plural) before handing the resource to the facade — the
+            // assertion below captures that override explicitly.
+            let receivedResource;
+            const fakeBookshelfModel = {
+                // No own `id` / `slug` properties; only `.toJSON()` exposes them.
+                toJSON: () => ({id: mockData.postId, slug: mockData.postTitle, type: 'post'})
+            };
+            const instance = new AudienceFeedbackService({
+                urlService: {
+                    facade: {
+                        getUrlForResource: (resource) => {
+                            receivedResource = resource;
+                            return `https://localhost:2368/${mockData.postTitle}/`;
+                        }
+                    }
+                },
+                config: {
+                    baseURL: new URL('https://localhost:2368')
+                }
+            });
+            const link = instance.buildLink(mockData.uuid, fakeBookshelfModel, mockData.score, mockData.key);
+            assert.equal(receivedResource.id, mockData.postId);
+            assert.equal(receivedResource.slug, mockData.postTitle);
+            assert.equal(receivedResource.type, 'posts');
+            // The hash fragment also depends on the post id, so the same bug
+            // would surface in the produced URL.
+            assert.match(link.href, new RegExp(`#/feedback/${mockData.postId}/`));
         });
     });
 });

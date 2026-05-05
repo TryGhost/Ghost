@@ -5,7 +5,9 @@ const CommentsServiceEmails = require('../../../../../core/server/services/comme
 describe('Comments Service: CommentsServiceEmails', function () {
     function createClassInstance({labs = {}}) {
         const urlService = {
-            getUrlByResourceId: sinon.stub().returns('https://example.com/my-post/')
+            facade: {
+                getUrlForResource: sinon.stub().returns('https://example.com/my-post/')
+            }
         };
         const labsStub = {
             isSet: sinon.stub().callsFake(flag => labs[flag] || false)
@@ -35,12 +37,34 @@ describe('Comments Service: CommentsServiceEmails', function () {
             assert.equal(result, 'https://example.com/my-post/#ghost-comments-456');
         });
 
-        it('passes the post id (not the post object) to the url service', function () {
+        it('passes a posts resource to the facade', function () {
             const {instance, urlService} = createClassInstance({});
 
             instance.getPostUrl({id: '123'}, '456');
 
-            sinon.assert.calledWith(urlService.getUrlByResourceId, '123', {absolute: true});
+            sinon.assert.calledWith(
+                urlService.facade.getUrlForResource,
+                sinon.match({id: '123', type: 'posts'}),
+                {absolute: true}
+            );
+        });
+
+        it('serialises Bookshelf-model input so spread does not lose the id', function () {
+            // Real callers (notify*Authors / notifyParentCommentAuthor / notifyReport)
+            // pass a Bookshelf model from Post.findOne. Spreading one with
+            // `{...model}` skips prototype getters like `.id`.
+            const {instance, urlService} = createClassInstance({});
+            const fakeBookshelfModel = {
+                toJSON: () => ({id: '123', slug: 'my-post'})
+            };
+
+            instance.getPostUrl(fakeBookshelfModel, '456');
+
+            sinon.assert.calledWith(
+                urlService.facade.getUrlForResource,
+                sinon.match({id: '123', slug: 'my-post', type: 'posts'}),
+                {absolute: true}
+            );
         });
     });
 
@@ -105,7 +129,9 @@ describe('Comments Service: CommentsServiceEmails', function () {
                 settingsCache: {get: sinon.stub().returns('Test Site')},
                 settingsHelpers: {getMembersSupportAddress: () => 'support@example.com'},
                 urlService: {
-                    getUrlByResourceId: sinon.stub().returns('https://example.com/my-post/')
+                    facade: {
+                        getUrlForResource: sinon.stub().returns('https://example.com/my-post/')
+                    }
                 },
                 urlUtils: {
                     getSiteUrl: () => 'https://example.com/',
