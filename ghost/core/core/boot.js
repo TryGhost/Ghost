@@ -248,7 +248,10 @@ async function initExpressApps({frontend, backend, config}) {
 
     if (frontend) {
         // SITE + MEMBERS
-        const urlService = require('./server/services/url');
+        // RouterManager and migrated frontend callers expect the facade
+        // (getUrlForResource / ownsResource), not the raw eager UrlService
+        // (which only exposes the legacy id-based methods).
+        const urlService = require('./server/services/url').facade;
         const frontendApp = require('./server/web/parent/frontend')({urlService});
         parentApp.use(vhost(config.getFrontendMountPath(), frontendApp));
     }
