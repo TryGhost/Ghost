@@ -52,26 +52,15 @@ describe('UrlTranslator', function () {
                     facade: {
                         getUrlForResource: (resource) => {
                             return '/path/' + resource.id;
-                        }
-                    },
-                    getResource: (path) => {
-                        switch (path) {
-                        case '/path/post': return {
-                            config: {type: 'posts'},
-                            data: {id: 'post'}
-                        };
-                        case '/path/tag': return {
-                            config: {type: 'tags'},
-                            data: {id: 'tag'}
-                        };
-                        case '/path/page': return {
-                            config: {type: 'pages'},
-                            data: {id: 'page'}
-                        };
-                        case '/path/author': return {
-                            config: {type: 'authors'},
-                            data: {id: 'author'}
-                        };
+                        },
+                        resolveUrl: async (path) => {
+                            switch (path) {
+                            case '/path/post': return {type: 'posts', id: 'post'};
+                            case '/path/tag': return {type: 'tags', id: 'tag'};
+                            case '/path/page': return {type: 'pages', id: 'page'};
+                            case '/path/author': return {type: 'authors', id: 'author'};
+                            }
+                            return null;
                         }
                     }
                 },
@@ -152,60 +141,51 @@ describe('UrlTranslator', function () {
         before(function () {
             translator = new UrlTranslator({
                 urlService: {
-                    getResource: (path) => {
-                        switch (path) {
-                        case '/post': return {
-                            config: {type: 'posts'},
-                            data: {id: 'post'}
-                        };
-                        case '/tag': return {
-                            config: {type: 'tags'},
-                            data: {id: 'tag'}
-                        };
-                        case '/page': return {
-                            config: {type: 'pages'},
-                            data: {id: 'page'}
-                        };
-                        case '/author': return {
-                            config: {type: 'authors'},
-                            data: {id: 'author'}
-                        };
+                    facade: {
+                        resolveUrl: async (path) => {
+                            switch (path) {
+                            case '/post': return {type: 'posts', id: 'post'};
+                            case '/tag': return {type: 'tags', id: 'tag'};
+                            case '/page': return {type: 'pages', id: 'page'};
+                            case '/author': return {type: 'authors', id: 'author'};
+                            }
+                            return null;
                         }
                     }
                 }
             });
         });
 
-        it('returns posts', function () {
-            assert.deepEqual(translator.getTypeAndIdFromPath('/post'), {
+        it('returns posts', async function () {
+            assert.deepEqual(await translator.getTypeAndIdFromPath('/post'), {
                 type: 'post',
                 id: 'post'
             });
         });
 
-        it('returns pages', function () {
-            assert.deepEqual(translator.getTypeAndIdFromPath('/page'), {
+        it('returns pages', async function () {
+            assert.deepEqual(await translator.getTypeAndIdFromPath('/page'), {
                 type: 'page',
                 id: 'page'
             });
         });
 
-        it('returns authors', function () {
-            assert.deepEqual(translator.getTypeAndIdFromPath('/author'), {
+        it('returns authors', async function () {
+            assert.deepEqual(await translator.getTypeAndIdFromPath('/author'), {
                 type: 'author',
                 id: 'author'
             });
         });
 
-        it('returns tags', function () {
-            assert.deepEqual(translator.getTypeAndIdFromPath('/tag'), {
+        it('returns tags', async function () {
+            assert.deepEqual(await translator.getTypeAndIdFromPath('/tag'), {
                 type: 'tag',
                 id: 'tag'
             });
         });
 
-        it('returns undefined', function () {
-            assert.equal(translator.getTypeAndIdFromPath('/other'), undefined);
+        it('returns undefined', async function () {
+            assert.equal(await translator.getTypeAndIdFromPath('/other'), undefined);
         });
     });
 

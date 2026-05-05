@@ -316,10 +316,12 @@ describe('PostsStatsService', function () {
 
         // Mock urlService for URL existence checking
         const mockUrlService = {
-            hasFinished: () => true,
-            getResource: () => {
-                // Mock that all URLs exist for testing
-                return {data: {title: 'Mock Title'}};
+            facade: {
+                hasFinished: () => true,
+                resolveUrl: async () => {
+                    // Mock that all URLs exist for testing
+                    return {title: 'Mock Title', type: 'posts'};
+                }
             }
         };
 
@@ -373,14 +375,16 @@ describe('PostsStatsService', function () {
             return new PostsStatsService({
                 knex: db,
                 urlService: {
-                    hasFinished: () => true,
-                    getResource: lookup
+                    facade: {
+                        hasFinished: () => true,
+                        resolveUrl: async path => lookup(path)
+                    }
                 }
             });
         }
 
         it('flags url_exists: true when the URL resolves to a resource', async function () {
-            const svc = svcWithUrlLookup(() => ({data: {title: 'present'}}));
+            const svc = svcWithUrlLookup(() => ({type: 'posts', title: 'present'}));
             const out = await svc._enrichWithTitles([
                 {attribution_url: '/known/', title: 'Known', attribution_type: 'post', attribution_id: 'p', post_id: 'p'}
             ]);
