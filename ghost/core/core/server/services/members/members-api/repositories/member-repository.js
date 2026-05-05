@@ -433,9 +433,8 @@ module.exports = class MemberRepository {
         let member;
 
         const isFreeSignup = !stripeCustomer && memberData.status === 'free';
-        const shouldEnqueueFreeWelcomeEmail = isFreeSignup && WELCOME_EMAIL_SOURCES.includes(source);
 
-        if (shouldEnqueueFreeWelcomeEmail) {
+        if (isFreeSignup && WELCOME_EMAIL_SOURCES.includes(source)) {
             const runMemberCreation = async (transacting) => {
                 const newMember = await this._Member.add({
                     ...memberData,
@@ -1531,14 +1530,13 @@ module.exports = class MemberRepository {
 
             const context = options?.context || {};
             const source = this._resolveContextSource(context);
-            const shouldEnqueuePaidWelcomeEmail = WELCOME_EMAIL_SOURCES.includes(source);
 
             // Enqueue paid welcome email if:
             // 1. The source is allowed to send welcome emails
             // 2. The member status changed to 'paid'
             // 3. The previous status wasn't 'gift', as gift members already received the paid welcome email on redemption
             if (
-                shouldEnqueuePaidWelcomeEmail &&
+                WELCOME_EMAIL_SOURCES.includes(source) &&
                 updatedMember.get('status') === 'paid' &&
                 updatedMember._previousAttributes.status !== 'gift'
             ) {
