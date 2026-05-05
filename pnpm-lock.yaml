@@ -58,6 +58,7 @@ overrides:
   qs@>=6.7.0 <=6.14.1: ^6.14.2
   tar@<7.5.11: ^7.5.11
   tmp@<=0.2.3: ^0.2.4
+  trim@<0.0.3: ^0.0.3
   undici@<6.24.0: ^6.24.0
   underscore@>=1.3.2 <1.12.1: ^1.12.1
   '@xmldom/xmldom@<0.8.13': ^0.8.13
@@ -21103,8 +21104,8 @@ packages:
   trim-trailing-lines@1.1.4:
     resolution: {integrity: sha512-rjUWSqnfTNrjbB9NQWfPMH/xRK1deHeGsHoVfpxJ++XeYXE0d6B1En37AHfw3jtfTU7dzMzZL2jjpe8Qb5gLIQ==}
 
-  trim@0.0.1:
-    resolution: {integrity: sha512-YzQV+TZg4AxpKxaTHK3c3D+kRDCGVEE7LemdlQZoQXn0iennk10RsIoY6ikzAqJTc9Xjl9C1/waHom/J86ziAQ==}
+  trim@0.0.3:
+    resolution: {integrity: sha512-h82ywcYhHK7veeelXrCScdH7HkWfbIT1D/CgYO+nmDarz3SGNssVBMws6jU16Ga60AJCRAvPV6w6RLuNerQqjg==}
     deprecated: Use String.prototype.trim() instead
 
   trough@1.0.5:
@@ -44883,7 +44884,7 @@ snapshots:
       parse-entities: 1.2.2
       repeat-string: 1.6.1
       state-toggle: 1.0.3
-      trim: 0.0.1
+      trim: 0.0.3
       trim-trailing-lines: 1.1.4
       unherit: 1.1.3
       unist-util-remove-position: 1.1.4
@@ -46968,7 +46969,7 @@ snapshots:
 
   trim-trailing-lines@1.1.4: {}
 
-  trim@0.0.1: {}
+  trim@0.0.3: {}
 
   trough@1.0.5: {}
 
