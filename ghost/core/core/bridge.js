@@ -122,12 +122,16 @@ class Bridge {
         // re-initialize apps (register app routers, because we have re-initialized the site routers)
         appService.init();
 
-        // connect routers and resources again
-        urlService.queue.start({
-            event: 'init',
-            tolerance: 100,
-            requiredSubscriberCount: 1
-        });
+        if (!urlService.facade.isLazy()) {
+            // connect routers and resources again. The lazy URL service has
+            // nothing to precompute, so this step (and the queue itself) is
+            // skipped in lazy mode.
+            urlService.queue.start({
+                event: 'init',
+                tolerance: 100,
+                requiredSubscriberCount: 1
+            });
+        }
     }
 }
 

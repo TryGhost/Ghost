@@ -2,6 +2,7 @@ const config = require('../../../shared/config');
 const LocalFileCache = require('./local-file-cache');
 const UrlService = require('./url-service');
 const UrlServiceFacade = require('./url-service-facade');
+const LazyUrlService = require('./lazy-url-service');
 
 // NOTE: instead of a path we could give UrlService a "data-resolver" of some sort
 //       so it doesn't have to contain the logic to read data at all. This would be
@@ -22,7 +23,56 @@ if (process.env.NODE_ENV.startsWith('test')){
 
 const cache = new LocalFileCache({storagePath, writeDisabled});
 const urlService = new UrlService({cache});
-const urlServiceFacade = new UrlServiceFacade({urlService});
+
+// LazyUrlService is only attached to the facade when the lazyRouting flag is
+// on. The eager UrlService stays in the require graph either way so test code
+// and partially-migrated callers continue to work. The model layer is only
+// pulled in when the flag is on so flag-off boot keeps its existing
+// require-graph shape.
+let lazyUrlService = null;
+if (config.get('lazyRouting')) {
+    const models = require('../../models');
+
+    const loadOne = async (Model, query) => {
+        const result = await Model.findOne(query, {require: false});
+        return result ? result.toJSON() : null;
+    };
+
+    const loadPostlike = (Model, query, dbType) => {
+        return loadOne(Model, {...query, type: dbType, status: 'published'});
+    };
+
+    // The eager UrlService only registers URLs for resources matching the
+    // resourceConfig filter (status:published, public visibility). Mirror
+    // that here so reverse lookups can't return drafts / private resources
+    // even though we now hit the DB on demand. We also disambiguate posts
+    // vs pages — both share `models.Post` and a permalink template like
+    // `/:slug/` could otherwise return either record.
+    //
+    // For tags and authors we use the public-facing scoped models
+    // (TagPublic, Author) which carry the shouldHavePosts gate, so reverse
+    // lookups can't return tags/users with no published posts (and in
+    // particular can't expose staff User accounts via a guessed slug).
+    const findResource = (type, query) => {
+        if (type === 'posts') {
+            return loadPostlike(models.Post, query, 'post');
+        }
+        if (type === 'pages') {
+            return loadPostlike(models.Post, query, 'page');
+        }
+        if (type === 'tags') {
+            return loadOne(models.TagPublic, {...query, visibility: 'public'});
+        }
+        if (type === 'authors') {
+            return loadOne(models.Author, {...query, visibility: 'public'});
+        }
+        return Promise.resolve(null);
+    };
+
+    lazyUrlService = new LazyUrlService({findResource});
+}
+
+const urlServiceFacade = new UrlServiceFacade({urlService, lazyUrlService});
 
 // Singleton: default export remains the eager UrlService for backwards
 // compatibility with existing imports. The new facade is exposed alongside
