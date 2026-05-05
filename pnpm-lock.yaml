@@ -35,7 +35,7 @@ overrides:
   eslint-plugin-ghost>@typescript-eslint/utils: 8.49.0
   ember-svg-jar>cheerio: 1.0.0-rc.12
   juice>cheerio: 0.22.0
-  lodash.template: 4.5.0
+  lodash.template: 4.18.0
   '@tootallnate/once@<3.0.1': ^3.0.1
   clean-css@<4.1.11: ^4.1.11
   debug@>=4.0.0 <4.3.1: ^4.3.1
@@ -16747,9 +16747,9 @@ packages:
   lodash.sortby@4.7.0:
     resolution: {integrity: sha512-HDWXG8isMntAyRF5vZ7xKuEvOhT4AhlRt/3czTSjvGUxjYCBVRQY48ViDHyfYz9VIoBkW4TMGQNapx+l3RUwdA==}
 
-  lodash.template@4.5.0:
-    resolution: {integrity: sha512-84vYFxIkmidUiFxidA/KjjH9pAycqW+h980j7Fuz5qxRtO9pgB7MDFTdys1N7A5mcucRiDyEq4fusljItR1T/A==}
-    deprecated: This package is deprecated. Use https://socket.dev/npm/package/eta instead.
+  lodash.template@4.18.0:
+    resolution: {integrity: sha512-VbCU2mYTHF/JUjasKG50ozrbli//eixCFmKBiAfvmz0cGt7iywc087M7zxflSoEQFS0Xtv0RqpE8ko8BXv3TOQ==}
+    deprecated: Bad release. Please use lodash.template@4.5.0 instead.
 
   lodash.templatesettings@4.2.0:
     resolution: {integrity: sha512-stgLz+i3Aa9mZgnjr/O+v9ruKZsPsndy7qPZOchbqk2cnTU1ZaldKK+v7m54WoKIyxiuMZTKT2H81F8BeAc3ZQ==}
@@ -21777,23 +21777,27 @@ packages:
 
   uuid@10.0.0:
     resolution: {integrity: sha512-8XkAphELsDnEGrDxUOHB3RGvXz6TeuYSGEZBOjtTtPm2lwhGBjLgOzLHB63IUWfBpNucQjND6d3AOudO+H3RWQ==}
+    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   uuid@3.4.0:
     resolution: {integrity: sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==}
-    deprecated: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
+    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   uuid@7.0.3:
     resolution: {integrity: sha512-DPSke0pXhTZgoF/d+WSt2QaKMCFSfx7QegxEWT+JOuHF5aWrKEn0G+ztjuJg/gG8/ItK+rbPCD/yNv8yyih6Cg==}
+    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   uuid@8.3.2:
     resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
+    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   uuid@9.0.1:
     resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
+    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   v8-compile-cache-lib@3.0.1:
@@ -30353,7 +30357,7 @@ snapshots:
 
   '@tryghost/tpl@0.1.40':
     dependencies:
-      lodash.template: 4.5.0
+      lodash.template: 4.18.0
 
   '@tryghost/tpl@2.1.0': {}
 
@@ -33546,7 +33550,7 @@ snapshots:
     dependencies:
       broccoli-plugin: 1.3.1
       fs-tree-diff: 0.5.9
-      lodash.template: 4.5.0
+      lodash.template: 4.18.0
       rimraf: 2.7.1
       walk-sync: 0.3.4
     transitivePeerDependencies:
@@ -36233,7 +36237,7 @@ snapshots:
       js-yaml: 3.14.2
       json-stable-stringify: 1.3.0
       leek: 0.0.24
-      lodash.template: 4.5.0
+      lodash.template: 4.18.0
       markdown-it: 12.3.2
       markdown-it-terminal: 0.2.1
       minimatch: 3.1.5
@@ -41618,7 +41622,7 @@ snapshots:
 
   lodash.sortby@4.7.0: {}
 
-  lodash.template@4.5.0:
+  lodash.template@4.18.0:
     dependencies:
       lodash._reinterpolate: 3.0.0
       lodash.templatesettings: 4.2.0
@@ -46127,7 +46131,7 @@ snapshots:
     dependencies:
       jsesc: 0.3.0
       lodash.foreach: 4.5.0
-      lodash.template: 4.5.0
+      lodash.template: 4.18.0
       source-map: 0.1.43
 
   spawn-args@0.2.0: {}

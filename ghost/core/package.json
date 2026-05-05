@@ -243,7 +243,7 @@
     "xml": "1.0.1"
   },
   "overrides": {
-    "lodash.template": "4.5.0"
+    "lodash.template": "4.18.0"
   },
   "optionalDependencies": {
     "@tryghost/html-to-mobiledoc": "3.3.1",
