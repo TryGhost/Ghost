@@ -51,6 +51,7 @@ overrides:
   form-data@<2.5.4: ^2.5.4
   growl@<1.10.0: ^1.10.0
   handlebars@>=4.0.0 <=4.7.8: ^4.7.9
+  ip-address@<=10.1.0: ^10.2.0
   js-yaml@>=4.0.0 <4.1.1: ^4.1.1
   json5@<1.0.2: ^1.0.2
   lodash@<4.18.0: ^4.18.0
@@ -15110,8 +15111,8 @@ packages:
     resolution: {integrity: sha512-tVrCrc4LWJwX82GD79dZ0teZQGq+5KJEGpXJRgzHOrhHtLgF9ME6rTwDV5+HN5bjnvmtrnS8ioXhflY16sy2HQ==}
     engines: {node: '>=6'}
 
-  ip-address@10.1.0:
-    resolution: {integrity: sha512-XXADHxXmvT9+CRxhXg56LJovE+bmWnEWB78LB83VZTprKTmaC5QfruXocxzTZ2Kl0DNwKuBdlIhjL8LeY8Sf8Q==}
+  ip-address@10.2.0:
+    resolution: {integrity: sha512-/+S6j4E9AHvW9SWMSEY9Xfy66O5PWvVEJ08O0y5JGyEKQpojb0K0GKpz/v5HJ/G0vi3D2sjGK78119oXZeE0qA==}
     engines: {node: '>= 12'}
 
   ip-regex@4.3.0:
@@ -39287,7 +39288,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  ip-address@10.1.0: {}
+  ip-address@10.2.0: {}
 
   ip-regex@4.3.0: {}
 
@@ -45481,7 +45482,7 @@ snapshots:
 
   socks@2.8.7:
     dependencies:
-      ip-address: 10.1.0
+      ip-address: 10.2.0
       smart-buffer: 4.2.0
 
   sonner@2.0.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
