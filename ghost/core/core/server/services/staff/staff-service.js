@@ -110,6 +110,11 @@ class StaffService {
                 attribution
             });
         } else if (type === SubscriptionActivatedEvent) {
+            // Suppress for gift→paid upgrades — staff was already notified
+            // when the member redeemed the gift (notifyGiftSubscriptionStarted).
+            if (event.data.previousStatus === 'gift') {
+                return;
+            }
             let attribution;
             if (event.data?.attribution) {
                 attribution = await this.memberAttributionService.fetchResource(event.data.attribution);
