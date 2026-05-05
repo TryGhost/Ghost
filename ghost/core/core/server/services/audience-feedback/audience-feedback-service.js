@@ -1,3 +1,5 @@
+const toPlain = require('../../lib/common/to-plain');
+
 class AudienceFeedbackService {
     /** @type URL */
     #baseURL;
@@ -20,13 +22,14 @@ class AudienceFeedbackService {
      * @param {string} key - hashed uuid value
      */
     buildLink(uuid, post, score, key) {
-        let postUrl = this.#urlService.getUrlByResourceId(post.id, {absolute: true});
+        const postData = toPlain(post);
+        let postUrl = this.#urlService.facade.getUrlForResource({...postData, type: 'posts'}, {absolute: true});
 
         if (postUrl.match(/\/404\//)) {
             postUrl = this.#baseURL;
         }
         const url = new URL(postUrl);
-        url.hash = `#/feedback/${post.id}/${score}/?uuid=${encodeURIComponent(uuid)}&key=${encodeURIComponent(key)}`;
+        url.hash = `#/feedback/${postData.id}/${score}/?uuid=${encodeURIComponent(uuid)}&key=${encodeURIComponent(key)}`;
         return url;
     }
 }
