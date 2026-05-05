@@ -52,7 +52,7 @@
     "eslint-plugin-react-refresh": "0.4.24",
     "eslint-plugin-tailwindcss": "3.18.2",
     "jsdom": "28.1.0",
-    "postcss": "8.5.6",
+    "postcss": "8.5.10",
     "postcss-import": "16.1.1",
     "prop-types": "15.8.1",
     "rollup-plugin-node-builtins": "2.1.2",
