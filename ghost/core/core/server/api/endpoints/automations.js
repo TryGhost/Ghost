@@ -17,6 +17,7 @@ const controller = {
                 data: automations.map(automation => ({
                     id: automation.get('id'),
                     name: automation.get('name'),
+                    slug: automation.get('slug'),
                     status: automation.get('status')
                 }))
             };

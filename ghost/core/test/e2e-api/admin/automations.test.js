@@ -62,10 +62,12 @@ describe('Automations API', function () {
             assert.deepEqual(body.automations, [{
                 id: first.id,
                 name: first.get('name'),
+                slug: first.get('slug'),
                 status: first.get('status')
             }, {
                 id: second.id,
                 name: second.get('name'),
+                slug: second.get('slug'),
                 status: second.get('status')
             }]);
         });
