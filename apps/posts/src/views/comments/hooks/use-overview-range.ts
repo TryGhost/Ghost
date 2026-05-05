@@ -7,13 +7,14 @@ const DEFAULT_RANGE = STATS_RANGES.LAST_30_DAYS.value;
 export const useOverviewRange = () => {
     const [range, setRange] = useState<number>(DEFAULT_RANGE);
 
-    const {dateFrom, dateTo} = useMemo(() => {
-        const {startDate, endDate} = getRangeDates(range);
+    const {dateFrom, dateTo, timezone} = useMemo(() => {
+        const {startDate, endDate, timezone: tz} = getRangeDates(range);
         return {
             dateFrom: formatQueryDate(startDate),
-            dateTo: formatQueryDate(endDate)
+            dateTo: formatQueryDate(endDate),
+            timezone: tz
         };
     }, [range]);
 
-    return {range, setRange, dateFrom, dateTo};
+    return {range, setRange, dateFrom, dateTo, timezone};
 };

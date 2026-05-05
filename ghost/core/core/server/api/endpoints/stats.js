@@ -535,7 +535,8 @@ const controller = {
         },
         options: [
             'date_from',
-            'date_to'
+            'date_to',
+            'timezone'
         ],
         permissions: {
             docName: 'comments',
@@ -547,7 +548,8 @@ const controller = {
             }
             const overview = await commentsService.stats.getOverview({
                 dateFrom: frame?.options?.date_from,
-                dateTo: frame?.options?.date_to
+                dateTo: frame?.options?.date_to,
+                timezone: frame?.options?.timezone
             });
             return {data: [overview]};
         }

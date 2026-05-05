@@ -18,7 +18,7 @@ const Comments: React.FC = () => {
     const {data: configData} = useBrowseConfig();
     const analyticsEnabled = configData?.config?.labs?.commentAnalytics === true;
 
-    const {range, setRange, dateFrom, dateTo} = useOverviewRange();
+    const {range, setRange, dateFrom, dateTo, timezone} = useOverviewRange();
 
     const handleAddFilter = useCallback((field: string, value: string, operator: string = 'is') => {
         setFilters((prevFilters) => {
@@ -50,6 +50,7 @@ const Comments: React.FC = () => {
             dateTo={dateTo}
             range={range}
             setRange={setRange}
+            timezone={timezone}
             onAddFilter={handleAddFilter}
         />
     ) : undefined;

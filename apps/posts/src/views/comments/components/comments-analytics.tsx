@@ -10,6 +10,7 @@ interface CommentsAnalyticsProps {
     setRange: (range: number) => void;
     dateFrom: string;
     dateTo: string;
+    timezone: string;
     /**
      * Applies a filter to the moderation list rendered alongside this rail.
      * Used by top-posts/commenters row clicks and chart bar clicks.
@@ -19,16 +20,18 @@ interface CommentsAnalyticsProps {
 
 const EMPTY_OVERVIEW: CommentsOverviewPayload = {
     totals: {comments: 0, commenters: 0, reported: 0},
+    previousTotals: null,
     series: [],
     topPosts: [],
     topMembers: []
 };
 
-const CommentsAnalytics: React.FC<CommentsAnalyticsProps> = ({range, setRange, dateFrom, dateTo, onAddFilter}) => {
+const CommentsAnalytics: React.FC<CommentsAnalyticsProps> = ({range, setRange, dateFrom, dateTo, timezone, onAddFilter}) => {
     const searchParams = useMemo(() => ({
         date_from: dateFrom,
-        date_to: dateTo
-    }), [dateFrom, dateTo]);
+        date_to: dateTo,
+        timezone
+    }), [dateFrom, dateTo, timezone]);
 
     const {data, isLoading} = useCommentsOverview({searchParams}) as {
         data: CommentsOverviewResponseType | undefined;
@@ -45,6 +48,7 @@ const CommentsAnalytics: React.FC<CommentsAnalyticsProps> = ({range, setRange, d
             </div>
             <OverviewKpiTabs
                 isLoading={isLoading}
+                previousTotals={data ? overview.previousTotals : undefined}
                 range={range}
                 series={data ? overview.series : undefined}
                 totals={data ? overview.totals : undefined}

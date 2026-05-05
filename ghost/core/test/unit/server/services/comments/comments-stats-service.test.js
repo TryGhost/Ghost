@@ -153,6 +153,99 @@ describe('CommentsStatsService', function () {
             ]);
         });
 
+        it('returns previousTotals for the equivalent prior window when both bounds are set', async function () {
+            // The two totals queries fire via Promise.all, so dispatch order is
+            // non-deterministic. We disambiguate by inspecting the `>=` lower
+            // bound the service applied to the query (UTC ISO string from
+            // `getDateBoundaries`).
+            const isCurrentRange = (builder) => {
+                const fromCall = builder.where.getCalls().find(call => call.args[1] === '>=');
+                if (!fromCall) {
+                    return false;
+                }
+                return fromCall.args[2] === '2026-02-08T00:00:00.000Z';
+            };
+
+            const {service} = createService({
+                tableResults: {
+                    comments: (builder) => {
+                        if (builder.groupByRaw.called || builder.join.called) {
+                            return [];
+                        }
+                        return isCurrentRange(builder)
+                            ? [{count: '40', commenters: '15'}]
+                            : [{count: '20', commenters: '8'}];
+                    },
+                    comment_reports: (builder) => {
+                        if (builder.groupByRaw.called) {
+                            return [];
+                        }
+                        return isCurrentRange(builder)
+                            ? [{reported: '6'}]
+                            : [{reported: '3'}];
+                    }
+                }
+            });
+
+            const result = await service.getOverview({dateFrom: '2026-02-08', dateTo: '2026-02-14'});
+
+            assert.deepEqual(result.totals, {comments: 40, commenters: 15, reported: 6});
+            assert.deepEqual(result.previousTotals, {comments: 20, commenters: 8, reported: 3});
+        });
+
+        it('interprets date bounds in the requested timezone', async function () {
+            // PST is UTC-8; the start of 2026-02-08 in PST is 08:00 UTC, and
+            // the end of 2026-02-08 in PST is 2026-02-09T07:59:59.999 UTC.
+            const recordedBounds = [];
+            const {service} = createService({
+                tableResults: {
+                    comments: (builder) => {
+                        if (builder.groupByRaw.called || builder.join.called) {
+                            return [];
+                        }
+                        const from = builder.where.getCalls().find(c => c.args[1] === '>=')?.args[2];
+                        const to = builder.where.getCalls().find(c => c.args[1] === '<=')?.args[2];
+                        recordedBounds.push({from, to});
+                        return [{count: 0, commenters: 0}];
+                    },
+                    comment_reports: () => [{reported: 0}]
+                }
+            });
+
+            await service.getOverview({
+                dateFrom: '2026-02-08',
+                dateTo: '2026-02-08',
+                timezone: 'America/Los_Angeles'
+            });
+
+            const currentBounds = recordedBounds.find(b => b.from === '2026-02-08T08:00:00.000Z');
+            assert.ok(currentBounds, 'expected current range lower bound at PST start-of-day in UTC');
+            assert.equal(currentBounds.to, '2026-02-09T07:59:59.999Z');
+        });
+
+        it('returns previousTotals = null when range has no bounds', async function () {
+            const {service} = createService({
+                tableResults: {
+                    comments: (builder) => {
+                        if (builder.groupByRaw.called || builder.join.called) {
+                            return [];
+                        }
+                        return [{count: 0, commenters: 0}];
+                    },
+                    comment_reports: (builder) => {
+                        if (builder.groupByRaw.called) {
+                            return [];
+                        }
+                        return [{reported: 0}];
+                    }
+                }
+            });
+
+            const result = await service.getOverview({});
+
+            assert.equal(result.previousTotals, null);
+        });
+
         it('formats Date instances in series rows into YYYY-MM-DD strings', async function () {
             const {service} = createService({
                 tableResults: {

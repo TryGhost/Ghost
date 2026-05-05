@@ -394,6 +394,7 @@ describe('Stats API', function () {
             assert.equal(typeof overview.totals.comments, 'number');
             assert.equal(typeof overview.totals.commenters, 'number');
             assert.equal(typeof overview.totals.reported, 'number');
+            assert.ok('previousTotals' in overview, 'expected previousTotals key');
             assert.ok(Array.isArray(overview.series));
             assert.ok(Array.isArray(overview.topPosts));
             assert.ok(Array.isArray(overview.topMembers));

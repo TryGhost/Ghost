@@ -1,13 +1,24 @@
 import React, {useMemo, useState} from 'react';
 import {BarChartLoadingIndicator, Card, CardContent, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, KpiTabTrigger, KpiTabValue, Tabs, TabsList} from '@tryghost/shade/components';
 import {CommentsOverviewSeriesItem, CommentsOverviewTotals} from '@tryghost/admin-x-framework/api/stats';
-import {LucideIcon, Recharts, formatNumber} from '@tryghost/shade/utils';
+import {LucideIcon, Recharts, formatNumber, formatPercentage} from '@tryghost/shade/utils';
+import {STATS_RANGES} from '@src/utils/constants';
 import {formatDisplayDateWithRange, sanitizeChartData} from '@tryghost/shade/app';
+import {getPreviousPeriodText} from '../utils/period-text';
 
 type MetricKey = 'comments' | 'commenters' | 'reported';
 
+type DiffDirection = 'up' | 'down' | 'same';
+
+interface MetricDiff {
+    direction: DiffDirection;
+    diffValue: string;
+    previousValue: number;
+}
+
 interface OverviewKpiTabsProps {
     totals: CommentsOverviewTotals | undefined;
+    previousTotals: CommentsOverviewTotals | null | undefined;
     series: CommentsOverviewSeriesItem[] | undefined;
     range: number;
     isLoading: boolean;
@@ -18,13 +29,60 @@ interface OverviewKpiTabsProps {
     onAddFilter: (field: string, value: string, operator?: string) => void;
 }
 
-const TAB_CONFIG: Record<MetricKey, {label: string; color: string; seriesField: 'count' | 'commenters' | 'reported'}> = {
-    comments: {label: 'Comments', color: 'var(--chart-darkblue)', seriesField: 'count'},
-    commenters: {label: 'Commenters', color: 'var(--chart-blue)', seriesField: 'commenters'},
-    reported: {label: 'Reported', color: 'var(--chart-rose)', seriesField: 'reported'}
+const TAB_CONFIG: Record<MetricKey, {label: string; color: string; seriesField: 'count' | 'commenters' | 'reported'; totalsField: keyof CommentsOverviewTotals}> = {
+    comments: {label: 'Comments', color: 'var(--chart-darkblue)', seriesField: 'count', totalsField: 'comments'},
+    commenters: {label: 'Commenters', color: 'var(--chart-blue)', seriesField: 'commenters', totalsField: 'commenters'},
+    reported: {label: 'Reported', color: 'var(--chart-rose)', seriesField: 'reported', totalsField: 'reported'}
 };
 
-const OverviewKpiTabs: React.FC<OverviewKpiTabsProps> = ({totals, series, range, isLoading, onAddFilter}) => {
+const METRIC_KEYS: readonly MetricKey[] = ['comments', 'commenters', 'reported'];
+
+const calcDiff = (current: number, previous: number): MetricDiff => {
+    if (previous === 0) {
+        // No prior baseline — any positive value is a "new" 100% increase, zero
+        // stays flat. Showing "∞%" would be noisy, so we cap at 100%.
+        const direction: DiffDirection = current > 0 ? 'up' : 'same';
+        return {
+            direction,
+            diffValue: current > 0 ? formatPercentage(1) : formatPercentage(0),
+            previousValue: previous
+        };
+    }
+    const change = (current - previous) / previous;
+    const direction: DiffDirection = change > 0 ? 'up' : change < 0 ? 'down' : 'same';
+    return {
+        direction,
+        diffValue: formatPercentage(change),
+        previousValue: previous
+    };
+};
+
+const buildDiffTooltip = (
+    diff: MetricDiff,
+    range: number
+): React.ReactNode => {
+    const previousPeriodText = getPreviousPeriodText(range);
+    if (!previousPeriodText) {
+        return null;
+    }
+    const formattedPrevious = formatNumber(diff.previousValue);
+
+    if (diff.direction === 'same') {
+        return (
+            <span>
+                Unchanged from the <span className='font-semibold'>{previousPeriodText}</span>
+            </span>
+        );
+    }
+    const directionText = diff.direction === 'up' ? 'up' : 'down';
+    return (
+        <span>
+            You&apos;re trending <span className='font-semibold'>{directionText} {diff.diffValue}</span> from <span className='font-semibold'>{formattedPrevious}</span> compared to the <span className='font-semibold'>{previousPeriodText}</span>
+        </span>
+    );
+};
+
+const OverviewKpiTabs: React.FC<OverviewKpiTabsProps> = ({totals, previousTotals, series, range, isLoading, onAddFilter}) => {
     const [currentTab, setCurrentTab] = useState<MetricKey>('comments');
 
     const config = TAB_CONFIG[currentTab];
@@ -64,41 +122,47 @@ const OverviewKpiTabs: React.FC<OverviewKpiTabsProps> = ({totals, series, range,
         value: {label: config.label, color: config.color}
     };
 
-    const commentsValue = totals ? formatNumber(totals.comments) : '—';
-    const commentersValue = totals ? formatNumber(totals.commenters) : '—';
-    const reportedValue = totals ? formatNumber(totals.reported) : '—';
+    // No prior period to compare against on "All time" — hide the diff.
+    const diffsHidden = range === STATS_RANGES.ALL_TIME.value;
+    const diffs = useMemo(() => {
+        if (diffsHidden || !totals || !previousTotals) {
+            return null;
+        }
+        const buildEntry = (key: MetricKey) => {
+            const field = TAB_CONFIG[key].totalsField;
+            const diff = calcDiff(totals[field], previousTotals[field]);
+            return {...diff, tooltip: buildDiffTooltip(diff, range)};
+        };
+        return {
+            comments: buildEntry('comments'),
+            commenters: buildEntry('commenters'),
+            reported: buildEntry('reported')
+        };
+    }, [diffsHidden, totals, previousTotals, range]);
 
     return (
-        <Card className='[&_[data-testid^="kpi-value"]]:!text-2xl'>
+        // The `:not([data-testid$="-diff"])` carve-out keeps the !text-2xl
+        // override off the diff badge (which also matches `kpi-value-*`).
+        <Card className='[&_[data-testid^="kpi-value-"]:not([data-testid$="-diff"])]:!text-2xl'>
             <Tabs value={currentTab} variant='kpis' onValueChange={value => setCurrentTab(value as MetricKey)}>
                 <TabsList className='-mx-px grid grid-cols-3'>
-                    <KpiTabTrigger className='px-3 py-4' value='comments'>
-                        <KpiTabValue
-                            color={TAB_CONFIG.comments.color}
-                            data-testid='kpi-value-comments'
-                            diffDirection='hidden'
-                            label='Comments'
-                            value={commentsValue}
-                        />
-                    </KpiTabTrigger>
-                    <KpiTabTrigger className='px-3 py-4' value='commenters'>
-                        <KpiTabValue
-                            color={TAB_CONFIG.commenters.color}
-                            data-testid='kpi-value-commenters'
-                            diffDirection='hidden'
-                            label='Commenters'
-                            value={commentersValue}
-                        />
-                    </KpiTabTrigger>
-                    <KpiTabTrigger className='px-3 py-4' value='reported'>
-                        <KpiTabValue
-                            color={TAB_CONFIG.reported.color}
-                            data-testid='kpi-value-reported'
-                            diffDirection='hidden'
-                            label='Reported'
-                            value={reportedValue}
-                        />
-                    </KpiTabTrigger>
+                    {METRIC_KEYS.map((key) => {
+                        const cfg = TAB_CONFIG[key];
+                        const diff = diffs?.[key];
+                        return (
+                            <KpiTabTrigger key={key} className='px-3 py-4' value={key}>
+                                <KpiTabValue
+                                    data-testid={`kpi-value-${key}`}
+                                    label={cfg.label}
+                                    value={totals ? formatNumber(totals[cfg.totalsField]) : '—'}
+                                    diffIconOnly
+                                    {...(diff && diff.direction !== 'same'
+                                        ? {diffDirection: diff.direction, diffValue: diff.diffValue, diffTooltip: diff.tooltip}
+                                        : {diffDirection: 'hidden' as const})}
+                                />
+                            </KpiTabTrigger>
+                        );
+                    })}
                 </TabsList>
                 <CardContent className='p-3 pt-4'>
                     {isLoading ? (

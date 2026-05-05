@@ -14,7 +14,8 @@ interface CommentsLayoutProps {
 const CommentsLayout: React.FC<CommentsLayoutProps> = ({children, rail}) => {
     const body = rail ? (
         <div className='block grow lg:grid lg:grid-cols-[minmax(0,1fr)_460px]'>
-            <aside className='px-4 pt-4 lg:col-start-2 lg:row-start-1 lg:border-l lg:border-border lg:px-8 lg:pt-8'>
+            {/* `self-start` is required for sticky — grid cells otherwise stretch to the row's height. */}
+            <aside className='px-4 pt-4 lg:sticky lg:top-0 lg:col-start-2 lg:row-start-1 lg:max-h-screen lg:self-start lg:overflow-y-auto lg:border-l lg:border-border lg:px-8 lg:pt-8'>
                 {rail}
             </aside>
             <div className='flex min-w-0 flex-col lg:col-start-1 lg:row-start-1 lg:[&_.prose]:max-w-[70ch]'>

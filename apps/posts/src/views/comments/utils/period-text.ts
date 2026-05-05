@@ -21,3 +21,25 @@ export const getPeriodText = (range: number): string => {
     }
     return name.toLowerCase();
 };
+
+/**
+ * Returns a phrase describing the prior comparison period, or '' when no
+ * comparable prior period exists (e.g. "All time").
+ */
+export const getPreviousPeriodText = (range: number): string => {
+    const name = RANGE_BY_VALUE.get(range);
+    if (!name) {
+        return '';
+    }
+    if (name === 'Today') {
+        return 'previous day';
+    }
+    if (name === 'Year to date') {
+        return 'same period last year';
+    }
+    if (name === 'All time') {
+        return '';
+    }
+    // "Last 7 days" → "previous 7 days", "Last 12 months" → "previous 12 months"
+    return name.toLowerCase().replace(/^last /, 'previous ');
+};

@@ -273,6 +273,7 @@ export type CommentsOverviewTopMember = {
 
 export type CommentsOverview = {
     totals: CommentsOverviewTotals;
+    previousTotals: CommentsOverviewTotals | null;
     series: CommentsOverviewSeriesItem[];
     topPosts: CommentsOverviewTopPost[];
     topMembers: CommentsOverviewTopMember[];

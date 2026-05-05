@@ -2,6 +2,7 @@ import * as React from 'react';
 import * as TabsPrimitive from '@radix-ui/react-tabs';
 import {DropdownMenuTrigger} from './dropdown-menu';
 
+import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from './tooltip';
 import {cn} from '@/lib/utils';
 import {cva} from 'class-variance-authority';
 import {TrendingDown, TrendingUp, type LucideIcon} from 'lucide-react';
@@ -186,6 +187,9 @@ interface KpiTabValueProps {
     value: string | number;
     diffDirection?: 'up' | 'down' | 'same' | 'hidden';
     diffValue?: string | number;
+    diffTooltip?: React.ReactNode;
+    /** Render the diff badge as an icon-only circle (hides the percent value). */
+    diffIconOnly?: boolean;
     className?: string;
     'data-testid'?: string;
 }
@@ -197,17 +201,36 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({
     value,
     diffDirection,
     diffValue,
+    diffTooltip,
+    diffIconOnly,
     className,
     'data-testid': testId
 }) => {
     const IconComponent = iconName ? LucideIcons[iconName] as LucideIcon : null;
 
     const diffContainerClassName = cn(
-        'flex items-center gap-1 text-xs h-[22px] px-1.5 rounded-xs group/diff cursor-default mt-0.5',
+        'flex items-center group/diff cursor-default mt-0.5',
+        diffIconOnly
+            ? 'size-5 justify-center rounded-full'
+            : 'gap-1 text-xs h-[22px] px-1.5 rounded-xs',
         diffDirection === 'up' && 'text-state-success bg-state-success/10',
+        diffDirection === 'up' && diffTooltip && 'hover:bg-state-success/20',
         diffDirection === 'down' && 'text-state-danger bg-state-danger/10',
+        diffDirection === 'down' && diffTooltip && 'hover:bg-state-danger/20',
         diffDirection === 'same' && 'text-text-secondary bg-muted'
     );
+    const badge = diffDirection && diffDirection !== 'hidden' ? (
+        <div className={diffContainerClassName} data-testid={testId ? `${testId}-diff` : undefined}>
+            {!diffIconOnly && <span className='leading-none font-medium'>{diffValue}</span>}
+            {diffDirection === 'up' &&
+                <TrendingUp className='size-3!' size={14} strokeWidth={2} />
+            }
+            {diffDirection === 'down' &&
+                <TrendingDown className='size-3!' size={14} strokeWidth={2} />
+            }
+        </div>
+    ) : null;
+
     return (
         <div className={cn('group flex w-full flex-col items-start gap-2', className)}>
             <div className='flex h-[22px] items-center gap-1.5 text-base font-medium text-muted-foreground transition-all group-hover:text-foreground' data-type="value">
@@ -219,19 +242,25 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({
                 <div className='text-[2.3rem] leading-none font-semibold tracking-tighter xl:text-[2.6rem]' data-testid={testId}>
                     {value}
                 </div>
-                {diffDirection && diffDirection !== 'hidden' &&
-                    <>
-                        <div className={diffContainerClassName} data-testid={testId ? `${testId}-diff` : undefined}>
-                            <span className='leading-none font-medium'>{diffValue}</span>
-                            {diffDirection === 'up' &&
-                                <TrendingUp className='size-3!' size={14} strokeWidth={2} />
-                            }
-                            {diffDirection === 'down' &&
-                                <TrendingDown className='size-3!' size={14} strokeWidth={2} />
-                            }
-                        </div>
-                    </>
-                }
+                {badge && (diffTooltip ? (
+                    // Radix Tooltip portals the bubble to body so it escapes
+                    // ancestor overflow/stacking contexts that broke the
+                    // CSS-only hover variant inside narrow rails.
+                    <TooltipProvider delayDuration={150}>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                {badge}
+                            </TooltipTrigger>
+                            <TooltipContent
+                                className='max-w-[300px] rounded-xs bg-background px-3 py-2 text-sm text-pretty text-foreground shadow-md'
+                                side='top'
+                                sideOffset={8}
+                            >
+                                {diffTooltip}
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                ) : badge)}
             </div>
         </div>
     );
