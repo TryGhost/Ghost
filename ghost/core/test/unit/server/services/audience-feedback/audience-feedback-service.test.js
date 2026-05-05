@@ -9,6 +9,7 @@ describe('audienceFeedbackService', function () {
         score: 1,
         key: 'somekey'
     };
+    const mockPost = {id: mockData.postId};
 
     describe('build link', function () {
         it('Can build link to post', async function () {
@@ -20,7 +21,7 @@ describe('audienceFeedbackService', function () {
                     baseURL: new URL('https://localhost:2368')
                 }
             });
-            const link = instance.buildLink(mockData.uuid, mockData.postId, mockData.score, mockData.key);
+            const link = instance.buildLink(mockData.uuid, mockPost, mockData.score, mockData.key);
             const expectedLink = `https://localhost:2368/${mockData.postTitle}/#/feedback/${mockData.postId}/${mockData.score}/?uuid=${mockData.uuid}&key=somekey`;
             assert.equal(link.href, expectedLink);
         });
@@ -34,9 +35,26 @@ describe('audienceFeedbackService', function () {
                     baseURL: new URL('https://localhost:2368')
                 }
             });
-            const link = instance.buildLink(mockData.uuid, mockData.postId, mockData.score, mockData.key);
+            const link = instance.buildLink(mockData.uuid, mockPost, mockData.score, mockData.key);
             const expectedLink = `https://localhost:2368/#/feedback/${mockData.postId}/${mockData.score}/?uuid=${mockData.uuid}&key=somekey`;
             assert.equal(link.href, expectedLink);
+        });
+
+        it('Passes post id (not the post object) to the url service', async function () {
+            let receivedId;
+            const instance = new AudienceFeedbackService({
+                urlService: {
+                    getUrlByResourceId: (id) => {
+                        receivedId = id;
+                        return `https://localhost:2368/${mockData.postTitle}/`;
+                    }
+                },
+                config: {
+                    baseURL: new URL('https://localhost:2368')
+                }
+            });
+            instance.buildLink(mockData.uuid, mockPost, mockData.score, mockData.key);
+            assert.equal(receivedId, mockData.postId);
         });
     });
 });

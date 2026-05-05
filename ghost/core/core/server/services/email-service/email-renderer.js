@@ -1058,13 +1058,13 @@ class EmailRenderer {
         // Audience feedback
         const positiveLink = this.#audienceFeedbackService.buildLink(
             '--uuid--',
-            post.id,
+            post,
             1,
             '--key--'
         ).href.replace('--uuid--', '%%{uuid}%%').replace('--key--', '%%{key}%%');
         const negativeLink = this.#audienceFeedbackService.buildLink(
             '--uuid--',
-            post.id,
+            post,
             0,
             '--key--'
         ).href.replace('--uuid--', '%%{uuid}%%').replace('--key--', '%%{key}%%');
