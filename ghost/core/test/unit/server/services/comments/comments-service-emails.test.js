@@ -30,9 +30,17 @@ describe('Comments Service: CommentsServiceEmails', function () {
         it('returns post URL with comment permalink', function () {
             const {instance} = createClassInstance({});
 
-            const result = instance.getPostUrl('123', '456');
+            const result = instance.getPostUrl({id: '123'}, '456');
 
             assert.equal(result, 'https://example.com/my-post/#ghost-comments-456');
+        });
+
+        it('passes the post id (not the post object) to the url service', function () {
+            const {instance, urlService} = createClassInstance({});
+
+            instance.getPostUrl({id: '123'}, '456');
+
+            sinon.assert.calledWith(urlService.getUrlByResourceId, '123', {absolute: true});
         });
     });
 
@@ -125,8 +133,9 @@ describe('Comments Service: CommentsServiceEmails', function () {
             sinon.assert.calledOnce(getPostUrlSpy);
             const [postArg, commentIdArg] = getPostUrlSpy.firstCall.args;
             assert.equal(commentIdArg, 'comment-id');
-            // postArg is either the post model or its id; both yield the same URL
-            assert.equal(typeof postArg === 'string' ? postArg : postArg && postArg.id, post.id);
+            assert.equal(postArg.id, post.id);
+            // After this commit's migration the call always passes a model.
+            assert.notEqual(typeof postArg, 'string');
 
             sinon.assert.calledOnce(renderStub);
             const [, templateData] = renderStub.firstCall.args;
@@ -153,7 +162,9 @@ describe('Comments Service: CommentsServiceEmails', function () {
             sinon.assert.calledOnce(getPostUrlSpy);
             const [postArg, commentIdArg] = getPostUrlSpy.firstCall.args;
             assert.equal(commentIdArg, 'comment-id');
-            assert.equal(typeof postArg === 'string' ? postArg : postArg && postArg.id, post.id);
+            assert.equal(postArg.id, post.id);
+            // After this commit's migration the call always passes a model.
+            assert.notEqual(typeof postArg, 'string');
 
             sinon.assert.calledOnce(renderStub);
             const [, templateData] = renderStub.firstCall.args;

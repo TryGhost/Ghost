@@ -15,18 +15,18 @@ class AudienceFeedbackService {
     }
     /**
      * @param {string} uuid
-     * @param {string} postId
+     * @param {{id: string}} post
      * @param {0 | 1} score
      * @param {string} key - hashed uuid value
      */
-    buildLink(uuid, postId, score, key) {
-        let postUrl = this.#urlService.getUrlByResourceId(postId, {absolute: true});
+    buildLink(uuid, post, score, key) {
+        let postUrl = this.#urlService.getUrlByResourceId(post.id, {absolute: true});
 
         if (postUrl.match(/\/404\//)) {
             postUrl = this.#baseURL;
         }
         const url = new URL(postUrl);
-        url.hash = `#/feedback/${postId}/${score}/?uuid=${encodeURIComponent(uuid)}&key=${encodeURIComponent(key)}`;
+        url.hash = `#/feedback/${post.id}/${score}/?uuid=${encodeURIComponent(uuid)}&key=${encodeURIComponent(key)}`;
         return url;
     }
 }
