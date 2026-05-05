@@ -1,8 +1,6 @@
 import * as React from 'react';
 import {cn} from '@/lib/utils';
 import {cva} from 'class-variance-authority';
-import {MetricValue} from '@/components/ui/metric-value';
-import {TrendBadge} from '@/components/ui/trend-badge';
 
 type CardsVariant = 'outline' | 'plain';
 const CardsVariantContext = React.createContext<CardsVariant>('outline');
@@ -152,70 +150,6 @@ const CardFooter = React.forwardRef<
 });
 CardFooter.displayName = 'CardFooter';
 
-const KpiCardHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
-    return (
-        <div
-            className={
-                cn(
-                    'flex flex-col border-r border-border last:border-none items-start gap-4 px-6 py-5 transition-all',
-                    className
-                )}
-            {...props}
-        >
-            {children}
-        </div>
-    );
-};
-
-const KpiCardHeaderLabel: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, color, ...props}) => {
-    return (
-        <div className={cn('[&_svg]:size-4 flex items-center gap-1.5 text-base text-muted-foreground h-[22px] font-medium', className)} {...props}>
-            {color && <div className='ml-1 size-2 rounded-full opacity-50' style={{backgroundColor: color}}></div>}
-            {children}
-        </div>
-    );
-};
-
-interface KpiCardValueProps {
-    value: string | number;
-    diffDirection?: 'up' | 'down' | 'same' | 'empty' | 'hidden';
-    diffValue?: string | number;
-    diffTooltip?: React.ReactNode;
-}
-
-const KpiCardHeaderValue: React.FC<KpiCardValueProps> = ({value, diffDirection, diffValue, diffTooltip}) => {
-    let trailing: React.ReactNode = null;
-    if (diffDirection && diffDirection !== 'hidden') {
-        if (diffDirection === 'empty') {
-            // Reserves the same vertical space as a real trend badge without showing one.
-            trailing = (
-                <div
-                    className='flex h-[22px] items-center px-1.5 text-xs leading-none font-medium'
-                    data-testid='kpi-card-header-diff'
-                >
-                    {diffValue}
-                </div>
-            );
-        } else {
-            trailing = (
-                <TrendBadge
-                    data-testid='kpi-card-header-diff'
-                    direction={diffDirection}
-                    tooltip={diffTooltip}
-                    value={diffValue ?? ''}
-                />
-            );
-        }
-    }
-    return (
-        <MetricValue
-            trailing={trailing}
-            value={value}
-            valueTestId='kpi-card-header-value'
-        />
-    );
-};
-
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface EmptyCardProps extends React.ComponentPropsWithoutRef<'div'> {}
 
@@ -238,9 +172,6 @@ export {
     CardTitle,
     CardDescription,
     CardContent,
-    KpiCardHeader,
-    KpiCardHeaderLabel,
-    KpiCardHeaderValue,
     EmptyCard,
     cardVariants
 };

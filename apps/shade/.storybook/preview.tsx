@@ -58,6 +58,7 @@ const preview: Preview = {
 			storySort: {
 				method: 'alphabetical',
 				order: [
+					'Foundations',
 					'Primitives',
 					'Components',
 					'Layout',

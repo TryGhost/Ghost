@@ -1,7 +1,7 @@
 import {useMemo, useState} from 'react';
 import {act, fireEvent, render, screen, waitFor} from '../../utils/test-utils';
 import {afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
-import {createFilter, FilterFieldConfig, Filters, ValueSource} from '../../../../src/components/ui/filters';
+import {createFilter, FilterFieldConfig, Filters, ValueSource} from '../../../../src/components/features/filters/filters';
 
 type TestOption = {
     value: string;

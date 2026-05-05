@@ -1,6 +1,6 @@
 import {calculateYAxisWidth, cn, formatDisplayDateWithRange, formatNumber, getYRange} from '@/lib/utils';
 import React from 'react';
-import {AlignedAxisTick, ChartConfig, ChartContainer, ChartTooltip} from './chart';
+import {AlignedAxisTick, ChartConfig, ChartContainer, ChartTooltip} from '@/components/ui/chart';
 import {Area, AreaChart, CartesianGrid, XAxis, YAxis} from 'recharts';
 import {TrendingDown, TrendingUp} from 'lucide-react';
 
