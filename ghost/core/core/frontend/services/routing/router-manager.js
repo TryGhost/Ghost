@@ -26,8 +26,16 @@ class RouterManager {
         return this.urlService.owns(routerId, id);
     }
 
+    ownsResource(routerId, resource) {
+        return this.urlService.ownsResource(routerId, resource);
+    }
+
     getUrlByResourceId(id, options) {
         return this.urlService.getUrlByResourceId(id, options);
+    }
+
+    getUrlForResource(resource, options) {
+        return this.urlService.getUrlForResource(resource, options);
     }
 
     getResourceById(resourceId) {
