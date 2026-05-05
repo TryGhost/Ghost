@@ -125,7 +125,7 @@
     "@tryghost/mongo-utils": "0.6.3",
     "@tryghost/mw-error-handler": "1.0.13",
     "@tryghost/mw-vhost": "1.0.6",
-    "@tryghost/nodemailer": "0.3.48",
+    "@tryghost/nodemailer": "2.2.0",
     "@tryghost/nql": "0.12.10",
     "@tryghost/nql-lang": "0.6.4",
     "@tryghost/parse-email-address": "workspace:*",
