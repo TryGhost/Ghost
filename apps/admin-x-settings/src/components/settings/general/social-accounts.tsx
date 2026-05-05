@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
 import {SOCIAL_PLATFORM_CONFIGS, SOCIAL_PLATFORM_KEYS, getSocialValidationError, normalizeSocialInput} from '../../../utils/social-urls';
@@ -8,9 +8,6 @@ import type {Setting} from '@tryghost/admin-x-framework/api/settings';
 import type {SocialPlatformKey} from '../../../utils/social-urls';
 
 const LEGACY_PLATFORM_KEYS: SocialPlatformKey[] = ['facebook', 'twitter'];
-const NEW_PLATFORM_KEYS: SocialPlatformKey[] = SOCIAL_PLATFORM_KEYS.filter(
-    key => !LEGACY_PLATFORM_KEYS.includes(key)
-);
 
 const getSocialUrls = (localSettings: Setting[] | null) => {
     const socialHandles = getSettingValues<string | null>(localSettings, [...SOCIAL_PLATFORM_KEYS]);
@@ -36,13 +33,10 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [urls, setUrls] = useState<Record<SocialPlatformKey, string>>(() => getSocialUrls(localSettings));
 
     const handles = getSettingValues<string | null>(localSettings, [...SOCIAL_PLATFORM_KEYS]);
-    const backendSupportsNewPlatforms = NEW_PLATFORM_KEYS.some(key => localSettings?.some(s => s.key === key));
 
-    const visiblePlatforms = useMemo(() => {
-        return backendSupportsNewPlatforms
-            ? SOCIAL_PLATFORM_CONFIGS
-            : SOCIAL_PLATFORM_CONFIGS.filter(config => LEGACY_PLATFORM_KEYS.includes(config.key));
-    }, [backendSupportsNewPlatforms]);
+    const visiblePlatforms = SOCIAL_PLATFORM_CONFIGS.filter((config) => {
+        return LEGACY_PLATFORM_KEYS.includes(config.key) || (localSettings?.some(s => s.key === config.key) ?? false);
+    });
 
     // Depend on stored values, not the localSettings reference (which churns on every updateSetting).
     useEffect(() => {
