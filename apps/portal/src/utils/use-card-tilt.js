@@ -52,9 +52,13 @@ export default function useCardTilt({maxTilt = 3, trackTransition = 'transform 8
         if (halfWidth === 0 || halfHeight === 0) {
             return;
         }
+        // Clamp to ±1: the mouse handlers are attached to the whole column,
+        // so the cursor can be well outside the card bounds — without
+        // clamping the rotation would exceed maxTilt near the column edges.
+        const clamp = value => Math.max(-1, Math.min(1, value));
         targetRef.current = {
-            x: (event.clientX - rect.left - halfWidth) / halfWidth,
-            y: (event.clientY - rect.top - halfHeight) / halfHeight
+            x: clamp((event.clientX - rect.left - halfWidth) / halfWidth),
+            y: clamp((event.clientY - rect.top - halfHeight) / halfHeight)
         };
         isHoveringRef.current = true;
         schedule();
