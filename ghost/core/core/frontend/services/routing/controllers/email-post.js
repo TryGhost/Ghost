@@ -48,7 +48,7 @@ module.exports = function emailPostController(req, res, next) {
             }
 
             if (post.status === 'published') {
-                return urlUtils.redirect301(res, routerManager.getUrlByResourceId(post.id, {withSubdirectory: true}));
+                return urlUtils.redirect301(res, routerManager.getUrlForResource(post, {withSubdirectory: true}));
             }
 
             return renderer.renderEntry(req, res)(post);

@@ -51,7 +51,7 @@ module.exports = function previewController(req, res, next) {
 
             // published content should only resolve to /:slug - /p/:uuid is for drafts only in lieu of an actual preview api
             if (post.status === 'published') {
-                return urlUtils.redirect301(res, routerManager.getUrlByResourceId(post.id, {withSubdirectory: true}));
+                return urlUtils.redirect301(res, routerManager.getUrlForResource(post, {withSubdirectory: true}));
             }
 
             // once an email-only post has been sent it shouldn't be available via /p/ to avoid leaking members-only content

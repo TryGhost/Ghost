@@ -73,7 +73,7 @@ module.exports = function collectionController(req, res, next) {
              * People should always invert their filters to ensure that the database query loads unique posts per collection.
              */
             result.posts = _.filter(result.posts, (post) => {
-                if (routerManager.owns(res.routerOptions.identifier, post.id)) {
+                if (routerManager.ownsResource(res.routerOptions.identifier, post)) {
                     return post;
                 }
 
