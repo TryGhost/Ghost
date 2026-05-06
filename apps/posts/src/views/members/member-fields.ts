@@ -1,18 +1,10 @@
-import moment from 'moment-timezone';
+import {DATE_FILTER_OPERATORS, DEFAULT_DATE_OPERATOR} from '../filters/filter-date';
+import {dateCodec, numberCodec, scalarCodec, setCodec, textCodec} from '../filters/filter-codecs';
 import {defineFields} from '../filters/filter-types';
 import {escapeNqlString} from '../filters/filter-normalization';
-import {numberCodec, scalarCodec, setCodec, textCodec} from '../filters/filter-codecs';
 import type {FilterCodec} from '../filters/filter-types';
 
-function getDayBoundsInUtc(date: string, timezone: string): {start: string; end: string} {
-    const start = moment.tz(date, 'YYYY-MM-DD', timezone).startOf('day').utc().toISOString();
-    const end = moment.tz(date, 'YYYY-MM-DD', timezone).endOf('day').utc().toISOString();
-
-    return {start, end};
-}
-
 const TEXT_OPERATORS = ['is', 'contains', 'does-not-contain', 'starts-with', 'ends-with'] as const;
-const DATE_OPERATORS = ['is-less', 'is-or-less', 'is-greater', 'is-or-greater'] as const;
 const NUMBER_OPERATORS = ['is', 'is-greater', 'is-less'] as const;
 const SCALAR_OPERATORS = ['is', 'is-not'] as const;
 const SET_OPERATORS = ['is-any', 'is-not-any'] as const;
@@ -25,78 +17,6 @@ const SUBSCRIPTION_STATUS_OPTIONS: Array<{value: string; label: string}> = [
     {value: 'incomplete', label: 'Incomplete'},
     {value: 'incomplete_expired', label: 'Incomplete - Expired'}
 ];
-
-function formatDateValue(value: unknown, timezone: string): string | null {
-    if (typeof value !== 'string' || !value) {
-        return null;
-    }
-
-    const legacyUtc = moment.utc(value, ['YYYY-MM-DD HH:mm:ss.SSS', 'YYYY-MM-DD HH:mm:ss'], true);
-
-    if (legacyUtc.isValid()) {
-        return legacyUtc.tz(timezone).format('YYYY-MM-DD');
-    }
-
-    const parsed = moment.tz(value, moment.ISO_8601, true, timezone);
-
-    if (!parsed.isValid()) {
-        return null;
-    }
-
-    return parsed.format('YYYY-MM-DD');
-}
-
-const memberDateCodec: FilterCodec = {
-    parse(node, ctx) {
-        const entry = Object.entries(node as Record<string, unknown>)[0];
-
-        if (!entry || entry[0] !== ctx.key || typeof entry[1] !== 'object' || entry[1] === null) {
-            return null;
-        }
-
-        const [operator, rawValue] = Object.entries(entry[1] as Record<string, unknown>)[0] ?? [];
-        const value = formatDateValue(rawValue, ctx.timezone);
-
-        if (!value) {
-            return null;
-        }
-
-        switch (operator) {
-        case '$lt':
-            return {field: ctx.key, operator: 'is-less', values: [value]};
-        case '$lte':
-            return {field: ctx.key, operator: 'is-or-less', values: [value]};
-        case '$gt':
-            return {field: ctx.key, operator: 'is-greater', values: [value]};
-        case '$gte':
-            return {field: ctx.key, operator: 'is-or-greater', values: [value]};
-        default:
-            return null;
-        }
-    },
-    serialize(predicate, ctx) {
-        const value = predicate.values[0];
-
-        if (typeof value !== 'string' || !value) {
-            return null;
-        }
-
-        const {start, end} = getDayBoundsInUtc(value, ctx.timezone);
-
-        switch (predicate.operator) {
-        case 'is-less':
-            return [`${ctx.key}:<'${start}'`];
-        case 'is-or-less':
-            return [`${ctx.key}:<='${end}'`];
-        case 'is-greater':
-            return [`${ctx.key}:>'${end}'`];
-        case 'is-or-greater':
-            return [`${ctx.key}:>='${start}'`];
-        default:
-            return null;
-        }
-    }
-};
 
 const subscribedCodec: FilterCodec = {
     parse() {
@@ -226,24 +146,24 @@ export const memberFields = defineFields({
         codec: subscribedCodec
     },
     last_seen_at: {
-        operators: DATE_OPERATORS,
+        operators: DATE_FILTER_OPERATORS,
         ui: {
             label: 'Last seen',
             type: 'date',
-            defaultOperator: 'is-or-less',
+            defaultOperator: DEFAULT_DATE_OPERATOR,
             className: 'w-40'
         },
-        codec: memberDateCodec
+        codec: dateCodec()
     },
     created_at: {
-        operators: DATE_OPERATORS,
+        operators: DATE_FILTER_OPERATORS,
         ui: {
             label: 'Created',
             type: 'date',
-            defaultOperator: 'is-or-less',
+            defaultOperator: DEFAULT_DATE_OPERATOR,
             className: 'w-40'
         },
-        codec: memberDateCodec
+        codec: dateCodec()
     },
     signup: {
         operators: SCALAR_OPERATORS,
@@ -340,11 +260,11 @@ export const memberFields = defineFields({
         codec: scalarCodec()
     },
     'subscriptions.start_date': {
-        operators: DATE_OPERATORS,
+        operators: DATE_FILTER_OPERATORS,
         ui: {
             label: 'Paid start date',
             type: 'date',
-            defaultOperator: 'is-or-less',
+            defaultOperator: DEFAULT_DATE_OPERATOR,
             className: 'w-40'
         },
         metadata: {
@@ -354,14 +274,14 @@ export const memberFields = defineFields({
                 include: 'subscriptions'
             }
         },
-        codec: memberDateCodec
+        codec: dateCodec()
     },
     'subscriptions.current_period_end': {
-        operators: DATE_OPERATORS,
+        operators: DATE_FILTER_OPERATORS,
         ui: {
             label: 'Next billing date',
             type: 'date',
-            defaultOperator: 'is-or-less',
+            defaultOperator: DEFAULT_DATE_OPERATOR,
             className: 'w-40'
         },
         metadata: {
@@ -371,7 +291,7 @@ export const memberFields = defineFields({
                 include: 'subscriptions'
             }
         },
-        codec: memberDateCodec
+        codec: dateCodec()
     },
     conversion: {
         operators: SCALAR_OPERATORS,

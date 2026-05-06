@@ -1,8 +1,10 @@
 import React, {useMemo} from 'react';
-import moment from 'moment-timezone';
+import {DATE_OPERATOR_LABELS} from '../filters/filter-date';
 import {FilterFieldConfig, FilterFieldGroup, FilterOption, ValueSource} from '@tryghost/shade/patterns';
 import {LabelFilterRenderer} from '@src/components/label-picker';
 import {LucideIcon} from '@tryghost/shade/utils';
+import {createOperatorOptions} from '../filters/filter-operator-options';
+import {getTodayInTimezone} from '../filters/filter-normalization';
 import {memberFields} from './member-fields';
 import type {Offer} from '@tryghost/admin-x-framework/api/offers';
 
@@ -27,31 +29,11 @@ interface UseMemberFilterFieldsOptions {
 type OfferOption = FilterOption<string>;
 type SearchableFieldOverrides = Pick<FilterFieldConfig, 'options' | 'valueSource'>;
 
-interface OperatorOption {
-    value: string;
-    label: string;
-}
-
-function createOperatorOptions(
-    operators: readonly string[],
-    options: {labels?: Record<string, string>} = {}
-): OperatorOption[] {
-    const labels = options.labels || {};
-
-    return operators.map(operator => ({
-        value: operator,
-        label: labels[operator] ?? operator.replaceAll('-', ' ')
-    }));
-}
-
 const MEMBER_OPERATOR_LABELS: Record<string, string> = {
     'is-any': 'is any of',
     'is-not-any': 'is none of',
     'does-not-contain': 'does not contain',
-    'is-less': 'before',
-    'is-or-less': 'on or before',
-    'is-greater': 'after',
-    'is-or-greater': 'on or after',
+    ...DATE_OPERATOR_LABELS,
     1: 'More like this',
     0: 'Less like this'
 };
@@ -311,7 +293,7 @@ export function useMemberFilterFields({
         const hiddenHydratedNewsletters = visibleHydratedNewsletters.filter(newsletter => !activeNewsletterSlugs.has(newsletter.slug));
         const offerOptions = buildOfferOptions(offers);
         const offerLabels = createOfferLabelMap(offers);
-        const today = moment.tz(siteTimezone).format('YYYY-MM-DD');
+        const today = getTodayInTimezone(siteTimezone);
 
         const basicFields: FilterFieldConfig[] = [
             createFieldConfig('name'),
