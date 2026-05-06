@@ -130,7 +130,9 @@ const FocusedThread: React.FC<Props> = ({comments, focusedThreadId}) => {
                 </button>
             </div>
 
-            <CommentComponent comment={focusedAsRoot} />
+            <div id={focusedAsRoot.id}>
+                <CommentComponent comment={focusedAsRoot} />
+            </div>
         </div>
     );
 };

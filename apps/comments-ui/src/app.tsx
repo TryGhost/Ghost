@@ -27,6 +27,35 @@ function isCommentLoaded(comments: Comment[], targetId: string): boolean {
     return comments.some(c => c.id === targetId || c.replies?.some(r => r.id === targetId));
 }
 
+// Mirror of MAX_NESTING_DEPTH in threaded-replies.tsx — replies past this depth
+// are collapsed behind a "more replies" button rather than rendered inline.
+const MAX_INLINE_REPLY_DEPTH = 3;
+
+/**
+ * If a permalinked reply sits below the inline-render depth, return its id so
+ * the app can enter focused-thread mode on it. Returns null otherwise.
+ */
+function getFocusedThreadIdForDeepReply(comments: Comment[], targetId: string): string | null {
+    for (const topLevel of comments) {
+        const replies = topLevel.replies || [];
+        const target = replies.find(r => r.id === targetId);
+        if (!target) {
+            continue;
+        }
+
+        const byId = new Map(replies.map(r => [r.id, r]));
+        let depth = 1;
+        let current: Comment | undefined = target;
+        while (current?.in_reply_to_id && byId.has(current.in_reply_to_id)) {
+            depth += 1;
+            current = byId.get(current.in_reply_to_id);
+        }
+
+        return depth > MAX_INLINE_REPLY_DEPTH ? targetId : null;
+    }
+    return null;
+}
+
 const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
     const options = useOptions(scriptTag);
     const [state, setFullState] = useState<EditableAppContext>({
@@ -287,6 +316,13 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
             const isPaidMember = !!member?.paid;
             const hasRequiredTier = isPaidMember || !isPaidOnly;
 
+            // If the permalink target is nested deeper than ThreadedReplies
+            // can render inline, auto-enter focused-thread mode on it so the
+            // reply is visible.
+            const focusedThreadId = scrollTargetFound && initialCommentId
+                ? getFocusedThreadIdForDeepReply(comments, initialCommentId)
+                : null;
+
             setState({
                 member,
                 initStatus: 'success',
@@ -299,6 +335,7 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
                 commentIdToHighlight: null,
                 commentIdToScrollTo: scrollTargetFound ? initialCommentId : null,
                 showMissingCommentNotice: !!initialCommentId && !scrollTargetFound,
+                focusedThreadId,
                 supportEmail,
                 isMember,
                 isPaidOnly,

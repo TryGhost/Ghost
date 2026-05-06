@@ -47,13 +47,15 @@ const TreeNode: React.FC<{
     }
 
     return (
-        <CommentComponent
-            comment={node}
-            hasTreeChildren={hasChildren}
-            parent={rootComment}
-            treeChildren={childElements}
-            treeChildrenCompact={hasChildren && atMaxDepth}
-        />
+        <div id={node.id}>
+            <CommentComponent
+                comment={node}
+                hasTreeChildren={hasChildren}
+                parent={rootComment}
+                treeChildren={childElements}
+                treeChildrenCompact={hasChildren && atMaxDepth}
+            />
+        </div>
     );
 };
 

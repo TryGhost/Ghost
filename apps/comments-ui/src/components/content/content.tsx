@@ -172,8 +172,14 @@ const Content = () => {
             return;
         }
 
+        // When entered via permalink, the per-comment scroll/highlight effect
+        // handles positioning instead — let it take over.
+        if (commentIdToScrollTo) {
+            return;
+        }
+
         containerRef.current.scrollIntoView({behavior: 'smooth', block: 'start'});
-    }, [focusedThreadId]);
+    }, [focusedThreadId, commentIdToScrollTo]);
 
     const isFirst = pagination?.total === 0;
     const canComment = isMember && hasRequiredTier && !isCommentingDisabled;
