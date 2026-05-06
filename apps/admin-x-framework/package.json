@@ -85,6 +85,7 @@
         "eslint": "catalog:",
         "eslint-plugin-react-hooks": "4.6.2",
         "eslint-plugin-react-refresh": "0.4.24",
+        "eslint-plugin-tailwindcss": "4.0.0-beta.0",
         "glob": "^10.5.0",
         "jsdom": "28.1.0",
         "msw": "2.12.14",
