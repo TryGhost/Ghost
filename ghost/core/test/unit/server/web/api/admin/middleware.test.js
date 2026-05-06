@@ -1,247 +1,222 @@
-const assert = require('node:assert/strict');
-const sinon = require('sinon');
-const errors = require('@tryghost/errors');
+const express = require('express');
+const request = require('supertest');
 
 // Module under test
 const middleware = require('../../../../../../core/server/web/api/endpoints/admin/middleware');
 
+const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
+
+const createApiKey = (userId) => {
+    return {
+        get(field) {
+            if (field === 'user_id') {
+                return userId;
+            }
+        }
+    };
+};
+
+const createApp = ({apiKey = null, user = null} = {}) => {
+    const app = express();
+
+    app.use((req, res, next) => {
+        req.api_key = apiKey;
+        req.user = user;
+        next();
+    });
+
+    app.use(tokenPermissionCheck);
+
+    app.use((req, res) => {
+        res.json({ok: true});
+    });
+
+    app.use((err, req, res, _next) => {
+        void _next;
+
+        res.status(err.statusCode || 500).json({
+            error: {
+                message: err.message,
+                statusCode: err.statusCode
+            }
+        });
+    });
+
+    return app;
+};
+
 describe('Admin API Middleware', function () {
     describe('tokenPermissionCheck', function () {
-        let req, res, next;
-
-        beforeEach(function () {
-            req = {
-                method: 'GET',
-                path: '/posts/',
-                url: '/posts',
-                query: {}
-            };
-            res = {};
-            next = sinon.stub();
-        });
-
-        afterEach(function () {
-            sinon.restore();
-        });
-
         describe('User Authentication (no API key)', function () {
-            it('should call next() when user is authenticated without API key', function () {
-                req.api_key = null;
-                req.user = {id: 'abcd1234'};
-
-                // Get the notImplemented middleware from the authAdminApi array
-                const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
-                tokenPermissionCheck(req, res, next);
-
-                sinon.assert.calledOnce(next);
-                assert.equal(next.firstCall.args.length, 0);
+            it('should call next() when user is authenticated without API key', async function () {
+                await request(createApp({
+                    user: {id: 'abcd1234'}
+                }))
+                    .get('/posts')
+                    .expect(200)
+                    .expect({ok: true});
             });
         });
 
         describe('Staff Token Authentication', function () {
-            beforeEach(function () {
-                // Mock api_key as a Bookshelf model with get() method
-                req.api_key = {
-                    get: sinon.stub().withArgs('user_id').returns('abcd1234')
-                };
-                req.user = {id: 'abcd1234', role: 'Editor'};
+            const app = createApp({
+                apiKey: createApiKey('abcd1234'),
+                user: {id: 'abcd1234', role: 'Editor'}
             });
 
-            it('should allow staff tokens to access regular endpoints', function () {
-                req.path = '/posts/';
-                req.method = 'GET';
-
-                const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
-                tokenPermissionCheck(req, res, next);
-
-                sinon.assert.calledOnce(next);
-                assert.equal(next.firstCall.args.length, 0);
+            it('should allow staff tokens to access regular endpoints', async function () {
+                await request(app)
+                    .get('/posts/')
+                    .expect(200)
+                    .expect({ok: true});
             });
 
-            it('should block staff tokens from DELETE /db/ endpoint', function () {
-                req.path = '/db/';
-                req.method = 'DELETE';
-
-                const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
-                tokenPermissionCheck(req, res, next);
-
-                sinon.assert.calledOnce(next);
-                const error = next.firstCall.args[0];
-                assert.equal(error instanceof errors.NoPermissionError, true);
-                assert.equal(error.message, 'Staff tokens are not allowed to access this endpoint');
+            it('should block staff tokens from DELETE /db/ endpoint', async function () {
+                await request(app)
+                    .delete('/db/')
+                    .expect(403)
+                    .expect({
+                        error: {
+                            message: 'Staff tokens are not allowed to access this endpoint',
+                            statusCode: 403
+                        }
+                    });
             });
 
-            it('should block staff tokens from PUT /users/owner/ endpoint', function () {
-                req.path = '/users/owner/';
-                req.method = 'PUT';
-
-                const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
-                tokenPermissionCheck(req, res, next);
-
-                sinon.assert.calledOnce(next);
-                const error = next.firstCall.args[0];
-                assert.equal(error instanceof errors.NoPermissionError, true);
-                assert.equal(error.message, 'Staff tokens are not allowed to access this endpoint');
+            it('should block staff tokens from PUT /users/owner/ endpoint', async function () {
+                await request(app)
+                    .put('/users/owner/')
+                    .expect(403)
+                    .expect({
+                        error: {
+                            message: 'Staff tokens are not allowed to access this endpoint',
+                            statusCode: 403
+                        }
+                    });
             });
 
-            it('should allow staff tokens to POST to /db/ endpoint', function () {
-                req.path = '/db/';
-                req.method = 'POST';
-
-                const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
-                tokenPermissionCheck(req, res, next);
-
-                sinon.assert.calledOnce(next);
-                assert.equal(next.firstCall.args.length, 0);
+            it('should allow staff tokens to POST to /db/ endpoint', async function () {
+                await request(app)
+                    .post('/db/')
+                    .expect(200)
+                    .expect({ok: true});
             });
 
-            it('should allow staff tokens to GET /users/owner/ endpoint', function () {
-                req.path = '/users/owner/';
-                req.method = 'GET';
-
-                const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
-                tokenPermissionCheck(req, res, next);
-
-                sinon.assert.calledOnce(next);
-                assert.equal(next.firstCall.args.length, 0);
+            it('should allow staff tokens to GET /users/owner/ endpoint', async function () {
+                await request(app)
+                    .get('/users/owner/')
+                    .expect(200)
+                    .expect({ok: true});
             });
 
-            it('should allow staff tokens to access endpoints without trailing slash', function () {
-                req.path = '/posts';
-                req.method = 'GET';
-
-                const notImplemented = middleware.authAdminApi[middleware.authAdminApi.length - 1];
-                notImplemented(req, res, next);
-
-                sinon.assert.calledOnce(next);
-                assert.equal(next.firstCall.args.length, 0);
+            it('should allow staff tokens to access endpoints without trailing slash', async function () {
+                await request(app)
+                    .get('/posts')
+                    .expect(200)
+                    .expect({ok: true});
             });
 
-            it('should block staff tokens from DELETE /db (without trailing slash)', function () {
-                req.path = '/db';
-                req.method = 'DELETE';
-
-                const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
-                tokenPermissionCheck(req, res, next);
-
-                sinon.assert.calledOnce(next);
-                const error = next.firstCall.args[0];
-                assert.equal(error instanceof errors.NoPermissionError, true);
-                assert.equal(error.message, 'Staff tokens are not allowed to access this endpoint');
+            it('should block staff tokens from DELETE /db (without trailing slash)', async function () {
+                await request(app)
+                    .delete('/db')
+                    .expect(403)
+                    .expect({
+                        error: {
+                            message: 'Staff tokens are not allowed to access this endpoint',
+                            statusCode: 403
+                        }
+                    });
             });
 
-            it('should block staff tokens from PUT /users/owner (without trailing slash)', function () {
-                req.path = '/users/owner';
-                req.method = 'PUT';
-
-                const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
-                tokenPermissionCheck(req, res, next);
-
-                sinon.assert.calledOnce(next);
-                const error = next.firstCall.args[0];
-                assert.equal(error instanceof errors.NoPermissionError, true);
-                assert.equal(error.message, 'Staff tokens are not allowed to access this endpoint');
+            it('should block staff tokens from PUT /users/owner (without trailing slash)', async function () {
+                await request(app)
+                    .put('/users/owner')
+                    .expect(403)
+                    .expect({
+                        error: {
+                            message: 'Staff tokens are not allowed to access this endpoint',
+                            statusCode: 403
+                        }
+                    });
             });
         });
 
         describe('Integration Token Authentication', function () {
-            beforeEach(function () {
-                // Mock api_key as a Bookshelf model with get() method that returns null for user_id
-                req.api_key = {
-                    get: sinon.stub().withArgs('user_id').returns(null)
-                };
-                req.user = null; // Integration tokens don't have associated users
+            const app = createApp({
+                apiKey: createApiKey(null)
             });
 
-            it('should allow integration tokens to access allowlisted endpoints', function () {
-                req.url = '/posts';
-                req.method = 'GET';
-
-                const notImplemented = middleware.authAdminApi[middleware.authAdminApi.length - 1];
-                notImplemented(req, res, next);
-
-                sinon.assert.calledOnce(next);
-                assert.equal(next.firstCall.args.length, 0);
+            it('should allow integration tokens to access allowlisted endpoints', async function () {
+                await request(app)
+                    .get('/posts')
+                    .expect(200)
+                    .expect({ok: true});
             });
 
-            it('should block integration tokens from non-allowlisted endpoints', function () {
-                req.url = '/non-existent';
-                req.method = 'GET';
-
-                const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
-                tokenPermissionCheck(req, res, next);
-
-                sinon.assert.calledOnce(next);
-                const error = next.firstCall.args[0];
-                assert.equal(error instanceof errors.NoPermissionError, true);
-                assert.equal(error.statusCode, 403);
+            it('should block integration tokens from non-allowlisted endpoints', async function () {
+                await request(app)
+                    .get('/non-existent')
+                    .expect(403)
+                    .expect({
+                        error: {
+                            message: 'API tokens do not have permission to access this endpoint',
+                            statusCode: 403
+                        }
+                    });
             });
 
-            it('should allow integration tokens to POST to /db endpoint', function () {
-                req.url = '/db';
-                req.method = 'POST';
-
-                const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
-                tokenPermissionCheck(req, res, next);
-
-                sinon.assert.calledOnce(next);
-                assert.equal(next.firstCall.args.length, 0);
+            it('should allow integration tokens to POST to /db endpoint', async function () {
+                await request(app)
+                    .post('/db')
+                    .expect(200)
+                    .expect({ok: true});
             });
 
-            it('should block integration tokens from DELETE /db endpoint', function () {
-                req.url = '/db';
-                req.method = 'DELETE';
-
-                const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
-                tokenPermissionCheck(req, res, next);
-
-                sinon.assert.calledOnce(next);
-                const error = next.firstCall.args[0];
-                assert.equal(error instanceof errors.NoPermissionError, true);
-                assert.equal(error.statusCode, 403);
+            it('should block integration tokens from DELETE /db endpoint', async function () {
+                await request(app)
+                    .delete('/db')
+                    .expect(403)
+                    .expect({
+                        error: {
+                            message: 'API tokens do not have permission to access this endpoint',
+                            statusCode: 403
+                        }
+                    });
             });
         });
 
         describe('God Mode', function () {
-            it('should allow access in development with god_mode query param', function () {
-                const originalEnv = process.env.NODE_ENV;
-                process.env.NODE_ENV = 'development';
+            const originalEnv = process.env.NODE_ENV;
 
-                req.api_key = {
-                    get: sinon.stub().withArgs('user_id').returns(null)
-                };
-                req.user = null;
-                req.query.god_mode = 'true';
-                req.url = '/non-existent';
-
-                const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
-                tokenPermissionCheck(req, res, next);
-
-                sinon.assert.calledOnce(next);
-                assert.equal(next.firstCall.args.length, 0);
-
+            afterEach(function () {
                 process.env.NODE_ENV = originalEnv;
             });
 
-            it('should not allow god mode in production', function () {
-                const originalEnv = process.env.NODE_ENV;
+            it('should allow access in development with god_mode query param', async function () {
+                process.env.NODE_ENV = 'development';
+
+                await request(createApp({
+                    apiKey: createApiKey(null)
+                }))
+                    .get('/non-existent?god_mode=true')
+                    .expect(200)
+                    .expect({ok: true});
+            });
+
+            it('should not allow god mode in production', async function () {
                 process.env.NODE_ENV = 'production';
 
-                req.api_key = {
-                    get: sinon.stub().withArgs('user_id').returns(null)
-                };
-                req.user = null;
-                req.query.god_mode = 'true';
-                req.url = '/non-existent';
-
-                const tokenPermissionCheck = middleware.authAdminApi[middleware.authAdminApi.length - 1];
-                tokenPermissionCheck(req, res, next);
-
-                sinon.assert.calledOnce(next);
-                const error = next.firstCall.args[0];
-                assert.equal(error instanceof errors.NoPermissionError, true);
-
-                process.env.NODE_ENV = originalEnv;
+                await request(createApp({
+                    apiKey: createApiKey(null)
+                }))
+                    .get('/non-existent?god_mode=true')
+                    .expect(403)
+                    .expect({
+                        error: {
+                            message: 'API tokens do not have permission to access this endpoint',
+                            statusCode: 403
+                        }
+                    });
             });
         });
     });
