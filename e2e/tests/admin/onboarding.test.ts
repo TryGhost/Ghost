@@ -7,9 +7,9 @@ type ChecklistState = 'pending' | 'started' | 'completed' | 'dismissed';
 const allSteps = ['customize-design', 'first-post', 'build-audience', 'share-publication'];
 const activeStartedAt = '2026-05-01T00:00:00.000Z';
 const navigationSteps: Array<[string, RegExp]> = [
-    ['customize-design', /\/ghost\/#\/settings\/design\/edit\?ref=setup/],
-    ['first-post', /\/ghost\/#\/editor\/post/],
-    ['build-audience', /\/ghost\/#\/members/]
+    ['customize-design', /\/ghost\/(?:\?[^#]*)?#\/settings\/design\/edit\?ref=setup/],
+    ['first-post', /\/ghost\/(?:\?[^#]*)?#\/editor\/post/],
+    ['build-audience', /\/ghost\/(?:\?[^#]*)?#\/members/]
 ];
 
 test.use({isolation: 'per-test'});
@@ -72,14 +72,15 @@ async function startOnboarding(page: Page) {
 }
 
 test.describe('Ghost Admin - Onboarding Checklist', () => {
-    test('new owner setup flow lands on onboarding', async ({page}) => {
+    test('firstStart root redirect lands on onboarding', async ({page}) => {
         await setOnboardingState(page, 'pending', ['customize-design']);
 
-        await page.goto('/ghost/#/setup/done');
+        await page.goto('/ghost/#/?firstStart=true&sr_id=test-site&ssts=1778061878&ssml=test-signature');
 
         const onboardingPage = new OnboardingPage(page);
         await expect(onboardingPage.checklist).toBeVisible();
         await expectOnboardingRoute(page);
+        await expect(page).not.toHaveURL(/\/ghost\/#\/setup\/done/);
 
         const preferences = await getOnboardingPreferences(page);
         expect(preferences).toMatchObject({
