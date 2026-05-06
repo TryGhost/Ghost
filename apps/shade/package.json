@@ -75,7 +75,6 @@
         "@storybook/addon-links": "10.3.5",
         "@storybook/react-vite": "10.3.5",
         "@tailwindcss/postcss": "4.2.1",
-        "@tailwindcss/vite": "4.2.1",
         "@testing-library/react": "14.3.1",
         "@types/node": "22.19.17",
         "@types/react-world-flags": "1.6.0",
