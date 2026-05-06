@@ -6,6 +6,11 @@ const urlUtils = require('../../../../../core/shared/url-utils');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const giftServiceWrapper = require('../../../../../core/server/services/gifts');
 
+// Initialise i18n before requiring the controller so its destructured `t`
+// import resolves to the live i18next instance. The init helper falls back
+// to 'en' when the locale setting isn't set.
+require('../../../../../core/server/services/i18n').init();
+
 const controller = require('../../../../../core/server/web/gift-preview/controller');
 
 describe('Gift Preview Controller', function () {
