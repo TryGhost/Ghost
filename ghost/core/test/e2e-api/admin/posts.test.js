@@ -30,6 +30,19 @@ const matchPostShallowIncludes = {
     published_at: anyISODateTime
 };
 
+const matchPostExportHeaders = {
+    'content-version': anyContentVersion,
+    'cache-control': 'no-transform',
+    'content-disposition': stringMatching(/^attachment; filename="post-analytics\.\d{4}-\d{2}-\d{2}\.csv"$/)
+};
+
+const postExportCsvReplacements = [
+    {
+        match: /\d{4}-\d{2}-\d{2}(?:T| )\d{2}:\d{2}:\d{2}(?:\.000Z)?/g,
+        replacement: '2050-01-01T00:00:00.000Z'
+    }
+];
+
 function testCleanedSnapshot(text, ignoreReplacements) {
     for (const {match, replacement} of ignoreReplacements) {
         if (match instanceof RegExp) {
@@ -139,73 +152,37 @@ describe('Posts API', function () {
         it('Can export', async function () {
             const {text} = await agent.get('posts/export')
                 .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag,
-                    'content-disposition': stringMatching(/^Attachment; filename="post-analytics.\d{4}-\d{2}-\d{2}.csv"$/)
-                });
+                .matchHeaderSnapshot(matchPostExportHeaders);
 
             // body snapshot doesn't work with text/csv
-            testCleanedSnapshot(text, [
-                {
-                    match: /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z/g,
-                    replacement: '2050-01-01T00:00:00.000Z'
-                }
-            ]);
+            testCleanedSnapshot(text, postExportCsvReplacements);
         });
 
         it('Can export with order', async function () {
             const {text} = await agent.get('posts/export?order=published_at%20ASC')
                 .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag,
-                    'content-disposition': stringMatching(/^Attachment; filename="post-analytics.\d{4}-\d{2}-\d{2}.csv"$/)
-                });
+                .matchHeaderSnapshot(matchPostExportHeaders);
 
             // body snapshot doesn't work with text/csv
-            testCleanedSnapshot(text, [
-                {
-                    match: /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z/g,
-                    replacement: '2050-01-01T00:00:00.000Z'
-                }
-            ]);
+            testCleanedSnapshot(text, postExportCsvReplacements);
         });
 
         it('Can export with limit', async function () {
             const {text} = await agent.get('posts/export?limit=1')
                 .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag,
-                    'content-disposition': stringMatching(/^Attachment; filename="post-analytics.\d{4}-\d{2}-\d{2}.csv"$/)
-                });
+                .matchHeaderSnapshot(matchPostExportHeaders);
 
             // body snapshot doesn't work with text/csv
-            testCleanedSnapshot(text, [
-                {
-                    match: /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z/g,
-                    replacement: '2050-01-01T00:00:00.000Z'
-                }
-            ]);
+            testCleanedSnapshot(text, postExportCsvReplacements);
         });
 
         it('Can export with filter', async function () {
             const {text} = await agent.get('posts/export?filter=featured:true')
                 .expectStatus(200)
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag,
-                    'content-disposition': stringMatching(/^Attachment; filename="post-analytics.\d{4}-\d{2}-\d{2}.csv"$/)
-                });
+                .matchHeaderSnapshot(matchPostExportHeaders);
 
             // body snapshot doesn't work with text/csv
-            testCleanedSnapshot(text, [
-                {
-                    match: /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z/g,
-                    replacement: '2050-01-01T00:00:00.000Z'
-                }
-            ]);
+            testCleanedSnapshot(text, postExportCsvReplacements);
         });
     });
 

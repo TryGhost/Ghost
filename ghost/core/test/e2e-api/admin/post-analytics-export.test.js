@@ -1,6 +1,6 @@
 const {assertMatchSnapshot} = require('../../utils/assertions');
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
-const {anyContentVersion, anyEtag, stringMatching} = matchers;
+const {anyContentVersion, stringMatching} = matchers;
 const models = require('../../../core/server/models');
 const escapeRegExp = require('lodash/escapeRegExp');
 
@@ -17,7 +17,7 @@ function testCleanedSnapshot(text, ignoreReplacements) {
 
 const csvReplacements = [
     {
-        match: /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.000Z/g,
+        match: /\d{4}-\d{2}-\d{2}(?:T| )\d{2}:\d{2}:\d{2}(?:\.000Z)?/g,
         replacement: '2050-01-01T00:00:00.000Z'
     },
     {
@@ -29,8 +29,8 @@ const csvReplacements = [
 
 const matchExportHeaders = {
     'content-version': anyContentVersion,
-    etag: anyEtag,
-    'content-disposition': stringMatching(/^Attachment; filename="post-analytics.\d{4}-\d{2}-\d{2}.csv"$/)
+    'cache-control': 'no-transform',
+    'content-disposition': stringMatching(/^attachment; filename="post-analytics\.\d{4}-\d{2}-\d{2}\.csv"$/)
 };
 
 describe('Post Analytics Export', function () {
