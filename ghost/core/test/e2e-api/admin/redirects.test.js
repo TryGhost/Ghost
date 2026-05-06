@@ -4,6 +4,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const localUtils = require('./utils');
 const config = require('../../../core/shared/config');
+const {parseYaml} = require('../../../core/server/services/custom-redirects/redirect-config-parser');
 
 describe('Redirects API', function () {
     let request;
@@ -20,34 +21,38 @@ describe('Redirects API', function () {
         return request
             .get(localUtils.API.getApiQuery('redirects/download/'))
             .set('Origin', config.get('url'))
-            .expect('Content-Type', /application\/json/)
-            .expect('Content-Disposition', 'Attachment; filename="redirects.json"')
+            .expect('Content-Type', /yaml/)
+            .expect('Content-Disposition', 'Attachment; filename="redirects.yaml"')
             .expect(200)
             .expect((res) => {
-                assert.deepEqual(res.body, [
-                    {from: '^/post/[0-9]+/([a-z0-9\\-]+)', to: '/$1'},
-                    {permanent: true, from: '/my-old-blog-post/', to: '/revamped-url/'},
-                    {permanent: true, from: '/test-params', to: '/result?q=abc'},
-                    {from: '^\\/what(\\/?)$', to: '/what-does-god-say'},
-                    {from: '^\\/search\\/label\\/([^\\%20]+)$', to: '/tag/$1'},
-                    {from: '^\\/topic\\/', to: '/'},
-                    {from: '^/resources\\/download(\\/?)$', to: '/shubal-stearns'},
-                    {from: '^/(?:capture1|capture2)/([A-Za-z0-9\\-]+)', to: '/$1'},
-                    {
-                        from: '^\\/[0-9]{4}\\/[0-9]{2}\\/([a-z0-9\\-]+)(\\.html)?(\\/)?$',
-                        to: '/$1'
-                    },
-                    {from: '^/prefix/([a-z0-9\\-]+)?', to: '/blog/$1'},
-                    {from: '/^\\/case-insensitive/i', to: '/redirected-insensitive'},
-                    {from: '^\\/Case-Sensitive', to: '/redirected-sensitive'},
-                    {from: '^\\/Default-Sensitive', to: '/redirected-default'},
-                    {from: '/external-url', to: 'https://ghost.org'},
-                    {from: '/external-url/(.*)', to: 'https://ghost.org/$1'}
+                // Download is YAML regardless of upload format. Round-trip the
+                // body through the parser to compare semantically rather than
+                // byte-for-byte (the YAML grouping reorders 301s and 302s
+                // relative to the JSON fixture, which is unimportant).
+                const redirects = parseYaml(res.text);
+                const sorted = [...redirects].sort((a, b) => a.from.localeCompare(b.from));
+
+                assert.deepEqual(sorted, [
+                    {from: '/^\\/case-insensitive/i', to: '/redirected-insensitive', permanent: false},
+                    {from: '/external-url', to: 'https://ghost.org', permanent: false},
+                    {from: '/external-url/(.*)', to: 'https://ghost.org/$1', permanent: false},
+                    {from: '/my-old-blog-post/', to: '/revamped-url/', permanent: true},
+                    {from: '/test-params', to: '/result?q=abc', permanent: true},
+                    {from: '^/(?:capture1|capture2)/([A-Za-z0-9\\-]+)', to: '/$1', permanent: false},
+                    {from: '^/post/[0-9]+/([a-z0-9\\-]+)', to: '/$1', permanent: false},
+                    {from: '^/prefix/([a-z0-9\\-]+)?', to: '/blog/$1', permanent: false},
+                    {from: '^/resources\\/download(\\/?)$', to: '/shubal-stearns', permanent: false},
+                    {from: '^\\/[0-9]{4}\\/[0-9]{2}\\/([a-z0-9\\-]+)(\\.html)?(\\/)?$', to: '/$1', permanent: false},
+                    {from: '^\\/Case-Sensitive', to: '/redirected-sensitive', permanent: false},
+                    {from: '^\\/Default-Sensitive', to: '/redirected-default', permanent: false},
+                    {from: '^\\/search\\/label\\/([^\\%20]+)$', to: '/tag/$1', permanent: false},
+                    {from: '^\\/topic\\/', to: '/', permanent: false},
+                    {from: '^\\/what(\\/?)$', to: '/what-does-god-say', permanent: false}
                 ]);
             });
     });
 
-    it('upload', function () {
+    it('upload (json)', function () {
         // Provide a redirects file in the root directory of the content test folder
         fs.writeFileSync(path.join(config.get('paths:contentPath'), 'redirects-init.json'), JSON.stringify([{
             from: 'k',
@@ -62,6 +67,40 @@ describe('Redirects API', function () {
             .expect(200)
             .expect((res) => {
                 assert.deepEqual(res.body, {});
+            });
+    });
+
+    it('upload (yaml)', async function () {
+        // The endpoint chooses parser by file extension. Cover the
+        // YAML branch explicitly so a regression on the JSON path
+        // doesn't quietly hide the missing YAML coverage.
+        const filePath = path.join(config.get('paths:contentPath'), 'redirects-init.yaml');
+        fs.writeFileSync(filePath, '301:\n  /yaml-from/: /yaml-to/\n');
+
+        await request
+            .post(localUtils.API.getApiQuery('redirects/upload/'))
+            .set('Origin', config.get('url'))
+            .attach('redirects', filePath)
+            .expect('Content-Type', /application\/json/)
+            .expect(200)
+            .expect((res) => {
+                assert.deepEqual(res.body, {});
+            });
+
+        // Status + body alone wouldn't distinguish "upload succeeded
+        // and registered the redirect" from "upload silently no-op'd".
+        // Round-trip via download to assert the YAML upload actually
+        // landed in the live config.
+        await request
+            .get(localUtils.API.getApiQuery('redirects/download/'))
+            .set('Origin', config.get('url'))
+            .expect(200)
+            .expect((res) => {
+                const redirects = parseYaml(res.text);
+                assert.ok(
+                    redirects.some(r => r.from === '/yaml-from/' && r.to === '/yaml-to/' && r.permanent === true),
+                    `expected the just-uploaded yaml entry to round-trip via download: ${res.text}`
+                );
             });
     });
 });

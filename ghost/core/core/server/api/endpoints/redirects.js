@@ -1,7 +1,11 @@
 const fs = require('fs-extra');
 
 const customRedirects = require('../../services/custom-redirects');
-const {parseJson, parseYaml} = require('../../services/custom-redirects/redirect-config-parser');
+const {
+    parseJson,
+    parseYaml,
+    serializeToYaml
+} = require('../../services/custom-redirects/redirect-config-parser');
 
 const YAML_EXTENSIONS = new Set(['.yaml', '.yml']);
 
@@ -22,14 +26,18 @@ const controller = {
     download: {
         headers: {
             disposition: {
-                type: 'file',
-                value: () => 'redirects.json'
+                type: 'yaml',
+                value: 'redirects.yaml'
             },
             cacheInvalidate: false
         },
         permissions: true,
-        query() {
-            return customRedirects.api.getAll();
+        response: {
+            format: () => 'plain'
+        },
+        async query() {
+            const redirects = await customRedirects.api.getAll();
+            return serializeToYaml(redirects);
         }
     },
 
