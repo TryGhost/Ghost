@@ -1,4 +1,7 @@
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 const sinon = require('sinon');
 const AdapterManager = require('../../../../../core/server/services/adapter-manager/adapter-manager');
 
@@ -80,6 +83,33 @@ describe('AdapterManager', function () {
         });
 
         sinon.assert.calledWith(loadAdapterFromPath, 'some-node-module-adapter');
+    });
+
+    it('Throws missing-dependency error when adapter exists but requires a missing package', function () {
+        const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ghost-adapter-test-'));
+        const adapterDir = path.join(tmpDir, 'scheduling');
+        fs.mkdirSync(adapterDir, {recursive: true});
+        fs.writeFileSync(
+            path.join(adapterDir, 'BrokenAdapter.js'),
+            `require('this-package-does-not-exist-at-all');\nmodule.exports = class {};`
+        );
+
+        try {
+            const adapterManager = new AdapterManager({
+                loadAdapterFromPath: require,
+                pathsToAdapters: [tmpDir]
+            });
+            adapterManager.registerAdapter('scheduling', BaseMailAdapter);
+
+            assert.throws(() => {
+                adapterManager.getAdapter('scheduling', 'BrokenAdapter', {});
+            }, {
+                errorType: 'IncorrectUsageError',
+                message: /missing dependencies/
+            });
+        } finally {
+            fs.rmSync(tmpDir, {recursive: true, force: true});
+        }
     });
 
     it('Loads registered adapters in the order defined by the paths', function () {
