@@ -5,11 +5,7 @@ import {Gift} from './gift';
 import type {GiftRepository} from './gift-repository';
 import tpl from '@tryghost/tpl';
 import {GIFT_REMINDER_FLOOR_DAYS, GIFT_REMINDER_LEAD_DAYS} from './constants';
-
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../member-welcome-emails/constants') as {
-    MEMBER_WELCOME_EMAIL_SLUGS: {free: string; paid: string};
-};
+import {MEMBER_WELCOME_EMAIL_SLUGS} from '../member-welcome-emails/constants';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const GIFT_REMINDER_LEAD_MS = GIFT_REMINDER_LEAD_DAYS * MS_PER_DAY;
