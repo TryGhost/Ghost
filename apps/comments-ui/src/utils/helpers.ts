@@ -18,6 +18,55 @@ export function flattenComments(comments: Comment[]): Comment[] {
     return comments.flatMap(comment => [comment, ...(comment.replies || [])]);
 }
 
+/**
+ * Build a tree structure from a flat list of replies using in_reply_to_id.
+ * Returns replies organized as a nested tree where each reply's `replies`
+ * array contains its direct children.
+ */
+export type TreeComment = Comment & {
+    children: TreeComment[];
+};
+
+export function buildReplyTree(rootComment: Comment): TreeComment[] {
+    const replies = rootComment.replies || [];
+    if (replies.length === 0) {
+        return [];
+    }
+
+    // Index all replies by id
+    const byId = new Map<string, TreeComment>();
+    for (const reply of replies) {
+        byId.set(reply.id, {...reply, children: []});
+    }
+
+    const roots: TreeComment[] = [];
+
+    for (const reply of replies) {
+        const node = byId.get(reply.id)!;
+        const parentNode = reply.in_reply_to_id ? byId.get(reply.in_reply_to_id) : null;
+
+        if (parentNode) {
+            parentNode.children.push(node);
+        } else {
+            // Direct reply to the root comment (or in_reply_to not found)
+            roots.push(node);
+        }
+    }
+
+    return roots;
+}
+
+/**
+ * Count all descendants of a tree node.
+ */
+export function countDescendants(node: TreeComment): number {
+    let count = node.children.length;
+    for (const child of node.children) {
+        count += countDescendants(child);
+    }
+    return count;
+}
+
 export function findCommentById(comments: Comment[], id: string): Comment | undefined {
     return comments.find(comment => comment?.id === id)
         || comments.flatMap(comment => comment.replies || []).find(reply => reply?.id === id);

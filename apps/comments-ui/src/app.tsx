@@ -45,6 +45,7 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
         commentIdToHighlight: null,
         commentIdToScrollTo: initialCommentId,
         showMissingCommentNotice: false,
+        focusedThreadId: null,
         pageUrl,
         supportEmail: null,
         isMember: false,

@@ -38,7 +38,8 @@ export type OpenCommentForm = {
     in_reply_to_id?: string,
     in_reply_to_snippet?: string,
     type: 'reply' | 'edit',
-    hasUnsavedChanges: boolean
+    hasUnsavedChanges: boolean,
+    focusOnReply?: string
 }
 
 export type AddComment = {
@@ -88,6 +89,7 @@ export type EditableAppContext = {
     commentIdToHighlight: string | null,
     commentIdToScrollTo: string | null,
     showMissingCommentNotice: boolean,
+    focusedThreadId: string | null,
     pageUrl: string,
     supportEmail: string | null,
     isMember: boolean,
