@@ -9,6 +9,7 @@ const events = require('../../../../core/server/lib/common/events');
 const settingsCache = require('../../../../core/shared/settings-cache');
 const labs = require('../../../../core/shared/labs');
 const logging = require('@tryghost/logging');
+const urlService = require('../../../../core/server/services/url');
 
 describe('IndexNow', function () {
     let eventStub;
@@ -399,6 +400,42 @@ describe('IndexNow', function () {
 
             const key = indexnow.getApiKey();
             assert.equal((key === null), true);
+        });
+    });
+
+    // Pin which URL ping() actually sends. The earlier `ping()` block above
+    // uses nock to intercept the HTTP request but never inspects the
+    // `?url=...` query parameter; that's the exact value a future change to
+    // the url-service call shape (e.g. swapping the legacy id-based method
+    // for a resource-based facade method) could regress without anyone
+    // noticing.
+    describe('ping() URL output', function () {
+        const ping = indexnow.__get__('ping');
+        const POST_URL = 'https://my-blog.example/some-post/';
+        let requestStub;
+        let resetIndexNow;
+
+        beforeEach(function () {
+            sinon.stub(urlService, 'getUrlByResourceId').returns(POST_URL);
+
+            requestStub = sinon.stub().resolves({statusCode: 200});
+            resetIndexNow = indexnow.__set__('request', requestStub);
+
+            settingsCacheStub.withArgs('indexnow_api_key').returns('a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4');
+        });
+
+        afterEach(function () {
+            resetIndexNow();
+        });
+
+        it('passes the post URL into the IndexNow request', async function () {
+            const post = {id: 'abc', slug: 'some-post', type: 'post'};
+
+            await ping(post);
+
+            sinon.assert.calledOnce(requestStub);
+            const indexNowUrl = new URL(requestStub.firstCall.args[0]);
+            assert.equal(indexNowUrl.searchParams.get('url'), POST_URL);
         });
     });
 });
