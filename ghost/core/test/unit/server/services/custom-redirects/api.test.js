@@ -57,6 +57,54 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
             await customRedirectsAPI.init();
             sinon.assert.notCalled(logging.error);
         });
+
+        it('loads redirects from a valid JSON file into the redirect manager', async function () {
+            const redirects = [{
+                from: '/old/',
+                to: '/new/',
+                permanent: true
+            }];
+
+            fsPathExistsStub.withArgs(`${basePath}redirects.yaml`).resolves(false);
+            fsPathExistsStub.withArgs(`${basePath}redirects.json`).resolves(true);
+            fsReadFileStub.withArgs(`${basePath}redirects.json`, 'utf-8').resolves(JSON.stringify(redirects));
+
+            customRedirectsAPI = new CustomRedirectsAPI({
+                basePath,
+                redirectManager,
+                getBackupFilePath: () => '',
+                validate: () => {}
+            });
+
+            await customRedirectsAPI.init();
+
+            sinon.assert.calledOnce(redirectManager.removeAllRedirects);
+            sinon.assert.calledOnceWithExactly(
+                redirectManager.addRedirect,
+                '/old/',
+                '/new/',
+                {permanent: true}
+            );
+            sinon.assert.notCalled(logging.error);
+        });
+
+        it('logs an error and does not throw when redirects file content is invalid', async function () {
+            fsPathExistsStub.withArgs(`${basePath}redirects.yaml`).resolves(false);
+            fsPathExistsStub.withArgs(`${basePath}redirects.json`).resolves(true);
+            fsReadFileStub.withArgs(`${basePath}redirects.json`, 'utf-8').resolves('{not valid json');
+
+            customRedirectsAPI = new CustomRedirectsAPI({
+                basePath,
+                redirectManager,
+                getBackupFilePath: () => '',
+                validate: () => {}
+            });
+
+            await customRedirectsAPI.init();
+
+            sinon.assert.calledOnce(logging.error);
+            sinon.assert.notCalled(redirectManager.addRedirect);
+        });
     });
 
     describe('get', function () {
@@ -246,6 +294,94 @@ describe('UNIT: redirects CustomRedirectsAPI class', function () {
             sinon.assert.calledOnce(redirectManager.removeAllRedirects);
             // two redirects in total
             sinon.assert.calledTwice(redirectManager.addRedirect);
+        });
+
+        it('does not create a backup file when no existing redirects file is present', async function () {
+            const incomingFilePath = path.join(__dirname, '/valid/path/redirects_incoming.json');
+            const backupFilePath = path.join(basePath, 'backup.json');
+
+            const redirectsJSONConfig = JSON.stringify([{from: 'a', to: 'b'}]);
+
+            // No existing redirects file
+            fsPathExistsStub.withArgs(`${basePath}redirects.json`).resolves(false);
+            fsPathExistsStub.withArgs(`${basePath}redirects.yaml`).resolves(false);
+
+            fsReadFileStub.withArgs(incomingFilePath, 'utf-8').resolves(redirectsJSONConfig);
+
+            customRedirectsAPI = new CustomRedirectsAPI({
+                basePath,
+                redirectManager,
+                getBackupFilePath: () => backupFilePath,
+                validate: () => {}
+            });
+
+            await customRedirectsAPI.setFromFilePath(incomingFilePath, '.json');
+
+            // No existing file means no backup attempted
+            sinon.assert.notCalled(fsUnlinkStub);
+            sinon.assert.notCalled(fsMoveStub);
+
+            // The new redirects file is still written
+            sinon.assert.calledWith(fsWriteFileStub, `${basePath}redirects.json`, redirectsJSONConfig, 'utf-8');
+
+            // Redirects are still registered
+            sinon.assert.calledOnce(redirectManager.removeAllRedirects);
+            sinon.assert.calledOnce(redirectManager.addRedirect);
+        });
+
+        it('runs validation on parsed redirects before writing or activating', async function () {
+            const incomingFilePath = path.join(__dirname, '/valid/path/redirects_incoming.json');
+            const backupFilePath = path.join(basePath, 'backup.json');
+            const redirects = [{from: '/a', to: '/b', permanent: true}];
+
+            fsPathExistsStub.withArgs(`${basePath}redirects.json`).resolves(false);
+            fsPathExistsStub.withArgs(`${basePath}redirects.yaml`).resolves(false);
+            fsReadFileStub.withArgs(incomingFilePath, 'utf-8').resolves(JSON.stringify(redirects));
+
+            const validate = sinon.stub();
+
+            customRedirectsAPI = new CustomRedirectsAPI({
+                basePath,
+                redirectManager,
+                getBackupFilePath: () => backupFilePath,
+                validate
+            });
+
+            await customRedirectsAPI.setFromFilePath(incomingFilePath, '.json');
+
+            sinon.assert.calledOnceWithExactly(validate, redirects);
+            assert.ok(validate.calledBefore(fsWriteFileStub), 'validate must be called before write');
+            assert.ok(validate.calledBefore(redirectManager.addRedirect), 'validate must be called before activation');
+        });
+
+        it('does not write or activate when validation throws', async function () {
+            const incomingFilePath = path.join(__dirname, '/invalid/path/redirects_incoming.json');
+            const backupFilePath = path.join(basePath, 'backup.json');
+            const redirects = [{from: '/a', to: '/b'}];
+
+            fsPathExistsStub.withArgs(`${basePath}redirects.json`).resolves(false);
+            fsPathExistsStub.withArgs(`${basePath}redirects.yaml`).resolves(false);
+            fsReadFileStub.withArgs(incomingFilePath, 'utf-8').resolves(JSON.stringify(redirects));
+
+            const validate = sinon.stub().throws(new Error('boom'));
+
+            customRedirectsAPI = new CustomRedirectsAPI({
+                basePath,
+                redirectManager,
+                getBackupFilePath: () => backupFilePath,
+                validate
+            });
+
+            await assert.rejects(
+                () => customRedirectsAPI.setFromFilePath(incomingFilePath, '.json'),
+                {message: 'boom'}
+            );
+
+            sinon.assert.notCalled(fsWriteFileStub);
+            sinon.assert.notCalled(fsCopyStub);
+            sinon.assert.notCalled(fsMoveStub);
+            sinon.assert.notCalled(redirectManager.removeAllRedirects);
+            sinon.assert.notCalled(redirectManager.addRedirect);
         });
 
         it('does not create a backup file from a bad redirect yaml file', async function () {
