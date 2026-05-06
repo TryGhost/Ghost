@@ -35,8 +35,33 @@ const controller = {
         query(frame) {
             return {
                 id: frame.data.id,
+                slug: 'member-welcome-email-free',
                 name: 'Welcome email',
-                status: 'active'
+                status: 'active',
+                created_at: '2026-05-05T00:00:00.000Z',
+                updated_at: '2026-05-05T00:00:00.000Z',
+                actions: [{
+                    id: '67f3f3f3f3f3f3f3f3f3f3f4',
+                    type: 'wait',
+                    data: {
+                        wait_hours: 24
+                    }
+                }, {
+                    id: '67f3f3f3f3f3f3f3f3f3f3f5',
+                    type: 'send email',
+                    data: {
+                        email_subject: 'Welcome!',
+                        email_lexical: '{"root":{"children":[]}}',
+                        email_sender_name: null,
+                        email_sender_email: null,
+                        email_sender_reply_to: null,
+                        email_design_setting_id: '680000000000000000000001'
+                    }
+                }],
+                edges: [{
+                    source_action_id: '67f3f3f3f3f3f3f3f3f3f3f4',
+                    target_action_id: '67f3f3f3f3f3f3f3f3f3f3f5'
+                }]
             };
         }
     },

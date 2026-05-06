@@ -77,16 +77,15 @@ describe('Automations API', function () {
         it('returns a placeholder automation for the requested id', async function () {
             const automationId = '67f3f3f3f3f3f3f3f3f3f3f3';
 
-            const {body} = await agent
+            await agent
                 .get(`automations/${automationId}`)
                 .expectStatus(200)
-                .expect(cacheInvalidateHeaderNotSet());
-
-            assert.deepEqual(body.automations, [{
-                id: automationId,
-                name: 'Welcome email',
-                status: 'active'
-            }]);
+                .expect(cacheInvalidateHeaderNotSet())
+                .matchBodySnapshot()
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
         });
     });
 
