@@ -1,6 +1,5 @@
-import {Button, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, LoadingIndicator} from '@tryghost/shade/components';
+import {Avatar, Button, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, LoadingIndicator} from '@tryghost/shade/components';
 import {Comment, useBrowseCommentLikes} from '@tryghost/admin-x-framework/api/comments';
-import {CommentAvatar} from './comment-avatar';
 import {LucideIcon, formatTimestamp} from '@tryghost/shade/utils';
 import {formatMemberName} from '@tryghost/shade/app';
 
@@ -28,10 +27,11 @@ function CommentLikesModal({comment, open, onOpenChange}: CommentLikesModalProps
                 {/* Comment context */}
                 <div className="overflow-hidden rounded-md border p-3">
                     <div className="flex min-w-0 items-start gap-3">
-                        <CommentAvatar
-                            avatarImage={comment.member?.avatar_image}
+                        <Avatar
                             className="shrink-0"
-                            memberId={comment.member?.id}
+                            email={comment.member?.email}
+                            name={comment.member?.name}
+                            src={comment.member?.avatar_image}
                         />
                         <div className="flex min-w-0 flex-col overflow-hidden">
                             <div className="flex min-w-0 items-center gap-1 text-sm">
@@ -67,9 +67,10 @@ function CommentLikesModal({comment, open, onOpenChange}: CommentLikesModalProps
                                 <div key={like.id} className="flex items-center justify-between gap-3">
                                     <div className="flex items-center gap-3">
                                         <div className="relative shrink-0">
-                                            <CommentAvatar
-                                                avatarImage={like.member?.avatar_image}
-                                                memberId={like.member?.id}
+                                            <Avatar
+                                                email={like.member?.email}
+                                                name={like.member?.name}
+                                                src={like.member?.avatar_image}
                                             />
                                             {/* Heart overlay */}
                                             <div className="absolute -right-0.5 -bottom-0.5 flex size-4 items-center justify-center rounded-full bg-pink-500 text-white">

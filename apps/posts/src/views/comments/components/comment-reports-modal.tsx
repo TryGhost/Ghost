@@ -1,6 +1,5 @@
-import {Button, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, LoadingIndicator} from '@tryghost/shade/components';
+import {Avatar, Button, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, LoadingIndicator} from '@tryghost/shade/components';
 import {Comment, useBrowseCommentReports} from '@tryghost/admin-x-framework/api/comments';
-import {CommentAvatar} from './comment-avatar';
 import {LucideIcon, formatTimestamp} from '@tryghost/shade/utils';
 import {formatMemberName} from '@tryghost/shade/app';
 
@@ -27,10 +26,11 @@ function CommentReportsModal({comment, open, onOpenChange}: CommentReportsModalP
                 {/* Comment context */}
                 <div className="overflow-hidden rounded-md border p-3">
                     <div className="flex min-w-0 items-start gap-3">
-                        <CommentAvatar
-                            avatarImage={comment.member?.avatar_image}
+                        <Avatar
                             className="shrink-0"
-                            memberId={comment.member?.id}
+                            email={comment.member?.email}
+                            name={comment.member?.name}
+                            src={comment.member?.avatar_image}
                         />
                         <div className="flex min-w-0 flex-col overflow-hidden">
                             <div className="flex min-w-0 items-center gap-1 text-sm">
@@ -66,9 +66,10 @@ function CommentReportsModal({comment, open, onOpenChange}: CommentReportsModalP
                                 <div key={report.id} className="flex items-center justify-between gap-3">
                                     <div className="flex items-center gap-3">
                                         <div className="relative shrink-0">
-                                            <CommentAvatar
-                                                avatarImage={report.member?.avatar_image}
-                                                memberId={report.member?.id}
+                                            <Avatar
+                                                email={report.member?.email}
+                                                name={report.member?.name}
+                                                src={report.member?.avatar_image}
                                             />
                                             {/* Red flag overlay */}
                                             <div className="absolute -right-0.5 -bottom-0.5 flex size-4 items-center justify-center rounded-full bg-red text-white">
