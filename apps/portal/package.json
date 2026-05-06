@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/portal",
-  "version": "2.68.29",
+  "version": "2.68.30",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -109,7 +109,6 @@
     ]
   },
   "devDependencies": {
-    "@babel/eslint-parser": "7.28.4",
     "@doist/react-interpolate": "2.2.1",
     "@sentry/react": "7.120.4",
     "@testing-library/jest-dom": "6.9.1",

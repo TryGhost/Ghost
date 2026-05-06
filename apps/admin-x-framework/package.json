@@ -88,7 +88,6 @@
         "glob": "^10.5.0",
         "jsdom": "28.1.0",
         "msw": "2.12.14",
-        "sinon": "18.0.1",
         "typescript": "5.9.3",
         "vite": "5.4.21",
         "vite-plugin-css-injected-by-js": "3.5.2",

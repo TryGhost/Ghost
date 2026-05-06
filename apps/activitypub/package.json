@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/activitypub",
-  "version": "3.1.14",
+  "version": "3.1.16",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -39,13 +39,11 @@
   "devDependencies": {
     "@playwright/test": "1.59.1",
     "@testing-library/react": "14.3.1",
-    "@types/dompurify": "3.2.0",
     "@types/jest": "29.5.14",
     "@types/react": "18.3.28",
     "@types/react-dom": "18.3.7",
     "jest": "29.7.0",
     "tailwindcss": "^4.2.2",
-    "ts-jest": "29.4.9",
     "vite": "5.4.21",
     "vitest": "1.6.1"
   },
