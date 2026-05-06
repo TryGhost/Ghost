@@ -8,12 +8,20 @@
 
 set -euo pipefail
 
-# Move to the repo root. Works whether this is invoked as a file
-# (bash scripts/setup-claude-code-web.sh from any cwd inside the checkout)
-# or pasted inline into the environment's Setup hook (where $0 is the shell
-# name and dirname-based resolution doesn't work).
-if repo_root="$(git rev-parse --show-toplevel 2>/dev/null)"; then
+# Move to the repo root. Setup hooks run from a cwd outside the checkout,
+# so try in order:
+#   1. CLAUDE_PROJECT_DIR (set by Claude Code in hooks/sessions)
+#   2. git rev-parse (works when invoked from inside the checkout)
+#   3. /home/user/Ghost (the canonical path in Claude Code on the web)
+if [ -n "${CLAUDE_PROJECT_DIR:-}" ] && [ -d "$CLAUDE_PROJECT_DIR/.git" ]; then
+    cd "$CLAUDE_PROJECT_DIR"
+elif repo_root="$(git rev-parse --show-toplevel 2>/dev/null)" && [ -n "$repo_root" ]; then
     cd "$repo_root"
+elif [ -d /home/user/Ghost/.git ]; then
+    cd /home/user/Ghost
+else
+    echo "error: could not locate Ghost checkout (set CLAUDE_PROJECT_DIR or run from inside the repo)" >&2
+    exit 1
 fi
 
 echo "==> Enabling pnpm via corepack"
