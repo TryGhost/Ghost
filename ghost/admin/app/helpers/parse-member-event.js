@@ -148,6 +148,10 @@ export default class ParseMemberEventHelper extends Helper {
             icon = 'gift';
         }
 
+        if (event.type === 'gift_ended_event') {
+            icon = 'subscriptions';
+        }
+
         if (event.type === 'email_change_event') {
             icon = 'email-changed';
         }
@@ -278,6 +282,10 @@ export default class ParseMemberEventHelper extends Helper {
 
         if (event.type === 'gift_redemption_event') {
             return 'started paid subscription via gift';
+        }
+
+        if (event.type === 'gift_ended_event') {
+            return 'ended paid subscription';
         }
     }
 
