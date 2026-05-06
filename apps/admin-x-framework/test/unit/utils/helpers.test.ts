@@ -138,15 +138,15 @@ describe('helpers utils', () => {
     });
 
     describe('blobDownload', () => {
-        let originalFetch: typeof global.fetch;
+        let originalFetch: typeof globalThis.fetch;
         let originalCreateObjectURL: typeof URL.createObjectURL;
         let originalRevokeObjectURL: typeof URL.revokeObjectURL;
-        let appendChildSpy: MockInstance<[node: Node], Node>;
+        let appendChildSpy: MockInstance<(node: Node) => Node>;
         let removeElementSpy: ReturnType<typeof vi.fn>;
         let clickSpy: ReturnType<typeof vi.fn>;
 
         beforeEach(() => {
-            originalFetch = global.fetch;
+            originalFetch = globalThis.fetch;
             originalCreateObjectURL = URL.createObjectURL;
             originalRevokeObjectURL = URL.revokeObjectURL;
 
@@ -168,7 +168,7 @@ describe('helpers utils', () => {
         });
 
         afterEach(() => {
-            global.fetch = originalFetch;
+            globalThis.fetch = originalFetch;
             URL.createObjectURL = originalCreateObjectURL;
             URL.revokeObjectURL = originalRevokeObjectURL;
             appendChildSpy.mockRestore();
@@ -177,14 +177,14 @@ describe('helpers utils', () => {
 
         it('fetches the URL and triggers a download', async () => {
             const mockBlob = new Blob(['test,data'], {type: 'text/csv'});
-            global.fetch = vi.fn().mockResolvedValue({
+            globalThis.fetch = vi.fn().mockResolvedValue({
                 ok: true,
                 blob: () => Promise.resolve(mockBlob)
             });
 
             await blobDownload('https://example.com/export.csv', 'members.csv');
 
-            expect(global.fetch).toHaveBeenCalledWith('https://example.com/export.csv', {method: 'GET'});
+            expect(globalThis.fetch).toHaveBeenCalledWith('https://example.com/export.csv', {method: 'GET'});
             expect(URL.createObjectURL).toHaveBeenCalledWith(mockBlob);
             expect(clickSpy).toHaveBeenCalled();
             expect(removeElementSpy).toHaveBeenCalled();
@@ -193,7 +193,7 @@ describe('helpers utils', () => {
 
         it('sets the correct filename on the download link', async () => {
             const mockBlob = new Blob(['test'], {type: 'text/csv'});
-            global.fetch = vi.fn().mockResolvedValue({
+            globalThis.fetch = vi.fn().mockResolvedValue({
                 ok: true,
                 blob: () => Promise.resolve(mockBlob)
             });
@@ -215,7 +215,7 @@ describe('helpers utils', () => {
         });
 
         it('throws on non-ok response', async () => {
-            global.fetch = vi.fn().mockResolvedValue({
+            globalThis.fetch = vi.fn().mockResolvedValue({
                 ok: false,
                 status: 500,
                 statusText: 'Internal Server Error'
@@ -226,7 +226,7 @@ describe('helpers utils', () => {
         });
 
         it('propagates fetch network errors', async () => {
-            global.fetch = vi.fn().mockRejectedValue(new Error('Network error'));
+            globalThis.fetch = vi.fn().mockRejectedValue(new Error('Network error'));
 
             await expect(blobDownload('https://example.com/fail', 'test.csv'))
                 .rejects.toThrow('Network error');
@@ -234,12 +234,12 @@ describe('helpers utils', () => {
     });
 
     describe('blobDownloadFromEndpoint', () => {
-        let originalFetch: typeof global.fetch;
+        let originalFetch: typeof globalThis.fetch;
         let originalCreateObjectURL: typeof URL.createObjectURL;
         let originalRevokeObjectURL: typeof URL.revokeObjectURL;
 
         beforeEach(() => {
-            originalFetch = global.fetch;
+            originalFetch = globalThis.fetch;
             originalCreateObjectURL = URL.createObjectURL;
             originalRevokeObjectURL = URL.revokeObjectURL;
             window.location.pathname = '/ghost/settings/';
@@ -258,7 +258,7 @@ describe('helpers utils', () => {
         });
 
         afterEach(() => {
-            global.fetch = originalFetch;
+            globalThis.fetch = originalFetch;
             URL.createObjectURL = originalCreateObjectURL;
             URL.revokeObjectURL = originalRevokeObjectURL;
             vi.restoreAllMocks();
@@ -266,14 +266,14 @@ describe('helpers utils', () => {
 
         it('constructs the full URL from apiRoot and path', async () => {
             const mockBlob = new Blob(['data'], {type: 'text/csv'});
-            global.fetch = vi.fn().mockResolvedValue({
+            globalThis.fetch = vi.fn().mockResolvedValue({
                 ok: true,
                 blob: () => Promise.resolve(mockBlob)
             });
 
             await blobDownloadFromEndpoint('/members/upload/?limit=all', 'members.csv');
 
-            expect(global.fetch).toHaveBeenCalledWith(
+            expect(globalThis.fetch).toHaveBeenCalledWith(
                 '/ghost/api/admin/members/upload/?limit=all',
                 {method: 'GET'}
             );
@@ -282,14 +282,14 @@ describe('helpers utils', () => {
         it('includes subdirectory in the URL', async () => {
             window.location.pathname = '/blog/ghost/settings/';
             const mockBlob = new Blob(['data'], {type: 'text/csv'});
-            global.fetch = vi.fn().mockResolvedValue({
+            globalThis.fetch = vi.fn().mockResolvedValue({
                 ok: true,
                 blob: () => Promise.resolve(mockBlob)
             });
 
             await blobDownloadFromEndpoint('/members/upload/?limit=all', 'members.csv');
 
-            expect(global.fetch).toHaveBeenCalledWith(
+            expect(globalThis.fetch).toHaveBeenCalledWith(
                 '/blog/ghost/api/admin/members/upload/?limit=all',
                 {method: 'GET'}
             );

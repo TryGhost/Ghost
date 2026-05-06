@@ -61,7 +61,7 @@ describe('takeScreenshot', function () {
     });
 
     afterEach(function () {
-        vi.clearAllMocks();
+        vi.restoreAllMocks();
     });
 
     it('calls html2canvas with correct default options', async function () {
