@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
 const _ = require('lodash');
-const url = require('url');
 const moment = require('moment');
 const DataGenerator = require('./fixtures/data-generator');
 const config = require('../../core/shared/config');
@@ -15,11 +14,11 @@ function getURL() {
 }
 
 function getSigninURL() {
-    return url.resolve(protocol + host + ':' + port, 'ghost/signin/');
+    return new URL('ghost/signin/', protocol + host + ':' + port).toString();
 }
 
 function getAdminURL() {
-    return url.resolve(protocol + host + ':' + port, 'ghost/');
+    return new URL('ghost/', protocol + host + ':' + port).toString();
 }
 
 function isISO8601(date) {
