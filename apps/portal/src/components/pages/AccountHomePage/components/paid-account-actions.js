@@ -145,12 +145,12 @@ const PaidAccountActions = () => {
         return null;
     };
 
-    const BillingSection = ({defaultCardLast4, isComplimentary}) => {
+    const BillingSection = ({defaultCardLast4, isComplimentary, isGift}) => {
         const {action} = useContext(AppContext);
         const label = action === 'manageBilling:running' ? (
             <LoaderIcon className='gh-portal-billing-button-loader' />
         ) : t('Update');
-        if (isComplimentary) {
+        if (isComplimentary || isGift) {
             return null;
         }
 
@@ -173,6 +173,7 @@ const PaidAccountActions = () => {
 
     const subscription = getMemberSubscription({member});
     const isComplimentary = isComplimentaryMember({member});
+    const isGift = isGiftMember({member});
     const isPaid = isPaidMember({member});
     if (subscription || isComplimentary) {
         const {
@@ -203,7 +204,7 @@ const PaidAccountActions = () => {
                     </div>
                     <PlanUpdateButton isPaid={isPaid} />
                 </section>
-                <BillingSection isComplimentary={isComplimentary} defaultCardLast4={defaultCardLast4} />
+                <BillingSection isComplimentary={isComplimentary} isGift={isGift} defaultCardLast4={defaultCardLast4} />
             </>
         );
     }
