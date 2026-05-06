@@ -2,11 +2,11 @@ const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');
 
 const DynamicRedirectManager = require('../lib/dynamic-redirect-manager');
-const CustomRedirectsAPI = require('./custom-redirects-api');
+const FileStore = require('./file-store');
+const RedirectsService = require('./redirects-service');
 const validation = require('./validation');
-const {getBackupRedirectsFilePath} = require('./utils');
 
-let customRedirectsAPI;
+let redirectsService;
 let redirectManager;
 
 module.exports = {
@@ -18,18 +18,21 @@ module.exports = {
             }
         });
 
-        customRedirectsAPI = new CustomRedirectsAPI({
-            basePath: config.getContentPath('data'),
+        const store = new FileStore({
+            basePath: config.getContentPath('data')
+        });
+
+        redirectsService = new RedirectsService({
+            store,
             redirectManager,
-            getBackupFilePath: getBackupRedirectsFilePath,
             validate: validation.validate.bind(validation)
         });
 
-        return customRedirectsAPI.init();
+        return redirectsService.init();
     },
 
     get api() {
-        return customRedirectsAPI;
+        return redirectsService;
     },
 
     get middleware() {
