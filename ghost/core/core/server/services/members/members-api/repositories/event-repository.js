@@ -255,10 +255,6 @@ module.exports = class EventRepository {
 
             // Prevent toJSON on stripeSubscription (we don't have everything loaded)
             delete model.relations.stripeSubscription;
-            // paidStatusEvent is a helper relation only used to derive previous_status above
-            if (subscriptionCreatedEvent && subscriptionCreatedEvent.id) {
-                delete subscriptionCreatedEvent.relations.paidStatusEvent;
-            }
             const d = {
                 ...model.toJSON(options),
                 attribution: model.get('type') === 'created' && subscriptionCreatedEvent && subscriptionCreatedEvent.id ? this._memberAttributionService.getEventAttribution(subscriptionCreatedEvent) : null,
@@ -267,6 +263,7 @@ module.exports = class EventRepository {
                 tierName
             };
             delete d.stripeSubscription;
+            delete d.subscriptionCreatedEvent?.paidStatusEvent;
             return {
                 type: 'subscription_event',
                 data: d
