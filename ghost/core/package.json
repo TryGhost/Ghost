@@ -254,6 +254,7 @@
     "@types/bookshelf": "1.2.9",
     "@types/common-tags": "1.8.4",
     "@types/express": "4.17.25",
+    "@types/fs-extra": "^11.0.4",
     "@types/js-yaml": "^4.0.9",
     "@types/jsdom": "28.0.1",
     "@types/jsonwebtoken": "9.0.10",
