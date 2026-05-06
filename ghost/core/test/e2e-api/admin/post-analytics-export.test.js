@@ -1,6 +1,6 @@
 const {assertMatchSnapshot} = require('../../utils/assertions');
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
-const {anyContentVersion, anyEtag, stringMatching} = matchers;
+const {anyContentVersion, stringMatching} = matchers;
 const models = require('../../../core/server/models');
 const escapeRegExp = require('lodash/escapeRegExp');
 
@@ -29,7 +29,6 @@ const csvReplacements = [
 
 const matchExportHeaders = {
     'content-version': anyContentVersion,
-    etag: anyEtag,
     'content-disposition': stringMatching(/^Attachment; filename="post-analytics.\d{4}-\d{2}-\d{2}.csv"$/)
 };
 

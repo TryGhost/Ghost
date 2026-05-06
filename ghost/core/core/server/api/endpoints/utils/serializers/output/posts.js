@@ -2,6 +2,8 @@ const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output
 const mappers = require('./mappers');
 const papaparse = require('papaparse');
 const tiersService = require('../../../../../services/tiers');
+const {pipeline} = require('stream');
+const {createCSVTransform} = require('./posts-csv-transform');
 
 module.exports = {
     async all(models, apiConfig, frame) {
@@ -54,6 +56,26 @@ module.exports = {
     },
 
     exportCSV(models, apiConfig, frame) {
+        if (models.data && typeof models.data.pipe === 'function') {
+            frame.response = function streamResponse(req, res, next) {
+                const csvTransform = createCSVTransform();
+
+                const datetime = (new Date()).toJSON().substring(0, 10);
+                res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+                res.setHeader('Content-Disposition', `Attachment; filename="post-analytics.${datetime}.csv"`);
+                const cacheControl = res.getHeader('Cache-Control');
+                res.setHeader('Cache-Control', cacheControl ? `${cacheControl}, no-transform` : 'no-transform');
+
+                pipeline(models.data, csvTransform, res, (err) => {
+                    // Successful completion has already written the response; only errors need forwarding.
+                    if (err) {
+                        next(err);
+                    }
+                });
+            };
+            return;
+        }
+
         frame.response = papaparse.unparse(models.data);
     },
 
