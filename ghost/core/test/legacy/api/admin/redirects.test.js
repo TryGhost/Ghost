@@ -100,8 +100,17 @@ describe('Redirects API', function () {
                     .then((response) => {
                         assert.equal(response.headers.location, '/d');
 
-                        const fileContent = fs.readFileSync(path.join(config.get('paths:contentPath'), 'data', 'redirects.yaml'), 'utf-8');
-                        assert.equal(fileContent, '302:\n  c: d');
+                        const dataDir = path.join(config.get('paths:contentPath'), 'data');
+                        const fileContent = fs.readFileSync(path.join(dataDir, 'redirects.json'), 'utf-8');
+                        assert.deepEqual(JSON.parse(fileContent), [
+                            {from: 'c', to: 'd', permanent: false}
+                        ]);
+
+                        const entries = fs.readdirSync(dataDir);
+                        assert.ok(
+                            entries.some(name => /^redirects-.+\.json$/.test(name)),
+                            `expected a timestamped redirects.json backup in ${entries.join(', ')}`
+                        );
                     });
             });
         });
