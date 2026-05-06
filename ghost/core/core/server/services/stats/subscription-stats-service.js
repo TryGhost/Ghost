@@ -186,6 +186,13 @@ class SubscriptionStatsService {
                 .whereIn('status', ['consumed', 'expired', 'refunded'])
                 .whereNotNull('redeemed_at')
                 .whereRaw(`${cancellationDate} IS NOT NULL`)
+                // Exclude gifts that were consumed because the member upgraded
+                // to a paid subscription. In that case `consumed_at` is set
+                // before the gift's planned end (`consumes_at`). When the gift
+                // ends naturally via the cron job, `consumed_at` is always
+                // >= `consumes_at`, so this condition cleanly distinguishes
+                // upgrades (not churn) from natural endings (real churn).
+                .whereRaw(`NOT (status = 'consumed' AND consumed_at < consumes_at)`)
                 .select(knex.raw(`DATE(${cancellationDate}) as date`))
                 .select('tier_id as tier')
                 .select('cadence')
