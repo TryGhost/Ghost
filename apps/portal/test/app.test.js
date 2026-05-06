@@ -90,6 +90,105 @@ describe('App', function () {
         expect(link.getAttribute('href')).toBe('#/share');
     });
 
+    describe('with data-disable-share on portal script tag', () => {
+        let scriptTag;
+
+        beforeEach(() => {
+            scriptTag = document.createElement('script');
+            scriptTag.setAttribute('data-ghost', 'http://example.com');
+            scriptTag.setAttribute('data-disable-share', 'true');
+            document.head.appendChild(scriptTag);
+        });
+
+        afterEach(() => {
+            scriptTag.remove();
+        });
+
+        test('does not transform #/share links on render', async () => {
+            const link = document.createElement('a');
+            link.setAttribute('href', 'http://example.com/#/share');
+            document.body.appendChild(link);
+
+            const ghostApi = setupApi();
+            const utils = appRender(
+                <App siteUrl="http://example.com" api={ghostApi} />
+            );
+
+            await utils.findByTitle(/portal-popup/i);
+
+            expect(link.getAttribute('href')).toBe('http://example.com/#/share');
+        });
+
+        test('still transforms #/portal links on render', async () => {
+            const link = document.createElement('a');
+            link.setAttribute('href', 'http://example.com/#/portal/signup');
+            document.body.appendChild(link);
+
+            const ghostApi = setupApi();
+            const utils = appRender(
+                <App siteUrl="http://example.com" api={ghostApi} />
+            );
+
+            await utils.findByTitle(/portal-popup/i);
+
+            expect(link.getAttribute('href')).toBe('#/portal/signup');
+        });
+
+        test('fetchLinkData does not match #/share hash', async () => {
+            window.location.hash = '#/share';
+
+            const app = new App({siteUrl: 'http://example.com'});
+            const result = await app.fetchLinkData(FixtureSite.singleTier.basic, FixtureMember.free);
+
+            expect(result).toEqual({});
+        });
+
+        test('getPageFromLinkPath returns null for share path', () => {
+            const app = new App({siteUrl: 'http://example.com'});
+            expect(app.getPageFromLinkPath('share')).toBeNull();
+        });
+
+        test('share trigger click does not dispatch openPopup', async () => {
+            const app = new App({siteUrl: 'http://example.com'});
+            app.dispatchAction = vi.fn();
+            app.state = {
+                ...app.state,
+                initStatus: 'success',
+                site: FixtureSite.singleTier.basic
+            };
+
+            await app.clickHandler({
+                preventDefault: vi.fn(),
+                currentTarget: {
+                    dataset: {
+                        portal: 'share'
+                    }
+                }
+            });
+
+            expect(app.dispatchAction).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('without data-disable-share', () => {
+        test('fetchLinkData matches #/share hash and opens share popup', async () => {
+            window.location.hash = '#/share';
+
+            const app = new App({siteUrl: 'http://example.com'});
+            const result = await app.fetchLinkData(FixtureSite.singleTier.basic, FixtureMember.free);
+
+            expect(result).toEqual({
+                showPopup: true,
+                page: 'share'
+            });
+        });
+
+        test('getPageFromLinkPath returns share page for share path', () => {
+            const app = new App({siteUrl: 'http://example.com'});
+            expect(app.getPageFromLinkPath('share')).toEqual({page: 'share'});
+        });
+    });
+
     test('shows gift redemption success notification when popup is open on load', async () => {
         window.location = new URL('http://example.com/?action=subscribe&success=true#/portal/account?giftRedemption=true');
 

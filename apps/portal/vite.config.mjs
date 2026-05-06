@@ -13,6 +13,9 @@ import {SUPPORTED_LOCALES} from '@tryghost/i18n';
 
 export default defineConfig((config) => {
     const outputFileName = pkg.name[0] === '@' ? pkg.name.slice(pkg.name.indexOf('/') + 1) : pkg.name;
+    const isShareBuild = process.env.PORTAL_BUILD === 'share';
+    const isWatch = process.argv.includes('--watch') || process.argv.includes('-w');
+    const bundleName = isShareBuild ? 'share' : outputFileName;
 
     return {
         logLevel: process.env.CI ? 'info' : 'warn',
@@ -60,16 +63,16 @@ export default defineConfig((config) => {
         },
         build: {
             outDir: resolve(__dirname, 'umd'),
-            emptyOutDir: true,
+            emptyOutDir: !isShareBuild && !isWatch,
             reportCompressedSize: false,
             minify: true,
             sourcemap: true,
             cssCodeSplit: false,
             lib: {
-                entry: resolve(__dirname, 'src/index.js'),
+                entry: resolve(__dirname, isShareBuild ? 'src/share.js' : 'src/index.js'),
                 formats: ['umd'],
                 name: pkg.name,
-                fileName: format => `${outputFileName}.min.js`
+                fileName: () => `${bundleName}.min.js`
             },
             rollupOptions: {
                 output: {

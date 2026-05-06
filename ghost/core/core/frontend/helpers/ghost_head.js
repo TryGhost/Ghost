@@ -49,32 +49,46 @@ function finaliseStructuredData(meta) {
 }
 
 function getMembersHelper(data, frontendKey, excludeList) {
-    // Do not load Portal if both Memberships and Tips & Donations and Recommendations are disabled
-    if (!settingsCache.get('members_enabled') && !settingsCache.get('donations_enabled') && !settingsCache.get('recommendations_enabled')) {
-        return '';
-    }
     let membersHelper = '';
-    if (!excludeList.has('portal')) {
-        const {scriptUrl} = getFrontendAppConfig('portal');
+    const fullPortalEnabled = Boolean(settingsCache.get('members_enabled') || settingsCache.get('donations_enabled') || settingsCache.get('recommendations_enabled'));
+    const portalDisabled = excludeList.has('portal');
+    const {scriptUrl, shareScriptUrl} = getFrontendAppConfig('portal');
+    const shareDisabled = shareScriptUrl === false || excludeList.has('share');
+    const locale = settingsCache.get('locale') || 'en';
 
+    if (fullPortalEnabled && !portalDisabled) {
         const colorString = (_.has(data, 'site._preview') && data.site.accent_color) ? data.site.accent_color : '';
         const attributes = {
             i18n: true,
             ghost: urlUtils.getSiteUrl(),
             key: frontendKey,
             api: urlUtils.urlFor('api', {type: 'content'}, true),
-            locale: settingsCache.get('locale') || 'en'
+            locale
+        };
+        if (colorString) {
+            attributes['accent-color'] = colorString;
+        }
+        if (shareDisabled) {
+            attributes['disable-share'] = true;
+        }
+        const dataAttributes = getDataAttributes(attributes);
+        membersHelper += `<script defer src="${scriptUrl}" ${dataAttributes} crossorigin="anonymous"></script>`;
+    } else if (!shareDisabled && shareScriptUrl) {
+        const colorString = (_.has(data, 'site.accent_color') && data.site.accent_color) ? data.site.accent_color : '';
+        const attributes = {
+            'portal-share': true,
+            locale
         };
         if (colorString) {
             attributes['accent-color'] = colorString;
         }
         const dataAttributes = getDataAttributes(attributes);
-        membersHelper += `<script defer src="${scriptUrl}" ${dataAttributes} crossorigin="anonymous"></script>`;
+        membersHelper += `<script defer src="${shareScriptUrl}" ${dataAttributes} crossorigin="anonymous"></script>`;
     }
-    if (!excludeList.has('cta_styles')) {
+    if (fullPortalEnabled && !excludeList.has('cta_styles')) {
         membersHelper += (`<style id="gh-members-styles">${templateStyles}</style>`);
     }
-    if (settingsCache.get('paid_members_enabled')) {
+    if (fullPortalEnabled && settingsCache.get('paid_members_enabled')) {
         membersHelper += `<script async src="https://js.stripe.com/v3/"></script>`;
     }
     return membersHelper;

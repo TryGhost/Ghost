@@ -1,4 +1,4 @@
-import CloseButton from '../../common/close-button';
+import CloseIconButton from '../../common/close-icon-button';
 import copyTextToClipboard from '../../../utils/copy-to-clipboard';
 import useShareData from './use-share-data';
 import {ReactComponent as BlueSkyIcon} from '../../../images/icons/share-bluesky.svg';
@@ -13,7 +13,7 @@ import {ReactComponent as XIcon} from '../../../images/icons/share-x.svg';
 import {useEffect, useRef, useState} from 'react';
 import {t} from '../../../utils/i18n';
 
-const ShareModal = () => {
+const ShareModal = ({onClose}) => {
     const [copied, setCopied] = useState(false);
     const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
     const copyTimeoutRef = useRef();
@@ -84,7 +84,7 @@ const ShareModal = () => {
 
     return (
         <div className='gh-portal-content gh-portal-share'>
-            <CloseButton />
+            <CloseIconButton onClick={onClose} />
             <div className='gh-portal-share-header'>
                 <h1 className='gh-portal-main-title'>{t('Share')}</h1>
             </div>

@@ -15,8 +15,8 @@
   },
   "scripts": {
     "dev": "concurrently \"pnpm preview -l silent\" \"pnpm build:watch\"",
-    "build": "vite build",
-    "build:watch": "vite build --watch",
+    "build": "vite build && PORTAL_BUILD=share vite build",
+    "build:watch": "concurrently \"vite build --watch\" \"PORTAL_BUILD=share vite build --watch\"",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",

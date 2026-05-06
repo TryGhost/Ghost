@@ -15,8 +15,8 @@ const addHeadTag = ({tagName, attrs = {}}) => {
     return element;
 };
 
-const setup = () => {
-    return render(<ShareModal />);
+const setup = ({onClose} = {}) => {
+    return render(<ShareModal onClose={onClose} />);
 };
 
 describe('ShareModal', () => {
@@ -258,5 +258,14 @@ describe('ShareModal', () => {
         await waitFor(() => {
             expect(getByRole('button', {name: 'Copy link'})).toBeInTheDocument();
         });
+    });
+
+    test('calls close callback when close icon is clicked', () => {
+        const onClose = vi.fn();
+        const {getByTestId} = setup({onClose});
+
+        fireEvent.click(getByTestId('close-popup'));
+
+        expect(onClose).toHaveBeenCalledTimes(1);
     });
 });

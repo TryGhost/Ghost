@@ -19,6 +19,7 @@ COPY apps/signup-form/umd /home/ghost/content/files/signup-form
 COPY apps/announcement-bar/umd /home/ghost/content/files/announcement-bar
 
 ENV portal__url=/content/files/portal/portal.min.js
+ENV portal__shareUrl=/content/files/portal/share.min.js
 ENV comments__url=/content/files/comments-ui/comments-ui.min.js
 ENV sodoSearch__url=/content/files/sodo-search/sodo-search.min.js
 ENV sodoSearch__styles=/content/files/sodo-search/main.css

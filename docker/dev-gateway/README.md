@@ -30,7 +30,7 @@ Caddy uses environment variables (set in `compose.dev.yaml`) to configure proxy 
 **Note:** AdminX React apps (admin-x-settings, activitypub, posts, stats) are served through the admin dev server so they don't need separate proxy entries.
 
 ### Ghost Configuration
-Ghost is configured via environment variables in `compose.dev.yaml` to load public app assets from `/ghost/assets/*` (e.g., `portal__url: /ghost/assets/portal/portal.min.js`). This uses the same path structure as built admin assets.
+Ghost is configured via environment variables in `compose.dev.yaml` to load public app assets from `/ghost/assets/*` (e.g., `portal__url: /ghost/assets/portal/portal.min.js` and `portal__shareUrl: /ghost/assets/portal/share.min.js`). This uses the same path structure as built admin assets.
 
 ### Routing Rules
 The Caddyfile defines these routing rules:
@@ -43,7 +43,7 @@ The Caddyfile defines these routing rules:
 | `/.well-known/webfinger`             | ActivityPub server (port 8080)      | *Optional:* WebFinger for federation                                   |
 | `/.well-known/nodeinfo`              | ActivityPub server (port 8080)      | *Optional:* NodeInfo for federation                                    |
 | `/ghost/assets/koenig-lexical/*`     | Lexical dev server (port 4173)      | *Optional:* Koenig Lexical editor (falls back to Ghost if not running) |
-| `/ghost/assets/portal/*`             | Portal dev server (port 4175)       | Membership UI                                                          |
+| `/ghost/assets/portal/*`             | Portal dev server (port 4175)       | Membership UI (`portal.min.js` and `share.min.js`)                     |
 | `/ghost/assets/comments-ui/*`        | Comments dev server (port 7173)     | Comments widget                                                        |
 | `/ghost/assets/signup-form/*`        | Signup dev server (port 6174)       | Signup form widget                                                     |
 | `/ghost/assets/sodo-search/*`        | Search dev server (port 4178)       | Search widget (JS + CSS)                                               |

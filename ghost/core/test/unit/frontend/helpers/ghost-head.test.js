@@ -1186,37 +1186,46 @@ describe('{{ghost_head}} helper', function () {
         it('includes portal when members enabled', async function () {
             getStub.withArgs('members_enabled').returns(true);
 
-            await testGhostHead(testUtils.createHbsResponse({
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
                     safeVersion: '4.3'
                 }
             }));
+
+            assert.match(rendered, /portal\.min\.js/);
+            assert.doesNotMatch(rendered, /share\.min\.js/);
         });
 
         it('includes portal when recommendations enabled', async function () {
             getStub.withArgs('recommendations_enabled').returns(true);
 
-            await testGhostHead(testUtils.createHbsResponse({
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
                     safeVersion: '4.3'
                 }
             }));
+
+            assert.match(rendered, /portal\.min\.js/);
+            assert.doesNotMatch(rendered, /share\.min\.js/);
         });
 
         it('includes portal when donations enabled', async function () {
             getStub.withArgs('donations_enabled').returns(true);
 
-            await testGhostHead(testUtils.createHbsResponse({
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
                     safeVersion: '4.3'
                 }
             }));
+
+            assert.match(rendered, /portal\.min\.js/);
+            assert.doesNotMatch(rendered, /share\.min\.js/);
         });
 
         it('includes stripe when connected', async function () {
@@ -1232,17 +1241,94 @@ describe('{{ghost_head}} helper', function () {
             }));
         });
 
-        it('skips portal and stripe when members are disabled', async function () {
+        it('includes share-only portal and skips stripe when full portal is disabled', async function () {
             getStub.withArgs('members_enabled').returns(false);
             getStub.withArgs('paid_members_enabled').returns(true);
 
-            await testGhostHead(testUtils.createHbsResponse({
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
                     context: ['home', 'index'],
                     safeVersion: '4.3'
                 }
             }));
+
+            assert.match(rendered, /share\.min\.js/);
+            assert.match(rendered, /data-portal-share="true"/);
+            assert.doesNotMatch(rendered, /portal\.min\.js/);
+            assert.doesNotMatch(rendered, /js\.stripe\.com/);
+        });
+
+        it('includes accent color on share-only portal when full portal is disabled', async function () {
+            getStub.withArgs('members_enabled').returns(false);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                templateOptions: {
+                    site: {
+                        accent_color: '#123456'
+                    }
+                },
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            assert.match(rendered, /share\.min\.js/);
+            assert.match(rendered, /data-accent-color="#123456"/);
+        });
+
+        it('omits share-only portal script when portal.shareUrl is disabled via config', async function () {
+            getStub.withArgs('members_enabled').returns(false);
+            configUtils.set('portal:shareUrl', false);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            assert.doesNotMatch(rendered, /share\.min\.js/);
+            assert.doesNotMatch(rendered, /data-portal-share/);
+            assert.doesNotMatch(rendered, /src="false"/);
+            assert.doesNotMatch(rendered, /src="undefined"/);
+        });
+
+        it('disables share inside full portal when portal.shareUrl is false via config', async function () {
+            getStub.withArgs('members_enabled').returns(true);
+            configUtils.set('portal:shareUrl', false);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            assert.match(rendered, /portal\.min\.js/);
+            assert.match(rendered, /data-disable-share="true"/);
+            assert.doesNotMatch(rendered, /share\.min\.js/);
+        });
+
+        it('omits all portal scripts when both exclude=portal and portal.shareUrl=false', async function () {
+            getStub.withArgs('members_enabled').returns(true);
+            configUtils.set('portal:shareUrl', false);
+
+            const rendered = (await ghost_head({hash: {exclude: 'portal'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            })})).toString();
+
+            assert.doesNotMatch(rendered, /portal\.min\.js/);
+            assert.doesNotMatch(rendered, /share\.min\.js/);
+            assert.doesNotMatch(rendered, /data-disable-share/);
         });
 
         it('skips stripe if not set up', async function () {
@@ -1576,8 +1662,68 @@ describe('{{ghost_head}} helper', function () {
                 }
             })});
             assert.match(rendered, /sodo-search@/);
-            assert.doesNotMatch(rendered, /portal@/);
+            assert.doesNotMatch(rendered, /portal\.min\.js/);
+            assert.match(rendered, /share\.min\.js/);
             assert.match(rendered, /js.stripe.com/);
+        });
+        it('when exclude contains portal and full portal is disabled', async function () {
+            getStub.withArgs('members_enabled').returns(false);
+            getStub.withArgs('paid_members_enabled').returns(true);
+
+            const rendered = (await ghost_head({hash: {exclude: 'portal'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            })})).toString();
+
+            assert.match(rendered, /sodo-search@/);
+            assert.doesNotMatch(rendered, /portal\.min\.js/);
+            assert.match(rendered, /share\.min\.js/);
+            assert.doesNotMatch(rendered, /js.stripe.com/);
+        });
+        it('when exclude contains portal and share', async function () {
+            getStub.withArgs('members_enabled').returns(true);
+            getStub.withArgs('paid_members_enabled').returns(true);
+
+            let rendered = await testGhostHead({hash: {exclude: 'portal,share'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            })});
+            assert.doesNotMatch(rendered, /portal\.min\.js/);
+            assert.doesNotMatch(rendered, /share\.min\.js/);
+        });
+        it('when exclude contains share with full portal enabled', async function () {
+            getStub.withArgs('members_enabled').returns(true);
+
+            let rendered = await testGhostHead({hash: {exclude: 'share'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            })});
+            assert.match(rendered, /portal\.min\.js/);
+            assert.match(rendered, /data-disable-share="true"/);
+            assert.doesNotMatch(rendered, /share\.min\.js/);
+        });
+        it('when exclude contains share with full portal disabled', async function () {
+            getStub.withArgs('members_enabled').returns(false);
+
+            let rendered = await testGhostHead({hash: {exclude: 'share'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            })});
+            assert.doesNotMatch(rendered, /portal\.min\.js/);
+            assert.doesNotMatch(rendered, /share\.min\.js/);
+            assert.doesNotMatch(rendered, /data-disable-share/);
         });
         it('can handle multiple excludes', async function () {
             getStub.withArgs('members_enabled').returns(true);
@@ -1591,7 +1737,8 @@ describe('{{ghost_head}} helper', function () {
                 }
             })});
             assert.doesNotMatch(rendered, /sodo-search@/);
-            assert.doesNotMatch(rendered, /portal@/);
+            assert.doesNotMatch(rendered, /portal\.min\.js/);
+            assert.match(rendered, /share\.min\.js/);
             assert.match(rendered, /js.stripe.com/);
         });
 
