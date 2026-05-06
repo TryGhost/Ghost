@@ -73,6 +73,22 @@ describe('Automations API', function () {
         });
     });
 
+    describe('read', function () {
+        it('returns a placeholder automation for the requested id', async function () {
+            const automationId = '67f3f3f3f3f3f3f3f3f3f3f3';
+
+            await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200)
+                .expect(cacheInvalidateHeaderNotSet())
+                .matchBodySnapshot()
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+    });
+
     describe('poll', function () {
         /** @type {sinon.SinonStub} */
         let dispatchStub;
