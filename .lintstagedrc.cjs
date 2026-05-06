@@ -1,69 +1,50 @@
 const path = require('path');
+const fs = require('fs');
 
-const SCOPED_WORKSPACES = [
-    'e2e',
-    'apps/admin',
-    'apps/posts',
-    'apps/shade'
-];
+const ROOT = process.cwd();
 
-function normalize(file) {
-    return file.split(path.sep).join('/');
-}
-
-function isInWorkspace(file, workspace) {
-    const normalizedFile = normalize(path.relative(process.cwd(), file));
-    const normalizedWorkspace = normalize(workspace);
-
-    return normalizedFile === normalizedWorkspace || normalizedFile.startsWith(`${normalizedWorkspace}/`);
+function normalize(p) {
+    return p.split(path.sep).join('/');
 }
 
 function shellQuote(value) {
     return `'${value.replace(/'/g, `'\\''`)}'`;
 }
 
-function buildScopedEslintCommand(workspace, files) {
-    if (files.length === 0) {
-        return null;
+function findWorkspace(file) {
+    let dir = path.dirname(path.resolve(file));
+    while (dir.startsWith(ROOT) && dir !== ROOT) {
+        if (fs.existsSync(path.join(dir, 'package.json'))) {
+            return normalize(path.relative(ROOT, dir));
+        }
+        dir = path.dirname(dir);
     }
-
-    const relativeFiles = files
-        .map(file => normalize(path.relative(workspace, file)))
-        .map(shellQuote)
-        .join(' ');
-
-    return `pnpm --dir ${shellQuote(workspace)} exec eslint --cache ${relativeFiles}`;
+    return null;
 }
 
-function buildRootEslintCommand(files) {
-    if (files.length === 0) {
-        return null;
-    }
-
-    const quotedFiles = files.map(file => shellQuote(normalize(file))).join(' ');
-    return `eslint --cache ${quotedFiles}`;
+function buildCommand(workspace, files) {
+    const base = workspace ? path.join(ROOT, workspace) : ROOT;
+    const relativeFiles = files
+        .map(file => normalize(path.relative(base, file)))
+        .map(shellQuote)
+        .join(' ');
+    const dirArg = workspace ? `--dir ${shellQuote(workspace)} ` : '';
+    return `pnpm ${dirArg}exec eslint --cache ${relativeFiles}`;
 }
 
 module.exports = {
     '*.{js,ts,tsx,jsx,cjs}': (files) => {
-        const workspaceGroups = new Map(SCOPED_WORKSPACES.map(workspace => [workspace, []]));
-        const rootFiles = [];
-
+        const groups = new Map();
         for (const file of files) {
-            const workspace = SCOPED_WORKSPACES.find(candidate => isInWorkspace(file, candidate));
-
-            if (workspace) {
-                workspaceGroups.get(workspace).push(file);
-            } else {
-                rootFiles.push(file);
+            const workspace = findWorkspace(file);
+            const key = workspace ?? '';
+            if (!groups.has(key)) {
+                groups.set(key, []);
             }
+            groups.get(key).push(file);
         }
-
-        return [
-            ...SCOPED_WORKSPACES
-                .map(workspace => buildScopedEslintCommand(workspace, workspaceGroups.get(workspace)))
-                .filter(Boolean),
-            buildRootEslintCommand(rootFiles)
-        ].filter(Boolean);
+        return [...groups.entries()].map(([workspace, wsFiles]) =>
+            buildCommand(workspace || null, wsFiles)
+        );
     }
 };
