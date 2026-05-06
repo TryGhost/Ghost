@@ -27,6 +27,8 @@ compose.yml
 docker
 !docker/**/*.entrypoint.sh
 !docker/**/*entrypoint.sh
+!docker/ghost-dev/sandbox-ca
+!docker/ghost-dev/sandbox-ca/*
 
 ghost/core/core/built/admin
 
