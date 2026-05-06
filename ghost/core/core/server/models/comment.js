@@ -50,6 +50,10 @@ const Comment = ghostBookshelf.Model.extend({
         return this.hasMany('CommentLike', 'comment_id');
     },
 
+    dislikes() {
+        return this.hasMany('CommentDislike', 'comment_id');
+    },
+
     replies() {
         return this.hasMany('Comment', 'parent_id', 'id')
             .query('orderBy', 'created_at', 'ASC');
@@ -124,6 +128,8 @@ const Comment = ghostBookshelf.Model.extend({
     orderAttributes: function orderAttributes() {
         let keys = ghostBookshelf.Model.prototype.orderAttributes.call(this, arguments);
         keys.push('count__likes');
+        keys.push('count__dislikes');
+        keys.push('count__net_score');
         keys.push('count__reports');
         return keys;
     },
@@ -197,7 +203,7 @@ const Comment = ghostBookshelf.Model.extend({
                     // Do not include replies for replies
                     options.withRelated = [
                         // Relations
-                        'in_reply_to', 'member', 'count.direct_replies', 'count.likes', 'count.liked'
+                        'in_reply_to', 'member', 'count.direct_replies', 'count.likes', 'count.dislikes', 'count.liked', 'count.disliked', 'count.net_score'
                     ];
 
                     // Add count.reports for admin requests only
@@ -207,9 +213,9 @@ const Comment = ghostBookshelf.Model.extend({
                 } else {
                     options.withRelated = [
                         // Relations
-                        'member', 'in_reply_to', 'count.replies', 'count.direct_replies', 'count.likes', 'count.liked',
+                        'member', 'in_reply_to', 'count.replies', 'count.direct_replies', 'count.likes', 'count.dislikes', 'count.liked', 'count.disliked', 'count.net_score',
                         'replies', 'replies.member', 'replies.in_reply_to',
-                        'replies.count.direct_replies', 'replies.count.likes', 'replies.count.liked'
+                        'replies.count.direct_replies', 'replies.count.likes', 'replies.count.dislikes', 'replies.count.liked', 'replies.count.disliked'
                     ];
 
                     // Add count.reports for admin requests only
@@ -232,7 +238,7 @@ const Comment = ghostBookshelf.Model.extend({
         // Identify reply-related relations to load separately in batch
         const replyRelationKeys = [
             'replies', 'replies.member', 'replies.in_reply_to',
-            'replies.count.direct_replies', 'replies.count.likes', 'replies.count.liked'
+            'replies.count.direct_replies', 'replies.count.likes', 'replies.count.dislikes', 'replies.count.liked', 'replies.count.disliked'
         ];
         if (options.isAdmin) {
             replyRelationKeys.push('replies.count.reports');
@@ -322,6 +328,36 @@ const Comment = ghostBookshelf.Model.extend({
                     // Return zero
                     qb.select(ghostBookshelf.knex.raw('0')).as('count__liked');
                 });
+            },
+            dislikes(modelOrCollection) {
+                modelOrCollection.query('columns', 'comments.*', (qb) => {
+                    qb.count('comment_dislikes.id')
+                        .from('comment_dislikes')
+                        .whereRaw('comment_dislikes.comment_id = comments.id')
+                        .as('count__dislikes');
+                });
+            },
+            disliked(modelOrCollection, options) {
+                modelOrCollection.query('columns', 'comments.*', (qb) => {
+                    if (options.context && options.context.member && options.context.member.id) {
+                        qb.count('comment_dislikes.id')
+                            .from('comment_dislikes')
+                            .whereRaw('comment_dislikes.comment_id = comments.id')
+                            .where('comment_dislikes.member_id', options.context.member.id)
+                            .as('count__disliked');
+                        return;
+                    }
+
+                    // Return zero
+                    qb.select(ghostBookshelf.knex.raw('0')).as('count__disliked');
+                });
+            },
+            net_score(modelOrCollection) {
+                modelOrCollection.query('columns', 'comments.*', ghostBookshelf.knex.raw(`(
+                    (SELECT COUNT(*) FROM comment_likes WHERE comment_likes.comment_id = comments.id)
+                    -
+                    (SELECT COUNT(*) FROM comment_dislikes WHERE comment_dislikes.comment_id = comments.id)
+                ) as count__net_score`));
             },
             reports(modelOrCollection) {
                 modelOrCollection.query('columns', 'comments.*', (qb) => {

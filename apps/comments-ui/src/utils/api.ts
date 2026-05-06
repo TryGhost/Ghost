@@ -299,6 +299,42 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                     }
                 });
             },
+            dislike({comment}: {comment: {id: string}}) {
+                const url = endpointFor({type: 'members', resource: `comments/${comment.id}/dislike`});
+                return makeRequest({
+                    url,
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).then(function (res) {
+                    if (res.ok) {
+                        return 'Success';
+                    } else {
+                        throw new Error('Failed to dislike comment');
+                    }
+                });
+            },
+            undislike({comment}: {comment: {id: string}}) {
+                const body = {
+                    comments: [comment]
+                };
+                const url = endpointFor({type: 'members', resource: `comments/${comment.id}/dislike`});
+                return makeRequest({
+                    url,
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(body)
+                }).then(function (res) {
+                    if (res.ok) {
+                        return 'Success';
+                    } else {
+                        throw new Error('Failed to undislike comment');
+                    }
+                });
+            },
             report({comment}: {comment: {id: string}}) {
                 const url = endpointFor({type: 'members', resource: `comments/${comment.id}/report`});
                 return makeRequest({

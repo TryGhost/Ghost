@@ -229,6 +229,10 @@ module.exports = {
         return apiFramework.pipeline(require('./comment-likes'), localUtils);
     },
 
+    get commentDislikes() {
+        return apiFramework.pipeline(require('./comment-dislikes'), localUtils);
+    },
+
     get links() {
         return apiFramework.pipeline(require('./links'), localUtils);
     },

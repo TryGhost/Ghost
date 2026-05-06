@@ -44,13 +44,15 @@ const postFields = [
 const countFields = [
     'replies',
     'direct_replies',
-    'likes'
+    'likes',
+    'dislikes'
 ];
 
 const countFieldsAdmin = [
     'replies',
     'direct_replies',
     'likes',
+    'dislikes',
     'reports'
 ];
 
@@ -109,6 +111,10 @@ const commentMapper = (model, frame) => {
 
     if (jsonModel.count && jsonModel.count.liked !== undefined) {
         response.liked = jsonModel.count.liked > 0;
+    }
+
+    if (jsonModel.count && jsonModel.count.disliked !== undefined) {
+        response.disliked = jsonModel.count.disliked > 0;
     }
 
     if (jsonModel.count) {

@@ -1,5 +1,5 @@
 const commentsService = require('../../services/comments');
-const ALLOWED_INCLUDES = ['member', 'replies', 'replies.member', 'replies.count.likes', 'replies.liked', 'count.replies', 'count.direct_replies', 'count.likes', 'liked', 'post', 'parent'];
+const ALLOWED_INCLUDES = ['member', 'replies', 'replies.member', 'replies.count.likes', 'replies.count.dislikes', 'replies.liked', 'replies.disliked', 'count.replies', 'count.direct_replies', 'count.likes', 'count.dislikes', 'liked', 'disliked', 'post', 'parent'];
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -186,6 +186,37 @@ const controller = {
         permissions: false,
         async query(frame) {
             return await commentsService.controller.unlike(frame);
+        }
+    },
+
+    dislike: {
+        statusCode: 204,
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'id'
+        ],
+        validation: {
+        },
+        permissions: false,
+        async query(frame) {
+            return await commentsService.controller.dislike(frame);
+        }
+    },
+
+    undislike: {
+        statusCode: 204,
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'id'
+        ],
+        validation: {},
+        permissions: false,
+        async query(frame) {
+            return await commentsService.controller.undislike(frame);
         }
     },
 
