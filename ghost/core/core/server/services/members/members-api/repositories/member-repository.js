@@ -1293,7 +1293,8 @@ module.exports = class MemberRepository {
                         memberId: memberModel.id,
                         subscriptionId: updatedStripeCustomerSubscriptionModel.get('id'),
                         offerId: offerId,
-                        batchId: options.batch_id
+                        batchId: options.batch_id,
+                        previousStatus: memberModel.get('status')
                     });
                     this.dispatchEvent(subscriptionActivatedEvent, options);
                 }
@@ -1381,7 +1382,8 @@ module.exports = class MemberRepository {
                     subscriptionId: newStripeCustomerSubscriptionModel.get('id'),
                     offerId: offerId,
                     attribution: attribution,
-                    batchId: options.batch_id
+                    batchId: options.batch_id,
+                    previousStatus: memberModel.get('status')
                 });
                 this.dispatchEvent(subscriptionActivatedEvent, options);
             }

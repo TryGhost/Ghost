@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 const DomainEvents = require('@tryghost/domain-events');
 const MemberRepository = require('../../../../../../../core/server/services/members/members-api/repositories/member-repository');
-const {SubscriptionCreatedEvent, OfferRedemptionEvent} = require('../../../../../../../core/shared/events');
+const {SubscriptionCreatedEvent, SubscriptionActivatedEvent, OfferRedemptionEvent} = require('../../../../../../../core/shared/events');
 
 const mockOfferRedemption = {
     add: sinon.stub(),
@@ -2034,6 +2034,102 @@ describe('MemberRepository', function () {
             });
 
             sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
+        });
+
+        it('dispatches SubscriptionActivatedEvent with previousStatus="gift" when member status was "gift"', async function () {
+            Member.findOne.resolves({
+                id: 'member_id_123',
+                get: sinon.stub().callsFake((key) => {
+                    const data = {
+                        email: 'test@example.com',
+                        name: 'Test Member',
+                        status: 'gift'
+                    };
+                    return data[key];
+                }),
+                related: (relation) => {
+                    return {
+                        query: sinon.stub().returns({
+                            fetchOne: sinon.stub().resolves({})
+                        }),
+                        toJSON: sinon.stub().returns(relation === 'products' ? [] : {}),
+                        fetch: sinon.stub().resolves({
+                            toJSON: sinon.stub().returns(relation === 'products' ? [] : {}),
+                            models: []
+                        })
+                    };
+                },
+                toJSON: sinon.stub().returns({})
+            });
+
+            const subscriptionActivatedSpy = sinon.spy();
+            DomainEvents.subscribe(SubscriptionActivatedEvent, subscriptionActivatedSpy);
+
+            const repo = new MemberRepository({
+                Member,
+                Outbox,
+                WelcomeEmailAutomationRun,
+                MemberPaidSubscriptionEvent,
+                StripeCustomerSubscription,
+                MemberProductEvent,
+                MemberStatusEvent,
+                stripeAPIService,
+                productRepository,
+                WelcomeEmailAutomation,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+            await repo.linkSubscription({
+                id: 'member_id_123',
+                subscription: subscriptionData
+            }, {
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
+                context: {}
+            });
+
+            sinon.assert.calledOnce(subscriptionActivatedSpy);
+            const event = subscriptionActivatedSpy.firstCall.args[0];
+            assert.equal(event.data.previousStatus, 'gift');
+        });
+
+        it('dispatches SubscriptionActivatedEvent with previousStatus not equal to "gift" when member status was not "gift"', async function () {
+            // Default Member.findOne stub returns no status, simulating a non-gift member
+            const subscriptionActivatedSpy = sinon.spy();
+            DomainEvents.subscribe(SubscriptionActivatedEvent, subscriptionActivatedSpy);
+
+            const repo = new MemberRepository({
+                Member,
+                Outbox,
+                WelcomeEmailAutomationRun,
+                MemberPaidSubscriptionEvent,
+                StripeCustomerSubscription,
+                MemberProductEvent,
+                MemberStatusEvent,
+                stripeAPIService,
+                productRepository,
+                WelcomeEmailAutomation,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+            await repo.linkSubscription({
+                id: 'member_id_123',
+                subscription: subscriptionData
+            }, {
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
+                context: {}
+            });
+
+            sinon.assert.calledOnce(subscriptionActivatedSpy);
+            const event = subscriptionActivatedSpy.firstCall.args[0];
+            assert.notEqual(event.data.previousStatus, 'gift');
         });
     });
 

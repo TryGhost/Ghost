@@ -406,6 +406,23 @@ describe('StaffService', function () {
                 sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('Direct')));
             });
 
+            it('skips paid subscription started email when previousStatus is "gift"', async function () {
+                await service.handleEvent(SubscriptionActivatedEvent, {
+                    data: {
+                        source: 'member',
+                        memberId: 'member-1',
+                        subscriptionId: 'sub-1',
+                        offerId: 'offer-1',
+                        tierId: 'tier-1',
+                        previousStatus: 'gift'
+                    }
+                });
+
+                sinon.assert.notCalled(service.memberAttributionService.getSubscriptionCreatedAttribution);
+                sinon.assert.notCalled(service.memberAttributionService.fetchResource);
+                sinon.assert.neverCalledWith(mailStub, sinon.match({subject: '💸 Paid subscription started: Jamie'}));
+            });
+
             it('handles paid member cancellation event', async function () {
                 await service.handleEvent(SubscriptionCancelledEvent, {
                     data: {
