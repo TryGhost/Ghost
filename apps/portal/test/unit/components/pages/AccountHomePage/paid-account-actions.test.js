@@ -674,6 +674,71 @@ describe('PaidAccountActions', () => {
         });
     });
 
+    describe('Billing section', () => {
+        test('renders for a regular paid member', () => {
+            const products = getProductsData({numOfProducts: 1});
+            const site = getSiteData({products, portalProducts: products.map(p => p.id)});
+            const member = getMemberData({
+                paid: true,
+                subscriptions: [
+                    getSubscriptionData({
+                        status: 'active',
+                        amount: 500,
+                        currency: 'USD',
+                        interval: 'month'
+                    })
+                ]
+            });
+
+            const {container} = setup({site, member});
+
+            expect(container.querySelector('[data-test-button="manage-billing"]')).toBeInTheDocument();
+        });
+
+        test('does not render for a gift member', () => {
+            const products = getProductsData({numOfProducts: 1});
+            const site = getSiteData({products, portalProducts: products.map(p => p.id)});
+            const member = getMemberData({
+                paid: true,
+                status: 'gift',
+                subscriptions: [
+                    getSubscriptionData({
+                        status: 'active',
+                        amount: 0,
+                        currency: 'USD',
+                        interval: 'month',
+                        tier: {id: products[0].id, expiry_at: new Date('2099-01-01T12:00:00.000Z')}
+                    })
+                ]
+            });
+
+            const {container} = setup({site, member});
+
+            expect(container.querySelector('[data-test-button="manage-billing"]')).not.toBeInTheDocument();
+        });
+
+        test('does not render for a complimentary member', () => {
+            const products = getProductsData({numOfProducts: 1});
+            const site = getSiteData({products, portalProducts: products.map(p => p.id)});
+            const member = getMemberData({
+                paid: true,
+                status: 'comped',
+                subscriptions: [
+                    getSubscriptionData({
+                        status: 'active',
+                        amount: 0,
+                        currency: 'USD',
+                        interval: 'month'
+                    })
+                ]
+            });
+
+            const {container} = setup({site, member});
+
+            expect(container.querySelector('[data-test-button="manage-billing"]')).not.toBeInTheDocument();
+        });
+    });
+
     describe('Canceled badge', () => {
         test('displays CANCELED badge when cancel_at_period_end is true', () => {
             const products = getProductsData({numOfProducts: 1});
