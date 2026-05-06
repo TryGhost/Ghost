@@ -756,4 +756,118 @@ describe('EventRepository', function () {
             assert.equal(event.data.member_id, 'member-xyz');
         });
     });
+
+    describe('getSubscriptionEvents', function () {
+        // Builds a Bookshelf-shaped mock that mirrors how the model is used inside
+        // getSubscriptionEvents, including the eager-load behaviour where multiple
+        // MemberPaidSubscriptionEvent rows that share a subscription_id receive the
+        // SAME SubscriptionCreatedEvent instance via .related().
+        function buildModels({sharedSubscriptionCreatedEvent}) {
+            function makeRelated(map) {
+                return name => map[name] ?? {id: undefined, related: () => ({id: undefined})};
+            }
+
+            const sharedRelated = makeRelated({
+                subscriptionCreatedEvent: sharedSubscriptionCreatedEvent,
+                stripeSubscription: {related: () => ({related: () => ({related: () => null})})}
+            });
+
+            const buildModel = (attrs) => {
+                const relations = {
+                    subscriptionCreatedEvent: sharedSubscriptionCreatedEvent,
+                    stripeSubscription: {related: () => ({related: () => ({related: () => null})})}
+                };
+                return {
+                    id: attrs.id,
+                    relations,
+                    related: name => relations[name] ?? sharedRelated(name),
+                    get: key => attrs[key],
+                    toJSON: () => {
+                        const paidStatusEvent = sharedSubscriptionCreatedEvent.related('paidStatusEvent');
+
+                        return {
+                            ...attrs,
+                            subscriptionCreatedEvent: {
+                                id: sharedSubscriptionCreatedEvent.id,
+                                paidStatusEvent: paidStatusEvent && paidStatusEvent.id ? {
+                                    id: paidStatusEvent.id,
+                                    from_status: paidStatusEvent.get('from_status'),
+                                    to_status: paidStatusEvent.get('to_status')
+                                } : undefined
+                            }
+                        };
+                    }
+                };
+            };
+
+            return [
+                // Order matches findPage(order: 'created_at desc, id desc'):
+                // the newer "updated" row comes first, the original "created" row second.
+                buildModel({
+                    id: 'mpse-updated',
+                    type: 'updated',
+                    member_id: 'member1',
+                    subscription_id: 'sub1',
+                    created_at: '2026-05-05T18:21:31.000Z'
+                }),
+                buildModel({
+                    id: 'mpse-created',
+                    type: 'created',
+                    member_id: 'member1',
+                    subscription_id: 'sub1',
+                    created_at: '2026-05-05T15:49:44.000Z'
+                })
+            ];
+        }
+
+        it('preserves previous_status on every row when multiple events share a subscription_id', async function () {
+            // One SubscriptionCreatedEvent shared across both paid-subscription rows
+            // (this is what Bookshelf's belongsTo eager-load gives us when the foreign
+            // key is duplicated). The paidStatusEvent on it represents the gift-to-paid
+            // transition.
+            const paidStatusEvent = {
+                id: 'mse-gift-to-paid',
+                get: key => ({from_status: 'gift', to_status: 'paid'}[key])
+            };
+            const sharedSubscriptionCreatedEvent = {
+                id: 'sce1',
+                relations: {paidStatusEvent, memberCreatedEvent: {id: undefined}},
+                related(name) {
+                    return this.relations[name] ?? {id: undefined};
+                }
+            };
+
+            const models = buildModels({sharedSubscriptionCreatedEvent});
+            const findPage = sinon.fake.resolves({
+                data: models,
+                meta: {pagination: {total: models.length}}
+            });
+
+            const eventRepository = new EventRepository({
+                EmailRecipient: null,
+                MemberSubscribeEvent: null,
+                MemberPaymentEvent: null,
+                MemberStatusEvent: null,
+                MemberLoginEvent: null,
+                MemberPaidSubscriptionEvent: {findPage},
+                memberAttributionService: {getEventAttribution: () => null},
+                labsService: null
+            });
+
+            const result = await eventRepository.getSubscriptionEvents({}, '');
+
+            assert.equal(result.data.length, 2);
+            const created = result.data.find(e => e.data.type === 'created');
+            const updated = result.data.find(e => e.data.type === 'updated');
+
+            // The original `created` row should still report previous_status='gift'
+            // even when iterated AFTER another row that shares its SubscriptionCreatedEvent.
+            assert.equal(created.data.previous_status, 'gift');
+
+            // The helper relation should be removed from the serialized payload
+            assert.equal(created.data.subscriptionCreatedEvent.paidStatusEvent, undefined);
+            assert.equal(updated.data.subscriptionCreatedEvent.paidStatusEvent, undefined);
+            assert.equal(sharedSubscriptionCreatedEvent.related('paidStatusEvent').get('from_status'), 'gift');
+        });
+    });
 });
