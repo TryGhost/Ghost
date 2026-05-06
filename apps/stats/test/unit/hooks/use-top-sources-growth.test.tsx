@@ -81,7 +81,9 @@ describe('useTopSourcesGrowth', () => {
         mockGetRangeDates.mockReturnValue({
             startDate: mockStartDate,
             endDate: mockEndDate,
-            timezone: null
+            // The function's actual return type is `string`, but this test exercises
+            // the falsy-timezone code path in the hook. Cast to satisfy the type.
+            timezone: null as unknown as string
         });
 
         renderHook(() => useTopSourcesGrowth(30));

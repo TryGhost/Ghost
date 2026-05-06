@@ -5,6 +5,7 @@ import {Gift} from './gift';
 import type {GiftRepository} from './gift-repository';
 import tpl from '@tryghost/tpl';
 import {GIFT_REMINDER_FLOOR_DAYS, GIFT_REMINDER_LEAD_DAYS} from './constants';
+import {MEMBER_WELCOME_EMAIL_SLUGS} from '../member-welcome-emails/constants';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const GIFT_REMINDER_LEAD_MS = GIFT_REMINDER_LEAD_DAYS * MS_PER_DAY;
@@ -37,6 +38,7 @@ interface MemberModel {
 interface MemberRepository {
     get(filter: Record<string, unknown>, options?: Record<string, unknown>): Promise<MemberModel | null>;
     update(data: Record<string, unknown>, options?: Record<string, unknown>): Promise<unknown>;
+    enqueueWelcomeEmailRun(memberId: string, slug: string, options?: Record<string, unknown>): Promise<unknown>;
 }
 
 type Tier = {
@@ -61,8 +63,6 @@ interface TiersService {
 interface GiftEmailService {
     sendPurchaseConfirmation(data: {
         buyerEmail: string;
-        amount: number;
-        currency: string;
         token: string;
         tierName: string;
         cadence: 'month' | 'year';
@@ -225,8 +225,6 @@ export class GiftService {
         try {
             await this.deps.giftEmailService.sendPurchaseConfirmation({
                 buyerEmail: data.buyerEmail,
-                amount: data.amount,
-                currency: data.currency,
                 token: data.token,
                 tierName: tier.name,
                 cadence: data.cadence,
@@ -251,23 +249,28 @@ export class GiftService {
             switch (redeemableCheck.reason) {
             case 'redeemed':
                 throw new errors.BadRequestError({
-                    message: tpl(errorMessages.giftAlreadyRedeemed)
+                    message: tpl(errorMessages.giftAlreadyRedeemed),
+                    code: 'GIFT_REDEEMED'
                 });
             case 'consumed':
                 throw new errors.BadRequestError({
-                    message: tpl(errorMessages.giftConsumed)
+                    message: tpl(errorMessages.giftConsumed),
+                    code: 'GIFT_CONSUMED'
                 });
             case 'expired':
                 throw new errors.BadRequestError({
-                    message: tpl(errorMessages.giftExpired)
+                    message: tpl(errorMessages.giftExpired),
+                    code: 'GIFT_EXPIRED'
                 });
             case 'refunded':
                 throw new errors.BadRequestError({
-                    message: tpl(errorMessages.giftRefunded)
+                    message: tpl(errorMessages.giftRefunded),
+                    code: 'GIFT_REFUNDED'
                 });
             case 'paid-member':
                 throw new errors.BadRequestError({
-                    message: tpl(errorMessages.paidMember)
+                    message: tpl(errorMessages.paidMember),
+                    code: 'GIFT_PAID_MEMBER'
                 });
             default: {
                 const exhaustiveCheck: never = redeemableCheck.reason;
@@ -324,6 +327,9 @@ export class GiftService {
 
             await this.deps.giftRepository.update(redeemed, {transacting});
 
+            // Gift members receive the paid welcome email, as they receive access to paid content
+            await this.deps.memberRepository.enqueueWelcomeEmailRun(memberId, MEMBER_WELCOME_EMAIL_SLUGS.paid, {transacting});
+
             return {redeemed, member};
         };
 
@@ -370,6 +376,13 @@ export class GiftService {
             return null;
         }
         return this.deps.giftRepository.getActiveByMember(memberId, options);
+    }
+
+    async getActiveByMembers(memberIds: string[], options: {transacting?: unknown} = {}): Promise<Map<string, Gift>> {
+        if (!memberIds || memberIds.length === 0) {
+            return new Map();
+        }
+        return this.deps.giftRepository.getActiveByMembers(memberIds, options);
     }
 
     getRemainingActiveDays(gift: Gift, now: Date = new Date()): number {

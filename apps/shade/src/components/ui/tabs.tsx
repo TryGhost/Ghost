@@ -4,9 +4,6 @@ import {DropdownMenuTrigger} from './dropdown-menu';
 
 import {cn} from '@/lib/utils';
 import {cva} from 'class-variance-authority';
-import {TrendingDown, TrendingUp, type LucideIcon} from 'lucide-react';
-import * as LucideIcons from 'lucide-react';
-import {Button, ButtonProps} from './button';
 
 type TabsVariant = 'segmented' | 'segmented-sm' | 'button' | 'button-sm' | 'underline' | 'navbar' | 'pill' | 'kpis';
 
@@ -59,6 +56,8 @@ const tabsListVariants = cva(
                 underline: 'w-full gap-5 border-b border-border-default',
                 navbar: 'h-[52px] items-end gap-6',
                 pill: '-ml-0.5 h-[30px] gap-px',
+                // The `kpis` variant is consumed only by `features/kpi/kpi-tabs.tsx`.
+                // Kept here so the cva variant set is in one place; not for direct use by app code.
                 kpis: 'border-b ring-0'
             }
         },
@@ -167,100 +166,6 @@ const TabsContent = React.forwardRef<
 });
 TabsContent.displayName = TabsPrimitive.Content.displayName;
 
-interface KpiTabTriggerProps extends React.ComponentProps<typeof TabsTrigger> {
-    children: React.ReactNode;
-}
-
-const KpiTabTrigger: React.FC<KpiTabTriggerProps> = ({children, ...props}) => {
-    return (
-        <TabsTrigger className='h-auto' {...props}>
-            {children}
-        </TabsTrigger>
-    );
-};
-
-interface KpiTabValueProps {
-    color?: string;
-    icon?: keyof typeof LucideIcons;
-    label: string;
-    value: string | number;
-    diffDirection?: 'up' | 'down' | 'same' | 'hidden';
-    diffValue?: string | number;
-    className?: string;
-    'data-testid'?: string;
-}
-
-const KpiTabValue: React.FC<KpiTabValueProps> = ({
-    color,
-    icon: iconName,
-    label,
-    value,
-    diffDirection,
-    diffValue,
-    className,
-    'data-testid': testId
-}) => {
-    const IconComponent = iconName ? LucideIcons[iconName] as LucideIcon : null;
-
-    const diffContainerClassName = cn(
-        'flex items-center gap-1 text-xs h-[22px] px-1.5 rounded-xs group/diff cursor-default mt-0.5',
-        diffDirection === 'up' && 'text-state-success bg-state-success/10',
-        diffDirection === 'down' && 'text-state-danger bg-state-danger/10',
-        diffDirection === 'same' && 'text-text-secondary bg-muted'
-    );
-    return (
-        <div className={cn('group flex w-full flex-col items-start gap-2', className)}>
-            <div className='flex h-[22px] items-center gap-1.5 text-base font-medium text-muted-foreground transition-all group-hover:text-foreground' data-type="value">
-                {color && <div className='ml-1 size-2 rounded-full opacity-50' style={{backgroundColor: color}}></div>}
-                {IconComponent && <IconComponent size={16} strokeWidth={1.5} />}
-                {label}
-            </div>
-            <div className='flex flex-col items-start gap-2 lg:flex-row xl:gap-3'>
-                <div className='text-[2.3rem] leading-none font-semibold tracking-tighter xl:text-[2.6rem]' data-testid={testId}>
-                    {value}
-                </div>
-                {diffDirection && diffDirection !== 'hidden' &&
-                    <>
-                        <div className={diffContainerClassName} data-testid={testId ? `${testId}-diff` : undefined}>
-                            <span className='leading-none font-medium'>{diffValue}</span>
-                            {diffDirection === 'up' &&
-                                <TrendingUp className='size-3!' size={14} strokeWidth={2} />
-                            }
-                            {diffDirection === 'down' &&
-                                <TrendingDown className='size-3!' size={14} strokeWidth={2} />
-                            }
-                        </div>
-                    </>
-                }
-            </div>
-        </div>
-    );
-};
-
-interface KpiDropdownButtonProps extends ButtonProps {
-    className?: string;
-    children: React.ReactNode;
-}
-
-const KpiDropdownButton = React.forwardRef<HTMLButtonElement, KpiDropdownButtonProps>(
-    ({variant = 'dropdown', className, ...props}, ref) => {
-        return (
-            <Button
-                ref={ref}
-                className={
-                    cn(
-                        'h-auto w-full rounded-none border-x-0 border-t-0 focus-visible:ring-0 bg-transparent py-5',
-                        className
-                    )
-                }
-                variant={variant}
-                {...props}
-            />
-        );
-    }
-);
-KpiDropdownButton.displayName = 'KpiDropdownButton';
-
 interface TabsDropdownTriggerProps extends Omit<React.ComponentProps<typeof TabsPrimitive.Trigger>, 'asChild'> {
     children: React.ReactNode;
 }
@@ -300,9 +205,6 @@ export {
     TabsTrigger,
     TabsTriggerCount,
     TabsContent,
-    KpiTabTrigger,
-    KpiTabValue,
-    KpiDropdownButton,
     TabsDropdownTrigger,
     tabsVariants
 };

@@ -86,7 +86,8 @@ module.exports = class EventRepository {
                 {type: 'payment_event', action: 'getPaymentEvents'},
                 {type: 'email_change_event', action: 'getEmailChangeEvent'},
                 {type: 'gift_purchase_event', action: 'getGiftPurchaseEvents'},
-                {type: 'gift_redemption_event', action: 'getGiftRedemptionEvents'}
+                {type: 'gift_redemption_event', action: 'getGiftRedemptionEvents'},
+                {type: 'gift_ended_event', action: 'getGiftEndedEvents'}
             );
 
             if (this._AutomatedEmailRecipient) {
@@ -136,6 +137,7 @@ module.exports = class EventRepository {
                         login_event: 0,
                         subscription_event: 1,
                         gift_redemption_event: 1,
+                        gift_ended_event: 1,
                         newsletter_event: 2,
                         signup_event: 3
                     };
@@ -253,10 +255,6 @@ module.exports = class EventRepository {
 
             // Prevent toJSON on stripeSubscription (we don't have everything loaded)
             delete model.relations.stripeSubscription;
-            // paidStatusEvent is a helper relation only used to derive previous_status above
-            if (subscriptionCreatedEvent && subscriptionCreatedEvent.id) {
-                delete subscriptionCreatedEvent.relations.paidStatusEvent;
-            }
             const d = {
                 ...model.toJSON(options),
                 attribution: model.get('type') === 'created' && subscriptionCreatedEvent && subscriptionCreatedEvent.id ? this._memberAttributionService.getEventAttribution(subscriptionCreatedEvent) : null,
@@ -265,6 +263,7 @@ module.exports = class EventRepository {
                 tierName
             };
             delete d.stripeSubscription;
+            delete d.subscriptionCreatedEvent?.paidStatusEvent;
             return {
                 type: 'subscription_event',
                 data: d
@@ -544,6 +543,46 @@ module.exports = class EventRepository {
                     amount: json.amount,
                     currency: json.currency,
                     created_at: json.redeemed_at
+                }
+            };
+        });
+
+        return {
+            data,
+            meta
+        };
+    }
+
+    async getGiftEndedEvents(options = {}, filter) {
+        options = {
+            ...options,
+            withRelated: ['member'],
+            filter: 'from_status:gift+to_status:free+custom:true',
+            useBasicCount: true,
+            mongoTransformer: chainTransformers(
+                // First set the filter manually
+                replaceCustomFilterTransformer(filter),
+
+                // Map the used keys in that filter
+                ...mapKeys({
+                    'data.created_at': 'created_at',
+                    'data.member_id': 'member_id'
+                })
+            )
+        };
+
+        const {data: models, meta} = await this._MemberStatusEvent.findPage(options);
+
+        const data = models.map((model) => {
+            const json = model.toJSON(options);
+
+            return {
+                type: 'gift_ended_event',
+                data: {
+                    id: json.id,
+                    member: json.member || null,
+                    member_id: json.member_id,
+                    created_at: json.created_at
                 }
             };
         });

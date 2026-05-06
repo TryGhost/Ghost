@@ -20,6 +20,7 @@
     "@tryghost/posts": "workspace:*",
     "@tryghost/shade": "workspace:*",
     "@tryghost/stats": "workspace:*",
+    "lodash": "4.18.1",
     "mingo": "2.5.3",
     "react": "18.3.1",
     "react-dom": "18.3.1",
@@ -48,7 +49,7 @@
     "tailwindcss": "^4.2.2",
     "typescript": "5.9.3",
     "typescript-eslint": "8.58.0",
-    "vite": "7.1.12",
+    "vite": "7.3.2",
     "vite-tsconfig-paths": "5.1.4",
     "vitest": "4.1.2"
   },

@@ -1,16 +1,18 @@
 module.exports = class StartGiftReminderFlushEvent {
     /**
+     * @param {any} data
      * @param {Date} timestamp
      */
-    constructor(timestamp) {
-        this.data = null;
+    constructor(data, timestamp) {
+        this.data = data;
         this.timestamp = timestamp;
     }
 
     /**
-     * @returns {StartGiftReminderFlushEvent}
+     * @param {any} [data]
+     * @param {Date} [timestamp]
      */
-    static create() {
-        return new StartGiftReminderFlushEvent(new Date());
+    static create(data, timestamp) {
+        return new StartGiftReminderFlushEvent(data, timestamp ?? new Date());
     }
 };

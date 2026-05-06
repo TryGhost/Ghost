@@ -37,9 +37,11 @@ export function toggleEventType(eventType, currentExcludedEvents = []) {
         if (excludedEvents.has('subscription_event')) {
             excludedEvents.delete('subscription_event');
             excludedEvents.delete('gift_redemption_event');
+            excludedEvents.delete('gift_ended_event');
         } else {
             excludedEvents.add('subscription_event');
             excludedEvents.add('gift_redemption_event');
+            excludedEvents.add('gift_ended_event');
         }
     } else if (eventType === 'payment_event') {
         if (excludedEvents.has('payment_event')) {

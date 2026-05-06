@@ -119,7 +119,8 @@ describe('App', function () {
 
         expect(popupFrame).toBeInTheDocument();
         expect(notificationFrame).toBeInTheDocument();
-        expect(within(notificationFrame.contentDocument).getByText('We couldn\'t redeem this gift for your account.')).toBeInTheDocument();
+        expect(within(notificationFrame.contentDocument).getByText('Gift could not be redeemed')).toBeInTheDocument();
+        expect(within(notificationFrame.contentDocument).getByText('Something went wrong, please try again later.')).toBeInTheDocument();
     });
 
     test('prefers locale prop over site locale for i18n language', async () => {

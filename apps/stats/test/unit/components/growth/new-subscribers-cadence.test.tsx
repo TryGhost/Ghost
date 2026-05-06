@@ -14,12 +14,6 @@ vi.mock('@tryghost/admin-x-framework/api/tiers', () => ({
     useBrowseTiers: vi.fn()
 }));
 
-vi.mock('@src/providers/global-data-provider', () => ({
-    useGlobalData: vi.fn(() => ({
-        data: {labs: {giftSubscriptions: true}}
-    }))
-}));
-
 // Mock date helpers from @tryghost/shade/app
 vi.mock('@tryghost/shade/app', async () => {
     const actual = await vi.importActual('@tryghost/shade/app');
@@ -47,13 +41,11 @@ vi.mock('@tryghost/shade/utils', async () => {
 });
 
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
-import {useGlobalData} from '@src/providers/global-data-provider';
 import {useMemberCountHistory, useSubscriptionStats} from '@tryghost/admin-x-framework/api/stats';
 
 const mockedUseSubscriptionStats = useSubscriptionStats as ReturnType<typeof vi.fn>;
 const mockedUseMemberCountHistory = useMemberCountHistory as ReturnType<typeof vi.fn>;
 const mockedUseBrowseTiers = useBrowseTiers as ReturnType<typeof vi.fn>;
-const mockedUseGlobalData = useGlobalData as ReturnType<typeof vi.fn>;
 
 describe('NewSubscribersCadence Component', () => {
     beforeEach(() => {
@@ -215,52 +207,31 @@ describe('NewSubscribersCadence Component', () => {
         expect(screen.getByText('20%')).toBeInTheDocument();
     });
 
-    it('shows Gift slice when giftSubscriptions labs flag is enabled and gift count increases', () => {
-        mockedUseGlobalData.mockReturnValue({data: {labs: {giftSubscriptions: true}}});
-
+    it('folds gift signups into the matching cadence bucket', () => {
         mockSuccess(mockedUseSubscriptionStats, {
             stats: [
-                {date: '2024-01-15', tier: 'tier-1', cadence: 'month', signups: 50, cancellations: 0, count: 100}
+                // 30 paid monthly + 6 monthly gifts = 36 total monthly signups
+                {date: '2024-01-15', tier: 'tier-1', cadence: 'month', signups: 36, cancellations: 0, count: 100},
+                // 10 paid yearly + 4 yearly gifts = 14 total yearly signups
+                {date: '2024-01-15', tier: 'tier-1', cadence: 'year', signups: 14, cancellations: 0, count: 50}
             ],
-            meta: {totals: [{tier: 'tier-1', cadence: 'month', count: 100}]}
-        });
-
-        mockSuccess(mockedUseMemberCountHistory, {
-            stats: [
-                {date: '2024-01-01', paid: 80, free: 50, comped: 0, gift: 0},
-                {date: '2024-01-31', paid: 100, free: 60, comped: 0, gift: 10}
-            ],
-            meta: {totals: {paid: 100, free: 60, comped: 0, gift: 10}}
+            meta: {
+                totals: [
+                    {tier: 'tier-1', cadence: 'month', count: 100},
+                    {tier: 'tier-1', cadence: 'year', count: 50}
+                ]
+            }
         });
 
         render(<NewSubscribersCadence isLoading={false} range={30} />);
 
         expect(screen.getByText('Monthly')).toBeInTheDocument();
-        expect(screen.getByText('Gift')).toBeInTheDocument();
-    });
-
-    it('hides Gift slice when giftSubscriptions labs flag is disabled, even when gift count increases', () => {
-        mockedUseGlobalData.mockReturnValue({data: {labs: {giftSubscriptions: false}}});
-
-        mockSuccess(mockedUseSubscriptionStats, {
-            stats: [
-                {date: '2024-01-15', tier: 'tier-1', cadence: 'month', signups: 50, cancellations: 0, count: 100}
-            ],
-            meta: {totals: [{tier: 'tier-1', cadence: 'month', count: 100}]}
-        });
-
-        mockSuccess(mockedUseMemberCountHistory, {
-            stats: [
-                {date: '2024-01-01', paid: 80, free: 50, comped: 0, gift: 0},
-                {date: '2024-01-31', paid: 100, free: 60, comped: 0, gift: 10}
-            ],
-            meta: {totals: {paid: 100, free: 60, comped: 0, gift: 10}}
-        });
-
-        render(<NewSubscribersCadence isLoading={false} range={30} />);
-
-        expect(screen.getByText('Monthly')).toBeInTheDocument();
+        expect(screen.getByText('Annual')).toBeInTheDocument();
         expect(screen.queryByText('Gift')).not.toBeInTheDocument();
+
+        // 36/50 = 72%, 14/50 = 28%
+        expect(screen.getByText('72%')).toBeInTheDocument();
+        expect(screen.getByText('28%')).toBeInTheDocument();
     });
 
     it('does not show complimentary when comped count does not increase', () => {

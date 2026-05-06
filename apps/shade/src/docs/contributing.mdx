@@ -6,232 +6,189 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 # Contributing to Shade
 
-<p className="excerpt">This guide explains how to contribute to the Shade design system, including adding or modifying components and documentation.</p>
+<p className="excerpt">This is the practical guide for adding to or changing the design system: where files go, how to write stories, what stops you from accidentally breaking everything downstream.</p>
 
-## Quick Start (Humans and Agents)
+## Before you write any code
 
-Use this sequence before writing code:
+The first decision is always which layer your change belongs in. The [Architecture](?path=/docs/architecture--docs) page has the full breakdown, but the quick rule:
 
-1. Pick the right layer (`tokens`, `primitives`, `components`, `patterns`).
-2. Reuse existing APIs first.
-3. If no good fit exists, keep code local first.
-4. Add shared abstractions to Shade only after clear repetition.
-5. Add stories that prove intended usage and states.
+- Visual values (colors, sizes, durations) → **Tokens**
+- Layout structure → **Primitives**
+- Generic UI controls → **Components**
+- Shared visual rules used by several components → **Recipes** (alongside components, surfaced under Foundations)
+- Product-shaped compositions → **Features**
 
-If unsure between `components` and `patterns`:
+If you're not sure between Components and Features, the smell test is: does the thing's name sound like Ghost or like the open web? `KpiCardHeader` is Ghost-y, `Button` is web-y.
 
-- choose `components` for generic controls
-- choose `patterns` for product workflow composition
+The second decision is whether the change belongs in Shade at all. The default is to keep code local to your app first. Build it where you need it, ship it, and only consider promoting it to Shade once you find yourself building the same thing again somewhere else. Premature design system additions are expensive — once an abstraction has consumers, changing it gets harder fast.
 
-## Repository Layout
-
-```
-/apps/shade/
-  .storybook/                 # Storybook config
-  src/
-    components/
-      ui/                     # Base ShadCN/UI primitives
-      layout/                 # Composed, reusable layout components
-      features/               # Feature-specific, higher-level components
-    docs/                     # System docs rendered in Storybook
-```
-
-## Import From Layered Entrypoints
-
-For new code, import from a layer-specific Shade subpath instead of the root barrel:
-
-- `@tryghost/shade/tokens` (+ `@tryghost/shade/tokens.css` for CSS token consumption)
-- `@tryghost/shade/primitives`
-- `@tryghost/shade/components`
-- `@tryghost/shade/patterns`
-- `@tryghost/shade/app`
-- `@tryghost/shade/utils`
-
-Use the root `@tryghost/shade` entrypoint only for DS-layer compatibility (`tokens`/`primitives`/`components`/`patterns`).
-Do not import `utils` or `app` symbols from root.
-
-## Ownership and "Add to Shade" Rules
-
-- Put token names/helpers and CSS token definitions in `tokens`.
-- Put layout/structure-only abstractions in `primitives`.
-- Put reusable controls and visual assets in `components`.
-- Put reusable feature-level compositions/rules in `patterns`.
-- Put app shell/provider/context APIs in `app`.
-- Keep `utils` design-system-safe only (generic helpers/hooks + third-party namespaces).
-- Do not add new domain/product helpers to `utils`; place them in app-local code or transitional `app` exports.
-
-## Primitive Composition Guardrails
-
-- Prefer `Stack`, `Inline`, `Box`, `Container`, `Grid`, and `Text` over anonymous wrappers that only carry layout utility classes.
-- Layout-shell migration scope is limited to `apps/shade/src/components/layout/*`.
-- Keep existing `@tryghost/shade/primitives` consumers compatible during migration; do not remove legacy exports during compatibility windows.
-- Use semantic spacing props (`none | xs | sm | md | lg | xl | 2xl`) for primitive composition APIs.
-
-## Component Rules and Guarantees
-
-- Shared controls in `apps/shade/src/components/ui/*` must be product-agnostic.
-- Define explicit public API and state rules before expanding variants.
-- Required interactive states for shared controls: `default`, `hover`, `focus-visible`, `disabled`.
-- If behavior becomes workflow-specific, move it into a `patterns` wrapper instead of growing the base control API.
-
-## AI Agent Output Format
-
-When an AI agent proposes or changes a shared component, include:
-
-1. `Scope` (purpose + non-goals)
-2. `Public API` (props, slots, variants)
-3. `States` (`default`, `hover`, `focus-visible`, `disabled` at minimum)
-4. `Compatibility notes` (what changed, what remains stable)
-
-## Naming Conventions
-
-- **File names:** kebab-case, e.g. `dropdown-menu.tsx` (ShadCN-generated files keep kebab-case)
-  ```
-  dropdown-menu.tsx
-  dropdown-menu.stories.tsx
-  # optional extras below
-  dropdown-menu.mdx
-  dropdown-menu.meta.json
-  fixtures/dropdown-menu.fixtures.ts
-  ```
-- **Storybook titles:**
-  - UI primitives: `Components / <Name>` (e.g., `Components / Button`)
-  - Layout: `Layout / <Name>` (e.g., `Layout / Page`)
-  - Features: `Features / <Name>` (e.g., `Features / Post Share Modal`)
-- **Component folders:**
-  - ShadCN primitives under `/apps/shade/src/components/ui/`
-  - Composed layout components under `/apps/shade/src/components/layout/`
-  - Feature components under `/apps/shade/src/components/features/`
-
-## File Set Per Component
-
-Each documented component requires:
+## Repo layout
 
 ```
-/apps/shade/src/components/ui/button.tsx          # Component (source)
-/apps/shade/src/components/ui/button.stories.tsx  # Stories (CSF)
-/apps/shade/src/components/ui/button.mdx          # (optional) component docs (MDX)
-
-# Optional metadata & fixtures
-/apps/shade/src/components/ui/button.meta.json    # Machine-readable metadata
-/apps/shade/src/components/ui/fixtures/button.fixtures.ts
+apps/shade/
+├── .storybook/                Storybook config
+└── src/
+    ├── components/
+    │   ├── ui/                Generic controls + recipes
+    │   ├── layout/            Page shells (Page, ListHeader, etc.)
+    │   └── features/          Product compositions
+    └── docs/                  These MDX pages
 ```
 
-## Component Documentation in Storybook
+Entrypoint barrels live one level up: `components.ts`, `primitives.ts`, `patterns.ts`, etc. They re-export from the folders above.
 
-We document components through concise stories that show real use cases. Each story should have a one‑line description explaining when to use that variant/state. Prefer multiple focused stories over long prose.
+## Importing from Shade
 
-Required for every component:
-- A colocated `*.stories.tsx` using CSF with:
-  - `title` under the right section (Components / Layout / Features)
-  - `tags: ['autodocs']`
-  - An overview via `parameters.docs.description.component`
-  - Stories covering key variants and states with `parameters.docs.description.story`
+Use a layer-specific subpath, not the root barrel:
 
-Example:
+```ts
+// Good
+import {Button} from '@tryghost/shade/components';
+import {Stack} from '@tryghost/shade/primitives';
+import {createFilter} from '@tryghost/shade/patterns';
+import {cn} from '@tryghost/shade/utils';
+import {ShadeApp} from '@tryghost/shade/app';
+
+// Avoid (compatibility lane only)
+import {Button, Stack} from '@tryghost/shade';
+```
+
+The full migration story is on the [Root Imports Migration](?path=/docs/migration-root-imports--docs) page.
+
+Inside Shade itself, use the `@/` path alias for cross-file imports. Don't worry about the alias leaking into emitted `.d.ts` files — `tsc-alias` rewrites them to relative paths at build time so consumer apps resolve them correctly.
+
+## File names and Storybook titles
+
+File names are kebab-case (`dropdown-menu.tsx`), matching what the ShadCN CLI generates. Components are PascalCase (`DropdownMenu`), hooks and functions are camelCase.
+
+Each component file ships alongside its story:
+
+```
+button.tsx              The component
+button.stories.tsx      Stories (CSF format)
+button.mdx              Optional component-specific docs
+```
+
+Storybook titles follow the layer convention so the sidebar groups make sense:
+
+| Layer | Title prefix |
+| --- | --- |
+| Recipe / visual rule | `Foundations / X` |
+| Layout primitive | `Primitives / X` |
+| Generic control | `Components / X` |
+| Page shell | `Layout / X` |
+| Product composition | `Features / X` |
+
+## Writing stories
+
+Every documented component needs a `.stories.tsx` file with:
+
+- A `title` under the right sidebar group.
+- `tags: ['autodocs']` so Storybook generates the docs page.
+- An overview via `parameters.docs.description.component`.
+- A handful of focused stories that cover the key variants and states, each with a one-line `parameters.docs.description.story` explaining when to use that variant.
+
+A typical Button story:
 
 ```tsx
 import type {Meta, StoryObj} from '@storybook/react-vite';
 import {Button} from './button';
 
 const meta: Meta<typeof Button> = {
-  title: 'Components / Button',
-  component: Button,
-  tags: ['autodocs'],
-  parameters: {
-    docs: {
-      description: {
-        component: 'Reusable button for actions. Choose variant/size by context.'
-      }
+    title: 'Components / Button',
+    component: Button,
+    tags: ['autodocs'],
+    parameters: {
+        docs: {
+            description: {
+                component: 'Reusable button for actions. Pick a variant and size based on context.'
+            }
+        }
     }
-  }
 };
 export default meta;
+
 type Story = StoryObj<typeof Button>;
 
 export const Default: Story = {
-  args: {children: 'Continue'},
-  parameters: {
-    docs: {description: {story: 'Primary call‑to‑action with default styling.'}}
-  }
+    args: {children: 'Continue'},
+    parameters: {docs: {description: {story: 'Primary call to action with default styling.'}}}
 };
 
 export const Destructive: Story = {
-  args: {variant: 'destructive', children: 'Delete'},
-  parameters: {
-    docs: {description: {story: 'Use for dangerous or irreversible actions.'}}
-  }
+    args: {variant: 'destructive', children: 'Delete'},
+    parameters: {docs: {description: {story: 'Use for dangerous or irreversible actions.'}}}
 };
 ```
 
-## Component Implementation
+The general pattern: prefer many small focused stories with a one-line "when to use" description over long prose. Storybook is a gallery, not a textbook.
 
-### Using ShadCN/UI
+## Implementing a component
 
-1. **Install Component**
-   ```bash
-   npx shadcn@latest add button
-   ```
+### Use ShadCN as a starting point
 
-2. **Customize Implementation**
+When the thing you're building maps onto a ShadCN primitive (Button, Dialog, Select, etc.), install it via the CLI:
 
-   > ⚠️ Always use the `cn` utility to combine classNames and `cva` for component variants. This ensures consistent class merging and variant handling across the design system.
+```bash
+npx shadcn@latest add button
+```
 
-   ```tsx
-   import { cn } from "@/lib/utils"
-   import { cva, type VariantProps } from "class-variance-authority"
+A few guardrails when running the CLI:
 
-   // Define variants using cva
-   const buttonVariants = cva(
-       // Base styles applied to all variants
-       "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors",
-       {
-           variants: {
-               variant: {
-                   solid: "bg-primary text-primary-foreground hover:bg-primary/90",
-                   outline: "border border-input bg-background hover:bg-accent",
-                   ghost: "hover:bg-accent hover:text-accent-foreground"
-               },
-               size: {
-                   sm: "h-9 px-3",
-                   md: "h-10 px-4",
-                   lg: "h-11 px-8"
-               }
-           },
-           defaultVariants: {
-               variant: "solid",
-               size: "md"
-           }
-       }
-   );
+- **Never overwrite existing Shade components.** When the prompt asks, choose "No" — we may have customizations the CLI doesn't know about.
+- **Run on a fresh branch.** It's much easier to review what the CLI did when the diff is clean.
+- **If the component already exists**, generate into a scratch repo and manually port the parts you actually want.
+- **After integrating**, run `pnpm lint`, `pnpm test`, and verify in Storybook.
 
-   // Extract variant props type
-   interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-       VariantProps<typeof buttonVariants> {}
+### Pattern for variants
 
-   // Use cn to combine variants with custom classes
-   export function Button({ className, variant, size, ...props }: ButtonProps) {
-       return (
-           <button
-               className={cn(buttonVariants({ variant, size }), className)}
-               {...props}
-           />
-       );
-   }
-   ```
+Use `cva()` for variants and `cn()` for class merging. They're not optional — they're the reason classes don't conflict in unexpected ways.
 
-   **Key Points:**
-   - Use `cn` to merge component variants with custom className props
-   - Define variants with `cva` for type-safe variant combinations
-   - Extract variant props using `VariantProps` type
-   - Always provide sensible default variants
-   - Include hover/focus states in variant definitions
+```tsx
+import {cn} from '@/lib/utils';
+import {cva, type VariantProps} from 'class-variance-authority';
 
-### Prefer Compound Subcomponents
+const buttonVariants = cva(
+    'inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors',
+    {
+        variants: {
+            variant: {
+                solid: 'bg-primary text-primary-foreground hover:bg-primary/90',
+                outline: 'border border-input bg-background hover:bg-accent',
+                ghost: 'hover:bg-accent hover:text-accent-foreground'
+            },
+            size: {
+                sm: 'h-9 px-3',
+                md: 'h-10 px-4',
+                lg: 'h-11 px-8'
+            }
+        },
+        defaultVariants: {
+            variant: 'solid',
+            size: 'md'
+        }
+    }
+);
 
-When a component has multiple meaningful regions (title, meta, actions, etc.), prefer a compound subcomponents API over many props. This keeps the API composable and flexible.
+interface ButtonProps
+    extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+        VariantProps<typeof buttonVariants> {}
 
-Example (Header):
+export function Button({className, variant, size, ...props}: ButtonProps) {
+    return (
+        <button
+            className={cn(buttonVariants({variant, size}), className)}
+            {...props}
+        />
+    );
+}
+```
+
+Three things to notice: the base styles go in the first `cva` argument, variants in the object, defaults in `defaultVariants`. The component always merges its computed className with the consumer's via `cn()` so consumers can extend without wrapping.
+
+### Compound subcomponents over heavy props
+
+When a component has multiple meaningful regions (a title, a meta line, an actions row), prefer compound subcomponents over a forest of props. It keeps the API composable and the consumer code readable:
 
 ```tsx
 function Header(props) { /* ... */ }
@@ -244,87 +201,62 @@ Header.Meta = HeaderMeta;
 Header.Actions = HeaderActions;
 
 export {Header};
+```
 
-// Usage
+Used like:
+
+```tsx
 <Header>
-  <Header.Title>Members</Header.Title>
-  <Header.Meta>42,102 total</Header.Meta>
-  <Header.Actions><Button>New member</Button></Header.Actions>
-  {/* ... */}
+    <Header.Title>Members</Header.Title>
+    <Header.Meta>42,102 total</Header.Meta>
+    <Header.Actions>
+        <Button>New member</Button>
+    </Header.Actions>
 </Header>
 ```
 
-Tips:
-- Attach parts as static properties and export them as named exports for convenience.
-- Keep parts small and focused; forward and merge `className`.
-- Demonstrate parts usage in stories (e.g., “With actions”, “With meta”).
+Each part stays small, accepts and forwards `className`, and gets demonstrated in stories ("With actions", "With meta").
 
-### Creating Custom Components
+### Custom components without ShadCN
 
-1. **File Structure**
-   ```
-   # Layout component
-   src/components/layout/
-   ├── custom-component.tsx
-   ├── custom-component.stories.tsx
-   └── custom-component.mdx
+For things that don't have a ShadCN starting point, the structure is the same — just simpler:
 
-   # Feature component
-   src/components/features/
-   ├── custom-component.tsx
-   ├── custom-component.stories.tsx
-   └── custom-component.mdx
-   ```
+```tsx
+import {cn} from '@/lib/utils';
 
-2. **Implementation Pattern**
-   ```tsx
-   import { cn } from "@/lib/utils"
+interface CustomComponentProps {
+    className?: string;
+}
 
-   interface CustomComponentProps {
-       className?: string;
-   }
+export function CustomComponent({className, ...props}: CustomComponentProps) {
+    return (
+        <div className={cn('base-styles', className)} {...props} />
+    );
+}
+```
 
-   export function CustomComponent({ className }: CustomComponentProps) {
-       return (
-           <div className={cn("base-styles", className)}>
-               {/* Component content */}
-           </div>
-       );
-   }
-   ```
+## Acceptance checklist
 
-## Acceptance Checklist
+Before you mark a component done:
 
-For each component:
+- It does one thing well, and the API reflects that one thing.
+- Multi-region components use compound subcomponents.
+- The `.stories.tsx` covers the key variants and states.
+- Each story has a short "when to use" description.
+- Accessibility is considered: labels, focus management, disabled state, keyboard support.
+- `className` is forwarded.
 
-- [ ] Component follows design system principles
-- [ ] Prefer compound subcomponents for multi‑region components
-- [ ] `*.stories.tsx` includes: overview + key variants and states
-- [ ] Each story has a short “when to use” description
-- [ ] Accessibility is considered (labels, focus, disabled) and reflected in stories/args
-- [ ] Slots are listed in Anatomy and demonstrated
-- [ ] Accessibility items include keyboard, ARIA, and contrast
-- [ ] (Optional) `*.meta.json` present and valid
+## What to do when something feels wrong
 
-## ShadCN Installation Guardrails
+A few situations should make you stop and reconsider before pushing through:
 
-- Never overwrite existing Shade components during `npx shadcn@latest add <name>` prompts — choose “No”.
-- Work on a fresh branch before running the installer: `git checkout -b chore/shadcn-add-<name>`.
-- If a component already exists, generate into a scratch repo and manually diff; port only the desired changes.
-- After integrating, run `yarn lint`, `yarn test`, and verify in Storybook.
+- The shared component is starting to grow product-specific props. Extract a Feature wrapper instead.
+- The API is requiring three or four optional props to do anything useful. Split or simplify.
+- A primitive is sprouting business logic. Move that logic up.
+- You can't decide between `components` and `features`. The decision is probably real — ask before guessing.
 
-## Utilities
+## Repo conventions
 
-- Import utilities from `@/lib/utils`.
-- Always forward and merge `className` with `cn(...)` and prefer CVA for variants when useful.
-
-## Agents & Repo Conventions
-
-Refer to `AGENTS.md` at the repository root for additional, repo-specific guidance used by both humans and agents. It covers:
-- Project structure and module organization
-- Build, test, and development commands
-- Coding style, naming conventions, and Tailwind scoping
-- Adding new components and ShadCN guardrails
-- Testing expectations and commit/PR guidelines
+For broader conventions across the Ghost monorepo (build commands, test expectations, commit and PR style), see `AGENTS.md` in the repo root.
 
 </div>

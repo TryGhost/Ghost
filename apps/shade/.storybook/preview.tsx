@@ -45,6 +45,35 @@ const customViewports = {
 	},
 };
 
+const StorybookSchemeDecorator = ({Story, scheme}: {Story: React.ComponentType; scheme: string}) => {
+	React.useEffect(() => {
+		const isDark = scheme === 'dark';
+
+		document.documentElement.classList.toggle('dark', isDark);
+		document.body.classList.toggle('dark', isDark);
+
+		return () => {
+			document.documentElement.classList.remove('dark');
+			document.body.classList.remove('dark');
+		};
+	}, [scheme]);
+
+	return (
+		<div className={`shade ${scheme === 'dark' ? 'dark' : ''}`} style={{
+			// padding: '24px',
+			// width: 'unset',
+			height: 'unset',
+			// overflow: 'unset',
+			background: (scheme === 'dark' ? '#131416' : '')
+		}}>
+			{/* 👇 Decorators in Storybook also accept a function. Replace <Story/> with Story() to enable it  */}
+			<ShadeProvider darkMode={scheme === 'dark'}>
+				<Story />
+			</ShadeProvider>
+		</div>
+	);
+};
+
 const preview: Preview = {
 	parameters: {
 		actions: { argTypesRegex: "^on[A-Z].*" },
@@ -58,6 +87,7 @@ const preview: Preview = {
 			storySort: {
 				method: 'alphabetical',
 				order: [
+					'Foundations',
 					'Primitives',
 					'Components',
 					'Layout',
@@ -87,19 +117,7 @@ const preview: Preview = {
 		(Story, context) => {
 			let {scheme} = context.globals;
 
-			return (
-			<div className={`shade ${scheme === 'dark' ? 'dark' : ''}`} style={{
-				// padding: '24px',
-				// width: 'unset',
-				height: 'unset',
-				// overflow: 'unset',
-				background: (scheme === 'dark' ? '#131416' : '')
-			}}>
-				{/* 👇 Decorators in Storybook also accept a function. Replace <Story/> with Story() to enable it  */}
-				<ShadeProvider darkMode={scheme === ''}>
-					<Story />
-				</ShadeProvider>
-			</div>);
+			return <StorybookSchemeDecorator Story={Story} scheme={scheme} />;
 	},
 	],
 	globalTypes: {

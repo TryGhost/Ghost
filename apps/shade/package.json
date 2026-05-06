@@ -51,7 +51,7 @@
     "sideEffects": false,
     "scripts": {
         "dev": "vite build --watch",
-        "build": "tsc -p tsconfig.declaration.json && vite build",
+        "build": "tsc -p tsconfig.declaration.json && tsc-alias -p tsconfig.declaration.json && vite build",
         "test": "pnpm test:types && vitest run --coverage",
         "test:unit": "pnpm test:types && vitest run",
         "test:types": "tsc --noEmit",
@@ -100,6 +100,7 @@
         "sinon": "18.0.1",
         "storybook": "10.3.5",
         "tailwindcss": "4.2.1",
+        "tsc-alias": "^1.8.17",
         "tw-animate-css": "1.4.0",
         "typescript": "5.9.3",
         "vite": "5.4.21",

@@ -43,7 +43,7 @@ SQL >
             AND member_status IN (
                 SELECT arrayJoin(
                     {{ Array(member_status, "'undefined', 'free', 'paid'", description="Member status to filter on", required=False) }}
-                    || if('paid' IN {{ Array(member_status) }}, ['comped'], [])
+                    || if('paid' IN {{ Array(member_status) }}, ['comped', 'gift'], [])
                 )
             )
         {% end %}
@@ -80,7 +80,7 @@ SQL >
             AND member_status IN (
                 SELECT arrayJoin(
                     {{ Array(member_status, "'undefined', 'free', 'paid'", description="Member status to filter on", required=False) }}
-                    || if('paid' IN {{ Array(member_status) }}, ['comped'], [])
+                    || if('paid' IN {{ Array(member_status) }}, ['comped', 'gift'], [])
                 )
             )
         {% end %}

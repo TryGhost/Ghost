@@ -1,6 +1,7 @@
 import * as React from 'react';
 
 import {cn} from '@/lib/utils';
+import {inputSurface} from '@/components/ui/input-surface';
 
 const Textarea = React.forwardRef<
   HTMLTextAreaElement,
@@ -10,7 +11,8 @@ const Textarea = React.forwardRef<
         <textarea
             ref={ref}
             className={cn(
-                'flex min-h-[80px] w-full rounded-md border border-border-default bg-surface-elevated px-3 py-2 text-base placeholder:text-muted-foreground focus-visible:outline-hidden focus-visible:bg-transparent focus-visible:border-focus-ring focus-visible:ring-2 focus-visible:ring-focus-ring/25 disabled:cursor-not-allowed disabled:opacity-50',
+                inputSurface('self'),
+                'flex min-h-[80px] w-full px-3 py-2 text-base placeholder:text-muted-foreground',
                 className
             )}
             {...props}

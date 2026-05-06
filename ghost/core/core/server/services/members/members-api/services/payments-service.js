@@ -189,6 +189,8 @@ class PaymentsService {
         const successUrlObj = new URL(successUrl);
         successUrlObj.searchParams.set('stripe', 'gift-purchase-success');
         successUrlObj.searchParams.set('gift_token', token);
+        successUrlObj.searchParams.set('gift_tier', tier.id.toHexString());
+        successUrlObj.searchParams.set('gift_cadence', cadence);
 
         const data = {
             amount,

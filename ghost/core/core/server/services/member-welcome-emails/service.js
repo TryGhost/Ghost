@@ -31,10 +31,10 @@ class MemberWelcomeEmailService {
     #memberWelcomeEmails = {free: null, paid: null};
     #defaultNewsletterSenderOptions = null;
 
-    constructor({t, singleUseTokenProvider}) {
+    constructor({t, dir, singleUseTokenProvider}) {
         emailAddressService.init();
         this.#mailer = new mail.GhostMailer();
-        this.#renderer = new MemberWelcomeEmailRenderer({t});
+        this.#renderer = new MemberWelcomeEmailRenderer({t, dir});
 
         const getSigninURL = (token) => {
             const adminUrl = urlUtils.urlFor('admin', true);
@@ -86,7 +86,8 @@ class MemberWelcomeEmailService {
             accentColor: settingsCache.get('accent_color') || '#15212A',
             iconUrl: icon ? urlUtils.urlFor('image', {
                 image: icon
-            }, true) : null
+            }, true) : null,
+            locale: settingsCache.get('locale') || 'en'
         };
     }
 
@@ -591,6 +592,7 @@ class MemberWelcomeEmailServiceWrapper {
 
         this.api = new MemberWelcomeEmailService({
             t: this.i18n.t,
+            dir: this.i18n.dir.bind(this.i18n),
             singleUseTokenProvider: new SingleUseTokenProvider({
                 SingleUseTokenModel: models.SingleUseToken,
                 validityPeriod: 24 * 60 * 60 * 1000,

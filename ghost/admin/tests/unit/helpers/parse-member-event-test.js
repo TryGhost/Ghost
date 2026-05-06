@@ -113,4 +113,18 @@ describe('Unit: Helper: parse-member-event', function () {
             expect(result.info).to.equal('Free');
         });
     });
+
+    describe('gift_ended_event', function () {
+        it('returns "ended paid subscription" action', function () {
+            const event = buildEvent({type: 'gift_ended_event'});
+            const result = helper.compute([event]);
+            expect(result.action).to.equal('ended paid subscription');
+        });
+
+        it('returns "event-subscriptions" icon', function () {
+            const event = buildEvent({type: 'gift_ended_event'});
+            const result = helper.compute([event]);
+            expect(result.icon).to.equal('event-subscriptions');
+        });
+    });
 });

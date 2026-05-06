@@ -34,6 +34,7 @@ describe('GiftService', function () {
         getByToken: sinon.SinonStub<Parameters<GiftRepository['getByToken']>, ReturnType<GiftRepository['getByToken']>>;
         getByPaymentIntentId: sinon.SinonStub<[string], Promise<Gift | null>>;
         getActiveByMember: sinon.SinonStub<Parameters<GiftRepository['getActiveByMember']>, ReturnType<GiftRepository['getActiveByMember']>>;
+        getActiveByMembers: sinon.SinonStub<Parameters<GiftRepository['getActiveByMembers']>, ReturnType<GiftRepository['getActiveByMembers']>>;
         findPendingConsumption: sinon.SinonStub<[], Promise<Gift[]>>;
         findPendingExpiration: sinon.SinonStub<[], Promise<Gift[]>>;
         findPendingReminder: sinon.SinonStub<[FindPendingReminderOptions], Promise<Gift[]>>;
@@ -46,6 +47,7 @@ describe('GiftService', function () {
     let memberRepository: {
         get: sinon.SinonStub;
         update: sinon.SinonStub;
+        enqueueWelcomeEmailRun: sinon.SinonStub;
     };
     let staffServiceEmails: {
         notifyGiftReceived: sinon.SinonStub;
@@ -80,6 +82,7 @@ describe('GiftService', function () {
             getByToken: sinon.stub<Parameters<GiftRepository['getByToken']>, ReturnType<GiftRepository['getByToken']>>().resolves(null),
             getByPaymentIntentId: sinon.stub<[string], Promise<Gift | null>>().resolves(null),
             getActiveByMember: sinon.stub<Parameters<GiftRepository['getActiveByMember']>, ReturnType<GiftRepository['getActiveByMember']>>().resolves(null),
+            getActiveByMembers: sinon.stub<Parameters<GiftRepository['getActiveByMembers']>, ReturnType<GiftRepository['getActiveByMembers']>>().resolves(new Map()),
             findPendingConsumption: sinon.stub<[], Promise<Gift[]>>().resolves([]),
             findPendingExpiration: sinon.stub<[], Promise<Gift[]>>().resolves([]),
             findPendingReminder: sinon.stub<[FindPendingReminderOptions], Promise<Gift[]>>().resolves([]),
@@ -95,7 +98,8 @@ describe('GiftService', function () {
                 memberGet.withArgs('status').returns('free');
                 return Promise.resolve({id: 'member_1', get: memberGet});
             }),
-            update: sinon.stub().resolves(undefined)
+            update: sinon.stub().resolves(undefined),
+            enqueueWelcomeEmailRun: sinon.stub().resolves(undefined)
         };
         staffServiceEmails = {
             notifyGiftReceived: sinon.stub(),
@@ -330,8 +334,6 @@ describe('GiftService', function () {
             const emailData = giftEmailService.sendPurchaseConfirmation.getCall(0).args[0];
 
             assert.equal(emailData.buyerEmail, 'buyer@example.com');
-            assert.equal(emailData.amount, 5000);
-            assert.equal(emailData.currency, 'usd');
             assert.equal(emailData.token, 'abc-123');
             assert.equal(emailData.tierName, 'Bronze');
             assert.equal(emailData.cadence, 'year');
@@ -429,7 +431,8 @@ describe('GiftService', function () {
                     redeemedAt: new Date('2026-02-01T00:00:00.000Z')
                 },
                 memberStatus: null,
-                message: 'This gift has already been redeemed.'
+                message: 'This gift has already been redeemed.',
+                code: 'GIFT_REDEEMED'
             },
             {
                 name: 'consumed gifts',
@@ -437,7 +440,8 @@ describe('GiftService', function () {
                     consumedAt: new Date('2026-02-01T00:00:00.000Z')
                 },
                 memberStatus: null,
-                message: 'This gift has already been consumed.'
+                message: 'This gift has already been consumed.',
+                code: 'GIFT_CONSUMED'
             },
             {
                 name: 'expired gifts',
@@ -445,7 +449,8 @@ describe('GiftService', function () {
                     expiredAt: new Date('2026-02-01T00:00:00.000Z')
                 },
                 memberStatus: null,
-                message: 'This gift has expired.'
+                message: 'This gift has expired.',
+                code: 'GIFT_EXPIRED'
             },
             {
                 name: 'refunded gifts',
@@ -453,13 +458,15 @@ describe('GiftService', function () {
                     refundedAt: new Date('2026-02-01T00:00:00.000Z')
                 },
                 memberStatus: null,
-                message: 'This gift has been refunded.'
+                message: 'This gift has been refunded.',
+                code: 'GIFT_REFUNDED'
             },
             {
                 name: 'paid members',
                 overrides: {},
                 memberStatus: 'paid',
-                message: 'You already have an active subscription.'
+                message: 'You already have an active subscription.',
+                code: 'GIFT_PAID_MEMBER'
             }
         ];
 
@@ -474,7 +481,7 @@ describe('GiftService', function () {
             assert.equal(result, gift);
         });
 
-        for (const {name, overrides, memberStatus, message} of testCases) {
+        for (const {name, overrides, memberStatus, message, code} of testCases) {
             it(`throws BadRequestError for ${name}`, async function () {
                 const gift = buildGift(overrides);
 
@@ -484,6 +491,7 @@ describe('GiftService', function () {
                     (err: any) => {
                         assert.equal(err.errorType, 'BadRequestError');
                         assert.equal(err.message, message);
+                        assert.equal(err.code, code);
                         return true;
                     }
                 );
@@ -1283,6 +1291,70 @@ describe('GiftService', function () {
             sinon.assert.notCalled(giftRepository.update);
             sinon.assert.notCalled(staffServiceEmails.notifyGiftSubscriptionStarted);
         });
+
+        it('enqueues the paid welcome email run for a new gift signup', async function () {
+            const gift = buildGift();
+            const memberGet = sinon.stub();
+            memberGet.withArgs('status').returns('gift');
+            memberGet.withArgs('name').returns('Member Name');
+            memberGet.withArgs('email').returns('member@example.com');
+
+            giftRepository.getByToken.resolves(gift);
+            memberRepository.get.resolves({id: 'member_1', get: memberGet});
+
+            const service = createService();
+            await service.redeem('gift-token', 'member_1', {newMember: true});
+
+            sinon.assert.calledOnceWithExactly(
+                memberRepository.enqueueWelcomeEmailRun,
+                'member_1',
+                'member-welcome-email-paid',
+                {transacting: 'trx'}
+            );
+        });
+
+        it('enqueues the paid welcome email run when an existing free member redeems a gift', async function () {
+            const gift = buildGift();
+            const memberGet = sinon.stub();
+            memberGet.withArgs('status').returns('free');
+            memberGet.withArgs('name').returns('Member Name');
+            memberGet.withArgs('email').returns('member@example.com');
+
+            giftRepository.getByToken.resolves(gift);
+            memberRepository.get.resolves({id: 'member_1', get: memberGet});
+
+            const service = createService();
+            await service.redeem('gift-token', 'member_1');
+
+            sinon.assert.calledOnceWithExactly(
+                memberRepository.enqueueWelcomeEmailRun,
+                'member_1',
+                'member-welcome-email-paid',
+                {transacting: 'trx'}
+            );
+        });
+
+        it('passes the external transaction through to the welcome email enqueue', async function () {
+            const gift = buildGift();
+            const memberGet = sinon.stub();
+            memberGet.withArgs('status').returns('free');
+            memberGet.withArgs('name').returns('Member Name');
+            memberGet.withArgs('email').returns('member@example.com');
+
+            giftRepository.getByToken.resolves(gift);
+            memberRepository.get.resolves({id: 'member_1', get: memberGet});
+
+            const service = createService();
+            const externalTrx = {executionPromise: Promise.resolve()};
+            await service.redeem('gift-token', 'member_1', {transacting: externalTrx});
+
+            sinon.assert.calledOnceWithExactly(
+                memberRepository.enqueueWelcomeEmailRun,
+                'member_1',
+                'member-welcome-email-paid',
+                {transacting: externalTrx}
+            );
+        });
     });
 
     describe('scheduleReminder (via redeem)', function () {
@@ -1623,6 +1695,41 @@ describe('GiftService', function () {
 
             assert.equal(result, null);
             sinon.assert.notCalled(giftRepository.getActiveByMember);
+        });
+    });
+
+    describe('getActiveByMembers', function () {
+        it('returns the redeemed gifts keyed by member id', async function () {
+            const giftA = buildRedeemedGift({redeemerMemberId: 'member_1', token: 'gift-token-a'});
+            const giftB = buildRedeemedGift({redeemerMemberId: 'member_2', token: 'gift-token-b'});
+            const repoMap = new Map([
+                ['member_1', giftA],
+                ['member_2', giftB]
+            ]);
+
+            giftRepository.getActiveByMembers.resolves(repoMap);
+
+            const service = createService();
+            const result = await service.getActiveByMembers(['member_1', 'member_2']);
+
+            assert.equal(result, repoMap);
+            sinon.assert.calledOnceWithExactly(giftRepository.getActiveByMembers, ['member_1', 'member_2'], {});
+        });
+
+        it('returns an empty map without hitting the repository when memberIds is empty', async function () {
+            const service = createService();
+            const result = await service.getActiveByMembers([]);
+
+            assert.equal(result.size, 0);
+            sinon.assert.notCalled(giftRepository.getActiveByMembers);
+        });
+
+        it('returns an empty map without hitting the repository when memberIds is null/undefined', async function () {
+            const service = createService();
+            const result = await service.getActiveByMembers(null as unknown as string[]);
+
+            assert.equal(result.size, 0);
+            sinon.assert.notCalled(giftRepository.getActiveByMembers);
         });
     });
 

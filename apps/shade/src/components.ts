@@ -18,7 +18,6 @@ export * from './components/ui/empty-indicator';
 export * from './components/ui/field';
 export * from './components/ui/flag';
 export * from './components/ui/form';
-export * from './components/ui/gh-chart';
 export * from './components/ui/hover-card';
 export * from './components/ui/indicator';
 export * from './components/ui/input';
@@ -26,6 +25,7 @@ export * from './components/ui/input-group';
 export * from './components/ui/kbd';
 export * from './components/ui/label';
 export * from './components/ui/loading-indicator';
+export * from './components/ui/metric-value';
 export * from './components/ui/multi-select-combobox';
 export * from './components/ui/navbar';
 export * from './components/ui/no-value-label';
@@ -39,12 +39,19 @@ export * from './components/ui/sheet';
 export * from './components/ui/sidebar';
 export * from './components/ui/skeleton';
 export * from './components/ui/sonner';
+export * from './components/ui/input-surface';
 export * from './components/ui/switch';
 export * from './components/ui/table';
 export * from './components/ui/tabs';
 export * from './components/ui/textarea';
 export * from './components/ui/toggle-group';
 export * from './components/ui/tooltip';
+export * from './components/ui/trend-badge';
+
+// Feature components — product-shaped compositions of UI primitives
+export * from './components/features/charts/gh-chart';
+export * from './components/features/kpi/kpi-card';
+export * from './components/features/kpi/kpi-tabs';
 
 export type {DropdownMenuCheckboxItemProps as DropdownMenuCheckboxItemProps} from '@radix-ui/react-dropdown-menu';
 
