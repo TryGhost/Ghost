@@ -46,8 +46,8 @@ const Comments: React.FC = () => {
     // If we are fetching comments, but not fetching the next page and not refetching, we should show the loading indicator
     const shouldShowLoading = isFetching && !isFetchingNextPage && !isRefetching;
 
-    const commentsContent = (
-        <>
+    return (
+        <CommentsLayout>
             <CommentsHeader>
                 {!isSingleIdFilter && (
                     <CommentsFilters
@@ -103,28 +103,18 @@ const Comments: React.FC = () => {
                     </>
                 )}
             </CommentsContent>
-        </>
-    );
-
-    return (
-        <CommentsLayout>
             {analyticsEnabled ? (
-                <div className='block grow lg:grid lg:grid-cols-[minmax(0,1fr)_460px]'>
-                    <CommentsSidebar>
-                        <CommentsAnalytics
-                            dateFrom={dateFrom}
-                            dateTo={dateTo}
-                            range={range}
-                            setRange={setRange}
-                            timezone={timezone}
-                            onAddFilters={handleAddFilters}
-                        />
-                    </CommentsSidebar>
-                    <div className='flex min-w-0 flex-col lg:col-start-1 lg:row-start-1 lg:[&_.prose]:max-w-[70ch]'>
-                        {commentsContent}
-                    </div>
-                </div>
-            ) : commentsContent}
+                <CommentsSidebar>
+                    <CommentsAnalytics
+                        dateFrom={dateFrom}
+                        dateTo={dateTo}
+                        range={range}
+                        setRange={setRange}
+                        timezone={timezone}
+                        onAddFilters={handleAddFilters}
+                    />
+                </CommentsSidebar>
+            ) : null}
         </CommentsLayout>
     );
 };
