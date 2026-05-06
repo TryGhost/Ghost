@@ -13,6 +13,15 @@ describe('Acceptance: Onboarding', function () {
     
     // Helper selectors for better readability
     const checklist = () => find('[data-test-dashboard="onboarding-checklist"]');
+    async function visitSetupDoneRedirect() {
+        try {
+            await visit('/setup/done');
+        } catch (error) {
+            if (error?.message !== 'TransitionAborted') {
+                throw error;
+            }
+        }
+    }
 
     beforeEach(async function () {
         mockAnalyticsApps();
@@ -47,7 +56,7 @@ describe('Acceptance: Onboarding', function () {
         // the React analytics app, not Ember.
 
         it('setup/done starts onboarding and redirects to the React onboarding route', async function () {
-            await visit('/setup/done');
+            await visitSetupDoneRedirect();
 
             await waitUntil(() => window.location.hash === '#/setup/onboarding?returnTo=/analytics');
             expect(window.location.hash).to.equal('#/setup/onboarding?returnTo=/analytics');
@@ -76,7 +85,7 @@ describe('Acceptance: Onboarding', function () {
         });
 
         it('setup/done redirects to the React onboarding route without starting onboarding', async function () {
-            await visit('/setup/done');
+            await visitSetupDoneRedirect();
 
             await waitUntil(() => window.location.hash === '#/setup/onboarding?returnTo=/analytics');
             expect(window.location.hash).to.equal('#/setup/onboarding?returnTo=/analytics');

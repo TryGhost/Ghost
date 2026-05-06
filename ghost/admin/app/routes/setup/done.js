@@ -9,7 +9,7 @@ export default class SetupFinishingTouchesRoute extends AuthenticatedRoute {
     @service session;
     @service settings;
 
-    async beforeModel() {
+    async beforeModel(transition) {
         await super.beforeModel(...arguments);
 
         if (this.session.user.isOwnerOnly) {
@@ -18,6 +18,7 @@ export default class SetupFinishingTouchesRoute extends AuthenticatedRoute {
 
         if (this.session.user?.isAdmin) {
             // The React admin app owns /setup/onboarding, so hand off via hash navigation.
+            transition.abort();
             window.location.hash = '/setup/onboarding?returnTo=/analytics';
         }
     }
