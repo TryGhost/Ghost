@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
+import {globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse, waitForApiRequest} from '@tryghost/admin-x-framework/test/acceptance';
 
 // Helper functions to reduce mockApi boilerplate
 const createConfigWithFeatureFlags = (limits?: any) => ({
@@ -97,8 +97,9 @@ test.describe('Analytics settings', async () => {
 
         await section.getByRole('button', {name: 'Save'}).click();
 
-        const body = lastApiRequests.editSettings?.body as {settings: Array<{key: string, value: boolean}>} | undefined;
-        const actualSettings = body?.settings || [];
+        const editSettings = await waitForApiRequest(lastApiRequests, 'editSettings');
+        const body = editSettings.body as {settings: Array<{key: string, value: boolean}>};
+        const actualSettings = body.settings || [];
         const expectedSettings = [
             {key: 'web_analytics', value: false},
             {key: 'members_track_sources', value: false},
@@ -129,7 +130,8 @@ test.describe('Analytics settings', async () => {
 
         await section.getByRole('button', {name: 'Post analytics'}).click();
 
-        const hasDownloadUrl = lastApiRequests.postsExport?.url?.includes('/posts/export/?limit=1000');
+        const postsExport = await waitForApiRequest(lastApiRequests, 'postsExport');
+        const hasDownloadUrl = postsExport.url?.includes('/posts/export/?limit=1000');
         expect(hasDownloadUrl).toBe(true);
     });
 
@@ -211,7 +213,8 @@ test.describe('Analytics settings', async () => {
         await webAnalyticsToggle.uncheck();
         await section.getByRole('button', {name: 'Save'}).click();
 
-        expect(lastApiRequests.editSettings?.body).toEqual({
+        const editSettings = await waitForApiRequest(lastApiRequests, 'editSettings');
+        expect(editSettings.body).toEqual({
             settings: [
                 {key: 'web_analytics', value: false}
             ]
@@ -270,7 +273,8 @@ test.describe('Analytics settings', async () => {
         await webAnalyticsToggle.check();
         await section.getByRole('button', {name: 'Save'}).click();
 
-        expect(lastApiRequests.editSettings?.body).toEqual({
+        const editSettings = await waitForApiRequest(lastApiRequests, 'editSettings');
+        expect(editSettings.body).toEqual({
             settings: [
                 {key: 'web_analytics', value: true}
             ]
