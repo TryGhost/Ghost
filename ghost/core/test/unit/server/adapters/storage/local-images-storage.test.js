@@ -157,12 +157,14 @@ describe('Local Images Storage', function () {
                 });
         });
 
-        it('success (leading and trailing slashes)', function (done) {
-            localFileStore.read({path: '/ghost-logo.png/'})
-                .then(function (bytes) {
-                    assert.equal(bytes.length, 8638);
-                    done();
-                });
+        it('rejects leading and trailing slashes', async function () {
+            // The strict adapter contract requires canonical relative paths;
+            // callers that historically passed slashy URL-shaped paths must
+            // strip them at the call site.
+            await assert.rejects(
+                localFileStore.read({path: '/ghost-logo.png/'}),
+                /must be relative to the storage root/
+            );
         });
 
         it('image does not exist', function (done) {
@@ -222,35 +224,21 @@ describe('Local Images Storage', function () {
         });
     });
 
-    // @TODO: remove path.join mock...
     describe('on Windows', function () {
         const truePathSep = path.sep;
-        let pathJoinStub;
-
-        beforeEach(function () {
-            pathJoinStub = sinon.stub(path, 'join');
-            sinon.stub(configUtils.config, 'getContentPath').returns('content/images/');
-        });
 
         afterEach(function () {
             path.sep = truePathSep;
         });
 
-        it('should return url in proper format for windows', function (done) {
+        it('returns the URL with forward slashes regardless of platform separator', function (done) {
+            // The production code applies a `path.sep → /` replace at the end
+            // of save() so URLs never carry backslashes even when running on
+            // Windows. We verify by flipping path.sep mid-flight and checking
+            // the returned URL is still POSIX-shaped.
             path.sep = '\\';
-            pathJoinStub.returns('content\\images\\2013\\09\\IMAGE.jpg');
-
             localFileStore.save(image).then(function (url) {
-                if (truePathSep === '\\') {
-                    assert.equal(url, '/content/images/2013/09/IMAGE.jpg');
-                } else {
-                    // if this unit test is run on an OS that uses forward slash separators,
-                    // localfilesystem.save() will use a path.relative() call on
-                    // one path with backslash separators and one path with forward
-                    // slashes and it returns a path that needs to be normalized
-                    assert.equal(path.normalize(url), '/content/images/2013/09/IMAGE.jpg');
-                }
-
+                assert.ok(!url.includes('\\'), `URL should contain no backslashes, got "${url}"`);
                 done();
             }).catch(done);
         });

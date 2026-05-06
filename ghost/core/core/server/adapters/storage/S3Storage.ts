@@ -18,6 +18,7 @@ import {
     S3Client,
     S3ClientConfig
 } from '@aws-sdk/client-s3';
+import {assertCanonicalFilePath, assertCanonicalDirPath} from './utils';
 
 // Minimum chunk size for multipart uploads (5 MiB) - required by S3/GCS
 // GCS limits: https://docs.cloud.google.com/storage/quotas#requests
@@ -83,6 +84,12 @@ export default class S3Storage extends StorageBase {
 
     private readonly multipartChunkSizeBytes: number;
 
+    // Bound to this instance's storagePath in the constructor so call sites
+    // don't have to repeat it on every assertion.
+    private readonly _assertFilePath: (input: string) => void;
+
+    private readonly _assertDirPath: (input: string) => void;
+
     constructor(options: S3StorageOptions) {
         super();
 
@@ -147,10 +154,19 @@ export default class S3Storage extends StorageBase {
         }
 
         this.client = options.s3Client || new S3Client(clientConfig);
+
+        this._assertFilePath = input => assertCanonicalFilePath(input, this.storagePath);
+        this._assertDirPath = input => assertCanonicalDirPath(input, this.storagePath);
     }
 
     async save(file: UploadFile, targetDir?: string): Promise<string> {
-        const dir = targetDir || this.getTargetDir();
+        if (targetDir !== undefined) {
+            this._assertDirPath(targetDir);
+        }
+        // Distinguish "no targetDir given" (use the year/month default) from
+        // an explicit empty string (storage root, used by the importer for
+        // files at the top of an import zip).
+        const dir = targetDir !== undefined ? targetDir : this.getTargetDir();
         const relativePath = await this.getUniqueFileName(file, dir);
 
         const key = this.buildKey(relativePath);
@@ -261,11 +277,7 @@ export default class S3Storage extends StorageBase {
     }
 
     async saveRaw(buffer: Buffer, targetPath: string): Promise<string> {
-        if (!targetPath?.trim()) {
-            throw new errors.IncorrectUsageError({
-                message: tpl(messages.emptyTargetPath)
-            });
-        }
+        this._assertFilePath(targetPath);
 
         const key = this.buildKey(targetPath);
 
@@ -320,10 +332,19 @@ export default class S3Storage extends StorageBase {
     }
 
     async exists(fileName: string, targetDir?: string): Promise<boolean> {
-        if (!fileName?.trim()) {
-            throw new errors.IncorrectUsageError({
-                message: tpl(messages.emptyFileName, {method: 'exists'})
-            });
+        // exists() is a query, not a mutation: a malformed input is "no, that
+        // doesn't exist" rather than a programmer-error throw. Mutating methods
+        // (save/saveRaw/delete) still throw on the same validator failures.
+        try {
+            this._assertFilePath(fileName);
+            if (targetDir !== undefined) {
+                this._assertDirPath(targetDir);
+            }
+        } catch (err) {
+            if (err instanceof errors.IncorrectUsageError) {
+                return false;
+            }
+            throw err;
         }
 
         const relativePath = targetDir ? path.posix.join(targetDir, fileName) : fileName;
@@ -358,10 +379,9 @@ export default class S3Storage extends StorageBase {
     }
 
     async delete(fileName: string, targetDir?: string): Promise<void> {
-        if (!fileName?.trim()) {
-            throw new errors.IncorrectUsageError({
-                message: tpl(messages.emptyFileName, {method: 'delete'})
-            });
+        this._assertFilePath(fileName);
+        if (targetDir !== undefined) {
+            this._assertDirPath(targetDir);
         }
 
         const relativePath = targetDir ? path.posix.join(targetDir, fileName) : fileName;

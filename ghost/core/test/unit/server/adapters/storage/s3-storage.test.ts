@@ -320,9 +320,10 @@ describe('S3Storage', function () {
         const {storage, sendStub} = createStorage();
         const {HeadObjectCommand: HeadObjectCmd} = await import('@aws-sdk/client-s3');
 
-        // handle-image-sizes middleware calls exists(req.url) with a single path argument
+        // handle-image-sizes middleware calls exists with a single canonical
+        // (relative) path argument
         sendStub.resolves({});
-        const exists = await storage.exists('/size/w1200/2024/06/photo.jpg');
+        const exists = await storage.exists('size/w1200/2024/06/photo.jpg');
         assert.equal(exists, true, 'should resolve to true when object exists');
 
         const command = sendStub.firstCall.args[0] as InstanceType<typeof HeadObjectCmd>;
@@ -334,7 +335,7 @@ describe('S3Storage', function () {
 
         sendStub.resetHistory();
         sendStub.rejects(createNotFoundError());
-        const missing = await storage.exists('/size/w1200/2024/06/missing.jpg');
+        const missing = await storage.exists('size/w1200/2024/06/missing.jpg');
         assert.equal(missing, false, 'should resolve to false when object does not exist');
     });
 
@@ -353,7 +354,7 @@ describe('S3Storage', function () {
 
         sendStub.rejects(createNotFoundError());
 
-        await storage.delete('ghost.txt', 'content/files');
+        await storage.delete('ghost.txt', '2024/06');
         sinon.assert.calledOnce(sendStub);
     });
 
@@ -369,17 +370,16 @@ describe('S3Storage', function () {
 
         await assert.rejects(
             storage.saveRaw(Buffer.from('data'), ''),
-            /requires a non-empty targetPath/
+            /requires a non-empty file path/
         );
     });
 
-    it('exists throws when fileName is empty', async function () {
+    it('exists returns false when fileName is empty', async function () {
+        // exists() is a query — malformed inputs are treated as "doesn't
+        // exist" rather than thrown back at the caller.
         const {storage} = createStorage();
 
-        await assert.rejects(
-            storage.exists('', '2024/06'),
-            /requires a non-empty fileName/
-        );
+        assert.equal(await storage.exists('', '2024/06'), false);
     });
 
     it('delete throws when fileName is empty', async function () {
@@ -387,7 +387,7 @@ describe('S3Storage', function () {
 
         await assert.rejects(
             storage.delete('', '2024/06'),
-            /requires a non-empty fileName/
+            /requires a non-empty file path/
         );
     });
 

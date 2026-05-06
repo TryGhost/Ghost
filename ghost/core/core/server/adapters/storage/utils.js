@@ -1,8 +1,73 @@
+const path = require('path');
+const errors = require('@tryghost/errors');
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');
 /**
  * @TODO: move `events.js` to here - e.g. storageUtils.getStorage
  */
+
+/**
+ * Storage adapters accept a single canonical input shape: a path relative to
+ * the storage root, with no leading slash, no storagePath prefix, and no
+ * `..` segments. Validate inputs at the adapter boundary so all callers
+ * agree on the shape.
+ *
+ * @param {string} input - the path argument to validate
+ * @param {string} storagePath - the storage root prefix (e.g. 'content/images')
+ * @param {string} [paramName='path'] - parameter name to surface in errors
+ */
+/**
+ * Validate the *shape* of a path argument — relative, no leading slash, no
+ * storagePath prefix, no traversal. Used internally by both the file-path
+ * and directory-path validators below.
+ */
+function assertCanonicalShape(input, storagePath) {
+    if (input.startsWith('/')) {
+        throw new errors.IncorrectUsageError({
+            message: `Storage path must be relative to the storage root, not absolute (received "${input}")`
+        });
+    }
+    if (input === storagePath || input.startsWith(`${storagePath}/`)) {
+        throw new errors.IncorrectUsageError({
+            message: `Storage path must not include the storagePath prefix "${storagePath}" (received "${input}")`
+        });
+    }
+    const normalized = path.posix.normalize(input);
+    if (normalized === '.' || normalized === '..' || normalized.startsWith('../')) {
+        throw new errors.IncorrectUsageError({
+            message: `Storage path must not escape the storage root (received "${input}")`
+        });
+    }
+}
+
+/**
+ * Validate a *file* path: a canonical relative path that must name a file.
+ * Empty is rejected — you can't read or write nothing.
+ */
+exports.assertCanonicalFilePath = function assertCanonicalFilePath(input, storagePath) {
+    if (typeof input !== 'string' || input.length === 0) {
+        throw new errors.IncorrectUsageError({
+            message: 'Storage requires a non-empty file path'
+        });
+    }
+    assertCanonicalShape(input, storagePath);
+};
+
+/**
+ * Validate a *directory* path: a canonical relative path that may be the
+ * empty string, representing the storage root itself.
+ */
+exports.assertCanonicalDirPath = function assertCanonicalDirPath(input, storagePath) {
+    if (typeof input !== 'string') {
+        throw new errors.IncorrectUsageError({
+            message: 'Storage directory path must be a string'
+        });
+    }
+    if (input.length === 0) {
+        return;
+    }
+    assertCanonicalShape(input, storagePath);
+};
 
 /**
  * Sanitizes a given URL or path for an image to be readable by the local file storage
@@ -28,13 +93,17 @@ exports.getLocalImagesStoragePath = function getLocalImagesStoragePath(imagePath
         urlUtils.STATIC_IMAGE_URL_PREFIX)}`
     );
 
+    let stripped;
     if (imagePath.match(urlRegExp)) {
-        return imagePath.replace(urlRegExp, '');
+        stripped = imagePath.replace(urlRegExp, '');
     } else if (imagePath.match(filePathRegExp)) {
-        return imagePath.replace(filePathRegExp, '');
+        stripped = imagePath.replace(filePathRegExp, '');
     } else {
-        return imagePath;
+        stripped = imagePath;
     }
+    // Storage adapters require canonical relative paths — strip any leading
+    // slash left over from the URL form.
+    return stripped.replace(/^\/+/, '');
 };
 
 /**

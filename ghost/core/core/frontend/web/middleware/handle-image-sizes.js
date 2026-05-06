@@ -111,14 +111,19 @@ module.exports = function handleImageSizes(req, res, next) {
         return redirectToOriginal();
     }
 
-    storageInstance.exists(req.url).then((exists) => {
+    // Strip the leading slashes that Express + the format/size regex remove
+    // in the URL space so storage adapters see canonical relative paths.
+    const storageRelativePath = req.url.replace(/^\/+/, '');
+    const originalImagePath = imagePath.replace(/^\/+/, '');
+
+    storageInstance.exists(storageRelativePath).then((exists) => {
         if (exists) {
             return;
         }
 
-        return imageSize.getOriginalImagePath(imagePath)
-            .then((storagePath) => {
-                return storageInstance.read({path: storagePath});
+        return imageSize.getOriginalImagePath(originalImagePath)
+            .then((originalRelativePath) => {
+                return storageInstance.read({path: originalRelativePath});
             })
             .then((originalImageBuffer) => {
                 if (originalImageBuffer.length <= 0) {
@@ -132,7 +137,7 @@ module.exports = function handleImageSizes(req, res, next) {
                 });
             })
             .then((resizedImageBuffer) => {
-                return storageInstance.saveRaw(resizedImageBuffer, req.url);
+                return storageInstance.saveRaw(resizedImageBuffer, storageRelativePath);
             });
     }).then(() => {
         if (format) {

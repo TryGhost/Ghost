@@ -138,13 +138,8 @@ class ExternalMediaInliner {
             logging.warn(`No storage adapter found for file extension: ${media.extension}`);
             return null;
         } else {
-            // @NOTE: this is extremely convoluted and should live on a
-            //        storage adapter level
-            const targetDir = storage.getTargetDir(storage.storagePath);
-            const uniqueFileName = await storage.getUniqueFileName({
-                name: media.filename
-            }, targetDir);
-            const targetPath = path.relative(storage.storagePath, uniqueFileName);
+            const targetDir = storage.getTargetDir();
+            const targetPath = await storage.getUniqueFileName({name: media.filename}, targetDir);
             const filePath = await storage.saveRaw(media.fileBuffer, targetPath);
 
             return urlUtils.toTransformReady(filePath);

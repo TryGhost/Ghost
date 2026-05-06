@@ -109,7 +109,7 @@ describe('Local Storage Base', function () {
 
             await assert.rejects(
                 localStorageBase.read({path: '../../outside-root.txt'}),
-                {message: 'The path "../../outside-root.txt" is not valid for this storage.'}
+                /must not escape the storage root/
             );
         });
 
@@ -135,7 +135,7 @@ describe('Local Storage Base', function () {
 
             await assert.rejects(
                 localStorageBase.read({path: 'foo/..'}),
-                {message: 'The path "foo/.." is not valid for this storage.'}
+                /must not escape the storage root/
             );
         });
 
@@ -159,7 +159,7 @@ describe('Local Storage Base', function () {
 
             await assert.rejects(
                 localStorageBase.delete(''),
-                {message: 'The path "" is not valid for this storage.'}
+                /requires a non-empty file path/
             );
         });
 
@@ -211,7 +211,7 @@ describe('Local Storage Base', function () {
 
             await assert.rejects(
                 localStorageBase.delete('file.txt', '../../etc'),
-                {message: 'The path "file.txt" is not valid for this storage.'}
+                /must not escape the storage root/
             );
         });
     });

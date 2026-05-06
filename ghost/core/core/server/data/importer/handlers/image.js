@@ -30,15 +30,17 @@ ImageHandler = {
 
             file.originalPath = noBaseDir;
             file.name = noGhostDirs;
-            file.targetDir = path.join(config.getContentPath('images'), path.dirname(noGhostDirs));
+            // path.dirname returns '.' when the file is at the root of the
+            // import; the adapter expects either a relative subdirectory or
+            // the empty string (representing the storage root itself).
+            const dir = path.dirname(noGhostDirs);
+            file.targetDir = (dir === '.' || dir === '') ? '' : dir;
             return file;
         });
 
         return Promise.all(files.map(function (image) {
-            return store.getUniqueFileName(image, image.targetDir).then(function (targetFilename) {
-                image.newPath = urlUtils.urlJoin('/', urlUtils.getSubdir(), store.staticFileURLPrefix,
-                    path.relative(config.getContentPath('images'), targetFilename));
-
+            return store.getUniqueFileName(image, image.targetDir).then(function (relativeFilename) {
+                image.newPath = urlUtils.urlJoin('/', urlUtils.getSubdir(), store.staticFileURLPrefix, relativeFilename);
                 return image;
             });
         }));

@@ -53,7 +53,7 @@ describe('ImageHandler', function () {
         sinon.assert.calledOnce(storageSpy);
         sinon.assert.calledOnce(storeSpy);
         assert.equal(storeSpy.firstCall.args[0].originalPath, 'test-image.jpeg');
-        assert.match(storeSpy.firstCall.args[0].targetDir, /(\/|\\)content(\/|\\)images$/);
+        assert.equal(storeSpy.firstCall.args[0].targetDir, '');
         assert.equal(storeSpy.firstCall.args[0].newPath, '/content/images/test-image.jpeg');
     });
 
@@ -72,7 +72,7 @@ describe('ImageHandler', function () {
         sinon.assert.calledOnce(storageSpy);
         sinon.assert.calledOnce(storeSpy);
         assert.equal(storeSpy.firstCall.args[0].originalPath, 'photos/my-cat.jpeg');
-        assert.match(storeSpy.firstCall.args[0].targetDir, /(\/|\\)content(\/|\\)images(\/|\\)photos$/);
+        assert.equal(storeSpy.firstCall.args[0].targetDir, 'photos');
         assert.equal(storeSpy.firstCall.args[0].newPath, '/content/images/photos/my-cat.jpeg');
     });
 
@@ -91,7 +91,7 @@ describe('ImageHandler', function () {
         sinon.assert.calledOnce(storageSpy);
         sinon.assert.calledOnce(storeSpy);
         assert.equal(storeSpy.firstCall.args[0].originalPath, 'content/images/my-cat.jpeg');
-        assert.match(storeSpy.firstCall.args[0].targetDir, /(\/|\\)content(\/|\\)images$/);
+        assert.equal(storeSpy.firstCall.args[0].targetDir, '');
         assert.equal(storeSpy.firstCall.args[0].newPath, '/content/images/my-cat.jpeg');
     });
 
@@ -112,7 +112,9 @@ describe('ImageHandler', function () {
         sinon.assert.calledOnce(storageSpy);
         sinon.assert.calledOnce(storeSpy);
         assert.equal(storeSpy.firstCall.args[0].originalPath, 'test-image.jpeg');
-        assert.match(storeSpy.firstCall.args[0].targetDir, /(\/|\\)content(\/|\\)images$/);
+        // Files at the root of the import use the empty string to denote the
+        // storage root (the strict adapter contract requires relative paths).
+        assert.equal(storeSpy.firstCall.args[0].targetDir, '');
         assert.equal(storeSpy.firstCall.args[0].newPath, '/subdir/content/images/test-image.jpeg');
     });
 
@@ -141,16 +143,16 @@ describe('ImageHandler', function () {
         sinon.assert.calledOnce(storageSpy);
         sinon.assert.callCount(storeSpy, 4);
         assert.equal(storeSpy.firstCall.args[0].originalPath, 'testing.png');
-        assert.match(storeSpy.firstCall.args[0].targetDir, /(\/|\\)content(\/|\\)images$/);
+        assert.equal(storeSpy.firstCall.args[0].targetDir, '');
         assert.equal(storeSpy.firstCall.args[0].newPath, '/content/images/testing.png');
         assert.equal(storeSpy.secondCall.args[0].originalPath, 'photo/kitten.jpg');
-        assert.match(storeSpy.secondCall.args[0].targetDir, /(\/|\\)content(\/|\\)images(\/|\\)photo$/);
+        assert.equal(storeSpy.secondCall.args[0].targetDir, 'photo');
         assert.equal(storeSpy.secondCall.args[0].newPath, '/content/images/photo/kitten.jpg');
         assert.equal(storeSpy.thirdCall.args[0].originalPath, 'content/images/animated/bunny.gif');
-        assert.match(storeSpy.thirdCall.args[0].targetDir, /(\/|\\)content(\/|\\)images(\/|\\)animated$/);
+        assert.equal(storeSpy.thirdCall.args[0].targetDir, 'animated');
         assert.equal(storeSpy.thirdCall.args[0].newPath, '/content/images/animated/bunny.gif');
         assert.equal(storeSpy.lastCall.args[0].originalPath, 'images/puppy.jpg');
-        assert.match(storeSpy.lastCall.args[0].targetDir, /(\/|\\)content(\/|\\)images$/);
+        assert.equal(storeSpy.lastCall.args[0].targetDir, '');
         assert.equal(storeSpy.lastCall.args[0].newPath, '/content/images/puppy.jpg');
     });
 });

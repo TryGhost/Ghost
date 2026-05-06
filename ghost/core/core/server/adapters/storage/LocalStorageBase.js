@@ -8,6 +8,7 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const urlUtils = require('../../../shared/url-utils');
 const StorageBase = require('ghost-storage-base');
+const {assertCanonicalFilePath, assertCanonicalDirPath} = require('./utils');
 
 const messages = {
     notFound: 'File not found',
@@ -37,75 +38,32 @@ class LocalStorageBase extends StorageBase {
         this.siteUrl = siteUrl;
         this.staticFileUrl = `${siteUrl}${staticFileURLPrefix}`;
         this.errorMessages = errorMessages || messages;
+
+        // Bind the path validators to this instance's storagePath so call
+        // sites don't have to repeat it on every assertion.
+        this._assertFilePath = input => assertCanonicalFilePath(input, this.storagePath);
+        this._assertDirPath = input => assertCanonicalDirPath(input, this.storagePath);
     }
 
     /**
-     * Normalizes a relative storage path and rejects traversal outside the storage root.
+     * Resolve a relative-to-storage path or path pair into a full filesystem
+     * path inside the storage root. Inputs must already be canonical
+     * (validated at the public entry points); this just composes the on-disk
+     * path.
      *
-     * @param {string} filePath
+     * @param {string} [targetDir]
+     * @param {string} [fileName]
      * @returns {string}
      */
-    _normalizeStorageRelativePath(filePath) {
-        const normalized = path.posix.normalize(String(filePath || '')
-            .replaceAll('\\', '/')
-            .replace(/^\/+/, '')
-            .replace(/\/+$/, ''));
-
-        if (normalized === '.' || normalized === '..' || normalized.startsWith('../')) {
-            throw new errors.IncorrectUsageError({
-                message: tpl(messages.invalidPathParameter, {path: filePath})
-            });
-        }
-
-        return normalized;
-    }
-
-    /**
-     * Resolves a target directory and optional file name into a full path,
-     * validating the result is inside the storage root.
-     *
-     * Supports relative paths (preferred) and absolute paths (legacy).
-     * TODO: remove absolute path support once all callers pass relative paths
-     *
-     * @param {string} [targetDir] absolute or relative directory
-     * @param {string} [fileName] file name to normalize and append
-     * @returns {string} resolved absolute path inside storagePath
-     */
-    _resolveAndValidateStoragePath(targetDir, fileName) {
-        const resolvedRoot = path.resolve(this.storagePath);
-
-        // Resolve targetDir: if already inside storage root use as-is, otherwise treat as relative
-        let resolvedBase;
+    _resolveStoragePath(targetDir, fileName) {
+        const segments = [this.storagePath];
         if (targetDir) {
-            const resolvedTargetDir = path.resolve(targetDir);
-            const relToRoot = path.relative(resolvedRoot, resolvedTargetDir);
-            if (relToRoot === '' || (!relToRoot.startsWith('..') && !path.isAbsolute(relToRoot))) {
-                resolvedBase = resolvedTargetDir;
-            } else {
-                resolvedBase = path.resolve(this.storagePath, targetDir);
-            }
-        } else {
-            resolvedBase = resolvedRoot;
+            segments.push(targetDir);
         }
-
-        // If fileName provided, normalize and resolve
-        let resolvedPath;
         if (fileName) {
-            const normalizedFileName = this._normalizeStorageRelativePath(fileName);
-            resolvedPath = path.resolve(resolvedBase, normalizedFileName);
-        } else {
-            resolvedPath = resolvedBase;
+            segments.push(fileName);
         }
-
-        // Validate the resolved path is strictly inside the storage root (not equal to it)
-        const relative = path.relative(resolvedRoot, resolvedPath);
-        if (relative === '' || relative === '..' || relative.startsWith('..' + path.sep) || path.isAbsolute(relative)) {
-            throw new errors.IncorrectUsageError({
-                message: tpl(messages.invalidPathParameter, {path: fileName || targetDir || ''})
-            });
-        }
-
-        return resolvedPath;
+        return path.join(...segments);
     }
 
     /**
@@ -117,19 +75,21 @@ class LocalStorageBase extends StorageBase {
      * @returns {Promise<String>}
      */
     async save(file, targetDir) {
-        let targetFilename;
+        if (targetDir !== undefined) {
+            this._assertDirPath(targetDir);
+        }
+        // Keep the dir relative through generateUnique/exists so the strict
+        // validator sees canonical inputs. Only resolve to absolute when we
+        // actually touch the filesystem. Distinguish "no targetDir" (year/month
+        // default) from explicit empty string (storage root).
+        const relativeDir = targetDir !== undefined ? targetDir : this.getTargetDir();
+        const relativeFilePath = await this.getUniqueFileName(file, relativeDir);
 
-        targetDir = targetDir
-            ? this._resolveAndValidateStoragePath(targetDir)
-            : this.getTargetDir(this.storagePath);
-
-        const filename = await this.getUniqueFileName(file, targetDir);
-
-        targetFilename = filename;
-        await fs.mkdirs(targetDir);
+        const absoluteFilePath = path.join(this.storagePath, relativeFilePath);
+        await fs.mkdirs(path.dirname(absoluteFilePath));
 
         try {
-            await fs.copy(file.path, targetFilename);
+            await fs.copy(file.path, absoluteFilePath);
         } catch (err) {
             if (err.code === 'ENAMETOOLONG') {
                 throw new errors.BadRequestError({err});
@@ -144,7 +104,7 @@ class LocalStorageBase extends StorageBase {
             urlUtils.urlJoin('/',
                 urlUtils.getSubdir(),
                 this.staticFileURLPrefix,
-                path.relative(this.storagePath, targetFilename))
+                relativeFilePath)
         ).replace(new RegExp(`\\${path.sep}`, 'g'), '/');
 
         return fullUrl;
@@ -157,7 +117,9 @@ class LocalStorageBase extends StorageBase {
      * @returns {Promise<String>} a URL to retrieve the data
      */
     async saveRaw(buffer, targetPath) {
-        const storagePath = path.join(this.storagePath, this._normalizeStorageRelativePath(targetPath));
+        this._assertFilePath(targetPath);
+
+        const storagePath = path.join(this.storagePath, targetPath);
         const targetDir = path.dirname(storagePath);
 
         await fs.mkdirs(targetDir);
@@ -197,27 +159,39 @@ class LocalStorageBase extends StorageBase {
             });
         }
 
-        try {
-            return this._normalizeStorageRelativePath(relativePath);
-        } catch (err) {
+        // Strip any leading/trailing slashes and normalise `..` segments before
+        // returning a canonical relative path.
+        const normalized = path.posix.normalize(relativePath
+            .replaceAll('\\', '/')
+            .replace(/^\/+/, '')
+            .replace(/\/+$/, ''));
+
+        if (normalized === '.' || normalized === '..' || normalized.startsWith('../')) {
             throw new errors.IncorrectUsageError({
                 message: tpl(messages.invalidUrlParameter, {url})
             });
         }
+
+        return normalized;
     }
 
     async exists(fileName, targetDir) {
-        let filePath;
-
+        // exists() is a query, not a mutation: a malformed input is "no, that
+        // doesn't exist" rather than a programmer-error throw. Mutating methods
+        // (save/saveRaw/delete) still throw on the same validator failures.
         try {
-            filePath = this._resolveAndValidateStoragePath(targetDir, fileName);
+            this._assertFilePath(fileName);
+            if (targetDir !== undefined) {
+                this._assertDirPath(targetDir);
+            }
         } catch (err) {
             if (err instanceof errors.IncorrectUsageError) {
                 return false;
             }
-
             throw err;
         }
+
+        const filePath = this._resolveStoragePath(targetDir, fileName);
 
         try {
             await fs.stat(filePath);
@@ -279,7 +253,12 @@ class LocalStorageBase extends StorageBase {
      * @returns {Promise.<*>}
      */
     async delete(fileName, targetDir) {
-        const filePath = this._resolveAndValidateStoragePath(targetDir, fileName);
+        this._assertFilePath(fileName);
+        if (targetDir !== undefined) {
+            this._assertDirPath(targetDir);
+        }
+
+        const filePath = this._resolveStoragePath(targetDir, fileName);
         return await fs.remove(filePath);
     }
 
@@ -292,8 +271,8 @@ class LocalStorageBase extends StorageBase {
     async read(options) {
         options = options || {};
 
-        const normalizedPath = this._normalizeStorageRelativePath(options.path);
-        const targetPath = path.join(this.storagePath, normalizedPath);
+        this._assertFilePath(options.path);
+        const targetPath = path.join(this.storagePath, options.path);
 
         try {
             return await fs.readFile(targetPath);

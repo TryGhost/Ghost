@@ -664,7 +664,7 @@ describe('lib/image: image size', function () {
 
             await assert.rejects(
                 imageSize.getImageSizeFromStoragePath(url),
-                {message: 'The path "/../../../../../outside-root.png" is not valid for this storage.'}
+                /must (be relative to the storage root|not escape the storage root)/
             );
         });
 

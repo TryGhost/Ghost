@@ -31,7 +31,7 @@ describe('storage utils', function () {
 
             result = storageUtils.getLocalImagesStoragePath(url);
             assertExists(result);
-            assert.equal(result, '/2017/07/ghost-logo.png');
+            assert.equal(result, '2017/07/ghost-logo.png');
         });
 
         it('should return local file storage path for absolute URL with subdirectory', function () {
@@ -45,7 +45,7 @@ describe('storage utils', function () {
 
             result = storageUtils.getLocalImagesStoragePath(url);
             assertExists(result);
-            assert.equal(result, '/2017/07/ghost-logo.png');
+            assert.equal(result, '2017/07/ghost-logo.png');
         });
 
         it('should return local file storage path for relative URL', function () {
@@ -59,7 +59,7 @@ describe('storage utils', function () {
 
             result = storageUtils.getLocalImagesStoragePath(filePath);
             assertExists(result);
-            assert.equal(result, '/2017/07/ghost-logo.png');
+            assert.equal(result, '2017/07/ghost-logo.png');
         });
 
         it('should return local file storage path for relative URL with subdirectory', function () {
@@ -73,7 +73,7 @@ describe('storage utils', function () {
 
             result = storageUtils.getLocalImagesStoragePath(filePath);
             assertExists(result);
-            assert.equal(result, '/2017/07/ghost-logo.png');
+            assert.equal(result, '2017/07/ghost-logo.png');
         });
 
         it('should not sanitize URL if not local file storage', function () {

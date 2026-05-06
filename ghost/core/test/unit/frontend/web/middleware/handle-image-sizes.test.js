@@ -205,10 +205,10 @@ describe('handleImageSizes middleware', function () {
 
         it('returns original URL if file is empty', function (done) {
             dummyStorage.exists = async function (path) {
-                if (path === '/blank_o.png') {
+                if (path === 'blank_o.png') {
                     return true;
                 }
-                if (path === '/size/w1000/blank.png') {
+                if (path === 'size/w1000/blank.png') {
                     return false;
                 }
             };
@@ -337,14 +337,14 @@ describe('handleImageSizes middleware', function () {
 
         it('continues if file exists', function (done) {
             dummyStorage.exists = async function (path) {
-                if (path === '/size/w1000/blank.png') {
+                if (path === 'size/w1000/blank.png') {
                     return true;
                 }
             };
 
             const fakeReq = {
                 url: '/size/w1000/blank.png',
-                originalUrl: '/size/w1000/blank.png'
+                originalUrl: 'size/w1000/blank.png'
             };
             const fakeRes = {
                 redirect() {
@@ -363,7 +363,7 @@ describe('handleImageSizes middleware', function () {
 
         it('uses unoptimizedImageExists if it exists', function (done) {
             dummyStorage.exists = async function (path) {
-                if (path === '/blank_o.png') {
+                if (path === 'blank_o.png') {
                     return true;
                 }
             };
@@ -385,7 +385,7 @@ describe('handleImageSizes middleware', function () {
                     return done(err);
                 }
                 try {
-                    sinon.assert.calledOnceWithExactly(spy, {path: '/blank_o.png'});
+                    sinon.assert.calledOnceWithExactly(spy, {path: 'blank_o.png'});
                 } catch (e) {
                     return done(e);
                 }
@@ -395,7 +395,7 @@ describe('handleImageSizes middleware', function () {
 
         it('uses unoptimizedImageExists if it exists with formatting', function (done) {
             dummyStorage.exists = async function (path) {
-                if (path === '/blank_o.png') {
+                if (path === 'blank_o.png') {
                     return true;
                 }
             };
@@ -419,7 +419,7 @@ describe('handleImageSizes middleware', function () {
                     return done(err);
                 }
                 try {
-                    sinon.assert.calledOnceWithExactly(spy, {path: '/blank_o.png'});
+                    sinon.assert.calledOnceWithExactly(spy, {path: 'blank_o.png'});
                     sinon.assert.calledOnceWithExactly(typeStub, 'webp');
                 } catch (e) {
                     return done(e);
