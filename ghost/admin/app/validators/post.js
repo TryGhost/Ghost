@@ -61,8 +61,8 @@ export default BaseValidator.create({
     },
 
     customExcerpt(model) {
-        if (!validator.isLength(model.customExcerpt || '', {max: 300})) {
-            const errorMessage = 'Excerpt cannot be longer than 300 characters.';
+        if (!validator.isLength(model.customExcerpt || '', {max: 2000})) {
+            const errorMessage = 'Excerpt cannot be longer than 2000 characters.';
             model.errors.add('customExcerpt', errorMessage);
             this.invalidate();
         } else {

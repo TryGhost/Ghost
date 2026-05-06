@@ -299,7 +299,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 find('[data-test-error="custom-excerpt"]').textContent.trim(),
                 'excerpt too long error'
-            ).to.match(/cannot be longer than 300/);
+            ).to.match(/cannot be longer than 2000/);
 
             expect(
                 this.server.db.posts.find(post.id).customExcerpt,
@@ -536,7 +536,7 @@ describe('Acceptance: Editor', function () {
             await fillIn('[data-test-textarea="excerpt"]', Array(302).join('a'));
 
             expect(find('[data-test-error="excerpt"]'), 'excerpt error').to.exist;
-            expect(find('[data-test-error="excerpt"]')).to.have.trimmed.text('Excerpt cannot be longer than 300 characters.');
+            expect(find('[data-test-error="excerpt"]')).to.have.trimmed.text('Excerpt cannot be longer than 2000 characters.');
 
             await fillIn('[data-test-textarea="excerpt"]', Array(300).join('a'));
 
