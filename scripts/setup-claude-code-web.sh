@@ -8,7 +8,13 @@
 
 set -euo pipefail
 
-cd "$(dirname "$0")/.."
+# Move to the repo root. Works whether this is invoked as a file
+# (bash scripts/setup-claude-code-web.sh from any cwd inside the checkout)
+# or pasted inline into the environment's Setup hook (where $0 is the shell
+# name and dirname-based resolution doesn't work).
+if repo_root="$(git rev-parse --show-toplevel 2>/dev/null)"; then
+    cd "$repo_root"
+fi
 
 echo "==> Enabling pnpm via corepack"
 corepack enable pnpm
