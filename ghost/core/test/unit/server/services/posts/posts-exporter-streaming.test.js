@@ -232,7 +232,7 @@ describe('PostsExporter streaming', function () {
                 getPostUrl: () => 'https://example.com/post'
             });
 
-            const posts = await collectStream(await exporter.exportStream({}));
+            const posts = await collectStream(await exporter.export({}));
             assert.equal(posts[0].status, 'published only');
         });
 
@@ -269,7 +269,7 @@ describe('PostsExporter streaming', function () {
                 getPostUrl: () => 'https://example.com/post'
             });
 
-            const posts = await collectStream(await exporter.exportStream({}));
+            const posts = await collectStream(await exporter.export({}));
             assert.equal(posts[0].newsletter_name, 'Daily Newsletter');
             assert.equal(posts[1].newsletter_name, 'Weekly Newsletter');
         });
@@ -281,7 +281,7 @@ describe('PostsExporter streaming', function () {
                 getPostUrl: () => 'https://example.com/post'
             });
 
-            const posts = await collectStream(await exporter.exportStream({}));
+            const posts = await collectStream(await exporter.export({}));
             assert.equal(posts[0].clicks, undefined);
             assert.notEqual(posts[0].sends, undefined);
             assert.notEqual(posts[0].opens, undefined);
@@ -294,7 +294,7 @@ describe('PostsExporter streaming', function () {
                 getPostUrl: () => 'https://example.com/post'
             });
 
-            const posts = await collectStream(await exporter.exportStream({}));
+            const posts = await collectStream(await exporter.export({}));
             assert.equal(posts[0].opens, undefined);
             assert.notEqual(posts[0].sends, undefined);
             assert.notEqual(posts[0].clicks, undefined);
@@ -307,7 +307,7 @@ describe('PostsExporter streaming', function () {
                 getPostUrl: () => 'https://example.com/post'
             });
 
-            const posts = await collectStream(await exporter.exportStream({}));
+            const posts = await collectStream(await exporter.export({}));
             assert.equal(posts[0].paid_conversions, undefined);
             assert.notEqual(posts[0].signups, undefined);
             assert.notEqual(posts[0].sends, undefined);
@@ -320,7 +320,7 @@ describe('PostsExporter streaming', function () {
                 getPostUrl: () => 'https://example.com/post'
             });
 
-            const posts = await collectStream(await exporter.exportStream({}));
+            const posts = await collectStream(await exporter.export({}));
             assert.equal(posts[0].signups, undefined);
             assert.equal(posts[0].paid_conversions, undefined);
             assert.notEqual(posts[0].sends, undefined);
@@ -347,7 +347,7 @@ describe('PostsExporter streaming', function () {
                 getPostUrl: () => 'https://example.com/post'
             });
 
-            const posts = await collectStream(await exporter.exportStream({}));
+            const posts = await collectStream(await exporter.export({}));
             assert.equal(posts[0].clicks, 0);
             assert.equal(posts[0].signups, 0);
             assert.equal(posts[0].paid_conversions, 0);
@@ -379,7 +379,7 @@ describe('PostsExporter streaming', function () {
                 getPostUrl: () => 'https://example.com/post'
             });
 
-            const posts = await collectStream(await exporter.exportStream({}));
+            const posts = await collectStream(await exporter.export({}));
             assert.equal(posts[0].author, 'Author A, Author B, Author C');
             assert.equal(posts[0].tags, 'Tag X, Tag Y');
         });
@@ -402,7 +402,7 @@ describe('PostsExporter streaming', function () {
                 getPostUrl: () => 'https://example.com/post'
             });
 
-            const posts = await collectStream(await exporter.exportStream({}));
+            const posts = await collectStream(await exporter.export({}));
             assert.equal(posts[0].status, 'emailed only');
             assert.equal(posts[0].sends, 256);
             assert.equal(posts[0].opens, 128);
@@ -431,7 +431,7 @@ describe('PostsExporter streaming', function () {
                 getPostUrl: () => 'https://example.com/post'
             });
 
-            const posts = await collectStream(await exporter.exportStream({}));
+            const posts = await collectStream(await exporter.export({}));
             assert.equal(posts[0].status, 'scheduled');
             assert.equal(posts[0].published_at, null);
             assert.equal(posts[0].sends, null);
@@ -478,7 +478,7 @@ describe('PostsExporter streaming', function () {
                 getPostUrl: () => 'https://example.com/post'
             });
 
-            const posts = await collectStream(await exporter.exportStream({}));
+            const posts = await collectStream(await exporter.export({}));
             assert.equal(posts[0].post_access, 'Public');
             assert.equal(posts[1].post_access, 'Members-only');
             assert.equal(posts[2].post_access, 'Paid members-only');
@@ -503,7 +503,7 @@ describe('PostsExporter streaming', function () {
                 getPostUrl: () => 'https://example.com/post'
             });
 
-            const posts = await collectStream(await exporter.exportStream({}));
+            const posts = await collectStream(await exporter.export({}));
             assert.equal(posts[0].post_access, 'Specific tiers: none');
         });
 
@@ -529,7 +529,7 @@ describe('PostsExporter streaming', function () {
                 getPostUrl: () => 'https://example.com/post'
             });
 
-            const posts = await collectStream(await exporter.exportStream({}));
+            const posts = await collectStream(await exporter.export({}));
             const fields = Object.keys(posts[0]);
 
             assert.deepEqual(fields, [
@@ -574,7 +574,7 @@ describe('PostsExporter streaming', function () {
                 getPostUrl: () => 'https://example.com/post'
             });
 
-            const posts = await collectStream(await exporter.exportStream({}));
+            const posts = await collectStream(await exporter.export({}));
             assert.equal(posts[0].email_recipients, 'VIP');
         });
     });
