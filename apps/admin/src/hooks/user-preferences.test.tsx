@@ -1,7 +1,7 @@
 import { test as baseTest, describe, expect } from "vitest";
 import { renderHook, waitFor, act } from "@testing-library/react";
 import type { QueryClient } from "@tanstack/react-query";
-import { useUserPreferences, useEditUserPreferences, DEFAULT_NAVIGATION_PREFERENCES } from "./user-preferences";
+import { useUserPreferences, useEditUserPreferences, DEFAULT_NAVIGATION_PREFERENCES, DEFAULT_ONBOARDING_PREFERENCES } from "./user-preferences";
 import { HttpResponse, http } from "msw";
 import { mockUser } from "@test-utils/factories";
 import { waitForQuerySettled } from "@test-utils/test-helpers";
@@ -30,6 +30,7 @@ const fixtures = {
     },
     defaults: {
         navigation: DEFAULT_NAVIGATION_PREFERENCES,
+        onboarding: DEFAULT_ONBOARDING_PREFERENCES,
     }
 };
 
@@ -209,6 +210,11 @@ describe("useUserPreferences", () => {
         queryTest("gracefully handles invalid schema values", async ({ setup }) => {
             const result = await setup({
                 accessibility: JSON.stringify({
+                    onboarding: {
+                        checklistState: "unknown",
+                        completedSteps: "customize-design",
+                        startedAt: "not-a-valid-datetime",
+                    },
                     whatsNew: {
                         lastSeenDate: "not-a-valid-datetime",
                     },
@@ -222,6 +228,24 @@ describe("useUserPreferences", () => {
                 whatsNew: {
                     lastSeenDate: undefined,
                 },
+            });
+        });
+
+        queryTest("parses onboarding startedAt into a date", async ({ setup }) => {
+            const result = await setup({
+                accessibility: JSON.stringify({
+                    onboarding: {
+                        completedSteps: ["customize-design"],
+                        checklistState: "started",
+                        startedAt: "2026-04-30T10:00:00.000Z",
+                    },
+                }),
+            });
+
+            expect(result.current.data?.onboarding).toEqual({
+                completedSteps: ["customize-design"],
+                checklistState: "started",
+                startedAt: new Date("2026-04-30T10:00:00.000Z"),
             });
         });
 
@@ -322,6 +346,7 @@ describe("useUserPreferences", () => {
             await waitFor(() => {
                 expect(result.current.query.data).toEqual({
                     navigation: DEFAULT_NAVIGATION_PREFERENCES,
+                    onboarding: DEFAULT_ONBOARDING_PREFERENCES,
                     whatsNew: {
                         lastSeenDate: new Date("2025-01-01T00:00:00.000Z"),
                     },
@@ -349,6 +374,7 @@ describe("useUserPreferences", () => {
                             posts: false,
                         },
                     },
+                    onboarding: DEFAULT_ONBOARDING_PREFERENCES,
                     whatsNew: {
                         lastSeenDate: new Date("2025-01-01T00:00:00.000Z"),
                     },
@@ -423,6 +449,10 @@ describe("useEditUserPreferences", () => {
                         expanded: { posts: false, members: false },
                         menu: { visible: true },
                     },
+                    onboarding: {
+                        completedSteps: ["customize-design"],
+                        checklistState: "started",
+                    },
                     nightShift: true,
                 }),
             });
@@ -430,6 +460,7 @@ describe("useEditUserPreferences", () => {
             await act(async () => {
                 await mutation.current.mutateAsync({
                     navigation: { expanded: { posts: true } },
+                    onboarding: { completedSteps: ["customize-design", "first-post"] },
                 });
             });
 
@@ -438,6 +469,10 @@ describe("useEditUserPreferences", () => {
                     navigation: {
                         expanded: { posts: true, members: false },
                         menu: { visible: true }, // Preserved
+                    },
+                    onboarding: {
+                        completedSteps: ["customize-design", "first-post"],
+                        checklistState: "started",
                     },
                     nightShift: true, // Preserved
                 });

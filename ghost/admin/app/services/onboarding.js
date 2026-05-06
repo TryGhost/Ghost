@@ -3,7 +3,8 @@ import {action} from '@ember/object';
 
 const EMPTY_SETTINGS = {
     completedSteps: [],
-    checklistState: 'pending' // pending, started, completed, dismissed
+    checklistState: 'pending', // pending, started, completed, dismissed
+    startedAt: undefined
 };
 
 export default class OnboardingService extends Service {
@@ -65,6 +66,7 @@ export default class OnboardingService extends Service {
 
         settings.completedSteps = [];
         settings.checklistState = 'started';
+        settings.startedAt = new Date().toISOString();
 
         await this._saveSettings(settings);
     }
