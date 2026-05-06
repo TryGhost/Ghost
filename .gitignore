@@ -212,3 +212,6 @@ yalc.lock
 .env.tinybird
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
+
+# Sandbox-environment CA certs copied into docker build contexts
+docker/*/sandbox-ca/
