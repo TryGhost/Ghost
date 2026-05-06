@@ -344,7 +344,7 @@ async function initServices() {
     const statsService = require('./server/services/stats');
     const explorePingService = require('./server/services/explore-ping');
     const domainEvents = require('@tryghost/domain-events');
-    const WelcomeEmailAutomationsService = require('./server/services/welcome-email-automations');
+    const AutomationsService = require('./server/services/automations');
 
     const {
         createAdapter: createSchedulerAdapter,
@@ -397,7 +397,7 @@ async function initServices() {
             schedulerAdapter,
             schedulerIntegration
         }),
-        new WelcomeEmailAutomationsService().init({
+        new AutomationsService().init({
             domainEvents,
             apiUrl,
             schedulerAdapter,
