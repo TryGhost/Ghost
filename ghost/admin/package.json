@@ -171,8 +171,6 @@
     "*.js": "eslint"
   },
   "dependencies": {
-    "i18n-iso-countries": "7.14.0",
-    "lru-cache": "6.0.0",
     "path-browserify": "1.0.1",
     "webpack": "5.105.4"
   },

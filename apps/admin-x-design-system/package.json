@@ -28,7 +28,6 @@
         "@codemirror/lang-html": "6.4.11",
         "@codemirror/state": "6.6.0",
         "@dnd-kit/utilities": "^3.2.2",
-        "@radix-ui/react-tooltip": "1.2.8",
         "@storybook/addon-docs": "10.3.5",
         "@storybook/addon-links": "10.3.5",
         "@storybook/react-vite": "10.3.5",

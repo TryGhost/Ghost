@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/comments-ui",
-  "version": "1.4.10",
+  "version": "1.4.11",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -64,7 +64,6 @@
     "@playwright/test": "1.59.1",
     "@testing-library/jest-dom": "5.17.0",
     "@testing-library/react": "12.1.5",
-    "@testing-library/user-event": "14.6.1",
     "@tryghost/i18n": "workspace:*",
     "@vitejs/plugin-react": "4.7.0",
     "@vitest/coverage-v8": "0.34.6",
