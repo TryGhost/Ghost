@@ -279,6 +279,31 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
+  job_knip:
+    runs-on: ubuntu-latest
+    needs: [job_setup]
+    name: Unused dependencies (advisory)
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check for unused dependencies (knip)
+        run: |
+          set +e
+          pnpm knip
+          code=$?
+          if [ $code -ne 0 ]; then
+            echo "::warning title=Unused dependencies (advisory)::knip exited $code — see logs above. Advisory only; not blocking the merge."
+          fi
+          exit 0
+
   job_i18n:
     runs-on: ubuntu-latest
     needs: [job_setup]
