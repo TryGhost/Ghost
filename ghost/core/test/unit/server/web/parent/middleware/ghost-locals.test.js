@@ -1,35 +1,23 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../../utils/assertions');
-const _ = require('lodash');
-const sinon = require('sinon');
+const express = require('express');
+const request = require('supertest');
 const ghostLocals = require('../../../../../../core/server/web/parent/middleware/ghost-locals');
 
 describe('Theme Handler', function () {
-    let req;
-    let res;
-    let next;
-
-    beforeEach(function () {
-        req = sinon.spy();
-        res = sinon.spy();
-        next = sinon.spy();
-    });
-
-    afterEach(function () {
-        sinon.restore();
+    const app = express();
+    app.use(ghostLocals);
+    app.get('/awesome-post', (_req, res) => {
+        res.json(res.locals);
     });
 
     describe('ghostLocals', function () {
-        it('sets all locals', function () {
-            req.path = '/awesome-post';
-
-            ghostLocals(req, res, next);
-
-            assert(_.isPlainObject(res.locals));
-            assertExists(res.locals.version);
-            assertExists(res.locals.safeVersion);
-            assert.equal(res.locals.relativeUrl, req.path);
-            sinon.assert.called(next);
+        it('sets all locals', async function () {
+            const {body} = await request(app)
+                .get('/awesome-post');
+            assertExists(body.version);
+            assertExists(body.safeVersion);
+            assert.equal(body.relativeUrl, '/awesome-post');
         });
     });
 });
