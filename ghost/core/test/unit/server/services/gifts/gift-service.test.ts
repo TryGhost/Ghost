@@ -47,6 +47,7 @@ describe('GiftService', function () {
     let memberRepository: {
         get: sinon.SinonStub;
         update: sinon.SinonStub;
+        enqueueWelcomeEmailRun: sinon.SinonStub;
     };
     let staffServiceEmails: {
         notifyGiftReceived: sinon.SinonStub;
@@ -97,7 +98,8 @@ describe('GiftService', function () {
                 memberGet.withArgs('status').returns('free');
                 return Promise.resolve({id: 'member_1', get: memberGet});
             }),
-            update: sinon.stub().resolves(undefined)
+            update: sinon.stub().resolves(undefined),
+            enqueueWelcomeEmailRun: sinon.stub().resolves(undefined)
         };
         staffServiceEmails = {
             notifyGiftReceived: sinon.stub(),
@@ -1288,6 +1290,70 @@ describe('GiftService', function () {
             sinon.assert.notCalled(memberRepository.update);
             sinon.assert.notCalled(giftRepository.update);
             sinon.assert.notCalled(staffServiceEmails.notifyGiftSubscriptionStarted);
+        });
+
+        it('enqueues the paid welcome email run for a new gift signup', async function () {
+            const gift = buildGift();
+            const memberGet = sinon.stub();
+            memberGet.withArgs('status').returns('gift');
+            memberGet.withArgs('name').returns('Member Name');
+            memberGet.withArgs('email').returns('member@example.com');
+
+            giftRepository.getByToken.resolves(gift);
+            memberRepository.get.resolves({id: 'member_1', get: memberGet});
+
+            const service = createService();
+            await service.redeem('gift-token', 'member_1', {newMember: true});
+
+            sinon.assert.calledOnceWithExactly(
+                memberRepository.enqueueWelcomeEmailRun,
+                'member_1',
+                'member-welcome-email-paid',
+                {transacting: 'trx'}
+            );
+        });
+
+        it('enqueues the paid welcome email run when an existing free member redeems a gift', async function () {
+            const gift = buildGift();
+            const memberGet = sinon.stub();
+            memberGet.withArgs('status').returns('free');
+            memberGet.withArgs('name').returns('Member Name');
+            memberGet.withArgs('email').returns('member@example.com');
+
+            giftRepository.getByToken.resolves(gift);
+            memberRepository.get.resolves({id: 'member_1', get: memberGet});
+
+            const service = createService();
+            await service.redeem('gift-token', 'member_1');
+
+            sinon.assert.calledOnceWithExactly(
+                memberRepository.enqueueWelcomeEmailRun,
+                'member_1',
+                'member-welcome-email-paid',
+                {transacting: 'trx'}
+            );
+        });
+
+        it('passes the external transaction through to the welcome email enqueue', async function () {
+            const gift = buildGift();
+            const memberGet = sinon.stub();
+            memberGet.withArgs('status').returns('free');
+            memberGet.withArgs('name').returns('Member Name');
+            memberGet.withArgs('email').returns('member@example.com');
+
+            giftRepository.getByToken.resolves(gift);
+            memberRepository.get.resolves({id: 'member_1', get: memberGet});
+
+            const service = createService();
+            const externalTrx = {executionPromise: Promise.resolve()};
+            await service.redeem('gift-token', 'member_1', {transacting: externalTrx});
+
+            sinon.assert.calledOnceWithExactly(
+                memberRepository.enqueueWelcomeEmailRun,
+                'member_1',
+                'member-welcome-email-paid',
+                {transacting: externalTrx}
+            );
         });
     });
 
