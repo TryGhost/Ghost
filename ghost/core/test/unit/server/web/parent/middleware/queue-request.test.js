@@ -1,20 +1,21 @@
-const assert = require('node:assert');
+const assert = require('node:assert/strict');
+const express = require('express');
 const sinon = require('sinon');
+const request = require('supertest');
 
 const queueRequest = require('../../../../../../core/server/web/parent/middleware/queue-request');
 
 describe('Queue request middleware', function () {
-    let req, res, next, config, queueFactory, queue;
+    let config, queueFactory, queue;
 
     beforeEach(function () {
-        req = {};
-        res = {};
-        next = sinon.stub();
         config = {
             concurrencyLimit: 123
         };
 
-        queue = sinon.stub();
+        queue = sinon.stub().callsFake((req, res, next) => {
+            return next();
+        });
         queue.queue = {
             on: sinon.stub(),
             getLength: sinon.stub().returns(0)
@@ -22,6 +23,17 @@ describe('Queue request middleware', function () {
 
         queueFactory = sinon.stub().returns(queue);
     });
+
+    function createApp() {
+        const app = express();
+
+        app.use(queueRequest(config, queueFactory));
+        app.get(['/foo/bar', '/foo/bar.css'], (req, res) => {
+            res.json({queueDepth: req.queueDepth});
+        });
+
+        return app;
+    }
 
     it('should configure the queue using the concurrency limit defined in the config', function () {
         queueRequest(config, queueFactory);
@@ -39,40 +51,36 @@ describe('Queue request middleware', function () {
         }, /concurrencyLimit must be defined when using queueRequest middleware/, 'error should be thrown');
     });
 
-    it('should not queue requests for static assets', function () {
-        req.path = '/foo/bar.css'; // Assume any path with a file extension is a static asset
+    it('should not queue requests for static assets', async function () {
+        await request(createApp())
+            .get('/foo/bar.css')
+            .expect(200)
+            .expect({queueDepth: 0});
 
-        const mw = queueRequest(config, queueFactory);
-
-        mw(req, res, next);
-
-        assert(next.calledOnce, 'next should be called once');
-        assert.equal(queue.calledOnce, 0, 'queue should not be called');
+        assert.equal(queue.callCount, 0, 'queue should not be called');
     });
 
-    it('should queue the request', function () {
-        req.path = '/foo/bar';
+    it('should queue the request', async function () {
+        await request(createApp())
+            .get('/foo/bar')
+            .expect(200);
 
-        const mw = queueRequest(config, queueFactory);
-
-        mw(req, res, next);
-
-        assert(queue.calledOnce, 'queue should be called once');
-        sinon.assert.calledWith(queue, req, res, next);
+        sinon.assert.calledOnce(queue);
+        assert.equal(queue.getCall(0).args[0].path, '/foo/bar');
+        assert.equal(typeof queue.getCall(0).args[1].json, 'function');
+        assert.equal(typeof queue.getCall(0).args[2], 'function');
     });
 
-    it('should record the queue depth on a request', function () {
+    it('should record the queue depth on a request', async function () {
         const queueLength = 123;
 
         queue.queue.getLength.returns(queueLength);
 
-        req.path = '/foo/bar';
+        await request(createApp())
+            .get('/foo/bar')
+            .expect(200)
+            .expect({queueDepth: queueLength});
 
-        const mw = queueRequest(config, queueFactory);
-
-        mw(req, res, next);
-
-        assert(queue.queue.getLength, 'queue should be called once');
-        assert(req.queueDepth === queueLength, 'queue depth should be set on the request');
+        sinon.assert.calledOnce(queue.queue.getLength);
     });
 });
