@@ -8,11 +8,11 @@ import CommentsSidebar from './components/comments-sidebar';
 import React, {useCallback} from 'react';
 import {Button, EmptyIndicator, LoadingIndicator} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
-import {createFilter} from '@tryghost/shade/patterns';
+import {upsertCommentFilters, useFilterState} from './hooks/use-filter-state';
 import {useBrowseComments} from '@tryghost/admin-x-framework/api/comments';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
-import {useFilterState} from './hooks/use-filter-state';
 import {useOverviewRange} from './hooks/use-overview-range';
+import type {CommentFilterUpdate} from './hooks/use-filter-state';
 
 const Comments: React.FC = () => {
     const {filters, nql, setFilters, clearFilters, isSingleIdFilter} = useFilterState();
@@ -21,14 +21,15 @@ const Comments: React.FC = () => {
 
     const {range, setRange, dateFrom, dateTo, timezone} = useOverviewRange();
 
-    const handleAddFilter = useCallback((field: string, value: string, operator: string = 'is') => {
+    const handleAddFilters = useCallback((updates: CommentFilterUpdate[]) => {
         setFilters((prevFilters) => {
-            // Remove any existing filter for the same field
-            const filtered = prevFilters.filter(f => f.field !== field);
-            // Add the new filter
-            return [...filtered, createFilter(field, operator, [value])];
+            return upsertCommentFilters(prevFilters, updates);
         }, {replace: false});
     }, [setFilters]);
+
+    const handleAddFilter = useCallback((field: string, value: string, operator: string = 'is') => {
+        handleAddFilters([{field, value, operator}]);
+    }, [handleAddFilters]);
 
     const {
         data,
@@ -116,7 +117,7 @@ const Comments: React.FC = () => {
                             range={range}
                             setRange={setRange}
                             timezone={timezone}
-                            onAddFilter={handleAddFilter}
+                            onAddFilters={handleAddFilters}
                         />
                     </CommentsSidebar>
                     <div className='flex min-w-0 flex-col lg:col-start-1 lg:row-start-1 lg:[&_.prose]:max-w-[70ch]'>
