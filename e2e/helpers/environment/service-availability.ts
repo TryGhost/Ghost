@@ -21,6 +21,11 @@ async function isServiceAvailable(docker: Docker, serviceName: string) {
  * Checks for tinybird-local service in ghost-dev compose project.
  */
 export async function isTinybirdAvailable(): Promise<boolean> {
+    if (process.env.GHOST_E2E_ANALYTICS === 'false') {
+        debug('Tinybird disabled by GHOST_E2E_ANALYTICS=false');
+        return false;
+    }
+
     const docker = new Docker();
     const tinybirdAvailable = await isServiceAvailable(docker, TINYBIRD.LOCAL_HOST);
     debug(`Tinybird availability for compose project ${DEV_ENVIRONMENT.projectNamespace}:`, tinybirdAvailable);

@@ -9,6 +9,7 @@ cd "$REPO_ROOT"
 
 MODE="$(resolve_e2e_mode)"
 export GHOST_E2E_MODE="$MODE"
+ANALYTICS_ENABLED="${GHOST_E2E_ANALYTICS:-true}"
 
 if [[ "$MODE" != "build" ]]; then
   DEV_COMPOSE_PROJECT="${COMPOSE_PROJECT_NAME:-ghost-dev}"
@@ -21,5 +22,12 @@ if [[ "$MODE" != "build" ]]; then
   fi
 fi
 
-docker compose -f compose.dev.yaml -f compose.dev.analytics.yaml up -d --wait \
-  mysql redis mailpit tinybird-local analytics
+compose_files=(-f compose.dev.yaml)
+services=(mysql redis mailpit)
+
+if [[ "$ANALYTICS_ENABLED" == "true" ]]; then
+  compose_files+=(-f compose.dev.analytics.yaml)
+  services+=(tinybird-local analytics)
+fi
+
+docker compose "${compose_files[@]}" up -d --wait "${services[@]}"

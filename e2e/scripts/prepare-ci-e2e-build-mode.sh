@@ -3,10 +3,12 @@ set -euo pipefail
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/load-playwright-container-env.sh"
 GATEWAY_IMAGE="${GHOST_E2E_GATEWAY_IMAGE:-caddy:2-alpine}"
+ANALYTICS_ENABLED="${GHOST_E2E_ANALYTICS:-true}"
 
 echo "Preparing E2E build-mode runtime"
 echo "Playwright image: ${PLAYWRIGHT_IMAGE}"
 echo "Gateway image: ${GATEWAY_IMAGE}"
+echo "Analytics enabled: ${ANALYTICS_ENABLED}"
 
 pids=()
 labels=()
@@ -25,7 +27,7 @@ run_bg() {
 
 run_bg "pull-gateway-image" docker pull "$GATEWAY_IMAGE"
 run_bg "pull-playwright-image" docker pull "$PLAYWRIGHT_IMAGE"
-run_bg "start-infra" env GHOST_E2E_MODE=build bash "$REPO_ROOT/e2e/scripts/infra-up.sh"
+run_bg "start-infra" env GHOST_E2E_MODE=build GHOST_E2E_ANALYTICS="$ANALYTICS_ENABLED" bash "$REPO_ROOT/e2e/scripts/infra-up.sh"
 
 for i in "${!pids[@]}"; do
     if ! wait "${pids[$i]}"; then
@@ -34,4 +36,6 @@ for i in "${!pids[@]}"; do
     fi
 done
 
-node "$REPO_ROOT/e2e/scripts/sync-tinybird-state.mjs"
+if [[ "$ANALYTICS_ENABLED" == "true" ]]; then
+    node "$REPO_ROOT/e2e/scripts/sync-tinybird-state.mjs"
+fi
