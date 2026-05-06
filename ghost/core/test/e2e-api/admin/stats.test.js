@@ -2,6 +2,8 @@ const {agentProvider, fixtureManager, matchers, mockManager} = require('../../ut
 const {mockStripe, stripeMocker} = require('../../utils/e2e-framework-mock-manager');
 const {anyContentVersion, anyEtag, anyISODate, anyObjectId, anyContentLength} = matchers;
 const assert = require('node:assert/strict');
+const ObjectId = require('bson-objectid').default;
+const db = require('../../../core/server/data/db');
 
 let agent;
 
@@ -376,6 +378,44 @@ describe('Stats API', function () {
     });
 
     describe('Comments overview', function () {
+        beforeEach(async function () {
+            await db.knex('comment_reports').truncate();
+            await db.knex('comments').truncate();
+        });
+
+        function post(index = 0) {
+            return fixtureManager.get('posts', index);
+        }
+
+        function member(index = 0) {
+            return fixtureManager.get('members', index);
+        }
+
+        async function addComment({postIndex = 0, memberIndex = 0, createdAt, status = 'published'} = {}) {
+            const id = ObjectId().toHexString();
+            await db.knex('comments').insert({
+                id,
+                post_id: post(postIndex).id,
+                member_id: member(memberIndex).id,
+                html: '<p>Comment</p>',
+                status,
+                created_at: createdAt,
+                updated_at: createdAt
+            });
+
+            return {id};
+        }
+
+        async function addReport(comment, memberIndex = 1, createdAt) {
+            await db.knex('comment_reports').insert({
+                id: ObjectId().toHexString(),
+                comment_id: comment.id,
+                member_id: member(memberIndex).id,
+                created_at: createdAt,
+                updated_at: createdAt
+            });
+        }
+
         it('returns the overview payload with expected shape', async function () {
             const {body} = await agent
                 .get('/stats/comments/')
@@ -404,6 +444,59 @@ describe('Stats API', function () {
             await agent
                 .get('/stats/comments/?date_from=2026-01-01&date_to=2026-12-31')
                 .expectStatus(200);
+        });
+
+        it('returns seeded comment analytics through the Admin API', async function () {
+            await addComment({createdAt: '2026-04-29T10:00:00.000Z', memberIndex: 0});
+            await addComment({createdAt: '2026-04-30T10:00:00.000Z', memberIndex: 1});
+
+            const first = await addComment({createdAt: '2026-05-01T10:00:00.000Z', memberIndex: 0, postIndex: 0});
+            const second = await addComment({createdAt: '2026-05-01T12:00:00.000Z', memberIndex: 0, postIndex: 0});
+            await addComment({createdAt: '2026-05-02T10:00:00.000Z', memberIndex: 1, postIndex: 1});
+            await addComment({createdAt: '2026-05-02T11:00:00.000Z', memberIndex: 2, postIndex: 1, status: 'hidden'});
+
+            await addReport(first, 1, '2026-05-01T13:00:00.000Z');
+            await addReport(first, 2, '2026-05-01T14:00:00.000Z');
+            await addReport(second, 2, '2026-05-02T14:00:00.000Z');
+
+            const {body} = await agent
+                .get('/stats/comments/?date_from=2026-05-01&date_to=2026-05-02&timezone=UTC')
+                .expectStatus(200);
+
+            const overview = body.stats[0];
+            assert.deepEqual(overview.totals, {comments: 3, commenters: 2, reported: 2});
+            assert.deepEqual(overview.previousTotals, {comments: 2, commenters: 2, reported: 0});
+            assert.deepEqual(overview.series, [
+                {date: '2026-05-01', count: 2, commenters: 1, reported: 1},
+                {date: '2026-05-02', count: 1, commenters: 1, reported: 1}
+            ]);
+            assert.deepEqual(overview.topPosts.slice(0, 2), [
+                {id: post(0).id, title: post(0).title, slug: post(0).slug, count: 2},
+                {id: post(1).id, title: post(1).title, slug: post(1).slug, count: 1}
+            ]);
+            assert.deepEqual(overview.topMembers.slice(0, 2), [
+                {id: member(0).id, name: member(0).name ?? null, email: member(0).email, count: 2},
+                {id: member(1).id, name: member(1).name ?? null, email: member(1).email, count: 1}
+            ]);
+        });
+
+        it('buckets comment series by the requested timezone through the Admin API', async function () {
+            const comment = await addComment({
+                createdAt: '2026-05-06T06:30:00.000Z',
+                memberIndex: 0,
+                postIndex: 0
+            });
+            await addReport(comment, 1, '2026-05-06T06:45:00.000Z');
+
+            const {body} = await agent
+                .get('/stats/comments/?date_from=2026-05-05&date_to=2026-05-05&timezone=America/Los_Angeles')
+                .expectStatus(200);
+
+            const overview = body.stats[0];
+            assert.deepEqual(overview.totals, {comments: 1, commenters: 1, reported: 1});
+            assert.deepEqual(overview.series, [
+                {date: '2026-05-05', count: 1, commenters: 1, reported: 1}
+            ]);
         });
     });
 });
