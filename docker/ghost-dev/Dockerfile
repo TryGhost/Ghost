@@ -5,13 +5,20 @@ ARG NODE_VERSION=22.18.0
 
 FROM node:$NODE_VERSION-bullseye-slim
 
+# Trust any extra CA certs provided via build context (for corporate/dev proxies
+# that perform TLS interception). Empty by default — drop *.crt files into
+# docker/ghost-dev/sandbox-ca/ to have them trusted at build time.
+COPY docker/ghost-dev/sandbox-ca/ /usr/local/share/ca-certificates/
+
 # Install system dependencies needed for building native modules
 RUN apt-get update && \
     apt-get install -y \
     build-essential \
+    ca-certificates \
     curl \
     python3 \
     git && \
+    update-ca-certificates && \
     rm -rf /var/lib/apt/lists/* && \
     apt clean
 

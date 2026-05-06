@@ -212,3 +212,8 @@ yalc.lock
 .env.tinybird
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
+
+# Local-only CA certs injected into Docker dev builds (e.g., proxy CAs in
+# corporate networks or remote sandboxes). The directories are kept; their
+# .crt contents are never committed.
+docker/*/sandbox-ca/*.crt

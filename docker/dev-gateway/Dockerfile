@@ -1,5 +1,11 @@
 FROM caddy:2-alpine@sha256:fce4f15aad23222c0ac78a1220adf63bae7b94355d5ea28eee53910624acedfa
 
+# Trust any extra CA certs provided via build context (for corporate/dev proxies
+# that perform TLS interception). Empty by default — drop *.crt files into
+# docker/dev-gateway/sandbox-ca/ to have them trusted at build time.
+COPY sandbox-ca/ /usr/local/share/ca-certificates/
+RUN update-ca-certificates
+
 RUN caddy add-package github.com/caddyserver/transform-encoder
 
 # Default proxy targets (can be overridden via environment variables)
