@@ -4,6 +4,7 @@ import CommentsFilters from './components/comments-filters';
 import CommentsHeader from './components/comments-header';
 import CommentsLayout from './components/comments-layout';
 import CommentsList from './components/comments-list';
+import CommentsMain from './components/comments-main';
 import CommentsSidebar from './components/comments-sidebar';
 import React, {useCallback} from 'react';
 import {Button, EmptyIndicator, LoadingIndicator} from '@tryghost/shade/components';
@@ -48,61 +49,63 @@ const Comments: React.FC = () => {
 
     return (
         <CommentsLayout>
-            <CommentsHeader>
-                {!isSingleIdFilter && (
-                    <CommentsFilters
-                        filters={filters}
-                        onFiltersChange={setFilters}
-                    />
-                )}
-            </CommentsHeader>
-            <CommentsContent>
-                {shouldShowLoading ? (
-                    <div className="flex h-full items-center justify-center">
-                        <LoadingIndicator size="lg" />
-                    </div>
-                ) : isError ? (
-                    <div className="mb-16 flex h-full flex-col items-center justify-center">
-                        <h2 className="mb-2 text-xl font-medium">
-                            Error loading comments
-                        </h2>
-                        <p className="mb-4 text-muted-foreground">
-                            Please reload the page to try again
-                        </p>
-                        <Button onClick={() => window.location.reload()}>
-                            Reload page
-                        </Button>
-                    </div>
-                ) : !data?.comments.length ? (
-                    <div className="flex h-full items-center justify-center">
-                        <EmptyIndicator
-                            title="No comments yet"
-                        >
-                            <LucideIcon.MessageSquare />
-                        </EmptyIndicator>
-                    </div>
-                ) : (
-                    <>
-                        <CommentsList
-                            fetchNextPage={fetchNextPage}
-                            hasNextPage={hasNextPage}
-                            isFetchingNextPage={isFetchingNextPage}
-                            isLoading={isFetching && !isFetchingNextPage}
-                            items={data?.comments ?? []}
-                            resetKey={nql ?? ''}
-                            totalItems={data?.meta?.pagination?.total ?? 0}
-                            onAddFilter={handleAddFilter}
+            <CommentsMain>
+                <CommentsHeader>
+                    {!isSingleIdFilter && (
+                        <CommentsFilters
+                            filters={filters}
+                            onFiltersChange={setFilters}
                         />
-                        {isSingleIdFilter && (
-                            <div className="flex justify-center py-8">
-                                <Button variant="outline" onClick={() => clearFilters({replace: false})}>
-                                    Show all comments
-                                </Button>
-                            </div>
-                        )}
-                    </>
-                )}
-            </CommentsContent>
+                    )}
+                </CommentsHeader>
+                <CommentsContent>
+                    {shouldShowLoading ? (
+                        <div className="flex h-full items-center justify-center">
+                            <LoadingIndicator size="lg" />
+                        </div>
+                    ) : isError ? (
+                        <div className="mb-16 flex h-full flex-col items-center justify-center">
+                            <h2 className="mb-2 text-xl font-medium">
+                                Error loading comments
+                            </h2>
+                            <p className="mb-4 text-muted-foreground">
+                                Please reload the page to try again
+                            </p>
+                            <Button onClick={() => window.location.reload()}>
+                                Reload page
+                            </Button>
+                        </div>
+                    ) : !data?.comments.length ? (
+                        <div className="flex h-full items-center justify-center">
+                            <EmptyIndicator
+                                title="No comments yet"
+                            >
+                                <LucideIcon.MessageSquare />
+                            </EmptyIndicator>
+                        </div>
+                    ) : (
+                        <>
+                            <CommentsList
+                                fetchNextPage={fetchNextPage}
+                                hasNextPage={hasNextPage}
+                                isFetchingNextPage={isFetchingNextPage}
+                                isLoading={isFetching && !isFetchingNextPage}
+                                items={data?.comments ?? []}
+                                resetKey={nql ?? ''}
+                                totalItems={data?.meta?.pagination?.total ?? 0}
+                                onAddFilter={handleAddFilter}
+                            />
+                            {isSingleIdFilter && (
+                                <div className="flex justify-center py-8">
+                                    <Button variant="outline" onClick={() => clearFilters({replace: false})}>
+                                        Show all comments
+                                    </Button>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </CommentsContent>
+            </CommentsMain>
             {analyticsEnabled ? (
                 <CommentsSidebar>
                     <CommentsAnalytics
