@@ -76,9 +76,11 @@ test.describe('Social account settings', async () => {
         }
     });
 
-    test('Hides only the platform fields whose key the backend does not return', async ({page}) => {
-        // Per-key gate: each new field is shown only if its key is in the settings
-        // response, so the admin never offers values the backend would silently drop.
+    test('Shows all new platform fields when any new key is present, even if linkedin is missing', async ({page}) => {
+        // Defends against the canary being a single hardcoded key. The migration adds
+        // all 7 keys atomically today, but the UI gate should treat the presence of
+        // any of them as sufficient — so a future migration that drops/renames just
+        // one key doesn't silently hide the entire panel.
         const settingsWithoutLinkedin = {
             ...responseFixtures.settings,
             settings: responseFixtures.settings.settings.filter(s => s.key !== 'linkedin')
@@ -93,10 +95,9 @@ test.describe('Social account settings', async () => {
 
         const section = page.getByTestId('social-accounts');
 
-        for (const label of ['Facebook', 'X', 'Bluesky', 'Threads', 'Mastodon', 'TikTok', 'YouTube', 'Instagram']) {
+        for (const label of ['Facebook', 'X', 'LinkedIn', 'Bluesky', 'Threads', 'Mastodon', 'TikTok', 'YouTube', 'Instagram']) {
             await expect(section.getByLabel(label)).toBeVisible();
         }
-        await expect(section.getByLabel('LinkedIn')).toHaveCount(0);
     });
 
     test('Restores values on cancel', async ({page}) => {
