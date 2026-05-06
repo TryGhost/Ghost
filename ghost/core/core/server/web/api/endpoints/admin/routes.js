@@ -200,6 +200,13 @@ module.exports = function apiRoutes() {
     router.put('/automated_emails/:id', mw.authAdminApi, http(api.automatedEmails.edit));
     router.post('/automated_emails/:id/preview', mw.authAdminApi, http(api.automatedEmails.preview));
     router.post('/automated_emails/:id/test', shared.middleware.brute.previewEmailLimiter, mw.authAdminApi, http(api.automatedEmails.sendTestEmail));
+    router.get('/automated_emails/:id/sequence', mw.authAdminApi, http(api.automatedEmailSequences.read));
+    router.put('/automated_emails/:id/sequence', mw.authAdminApi, function normalizeSequenceBody(req, res, next) {
+        if (req.body && req.body.automated_email_sequences && !Array.isArray(req.body.automated_email_sequences)) {
+            req.body.automated_email_sequences = [req.body.automated_email_sequences];
+        }
+        next();
+    }, http(api.automatedEmailSequences.edit));
 
     // ## Roles
     router.get('/roles/', mw.authAdminApi, http(api.roles.browse));
