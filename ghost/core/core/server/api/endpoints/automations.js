@@ -43,9 +43,9 @@ const controller = {
                 updated_at: '2026-05-05T00:00:00.000Z',
                 actions: [{
                     id: '67f3f3f3f3f3f3f3f3f3f3f4',
-                    type: 'wait',
+                    type: 'delay',
                     data: {
-                        wait_hours: 24
+                        delay_hours: 24
                     }
                 }, {
                     id: '67f3f3f3f3f3f3f3f3f3f3f5',

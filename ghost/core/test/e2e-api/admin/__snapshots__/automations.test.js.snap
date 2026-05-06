@@ -80,10 +80,10 @@ Object {
       "actions": Array [
         Object {
           "data": Object {
-            "wait_hours": 24,
+            "delay_hours": 24,
           },
           "id": "67f3f3f3f3f3f3f3f3f3f3f4",
-          "type": "wait",
+          "type": "delay",
         },
         Object {
           "data": Object {
@@ -119,7 +119,7 @@ exports[`Automations API read returns a placeholder automation for the requested
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "666",
+  "content-length": "668",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
