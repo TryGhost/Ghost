@@ -55,7 +55,7 @@ module.exports = {
             if (emailTypeSettings.includes(setting.key)) {
                 const email = setting.value;
 
-                if (typeof email !== 'string' || (!validator.isEmail(email) && email !== 'noreply')) {
+                if (typeof email !== 'string' || (!validator.isEmail(email, {legacy: false}) && email !== 'noreply')) {
                     const typeError = new ValidationError({
                         message: tpl(messages.invalidEmailValueReceived),
                         property: setting.key

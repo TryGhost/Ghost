@@ -37,7 +37,7 @@ class EmailAddressServiceWrapper {
                 return settingsHelpers.getMembersSupportAddress();
             },
             isValidEmailAddress: (emailAddress) => {
-                return validator.isEmail(emailAddress);
+                return validator.isEmail(emailAddress, {legacy: false});
             }
         });
     }

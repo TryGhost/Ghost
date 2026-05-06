@@ -1175,6 +1175,54 @@ describe('RouterController', function () {
             });
         });
 
+        describe('email validation', function () {
+            let req, res, sendEmailWithMagicLinkStub;
+
+            const createRouterController = (deps = {}) => {
+                return new RouterController({
+                    allowSelfSignup: sinon.stub().returns(true),
+                    memberAttributionService: {
+                        getAttribution: sinon.stub().resolves({})
+                    },
+                    sendEmailWithMagicLink: sendEmailWithMagicLinkStub,
+                    settingsCache,
+                    settingsHelpers,
+                    emailAddressService,
+                    ...deps
+                });
+            };
+
+            beforeEach(function () {
+                req = {
+                    body: {
+                        email: 'jamie@example.com',
+                        emailType: 'signup'
+                    },
+                    get: sinon.stub()
+                };
+                res = {
+                    writeHead: sinon.stub(),
+                    end: sinon.stub()
+                };
+                sendEmailWithMagicLinkStub = sinon.stub().resolves();
+            });
+
+            it('Accepts email addresses with modern gTLDs', async function () {
+                const controller = createRouterController();
+                const email = 'jamie@example.rocks';
+
+                req.body.email = email;
+
+                await controller.sendMagicLink(req, res);
+
+                sinon.assert.calledWith(res.writeHead, 201, {'Content-Type': 'application/json'});
+                assert.equal(res.end.calledOnceWith('{}'), true);
+                sinon.assert.calledOnce(sendEmailWithMagicLinkStub);
+                assert.equal(sendEmailWithMagicLinkStub.args[0][0].email, email);
+                assert.equal(sendEmailWithMagicLinkStub.args[0][0].requestedType, 'signup');
+            });
+        });
+
         describe('OTC response handling', function () {
             let req, res, handleSigninStub, routerController;
 

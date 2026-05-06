@@ -57,6 +57,24 @@ describe('MagicLink', function () {
             assert.rejects(service.sendMagicLink(args));
         });
 
+        it('Accepts email addresses with modern gTLDs', async function () {
+            const options = buildOptions();
+            const service = new MagicLink(options);
+
+            const args = {
+                email: 'test@example.rocks',
+                tokenData: {
+                    id: '420'
+                },
+                type: 'signin'
+            };
+
+            await service.sendMagicLink(args);
+
+            sinon.assert.calledOnce(options.transporter.sendMail);
+            assert.equal(options.transporter.sendMail.firstCall.args[0].to, args.email);
+        });
+
         it('Sends an email to the user with a link generated from getSigninURL(token, type)', async function () {
             const options = buildOptions();
             const service = new MagicLink(options);

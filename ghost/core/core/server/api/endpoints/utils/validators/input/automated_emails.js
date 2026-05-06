@@ -127,7 +127,7 @@ module.exports = {
     sendTestEmail(apiConfig, frame) {
         const email = frame.data.email;
 
-        if (typeof email !== 'string' || !validator.isEmail(email)) {
+        if (typeof email !== 'string' || !validator.isEmail(email, {legacy: false})) {
             throw new ValidationError({
                 message: tpl(messages.invalidEmailReceived)
             });

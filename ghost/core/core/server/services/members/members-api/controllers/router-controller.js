@@ -813,7 +813,7 @@ module.exports = class RouterController {
             });
         }
 
-        if (!isEmail(email)) {
+        if (!isEmail(email, {legacy: false})) {
             throw new errors.BadRequestError({
                 message: tpl(messages.invalidEmail)
             });
