@@ -52,7 +52,6 @@ export function SharePublicationDialog({
             closeButtonId="ob-close-share-modal"
             contentProps={{
                 className: "dark:bg-surface-elevated",
-                "data-test-modal": "onboarding-share",
                 "data-testid": "onboarding-share-modal",
             }}
             copyButtonId="ob-copy-publication-link"
