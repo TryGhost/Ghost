@@ -4,6 +4,7 @@ import CommentsFilters from './components/comments-filters';
 import CommentsHeader from './components/comments-header';
 import CommentsLayout from './components/comments-layout';
 import CommentsList from './components/comments-list';
+import CommentsSidebar from './components/comments-sidebar';
 import React, {useCallback} from 'react';
 import {Button, EmptyIndicator, LoadingIndicator} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
@@ -44,19 +45,8 @@ const Comments: React.FC = () => {
     // If we are fetching comments, but not fetching the next page and not refetching, we should show the loading indicator
     const shouldShowLoading = isFetching && !isFetchingNextPage && !isRefetching;
 
-    const rail = analyticsEnabled ? (
-        <CommentsAnalytics
-            dateFrom={dateFrom}
-            dateTo={dateTo}
-            range={range}
-            setRange={setRange}
-            timezone={timezone}
-            onAddFilter={handleAddFilter}
-        />
-    ) : undefined;
-
-    return (
-        <CommentsLayout rail={rail}>
+    const commentsContent = (
+        <>
             <CommentsHeader>
                 {!isSingleIdFilter && (
                     <CommentsFilters
@@ -112,6 +102,28 @@ const Comments: React.FC = () => {
                     </>
                 )}
             </CommentsContent>
+        </>
+    );
+
+    return (
+        <CommentsLayout>
+            {analyticsEnabled ? (
+                <div className='block grow lg:grid lg:grid-cols-[minmax(0,1fr)_460px]'>
+                    <CommentsSidebar>
+                        <CommentsAnalytics
+                            dateFrom={dateFrom}
+                            dateTo={dateTo}
+                            range={range}
+                            setRange={setRange}
+                            timezone={timezone}
+                            onAddFilter={handleAddFilter}
+                        />
+                    </CommentsSidebar>
+                    <div className='flex min-w-0 flex-col lg:col-start-1 lg:row-start-1 lg:[&_.prose]:max-w-[70ch]'>
+                        {commentsContent}
+                    </div>
+                </div>
+            ) : commentsContent}
         </CommentsLayout>
     );
 };
