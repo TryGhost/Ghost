@@ -25,6 +25,7 @@ interface CreateGhostBrowseValueSourceConfig<Item, Data> {
     debounceMs?: number;
     selectItems: (data: Data | undefined) => Item[] | undefined;
     toOption: (item: Item) => FilterOption<string>;
+    getMissingSelectedOption?: (selectedValue: string) => FilterOption<string>;
     useQuery: (
         options: {enabled: boolean; searchParams: Record<string, string>}
     ) => InfiniteBrowseResult<Data>;
@@ -53,6 +54,7 @@ export function createGhostBrowseValueSource<Item, Data extends GhostBrowseRespo
     debounceMs,
     selectItems,
     toOption,
+    getMissingSelectedOption,
     useQuery
 }: CreateGhostBrowseValueSourceConfig<Item, Data>) {
     return createRemoteValueSource<Item>({
@@ -93,6 +95,7 @@ export function createGhostBrowseValueSource<Item, Data extends GhostBrowseRespo
             };
         },
         toOption,
+        getMissingSelectedOption,
         debounceMs
     });
 }

@@ -3,23 +3,65 @@ import CommentsFilters from './components/comments-filters';
 import CommentsHeader from './components/comments-header';
 import CommentsLayout from './components/comments-layout';
 import CommentsList from './components/comments-list';
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {Button, EmptyIndicator, LoadingIndicator} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {createFilter} from '@tryghost/shade/patterns';
+import {escapeNqlString} from '../filters/filter-normalization';
+import {getSiteTimezone} from '@src/utils/get-site-timezone';
+import {serializeCommentFilters} from './comment-filter-query';
+import {shouldDelayCommentDateFilterHydration, useFilterState} from './hooks/use-filter-state';
 import {useBrowseComments} from '@tryghost/admin-x-framework/api/comments';
-import {useFilterState} from './hooks/use-filter-state';
+import {useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
+import {useSearchParams} from 'react-router';
 
-const Comments: React.FC = () => {
-    const {filters, nql, setFilters, clearFilters, isSingleIdFilter} = useFilterState();
+function getSingleCommentIdParam(searchParams: URLSearchParams): string | undefined {
+    const value = searchParams.get('id');
+    const match = value?.match(/^is:(.+)$/);
+
+    return match?.[1];
+}
+
+const CommentsPage: React.FC<{timezone: string; singleCommentId?: string}> = ({
+    timezone,
+    singleCommentId
+}) => {
+    const [searchParams, setSearchParams] = useSearchParams();
+    const {filters, nql, setFilters} = useFilterState(timezone);
     const handleAddFilter = useCallback((field: string, value: string, operator: string = 'is') => {
-        setFilters((prevFilters) => {
-            // Remove any existing filter for the same field
-            const filtered = prevFilters.filter(f => f.field !== field);
-            // Add the new filter
-            return [...filtered, createFilter(field, operator, [value])];
-        }, {replace: false});
-    }, [setFilters]);
+        const nextFilters = [
+            ...filters.filter(filter => filter.field !== field),
+            createFilter(field, operator, [value])
+        ];
+
+        if (!singleCommentId) {
+            setFilters(nextFilters, {replace: false});
+            return;
+        }
+
+        const nextSearchParams = new URLSearchParams(searchParams);
+        const nextNql = serializeCommentFilters(nextFilters, timezone);
+
+        nextSearchParams.delete('id');
+        nextSearchParams.delete('filter');
+
+        if (nextNql) {
+            nextSearchParams.set('filter', nextNql);
+        }
+
+        setSearchParams(nextSearchParams, {replace: false});
+    }, [filters, searchParams, setFilters, setSearchParams, singleCommentId, timezone]);
+    const effectiveFilter = useMemo(() => {
+        if (singleCommentId) {
+            return `id:${escapeNqlString(singleCommentId)}`;
+        }
+
+        return nql;
+    }, [nql, singleCommentId]);
+
+    const handleShowAllComments = useCallback(() => {
+        setSearchParams(new URLSearchParams(), {replace: false});
+    }, [setSearchParams]);
 
     const {
         data,
@@ -30,18 +72,21 @@ const Comments: React.FC = () => {
         fetchNextPage,
         hasNextPage
     } = useBrowseComments({
-        searchParams: nql ? {filter: nql} : {},
+        searchParams: {
+            ...(effectiveFilter ? {filter: effectiveFilter} : {})
+        },
         keepPreviousData: true
     });
-    // If we are fetching comments, but not fetching the next page and not refetching, we should show the loading indicator
     const shouldShowLoading = isFetching && !isFetchingNextPage && !isRefetching;
+    const resetKey = effectiveFilter ?? '';
 
     return (
         <CommentsLayout>
             <CommentsHeader>
-                {!isSingleIdFilter && (
+                {!singleCommentId && (
                     <CommentsFilters
                         filters={filters}
+                        siteTimezone={timezone}
                         onFiltersChange={setFilters}
                     />
                 )}
@@ -65,11 +110,22 @@ const Comments: React.FC = () => {
                     </div>
                 ) : !data?.comments.length ? (
                     <div className="flex h-full items-center justify-center">
-                        <EmptyIndicator
-                            title="No comments yet"
-                        >
-                            <LucideIcon.MessageSquare />
-                        </EmptyIndicator>
+                        {singleCommentId ? (
+                            <div className="flex flex-col items-center">
+                                <EmptyIndicator title="Comment not found">
+                                    <LucideIcon.MessageSquare />
+                                </EmptyIndicator>
+                                <Button className="mt-4" variant="outline" onClick={handleShowAllComments}>
+                                    Show all comments
+                                </Button>
+                            </div>
+                        ) : (
+                            <EmptyIndicator
+                                title="No comments yet"
+                            >
+                                <LucideIcon.MessageSquare />
+                            </EmptyIndicator>
+                        )}
                     </div>
                 ) : (
                     <>
@@ -79,13 +135,13 @@ const Comments: React.FC = () => {
                             isFetchingNextPage={isFetchingNextPage}
                             isLoading={isFetching && !isFetchingNextPage}
                             items={data?.comments ?? []}
-                            resetKey={nql ?? ''}
+                            resetKey={resetKey}
                             totalItems={data?.meta?.pagination?.total ?? 0}
                             onAddFilter={handleAddFilter}
                         />
-                        {isSingleIdFilter && (
+                        {singleCommentId && (
                             <div className="flex justify-center py-8">
-                                <Button variant="outline" onClick={() => clearFilters({replace: false})}>
+                                <Button variant="outline" onClick={handleShowAllComments}>
                                     Show all comments
                                 </Button>
                             </div>
@@ -95,6 +151,31 @@ const Comments: React.FC = () => {
             </CommentsContent>
         </CommentsLayout>
     );
+};
+
+const Comments: React.FC = () => {
+    const [searchParams] = useSearchParams();
+    const {data: settingsData, isLoading: isSettingsLoading} = useBrowseSettings({});
+    const singleCommentId = useMemo(() => getSingleCommentIdParam(searchParams), [searchParams]);
+    const filterParam = searchParams.get('filter') ?? undefined;
+    const shouldDelayHydration = !singleCommentId && shouldDelayCommentDateFilterHydration(filterParam, Boolean(settingsData), isSettingsLoading);
+
+    if (shouldDelayHydration) {
+        return (
+            <CommentsLayout>
+                <CommentsHeader />
+                <CommentsContent>
+                    <div className="flex h-full items-center justify-center">
+                        <LoadingIndicator size="lg" />
+                    </div>
+                </CommentsContent>
+            </CommentsLayout>
+        );
+    }
+
+    const timezone = getSiteTimezone(settingsData?.settings ?? []);
+
+    return <CommentsPage singleCommentId={singleCommentId} timezone={timezone} />;
 };
 
 export default Comments;

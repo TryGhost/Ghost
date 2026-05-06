@@ -1,6 +1,9 @@
-import {escapeNqlString} from './filter-normalization';
+import {DATE_FILTER_OPERATORS} from './filter-date';
+import {escapeNqlString, formatDateInTimezone, getDayBoundsInUtc} from './filter-normalization';
 import {extractComparator} from './filter-ast';
 import type {FilterCodec} from './filter-types';
+
+type DateOperator = typeof DATE_FILTER_OPERATORS[number];
 
 const SCALAR_OPERATORS: Record<string, string> = {
     $eq: 'is',
@@ -13,6 +16,13 @@ const NUMBER_OPERATORS: Record<string, string> = {
     $gte: 'is-or-greater',
     $lt: 'is-less',
     $lte: 'is-or-less'
+};
+
+const DATE_OPERATORS: Record<string, DateOperator> = {
+    $lt: 'is-less',
+    $lte: 'is-or-less',
+    $gt: 'is-greater',
+    $gte: 'is-or-greater'
 };
 
 const TEXT_OPERATOR_SYMBOLS: Record<string, string> = {
@@ -30,6 +40,13 @@ const NUMBER_OPERATOR_SYMBOLS: Record<string, string> = {
     'is-or-greater': '>=',
     'is-less': '<',
     'is-or-less': '<='
+};
+
+const DATE_OPERATOR_SYMBOLS: Record<string, string> = {
+    'is-less': '<',
+    'is-or-less': '<=',
+    'is-greater': '>',
+    'is-or-greater': '>='
 };
 
 const SET_OPERATOR_SYMBOLS: Record<string, string> = {
@@ -311,6 +328,59 @@ export function numberCodec(config?: CodecConfig): FilterCodec {
             }
 
             return [`${field}:${operator}${value}`];
+        }
+    };
+}
+
+export function dateCodec(config?: CodecConfig): FilterCodec {
+    return {
+        parse(node, ctx) {
+            const comparator = extractComparator(node as Record<string, unknown>);
+            const field = getCodecField(config, ctx.key);
+
+            if (!comparator || comparator.field !== field || typeof comparator.value !== 'string') {
+                return null;
+            }
+
+            const operator = DATE_OPERATORS[comparator.operator];
+            const value = formatDateInTimezone(comparator.value, ctx.timezone);
+
+            if (!operator || !value) {
+                return null;
+            }
+
+            return {
+                field: ctx.key,
+                operator,
+                values: [value]
+            };
+        },
+        serialize(predicate, ctx) {
+            const rawValue = predicate.values[0];
+            const field = getCodecField(config, ctx.key);
+
+            if (typeof rawValue !== 'string' || rawValue === '') {
+                return null;
+            }
+
+            const value = formatDateInTimezone(rawValue, ctx.timezone);
+
+            if (!value) {
+                return null;
+            }
+
+            const {start, end} = getDayBoundsInUtc(value, ctx.timezone);
+            const operator = DATE_OPERATOR_SYMBOLS[predicate.operator];
+
+            if (operator === undefined) {
+                return null;
+            }
+
+            const boundary = predicate.operator === 'is-less' || predicate.operator === 'is-or-greater'
+                ? start
+                : end;
+
+            return [`${field}:${operator}'${boundary}'`];
         }
     };
 }

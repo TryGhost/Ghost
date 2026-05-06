@@ -17,6 +17,10 @@ const useRemoteMemberValueSource = createGhostBrowseValueSource<Member, MembersI
         order: 'created_at DESC',
         ...(query ? {search: query} : {})
     }),
+    getMissingSelectedOption: value => ({
+        value,
+        label: `ID: ${value}`
+    }),
     selectItems: data => data?.members,
     useQuery: ({enabled, searchParams}) => {
         return useBrowseMembersInfinite({

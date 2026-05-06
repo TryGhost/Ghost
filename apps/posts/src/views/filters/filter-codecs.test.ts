@@ -1,6 +1,6 @@
 import nql from '@tryghost/nql-lang';
+import {dateCodec, numberCodec, scalarCodec, setCodec, textCodec} from './filter-codecs';
 import {describe, expect, it} from 'vitest';
-import {numberCodec, scalarCodec, setCodec, textCodec} from './filter-codecs';
 import type {CodecContext, FilterPredicate} from './filter-types';
 
 const statusContext: CodecContext = {
@@ -48,6 +48,13 @@ const offerContext: CodecContext = {
 const countContext: CodecContext = {
     key: 'email_count',
     pattern: 'email_count',
+    params: {},
+    timezone: 'UTC'
+};
+
+const dateContext: CodecContext = {
+    key: 'created_at',
+    pattern: 'created_at',
     params: {},
     timezone: 'UTC'
 };
@@ -333,5 +340,43 @@ describe('numberCodec', () => {
         };
 
         expect(numberCodec().serialize(predicate, countContext)).toEqual(['email_count:<=10']);
+    });
+});
+
+describe('dateCodec', () => {
+    it('parses date comparison operators', () => {
+        expect(dateCodec().parse(nql.parse('created_at:<=\'2024-01-01T23:59:59.999Z\'') as never, dateContext)).toEqual({
+            field: 'created_at',
+            operator: 'is-or-less',
+            values: ['2024-01-01']
+        });
+
+        expect(dateCodec().parse(nql.parse('created_at:>\'2024-01-01T23:59:59.999Z\'') as never, dateContext)).toEqual({
+            field: 'created_at',
+            operator: 'is-greater',
+            values: ['2024-01-01']
+        });
+    });
+
+    it('serializes date comparison operators using site timezone day bounds', () => {
+        expect(dateCodec().serialize({
+            id: '1',
+            field: 'created_at',
+            operator: 'is-or-less',
+            values: ['2024-02-01']
+        }, {
+            ...dateContext,
+            timezone: 'Europe/Stockholm'
+        })).toEqual(['created_at:<=\'2024-02-01T22:59:59.999Z\'']);
+    });
+
+    it('returns null for invalid date values', () => {
+        expect(dateCodec().parse(nql.parse('created_at:<=\'not-a-date\'') as never, dateContext)).toBeNull();
+        expect(dateCodec().serialize({
+            id: '1',
+            field: 'created_at',
+            operator: 'is-or-less',
+            values: ['not-a-date']
+        }, dateContext)).toBeNull();
     });
 });

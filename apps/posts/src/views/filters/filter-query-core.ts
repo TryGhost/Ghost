@@ -22,6 +22,38 @@ export function stampPredicates(predicates: ParsedPredicate[]): FilterPredicate[
     }));
 }
 
+export function getFieldKeysByType<TFields extends Record<string, FilterField>>(
+    fields: TFields,
+    type: FilterField['ui']['type']
+): Set<string> {
+    const keys = new Set<string>();
+
+    Object.entries(fields).forEach(([key, definition]) => {
+        if (definition.ui.type !== type) {
+            return;
+        }
+
+        keys.add(key);
+        definition.parseKeys?.forEach(parseKey => keys.add(parseKey));
+    });
+
+    return keys;
+}
+
+export function hasFieldKey(node: AstNode, fieldKeys: ReadonlySet<string>): boolean {
+    if (Object.keys(node).some(key => fieldKeys.has(key))) {
+        return true;
+    }
+
+    return Object.values(node).some((value) => {
+        if (Array.isArray(value)) {
+            return value.some(child => child !== null && typeof child === 'object' && hasFieldKey(child as AstNode, fieldKeys));
+        }
+
+        return value !== null && typeof value === 'object' && !(value instanceof RegExp) && hasFieldKey(value as AstNode, fieldKeys);
+    });
+}
+
 export function dispatchSimpleNodes<TFields extends Record<string, FilterField>>(nodes: AstNode[], fields: TFields, timezone: string): ParsedPredicate[] {
     return nodes.flatMap((node) => {
         const keys = Object.keys(node);
