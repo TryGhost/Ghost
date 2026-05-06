@@ -1,4 +1,3 @@
-const {URL} = require('url');
 const cors = require('cors');
 const config = require('../../../../shared/config');
 
