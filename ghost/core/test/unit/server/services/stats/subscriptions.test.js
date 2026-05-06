@@ -46,6 +46,7 @@ describe('SubscriptionStatsService', function () {
                 table.string('cadence');
                 table.string('status');
                 table.dateTime('redeemed_at');
+                table.dateTime('consumes_at');
                 table.dateTime('consumed_at');
                 table.dateTime('expired_at');
                 table.dateTime('refunded_at');
@@ -404,12 +405,12 @@ describe('SubscriptionStatsService', function () {
 
             // Gifts covering each end-of-life branch:
             //  - g-month: redeemed day 1, still active
-            //  - g-year-consumed:  redeemed day 1, consumed day 2
+            //  - g-year-consumed:  redeemed day 1, period ended day 2 (natural end via cron)
             //  - g-year-expired:   redeemed day 1, expired day 3
             //  - g-month-refunded: redeemed day 1, refunded day 4
             await db('gifts').insert([
                 {id: 'g-month', tier_id: 'basic', cadence: 'month', status: 'redeemed', redeemed_at: '1970-01-01T00:00:00.000Z'},
-                {id: 'g-year-consumed', tier_id: 'basic', cadence: 'year', status: 'consumed', redeemed_at: '1970-01-01T00:00:00.000Z', consumed_at: '1970-01-02T00:00:00.000Z'},
+                {id: 'g-year-consumed', tier_id: 'basic', cadence: 'year', status: 'consumed', redeemed_at: '1970-01-01T00:00:00.000Z', consumes_at: '1970-01-02T00:00:00.000Z', consumed_at: '1970-01-02T00:00:00.000Z'},
                 {id: 'g-year-expired', tier_id: 'basic', cadence: 'year', status: 'expired', redeemed_at: '1970-01-01T00:00:00.000Z', expired_at: '1970-01-03T00:00:00.000Z'},
                 {id: 'g-month-refunded', tier_id: 'basic', cadence: 'month', status: 'refunded', redeemed_at: '1970-01-01T00:00:00.000Z', refunded_at: '1970-01-04T00:00:00.000Z'}
             ]);
@@ -482,6 +483,40 @@ describe('SubscriptionStatsService', function () {
             assert.equal(rows.length, 1);
             assert.equal(rows[0].signups, 2);
             assert.equal(rows[0].positive_delta, 2);
+        });
+
+        it('Excludes consumed gifts where the member upgraded to paid (consumed_at < consumes_at) from cancellations', async function () {
+            const tiers = await createTiers(['basic']);
+
+            // Two consumed gifts at the same tier/cadence on the same day:
+            //  - g-upgrade: consumed BEFORE its planned end (consumed_at < consumes_at) → upgrade, NOT churn
+            //  - g-natural: consumed AT/AFTER its planned end (consumed_at >= consumes_at) → real churn
+            await db('gifts').insert([
+                {id: 'g-upgrade', tier_id: 'basic', cadence: 'month', status: 'consumed', redeemed_at: '1970-01-01T00:00:00.000Z', consumes_at: '1970-02-01T00:00:00.000Z', consumed_at: '1970-01-05T00:00:00.000Z'},
+                {id: 'g-natural', tier_id: 'basic', cadence: 'month', status: 'consumed', redeemed_at: '1970-01-01T00:00:00.000Z', consumes_at: '1970-01-05T00:00:00.000Z', consumed_at: '1970-01-05T00:00:00.000Z'}
+            ]);
+
+            // Add a paid signup so the service produces a non-empty result regardless.
+            const NEW = createEvent('created');
+            await insertEvents([
+                [NEW('A', tiers.basic.monthly)]
+            ]);
+
+            const stats = new SubscriptionStatsService({knex: db});
+            const result = await stats.getSubscriptionHistory();
+
+            // Day 5 monthly: only g-natural should count as a cancellation; g-upgrade is excluded.
+            const day5Cancellations = result.data
+                .filter(r => r.tier === 'basic' && r.cadence === 'month' && r.date === '1970-01-05')
+                .reduce((acc, r) => acc + r.cancellations, 0);
+            assert.equal(day5Cancellations, 1);
+
+            // Both gifts still count as signups on day 1 (the upgrade was a real signup at the time).
+            const day1Signups = result.data
+                .filter(r => r.tier === 'basic' && r.cadence === 'month' && r.date === '1970-01-01')
+                .reduce((acc, r) => acc + r.signups, 0);
+            // 1 paid + 2 gift redemptions = 3
+            assert.equal(day1Signups, 3);
         });
 
         it('Excludes unredeemed gifts (expired/refunded before redemption) from cancellations', async function () {
