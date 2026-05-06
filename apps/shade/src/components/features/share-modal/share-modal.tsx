@@ -33,7 +33,7 @@ interface ShareModalProps extends React.ComponentPropsWithoutRef<typeof DialogPr
     copyLabel?: string;
     copySuccessLabel?: string;
     copyURL: string;
-    contentProps?: React.ComponentPropsWithoutRef<typeof DialogContent>;
+    contentProps?: React.ComponentPropsWithoutRef<typeof DialogContent> & Record<`data-${string}`, string | undefined>;
     description?: React.ReactNode;
     footerAction?: React.ReactNode;
     guidance?: React.ReactNode;
