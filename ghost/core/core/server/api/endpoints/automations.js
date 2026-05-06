@@ -33,6 +33,7 @@ const controller = {
         ],
         permissions: true,
         query(frame) {
+            // TODO: NY-1265 - replace this static payload with persisted automation data.
             return {
                 id: frame.data.id,
                 slug: 'member-welcome-email-free',
