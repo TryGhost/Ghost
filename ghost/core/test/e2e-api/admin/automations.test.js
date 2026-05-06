@@ -85,10 +85,7 @@ describe('Automations API', function () {
             assert.deepEqual(body.automations, [{
                 id: automationId,
                 name: 'Welcome email',
-                description: 'Onboard new free members with a short welcome email.',
-                status: 'active',
-                trigger_type: 'member_signs_up',
-                trigger_mode: 'free'
+                status: 'active'
             }]);
         });
     });

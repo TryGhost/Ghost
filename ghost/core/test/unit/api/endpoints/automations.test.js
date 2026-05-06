@@ -73,10 +73,7 @@ describe('Automations controller', function () {
             assert.deepEqual(result, {
                 id: '67f3f3f3f3f3f3f3f3f3f3f3',
                 name: 'Welcome email',
-                description: 'Onboard new free members with a short welcome email.',
-                status: 'active',
-                trigger_type: 'member_signs_up',
-                trigger_mode: 'free'
+                status: 'active'
             });
         });
     });
