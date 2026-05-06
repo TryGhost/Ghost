@@ -15,7 +15,9 @@ export const withMockFetch = async (
 
     globalThis.fetch = mockFetch as any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
-    await callback(mockFetch.mock);
-
-    globalThis.fetch = originalFetch;
+    try {
+        await callback(mockFetch.mock);
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
 };
