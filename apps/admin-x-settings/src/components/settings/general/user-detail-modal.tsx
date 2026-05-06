@@ -12,10 +12,10 @@ import {ConfirmationModal, Heading, Icon, ImageUpload, LimitModal, Menu, type Me
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../hooks/use-limiter';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {SOCIAL_PLATFORM_CONFIGS, getSocialValidationError} from '../../../utils/social-urls/index';
 import {type User, canAccessSettings, hasAdminAccess, isAdminUser, isAuthorOrContributor, isEditorUser, isOwnerUser, useDeleteUser, useEditUser, useGetUserBySlug, useMakeOwner} from '@tryghost/admin-x-framework/api/users';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {useGlobalData} from '../../providers/global-data-provider';
-import {validateBlueskyUrl, validateFacebookUrl, validateInstagramUrl, validateLinkedInUrl, validateMastodonUrl, validateThreadsUrl, validateTikTokUrl, validateTwitterUrl, validateYouTubeUrl} from '../../../utils/social-urls/index';
 
 const validators: Record<string, (u: Partial<User>) => string> = {
     name: ({name}) => {
@@ -52,105 +52,10 @@ const validators: Record<string, (u: Partial<User>) => string> = {
         const valid = !website || (validator.isURL(website) && website.length <= 2000);
         return valid ? '' : 'Enter a valid URL';
     },
-    facebook: ({facebook}) => {
-        try {
-            validateFacebookUrl(facebook || '');
-            return '';
-        } catch (e) {
-            if (e instanceof Error) {
-                return e.message;
-            }
-            return '';
-        }
-    },
-    twitter: ({twitter}) => {
-        try {
-            validateTwitterUrl(twitter || '');
-            return '';
-        } catch (e) {
-            if (e instanceof Error) {
-                return e.message;
-            }
-            return '';
-        }
-    },
-    threads: ({threads}) => {
-        try {
-            validateThreadsUrl(threads || '');
-            return '';
-        } catch (e) {
-            if (e instanceof Error) {
-                return e.message;
-            }
-            return '';
-        }
-    },
-    bluesky: ({bluesky}) => {
-        try {
-            validateBlueskyUrl(bluesky || '');
-            return '';
-        } catch (e) {
-            if (e instanceof Error) {
-                return e.message;
-            }
-            return '';
-        }
-    },
-    linkedin: ({linkedin}) => {
-        try {
-            validateLinkedInUrl(linkedin || '');
-            return '';
-        } catch (e) {
-            if (e instanceof Error) {
-                return e.message;
-            }
-            return '';
-        }
-    },
-    instagram: ({instagram}) => {
-        try {
-            validateInstagramUrl(instagram || '');
-            return '';
-        } catch (e) {
-            if (e instanceof Error) {
-                return e.message;
-            }
-            return '';
-        }
-    },
-    youtube: ({youtube}) => {
-        try {
-            validateYouTubeUrl(youtube || '');
-            return '';
-        } catch (e) {
-            if (e instanceof Error) {
-                return e.message;
-            }
-            return '';
-        }
-    },
-    tiktok: ({tiktok}) => {
-        try {
-            validateTikTokUrl(tiktok || '');
-            return '';
-        } catch (e) {
-            if (e instanceof Error) {
-                return e.message;
-            }
-            return '';
-        }
-    },
-    mastodon: ({mastodon}) => {
-        try {
-            validateMastodonUrl(mastodon || '');
-            return '';
-        } catch (e) {
-            if (e instanceof Error) {
-                return e.message;
-            }
-            return '';
-        }
-    }
+    ...Object.fromEntries(SOCIAL_PLATFORM_CONFIGS.map(config => [
+        config.key,
+        (values: Partial<User>) => getSocialValidationError(config.key, values[config.key] as string | null | undefined)
+    ]))
 };
 
 export interface UserDetailProps {
