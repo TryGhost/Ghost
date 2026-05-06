@@ -1,5 +1,7 @@
+import AuthConfiguration from 'ember-simple-auth/configuration';
 import ESASessionService from 'ember-simple-auth/services/session';
 import RSVP from 'rsvp';
+import windowProxy from 'ghost-admin/utils/window-proxy';
 import {configureScope} from '@sentry/ember';
 import {getOwner} from '@ember/application';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -91,7 +93,11 @@ export default class SessionService extends ESASessionService {
             const redirectUrl = window.sessionStorage.getItem('ghost-signin-redirect');
             window.sessionStorage.removeItem('ghost-signin-redirect');
             if (redirectUrl && !redirectUrl.startsWith('/signin') && !redirectUrl.startsWith('/signup') && !redirectUrl.startsWith('/setup')) {
-                this.router.transitionTo(redirectUrl);
+                // Hard navigate rather than router.transitionTo: the catch-all
+                // react-fallback route has no controller-declared queryParams,
+                // so transitionTo strips params like ?verifyEmail=<token> used
+                // by newsletter reply-to confirmation links.
+                windowProxy.replaceLocation(`${AuthConfiguration.rootURL}#${redirectUrl}`);
                 return;
             }
 
