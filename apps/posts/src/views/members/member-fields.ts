@@ -389,8 +389,7 @@ export const memberFields = defineFields({
         ui: {
             label: 'Emails sent (all time)',
             type: 'number',
-            defaultOperator: 'is',
-            defaultValue: 0,
+            defaultOperator: 'is-greater',
             min: 0,
             className: 'w-24'
         },
@@ -401,8 +400,7 @@ export const memberFields = defineFields({
         ui: {
             label: 'Emails opened (all time)',
             type: 'number',
-            defaultOperator: 'is',
-            defaultValue: 0,
+            defaultOperator: 'is-greater',
             min: 0,
             className: 'w-24'
         },
@@ -413,8 +411,7 @@ export const memberFields = defineFields({
         ui: {
             label: 'Open rate (all time)',
             type: 'number',
-            defaultOperator: 'is',
-            defaultValue: 0,
+            defaultOperator: 'is-greater',
             min: 0,
             max: 100,
             suffix: '%',
