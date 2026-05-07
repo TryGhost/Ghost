@@ -64,7 +64,7 @@ export const GiftPageStyles = `
     align-items: center;
     justify-content: center;
     background: var(--white);
-    padding: 64px 48px 128px;
+    padding: 64px 48px;
 }
 
 /* Selection page only: useLayoutEffect locks the inner's vertical
