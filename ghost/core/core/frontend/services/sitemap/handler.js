@@ -13,7 +13,13 @@ module.exports = function handler(siteApp) {
         next();
     };
 
-    siteApp.get('/sitemap.xml', function sitemapXML(req, res) {
+    siteApp.get('/sitemap.xml', async function sitemapXML(req, res, next) {
+        try {
+            await manager.ensurePopulatedFromDatabase();
+        } catch (err) {
+            return next(err);
+        }
+
         res.set({
             'Cache-Control': 'public, max-age=' + config.get('caching:sitemap:maxAge'),
             'Content-Type': 'text/xml'
@@ -22,10 +28,16 @@ module.exports = function handler(siteApp) {
         res.send(manager.getIndexXml());
     });
 
-    siteApp.get('/sitemap-:resource.xml', verifyResourceType, function sitemapResourceXML(req, res) {
+    siteApp.get('/sitemap-:resource.xml', verifyResourceType, async function sitemapResourceXML(req, res, next) {
         const type = req.params.resource.replace(/-\d+$/, '');
         const pageParam = (req.params.resource.match(/-(\d+)$/) || [null, null])[1];
         const page = pageParam ? parseInt(pageParam, 10) : 1;
+
+        try {
+            await manager.ensurePopulatedFromDatabase();
+        } catch (err) {
+            return next(err);
+        }
 
         const content = manager.getSiteMapXml(type, page);
         // Prevent x-1.xml as it is a duplicate of x.xml and empty sitemaps
