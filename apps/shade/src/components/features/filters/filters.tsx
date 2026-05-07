@@ -2422,16 +2422,23 @@ export function Filters<T = unknown>({
                             )}
                         >
                             {selectedFieldForOptions ? (
-                                // Show original select/multiselect rendering without back button
-                                // SelectOptionsPopover renders its own Command component when inline={true}
+                                // In multi-filter mode, override the field's type to 'select' so
+                                // the inline picker behaves as single-pick: one click commits a
+                                // new single-value filter and the picker closes. Further
+                                // multi-value editing happens through the filter row's own
+                                // picker. In single-filter mode the picker stays multi-select and
+                                // accumulates values into one filter (handled in
+                                // addFilterWithOption).
                                 <SelectOptionsPopover<T>
-                                    field={selectedFieldForOptions}
+                                    field={
+                                        allowMultiple && selectedFieldForOptions.type === 'multiselect'
+                                            ? {...selectedFieldForOptions, type: 'select'}
+                                            : selectedFieldForOptions
+                                    }
                                     inline={true}
                                     values={tempSelectedValues as T[]}
                                     onChange={(values) => {
-                                        // For multiselect, create filter immediately but keep popover open
-                                        // For single select, create filter and close popover
-                                        const shouldClosePopover = selectedFieldForOptions.type === 'select';
+                                        const shouldClosePopover = allowMultiple || selectedFieldForOptions.type === 'select';
                                         addFilterWithOption(selectedFieldForOptions, values as unknown[], shouldClosePopover);
                                     }}
                                     onClose={closeFilterPopover}
