@@ -51,7 +51,7 @@ CREATE TABLE automation_action_revisions (
   UNIQUE (created_at, action_id)
 ) STRICT;
 
-CREATE TABLE action_edges (
+CREATE TABLE automation_action_edges (
   source_action_id TEXT NOT NULL REFERENCES automation_actions(id),
   target_action_id TEXT NOT NULL REFERENCES automation_actions(id),
   PRIMARY KEY (source_action_id, target_action_id)
@@ -107,7 +107,7 @@ INSERT INTO automation_action_revisions (id, created_at, action_id, wait_hours, 
 ('p_rev_3', 1715016007, 'p_act_3', 72, NULL, NULL),
 ('p_rev_4', 1715016008, 'p_act_4', NULL, 'Exclusive Insights', '{"root":{"children":[]}}');
 
-INSERT INTO action_edges (source_action_id, target_action_id) VALUES
+INSERT INTO automation_action_edges (source_action_id, target_action_id) VALUES
 ('f_act_1', 'f_act_2'),
 ('f_act_2', 'f_act_3'),
 ('f_act_3', 'f_act_4'),
