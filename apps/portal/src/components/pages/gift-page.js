@@ -525,6 +525,12 @@ export const GiftPageStyles = `
 
 
 @media (max-width: 880px) {
+    .gh-portal-popup-container.full-size.gift,
+    .gh-portal-popup-container.full-size.giftSuccess,
+    .gh-portal-popup-container.full-size.giftRedemption {
+        padding: 0 !important;
+    }
+
     .gh-portal-gift-checkout {
         grid-template-columns: 1fr;
         min-height: 0;
@@ -534,21 +540,34 @@ export const GiftPageStyles = `
         order: -1;
         position: static;
         height: auto;
-        padding: 12px 12px 0;
+        padding: 0;
         overflow: visible;
     }
 
     .gh-portal-gift-checkout-right-panel {
-        padding: 32px 24px;
+        padding: 56px 24px 32px;
+        border-radius: 0 0 32px 32px;
     }
 
     .gh-portal-gift-checkout-left {
-        padding: 32px 24px 80px;
+        padding: 32px 24px 0;
+    }
+
+    /* Screens without a sticky CTA wrapper need their own bottom padding. */
+    .gh-portal-content.giftSuccess .gh-portal-gift-checkout-left,
+    .gh-portal-content.giftRedemption .gh-portal-gift-checkout-left {
+        padding-bottom: 24px;
     }
 
     .gh-portal-gift-checkout-card,
     .gh-portal-gift-checkout-card-stack {
-        max-width: 320px;
+        max-width: 240px;
+    }
+
+    .gh-portal-gift-checkout-cta-wrapper {
+        bottom: 0;
+        margin: 0;
+        padding: 32px 0 24px;
     }
 }
 
@@ -635,6 +654,8 @@ const GiftPage = () => {
     // half. After this single measurement we never recompute — so when the
     // benefits change height on tier switch, only the bottom of the column
     // (the CTA) shifts, leaving the title and tier picker anchored.
+    // Skipped on mobile (single-column stack) where natural top-aligned flow
+    // is what we want; centering would push content under the sticky CTA.
     useLayoutEffect(() => {
         if (centeringDoneRef.current) {
             return;
@@ -642,6 +663,11 @@ const GiftPage = () => {
         const inner = innerRef.current;
         const left = leftRef.current;
         if (!inner || !left) {
+            return;
+        }
+        if (window.matchMedia('(max-width: 880px)').matches) {
+            inner.style.marginTop = '';
+            centeringDoneRef.current = true;
             return;
         }
         const leftRect = left.getBoundingClientRect();
