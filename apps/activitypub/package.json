@@ -47,7 +47,7 @@
     "eslint-plugin-react-refresh": "0.4.24",
     "eslint-plugin-tailwindcss": "4.0.0-beta.0",
     "jest": "29.7.0",
-    "tailwindcss": "^4.2.2",
+    "tailwindcss": "4.2.2",
     "vite": "7.3.2",
     "vitest": "4.1.2"
   },

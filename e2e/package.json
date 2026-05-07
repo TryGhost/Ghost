@@ -35,7 +35,7 @@
     "@tryghost/logging": "4.1.0",
     "@types/dockerode": "3.3.47",
     "@types/express": "4.17.25",
-    "busboy": "^1.6.0",
+    "busboy": "1.6.0",
     "dockerode": "4.0.10",
     "dotenv": "17.3.1",
     "eslint": "catalog:",
