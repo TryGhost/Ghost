@@ -1,2 +1,2 @@
 export {default} from './share-modal';
-export type {ShareModalSocialLink} from './share-modal';
+export type {ShareModalPreviewProps, ShareModalSocialLink} from './share-modal';

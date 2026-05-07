@@ -1,10 +1,9 @@
-import {H3} from '@/components/layout/heading';
-import {Button} from '@/components/ui/button';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
+import {Check, Copy, Link, X} from 'lucide-react';
+import React, {useState} from 'react';
+import {Button, type ButtonProps} from '@/components/ui/button';
 import {Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger} from '@/components/ui/dialog';
 import {cn} from '@/lib/utils';
-import * as DialogPrimitive from '@radix-ui/react-dialog';
-import {Check, Copy, Image as ImageIcon, Link, X} from 'lucide-react';
-import React, {useState} from 'react';
 
 type ShareService = 'x' | 'threads' | 'facebook' | 'linkedin';
 
@@ -16,35 +15,9 @@ export type ShareModalSocialLink = {
     title?: string;
 };
 
-interface ShareModalPreview {
-    description?: React.ReactNode;
-    imageURL?: string;
-    meta?: React.ReactNode;
-    title: React.ReactNode;
-    url: string;
-}
-
-interface ShareModalProps extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Root> {
-    actionsLayout?: 'footer' | 'stacked';
-    children?: React.ReactNode;
-    closeButtonId?: string;
-    copyButtonId?: string;
-    copyButtonTestId?: string;
-    copyLabel?: string;
-    copySuccessLabel?: string;
-    copyURL: string;
-    contentProps?: React.ComponentPropsWithoutRef<typeof DialogContent> & Record<`data-${string}`, string | undefined>;
-    description?: React.ReactNode;
-    footerAction?: React.ReactNode;
-    guidance?: React.ReactNode;
-    onClose?: () => void;
-    preview: ShareModalPreview;
-    primaryTitle?: React.ReactNode;
-    secondaryTitle?: React.ReactNode;
-    socialLinks?: ShareModalSocialLink[];
-    title?: React.ReactNode;
-    variant?: 'post' | 'publication';
-}
+export type ShareModalPreviewProps = {
+    href: string;
+} & React.AnchorHTMLAttributes<HTMLAnchorElement>;
 
 async function copyTextToClipboard(text: string) {
     if (navigator.clipboard?.writeText) {
@@ -67,6 +40,98 @@ async function copyTextToClipboard(text: string) {
     document.execCommand('copy');
     document.body.removeChild(textarea);
 }
+
+function Root(props: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Root>) {
+    return <Dialog {...props} />;
+}
+
+const Trigger = React.forwardRef<
+    React.ElementRef<typeof DialogPrimitive.Trigger>,
+    React.ComponentPropsWithoutRef<typeof DialogPrimitive.Trigger>
+>(({asChild = true, className, ...props}, ref) => (
+    <DialogTrigger
+        ref={ref}
+        asChild={asChild}
+        className={cn('cursor-pointer', className)}
+        {...props}
+    />
+));
+Trigger.displayName = 'ShareModal.Trigger';
+
+const Content = React.forwardRef<
+    React.ElementRef<typeof DialogContent>,
+    React.ComponentPropsWithoutRef<typeof DialogContent>
+>(({className, ...props}, ref) => (
+    <DialogContent
+        ref={ref}
+        className={cn('max-h-[calc(100vh-16vmin)] max-w-[540px] overflow-y-auto p-8', className)}
+        {...props}
+    />
+));
+Content.displayName = 'ShareModal.Content';
+
+function Header({className, ...props}: React.ComponentPropsWithoutRef<typeof DialogHeader>) {
+    return <DialogHeader className={className} {...props} />;
+}
+
+function Title({className, ...props}: React.ComponentPropsWithoutRef<typeof DialogTitle>) {
+    return <DialogTitle className={className} {...props} />;
+}
+
+function Description({className, ...props}: React.ComponentPropsWithoutRef<typeof DialogDescription>) {
+    return <DialogDescription className={className} {...props} />;
+}
+
+type CloseButtonProps = ButtonProps;
+
+const CloseButton = React.forwardRef<HTMLButtonElement, CloseButtonProps>(({
+    children,
+    className,
+    size = 'lg',
+    title = 'Close',
+    variant = 'link',
+    ...props
+}, ref) => (
+    <Button
+        ref={ref}
+        className={cn(
+            '-mr-2 cursor-pointer p-2 text-muted-foreground hover:text-foreground [&_svg]:size-6!',
+            className
+        )}
+        size={size}
+        title={title}
+        variant={variant}
+        {...props}
+    >
+        {children || (
+            <>
+                <X size={24} strokeWidth={1} />
+                <span className="sr-only">Close</span>
+            </>
+        )}
+    </Button>
+));
+CloseButton.displayName = 'ShareModal.CloseButton';
+
+const Preview = React.forwardRef<HTMLAnchorElement, ShareModalPreviewProps>(({
+    className,
+    href,
+    rel = 'noopener noreferrer',
+    target = '_blank',
+    ...props
+}, ref) => {
+    return (
+        <a
+            ref={ref}
+            className={cn('flex flex-col items-stretch overflow-hidden border transition-all hover:border-muted-foreground/40', className)}
+            href={href}
+            rel={rel}
+            target={target}
+            {...props}
+        />
+    );
+});
+Preview.displayName = 'ShareModal.Preview';
 
 function SocialIcon({service}: {service: ShareService}) {
     if (service === 'threads') {
@@ -92,10 +157,15 @@ function SocialIcon({service}: {service: ShareService}) {
     );
 }
 
-function SocialLinks({layout, links}: {layout: 'footer' | 'stacked'; links: ShareModalSocialLink[]}) {
+interface SocialLinksProps extends React.HTMLAttributes<HTMLDivElement> {
+    layout?: 'footer' | 'stacked';
+    links: ShareModalSocialLink[];
+}
+
+function SocialLinks({className, layout = 'footer', links, ...props}: SocialLinksProps) {
     if (layout === 'stacked') {
         return (
-            <div className="flex gap-2">
+            <div className={cn('flex gap-2', className)} {...props}>
                 {links.map(link => (
                     <Button key={link.id ?? link.href} className="flex-1" id={link.id} variant="outline" asChild>
                         <a aria-label={link.label} href={link.href} rel="noreferrer" target="_blank" title={link.title || link.label}>
@@ -109,7 +179,7 @@ function SocialLinks({layout, links}: {layout: 'footer' | 'stacked'; links: Shar
     }
 
     return (
-        <div className="flex items-center gap-2">
+        <div className={cn('flex items-center gap-2', className)} {...props}>
             {links.map(link => (
                 <a key={link.id ?? link.href} aria-label={link.label} className="flex h-(--control-height) w-14 items-center justify-center rounded-xs bg-muted px-3 hover:bg-muted-foreground/20 [&_svg]:h-4" href={link.href} rel="noopener noreferrer" target="_blank" title={link.title || link.label}>
                     <SocialIcon service={link.service} />
@@ -119,151 +189,93 @@ function SocialLinks({layout, links}: {layout: 'footer' | 'stacked'; links: Shar
     );
 }
 
-const ShareModal: React.FC<ShareModalProps> = ({
-    actionsLayout = 'footer',
+interface CopyButtonProps extends ButtonProps {
+    copyURL: string;
+    icon?: 'copy' | 'link';
+    label?: string;
+    successLabel?: string;
+}
+
+function CopyButton({
     children,
-    closeButtonId,
-    copyButtonId,
-    copyButtonTestId,
-    copyLabel = 'Copy link',
-    copySuccessLabel = 'Copied!',
     copyURL,
-    contentProps,
-    description,
-    footerAction,
-    guidance,
-    onClose = () => {},
-    preview,
-    primaryTitle,
-    secondaryTitle,
-    socialLinks = [],
-    title,
-    variant = 'post',
+    disabled,
+    icon = 'link',
+    label = 'Copy link',
+    onClick,
+    successLabel = 'Copied!',
     ...props
-}) => {
+}: CopyButtonProps) {
     const [isCopied, setIsCopied] = useState(false);
 
-    const handleCopyLink = async () => {
+    const handleCopyLink = async (event: React.MouseEvent<HTMLButtonElement>) => {
+        onClick?.(event);
+
+        if (event.defaultPrevented) {
+            return;
+        }
+
         await copyTextToClipboard(copyURL);
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
     };
 
-    const showPostHeader = variant === 'post';
-    const {className: contentClassName, ...dialogContentProps} = contentProps || {};
-    const content = (
-        <DialogContent className={cn('max-h-[calc(100vh-16vmin)] max-w-[540px] overflow-y-auto p-8', contentClassName)} {...dialogContentProps}>
-            {showPostHeader && (
-                <div className="sticky top-0 ml-auto size-0">
-                    <Button className="absolute -top-5 -right-5 cursor-pointer p-2 text-muted-foreground hover:text-foreground [&_svg]:size-6!" id={closeButtonId} size="lg" title="Close" variant="link" onClick={onClose}>
-                        <X size={24} strokeWidth={1} />
-                        <span className="sr-only">Close</span>
-                    </Button>
-                </div>
-            )}
-            <DialogHeader className={showPostHeader ? 'relative -mt-5' : 'flex-row items-center justify-between gap-4 space-y-0 text-left'}>
-                {showPostHeader ?
-                    <DialogTitle className="text-3xl leading-[1.15em] font-bold">
-                        {primaryTitle && <span className="text-state-success">{primaryTitle}</span>}
-                        {primaryTitle && secondaryTitle && <br />}
-                        {secondaryTitle && <span>{secondaryTitle}</span>}
-                    </DialogTitle>
-                    :
-                    <DialogTitle className="text-2xl">{title}</DialogTitle>
-                }
-                {!showPostHeader && (
-                    <Button className="-mr-2 cursor-pointer p-2 text-muted-foreground hover:text-foreground [&_svg]:size-6!" id={closeButtonId} size="lg" title="Close" variant="link" onClick={onClose}>
-                        <X size={24} strokeWidth={1} />
-                        <span className="sr-only">Close</span>
-                    </Button>
-                )}
-                {description &&
-                    <DialogDescription className={showPostHeader ? 'mb-0 pt-1 pb-0 text-lg text-foreground' : 'sr-only'}>
-                        {description}
-                    </DialogDescription>
-                }
-            </DialogHeader>
-
-            <a className={cn('flex flex-col items-stretch overflow-hidden border transition-all hover:border-muted-foreground/40', showPostHeader ? 'rounded-md' : 'rounded-lg bg-card')} href={preview.url} rel="noopener noreferrer" target="_blank">
-                {preview.imageURL ?
-                    <div className="aspect-video bg-cover bg-center" style={{backgroundImage: `url(${preview.imageURL})`}}></div>
-                    :
-                    !showPostHeader && (
-                        <div className="flex aspect-video items-center justify-center bg-muted text-muted-foreground">
-                            <ImageIcon className="size-8" />
-                        </div>
-                    )
-                }
-                <div className={showPostHeader ? 'p-6 pt-5' : 'p-5'}>
-                    {showPostHeader ?
-                        <H3>{preview.title}</H3>
-                        :
-                        <div className="text-lg font-semibold">{preview.title}</div>
-                    }
-                    {preview.description && (
-                        <p className={showPostHeader ? undefined : 'mt-1 text-sm text-muted-foreground'}>{preview.description}</p>
-                    )}
-                    {preview.meta}
-                </div>
-            </a>
-
-            {guidance}
-
-            {actionsLayout === 'stacked' ?
-                <>
-                    <div className="flex items-center gap-2 rounded-md border bg-muted p-2">
-                        <span className="min-w-0 flex-1 truncate px-2 text-sm">{copyURL}</span>
-                        <Button
-                            data-testid={copyButtonTestId}
-                            id={copyButtonId}
-                            size="sm"
-                            type="button"
-                            variant="outline"
-                            onClick={() => {
-                                void handleCopyLink();
-                            }}
-                        >
-                            {isCopied ? <Check /> : <Copy />}
-                            {isCopied ? copySuccessLabel : copyLabel}
-                        </Button>
-                    </div>
-                    <SocialLinks layout={actionsLayout} links={socialLinks} />
-                </>
-                :
-                <DialogFooter className="justify-between gap-6">
-                    {footerAction || (
-                        <>
-                            <SocialLinks layout={actionsLayout} links={socialLinks} />
-                            <Button
-                                className="ml-0! grow cursor-pointer"
-                                disabled={!copyURL}
-                                type="button"
-                                onClick={() => {
-                                    void handleCopyLink();
-                                }}
-                            >
-                                {isCopied ? <Check /> : <Link />}
-                                {isCopied ? copySuccessLabel : copyLabel}
-                            </Button>
-                        </>
-                    )}
-                </DialogFooter>
-            }
-        </DialogContent>
-    );
+    const Icon = icon === 'copy' ? Copy : Link;
 
     return (
-        <Dialog {...props}>
-            {children ?
-                <DialogTrigger className="cursor-pointer" asChild>
-                    {children}
-                </DialogTrigger>
-                :
-                null
-            }
-            {content}
-        </Dialog>
+        <Button
+            disabled={disabled || !copyURL}
+            type="button"
+            onClick={(event) => {
+                void handleCopyLink(event);
+            }}
+            {...props}
+        >
+            {children || (
+                <>
+                    {isCopied ? <Check /> : <Icon />}
+                    {isCopied ? successLabel : label}
+                </>
+            )}
+        </Button>
     );
+}
+
+interface CopyURLBoxProps extends React.HTMLAttributes<HTMLDivElement> {
+    copyURL: string;
+}
+
+function CopyURLBox({children, className, copyURL, ...props}: CopyURLBoxProps) {
+    return (
+        <div className={cn('flex items-center gap-2 rounded-md border bg-muted p-2', className)} {...props}>
+            <span className="min-w-0 flex-1 truncate px-2 text-sm">{copyURL}</span>
+            {children}
+        </div>
+    );
+}
+
+function Footer({className, ...props}: React.ComponentPropsWithoutRef<typeof DialogFooter>) {
+    return (
+        <DialogFooter
+            className={cn('justify-between gap-6', className)}
+            {...props}
+        />
+    );
+}
+
+const ShareModal = {
+    CloseButton,
+    Content,
+    CopyButton,
+    CopyURLBox,
+    Description,
+    Footer,
+    Header,
+    Preview,
+    Root,
+    SocialLinks,
+    Title,
+    Trigger
 };
 
 export default ShareModal;

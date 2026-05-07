@@ -1,4 +1,5 @@
 import ShareModal, {type ShareModalSocialLink} from '@/components/features/share-modal/share-modal';
+import {H3} from '@/components/layout/heading';
 import {Button} from '@/components/ui/button';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import React from 'react';
@@ -62,40 +63,65 @@ const PostShareModal: React.FC<PostShareModalProps> = ({
     ];
 
     return (
-        <ShareModal
-            actionsLayout="footer"
-            copyURL={postURL}
-            description={description}
-            footerAction={emailOnly ? (
-                <Button className="cursor-pointer" type="button" onClick={onClose}>
-                    Close
-                </Button>
-            ) : undefined}
-            preview={{
-                description: postExcerpt,
-                imageURL: featureImageURL,
-                meta: (
-                    <div className="mt-2 flex items-start gap-2">
-                        <div className="mt-0.5 size-4 bg-cover bg-center" style={{backgroundImage: `url(${faviconURL})`}}></div>
-                        <div className="flex gap-1">
-                            <strong>{siteTitle}</strong>
-                            <span>&bull;</span>
-                            <span>{author}</span>
+        <ShareModal.Root {...props}>
+            {children && (
+                <ShareModal.Trigger>
+                    {children}
+                </ShareModal.Trigger>
+            )}
+            <ShareModal.Content>
+                <div className="sticky top-0 ml-auto size-0">
+                    <ShareModal.CloseButton className="absolute -top-5 -right-5" onClick={onClose} />
+                </div>
+                <ShareModal.Header className="relative -mt-5">
+                    <ShareModal.Title className="text-3xl leading-[1.15em] font-bold">
+                        {primaryTitle && <span className="text-state-success">{primaryTitle}</span>}
+                        {primaryTitle && secondaryTitle && <br />}
+                        {secondaryTitle && <span>{secondaryTitle}</span>}
+                    </ShareModal.Title>
+                    {description && (
+                        <ShareModal.Description className="mb-0 pt-1 pb-0 text-lg text-foreground">
+                            {description}
+                        </ShareModal.Description>
+                    )}
+                </ShareModal.Header>
+                <ShareModal.Preview className="rounded-md" href={postURL}>
+                    {featureImageURL && (
+                        <div className="aspect-video bg-cover bg-center" style={{backgroundImage: `url(${featureImageURL})`}}></div>
+                    )}
+                    <div className="p-6 pt-5">
+                        <H3>{postTitle}</H3>
+                        {postExcerpt && (
+                            <p>{postExcerpt}</p>
+                        )}
+                        <div className="mt-2 flex items-start gap-2">
+                            <div className="mt-0.5 size-4 bg-cover bg-center" style={{backgroundImage: `url(${faviconURL})`}}></div>
+                            <div className="flex gap-1">
+                                <strong>{siteTitle}</strong>
+                                <span>&bull;</span>
+                                <span>{author}</span>
+                            </div>
                         </div>
                     </div>
-                ),
-                title: postTitle,
-                url: postURL
-            }}
-            primaryTitle={primaryTitle}
-            secondaryTitle={secondaryTitle}
-            socialLinks={socialLinks}
-            variant="post"
-            onClose={onClose}
-            {...props}
-        >
-            {children}
-        </ShareModal>
+                </ShareModal.Preview>
+                <ShareModal.Footer>
+                    {emailOnly ? (
+                        <Button className="cursor-pointer" type="button" onClick={onClose}>
+                            Close
+                        </Button>
+                    ) : (
+                        <>
+                            <ShareModal.SocialLinks links={socialLinks} />
+                            <ShareModal.CopyButton
+                                className="ml-0! grow cursor-pointer"
+                                copyURL={postURL}
+                                icon="link"
+                            />
+                        </>
+                    )}
+                </ShareModal.Footer>
+            </ShareModal.Content>
+        </ShareModal.Root>
     );
 };
 
