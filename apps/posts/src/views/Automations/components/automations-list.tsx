@@ -1,5 +1,6 @@
 import React from 'react';
 import {Automation} from '@tryghost/admin-x-framework/api/automations';
+import {Link} from '@tryghost/admin-x-framework';
 import {Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
 
 const AUTOMATION_DESCRIPTIONS: Record<string, string> = {
@@ -88,14 +89,14 @@ const AutomationsList: React.FC<AutomationsListProps> = ({automations = [], isLo
                             data-testid="automation-list-row"
                         >
                             <TableCell className="static min-w-0 lg:p-4">
-                                <a
+                                <Link
                                     className="before:absolute before:inset-0 before:z-10 before:rounded-sm focus-visible:outline-hidden focus-visible:before:ring-2 focus-visible:before:ring-focus-ring"
-                                    href={`#/automations/${automation.slug}`}
+                                    to={`/automations/${automation.id}`}
                                 >
                                     <span className="block font-medium">
                                         {automation.name}
                                     </span>
-                                </a>
+                                </Link>
                                 {description && (
                                     <span className="block text-muted-foreground">
                                         {description}
