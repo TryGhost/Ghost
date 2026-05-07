@@ -1,5 +1,6 @@
 import {Button} from "@tryghost/shade/components";
 import {ShareModal, type ShareModalSocialLink} from "@tryghost/shade/patterns";
+import {LucideIcon} from "@tryghost/shade/utils";
 
 interface SharePublicationDialogProps {
     description: string;
@@ -47,37 +48,52 @@ export function SharePublicationDialog({
     ];
 
     return (
-        <ShareModal
-            actionsLayout="footer"
-            closeButtonId="ob-close-share-modal"
-            contentProps={{
-                className: "dark:bg-surface-elevated",
-                "data-testid": "onboarding-share-modal",
-            }}
-            copyButtonId="ob-copy-publication-link"
-            copyButtonTestId="onboarding-copy-link"
-            copyLabel="Copy link"
-            copyURL={siteUrl}
-            guidance={(
+        <ShareModal.Root
+            open={open}
+            onOpenChange={onOpenChange}
+        >
+            <ShareModal.Content
+                className="dark:bg-surface-elevated"
+                data-test-modal="onboarding-share"
+                data-testid="onboarding-share-modal"
+            >
+                <ShareModal.Header className="flex-row items-center justify-between gap-4 space-y-0 text-left">
+                    <ShareModal.Title className="text-2xl">Share your publication</ShareModal.Title>
+                    <ShareModal.CloseButton id="ob-close-share-modal" onClick={() => onOpenChange(false)} />
+                </ShareModal.Header>
+                <ShareModal.Preview className="rounded-lg bg-card" href={siteUrl}>
+                    {imageUrl ?
+                        <div className="aspect-video bg-cover bg-center" style={{backgroundImage: `url(${imageUrl})`}}></div>
+                        :
+                        <div className="flex aspect-video items-center justify-center bg-muted text-muted-foreground">
+                            <LucideIcon.Image className="size-8" />
+                        </div>
+                    }
+                    <div className="p-5">
+                        <div className="text-lg font-semibold">{siteTitle}</div>
+                        {description && (
+                            <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+                        )}
+                    </div>
+                </ShareModal.Preview>
                 <p className="text-sm text-muted-foreground">
                     Set your publication&apos;s cover image and description in{" "}
                     <Button asChild className="h-auto p-0 align-baseline text-sm text-green hover:text-green/90" variant="link">
                         <a href="#/settings/design/edit?ref=setup" id="ob-share-modal-design-settings">Design settings</a>
                     </Button>.
                 </p>
-            )}
-            open={open}
-            preview={{
-                description,
-                imageURL: imageUrl,
-                title: siteTitle,
-                url: siteUrl,
-            }}
-            socialLinks={socialLinks}
-            title="Share your publication"
-            variant="publication"
-            onClose={() => onOpenChange(false)}
-            onOpenChange={onOpenChange}
-        />
+                <ShareModal.Footer>
+                    <ShareModal.SocialLinks links={socialLinks} />
+                    <ShareModal.CopyButton
+                        className="ml-0! grow cursor-pointer"
+                        copyURL={siteUrl}
+                        data-testid="onboarding-copy-link"
+                        icon="link"
+                        id="ob-copy-publication-link"
+                        label="Copy link"
+                    />
+                </ShareModal.Footer>
+            </ShareModal.Content>
+        </ShareModal.Root>
     );
 }
