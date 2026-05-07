@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const domainEvents = require('@tryghost/domain-events');
 const models = require('../../../../core/server/models');
 const automationsController = require('../../../../core/server/api/endpoints/automations');
-const StartAutomationsPollEvent = require('../../../../core/server/services/welcome-email-automations/events/start-automations-poll-event');
+const StartAutomationsPollEvent = require('../../../../core/server/services/automations/events/start-automations-poll-event');
 
 describe('Automations controller', function () {
     before(function () {

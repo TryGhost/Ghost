@@ -1,9 +1,9 @@
 const sinon = require('sinon');
 
-const WelcomeEmailAutomationsService = require('../../../../../core/server/services/welcome-email-automations');
-const StartAutomationsPollEvent = require('../../../../../core/server/services/welcome-email-automations/events/start-automations-poll-event');
+const AutomationsService = require('../../../../../core/server/services/automations');
+const StartAutomationsPollEvent = require('../../../../../core/server/services/automations/events/start-automations-poll-event');
 
-describe('WelcomeEmailAutomationsService', function () {
+describe('AutomationsService', function () {
     let service;
     let domainEvents;
     let schedulerAdapter;
@@ -11,7 +11,7 @@ describe('WelcomeEmailAutomationsService', function () {
     let initOptions;
 
     beforeEach(function () {
-        service = new WelcomeEmailAutomationsService();
+        service = new AutomationsService();
         domainEvents = {
             dispatch: sinon.stub(),
             subscribe: sinon.stub()

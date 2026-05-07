@@ -28,7 +28,7 @@ const memberWelcomeEmailService = require('../member-welcome-emails/service');
  * }>} api_keys
  */
 
-class WelcomeEmailAutomationsService {
+class AutomationsService {
     #initialized = false;
 
     /**
@@ -82,4 +82,4 @@ class WelcomeEmailAutomationsService {
     }
 }
 
-module.exports = WelcomeEmailAutomationsService;
+module.exports = AutomationsService;
