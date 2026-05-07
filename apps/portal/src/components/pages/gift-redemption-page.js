@@ -9,7 +9,7 @@ import {getGiftDurationLabel, getGiftRedemptionErrorMessage} from '../../utils/g
 import {t} from '../../utils/i18n';
 import {hasGiftSubscriptions, removePortalLinkFromUrl} from '../../utils/helpers';
 import useCardTilt from '../../utils/use-card-tilt';
-import {formatGiftExpiresAt, getPreviewGiftExpiresAt} from './gift-page';
+import {formatGiftValue} from './gift-page';
 
 export const GiftRedemptionStyles = `
 .gh-portal-gift-redemption-form {
@@ -163,6 +163,7 @@ const GiftRedemptionPage = () => {
         ? `You've been gifted a membership to ${siteTitle}`
         : 'You\'ve been gifted a membership';
     const benefits = gift.tier.benefits || [];
+    const tierDescription = gift.tier.description || '';
 
     return (
         <>
@@ -216,8 +217,8 @@ const GiftRedemptionPage = () => {
                                             )}
                                             <div className='gh-portal-gift-checkout-card-detail'>
                                                 {/* eslint-disable-next-line i18next/no-literal-string -- copy not yet finalised */}
-                                                <div className='gh-portal-gift-checkout-card-detail-label'>Expires</div>
-                                                <div className='gh-portal-gift-checkout-card-detail-value'>{formatGiftExpiresAt(gift.expires_at || getPreviewGiftExpiresAt())}</div>
+                                                <div className='gh-portal-gift-checkout-card-detail-label'>Gift value</div>
+                                                <div className='gh-portal-gift-checkout-card-detail-value'>{formatGiftValue(gift)}</div>
                                             </div>
                                         </div>
                                         <div className='gh-portal-gift-checkout-card-site'>
@@ -229,7 +230,7 @@ const GiftRedemptionPage = () => {
                                     </div>
                                 </div>
 
-                                {benefits.length > 0 && (
+                                {(tierDescription || benefits.length > 0) && (
                                     <>
                                         <div
                                             className='gh-portal-gift-checkout-details'
@@ -237,23 +238,28 @@ const GiftRedemptionPage = () => {
                                             aria-hidden={!showDetails}
                                         >
                                             <div className='gh-portal-gift-checkout-details-inner'>
-                                                <div className='gh-portal-gift-checkout-benefits'>
-                                                    {benefits.map((benefit, index) => {
-                                                        const benefitName = typeof benefit === 'string' ? benefit : benefit?.name;
-                                                        const benefitKey = typeof benefit === 'string' ? benefit : benefit?.id || `gift-benefit-${index}`;
+                                                {tierDescription && (
+                                                    <p className='gh-portal-gift-checkout-details-description'>{tierDescription}</p>
+                                                )}
+                                                {benefits.length > 0 && (
+                                                    <div className='gh-portal-gift-checkout-benefits'>
+                                                        {benefits.map((benefit, index) => {
+                                                            const benefitName = typeof benefit === 'string' ? benefit : benefit?.name;
+                                                            const benefitKey = typeof benefit === 'string' ? benefit : benefit?.id || `gift-benefit-${index}`;
 
-                                                        if (!benefitName) {
-                                                            return null;
-                                                        }
+                                                            if (!benefitName) {
+                                                                return null;
+                                                            }
 
-                                                        return (
-                                                            <div className='gh-portal-gift-checkout-benefit' key={benefitKey}>
-                                                                <CheckmarkIcon alt='' />
-                                                                <span>{benefitName}</span>
-                                                            </div>
-                                                        );
-                                                    })}
-                                                </div>
+                                                            return (
+                                                                <div className='gh-portal-gift-checkout-benefit' key={benefitKey}>
+                                                                    <CheckmarkIcon alt='' />
+                                                                    <span>{benefitName}</span>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                         <button
