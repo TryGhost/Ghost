@@ -49,7 +49,8 @@ module.exports = function (environment) {
 
         // Enable mirage here in order to mock API endpoints during development
         ENV['ember-cli-mirage'] = {
-            enabled: false
+            enabled: false,
+            excludeFilesFromBuild: process.env.EMBER_INCLUDE_TESTS !== 'true'
         };
     }
 
