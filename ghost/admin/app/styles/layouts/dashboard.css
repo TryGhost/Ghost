@@ -323,10 +323,6 @@ Dashboard Layout */
     margin-bottom: 12px;
 }
 
-.gh-dashboard .gh-members-help {
-    margin-top: 0;
-}
-
 .gh-dashboard-select {
     position: absolute;
     top: 14px;
@@ -1654,10 +1650,6 @@ Dashboard Resources */
     margin-top: 20px;
 }
 
-.gh-dashboard-resources .gh-members-help-card {
-    padding: 24px;
-}
-
 .gh-dashboard-resources .gh-dashboare5-article-content {
     display: flex;
     flex-direction: row;
@@ -1707,26 +1699,6 @@ Dashboard Multi */
 
 .gh-dashboard-multi .gh-dashboard-articles-footer {
     margin-top: 20px;
-}
-
-.gh-dashboard-multi .gh-members-help-card {
-    flex: 1;
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: space-between;
-    background: var(--white);
-    border-radius: 3px;
-    box-shadow: 0 2px 4px rgb(0 0 0 / 7%);
-    color: #7c8b9a;
-    font-size: 1.4rem;
-    transition: none;
-    margin-right: 16px;
-}
-
-.gh-dashboard-multi .gh-members-help-card:hover {
-    transform: translate(0);
 }
 
 .gh-dashboard-multi .gh-dashboard-list-header {

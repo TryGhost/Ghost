@@ -7,15 +7,7 @@ export interface ExportedFile {
     content: string;
 }
 
-export interface MembersListSurface {
-    goto(): Promise<unknown>;
-    openActionsMenu(): Promise<void>;
-    applyLabelFilter(labelName: string): Promise<void>;
-    getVisibleMemberCount(): Promise<number>;
-    exportMembers(): Promise<ExportedFile>;
-}
-
-export class MembersListPage extends AdminPage implements MembersListSurface {
+export class MembersListPage extends AdminPage {
     readonly memberRows: Locator;
     readonly searchInput: Locator;
     readonly actionsButton: Locator;

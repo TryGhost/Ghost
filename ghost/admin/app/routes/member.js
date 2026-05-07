@@ -5,7 +5,6 @@ import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 export default class MembersRoute extends MembersManagementRoute {
-    @service feature;
     @service modals;
     @service router;
     @service('unsaved-changes') unsavedChanges;
