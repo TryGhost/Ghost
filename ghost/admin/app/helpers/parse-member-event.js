@@ -149,7 +149,7 @@ export default class ParseMemberEventHelper extends Helper {
         }
 
         if (event.type === 'gift_ended_event') {
-            icon = 'subscriptions';
+            icon = 'expired-gift';
         }
 
         if (event.type === 'email_change_event') {
@@ -187,9 +187,6 @@ export default class ParseMemberEventHelper extends Helper {
 
         if (event.type === 'subscription_event') {
             if (event.data.type === 'created') {
-                if (event.data.previous_status === 'gift') {
-                    return 'continued paid subscription after gift';
-                }
                 return 'started paid subscription';
             }
             if (event.data.type === 'updated') {
@@ -281,11 +278,11 @@ export default class ParseMemberEventHelper extends Helper {
         }
 
         if (event.type === 'gift_redemption_event') {
-            return 'started paid subscription via gift';
+            return 'started gift subscription';
         }
 
         if (event.type === 'gift_ended_event') {
-            return 'ended paid subscription';
+            return 'gift subscription expired';
         }
     }
 
