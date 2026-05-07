@@ -651,7 +651,7 @@ const GiftPage = () => {
         if (!inner || !left) {
             return;
         }
-        if (window.matchMedia('(max-width: 880px)').matches) {
+        if (typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 880px)').matches) {
             inner.style.marginTop = '';
             centeringDoneRef.current = true;
             return;
