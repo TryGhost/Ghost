@@ -1,6 +1,6 @@
 const domainEvents = require('@tryghost/domain-events');
 const models = require('../../models');
-const StartAutomationsPollEvent = require('../../services/welcome-email-automations/events/start-automations-poll-event');
+const StartAutomationsPollEvent = require('../../services/automations/events/start-automations-poll-event');
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {

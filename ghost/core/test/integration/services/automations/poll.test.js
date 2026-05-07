@@ -5,7 +5,7 @@ const ObjectId = require('bson-objectid').default;
 const sinon = require('sinon');
 const testUtils = require('../../../utils');
 
-const {poll} = require('../../../../core/server/services/welcome-email-automations/poll');
+const {poll} = require('../../../../core/server/services/automations/poll');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../../core/server/services/member-welcome-emails/constants');
 const {Member, WelcomeEmailAutomationRun} = require('../../../../core/server/models');
 
@@ -13,7 +13,7 @@ const RETRY_DELAY_MS = 10 * 60 * 1000;
 const LOCK_TIMEOUT_MS = 30 * 60 * 1000;
 const MAX_RUNS_PER_BATCH = 100;
 
-describe('welcome email automations poll', function () {
+describe('automations poll', function () {
     let options;
 
     before(async function () {
