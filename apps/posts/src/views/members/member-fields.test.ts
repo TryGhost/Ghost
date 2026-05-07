@@ -55,11 +55,24 @@ describe('memberFields', () => {
             'is-greater',
             'is-less'
         ]);
-        expect(memberFields.created_at.operators).toEqual([
+        const pastDateOperators = [
             'is-less',
             'is-or-less',
             'is-greater',
-            'is-or-greater'
+            'is-or-greater',
+            'in-the-last'
+        ];
+
+        expect(memberFields.created_at.operators).toEqual(pastDateOperators);
+        expect(memberFields.last_seen_at.operators).toEqual(pastDateOperators);
+        expect(memberFields['subscriptions.start_date'].operators).toEqual(pastDateOperators);
+
+        expect(memberFields['subscriptions.current_period_end'].operators).toEqual([
+            'is-less',
+            'is-or-less',
+            'is-greater',
+            'is-or-greater',
+            'in-the-next'
         ]);
     });
 

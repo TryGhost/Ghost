@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {parseMemberFilter, serializeMemberFilters} from './member-filter-query';
+import {hasTimezoneSensitiveMemberFilter, parseMemberFilter, serializeMemberFilters} from './member-filter-query';
 import type {FilterPredicate} from '../filters/filter-types';
 
 function stripIds(predicates: FilterPredicate[]) {
@@ -188,5 +188,114 @@ describe('member-filter-query', () => {
 
     it('drops invalid member date values during parse', () => {
         expect(parseMemberFilter('created_at:<=\'not-a-date\'', 'UTC')).toEqual([]);
+    });
+
+    it('parses relative past-date filters into in-the-last predicates for every supported field', () => {
+        expect(stripIds(parseMemberFilter('created_at:>=now-7d', 'UTC'))).toEqual([
+            {field: 'created_at', operator: 'in-the-last', values: [7]}
+        ]);
+
+        expect(stripIds(parseMemberFilter('last_seen_at:>=now-30d', 'UTC'))).toEqual([
+            {field: 'last_seen_at', operator: 'in-the-last', values: [30]}
+        ]);
+
+        expect(stripIds(parseMemberFilter('subscriptions.start_date:>=now-90d', 'UTC'))).toEqual([
+            {field: 'subscriptions.start_date', operator: 'in-the-last', values: [90]}
+        ]);
+    });
+
+    it('parses relative future-date filters into in-the-next predicates', () => {
+        expect(stripIds(parseMemberFilter('subscriptions.current_period_end:<=now+14d', 'UTC'))).toEqual([
+            {field: 'subscriptions.current_period_end', operator: 'in-the-next', values: [14]}
+        ]);
+    });
+
+    it('does not interpret past-direction syntax on a future-only field', () => {
+        // The relative-extraction layer doesn't claim this clause (the field
+        // doesn't carry `in-the-last`), so NQL parses it as an absolute date
+        // and we get an `is-or-greater` predicate against the resolved date —
+        // never an `in-the-last`. Asserting the resolved-shape is stricter
+        // than just "no in-the-last predicate".
+        const parsed = stripIds(parseMemberFilter('subscriptions.current_period_end:>=now-7d', 'UTC'));
+
+        expect(parsed).toHaveLength(1);
+        expect(parsed[0]).toMatchObject({field: 'subscriptions.current_period_end', operator: 'is-or-greater'});
+    });
+
+    it('serializes in-the-last and in-the-next predicates with the relative now token', () => {
+        expect(serializeMemberFilters(
+            [{id: '1', field: 'created_at', operator: 'in-the-last', values: [7]}],
+            'UTC'
+        )).toBe('created_at:>=now-7d');
+
+        expect(serializeMemberFilters(
+            [{id: '1', field: 'subscriptions.current_period_end', operator: 'in-the-next', values: [14]}],
+            'UTC'
+        )).toBe('subscriptions.current_period_end:<=now+14d');
+    });
+
+    it('round-trips relative created_at predicates alongside other clauses', () => {
+        const filter = 'created_at:>=now-30d+status:paid';
+        const parsed = parseMemberFilter(filter, 'UTC');
+
+        expect(stripIds(parsed)).toEqual([
+            {field: 'created_at', operator: 'in-the-last', values: [30]},
+            {field: 'status', operator: 'is', values: ['paid']}
+        ]);
+
+        expect(serializeMemberFilters(parsed, 'UTC')).toBe('created_at:>=now-30d+status:paid');
+    });
+
+    it('drops invalid relative date predicates on serialize', () => {
+        expect(serializeMemberFilters(
+            [{id: '1', field: 'created_at', operator: 'in-the-last', values: [0]}],
+            'UTC'
+        )).toBeUndefined();
+
+        expect(serializeMemberFilters(
+            [{id: '1', field: 'created_at', operator: 'in-the-last', values: ['7']}],
+            'UTC'
+        )).toBeUndefined();
+    });
+
+    it('drops the entire filter when a relative-date clause is mixed into a top-level OR', () => {
+        // Relative extraction only matches top-level AND members. In a top-level
+        // OR (`,`), the relative clause stays in `rest`. NQL resolves `now-Nd`
+        // into an absolute date, but `parseMemberNode` doesn't flatten generic
+        // OR groups, so every clause — including the non-relative `status:paid`
+        // — is dropped. This is a pre-existing OR limitation, not a relative-
+        // date issue, but it's worth pinning so the behaviour can't regress
+        // silently when relative-date support evolves.
+        const parsed = parseMemberFilter('created_at:>=now-7d,status:paid', 'UTC');
+
+        expect(stripIds(parsed)).toEqual([]);
+    });
+
+    it('falls through to NQL for now-0d (degenerate case treated as today)', () => {
+        // We don't claim now-0d as an in-the-last predicate; NQL parses it natively
+        // as a date comparison against today. The serializer-side rejection of zero
+        // is about defending the predicate shape, not this URL form.
+        const parsed = stripIds(parseMemberFilter('created_at:>=now-0d', 'UTC'));
+
+        expect(parsed).toHaveLength(1);
+        expect(parsed[0]).toMatchObject({field: 'created_at', operator: 'is-or-greater'});
+    });
+
+    it('rejects relative day counts outside the safe-integer range on parse', () => {
+        expect(parseMemberFilter('created_at:>=now-9999999999999999d', 'UTC')).toEqual([]);
+    });
+
+    it('reports relative-date filters as timezone-sensitive', () => {
+        // `now` resolves in the user's timezone, so a relative-date clause
+        // must wait for timezone resolution just like an absolute date clause.
+        expect(hasTimezoneSensitiveMemberFilter('created_at:>=now-7d')).toBe(true);
+        expect(hasTimezoneSensitiveMemberFilter('subscriptions.current_period_end:<=now+14d')).toBe(true);
+        expect(hasTimezoneSensitiveMemberFilter('created_at:>=now-7d+status:paid')).toBe(true);
+    });
+
+    it('does not report non-date filters as timezone-sensitive', () => {
+        expect(hasTimezoneSensitiveMemberFilter('status:paid')).toBe(false);
+        expect(hasTimezoneSensitiveMemberFilter('')).toBe(false);
+        expect(hasTimezoneSensitiveMemberFilter(undefined)).toBe(false);
     });
 });

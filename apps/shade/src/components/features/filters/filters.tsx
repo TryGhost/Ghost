@@ -387,13 +387,24 @@ const filterFieldLabelVariants = cva(
 const filterFieldValueVariants = cva(
     [
         'relative flex min-w-0 shrink items-center gap-1 text-foreground transition focus-visible:z-1',
-        'focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden'
+        'focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden',
+        'has-[[data-slot=filters-input]:focus-visible]:ring-focus-ring/30',
+        'has-[[data-slot=filters-input]:focus-visible]:border-focus-ring',
+        'has-[[data-slot=filters-input]:focus-visible]:outline-hidden',
+        'has-[[data-slot=filters-input]:focus-visible]:ring-[3px]',
+        'has-[[data-slot=filters-input]:focus-visible]:z-1',
+        'has-[[data-slot=filters-input][aria-invalid=true]]:border',
+        'has-[[data-slot=filters-input][aria-invalid=true]]:border-solid',
+        'has-[[data-slot=filters-input][aria-invalid=true]]:border-destructive/60',
+        'has-[[data-slot=filters-input][aria-invalid=true]]:ring-destructive/10',
+        'dark:has-[[data-slot=filters-input][aria-invalid=true]]:border-destructive',
+        'dark:has-[[data-slot=filters-input][aria-invalid=true]]:ring-destructive/20'
     ],
     {
         variants: {
             variant: {
                 solid: 'bg-secondary',
-                outline: 'border border-border bg-background hover:bg-secondary has-[[data-slot=switch]]:hover:bg-transparent'
+                outline: 'border border-border bg-background hover:bg-secondary has-[[data-slot=switch]]:hover:bg-transparent has-[>[data-slot=filters-input-wrapper]]:hover:bg-background'
             },
             size: {
                 lg: 'h-10 gap-1.5 px-4 text-sm [&_svg:not([class*=size-])]:size-4',
@@ -401,7 +412,7 @@ const filterFieldValueVariants = cva(
                 sm: 'h-8 gap-0.5 px-2.5 text-xs [&_svg:not([class*=size-])]:size-3.5'
             },
             cursorPointer: {
-                true: 'cursor-pointer has-[[data-slot=switch]]:cursor-default',
+                true: 'cursor-pointer has-[[data-slot=switch]]:cursor-default has-[>[data-slot=filters-input-wrapper]]:cursor-text',
                 false: ''
             }
         },

@@ -5,6 +5,8 @@ import {escapeNqlString} from '../filters/filter-normalization';
 import type {FilterCodec} from '../filters/filter-types';
 
 const TEXT_OPERATORS = ['is', 'contains', 'does-not-contain', 'starts-with', 'ends-with'] as const;
+const RELATIVE_PAST_DATE_OPERATORS = [...DATE_FILTER_OPERATORS, 'in-the-last'] as const;
+const RELATIVE_FUTURE_DATE_OPERATORS = [...DATE_FILTER_OPERATORS, 'in-the-next'] as const;
 const NUMBER_OPERATORS = ['is', 'is-greater', 'is-less'] as const;
 const SCALAR_OPERATORS = ['is', 'is-not'] as const;
 const SET_OPERATORS = ['is-any', 'is-not-any'] as const;
@@ -146,7 +148,7 @@ export const memberFields = defineFields({
         codec: subscribedCodec
     },
     last_seen_at: {
-        operators: DATE_FILTER_OPERATORS,
+        operators: RELATIVE_PAST_DATE_OPERATORS,
         ui: {
             label: 'Last seen',
             type: 'date',
@@ -155,7 +157,7 @@ export const memberFields = defineFields({
         codec: dateCodec()
     },
     created_at: {
-        operators: DATE_FILTER_OPERATORS,
+        operators: RELATIVE_PAST_DATE_OPERATORS,
         ui: {
             label: 'Created',
             type: 'date',
@@ -258,7 +260,7 @@ export const memberFields = defineFields({
         codec: scalarCodec()
     },
     'subscriptions.start_date': {
-        operators: DATE_FILTER_OPERATORS,
+        operators: RELATIVE_PAST_DATE_OPERATORS,
         ui: {
             label: 'Paid start date',
             type: 'date',
@@ -274,7 +276,7 @@ export const memberFields = defineFields({
         codec: dateCodec()
     },
     'subscriptions.current_period_end': {
-        operators: DATE_FILTER_OPERATORS,
+        operators: RELATIVE_FUTURE_DATE_OPERATORS,
         ui: {
             label: 'Next billing date',
             type: 'date',

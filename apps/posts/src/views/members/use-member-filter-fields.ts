@@ -3,6 +3,7 @@ import {DATE_OPERATOR_LABELS} from '../filters/filter-date';
 import {FilterFieldConfig, FilterFieldGroup, FilterOption, ValueSource} from '@tryghost/shade/patterns';
 import {LabelFilterRenderer} from '@src/components/label-picker';
 import {LucideIcon} from '@tryghost/shade/utils';
+import {RelativeDateFilter} from './components/relative-date-filter';
 import {createOperatorOptions} from '../filters/filter-operator-options';
 import {getTodayInTimezone} from '../filters/filter-normalization';
 import {memberFields} from './member-fields';
@@ -34,6 +35,8 @@ const MEMBER_OPERATOR_LABELS: Record<string, string> = {
     'is-not-any': 'is none of',
     'does-not-contain': 'does not contain',
     ...DATE_OPERATOR_LABELS,
+    'in-the-last': 'in the last',
+    'in-the-next': 'in the next',
     1: 'More like this',
     0: 'Less like this'
 };
@@ -113,8 +116,19 @@ function createFieldConfig(
     };
 }
 
-function createDateFieldConfig(key: string, defaultValue: string) {
-    return createFieldConfig(key, {defaultValue});
+function createDateFieldConfig(key: string, defaultValue: string, overrides: Partial<FilterFieldConfig> = {}) {
+    return createFieldConfig(key, {defaultValue, ...overrides});
+}
+
+function createRelativeDateRenderer(fallbackDate: string): FilterFieldConfig['customRenderer'] {
+    const renderer: FilterFieldConfig['customRenderer'] = props => React.createElement(RelativeDateFilter, {
+        ...(props as React.ComponentProps<typeof RelativeDateFilter>),
+        fallbackDate
+    });
+
+    (renderer as {displayName?: string}).displayName = 'RelativeDateRenderer';
+
+    return renderer;
 }
 
 function createSearchableFieldOverrides(
@@ -317,9 +331,11 @@ export function useMemberFilterFields({
             }
         }
 
+        const relativeDateRenderer = createRelativeDateRenderer(today);
+
         basicFields.push(
-            createDateFieldConfig('last_seen_at', today),
-            createDateFieldConfig('created_at', today)
+            createDateFieldConfig('last_seen_at', today, {customRenderer: relativeDateRenderer}),
+            createDateFieldConfig('created_at', today, {customRenderer: relativeDateRenderer})
         );
 
         if (membersTrackSources) {
@@ -371,8 +387,8 @@ export function useMemberFilterFields({
                 } : {}),
                 createFieldConfig('subscriptions.plan_interval'),
                 createFieldConfig('subscriptions.status'),
-                createDateFieldConfig('subscriptions.start_date', today),
-                createDateFieldConfig('subscriptions.current_period_end', today)
+                createDateFieldConfig('subscriptions.start_date', today, {customRenderer: relativeDateRenderer}),
+                createDateFieldConfig('subscriptions.current_period_end', today, {customRenderer: relativeDateRenderer})
             );
 
             if (membersTrackSources) {

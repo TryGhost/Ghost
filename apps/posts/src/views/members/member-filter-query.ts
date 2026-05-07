@@ -6,6 +6,135 @@ import type {FilterPredicate, ParsedPredicate} from '../filters/filter-types';
 type CompoundMatcher = (node: AstNode) => ParsedPredicate | null;
 const TIMEZONE_SENSITIVE_MEMBER_FIELDS = getFieldKeysByType(memberFields, 'date');
 
+function getMemberFieldsWithOperator(operator: string): Set<string> {
+    const set = new Set<string>();
+
+    for (const [key, field] of Object.entries(memberFields)) {
+        if ((field.operators as readonly string[]).includes(operator)) {
+            set.add(key);
+        }
+    }
+
+    return set;
+}
+
+const RELATIVE_PAST_DATE_FIELDS = getMemberFieldsWithOperator('in-the-last');
+const RELATIVE_FUTURE_DATE_FIELDS = getMemberFieldsWithOperator('in-the-next');
+const RELATIVE_PAST_CLAUSE = /^([\w.]+):>=now-(\d+)d$/;
+const RELATIVE_FUTURE_CLAUSE = /^([\w.]+):<=now\+(\d+)d$/;
+const NOW_BOUNDARY = /:[<>]=?now$/;
+
+function isValidRelativeDayCount(value: number): boolean {
+    return Number.isSafeInteger(value) && value > 0;
+}
+
+function splitTopLevelAnd(filter: string): string[] {
+    const parts: string[] = [];
+    let depth = 0;
+    let inString: string | null = null;
+    let current = '';
+
+    for (let i = 0; i < filter.length; i += 1) {
+        const ch = filter[i];
+        const prev = i > 0 ? filter[i - 1] : '';
+
+        if (inString) {
+            if (ch === inString && prev !== '\\') {
+                inString = null;
+            }
+            current += ch;
+            continue;
+        }
+
+        if (ch === '\'' || ch === '"') {
+            inString = ch;
+            current += ch;
+            continue;
+        }
+
+        if (ch === '(' || ch === '[') {
+            depth += 1;
+            current += ch;
+            continue;
+        }
+
+        if (ch === ')' || ch === ']') {
+            depth -= 1;
+            current += ch;
+            continue;
+        }
+
+        if (ch === '+' && depth === 0 && !NOW_BOUNDARY.test(current)) {
+            if (current) {
+                parts.push(current);
+            }
+            current = '';
+            continue;
+        }
+
+        current += ch;
+    }
+
+    if (current) {
+        parts.push(current);
+    }
+
+    return parts;
+}
+
+// Only top-level AND members are extracted. NQL itself parses `now-Nd` fine,
+// but it resolves the token to an absolute date — losing the relative intent
+// that we want the UI to render as an "in the last N days" widget. We
+// intercept the syntactic form before it reaches NQL. Relative clauses inside
+// an OR group (e.g. `created_at:>=now-7d,status:paid`) are not extracted; they
+// stay in `rest` and NQL resolves them to an absolute-date predicate, which
+// `parseMemberNode` then drops because it doesn't flatten generic OR groups.
+function extractRelativeDatePredicates(filter: string): {predicates: ParsedPredicate[]; rest: string} {
+    if (!filter) {
+        return {predicates: [], rest: ''};
+    }
+
+    const clauses = splitTopLevelAnd(filter);
+    const predicates: ParsedPredicate[] = [];
+    const rest: string[] = [];
+
+    for (const clause of clauses) {
+        const past = RELATIVE_PAST_CLAUSE.exec(clause);
+
+        if (past && RELATIVE_PAST_DATE_FIELDS.has(past[1])) {
+            const days = Number(past[2]);
+
+            if (isValidRelativeDayCount(days)) {
+                predicates.push({
+                    field: past[1],
+                    operator: 'in-the-last',
+                    values: [days]
+                });
+                continue;
+            }
+        }
+
+        const future = RELATIVE_FUTURE_CLAUSE.exec(clause);
+
+        if (future && RELATIVE_FUTURE_DATE_FIELDS.has(future[1])) {
+            const days = Number(future[2]);
+
+            if (isValidRelativeDayCount(days)) {
+                predicates.push({
+                    field: future[1],
+                    operator: 'in-the-next',
+                    values: [days]
+                });
+                continue;
+            }
+        }
+
+        rest.push(clause);
+    }
+
+    return {predicates, rest: rest.join('+')};
+}
+
 function getCompoundChildren(node: AstNode): {operator: '$and' | '$or'; children: AstNode[]} | null {
     if (Array.isArray(node.$and)) {
         return {operator: '$and', children: node.$and as AstNode[]};
@@ -193,13 +322,11 @@ function parseMemberNode(node: AstNode, timezone: string): ParsedPredicate[] {
 }
 
 export function parseMemberFilter(filter: string | undefined, timezone: string): FilterPredicate[] {
-    const ast = parseFilterToAst(filter ?? '');
+    const {predicates: relativePredicates, rest} = extractRelativeDatePredicates(filter ?? '');
+    const ast = parseFilterToAst(rest);
+    const astPredicates = ast ? parseMemberNode(ast, timezone) : [];
 
-    if (!ast) {
-        return [];
-    }
-
-    return stampPredicates(parseMemberNode(ast, timezone));
+    return stampPredicates([...relativePredicates, ...astPredicates]);
 }
 
 export function hasTimezoneSensitiveMemberFilter(filter: string | undefined): boolean {
@@ -212,6 +339,48 @@ export function hasTimezoneSensitiveMemberFilter(filter: string | undefined): bo
     return hasFieldKey(ast, TIMEZONE_SENSITIVE_MEMBER_FIELDS);
 }
 
+function serializeRelativeDatePredicate(predicate: FilterPredicate): string | null {
+    const days = predicate.values[0];
+
+    if (typeof days !== 'number' || !isValidRelativeDayCount(days)) {
+        return null;
+    }
+
+    if (predicate.operator === 'in-the-last' && RELATIVE_PAST_DATE_FIELDS.has(predicate.field)) {
+        return `${predicate.field}:>=now-${days}d`;
+    }
+
+    if (predicate.operator === 'in-the-next' && RELATIVE_FUTURE_DATE_FIELDS.has(predicate.field)) {
+        return `${predicate.field}:<=now+${days}d`;
+    }
+
+    return null;
+}
+
 export function serializeMemberFilters(predicates: FilterPredicate[], timezone: string): string | undefined {
-    return serializePredicates(predicates, memberFields, timezone);
+    const relativeClauses: string[] = [];
+    const remainder: FilterPredicate[] = [];
+
+    for (const predicate of predicates) {
+        if (predicate.operator === 'in-the-last' || predicate.operator === 'in-the-next') {
+            const clause = serializeRelativeDatePredicate(predicate);
+
+            if (clause) {
+                relativeClauses.push(clause);
+            }
+            continue;
+        }
+
+        remainder.push(predicate);
+    }
+
+    const remainderString = serializePredicates(remainder, memberFields, timezone);
+    const remainderClauses = remainderString ? splitTopLevelAnd(remainderString) : [];
+    const allClauses = [...relativeClauses, ...remainderClauses].sort((left, right) => left.localeCompare(right));
+
+    if (!allClauses.length) {
+        return undefined;
+    }
+
+    return allClauses.join('+');
 }
