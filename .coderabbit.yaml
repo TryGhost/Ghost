@@ -6,6 +6,3 @@ reviews:
   sequence_diagrams: false
   estimate_code_review_effort: false
   poem: false
-  auto_review:
-    base_branches:
-      - 6.x
