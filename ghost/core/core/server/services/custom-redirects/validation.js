@@ -9,17 +9,11 @@ const messages = {
 };
 
 /**
- * Redirect configuration object
- * @typedef {Object} RedirectConfig
- * @property {string} from - Defines the relative incoming URL or pattern (regex)
- * @property {string} to - Defines where the incoming traffic should be redirected to, which can be a static URL, or a dynamic value using regex (example: "to": "/$1/")
- * @property {boolean} [permanent] - Can be defined with true for a permanent HTTP 301 redirect, or false for a temporary HTTP 302 redirect
- */
-
-/**
- * Redirects are file based at the moment, but they will live in the database in the future.
- * See V2 of https://github.com/TryGhost/Ghost/issues/7707.
- * @param {RedirectConfig[]} redirects
+ * Validates a batch of redirects against the shared shape contract:
+ * non-empty `from` / `to` strings, with `from` compilable as a RegExp.
+ * Throws on the first failure rather than collecting errors.
+ *
+ * @param {import('./types').RedirectConfig[]} redirects
  */
 const validate = (redirects) => {
     if (!_.isArray(redirects)) {
@@ -30,7 +24,12 @@ const validate = (redirects) => {
     }
 
     _.each(redirects, function (redirect) {
-        if (!redirect.from || !redirect.to) {
+        // Guard the entry shape before property access. Without this,
+        // a `null` / scalar entry would throw a raw `TypeError` from
+        // `redirect.from` rather than the user-facing ValidationError.
+        if (!redirect || typeof redirect !== 'object'
+            || !isNonEmptyString(redirect.from)
+            || !isNonEmptyString(redirect.to)) {
             throw new errors.ValidationError({
                 message: tpl(messages.redirectsWrongFormat),
                 context: redirect,
@@ -50,5 +49,7 @@ const validate = (redirects) => {
         }
     });
 };
+
+const isNonEmptyString = value => typeof value === 'string' && value.trim().length > 0;
 
 module.exports.validate = validate;
