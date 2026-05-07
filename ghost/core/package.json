@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "6.36.1-rc.0",
+  "version": "6.37.0-rc.0",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -231,6 +231,8 @@
     "simple-dom": "1.4.0",
     "stoppable": "1.1.0",
     "stripe": "8.222.0",
+    "superagent": "5.3.1",
+    "superagent-throttle": "1.0.1",
     "terser": "5.46.1",
     "tiny-glob": "0.2.9",
     "ua-parser-js": "1.0.41",

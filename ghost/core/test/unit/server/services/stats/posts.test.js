@@ -364,6 +364,38 @@ describe('PostsStatsService', function () {
         assert.ok(service, 'Service instance should exist');
     });
 
+    // _enrichWithTitles assigns `url_exists` based on the urlService lookup.
+    // The fixtures above always return truthy, so the falsy branch was
+    // unreached. Pin both branches here so the future migration to a
+    // different lookup API has to keep them coherent.
+    describe('_enrichWithTitles url_exists', function () {
+        function svcWithUrlLookup(lookup) {
+            return new PostsStatsService({
+                knex: db,
+                urlService: {
+                    hasFinished: () => true,
+                    getResource: lookup
+                }
+            });
+        }
+
+        it('flags url_exists: true when the URL resolves to a resource', async function () {
+            const svc = svcWithUrlLookup(() => ({data: {title: 'present'}}));
+            const out = await svc._enrichWithTitles([
+                {attribution_url: '/known/', title: 'Known', attribution_type: 'post', attribution_id: 'p', post_id: 'p'}
+            ]);
+            assert.equal(out[0].url_exists, true);
+        });
+
+        it('flags url_exists: false when the URL has no resource', async function () {
+            const svc = svcWithUrlLookup(() => null);
+            const out = await svc._enrichWithTitles([
+                {attribution_url: '/missing/', title: 'Missing', attribution_type: 'post', attribution_id: 'p', post_id: 'p'}
+            ]);
+            assert.equal(out[0].url_exists, false);
+        });
+    });
+
     describe('getTopPosts', function () {
         it('returns all posts with zero stats when no events exist', async function () {
             const result = await service.getTopPosts({});
