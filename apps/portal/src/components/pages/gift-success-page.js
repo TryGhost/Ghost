@@ -174,7 +174,7 @@ const GiftSuccessPage = () => {
                                     </div>
                                 </div>
 
-                                {tier && tier.benefits && tier.benefits.length > 0 && (
+                                {tier && (tier.description || (tier.benefits && tier.benefits.length > 0)) && (
                                     <>
                                         <div
                                             className='gh-portal-gift-checkout-details'
@@ -182,17 +182,22 @@ const GiftSuccessPage = () => {
                                             aria-hidden={!showDetails}
                                         >
                                             <div className='gh-portal-gift-checkout-details-inner'>
-                                                <div className='gh-portal-gift-checkout-benefits'>
-                                                    {tier.benefits.map((benefit, idx) => {
-                                                        const key = benefit?.id || `benefit-${idx}`;
-                                                        return (
-                                                            <div className='gh-portal-gift-checkout-benefit' key={key}>
-                                                                <CheckmarkIcon alt='' />
-                                                                <span>{benefit.name}</span>
-                                                            </div>
-                                                        );
-                                                    })}
-                                                </div>
+                                                {tier.description && (
+                                                    <p className='gh-portal-gift-checkout-details-description'>{tier.description}</p>
+                                                )}
+                                                {tier.benefits && tier.benefits.length > 0 && (
+                                                    <div className='gh-portal-gift-checkout-benefits'>
+                                                        {tier.benefits.map((benefit, idx) => {
+                                                            const key = benefit?.id || `benefit-${idx}`;
+                                                            return (
+                                                                <div className='gh-portal-gift-checkout-benefit' key={key}>
+                                                                    <CheckmarkIcon alt='' />
+                                                                    <span>{benefit.name}</span>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                         <button

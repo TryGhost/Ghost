@@ -149,7 +149,7 @@ export const GiftPageStyles = `
 
 .gh-portal-gift-checkout-tier {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 10px;
     width: 100%;
     background: transparent;
@@ -169,6 +169,7 @@ export const GiftPageStyles = `
     flex-shrink: 0;
     width: 18px;
     height: 18px;
+    margin-top: 3px;
     border-radius: 50%;
     border: 1.5px solid var(--grey9);
     background: var(--white);
@@ -192,6 +193,20 @@ export const GiftPageStyles = `
     transform: translate(-50%, -50%);
 }
 
+.gh-portal-gift-checkout-tier-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.gh-portal-gift-checkout-tier-heading {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+}
+
 .gh-portal-gift-checkout-tier-name {
     flex: 1;
     font-size: 1.5rem;
@@ -203,6 +218,14 @@ export const GiftPageStyles = `
     font-size: 1.5rem;
     font-weight: 500;
     color: var(--grey0);
+}
+
+.gh-portal-gift-checkout-tier-description {
+    margin: 0;
+    margin-top: -2px;
+    font-size: 1.4rem;
+    line-height: 1.4;
+    color: var(--grey4);
 }
 
 .gh-portal-gift-checkout-tier-benefits {
@@ -245,7 +268,7 @@ export const GiftPageStyles = `
 .gh-portal-gift-checkout-benefit svg {
     width: 14px;
     height: 14px;
-    margin-top: 4px;
+    margin-top: 3px;
     color: var(--grey1);
     flex-shrink: 0;
 }
@@ -365,6 +388,17 @@ export const GiftPageStyles = `
 .gh-portal-gift-checkout-details-inner {
     min-height: 0;
     overflow: hidden;
+}
+
+.gh-portal-gift-checkout-details-description {
+    margin: 0 0 12px;
+    font-size: 1.45rem;
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.gh-portal-gift-checkout-details-description:last-child {
+    margin-bottom: 0;
 }
 
 .gh-portal-gift-checkout-card {
@@ -715,8 +749,15 @@ const GiftPage = () => {
                                                     {!isSingleTier && (
                                                         <span className='gh-portal-gift-checkout-tier-radio' aria-hidden='true' />
                                                     )}
-                                                    <span className='gh-portal-gift-checkout-tier-name'>{product.name}</span>
-                                                    <span className='gh-portal-gift-checkout-tier-price'>{getTierPriceLabel(product, activeInterval)}</span>
+                                                    <div className='gh-portal-gift-checkout-tier-content'>
+                                                        <div className='gh-portal-gift-checkout-tier-heading'>
+                                                            <span className='gh-portal-gift-checkout-tier-name'>{product.name}</span>
+                                                            <span className='gh-portal-gift-checkout-tier-price'>{getTierPriceLabel(product, activeInterval)}</span>
+                                                        </div>
+                                                        {product.description && (
+                                                            <p className='gh-portal-gift-checkout-tier-description'>{product.description}</p>
+                                                        )}
+                                                    </div>
                                                 </button>
                                                 {benefits.length > 0 && (
                                                     <div

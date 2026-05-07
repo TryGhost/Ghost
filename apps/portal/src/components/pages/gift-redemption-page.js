@@ -163,6 +163,7 @@ const GiftRedemptionPage = () => {
         ? `You've been gifted a membership to ${siteTitle}`
         : 'You\'ve been gifted a membership';
     const benefits = gift.tier.benefits || [];
+    const tierDescription = gift.tier.description || '';
 
     return (
         <>
@@ -229,7 +230,7 @@ const GiftRedemptionPage = () => {
                                     </div>
                                 </div>
 
-                                {benefits.length > 0 && (
+                                {(tierDescription || benefits.length > 0) && (
                                     <>
                                         <div
                                             className='gh-portal-gift-checkout-details'
@@ -237,23 +238,28 @@ const GiftRedemptionPage = () => {
                                             aria-hidden={!showDetails}
                                         >
                                             <div className='gh-portal-gift-checkout-details-inner'>
-                                                <div className='gh-portal-gift-checkout-benefits'>
-                                                    {benefits.map((benefit, index) => {
-                                                        const benefitName = typeof benefit === 'string' ? benefit : benefit?.name;
-                                                        const benefitKey = typeof benefit === 'string' ? benefit : benefit?.id || `gift-benefit-${index}`;
+                                                {tierDescription && (
+                                                    <p className='gh-portal-gift-checkout-details-description'>{tierDescription}</p>
+                                                )}
+                                                {benefits.length > 0 && (
+                                                    <div className='gh-portal-gift-checkout-benefits'>
+                                                        {benefits.map((benefit, index) => {
+                                                            const benefitName = typeof benefit === 'string' ? benefit : benefit?.name;
+                                                            const benefitKey = typeof benefit === 'string' ? benefit : benefit?.id || `gift-benefit-${index}`;
 
-                                                        if (!benefitName) {
-                                                            return null;
-                                                        }
+                                                            if (!benefitName) {
+                                                                return null;
+                                                            }
 
-                                                        return (
-                                                            <div className='gh-portal-gift-checkout-benefit' key={benefitKey}>
-                                                                <CheckmarkIcon alt='' />
-                                                                <span>{benefitName}</span>
-                                                            </div>
-                                                        );
-                                                    })}
-                                                </div>
+                                                            return (
+                                                                <div className='gh-portal-gift-checkout-benefit' key={benefitKey}>
+                                                                    <CheckmarkIcon alt='' />
+                                                                    <span>{benefitName}</span>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                         <button

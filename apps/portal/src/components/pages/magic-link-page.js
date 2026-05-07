@@ -324,6 +324,7 @@ export default class MagicLinkPage extends React.Component {
             submittedEmailOrInbox
         });
         const benefits = gift.tier?.benefits || [];
+        const tierDescription = gift.tier?.description || '';
         const submittedName = (pageData?.name || '').trim();
 
         return (
@@ -376,7 +377,7 @@ export default class MagicLinkPage extends React.Component {
                                         </div>
                                     </div>
 
-                                    {benefits.length > 0 && (
+                                    {(tierDescription || benefits.length > 0) && (
                                         <>
                                             <div
                                                 className='gh-portal-gift-checkout-details'
@@ -384,23 +385,28 @@ export default class MagicLinkPage extends React.Component {
                                                 aria-hidden={!this.state.showDetails}
                                             >
                                                 <div className='gh-portal-gift-checkout-details-inner'>
-                                                    <div className='gh-portal-gift-checkout-benefits'>
-                                                        {benefits.map((benefit, index) => {
-                                                            const benefitName = typeof benefit === 'string' ? benefit : benefit?.name;
-                                                            const benefitKey = typeof benefit === 'string' ? benefit : benefit?.id || `gift-benefit-${index}`;
+                                                    {tierDescription && (
+                                                        <p className='gh-portal-gift-checkout-details-description'>{tierDescription}</p>
+                                                    )}
+                                                    {benefits.length > 0 && (
+                                                        <div className='gh-portal-gift-checkout-benefits'>
+                                                            {benefits.map((benefit, index) => {
+                                                                const benefitName = typeof benefit === 'string' ? benefit : benefit?.name;
+                                                                const benefitKey = typeof benefit === 'string' ? benefit : benefit?.id || `gift-benefit-${index}`;
 
-                                                            if (!benefitName) {
-                                                                return null;
-                                                            }
+                                                                if (!benefitName) {
+                                                                    return null;
+                                                                }
 
-                                                            return (
-                                                                <div className='gh-portal-gift-checkout-benefit' key={benefitKey}>
-                                                                    <CheckmarkIcon />
-                                                                    <span>{benefitName}</span>
-                                                                </div>
-                                                            );
-                                                        })}
-                                                    </div>
+                                                                return (
+                                                                    <div className='gh-portal-gift-checkout-benefit' key={benefitKey}>
+                                                                        <CheckmarkIcon />
+                                                                        <span>{benefitName}</span>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                             <button
