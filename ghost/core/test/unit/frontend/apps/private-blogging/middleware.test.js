@@ -1,425 +1,505 @@
 const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
+const express = require('express');
+const request = require('supertest');
 const sinon = require('sinon');
-const crypto = require('crypto');
-const fs = require('fs-extra');
-const {assertExists} = require('../../../../utils/assertions');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const config = require('../../../../../core/shared/config');
 const privateBlogging = require('../../../../../core/frontend/apps/private-blogging/lib/middleware');
 
-function hash(password, salt) {
-    const hasher = crypto.createHash('sha256');
-    hasher.update(password + salt, 'utf8');
-    return hasher.digest('hex');
+function errorHandler(err, req, res, next) {
+    void req;
+    void next;
+
+    res.status(err.statusCode || 500).json({
+        error: {
+            message: err.message,
+            statusCode: err.statusCode
+        }
+    });
+}
+
+function finalHandler(req, res) {
+    res.json({
+        ok: true,
+        isPrivateBlog: res.isPrivateBlog,
+        url: req.url,
+        path: req.path,
+        originalUrl: req.originalUrl,
+        error: res.error
+    });
+}
+
+function createApp(middlewares, {withLogin = false, withBadSession = false} = {}) {
+    const app = express();
+
+    app.use(express.urlencoded({extended: false}));
+    app.use(privateBlogging.checkIsPrivate);
+
+    if (withLogin) {
+        app.post('/private/', privateBlogging.doLoginToPrivateSite, finalHandler);
+    }
+
+    if (withBadSession) {
+        app.get('/_test/bad-session/', (req, res) => {
+            req.session.token = 'wrongpassword';
+            req.session.salt = Date.now().toString();
+            res.sendStatus(204);
+        });
+    }
+
+    for (const middleware of middlewares) {
+        app.use(middleware);
+    }
+
+    app.use(finalHandler);
+    app.use(errorHandler);
+
+    return app;
+}
+
+function create404App({withLogin = false} = {}) {
+    const app = express();
+
+    app.use(express.urlencoded({extended: false}));
+    app.use(privateBlogging.checkIsPrivate);
+
+    if (withLogin) {
+        app.post('/private/', privateBlogging.doLoginToPrivateSite, finalHandler);
+    }
+
+    app.use((req, res, next) => {
+        void req;
+        void res;
+
+        next(new errors.NotFoundError());
+    });
+    app.use(privateBlogging.handle404);
+    app.use(errorHandler);
+
+    return app;
+}
+
+async function login(agent) {
+    await agent
+        .post('/private/')
+        .type('form')
+        .send({password: 'rightpassword'})
+        .expect(302);
 }
 
 describe('Private Blogging', function () {
     let settingsStub;
-    let req;
-    let res;
-    let next;
 
     afterEach(function () {
         sinon.restore();
     });
 
     beforeEach(function () {
-        req = {
-            query: {}
-        };
-        res = {};
-        settingsStub = sinon.stub(settingsCache, 'get');
-        next = sinon.spy();
+        settingsStub = sinon.stub(settingsCache, 'get').callsFake((key) => {
+            if (key === 'is_private') {
+                return true;
+            }
+
+            if (key === 'password') {
+                return 'rightpassword';
+            }
+
+            if (key === 'public_hash') {
+                return '777aaa';
+            }
+        });
     });
 
     describe('checkIsPrivate (set state from settings)', function () {
-        it('Sets res.isPrivateBlog false if setting is false', function () {
+        it('Sets res.isPrivateBlog false if setting is false', async function () {
             settingsStub.withArgs('is_private').returns(false);
 
-            privateBlogging.checkIsPrivate(req, res, next);
-            sinon.assert.called(next);
-            assert.equal(res.isPrivateBlog, false);
+            await request(createApp([]))
+                .get('/')
+                .expect(200)
+                .expect(({body}) => {
+                    assert.equal(body.isPrivateBlog, false);
+                });
         });
 
-        it('Sets res.isPrivateBlog true if setting is true', function () {
-            settingsStub.withArgs('is_private').returns(true);
-
-            privateBlogging.checkIsPrivate(req, res, next);
-            sinon.assert.called(next);
-            assert.equal(res.isPrivateBlog, true);
+        it('Sets res.isPrivateBlog true if setting is true', async function () {
+            await request(createApp([]))
+                .get('/')
+                .expect(200)
+                .expect(({body}) => {
+                    assert.equal(body.isPrivateBlog, true);
+                });
         });
     });
 
-    // The remainder of these tests set res.isPrivateBlog true or false directly
     describe('Private Mode Disabled', function () {
         beforeEach(function () {
-            res.isPrivateBlog = false;
+            settingsStub.withArgs('is_private').returns(false);
         });
 
-        it('filterPrivateRoutes should call next', function () {
-            privateBlogging.filterPrivateRoutes(req, res, next);
-            sinon.assert.called(next);
+        it('filterPrivateRoutes should call next', async function () {
+            await request(createApp([privateBlogging.filterPrivateRoutes]))
+                .get('/')
+                .expect(200)
+                .expect(({body}) => {
+                    assert.equal(body.ok, true);
+                    assert.equal(body.isPrivateBlog, false);
+                });
         });
 
-        it('redirectPrivateToHomeIfLoggedIn should redirect to home', function () {
-            res = {
-                redirect: sinon.spy(),
-                isPrivateBlog: false
-            };
-            privateBlogging.redirectPrivateToHomeIfLoggedIn(req, res, next);
-            sinon.assert.called(res.redirect);
-            sinon.assert.calledWith(res.redirect, `${config.get('url')}/`);
+        it('redirectPrivateToHomeIfLoggedIn should redirect to home', async function () {
+            await request(createApp([privateBlogging.redirectPrivateToHomeIfLoggedIn]))
+                .get('/private/')
+                .expect(302)
+                .expect('Location', `${config.get('url')}/`);
         });
 
-        it('handle404 should still 404', function () {
-            privateBlogging.handle404(new errors.NotFoundError(), req, res, next);
-            sinon.assert.called(next);
-            assert.equal((next.firstCall.args[0] instanceof errors.NotFoundError), true);
+        it('handle404 should still 404', async function () {
+            await request(create404App())
+                .get('/welcome/')
+                .expect(404)
+                .expect(({body}) => {
+                    assert.equal(body.error.statusCode, 404);
+                });
         });
     });
 
     describe('Private Mode Enabled', function () {
-        beforeEach(function () {
-            res = {
-                status: function () {
-                    return this;
-                },
-                send: function () {
-                },
-                set: function () {
-                },
-                redirect: sinon.spy(),
-                isPrivateBlog: true
-            };
-
-            // Set global settings for private mode
-            settingsStub.withArgs('is_private').returns(true);
-            settingsStub.withArgs('password').returns('rightpassword');
-            settingsStub.withArgs('public_hash').returns('777aaa');
-
-            // Ensure we have an empty session (not logged in)
-            req.session = {};
-        });
-
         describe('Logged Out behavior', function () {
-            it('authenticatePrivateSession should redirect', function () {
-                req.path = req.url = '/welcome/';
-                privateBlogging.authenticatePrivateSession(req, res, next);
-                sinon.assert.notCalled(next);
-                sinon.assert.called(res.redirect);
-                sinon.assert.calledWith(res.redirect, '/private/?r=%2Fwelcome%2F');
+            it('authenticatePrivateSession should redirect', async function () {
+                await request(createApp([privateBlogging.authenticatePrivateSession]))
+                    .get('/welcome/')
+                    .expect(302)
+                    .expect('Location', '/private/?r=%2Fwelcome%2F');
             });
 
-            it('handle404 should redirect', function () {
-                req.path = req.url = '/welcome/';
-                privateBlogging.handle404(new errors.NotFoundError(), req, res, next);
-                sinon.assert.notCalled(next);
-                sinon.assert.called(res.redirect);
-                sinon.assert.calledWith(res.redirect, '/private/?r=%2Fwelcome%2F');
+            it('handle404 should redirect', async function () {
+                await request(create404App())
+                    .get('/welcome/')
+                    .expect(302)
+                    .expect('Location', '/private/?r=%2Fwelcome%2F');
             });
 
             describe('Site privacy managed by filterPrivateRoutes', function () {
-                it('should call next for the /private/ route', function () {
-                    req.path = req.url = '/private/';
-                    privateBlogging.filterPrivateRoutes(req, res, next);
-                    sinon.assert.called(next);
+                it('should call next for the /private/ route', async function () {
+                    await request(createApp([privateBlogging.filterPrivateRoutes]))
+                        .get('/private/')
+                        .expect(200);
                 });
 
-                it('should redirect to /private/ for private route with extra path', function () {
-                    req.path = req.url = '/private/welcome/';
-
-                    privateBlogging.filterPrivateRoutes(req, res, next);
-                    sinon.assert.calledOnce(res.redirect);
-                    sinon.assert.calledWith(res.redirect, '/private/?r=%2Fprivate%2Fwelcome%2F');
+                it('should redirect to /private/ for private route with extra path', async function () {
+                    await request(createApp([privateBlogging.filterPrivateRoutes]))
+                        .get('/private/welcome/')
+                        .expect(302)
+                        .expect('Location', '/private/?r=%2Fprivate%2Fwelcome%2F');
                 });
 
-                it('should redirect to /private/ for sitemap', function () {
-                    req.path = req.url = '/sitemap.xml';
-
-                    privateBlogging.filterPrivateRoutes(req, res, next);
-                    sinon.assert.calledOnce(res.redirect);
-                    sinon.assert.calledWith(res.redirect, '/private/?r=%2Fsitemap.xml');
+                it('should redirect to /private/ for sitemap', async function () {
+                    await request(createApp([privateBlogging.filterPrivateRoutes]))
+                        .get('/sitemap.xml')
+                        .expect(302)
+                        .expect('Location', '/private/?r=%2Fsitemap.xml');
                 });
 
-                it('should redirect to /private/ for sitemap with params', function () {
-                    req.url = '/sitemap.xml?weird=param';
-                    req.path = '/sitemap.xml';
-
-                    privateBlogging.filterPrivateRoutes(req, res, next);
-                    sinon.assert.calledOnce(res.redirect);
-                    sinon.assert.calledWith(res.redirect, '/private/?r=%2Fsitemap.xml%3Fweird%3Dparam');
+                it('should redirect to /private/ for sitemap with params', async function () {
+                    await request(createApp([privateBlogging.filterPrivateRoutes]))
+                        .get('/sitemap.xml?weird=param')
+                        .expect(302)
+                        .expect('Location', '/private/?r=%2Fsitemap.xml%3Fweird%3Dparam');
                 });
 
-                it('should redirect to /private/ for /rss/', function () {
-                    req.path = req.url = '/rss/';
-
-                    privateBlogging.filterPrivateRoutes(req, res, next);
-                    sinon.assert.calledOnce(res.redirect);
-                    sinon.assert.calledWith(res.redirect, '/private/?r=%2Frss%2F');
+                it('should redirect to /private/ for /rss/', async function () {
+                    await request(createApp([privateBlogging.filterPrivateRoutes]))
+                        .get('/rss/')
+                        .expect(302)
+                        .expect('Location', '/private/?r=%2Frss%2F');
                 });
 
-                it('should redirect to /private/ for author rss', function () {
-                    req.path = req.url = '/author/halfdan/rss/';
-
-                    privateBlogging.filterPrivateRoutes(req, res, next);
-                    sinon.assert.calledOnce(res.redirect);
-                    sinon.assert.calledWith(res.redirect, '/private/?r=%2Fauthor%2Fhalfdan%2Frss%2F');
+                it('should redirect to /private/ for author rss', async function () {
+                    await request(createApp([privateBlogging.filterPrivateRoutes]))
+                        .get('/author/halfdan/rss/')
+                        .expect(302)
+                        .expect('Location', '/private/?r=%2Fauthor%2Fhalfdan%2Frss%2F');
                 });
 
-                it('should redirect to /private/ for tag rss', function () {
-                    req.path = req.url = '/tag/slimer/rss/';
-
-                    privateBlogging.filterPrivateRoutes(req, res, next);
-                    sinon.assert.calledOnce(res.redirect);
-                    sinon.assert.calledWith(res.redirect, '/private/?r=%2Ftag%2Fslimer%2Frss%2F');
+                it('should redirect to /private/ for tag rss', async function () {
+                    await request(createApp([privateBlogging.filterPrivateRoutes]))
+                        .get('/tag/slimer/rss/')
+                        .expect(302)
+                        .expect('Location', '/private/?r=%2Ftag%2Fslimer%2Frss%2F');
                 });
 
-                it('should redirect to /private/ for rss with extra path', function () {
-                    req.path = req.url = '/rss/sometag';
-
-                    privateBlogging.filterPrivateRoutes(req, res, next);
-                    sinon.assert.calledOnce(res.redirect);
-                    sinon.assert.calledWith(res.redirect, '/private/?r=%2Frss%2Fsometag');
+                it('should redirect to /private/ for rss with extra path', async function () {
+                    await request(createApp([privateBlogging.filterPrivateRoutes]))
+                        .get('/rss/sometag')
+                        .expect(302)
+                        .expect('Location', '/private/?r=%2Frss%2Fsometag');
                 });
 
-                it('should render custom robots.txt', function () {
-                    // Note this test doesn't cover the full site behavior,
-                    // another robots.txt can be incorrectly served if middleware is out of order
-                    req.url = req.path = '/robots.txt';
-                    res.writeHead = sinon.spy();
-                    res.end = sinon.spy();
-                    sinon.stub(fs, 'readFile').callsFake(function (file, cb) {
-                        cb(null, 'User-agent: * Disallow: /');
-                    });
-                    privateBlogging.filterPrivateRoutes(req, res, next);
-                    sinon.assert.called(res.writeHead);
-                    sinon.assert.called(res.end);
+                it('should render custom robots.txt', async function () {
+                    await request(createApp([privateBlogging.filterPrivateRoutes]))
+                        .get('/robots.txt')
+                        .expect(200)
+                        .expect('Content-Type', /text\/plain/)
+                        .expect('User-agent: *\nDisallow: /');
                 });
 
-                it('should allow private /rss/ feed', function () {
-                    req.url = req.originalUrl = req.path = '/777aaa/rss/';
-                    req.params = {};
-
-                    privateBlogging.filterPrivateRoutes(req, res, next);
-                    sinon.assert.called(next);
-                    assert.equal(req.url, '/rss/');
+                it('should allow private /rss/ feed', async function () {
+                    await request(createApp([privateBlogging.filterPrivateRoutes]))
+                        .get('/777aaa/rss/')
+                        .expect(200)
+                        .expect(({body}) => {
+                            assert.equal(body.url, '/rss/');
+                        });
                 });
 
-                it('should allow private tag /rss/ feed', function () {
-                    req.url = req.originalUrl = req.path = '/tag/getting-started/777aaa/rss/';
-                    req.params = {};
-
-                    privateBlogging.filterPrivateRoutes(req, res, next);
-                    sinon.assert.called(next);
-                    assert.equal(req.url, '/tag/getting-started/rss/');
+                it('should allow private tag /rss/ feed', async function () {
+                    await request(createApp([privateBlogging.filterPrivateRoutes]))
+                        .get('/tag/getting-started/777aaa/rss/')
+                        .expect(200)
+                        .expect(({body}) => {
+                            assert.equal(body.url, '/tag/getting-started/rss/');
+                        });
                 });
 
-                it('should redirect to /private/ for private rss with extra path', function () {
-                    req.url = req.originalUrl = req.path = '/777aaa/rss/hackme/';
-
-                    privateBlogging.filterPrivateRoutes(req, res, next);
-                    sinon.assert.calledOnce(res.redirect);
-                    sinon.assert.calledWith(res.redirect, '/private/?r=%2F777aaa%2Frss%2Fhackme%2F');
+                it('should redirect to /private/ for private rss with extra path', async function () {
+                    await request(createApp([privateBlogging.filterPrivateRoutes]))
+                        .get('/777aaa/rss/hackme/')
+                        .expect(302)
+                        .expect('Location', '/private/?r=%2F777aaa%2Frss%2Fhackme%2F');
                 });
             });
 
             describe('/private/ route', function () {
-                it('redirectPrivateToHomeIfLoggedIn should allow /private/ to be rendered', function () {
-                    privateBlogging.redirectPrivateToHomeIfLoggedIn(req, res, next);
-                    sinon.assert.called(next);
+                it('redirectPrivateToHomeIfLoggedIn should allow /private/ to be rendered', async function () {
+                    await request(createApp([privateBlogging.redirectPrivateToHomeIfLoggedIn]))
+                        .get('/private/')
+                        .expect(200);
                 });
             });
         });
 
         describe('Logging in (doLoginToPrivateSite)', function () {
-            it('doLoginToPrivateSite should call next if error', function () {
-                res.error = 'Test Error';
-                privateBlogging.doLoginToPrivateSite(req, res, next);
-                sinon.assert.called(next);
+            it('doLoginToPrivateSite should call next if error', async function () {
+                const app = createApp([(req, res, next) => {
+                    void req;
+
+                    res.error = 'Test Error';
+                    next();
+                }, privateBlogging.doLoginToPrivateSite]);
+
+                await request(app)
+                    .post('/private/')
+                    .type('form')
+                    .send({password: 'rightpassword'})
+                    .expect(200)
+                    .expect(({body}) => {
+                        assert.equal(body.error, 'Test Error');
+                    });
             });
 
-            it('doLoginToPrivateSite should return next if password is incorrect', function () {
-                req.body = {password: 'wrongpassword'};
-
-                privateBlogging.doLoginToPrivateSite(req, res, next);
-                assertExists(res.error);
-                sinon.assert.called(next);
+            it('doLoginToPrivateSite should return next if password is incorrect', async function () {
+                await request(createApp([privateBlogging.doLoginToPrivateSite]))
+                    .post('/private/')
+                    .type('form')
+                    .send({password: 'wrongpassword'})
+                    .expect(200)
+                    .expect(({body}) => {
+                        assert.equal(body.error.message, 'Incorrect password.');
+                    });
             });
 
-            it('doLoginToPrivateSite should redirect if password is correct', function () {
-                req.body = {password: 'rightpassword'};
-                req.session = {};
-                res.redirect = sinon.spy();
-
-                privateBlogging.doLoginToPrivateSite(req, res, next);
-                sinon.assert.called(res.redirect);
+            it('doLoginToPrivateSite should redirect if password is correct', async function () {
+                await request(createApp([privateBlogging.doLoginToPrivateSite]))
+                    .post('/private/')
+                    .type('form')
+                    .send({password: 'rightpassword'})
+                    .expect(302);
             });
 
-            it('doLoginToPrivateSite should redirect to "/" if r param is a full url', function () {
-                req.body = {password: 'rightpassword'};
-                req.session = {};
-                req.query = {
-                    r: encodeURIComponent('http://britney.com')
-                };
-                res.redirect = sinon.spy();
-
-                privateBlogging.doLoginToPrivateSite(req, res, next);
-                sinon.assert.called(res.redirect);
-                assert.equal(res.redirect.args[0][0], '/');
+            it('doLoginToPrivateSite should redirect to "/" if r param is a full url', async function () {
+                await request(createApp([privateBlogging.doLoginToPrivateSite]))
+                    .post('/private/')
+                    .query({r: encodeURIComponent('http://britney.com')})
+                    .type('form')
+                    .send({password: 'rightpassword'})
+                    .expect(302)
+                    .expect('Location', '/');
             });
 
-            it('doLoginToPrivateSite should redirect to the relative path if r param is there', function () {
-                req.body = {password: 'rightpassword'};
-                req.session = {};
-                req.query = {
-                    r: encodeURIComponent('/test')
-                };
-                res.redirect = sinon.spy();
-
-                privateBlogging.doLoginToPrivateSite(req, res, next);
-                sinon.assert.called(res.redirect);
-                assert.equal(res.redirect.args[0][0], '/test');
+            it('doLoginToPrivateSite should redirect to the relative path if r param is there', async function () {
+                await request(createApp([privateBlogging.doLoginToPrivateSite]))
+                    .post('/private/')
+                    .query({r: encodeURIComponent('/test')})
+                    .type('form')
+                    .send({password: 'rightpassword'})
+                    .expect(302)
+                    .expect('Location', '/test');
             });
 
-            it('doLoginToPrivateSite should preserve query string including UTM parameters', function () {
-                req.body = {password: 'rightpassword'};
-                req.session = {};
-                req.query = {
-                    r: encodeURIComponent('/?utm_source=twitter&utm_campaign=test')
-                };
-                res.redirect = sinon.spy();
-
-                privateBlogging.doLoginToPrivateSite(req, res, next);
-                sinon.assert.called(res.redirect);
-                assert.equal(res.redirect.args[0][0], '/?utm_source=twitter&utm_campaign=test');
+            it('doLoginToPrivateSite should preserve query string including UTM parameters', async function () {
+                await request(createApp([privateBlogging.doLoginToPrivateSite]))
+                    .post('/private/')
+                    .query({r: encodeURIComponent('/?utm_source=twitter&utm_campaign=test')})
+                    .type('form')
+                    .send({password: 'rightpassword'})
+                    .expect(302)
+                    .expect('Location', '/?utm_source=twitter&utm_campaign=test');
             });
 
-            it('doLoginToPrivateSite should preserve query string on paths', function () {
-                req.body = {password: 'rightpassword'};
-                req.session = {};
-                req.query = {
-                    r: encodeURIComponent('/welcome/?ref=newsletter&utm_medium=email')
-                };
-                res.redirect = sinon.spy();
-
-                privateBlogging.doLoginToPrivateSite(req, res, next);
-                sinon.assert.called(res.redirect);
-                assert.equal(res.redirect.args[0][0], '/welcome/?ref=newsletter&utm_medium=email');
+            it('doLoginToPrivateSite should preserve query string on paths', async function () {
+                await request(createApp([privateBlogging.doLoginToPrivateSite]))
+                    .post('/private/')
+                    .query({r: encodeURIComponent('/welcome/?ref=newsletter&utm_medium=email')})
+                    .type('form')
+                    .send({password: 'rightpassword'})
+                    .expect(302)
+                    .expect('Location', '/welcome/?ref=newsletter&utm_medium=email');
             });
 
-            it('doLoginToPrivateSite should redirect to "/" if r param is redirecting to another domain than the current instance', function () {
-                req.body = {password: 'rightpassword'};
-                req.session = {};
-                req.query = {
-                    r: encodeURIComponent('http://britney.com//example.com')
-                };
-                res.redirect = sinon.spy();
-
-                privateBlogging.doLoginToPrivateSite(req, res, next);
-                sinon.assert.called(res.redirect);
-                assert.equal(res.redirect.args[0][0], '/');
+            it('doLoginToPrivateSite should redirect to "/" if r param is redirecting to another domain than the current instance', async function () {
+                await request(createApp([privateBlogging.doLoginToPrivateSite]))
+                    .post('/private/')
+                    .query({r: encodeURIComponent('http://britney.com//example.com')})
+                    .type('form')
+                    .send({password: 'rightpassword'})
+                    .expect(302)
+                    .expect('Location', '/');
             });
 
             describe('Bad Password', function () {
-                beforeEach(function () {
-                    req.session = {
-                        token: 'wrongpassword',
-                        salt: Date.now().toString()
-                    };
-                });
-                it('redirectPrivateToHomeIfLoggedIn should return next', function () {
-                    privateBlogging.redirectPrivateToHomeIfLoggedIn(req, res, next);
-                    sinon.assert.called(next);
+                it('redirectPrivateToHomeIfLoggedIn should return next', async function () {
+                    const app = createApp([privateBlogging.redirectPrivateToHomeIfLoggedIn], {withBadSession: true});
+                    const agent = request.agent(app);
+
+                    await agent.get('/_test/bad-session/').expect(204);
+                    await agent
+                        .get('/private/')
+                        .expect(200);
                 });
 
-                it('authenticatePrivateSession should redirect', function () {
-                    req.url = '/welcome';
+                it('authenticatePrivateSession should redirect', async function () {
+                    const app = createApp([privateBlogging.authenticatePrivateSession], {withBadSession: true});
+                    const agent = request.agent(app);
 
-                    privateBlogging.authenticatePrivateSession(req, res, next);
-                    sinon.assert.called(res.redirect);
-                    sinon.assert.calledWith(res.redirect, '/private/?r=%2Fwelcome');
+                    await agent.get('/_test/bad-session/').expect(204);
+                    await agent
+                        .get('/welcome')
+                        .expect(302)
+                        .expect('Location', '/private/?r=%2Fwelcome');
                 });
             });
         });
 
         describe('Logged In behavior', function () {
-            beforeEach(function () {
-                const salt = Date.now().toString();
+            it('authenticatePrivateSession should return next', async function () {
+                const app = createApp([privateBlogging.authenticatePrivateSession], {withLogin: true});
+                const agent = request.agent(app);
 
-                req.session = {
-                    token: hash('rightpassword', salt),
-                    salt
-                };
+                await login(agent);
+                await agent
+                    .get('/')
+                    .expect(200);
             });
 
-            it('authenticatePrivateSession should return next', function () {
-                privateBlogging.authenticatePrivateSession(req, res, next);
-                sinon.assert.called(next);
-            });
+            it('handle404 should still 404', async function () {
+                const app = create404App({withLogin: true});
+                const agent = request.agent(app);
 
-            it('handle404 should still 404', function () {
-                privateBlogging.handle404(new errors.NotFoundError(), req, res, next);
-                sinon.assert.called(next);
-                assert.equal((next.firstCall.args[0] instanceof errors.NotFoundError), true);
+                await login(agent);
+                await agent
+                    .get('/welcome/')
+                    .expect(404)
+                    .expect(({body}) => {
+                        assert.equal(body.error.statusCode, 404);
+                    });
             });
 
             describe('Site privacy managed by filterPrivateRoutes', function () {
-                it('should 404 for standard public /rss/ requests', function () {
-                    req.url = req.path = '/rss/';
+                it('should 404 for standard public /rss/ requests', async function () {
+                    const app = createApp([privateBlogging.filterPrivateRoutes], {withLogin: true});
+                    const agent = request.agent(app);
 
-                    privateBlogging.filterPrivateRoutes(req, res, next);
-                    sinon.assert.called(next);
-                    assert.equal((next.firstCall.args[0] instanceof errors.NotFoundError), true);
+                    await login(agent);
+                    await agent
+                        .get('/rss/')
+                        .expect(404)
+                        .expect(({body}) => {
+                            assert.equal(body.error.statusCode, 404);
+                        });
                 });
 
-                it('should 404 for standard public tag rss requests', function () {
-                    req.url = req.path = '/tag/welcome/rss/';
+                it('should 404 for standard public tag rss requests', async function () {
+                    const app = createApp([privateBlogging.filterPrivateRoutes], {withLogin: true});
+                    const agent = request.agent(app);
 
-                    privateBlogging.filterPrivateRoutes(req, res, next);
-                    sinon.assert.called(next);
-                    assert.equal((next.firstCall.args[0] instanceof errors.NotFoundError), true);
+                    await login(agent);
+                    await agent
+                        .get('/tag/welcome/rss/')
+                        .expect(404)
+                        .expect(({body}) => {
+                            assert.equal(body.error.statusCode, 404);
+                        });
                 });
 
-                it('should allow a tag to contain the word rss', function () {
-                    req.url = req.path = '/tag/rss-test/';
+                it('should allow a tag to contain the word rss', async function () {
+                    const app = createApp([privateBlogging.filterPrivateRoutes], {withLogin: true});
+                    const agent = request.agent(app);
 
-                    privateBlogging.filterPrivateRoutes(req, res, next);
-                    sinon.assert.called(next);
-                    assert.equal(next.firstCall.args.length, 0);
+                    await login(agent);
+                    await agent
+                        .get('/tag/rss-test/')
+                        .expect(200);
                 });
 
-                it('should not 404 for very short post url', function () {
-                    req.url = req.path = '/ab/';
+                it('should not 404 for very short post url', async function () {
+                    const app = createApp([privateBlogging.filterPrivateRoutes], {withLogin: true});
+                    const agent = request.agent(app);
 
-                    privateBlogging.filterPrivateRoutes(req, res, next);
-                    sinon.assert.called(next);
-                    assert.equal(next.firstCall.args.length, 0);
+                    await login(agent);
+                    await agent
+                        .get('/ab/')
+                        .expect(200);
                 });
 
-                it('should allow private /rss/ feed', function () {
-                    req.url = req.originalUrl = req.path = '/777aaa/rss/';
-                    req.params = {};
+                it('should allow private /rss/ feed', async function () {
+                    const app = createApp([privateBlogging.filterPrivateRoutes], {withLogin: true});
+                    const agent = request.agent(app);
 
-                    privateBlogging.filterPrivateRoutes(req, res, next);
-                    sinon.assert.called(next);
-                    assert.equal(req.url, '/rss/');
+                    await login(agent);
+                    await agent
+                        .get('/777aaa/rss/')
+                        .expect(200)
+                        .expect(({body}) => {
+                            assert.equal(body.url, '/rss/');
+                        });
                 });
 
-                it('should allow private tag /rss/ feed', function () {
-                    req.url = req.originalUrl = req.path = '/tag/getting-started/777aaa/rss/';
-                    req.params = {};
+                it('should allow private tag /rss/ feed', async function () {
+                    const app = createApp([privateBlogging.filterPrivateRoutes], {withLogin: true});
+                    const agent = request.agent(app);
 
-                    privateBlogging.filterPrivateRoutes(req, res, next);
-                    sinon.assert.called(next);
-                    assert.equal(req.url, '/tag/getting-started/rss/');
+                    await login(agent);
+                    await agent
+                        .get('/tag/getting-started/777aaa/rss/')
+                        .expect(200)
+                        .expect(({body}) => {
+                            assert.equal(body.url, '/tag/getting-started/rss/');
+                        });
                 });
             });
 
             describe('/private/ route', function () {
-                it('redirectPrivateToHomeIfLoggedIn should redirect to home', function () {
-                    privateBlogging.redirectPrivateToHomeIfLoggedIn(req, res, next);
-                    sinon.assert.called(res.redirect);
+                it('redirectPrivateToHomeIfLoggedIn should redirect to home', async function () {
+                    const app = createApp([privateBlogging.redirectPrivateToHomeIfLoggedIn], {withLogin: true});
+                    const agent = request.agent(app);
+
+                    await login(agent);
+                    await agent
+                        .get('/private/')
+                        .expect(302)
+                        .expect('Location', `${config.get('url')}/`);
                 });
             });
         });
