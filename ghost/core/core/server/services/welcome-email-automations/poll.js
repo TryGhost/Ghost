@@ -32,7 +32,7 @@ const {AutomatedEmailRecipient, Member, WelcomeEmailAutomationRun} = require('..
  * }) => PromiseLike<unknown>} api.send
  */
 
-const LOG_KEY = '[WELCOME-EMAIL-AUTOMATIONS]';
+const LOG_KEY = '[AUTOMATIONS]';
 const MAX_RUNS_PER_BATCH = 100;
 const MAX_ATTEMPTS = 10;
 const RETRY_DELAY_MS = 10 * 60 * 1000;
