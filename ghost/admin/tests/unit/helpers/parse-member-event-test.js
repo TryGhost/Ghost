@@ -30,34 +30,7 @@ describe('Unit: Helper: parse-member-event', function () {
     });
 
     describe('subscription_event action', function () {
-        it('returns "continued paid subscription after gift" when previous_status is "gift"', function () {
-            const event = buildEvent({
-                type: 'subscription_event',
-                data: {type: 'created', previous_status: 'gift'}
-            });
-            const result = helper.compute([event]);
-            expect(result.action).to.equal('continued paid subscription after gift');
-        });
-
-        it('returns "started paid subscription" when previous_status is null', function () {
-            const event = buildEvent({
-                type: 'subscription_event',
-                data: {type: 'created', previous_status: null}
-            });
-            const result = helper.compute([event]);
-            expect(result.action).to.equal('started paid subscription');
-        });
-
-        it('returns "started paid subscription" when previous_status is "free"', function () {
-            const event = buildEvent({
-                type: 'subscription_event',
-                data: {type: 'created', previous_status: 'free'}
-            });
-            const result = helper.compute([event]);
-            expect(result.action).to.equal('started paid subscription');
-        });
-
-        it('returns "started paid subscription" when previous_status is missing', function () {
+        it('returns "started paid subscription" for a created subscription_event', function () {
             const event = buildEvent({
                 type: 'subscription_event',
                 data: {type: 'created'}
@@ -114,17 +87,31 @@ describe('Unit: Helper: parse-member-event', function () {
         });
     });
 
-    describe('gift_ended_event', function () {
-        it('returns "ended paid subscription" action', function () {
-            const event = buildEvent({type: 'gift_ended_event'});
+    describe('gift_redemption_event', function () {
+        it('returns "started gift subscription" action', function () {
+            const event = buildEvent({type: 'gift_redemption_event'});
             const result = helper.compute([event]);
-            expect(result.action).to.equal('ended paid subscription');
+            expect(result.action).to.equal('started gift subscription');
         });
 
-        it('returns "event-subscriptions" icon', function () {
+        it('returns "event-gift" icon', function () {
+            const event = buildEvent({type: 'gift_redemption_event'});
+            const result = helper.compute([event]);
+            expect(result.icon).to.equal('event-gift');
+        });
+    });
+
+    describe('gift_ended_event', function () {
+        it('returns "gift subscription expired" action', function () {
             const event = buildEvent({type: 'gift_ended_event'});
             const result = helper.compute([event]);
-            expect(result.icon).to.equal('event-subscriptions');
+            expect(result.action).to.equal('gift subscription expired');
+        });
+
+        it('returns "event-expired-gift" icon', function () {
+            const event = buildEvent({type: 'gift_ended_event'});
+            const result = helper.compute([event]);
+            expect(result.icon).to.equal('event-expired-gift');
         });
     });
 });
