@@ -79,7 +79,8 @@ class StaffServiceEmails {
             const interval = subscription?.interval || '';
             const tierData = {
                 name: tier?.name || '',
-                details: `${formattedAmount}/${interval}`
+                details: `${formattedAmount}/${interval}`,
+                trialDays: null
             };
 
             const subscriptionData = {
@@ -87,6 +88,15 @@ class StaffServiceEmails {
             };
 
             let offerData = this.getOfferData(offer);
+
+            if (!offerData && subscription?.trialEnd) {
+                const trialEnd = moment(subscription.trialEnd);
+                const trialStart = subscription.trialStart ? moment(subscription.trialStart) : moment();
+                const days = trialEnd.diff(trialStart, 'days');
+                if (days > 0) {
+                    tierData.trialDays = days;
+                }
+            }
 
             let attributionTitle = attribution?.title || '';
             // In case of a homepage attribution, we want to show the title as "Homepage" on email
