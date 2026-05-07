@@ -1982,6 +1982,11 @@ module.exports = class MemberRepository {
                     zeroValuePrice = product.stripePrices.find((p) => {
                         return p.currency.toLowerCase() === price.get('currency').toLowerCase() && p.amount === 0 && this.isComplimentaryPlanNickname(p.nickname);
                     });
+                    if (!zeroValuePrice) {
+                        throw new errors.NotFoundError({
+                            message: `Failed to locate a complimentary (zero-amount, nickname matched by isComplimentaryPlanNickname) Stripe price for currency "${price.get('currency')}" on product ${product.id} after update. Returned stripePrices: ${JSON.stringify(product.stripePrices)}`
+                        });
+                    }
                     complimentaryPrices.push(zeroValuePrice);
                 }
 
@@ -2032,6 +2037,11 @@ module.exports = class MemberRepository {
                 zeroValuePrice = product.stripePrices.find((price) => {
                     return price.currency.toLowerCase() === 'usd' && price.amount === 0 && this.isComplimentaryPlanNickname(price.nickname);
                 });
+                if (!zeroValuePrice) {
+                    throw new errors.NotFoundError({
+                        message: `Failed to locate a complimentary (zero-amount, nickname matched by isComplimentaryPlanNickname) Stripe price for currency "USD" on product ${product.id} after update. Returned stripePrices: ${JSON.stringify(product.stripePrices)}`
+                    });
+                }
                 complimentaryPrices.push(zeroValuePrice);
             }
 
