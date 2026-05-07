@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const crypto = require('crypto');
-const {agentProvider, mockManager, fixtureManager, matchers, configUtils} = require('../../utils/e2e-framework');
-const {anyEtag, anyObjectId, anyUuid, anyISODateTime, stringMatching} = matchers;
+const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
+const {anyEtag, anyObjectId, anyUuid, anyISODateTime} = matchers;
 const models = require('../../../core/server/models');
 const sinon = require('sinon');
 const settingsHelpers = require('../../../core/server/services/settings-helpers');
@@ -235,60 +235,4 @@ describe('Comments API', function () {
         });
     });
 
-    describe('when caching members content is enabled', function () {
-        it('sets ghost-access and ghost-access-hmac cookies', async function () {
-            configUtils.set('cacheMembersContent:enabled', true);
-            configUtils.set('cacheMembersContent:hmacSecret', crypto.randomBytes(64).toString('base64'));
-            membersAgent = await agentProvider.getMembersAPIAgent();
-            await fixtureManager.init('newsletters', 'members:newsletters');
-            await membersAgent.loginAs('member@example.com');
-            const member = await models.Member.findOne({email: 'member@example.com'}, {require: true});
-            await membersAgent
-                .get(`/api/member/`)
-                .expectStatus(200)
-                .matchHeaderSnapshot({
-                    etag: anyEtag,
-                    'set-cookie': [
-                        stringMatching(/^ghost-access=[0-9a-fA-F]{24}:\d{10}/),
-                        stringMatching(/^ghost-access-hmac=[a-fA-F0-9]{64}/)
-                    ]
-                })
-                .matchBodySnapshot(memberMatcher(2))
-                .expect(({body}) => {
-                    assert.equal(body.email, member.get('email'));
-                });
-        });
-
-        it('does not set ghost-access and ghost-access-hmac cookies when not authenticated', async function () {
-            configUtils.set('cacheMembersContent:enabled', true);
-            configUtils.set('cacheMembersContent:hmacSecret', crypto.randomBytes(64).toString('base64'));
-            membersAgent = await agentProvider.getMembersAPIAgent();
-            await fixtureManager.init('newsletters', 'members:newsletters');
-            await membersAgent
-                .get(`/api/member/`)
-                .expectStatus(204)
-                .expectEmptyBody()
-                .expect(({headers}) => {
-                    assert.equal(headers['set-cookie'], undefined);
-                });
-        });
-
-        it('sets ghost-access and ghost-access-hmac cookies to null when not authenticated but a cookie is sent', async function () {
-            // This is to ensure that the cookies are reset when a user logs out
-            configUtils.set('cacheMembersContent:enabled', true);
-            configUtils.set('cacheMembersContent:hmacSecret', crypto.randomBytes(64).toString('base64'));
-            membersAgent = await agentProvider.getMembersAPIAgent();
-            await fixtureManager.init('newsletters', 'members:newsletters');
-            // Send a ghost-access cookie but without a valid member session
-            await membersAgent.jar.setCookie('ghost-access=fake;');
-            await membersAgent
-                .get('/api/member/')
-                .expect(({headers}) => {
-                    assert(Array.isArray(headers['set-cookie']));
-                    assert(headers['set-cookie'].some(h => /ghost-access=null;/.test(h)));
-                })
-                .expectStatus(204)
-                .expectEmptyBody();
-        });
-    });
 });

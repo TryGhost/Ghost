@@ -7,7 +7,6 @@ const stripeService = require('../../services/stripe');
 const middleware = membersService.middleware;
 const shared = require('../shared');
 const errorHandler = require('@tryghost/mw-error-handler');
-const config = require('../../../shared/config');
 const {http} = require('@tryghost/api-framework');
 const api = require('../../api').endpoints;
 
@@ -51,13 +50,7 @@ module.exports = function setupMembersApp() {
     );
 
     // Get and update member data
-    // Caching members content is an experimental feature
-    const shouldCacheMembersContent = config.get('cacheMembersContent:enabled');
-    if (shouldCacheMembersContent) {
-        membersApp.get('/api/member', middleware.loadMemberSession, middleware.accessInfoSession, middleware.getMemberData);
-    } else {
-        membersApp.get('/api/member', middleware.getMemberData);
-    }
+    membersApp.get('/api/member', middleware.getMemberData);
 
     membersApp.put('/api/member', bodyParser.json({limit: '50mb'}), middleware.updateMemberData);
     membersApp.post('/api/member/email', bodyParser.json({limit: '50mb'}), (req, res, next) => membersService.api.middleware.updateEmailAddress(req, res, next));
