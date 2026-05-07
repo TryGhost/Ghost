@@ -763,7 +763,7 @@ function FilterDatePicker<T = unknown>({
     return (
         <div
             className={cn(
-                'w-36',
+                'w-32',
                 filterInputVariants({variant: context.variant, size: context.size, cursorPointer: false}),
                 className
             )}

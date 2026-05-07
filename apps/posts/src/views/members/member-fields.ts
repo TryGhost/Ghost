@@ -150,8 +150,7 @@ export const memberFields = defineFields({
         ui: {
             label: 'Last seen',
             type: 'date',
-            defaultOperator: DEFAULT_DATE_OPERATOR,
-            className: 'w-40'
+            defaultOperator: DEFAULT_DATE_OPERATOR
         },
         codec: dateCodec()
     },
@@ -160,8 +159,7 @@ export const memberFields = defineFields({
         ui: {
             label: 'Created',
             type: 'date',
-            defaultOperator: DEFAULT_DATE_OPERATOR,
-            className: 'w-40'
+            defaultOperator: DEFAULT_DATE_OPERATOR
         },
         codec: dateCodec()
     },
@@ -264,8 +262,7 @@ export const memberFields = defineFields({
         ui: {
             label: 'Paid start date',
             type: 'date',
-            defaultOperator: DEFAULT_DATE_OPERATOR,
-            className: 'w-40'
+            defaultOperator: DEFAULT_DATE_OPERATOR
         },
         metadata: {
             activeColumn: {
@@ -281,8 +278,7 @@ export const memberFields = defineFields({
         ui: {
             label: 'Next billing date',
             type: 'date',
-            defaultOperator: DEFAULT_DATE_OPERATOR,
-            className: 'w-40'
+            defaultOperator: DEFAULT_DATE_OPERATOR
         },
         metadata: {
             activeColumn: {
