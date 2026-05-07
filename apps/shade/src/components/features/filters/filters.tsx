@@ -2234,15 +2234,7 @@ export function Filters<T = unknown>({
             // For select and multiselect types, show the options popover
             if (field.type === 'select' || field.type === 'multiselect') {
                 setSelectedFieldKeyForOptions(field.key);
-
-                // When editing an existing filter (single-filter mode), pre-populate with its values
-                if (!allowMultiple && field.type === 'multiselect') {
-                    const existingFilter = filters.find(f => f.field === fieldKey);
-                    setTempSelectedValues(existingFilter ? existingFilter.values : []);
-                } else {
-                    setTempSelectedValues([]);
-                }
-
+                setTempSelectedValues([]);
                 return;
             }
 
@@ -2271,37 +2263,19 @@ export function Filters<T = unknown>({
     );
 
     const addFilterWithOption = useCallback(
-        (field: FilterFieldConfig<T>, values: unknown[], closePopover: boolean = true) => {
+        (field: FilterFieldConfig<T>, values: unknown[]) => {
             if (!field.key) {
                 return;
             }
 
-            // In single-filter mode, update the existing filter for this field if one exists
-            if (!allowMultiple) {
-                const existingFilter = filters.find(f => f.field === field.key);
-                if (existingFilter) {
-                    onChange(filters.map(f => (f.id === existingFilter.id ? {...f, values: values as T[]} : f)));
-                    setTempSelectedValues(values as T[]);
-
-                    if (closePopover) {
-                        closeFilterPopover();
-                    }
-                    return;
-                }
-            }
-
-            // Create a new filter
+            // Every commit creates a new filter. Multi-value editing of an existing
+            // filter happens through the filter row's own picker, not here.
             const defaultOperator = field.defaultOperator || (field.type === 'multiselect' ? 'is_any_of' : 'is');
             const newFilter = createFilter<T>(field.key, defaultOperator, values as T[]);
             onChange([...filters, newFilter]);
-
-            if (closePopover) {
-                closeFilterPopover();
-            } else {
-                setTempSelectedValues(values as unknown[]);
-            }
+            closeFilterPopover();
         },
-        [allowMultiple, closeFilterPopover, filters, onChange]
+        [closeFilterPopover, filters, onChange]
     );
 
     const selectableFields = useMemo(() => {
@@ -2422,25 +2396,21 @@ export function Filters<T = unknown>({
                             )}
                         >
                             {selectedFieldForOptions ? (
-                                // In multi-filter mode, override the field's type to 'select' so
-                                // the inline picker behaves as single-pick: one click commits a
-                                // new single-value filter and the picker closes. Further
-                                // multi-value editing happens through the filter row's own
-                                // picker. In single-filter mode the picker stays multi-select and
-                                // accumulates values into one filter (handled in
-                                // addFilterWithOption).
+                                // The inline "add filter" picker always commits one filter per
+                                // pick and closes — for both `select` and `multiselect` fields.
+                                // We override `multiselect` → `select` so SelectOptionsPopover
+                                // renders the single-pick UI (one click → onChange + onClose).
+                                // Multi-value editing of an existing filter happens through the
+                                // filter row's own picker, not here.
                                 <SelectOptionsPopover<T>
                                     field={
-                                        allowMultiple && selectedFieldForOptions.type === 'multiselect'
+                                        selectedFieldForOptions.type === 'multiselect'
                                             ? {...selectedFieldForOptions, type: 'select'}
                                             : selectedFieldForOptions
                                     }
                                     inline={true}
                                     values={tempSelectedValues as T[]}
-                                    onChange={(values) => {
-                                        const shouldClosePopover = allowMultiple || selectedFieldForOptions.type === 'select';
-                                        addFilterWithOption(selectedFieldForOptions, values as unknown[], shouldClosePopover);
-                                    }}
+                                    onChange={values => addFilterWithOption(selectedFieldForOptions, values as unknown[])}
                                     onClose={closeFilterPopover}
                                 />
                             ) : (
