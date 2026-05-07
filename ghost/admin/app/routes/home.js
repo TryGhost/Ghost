@@ -5,15 +5,18 @@ import {inject as service} from '@ember/service';
 export default class HomeRoute extends AuthenticatedRoute {
     @inject config;
     @service feature;
+    @service onboarding;
     @service router;
     @service session;
 
-    beforeModel(transition) {
-        super.beforeModel(...arguments);
+    async beforeModel(transition) {
+        await super.beforeModel(...arguments);
 
-        // This is needed to initialize the checklist for sites that have been already set up
         if (transition.to?.queryParams?.firstStart === 'true') {
-            return this.router.transitionTo('setup.done');
+            transition.abort();
+            await this.onboarding.startChecklist();
+            window.location.hash = '/setup/onboarding?returnTo=/analytics';
+            return;
         }
 
         if (this.session.user?.isAdmin) {
