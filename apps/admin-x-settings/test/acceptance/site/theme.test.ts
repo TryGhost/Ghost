@@ -1,5 +1,72 @@
+import JSZip from 'jszip';
+import path from 'path';
 import {expect, test} from '@playwright/test';
 import {expectExternalNavigate, globalDataRequests, limitRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
+import {readFileSync} from 'fs';
+import type {Page} from '@playwright/test';
+
+const themeEditorZip = readFileSync(path.join(__dirname, '../../utils/responses/theme.zip'));
+
+const customThemesLimitConfig = (allowlist: string[], error: string) => ({
+    ...globalDataRequests.browseConfig,
+    response: {
+        config: {
+            ...responseFixtures.config.config,
+            hostSettings: {
+                limits: {
+                    customThemes: {
+                        allowlist,
+                        error
+                    }
+                }
+            }
+        }
+    }
+});
+
+const themeDownloadRequest = (themeName: string) => ({
+    method: 'GET' as const,
+    path: `/themes/${themeName}/download/`,
+    response: '',
+    rawResponse: themeEditorZip,
+    responseHeaders: {'content-type': 'application/zip'}
+});
+
+const createArchiveBuffer = async (build: (zip: JSZip) => void) => {
+    const zip = new JSZip();
+
+    build(zip);
+
+    return Buffer.from(await zip.generateAsync({type: 'uint8array'}));
+};
+
+async function openChangeThemeModal(page: Page) {
+    await page.goto('/#/settings/theme');
+    await page.getByTestId('theme').getByRole('button', {name: 'Change theme'}).click();
+
+    return page.getByTestId('theme-modal');
+}
+
+async function openInstalledThemeEditor(page: Page, themeName: string) {
+    const modal = await openChangeThemeModal(page);
+    await modal.getByRole('tab', {name: 'Installed'}).click();
+
+    const themeListItem = modal.getByTestId('theme-list-item').filter({hasText: new RegExp(themeName, 'i')});
+    await themeListItem.getByRole('button', {name: 'Menu'}).click();
+    await page.getByTestId('popover-content').getByRole('button', {name: 'Edit code'}).click();
+
+    return page.getByTestId('theme-code-editor-modal');
+}
+
+async function openActiveThemeEditorFromSettings(page: Page) {
+    await page.goto('/#/settings');
+
+    const themeSection = page.getByTestId('theme');
+    await themeSection.getByRole('button', {name: 'Menu'}).click();
+    await page.getByTestId('popover-content').getByRole('button', {name: 'Edit code'}).click();
+
+    return page.getByTestId('theme-code-editor-modal');
+}
 
 test.describe('Theme settings', async () => {
     test('Browsing and installing default themes', async ({page}) => {
@@ -187,6 +254,86 @@ test.describe('Theme settings', async () => {
         await expect(modal.getByTestId('theme-list-item')).toHaveCount(3);
 
         expect(lastApiRequests.uploadTheme).toBeTruthy();
+    });
+
+    test('Supports editing and saving a custom theme in browser', async ({page}) => {
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes},
+            downloadTheme: themeDownloadRequest('edition'),
+            uploadTheme: {
+                method: 'POST',
+                path: '/themes/upload/',
+                response: {
+                    themes: [{
+                        name: 'edition',
+                        package: {
+                            name: 'Edition',
+                            version: '1.0.0'
+                        },
+                        active: true,
+                        templates: []
+                    }]
+                }
+            }
+        }});
+
+        const editorModal = await openInstalledThemeEditor(page, 'edition');
+        await expect(editorModal).toBeVisible();
+        await expect(editorModal).toContainText('Edit theme');
+        await expect(editorModal).toContainText('edition');
+
+        const codeEditor = editorModal.locator('.cm-content');
+        await codeEditor.click();
+        await page.keyboard.press('ControlOrMeta+A');
+        await page.keyboard.insertText('{"name":"edition","version":"1.0.0"}\n');
+
+        await editorModal.getByRole('button', {name: 'Save'}).click();
+        await page.getByTestId('theme-editor-confirm-modal').getByRole('button', {name: 'Replace theme'}).click();
+
+        await expect(page.getByTestId('toast-success')).toHaveText(/Theme saved/i);
+        expect(lastApiRequests.downloadTheme?.url).toMatch(/\/themes\/edition\/download/);
+        expect(lastApiRequests.uploadTheme?.url).toMatch(/\/themes\/upload\//);
+    });
+
+    test('Saves built-in themes as a new theme name', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes},
+            downloadTheme: themeDownloadRequest('casper'),
+            uploadTheme: {
+                method: 'POST',
+                path: '/themes/upload/',
+                response: {
+                    themes: [{
+                        name: 'casper-edited',
+                        package: {
+                            name: 'Casper Edited',
+                            version: '1.0.0'
+                        },
+                        active: false,
+                        templates: []
+                    }]
+                }
+            }
+        }});
+
+        const editorModal = await openInstalledThemeEditor(page, 'casper');
+        await expect(editorModal).toBeVisible();
+
+        const codeEditor = editorModal.locator('.cm-content');
+        await codeEditor.click();
+        await page.keyboard.press('ControlOrMeta+A');
+        await page.keyboard.insertText('{"name":"casper","version":"1.0.0"}\n');
+
+        await editorModal.getByRole('button', {name: 'Save'}).click();
+        const inputModal = page.getByTestId('theme-editor-input-modal');
+        await inputModal.getByLabel('Theme name').fill('casper-edited');
+        await inputModal.getByRole('button', {name: 'Continue'}).click();
+        await page.getByTestId('theme-editor-confirm-modal').getByRole('button', {name: 'Save theme'}).click();
+
+        await expect(page).toHaveURL(/#\/settings\/theme\/edit\/casper-edited/);
+        await expect(editorModal).toContainText('casper-edited');
     });
 
     test('Limits uploading new themes and redirect to /pro', async ({page}) => {
@@ -396,22 +543,7 @@ test.describe('Theme settings', async () => {
             ...globalDataRequests,
             ...limitRequests,
             browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes},
-            browseConfig: {
-                ...globalDataRequests.browseConfig,
-                response: {
-                    config: {
-                        ...responseFixtures.config.config,
-                        hostSettings: {
-                            limits: {
-                                customThemes: {
-                                    allowlist: ['casper'],
-                                    error: 'Upgrade to use custom themes'
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            browseConfig: customThemesLimitConfig(['casper'], 'Upgrade to use custom themes')
         }});
 
         // Navigate directly to the change theme route
@@ -426,6 +558,117 @@ test.describe('Theme settings', async () => {
 
         // Theme modal should not be visible
         await expect(page.getByTestId('theme-modal')).not.toBeVisible();
+    });
+
+    test('Opens the editor from the active theme overflow menu and returns to settings on close', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes},
+            downloadTheme: themeDownloadRequest('edition')
+        }});
+
+        const editorModal = await openActiveThemeEditorFromSettings(page);
+
+        await expect(editorModal).toBeVisible();
+        await expect(page).toHaveURL(/#\/settings\/theme\/edit\/edition/);
+
+        await editorModal.getByRole('button', {name: 'Close'}).click();
+
+        await expect(page).toHaveURL(/#\/settings$/);
+        await expect(page.getByTestId('theme')).toBeVisible();
+    });
+
+    test('Prevents direct access to theme editor route when editing is limited', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            ...limitRequests,
+            browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes},
+            browseConfig: customThemesLimitConfig(['casper'], 'Upgrade to use custom themes')
+        }});
+
+        await page.goto('/#/settings/theme/edit/edition');
+
+        await page.waitForSelector('[data-testid="limit-modal"]', {timeout: 10000});
+
+        await expect(page.getByTestId('limit-modal')).toHaveText(/Upgrade to use custom themes/);
+        await expect(page.getByTestId('theme-code-editor-modal')).not.toBeVisible();
+    });
+
+    test('Redirects malformed theme editor routes back to theme settings', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes}
+        }});
+
+        const pageErrors: string[] = [];
+        page.on('pageerror', error => pageErrors.push(error.message));
+
+        await page.goto('/#/settings/theme/edit/%E0%A4%A');
+
+        await expect(page).toHaveURL(/#\/settings\/theme$/);
+        await expect(page.getByTestId('theme')).toBeVisible();
+        await expect(page.getByTestId('theme-code-editor-modal')).not.toBeVisible();
+        expect(pageErrors).toEqual([]);
+    });
+
+    test('Redirects encoded-slash theme editor routes back to theme settings', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes}
+        }});
+
+        const pageErrors: string[] = [];
+        page.on('pageerror', error => pageErrors.push(error.message));
+
+        await page.goto('/#/settings/theme/edit/%2Fedition');
+
+        await expect(page).toHaveURL(/#\/settings\/theme$/);
+        await expect(page.getByTestId('theme')).toBeVisible();
+        await expect(page.getByTestId('theme-code-editor-modal')).not.toBeVisible();
+        expect(pageErrors).toEqual([]);
+    });
+
+    test('Allows selecting a non-editable file and shows the browser-edit message', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes},
+            downloadTheme: themeDownloadRequest('edition')
+        }});
+
+        const editorModal = await openInstalledThemeEditor(page, 'edition');
+
+        await editorModal.getByRole('button', {name: '.DS_Store'}).click();
+
+        await expect(editorModal).toContainText('This file cannot be edited in the browser.');
+        await expect(editorModal.locator('.cm-editor')).toHaveCount(0);
+    });
+
+    test('Shows a controlled error when the downloaded theme archive exceeds editor limits', async ({page}) => {
+        const oversizedThemeZip = await createArchiveBuffer((zip) => {
+            for (let index = 0; index <= 1000; index += 1) {
+                zip.file(`theme/partials/file-${index}.hbs`, `{{! file ${index} }}`);
+            }
+        });
+
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes},
+            downloadTheme: {
+                method: 'GET',
+                path: '/themes/edition/download/',
+                response: '',
+                rawResponse: oversizedThemeZip,
+                responseHeaders: {'content-type': 'application/zip'}
+            }
+        }});
+
+        const editorModal = await openInstalledThemeEditor(page, 'edition');
+
+        await expect(editorModal).toContainText('This theme archive contains too many files for the browser editor');
+        await expect(editorModal.getByRole('button', {name: 'Save'})).toBeEnabled();
+        await editorModal.getByRole('button', {name: 'Save'}).click();
+        await expect(page.getByTestId('toast-info')).toHaveText(/No changes to save/i);
+        await expect(editorModal).toContainText('Select a file from the tree to start editing.');
     });
 
     test('Theme install route works without limits', async ({page}) => {
