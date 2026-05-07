@@ -250,7 +250,7 @@ describe('Private Blogging', function () {
 
             it('doLoginToPrivateSite should return next if stored access code is empty', function () {
                 settingsStub.withArgs('password').returns('');
-                req.body = {password: ''};
+                req.body = {password: 'rightpassword'};
 
                 privateBlogging.doLoginToPrivateSite(req, res, next);
                 assertExists(res.error);
