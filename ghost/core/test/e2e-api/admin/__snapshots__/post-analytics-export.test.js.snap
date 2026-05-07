@@ -3,13 +3,11 @@
 exports[`Post Analytics Export Default settings (all features enabled) Exports CSV with full analytics data 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
   "content-disposition": StringMatching /\\^Attachment; filename="post-analytics\\.\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}\\.csv"\\$/,
-  "content-length": "3738",
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -38,13 +36,11 @@ Object {
 exports[`Post Analytics Export Settings variations Hides clicks column when email_track_clicks disabled 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
   "content-disposition": StringMatching /\\^Attachment; filename="post-analytics\\.\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}\\.csv"\\$/,
-  "content-length": "3714",
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -73,13 +69,11 @@ Object {
 exports[`Post Analytics Export Settings variations Hides email columns when members disabled 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
   "content-disposition": StringMatching /\\^Attachment; filename="post-analytics\\.\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}\\.csv"\\$/,
-  "content-length": "3432",
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -108,13 +102,11 @@ Object {
 exports[`Post Analytics Export Settings variations Hides feedback columns when no newsletter has feedback enabled 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
   "content-disposition": StringMatching /\\^Attachment; filename="post-analytics\\.\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}\\.csv"\\$/,
-  "content-length": "3656",
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -143,13 +135,11 @@ Object {
 exports[`Post Analytics Export Settings variations Hides opens column when email_track_opens disabled 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
   "content-disposition": StringMatching /\\^Attachment; filename="post-analytics\\.\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}\\.csv"\\$/,
-  "content-length": "3713",
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -178,13 +168,11 @@ Object {
 exports[`Post Analytics Export Settings variations Hides paid_conversions when paid members disabled 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
   "content-disposition": StringMatching /\\^Attachment; filename="post-analytics\\.\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}\\.csv"\\$/,
-  "content-length": "3691",
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -213,13 +201,11 @@ Object {
 exports[`Post Analytics Export Settings variations Hides signups and paid_conversions when members_track_sources disabled 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
   "content-disposition": StringMatching /\\^Attachment; filename="post-analytics\\.\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}\\.csv"\\$/,
-  "content-length": "3653",
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;

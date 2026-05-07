@@ -185,6 +185,35 @@ describe('Unit: models/post', function () {
             });
         });
 
+        it('adds a stable order field to explicit ordered pages when requested', function () {
+            const queries = [];
+            tracker.install();
+
+            tracker.on('query', (query) => {
+                queries.push(query);
+                query.response([]);
+            });
+
+            return models.Post.findPage({
+                filter: 'published_at:>\'2015-07-20\'',
+                order: 'published_at desc',
+                limit: 1,
+                skipPagination: true,
+                stableOrder: true,
+                withRelated: ['tags']
+            }).then((result) => {
+                assert.equal(queries.length, 1);
+                assert.equal(queries[0].sql, 'select `posts`.* from `posts` where (`posts`.`published_at` > ? and (`posts`.`type` = ? and `posts`.`status` = ?)) order by `posts`.`published_at` DESC, `posts`.`id` DESC limit ?');
+                assert.deepEqual(queries[0].bindings, [
+                    '2015-07-20',
+                    'post',
+                    'published',
+                    1
+                ]);
+                assert.deepEqual(result.meta, {});
+            });
+        });
+
         describe('primary_tag/primary_author', function () {
             it('generates correct query for - filter: primary_tag:photo, with related: tags', function () {
                 const queries = [];

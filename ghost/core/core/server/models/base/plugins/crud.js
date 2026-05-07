@@ -46,6 +46,37 @@ const applyManualPaginationWindow = (itemCollection, options) => {
     options.limit = 'all';
 };
 
+const getStableOrderFields = (model) => {
+    const field = model.prototype.idAttribute || 'id';
+    return [
+        field,
+        `${model.prototype.tableName}.${field}`
+    ];
+};
+
+const hasStableOrderField = (order, fields) => {
+    return String(order)
+        .split(',')
+        .map(orderPart => orderPart.trim().toLowerCase())
+        .some((orderPart) => {
+            const [orderedField] = orderPart.split(/\s+/);
+            return fields.includes(orderedField);
+        });
+};
+
+const applyStableOrder = (model, order) => {
+    if (!order) {
+        return order;
+    }
+
+    const fields = getStableOrderFields(model);
+    if (hasStableOrderField(order, fields)) {
+        return order;
+    }
+
+    return `${order}, ${fields[0]} desc`;
+};
+
 const buildPaginationMeta = (skipPagination, pagination) => {
     return skipPagination ? {} : {pagination};
 };
@@ -114,7 +145,9 @@ module.exports = function (Bookshelf) {
         findPage: async function findPage(unfilteredOptions) {
             const options = this.filterOptions(unfilteredOptions, 'findPage');
             const skipPagination = options.skipPagination === true;
+            const stableOrder = options.stableOrder === true;
             delete options.skipPagination;
+            delete options.stableOrder;
 
             const itemCollection = this.getFilteredCollection(options);
             const requestedColumns = options.columns;
@@ -132,6 +165,10 @@ module.exports = function (Bookshelf) {
             }
 
             if (options.order) {
+                if (stableOrder) {
+                    options.order = applyStableOrder(this, options.order);
+                }
+
                 const {order, orderRaw, eagerLoad} = itemCollection.parseOrderOption(options.order, options.withRelated);
                 options.orderRaw = orderRaw;
                 options.order = order;

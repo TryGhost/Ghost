@@ -47,7 +47,7 @@ module.exports = function (Bookshelf) {
             case 'findAll':
                 return [...baseOptions, ...extraOptions, 'filter', 'columns', 'mongoTransformer'];
             case 'findPage':
-                return [...baseOptions, ...extraOptions, 'filter', 'order', 'autoOrder', 'page', 'limit', 'columns', 'mongoTransformer', 'skipPagination'];
+                return [...baseOptions, ...extraOptions, 'filter', 'order', 'autoOrder', 'page', 'limit', 'columns', 'mongoTransformer', 'skipPagination', 'stableOrder'];
             default:
                 return [...baseOptions, ...extraOptions];
             }
