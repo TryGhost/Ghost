@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/signup-form",
-  "version": "0.3.21",
+  "version": "0.3.22",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -48,8 +48,6 @@
     "autoprefixer": "10.4.21",
     "concurrently": "8.2.2",
     "eslint": "catalog:",
-    "eslint-plugin-react-hooks": "4.6.2",
-    "eslint-plugin-react-refresh": "0.4.24",
     "eslint-plugin-tailwindcss": "3.18.2",
     "jsdom": "28.1.0",
     "postcss": "8.5.6",
