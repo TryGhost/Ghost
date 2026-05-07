@@ -1,6 +1,18 @@
 const nql = require('@tryghost/nql');
 const logging = require('@tryghost/logging');
 
+const EXPORT_WITH_RELATED = [
+    'tiers',
+    'tags',
+    'authors',
+    'count.signups',
+    'count.paid_conversions',
+    'count.clicks',
+    'count.positive_feedback',
+    'count.negative_feedback',
+    'email'
+];
+
 class PostsExporter {
     #models;
     #getPostUrl;
@@ -37,31 +49,58 @@ class PostsExporter {
             filter: filter ?? 'status:published,status:sent',
             order,
             limit,
-            withRelated: [
-                'tiers',
-                'tags',
-                'authors',
-                'count.signups',
-                'count.paid_conversions',
-                'count.clicks',
-                'count.positive_feedback',
-                'count.negative_feedback',
-                'email'
-            ]
+            withRelated: EXPORT_WITH_RELATED
         });
 
-        const newsletters = (await this.#models.Newsletter.findAll()).models;
-        const labels = (await this.#models.Label.findAll()).models;
-        const tiers = (await this.#models.Product.findAll()).models;
+        const exportContext = await this.#getExportContext();
+        return this.#mapPosts(posts.data, exportContext);
+    }
+
+    async #getExportContext() {
+        const [
+            newsletters,
+            labels,
+            tiers
+        ] = await Promise.all([
+            this.#models.Newsletter.findAll(),
+            this.#models.Label.findAll(),
+            this.#models.Product.findAll()
+        ]);
 
         const membersEnabled = this.#settingsHelpers.isMembersEnabled();
         const membersTrackSources = membersEnabled && this.#settingsCache.get('members_track_sources');
         const paidMembersEnabled = membersEnabled && this.#settingsHelpers.arePaidMembersEnabled();
         const trackOpens = this.#settingsCache.get('email_track_opens');
         const trackClicks = this.#settingsCache.get('email_track_clicks');
-        const hasNewslettersWithFeedback = !!newsletters.find(newsletter => newsletter.get('feedback_enabled'));
+        const hasNewslettersWithFeedback = !!newsletters.models.find(newsletter => newsletter.get('feedback_enabled'));
 
-        const mapped = posts.data.map((post) => {
+        return {
+            newsletters: newsletters.models,
+            labels: labels.models,
+            tiers: tiers.models,
+            membersEnabled,
+            membersTrackSources,
+            paidMembersEnabled,
+            trackOpens,
+            trackClicks,
+            hasNewslettersWithFeedback
+        };
+    }
+
+    #mapPosts(posts, exportContext) {
+        const {
+            newsletters,
+            labels,
+            tiers,
+            membersEnabled,
+            membersTrackSources,
+            paidMembersEnabled,
+            trackOpens,
+            trackClicks,
+            hasNewslettersWithFeedback
+        } = exportContext;
+
+        const mapped = posts.map((post) => {
             let email = post.related('email');
 
             // Weird bookshelf thing fix
