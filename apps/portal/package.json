@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/portal",
-  "version": "2.68.30",
+  "version": "2.68.31",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -115,6 +115,8 @@
     "@testing-library/react": "12.1.5",
     "@testing-library/user-event": "14.6.1",
     "@tryghost/i18n": "workspace:*",
+    "@typescript-eslint/eslint-plugin": "8.49.0",
+    "@typescript-eslint/parser": "8.49.0",
     "@vitejs/plugin-react": "4.7.0",
     "@vitest/coverage-v8": "3.2.4",
     "@vitest/ui": "3.2.4",
