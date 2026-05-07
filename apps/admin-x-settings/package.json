@@ -74,15 +74,12 @@
     "@types/react": "18.3.28",
     "@types/react-dom": "18.3.7",
     "@types/validator": "13.15.10",
-    "@vitejs/plugin-react": "4.7.0",
     "eslint": "catalog:",
     "eslint-plugin-react-hooks": "4.6.2",
     "eslint-plugin-react-refresh": "0.4.24",
     "eslint-plugin-tailwindcss": "4.0.0-beta.0",
     "tailwindcss": "^4.2.2",
     "vite": "7.3.2",
-    "vite-plugin-css-injected-by-js": "3.5.2",
-    "vite-plugin-svgr": "4.5.0",
     "vitest": "4.1.2"
   },
   "nx": {
