@@ -1,7 +1,7 @@
 import {useMemo, useState} from 'react';
 import {act, fireEvent, render, screen, waitFor} from '../../utils/test-utils';
 import {afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
-import {createFilter, FilterFieldConfig, Filters, ValueSource} from '../../../../src/components/features/filters/filters';
+import {createFilter, Filter, FilterFieldConfig, Filters, ValueSource} from '../../../../src/components/features/filters/filters';
 
 type TestOption = {
     value: string;
@@ -212,5 +212,90 @@ describe('Filters ValueSource', () => {
         rerender(<StaticLoadingFilters isLoading={true} options={ALL_OPTIONS} />);
         expect(await screen.findByPlaceholderText('Search status...')).toBeDefined();
         expect(document.querySelector('.animate-spin')).toBeTruthy();
+    });
+});
+
+describe('Filters allowMultiple multiselect', () => {
+    beforeAll(() => {
+        global.ResizeObserver = class {
+            observe() {
+                return undefined;
+            }
+
+            unobserve() {
+                return undefined;
+            }
+
+            disconnect() {
+                return undefined;
+            }
+        } as unknown as typeof ResizeObserver;
+        HTMLElement.prototype.scrollIntoView = vi.fn();
+    });
+
+    function MultiselectTestFilters({initialFilters, onChangeSpy}: Readonly<{
+        initialFilters: Filter<string>[];
+        // eslint-disable-next-line no-unused-vars
+        onChangeSpy: (filters: Filter<string>[]) => void;
+    }>) {
+        const [filters, setFilters] = useState<Filter<string>[]>(initialFilters);
+        const fields = useMemo<FilterFieldConfig<string>[]>(() => ([
+            {
+                key: 'label',
+                label: 'Label',
+                type: 'multiselect',
+                searchable: false,
+                operators: [{value: 'is-any', label: 'is any of'}],
+                defaultOperator: 'is-any',
+                options: [
+                    {value: 'vip', label: 'VIP'},
+                    {value: 'premium', label: 'Premium'},
+                    {value: 'gold', label: 'Gold'}
+                ]
+            }
+        ]), []);
+
+        return (
+            <Filters
+                addButtonText="Add filter"
+                allowMultiple={true}
+                fields={fields}
+                filters={filters}
+                showSearchInput={false}
+                onChange={(next) => {
+                    onChangeSpy(next);
+                    setFilters(next);
+                }}
+            />
+        );
+    }
+
+    it('commits a new single-value label filter and closes the picker after one selection', async () => {
+        const onChangeSpy = vi.fn();
+        const initial = [createFilter<string>('label', 'is-any', ['vip'])];
+
+        render(<MultiselectTestFilters initialFilters={initial} onChangeSpy={onChangeSpy} />);
+
+        fireEvent.click(screen.getByRole('button', {name: 'Add filter'}));
+
+        const labelMenuItem = await screen.findByRole('option', {name: 'Label'});
+        fireEvent.click(labelMenuItem);
+
+        const premiumOption = await screen.findByRole('option', {name: 'Premium'});
+        fireEvent.click(premiumOption);
+
+        await waitFor(() => {
+            const lastCall = onChangeSpy.mock.calls.at(-1);
+            expect(lastCall).toBeDefined();
+            const finalFilters = lastCall![0] as Filter<string>[];
+            expect(finalFilters).toHaveLength(2);
+            expect(finalFilters[0].field).toBe('label');
+            expect(finalFilters[0].values).toEqual(['vip']);
+            expect(finalFilters[1].field).toBe('label');
+            expect(finalFilters[1].values).toEqual(['premium']);
+        });
+
+        // Picker should have closed — no more option role elements visible.
+        expect(screen.queryByRole('option', {name: 'Gold'})).toBeNull();
     });
 });
