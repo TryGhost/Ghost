@@ -51,6 +51,22 @@ const generateItem = function generateItem(post) {
         htmlContent('img').attr('alt', post.title);
     }
 
+    // Tidy up cards
+    htmlContent('.kg-card').each(function (index, card) {
+        // Bookmark card
+        htmlContent(card).find('.kg-bookmark-thumbnail, .kg-bookmark-icon, .kg-bookmark-metadata').remove();
+        htmlContent(card).find('.kg-bookmark-description').wrap('<small></small>');
+
+        // Video card
+        htmlContent(card).find('.kg-video-overlay, .kg-video-player-container').remove();
+        const videoPoster = htmlContent(card).attr('data-kg-custom-thumbnail') || htmlContent(card).attr('data-kg-thumbnail');
+        htmlContent(card).find('.kg-video-card video').attr('poster', videoPoster);
+
+        // Audio card
+        htmlContent(card).find('.kg-audio-thumbnail, .kg-audio-player, .kg-audio-title').remove();
+        htmlContent(card).find('.kg-audio-card audio').attr('controls', '');
+    });
+
     item.custom_elements.push({
         'content:encoded': {
             _cdata: htmlContent.html()
