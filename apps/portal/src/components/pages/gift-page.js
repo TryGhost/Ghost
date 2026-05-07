@@ -610,34 +610,20 @@ function GiftPriceSwitch({selectedInterval, setSelectedInterval}) {
     );
 }
 
-function getTierPriceLabel(product, selectedInterval) {
-    const activePrice = selectedInterval === 'month' ? product.monthlyPrice : product.yearlyPrice;
-
-    if (!activePrice) {
+export function formatGiftValue({amount, currency} = {}) {
+    if (amount === null || amount === undefined || !currency) {
         return '';
     }
+    return `${getCurrencySymbol(currency)}${formatNumber(getStripeAmount(amount))}`;
+}
 
-    const currencySymbol = getCurrencySymbol(activePrice.currency);
-    return `${currencySymbol}${formatNumber(getStripeAmount(activePrice.amount))}`;
+function getTierPriceLabel(product, selectedInterval) {
+    const activePrice = selectedInterval === 'month' ? product.monthlyPrice : product.yearlyPrice;
+    return formatGiftValue(activePrice);
 }
 
 function getDurationLabel(selectedInterval) {
     return selectedInterval === 'month' ? '1 month' : '1 year';
-}
-
-const GIFT_EXPIRY_DAYS = 365;
-
-export function getPreviewGiftExpiresAt(fromDate = new Date()) {
-    const date = new Date(fromDate);
-    date.setDate(date.getDate() + GIFT_EXPIRY_DAYS);
-    return date;
-}
-
-export function formatGiftExpiresAt(date) {
-    const d = date instanceof Date ? date : new Date(date);
-    const day = d.getDate();
-    const month = d.toLocaleDateString('en-US', {month: 'short'});
-    return `${day} ${month}, ${d.getFullYear()}`;
 }
 
 const GiftPage = () => {
@@ -844,8 +830,8 @@ const GiftPage = () => {
                                     </div>
                                     <div className='gh-portal-gift-checkout-card-details'>
                                         <div className='gh-portal-gift-checkout-card-detail'>
-                                            <div className='gh-portal-gift-checkout-card-detail-label'>Expires</div>
-                                            <div className='gh-portal-gift-checkout-card-detail-value'>{formatGiftExpiresAt(getPreviewGiftExpiresAt())}</div>
+                                            <div className='gh-portal-gift-checkout-card-detail-label'>Gift value</div>
+                                            <div className='gh-portal-gift-checkout-card-detail-value'>{getTierPriceLabel(activeProduct, activeInterval)}</div>
                                         </div>
                                     </div>
                                     <div className='gh-portal-gift-checkout-card-site'>

@@ -9,7 +9,7 @@ import {getGiftDurationLabel, getGiftRedemptionErrorMessage} from '../../utils/g
 import {t} from '../../utils/i18n';
 import {hasGiftSubscriptions, removePortalLinkFromUrl} from '../../utils/helpers';
 import useCardTilt from '../../utils/use-card-tilt';
-import {formatGiftExpiresAt, getPreviewGiftExpiresAt} from './gift-page';
+import {formatGiftValue} from './gift-page';
 
 export const GiftRedemptionStyles = `
 .gh-portal-gift-redemption-form {
@@ -217,8 +217,8 @@ const GiftRedemptionPage = () => {
                                             )}
                                             <div className='gh-portal-gift-checkout-card-detail'>
                                                 {/* eslint-disable-next-line i18next/no-literal-string -- copy not yet finalised */}
-                                                <div className='gh-portal-gift-checkout-card-detail-label'>Expires</div>
-                                                <div className='gh-portal-gift-checkout-card-detail-value'>{formatGiftExpiresAt(gift.expires_at || getPreviewGiftExpiresAt())}</div>
+                                                <div className='gh-portal-gift-checkout-card-detail-label'>Gift value</div>
+                                                <div className='gh-portal-gift-checkout-card-detail-value'>{formatGiftValue(gift)}</div>
                                             </div>
                                         </div>
                                         <div className='gh-portal-gift-checkout-card-site'>
