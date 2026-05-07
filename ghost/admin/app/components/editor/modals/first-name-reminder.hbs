@@ -1,0 +1,17 @@
+<div class="modal-content gh-first-name-reminder" data-test-modal="first-name-reminder">
+    <header class="modal-header">
+        <h1>Quick check before publishing</h1>
+    </header>
+    <button type="button" class="close" title="Close" {{on "click" @close}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    <div class="modal-body">
+        <p>
+            <code>{first_name}</code> was found in your post, but it only works inside an Email content card.
+        </p>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="gh-btn" {{on "click" (fn @close true)}}><span>Continue to publish</span></button>
+        <button type="button" class="gh-btn gh-btn-black" {{on "click" @close}}><span>Back to editor</span></button>
+    </div>
+</div>
