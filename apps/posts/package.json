@@ -58,6 +58,7 @@
         "@tryghost/admin-x-framework": "workspace:*",
         "@tryghost/nql-lang": "0.6.4",
         "@tryghost/shade": "workspace:*",
+        "@xyflow/react": "12.8.6",
         "i18n-iso-countries": "7.14.0",
         "moment-timezone": "0.5.45",
         "papaparse": "5.5.3",
