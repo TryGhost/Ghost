@@ -9,6 +9,7 @@ import {getGiftDurationLabel, getGiftRedemptionErrorMessage} from '../../utils/g
 import {t} from '../../utils/i18n';
 import {hasGiftSubscriptions, removePortalLinkFromUrl} from '../../utils/helpers';
 import useCardTilt from '../../utils/use-card-tilt';
+import {formatGiftExpiresAt, getPreviewGiftExpiresAt} from './gift-page';
 
 export const GiftRedemptionStyles = `
 .gh-portal-gift-redemption-form {
@@ -200,16 +201,30 @@ const GiftRedemptionPage = () => {
                             <div className='gh-portal-gift-checkout-card-stack' data-revealing={showDetails}>
                                 <div className='gh-portal-gift-checkout-card-frame'>
                                     <div ref={cardRef} className='gh-portal-gift-checkout-card'>
+                                        <div className='gh-portal-gift-checkout-card-meta'>
+                                            <div className='gh-portal-gift-checkout-card-duration'>{getGiftDurationLabel(gift)}</div>
+                                            {/* eslint-disable-next-line i18next/no-literal-string -- copy not yet finalised */}
+                                            <div className='gh-portal-gift-checkout-card-tier'>{`${gift.tier.name} membership`}</div>
+                                        </div>
+                                        <div className='gh-portal-gift-checkout-card-details'>
+                                            {name.trim() && (
+                                                <div className='gh-portal-gift-checkout-card-detail'>
+                                                    {/* eslint-disable-next-line i18next/no-literal-string -- copy not yet finalised */}
+                                                    <div className='gh-portal-gift-checkout-card-detail-label'>Name</div>
+                                                    <div className='gh-portal-gift-checkout-card-detail-value'>{name.trim()}</div>
+                                                </div>
+                                            )}
+                                            <div className='gh-portal-gift-checkout-card-detail'>
+                                                {/* eslint-disable-next-line i18next/no-literal-string -- copy not yet finalised */}
+                                                <div className='gh-portal-gift-checkout-card-detail-label'>Expires</div>
+                                                <div className='gh-portal-gift-checkout-card-detail-value'>{formatGiftExpiresAt(gift.expires_at || getPreviewGiftExpiresAt())}</div>
+                                            </div>
+                                        </div>
                                         <div className='gh-portal-gift-checkout-card-site'>
                                             {siteIcon && (
                                                 <img className='gh-portal-gift-checkout-card-site-icon' src={siteIcon} alt='' />
                                             )}
                                             <span className='gh-portal-gift-checkout-card-site-name'>{siteTitle}</span>
-                                        </div>
-                                        <div className='gh-portal-gift-checkout-card-meta'>
-                                            <div className='gh-portal-gift-checkout-card-duration'>{getGiftDurationLabel(gift)}</div>
-                                            {/* eslint-disable-next-line i18next/no-literal-string -- copy not yet finalised */}
-                                            <div className='gh-portal-gift-checkout-card-tier'>{`${gift.tier.name} membership`}</div>
                                         </div>
                                     </div>
                                 </div>
