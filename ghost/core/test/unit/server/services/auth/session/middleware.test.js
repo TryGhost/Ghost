@@ -1,297 +1,262 @@
 const assert = require('node:assert/strict');
-const sessionMiddleware = require('../../../../../../core/server/services/auth').session;
-const SessionMiddlware = require('../../../../../../core/server/services/auth/session/middleware');
-const models = require('../../../../../../core/server/models');
+const express = require('express');
+const request = require('supertest');
 const sinon = require('sinon');
-const labs = require('../../../../../../core/shared/labs');
+
+const sessionMiddleware = require('../../../../../../core/server/services/auth').session;
+const SessionMiddleware = require('../../../../../../core/server/services/auth/session/middleware');
+const models = require('../../../../../../core/server/models');
 
 describe('Session Service', function () {
     afterEach(function () {
         sinon.restore();
     });
 
-    const fakeReq = function fakeReq() {
-        return {
-            session: {},
-            user: null,
-            body: {},
-            get() {}
-        };
-    };
+    const createApp = function createApp(middleware, options = {}) {
+        const app = express();
+        app.set('trust proxy', true);
+        app.use(express.json());
+        app.use(function setupRequest(req, res, next) {
+            req.session = options.session || {};
+            req.user = options.user || null;
+            next();
+        });
+        app.post('/', middleware);
+        app.use(function errorHandler(err, _req, res, next) {
+            if (res.headersSent) {
+                return next(err);
+            }
 
-    const fakeRes = function fakeRes() {
-        return {
-            sendStatus() {}
-        };
+            res.status(err.statusCode || err.status || 500).json({
+                code: err.code,
+                errorType: err.errorType,
+                message: err.message,
+                statusCode: err.statusCode
+            });
+        });
+
+        return app;
     };
 
     describe('createSession', function () {
-        it('sets req.session.origin from the Referer header', function (done) {
-            const req = fakeReq();
-            const res = fakeRes();
+        it('sets req.session.origin from the Referer header', async function () {
+            const session = {};
+            const user = models.User.forge({id: 23});
+            const app = createApp(sessionMiddleware.createSession, {session, user});
 
-            sinon.stub(req, 'get')
-                .withArgs('user-agent').returns('')
-                .withArgs('origin').returns('')
-                .withArgs('referrer').returns('http://ghost.org/path');
+            await request(app)
+                .post('/')
+                .set('Referer', 'http://ghost.org/path')
+                .set('X-Forwarded-For', '127.0.0.1')
+                .expect(201);
 
-            req.ip = '127.0.0.1';
-            req.user = models.User.forge({id: 23});
-
-            sinon.stub(res, 'sendStatus')
-                .callsFake(function () {
-                    assert.equal(req.session.origin, 'http://ghost.org');
-                    done();
-                });
-
-            sessionMiddleware.createSession(req, res);
+            assert.equal(session.origin, 'http://ghost.org');
         });
 
-        it('sets req.session.user_id,origin,user_agent,ip and calls sendStatus with 201 if the check succeeds', function (done) {
-            const req = fakeReq();
-            const res = fakeRes();
+        it('sets req.session.user_id,origin,user_agent,ip and returns 201 if the check succeeds', async function () {
+            const session = {};
+            const user = models.User.forge({id: 23});
+            const app = createApp(sessionMiddleware.createSession, {session, user});
 
-            sinon.stub(req, 'get')
-                .withArgs('origin').returns('http://host.tld')
-                .withArgs('user-agent').returns('bububang');
+            await request(app)
+                .post('/')
+                .set('Origin', 'http://host.tld')
+                .set('User-Agent', 'bububang')
+                .set('X-Forwarded-For', '127.0.0.1')
+                .expect(201);
 
-            req.ip = '127.0.0.1';
-            req.user = models.User.forge({id: 23});
-
-            sinon.stub(res, 'sendStatus')
-                .callsFake(function (statusCode) {
-                    assert.equal(req.session.user_id, 23);
-                    assert.equal(req.session.origin, 'http://host.tld');
-                    assert.equal(req.session.user_agent, 'bububang');
-                    assert.equal(req.session.ip, '127.0.0.1');
-                    assert.equal(statusCode, 201);
-                    done();
-                });
-
-            sessionMiddleware.createSession(req, res);
+            assert.equal(session.user_id, 23);
+            assert.equal(session.origin, 'http://host.tld');
+            assert.equal(session.user_agent, 'bububang');
+            assert.equal(session.ip, '127.0.0.1');
         });
 
         it('errors with a 403 when signing in while not verified', async function () {
-            sinon.stub(labs, 'isSet').returns(true);
-            const req = fakeReq();
-            const res = fakeRes();
-            const next = sinon.stub();
-            sinon.stub(req, 'get')
-                .withArgs('origin').returns('http://host.tld')
-                .withArgs('user-agent').returns('bububang');
-
-            req.ip = '127.0.0.1';
-            req.user = models.User.forge({id: 23});
-
-            const middleware = SessionMiddlware({
+            const user = models.User.forge({id: 23});
+            const createSessionForUserStub = sinon.stub().resolves();
+            const isVerifiedSessionStub = sinon.stub().resolves(false);
+            const sendAuthCodeToUserStub = sinon.stub().resolves();
+            const middleware = SessionMiddleware({
                 sessionService: {
-                    createSessionForUser: function () {
-                        return Promise.resolve();
-                    },
-                    isVerifiedSession: function () {
-                        return Promise.resolve(false);
-                    },
-                    sendAuthCodeToUser: function () {
-                        return Promise.resolve();
-                    },
+                    createSessionForUser: createSessionForUserStub,
+                    isVerifiedSession: isVerifiedSessionStub,
+                    sendAuthCodeToUser: sendAuthCodeToUserStub,
                     isVerificationRequired: function () {
                         return false;
                     }
                 }
             });
+            const app = createApp(middleware.createSession, {user});
 
-            await middleware.createSession(req, res, next);
-            sinon.assert.calledOnce(next);
-            assert.equal(next.args[0][0].statusCode, 403);
-            assert.equal(next.args[0][0].code, '2FA_NEW_DEVICE_DETECTED');
+            const {body} = await request(app)
+                .post('/')
+                .set('Origin', 'http://host.tld')
+                .set('User-Agent', 'bububang')
+                .set('X-Forwarded-For', '127.0.0.1')
+                .expect(403);
+
+            sinon.assert.calledOnce(createSessionForUserStub);
+            sinon.assert.calledOnce(isVerifiedSessionStub);
+            sinon.assert.calledOnce(sendAuthCodeToUserStub);
+            assert.equal(createSessionForUserStub.firstCall.args[2], user);
+            assert.equal(body.statusCode, 403);
+            assert.equal(body.code, '2FA_NEW_DEVICE_DETECTED');
         });
 
         it('errors with a 403 when require_email_mfa is true', async function () {
-            sinon.stub(labs, 'isSet').returns(true);
-            const req = fakeReq();
-            const res = fakeRes();
-            const next = sinon.stub();
-
-            sinon.stub(req, 'get')
-                .withArgs('origin').returns('http://host.tld')
-                .withArgs('user-agent').returns('bububang');
-
-            req.ip = '127.0.0.1';
-            req.user = models.User.forge({id: 23});
-
-            const middleware = SessionMiddlware({
+            const user = models.User.forge({id: 23});
+            const createSessionForUserStub = sinon.stub().resolves();
+            const isVerifiedSessionStub = sinon.stub().resolves(false);
+            const sendAuthCodeToUserStub = sinon.stub().resolves();
+            const middleware = SessionMiddleware({
                 sessionService: {
-                    createSessionForUser: function () {
-                        return Promise.resolve();
-                    },
-                    isVerifiedSession: function () {
-                        return Promise.resolve(false);
-                    },
-                    sendAuthCodeToUser: function () {
-                        return Promise.resolve();
-                    },
+                    createSessionForUser: createSessionForUserStub,
+                    isVerifiedSession: isVerifiedSessionStub,
+                    sendAuthCodeToUser: sendAuthCodeToUserStub,
                     isVerificationRequired: function () {
                         return true;
                     }
                 }
             });
+            const app = createApp(middleware.createSession, {user});
 
-            await middleware.createSession(req, res, next);
-            sinon.assert.calledOnce(next);
-            assert.equal(next.args[0][0].statusCode, 403);
-            assert.equal(next.args[0][0].code, '2FA_TOKEN_REQUIRED');
+            const {body} = await request(app)
+                .post('/')
+                .set('Origin', 'http://host.tld')
+                .set('User-Agent', 'bububang')
+                .set('X-Forwarded-For', '127.0.0.1')
+                .expect(403);
+
+            sinon.assert.calledOnce(createSessionForUserStub);
+            sinon.assert.calledOnce(isVerifiedSessionStub);
+            sinon.assert.calledOnce(sendAuthCodeToUserStub);
+            assert.equal(createSessionForUserStub.firstCall.args[2], user);
+            assert.equal(body.statusCode, 403);
+            assert.equal(body.code, '2FA_TOKEN_REQUIRED');
         });
     });
 
     describe('logout', function () {
-        it('calls next with InternalServerError if removeSessionForUser errors', function (done) {
-            const req = fakeReq();
-            const res = fakeRes();
-            const middleware = SessionMiddlware({
+        it('returns 500 if removeSessionForUser errors', async function () {
+            const removeUserForSessionStub = sinon.stub().rejects(new Error('oops'));
+            const middleware = SessionMiddleware({
                 sessionService: {
-                    removeUserForSession: function () {
-                        return Promise.reject(new Error('oops'));
-                    }
+                    removeUserForSession: removeUserForSessionStub
                 }
             });
+            const app = createApp(middleware.logout);
 
-            middleware.logout(req, res, function next(err) {
-                assert.equal(err.errorType, 'InternalServerError');
-                done();
-            });
+            const {body} = await request(app)
+                .post('/')
+                .expect(500);
+
+            sinon.assert.calledOnce(removeUserForSessionStub);
+            assert.equal(body.errorType, 'InternalServerError');
         });
 
-        it('calls sendStatus with 204 if removeUserForSession does not error', function (done) {
-            const req = fakeReq();
-            const res = fakeRes();
-            sinon.stub(res, 'sendStatus')
-                .callsFake(function (status) {
-                    assert.equal(status, 204);
-                    done();
-                });
-
-            const middleware = SessionMiddlware({
+        it('returns 204 if removeUserForSession does not error', async function () {
+            const removeUserForSessionStub = sinon.stub().resolves();
+            const middleware = SessionMiddleware({
                 sessionService: {
-                    removeUserForSession: function () {
-                        return Promise.resolve();
-                    }
+                    removeUserForSession: removeUserForSessionStub
                 }
             });
+            const app = createApp(middleware.logout);
 
-            middleware.logout(req, res);
+            await request(app)
+                .post('/')
+                .expect(204);
+
+            sinon.assert.calledOnce(removeUserForSessionStub);
         });
     });
 
     describe('sendAuthCode', function () {
         it('sends an auth code to the user', async function () {
-            const req = fakeReq();
-            const res = fakeRes();
-
             const sendAuthCodeToUserStub = sinon.stub().resolves(123);
-            const nextStub = sinon.stub();
-            const sendStatusStub = sinon.stub(res, 'sendStatus');
-
-            const middleware = SessionMiddlware({
+            const middleware = SessionMiddleware({
                 sessionService: {
                     sendAuthCodeToUser: sendAuthCodeToUserStub
                 }
             });
+            const app = createApp(middleware.sendAuthCode);
 
-            await middleware.sendAuthCode(req, res, nextStub);
+            await request(app)
+                .post('/')
+                .expect(200);
 
             sinon.assert.calledOnce(sendAuthCodeToUserStub);
-            sinon.assert.notCalled(nextStub);
-            sinon.assert.calledOnce(sendStatusStub);
-            assert.equal(sendStatusStub.args[0][0], 200);
         });
 
-        it('calls next with an error if sendAuthCodeToUser fails', async function () {
-            const req = fakeReq();
-            const res = fakeRes();
-
+        it('returns 500 if sendAuthCodeToUser fails', async function () {
             const sendAuthCodeToUserStub = sinon.stub().rejects(new Error('foo bar baz'));
-            const nextStub = sinon.stub();
-            const sendStatusStub = sinon.stub(res, 'sendStatus');
-
-            const middleware = SessionMiddlware({
+            const middleware = SessionMiddleware({
                 sessionService: {
                     sendAuthCodeToUser: sendAuthCodeToUserStub
                 }
             });
+            const app = createApp(middleware.sendAuthCode);
 
-            await middleware.sendAuthCode(req, res, nextStub);
+            const {body} = await request(app)
+                .post('/')
+                .expect(500);
 
             sinon.assert.calledOnce(sendAuthCodeToUserStub);
-            sinon.assert.calledOnce(nextStub);
-            sinon.assert.notCalled(sendStatusStub);
+            assert.equal(body.message, 'foo bar baz');
         });
     });
 
     describe('verifyAuthCode', function () {
         it('returns 200 if the auth code is valid', async function () {
-            const req = fakeReq();
-            const res = fakeRes();
-
             const verifyAuthCodeForUserStub = sinon.stub().resolves(true);
-            const nextStub = sinon.stub();
-            const sendStatusStub = sinon.stub(res, 'sendStatus');
-
-            const middleware = SessionMiddlware({
+            const verifySessionStub = sinon.stub().resolves(true);
+            const middleware = SessionMiddleware({
                 sessionService: {
                     verifyAuthCodeForUser: verifyAuthCodeForUserStub,
-                    verifySession: sinon.stub().resolves(true)
+                    verifySession: verifySessionStub
                 }
             });
+            const app = createApp(middleware.verifyAuthCode);
 
-            await middleware.verifyAuthCode(req, res, nextStub);
+            await request(app)
+                .post('/')
+                .expect(200);
 
             sinon.assert.calledOnce(verifyAuthCodeForUserStub);
-            sinon.assert.notCalled(nextStub);
-            sinon.assert.calledOnce(sendStatusStub);
-            assert.equal(sendStatusStub.args[0][0], 200);
+            sinon.assert.calledOnce(verifySessionStub);
         });
 
         it('returns 401 if the auth code is invalid', async function () {
-            const req = fakeReq();
-            const res = fakeRes();
-
             const verifyAuthCodeForUserStub = sinon.stub().resolves(false);
-            const nextStub = sinon.stub();
-            const sendStatusStub = sinon.stub(res, 'sendStatus');
-
-            const middleware = SessionMiddlware({
+            const middleware = SessionMiddleware({
                 sessionService: {
                     verifyAuthCodeForUser: verifyAuthCodeForUserStub
                 }
             });
+            const app = createApp(middleware.verifyAuthCode);
 
-            await middleware.verifyAuthCode(req, res, nextStub);
+            await request(app)
+                .post('/')
+                .expect(401);
 
             sinon.assert.calledOnce(verifyAuthCodeForUserStub);
-            sinon.assert.notCalled(nextStub);
-            sinon.assert.calledOnce(sendStatusStub);
-            assert.equal(sendStatusStub.args[0][0], 401);
         });
 
-        it('calls next with an error if sendAuthCodeToUser fails', async function () {
-            const req = fakeReq();
-            const res = fakeRes();
-
+        it('returns 500 if verifyAuthCodeForUser fails', async function () {
             const verifyAuthCodeForUserStub = sinon.stub().rejects(new Error('foo bar baz'));
-            const nextStub = sinon.stub();
-            const sendStatusStub = sinon.stub(res, 'sendStatus');
-
-            const middleware = SessionMiddlware({
+            const middleware = SessionMiddleware({
                 sessionService: {
                     verifyAuthCodeForUser: verifyAuthCodeForUserStub
                 }
             });
+            const app = createApp(middleware.verifyAuthCode);
 
-            await middleware.verifyAuthCode(req, res, nextStub);
+            const {body} = await request(app)
+                .post('/')
+                .expect(500);
 
             sinon.assert.calledOnce(verifyAuthCodeForUserStub);
-            sinon.assert.calledOnce(nextStub);
-            sinon.assert.notCalled(sendStatusStub);
+            assert.equal(body.message, 'foo bar baz');
         });
     });
 });
