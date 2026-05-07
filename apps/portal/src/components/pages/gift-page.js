@@ -610,7 +610,8 @@ function GiftPriceSwitch({selectedInterval, setSelectedInterval}) {
     );
 }
 
-export function formatGiftValue({amount, currency} = {}) {
+export function formatGiftValue(price) {
+    const {amount, currency} = price ?? {};
     if (amount === null || amount === undefined || !currency) {
         return '';
     }
