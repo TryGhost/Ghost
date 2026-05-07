@@ -53,9 +53,9 @@ const automationDetail = {
     updated_at: '2026-05-05T00:00:00.000Z',
     actions: [
         {
-            id: 'action-delay',
-            type: 'delay' as const,
-            data: {delay_hours: 24}
+            id: 'action-wait',
+            type: 'wait' as const,
+            data: {wait_hours: 24}
         },
         {
             id: 'action-email',
@@ -71,7 +71,7 @@ const automationDetail = {
         }
     ],
     edges: [
-        {source_action_id: 'action-delay', target_action_id: 'action-email'}
+        {source_action_id: 'action-wait', target_action_id: 'action-email'}
     ]
 };
 
