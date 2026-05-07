@@ -51,7 +51,7 @@ async function rotateSessionForSelfPasswordChange(frame, user) {
     });
 }
 
-async function fetchOrCreatePersonalToken(userId) {
+async function fetchOrCreateStaffToken(userId) {
     const token = await models.ApiKey.findOne({user_id: userId}, {});
 
     if (!token) {
@@ -276,7 +276,7 @@ const controller = {
         }
     },
 
-    readToken: {
+    readStaffToken: {
         headers: {
             cacheInvalidate: false
         },
@@ -293,11 +293,11 @@ const controller = {
         permissions: permissionOnlySelf,
         query(frame) {
             const targetId = getTargetId(frame);
-            return fetchOrCreatePersonalToken(targetId);
+            return fetchOrCreateStaffToken(targetId);
         }
     },
 
-    regenerateToken: {
+    regenerateStaffToken: {
         headers: {
             cacheInvalidate: false
         },
@@ -314,7 +314,7 @@ const controller = {
         permissions: permissionOnlySelf,
         async query(frame) {
             const targetId = getTargetId(frame);
-            const model = await fetchOrCreatePersonalToken(targetId);
+            const model = await fetchOrCreateStaffToken(targetId);
             return models.ApiKey.refreshSecret(model.toJSON(), Object.assign({}, {id: model.id}));
         }
     }
