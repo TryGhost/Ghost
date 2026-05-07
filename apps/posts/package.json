@@ -45,6 +45,7 @@
         "@types/jest": "29.5.14",
         "@types/react": "18.3.28",
         "@vitest/coverage-v8": "^1.6.1",
+        "eslint": "catalog:",
         "msw": "2.12.14",
         "tailwindcss": "^4.2.2",
         "vite": "5.4.21",
