@@ -122,7 +122,7 @@ export const GiftPageStyles = `
 .gh-portal-gift-checkout-tiers {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
 }
 
 .gh-portal-gift-checkout-tier-item {
@@ -289,7 +289,7 @@ export const GiftPageStyles = `
 .gh-portal-gift-checkout-cta-wrapper {
     position: sticky;
     bottom: 0;
-    margin: 32px 0 -64px;
+    margin: 0 0 -64px;
     padding: 32px 0 64px;
     background: linear-gradient(0deg, rgba(var(--whitergb), 1) 60%, rgba(var(--whitergb), 0) 100%);
     z-index: 1;
