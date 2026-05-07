@@ -685,11 +685,9 @@ interface FilterDatePickerProps<T = unknown> {
     className?: string;
 }
 
-// Composes a native <input type="date"> (so segment editing & locale
-// formatting come for free, and onChange fires whenever the value becomes a
-// complete valid date) with a Shade Calendar popover triggered from a sibling
-// button. The native browser calendar indicator is hidden so the popover is
-// the only visible picker affordance.
+// Composes a text input for YYYY-MM-DD values with a Shade Calendar popover.
+// Avoid using <input type="date"> here: Safari opens its native date picker
+// from clicks inside the text area even when the calendar indicator is hidden.
 function FilterDatePicker<T = unknown>({
     field,
     value,
@@ -701,6 +699,7 @@ function FilterDatePicker<T = unknown>({
     const parsed = useMemo(() => parseFilterDateValue(value), [value]);
     const [month, setMonth] = useState<Date | undefined>(parsed);
     const inputRef = useRef<HTMLInputElement>(null);
+    const lastLocalCommitRef = useRef(value);
     // Local buffer for the input's value so the controlled element follows the
     // user's segment-edit state instead of the filter state. This insulates the
     // input from upstream re-renders triggered by URL roundtrips on Comments —
@@ -718,8 +717,13 @@ function FilterDatePicker<T = unknown>({
     // Sync the buffer from the committed filter value only when the user
     // isn't editing — calendar picks, "Clear filters", URL deep-links, etc.
     useEffect(() => {
+        if (value === lastLocalCommitRef.current) {
+            return;
+        }
+
         if (document.activeElement !== inputRef.current) {
             setLocalValue(value);
+            lastLocalCommitRef.current = value;
         }
     }, [value]);
 
@@ -739,20 +743,46 @@ function FilterDatePicker<T = unknown>({
     };
 
     const handleInputBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-        if (e.target.value !== value) {
-            onChange(e.target.value);
+        const inputValue = e.target.value;
+        const parsedInputValue = parseFilterDateValue(inputValue);
+        const dateValue = inputValue && !parsedInputValue ? formatFilterDateValue(new Date()) : inputValue;
+
+        if (parsedInputValue) {
+            setMonth(parsedInputValue);
+        } else if (dateValue) {
+            setMonth(parseFilterDateValue(dateValue));
         }
-        notifyInputChange(e.target.value, e.target);
+
+        if (dateValue !== inputValue) {
+            if (inputRef.current) {
+                inputRef.current.value = dateValue;
+            }
+            setLocalValue(dateValue);
+        }
+
+        if (dateValue !== value) {
+            lastLocalCommitRef.current = dateValue;
+            onChange(dateValue);
+        }
+        notifyInputChange(dateValue, e.target);
     };
 
     const handleSelect = (date: Date | undefined) => {
         if (!date) {
+            lastLocalCommitRef.current = '';
+            if (inputRef.current) {
+                inputRef.current.value = '';
+            }
             setLocalValue('');
             onChange('');
             notifyInputChange('');
             return;
         }
         const formatted = formatFilterDateValue(date);
+        lastLocalCommitRef.current = formatted;
+        if (inputRef.current) {
+            inputRef.current.value = formatted;
+        }
         setMonth(date);
         setLocalValue(formatted);
         onChange(formatted);
@@ -781,9 +811,12 @@ function FilterDatePicker<T = unknown>({
                 <input
                     ref={inputRef}
                     autoComplete="off"
-                    className="w-full min-w-0 bg-transparent outline-hidden dark:!bg-transparent [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none [&::-webkit-clear-button]:hidden [&::-webkit-inner-spin-button]:hidden"
+                    className="w-full min-w-0 bg-transparent outline-hidden dark:!bg-transparent"
                     data-slot="filters-input"
-                    type="date"
+                    inputMode="numeric"
+                    pattern="\d{4}-\d{2}-\d{2}"
+                    placeholder="YYYY-MM-DD"
+                    type="text"
                     value={localValue}
                     onBlur={handleInputBlur}
                     onChange={handleInputChange}

@@ -4,12 +4,23 @@ import {afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
 import {createFilter, FilterFieldConfig, Filters, ValueSource} from '../../../../src/components/features/filters/filters';
 
 vi.mock('@/components/ui/calendar', () => ({
-    Calendar: ({selected}: {selected?: Date}) => (
-        <div
-            data-selected={selected ? `${selected.getFullYear()}-${String(selected.getMonth() + 1).padStart(2, '0')}-${String(selected.getDate()).padStart(2, '0')}` : ''}
-            data-testid="calendar-selected"
-        />
-    )
+    Calendar: ({selected, onSelect}: {selected?: Date; onSelect?: unknown}) => {
+        const handleSelect = () => {
+            if (typeof onSelect === 'function') {
+                onSelect(new Date(2026, 4, 8));
+            }
+        };
+
+        return (
+            <div>
+                <div
+                    data-selected={selected ? `${selected.getFullYear()}-${String(selected.getMonth() + 1).padStart(2, '0')}-${String(selected.getDate()).padStart(2, '0')}` : ''}
+                    data-testid="calendar-selected"
+                />
+                <button type="button" onClick={handleSelect}>Select May 8</button>
+            </div>
+        );
+    }
 }));
 
 type TestOption = {
@@ -276,12 +287,52 @@ describe('Filters ValueSource', () => {
         expect(handleInputChange).toHaveBeenCalledWith('2026-05-08');
     });
 
+    it('resets manually entered invalid date values to today', () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date(2026, 4, 9));
+        const handleFiltersChange = vi.fn();
+        const handleInputChange = vi.fn();
+
+        render(<DateFilters onFiltersChange={handleFiltersChange} onInputChange={handleInputChange} />);
+
+        const input = screen.getByDisplayValue('2026-05-07');
+        fireEvent.change(input, {target: {value: '2026-02-30'}});
+        fireEvent.blur(input);
+
+        expect(screen.getByDisplayValue('2026-05-09')).toBeDefined();
+        expect(handleFiltersChange).toHaveBeenCalledWith('2026-05-09');
+        expect(handleInputChange).toHaveBeenCalledWith('2026-05-09');
+    });
+
     it('passes valid date values to the calendar selection', async () => {
         render(<DateFilters onFiltersChange={vi.fn()} onInputChange={vi.fn()} />);
 
         openCalendar();
 
         expect((await screen.findByTestId('calendar-selected')).getAttribute('data-selected')).toBe('2026-05-07');
+    });
+
+    it('updates the date input when a calendar date is selected', async () => {
+        const handleFiltersChange = vi.fn();
+        const handleInputChange = vi.fn();
+
+        render(<DateFilters onFiltersChange={handleFiltersChange} onInputChange={handleInputChange} />);
+
+        openCalendar();
+        fireEvent.click(await screen.findByRole('button', {name: 'Select May 8'}));
+
+        expect(screen.getByDisplayValue('2026-05-08')).toBeDefined();
+        expect(handleFiltersChange).toHaveBeenCalledWith('2026-05-08');
+        expect(handleInputChange).toHaveBeenCalledWith('2026-05-08');
+    });
+
+    it('uses an editable text input for date values', () => {
+        render(<DateFilters onFiltersChange={vi.fn()} onInputChange={vi.fn()} />);
+
+        const input = screen.getByDisplayValue('2026-05-07') as HTMLInputElement;
+
+        expect(input.type).toBe('text');
+        expect(input.pattern).toBe('\\d{4}-\\d{2}-\\d{2}');
     });
 
     it('does not normalize overflow date values for the calendar selection', async () => {
