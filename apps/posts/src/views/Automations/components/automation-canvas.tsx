@@ -78,7 +78,7 @@ const nodeTypes = {
     tail: TailNode
 };
 
-const formatDelay = (hours: number): string => {
+const formatWait = (hours: number): string => {
     if (hours <= 0) {
         return 'Immediately';
     }
@@ -90,8 +90,8 @@ const formatDelay = (hours: number): string => {
 };
 
 const buildActionData = (action: AutomationAction): StepNodeData => {
-    if (action.type === 'delay') {
-        return {icon: LucideIcon.Clock, type: 'Wait', value: formatDelay(action.data.delay_hours)};
+    if (action.type === 'wait') {
+        return {icon: LucideIcon.Clock, type: 'Wait', value: formatWait(action.data.wait_hours)};
     }
     return {icon: LucideIcon.Mail, type: 'Send email', value: action.data.email_subject};
 };

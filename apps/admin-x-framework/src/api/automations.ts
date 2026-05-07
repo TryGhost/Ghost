@@ -7,11 +7,11 @@ export type Automation = {
     status: 'active' | 'inactive';
 }
 
-export type AutomationDelayAction = {
+export type AutomationWaitAction = {
     id: string;
-    type: 'delay';
+    type: 'wait';
     data: {
-        delay_hours: number;
+        wait_hours: number;
     };
 }
 
@@ -24,11 +24,11 @@ export type AutomationSendEmailAction = {
         email_sender_name: string | null;
         email_sender_email: string | null;
         email_sender_reply_to: string | null;
-        email_design_setting_id: string;
+        email_design_setting_id: string | null;
     };
 }
 
-export type AutomationAction = AutomationDelayAction | AutomationSendEmailAction;
+export type AutomationAction = AutomationWaitAction | AutomationSendEmailAction;
 
 export type AutomationEdge = {
     source_action_id: string;
