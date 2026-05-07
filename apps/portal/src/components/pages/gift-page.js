@@ -137,6 +137,10 @@ export const GiftPageStyles = `
     border-color: var(--grey9);
 }
 
+.gh-portal-gift-checkout-tiers.single .gh-portal-gift-checkout-tier-item:hover {
+    border-color: var(--grey11);
+}
+
 .gh-portal-gift-checkout-tier-item.selected {
     border-color: var(--brandcolor);
     background: color-mix(in srgb, var(--brandcolor) 6%, var(--white));
@@ -155,6 +159,10 @@ export const GiftPageStyles = `
     text-align: start;
     font: inherit;
     color: inherit;
+}
+
+.gh-portal-gift-checkout-tiers.single .gh-portal-gift-checkout-tier {
+    cursor: default;
 }
 
 .gh-portal-gift-checkout-tier-radio {
@@ -646,6 +654,7 @@ const GiftPage = () => {
     }
 
     const activeProduct = products.find(p => p.id === selectedProductId) || products[0];
+    const isSingleTier = products.length === 1;
     const isPurchasing = action === 'checkoutGift:running';
     const isDisabled = isCookiesDisabled() || isPurchasing;
 
@@ -681,25 +690,31 @@ const GiftPage = () => {
                             </div>
 
                             <div className='gh-portal-gift-checkout-section'>
-                                <div className='gh-portal-gift-checkout-label'>Tier</div>
-                                <div className='gh-portal-gift-checkout-tiers' role='radiogroup' aria-label='Tier'>
+                                <div className='gh-portal-gift-checkout-label'>{isSingleTier ? 'Membership details' : 'Tier'}</div>
+                                <div
+                                    className={'gh-portal-gift-checkout-tiers' + (isSingleTier ? ' single' : '')}
+                                    role={isSingleTier ? undefined : 'radiogroup'}
+                                    aria-label={isSingleTier ? undefined : 'Tier'}
+                                >
                                     {products.map((product) => {
                                         const isSelected = product.id === activeProduct.id;
                                         const benefits = product.benefits || [];
                                         return (
                                             <div
                                                 key={product.id}
-                                                className={'gh-portal-gift-checkout-tier-item' + (isSelected ? ' selected' : '')}
+                                                className={'gh-portal-gift-checkout-tier-item' + (isSelected && !isSingleTier ? ' selected' : '')}
                                             >
                                                 <button
                                                     type='button'
-                                                    role='radio'
-                                                    aria-checked={isSelected}
+                                                    role={isSingleTier ? undefined : 'radio'}
+                                                    aria-checked={isSingleTier ? undefined : isSelected}
                                                     className='gh-portal-gift-checkout-tier'
                                                     onClick={() => setSelectedProductId(product.id)}
                                                     data-test-tier={product.name}
                                                 >
-                                                    <span className='gh-portal-gift-checkout-tier-radio' aria-hidden='true' />
+                                                    {!isSingleTier && (
+                                                        <span className='gh-portal-gift-checkout-tier-radio' aria-hidden='true' />
+                                                    )}
                                                     <span className='gh-portal-gift-checkout-tier-name'>{product.name}</span>
                                                     <span className='gh-portal-gift-checkout-tier-price'>{getTierPriceLabel(product, activeInterval)}</span>
                                                 </button>
