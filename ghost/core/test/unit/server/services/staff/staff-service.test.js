@@ -987,7 +987,7 @@ describe('StaffService', function () {
                     duration: 1
                 });
 
-                sinon.assert.calledWith(getEmailAlertUsersStub, 'gift-subscription-purchased');
+                sinon.assert.calledWith(getEmailAlertUsersStub, 'gift-subscriptions');
                 sinon.assert.calledOnce(mailStub);
                 sinon.assert.calledWith(mailStub, sinon.match.has('subject', sinon.match('Gift subscription purchased: $60.00 from Alice')));
             });
@@ -1102,9 +1102,9 @@ describe('StaffService', function () {
                     buyerEmail: 'gifter@example.com'
                 });
 
-                sinon.assert.calledWith(getEmailAlertUsersStub, 'paid-started');
+                sinon.assert.calledWith(getEmailAlertUsersStub, 'gift-subscriptions');
                 sinon.assert.calledOnce(mailStub);
-                sinon.assert.calledWith(mailStub, sinon.match.has('subject', sinon.match('🎁 Paid subscription started: Jamie')));
+                sinon.assert.calledWith(mailStub, sinon.match.has('subject', sinon.match('🎁 Gift subscription redeemed: Jamie')));
             });
 
             it('includes the tier and cadence in HTML and plain text', async function () {
