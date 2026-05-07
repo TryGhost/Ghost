@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/activitypub",
-  "version": "3.1.16",
+  "version": "3.1.18",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -42,6 +42,7 @@
     "@types/jest": "29.5.14",
     "@types/react": "18.3.28",
     "@types/react-dom": "18.3.7",
+    "eslint": "catalog:",
     "jest": "29.7.0",
     "tailwindcss": "^4.2.2",
     "vite": "5.4.21",

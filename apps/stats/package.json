@@ -50,6 +50,7 @@
         "@vitest/coverage-v8": "^1.6.1",
         "@vitejs/plugin-react": "4.7.0",
         "dotenv": "17.3.1",
+        "eslint": "catalog:",
         "tailwindcss": "^4.2.2",
         "vite": "5.4.21",
         "vite-plugin-svgr": "4.5.0",
