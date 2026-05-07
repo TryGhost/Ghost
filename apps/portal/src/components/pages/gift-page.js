@@ -12,24 +12,35 @@ import useCardTilt from '../../utils/use-card-tilt';
 /* eslint-disable i18next/no-literal-string */
 
 export const GiftPageStyles = `
+@property --shine-angle {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 243.43deg;
+}
+
 .gh-portal-popup-container.full-size.gift,
 .gh-portal-popup-container.full-size.giftSuccess,
 .gh-portal-popup-container.full-size.giftRedemption {
     padding: 0;
 }
 
-/* Close icon sits over the brand-coloured right panel, so override the
-   default grey from Frame.styles.js to a translucent white. */
+.gh-portal-popup-container.full-size.gift .gh-portal-closeicon-container,
+.gh-portal-popup-container.full-size.giftSuccess .gh-portal-closeicon-container,
+.gh-portal-popup-container.full-size.giftRedemption .gh-portal-closeicon-container {
+    top: 32px;
+    right: 32px;
+}
+
 .gh-portal-popup-container.full-size.gift .gh-portal-closeicon,
 .gh-portal-popup-container.full-size.giftSuccess .gh-portal-closeicon,
 .gh-portal-popup-container.full-size.giftRedemption .gh-portal-closeicon {
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(255, 255, 255, 0.5);
 }
 
 .gh-portal-popup-container.full-size.gift .gh-portal-closeicon:hover,
 .gh-portal-popup-container.full-size.giftSuccess .gh-portal-closeicon:hover,
 .gh-portal-popup-container.full-size.giftRedemption .gh-portal-closeicon:hover {
-    color: rgba(255, 255, 255, 0.95);
+    color: rgba(255, 255, 255, 0.8);
 }
 
 .gh-portal-content.gift,
@@ -56,11 +67,8 @@ export const GiftPageStyles = `
     padding: 64px 48px 128px;
 }
 
-/* On the selection page only, the inner content's vertical position is
-   locked once on first paint by useLayoutEffect (so tier switches push the
-   CTA down rather than re-centering). flex-start lets that JS-applied
-   margin-top do the actual centering math. Other gift pages keep the
-   default flex centering. */
+/* Selection page only: useLayoutEffect locks the inner's vertical
+   position; flex-start lets that JS-applied margin-top do the centering. */
 .gh-portal-content.gift .gh-portal-gift-checkout-left {
     align-items: flex-start;
 }
@@ -117,10 +125,6 @@ export const GiftPageStyles = `
     gap: 8px;
 }
 
-/* Each tier renders as an accordion item: the radio button row sits at top,
-   and the benefits accordion expands below when selected. The border, radius
-   and selected-state styling live on the wrapper so the benefits feel like
-   they belong to the same card. */
 .gh-portal-gift-checkout-tier-item {
     background: var(--white);
     border: 1px solid var(--grey11);
@@ -193,15 +197,12 @@ export const GiftPageStyles = `
     color: var(--grey0);
 }
 
-/* Accordion wrapper inside each tier — collapses and expands its benefit
-   list using the grid-template-rows trick, matching the 0.3s ease used by
-   the right-side details toggle. */
 .gh-portal-gift-checkout-tier-benefits {
     display: grid;
     grid-template-rows: 0fr;
     transition: grid-template-rows 0.3s ease;
-    /* Clip the grid item: even with min-height: 0, the inner's padding still
-       renders ~20px tall, which Chrome leaks the first benefit through. */
+    /* overflow + padding-free inner: Chrome leaks the first benefit through
+       a 0fr track if the grid item has padding (min-size includes padding). */
     overflow: hidden;
 }
 
@@ -210,11 +211,6 @@ export const GiftPageStyles = `
 }
 
 .gh-portal-gift-checkout-tier-benefits-inner {
-    /* min-height: 0 overrides the default min-height: auto on grid items.
-       Padding on this element contributes to the grid track's min-size
-       (Chrome resolves 0fr to the inner padding-bottom otherwise), so we
-       keep the inner padding-free and put the spacing on the benefits
-       list instead. */
     min-height: 0;
     overflow: hidden;
 }
@@ -246,13 +242,11 @@ export const GiftPageStyles = `
     flex-shrink: 0;
 }
 
-/* Inside the brand-coloured right panel, lighten benefit text + checkmark
-   so they read against the saturated background. The checkmark SVG uses a
-   hard-coded stroke so we override it explicitly rather than via color. */
 .gh-portal-gift-checkout-right-panel .gh-portal-gift-checkout-benefit {
     color: rgba(255, 255, 255, 0.85);
 }
 
+/* Checkmark SVG hard-codes its stroke so it can't be themed via color. */
 .gh-portal-gift-checkout-right-panel .gh-portal-gift-checkout-benefit svg path {
     stroke: rgba(255, 255, 255, 0.85);
 }
@@ -261,11 +255,6 @@ export const GiftPageStyles = `
     border-radius: 999px;
 }
 
-/* Sticky wrapper around the CTA: keeps the button visible at the bottom of
-   the viewport when the left column is long enough to scroll, and adds a
-   white→transparent fade at the top so scrolling content tucks under it
-   instead of cutting against the button edge.
-   Same pattern as .gh-portal-btn-container.sticky in frame.styles.js. */
 .gh-portal-gift-checkout-cta-wrapper {
     position: sticky;
     bottom: 0;
@@ -292,17 +281,16 @@ export const GiftPageStyles = `
     overflow-y: auto;
 }
 
-/* Inner brand-coloured panel that holds the card. Inset 12px from top, right
-   and bottom of the right column (no left inset — flush with the column
-   boundary), with 32px rounded corners. */
 .gh-portal-gift-checkout-right-panel {
     flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--brandcolor);
+    background:
+        linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0) 100%),
+        var(--brandcolor);
     border-radius: 32px;
-    padding: 64px 48px 128px;
+    padding: 64px 48px 64px;
 }
 
 .gh-portal-gift-checkout-card-stack {
@@ -310,12 +298,9 @@ export const GiftPageStyles = `
     flex-direction: column;
     align-items: center;
     width: 100%;
-    max-width: 440px;
+    max-width: 280px;
 }
 
-/* Wraps the card so we can tilt it forward when "Gift details" is expanded,
-   making the benefits feel like they're sliding out from behind the card.
-   Composes cleanly with the cursor-driven tilt applied to the card itself. */
 .gh-portal-gift-checkout-card-frame {
     width: 100%;
     transform-style: preserve-3d;
@@ -374,77 +359,111 @@ export const GiftPageStyles = `
     overflow: hidden;
 }
 
-/* Card is split into two zones via a hard-stop gradient: the brand-coloured
-   top (~70%) holds the duration + tier in white text, the white bottom (~30%)
-   holds the site icon + name. flex-direction: column-reverse so the existing
-   site → meta DOM order maps to bottom → top visually. */
 .gh-portal-gift-checkout-card {
     position: relative;
     width: 100%;
-    max-width: 440px;
-    aspect-ratio: 1.7 / 1;
-    background: linear-gradient(to bottom, color-mix(in srgb, var(--brandcolor) 70%, var(--white)) 75%, var(--white) 75%);
+    max-width: 280px;
+    aspect-ratio: 1 / 1.45;
+    background:
+        linear-gradient(var(--shine-angle, 243.43deg), rgba(255, 255, 255, 0) 3.94%, rgba(255, 255, 255, 0.31) 49.99%, rgba(255, 255, 255, 0) 95.16%),
+        linear-gradient(0deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.07)),
+        var(--brandcolor);
     border-radius: 24px;
-    padding: 28px 28px 20px;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 24px 48px rgba(var(--blackrgb), 0.08), 0 4px 12px rgba(var(--blackrgb), 0.04);
     display: flex;
-    flex-direction: column-reverse;
-    justify-content: space-between;
+    flex-direction: column;
     overflow: hidden;
     transform-style: preserve-3d;
     will-change: transform;
 }
 
-/* Soft orb glow layer on the brand surface. Sits behind the content
-   (z-index 0) and is clipped to the brand area only (bottom: 25%) so it
-   doesn't bleed into the white strip. */
 .gh-portal-gift-checkout-card::after {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    bottom: 25%;
+    bottom: 0;
     background-image: url("${giftCardOrbUrl}");
-    background-size: 100% auto;
-    background-position: 100px 100%;
+    background-size: 120% auto;
+    background-position: -60% -180%;
     background-repeat: no-repeat;
     pointer-events: none;
     z-index: 0;
-    opacity: 0.4;
+    opacity: 0.2;
 }
 
-/* Make sure the card content paints above the orb glow. */
 .gh-portal-gift-checkout-card > * {
     position: relative;
     z-index: 1;
 }
 
-/* Lanyard slot — small semi-transparent pill at the top center of the card,
-   so the brand-coloured top reads as an ID-badge surface. */
 .gh-portal-gift-checkout-card::before {
     content: '';
     position: absolute;
-    top: 16px;
+    top: 20px;
     left: 50%;
     width: 56px;
-    height: 8px;
-    border-radius: 4px;
-    background: rgba(255, 255, 255, 0.25);
+    height: 12px;
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.35);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 0 rgba(255, 255, 255, 0.18);
     transform: translateX(-50%);
     z-index: 2;
 }
 
 
+.gh-portal-gift-checkout-card-meta {
+    padding: 56px 28px 0;
+}
+
+.gh-portal-gift-checkout-card-duration {
+    font-size: 2.8rem;
+    font-weight: 600;
+    color: var(--white);
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+}
+
+.gh-portal-gift-checkout-card-tier {
+    margin-top: 6px;
+    font-size: 1.5rem;
+    color: var(--white);
+    line-height: 1.3;
+}
+
+.gh-portal-gift-checkout-card-details {
+    margin-top: auto;
+    padding: 0 28px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.gh-portal-gift-checkout-card-detail-label {
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: -5px;
+}
+
+.gh-portal-gift-checkout-card-detail-value {
+    font-size: 1.3rem;
+    font-weight: 500;
+    color: var(--white);
+}
+
 .gh-portal-gift-checkout-card-site {
+    background: var(--white);
+    padding: 16px 28px;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
 }
 
 .gh-portal-gift-checkout-card-site-icon {
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
     object-fit: cover;
 }
 
@@ -455,21 +474,6 @@ export const GiftPageStyles = `
     color: var(--grey0);
 }
 
-.gh-portal-gift-checkout-card-duration {
-    font-size: 2.6rem;
-    font-weight: 600;
-    color: var(--white);
-    letter-spacing: -0.01em;
-    line-height: 1.1;
-}
-
-.gh-portal-gift-checkout-card-tier {
-    margin-top: 6px;
-    font-size: 1.4rem;
-    color: rgba(255, 255, 255, 0.8);
-    line-height: 1.3;
-}
-
 
 @media (max-width: 880px) {
     .gh-portal-gift-checkout {
@@ -477,8 +481,6 @@ export const GiftPageStyles = `
         min-height: 0;
     }
 
-    /* Drop sticky/100vh sizing — on mobile the right column should sit naturally
-       above the left content, taking only the height it needs. */
     .gh-portal-gift-checkout-right {
         order: -1;
         position: static;
@@ -553,6 +555,21 @@ function getTierPriceLabel(product, selectedInterval) {
 
 function getDurationLabel(selectedInterval) {
     return selectedInterval === 'month' ? '1 month' : '1 year';
+}
+
+const GIFT_EXPIRY_DAYS = 365;
+
+export function getPreviewGiftExpiresAt(fromDate = new Date()) {
+    const date = new Date(fromDate);
+    date.setDate(date.getDate() + GIFT_EXPIRY_DAYS);
+    return date;
+}
+
+export function formatGiftExpiresAt(date) {
+    const d = date instanceof Date ? date : new Date(date);
+    const day = d.getDate();
+    const month = d.toLocaleDateString('en-US', {month: 'short'});
+    return `${day} ${month}, ${d.getFullYear()}`;
 }
 
 const GiftPage = () => {
@@ -732,15 +749,21 @@ const GiftPage = () => {
                         <div className='gh-portal-gift-checkout-right-panel'>
                             <div className='gh-portal-gift-checkout-card-stack'>
                                 <div ref={cardRef} className='gh-portal-gift-checkout-card'>
+                                    <div className='gh-portal-gift-checkout-card-meta'>
+                                        <div className='gh-portal-gift-checkout-card-duration'>{getDurationLabel(activeInterval)}</div>
+                                        <div className='gh-portal-gift-checkout-card-tier'>{`${activeProduct.name} membership`}</div>
+                                    </div>
+                                    <div className='gh-portal-gift-checkout-card-details'>
+                                        <div className='gh-portal-gift-checkout-card-detail'>
+                                            <div className='gh-portal-gift-checkout-card-detail-label'>Expires</div>
+                                            <div className='gh-portal-gift-checkout-card-detail-value'>{formatGiftExpiresAt(getPreviewGiftExpiresAt())}</div>
+                                        </div>
+                                    </div>
                                     <div className='gh-portal-gift-checkout-card-site'>
                                         {siteIcon && (
                                             <img className='gh-portal-gift-checkout-card-site-icon' src={siteIcon} alt='' />
                                         )}
                                         <span className='gh-portal-gift-checkout-card-site-name'>{siteTitle}</span>
-                                    </div>
-                                    <div className='gh-portal-gift-checkout-card-meta'>
-                                        <div className='gh-portal-gift-checkout-card-duration'>{getDurationLabel(activeInterval)}</div>
-                                        <div className='gh-portal-gift-checkout-card-tier'>{`${activeProduct.name} membership`}</div>
                                     </div>
                                 </div>
 

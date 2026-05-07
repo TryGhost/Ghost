@@ -8,6 +8,7 @@ import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg'
 import {isIos} from '../../utils/is-ios';
 import {t} from '../../utils/i18n';
 import {getGiftDurationLabel} from '../../utils/gift-redemption-notification';
+import {formatGiftExpiresAt, getPreviewGiftExpiresAt} from './gift-page';
 
 const ChevronIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -323,6 +324,7 @@ export default class MagicLinkPage extends React.Component {
             submittedEmailOrInbox
         });
         const benefits = gift.tier?.benefits || [];
+        const submittedName = (pageData?.name || '').trim();
 
         return (
             <>
@@ -346,16 +348,30 @@ export default class MagicLinkPage extends React.Component {
                                 <div className='gh-portal-gift-checkout-card-stack' data-revealing={this.state.showDetails}>
                                     <div className='gh-portal-gift-checkout-card-frame'>
                                         <div className='gh-portal-gift-checkout-card'>
+                                            <div className='gh-portal-gift-checkout-card-meta'>
+                                                <div className='gh-portal-gift-checkout-card-duration'>{getGiftDurationLabel(gift)}</div>
+                                                {/* eslint-disable-next-line i18next/no-literal-string -- copy not yet finalised */}
+                                                <div className='gh-portal-gift-checkout-card-tier'>{`${gift.tier?.name} membership`}</div>
+                                            </div>
+                                            <div className='gh-portal-gift-checkout-card-details'>
+                                                {submittedName && (
+                                                    <div className='gh-portal-gift-checkout-card-detail'>
+                                                        {/* eslint-disable-next-line i18next/no-literal-string -- copy not yet finalised */}
+                                                        <div className='gh-portal-gift-checkout-card-detail-label'>Name</div>
+                                                        <div className='gh-portal-gift-checkout-card-detail-value'>{submittedName}</div>
+                                                    </div>
+                                                )}
+                                                <div className='gh-portal-gift-checkout-card-detail'>
+                                                    {/* eslint-disable-next-line i18next/no-literal-string -- copy not yet finalised */}
+                                                    <div className='gh-portal-gift-checkout-card-detail-label'>Expires</div>
+                                                    <div className='gh-portal-gift-checkout-card-detail-value'>{formatGiftExpiresAt(gift.expires_at || getPreviewGiftExpiresAt())}</div>
+                                                </div>
+                                            </div>
                                             <div className='gh-portal-gift-checkout-card-site'>
                                                 {siteIcon && (
                                                     <img className='gh-portal-gift-checkout-card-site-icon' src={siteIcon} alt='' />
                                                 )}
                                                 <span className='gh-portal-gift-checkout-card-site-name'>{siteTitle}</span>
-                                            </div>
-                                            <div className='gh-portal-gift-checkout-card-meta'>
-                                                <div className='gh-portal-gift-checkout-card-duration'>{getGiftDurationLabel(gift)}</div>
-                                                {/* eslint-disable-next-line i18next/no-literal-string -- copy not yet finalised */}
-                                                <div className='gh-portal-gift-checkout-card-tier'>{`${gift.tier?.name} membership`}</div>
                                             </div>
                                         </div>
                                     </div>
