@@ -112,6 +112,7 @@ class PostsExporter {
                 limit: pageLimit,
                 page,
                 skipPagination: true,
+                stableOrder: true,
                 withRelated: EXPORT_WITH_RELATED
             });
 

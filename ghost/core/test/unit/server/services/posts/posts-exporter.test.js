@@ -1,5 +1,6 @@
 const PostsExporter = require('../../../../../core/server/services/posts/posts-exporter');
 const assert = require('node:assert/strict');
+const {assertMatchSnapshot} = require('../../../../utils/assertions');
 const {Readable} = require('stream');
 const {createModelClass, createModel} = require('./utils');
 
@@ -320,6 +321,65 @@ describe('PostsExporter', function () {
             assert.deepEqual(findPageCalls.map(call => call.limit), [50, 50]);
             assert.deepEqual(findPageCalls.map(call => call.page), [1, 2]);
             assert.ok(findPageCalls.every(call => call.skipPagination === true));
+        });
+
+        it('Keeps custom ordered stream exports stable across page boundaries', async function () {
+            const posts = Array.from({length: 60}, (_, index) => ({
+                ...post,
+                id: `post-${String(index + 1).padStart(2, '0')}`,
+                title: `Post ${String(index + 1).padStart(2, '0')}`,
+                published_at: new Date('2026-01-01T00:00:00.000Z'),
+                email: createModel({
+                    feedback_enabled: true,
+                    track_clicks: true,
+                    email_count: 256,
+                    opened_count: 128
+                })
+            }));
+            const findPageCalls = [];
+
+            models.Post = {
+                findPage: async (options) => {
+                    if (options.stableOrder && !options.order.split(',').some(orderPart => orderPart.trim().toLowerCase().startsWith('id '))) {
+                        options.order = `${options.order}, id desc`;
+                    }
+                    findPageCalls.push(options);
+
+                    // Simulate a database returning a different tie order for page 2
+                    // when the requested order does not include a unique tie-breaker.
+                    const hasStableOrder = options.order.split(',').some(orderPart => orderPart.trim().toLowerCase().startsWith('id '));
+                    const orderedPosts = options.page === 2 && !hasStableOrder
+                        ? [
+                            ...posts.slice(0, 49),
+                            posts[50],
+                            posts[49],
+                            ...posts.slice(51)
+                        ]
+                        : posts;
+                    const start = (options.page - 1) * options.limit;
+                    const pageData = orderedPosts.slice(start, start + options.limit);
+
+                    return {
+                        data: pageData.map(data => createModel({...data, ...options}))
+                    };
+                }
+            };
+
+            const exportedPosts = await collectStream(await exporter.export({
+                limit: 'all',
+                order: 'published_at desc'
+            }));
+            const exportedIds = exportedPosts.map(exportedPost => exportedPost.id);
+            const expectedIds = posts.map(data => data.id);
+            const duplicateIds = exportedIds.filter((id, index) => exportedIds.indexOf(id) !== index);
+            const missingIds = expectedIds.filter(id => !exportedIds.includes(id));
+
+            assertMatchSnapshot({
+                requestedOrders: findPageCalls.map(call => call.order),
+                exportedIds,
+                duplicateIds,
+                missingIds
+            });
         });
 
         it('Preserves the default export limit when no limit is supplied', async function () {
