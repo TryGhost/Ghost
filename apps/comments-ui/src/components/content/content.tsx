@@ -4,11 +4,11 @@ import CommentingDisabledBox from './commenting-disabled-box';
 import ContentTitle from './content-title';
 import MainForm from './forms/main-form';
 import Pagination from './pagination';
+import {Fragment, useCallback, useEffect, useRef} from 'react';
 import {ROOT_DIV_ID} from '../../utils/constants';
 import {SortingForm} from './forms/sorting-form';
 import {parseCommentIdFromHash, scrollToElement} from '../../utils/helpers';
 import {useAppContext, useLabs} from '../../app-context';
-import {useCallback, useEffect, useRef} from 'react';
 
 /**
  * Find the iframe element that contains the current window, if any.
@@ -174,7 +174,14 @@ const Content = () => {
     const showDisabledBox = !canComment && isCommentingDisabled;
     const showCtaBox = !canComment && !isCommentingDisabled;
 
-    const commentsComponents = comments.map(comment => <Comment key={comment.id} comment={comment} />);
+    const commentsComponents = comments.map((comment, index) => (
+        <Fragment key={comment.id}>
+            <Comment comment={comment} showRepliesLine={false} />
+            {index < comments.length - 1 && (
+                <hr className="mb-7 mt-8 border-0 border-t border-neutral-900/10 dark:border-white/10" data-testid="top-level-comment-separator" />
+            )}
+        </Fragment>
+    ));
 
     return (
         <>
