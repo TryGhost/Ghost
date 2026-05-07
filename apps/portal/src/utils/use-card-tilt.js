@@ -13,7 +13,7 @@ import {useCallback, useRef} from 'react';
  * sensitive than Chrome to long transitions overlapping rapid style updates,
  * so without this it feels like the tilt is debounced.
  */
-export default function useCardTilt({maxTilt = 3, trackTransition = 'transform 80ms linear', restTransition = 'transform 400ms ease-out'} = {}) {
+export default function useCardTilt({maxTilt = 3, shineSwing = 10, trackTransition = 'transform 80ms linear, --shine-angle 80ms linear', restTransition = 'transform 400ms ease-out, --shine-angle 400ms ease-out'} = {}) {
     const cardRef = useRef(null);
     const rafIdRef = useRef(null);
     const targetRef = useRef({x: 0, y: 0});
@@ -29,11 +29,13 @@ export default function useCardTilt({maxTilt = 3, trackTransition = 'transform 8
             const {x, y} = targetRef.current;
             card.style.transition = trackTransition;
             card.style.transform = `perspective(1200px) rotateX(${-y * maxTilt}deg) rotateY(${x * maxTilt}deg)`;
+            card.style.setProperty('--shine-angle', `${243.43 + x * shineSwing}deg`);
         } else {
             card.style.transition = restTransition;
             card.style.transform = '';
+            card.style.removeProperty('--shine-angle');
         }
-    }, [maxTilt, trackTransition, restTransition]);
+    }, [maxTilt, shineSwing, trackTransition, restTransition]);
 
     const schedule = useCallback(() => {
         if (rafIdRef.current === null) {
