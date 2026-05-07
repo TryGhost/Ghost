@@ -379,8 +379,9 @@ describe('Stats API', function () {
 
     describe('Comments overview', function () {
         beforeEach(async function () {
-            await db.knex('comment_reports').truncate();
-            await db.knex('comments').truncate();
+            await db.knex('comment_likes').delete();
+            await db.knex('comment_reports').delete();
+            await db.knex('comments').delete();
         });
 
         function post(index = 0) {

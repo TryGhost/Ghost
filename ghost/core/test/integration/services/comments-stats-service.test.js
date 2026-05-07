@@ -9,8 +9,9 @@ describe('CommentsStatsService', function () {
     before(testUtils.setup('users:roles', 'posts', 'members'));
 
     beforeEach(async function () {
-        await testUtils.truncate('comment_reports');
-        await testUtils.truncate('comments');
+        await db.knex('comment_likes').delete();
+        await db.knex('comment_reports').delete();
+        await db.knex('comments').delete();
     });
 
     const service = new CommentsStatsService({db});
