@@ -64,7 +64,7 @@
   },
   "devDependencies": {
     "@playwright/test": "1.59.1",
-    "@testing-library/jest-dom": "^6",
+    "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "14.3.1",
     "@tryghost/admin-x-design-system": "workspace:*",
     "@tryghost/admin-x-framework": "workspace:*",
@@ -78,7 +78,7 @@
     "eslint-plugin-react-hooks": "4.6.2",
     "eslint-plugin-react-refresh": "0.4.24",
     "eslint-plugin-tailwindcss": "4.0.0-beta.0",
-    "tailwindcss": "^4.2.2",
+    "tailwindcss": "4.2.2",
     "vite": "7.3.2",
     "vitest": "4.1.2"
   },
