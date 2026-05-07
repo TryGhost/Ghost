@@ -8,11 +8,11 @@ Comments widget that is embedded at the bottom of posts in Ghost.
 
 - Run `pnpm` in Ghost monorepo root
 
-### Running via Ghost `pnpm dev` in root folder
+### Running from the monorepo root
 
-Comments UI runs automatically when using Ghost's development command from the monorepo root:
+Run Ghost with the public app dev servers from the monorepo root when working on Comments UI:
 ```bash
-pnpm dev
+pnpm dev:apps
 ```
 
 ## Release

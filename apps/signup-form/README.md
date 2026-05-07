@@ -9,14 +9,12 @@ Embed a Ghost signup form on any site.
 - Run `pnpm` in Ghost monorepo root
 - Run `pnpm` in this directory
 
-### Running via Ghost `pnpm dev` in root folder
+### Running from the monorepo root
 
-Signup Form runs automatically when using Ghost's development command from the monorepo root:
+Run Ghost with the public app dev servers from the monorepo root when working on Signup Form:
 ```bash
-pnpm dev
+pnpm dev:apps
 ```
-
-This starts all frontend apps (including Signup Form.)
 
 ### Running the development version only
 

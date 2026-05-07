@@ -44,7 +44,8 @@ Two categories of apps:
 ```bash
 corepack enable pnpm           # Enable corepack to use the correct pnpm version
 pnpm run setup                 # First-time setup (installs deps + submodules)
-pnpm dev                       # Start development (Docker backend + host frontend dev servers)
+pnpm dev                       # Start development (Docker backend + admin frontend dev servers)
+pnpm dev:apps                  # Start Ghost, admin, and public app dev servers
 ```
 
 ### Building
@@ -104,13 +105,16 @@ The `pnpm dev` command uses a **hybrid Docker + host development** setup:
 - Caddy gateway/reverse proxy
 
 **What runs on host:**
-- Frontend dev servers (Admin, Portal, Comments UI, etc.) in watch mode with HMR
+- Admin frontend dev servers in watch mode with HMR
 - Foundation libraries (shade, admin-x-framework, etc.)
 
 **Setup:**
 ```bash
-# Start everything (Docker + frontend dev servers)
+# Start Ghost + admin app dev servers
 pnpm dev
+
+# Start Ghost, admin, and public app dev servers when working on visitor-facing widgets
+pnpm dev:apps
 
 # With optional services (uses Docker Compose file composition)
 pnpm dev:analytics             # Include Tinybird analytics

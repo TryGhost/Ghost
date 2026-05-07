@@ -44,12 +44,10 @@ Refer the [docs](https://ghost.org/help/setup-members/#customize-portal-settings
 
 ## Develop
 
-Portal runs automatically when using Ghost's development command from the monorepo root:
+Run Ghost with the public app dev servers from the monorepo root when working on Portal:
 ```
-pnpm dev
+pnpm dev:apps
 ```
-
-This starts all frontend apps (including Portal.)
 ---
 
 To run Portal in a standalone fashion, use `pnpm preview` and open [http://localhost:3000](http://localhost:3000).

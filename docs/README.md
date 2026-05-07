@@ -37,7 +37,7 @@ pnpm run setup
 #### 3. Start Ghost
 
 ```bash
-# Start development (runs Docker backend services + frontend dev servers)
+# Start development (runs Docker backend services + admin frontend dev servers)
 pnpm dev
 ```
 

@@ -7,14 +7,12 @@
 - Run `pnpm` in Ghost monorepo root
 - Run `pnpm` in this directory
 
-### Running via Ghost `pnpm dev` in root folder
+### Running from the monorepo root
 
-Announcement Bar runs automatically when using Ghost's development command from the monorepo root:
+Run Ghost with the public app dev servers from the monorepo root when working on Announcement Bar:
 ```bash
-pnpm dev
+pnpm dev:apps
 ```
-
-This starts all frontend apps (including Announcement Bar.)
 
 ## Release
 

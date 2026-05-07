@@ -23,6 +23,7 @@
     "build:clean": "nx reset && rimraf -g 'ghost/*/build' && rimraf -g 'ghost/*/tsconfig.tsbuildinfo'",
     "clean:hard": "node ./.github/scripts/clean.js",
     "dev": "pnpm nx run ghost-monorepo:docker:dev",
+    "dev:apps": "pnpm nx run ghost-monorepo:docker:dev:apps",
     "dev:sqlite": "DEV_COMPOSE_FILES='-f compose.dev.sqlite.yaml' pnpm nx run ghost-monorepo:docker:dev",
     "dev:mailgun": "DEV_COMPOSE_FILES='-f compose.dev.mailgun.yaml' pnpm nx run ghost-monorepo:docker:dev",
     "dev:lexical": "EDITOR_URL=http://localhost:2368/ghost/assets/koenig-lexical/ pnpm dev",
@@ -173,6 +174,23 @@
         }
       },
       "docker:dev": {
+        "continuous": true,
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "trap 'docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} down' EXIT; docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} logs -f"
+        },
+        "dependsOn": [
+          "docker:up",
+          {
+            "target": "dev",
+            "projects": [
+              "@tryghost/admin",
+              "@tryghost/parse-email-address"
+            ]
+          }
+        ]
+      },
+      "docker:dev:apps": {
         "continuous": true,
         "executor": "nx:run-commands",
         "options": {
