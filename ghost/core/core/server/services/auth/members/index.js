@@ -6,8 +6,7 @@ const config = require('../../../../shared/config');
 let UNO_MEMBERINO;
 
 async function createMiddleware() {
-    const url = require('url');
-    const {protocol, host} = url.parse(config.get('url'));
+    const {protocol, host} = new URL(config.get('url'));
     const siteOrigin = `${protocol}//${host}`;
 
     const membersConfig = await membersService.api.getPublicConfig();
