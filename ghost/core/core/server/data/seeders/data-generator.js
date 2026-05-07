@@ -100,6 +100,19 @@ class DataGenerator {
         // TODO: Remove this once we import posts_meta
         tables.unshift('posts_meta');
 
+        // members_current_subscription has no importer (it's a computed
+        // lookup populated from a VIEW in the post-import step), so it
+        // wouldn't be in `tables` from `tableList`. Without explicitly
+        // adding it here, --clear-database leaves stale rows behind that
+        // reference truncated members/subscriptions. Schema FK cascades
+        // would normally take care of this, but FOREIGN_KEY_CHECKS is
+        // disabled in #run for performance — so we have to truncate it
+        // explicitly. Conditional on existence so older DBs without our
+        // migrations don't fail.
+        if (await transaction.schema.hasTable('members_current_subscription')) {
+            tables.unshift('members_current_subscription');
+        }
+
         // Clear data from any tables that are being imported
         for (const table of tables) {
             this.logger.debug(`Clearing table ${table}`);
@@ -283,6 +296,36 @@ class DataGenerator {
                 baseUrl: this.baseUrl
             });
             await tableImporter.finalise();
+        }
+
+        // Refresh the members_current_subscription lookup from the
+        // members_resolved_subscription VIEW. Importers write directly to
+        // members_stripe_customers_subscriptions; they don't go through the
+        // linkSubscription path that normally maintains this lookup. Without
+        // this step, `subscriptions.*` filters return no results after
+        // `pnpm reset:data` even though subscriptions exist. See BER-3345.
+        //
+        // We clear the table before re-inserting because clearData doesn't
+        // truncate it (it's a computed table with no importer) and the
+        // generator disables FK checks before clearing parent rows. Any
+        // pre-existing rows would otherwise be left behind as orphans
+        // pointing at member/subscription ids that no longer exist.
+        if (await transaction.schema.hasTable('members_current_subscription')) {
+            try {
+                await transaction('members_current_subscription').del();
+
+                const resolved = await transaction('members_resolved_subscription')
+                    .select('member_id', 'subscription_id');
+                if (resolved.length > 0) {
+                    await transaction('members_current_subscription').insert(resolved);
+                }
+            } catch (err) {
+                // The VIEW is created alongside the lookup table by Ghost's
+                // migrations, but tests sometimes spin up a bare schema
+                // without the VIEW. In that case the table is empty too,
+                // so silently skipping is the right behaviour.
+                this.logger.warn(`Skipped members_current_subscription refresh: ${err.message}`);
+            }
         }
 
         // Re-enable the redo log because it's a persisted global

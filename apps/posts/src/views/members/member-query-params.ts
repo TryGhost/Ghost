@@ -89,6 +89,27 @@ export function buildMemberOperationParams({nql, search}: BuildMemberOperationPa
     };
 }
 
+/**
+ * Resolve the member's current subscription, preferring the field returned by
+ * the backend. Falls back to local resolution for older API responses that
+ * don't yet expose `current_subscription` (deploy skew between backend and
+ * admin assets). Once the field has been live everywhere for long enough,
+ * `mostRelevantSubscription` and this fallback can be removed.
+ *
+ * The `!== undefined` check is intentional — three distinct states matter:
+ *   • `undefined` — field absent (old BE during deploy skew) → use fallback
+ *   • `null`      — BE returned the field, member has no resolved sub
+ *   • `Object`    — BE returned the resolved sub
+ * Using `!= null` would re-run the fallback when the BE legitimately returned
+ * null, re-introducing the duplication this field exists to remove.
+ */
+export function getCurrentSubscription(member: Member): MemberSubscription | null {
+    if (member.current_subscription !== undefined) {
+        return member.current_subscription;
+    }
+    return mostRelevantSubscription(member.subscriptions);
+}
+
 export function mostRelevantSubscription(
     subscriptions: MemberSubscription[] | undefined
 ): MemberSubscription | null {
@@ -102,6 +123,20 @@ export function mostRelevantSubscription(
         return null;
     }
 
+    // This is the pre-`current_subscription` resolution logic, kept verbatim
+    // for backwards-compat during BE/FE deploy skew. It does NOT match the
+    // new backend ordering (which uses `created_at` rather than
+    // `current_period_end`) — that mismatch is acceptable here because:
+    //   • This function only runs when `member.current_subscription` is
+    //     absent, which happens only when the FE is talking to a BE that
+    //     hasn't yet been deployed with the new field.
+    //   • In that window, the BE filter system also still uses the old
+    //     "any sub matches" logic, so neither display nor filter has flipped
+    //     to the new rule yet — keeping FE display stable matches what users
+    //     would have seen before this change rolled out.
+    //   • Once the BE has rolled out everywhere, `current_subscription` is
+    //     always present and this function is never reached. At that point
+    //     the function (and this fallback path) can be removed.
     const sorted = [...withId].sort((a, b) => {
         const aActive = ACTIVE_SUBSCRIPTION_STATUSES.has(a.status);
         const bActive = ACTIVE_SUBSCRIPTION_STATUSES.has(b.status);
@@ -159,7 +194,7 @@ export function getActiveColumnValue(
             : null;
 
     case 'subscriptions.plan_interval': {
-        const interval = mostRelevantSubscription(member.subscriptions)?.plan?.interval;
+        const interval = getCurrentSubscription(member)?.plan?.interval;
         if (!interval) {
             return null;
         }
@@ -167,7 +202,7 @@ export function getActiveColumnValue(
     }
 
     case 'subscriptions.status': {
-        const status = mostRelevantSubscription(member.subscriptions)?.status;
+        const status = getCurrentSubscription(member)?.status;
         if (!status) {
             return null;
         }
@@ -181,13 +216,13 @@ export function getActiveColumnValue(
 
     case 'subscriptions.start_date':
         return formatDateColumn(
-            mostRelevantSubscription(member.subscriptions)?.start_date,
+            getCurrentSubscription(member)?.start_date,
             timezone
         );
 
     case 'subscriptions.current_period_end':
         return formatDateColumn(
-            mostRelevantSubscription(member.subscriptions)?.current_period_end,
+            getCurrentSubscription(member)?.current_period_end,
             timezone
         );
 

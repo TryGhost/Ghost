@@ -65,7 +65,7 @@ module.exports.reset = async ({truncate} = {truncate: false}) => {
             // Perform a fast reset by tearing down all the tables and inserting the fixtures
             try {
                 await truncateAll();
-                await knexMigrator.init({only: 2});
+                await knexMigrator.init({only: 3});
             } catch (err) {
                 // If it fails, try a normal restore
                 await forceReinit();

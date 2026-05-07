@@ -72,6 +72,7 @@ export type Member = {
     tiers?: MemberTier[];
     newsletters?: MemberNewsletter[];
     subscriptions?: MemberSubscription[];
+    current_subscription?: MemberSubscription | null;
     email_count?: number;
     email_opened_count?: number;
     email_open_rate?: number | null;

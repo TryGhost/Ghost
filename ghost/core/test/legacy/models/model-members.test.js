@@ -410,6 +410,7 @@ describe('Member Model', function run() {
 
         it('Should allow filtering on subscriptions', async function () {
             const context = testUtils.context.admin;
+            const knex = require('../../../core/server/data/db').knex;
 
             const member = await Member.add({
                 email: 'test@test.member',
@@ -479,6 +480,12 @@ describe('Member Model', function run() {
                 cancel_at_period_end: false
             }, context);
 
+            // Populate the lookup table — subscription1 is active so it wins
+            await knex('members_current_subscription').insert({
+                member_id: member.get('id'),
+                subscription_id: subscription1.get('id')
+            });
+
             {
                 const members = await Member.findPage({filter: `subscriptions.status:canceled+subscriptions.status:-active`});
                 assert.equal(members.data.length, 0, 'Can search for members with canceled subscription and no active ones');
@@ -490,6 +497,12 @@ describe('Member Model', function run() {
                 id: subscription1.id,
                 ...context
             });
+
+            // Both subscriptions are now canceled — update lookup to point to subscription1
+            // (both canceled with same current_period_end, either would work)
+            await knex('members_current_subscription')
+                .where({member_id: member.get('id')})
+                .update({subscription_id: subscription1.get('id')});
 
             {
                 const members = await Member.findPage({filter: `subscriptions.status:canceled+subscriptions.status:-active`});
@@ -512,6 +525,20 @@ describe('Member Model', function run() {
                 const members = await Member.findPage({filter: `subscriptions.plan_interval:month+subscriptions.plan_interval:-year`});
                 assert.equal(members.data.length, 0, 'Can search for members by plan_interval');
             }
+        });
+
+        it('Subscription filter excludes members with no subscriptions at all', async function () {
+            const context = testUtils.context.admin;
+
+            await Member.add({
+                email: 'no-subs@test.member',
+                labels: [],
+                email_disabled: false
+            }, context);
+
+            const activeMembers = await Member.findPage({filter: 'subscriptions.status:active'});
+            const found = activeMembers.data.find(model => model.get('email') === 'no-subs@test.member');
+            assert.equal(found, undefined, 'Member with no subscriptions should not appear in subscription status filter');
         });
 
         it('Should allow filtering on offers redeemed', async function () {

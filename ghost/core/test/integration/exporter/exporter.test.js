@@ -50,6 +50,7 @@ describe('Exporter', function () {
             'members_cancel_events',
             'members_click_events',
             'members_created_events',
+            'members_current_subscription',
             'members_email_change_events',
             'members_feedback',
             'members_labels',

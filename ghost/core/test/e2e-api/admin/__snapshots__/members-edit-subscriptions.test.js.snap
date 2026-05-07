@@ -22,6 +22,7 @@ Object {
       },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "current_subscription": Nullable<Any<Object>>,
       "email": "member2@test.com",
       "email_count": 0,
       "email_open_rate": 50,
@@ -150,7 +151,7 @@ exports[`Members API: edit subscriptions Can cancel a subscription 2: [headers] 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2839",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -181,6 +182,7 @@ Object {
       },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "current_subscription": Nullable<Any<Object>>,
       "email": "member2@test.com",
       "email_count": 0,
       "email_open_rate": 50,
@@ -264,115 +266,7 @@ exports[`Members API: edit subscriptions Can cancel a subscription 4: [headers] 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1854",
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API: edit subscriptions Can cancel a subscription for a member with both comped and paid subscriptions 1: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "attribution": null,
-      "avatar_image": null,
-      "can_comment": true,
-      "commenting": Object {
-        "disabled": false,
-        "disabled_reason": null,
-        "disabled_until": null,
-      },
-      "comped": false,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "comped-paid-combination@example.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "email_suppression": Object {
-        "info": null,
-        "suppressed": false,
-      },
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": null,
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "paid",
-      "subscribed": false,
-      "subscriptions": Any<Array>,
-      "tiers": Any<Array>,
-      "unsubscribe_url": "http://domain.com/unsubscribe/?uuid=memberuuid&key=abc123dontstealme",
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API: edit subscriptions Can cancel a subscription for a member with both comped and paid subscriptions 2: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4065",
-  "content-type": "application/json; charset=utf-8",
-  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
-  "x-powered-by": "Express",
-}
-`;
-
-exports[`Members API: edit subscriptions Can cancel a subscription for a member with both comped and paid subscriptions 3: [body] 1`] = `
-Object {
-  "members": Array [
-    Object {
-      "attribution": null,
-      "avatar_image": null,
-      "can_comment": true,
-      "commenting": Object {
-        "disabled": false,
-        "disabled_reason": null,
-        "disabled_until": null,
-      },
-      "comped": true,
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "email": "comped-paid-combination@example.com",
-      "email_count": 0,
-      "email_open_rate": null,
-      "email_opened_count": 0,
-      "email_suppression": Object {
-        "info": null,
-        "suppressed": false,
-      },
-      "geolocation": null,
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "labels": Any<Array>,
-      "last_seen_at": null,
-      "name": null,
-      "newsletters": Any<Array>,
-      "note": null,
-      "status": "comped",
-      "subscribed": false,
-      "subscriptions": Any<Array>,
-      "tiers": Any<Array>,
-      "unsubscribe_url": "http://domain.com/unsubscribe/?uuid=memberuuid&key=abc123dontstealme",
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
-    },
-  ],
-}
-`;
-
-exports[`Members API: edit subscriptions Can cancel a subscription for a member with both comped and paid subscriptions 4: [headers] 1`] = `
-Object {
-  "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3081",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -403,6 +297,7 @@ Object {
       },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "current_subscription": Nullable<Any<Object>>,
       "email": "duplicate-customers-test@example.com",
       "email_count": 0,
       "email_open_rate": null,
@@ -434,7 +329,7 @@ exports[`Members API: edit subscriptions Can cancel a subscription for a member 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3864",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -465,6 +360,7 @@ Object {
       },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "current_subscription": Nullable<Any<Object>>,
       "email": "duplicate-customers-test@example.com",
       "email_count": 0,
       "email_open_rate": null,
@@ -496,7 +392,7 @@ exports[`Members API: edit subscriptions Can cancel a subscription for a member 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2880",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -527,6 +423,7 @@ Object {
       },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "current_subscription": Nullable<Any<Object>>,
       "email": "duplicate-subscription-test@example.com",
       "email_count": 0,
       "email_open_rate": null,
@@ -558,7 +455,7 @@ exports[`Members API: edit subscriptions Can cancel a subscription for a member 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3873",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -589,6 +486,7 @@ Object {
       },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "current_subscription": Nullable<Any<Object>>,
       "email": "duplicate-subscription-test@example.com",
       "email_count": 0,
       "email_open_rate": null,
@@ -620,7 +518,7 @@ exports[`Members API: edit subscriptions Can cancel a subscription for a member 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2889",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -651,6 +549,7 @@ Object {
       },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "current_subscription": Nullable<Any<Object>>,
       "email": "duplicate-subscription-wrongfully-test@example.com",
       "email_count": 0,
       "email_open_rate": null,
@@ -682,7 +581,7 @@ exports[`Members API: edit subscriptions Can recover member products when we can
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3906",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -713,6 +612,7 @@ Object {
       },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "current_subscription": Nullable<Any<Object>>,
       "email": "duplicate-subscription-wrongfully-test@example.com",
       "email_count": 0,
       "email_open_rate": null,
@@ -744,7 +644,7 @@ exports[`Members API: edit subscriptions Can recover member products when we can
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2922",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -775,6 +675,7 @@ Object {
       },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "current_subscription": Nullable<Any<Object>>,
       "email": "duplicate-subscription-wrongfully-test2@example.com",
       "email_count": 0,
       "email_open_rate": null,
@@ -806,7 +707,7 @@ exports[`Members API: edit subscriptions Can recover member products when we upd
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4746",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -837,6 +738,7 @@ Object {
       },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "current_subscription": Nullable<Any<Object>>,
       "email": "duplicate-subscription-edit-test@example.com",
       "email_count": 0,
       "email_open_rate": null,
@@ -868,7 +770,7 @@ exports[`Members API: edit subscriptions Can update a subscription for a member 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4725",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -899,6 +801,7 @@ Object {
       },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "current_subscription": Nullable<Any<Object>>,
       "email": "duplicate-subscription-edit-test@example.com",
       "email_count": 0,
       "email_open_rate": null,
@@ -930,7 +833,7 @@ exports[`Members API: edit subscriptions Can update a subscription for a member 
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4724",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -953,6 +856,7 @@ Object {
       },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "current_subscription": Nullable<Any<Object>>,
       "email": "comped-paid-combination@example.com",
       "email_count": 0,
       "email_open_rate": null,
@@ -984,7 +888,7 @@ exports[`Members API: edit subscriptions Comp product is removed when a comped m
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2688",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1007,6 +911,7 @@ Object {
       },
       "comped": false,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "current_subscription": Nullable<Any<Object>>,
       "email": "comped-paid-combination@example.com",
       "email_count": 0,
       "email_open_rate": null,
@@ -1038,7 +943,7 @@ exports[`Members API: edit subscriptions Comp product is removed when a comped m
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1704",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
