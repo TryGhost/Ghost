@@ -12,16 +12,27 @@ const privateRoute = '/private/';
 
 const messages = {
     pageNotFound: 'Page not found.',
-    wrongPassword: 'Incorrect password.'
+    wrongAccessCode: 'Incorrect access code.'
 };
 
+function getAccessCode() {
+    const accessCode = settingsCache.get('password');
+    return typeof accessCode === 'string' ? accessCode : '';
+}
+
+function hasAccessCode(accessCode) {
+    return typeof accessCode === 'string' && accessCode.trim().length > 0;
+}
+
 function verifySessionHash(salt, hash) {
-    if (!salt || !hash) {
+    const accessCode = getAccessCode();
+
+    if (!salt || !hash || !hasAccessCode(accessCode)) {
         return false;
     }
 
     let hasher = crypto.createHash('sha256');
-    hasher.update(settingsCache.get('password') + salt, 'utf8');
+    hasher.update(accessCode + salt, 'utf8');
     return hasher.digest('hex') === hash;
 }
 
@@ -152,21 +163,21 @@ const privateBlogging = {
             return next();
         }
 
-        const bodyPass = req.body.password;
-        const pass = settingsCache.get('password');
+        const submittedAccessCode = req.body && req.body.password;
+        const accessCode = getAccessCode();
         const hasher = crypto.createHash('sha256');
         const salt = Date.now().toString();
         const forward = getRedirectUrl(req.query);
 
-        if (pass === bodyPass) {
-            hasher.update(bodyPass + salt, 'utf8');
+        if (hasAccessCode(accessCode) && hasAccessCode(submittedAccessCode) && accessCode === submittedAccessCode) {
+            hasher.update(submittedAccessCode + salt, 'utf8');
             req.session.token = hasher.digest('hex');
             req.session.salt = salt;
 
             return res.redirect(urlUtils.urlFor({relativeUrl: forward}));
         } else {
             res.error = {
-                message: tpl(messages.wrongPassword)
+                message: tpl(messages.wrongAccessCode)
             };
             return next();
         }
