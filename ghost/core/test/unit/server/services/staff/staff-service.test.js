@@ -565,7 +565,7 @@ describe('StaffService', function () {
                 testCommonPaidSubMailData({...stubs, member});
 
                 assert.equal(mailStub.calledWith(
-                    sinon.match.has('html', 'Offer')
+                    sinon.match.has('html', sinon.match('Offer'))
                 ), false);
             });
 
@@ -580,7 +580,7 @@ describe('StaffService', function () {
                 testCommonPaidSubMailData({...stubs, member: memberData});
 
                 assert.equal(mailStub.calledWith(
-                    sinon.match.has('html', 'Offer')
+                    sinon.match.has('html', sinon.match('Offer'))
                 ), false);
 
                 // check preview text
@@ -656,6 +656,56 @@ describe('StaffService', function () {
                 sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('Free week')));
                 sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('7 days free')));
             });
+
+            it('sends paid subscription start alert with gift-derived trial period', async function () {
+                const trialStart = new Date('2022-08-01T07:30:39.882Z');
+                const trialEnd = new Date('2022-08-31T07:30:39.882Z');
+                const trialSubscription = {
+                    ...subscription,
+                    trialStart,
+                    trialEnd
+                };
+
+                await service.emails.notifyPaidSubscriptionStarted({member, offer: null, tier, subscription: trialSubscription}, options);
+
+                sinon.assert.calledOnce(mailStub);
+                testCommonPaidSubMailData({...stubs, member});
+
+                // Trial appears inline on the Tier line, not as a separate Offer block
+                sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('30 days free')));
+                assert.equal(mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Offer'))
+                ), false);
+
+                // check preview text — trial appended to tier line
+                sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('Test Tier: $50.00/month - 30 days free')));
+            });
+
+            it('does not show inline trial on tier line when a trial offer is present', async function () {
+                offer = {
+                    name: 'Free week',
+                    duration: 'trial',
+                    type: 'trial',
+                    amount: 7
+                };
+                const trialSubscription = {
+                    ...subscription,
+                    trialStart: new Date('2022-08-01T07:30:39.882Z'),
+                    trialEnd: new Date('2022-08-08T07:30:39.882Z')
+                };
+
+                await service.emails.notifyPaidSubscriptionStarted({member, offer, tier, subscription: trialSubscription}, options);
+
+                sinon.assert.calledOnce(mailStub);
+                testCommonPaidSubMailData({...stubs, member});
+
+                // The Offer block renders "7 days free" but the Tier line should NOT also show it
+                sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('Free week')));
+                sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('7 days free')));
+                assert.equal(mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Test Tier: $50.00/month - 7 days free'))
+                ), false);
+            });
         });
 
         describe('notifyPaidSubscriptionCancel', function () {
@@ -704,7 +754,7 @@ describe('StaffService', function () {
                 sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('5 Sep 2024')));
 
                 assert.equal(mailStub.calledWith(
-                    sinon.match.has('html', 'Offer')
+                    sinon.match.has('html', sinon.match('Offer'))
                 ), false);
 
                 sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('Cancellation reason')));
@@ -750,7 +800,7 @@ describe('StaffService', function () {
                 sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('5 Sep 2024')));
 
                 assert.equal(mailStub.calledWith(
-                    sinon.match.has('html', 'Offer')
+                    sinon.match.has('html', sinon.match('Offer'))
                 ), false);
 
                 sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('Cancellation reason')));

@@ -45,7 +45,9 @@ class StaffService {
                 currency: subscription.plan?.currency,
                 startDate: subscription.start_date,
                 cancelAt: subscription.current_period_end,
-                cancellationReason: subscription.cancellation_reason
+                cancellationReason: subscription.cancellation_reason,
+                trialStart: subscription.trial_start_at,
+                trialEnd: subscription.trial_end_at
             } : null,
             member: member ? {
                 id: member.id,
