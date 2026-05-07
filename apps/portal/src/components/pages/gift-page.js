@@ -64,7 +64,7 @@ export const GiftPageStyles = `
     align-items: center;
     justify-content: center;
     background: var(--white);
-    padding: 64px 48px 128px;
+    padding: 64px 48px;
 }
 
 /* Selection page only: useLayoutEffect locks the inner's vertical
@@ -122,7 +122,7 @@ export const GiftPageStyles = `
 .gh-portal-gift-checkout-tiers {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
 }
 
 .gh-portal-gift-checkout-tier-item {
@@ -137,6 +137,10 @@ export const GiftPageStyles = `
     border-color: var(--grey9);
 }
 
+.gh-portal-gift-checkout-tiers.single .gh-portal-gift-checkout-tier-item:hover {
+    border-color: var(--grey11);
+}
+
 .gh-portal-gift-checkout-tier-item.selected {
     border-color: var(--brandcolor);
     background: color-mix(in srgb, var(--brandcolor) 6%, var(--white));
@@ -145,7 +149,7 @@ export const GiftPageStyles = `
 
 .gh-portal-gift-checkout-tier {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 10px;
     width: 100%;
     background: transparent;
@@ -157,10 +161,15 @@ export const GiftPageStyles = `
     color: inherit;
 }
 
+.gh-portal-gift-checkout-tiers.single .gh-portal-gift-checkout-tier {
+    cursor: default;
+}
+
 .gh-portal-gift-checkout-tier-radio {
     flex-shrink: 0;
     width: 18px;
     height: 18px;
+    margin-top: 3px;
     border-radius: 50%;
     border: 1.5px solid var(--grey9);
     background: var(--white);
@@ -184,6 +193,20 @@ export const GiftPageStyles = `
     transform: translate(-50%, -50%);
 }
 
+.gh-portal-gift-checkout-tier-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.gh-portal-gift-checkout-tier-heading {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+}
+
 .gh-portal-gift-checkout-tier-name {
     flex: 1;
     font-size: 1.5rem;
@@ -195,6 +218,14 @@ export const GiftPageStyles = `
     font-size: 1.5rem;
     font-weight: 500;
     color: var(--grey0);
+}
+
+.gh-portal-gift-checkout-tier-description {
+    margin: 0;
+    margin-top: -2px;
+    font-size: 1.4rem;
+    line-height: 1.4;
+    color: var(--grey4);
 }
 
 .gh-portal-gift-checkout-tier-benefits {
@@ -237,7 +268,7 @@ export const GiftPageStyles = `
 .gh-portal-gift-checkout-benefit svg {
     width: 14px;
     height: 14px;
-    margin-top: 4px;
+    margin-top: 3px;
     color: var(--grey1);
     flex-shrink: 0;
 }
@@ -258,7 +289,7 @@ export const GiftPageStyles = `
 .gh-portal-gift-checkout-cta-wrapper {
     position: sticky;
     bottom: 0;
-    margin: 32px 0 -64px;
+    margin: 0 0 -64px;
     padding: 32px 0 64px;
     background: linear-gradient(0deg, rgba(var(--whitergb), 1) 60%, rgba(var(--whitergb), 0) 100%);
     z-index: 1;
@@ -284,13 +315,15 @@ export const GiftPageStyles = `
 .gh-portal-gift-checkout-right-panel {
     flex: 1;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
     background:
         linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0) 100%),
         var(--brandcolor);
     border-radius: 32px;
     padding: 64px 48px 64px;
+    overflow-y: auto;
+    min-height: 0;
 }
 
 .gh-portal-gift-checkout-card-stack {
@@ -299,6 +332,8 @@ export const GiftPageStyles = `
     align-items: center;
     width: 100%;
     max-width: 280px;
+    margin-block: auto;
+    flex-shrink: 0;
 }
 
 .gh-portal-gift-checkout-card-frame {
@@ -306,6 +341,9 @@ export const GiftPageStyles = `
     transform-style: preserve-3d;
     perspective: 1200px;
     transition: transform 0.3s ease;
+    position: sticky;
+    top: 0;
+    z-index: 1;
 }
 
 .gh-portal-gift-checkout-card-stack[data-revealing="true"] .gh-portal-gift-checkout-card-frame {
@@ -357,6 +395,17 @@ export const GiftPageStyles = `
 .gh-portal-gift-checkout-details-inner {
     min-height: 0;
     overflow: hidden;
+}
+
+.gh-portal-gift-checkout-details-description {
+    margin: 0 0 12px;
+    font-size: 1.45rem;
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.gh-portal-gift-checkout-details-description:last-child {
+    margin-bottom: 0;
 }
 
 .gh-portal-gift-checkout-card {
@@ -476,6 +525,12 @@ export const GiftPageStyles = `
 
 
 @media (max-width: 880px) {
+    .gh-portal-popup-container.full-size.gift,
+    .gh-portal-popup-container.full-size.giftSuccess,
+    .gh-portal-popup-container.full-size.giftRedemption {
+        padding: 0 !important;
+    }
+
     .gh-portal-gift-checkout {
         grid-template-columns: 1fr;
         min-height: 0;
@@ -485,21 +540,34 @@ export const GiftPageStyles = `
         order: -1;
         position: static;
         height: auto;
-        padding: 12px 12px 0;
+        padding: 0;
         overflow: visible;
     }
 
     .gh-portal-gift-checkout-right-panel {
-        padding: 32px 24px;
+        padding: 56px 24px 32px;
+        border-radius: 0 0 32px 32px;
     }
 
     .gh-portal-gift-checkout-left {
-        padding: 32px 24px 80px;
+        padding: 32px 24px 0;
+    }
+
+    /* Screens without a sticky CTA wrapper need their own bottom padding. */
+    .gh-portal-content.giftSuccess .gh-portal-gift-checkout-left,
+    .gh-portal-content.giftRedemption .gh-portal-gift-checkout-left {
+        padding-bottom: 24px;
     }
 
     .gh-portal-gift-checkout-card,
     .gh-portal-gift-checkout-card-stack {
-        max-width: 320px;
+        max-width: 240px;
+    }
+
+    .gh-portal-gift-checkout-cta-wrapper {
+        bottom: 0;
+        margin: 0;
+        padding: 32px 0 24px;
     }
 }
 
@@ -542,34 +610,21 @@ function GiftPriceSwitch({selectedInterval, setSelectedInterval}) {
     );
 }
 
-function getTierPriceLabel(product, selectedInterval) {
-    const activePrice = selectedInterval === 'month' ? product.monthlyPrice : product.yearlyPrice;
-
-    if (!activePrice) {
+export function formatGiftValue(price) {
+    const {amount, currency} = price ?? {};
+    if (amount === null || amount === undefined || !currency) {
         return '';
     }
+    return `${getCurrencySymbol(currency)}${formatNumber(getStripeAmount(amount))}`;
+}
 
-    const currencySymbol = getCurrencySymbol(activePrice.currency);
-    return `${currencySymbol}${formatNumber(getStripeAmount(activePrice.amount))}`;
+function getTierPriceLabel(product, selectedInterval) {
+    const activePrice = selectedInterval === 'month' ? product.monthlyPrice : product.yearlyPrice;
+    return formatGiftValue(activePrice);
 }
 
 function getDurationLabel(selectedInterval) {
     return selectedInterval === 'month' ? '1 month' : '1 year';
-}
-
-const GIFT_EXPIRY_DAYS = 365;
-
-export function getPreviewGiftExpiresAt(fromDate = new Date()) {
-    const date = new Date(fromDate);
-    date.setDate(date.getDate() + GIFT_EXPIRY_DAYS);
-    return date;
-}
-
-export function formatGiftExpiresAt(date) {
-    const d = date instanceof Date ? date : new Date(date);
-    const day = d.getDate();
-    const month = d.toLocaleDateString('en-US', {month: 'short'});
-    return `${day} ${month}, ${d.getFullYear()}`;
 }
 
 const GiftPage = () => {
@@ -586,6 +641,8 @@ const GiftPage = () => {
     // half. After this single measurement we never recompute — so when the
     // benefits change height on tier switch, only the bottom of the column
     // (the CTA) shifts, leaving the title and tier picker anchored.
+    // Skipped on mobile (single-column stack) where natural top-aligned flow
+    // is what we want; centering would push content under the sticky CTA.
     useLayoutEffect(() => {
         if (centeringDoneRef.current) {
             return;
@@ -593,6 +650,11 @@ const GiftPage = () => {
         const inner = innerRef.current;
         const left = leftRef.current;
         if (!inner || !left) {
+            return;
+        }
+        if (typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 880px)').matches) {
+            inner.style.marginTop = '';
+            centeringDoneRef.current = true;
             return;
         }
         const leftRect = left.getBoundingClientRect();
@@ -646,6 +708,7 @@ const GiftPage = () => {
     }
 
     const activeProduct = products.find(p => p.id === selectedProductId) || products[0];
+    const isSingleTier = products.length === 1;
     const isPurchasing = action === 'checkoutGift:running';
     const isDisabled = isCookiesDisabled() || isPurchasing;
 
@@ -681,27 +744,40 @@ const GiftPage = () => {
                             </div>
 
                             <div className='gh-portal-gift-checkout-section'>
-                                <div className='gh-portal-gift-checkout-label'>Tier</div>
-                                <div className='gh-portal-gift-checkout-tiers' role='radiogroup' aria-label='Tier'>
+                                <div className='gh-portal-gift-checkout-label'>{isSingleTier ? 'Membership details' : 'Tier'}</div>
+                                <div
+                                    className={'gh-portal-gift-checkout-tiers' + (isSingleTier ? ' single' : '')}
+                                    role={isSingleTier ? undefined : 'radiogroup'}
+                                    aria-label={isSingleTier ? undefined : 'Tier'}
+                                >
                                     {products.map((product) => {
                                         const isSelected = product.id === activeProduct.id;
                                         const benefits = product.benefits || [];
                                         return (
                                             <div
                                                 key={product.id}
-                                                className={'gh-portal-gift-checkout-tier-item' + (isSelected ? ' selected' : '')}
+                                                className={'gh-portal-gift-checkout-tier-item' + (isSelected && !isSingleTier ? ' selected' : '')}
                                             >
                                                 <button
                                                     type='button'
-                                                    role='radio'
-                                                    aria-checked={isSelected}
+                                                    role={isSingleTier ? undefined : 'radio'}
+                                                    aria-checked={isSingleTier ? undefined : isSelected}
                                                     className='gh-portal-gift-checkout-tier'
                                                     onClick={() => setSelectedProductId(product.id)}
                                                     data-test-tier={product.name}
                                                 >
-                                                    <span className='gh-portal-gift-checkout-tier-radio' aria-hidden='true' />
-                                                    <span className='gh-portal-gift-checkout-tier-name'>{product.name}</span>
-                                                    <span className='gh-portal-gift-checkout-tier-price'>{getTierPriceLabel(product, activeInterval)}</span>
+                                                    {!isSingleTier && (
+                                                        <span className='gh-portal-gift-checkout-tier-radio' aria-hidden='true' />
+                                                    )}
+                                                    <div className='gh-portal-gift-checkout-tier-content'>
+                                                        <div className='gh-portal-gift-checkout-tier-heading'>
+                                                            <span className='gh-portal-gift-checkout-tier-name'>{product.name}</span>
+                                                            <span className='gh-portal-gift-checkout-tier-price'>{getTierPriceLabel(product, activeInterval)}</span>
+                                                        </div>
+                                                        {product.description && (
+                                                            <p className='gh-portal-gift-checkout-tier-description'>{product.description}</p>
+                                                        )}
+                                                    </div>
                                                 </button>
                                                 {benefits.length > 0 && (
                                                     <div
@@ -755,8 +831,8 @@ const GiftPage = () => {
                                     </div>
                                     <div className='gh-portal-gift-checkout-card-details'>
                                         <div className='gh-portal-gift-checkout-card-detail'>
-                                            <div className='gh-portal-gift-checkout-card-detail-label'>Expires</div>
-                                            <div className='gh-portal-gift-checkout-card-detail-value'>{formatGiftExpiresAt(getPreviewGiftExpiresAt())}</div>
+                                            <div className='gh-portal-gift-checkout-card-detail-label'>Gift value</div>
+                                            <div className='gh-portal-gift-checkout-card-detail-value'>{getTierPriceLabel(activeProduct, activeInterval)}</div>
                                         </div>
                                     </div>
                                     <div className='gh-portal-gift-checkout-card-site'>
