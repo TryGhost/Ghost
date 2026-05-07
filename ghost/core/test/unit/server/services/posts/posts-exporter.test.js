@@ -1,5 +1,6 @@
 const PostsExporter = require('../../../../../core/server/services/posts/posts-exporter');
 const assert = require('node:assert/strict');
+const {Readable} = require('stream');
 const {createModelClass, createModel} = require('./utils');
 
 class SettingsCache {
@@ -14,6 +15,14 @@ class SettingsCache {
     set(key, value) {
         this.settings[key] = value;
     }
+}
+
+async function collectStream(stream) {
+    const items = [];
+    for await (const item of stream) {
+        items.push(item);
+    }
+    return items;
 }
 
 describe('PostsExporter', function () {
@@ -115,7 +124,7 @@ describe('PostsExporter', function () {
         });
 
         it('Can export posts', async function () {
-            const posts = await exporter.export({});
+            const posts = await collectStream(await exporter.export({}));
             assert.equal(posts.length, 1);
 
             // Hides newsletter column
@@ -127,7 +136,7 @@ describe('PostsExporter', function () {
 
         it('Can export posts without an email', async function () {
             post.email = null;
-            const posts = await exporter.export({});
+            const posts = await collectStream(await exporter.export({}));
             assert.equal(posts.length, 1);
 
             // Hides newsletter column
@@ -148,7 +157,7 @@ describe('PostsExporter', function () {
                 ...post,
                 newsletter_id: models.Newsletter.options.findAll[1].id
             });
-            const posts = await exporter.export({});
+            const posts = await collectStream(await exporter.export({}));
             assert.equal(posts.length, 2);
 
             // Shows newsletter column
@@ -162,7 +171,7 @@ describe('PostsExporter', function () {
 
         it('Hides feedback columns if feedback disabled for all newsletters', async function () {
             defaultNewsletter.feedback_enabled = false;
-            const posts = await exporter.export({});
+            const posts = await collectStream(await exporter.export({}));
 
             // Hides feedback columns
             assert.equal(posts[0].feedback_more_like_this, undefined);
@@ -177,7 +186,7 @@ describe('PostsExporter', function () {
             };
             models.Newsletter.options.findAll.push(secondNewsletter);
             post.status = 'draft';
-            const posts = await exporter.export({});
+            const posts = await collectStream(await exporter.export({}));
 
             // Feedback columns are empty, but present because of global settings (newsletter with feedback enabled)
             assert.equal(posts[0].feedback_more_like_this, null);
@@ -196,7 +205,7 @@ describe('PostsExporter', function () {
 
         it('Hides member related columns if members disabled', async function () {
             settingsHelpers.isMembersEnabled = () => false;
-            const posts = await exporter.export({});
+            const posts = await collectStream(await exporter.export({}));
             assert.equal(posts[0].email_recipients, undefined);
 
             // No feedback columns
@@ -215,7 +224,7 @@ describe('PostsExporter', function () {
 
         it('Hides clicks if disabled', async function () {
             settingsCache.set('email_track_clicks', false);
-            const posts = await exporter.export({});
+            const posts = await collectStream(await exporter.export({}));
 
             assert.notEqual(posts[0].email_recipients, undefined);
             assert.notEqual(posts[0].feedback_more_like_this, undefined);
@@ -230,7 +239,7 @@ describe('PostsExporter', function () {
 
         it('Hides opens if disabled', async function () {
             settingsCache.set('email_track_opens', false);
-            const posts = await exporter.export({});
+            const posts = await collectStream(await exporter.export({}));
 
             assert.notEqual(posts[0].email_recipients, undefined);
             assert.notEqual(posts[0].feedback_more_like_this, undefined);
@@ -245,7 +254,7 @@ describe('PostsExporter', function () {
 
         it('Hides paid member related columns if paid members disabled', async function () {
             settingsHelpers.arePaidMembersEnabled = () => false;
-            const posts = await exporter.export({});
+            const posts = await collectStream(await exporter.export({}));
 
             assert.notEqual(posts[0].email_recipients, undefined);
             assert.notEqual(posts[0].feedback_more_like_this, undefined);
@@ -265,7 +274,7 @@ describe('PostsExporter', function () {
             delete post.count__positive_feedback;
             delete post.count__negative_feedback;
 
-            const posts = await exporter.export({});
+            const posts = await collectStream(await exporter.export({}));
             assert.equal(posts.length, 1);
 
             assert.equal(posts[0].clicks, 0);
@@ -273,6 +282,104 @@ describe('PostsExporter', function () {
             assert.equal(posts[0].paid_conversions, 0);
             assert.equal(posts[0].feedback_more_like_this, 0);
             assert.equal(posts[0].feedback_less_like_this, 0);
+        });
+
+        it('Streams exports in stable pages when limit is greater than one batch', async function () {
+            const findPageCalls = [];
+            const posts = Array.from({length: 80}, (_, index) => ({
+                ...post,
+                id: `post-${index + 1}`,
+                title: `Post ${index + 1}`,
+                email: createModel({
+                    feedback_enabled: true,
+                    track_clicks: true,
+                    email_count: 256,
+                    opened_count: 128
+                })
+            }));
+
+            models.Post = {
+                findPage: async (options) => {
+                    findPageCalls.push(options);
+
+                    const start = (options.page - 1) * options.limit;
+                    const pageData = posts.slice(start, start + options.limit);
+
+                    return {
+                        data: pageData.map(data => createModel({...data, ...options}))
+                    };
+                }
+            };
+
+            const stream = await exporter.export({limit: 75});
+            assert.ok(stream instanceof Readable || typeof stream.pipe === 'function');
+
+            const exportedPosts = await collectStream(stream);
+            assert.equal(exportedPosts.length, 75);
+            assert.deepEqual(exportedPosts.map(exportedPost => exportedPost.id), posts.slice(0, 75).map(data => data.id));
+            assert.deepEqual(findPageCalls.map(call => call.limit), [50, 50]);
+            assert.deepEqual(findPageCalls.map(call => call.page), [1, 2]);
+            assert.ok(findPageCalls.every(call => call.skipPagination === true));
+        });
+
+        it('Preserves the default export limit when no limit is supplied', async function () {
+            const posts = Array.from({length: 20}, (_, index) => ({
+                ...post,
+                id: `post-${index + 1}`,
+                title: `Post ${index + 1}`,
+                email: createModel({
+                    feedback_enabled: true,
+                    track_clicks: true,
+                    email_count: 256,
+                    opened_count: 128
+                })
+            }));
+
+            models.Post = {
+                findPage: async (options) => {
+                    const start = (options.page - 1) * options.limit;
+                    const pageData = posts.slice(start, start + options.limit);
+
+                    return {
+                        data: pageData.map(data => createModel({...data, ...options}))
+                    };
+                }
+            };
+
+            const exportedPosts = await collectStream(await exporter.export({}));
+
+            assert.equal(exportedPosts.length, 15);
+            assert.deepEqual(exportedPosts.map(exportedPost => exportedPost.id), posts.slice(0, 15).map(data => data.id));
+        });
+
+        it('Falls back to the default export limit when an invalid limit is supplied', async function () {
+            const posts = Array.from({length: 20}, (_, index) => ({
+                ...post,
+                id: `post-${index + 1}`,
+                title: `Post ${index + 1}`,
+                email: createModel({
+                    feedback_enabled: true,
+                    track_clicks: true,
+                    email_count: 256,
+                    opened_count: 128
+                })
+            }));
+
+            models.Post = {
+                findPage: async (options) => {
+                    const start = (options.page - 1) * options.limit;
+                    const pageData = posts.slice(start, start + options.limit);
+
+                    return {
+                        data: pageData.map(data => createModel({...data, ...options}))
+                    };
+                }
+            };
+
+            const exportedPosts = await collectStream(await exporter.export({limit: 'invalid'}));
+
+            assert.equal(exportedPosts.length, 15);
+            assert.deepEqual(exportedPosts.map(exportedPost => exportedPost.id), posts.slice(0, 15).map(data => data.id));
         });
     });
 

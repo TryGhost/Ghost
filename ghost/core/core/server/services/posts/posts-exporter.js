@@ -1,6 +1,9 @@
 const nql = require('@tryghost/nql');
 const logging = require('@tryghost/logging');
+const {Readable} = require('stream');
 
+const EXPORT_BATCH_SIZE = 50;
+const DEFAULT_EXPORT_LIMIT = 15;
 const EXPORT_WITH_RELATED = [
     'tiers',
     'tags',
@@ -12,6 +15,24 @@ const EXPORT_WITH_RELATED = [
     'count.negative_feedback',
     'email'
 ];
+
+function parseExportLimit(limit) {
+    if (limit === 'all') {
+        return null;
+    }
+
+    if (limit === undefined || limit === null) {
+        return DEFAULT_EXPORT_LIMIT;
+    }
+
+    const parsed = Number.parseInt(limit, 10);
+
+    if (Number.isNaN(parsed)) {
+        return DEFAULT_EXPORT_LIMIT;
+    }
+
+    return Math.max(parsed, 1);
+}
 
 class PostsExporter {
     #models;
@@ -38,22 +59,80 @@ class PostsExporter {
     }
 
     /**
-     *
      * @param {object} options
      * @param {string} [options.filter]
      * @param {string} [options.order]
      * @param {string|number} [options.limit]
+     * @returns {Promise<Readable>}
      */
     async export({filter, order, limit}) {
-        const posts = await this.#models.Post.findPage({
-            filter: filter ?? 'status:published,status:sent',
-            order,
-            limit,
-            withRelated: EXPORT_WITH_RELATED
-        });
-
         const exportContext = await this.#getExportContext();
-        return this.#mapPosts(posts.data, exportContext);
+        const requestedLimit = parseExportLimit(limit);
+        const pageLimit = requestedLimit === null ? EXPORT_BATCH_SIZE : Math.min(EXPORT_BATCH_SIZE, requestedLimit);
+
+        return Readable.from(this.#streamPosts({
+            filter,
+            order,
+            requestedLimit,
+            pageLimit,
+            exportContext
+        }), {objectMode: true});
+    }
+
+    /**
+     * @typedef {object} ExportContext
+     * @property {object[]} newsletters
+     * @property {object[]} labels
+     * @property {object[]} tiers
+     * @property {boolean} membersEnabled
+     * @property {boolean} membersTrackSources
+     * @property {boolean} paidMembersEnabled
+     * @property {boolean} trackOpens
+     * @property {boolean} trackClicks
+     * @property {boolean} hasNewslettersWithFeedback
+     */
+
+    /**
+     * @param {object} options
+     * @param {string} [options.filter]
+     * @param {string} [options.order]
+     * @param {number|null} options.requestedLimit - null means unbounded
+     * @param {number} options.pageLimit
+     * @param {ExportContext} options.exportContext
+     * @returns {AsyncGenerator<object>}
+     */
+    async *#streamPosts({filter, order, requestedLimit, pageLimit, exportContext}) {
+        let page = 1;
+        let emitted = 0;
+
+        while (requestedLimit === null || emitted < requestedLimit) {
+            const posts = await this.#models.Post.findPage({
+                filter: filter ?? 'status:published,status:sent',
+                order,
+                limit: pageLimit,
+                page,
+                skipPagination: true,
+                withRelated: EXPORT_WITH_RELATED
+            });
+
+            if (posts.data.length === 0) {
+                break;
+            }
+
+            const mapped = this.#mapPosts(posts.data, exportContext);
+            const remaining = requestedLimit === null ? mapped.length : requestedLimit - emitted;
+
+            for (const row of mapped.slice(0, remaining)) {
+                emitted += 1;
+                yield row;
+            }
+
+            if (posts.data.length < pageLimit) {
+                break;
+            }
+
+            page += 1;
+        }
     }
 
     async #getExportContext() {
