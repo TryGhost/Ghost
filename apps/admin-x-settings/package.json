@@ -80,10 +80,10 @@
     "eslint-plugin-react-refresh": "0.4.24",
     "eslint-plugin-tailwindcss": "4.0.0-beta.0",
     "tailwindcss": "^4.2.2",
-    "vite": "5.4.21",
+    "vite": "7.3.2",
     "vite-plugin-css-injected-by-js": "3.5.2",
-    "vite-plugin-svgr": "3.3.0",
-    "vitest": "1.6.1"
+    "vite-plugin-svgr": "4.5.0",
+    "vitest": "4.1.2"
   },
   "nx": {
     "targets": {
