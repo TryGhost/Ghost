@@ -315,13 +315,15 @@ export const GiftPageStyles = `
 .gh-portal-gift-checkout-right-panel {
     flex: 1;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
     background:
         linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0) 100%),
         var(--brandcolor);
     border-radius: 32px;
     padding: 64px 48px 64px;
+    overflow-y: auto;
+    min-height: 0;
 }
 
 .gh-portal-gift-checkout-card-stack {
@@ -330,6 +332,8 @@ export const GiftPageStyles = `
     align-items: center;
     width: 100%;
     max-width: 280px;
+    margin-block: auto;
+    flex-shrink: 0;
 }
 
 .gh-portal-gift-checkout-card-frame {
@@ -337,6 +341,9 @@ export const GiftPageStyles = `
     transform-style: preserve-3d;
     perspective: 1200px;
     transition: transform 0.3s ease;
+    position: sticky;
+    top: 0;
+    z-index: 1;
 }
 
 .gh-portal-gift-checkout-card-stack[data-revealing="true"] .gh-portal-gift-checkout-card-frame {
