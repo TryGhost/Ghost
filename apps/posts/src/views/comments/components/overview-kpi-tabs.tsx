@@ -5,6 +5,7 @@ import {LucideIcon, Recharts, formatNumber, formatPercentage} from '@tryghost/sh
 import {STATS_RANGES} from '@src/utils/constants';
 import {formatDisplayDateWithRange, sanitizeChartData} from '@tryghost/shade/app';
 import {getPreviousPeriodText} from '../utils/period-text';
+import type {CommentFilterUpdate} from '../hooks/use-filter-state';
 
 type MetricKey = 'comments' | 'commenters' | 'reported';
 
@@ -26,7 +27,7 @@ interface OverviewKpiTabsProps {
      * Clicking a bar filters the moderation list to comments from that date.
      * On the Reported tab, also applies `reported=true`.
      */
-    onAddFilter: (field: string, value: string, operator?: string) => void;
+    onAddFilters: (filters: CommentFilterUpdate[]) => void;
 }
 
 const TAB_CONFIG: Record<MetricKey, {label: string; color: string; seriesField: 'count' | 'commenters' | 'reported'; totalsField: keyof CommentsOverviewTotals}> = {
@@ -82,7 +83,11 @@ const buildDiffTooltip = (
     );
 };
 
-const OverviewKpiTabs: React.FC<OverviewKpiTabsProps> = ({totals, previousTotals, series, range, isLoading, onAddFilter}) => {
+export const shouldHideDiffs = (range: number) => (
+    range === STATS_RANGES.ALL_TIME.value || range === STATS_RANGES.YEAR_TO_DATE.value
+);
+
+const OverviewKpiTabs: React.FC<OverviewKpiTabsProps> = ({totals, previousTotals, series, range, isLoading, onAddFilters}) => {
     const [currentTab, setCurrentTab] = useState<MetricKey>('comments');
 
     const config = TAB_CONFIG[currentTab];
@@ -97,10 +102,11 @@ const OverviewKpiTabs: React.FC<OverviewKpiTabsProps> = ({totals, previousTotals
         if (!isDailyAggregation || !payload?.date) {
             return;
         }
-        onAddFilter('created_at', payload.date, 'is');
+        const filters: CommentFilterUpdate[] = [{field: 'created_at', value: payload.date, operator: 'is'}];
         if (currentTab === 'reported') {
-            onAddFilter('reported', 'true', 'is');
+            filters.push({field: 'reported', value: 'true', operator: 'is'});
         }
+        onAddFilters(filters);
     };
 
     const chartData = useMemo(() => {
@@ -122,8 +128,8 @@ const OverviewKpiTabs: React.FC<OverviewKpiTabsProps> = ({totals, previousTotals
         value: {label: config.label, color: config.color}
     };
 
-    // No prior period to compare against on "All time" — hide the diff.
-    const diffsHidden = range === STATS_RANGES.ALL_TIME.value;
+    // No meaningful prior period to compare against on "All time" or YTD.
+    const diffsHidden = shouldHideDiffs(range);
     const diffs = useMemo(() => {
         if (diffsHidden || !totals || !previousTotals) {
             return null;

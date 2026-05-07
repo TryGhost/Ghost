@@ -37,6 +37,10 @@ function createService({tableResults = {}} = {}) {
     };
 }
 
+function isSeriesQuery(builder) {
+    return builder.select.called && !builder.count.called && !builder.countDistinct.called && !builder.join.called;
+}
+
 describe('CommentsStatsService', function () {
     afterEach(function () {
         sinon.restore();
@@ -47,13 +51,13 @@ describe('CommentsStatsService', function () {
             const {service} = createService({
                 tableResults: {
                     comments: (builder) => {
-                        if (builder.groupByRaw.called || builder.join.called) {
+                        if (isSeriesQuery(builder) || builder.join.called) {
                             return [];
                         }
                         return [{count: 0, commenters: 0}];
                     },
                     comment_reports: (builder) => {
-                        if (builder.groupByRaw.called) {
+                        if (isSeriesQuery(builder)) {
                             return [];
                         }
                         return [{reported: 0}];
@@ -73,14 +77,16 @@ describe('CommentsStatsService', function () {
             assert.deepEqual(result.topMembers, []);
         });
 
-        it('maps aggregate rows into the expected shape', async function () {
+        it('buckets series detail rows into the expected shape', async function () {
             const {service} = createService({
                 tableResults: {
                     comments: (builder) => {
-                        if (builder.groupByRaw.called) {
+                        if (isSeriesQuery(builder)) {
                             return [
-                                {date: '2026-01-10', count: '5', commenters: '4'},
-                                {date: '2026-01-11', count: '7', commenters: '5'}
+                                {created_at: new Date('2026-01-10T10:00:00.000Z'), member_id: 'mem-1'},
+                                {created_at: new Date('2026-01-10T11:00:00.000Z'), member_id: 'mem-1'},
+                                {created_at: new Date('2026-01-10T12:00:00.000Z'), member_id: 'mem-2'},
+                                {created_at: new Date('2026-01-11T10:00:00.000Z'), member_id: 'mem-3'}
                             ];
                         }
                         if (builder.join.called) {
@@ -101,8 +107,12 @@ describe('CommentsStatsService', function () {
                         return [{count: '42', commenters: '11'}];
                     },
                     comment_reports: (builder) => {
-                        if (builder.groupByRaw.called) {
-                            return [{date: '2026-01-11', reported: '2'}];
+                        if (isSeriesQuery(builder)) {
+                            return [
+                                {created_at: new Date('2026-01-11T10:00:00.000Z'), comment_id: 'comment-1'},
+                                {created_at: new Date('2026-01-11T11:00:00.000Z'), comment_id: 'comment-1'},
+                                {created_at: new Date('2026-01-11T12:00:00.000Z'), comment_id: 'comment-2'}
+                            ];
                         }
                         return [{reported: '3'}];
                     }
@@ -117,8 +127,8 @@ describe('CommentsStatsService', function () {
                 reported: 3
             });
             assert.deepEqual(result.series, [
-                {date: '2026-01-10', count: 5, commenters: 4, reported: 0},
-                {date: '2026-01-11', count: 7, commenters: 5, reported: 2}
+                {date: '2026-01-10', count: 3, commenters: 2, reported: 0},
+                {date: '2026-01-11', count: 1, commenters: 1, reported: 2}
             ]);
             assert.deepEqual(result.topPosts[0], {
                 id: 'post-1', title: 'Post One', slug: 'post-one', count: 20
@@ -132,14 +142,19 @@ describe('CommentsStatsService', function () {
             const {service} = createService({
                 tableResults: {
                     comments: (builder) => {
-                        if (builder.groupByRaw.called || builder.join.called) {
+                        if (isSeriesQuery(builder) || builder.join.called) {
                             return [];
                         }
                         return [{count: 0, commenters: 0}];
                     },
                     comment_reports: (builder) => {
-                        if (builder.groupByRaw.called) {
-                            return [{date: '2026-02-15', reported: '4'}];
+                        if (isSeriesQuery(builder)) {
+                            return [
+                                {created_at: new Date('2026-02-15T10:00:00.000Z'), comment_id: 'comment-1'},
+                                {created_at: new Date('2026-02-15T11:00:00.000Z'), comment_id: 'comment-2'},
+                                {created_at: new Date('2026-02-15T12:00:00.000Z'), comment_id: 'comment-3'},
+                                {created_at: new Date('2026-02-15T13:00:00.000Z'), comment_id: 'comment-4'}
+                            ];
                         }
                         return [{reported: '4'}];
                     }
@@ -169,7 +184,7 @@ describe('CommentsStatsService', function () {
             const {service} = createService({
                 tableResults: {
                     comments: (builder) => {
-                        if (builder.groupByRaw.called || builder.join.called) {
+                        if (isSeriesQuery(builder) || builder.join.called) {
                             return [];
                         }
                         return isCurrentRange(builder)
@@ -177,7 +192,7 @@ describe('CommentsStatsService', function () {
                             : [{count: '20', commenters: '8'}];
                     },
                     comment_reports: (builder) => {
-                        if (builder.groupByRaw.called) {
+                        if (isSeriesQuery(builder)) {
                             return [];
                         }
                         return isCurrentRange(builder)
@@ -200,7 +215,7 @@ describe('CommentsStatsService', function () {
             const {service} = createService({
                 tableResults: {
                     comments: (builder) => {
-                        if (builder.groupByRaw.called || builder.join.called) {
+                        if (isSeriesQuery(builder) || builder.join.called) {
                             return [];
                         }
                         const from = builder.where.getCalls().find(c => c.args[1] === '>=')?.args[2];
@@ -227,13 +242,13 @@ describe('CommentsStatsService', function () {
             const {service} = createService({
                 tableResults: {
                     comments: (builder) => {
-                        if (builder.groupByRaw.called || builder.join.called) {
+                        if (isSeriesQuery(builder) || builder.join.called) {
                             return [];
                         }
                         return [{count: 0, commenters: 0}];
                     },
                     comment_reports: (builder) => {
-                        if (builder.groupByRaw.called) {
+                        if (isSeriesQuery(builder)) {
                             return [];
                         }
                         return [{reported: 0}];
@@ -246,12 +261,12 @@ describe('CommentsStatsService', function () {
             assert.equal(result.previousTotals, null);
         });
 
-        it('formats Date instances in series rows into YYYY-MM-DD strings', async function () {
+        it('buckets series rows by the requested timezone', async function () {
             const {service} = createService({
                 tableResults: {
                     comments: (builder) => {
-                        if (builder.groupByRaw.called) {
-                            return [{date: new Date('2026-03-07T00:00:00.000Z'), count: 4, commenters: 3}];
+                        if (isSeriesQuery(builder)) {
+                            return [{created_at: new Date('2026-03-07T06:30:00.000Z'), member_id: 'mem-1'}];
                         }
                         if (builder.join.called) {
                             return [];
@@ -259,17 +274,17 @@ describe('CommentsStatsService', function () {
                         return [{count: 0, commenters: 0}];
                     },
                     comment_reports: (builder) => {
-                        if (builder.groupByRaw.called) {
-                            return [];
+                        if (isSeriesQuery(builder)) {
+                            return [{created_at: new Date('2026-03-07T06:45:00.000Z'), comment_id: 'comment-1'}];
                         }
                         return [{reported: 0}];
                     }
                 }
             });
 
-            const result = await service.getOverview({});
+            const result = await service.getOverview({timezone: 'America/Los_Angeles'});
 
-            assert.deepEqual(result.series, [{date: '2026-03-07', count: 4, commenters: 3, reported: 0}]);
+            assert.deepEqual(result.series, [{date: '2026-03-06', count: 1, commenters: 1, reported: 1}]);
         });
     });
 });

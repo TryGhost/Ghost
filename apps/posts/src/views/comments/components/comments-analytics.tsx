@@ -3,7 +3,9 @@ import OverviewKpiTabs from './overview-kpi-tabs';
 import OverviewTopMembers from './overview-top-members';
 import OverviewTopPosts from './overview-top-posts';
 import React, {useMemo} from 'react';
+import {Button} from '@tryghost/shade/components';
 import {CommentsOverview as CommentsOverviewPayload, CommentsOverviewResponseType, useCommentsOverview} from '@tryghost/admin-x-framework/api/stats';
+import type {CommentFilterUpdate} from '../hooks/use-filter-state';
 
 interface CommentsAnalyticsProps {
     range: number;
@@ -15,7 +17,7 @@ interface CommentsAnalyticsProps {
      * Applies a filter to the moderation list rendered alongside this rail.
      * Used by top-posts/commenters row clicks and chart bar clicks.
      */
-    onAddFilter: (field: string, value: string, operator?: string) => void;
+    onAddFilters: (filters: CommentFilterUpdate[]) => void;
 }
 
 const EMPTY_OVERVIEW: CommentsOverviewPayload = {
@@ -26,16 +28,18 @@ const EMPTY_OVERVIEW: CommentsOverviewPayload = {
     topMembers: []
 };
 
-const CommentsAnalytics: React.FC<CommentsAnalyticsProps> = ({range, setRange, dateFrom, dateTo, timezone, onAddFilter}) => {
+const CommentsAnalytics: React.FC<CommentsAnalyticsProps> = ({range, setRange, dateFrom, dateTo, timezone, onAddFilters}) => {
     const searchParams = useMemo(() => ({
         date_from: dateFrom,
         date_to: dateTo,
         timezone
     }), [dateFrom, dateTo, timezone]);
 
-    const {data, isLoading} = useCommentsOverview({searchParams}) as {
+    const {data, isError, isLoading, refetch} = useCommentsOverview({searchParams, defaultErrorHandler: false}) as {
         data: CommentsOverviewResponseType | undefined;
+        isError: boolean;
         isLoading: boolean;
+        refetch: () => void;
     };
 
     const overview = data?.stats?.[0] ?? EMPTY_OVERVIEW;
@@ -46,26 +50,38 @@ const CommentsAnalytics: React.FC<CommentsAnalyticsProps> = ({range, setRange, d
                 <h2 className='text-lg font-semibold tracking-tight'>Analytics</h2>
                 <OverviewDateRange range={range} onRangeChange={setRange} />
             </div>
-            <OverviewKpiTabs
-                isLoading={isLoading}
-                previousTotals={data ? overview.previousTotals : undefined}
-                range={range}
-                series={data ? overview.series : undefined}
-                totals={data ? overview.totals : undefined}
-                onAddFilter={onAddFilter}
-            />
-            <OverviewTopPosts
-                isLoading={isLoading}
-                posts={data ? overview.topPosts : undefined}
-                range={range}
-                onRowClick={postId => onAddFilter('post', postId)}
-            />
-            <OverviewTopMembers
-                isLoading={isLoading}
-                members={data ? overview.topMembers : undefined}
-                range={range}
-                onRowClick={memberId => onAddFilter('author', memberId)}
-            />
+            {isError ? (
+                <div className='rounded-md border border-border bg-background p-4 text-sm'>
+                    <div className='font-medium text-foreground'>Could not load analytics</div>
+                    <div className='mt-1 text-muted-foreground'>Try again, or reload the page if the problem continues.</div>
+                    <Button className='mt-3' size='sm' variant='outline' onClick={() => refetch()}>
+                        Retry
+                    </Button>
+                </div>
+            ) : (
+                <>
+                    <OverviewKpiTabs
+                        isLoading={isLoading}
+                        previousTotals={data ? overview.previousTotals : undefined}
+                        range={range}
+                        series={data ? overview.series : undefined}
+                        totals={data ? overview.totals : undefined}
+                        onAddFilters={onAddFilters}
+                    />
+                    <OverviewTopPosts
+                        isLoading={isLoading}
+                        posts={data ? overview.topPosts : undefined}
+                        range={range}
+                        onRowClick={postId => onAddFilters([{field: 'post', value: postId}])}
+                    />
+                    <OverviewTopMembers
+                        isLoading={isLoading}
+                        members={data ? overview.topMembers : undefined}
+                        range={range}
+                        onRowClick={memberId => onAddFilters([{field: 'author', value: memberId}])}
+                    />
+                </>
+            )}
         </div>
     );
 };

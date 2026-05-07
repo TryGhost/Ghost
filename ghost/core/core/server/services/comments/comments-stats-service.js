@@ -73,7 +73,11 @@ module.exports = class CommentsStatsService {
     }
 
     _resolveRange(dateFrom, dateTo, timezone) {
-        return getDateBoundaries({date_from: dateFrom, date_to: dateTo, timezone});
+        const tz = timezone || 'UTC';
+        return {
+            ...getDateBoundaries({date_from: dateFrom, date_to: dateTo, timezone: tz}),
+            timezone: tz
+        };
     }
 
     _resolvePreviousRange(dateFrom, dateTo, timezone) {
@@ -93,7 +97,7 @@ module.exports = class CommentsStatsService {
         }
         const prevDateTo = startOfFrom.clone().subtract(1, 'day').format('YYYY-MM-DD');
         const prevDateFrom = startOfFrom.clone().subtract(lengthDays, 'days').format('YYYY-MM-DD');
-        return getDateBoundaries({date_from: prevDateFrom, date_to: prevDateTo, timezone: tz});
+        return this._resolveRange(prevDateFrom, prevDateTo, tz);
     }
 
     _applyRange(query, column, {dateFrom, dateTo}) {
@@ -125,50 +129,56 @@ module.exports = class CommentsStatsService {
     async _getSeries(knex, range) {
         const commentsQuery = knex('comments')
             .where('status', 'published')
-            .select(knex.raw('DATE(created_at) as date'))
-            .count({count: '*'})
-            .countDistinct({commenters: 'member_id'})
-            .groupByRaw('DATE(created_at)')
-            .orderByRaw('DATE(created_at) ASC');
+            .select('created_at', 'member_id');
         this._applyRange(commentsQuery, 'comments.created_at', range);
 
         const reportsQuery = knex('comment_reports')
-            .select(knex.raw('DATE(created_at) as date'))
-            .countDistinct({reported: 'comment_id'})
-            .groupByRaw('DATE(created_at)')
-            .orderByRaw('DATE(created_at) ASC');
+            .select('created_at', 'comment_id');
         this._applyRange(reportsQuery, 'comment_reports.created_at', range);
 
         const [commentsRows, reportsRows] = await Promise.all([commentsQuery, reportsQuery]);
 
         const byDate = new Map();
         for (const row of commentsRows) {
-            const date = typeof row.date === 'string' ? row.date : this._formatDate(row.date);
-            byDate.set(date, {
-                date,
-                count: Number(row.count) || 0,
-                commenters: Number(row.commenters) || 0,
-                reported: 0
-            });
+            const date = this._formatBucketDate(row.created_at, range.timezone);
+            const existing = this._getSeriesBucket(byDate, date);
+            existing.count += 1;
+            if (row.member_id) {
+                existing.commenterIds.add(row.member_id);
+            }
         }
         for (const row of reportsRows) {
-            const date = typeof row.date === 'string' ? row.date : this._formatDate(row.date);
-            const existing = byDate.get(date) || {date, count: 0, commenters: 0, reported: 0};
-            existing.reported = Number(row.reported) || 0;
-            byDate.set(date, existing);
+            const date = this._formatBucketDate(row.created_at, range.timezone);
+            const existing = this._getSeriesBucket(byDate, date);
+            if (row.comment_id) {
+                existing.reportedCommentIds.add(row.comment_id);
+            }
         }
 
-        return [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date));
+        return [...byDate.values()]
+            .map(row => ({
+                date: row.date,
+                count: row.count,
+                commenters: row.commenterIds.size,
+                reported: row.reportedCommentIds.size
+            }))
+            .sort((a, b) => a.date.localeCompare(b.date));
     }
 
-    _formatDate(value) {
-        if (!(value instanceof Date)) {
-            return String(value);
+    _getSeriesBucket(byDate, date) {
+        if (!byDate.has(date)) {
+            byDate.set(date, {
+                date,
+                count: 0,
+                commenterIds: new Set(),
+                reportedCommentIds: new Set()
+            });
         }
-        const year = value.getUTCFullYear();
-        const month = String(value.getUTCMonth() + 1).padStart(2, '0');
-        const day = String(value.getUTCDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
+        return byDate.get(date);
+    }
+
+    _formatBucketDate(value, timezone) {
+        return moment.utc(value).tz(timezone || 'UTC').format('YYYY-MM-DD');
     }
 
     async _getTopPosts(knex, range, limit = 25) {

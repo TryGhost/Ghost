@@ -1,4 +1,4 @@
-import {Filter} from '@tryghost/shade/patterns';
+import {Filter, createFilter} from '@tryghost/shade/patterns';
 import {useCallback, useMemo} from 'react';
 import {useSearchParams} from '@tryghost/admin-x-framework';
 
@@ -8,6 +8,20 @@ import {useSearchParams} from '@tryghost/admin-x-framework';
 export const COMMENT_FILTER_FIELDS = ['id', 'status', 'created_at', 'body', 'post', 'author', 'reported'] as const;
 
 export type CommentFilterField = typeof COMMENT_FILTER_FIELDS[number];
+
+export interface CommentFilterUpdate {
+    field: string;
+    value: string;
+    operator?: string;
+}
+
+export function upsertCommentFilters(filters: Filter[], updates: CommentFilterUpdate[]): Filter[] {
+    const fieldsToUpdate = new Set(updates.map(update => update.field));
+    const filtered = filters.filter(filter => !fieldsToUpdate.has(filter.field));
+    const newFilters = updates.map(update => createFilter(update.field, update.operator || 'is', [update.value]));
+
+    return [...filtered, ...newFilters];
+}
 
 export function buildNqlFilter(filters: Filter[]): string | undefined {
     const parts: string[] = [];
