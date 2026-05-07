@@ -4,6 +4,7 @@
 const config = require('../../../shared/config');
 const shared = require('../../../server/web/shared');
 const {api} = require('../../services/proxy');
+const preview = require('../../services/theme-engine/preview');
 
 /**
  * Calculate the member's active tier.
@@ -43,6 +44,10 @@ const getMiddleware = async (getFreeTier = async () => {
      * @param {import('express').NextFunction} next
      */
     function setFrontendCacheHeadersMiddleware(req, res, next) {
+        if (req.header?.(preview._PREVIEW_HEADER_NAME)) {
+            return shared.middleware.cacheControl('noCache')(req, res, next);
+        }
+
         // Caching member's content is an experimental feature, enabled via config
         const shouldCacheMembersContent = config.get('cacheMembersContent:enabled');
         // CASE: Never cache if the blog is set to private
