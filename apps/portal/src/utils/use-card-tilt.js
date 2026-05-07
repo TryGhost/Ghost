@@ -35,7 +35,7 @@ export default function useCardTilt({maxTilt = 3, shineSwing = 10, trackTransiti
             card.style.transform = '';
             card.style.removeProperty('--shine-angle');
         }
-    }, [maxTilt, trackTransition, restTransition]);
+    }, [maxTilt, shineSwing, trackTransition, restTransition]);
 
     const schedule = useCallback(() => {
         if (rafIdRef.current === null) {
