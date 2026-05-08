@@ -3,10 +3,6 @@ const models = require('../../../../../core/server/models');
 const assert = require('node:assert/strict');
 
 describe('Models: getLazyRelation', function () {
-    before(function () {
-        models.init();
-    });
-
     afterEach(function () {
         sinon.restore();
     });

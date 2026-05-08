@@ -268,6 +268,12 @@ export async function mockApi<Requests extends Record<string, MockRequestConfig>
     return {lastApiRequests};
 }
 
+export async function waitForApiRequest<Requests extends Record<string, MockRequestConfig>>(lastApiRequests: {[key in keyof Requests]?: RequestRecord}, requestName: keyof Requests) {
+    await expect.poll(() => lastApiRequests[requestName]).toBeTruthy();
+
+    return lastApiRequests[requestName]!;
+}
+
 export function updatedSettingsResponse(newSettings: Array<{ key: string, value: string | boolean | null, is_read_only?: boolean }>) {
     return {
         ...responseFixtures.settings,

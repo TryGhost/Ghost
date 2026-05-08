@@ -316,10 +316,12 @@ describe('PostsStatsService', function () {
 
         // Mock urlService for URL existence checking
         const mockUrlService = {
-            hasFinished: () => true,
-            getResource: () => {
-                // Mock that all URLs exist for testing
-                return {data: {title: 'Mock Title'}};
+            facade: {
+                hasFinished: () => true,
+                resolveUrl: async () => {
+                    // Mock that all URLs exist for testing
+                    return {title: 'Mock Title', type: 'posts'};
+                }
             }
         };
 
@@ -362,6 +364,40 @@ describe('PostsStatsService', function () {
 
     it('exists', function () {
         assert.ok(service, 'Service instance should exist');
+    });
+
+    // _enrichWithTitles assigns `url_exists` based on the urlService lookup.
+    // The fixtures above always return truthy, so the falsy branch was
+    // unreached. Pin both branches here so the future migration to a
+    // different lookup API has to keep them coherent.
+    describe('_enrichWithTitles url_exists', function () {
+        function svcWithUrlLookup(lookup) {
+            return new PostsStatsService({
+                knex: db,
+                urlService: {
+                    facade: {
+                        hasFinished: () => true,
+                        resolveUrl: async path => lookup(path)
+                    }
+                }
+            });
+        }
+
+        it('flags url_exists: true when the URL resolves to a resource', async function () {
+            const svc = svcWithUrlLookup(() => ({type: 'posts', title: 'present'}));
+            const out = await svc._enrichWithTitles([
+                {attribution_url: '/known/', title: 'Known', attribution_type: 'post', attribution_id: 'p', post_id: 'p'}
+            ]);
+            assert.equal(out[0].url_exists, true);
+        });
+
+        it('flags url_exists: false when the URL has no resource', async function () {
+            const svc = svcWithUrlLookup(() => null);
+            const out = await svc._enrichWithTitles([
+                {attribution_url: '/missing/', title: 'Missing', attribution_type: 'post', attribution_id: 'p', post_id: 'p'}
+            ]);
+            assert.equal(out[0].url_exists, false);
+        });
     });
 
     describe('getTopPosts', function () {

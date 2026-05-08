@@ -1,9 +1,14 @@
-const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
+const errors = require('@tryghost/errors');
 const {generateGiftPreviewImage} = require('./image');
+const {t} = require('../../services/i18n');
 
 function getCadenceLabel(cadence, duration) {
-    return duration === 1 ? `1 ${cadence}` : `${duration} ${cadence}s`;
+    if (cadence === 'year') {
+        return t('{count} year', {count: duration});
+    }
+
+    return t('{count} month', {count: duration});
 }
 
 function escapeHtml(str) {
@@ -17,7 +22,6 @@ function escapeHtml(str) {
 async function giftPreview(req, res) {
     const labs = require('../../../shared/labs');
     const giftService = require('../../services/gifts').service;
-    const tiersService = require('../../services/tiers');
     const urlUtils = require('../../../shared/url-utils');
     const settingsCache = require('../../../shared/settings-cache');
 
@@ -31,14 +35,12 @@ async function giftPreview(req, res) {
     const siteTitle = settingsCache.get('title') || 'Ghost';
 
     let gift;
-    let tier;
 
     try {
         gift = await giftService.getByToken(token);
-        tier = await tiersService.api.read(gift.tierId);
 
-        if (!tier) {
-            throw new errors.NotFoundError({message: `Tier not found: ${gift.tierId}`});
+        if (!gift) {
+            throw new errors.NotFoundError({message: `Gift not found for token`});
         }
     } catch (err) {
         logging.warn(`Gift preview: failed to load required gift data, redirecting to homepage`, err);
@@ -47,8 +49,12 @@ async function giftPreview(req, res) {
     }
 
     const cadenceLabel = getCadenceLabel(gift.cadence, gift.duration);
-    const ogTitle = `A gift membership to ${siteTitle}`;
-    const ogDescription = `${tier.name} \u00B7 ${cadenceLabel}`;
+    const ogTitle = t(`You've been gifted {cadenceLabel} of {siteTitle}`, {
+        cadenceLabel,
+        siteTitle,
+        interpolation: {escapeValue: false}
+    });
+    const ogDescription = t('Open this link to redeem your gift.');
     const ogImage = `${siteUrl}/gift/${encodeURIComponent(token)}/image`;
     const ogUrl = `${siteUrl}/gift/${encodeURIComponent(token)}`;
     const redirectUrl = `${siteUrl}/#/portal/gift/redeem/${encodeURIComponent(token)}`;
@@ -81,7 +87,7 @@ async function giftPreview(req, res) {
 </head>
 <body>
     <script>window.location.replace(${JSON.stringify(redirectUrl)});</script>
-    <noscript><a href="${escapeHtml(redirectUrl)}">Redeem your gift membership</a></noscript>
+    <noscript><a href="${escapeHtml(redirectUrl)}">${escapeHtml(t('Redeem your gift subscription'))}</a></noscript>
 </body>
 </html>`;
 
@@ -92,38 +98,16 @@ async function giftPreview(req, res) {
 
 async function giftPreviewImage(req, res) {
     const labs = require('../../../shared/labs');
-    const giftService = require('../../services/gifts').service;
-    const tiersService = require('../../services/tiers');
     const settingsCache = require('../../../shared/settings-cache');
 
     if (!labs.isSet('giftSubscriptions')) {
         return res.sendStatus(404);
     }
 
-    const token = req.params.token;
-
-    let gift;
-    let tier;
-
-    try {
-        gift = await giftService.getByToken(token);
-        tier = await tiersService.api.read(gift.tierId);
-
-        if (!tier) {
-            throw new errors.NotFoundError({message: `Tier not found: ${gift.tierId}`});
-        }
-    } catch (err) {
-        logging.warn('Gift preview image: failed to load required gift data', err);
-
-        return res.sendStatus(404);
-    }
-
-    const tierName = tier.name;
-    const cadenceLabel = getCadenceLabel(gift.cadence, gift.duration);
     const accentColor = settingsCache.get('accent_color') || '#15171A';
 
     try {
-        const png = await generateGiftPreviewImage({tierName, cadenceLabel, accentColor});
+        const png = await generateGiftPreviewImage({accentColor});
 
         res.set('Content-Type', 'image/png');
         res.set('Cache-Control', 'public, max-age=86400');

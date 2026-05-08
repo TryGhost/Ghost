@@ -125,7 +125,8 @@ export default class MembersStatsService extends Service {
             paid: initialDateInRangeVal ? initialDateInRangeVal.paid : 0,
             free: initialDateInRangeVal ? initialDateInRangeVal.free : 0,
             comped: initialDateInRangeVal ? initialDateInRangeVal.comped : 0,
-            total: initialDateInRangeVal ? (initialDateInRangeVal.paid + initialDateInRangeVal.free + initialDateInRangeVal.comped) : 0
+            gift: initialDateInRangeVal ? initialDateInRangeVal.gift : 0,
+            total: initialDateInRangeVal ? (initialDateInRangeVal.paid + initialDateInRangeVal.free + initialDateInRangeVal.comped + initialDateInRangeVal.gift) : 0
         };
         while (currentRangeDate.isBefore(endDate)) {
             let dateStr = currentRangeDate.format('YYYY-MM-DD');
@@ -134,7 +135,8 @@ export default class MembersStatsService extends Service {
                 paid: dataOnDate.paid,
                 free: dataOnDate.free,
                 comped: dataOnDate.comped,
-                total: dataOnDate.paid + dataOnDate.free + dataOnDate.comped
+                gift: dataOnDate.gift,
+                total: dataOnDate.paid + dataOnDate.free + dataOnDate.comped + dataOnDate.gift
             } : lastVal;
             lastVal = output[dateStr];
             currentRangeDate = currentRangeDate.add(1, 'day');

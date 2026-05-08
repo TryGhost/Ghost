@@ -4,8 +4,17 @@ import CloseButton from '../common/close-button';
 import InboxLinkButton from '../common/inbox-link-button';
 import AppContext from '../../app-context';
 import {ReactComponent as EnvelopeIcon} from '../../images/icons/envelope.svg';
+import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
 import {isIos} from '../../utils/is-ios';
 import {t} from '../../utils/i18n';
+import {getGiftDurationLabel} from '../../utils/gift-redemption-notification';
+import {formatGiftValue} from './gift-page';
+
+const ChevronIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <polyline points="6 9 12 15 18 9"/>
+    </svg>
+);
 
 export const MagicLinkStyles = `
     .gh-portal-icon-envelope {
@@ -85,7 +94,8 @@ export default class MagicLinkPage extends React.Component {
         this.state = {
             [OTC_FIELD_NAME]: '',
             errors: {},
-            isFocused: false
+            isFocused: false,
+            showDetails: false
         };
     }
 
@@ -100,24 +110,30 @@ export default class MagicLinkPage extends React.Component {
                 withOTC: t('If you have an account, an email has been sent to {submittedEmailOrInbox}. Click the link inside or enter your code below.', {submittedEmailOrInbox}),
                 withoutOTC: t('If you have an account, a login link has been sent to your inbox. If it doesn\'t arrive in 3 minutes, be sure to check your spam folder.')
             },
-            signup: t('To complete signup, click the confirmation link in your inbox. If it doesn\'t arrive within 3 minutes, check your spam folder!')
+            signup: t('To complete signup, click the confirmation link in your inbox. If it doesn\'t arrive within 3 minutes, check your spam folder!'),
+            gift: t('Click the confirmation link in your inbox to finish redeeming your membership. If it doesn\'t arrive within 3 minutes, check your spam folder.')
         };
     }
 
     /**
      * Gets the appropriate translated description based on page context
      * @param {Object} params - Configuration object
-     * @param {string} params.lastPage - The previous page ('signin' or 'signup')
+     * @param {string} params.lastPage - The previous page ('signin', 'signup', or 'gift')
      * @param {boolean} params.otcRef - Whether one-time code is being used
      * @param {string} params.submittedEmailOrInbox - The email address or 'your inbox' fallback
      * @returns {string} The translated description
      */
     getTranslatedDescription({lastPage, otcRef, submittedEmailOrInbox}) {
         const descriptionConfig = this.getDescriptionConfig(submittedEmailOrInbox);
-        const normalizedPage = (lastPage === 'signup' || lastPage === 'signin') ? lastPage : 'signin';
+        const allowedPages = ['signup', 'signin', 'gift'];
+        const normalizedPage = allowedPages.includes(lastPage) ? lastPage : 'signin';
 
         if (normalizedPage === 'signup') {
             return descriptionConfig.signup;
+        }
+
+        if (normalizedPage === 'gift') {
+            return descriptionConfig.gift;
         }
 
         return otcRef ? descriptionConfig.signin.withOTC : descriptionConfig.signin.withoutOTC;
@@ -295,9 +311,133 @@ export default class MagicLinkPage extends React.Component {
         );
     }
 
+    renderGiftLayout(showOTCForm) {
+        const {site, pageData, otcRef} = this.context;
+        const gift = pageData?.gift;
+        const siteIcon = site?.icon;
+        const siteTitle = site?.title || '';
+        const submittedEmailOrInbox = pageData?.email ? pageData.email : t('your inbox');
+        const popupTitle = t('Now check your email!');
+        const popupDescription = this.getTranslatedDescription({
+            lastPage: 'gift',
+            otcRef,
+            submittedEmailOrInbox
+        });
+        const benefits = gift.tier?.benefits || [];
+        const tierDescription = gift.tier?.description || '';
+        const submittedName = (pageData?.name || '').trim();
+
+        return (
+            <>
+                <CloseButton />
+                <div className='gh-portal-content giftRedemption'>
+                    <div className='gh-portal-gift-checkout'>
+                        <div className='gh-portal-gift-checkout-left'>
+                            <div className='gh-portal-gift-checkout-bg' aria-hidden='true' />
+                            <div className='gh-portal-gift-checkout-inner'>
+                                <header className='gh-portal-gift-checkout-header'>
+                                    <h1 className='gh-portal-main-title'>{popupTitle}</h1>
+                                    <p className='gh-portal-gift-checkout-subtitle'>{popupDescription}</p>
+                                </header>
+                                <div className='gh-portal-gift-redemption-form'>
+                                    {showOTCForm ? this.renderOTCForm() : this.renderCloseButton()}
+                                </div>
+                            </div>
+                        </div>
+                        <div className='gh-portal-gift-checkout-right'>
+                            <div className='gh-portal-gift-checkout-right-panel'>
+                                <div className='gh-portal-gift-checkout-card-stack' data-revealing={this.state.showDetails}>
+                                    <div className='gh-portal-gift-checkout-card-frame'>
+                                        <div className='gh-portal-gift-checkout-card'>
+                                            <div className='gh-portal-gift-checkout-card-meta'>
+                                                <div className='gh-portal-gift-checkout-card-duration'>{getGiftDurationLabel(gift)}</div>
+                                                {/* eslint-disable-next-line i18next/no-literal-string -- copy not yet finalised */}
+                                                <div className='gh-portal-gift-checkout-card-tier'>{`${gift.tier?.name} membership`}</div>
+                                            </div>
+                                            <div className='gh-portal-gift-checkout-card-details'>
+                                                {submittedName && (
+                                                    <div className='gh-portal-gift-checkout-card-detail'>
+                                                        {/* eslint-disable-next-line i18next/no-literal-string -- copy not yet finalised */}
+                                                        <div className='gh-portal-gift-checkout-card-detail-label'>Name</div>
+                                                        <div className='gh-portal-gift-checkout-card-detail-value'>{submittedName}</div>
+                                                    </div>
+                                                )}
+                                                <div className='gh-portal-gift-checkout-card-detail'>
+                                                    {/* eslint-disable-next-line i18next/no-literal-string -- copy not yet finalised */}
+                                                    <div className='gh-portal-gift-checkout-card-detail-label'>Gift value</div>
+                                                    <div className='gh-portal-gift-checkout-card-detail-value'>{formatGiftValue(gift)}</div>
+                                                </div>
+                                            </div>
+                                            <div className='gh-portal-gift-checkout-card-site'>
+                                                {siteIcon && (
+                                                    <img className='gh-portal-gift-checkout-card-site-icon' src={siteIcon} alt='' />
+                                                )}
+                                                <span className='gh-portal-gift-checkout-card-site-name'>{siteTitle}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {(tierDescription || benefits.length > 0) && (
+                                        <>
+                                            <div
+                                                className='gh-portal-gift-checkout-details'
+                                                data-open={this.state.showDetails}
+                                                aria-hidden={!this.state.showDetails}
+                                            >
+                                                <div className='gh-portal-gift-checkout-details-inner'>
+                                                    {tierDescription && (
+                                                        <p className='gh-portal-gift-checkout-details-description'>{tierDescription}</p>
+                                                    )}
+                                                    {benefits.length > 0 && (
+                                                        <div className='gh-portal-gift-checkout-benefits'>
+                                                            {benefits.map((benefit, index) => {
+                                                                const benefitName = typeof benefit === 'string' ? benefit : benefit?.name;
+                                                                const benefitKey = typeof benefit === 'string' ? benefit : benefit?.id || `gift-benefit-${index}`;
+
+                                                                if (!benefitName) {
+                                                                    return null;
+                                                                }
+
+                                                                return (
+                                                                    <div className='gh-portal-gift-checkout-benefit' key={benefitKey}>
+                                                                        <CheckmarkIcon />
+                                                                        <span>{benefitName}</span>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <button
+                                                type='button'
+                                                className={'gh-portal-gift-checkout-details-toggle' + (this.state.showDetails ? ' is-open' : '')}
+                                                onClick={() => this.setState(s => ({showDetails: !s.showDetails}))}
+                                                aria-expanded={this.state.showDetails}
+                                            >
+                                                {/* eslint-disable-next-line i18next/no-literal-string -- copy not yet finalised */}
+                                                {this.state.showDetails ? 'Hide details' : 'Gift details'}
+                                                <ChevronIcon />
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </>
+        );
+    }
+
     render() {
-        const {otcRef} = this.context;
+        const {otcRef, lastPage, pageData} = this.context;
         const showOTCForm = !!otcRef;
+        const isGiftMode = lastPage === 'gift' && !!pageData?.gift;
+
+        if (isGiftMode) {
+            return this.renderGiftLayout(showOTCForm);
+        }
 
         return (
             <div className='gh-portal-content'>

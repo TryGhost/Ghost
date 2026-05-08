@@ -1,10 +1,9 @@
 module.exports = function (data) {
     // Be careful when you indent the email, because whitespaces are visible in emails!
     return `
-Congratulations!
+Someone redeemed a gift subscription
 
-You have a new paid member: ${data.memberData.name}
-
+Member: ${data.memberData.name}
 Tier: ${data.tierData.name}${data.tierData.details ? ` • ${data.tierData.details}` : ''}
 Gifted by: ${data.giftedByEmail}
 

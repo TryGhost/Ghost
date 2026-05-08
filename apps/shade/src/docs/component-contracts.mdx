@@ -4,86 +4,61 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 <div className="sb-doc">
 
-# Component Rules and Guarantees
+# What you can rely on from a Shade component
 
-<p className="excerpt">This page defines clear rules and guarantees for shared controls: what they do, what they do not do, and which states must always work.</p>
+<p className="excerpt">When you reach for a Shade component, there are some things you should be able to count on without reading the source. This page describes those guarantees, and what we promise about them when the component changes over time.</p>
 
-## Plain-English Definition
+## The rules in one paragraph
 
-In this doc, “contract” means “rules and guarantees”.
-Those rules answer 5 questions:
+A shared component in `components/ui/` does one job, has a public API you can use without surprises, and works in four states (default, hover, focus-visible, disabled) before anything else. It doesn't know about specific product surfaces, and it doesn't accept props that hint at one. When we change it, we tell you what changed and what stayed the same.
 
-- What problem does this component solve?
-- What API can consumers use safely?
-- Which states must always work?
-- What is intentionally out of scope?
-- What compatibility promise do we make?
+If those things aren't true, the component isn't ready to be shared yet — it's still a draft.
 
-If these answers are missing, teams guess. Guessing causes component drift.
+## Why bother with rules
 
-## Why This Matters
+For humans, clear rules make code reviews faster (less back-and-forth about whether a prop is appropriate) and reuse decisions less anxious (you can tell from the API whether a component fits your situation).
 
-For humans:
+For AI agents, the rules are even more important. An agent generating UI code is constantly making choices: which component to use, which prop, which variant. Predictable, narrow component APIs let the agent pick the right tool without inventing components or making up props. Loose APIs invite the agent to guess.
 
-- Faster code reviews (less ambiguity)
-- Easier reuse decisions (`components` vs `patterns`)
-- Fewer accidental breaking changes
+## What "shared" means
 
-For AI agents:
+The current target for documented rules is the set of foundational controls in `components/ui/`:
 
-- Reliable constraints for code generation
-- Fewer invented props and variants
-- Predictable output shape across components
+`Button`, `Input`, `Field`, `Select`, `Tabs`, `Table`, `Dialog`, `DropdownMenu`, `Card`.
 
-## Scope (Wave A)
+Other things in `components/ui/` (recipes like `inputSurface`, smaller helpers, primitives like `TrendBadge` and `MetricValue`) follow the same spirit but don't yet have formal rule documents.
 
-Current Wave A rules coverage targets:
+Some surfaces deliberately sit outside this list — `sidebar`, `multi-select-combobox`, the chart variants. They're large and mix layout, behavior, and styling in ways that the simple rules don't fit cleanly. They're documented at the component level instead.
 
-- `Button`
-- `Input`
-- `Field`
-- `Select`
-- `Tabs`
-- `Table`
-- `Dialog`
-- `DropdownMenu`
-- `Card`
+## What the rules answer
 
-Out of scope for Wave A:
+Five questions, in this order:
 
-- workflow-level compositions (`filters`, app-specific orchestration)
-- very large mixed-behavior surfaces (`sidebar`, `multi-select-combobox`, chart variants)
+**What problem does this component solve?** A one- or two-sentence answer. If the answer takes a paragraph, the component is probably doing too much.
 
-## Human Workflow (Fast)
+**What's the public API?** Props, slots, and variants you can rely on. Things explicitly out of scope (so consumers don't accidentally lean on internal implementation details).
 
-Use this when adding or changing a shared component:
+**Which states must always work?** Default, hover, focus-visible, disabled at minimum. Optional ones (active, loading, error, empty) are documented when they apply.
 
-1. Write a 1-2 sentence purpose and non-goals.
-2. List public props and slots.
-3. Confirm required states: `default`, `hover`, `focus-visible`, `disabled`.
-4. Add Storybook stories that prove those states.
-5. Add compatibility notes if API changed.
+**What's intentionally out of scope?** Workflow-specific behavior, product-specific styling, things that belong in a Feature wrapper instead.
 
-If you cannot explain a prop in one sentence, the API is probably too broad.
+**What's the compatibility promise?** Backward-compatible additions, breaking changes (with migration notes), deprecation timelines if a prop is going away.
 
-## AI Agent Workflow (Deterministic)
+## When you're adding or changing a shared component
 
-When generating or editing a shared component, produce this structure first, then implement:
+The minimum loop:
 
-1. `Component scope`
-2. `Public API`
-3. `State matrix`
-4. `Compatibility policy`
-5. `Deprecation plan` (if needed)
+1. Write a one-sentence purpose statement and a list of explicit non-goals.
+2. List the public props and any slots/subcomponents.
+3. Implement the four required states (default, hover, focus-visible, disabled).
+4. Add Storybook stories that prove those states work.
+5. If you changed an existing API, write a short note about what's different and what stayed the same.
 
-Hard rules for agents:
+If you can't explain a prop in one sentence, the API is probably trying to do too much. Split it.
 
-- Do not add product-specific props in shared `components`.
-- Do not skip required states.
-- Do not remove existing public API without compatibility notes.
-- If behavior is workflow-specific, move it to `patterns`.
+## When you're an AI agent generating a shared component
 
-## Rules Template
+Produce this structure first, then implement:
 
 ```md
 ## Component scope
@@ -92,63 +67,78 @@ Hard rules for agents:
 
 ## Public API
 - Props:
-- Slots/subcomponents:
+- Slots / subcomponents:
 - Variants:
-- Events/callbacks:
+- Events / callbacks:
 
 ## State matrix
 - default:
 - hover:
 - focus-visible:
 - disabled:
-- optional states (if applicable): active/loading/error/empty
+- optional states (if applicable): active / loading / error / empty
 
 ## Compatibility policy
 - Backward-compatible additions:
 - Breaking changes:
 - Migration notes:
 
-## Deprecation plan
+## Deprecation plan (if applicable)
 - Alias period:
 - Removal target:
 ```
 
-## Good vs Bad Example
+The hard rules for agents:
 
-Good:
+- No product-specific props in shared components. `variant="destructive"` is fine; `isMembersPage` is not.
+- Don't skip required states. A component without a focus-visible style isn't done.
+- Don't remove existing public API without explicit compatibility notes.
+- If behavior is workflow-specific, route it to `features/`, not into the base component.
 
-- `variant="destructive"`: visual intent is explicit and reusable.
-- `size="sm|md|lg"`: bounded scale.
+## A worked example: good vs bad props
 
-Bad:
+Good props are visual or interactive intents that make sense in any context:
 
-- `isMembersPage`: product-specific in a shared control.
-- `layoutMode="toolbarWithFilterAndStats"`: workflow logic leaking into base component.
+- `variant="destructive"` — clear visual intent, reusable across surfaces.
+- `size="sm | md | lg"` — bounded scale, no hidden behavior.
+- `loading={true}` — generic state.
 
-## Required State Coverage
+Bad props leak product or workflow knowledge into a generic control:
 
-For each required state, define:
+- `isMembersPage` — the component shouldn't know which page it's on.
+- `layoutMode="toolbarWithFilterAndStats"` — that's a workflow shape, not a component variant.
 
-- visuals (semantic tokens)
-- interaction behavior
-- accessibility semantics
+When you see yourself reaching for the second kind, stop and ask: is this really a generic control, or is it a Feature wrapper trying to hide as a Button?
 
-Missing required states is a blocker.
+## State coverage in detail
 
-## Ownership Rules
+For each required state, the component should define three things:
 
-Choose `components` when the abstraction is a generic reusable control.
-Choose `patterns` when the abstraction encodes product workflow semantics.
+**Visuals**: which semantic tokens drive the appearance (background, border, text, ring).
 
-If a shared control starts accumulating workflow props, stop and extract a pattern wrapper.
+**Interaction behavior**: what happens when the user does the thing (clicks, types, presses Tab).
 
-## Review Checklist
+**Accessibility semantics**: ARIA roles, labels, focus management, keyboard support.
 
-Before merge:
+Missing required states is a blocker. We don't ship a Button without a focus ring and we don't ship a Dialog without escape-to-close.
 
-- [ ] Rules and guarantees are documented and match implementation.
-- [ ] Required states are implemented and visible in stories.
-- [ ] API remains product-agnostic.
-- [ ] Compatibility/deprecation notes are present for API changes.
+## Components vs. features: the dividing line
+
+The honest answer is: pick `components` when the abstraction is genuinely generic, and `features` when it encodes product workflow.
+
+The smell test: if the component name reads like English you'd use in any web app (Button, Input, Tabs), it's a component. If it reads like Ghost-specific jargon (KpiCardHeader, GhAreaChart, FilterBuilder), it's a feature.
+
+When a shared control starts collecting workflow-specific props, that's the signal to extract a Feature wrapper instead of growing the base API.
+
+## Review checklist
+
+Before merging a change to a shared component:
+
+- The rules and guarantees match the implementation.
+- Required states are implemented and visible in stories.
+- The API stays product-agnostic.
+- Compatibility / deprecation notes exist for any API changes.
+
+If any of those isn't true, the change isn't ready yet.
 
 </div>

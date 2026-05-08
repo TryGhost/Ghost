@@ -177,7 +177,7 @@ describe('redeemGift action', () => {
 
         expect(result).toMatchObject({
             page: 'magiclink',
-            lastPage: 'giftRedemption',
+            lastPage: 'gift',
             otcRef: 'otc-ref-123',
             pageData: {
                 token: 'gift-token-123',

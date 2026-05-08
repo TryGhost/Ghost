@@ -111,7 +111,7 @@ module.exports = (lng = 'en', ns = 'portal', options = {}) => {
         prefix: '{',
         suffix: '}'
     };
-    if (ns === 'theme') {
+    if (ns === 'theme' || ns === 'portal') {
         interpolation.escapeValue = false;
     }
     let resources;

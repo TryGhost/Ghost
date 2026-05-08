@@ -988,9 +988,6 @@ describe('EmailAnalyticsService', function () {
         });
     });
 
-    describe('processEvent', function () {
-    });
-
     describe('aggregateStats', function () {
         describe('with batching enabled', function () {
             let service;

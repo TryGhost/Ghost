@@ -368,7 +368,7 @@ describe('PaymentsService', function () {
             assert.equal(args.metadata.gift_token, 'AbCdEfGhIjKl');
         });
 
-        it('appends gift token to success URL', async function () {
+        it('appends gift token, tier and cadence to success URL', async function () {
             const tier = await createTier({monthlyPrice: 5000, yearlyPrice: 50000});
 
             await service.getGiftPaymentLink({...defaultGiftOptions, tier, cadence: 'year'});
@@ -378,6 +378,8 @@ describe('PaymentsService', function () {
 
             assert.equal(successUrl.searchParams.get('stripe'), 'gift-purchase-success');
             assert.equal(successUrl.searchParams.get('gift_token'), args.metadata.gift_token);
+            assert.equal(successUrl.searchParams.get('gift_tier'), tier.id.toHexString());
+            assert.equal(successUrl.searchParams.get('gift_cadence'), 'year');
         });
 
         it('prevents caller metadata from overwriting gift-specific keys', async function () {

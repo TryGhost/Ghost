@@ -1,0 +1,2 @@
+id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id
+634e48e056ef99c6a7af5853,giftmember3@example.com,Gift And Comp,Has both gift_id and complimentary_plan,true,true,,2023-07-26T11:50:00.000Z,,,Premium Tier,abc123abc123abc123abc123

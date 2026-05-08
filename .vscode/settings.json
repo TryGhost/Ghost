@@ -18,6 +18,7 @@
         "**/ghost.map": true,
         "**/node_modules": true,
         "ghost/core/core/built/**": true,
+        ".claude/worktrees/**": true,
         "**/config.*.json": false,
         "**/config.*.jsonc": false
     },

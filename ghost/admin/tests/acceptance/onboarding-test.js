@@ -1,6 +1,6 @@
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
-import {currentURL, find, visit} from '@ember/test-helpers';
+import {currentURL, find, visit, waitUntil} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
 import {enableMembers} from '../helpers/members';
 import {expect} from 'chai';
@@ -13,6 +13,15 @@ describe('Acceptance: Onboarding', function () {
     
     // Helper selectors for better readability
     const checklist = () => find('[data-test-dashboard="onboarding-checklist"]');
+    async function visitSetupDoneRedirect() {
+        try {
+            await visit('/setup/done');
+        } catch (error) {
+            if (error?.message !== 'TransitionAborted') {
+                throw error;
+            }
+        }
+    }
 
     beforeEach(async function () {
         mockAnalyticsApps();
@@ -45,6 +54,19 @@ describe('Acceptance: Onboarding', function () {
 
         // Onboarding checklist tests removed — checklist is now rendered by
         // the React analytics app, not Ember.
+
+        it('setup/done starts onboarding and redirects to the React onboarding route', async function () {
+            await visitSetupDoneRedirect();
+
+            await waitUntil(() => window.location.hash === '#/setup/onboarding?returnTo=/analytics');
+            expect(window.location.hash).to.equal('#/setup/onboarding?returnTo=/analytics');
+
+            let user = this.server.schema.users.first();
+            let preferences = JSON.parse(user.accessibility);
+            expect(preferences.onboarding.completedSteps).to.deep.equal([]);
+            expect(preferences.onboarding.checklistState).to.equal('started');
+            expect(preferences.onboarding.startedAt).to.match(/^\d{4}-\d{2}-\d{2}T/);
+        });
     });
 
     describe('checklist (non-owner)', function () {
@@ -60,6 +82,16 @@ describe('Acceptance: Onboarding', function () {
 
             // onboarding isn't shown
             expect(checklist()).to.not.exist;
+        });
+
+        it('setup/done redirects to the React onboarding route without starting onboarding', async function () {
+            await visitSetupDoneRedirect();
+
+            await waitUntil(() => window.location.hash === '#/setup/onboarding?returnTo=/analytics');
+            expect(window.location.hash).to.equal('#/setup/onboarding?returnTo=/analytics');
+
+            let user = this.server.schema.users.first();
+            expect(user.accessibility).to.be.null;
         });
     });
 

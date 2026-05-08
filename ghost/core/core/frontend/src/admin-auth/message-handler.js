@@ -3,114 +3,72 @@ const adminUrl = window.location.href.replace('auth-frame/', '') + 'api/admin';
 // At compile time, we'll replace the value with the actual origin.
 const siteOrigin = '{{SITE_ORIGIN}}';
 
+function id(value) {
+    if (typeof value !== 'string' || !/^[a-f0-9]{24}$/i.test(value)) {
+        throw new Error('Invalid identifier');
+    }
+    return value;
+}
+
+function qs(params) {
+    const s = new URLSearchParams(params).toString();
+    return s ? '?' + s : '';
+}
+
+function setCommentStatus(commentId, status) {
+    const safeId = id(commentId);
+    return fetch(`${adminUrl}/comments/${safeId}/`, {
+        method: 'PUT',
+        body: JSON.stringify({
+            comments: [{id: safeId, status}]
+        }),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+}
+
+const actions = {
+    browseComments: d => fetch(`${adminUrl}/comments/post/${id(d.postId)}/${qs(d.params)}`),
+    getReplies: d => fetch(`${adminUrl}/comments/${id(d.commentId)}/replies/${qs(d.params)}`),
+    readComment: d => fetch(`${adminUrl}/comments/${id(d.commentId)}/${qs(d.params)}`),
+    getUser: () => fetch(`${adminUrl}/users/me/?include=roles`),
+    hideComment: d => setCommentStatus(d.id, 'hidden'),
+    showComment: d => setCommentStatus(d.id, 'published')
+};
+
 window.addEventListener('message', async function (event) {
     if (event.origin !== siteOrigin) {
         console.warn('Ignored message to admin auth iframe because of mismatch in origin', 'expected', siteOrigin, 'got', event.origin, 'with data', event.data);
         return;
     }
-    let data = null;
+
+    let data;
     try {
         data = JSON.parse(event.data);
     } catch (err) {
-        console.error(err);
+        console.error('Admin auth iframe failed to parse message from site origin:', event.data, err);
+        return;
     }
 
     function respond(error, result) {
         event.source.postMessage(JSON.stringify({
             uid: data.uid,
-            error: error,
-            result: result
+            error: error ? error.message : null,
+            result
         }), siteOrigin);
     }
 
-    if (data.action === 'browseComments') {
-        try {
-            const {postId, params} = data;
-            const res = await fetch(
-                adminUrl + `/comments/post/${postId}/?${new URLSearchParams(params).toString()}`
-            );
-            const json = await res.json();
-            respond(null, json);
-        } catch (err) {
-            respond(err, null);
-        }
+    const handler = actions[data.action];
+    if (!handler) {
+        return;
     }
 
-    if (data.action === 'getReplies') {
-        try {
-            const {commentId, params} = data;
-            const res = await fetch(
-                adminUrl + `/comments/${commentId}/replies/?${new URLSearchParams(params).toString()}`
-            );
-            const json = await res.json();
-            respond(null, json);
-        } catch (err) {
-            respond(err, null);
-        }
-    }
-
-    if (data.action === 'readComment') {
-        try {
-            const {commentId, params} = data;
-            const res = await fetch(adminUrl + '/comments/' + commentId + '/' + '?' + new URLSearchParams(params).toString());
-            const json = await res.json();
-            respond(null, json);
-        } catch (err) {
-            respond(err, null);
-        }
-    }
- 
-    if (data.action === 'getUser') {
-        try {
-            const res = await fetch(
-                adminUrl + '/users/me/?include=roles'
-            );
-            const json = await res.json();
-            respond(null, json);
-        } catch (err) {
-            respond(err, null);
-        }
-    }
-
-    if (data.action === 'hideComment') {
-        try {
-            const res = await fetch(adminUrl + '/comments/' + data.id + '/', {
-                method: 'PUT',
-                body: JSON.stringify({
-                    comments: [{
-                        id: data.id,
-                        status: 'hidden'
-                    }]
-                }),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-            const json = await res.json();
-            respond(null, json);
-        } catch (err) {
-            respond(err, null);
-        }
-    }
-
-    if (data.action === 'showComment') {
-        try {
-            const res = await fetch(adminUrl + '/comments/' + data.id + '/', {
-                method: 'PUT',
-                body: JSON.stringify({
-                    comments: [{
-                        id: data.id,
-                        status: 'published'
-                    }]
-                }),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-            const json = await res.json();
-            respond(null, json);
-        } catch (err) {
-            respond(err, null);
-        }
+    try {
+        const res = await handler(data);
+        const json = await res.json();
+        respond(null, json);
+    } catch (err) {
+        respond(err, null);
     }
 });

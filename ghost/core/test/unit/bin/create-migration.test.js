@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const os = require('os');
 
-const {isValidSlug, getNextMigrationVersion, createMigration} = require('../../../bin/create-migration');
+const {isValidSlug, getTargetMigrationFolder, createMigration} = require('../../../bin/create-migration');
 
 describe('bin/create-migration', function () {
     describe('isValidSlug', function () {
@@ -31,28 +31,25 @@ describe('bin/create-migration', function () {
         });
     });
 
-    describe('getNextMigrationVersion', function () {
-        it('increments minor for stable versions', function () {
-            assert.equal(getNextMigrationVersion('6.18.0'), '6.19');
-            assert.equal(getNextMigrationVersion('5.75.0'), '5.76');
-            assert.equal(getNextMigrationVersion('6.0.0'), '6.1');
-            assert.equal(getNextMigrationVersion('7.12.3'), '7.13');
+    describe('getTargetMigrationFolder', function () {
+        it('targets the minor after the last published version when package is on the patch RC', function () {
+            assert.equal(getTargetMigrationFolder('6.34.1-rc.0', '6.34.0'), '6.35');
+            assert.equal(getTargetMigrationFolder('6.34.2-rc.0', '6.34.0'), '6.35');
         });
 
-        it('uses current minor for prerelease versions', function () {
-            assert.equal(getNextMigrationVersion('6.19.0-rc.0'), '6.19');
-            assert.equal(getNextMigrationVersion('6.19.0-rc.1'), '6.19');
-            assert.equal(getNextMigrationVersion('6.0.0-alpha.0'), '6.0');
-            assert.equal(getNextMigrationVersion('5.75.0-beta.1'), '5.75');
+        it('stays on the current minor when package is already promoted to the next minor RC', function () {
+            assert.equal(getTargetMigrationFolder('6.35.0-rc.0', '6.34.0'), '6.35');
+            assert.equal(getTargetMigrationFolder('6.35.0-rc.3', '6.34.0'), '6.35');
         });
 
-        it('stable and its RC target the same folder', function () {
-            assert.equal(getNextMigrationVersion('6.18.0'), '6.19');
-            assert.equal(getNextMigrationVersion('6.19.0-rc.0'), '6.19');
+        it('targets the next minor when package is sitting on a stable version', function () {
+            assert.equal(getTargetMigrationFolder('6.34.0', '6.34.0'), '6.35');
+            assert.equal(getTargetMigrationFolder('5.75.0', '5.75.0'), '5.76');
         });
 
-        it('throws for invalid versions', function () {
-            assert.throws(() => getNextMigrationVersion('not-a-version'), /Invalid version/);
+        it('does not double-bump when package is further ahead than next-of-published', function () {
+            // Hypothetical recovery state — package was manually promoted ahead
+            assert.equal(getTargetMigrationFolder('6.36.0-rc.0', '6.34.0'), '6.36');
         });
     });
 
@@ -61,8 +58,6 @@ describe('bin/create-migration', function () {
         let coreDir;
 
         beforeEach(function () {
-            // Create a parent dir that mirrors the monorepo layout (core/ + admin/)
-            // so path.resolve(coreDir, '..', 'admin') stays inside the sandbox
             tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ghost-migration-test-'));
             coreDir = path.join(tmpDir, 'core');
 
@@ -84,27 +79,29 @@ describe('bin/create-migration', function () {
             return JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8')).version;
         }
 
-        it('creates a migration file in the correct version folder', function () {
-            writePackageJson(coreDir, '6.18.0');
+        it('creates a migration file in the next-minor folder when on a patch RC', function () {
+            writePackageJson(coreDir, '6.34.1-rc.0');
 
             const result = createMigration({
                 slug: 'add-column',
                 coreDir,
-                date: new Date('2026-02-23T10:30:00Z')
+                date: new Date('2026-02-23T10:30:00Z'),
+                lastPublishedVersion: '6.34.0'
             });
 
             assert.ok(fs.existsSync(result.migrationPath));
-            assert.ok(result.migrationPath.includes(path.join('versions', '6.19')));
+            assert.ok(result.migrationPath.includes(path.join('versions', '6.35')));
             assert.ok(result.migrationPath.endsWith('2026-02-23-10-30-00-add-column.js'));
         });
 
         it('writes the migration template', function () {
-            writePackageJson(coreDir, '6.18.0');
+            writePackageJson(coreDir, '6.34.1-rc.0');
 
             const {migrationPath} = createMigration({
                 slug: 'test-migration',
                 coreDir,
-                date: new Date('2026-01-01T00:00:00Z')
+                date: new Date('2026-01-01T00:00:00Z'),
+                lastPublishedVersion: '6.34.0'
             });
 
             const content = fs.readFileSync(migrationPath, 'utf8');
@@ -115,88 +112,107 @@ describe('bin/create-migration', function () {
         });
 
         it('creates the version directory if it does not exist', function () {
-            writePackageJson(coreDir, '6.18.0');
+            writePackageJson(coreDir, '6.34.1-rc.0');
 
-            const versionDir = path.join(coreDir, 'core', 'server', 'data', 'migrations', 'versions', '6.19');
+            const versionDir = path.join(coreDir, 'core', 'server', 'data', 'migrations', 'versions', '6.35');
             assert.ok(!fs.existsSync(versionDir));
 
             createMigration({
                 slug: 'new-folder',
                 coreDir,
-                date: new Date('2026-01-01T00:00:00Z')
+                date: new Date('2026-01-01T00:00:00Z'),
+                lastPublishedVersion: '6.34.0'
             });
 
             assert.ok(fs.existsSync(versionDir));
         });
 
-        it('bumps to RC when current version is stable', function () {
-            writePackageJson(coreDir, '6.18.0');
+        it('promotes package.json from patch RC to next-minor RC on first migration of the cycle', function () {
+            writePackageJson(coreDir, '6.34.1-rc.0');
 
             const {rcVersion} = createMigration({
                 slug: 'first-migration',
                 coreDir,
-                date: new Date('2026-01-01T00:00:00Z')
+                date: new Date('2026-01-01T00:00:00Z'),
+                lastPublishedVersion: '6.34.0'
             });
 
-            assert.equal(rcVersion, '6.19.0-rc.0');
-            assert.equal(readVersion(coreDir), '6.19.0-rc.0');
+            assert.equal(rcVersion, '6.35.0-rc.0');
+            assert.equal(readVersion(coreDir), '6.35.0-rc.0');
         });
 
-        it('bumps admin package.json when it exists', function () {
-            writePackageJson(coreDir, '6.18.0');
+        it('promotes from a stable version when no RC exists yet', function () {
+            writePackageJson(coreDir, '6.34.0');
+
+            const {rcVersion} = createMigration({
+                slug: 'first-migration',
+                coreDir,
+                date: new Date('2026-01-01T00:00:00Z'),
+                lastPublishedVersion: '6.34.0'
+            });
+
+            assert.equal(rcVersion, '6.35.0-rc.0');
+            assert.equal(readVersion(coreDir), '6.35.0-rc.0');
+        });
+
+        it('promotes admin package.json alongside core', function () {
+            writePackageJson(coreDir, '6.34.1-rc.0');
 
             const adminDir = path.join(tmpDir, 'admin');
             fs.mkdirSync(adminDir, {recursive: true});
-            writePackageJson(adminDir, '6.18.0');
+            writePackageJson(adminDir, '6.34.1-rc.0');
 
             createMigration({
                 slug: 'with-admin',
                 coreDir,
-                date: new Date('2026-01-01T00:00:00Z')
+                date: new Date('2026-01-01T00:00:00Z'),
+                lastPublishedVersion: '6.34.0'
             });
 
-            assert.equal(readVersion(adminDir), '6.19.0-rc.0');
+            assert.equal(readVersion(adminDir), '6.35.0-rc.0');
         });
 
-        it('does not bump when already a prerelease', function () {
-            writePackageJson(coreDir, '6.19.0-rc.0');
+        it('does not bump when already on the target minor RC', function () {
+            writePackageJson(coreDir, '6.35.0-rc.0');
 
             const {rcVersion} = createMigration({
                 slug: 'second-migration',
                 coreDir,
-                date: new Date('2026-01-01T00:00:00Z')
+                date: new Date('2026-01-01T00:00:00Z'),
+                lastPublishedVersion: '6.34.0'
             });
 
             assert.equal(rcVersion, null);
-            assert.equal(readVersion(coreDir), '6.19.0-rc.0');
+            assert.equal(readVersion(coreDir), '6.35.0-rc.0');
         });
 
-        it('places RC migrations in the same folder as stable', function () {
-            writePackageJson(coreDir, '6.19.0-rc.0');
+        it('places subsequent migrations in the same folder as the first', function () {
+            writePackageJson(coreDir, '6.35.0-rc.0');
 
             const result = createMigration({
                 slug: 'rc-migration',
                 coreDir,
-                date: new Date('2026-01-01T00:00:00Z')
+                date: new Date('2026-01-01T00:00:00Z'),
+                lastPublishedVersion: '6.34.0'
             });
 
-            assert.ok(result.migrationPath.includes(path.join('versions', '6.19')));
+            assert.ok(result.migrationPath.includes(path.join('versions', '6.35')));
         });
 
         it('throws for invalid slug', function () {
-            writePackageJson(coreDir, '6.18.0');
+            writePackageJson(coreDir, '6.34.1-rc.0');
 
             assert.throws(
-                () => createMigration({slug: 'INVALID', coreDir}),
+                () => createMigration({slug: 'INVALID', coreDir, lastPublishedVersion: '6.34.0'}),
                 /Invalid slug/
             );
         });
 
         it('throws for missing slug', function () {
-            writePackageJson(coreDir, '6.18.0');
+            writePackageJson(coreDir, '6.34.1-rc.0');
 
             assert.throws(
-                () => createMigration({slug: undefined, coreDir}),
+                () => createMigration({slug: undefined, coreDir, lastPublishedVersion: '6.34.0'}),
                 /Invalid slug/
             );
         });

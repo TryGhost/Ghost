@@ -47,7 +47,7 @@ const EmptyIndicator = React.forwardRef<HTMLDivElement, EmptyIndicatorProps>(({c
                 }
             </div>
             {actions && (
-                <div className='mt-4 flex items-center gap-2'>
+                <div className='flex items-center gap-2'>
                     {actions}
                 </div>
             )}

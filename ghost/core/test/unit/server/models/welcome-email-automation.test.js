@@ -4,10 +4,6 @@ const models = require('../../../../core/server/models');
 const logging = require('@tryghost/logging');
 
 describe('Unit: models/welcome-email-automation', function () {
-    before(function () {
-        models.init();
-    });
-
     afterEach(function () {
         sinon.restore();
     });

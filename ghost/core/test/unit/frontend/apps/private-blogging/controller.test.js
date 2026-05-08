@@ -190,6 +190,9 @@ describe('private.hbs template translation', function () {
                 assert(html.includes('class="gh-private-signup-btn-loading"'));
                 assert(html.includes('class="gh-private-signup-btn-success"'));
                 assert(html.includes('data-ghost-private-subscribe-feedback'));
+                assert(html.includes('id="access"'));
+                assert(html.includes('data-ghost-private-trigger'));
+                assert(html.includes('Enter access code'));
                 assert(html.includes('id="gh-private-config"'));
                 assert(html.includes('src="/private.js"'));
             });
@@ -211,12 +214,54 @@ describe('private.hbs template translation', function () {
                 const html = renderPrivateTemplate(context);
 
                 assertExists(html);
-                assert(!/<form class="gh-private-signup-form gh-signin"[^>]*data-ghost-private-subscribe-form/.test(html));
+                assert(!html.includes('data-ghost-private-subscribe-form'));
+                assert(!html.includes('data-members-form="subscribe"'));
+            });
+
+            it('renders the access form inline when self signup is disabled', function () {
+                const context = {
+                    site: {title: 'Test', description: 'A private publication', url: 'http://test.local', locale: 'en', allow_self_signup: false, admin_url: 'http://test.local/ghost/'}
+                };
+                const html = renderPrivateTemplate(context);
+
+                assertExists(html);
+                assert(html.includes('A private publication'));
+                assert(/<form[^>]*method="post"[\s\S]*name="password"/.test(html));
+                assert(html.includes('placeholder="Access code"'));
+                assert(html.includes('data-1p-ignore'));
+                assert(html.includes('type="submit"'));
+                assert(html.includes('Enter &rarr;'));
+            });
+
+            it('does not render the access dialog or footer access link when self signup is disabled', function () {
+                const context = {
+                    site: {title: 'Test', url: 'http://test.local', locale: 'en', allow_self_signup: false, admin_url: 'http://test.local/ghost/'}
+                };
+                const html = renderPrivateTemplate(context);
+
+                assertExists(html);
+                assert(!html.includes('id="access"'));
+                assert(!html.includes('data-ghost-private-trigger'));
+                assert(!html.includes('href="#access"'));
+                assert(html.includes('Powered by Ghost'));
+                assert(html.includes('Site owner login'));
+            });
+
+            it('renders access form errors inline when self signup is disabled', function () {
+                const context = {
+                    error: {message: 'Wrong code'},
+                    site: {title: 'Test', url: 'http://test.local', locale: 'en', allow_self_signup: false, admin_url: 'http://test.local/ghost/'}
+                };
+                const html = renderPrivateTemplate(context);
+
+                assertExists(html);
+                assert(/<form[^>]*method="post"[\s\S]*Wrong code[\s\S]*<\/form>/.test(html));
+                assert(!html.includes('data-auto-open="true"'));
             });
 
             it('renders English strings when locale is en', function () {
                 const context = {
-                    site: {title: 'Test', url: 'http://test.local', locale: 'en', admin_url: 'http://test.local/ghost/'}
+                    site: {title: 'Test', url: 'http://test.local', locale: 'en', allow_self_signup: true, admin_url: 'http://test.local/ghost/'}
                 };
                 const html = renderPrivateTemplate(context);
                 assertExists(html);
@@ -236,7 +281,7 @@ describe('private.hbs template translation', function () {
             it('renders German strings when locale is de', function () {
                 initLocale({useNewTranslation, locale: 'de'});
                 const context = {
-                    site: {title: 'Test', url: 'http://test.local', locale: 'de', admin_url: 'http://test.local/ghost/'}
+                    site: {title: 'Test', url: 'http://test.local', locale: 'de', allow_self_signup: true, admin_url: 'http://test.local/ghost/'}
                 };
                 const html = renderPrivateTemplate(context);
                 assertExists(html);
@@ -250,7 +295,7 @@ describe('private.hbs template translation', function () {
             it('falls back to English when locale is fr (no fr.json)', function () {
                 initLocale({useNewTranslation, locale: 'fr'});
                 const context = {
-                    site: {title: 'Test', url: 'http://test.local', locale: 'fr', admin_url: 'http://test.local/ghost/'}
+                    site: {title: 'Test', url: 'http://test.local', locale: 'fr', allow_self_signup: true, admin_url: 'http://test.local/ghost/'}
                 };
                 const html = renderPrivateTemplate(context);
                 assertExists(html);
@@ -264,7 +309,7 @@ describe('private.hbs template translation', function () {
             it('auto-opens the dialog when an error is present', function () {
                 const context = {
                     error: {message: 'Wrong code'},
-                    site: {title: 'Test', url: 'http://test.local', locale: 'en', admin_url: 'http://test.local/ghost/'}
+                    site: {title: 'Test', url: 'http://test.local', locale: 'en', allow_self_signup: true, admin_url: 'http://test.local/ghost/'}
                 };
                 const html = renderPrivateTemplate(context);
 

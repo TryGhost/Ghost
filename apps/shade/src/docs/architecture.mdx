@@ -4,245 +4,143 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 <div className="sb-doc">
 
-# System Architecture
+# How Shade is organized
 
-<p className="excerpt">Shade is built as a layered system, with each layer building upon the previous to create a complete design system. This document outlines how these layers work together.</p>
+<p className="excerpt">Shade is a layered system. Each layer has a job, and code belongs in exactly one. Once you understand the layers and their boundaries, the rest of the design system answers itself: where to put new code, what to import, when to compose vs. when to add a new abstraction.</p>
 
-## Read This First (60 seconds)
+## The five-second mental model
 
-If you are not sure where code belongs, use this:
+From the bottom up:
 
-- `tokens`: visual values only (color, type, radius, motion)
-- `primitives`: layout structure only (`Stack`, `Inline`, `Box`, `Container`, `Grid`, `Text`)
-- `components`: reusable generic controls (button, input, dialog)
-- `patterns`: repeated product workflows (filters, resource flows)
-- `app`: app shell and transitional domain exports
-- `utils`: design-system-safe generic helpers only
+**Tokens** are the raw visual values — a color, a radius, a font size, a duration. They have no shape, no behavior, no markup. Just values that other layers consume.
 
-Fast decision rule:
+**Primitives** turn tokens into structure. They're the layout vocabulary: `Stack`, `Inline`, `Box`, `Grid`, `Container`, `Text`. Primitives don't know about buttons or dialogs; they know about rows, columns, padding, and gaps.
 
-- If it changes spacing/alignment/layout, use `primitives`.
-- If it is a generic control, use `components`.
-- If it encodes product workflow, use `patterns`.
+**Components** are generic, reusable controls — Button, Input, Dialog, Tabs. They have visual styling and accessible behavior, but they don't know anything about Ghost's product. A Shade Button is the same Button whether it sits inside Stats, Settings, or the post editor.
 
-## File Structure
+**Recipes** sit alongside components in a separate sidebar group called Foundations. A recipe is a small, shared visual rule that several components consume — for example `inputSurface`, the border + background + focus ring used by every Input, Textarea, InputGroup, and Select trigger. Recipes are utilities, not components; they have no JSX of their own.
+
+**Features** (sometimes called Patterns) are the product-shaped layer. This is where Ghost-specific compositions live: KPI cards, the area chart on Stats, the filter builder on the Members list. Features compose primitives and components together with knowledge of how Ghost actually uses them.
+
+That's the whole hierarchy. Tokens → primitives → components & recipes → features. Each layer is allowed to use anything below it. The reverse is forbidden: a Button can't reach into a feature, a primitive can't reach into a component.
+
+## Terms
+
+A few words get used a lot in Shade and they're worth defining clearly.
+
+### Token
+
+A named visual value. `--color-foreground`, `--radius-md`, `--text-base`, `--duration-fast`. Tokens are CSS custom properties exposed via Tailwind v4's `@theme` block. They flip between light and dark mode automatically. You consume them through Tailwind utility classes (`bg-background`, `text-foreground`, `rounded-md`) or directly via CSS variables in stylesheets.
+
+When you find yourself reaching for a hardcoded color or pixel value, that's a sign you should be using a token instead.
+
+### Primitive
+
+A small layout building block with no domain meaning. The full set: `Stack` (vertical grouping), `Inline` (horizontal grouping), `Box` (padding / radius framing), `Container` (width-constrained shells), `Grid` (multi-column layouts), `Text` (typographic element). Primitives accept semantic spacing and alignment props (`gap="lg"`, `align="center"`) instead of raw Tailwind classes.
+
+Primitives replace the long `flex flex-col gap-4 items-start` strings that made every layout look the same to humans and robots alike.
+
+### Component
+
+A generic, reusable UI control. Button, Input, Dialog, Tabs, Card, DropdownMenu, and so on. Components are styled, accessible, and themed — but they have no product-specific behavior. A Shade `Button` accepts `variant="destructive"` because "destructive" is a generic visual intent. It does not accept `isMembersPage`, because that's a product concern leaking into a generic control.
+
+If a component starts collecting product-specific props or branches, that's a signal to extract a Feature wrapper instead.
+
+### Recipe
+
+A small, named visual rule reused by several components — without being a component itself. The canonical example is `inputSurface`: a function that returns the shared border, background, radius, and focus-ring class string used by every form control surface in Shade. `Input`, `Textarea`, `InputGroup`, and the `Select` trigger all consume it.
+
+Recipes are useful when several components need to look identical along one dimension (chrome, focus state, density) but have different shapes otherwise. They live in `components/ui/` next to the components they support, and they show up in Storybook under the **Foundations** group.
+
+### Layout
+
+A reusable page shell. `Page`, `Header`, `ListHeader`, `ViewHeader`, `Heading`. Layouts compose primitives and components into the structural skeleton of a screen, but they don't carry product logic. They're shared scaffolding.
+
+### Feature (also called Pattern)
+
+A product-shaped composition. Examples in Shade today: `KpiCardHeader`, `KpiTabValue`, `GhAreaChart`, `Filters`. Features know that Ghost has KPIs, area charts with diff tooltips, filterable Members lists. They compose components, primitives, and recipes with that knowledge baked in.
+
+There's a small terminology mismatch worth knowing: in the file system, this layer lives in `components/features/`, but the package entrypoint that exposes them is called `@tryghost/shade/patterns`. Both names refer to the same thing — features are patterns and vice versa. You'll see both used.
+
+### App
+
+The wrapper layer for context, providers, and a small set of transitional helpers. `ShadeApp` lives here, along with utilities that bridge between the design system and Ghost-specific concerns during ongoing migrations.
+
+## Choosing the right layer
+
+When you're about to write something new, the layer choice is usually obvious if you ask: *what is this thing actually doing?*
+
+If it changes spacing, alignment, or layout structure, it's a primitive concern. Reach for `Stack`, `Inline`, `Box`, `Grid`, or `Container` rather than writing flex utilities by hand.
+
+If it's a generic interactive control, it's a component. Use the existing one (Button, Input, Dialog, etc.) or, if you genuinely have a new generic control nobody has built yet, add it to `components/ui/`.
+
+If several components share the same chrome, focus ring, or visual rule, that's a recipe. Extract it to a small utility function in `components/ui/`. Don't try to make it a component if it doesn't have its own markup.
+
+If the thing knows about Ghost — KPIs, members, posts, newsletters, analytics — it's a feature. Put it in `components/features/<feature-name>/`.
+
+The fast version: **if it has a Ghost-shaped name, it's a feature; if it has a generic name, it's a component or primitive.**
+
+## When to add code to Shade at all
+
+The default is to **keep code local first**. A component used in one place doesn't belong in a design system. Build it in your app, ship it, and leave it there. When you find yourself building the same thing a second time in a different surface, that's when you start considering Shade. By the third time, the case is clear.
+
+Premature abstractions in a design system are expensive — the API gets tuned for too few use cases, and changing it later means hunting through every consumer. Patience pays.
+
+## Layered package entrypoints
+
+Shade exposes itself through several import paths instead of one giant barrel. This keeps consumer bundles small and makes intent clear at the call site:
+
+| Import | What's in it |
+| --- | --- |
+| `@tryghost/shade/tokens` | Token names and helpers (CSS variable definitions in `@tryghost/shade/tokens.css`) |
+| `@tryghost/shade/primitives` | Layout primitives + legacy layout shells |
+| `@tryghost/shade/components` | Generic controls, recipes, and visual assets |
+| `@tryghost/shade/patterns` | Features (product compositions) |
+| `@tryghost/shade/app` | `ShadeApp`, providers, transitional helpers |
+| `@tryghost/shade/utils` | Generic DS-safe helpers, `LucideIcon`, `Recharts` |
+
+The bare `@tryghost/shade` import is a compatibility lane that re-exports the main DS layers. New code should import from a specific subpath. The migration deadline is documented in the [Root Imports Migration](?path=/docs/migration-root-imports--docs) page.
+
+## File layout
+
+The repository structure mirrors the layer model:
 
 ```
-/apps/shade/
-├── src/
-│   ├── components/
-│   │   ├── ui/           # Base ShadCN components
-│   │   ├── layout/       # Composed, reusable layout components
-│   │   └── features/     # Feature-specific, higher-level components
-│   ├── hooks/            # Custom React hooks
-│   ├── providers/        # Context providers
-│   ├── lib/ds-utils.ts   # DS-safe utilities
-│   ├── lib/app-utils.ts  # Transitional domain utilities
-│   └── docs/             # Documentation
-├── .storybook/          # Storybook configuration
-├── styles.css           # Tailwind imports + runtime variables
-└── tailwind.theme.css   # CSS-first token definitions (@theme)
+apps/shade/src/
+├── components/
+│   ├── ui/              Generic controls and recipes
+│   ├── layout/          Page shells (Page, ListHeader, ViewHeader)
+│   └── features/        Product compositions (KPI, charts, filters)
+├── docs/                MDX documentation rendered in Storybook
+├── hooks/               Generic React hooks
+├── lib/
+│   ├── ds-utils.ts      DS-safe utilities
+│   └── app-utils.ts     Transitional domain utilities
+└── providers/           Context providers
 ```
 
-## Export Entrypoints
+`components.ts`, `primitives.ts`, `patterns.ts` and friends are the entrypoint barrels — they re-export from their respective folders for the corresponding `@tryghost/shade/*` import path.
 
-Shade now uses layered package entrypoints:
+## Conventions worth knowing
 
-- `@tryghost/shade/tokens` and `@tryghost/shade/tokens.css`
-- `@tryghost/shade/primitives`
-- `@tryghost/shade/components`
-- `@tryghost/shade/patterns`
-- `@tryghost/shade/app`
-- `@tryghost/shade/utils`
+**File names are kebab-case** (`dropdown-menu.tsx`). This matches what the ShadCN CLI generates, so we accept the inconsistency with PascalCase exports.
 
-The root `@tryghost/shade` entrypoint remains a compatibility lane during migration, but new code should import from a layer-specific subpath.
-The root entrypoint now keeps compatibility for DS layers only (`tokens`, `primitives`, `components`, `patterns`).
-`app` and `utils` are intentionally subpath-only.
+**Components are PascalCase**, hooks/functions/types are camelCase.
 
-## Layer Ownership Rules
+**Stories live next to their component** as `<name>.stories.tsx`. The Storybook title puts each story in the right sidebar group: `Foundations / X`, `Primitives / X`, `Components / X`, `Layout / X`, `Features / X`.
 
-- `tokens`: token definitions and helpers only (CSS variables, token names, token lookup helpers).
-- `primitives`: structure/layout building blocks with no product/domain behavior.
-- `components`: reusable UI controls and visual assets/icons.
-- `patterns`: feature-level reusable compositions and interaction rules.
-- `app`: app shell/provider/context APIs and transitional domain exports.
-- `utils`: DS-safe helpers, generic hooks, and third-party namespaces.
+**Use `cn()` to merge classes** (combines `clsx` + `tailwind-merge`). Always merge through `cn()` rather than concatenating strings — it handles Tailwind class conflicts correctly.
 
-## Human and AI Decision Protocol
+**Use `cva()` for variants** when a component has multiple visual modes. It gives type-safe variant props and a single place to define the styles.
 
-Run this order before implementing UI:
+**Always forward `className`** so consumers can extend a component without wrapping it.
 
-1. Choose the layer (`tokens` -> `primitives` -> `components` -> `patterns`).
-2. Reuse existing API first.
-3. If no fit, keep code local and add it to Shade only after repeated use.
-4. Keep shared APIs product-agnostic.
+## When to stop and think
 
-Stop and re-evaluate when:
+A few situations should make you pause:
 
-- a shared component needs workflow-specific props
-- a layout abstraction starts carrying business logic
-- ownership between `components` and `patterns` is unclear
-
-When to add code to Shade:
-
-- Keep code local first, then add it to Shade when it is reused across surfaces.
-- Add to `primitives` when the abstraction is structural.
-- Add to `components` when the abstraction is a reusable control.
-- Add to `patterns` when repeated product workflows emerge.
-- Do not place domain/product helpers in `utils`; route them through `app` during migration and then toward app-local/pattern ownership.
-
-## Primitive Composition Rules and Guarantees
-
-Primitive composition has these fixed rules:
-
-- Primitive set: `Stack`, `Inline`, `Box`, `Container`, `Grid`, `Text`.
-- Spacing API: semantic steps `none | xs | sm | md | lg | xl | 2xl`.
-- Text depth: minimal `Text` primitive with compatibility heading wrappers (`H1`-`H4`, `HTable`).
-- Migration scope: `apps/shade/src/components/layout/*` only.
-- Compatibility policy: keep existing `@tryghost/shade/primitives` exports available during migration and deprecate without hard removals.
-
-## Component Rules and Guarantees Layer
-
-This layer keeps shared control APIs explicit and stable in `components/ui`:
-
-- Define explicit API and state rules for Wave A controls (`Button`, `Input`, `Field`, `Select`, `Tabs`, `Table`, `Dialog`, `DropdownMenu`, `Card`).
-- Keep shared controls product-agnostic.
-- Preserve compatibility through deprecation notes, not hard removals.
-
-## Component Types
-
-### Base Components (UI)
-Located in `/src/components/ui/`:
-- Built on ShadCN/UI primitives
-- Use RadixUI for accessibility
-- Follow composable pattern
-- Examples: Button, Input, Card
-
-### Layout Components (Composed)
-Located in `/src/components/layout/`:
-- Compose base UI into reusable layout primitives (Page, Header, Heading, ViewHeader)
-- Shared across surfaces; no product logic
-- Follow same patterns as base components
-
-### Feature Components
-Located in `/src/components/features/`:
-- Higher-level, feature-specific compositions (e.g., PostShareModal, SourceTabs)
-- May bundle multiple UI and layout parts for a specific workflow
-- Still reusable across apps when the feature exists
-
-## Dependencies
-
-### Core Dependencies
-- **React**: UI library
-- **TailwindCSS**: Utility-first styling
-- **ShadCN/UI**: Component primitives
-- **RadixUI**: Accessible primitives
-- **Lucide**: Default icon system
-
-> ⚠️ Note: When using third-party libraries that might have naming conflicts (like Recharts), we alias all exports (e.g., `export * as Recharts from "recharts"`).
-
-## Component Implementation
-
-### Naming Conventions
-
-- Filenames: ShadCN-generated files keep kebab-case; file-scoped components live alongside their stories
-- Components: `PascalCase`
-- Functions/vars/types: `camelCase`
-
-> ⚠️ Note: ShadCN/UI CLI creates files in kebab-case. We accept this inconsistency due to case-sensitivity issues.
-
-### Component Structure
-
-```tsx
-// Basic component structure
-import { cn } from "@/lib/utils"
-import { cva } from "class-variance-authority"
-
-const componentVariants = cva(
-    "base-styles",
-    {
-        variants: {
-            variant: {
-                default: "variant-styles",
-                // Add variants...
-            }
-        },
-        defaultVariants: {
-            variant: "default"
-        }
-    }
-)
-
-export interface ComponentProps {
-    className?: string;
-    // Other props...
-}
-
-export function Component({ className, ...props }: ComponentProps) {
-    return (
-        <div className={cn(componentVariants(), className)} {...props} />
-    )
-}
-```
-
-### Component API
-
-- Use RadixUI primitives for accessibility
-- Expose RadixUI props when available
-- Always include `className` prop
-- Use Class Variance Authority for variants
-
-## Icons
-
-Shade defaults to using Lucide icons. Since all exports are aliased as `LucideIcon` in `index.ts`, the way to use icons in apps happens through referencing the LucideIcon package:
-
-   ```tsx
-   import { LucideIcon } from 'lucide-react';
-
-   <LucideIcon.Search size={16} />
-   ```
-
-## ShadCN/UI Configuration
-
-Key configuration in `components.json`:
-```json
-{
-    "style": "new-york",
-    "baseColor": "gray",
-    "cssVariables": true
-}
-```
-
-## Best Practices
-
-### Component Design
-- Create composable, not configurable components
-- Keep components focused and single-purpose
-- Maintain consistent prop patterns
-- Document all variants and props
-
-### Styling
-- Use design tokens via Tailwind classes sourced from CSS-first `@theme` tokens
-- Always merge className prop using cn utility
-- Maintain dark mode support
-- Follow responsive design patterns
-
-### Implementation Flow
-
-1. **Start with ShadCN/UI**
-   - Install via CLI if available
-   - Customize implementation
-   - Add/modify variants
-
-2. **Add Documentation**
-   - Create stories
-   - Document variants
-   - Show usage examples
-
-3. **Export Component**
-   ```ts
-   // index.ts
-   export * from './components/ui/component';
-   ```
+- A shared component is starting to grow workflow-specific props (`isMembersPage`, `showInPostEditor`). That's a sign the abstraction is wrong; extract a Feature wrapper instead.
+- A primitive is sprouting business logic (an `if` branch that knows about specific data). Move that logic up into the consumer or a Feature.
+- You can't tell whether something belongs in `components` or `features`. Use the rule: generic name → component, Ghost-shaped name → feature. If still unclear, ask — that ambiguity is usually a real design question.
 
 </div>

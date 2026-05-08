@@ -14,12 +14,14 @@ export interface FindPendingReminderOptions {
 
 export interface GiftRepository {
     existsByCheckoutSessionId(checkoutSessionId: string): Promise<boolean>;
+    getById(id: string, options?: RepositoryTransactionOptions): Promise<Gift | null>;
     getByToken(token: string, options?: RepositoryTransactionOptions): Promise<Gift | null>;
     getByPaymentIntentId(paymentIntentId: string): Promise<Gift | null>;
     findPendingConsumption(): Promise<Gift[]>;
     findPendingExpiration(): Promise<Gift[]>;
     findPendingReminder(options: FindPendingReminderOptions): Promise<Gift[]>;
-    getActiveByMember(memberId: string): Promise<Gift | null>;
+    getActiveByMember(memberId: string, options?: RepositoryTransactionOptions): Promise<Gift | null>;
+    getActiveByMembers(memberIds: string[], options?: RepositoryTransactionOptions): Promise<Map<string, Gift>>;
     create(gift: Gift, options?: RepositoryTransactionOptions): Promise<void>;
     update(gift: Gift, options?: RepositoryTransactionOptions): Promise<void>;
     transaction<T>(callback: (transacting: unknown) => Promise<T>): Promise<T>;

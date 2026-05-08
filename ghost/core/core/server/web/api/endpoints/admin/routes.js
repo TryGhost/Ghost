@@ -73,6 +73,9 @@ module.exports = function apiRoutes() {
     // ## Schedules
     router.put('/schedules/:resource/:id', mw.authAdminApiWithUrl, http(api.schedules.publish));
 
+    // ## Gift Reminders
+    router.put('/gifts/flush_reminders', mw.authAdminApiWithUrl, http(api.giftReminders.flushReminders));
+
     // ## Settings
     router.get('/settings/routes/yaml', mw.authAdminApi, http(api.settings.download));
     router.post('/settings/routes/yaml',
@@ -93,12 +96,12 @@ module.exports = function apiRoutes() {
     router.get('/users/slug/:slug', mw.authAdminApi, http(api.users.read));
     // NOTE: We don't expose any email addresses via the public api.
     router.get('/users/email/:email', mw.authAdminApi, http(api.users.read));
-    router.get('/users/:id/token', mw.authAdminApi, http(api.users.readToken));
+    router.get('/users/:id/token', mw.authAdminApi, http(api.users.readStaffToken));
 
     router.put('/users/password', mw.authAdminApi, http(api.users.changePassword));
     router.put('/users/owner', mw.authAdminApi, http(api.users.transferOwnership));
     router.put('/users/:id', mw.authAdminApi, http(api.users.edit));
-    router.put('/users/:id/token', mw.authAdminApi, http(api.users.regenerateToken));
+    router.put('/users/:id/token', mw.authAdminApi, http(api.users.regenerateStaffToken));
     router.delete('/users/:id', mw.authAdminApi, http(api.users.destroy));
 
     // ## Tags
@@ -183,6 +186,8 @@ module.exports = function apiRoutes() {
     router.delete('/labels/:id', mw.authAdminApi, http(api.labels.destroy));
 
     // ## Automations
+    router.get('/automations', mw.authAdminApi, http(api.automations.browse));
+    router.get('/automations/:id', mw.authAdminApi, http(api.automations.read));
     router.put('/automations/poll', mw.authAdminApiWithUrl, http(api.automations.poll));
 
     // ## Automated Emails

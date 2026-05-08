@@ -2,15 +2,29 @@ import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
 import {type GroupBase, type MultiValue} from 'react-select';
-import {MultiSelect, type MultiSelectOption, Select, Separator, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Hint, MultiSelect, type MultiSelectOption, Select, Separator, SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
+import {useGlobalData} from '../../providers/global-data-provider';
+
+const SITE_VISIBILITY_OPTIONS = [
+    {
+        value: 'public',
+        label: 'Public',
+        hint: 'Anyone can visit and read the website'
+    },
+    {
+        value: 'private',
+        label: 'Private',
+        hint: 'Access code required'
+    }
+];
 
 const MEMBERS_SIGNUP_ACCESS_OPTIONS = [
     {
         value: 'all',
-        label: 'Anyone can sign up',
-        hint: 'All visitors will be able to subscribe and sign in'
+        label: 'Public',
+        hint: 'Anyone can sign up and log in'
     },
     {
         value: 'paid',
@@ -71,19 +85,34 @@ const COMMENTS_ENABLED_OPTIONS = [
 ];
 
 const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
+    const {settings} = useGlobalData();
     const {
         localSettings,
         isEditing,
         saveState,
+        siteData,
         handleSave,
         handleCancel,
         updateSetting,
-        handleEditingChange
-    } = useSettingGroup();
+        handleEditingChange,
+        errors,
+        clearError
+    } = useSettingGroup({
+        onValidate: () => {
+            if (isPrivate && !password) {
+                return {
+                    password: 'Enter an access code'
+                };
+            }
 
-    const [membersSignupAccess, defaultContentVisibility, defaultContentVisibilityTiers, commentsEnabled] = getSettingValues(localSettings, [
-        'members_signup_access', 'default_content_visibility', 'default_content_visibility_tiers', 'comments_enabled'
-    ]) as string[];
+            return {};
+        }
+    });
+
+    const [isPrivate, password, membersSignupAccess, defaultContentVisibility, defaultContentVisibilityTiers, commentsEnabled] = getSettingValues(localSettings, [
+        'is_private', 'password', 'members_signup_access', 'default_content_visibility', 'default_content_visibility_tiers', 'comments_enabled'
+    ]) as [boolean, string, string, string, string, string];
+    const [savedIsPrivate, savedPublicHash] = getSettingValues(settings, ['is_private', 'public_hash']) as [boolean, string];
 
     const {data: {tiers} = {}} = useBrowseTiers();
 
@@ -100,6 +129,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const contentVisibilityTiers = JSON.parse(defaultContentVisibilityTiers || '[]') as string[];
     const selectedTierOptions = tierOptionGroups.flatMap(group => group.options).filter(option => contentVisibilityTiers.includes(option.value));
+    const privateRssUrl = (savedIsPrivate && isPrivate && siteData?.url && savedPublicHash) ? `${siteData.url.replace(/\/$/, '')}/${savedPublicHash}/rss` : null;
 
     const setSelectedTiers = (selectedOptions: MultiValue<MultiSelectOption>) => {
         const selectedTiers = selectedOptions.map(option => option.value);
@@ -108,6 +138,47 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const form = (
         <SettingGroupContent className='gap-y-4' columns={1}>
+            <div className="flex flex-col content-center items-center gap-4 md:flex-row">
+                <div className="w-full max-w-none min-w-[160px] md:w-2/3 md:max-w-[320px]">Who should be able to browse your site?</div>
+                <div className="w-full md:flex-1">
+                    <Select
+                        options={SITE_VISIBILITY_OPTIONS}
+                        selectedOption={SITE_VISIBILITY_OPTIONS.find(option => option.value === (isPrivate ? 'private' : 'public'))}
+                        testId='site-visibility-select'
+                        onSelect={(option) => {
+                            updateSetting('is_private', option?.value === 'private');
+                            handleEditingChange(true);
+                        }}
+                    />
+                </div>
+            </div>
+            {isPrivate && (
+                <div className="flex flex-col content-center items-center gap-4 md:flex-row md:items-start">
+                    <div className="w-full max-w-none min-w-[160px] md:w-2/3 md:max-w-[320px] md:pt-3">What access code should visitors use?</div>
+                    <div className="w-full md:flex-1">
+                        <TextField
+                            data-testid='site-access-code'
+                            error={!!errors.password}
+                            hint={errors.password}
+                            placeholder="Enter access code"
+                            title='Access code'
+                            value={password || ''}
+                            hideTitle
+                            onChange={(e) => {
+                                updateSetting('password', e.target.value);
+                                handleEditingChange(true);
+                            }}
+                            onKeyDown={() => clearError('password')}
+                        />
+                        {privateRssUrl && (
+                            <Hint className='mt-2'>
+                                <>A private RSS feed is available <a className='text-green' href={privateRssUrl} rel="noopener noreferrer" target='_blank'>here</a></>
+                            </Hint>
+                        )}
+                    </div>
+                </div>
+            )}
+            <Separator className="border-grey-200 dark:border-grey-900" />
             <div className="flex flex-col content-center items-center gap-4 md:flex-row">
                 <div className="w-full max-w-none min-w-[160px] md:w-2/3 md:max-w-[320px]">Who should be able to subscribe to your site?</div>
                 <div className="w-full md:flex-1">
@@ -175,7 +246,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (
         <TopLevelGroup
-            description='Set up default access options for subscription and posts'
+            description='Set up who can browse your site, subscribe, read posts, and comment'
             isEditing={isEditing}
             keywords={keywords}
             navid='members'

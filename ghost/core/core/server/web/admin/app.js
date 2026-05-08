@@ -65,6 +65,11 @@ module.exports = function setupAdminApp() {
     // must happen AFTER asset loading and BEFORE routing
     adminApp.use(shared.middleware.urlRedirects.adminSSLAndHostRedirect);
 
+    // Deep-link redirect (e.g. /ghost/members/import -> /ghost/#/members/import).
+    // Must run BEFORE prettyUrls so the captured path doesn't pick up a trailing
+    // slash that React Router's hash routes don't match.
+    adminApp.use(redirectAdminUrls);
+
     // Add in all trailing slashes & remove uppercase
     // must happen AFTER asset loading and BEFORE routing
     adminApp.use(shared.middleware.prettyUrls);
@@ -72,9 +77,6 @@ module.exports = function setupAdminApp() {
     // Cache headers go last before serving the request
     // Admin is currently set to not be cached at all
     adminApp.use(shared.middleware.cacheControl('private'));
-
-    // Special redirects for the admin (these should have their own cache-control headers)
-    adminApp.use(redirectAdminUrls);
 
     // Finally, routing
     adminApp.get('*', require('./controller'));

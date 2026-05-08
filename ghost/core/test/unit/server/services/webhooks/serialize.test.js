@@ -10,10 +10,6 @@ const tiersService = require('../../../../../core/server/services/tiers');
 const {fixtureManager} = require('../../../../utils/e2e-framework');
 
 describe('WebhookService - Serialize', function () {
-    before(function () {
-        models.init();
-    });
-
     beforeEach(function () {
         tiersService.api = {
             browse() {

@@ -4,222 +4,138 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 <div className="sb-doc">
 
-# Design Tokens
+# Design tokens
 
-<p className="excerpt">Shade's design tokens are implemented through CSS-first Tailwind v4 tokens (`@theme` + CSS variables). This document outlines our token system and how to use it effectively.</p>
+<p className="excerpt">Tokens are the smallest unit of the design system — a color, a size, a duration. Every other layer (primitives, components, features) ultimately resolves down to tokens. This page explains how they're defined, which families exist, and how to consume them.</p>
 
-## Color System
+## What a token is
 
-### Base Colors
+In Shade, a token is a CSS custom property exposed through Tailwind v4's `@theme` block. So `bg-background`, `text-foreground`, and `rounded-md` are all backed by tokens that flip automatically when dark mode is on.
 
-Our color system includes semantic colors and a comprehensive neutral palette:
+There are two kinds of token in practice:
 
-```css
-@theme {
-    // Base colors
-    --color-transparent: transparent;
-    --color-current: currentColor;
-    --color-ghostaccent: var(--accent-color, #ff0095);
-    --color-white: #FFF;
-    --color-black: #15171A;
+**Raw tokens** are concrete values — `--color-gray-500`, `--text-base`, `--spacing`. They never change between modes; they just exist.
 
-    // Gray scale (note: we use 'gray', not 'grey')
-    --color-gray-50: #FAFAFB;
-    --color-gray-100: #F4F5F6;
-    // ... more shades
-    --color-gray-900: #394047;
-    --color-gray: #ABB4BE;
+**Semantic tokens** are named by purpose, not value. `--background`, `--foreground`, `--border-default`, `--surface-elevated`. They reference raw tokens (or specific values) and they're allowed to flip between light and dark mode. **You should almost always reach for the semantic token, not the raw one.** That way the same component renders correctly in both modes without any work from you.
 
-    // Brand colors
-    --color-green-100: #E1F9E4;
-    --color-green-400: #58DA67;
-    --color-green-500: #30CF43;
-    --color-green-600: #2AB23A;
-    --color-green: #30CF43;
-    // ... more colors
-}
-```
+## Where they're defined
 
-> ⚠️ Note: While both `grey` and `gray` token aliases exist for legacy compatibility, use `gray` for new components following TailwindCSS conventions.
+Two files do the heavy lifting:
 
-### Semantic Tokens
+**`theme-variables.css`** holds the runtime values for every semantic token, including the dark-mode overrides. This is where `--background` becomes `hsl(0 0% 100%)` in light and `hsl(216 11% 9%)` in dark.
 
-Theme-aware colors using CSS variables:
+**`tailwind.theme.css`** is the Tailwind `@theme` block. It exposes both the raw token catalogue (the gray scale, the brand colors, the type ramp, the spacing unit) and the bindings that make `bg-background` resolve to `var(--background)`.
 
-```css
-@theme {
-    --color-background: var(--background);
-    --color-foreground: var(--foreground);
-    --color-primary: var(--primary);
-    --color-primary-foreground: var(--primary-foreground);
-    // ... more semantic colors
-}
-```
+If you want to know what a Tailwind class is actually doing, search `tailwind.theme.css` first.
 
-### Semantic Contract
+## Color
 
-The semantic visual rules and guarantees are defined in:
+Shade uses a small semantic palette layered on top of a larger raw palette.
 
-- `theme-variables.css` (runtime values + dark mode overrides)
-- `tailwind.theme.css` (Tailwind aliases)
+### Semantic color families
 
-Current semantic families:
+Color tokens are grouped by what they're for, not by their RGB value. The current families are:
 
-- Surface: `surface-page`, `surface-panel`, `surface-elevated`, `surface-overlay`, `surface-inverse`
-- Text: `text-primary`, `text-secondary`, `text-tertiary`, `text-inverse`
-- Border/focus: `border-subtle`, `border-default`, `border-strong`, `focus-ring`
-- State: `state-info`, `state-success`, `state-warning`, `state-danger`
+- **Surface** — `surface-page`, `surface-panel`, `surface-elevated`, `surface-overlay`, `surface-inverse`. Backgrounds with intent: "the page itself", "a card sitting on the page", "a popover floating above everything".
+- **Text** — `text-primary`, `text-secondary`, `text-tertiary`, `text-inverse`. Use these instead of the foreground variants when you want explicit hierarchy.
+- **Border / focus** — `border-subtle`, `border-default`, `border-strong`, `focus-ring`. Three weights of border plus the focus ring color.
+- **State** — `state-info`, `state-success`, `state-warning`, `state-danger`. Plus matching `-foreground` variants for text on those backgrounds.
 
-Semantic typography/radius/motion families:
+Every one of these flips between light and dark mode. You don't have to do anything for that to work.
 
-- Typography: `font-body`, `font-heading`, `font-code`, `text-body-{sm|md|lg}`, `leading-{body|heading}`
-- Sizing: `--control-height` (shared medium control height, currently `34px`)
-- Radius: `radius-control`, `radius-surface`, `radius-badge`, `radius-pill`
-- Motion: `duration-{fast|base|slow}`, `ease-{standard|emphasized}`
+### Raw color palette
+
+If you genuinely need a specific shade rather than a semantic token, the raw palette is also available — `gray-50` through `gray-900`, the brand greens, plus chart colors (`--chart-1` through `--chart-5` and named accents like `--chart-purple`, `--chart-rose`).
+
+A note on spelling: both `grey` and `gray` work as token aliases for legacy reasons, but `gray` is the convention going forward — it matches Tailwind.
+
+### Picking the right color
+
+The default move is the semantic token: `bg-background`, `text-foreground`, `border-border-default`. Reach for raw colors when the semantic vocabulary doesn't fit (chart series, brand logos, illustrations).
+
+What you should not do is hardcode hex or `hsl()` values, even temporarily. They don't theme, they don't dark-mode, and they don't show up in design audits.
 
 ## Typography
 
-### Font Families
+### Font families
 
-```css
-@theme {
-    --font-sans: Inter, -apple-system, ...;  /* Default UI font */
-    --font-serif: Georgia, serif;            /* Editorial content */
-    --font-mono: Consolas, ...;              /* Code */
-    // Additional web fonts available
-}
-```
+Three faces are available via `--font-sans` (Inter, the default UI face), `--font-serif` (Georgia, for editorial content), and `--font-mono` (Consolas, for code).
 
-### Font Sizes
+### Font sizes
 
-A comprehensive scale from 2xs to 9xl:
+The type ramp runs from `--text-2xs` (1.0rem) up to `--text-9xl` (12.8rem). Use the semantic `text-base` for body copy. Larger sizes have line-height variables baked in (`--text-9xl--line-height: 1`) so headlines don't get awkward leading.
 
-```css
-@theme {
-    --text-2xs: 1.0rem;
-    --text-base: 1.4rem;
-    --text-xs: 1.2rem;
-    // ... more sizes
-    --text-9xl: 12.8rem;
-    --text-9xl--line-height: 1;
-}
-```
+### Line height
 
-### Line Heights
-
-```css
-@theme {
-    --leading-base: 1.5em;
-    --leading-tight: 1.35em;
-    --leading-tighter: 1.25em;
-    --leading-supertight: 1.1em;
-}
-```
+`--leading-base` (1.5em) is the default. `--leading-tight`, `--leading-tighter`, `--leading-supertight` exist for headings and dense type.
 
 ## Spacing
 
-Our spacing system uses a 0.4rem (4px) base unit:
+Shade's spacing scale is built on a 4px base (`--spacing: 0.4rem`). Tailwind utilities like `p-4`, `gap-2`, `mt-3` derive from that base — `p-4` is `4 × 0.4rem = 1.6rem`.
+
+For primitives (`Stack`, `Inline`, `Box`), use the semantic spacing scale instead of the raw Tailwind numbers: `gap="md"` rather than `gap-4`. The named values map onto the same underlying base unit but make intent readable: "a medium gap" instead of "the number four".
+
+The semantic scale: `none | xs | sm | md | lg | xl | 2xl`.
+
+## Sizing
+
+A few size tokens exist for shared dimensions:
+
+- `--control-height` (currently `34px`) — the height of a medium form control. Used by Input, Select trigger, the "medium" Button size, etc.
+
+If you need a control to match the others vertically, reach for this token rather than re-deriving it.
+
+## Radius
+
+Border radius has both a numeric scale (`--radius`, `--radius-sm`, `--radius-md`, `--radius-lg`) and semantic aliases (`radius-control` for form controls, `radius-surface` for cards, `radius-badge` for pills, `radius-pill` for fully rounded).
+
+Prefer the semantic version when it fits — it'll keep visual rhythm consistent if we ever shift the radius vocabulary.
+
+## Motion
+
+`--duration-fast`, `--duration-base`, `--duration-slow` for timing. `--ease-standard` and `--ease-emphasized` for curves. There's also a set of pre-built named animations (`--animate-fade-in`, `--animate-toaster-in`, etc.) for common interactions.
+
+## Shadows and breakpoints
+
+Standard shadows live on `--shadow`, `--shadow-xs`, `--shadow-sm`, `--shadow-md`, `--shadow-lg`. Breakpoints are defined as `--breakpoint-sm` through `--breakpoint-xxxl`, plus a few specials (`--breakpoint-sidebar`, `--breakpoint-sidebarlg`, `--breakpoint-tablet`).
+
+## How to consume tokens
+
+Most of the time, you consume tokens through Tailwind utility classes:
+
+```tsx
+// Good — semantic, themed
+<div className="bg-background text-foreground border-border-default rounded-md">
+    Hello
+</div>
+
+// Bad — hardcoded, breaks in dark mode
+<div style={{background: '#fff', color: '#000', border: '1px solid #eee'}}>
+    Hello
+</div>
+```
+
+Inside a stylesheet (rare in Shade, but it happens), use the CSS variables directly:
 
 ```css
-@theme {
-    --spacing: 0.4rem; /* Base unit */
-    // Utilities are derived as calc(var(--spacing) * n)
+.something {
+    background: var(--surface-elevated);
+    color: var(--surface-elevated-foreground);
 }
 ```
 
-## Breakpoints
+Don't double-wrap variables in `hsl()` — they already contain `hsl(...)`. Writing `hsl(var(--background))` produces nonsense.
 
-```css
-@theme {
-    --breakpoint-sm: 480px;
-    --breakpoint-md: 640px;
-    --breakpoint-sidebar: 800px;
-    --breakpoint-lg: 1024px;
-    --breakpoint-sidebarlg: 1240px;
-    --breakpoint-xl: 1320px;
-    --breakpoint-xxl: 1440px;
-    --breakpoint-xxxl: 1600px;
-    --breakpoint-tablet: 860px;
-}
-```
+## Dark mode
 
-## Shadows
+Dark mode is handled by toggling a `.dark` class on a Shade-scoped ancestor (`ShadeApp` does this for you). The CSS custom variant in `theme-variables.css` flips every semantic token under that class, so `bg-background`, `text-foreground`, etc. all switch automatically.
 
-```css
-@theme {
-    --shadow: 0 0 1px rgba(0,0,0,.05), 0 5px 18px rgba(0,0,0,.08);
-    --shadow-xs: 0 0 1px rgba(0,0,0,0.04), ...;
-    // ... more shadow values
-}
-```
+You don't write `dark:` variants in component code. The tokens do that work.
 
-## Border Radius
+The exception is when a component genuinely needs a different layout or asset between modes (a logo, a custom illustration). For those rare cases, `dark:` Tailwind variants are fine. But for color and surface decisions, stick to semantic tokens and let them flip.
 
-```css
-@theme {
-    --radius: 0.4rem;
-    --radius-sm: 0.4rem;
-    --radius-md: 0.6rem;
-    --radius-lg: 0.8rem;
-    // ... more radius values
-}
-```
+## Reset
 
-## Animations
-
-Pre-defined animations for common interactions:
-
-```css
-@theme {
-    --animate-toaster-in: toasterIn 0.8s cubic-bezier(...);
-    --animate-fade-in: fadeIn 0.15s ease forwards;
-    // ... more animations
-}
-```
-
-## Usage Guidelines
-
-### Best Practices
-
-1. **Use Semantic Tokens**
-   ```js
-   // ✅ Good
-   className="bg-background text-foreground"
-
-   // ❌ Avoid
-   className="bg-white text-black"
-   ```
-
-2. **Spacing Consistency**
-   ```js
-   // ✅ Good
-   className="p-4 gap-2"
-
-   // ❌ Avoid
-   style={{padding: '16px', gap: '8px'}}
-   ```
-
-3. **Typography Scale**
-   ```js
-   // ✅ Good
-   className="text-2xl font-sans"
-
-   // ❌ Avoid
-   style={{fontSize: '22px'}}
-   ```
-
-### Dark Mode
-
-Dark mode uses a CSS custom variant:
-```css
-@custom-variant dark (&:is(.dark *):not(.light *));
-```
-
-### CSS Reset
-
-Shade uses a scoped CSS reset:
-```css
-@import "./preflight.css"; /* Custom scoped reset provided */
-```
+Shade ships its own scoped CSS reset (`preflight.css`) so it doesn't fight whatever reset the rest of the app might use. You don't need to do anything to get it — it's imported by `styles.css`.
 
 </div>

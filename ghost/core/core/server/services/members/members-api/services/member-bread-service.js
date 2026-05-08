@@ -28,6 +28,11 @@ const messages = {
  * @typedef {import('@tryghost/members-offers/lib/application/OfferMapper').OfferDTO} OfferDTO
  */
 
+/**
+ * @typedef {object} IGiftServiceWrapper
+ * @prop {{getActiveByMembers: (memberIds: string[]) => Promise<Map<string, {cadence: 'month' | 'year', currency: string, amount: number}>>}} service
+ */
+
 module.exports = class MemberBREADService {
     /**
      * @param {object} deps
@@ -40,8 +45,9 @@ module.exports = class MemberBREADService {
      * @param {import('@tryghost/email-suppression-list/lib/email-suppression-list').IEmailSuppressionList} deps.emailSuppressionList
      * @param {import('@tryghost/settings-helpers')} deps.settingsHelpers
      * @param {import('./next-payment-calculator')} deps.nextPaymentCalculator
+     * @param {IGiftServiceWrapper} deps.giftService
      */
-    constructor({memberRepository, labsService, emailService, stripeService, offersAPI, memberAttributionService, emailSuppressionList, settingsHelpers, nextPaymentCalculator, commentsService}) {
+    constructor({memberRepository, labsService, emailService, stripeService, offersAPI, memberAttributionService, emailSuppressionList, settingsHelpers, nextPaymentCalculator, commentsService, giftService}) {
         this.offersAPI = offersAPI;
         /** @private */
         this.memberRepository = memberRepository;
@@ -61,13 +67,17 @@ module.exports = class MemberBREADService {
         this.nextPaymentCalculator = nextPaymentCalculator;
         /** @private */
         this.commentsService = commentsService;
+        /** @private */
+        this.giftService = giftService;
     }
 
     /**
      * @private
      * Adds missing complimentary subscriptions to a member and makes sure the tier of all subscriptions is set correctly.
+     * @param {Object} member JSON serialized member
+     * @param {Map<string, {cadence: 'month' | 'year', currency: string, amount: number}>} [giftMap] Map of memberId → active redeemed gift, used to populate real price details on synthetic gift subscriptions
      */
-    attachSubscriptionsToMember(member) {
+    attachSubscriptionsToMember(member, giftMap = new Map()) {
         if (!member.products || !Array.isArray(member.products)) {
             return member;
         }
@@ -87,6 +97,22 @@ module.exports = class MemberBREADService {
         // Note: a complimentary or gift subscription should always be the current member subscription and match its status,
         // as non-Stripe subscriptions are removed when a member continues with a Stripe paid subscription
         if (member.status === 'comped' || member.status === 'gift') {
+            let interval = 'year';
+            let currency = 'USD';
+            let amount = 0;
+            const nickname = member.status === 'gift' ? 'Gift subscription' : 'Complimentary';
+
+            if (member.status === 'gift') {
+                const gift = giftMap.get(member.id);
+                if (gift) {
+                    interval = gift.cadence;
+                    currency = gift.currency;
+                    amount = gift.amount;
+                } else {
+                    logging.warn(`No active gift found for gift member ${member.id} — falling back to default subscription price details.`);
+                }
+            }
+
             for (const product of member.products) {
                 if (!subscriptionProducts.includes(product.id)) {
                     const productAddEvent = member.productEvents.find(event => event.product_id === product.id && event.action === 'added');
@@ -96,8 +122,6 @@ module.exports = class MemberBREADService {
                     } else {
                         startDate = moment(productAddEvent.created_at);
                     }
-
-                    const nickname = member.status === 'gift' ? 'Gift subscription' : 'Complimentary';
 
                     member.subscriptions.push({
                         id: '',
@@ -110,9 +134,9 @@ module.exports = class MemberBREADService {
                         plan: {
                             id: '',
                             nickname,
-                            interval: 'year',
-                            currency: 'USD',
-                            amount: 0
+                            interval,
+                            currency,
+                            amount
                         },
                         status: 'active',
                         start_date: startDate,
@@ -124,10 +148,10 @@ module.exports = class MemberBREADService {
                             id: '',
                             price_id: '',
                             nickname,
-                            amount: 0,
-                            interval: 'year',
+                            amount,
+                            interval,
                             type: 'recurring',
-                            currency: 'USD',
+                            currency,
                             product: {
                                 id: '',
                                 product_id: product.id
@@ -283,6 +307,30 @@ module.exports = class MemberBREADService {
         }
     }
 
+    /**
+     * @private
+     * Fetches active redeemed gifts for any gift-status members in the input list.
+     * @param {import('bookshelf').Model[]} members - Bookshelf member models
+     * @returns {Promise<Map<string, {cadence: 'month' | 'year', currency: string, amount: number}>>} keyed by member.id → active Gift
+     */
+    async fetchActiveGiftsForMembers(members) {
+        const giftMemberIds = members
+            .filter(m => m.get('status') === 'gift')
+            .map(m => m.id);
+
+        if (giftMemberIds.length === 0) {
+            return new Map();
+        }
+
+        try {
+            return await this.giftService.service.getActiveByMembers(giftMemberIds);
+        } catch (e) {
+            logging.error(`Failed to load active gifts for members - ${giftMemberIds.join(', ')}.`);
+            logging.error(e);
+            return new Map();
+        }
+    }
+
     async read(data, options = {}) {
         const defaultWithRelated = [
             'labels',
@@ -324,12 +372,13 @@ module.exports = class MemberBREADService {
         const stripeSubscriptions = model.related('stripeSubscriptions');
 
         member.subscriptions = member.subscriptions.filter(sub => !!sub.price);
-        this.attachSubscriptionsToMember(member);
 
-        const [offerMap, offerRedemptionsMap] = await Promise.all([
+        const [offerMap, offerRedemptionsMap, giftMap] = await Promise.all([
             this.fetchSubscriptionOffers(stripeSubscriptions),
-            this.fetchSubscriptionOfferRedemptions(stripeSubscriptions)
+            this.fetchSubscriptionOfferRedemptions(stripeSubscriptions),
+            this.fetchActiveGiftsForMembers([model])
         ]);
+        this.attachSubscriptionsToMember(member, giftMap);
         this.attachOffersToSubscriptions(member, offerMap, offerRedemptionsMap);
         this.attachNextPaymentToSubscriptions(member);
         await this.attachAttributionsToMember(member, subscriptionIdMap);
@@ -360,6 +409,11 @@ module.exports = class MemberBREADService {
         let model;
 
         try {
+            if (data.email && data.email_disabled === undefined) {
+                const isSuppressed = (await this.emailSuppressionList.getSuppressionData(data.email))?.suppressed;
+                data.email_disabled = !!isSuppressed;
+            }
+
             const attribution = await this.memberAttributionService.getAttributionFromContext(options?.context);
             if (attribution) {
                 data.attribution = attribution;
@@ -573,9 +627,10 @@ module.exports = class MemberBREADService {
         }
 
         const subscriptions = page.data.flatMap(model => model.related('stripeSubscriptions').slice());
-        const [offerMap, offerRedemptionsMap] = await Promise.all([
+        const [offerMap, offerRedemptionsMap, giftMap] = await Promise.all([
             this.fetchSubscriptionOffers(subscriptions),
-            this.fetchSubscriptionOfferRedemptions(subscriptions)
+            this.fetchSubscriptionOfferRedemptions(subscriptions),
+            this.fetchActiveGiftsForMembers(page.data)
         ]);
 
         const bulkSuppressionData = await this.emailSuppressionList.getBulkSuppressionData(page.data.map(member => member.get('email')));
@@ -583,7 +638,7 @@ module.exports = class MemberBREADService {
         const data = page.data.map((model, index) => {
             const member = model.toJSON(options);
             member.subscriptions = member.subscriptions.filter(sub => !!sub.price);
-            this.attachSubscriptionsToMember(member);
+            this.attachSubscriptionsToMember(member, giftMap);
             this.attachOffersToSubscriptions(member, offerMap, offerRedemptionsMap);
             this.attachNextPaymentToSubscriptions(member);
             if (!originalWithRelated.includes('products')) {

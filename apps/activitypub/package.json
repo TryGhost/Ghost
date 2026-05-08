@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/activitypub",
-  "version": "3.1.13",
+  "version": "3.1.19",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -39,15 +39,17 @@
   "devDependencies": {
     "@playwright/test": "1.59.1",
     "@testing-library/react": "14.3.1",
-    "@types/dompurify": "3.2.0",
     "@types/jest": "29.5.14",
     "@types/react": "18.3.28",
     "@types/react-dom": "18.3.7",
+    "eslint": "catalog:",
+    "eslint-plugin-react-hooks": "4.6.2",
+    "eslint-plugin-react-refresh": "0.4.24",
+    "eslint-plugin-tailwindcss": "4.0.0-beta.0",
     "jest": "29.7.0",
     "tailwindcss": "^4.2.2",
-    "ts-jest": "29.4.9",
-    "vite": "5.4.21",
-    "vitest": "1.6.1"
+    "vite": "7.3.2",
+    "vitest": "4.1.2"
   },
   "nx": {
     "targets": {
@@ -82,7 +84,7 @@
     "@tryghost/admin-x-framework": "workspace:*",
     "@tryghost/shade": "workspace:*",
     "clsx": "2.1.1",
-    "dompurify": "3.3.1",
+    "dompurify": "3.4.1",
     "html2canvas-objectfit-fix": "1.2.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",

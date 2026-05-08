@@ -2,6 +2,19 @@ import {ImportMembersModal} from '@src/views/members/components/bulk-action-moda
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {fireEvent, render, screen, waitFor} from '@testing-library/react';
 
+vi.mock('@tryghost/admin-x-framework/api/config', () => ({
+    useBrowseConfig: () => ({
+        data: {
+            config: {
+                labs: {
+                    importMemberTier: true,
+                    giftSubscriptions: true
+                }
+            }
+        }
+    })
+}));
+
 vi.mock('@tryghost/admin-x-framework/helpers', () => ({
     getGhostPaths: () => ({
         apiRoot: '/ghost/api/admin'
@@ -42,7 +55,7 @@ class MockFileReader {
     readAsText() {
         this.onload?.({
             target: {
-                result: 'email,name\nmember@example.com,Member'
+                result: mockCsvContents
             }
         });
     }
@@ -52,11 +65,13 @@ class MockFileReader {
     }
 }
 
+let mockCsvContents = 'email,name\nmember@example.com,Member';
+
 const originalCreateObjectURL = URL.createObjectURL;
 const originalRevokeObjectURL = URL.revokeObjectURL;
-
 describe('ImportMembersModal', () => {
     beforeEach(() => {
+        mockCsvContents = 'email,name\nmember@example.com,Member';
         vi.stubGlobal('FileReader', MockFileReader);
         vi.stubGlobal('fetch', vi.fn(async () => new Response(null, {status: 202})));
         Object.defineProperty(URL, 'createObjectURL', {
@@ -119,5 +134,33 @@ describe('ImportMembersModal', () => {
         });
 
         expect(screen.getByRole('heading', {name: /import in progress/i})).toBeInTheDocument();
+    });
+
+    it('shows tier as a mapped field when importMemberTier is enabled', async () => {
+        mockCsvContents = 'email,import_tier\nmember@example.com,Gold';
+
+        render(
+            <ImportMembersModal
+                open
+                onOpenChange={() => {}}
+            />
+        );
+
+        const dropTarget = screen.getByRole('button', {name: /select or drop a csv file/i});
+        const csvFile = createFile('members.csv', 'text/csv', mockCsvContents);
+
+        fireEvent.drop(dropTarget, {
+            dataTransfer: {
+                files: [csvFile],
+                items: [{
+                    kind: 'file',
+                    type: csvFile.type,
+                    getAsFile: () => csvFile
+                }],
+                types: ['Files']
+            }
+        });
+
+        expect(await screen.findByText('Tier')).toBeInTheDocument();
     });
 });

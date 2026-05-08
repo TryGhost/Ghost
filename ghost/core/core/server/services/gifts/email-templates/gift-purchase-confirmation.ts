@@ -3,7 +3,6 @@ export interface GiftPurchaseConfirmationData {
     siteDomain: string;
     toEmail: string;
     gift: {
-        amount: string;
         tierName: string;
         cadenceLabel: string;
         link: string;
@@ -14,14 +13,13 @@ export interface GiftPurchaseConfirmationData {
 export function renderText(data: GiftPurchaseConfirmationData): string {
     return `Your gift is ready to share!
 
-Share the link below with the recipient to let them redeem their gift membership.
+Thank you for supporting ${data.siteTitle}. Send the link below to share your gift with whoever you'd like.
 
 Gift subscription: ${data.gift.tierName} • ${data.gift.cadenceLabel}
-Amount paid: ${data.gift.amount}
 
-Redemption link: ${data.gift.link}
+Gift link: ${data.gift.link}
 
-This link can be redeemed once and expires on ${data.gift.expiresAt}. It's only available to free or new members.
+This link expires on ${data.gift.expiresAt} and can be redeemed once by anyone who isn't already a paid member of ${data.siteTitle}.
 
 ---
 
