@@ -323,7 +323,7 @@ const RecommendationsPage = () => {
         return <LoadingPage/>;
     }
 
-    const heading = pageData && pageData.signup ? t('Welcome to {siteTitle}', {siteTitle: title, interpolation: {escapeValue: false}}) : t('Recommendations');
+    const heading = pageData && pageData.signup ? t('Welcome to {siteTitle}', {siteTitle: title}) : t('Recommendations');
 
     /* Possible cases:
     - no recommendations found - subhead says no recommendations are available.
