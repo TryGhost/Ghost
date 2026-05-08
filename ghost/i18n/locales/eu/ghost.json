@@ -1,8 +1,8 @@
 {
     "{count} month_one": "hilabete",
-    "{count} month_other": "hilabete",
+    "{count} month_other": "{count} hilabete",
     "{count} year_one": "urtebete",
-    "{count} year_other": "urte",
+    "{count} year_other": "{count} urte",
     "{date}": "{date}",
     "All the best!": "Zorte on!",
     "Become a paid member of {site} to get access to all premium content.": "Egin zaitez ordainpeko kide {site}(e)ko primerako eduki guztira sarbidea izateko.",
