@@ -31,6 +31,7 @@ const CSV_HEADERS = [
     'name',
     'note',
     'subscribed_to_emails',
+    'email_disabled',
     'complimentary_plan',
     'stripe_customer_id',
     'created_at',
@@ -71,12 +72,16 @@ function formatMemberForCSV(member) {
     // Convert subscribed boolean to string representation
     const subscribedToEmails = member.subscribed === true ? 'true' : 'false';
 
+    // Convert email_disabled boolean to string representation
+    const emailDisabled = member.email_disabled === true ? 'true' : 'false';
+
     return {
         id: member.id,
         email: member.email,
         name: member.name,
         note: member.note,
         subscribed_to_emails: subscribedToEmails,
+        email_disabled: emailDisabled,
         complimentary_plan: complimentaryPlan,
         stripe_customer_id: member.stripe_customer_id,
         created_at: member.created_at,
