@@ -66,7 +66,7 @@ describe('Unit: models/member', function () {
                 get: key => (key === 'name' ? 'Existing' : 'existing-1')
             }];
             const findAllStub = sinon.stub(models.Label, 'findAll').resolves({
-                find: predicate => existingLabels.find(predicate)
+                models: existingLabels
             });
 
             await memberModel.onSaving(memberModel, memberModel.attributes, {});
