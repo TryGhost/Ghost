@@ -259,6 +259,28 @@ describe('Private Blogging', function () {
                 sinon.assert.called(next);
             });
 
+            it('doLoginToPrivateSite should return next if stored access code is undefined', function () {
+                settingsStub.withArgs('password').returns(undefined);
+                req.body = {password: 'rightpassword'};
+
+                privateBlogging.doLoginToPrivateSite(req, res, next);
+                assertExists(res.error);
+                assert.equal(res.error.message, 'Incorrect access code.');
+                sinon.assert.notCalled(res.redirect);
+                sinon.assert.called(next);
+            });
+
+            it('doLoginToPrivateSite should return next if stored access code is null', function () {
+                settingsStub.withArgs('password').returns(null);
+                req.body = {password: 'rightpassword'};
+
+                privateBlogging.doLoginToPrivateSite(req, res, next);
+                assertExists(res.error);
+                assert.equal(res.error.message, 'Incorrect access code.');
+                sinon.assert.notCalled(res.redirect);
+                sinon.assert.called(next);
+            });
+
             it('doLoginToPrivateSite should return next if submitted access code is empty', function () {
                 req.body = {password: ''};
 
