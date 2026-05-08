@@ -326,8 +326,12 @@ const Member = ghostBookshelf.Model.extend({
             //  and deduplicate upper/lowercase tags
             _.each(this.get('labels'), function each(item) {
                 item.name = item.name && item.name.trim();
+                // CASE: skip labels without a name to avoid downstream `.toLowerCase()` errors
+                if (!item.name) {
+                    return;
+                }
                 for (let i = 0; i < labelsToSave.length; i = i + 1) {
-                    if (labelsToSave[i].name && item.name && labelsToSave[i].name.toLocaleLowerCase() === item.name.toLocaleLowerCase()) {
+                    if (labelsToSave[i].name && labelsToSave[i].name.toLocaleLowerCase() === item.name.toLocaleLowerCase()) {
                         return;
                     }
                 }
@@ -348,7 +352,8 @@ const Member = ghostBookshelf.Model.extend({
             .then((labels) => {
                 labelsToSave.forEach((label) => {
                     let existingLabel = labels.find((lab) => {
-                        return label.name.toLowerCase() === lab.get('name').toLowerCase();
+                        const existingName = lab.get('name');
+                        return label.name && existingName && label.name.toLowerCase() === existingName.toLowerCase();
                     });
                     label.name = (existingLabel && existingLabel.get('name')) || label.name;
                     label.id = (existingLabel && existingLabel.id) || label.id;
