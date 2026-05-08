@@ -4,6 +4,7 @@ import Sidebar from './components/sidebar';
 import Users from './components/settings/general/users';
 import {Heading, confirmIfDirty, topLevelBackdropClasses, useGlobalDirtyState} from '@tryghost/admin-x-design-system';
 import {type ReactNode, useEffect} from 'react';
+import {TrialPrivateSiteSimulatorProvider} from './components/trial-private-site-simulator/trial-private-site-simulator';
 import {canAccessSettings, isEditorUser} from '@tryghost/admin-x-framework/api/users';
 import {toast} from 'react-hot-toast';
 import {useGlobalData} from './components/providers/global-data-provider';
@@ -87,17 +88,19 @@ const MainContent: React.FC = () => {
     }
 
     return (
-        <Page>
-            {loadingModal && <div className={`fixed inset-0 z-40 h-[calc(100vh-55px)] w-[100vw] tablet:h-[100vh] ${topLevelBackdropClasses}`} />}
-            <div className="fixed inset-x-0 top-0 z-[35] max-w-[calc(100%-16px)] flex-1 basis-[320px] bg-white p-8 tablet:relative tablet:inset-x-auto tablet:top-auto tablet:h-full tablet:overflow-y-scroll tablet:bg-grey-50 tablet:py-0 dark:bg-grey-975 dark:tablet:bg-[#101114]" id="admin-x-settings-sidebar-scroller">
-                <div className="relative w-full">
-                    <Sidebar />
+        <TrialPrivateSiteSimulatorProvider>
+            <Page>
+                {loadingModal && <div className={`fixed inset-0 z-40 h-[calc(100vh-55px)] w-[100vw] tablet:h-[100vh] ${topLevelBackdropClasses}`} />}
+                <div className="fixed inset-x-0 top-0 z-[35] max-w-[calc(100%-16px)] flex-1 basis-[320px] bg-white p-8 tablet:relative tablet:inset-x-auto tablet:top-auto tablet:h-full tablet:overflow-y-scroll tablet:bg-grey-50 tablet:py-0 dark:bg-grey-975 dark:tablet:bg-[#101114]" id="admin-x-settings-sidebar-scroller">
+                    <div className="relative w-full">
+                        <Sidebar />
+                    </div>
                 </div>
-            </div>
-            <div className="relative h-full flex-1 overflow-y-scroll bg-white pt-12 tablet:basis-[800px] dark:bg-grey-975 dark:tablet:bg-black" id="admin-x-settings-scroller">
-                <Settings />
-            </div>
-        </Page>
+                <div className="relative h-full flex-1 overflow-y-scroll bg-white pt-12 tablet:basis-[800px] dark:bg-grey-975 dark:tablet:bg-black" id="admin-x-settings-scroller">
+                    <Settings />
+                </div>
+            </Page>
+        </TrialPrivateSiteSimulatorProvider>
     );
 };
 

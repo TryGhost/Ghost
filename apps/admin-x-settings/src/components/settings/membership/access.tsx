@@ -1,11 +1,12 @@
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
+import {Button, Hint, MultiSelect, type MultiSelectOption, Select, Separator, SettingGroupContent, TextField, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {type GroupBase, type MultiValue} from 'react-select';
-import {Hint, MultiSelect, type MultiSelectOption, Select, Separator, SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useGlobalData} from '../../providers/global-data-provider';
+import {useTrialPrivateSiteSimulator} from '../../trial-private-site-simulator/trial-private-site-simulator';
 
 const SITE_VISIBILITY_OPTIONS = [
     {
@@ -84,8 +85,14 @@ const COMMENTS_ENABLED_OPTIONS = [
     }
 ];
 
+function normalizeAccessCode(value: string | null | undefined) {
+    return value?.trim() || '';
+}
+
 const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {settings} = useGlobalData();
+    const {isTrialMode, isUpgradedMode, password: simulatorPassword, regenerateAccessCode} = useTrialPrivateSiteSimulator();
+    const [isRegenerating, setIsRegenerating] = React.useState(false);
     const {
         localSettings,
         isEditing,
@@ -113,6 +120,10 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
         'is_private', 'password', 'members_signup_access', 'default_content_visibility', 'default_content_visibility_tiers', 'comments_enabled'
     ]) as [boolean, string, string, string, string, string];
     const [savedIsPrivate, savedPublicHash] = getSettingValues(settings, ['is_private', 'public_hash']) as [boolean, string];
+    const savedPassword = normalizeAccessCode(password);
+    const savedSimulatorPassword = normalizeAccessCode(simulatorPassword);
+    const effectiveIsPrivate = isTrialMode ? true : isPrivate;
+    const effectivePassword = isTrialMode ? savedSimulatorPassword || savedPassword : savedPassword;
 
     const {data: {tiers} = {}} = useBrowseTiers();
 
@@ -129,11 +140,42 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const contentVisibilityTiers = JSON.parse(defaultContentVisibilityTiers || '[]') as string[];
     const selectedTierOptions = tierOptionGroups.flatMap(group => group.options).filter(option => contentVisibilityTiers.includes(option.value));
-    const privateRssUrl = (savedIsPrivate && isPrivate && siteData?.url && savedPublicHash) ? `${siteData.url.replace(/\/$/, '')}/${savedPublicHash}/rss` : null;
+    const privateRssUrl = (savedIsPrivate && effectiveIsPrivate && siteData?.url && savedPublicHash) ? `${siteData.url.replace(/\/$/, '')}/${savedPublicHash}/rss` : null;
 
     const setSelectedTiers = (selectedOptions: MultiValue<MultiSelectOption>) => {
         const selectedTiers = selectedOptions.map(option => option.value);
         updateSetting('default_content_visibility_tiers', JSON.stringify(selectedTiers));
+    };
+
+    const copyAccessCode = async () => {
+        if (!effectivePassword) {
+            return;
+        }
+
+        await navigator.clipboard.writeText(effectivePassword);
+        showToast({
+            type: 'success',
+            title: 'Access code copied'
+        });
+    };
+
+    const handleRegenerateAccessCode = async () => {
+        setIsRegenerating(true);
+
+        try {
+            await regenerateAccessCode();
+            showToast({
+                type: 'success',
+                title: 'Access code regenerated'
+            });
+        } catch {
+            showToast({
+                type: 'error',
+                title: 'Could not regenerate access code'
+            });
+        } finally {
+            setIsRegenerating(false);
+        }
     };
 
     const form = (
@@ -142,8 +184,9 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 <div className="w-full max-w-none min-w-[160px] md:w-2/3 md:max-w-[320px]">Who should be able to browse your site?</div>
                 <div className="w-full md:flex-1">
                     <Select
+                        disabled={isTrialMode}
                         options={SITE_VISIBILITY_OPTIONS}
-                        selectedOption={SITE_VISIBILITY_OPTIONS.find(option => option.value === (isPrivate ? 'private' : 'public'))}
+                        selectedOption={SITE_VISIBILITY_OPTIONS.find(option => option.value === (effectiveIsPrivate ? 'private' : 'public'))}
                         testId='site-visibility-select'
                         onSelect={(option) => {
                             updateSetting('is_private', option?.value === 'private');
@@ -152,17 +195,44 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     />
                 </div>
             </div>
-            {isPrivate && (
+            {(effectiveIsPrivate || isTrialMode) && (
                 <div className="flex flex-col content-center items-center gap-4 md:flex-row md:items-start">
                     <div className="w-full max-w-none min-w-[160px] md:w-2/3 md:max-w-[320px] md:pt-3">What access code should visitors use?</div>
                     <div className="w-full md:flex-1">
                         <TextField
                             data-testid='site-access-code'
+                            disabled={isTrialMode}
                             error={!!errors.password}
                             hint={errors.password}
                             placeholder="Enter access code"
+                            rightPlaceholder={(
+                                <span className='flex h-full items-center gap-1'>
+                                    <Button
+                                        aria-label='Regenerate access code'
+                                        disabled={isRegenerating}
+                                        icon='reload'
+                                        label='Regenerate access code'
+                                        size='sm'
+                                        title='Regenerate access code'
+                                        hideLabel
+                                        link
+                                        onClick={handleRegenerateAccessCode}
+                                    />
+                                    <Button
+                                        aria-label='Copy access code'
+                                        disabled={!effectivePassword}
+                                        icon='duplicate'
+                                        label='Copy access code'
+                                        size='sm'
+                                        title='Copy access code'
+                                        hideLabel
+                                        link
+                                        onClick={copyAccessCode}
+                                    />
+                                </span>
+                            )}
                             title='Access code'
-                            value={password || ''}
+                            value={effectivePassword || ''}
                             hideTitle
                             onChange={(e) => {
                                 updateSetting('password', e.target.value);
@@ -173,6 +243,16 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         {privateRssUrl && (
                             <Hint className='mt-2'>
                                 <>A private RSS feed is available <a className='text-green' href={privateRssUrl} rel="noopener noreferrer" target='_blank'>here</a></>
+                            </Hint>
+                        )}
+                        {isTrialMode && (
+                            <Hint className='mt-2'>
+                                Trial sites are private while you set up. Share this access code with anyone you want to <a className='text-green' href={siteData?.url || '/'} rel="noopener noreferrer" target='_blank'>preview your site</a>.
+                            </Hint>
+                        )}
+                        {isUpgradedMode && (
+                            <Hint className='mt-2'>
+                                Your site is still private. You can make it public whenever you&apos;re ready.
                             </Hint>
                         )}
                     </div>
