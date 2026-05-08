@@ -68,7 +68,7 @@ const NotificationText = ({type, status, message, context}) => {
                     mapping={{
                         strong: <strong />
                     }}
-                    string={t('You\'ve successfully subscribed to <strong>{siteTitle}</strong>', {siteTitle: context.site.title})}
+                    string={t('You\'ve successfully subscribed to <strong>{siteTitle}</strong>', {siteTitle: context.site.title, interpolation: {escapeValue: false}})}
                 />
             </p>
         );
@@ -79,7 +79,7 @@ const NotificationText = ({type, status, message, context}) => {
                     mapping={{
                         strong: <strong />
                     }}
-                    string={t('You\'ve successfully subscribed to <strong>{siteTitle}</strong>', {siteTitle: context.site.title})}
+                    string={t('You\'ve successfully subscribed to <strong>{siteTitle}</strong>', {siteTitle: context.site.title, interpolation: {escapeValue: false}})}
                 />
             </p>
         );

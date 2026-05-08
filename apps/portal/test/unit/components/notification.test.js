@@ -206,6 +206,38 @@ describe('Notification', () => {
         });
     });
 
+    test('renders site titles with special characters without HTML escaping in signup success toast', async () => {
+        NotificationParser.mockReturnValue({
+            type: 'signup',
+            status: 'success',
+            autoHide: true,
+            duration: 5000
+        });
+
+        const site = {
+            url: 'https://example.com',
+            title: 'Fabien O\'Carroll'
+        };
+
+        const {getByText} = render(
+            <AppContext.Provider value={{
+                site,
+                member: null,
+                brandColor: '#000000',
+                showPopup: false,
+                doAction: vi.fn(),
+                notification: null
+            }}
+            >
+                <Notification />
+            </AppContext.Provider>
+        );
+
+        await waitFor(() => {
+            expect(getByText('Fabien O\'Carroll')).toBeInTheDocument();
+        });
+    });
+
     test('renders title and subtitle from a gift redemption error message object', async () => {
         NotificationParser.mockReturnValue({
             type: 'giftRedeem',
