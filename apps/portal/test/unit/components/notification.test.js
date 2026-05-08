@@ -216,7 +216,7 @@ describe('Notification', () => {
 
         const site = {
             url: 'https://example.com',
-            title: 'Fabien O\'Carroll'
+            title: 'Quentin O\'Apostrophe'
         };
 
         const {getByText} = render(
@@ -234,7 +234,7 @@ describe('Notification', () => {
         );
 
         await waitFor(() => {
-            expect(getByText('Fabien O\'Carroll')).toBeInTheDocument();
+            expect(getByText('Quentin O\'Apostrophe')).toBeInTheDocument();
         });
     });
 
