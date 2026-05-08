@@ -50,7 +50,7 @@
     "@tryghost/helpers": "1.1.103",
     "@tryghost/kg-clean-basic-html": "4.3.1",
     "@tryghost/kg-converters": "1.2.1",
-    "@tryghost/koenig-lexical": "1.8.1",
+    "@tryghost/koenig-lexical": "1.8.2-pr1882.0",
     "@tryghost/limit-service": "1.5.2",
     "@tryghost/nql": "0.12.10",
     "@tryghost/string": "0.3.2",
