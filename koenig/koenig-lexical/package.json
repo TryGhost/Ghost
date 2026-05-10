@@ -114,7 +114,7 @@
     "prettier": "3.8.3",
     "prettier-plugin-organize-attributes": "1.0.0",
     "react": "18.3.1",
-    "react-colorful": "5.6.1",
+    "react-colorful": "5.7.0",
     "react-dom": "18.3.1",
     "react-highlight": "0.15.0",
     "react-router-dom": "7.15.0",
