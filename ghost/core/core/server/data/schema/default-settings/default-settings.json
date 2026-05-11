@@ -432,6 +432,10 @@
         }
     },
     "email": {
+        "resend_api_key": {
+            "defaultValue": null,
+            "type": "string"
+        },
         "mailgun_domain": {
             "defaultValue": null,
             "type": "string"

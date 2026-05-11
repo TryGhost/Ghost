@@ -225,6 +225,7 @@
     "path-match": "1.2.4",
     "probability-distributions": "0.9.1",
     "probe-image-size": "7.2.3",
+    "resend": "^6.12.3",
     "rss": "1.2.2",
     "sanitize-html": "2.17.0",
     "semver": "7.7.4",

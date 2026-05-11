@@ -21,11 +21,11 @@ class EmailServiceWrapper {
         const SendingService = require('./sending-service');
         const BatchSendingService = require('./batch-sending-service');
         const EmailSegmenter = require('./email-segmenter');
-        const MailgunEmailProvider = require('./mailgun-email-provider');
+        const ResendEmailProvider = require('./resend-email-provider');
         const {DomainWarmingService} = require('./domain-warming-service');
 
         const {Post, Newsletter, Email, EmailBatch, EmailRecipient, Member} = require('../../models');
-        const MailgunClient = require('../lib/mailgun-client');
+        const ResendClient = require('../lib/resend-client');
         const configService = require('../../../shared/config');
         const settingsCache = require('../../../shared/settings-cache');
         const settingsHelpers = require('../settings-helpers');
@@ -49,15 +49,15 @@ class EmailServiceWrapper {
         const emailAnalyticsJobs = require('../email-analytics/jobs');
         const {cachedImageSizeFromUrl} = require('../../lib/image');
 
-        // capture errors from mailgun client and log them in sentry
+        // capture errors from resend client and log them in sentry
         const errorHandler = (error) => {
-            logging.info(`Capturing error for mailgun email provider service`);
+            logging.info(`Capturing error for resend email provider service`);
             sentry.captureException(error);
         };
 
-        // Mailgun client instance for email provider
-        const mailgunClient = new MailgunClient({
-            config: configService, settings: settingsCache, labs
+        // Resend client instance for email provider
+        const resendClient = new ResendClient({
+            config: configService, settings: settingsCache
         });
         const i18nLanguage = settingsCache.get('locale') || 'en';
         const i18n = i18nLib(i18nLanguage, 'ghost');
@@ -67,8 +67,8 @@ class EmailServiceWrapper {
             i18n.changeLanguage(model.get('value'));
         });
 
-        const mailgunEmailProvider = new MailgunEmailProvider({
-            mailgunClient,
+        const resendEmailProvider = new ResendEmailProvider({
+            resendClient,
             errorHandler
         });
 
@@ -96,7 +96,7 @@ class EmailServiceWrapper {
         });
 
         const sendingService = new SendingService({
-            emailProvider: mailgunEmailProvider,
+            emailProvider: resendEmailProvider,
             emailRenderer,
             emailAddressService: emailAddressService.service
         });
