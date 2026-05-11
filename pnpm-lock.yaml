@@ -2342,6 +2342,9 @@ importers:
       semver:
         specifier: 7.7.4
         version: 7.7.4
+      sharp:
+        specifier: 0.34.5
+        version: 0.34.5
       simple-dom:
         specifier: 1.4.0
         version: 1.4.0

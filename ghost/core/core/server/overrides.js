@@ -1,4 +1,3 @@
-const path = require('path');
 const luxon = require('luxon');
 const moment = require('moment-timezone');
 
@@ -13,11 +12,3 @@ const moment = require('moment-timezone');
  */
 luxon.Settings.defaultZone = 'UTC';
 moment.tz.setDefault('UTC');
-
-/**
- * Point fontconfig at the bundled Inter font used for gift subscription
- * link previews. This must run before sharp/libvips initializes fontconfig
- * (on first text render) — once fontconfig caches its config, changing the
- * env var is a no-op.
- */
-process.env.FONTCONFIG_FILE ??= path.join(__dirname, 'web/gift-preview/fonts.conf');

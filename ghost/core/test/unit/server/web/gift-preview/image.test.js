@@ -12,9 +12,8 @@ describe('Gift Preview Image', function () {
     });
 
     describe('generateGiftPreviewImage', function () {
-        it('bundles the Inter font and fontconfig file for SVG rendering', function () {
+        it('bundles the Inter font for gift preview text rendering', function () {
             assert.ok(fs.existsSync(path.join(giftPreviewPath, 'Inter.ttf')));
-            assert.ok(fs.existsSync(path.join(giftPreviewPath, 'fonts.conf')));
         });
 
         it('generates a PNG buffer', async function () {

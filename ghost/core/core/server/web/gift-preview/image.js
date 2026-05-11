@@ -3,7 +3,7 @@ const path = require('path');
 
 const CACHE_MAX_SIZE = 100;
 const GIFT_CARD_ORB_PATH = path.join(__dirname, 'gift-card-orb.png');
-const FONT_STACK = 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif';
+const INTER_FONT_PATH = path.join(__dirname, 'Inter.ttf');
 
 const cache = new Map();
 let giftCardOrbImageHref;
@@ -48,14 +48,63 @@ function truncateText(str, maxLength) {
     return `${text.slice(0, maxLength - 3).trim()}...`;
 }
 
-function buildSvg({accentColor, siteTitle = 'Ghost', tierLabel = '', cadenceLabel = '1 year'}) {
+function createTextInput({text, size, weight, width}) {
+    const escapedText = escapeXml(text);
+
+    return {
+        text: {
+            text: `<span foreground="#FFFFFF" font_desc="Inter ${weight} ${size}">${escapedText}</span>`,
+            font: 'Inter',
+            fontfile: INTER_FONT_PATH,
+            width,
+            rgba: true,
+            dpi: 72
+        }
+    };
+}
+
+function buildTextOverlays({siteTitle = 'Ghost', tierLabel = '', cadenceLabel = '1 year'}) {
+    const safeCadenceLabel = truncateText(cadenceLabel, 18);
+    const safeTierLabel = truncateText(tierLabel || 'Gift membership', 38);
+    const safeSiteTitle = truncateText(siteTitle, 40);
+
+    return [
+        {
+            input: createTextInput({
+                text: safeCadenceLabel,
+                size: 84,
+                weight: 'Bold',
+                width: 1060
+            }),
+            left: 64,
+            top: 82
+        },
+        {
+            input: createTextInput({
+                text: safeTierLabel,
+                size: 44,
+                weight: 'Medium',
+                width: 1060
+            }),
+            left: 66,
+            top: 177
+        },
+        {
+            input: createTextInput({
+                text: safeSiteTitle,
+                size: 52,
+                weight: 'Bold',
+                width: 1060
+            }),
+            left: 66,
+            top: 500
+        }
+    ];
+}
+
+function buildSvg({accentColor}) {
     const escapedAccentColor = escapeXml(accentColor);
     const orbImageHref = escapeXml(getGiftCardOrbImageHref());
-    const safeCadenceLabel = escapeXml(truncateText(cadenceLabel, 18));
-    const safeTierLabel = escapeXml(truncateText(tierLabel, 38));
-    const safeSiteTitle = escapeXml(truncateText(siteTitle, 40));
-
-    const textX = 64;
 
     return `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
@@ -74,11 +123,6 @@ function buildSvg({accentColor, siteTitle = 'Ghost', tierLabel = '', cadenceLabe
 
     <rect x="505" y="42" width="190" height="36" rx="18" fill="#000000" opacity="0.36"/>
     <rect x="510" y="44" width="180" height="3" rx="1.5" fill="#FFFFFF" opacity="0.18"/>
-
-    <text x="${textX}" y="150" font-family="${FONT_STACK}" font-size="84" font-weight="700" letter-spacing="0" line-height="1" fill="#FFFFFF">${safeCadenceLabel}</text>
-    <text x="${textX + 2}" y="220" font-family="${FONT_STACK}" font-size="44" font-weight="500" letter-spacing="0" fill="#FFFFFF">${safeTierLabel}</text>
-
-    <text x="${textX + 2}" y="555" font-family="${FONT_STACK}" font-size="52" font-weight="700" letter-spacing="0" fill="#FFFFFF">${safeSiteTitle}</text>
 </svg>`;
 }
 
@@ -94,14 +138,17 @@ async function generateGiftPreviewImage({accentColor = '#15171A', siteTitle, tie
         return cache.get(cacheKey);
     }
 
-    const imageTransform = require('@tryghost/image-transform');
-    const svg = buildSvg({accentColor, siteTitle, tierLabel, cadenceLabel});
-    const image = await imageTransform.resizeFromBuffer(Buffer.from(svg), {
-        width: 1200,
-        format: 'png',
-        withoutEnlargement: false,
-        timeout: 10
-    });
+    const sharp = require('sharp');
+
+    const svg = buildSvg({accentColor});
+    const image = await sharp(Buffer.from(svg), {animated: false})
+        .resize(1200, null, {
+            withoutEnlargement: false
+        })
+        .composite(buildTextOverlays({siteTitle, tierLabel, cadenceLabel}))
+        .png()
+        .timeout({seconds: 10})
+        .toBuffer();
 
     cacheResult(cacheKey, image);
 
