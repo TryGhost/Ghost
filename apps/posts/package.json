@@ -43,6 +43,7 @@
         "@testing-library/jest-dom": "^6",
         "@testing-library/react": "14.3.1",
         "@types/jest": "29.5.14",
+        "@types/papaparse": "5.5.2",
         "@types/react": "18.3.28",
         "@vitest/coverage-v8": "^4.1.2",
         "eslint": "catalog:",
