@@ -75,12 +75,22 @@ class ResendEmailProvider {
 
     /**
      * @param {import('./sending-service').EmailData} data
+     * @param {object} [options] - sending options. Accepted for interface
+     *   parity with MailgunEmailProvider. Resend does not natively support
+     *   open/click tracking toggles or scheduled deliveryTime at send time,
+     *   so these are logged when requested and otherwise ignored.
      * @returns {Promise<{id: string}>}
      */
-    async send(data) {
+    async send(data, options = {}) {
         const recipientCount = data.recipients.length;
         const firstRecipient = data.recipients[0]?.email;
         logging.info(`[Resend] Sending email to ${recipientCount} recipients (first: ${firstRecipient}, from: ${data.from}, subject: "${data.subject}")`);
+        if (options.deliveryTime) {
+            logging.warn(`[Resend] options.deliveryTime requested (${options.deliveryTime}) but Resend has no scheduled-send API — sending immediately`);
+        }
+        if (options.clickTrackingEnabled || options.openTrackingEnabled) {
+            logging.info(`[Resend] options.clickTracking=${!!options.clickTrackingEnabled} openTracking=${!!options.openTrackingEnabled} requested — Resend tracks via webhooks, configure in Resend dashboard`);
+        }
         const startTime = Date.now();
         debug(`sending message to ${recipientCount} recipients`);
 
