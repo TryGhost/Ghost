@@ -95,8 +95,12 @@ class ResendEmailProvider {
         debug(`sending message to ${recipientCount} recipients`);
 
         if (!this.#resendClient.isConfigured()) {
-            logging.warn('[Resend] Provider is not configured — set resend_api_key setting or bulkEmail.resend.apiKey config');
-            return null;
+            throw new errors.EmailError({
+                message: 'Resend provider is not configured',
+                context: 'Set resend_api_key setting or bulkEmail.resend.apiKey config',
+                help: 'https://ghost.org/docs/newsletters/#bulk-email-configuration',
+                code: 'BULK_EMAIL_PROVIDER_NOT_CONFIGURED'
+            });
         }
 
         try {
@@ -110,7 +114,7 @@ class ResendEmailProvider {
 
             logging.info(`[Resend] Built ${emails.length} per-recipient email objects (replacements: ${data.replacementDefinitions?.length || 0})`);
 
-            const BATCH_SIZE = 100;
+            const BATCH_SIZE = Math.min(this.#resendClient.getBatchSize(), 100);
             let lastId;
             let totalSent = 0;
 
@@ -159,6 +163,10 @@ class ResendEmailProvider {
 
             if (this.#errorHandler) {
                 this.#errorHandler(e);
+            }
+
+            if (errors.utils.isGhostError(e)) {
+                throw e;
             }
 
             throw new errors.EmailError({

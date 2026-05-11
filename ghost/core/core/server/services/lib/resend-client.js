@@ -28,7 +28,7 @@ module.exports = class ResendClient {
             logging.warn('[ResendClient] No API key found in config (bulkEmail.resend.apiKey) or settings (resend_api_key)');
             return null;
         }
-        logging.info(`[ResendClient] Using API key from ${resendConfig.source} (key prefix: ${resendConfig.apiKey.slice(0, 6)}...)`);
+        logging.info(`[ResendClient] Using API key from ${resendConfig.source}`);
         const {Resend} = require('resend');
         return new Resend(resendConfig.apiKey);
     }
@@ -38,7 +38,10 @@ module.exports = class ResendClient {
     }
 
     getBatchSize() {
-        return this.#config.get('bulkEmail')?.batchSize ?? ResendClient.DEFAULT_BATCH_SIZE;
+        const configured = this.#config.get('bulkEmail')?.batchSize;
+        const parsed = parseInt(configured);
+        const value = Number.isInteger(parsed) && parsed > 0 ? parsed : ResendClient.DEFAULT_BATCH_SIZE;
+        return Math.min(value, 100);
     }
 
     getTargetDeliveryWindow() {

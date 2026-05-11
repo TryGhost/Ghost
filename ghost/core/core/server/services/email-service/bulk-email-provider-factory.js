@@ -8,12 +8,12 @@ const ResendEmailProvider = require('./resend-email-provider');
  * Resolve which bulk-email provider should be used.
  *
  * Resolution order:
- *   1. Explicit `config.bulkEmail.provider` value ('mailgun' or 'resend').
- *   2. If `config.bulkEmail.resend` block is set → 'resend'.
- *   3. If a non-empty `resend_api_key` setting is stored → 'resend'.
- *   4. If `config.bulkEmail.mailgun` block is set → 'mailgun'.
- *   5. If Mailgun api key + domain settings are stored → 'mailgun'.
- *   6. Default 'mailgun' (preserves upstream behaviour).
+ *   1. Explicit `config.bulkEmail.provider` — honored only if the matching
+ *      credentials are present. If the operator selects a provider with no
+ *      key, a warning is logged and resolution falls through to auto-detect.
+ *   2. If `config.bulkEmail.resend` block is set or `resend_api_key` setting
+ *      is stored → 'resend'.
+ *   3. Otherwise → 'mailgun' (preserves upstream behaviour).
  *
  * @param {object} config
  * @param {object} settings - settings cache
@@ -21,21 +21,20 @@ const ResendEmailProvider = require('./resend-email-provider');
  */
 function resolveProvider(config, settings) {
     const bulkEmailConfig = config.get('bulkEmail') || {};
+    const hasResendCreds = !!(bulkEmailConfig.resend?.apiKey || settings.get('resend_api_key'));
+    const hasMailgunCreds = !!(bulkEmailConfig.mailgun || (settings.get('mailgun_api_key') && settings.get('mailgun_domain')));
+
     const explicit = bulkEmailConfig.provider;
     if (explicit === 'resend' || explicit === 'mailgun') {
-        return explicit;
+        const explicitHasCreds = explicit === 'resend' ? hasResendCreds : hasMailgunCreds;
+        if (explicitHasCreds) {
+            return explicit;
+        }
+        logging.warn(`[BulkEmail] bulkEmail.provider="${explicit}" but no ${explicit} credentials configured — falling back to auto-detect`);
     }
 
-    const hasResendConfig = !!bulkEmailConfig.resend;
-    const hasResendSetting = !!settings.get('resend_api_key');
-    if (hasResendConfig || hasResendSetting) {
+    if (hasResendCreds) {
         return 'resend';
-    }
-
-    const hasMailgunConfig = !!bulkEmailConfig.mailgun;
-    const hasMailgunSetting = !!(settings.get('mailgun_api_key') && settings.get('mailgun_domain'));
-    if (hasMailgunConfig || hasMailgunSetting) {
-        return 'mailgun';
     }
 
     return 'mailgun';

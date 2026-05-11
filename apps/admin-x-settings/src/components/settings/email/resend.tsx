@@ -62,7 +62,7 @@ const Resend: React.FC<{ keywords: string[] }> = ({keywords}) => {
     );
 
     const groupDescription = (
-        <>The Resend API is used for bulk email newsletter delivery. <Link href='https://resend.com/docs' target='_blank'>Learn more</Link></>
+        <>The Resend API is used for bulk email newsletter delivery. <Link href='https://resend.com/docs' rel='noopener noreferrer' target='_blank'>Learn more</Link></>
     );
 
     return (
