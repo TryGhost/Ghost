@@ -383,7 +383,8 @@
     "You're not receiving emails because you either marked a recent message as spam, or because messages could not be delivered to your provided email address.": "An error message displayed in the member account area when newsletter delivery to their address has repeatedly failed or they have marked an email as spam.",
     "You're one tap away from subscribing to {siteTitle} — please confirm your email address with this link:": "Signup confirmation email",
     "You're one tap away from subscribing to {siteTitle}!": "Signup confirmation email",
-    "You've been gifted {cadenceLabel} of {siteTitle}": "Title shown in the social media (Open Graph) preview when a gift subscription link is shared. {cadenceLabel} is a translated duration like '1 year' or '3 months'. {siteTitle} is the name of the publication",
+    "You've been gifted a {duration}-month {tierName} membership to {siteTitle}": "Title shown in the social media (Open Graph) preview when a gift subscription link is shared, for monthly gifts. {duration} is the number of months (e.g. 1 or 3), {tierName} is the membership tier name (e.g. 'Gold'), {siteTitle} is the publication name. Translators may reword the sentence as needed for their language.",
+    "You've been gifted a {duration}-year {tierName} membership to {siteTitle}": "Title shown in the social media (Open Graph) preview when a gift subscription link is shared, for yearly gifts. {duration} is the number of years (e.g. 1 or 2), {tierName} is the membership tier name (e.g. 'Gold'), {siteTitle} is the publication name. Translators may reword the sentence as needed for their language.",
     "You've successfully signed in.": "A notification displayed when the user signs in",
     "You've successfully subscribed to <strong>{siteTitle}</strong>": "Notification displayed after a successful signup. The <strong>...</strong> tag wraps the site name. {siteTitle} is the name of the publication",
     "Your account": "A label indicating member account details",
@@ -435,6 +436,7 @@
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "Shown when a member unsubscribes from a newsletter",
     "{months} months": "Duration label for a multiple-month subscription",
     "{months} months free": "Retention offer discount badge shown during subscription cancellation",
+    "{tierName} membership": "Label shown on the gift subscription Open Graph preview image, combining the membership tier name with the word 'membership' (e.g. 'Gold membership'). {tierName} is the tier name. Translators may reword as needed for their language.",
     "{trialDays} days free": "Portal - label for a free trial that lasts a specific number of days",
     "{years} years": "Duration label for a multiple-year subscription"
 }

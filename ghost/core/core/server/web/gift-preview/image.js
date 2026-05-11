@@ -1,6 +1,12 @@
+const fs = require('fs');
+const path = require('path');
+
 const CACHE_MAX_SIZE = 100;
+const GIFT_CARD_ORB_PATH = path.join(__dirname, 'gift-card-orb.png');
+const INTER_FONT_PATH = path.join(__dirname, 'Inter.ttf');
 
 const cache = new Map();
+let giftCardOrbImageHref;
 
 function cacheResult(key, value) {
     if (cache.size >= CACHE_MAX_SIZE) {
@@ -21,75 +27,128 @@ function escapeXml(str) {
         .replaceAll('\'', '&apos;');
 }
 
-function hexToRgb(hex) {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-
-    if (!result) {
-        return {r: 0, g: 0, b: 0};
+function getGiftCardOrbImageHref() {
+    if (giftCardOrbImageHref !== undefined) {
+        return giftCardOrbImageHref;
     }
 
+    const orbPng = fs.readFileSync(GIFT_CARD_ORB_PATH);
+    giftCardOrbImageHref = `data:image/png;base64,${orbPng.toString('base64')}`;
+
+    return giftCardOrbImageHref;
+}
+
+function truncateText(str, maxLength) {
+    const text = `${str || ''}`.trim();
+
+    if (text.length <= maxLength) {
+        return text;
+    }
+
+    return `${text.slice(0, maxLength - 3).trim()}...`;
+}
+
+function createTextInput({text, size, weight, width}) {
+    const escapedText = escapeXml(text);
+
     return {
-        r: Number.parseInt(result[1], 16),
-        g: Number.parseInt(result[2], 16),
-        b: Number.parseInt(result[3], 16)
+        text: {
+            text: `<span foreground="#FFFFFF" font_desc="Inter ${weight} ${size}">${escapedText}</span>`,
+            font: 'Inter',
+            fontfile: INTER_FONT_PATH,
+            width,
+            rgba: true,
+            dpi: 72
+        }
     };
 }
 
-function getBackgroundColor(accentColor) {
-    // Blend accent color at 6% opacity over white, matching Portal's redemption modal
-    const {r, g, b} = hexToRgb(accentColor);
-    const opacity = 0.06;
-    const blend = c => Math.round(255 + (c - 255) * opacity);
+function buildTextOverlays({siteTitle = 'Ghost', tierLabel = '', cadenceLabel = '1 year'}) {
+    const safeCadenceLabel = truncateText(cadenceLabel, 18);
+    const safeTierLabel = truncateText(tierLabel || 'Gift membership', 38);
+    const safeSiteTitle = truncateText(siteTitle, 40);
 
-    return `rgb(${blend(r)}, ${blend(g)}, ${blend(b)})`;
+    return [
+        {
+            input: createTextInput({
+                text: safeCadenceLabel,
+                size: 84,
+                weight: 'Bold',
+                width: 1060
+            }),
+            left: 64,
+            top: 82
+        },
+        {
+            input: createTextInput({
+                text: safeTierLabel,
+                size: 44,
+                weight: 'Medium',
+                width: 1060
+            }),
+            left: 66,
+            top: 177
+        },
+        {
+            input: createTextInput({
+                text: safeSiteTitle,
+                size: 52,
+                weight: 'Bold',
+                width: 1060
+            }),
+            left: 66,
+            top: 500
+        }
+    ];
 }
 
 function buildSvg({accentColor}) {
-    const bgColor = getBackgroundColor(accentColor);
     const escapedAccentColor = escapeXml(accentColor);
-
-    // Gift box icon from Portal (apps/portal/src/images/icons/gift.svg)
-    // Original viewBox 0 0 24 24, scaled and centered in the seal.
-    const giftIcon = `
-        <g transform="translate(564, 279) scale(3)" fill="none" stroke="#FFFFFF"
-            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="8" width="18" height="4" rx="1"/>
-            <path d="M12 8v13"/>
-            <path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/>
-            <path d="M7.5 8a2.5 2.5 0 0 1 0-5C9 3 12 8 12 8"/>
-            <path d="M16.5 8a2.5 2.5 0 0 0 0-5C15 3 12 8 12 8"/>
-        </g>
-    `;
+    const orbImageHref = escapeXml(getGiftCardOrbImageHref());
 
     return `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
-    <rect width="1200" height="630" fill="${bgColor}"/>
+    <defs>
+        <linearGradient id="cardShine" x1="120" y1="580" x2="980" y2="60" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#FFFFFF" stop-opacity="0"/>
+            <stop offset="0.5" stop-color="#FFFFFF" stop-opacity="0.31"/>
+            <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+        </linearGradient>
+    </defs>
 
-    <rect x="0" y="303" width="1200" height="24" fill="${escapedAccentColor}"/>
-    <rect x="588" y="0" width="24" height="630" fill="${escapedAccentColor}"/>
+    <rect width="1200" height="630" fill="${escapedAccentColor}"/>
+    <rect width="1200" height="630" fill="#FFFFFF" opacity="0.07"/>
+    <rect width="1200" height="630" fill="url(#cardShine)"/>
+    <image href="${orbImageHref}" x="0" y="0" width="1200" height="630" opacity="0.2" preserveAspectRatio="none"/>
 
-    <circle cx="600" cy="315" r="70" fill="${bgColor}"/>
-    <circle cx="600" cy="315" r="58" fill="${escapedAccentColor}"/>
-
-    ${giftIcon}
+    <rect x="505" y="42" width="190" height="36" rx="18" fill="#000000" opacity="0.36"/>
+    <rect x="510" y="44" width="180" height="3" rx="1.5" fill="#FFFFFF" opacity="0.18"/>
 </svg>`;
 }
 
-async function generateGiftPreviewImage({accentColor}) {
-    const cacheKey = accentColor;
+async function generateGiftPreviewImage({accentColor = '#15171A', siteTitle, tierLabel, cadenceLabel}) {
+    const cacheKey = JSON.stringify({
+        accentColor,
+        siteTitle,
+        tierLabel,
+        cadenceLabel
+    });
 
     if (cache.has(cacheKey)) {
         return cache.get(cacheKey);
     }
 
-    const imageTransform = require('@tryghost/image-transform');
+    const sharp = require('sharp');
+
     const svg = buildSvg({accentColor});
-    const image = await imageTransform.resizeFromBuffer(Buffer.from(svg), {
-        width: 1200,
-        format: 'png',
-        withoutEnlargement: false,
-        timeout: 10
-    });
+    const image = await sharp(Buffer.from(svg), {animated: false})
+        .resize(1200, null, {
+            withoutEnlargement: false
+        })
+        .composite(buildTextOverlays({siteTitle, tierLabel, cadenceLabel}))
+        .png()
+        .timeout({seconds: 10})
+        .toBuffer();
 
     cacheResult(cacheKey, image);
 
