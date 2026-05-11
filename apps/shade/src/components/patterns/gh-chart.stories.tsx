@@ -2,7 +2,7 @@ import type {Meta, StoryObj} from '@storybook/react-vite';
 import {GhAreaChart, type GhAreaChartDataItem} from './gh-chart';
 
 const meta = {
-    title: 'Components / Ghost Chart',
+    title: 'Patterns / Ghost Chart',
     component: GhAreaChart,
     tags: ['autodocs'],
     parameters: {

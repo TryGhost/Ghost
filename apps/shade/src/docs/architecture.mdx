@@ -62,7 +62,7 @@ A product-shaped composition. Examples in Shade today: `PageHeader`, `ListPage`,
 
 Page-shaped patterns (those that represent a recurring kind of Admin page — List page, Analytics page, Detail page) are documented in [`docs/page-types.md`](../../docs/page-types.md).
 
-Pattern files live in `components/patterns/` and are exposed via `@tryghost/shade/patterns`. A few component-level features (currently `kpi/` and `charts/`) still live under `components/features/` and are exposed via `@tryghost/shade/components` — they're slated to move to `components/ui/` in a follow-up.
+Pattern files live in `components/patterns/` and are exposed via `@tryghost/shade/patterns`.
 
 ### App
 
@@ -142,8 +142,7 @@ apps/shade/src/
 ├── components/
 │   ├── ui/              Generic controls and recipes
 │   ├── layout/          Page shells (Page, ListHeader, ViewHeader)
-│   ├── patterns/        Product compositions (PageHeader, ListPage, Filters, ShareModal, …)
-│   ├── features/        Component-level features pending move to ui/ (KPI, charts)
+│   ├── patterns/        Product compositions (PageHeader, ListPage, Filters, KpiCard, GhAreaChart, …)
 │   └── posts-stats/     Interim shared components between the Posts and Stats apps
 ├── docs/                MDX documentation rendered in Storybook
 ├── hooks/               Generic React hooks
@@ -161,7 +160,7 @@ apps/shade/src/
 
 **Components are PascalCase**, hooks/functions/types are camelCase.
 
-**Stories live next to their component** as `<name>.stories.tsx`. The Storybook title puts each story in the right sidebar group: `Foundations / X`, `Primitives / X`, `Components / X`, `Layout / X`, `Patterns / X`, `Features / X`, `Posts–Stats / X`.
+**Stories live next to their component** as `<name>.stories.tsx`. The Storybook title puts each story in the right sidebar group: `Foundations / X`, `Primitives / X`, `Components / X`, `Layout / X`, `Patterns / X`, `Posts–Stats / X`.
 
 **Use `cn()` to merge classes** (combines `clsx` + `tailwind-merge`). Always merge through `cn()` rather than concatenating strings — it handles Tailwind class conflicts correctly.
 
