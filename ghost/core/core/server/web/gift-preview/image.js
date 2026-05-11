@@ -40,10 +40,12 @@ function getGiftCardOrbImageHref() {
     return giftCardOrbImageHref;
 }
 
-async function getGiftCardNoiseTile(sharp) {
+async function getGiftCardNoiseTile() {
     if (giftCardNoiseTile !== undefined) {
         return giftCardNoiseTile;
     }
+
+    const sharp = require('sharp');
 
     giftCardNoiseTile = await sharp(GIFT_CARD_NOISE_PATH)
         .resize(192, 192, {kernel: 'nearest'})
@@ -199,7 +201,7 @@ async function generateGiftPreviewImage({accentColor = '#15171A', siteTitle, tie
     const sharp = require('sharp');
 
     const svg = buildSvg({accentColor});
-    const noiseTile = await getGiftCardNoiseTile(sharp);
+    const noiseTile = await getGiftCardNoiseTile();
     const image = await sharp(Buffer.from(svg), {animated: false})
         .resize(1200, null, {
             withoutEnlargement: false
