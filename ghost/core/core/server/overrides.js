@@ -20,4 +20,4 @@ moment.tz.setDefault('UTC');
  * (on first text render) — once fontconfig caches its config, changing the
  * env var is a no-op.
  */
-process.env.FONTCONFIG_FILE = path.join(__dirname, 'web/gift-preview/fonts.conf');
+process.env.FONTCONFIG_FILE ??= path.join(__dirname, 'web/gift-preview/fonts.conf');
