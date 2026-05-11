@@ -1,20 +1,23 @@
 import '@xyflow/react/dist/style.css';
-import React, {useRef} from 'react';
+import React from 'react';
 import {AutomationAction, AutomationDetail} from '@tryghost/admin-x-framework/api/automations';
-import {Background, Edge, Handle, Node, NodeProps, Position, ReactFlow, ReactFlowInstance} from '@xyflow/react';
+import {Background, Edge, Handle, Node, NodeProps, Position, ReactFlow} from '@xyflow/react';
 import {Banner, LoadingIndicator} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
 
 const TAIL_NODE_ID = '__tail__';
-const NODE_X = 240;
+const NODE_X = 0;
 const NODE_GAP_Y = 180;
-const NODE_COLUMN_CENTER_X = NODE_X + 128;
 
 type StepNodeData = {
     icon: React.ElementType;
-    type: string;
+    label: string;
     value?: string;
 };
+
+type StepFlowNode = Node<StepNodeData, 'trigger' | 'step'>;
+type TailFlowNode = Node<Record<string, never>, 'tail'>;
+type AutomationFlowNode = StepFlowNode | TailFlowNode;
 
 const HIDDEN_HANDLE_STYLE: React.CSSProperties = {
     opacity: 0,
@@ -22,6 +25,8 @@ const HIDDEN_HANDLE_STYLE: React.CSSProperties = {
     background: 'transparent',
     border: 'none'
 };
+
+const EDGE_STYLE: React.CSSProperties = {stroke: 'var(--color-grey-500)'};
 
 const HiddenHandle: React.FC<{type: 'source' | 'target'; position: Position}> = ({type, position}) => (
     <Handle isConnectable={false} position={position} style={HIDDEN_HANDLE_STYLE} type={type} />
@@ -43,34 +48,38 @@ const StepNodeContent: React.FC<{data: StepNodeData}> = ({data}) => {
                 <Icon className='size-4' />
             </div>
             <div className='flex min-w-0 flex-col text-left'>
-                <span className='text-xs text-grey-600'>{data.type}</span>
+                <span className='text-xs text-grey-600'>{data.label}</span>
                 {data.value && <span className='truncate font-medium'>{data.value}</span>}
             </div>
         </>
     );
 };
 
-const TriggerNode: React.FC<NodeProps> = ({data}) => (
+const TriggerNode = React.memo<NodeProps<StepFlowNode>>(({data}) => (
     <NodeShell>
-        <StepNodeContent data={data as StepNodeData} />
+        <StepNodeContent data={data} />
         <HiddenHandle position={Position.Bottom} type='source' />
     </NodeShell>
-);
+));
+TriggerNode.displayName = 'TriggerNode';
 
-const StepNode: React.FC<NodeProps> = ({data}) => (
+const StepNode = React.memo<NodeProps<StepFlowNode>>(({data}) => (
     <NodeShell>
         <HiddenHandle position={Position.Top} type='target' />
-        <StepNodeContent data={data as StepNodeData} />
+        <StepNodeContent data={data} />
         <HiddenHandle position={Position.Bottom} type='source' />
     </NodeShell>
-);
+));
+StepNode.displayName = 'StepNode';
 
-const TailNode: React.FC = () => (
-    <div className='flex h-12 w-64 items-center justify-center rounded-lg border border-dashed border-grey-300'>
+// TODO: convert to a <button> once "add step" is wired up. Currently decorative.
+const TailNode = React.memo<NodeProps<TailFlowNode>>(() => (
+    <div aria-hidden='true' className='flex h-12 w-64 items-center justify-center rounded-lg border border-dashed border-grey-300 bg-white'>
         <HiddenHandle position={Position.Top} type='target' />
         <LucideIcon.Plus className='size-5 text-grey-500' strokeWidth={1.5} />
     </div>
-);
+));
+TailNode.displayName = 'TailNode';
 
 const nodeTypes = {
     trigger: TriggerNode,
@@ -78,7 +87,7 @@ const nodeTypes = {
     tail: TailNode
 };
 
-const formatWait = (hours: number): string => {
+export const formatWait = (hours: number): string => {
     if (hours <= 0) {
         return 'Immediately';
     }
@@ -90,19 +99,27 @@ const formatWait = (hours: number): string => {
 };
 
 const buildActionData = (action: AutomationAction): StepNodeData => {
-    if (action.type === 'wait') {
-        return {icon: LucideIcon.Clock, type: 'Wait', value: formatWait(action.data.wait_hours)};
+    switch (action.type) {
+    case 'wait':
+        return {icon: LucideIcon.Clock, label: 'Wait', value: formatWait(action.data.wait_hours)};
+    case 'send_email':
+        return {icon: LucideIcon.Mail, label: 'Send email', value: action.data.email_subject};
+    default:
+        throw new Error(`Unknown automation action type: ${(action as AutomationAction).type}`);
     }
-    return {icon: LucideIcon.Mail, type: 'Send email', value: action.data.email_subject};
 };
 
-const orderActions = (automation: AutomationDetail): AutomationAction[] => {
+const getInitialActionOrder = (automation: AutomationDetail): AutomationAction[] => {
+    if (automation.actions.length === 0) {
+        return [];
+    }
+
     const actionsById = new Map(automation.actions.map(action => [action.id, action]));
     const incoming = new Set(automation.edges.map(edge => edge.target_action_id));
     const head = automation.actions.find(action => !incoming.has(action.id));
 
     if (!head) {
-        return automation.actions;
+        throw new Error(`Could not determine the starting step for automation ${automation.id}.`);
     }
 
     const nextById = new Map(automation.edges.map(edge => [edge.source_action_id, edge.target_action_id]));
@@ -110,18 +127,25 @@ const orderActions = (automation: AutomationDetail): AutomationAction[] => {
     const visited = new Set<string>();
     let cursor: AutomationAction | undefined = head;
 
-    while (cursor && !visited.has(cursor.id)) {
+    while (cursor) {
+        if (visited.has(cursor.id)) {
+            throw new Error(`Detected a loop in automation ${automation.id}.`);
+        }
         ordered.push(cursor);
         visited.add(cursor.id);
         const nextId = nextById.get(cursor.id);
         cursor = nextId ? actionsById.get(nextId) : undefined;
     }
 
+    if (ordered.length !== automation.actions.length) {
+        throw new Error(`Some steps in automation ${automation.id} are missing or disconnected.`);
+    }
+
     return ordered;
 };
 
-const buildGraph = (automation: AutomationDetail): {nodes: Node[]; edges: Edge[]} => {
-    const ordered = orderActions(automation);
+const buildGraph = (automation: AutomationDetail): {nodes: AutomationFlowNode[]; edges: Edge[]} => {
+    const ordered = getInitialActionOrder(automation);
     const baseNodeProps = {
         draggable: false,
         selectable: false,
@@ -129,12 +153,12 @@ const buildGraph = (automation: AutomationDetail): {nodes: Node[]; edges: Edge[]
         focusable: false
     };
 
-    const nodes: Node[] = [
+    const nodes: AutomationFlowNode[] = [
         {
             id: 'trigger',
             type: 'trigger',
             position: {x: NODE_X, y: 0},
-            data: {icon: LucideIcon.Zap, type: 'Trigger', value: 'Member signs up'} satisfies StepNodeData,
+            data: {icon: LucideIcon.Zap, label: 'Trigger', value: 'Member signs up'},
             ...baseNodeProps
         }
     ];
@@ -159,25 +183,21 @@ const buildGraph = (automation: AutomationDetail): {nodes: Node[]; edges: Edge[]
 
     const edges: Edge[] = [];
     let previousId = 'trigger';
-    ordered.forEach((action) => {
+    const pushEdge = (source: string, target: string) => {
         edges.push({
-            id: `e-${previousId}-${action.id}`,
-            source: previousId,
-            target: action.id,
+            id: `e-${source}-${target}`,
+            source,
+            target,
             type: 'smoothstep',
             focusable: false,
-            style: {stroke: 'var(--color-grey-500)'}
+            style: EDGE_STYLE
         });
+    };
+    ordered.forEach((action) => {
+        pushEdge(previousId, action.id);
         previousId = action.id;
     });
-    edges.push({
-        id: `e-${previousId}-tail`,
-        source: previousId,
-        target: TAIL_NODE_ID,
-        type: 'smoothstep',
-        focusable: false,
-        style: {stroke: 'var(--color-grey-500)'}
-    });
+    pushEdge(previousId, TAIL_NODE_ID);
 
     return {nodes, edges};
 };
@@ -189,7 +209,10 @@ interface AutomationCanvasProps {
 }
 
 const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoading, isError}) => {
-    const canvasRef = useRef<HTMLDivElement>(null);
+    const graph = React.useMemo(
+        () => (automation ? buildGraph(automation) : null),
+        [automation]
+    );
 
     if (isLoading) {
         return (
@@ -199,7 +222,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
         );
     }
 
-    if (isError || !automation) {
+    if (isError || !automation || !graph) {
         return (
             <div className='flex flex-1 items-start justify-center bg-grey-75 px-4 py-8'>
                 <Banner className='max-w-md' role='alert' variant='destructive'>
@@ -215,27 +238,21 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
         );
     }
 
-    const {nodes, edges} = buildGraph(automation);
-
-    const handleInit = (instance: ReactFlowInstance) => {
-        const width = canvasRef.current?.clientWidth ?? 1200;
-        instance.setViewport({x: Math.round(width / 2 - NODE_COLUMN_CENTER_X), y: 40, zoom: 1});
-    };
-
     return (
-        <div ref={canvasRef} className='flex-1 bg-grey-75' data-testid='automation-canvas'>
+        <div className='flex-1 bg-grey-75' data-testid='automation-canvas'>
             <ReactFlow
-                edges={edges}
+                edges={graph.edges}
                 edgesFocusable={false}
-                nodes={nodes}
+                fitViewOptions={{maxZoom: 1, padding: 0.4}}
+                nodes={graph.nodes}
                 nodesConnectable={false}
                 nodesDraggable={false}
                 nodesFocusable={false}
                 nodeTypes={nodeTypes}
                 proOptions={{hideAttribution: true}}
                 zoomOnScroll={false}
+                fitView
                 panOnScroll
-                onInit={handleInit}
             >
                 <Background color='var(--color-grey-400)' />
             </ReactFlow>

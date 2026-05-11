@@ -10,14 +10,12 @@ vi.mock('@tryghost/admin-x-framework/api/automations', () => ({
     useReadAutomation: (...args: unknown[]) => mockUseReadAutomation(...args)
 }));
 
-vi.mock('@components/layout/main-layout', () => ({
-    default: ({children}: {children: React.ReactNode}) => <div data-testid='main-layout'>{children}</div>
-}));
-
 // xyflow's ReactFlow needs a sized container; stub it out for unit tests.
 type StubNode = {id: string; data?: Record<string, unknown>; type?: string};
+type StubEdge = {id: string; source: string; target: string};
 type StubReactFlowProps = {
     nodes: StubNode[];
+    edges?: StubEdge[];
     nodeTypes?: Record<string, React.ComponentType<NodeRenderProps>>;
 };
 type NodeRenderProps = {id: string; data: Record<string, unknown>; type: string};
@@ -26,7 +24,7 @@ vi.mock('@xyflow/react', async () => {
     const actual = await vi.importActual<typeof import('@xyflow/react')>('@xyflow/react');
     return {
         ...actual,
-        ReactFlow: ({nodes, nodeTypes}: StubReactFlowProps) => (
+        ReactFlow: ({nodes, edges, nodeTypes}: StubReactFlowProps) => (
             <div data-testid='react-flow-mock'>
                 {nodes.map((node) => {
                     const nodeType = node.type ?? 'default';
@@ -37,6 +35,11 @@ vi.mock('@xyflow/react', async () => {
                         </div>
                     );
                 })}
+                <ul data-testid='react-flow-mock-edges'>
+                    {(edges ?? []).map(edge => (
+                        <li key={edge.id} data-edge-id={edge.id} data-source={edge.source} data-target={edge.target} />
+                    ))}
+                </ul>
             </div>
         ),
         Background: () => null,
@@ -59,7 +62,7 @@ const automationDetail = {
         },
         {
             id: 'action-email',
-            type: 'send email' as const,
+            type: 'send_email' as const,
             data: {
                 email_subject: 'Welcome to The Blueprint',
                 email_lexical: '{"root":{"children":[]}}',
@@ -114,7 +117,7 @@ describe('AutomationEditor', () => {
         expect(screen.queryByTestId('automation-canvas')).not.toBeInTheDocument();
     });
 
-    it('renders the trigger, delay, send-email, and tail nodes following the action chain', () => {
+    it('renders the trigger, wait, send-email, and tail nodes following the action chain', () => {
         mockUseReadAutomation.mockReturnValue({
             data: {automations: [automationDetail]},
             isLoading: false,
@@ -131,6 +134,17 @@ describe('AutomationEditor', () => {
         expect(screen.getByText('Send email')).toBeInTheDocument();
         expect(screen.getByText('Welcome to The Blueprint')).toBeInTheDocument();
         expect(screen.getByTestId('react-flow-mock').querySelector('[data-node-id="__tail__"]')).toBeInTheDocument();
+
+        const edgeList = screen.getByTestId('react-flow-mock-edges');
+        const edgePairs = Array.from(edgeList.querySelectorAll('li')).map(li => [
+            li.getAttribute('data-source'),
+            li.getAttribute('data-target')
+        ]);
+        expect(edgePairs).toEqual([
+            ['trigger', 'action-wait'],
+            ['action-wait', 'action-email'],
+            ['action-email', '__tail__']
+        ]);
     });
 
     it('links the back button to the automations list', () => {

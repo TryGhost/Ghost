@@ -17,7 +17,7 @@ export type AutomationWaitAction = {
 
 export type AutomationSendEmailAction = {
     id: string;
-    type: 'send email';
+    type: 'send_email';
     data: {
         email_subject: string;
         email_lexical: string;
