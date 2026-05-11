@@ -20,9 +20,9 @@ From the bottom up:
 
 **Recipes** sit alongside components in a separate sidebar group called Foundations. A recipe is a small, shared visual rule that several components consume — for example `inputSurface`, the border + background + focus ring used by every Input, Textarea, InputGroup, and Select trigger. Recipes are utilities, not components; they have no JSX of their own.
 
-**Features** (sometimes called Patterns) are the product-shaped layer. This is where Ghost-specific compositions live: KPI cards, the area chart on Stats, the filter builder on the Members list. Features compose primitives and components together with knowledge of how Ghost actually uses them.
+**Patterns** are the product-shaped layer. This is where Ghost-specific compositions live: the page header, the list-page recipe, KPI cards, the area chart on Stats, the filter builder on the Members list. Patterns compose primitives and components together with knowledge of how Ghost actually uses them.
 
-That's the whole hierarchy. Tokens → primitives → components & recipes → features. Each layer is allowed to use anything below it. The reverse is forbidden: a Button can't reach into a feature, a primitive can't reach into a component.
+That's the whole hierarchy. Tokens → primitives → components & recipes → patterns. Each layer is allowed to use anything below it. The reverse is forbidden: a Button can't reach into a pattern, a primitive can't reach into a component.
 
 ## Terms
 
@@ -44,7 +44,7 @@ Primitives replace the long `flex flex-col gap-4 items-start` strings that made 
 
 A generic, reusable UI control. Button, Input, Dialog, Tabs, Card, DropdownMenu, and so on. Components are styled, accessible, and themed — but they have no product-specific behavior. A Shade `Button` accepts `variant="destructive"` because "destructive" is a generic visual intent. It does not accept `isMembersPage`, because that's a product concern leaking into a generic control.
 
-If a component starts collecting product-specific props or branches, that's a signal to extract a Feature wrapper instead.
+If a component starts collecting product-specific props or branches, that's a signal to extract a Pattern wrapper instead.
 
 ### Recipe
 
@@ -173,8 +173,8 @@ apps/shade/src/
 
 A few situations should make you pause:
 
-- A shared component is starting to grow workflow-specific props (`isMembersPage`, `showInPostEditor`). That's a sign the abstraction is wrong; extract a Feature wrapper instead.
-- A primitive is sprouting business logic (an `if` branch that knows about specific data). Move that logic up into the consumer or a Feature.
-- You can't tell whether something belongs in `components` or `features`. Use the rule: generic name → component, Ghost-shaped name → feature. If still unclear, ask — that ambiguity is usually a real design question.
+- A shared component is starting to grow workflow-specific props (`isMembersPage`, `showInPostEditor`). That's a sign the abstraction is wrong; extract a Pattern wrapper instead.
+- A primitive is sprouting business logic (an `if` branch that knows about specific data). Move that logic up into the consumer or a Pattern.
+- You can't tell whether something belongs in `components` or `patterns`. Use the rule: generic name → component, Ghost-shaped name → pattern. If still unclear, ask — that ambiguity is usually a real design question.
 
 </div>
