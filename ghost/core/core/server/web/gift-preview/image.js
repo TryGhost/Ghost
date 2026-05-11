@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const CACHE_MAX_SIZE = 100;
-const GIFT_CARD_ORB_PATH = path.join(__dirname, 'gift-card-orb.svg');
+const GIFT_CARD_ORB_PATH = path.join(__dirname, 'gift-card-orb.png');
 const FONT_STACK = 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif';
 
 const cache = new Map();
@@ -32,10 +32,8 @@ function getGiftCardOrbImageHref() {
         return giftCardOrbImageHref;
     }
 
-    const orbSvg = fs.readFileSync(GIFT_CARD_ORB_PATH, 'utf8');
-    const [, imageHref = ''] = orbSvg.match(/xlink:href="(data:image\/png;base64,[^"]+)"/) || [];
-
-    giftCardOrbImageHref = imageHref;
+    const orbPng = fs.readFileSync(GIFT_CARD_ORB_PATH);
+    giftCardOrbImageHref = `data:image/png;base64,${orbPng.toString('base64')}`;
 
     return giftCardOrbImageHref;
 }
@@ -72,7 +70,7 @@ function buildSvg({accentColor, siteTitle = 'Ghost', tierName = '', cadenceLabel
     <rect width="1200" height="630" fill="${escapedAccentColor}"/>
     <rect width="1200" height="630" fill="#FFFFFF" opacity="0.07"/>
     <rect width="1200" height="630" fill="url(#cardShine)"/>
-    <image href="${orbImageHref}" x="-170" y="-1045" width="2050" height="2050" opacity="0.2" preserveAspectRatio="xMidYMid slice"/>
+    <image href="${orbImageHref}" x="0" y="0" width="1200" height="630" opacity="0.2" preserveAspectRatio="none"/>
 
     <rect x="505" y="42" width="190" height="36" rx="18" fill="#000000" opacity="0.36"/>
     <rect x="510" y="44" width="180" height="3" rx="1.5" fill="#FFFFFF" opacity="0.18"/>
