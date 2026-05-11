@@ -14,20 +14,7 @@ A pattern is a composition of primitives and components with knowledge of how Gh
 
 Patterns compose lower layers (primitives, components, recipes) but stop short of fetching data or owning routing. They are layout and composition contracts, nothing more.
 
-## The current set
-
-| Pattern | What it's for |
-| --- | --- |
-| `PageHeader` | Canonical page chrome for List and Analytics pages. Replaces the deprecated `ListHeader` / `Header` / `ViewHeader`. |
-| `ListPage` | Vertical layout recipe for the List page type (Members, Tags, Comments, Automations). |
-| `Filters` | Ghost's filter builder — operators, value sources, chips, dropdowns. |
-| `KpiCard` | KPI display surface for analytics pages (header, label, value, trend). |
-| `KpiTabs` | Tabbed metric switcher used above charts on analytics pages. |
-| `GhAreaChart` | Ghost's area-chart variant with diff tooltips and value-formatting hooks. |
-| `ColorPicker` | Reusable color picker (used by branding, design system internals). |
-| `ShareModal` | Generic share-on-social compound. Used directly by Admin onboarding; composed by `PostShareModal` in the `posts-stats/` interim layer. |
-
-The taxonomy of which patterns belong to which **page types** (List page, Analytics page, Detail page) is documented in `apps/shade/docs/page-types.md`.
+For the live list of patterns and their APIs, see the individual pattern entries in the sidebar. The taxonomy of which patterns belong to which **page types** (List page, Analytics page, Detail page) is documented in `apps/shade/docs/page-types.md`.
 
 ## How to use a pattern
 

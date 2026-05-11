@@ -22,13 +22,9 @@ For AI agents, the rules are even more important. An agent generating UI code is
 
 ## What "shared" means
 
-The current target for documented rules is the set of foundational controls in `components/ui/`:
+The rules below apply to the foundational controls in `components/ui/` — the generic, reusable controls listed in the sidebar under **Components**. Recipes and smaller helpers in the same folder follow the same spirit but don't always carry formal rule documents.
 
-`Button`, `Input`, `Field`, `Select`, `Tabs`, `Table`, `Dialog`, `DropdownMenu`, `Card`.
-
-Other things in `components/ui/` (recipes like `inputSurface`, smaller helpers, primitives like `TrendBadge` and `MetricValue`) follow the same spirit but don't yet have formal rule documents.
-
-Some surfaces deliberately sit outside this list — `sidebar`, `multi-select-combobox`, the chart variants. They're large and mix layout, behavior, and styling in ways that the simple rules don't fit cleanly. They're documented at the component level instead.
+Some surfaces deliberately sit outside the simple rules — large compounds that mix layout, behavior, and styling in ways the standard contract doesn't fit cleanly. Those are documented at the component level rather than against the shared rules.
 
 ## What the rules answer
 
@@ -40,7 +36,7 @@ Five questions, in this order:
 
 **Which states must always work?** Default, hover, focus-visible, disabled at minimum. Optional ones (active, loading, error, empty) are documented when they apply.
 
-**What's intentionally out of scope?** Workflow-specific behavior, product-specific styling, things that belong in a Feature wrapper instead.
+**What's intentionally out of scope?** Workflow-specific behavior, product-specific styling, things that belong in a Pattern wrapper instead.
 
 **What's the compatibility promise?** Backward-compatible additions, breaking changes (with migration notes), deprecation timelines if a prop is going away.
 
@@ -93,7 +89,7 @@ The hard rules for agents:
 - No product-specific props in shared components. `variant="destructive"` is fine; `isMembersPage` is not.
 - Don't skip required states. A component without a focus-visible style isn't done.
 - Don't remove existing public API without explicit compatibility notes.
-- If behavior is workflow-specific, route it to `features/`, not into the base component.
+- If behavior is workflow-specific, route it to `patterns/`, not into the base component.
 
 ## A worked example: good vs bad props
 
@@ -108,7 +104,7 @@ Bad props leak product or workflow knowledge into a generic control:
 - `isMembersPage` — the component shouldn't know which page it's on.
 - `layoutMode="toolbarWithFilterAndStats"` — that's a workflow shape, not a component variant.
 
-When you see yourself reaching for the second kind, stop and ask: is this really a generic control, or is it a Feature wrapper trying to hide as a Button?
+When you see yourself reaching for the second kind, stop and ask: is this really a generic control, or is it a Pattern wrapper trying to hide as a Button?
 
 ## State coverage in detail
 
@@ -122,13 +118,13 @@ For each required state, the component should define three things:
 
 Missing required states is a blocker. We don't ship a Button without a focus ring and we don't ship a Dialog without escape-to-close.
 
-## Components vs. features: the dividing line
+## Components vs. patterns: the dividing line
 
-The honest answer is: pick `components` when the abstraction is genuinely generic, and `features` when it encodes product workflow.
+The honest answer is: pick `components` when the abstraction is genuinely generic, and `patterns` when it encodes product workflow.
 
-The smell test: if the component name reads like English you'd use in any web app (Button, Input, Tabs), it's a component. If it reads like Ghost-specific jargon (KpiCardHeader, GhAreaChart, FilterBuilder), it's a feature.
+The smell test: if the component name reads like English you'd use in any web app, it's a component. If it reads like Ghost-specific jargon, it's a pattern.
 
-When a shared control starts collecting workflow-specific props, that's the signal to extract a Feature wrapper instead of growing the base API.
+When a shared control starts collecting workflow-specific props, that's the signal to extract a Pattern wrapper instead of growing the base API.
 
 ## Review checklist
 
