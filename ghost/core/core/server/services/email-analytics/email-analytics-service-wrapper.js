@@ -13,17 +13,26 @@ class EmailAnalyticsServiceWrapper {
         const EmailAnalyticsService = require('./email-analytics-service');
         const EmailEventStorage = require('../email-service/email-event-storage');
         const EmailEventProcessor = require('../email-service/email-event-processor');
+        const MailgunProvider = require('./email-analytics-provider-mailgun');
         const ResendProvider = require('./email-analytics-provider-resend');
+        const {resolveProvider} = require('../email-service/bulk-email-provider-factory');
         const {EmailRecipientFailure, EmailSpamComplaintEvent, Email} = require('../../models');
         const StartEmailAnalyticsJobEvent = require('./events/start-email-analytics-job-event');
         const domainEvents = require('@tryghost/domain-events');
         const settings = require('../../../shared/settings-cache');
+        const labs = require('../../../shared/labs');
         const db = require('../../data/db');
         const queries = require('./lib/queries');
         const membersService = require('../members');
         const membersRepository = membersService.api.members;
         const emailSuppressionList = require('../email-suppression-list');
         const prometheusClient = require('../../../shared/prometheus-client');
+
+        const bulkEmailProvider = resolveProvider(config, settings);
+        const analyticsProvider = bulkEmailProvider === 'resend'
+            ? new ResendProvider()
+            : new MailgunProvider({config, settings, labs});
+        logging.info(`[EmailAnalytics] Using analytics provider: ${bulkEmailProvider}`);
 
         this.eventStorage = new EmailEventStorage({
             db,
@@ -51,7 +60,7 @@ class EmailAnalyticsServiceWrapper {
             settings,
             eventProcessor,
             providers: [
-                new ResendProvider()
+                analyticsProvider
             ],
             queries,
             domainEvents,

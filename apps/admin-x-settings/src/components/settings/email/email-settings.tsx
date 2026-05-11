@@ -1,5 +1,6 @@
 import DefaultRecipients from './default-recipients';
 import EnableNewsletters from './enable-newsletters';
+import MailGun from './mailgun';
 import Newsletters from './newsletters';
 import React from 'react';
 import Resend from './resend';
@@ -11,8 +12,9 @@ export const searchKeywords = {
     enableNewsletters: ['emails', 'newsletters', 'newsletter sending', 'enable', 'disable', 'turn on', 'turn off'],
     newsletters: ['newsletters', 'emails', 'design', 'customization'],
     defaultRecipients: ['newsletters', 'default recipients', 'emails'],
+    mailgun: ['mailgun', 'emails', 'newsletters'],
     resend: ['resend', 'emails', 'newsletters'],
-    newslettersNavMenu: ['emails', 'newsletters', 'newsletter sending', 'enable', 'disable', 'turn on', 'turn off', 'design', 'customization', 'default recipients', 'resend', 'tips', 'donations', 'one time', 'payment']
+    newslettersNavMenu: ['emails', 'newsletters', 'newsletter sending', 'enable', 'disable', 'turn on', 'turn off', 'design', 'customization', 'default recipients', 'mailgun', 'resend', 'tips', 'donations', 'one time', 'payment']
 };
 
 const EmailSettings: React.FC = () => {
@@ -27,6 +29,7 @@ const EmailSettings: React.FC = () => {
                     <DefaultRecipients keywords={searchKeywords.defaultRecipients} />
                     <Newsletters keywords={searchKeywords.newsletters} />
                     {!config.resendIsConfigured && <Resend keywords={searchKeywords.resend} />}
+                    {!config.mailgunIsConfigured && <MailGun keywords={searchKeywords.mailgun} />}
                 </>
             )}
         </SearchableSection>

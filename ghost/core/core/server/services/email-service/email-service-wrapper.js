@@ -21,11 +21,10 @@ class EmailServiceWrapper {
         const SendingService = require('./sending-service');
         const BatchSendingService = require('./batch-sending-service');
         const EmailSegmenter = require('./email-segmenter');
-        const ResendEmailProvider = require('./resend-email-provider');
+        const {createBulkEmailProvider} = require('./bulk-email-provider-factory');
         const {DomainWarmingService} = require('./domain-warming-service');
 
         const {Post, Newsletter, Email, EmailBatch, EmailRecipient, Member} = require('../../models');
-        const ResendClient = require('../lib/resend-client');
         const configService = require('../../../shared/config');
         const settingsCache = require('../../../shared/settings-cache');
         const settingsHelpers = require('../settings-helpers');
@@ -49,27 +48,24 @@ class EmailServiceWrapper {
         const emailAnalyticsJobs = require('../email-analytics/jobs');
         const {cachedImageSizeFromUrl} = require('../../lib/image');
 
-        // capture errors from resend client and log them in sentry
+        // Capture errors from the bulk email provider and log them in sentry
         const errorHandler = (error) => {
-            logging.info(`Capturing error for resend email provider service`);
+            logging.info(`Capturing error for bulk email provider service`);
             sentry.captureException(error);
         };
 
-        // Resend client instance for email provider
-        const resendClient = new ResendClient({
-            config: configService, settings: settingsCache
+        const {emailProvider} = createBulkEmailProvider({
+            config: configService,
+            settings: settingsCache,
+            errorHandler
         });
+
         const i18nLanguage = settingsCache.get('locale') || 'en';
         const i18n = i18nLib(i18nLanguage, 'ghost');
 
         events.on('settings.locale.edited', (model) => {
             debug('locale changed, updating i18n to', model.get('value'));
             i18n.changeLanguage(model.get('value'));
-        });
-
-        const resendEmailProvider = new ResendEmailProvider({
-            resendClient,
-            errorHandler
         });
 
         const emailRenderer = new EmailRenderer({
@@ -96,7 +92,7 @@ class EmailServiceWrapper {
         });
 
         const sendingService = new SendingService({
-            emailProvider: resendEmailProvider,
+            emailProvider,
             emailRenderer,
             emailAddressService: emailAddressService.service
         });
