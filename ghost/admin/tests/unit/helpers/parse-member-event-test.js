@@ -108,10 +108,10 @@ describe('Unit: Helper: parse-member-event', function () {
             expect(result.action).to.equal('gift subscription expired');
         });
 
-        it('returns "event-expired-gift" icon', function () {
+        it('returns "event-gift" icon', function () {
             const event = buildEvent({type: 'gift_ended_event'});
             const result = helper.compute([event]);
-            expect(result.icon).to.equal('event-expired-gift');
+            expect(result.icon).to.equal('event-gift');
         });
     });
 });
