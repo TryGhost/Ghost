@@ -427,6 +427,16 @@ async function initBackgroundServices({config}) {
         return;
     }
 
+    // Resume any newsletter sends interrupted by a prior container shutdown.
+    // Runs before activitypub.init so an activitypub failure can't disable recovery.
+    try {
+        const emailService = require('./server/services/email-service');
+        await emailService.service.resumeInterruptedSends();
+    } catch (err) {
+        const logging = require('@tryghost/logging');
+        logging.error(err);
+    }
+
     const activitypub = require('./server/services/activitypub');
     await activitypub.init();
     // Load email analytics recurring jobs

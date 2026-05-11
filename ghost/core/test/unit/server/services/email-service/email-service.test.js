@@ -1,6 +1,7 @@
 const EmailService = require('../../../../../core/server/services/email-service/email-service');
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
+const logging = require('@tryghost/logging');
 const {createModel, createModelClass} = require('./utils');
 
 describe('Email Service', function () {
@@ -462,6 +463,113 @@ describe('Email Service', function () {
 
             limited.emails = true;
             assert.rejects(service.retryEmail(email));
+            sinon.assert.notCalled(scheduleEmail);
+        });
+
+        it('Throws BadRequestError if email status is not failed', async function () {
+            const email = createModel({
+                status: 'submitting',
+                post: createModel({
+                    status: 'published'
+                })
+            });
+
+            await assert.rejects(
+                service.retryEmail(email),
+                err => err.statusCode === 400 && /Only failed emails can be retried/.test(err.message)
+            );
+            sinon.assert.notCalled(scheduleEmail);
+        });
+    });
+
+    describe('resumeInterruptedSends', function () {
+        it('Per-email try/catch: one bad email does not skip the others', async function () {
+            const errorLog = sinon.stub(logging, 'error');
+            const updateStatusLock = sinon.stub().resolves(createModel({}));
+
+            const emails = [
+                createModel({
+                    id: 'good-1',
+                    status: 'submitting',
+                    post: createModel({status: 'published'})
+                }),
+                createModel({
+                    id: 'bad',
+                    status: 'submitting',
+                    get post() {
+                        throw new Error('Boom');
+                    }
+                }),
+                createModel({
+                    id: 'good-2',
+                    status: 'submitting',
+                    post: createModel({status: 'sent'})
+                })
+            ];
+            // createModel exposes `post` via .related('post') / .getLazyRelation('post').
+            // Override getLazyRelation on the bad one to throw — this is what the scanner awaits first.
+            emails[1].getLazyRelation = () => {
+                throw new Error('Boom');
+            };
+
+            const localService = new EmailService({
+                emailSegmenter: {getMembersCount: () => Promise.resolve(0)},
+                limitService: {isLimited: () => false, errorIfIsOverLimit: () => {}, errorIfWouldGoOverLimit: () => {}},
+                verificationTrigger: {checkVerificationRequired: () => Promise.resolve(false)},
+                models: {
+                    Email: {findAll: async () => ({models: emails})}
+                },
+                batchSendingService: {
+                    scheduleEmail,
+                    updateStatusLock
+                },
+                settingsCache,
+                emailRenderer,
+                membersRepository,
+                sendingService,
+                emailAnalyticsJobs: {scheduleRecurringJobs},
+                domainWarmingService
+            });
+
+            await localService.resumeInterruptedSends();
+
+            sinon.assert.calledTwice(scheduleEmail);
+            sinon.assert.calledOnce(errorLog);
+        });
+
+        it('Marks email as failed if the parent post is no longer published or sent', async function () {
+            const updateStatusLock = sinon.stub().resolves(createModel({}));
+            const emails = [
+                createModel({
+                    id: 'unpublished',
+                    status: 'submitting',
+                    post: createModel({status: 'draft'})
+                })
+            ];
+
+            const localService = new EmailService({
+                emailSegmenter: {getMembersCount: () => Promise.resolve(0)},
+                limitService: {isLimited: () => false, errorIfIsOverLimit: () => {}, errorIfWouldGoOverLimit: () => {}},
+                verificationTrigger: {checkVerificationRequired: () => Promise.resolve(false)},
+                models: {
+                    Email: {findAll: async () => ({models: emails})}
+                },
+                batchSendingService: {
+                    scheduleEmail,
+                    updateStatusLock
+                },
+                settingsCache,
+                emailRenderer,
+                membersRepository,
+                sendingService,
+                emailAnalyticsJobs: {scheduleRecurringJobs},
+                domainWarmingService
+            });
+
+            await localService.resumeInterruptedSends();
+
+            sinon.assert.calledOnce(updateStatusLock);
+            sinon.assert.calledWith(updateStatusLock, sinon.match.any, 'unpublished', 'failed', ['submitting']);
             sinon.assert.notCalled(scheduleEmail);
         });
     });

@@ -1171,14 +1171,41 @@ describe('Batch Sending Service', function () {
 
             const result = await service.sendBatch({
                 email: createModel({}),
-                batch: createModel({}),
+                batch: createModel({status: 'submitted'}),
                 post: createModel({}),
                 newsletter: createModel({})
             });
 
             assert.equal(result, true);
+            // Already-submitted is an expected resume path, not an error. Logs info, not error.
+            sinon.assert.notCalled(errorLog);
+            sinon.assert.calledWithMatch(logging.info, /already submitted on a prior run/);
+        });
+
+        it('Returns false for orphan submitting batch', async function () {
+            // After a crashed worker, batches can be left in `submitting` status.
+            // updateStatusLock will return undefined (status not in pending/failed allowlist).
+            // sendBatch should return false so the parent email correctly promotes to failed
+            // instead of being falsely marked submitted.
+            const EmailBatch = createModelClass({
+                findOne: {
+                    status: 'submitting'
+                }
+            });
+            const service = new BatchSendingService({
+                models: {EmailBatch}
+            });
+
+            const result = await service.sendBatch({
+                email: createModel({}),
+                batch: createModel({status: 'submitting'}),
+                post: createModel({}),
+                newsletter: createModel({})
+            });
+
+            assert.equal(result, false);
             sinon.assert.calledOnce(errorLog);
-            sinon.assert.calledWith(errorLog, sinon.match(/Tried sending email batch that is not pending or failed/));
+            sinon.assert.calledWith(errorLog, sinon.match(/stuck in status=submitting/));
         });
 
         it('Does send', async function () {

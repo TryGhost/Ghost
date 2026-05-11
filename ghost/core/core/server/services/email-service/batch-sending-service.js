@@ -538,8 +538,24 @@ class BatchSendingService {
             {...this.#getBeforeRetryConfig(email), description: `updateStatusLock batch ${originalBatch.id} -> submitting`}
         );
         if (!batch) {
-            logging.error(`Tried sending email batch that is not pending or failed ${originalBatch.id}`);
-            return true;
+            // updateStatusLock returned undefined: the batch's current status is neither
+            // `pending` nor `failed`, so the lock didn't engage. Two distinct cases, and
+            // they need different handling — collapsing them is the bug this branch fixes.
+            const currentStatus = originalBatch.get('status');
+            if (currentStatus === 'submitted') {
+                // Mailgun accepted this batch on a prior run. Nothing to do; return true so
+                // the parent email's success counter stays accurate. Expected path during
+                // resume of an interrupted send where some batches finished before the crash.
+                logging.info(`Email batch ${originalBatch.id} already submitted on a prior run; skipping`);
+                return true;
+            }
+            // Otherwise currentStatus is `submitting`: orphan from a worker that crashed
+            // mid-batch. We have no record of Mailgun accepting it, and re-sending risks
+            // duplicates. Return false so the parent email is promoted to `failed` and an
+            // operator can reconcile against the Mailgun dashboard before retrying.
+            // Runbook: docs/newsletter-send-plan-v9.md.
+            logging.error(`Email batch ${originalBatch.id} is stuck in status=${currentStatus} (orphan from a crashed worker); not re-sending — marking parent email as failed for operator review`);
+            return false;
         }
 
         let succeeded = false;

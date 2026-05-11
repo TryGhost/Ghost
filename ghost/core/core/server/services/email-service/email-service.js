@@ -20,7 +20,8 @@ const messages = {
     archivedNewsletterError: 'Cannot send email to archived newsletters',
     missingNewsletterError: 'The post does not have a newsletter relation',
     emailSendingDisabled: `Email sending is temporarily disabled because your account is currently in review. You should have an email about this from us already, but you can also reach us any time at support@ghost.org`,
-    retryEmailStatusError: 'Can only retry emails for published posts'
+    retryEmailStatusError: 'Can only retry emails for published posts',
+    retryEmailNotFailed: 'Only failed emails can be retried'
 };
 
 class EmailService {
@@ -44,6 +45,7 @@ class EmailService {
      * @param {SendingService} dependencies.sendingService
      * @param {object} dependencies.models
      * @param {object} dependencies.models.Email
+     * @param {object} [dependencies.models.EmailBatch] - Required for resumeInterruptedSends breadcrumbs
      * @param {object} dependencies.settingsCache
      * @param {EmailRenderer} dependencies.emailRenderer
      * @param {EmailSegmenter} dependencies.emailSegmenter
@@ -189,6 +191,105 @@ class EmailService {
         return email;
     }
 
+    /**
+     * Boot-time scanner: resumes newsletter emails left in `submitting` after a
+     * previous container's interrupted send. Gated by the `emailSendRecovery` lab flag
+     * at the call site (boot.js). Iterates sequentially; one failure does not skip others.
+     */
+    async resumeInterruptedSends() {
+        const emails = await this.#models.Email.findAll({
+            filter: 'status:submitting'
+        });
+        const list = emails.models || emails;
+        if (list.length === 0) {
+            return;
+        }
+        logging.info(`Email resume: found ${list.length} email(s) in submitting status`);
+
+        for (const email of list) {
+            try {
+                await this.#resumeOneEmail(email);
+            } catch (e) {
+                logging.error(e);
+            }
+        }
+    }
+
+    async #resumeOneEmail(email) {
+        const post = await email.getLazyRelation('post');
+        const postStatus = post ? post.get('status') : null;
+        const sendable = postStatus === 'published' || postStatus === 'sent';
+
+        if (!sendable) {
+            // Parent post was unpublished or deleted while the email was in flight.
+            // Can't resume — mark the email as failed so it stops showing as "submitting".
+            const locked = await this.#batchSendingService.updateStatusLock(
+                this.#models.Email,
+                email.id,
+                'failed',
+                ['submitting']
+            );
+            if (locked) {
+                logging.warn(`Email resume: ${email.id} parent post status=${postStatus} is not sendable — marked email as failed`);
+            }
+            return;
+        }
+
+        // Flip submitting -> pending so emailJob's status lock (['pending', 'failed']) admits it.
+        // If updateStatusLock returns undefined, another path raced us — just continue.
+        const locked = await this.#batchSendingService.updateStatusLock(
+            this.#models.Email,
+            email.id,
+            'pending',
+            ['submitting']
+        );
+        if (!locked) {
+            logging.info(`Email resume: ${email.id} status changed before lock could be taken — skipping`);
+            return;
+        }
+
+        // Structured breadcrumb so post-incident timing/batch state is recoverable from logs.
+        const breadcrumb = await this.#buildResumeBreadcrumb(email);
+        logging.warn(`Email resume: scheduling ${email.id} for re-send ${JSON.stringify(breadcrumb)}`);
+
+        // Skip checkLimits — this email already passed limits when first sent.
+        this.#batchSendingService.scheduleEmail(email);
+    }
+
+    async #buildResumeBreadcrumb(email) {
+        const counts = {};
+        let latestStatusWrite = email.get('updated_at') || email.get('created_at');
+        if (this.#models.EmailBatch) {
+            try {
+                const batches = await this.#models.EmailBatch.findAll({
+                    filter: `email_id:'${email.id}'`
+                });
+                for (const batch of batches.models || batches) {
+                    const status = batch.get('status');
+                    counts[status] = (counts[status] || 0) + 1;
+                    const updatedAt = batch.get('updated_at');
+                    if (updatedAt && (!latestStatusWrite || updatedAt > latestStatusWrite)) {
+                        latestStatusWrite = updatedAt;
+                    }
+                }
+            } catch (e) {
+                // Breadcrumb is best-effort; never block resume on it.
+                logging.warn(`Email resume: could not build breadcrumb for ${email.id}: ${e.message}`);
+            }
+        }
+        const msSinceLastStatusWrite = latestStatusWrite
+            ? Date.now() - new Date(latestStatusWrite).getTime()
+            : null;
+        const targetDeliveryWindowMs = this.#config?.get?.('bulkEmail:targetDeliveryWindow') ?? 0;
+        return {
+            email_id: email.id,
+            post_id: email.get('post_id'),
+            batch_counts_by_status: counts,
+            ms_since_last_status_write: msSinceLastStatusWrite,
+            target_delivery_window_ms: targetDeliveryWindowMs
+        };
+    }
+
     async retryEmail(email) {
         // Block accidentaly retrying non-published posts (can happen due to bugs in frontend)
         const post = await email.getLazyRelation('post');
@@ -198,13 +299,17 @@ class EmailService {
             });
         }
 
+        if (email.get('status') !== 'failed') {
+            throw new errors.BadRequestError({
+                message: tpl(messages.retryEmailNotFailed)
+            });
+        }
+
         await this.checkLimits();
 
         // Change email status back to 'pending' before scheduling
         // so we have a immediate response when retrying an email (schedule can take a while to kick off sometimes)
-        if (email.get('status') === 'failed') {
-            await email.save({status: 'pending'}, {patch: true});
-        }
+        await email.save({status: 'pending'}, {patch: true});
 
         this.#batchSendingService.scheduleEmail(email);
         return email;
