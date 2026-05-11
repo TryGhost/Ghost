@@ -24,6 +24,8 @@ Primitives solve that by giving structural concepts names. Instead of inferring 
 
 See the individual primitive entries in the sidebar for the live list of primitives, their props, and runnable examples.
 
+**Reach for a pattern first when one exists.** If you're building a page header, a list page, a filter UI, or any other shape Shade already encodes as a pattern, use the pattern. Primitives are for composing the parts patterns don't cover — settings rows, content cards, custom sections inside a page.
+
 ## Adding a new primitive
 
 The bar is high. Primitives are the foundation everything else composes against, and adding one means every reviewer and agent has to learn another name. Before adding one, check that:
@@ -41,64 +43,70 @@ When those check out:
 
 ## Examples
 
-A typical page shell composed entirely of primitives:
+A settings-style row — a label-and-description block with an action aligned to the right. Primitives shine here because there's no pattern for this shape:
 
 ```tsx
-import {Button} from '@tryghost/shade/components';
-import {Container, Inline, Stack, Text} from '@tryghost/shade/primitives';
+import {Button, Switch} from '@tryghost/shade/components';
+import {Box, Inline, Stack, Text} from '@tryghost/shade/primitives';
 
-<Container size="page" paddingX="lg">
-    <Stack gap="xl">
-        <Inline justify="between" align="center">
-            <Text as="h1" size="2xl" weight="bold" leading="heading">Members</Text>
-            <Button>New member</Button>
-        </Inline>
-
-        <Stack gap="md">
-            <Text tone="secondary">Manage your audience.</Text>
+<Box padding="lg" radius="md" className="border border-border-default">
+    <Inline align="center" justify="between" gap="md">
+        <Stack gap="xs">
+            <Text weight="semibold">Email notifications</Text>
+            <Text tone="secondary" size="sm">
+                Get notified when your posts get engagement.
+            </Text>
         </Stack>
-    </Stack>
-</Container>
+        <Switch />
+    </Inline>
+</Box>
 ```
 
-Read that out loud and it tells you what's there: a page-width container; vertically stacked content; the top row is a horizontal split with the title on the left and the action button on the right; below it, another vertical stack of text.
+Read that out loud: a framed box; inside, a horizontal row split between a label-and-description stack on the left and a switch on the right.
 
-A list of framed rows:
+A grid of framed cards:
 
 ```tsx
-<Stack gap="sm">
+<Stack gap="md">
     <Text as="h3" size="lg" weight="semibold">Drafts</Text>
-    <Grid columns={1} gap="sm">
+    <Grid columns={3} gap="md">
         <Box padding="md" radius="md" className="border border-border-default">
-            <Text>Draft row content</Text>
+            <Text>Draft card content</Text>
         </Box>
         <Box padding="md" radius="md" className="border border-border-default">
-            <Text>Another draft row</Text>
+            <Text>Another draft card</Text>
+        </Box>
+        <Box padding="md" radius="md" className="border border-border-default">
+            <Text>And another</Text>
         </Box>
     </Grid>
 </Stack>
 ```
 
-Migrating Tailwind utility soup to primitives is mechanical and usually shorter:
+Migrating Tailwind utility soup to primitives is mechanical and usually shorter. The example below is a content card — exactly the kind of thing primitives are for, with no pattern equivalent:
 
 ```tsx
 // Before
-<div className="flex flex-col gap-4">
-    <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold">Members</h1>
-        <p className="text-gray-600">Manage your audience</p>
+<div className="rounded-md border border-gray-200 p-6">
+    <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1">
+            <h3 className="text-base font-semibold">Public profile</h3>
+            <p className="text-sm text-gray-600">Anyone with the link can view your profile.</p>
+        </div>
+        <div className="flex items-center justify-end gap-2">...</div>
     </div>
-    <div className="flex items-center justify-between gap-2">...</div>
 </div>
 
 // After
-<Stack gap="lg">
-    <Stack gap="sm">
-        <Text as="h1" size="2xl" weight="bold" leading="heading">Members</Text>
-        <Text tone="secondary">Manage your audience</Text>
+<Box padding="lg" radius="md" className="border border-border-default">
+    <Stack gap="md">
+        <Stack gap="xs">
+            <Text weight="semibold">Public profile</Text>
+            <Text tone="secondary" size="sm">Anyone with the link can view your profile.</Text>
+        </Stack>
+        <Inline align="center" justify="end" gap="sm">...</Inline>
     </Stack>
-    <Inline align="center" justify="between" gap="sm">...</Inline>
-</Stack>
+</Box>
 ```
 
 </div>
