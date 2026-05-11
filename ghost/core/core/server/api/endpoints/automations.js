@@ -9,9 +9,9 @@ const controller = {
             cacheInvalidate: false
         },
         permissions: true,
-        query() {
+        async query() {
             return {
-                data: automationsApi.browse()
+                data: await automationsApi.browse()
             };
         }
     },
@@ -24,8 +24,8 @@ const controller = {
             'id'
         ],
         permissions: true,
-        query(frame) {
-            return automationsApi.read(frame.data.id);
+        async query(frame) {
+            return await automationsApi.read(frame.data.id);
         }
     },
 
