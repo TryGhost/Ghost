@@ -100,6 +100,7 @@ export const GiftPageStyles = `
     font-size: 1.6rem;
     line-height: 1.45em;
     color: var(--grey3);
+    text-wrap: pretty;
 }
 
 .gh-portal-gift-checkout-section {
