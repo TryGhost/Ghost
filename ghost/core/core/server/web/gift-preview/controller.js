@@ -11,10 +11,22 @@ function getCadenceLabel(cadence, duration) {
     return t('{count} month', {count: duration});
 }
 
-function getCadenceTitleLabel(cadence, duration) {
-    const unit = cadence === 'year' ? 'year' : 'month';
+function getOgTitle({cadence, duration, tierName, siteTitle}) {
+    if (cadence === 'year') {
+        return t(`You've been gifted a {duration}-year {tierName} membership to {siteTitle}`, {
+            duration,
+            tierName,
+            siteTitle,
+            interpolation: {escapeValue: false}
+        });
+    }
 
-    return `${duration}-${unit}`;
+    return t(`You've been gifted a {duration}-month {tierName} membership to {siteTitle}`, {
+        duration,
+        tierName,
+        siteTitle,
+        interpolation: {escapeValue: false}
+    });
 }
 
 function getTierName(tier) {
@@ -67,12 +79,11 @@ async function giftPreview(req, res) {
     }
 
     const tierName = getTierName(tier);
-    const cadenceTitleLabel = getCadenceTitleLabel(gift.cadence, gift.duration);
-    const ogTitle = t(`You've been gifted a {cadenceTitleLabel} {tierName} membership to {siteTitle}`, {
-        cadenceTitleLabel,
+    const ogTitle = getOgTitle({
+        cadence: gift.cadence,
+        duration: gift.duration,
         tierName,
-        siteTitle,
-        interpolation: {escapeValue: false}
+        siteTitle
     });
     const ogDescription = t('Open this link to redeem your gift.');
     const ogImage = `${siteUrl}/gift/${encodeURIComponent(token)}/image`;
