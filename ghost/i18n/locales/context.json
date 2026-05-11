@@ -436,6 +436,7 @@
     "{memberEmail} will no longer receive {newsletterName} newsletter.": "Shown when a member unsubscribes from a newsletter",
     "{months} months": "Duration label for a multiple-month subscription",
     "{months} months free": "Retention offer discount badge shown during subscription cancellation",
+    "{tierName} membership": "Label shown on the gift subscription Open Graph preview image, combining the membership tier name with the word 'membership' (e.g. 'Gold membership'). {tierName} is the tier name. Translators may reword as needed for their language.",
     "{trialDays} days free": "Portal - label for a free trial that lasts a specific number of days",
     "{years} years": "Duration label for a multiple-year subscription"
 }

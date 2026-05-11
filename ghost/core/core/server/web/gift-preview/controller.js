@@ -29,10 +29,6 @@ function getOgTitle({cadence, duration, tierName, siteTitle}) {
     });
 }
 
-function getTierName(tier) {
-    return tier.name || tier.toJSON?.().name || '';
-}
-
 function escapeHtml(str) {
     return str
         .replaceAll('&', '&amp;')
@@ -78,11 +74,10 @@ async function giftPreview(req, res) {
         return res.redirect(302, siteUrl + '/');
     }
 
-    const tierName = getTierName(tier);
     const ogTitle = getOgTitle({
         cadence: gift.cadence,
         duration: gift.duration,
-        tierName,
+        tierName: tier.name,
         siteTitle
     });
     const ogDescription = t('Open this link to redeem your gift.');
@@ -157,7 +152,10 @@ async function giftPreviewImage(req, res) {
         const png = await generateGiftPreviewImage({
             accentColor,
             siteTitle,
-            tierName: getTierName(tier),
+            tierLabel: t('{tierName} membership', {
+                tierName: tier.name,
+                interpolation: {escapeValue: false}
+            }),
             cadenceLabel: getCadenceLabel(gift.cadence, gift.duration)
         });
 

@@ -4,6 +4,7 @@
     "{count} year_one": "",
     "{count} year_other": "",
     "{date}": "{date}",
+    "{tierName} membership": "",
     "All the best!": "En iyi dileklerimizle!",
     "Become a paid member of {site} to get access to all premium content.": "Tüm premium içeriklere erişebilmek için {site} ücretli üyesi olun.",
     "By {authors}": "Ekleyen {authors}",

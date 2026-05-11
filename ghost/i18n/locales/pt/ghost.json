@@ -6,6 +6,7 @@
     "{count} year_many": "",
     "{count} year_other": "",
     "{date}": "{date}",
+    "{tierName} membership": "",
     "All the best!": "Tudo de bom para si!",
     "Become a paid member of {site} to get access to all premium content.": "Torne-se um membro pago de {site} para aceder a todo o conteúdo exclusivo.",
     "By {authors}": "Por {authors}",

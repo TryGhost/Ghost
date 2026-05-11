@@ -4,6 +4,7 @@
     "{count} year_one": "{count} year",
     "{count} year_other": "{count} years",
     "{date}": "{date}",
+    "{tierName} membership": "",
     "All the best!": "",
     "Become a paid member of {site} to get access to all premium content.": "",
     "By {authors}": "",

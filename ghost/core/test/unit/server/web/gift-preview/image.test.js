@@ -45,14 +45,14 @@ describe('Gift Preview Image', function () {
 
         it('returns different results for different gift details with the same accent color', async function () {
             const result1 = await imageModule.generateGiftPreviewImage({
-                tierName: 'Gold',
+                tierLabel: 'Gold membership',
                 cadenceLabel: '1 year',
                 siteTitle: 'Test Blog',
                 accentColor: '#FF5733'
             });
 
             const result2 = await imageModule.generateGiftPreviewImage({
-                tierName: 'Silver',
+                tierLabel: 'Silver membership',
                 cadenceLabel: '3 months',
                 siteTitle: 'Test Blog',
                 accentColor: '#FF5733'

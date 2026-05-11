@@ -6,6 +6,7 @@
     "{count} year_few": "",
     "{count} year_other": "",
     "{date}": "{date}",
+    "{tierName} membership": "",
     "All the best!": "Све најбоље!",
     "Become a paid member of {site} to get access to all premium content.": "Постаните плаћени члан {site}-а да бисте добили приступ премијум садржају.",
     "By {authors}": "Аутори: {authors}",

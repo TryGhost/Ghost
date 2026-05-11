@@ -4,6 +4,7 @@
     "{count} year_one": "",
     "{count} year_other": "",
     "{date}": "{date}",
+    "{tierName} membership": "",
     "All the best!": "Kaikkea hyvää!",
     "Become a paid member of {site} to get access to all premium content.": "Saat kaiken sisällön käyttöösi, kun otat maksullisen jäsenyyden sivulle {site}.",
     "By {authors}": "Kirjoittajat: {authors}",

@@ -48,11 +48,11 @@ function truncateText(str, maxLength) {
     return `${text.slice(0, maxLength - 3).trim()}...`;
 }
 
-function buildSvg({accentColor, siteTitle = 'Ghost', tierName = '', cadenceLabel = '1 year'}) {
+function buildSvg({accentColor, siteTitle = 'Ghost', tierLabel = '', cadenceLabel = '1 year'}) {
     const escapedAccentColor = escapeXml(accentColor);
     const orbImageHref = escapeXml(getGiftCardOrbImageHref());
     const safeCadenceLabel = escapeXml(truncateText(cadenceLabel, 18));
-    const safeTierLabel = escapeXml(truncateText(tierName ? `${tierName} membership` : 'Gift membership', 38));
+    const safeTierLabel = escapeXml(truncateText(tierLabel, 38));
     const safeSiteTitle = escapeXml(truncateText(siteTitle, 40));
 
     const textX = 64;
@@ -82,11 +82,11 @@ function buildSvg({accentColor, siteTitle = 'Ghost', tierName = '', cadenceLabel
 </svg>`;
 }
 
-async function generateGiftPreviewImage({accentColor = '#15171A', siteTitle, tierName, cadenceLabel}) {
+async function generateGiftPreviewImage({accentColor = '#15171A', siteTitle, tierLabel, cadenceLabel}) {
     const cacheKey = JSON.stringify({
         accentColor,
         siteTitle,
-        tierName,
+        tierLabel,
         cadenceLabel
     });
 
@@ -95,7 +95,7 @@ async function generateGiftPreviewImage({accentColor = '#15171A', siteTitle, tie
     }
 
     const imageTransform = require('@tryghost/image-transform');
-    const svg = buildSvg({accentColor, siteTitle, tierName, cadenceLabel});
+    const svg = buildSvg({accentColor, siteTitle, tierLabel, cadenceLabel});
     const image = await imageTransform.resizeFromBuffer(Buffer.from(svg), {
         width: 1200,
         format: 'png',
