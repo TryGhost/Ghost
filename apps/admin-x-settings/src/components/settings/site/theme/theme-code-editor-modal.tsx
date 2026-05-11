@@ -484,11 +484,16 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
             };
         }
 
-        Promise.all([oneDark, getLanguageExtension(selectedFile.path)]).then((extensions) => {
+        // Only the language extension is async (dynamic import); oneDark and
+        // the other extensions are static. Awaiting just the language load
+        // keeps the Promise types honest and makes the fallback branch read
+        // more clearly.
+        getLanguageExtension(selectedFile.path).then((languageExtension) => {
             if (isMounted) {
                 setEditorExtensions([
                     search({top: true}),
-                    ...extensions,
+                    oneDark,
+                    languageExtension,
                     ...(isTextWrapEnabled ? [EditorView.lineWrapping] : []),
                     editorSelectionTheme
                 ]);

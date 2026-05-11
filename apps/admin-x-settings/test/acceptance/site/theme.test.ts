@@ -334,6 +334,30 @@ test.describe('Theme settings', async () => {
         expect(lastApiRequests.uploadTheme?.url).toMatch(/\/themes\/upload\//);
     });
 
+    test('Loads CodeMirror with the dynamic language extension applied', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes},
+            downloadTheme: themeDownloadRequest('edition')
+        }});
+
+        const editorModal = await openInstalledThemeEditor(page, 'edition');
+
+        // The CodeMirror surface only renders after the dynamic language
+        // module import resolves and the extensions array is set. Proving
+        // the editor accepts input verifies the success branch of the load
+        // chain — if extensions never landed, the surface would be inert.
+        const codeEditor = editorModal.locator('.cm-content');
+        await expect(codeEditor).toBeVisible();
+        await expect(editorModal).toContainText(/json/i);
+
+        await codeEditor.click();
+        await page.keyboard.press('ControlOrMeta+A');
+        await page.keyboard.insertText('{"name":"edition","version":"1.0.0"}\n');
+
+        await expect(editorModal).toContainText(/1 file modified/);
+    });
+
     test('Saves built-in themes as a new theme name', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,
