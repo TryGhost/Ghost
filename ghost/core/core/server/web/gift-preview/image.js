@@ -3,15 +3,10 @@ const path = require('path');
 
 const CACHE_MAX_SIZE = 100;
 const GIFT_CARD_ORB_PATH = path.join(__dirname, 'gift-card-orb.svg');
-const FONTCONFIG_FILE_PATH = path.join(__dirname, 'fonts.conf');
 const FONT_STACK = 'Inter, -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif';
 
 const cache = new Map();
 let giftCardOrbImageHref;
-
-// librsvg resolves SVG fonts through fontconfig, so configure it before
-// @tryghost/image-transform loads sharp/libvips.
-process.env.FONTCONFIG_FILE = FONTCONFIG_FILE_PATH;
 
 function cacheResult(key, value) {
     if (cache.size >= CACHE_MAX_SIZE) {
