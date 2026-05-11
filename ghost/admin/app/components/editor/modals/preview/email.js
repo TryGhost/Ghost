@@ -61,6 +61,14 @@ export default class ModalPostPreviewEmailComponent extends Component {
             !!(this.settings.mailgunApiKey && this.settings.mailgunDomain && this.settings.mailgunBaseUrl);
     }
 
+    get resendIsEnabled() {
+        return this.config.resendIsConfigured || !!this.settings.resendApiKey;
+    }
+
+    get bulkEmailIsEnabled() {
+        return this.mailgunIsEnabled || this.resendIsEnabled;
+    }
+
     get selectedSegment() {
         return this.segments.find(segment => segment.alias === this.args.memberSegment);
     }
@@ -91,7 +99,7 @@ export default class ModalPostPreviewEmailComponent extends Component {
                 this.sendPreviewEmailError = 'Please enter a valid email';
                 return false;
             }
-            if (!this.mailgunIsEnabled) {
+            if (!this.bulkEmailIsEnabled) {
                 this.sendPreviewEmailError = 'Please verify your email settings';
                 return false;
             }

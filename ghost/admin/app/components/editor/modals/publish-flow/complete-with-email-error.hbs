@@ -11,7 +11,7 @@
 
     <p class="gh-publish-confirmation">
         {{this.emailErrorMessage}}
-        {{#unless this.config.mailgunIsConfigured}}
+        {{#unless (or this.config.mailgunIsConfigured this.config.resendIsConfigured)}}
         <br><br>
         If the error persists, please verify your email settings.
         {{/unless}}

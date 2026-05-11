@@ -135,12 +135,21 @@ export default class PublishOptions {
     get emailDisabled() {
         const hasNoMembers = this.totalMemberCount === 0;
 
-        return !this.mailgunIsConfigured || hasNoMembers || this.emailDisabledError;
+        return !this.bulkEmailIsConfigured || hasNoMembers || this.emailDisabledError;
     }
 
     get mailgunIsConfigured() {
         return this.settings.mailgunIsConfigured
             || this.config.mailgunIsConfigured;
+    }
+
+    get resendIsConfigured() {
+        return this.settings.resendIsConfigured
+            || this.config.resendIsConfigured;
+    }
+
+    get bulkEmailIsConfigured() {
+        return this.mailgunIsConfigured || this.resendIsConfigured;
     }
 
     @action
