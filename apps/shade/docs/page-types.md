@@ -34,7 +34,7 @@ Working with a single item — viewing, editing, or both.
 
 **Chrome shape**: `PageHeader` with breadcrumb + title + meta, a primary action area (save/cancel), and a content area dedicated to the item itself.
 
-**Shade pattern**: Not built this milestone. Named here so features can identify the page type and avoid forcing detail flows into modals or Settings.
+**Shade pattern**: Not built this milestone. Named here so new product surfaces can identify the page type and avoid forcing detail flows into modals or Settings.
 
 ## What's not in this taxonomy (yet)
 

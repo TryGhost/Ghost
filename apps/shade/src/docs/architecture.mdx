@@ -18,7 +18,7 @@ From the bottom up:
 
 **Components** are generic, reusable controls — Button, Input, Dialog, Tabs. They have visual styling and accessible behavior, but they don't know anything about Ghost's product. A Shade Button is the same Button whether it sits inside Stats, Settings, or the post editor.
 
-**Recipes** sit alongside components in a separate sidebar group called Foundations. A recipe is a small, shared visual rule that several components consume — for example `inputSurface`, the border + background + focus ring used by every Input, Textarea, InputGroup, and Select trigger. Recipes are utilities, not components; they have no JSX of their own.
+**Recipes** sit alongside components in their own sidebar group. A recipe is a small, shared visual rule that several components consume — for example `inputSurface`, the border + background + focus ring used by every Input, Textarea, InputGroup, and Select trigger. Recipes are utilities, not components; they have no JSX of their own.
 
 **Patterns** are the product-shaped layer. This is where Ghost-specific compositions live: the page header, the list-page recipe, KPI cards, the area chart on Stats, the filter builder on the Members list. Patterns compose primitives and components together with knowledge of how Ghost actually uses them.
 
@@ -50,7 +50,7 @@ If a component starts collecting product-specific props or branches, that's a si
 
 A small, named visual rule reused by several components — without being a component itself. The canonical example is `inputSurface`: a function that returns the shared border, background, radius, and focus-ring class string used by every form control surface in Shade. `Input`, `Textarea`, `InputGroup`, and the `Select` trigger all consume it.
 
-Recipes are useful when several components need to look identical along one dimension (chrome, focus state, density) but have different shapes otherwise. They live in `components/ui/` next to the components they support, and they show up in Storybook under the **Foundations** group.
+Recipes are useful when several components need to look identical along one dimension (chrome, focus state, density) but have different shapes otherwise. They live in `components/ui/` next to the components they support, and they show up in Storybook under the **Recipes** group.
 
 ### Layout
 
@@ -160,7 +160,7 @@ apps/shade/src/
 
 **Components are PascalCase**, hooks/functions/types are camelCase.
 
-**Stories live next to their component** as `<name>.stories.tsx`. The Storybook title puts each story in the right sidebar group: `Foundations / X`, `Primitives / X`, `Components / X`, `Layout / X`, `Patterns / X`, `Posts–Stats / X`.
+**Stories live next to their component** as `<name>.stories.tsx`. The Storybook title puts each story in the right sidebar group: `Primitives / X`, `Components / X`, `Patterns / X`, `Recipes / X`, `Posts–Stats / X`, `Deprecated / X`.
 
 **Use `cn()` to merge classes** (combines `clsx` + `tailwind-merge`). Always merge through `cn()` rather than concatenating strings — it handles Tailwind class conflicts correctly.
 
