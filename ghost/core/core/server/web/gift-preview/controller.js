@@ -70,7 +70,7 @@ async function giftPreview(req, res) {
         tier = await tiersService.api.read(gift.tierId);
 
         if (!tier) {
-            throw new errors.NotFoundError({message: `Tier not found for gift: ${gift.token}`});
+            throw new errors.NotFoundError({message: `Tier not found for gift: ${gift.id}`});
         }
     } catch (err) {
         logging.warn(`Gift preview: failed to load required gift data, redirecting to homepage`, err);
@@ -151,7 +151,7 @@ async function giftPreviewImage(req, res) {
         const tier = await tiersService.api.read(gift.tierId);
 
         if (!tier) {
-            throw new errors.NotFoundError({message: `Tier not found for gift: ${gift.token}`});
+            throw new errors.NotFoundError({message: `Tier not found for gift: ${gift.id}`});
         }
 
         const png = await generateGiftPreviewImage({
