@@ -1,6 +1,6 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-<Meta title="Architecture" />
+<Meta title="Overview / Architecture" />
 
 <div className="sb-doc">
 
@@ -127,7 +127,7 @@ Shade exposes itself through several import paths instead of one giant barrel. T
 | `@tryghost/shade/app` | `ShadeApp`, providers, transitional helpers |
 | `@tryghost/shade/utils` | Generic DS-safe helpers, `LucideIcon`, `Recharts` |
 
-The bare `@tryghost/shade` import is a compatibility lane that re-exports the main DS layers. New code should import from a specific subpath. The migration deadline is documented in the [Root Imports Migration](?path=/docs/migration-root-imports--docs) page.
+The bare `@tryghost/shade` import is a compatibility lane that re-exports the main DS layers. New code should import from a specific subpath. The migration deadline is documented in the [Root Imports Migration](?path=/docs/overview-root-imports-migration--docs) page.
 
 ### `posts-stats` is intentionally not a pattern layer
 

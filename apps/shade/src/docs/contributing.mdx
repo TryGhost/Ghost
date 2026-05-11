@@ -1,6 +1,6 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-<Meta title="Contributing" />
+<Meta title="Overview / Contributing" />
 
 <div className="sb-doc">
 
@@ -10,7 +10,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 ## Before you write any code
 
-The first decision is always which layer your change belongs in. The [Architecture](?path=/docs/architecture--docs) page has the full breakdown, but the quick rule:
+The first decision is always which layer your change belongs in. The [Architecture](?path=/docs/overview-architecture--docs) page has the full breakdown, but the quick rule:
 
 - Visual values (colors, sizes, durations) → **Tokens**
 - Layout structure → **Primitives**
@@ -53,7 +53,7 @@ import {ShadeApp} from '@tryghost/shade/app';
 import {Button, Stack} from '@tryghost/shade';
 ```
 
-The full migration story is on the [Root Imports Migration](?path=/docs/migration-root-imports--docs) page.
+The full migration story is on the [Root Imports Migration](?path=/docs/overview-root-imports-migration--docs) page.
 
 Inside Shade itself, use the `@/` path alias for cross-file imports. Don't worry about the alias leaking into emitted `.d.ts` files — `tsc-alias` rewrites them to relative paths at build time so consumer apps resolve them correctly.
 

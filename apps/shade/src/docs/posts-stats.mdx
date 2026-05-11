@@ -10,7 +10,7 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 ## Why this exists
 
-The Posts and Stats apps were split apart by an earlier architectural decision that is being reversed. While they're still separate, some components need to be shared between them, and Shade is the only place they can sit. These components are Ghost-specific to the post-analytics surface — they don't pass the [pattern promotion rules](?path=/docs/architecture--docs) and shouldn't try to.
+The Posts and Stats apps were split apart by an earlier architectural decision that is being reversed. While they're still separate, some components need to be shared between them, and Shade is the only place they can sit. These components are Ghost-specific to the post-analytics surface — they don't pass the [pattern promotion rules](?path=/docs/overview-architecture--docs) and shouldn't try to.
 
 Today this category holds `PostShareModal` (used by Post Analytics in `apps/posts` and by the Stats overview's "latest post" card in `apps/stats`).
 
@@ -28,7 +28,7 @@ When the Posts and Stats apps are merged into a single app, this folder and entr
 
 ## When *not* to add things here
 
-- **A component shared across three or more apps** — that's a real Shade pattern. Apply the [promotion rules](?path=/docs/architecture--docs) and add it under `patterns/` instead.
+- **A component shared across three or more apps** — that's a real Shade pattern. Apply the [promotion rules](?path=/docs/overview-architecture--docs) and add it under `patterns/` instead.
 - **A component shared between two apps that aren't Posts and Stats** — this folder is named for one specific historical situation. Don't generalise it. New cross-app temporary needs get their own named category.
 
 </div>

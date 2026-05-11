@@ -14,7 +14,7 @@ import {ListHeader} from './list-header';
 import {Ellipsis, Filter, Plus, Search} from 'lucide-react';
 
 const meta = {
-    title: 'Layout / List Header',
+    title: 'Deprecated / List Header',
     component: ListHeader,
     tags: ['autodocs'],
     parameters: {
