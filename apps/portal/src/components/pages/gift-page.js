@@ -4,7 +4,7 @@ import CloseButton from '../common/close-button';
 import ActionButton from '../common/action-button';
 import LoadingPage from './loading-page';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
-import giftCardOrbUrl from '../../images/gift-card-orb.svg';
+import giftCardOrbUrl from '../../images/gift-card-orb.webp';
 import {getAvailableProducts, getCurrencySymbol, formatNumber, getStripeAmount, isCookiesDisabled, getActiveInterval} from '../../utils/helpers';
 import useCardTilt from '../../utils/use-card-tilt';
 
