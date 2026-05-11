@@ -60,7 +60,7 @@ A reusable page shell. `Page`, `Header`, `ListHeader`, `ViewHeader`, `Heading`. 
 
 A product-shaped composition. Examples in Shade today: `PageHeader`, `ListPage`, `Filters`, `KpiCard`, `KpiTabValue`, `GhAreaChart`. Patterns know that Ghost has KPIs, area charts with diff tooltips, filterable Members lists. They compose components, primitives, and recipes with that knowledge baked in.
 
-Page-shaped patterns (those that represent a recurring kind of Admin page — List page, Analytics page, Detail page) are documented in [`docs/page-types.md`](../../docs/page-types.md).
+Page-shaped patterns (those that represent a recurring kind of Admin page — currently List page and Detail page) are documented on the [Page Types](?path=/docs/patterns-page-types--docs) page.
 
 Pattern files live in `components/patterns/` and are exposed via `@tryghost/shade/patterns`.
 
@@ -105,13 +105,13 @@ Patterns are the layer most prone to premature abstraction, because they look li
 ### When *not* to promote
 
 - **It's just a wrapper.** A `<MembersTable>` that's a `<Table>` with three pre-set columns belongs in the app, not Shade.
-- **You're reaching for Shade because you can't decide where the thing belongs in the product.** That's a feature-placement question — solve it with the [page types](../../docs/page-types.md) first. Promoting to Shade to dodge a structural decision will fossilize the wrong placement.
+- **You're reaching for Shade because you can't decide where the thing belongs in the product.** That's a feature-placement question — solve it with the [Page Types](?path=/docs/patterns-page-types--docs) page first. Promoting to Shade to dodge a structural decision will fossilize the wrong placement.
 - **One consumer, but "we want consistency".** Consistency is a side effect of reuse, not a reason to pre-extract.
 - **It's a one-off flow.** Success screens, onboarding steps, single-use modals — keep them in the app.
 
 ### Page-shaped patterns
 
-A page-shaped pattern (`ListPage`, future `DetailPage`) must map to a named entry in [`page-types.md`](../../docs/page-types.md). If a candidate doesn't fit any named page type, either the candidate is wrong or the taxonomy needs a new entry — resolve that before shipping the pattern.
+A page-shaped pattern (`ListPage`, future `DetailPage`) must map to a named entry on the [Page Types](?path=/docs/patterns-page-types--docs) page. If a candidate doesn't fit any named page type, either the candidate is wrong or the taxonomy needs a new entry — resolve that before shipping the pattern.
 
 ## Layered package entrypoints
 

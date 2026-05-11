@@ -1,6 +1,12 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Patterns / Page Types" />
+
+<div className="sb-doc">
+
 # Page types in Ghost Admin
 
-A small vocabulary for naming the kinds of pages Ghost Admin has. The point isn't to enforce a framework — it's so a designer or AI agent can identify what kind of page they're building, and reach for the right Shade pattern instead of inventing chrome from scratch.
+<p className="excerpt">A small vocabulary for naming the kinds of pages Ghost Admin has. The point isn't to enforce a framework — it's so a designer or AI agent can identify what kind of page they're building, and reach for the right Shade pattern instead of inventing chrome from scratch.</p>
 
 When a new feature shows up, the first question is **"what page type is this?"**. The second is **"is it really that, or is it being pushed into Settings by default?"**.
 
@@ -10,21 +16,11 @@ When a new feature shows up, the first question is **"what page type is this?"**
 
 Browsing or scanning a collection of items.
 
-**Live examples**: Members, Tags, Comments, Automations, ActivityPub followers/feed.
+**Live examples**: Members, Tags, Comments, Automations, ActivityPub followers and feed.
 
 **Chrome shape**: `PageHeader` (title + count + search/filter/actions inside `ActionGroup`) → table or list → empty state → pagination.
 
-**Shade pattern**: [`ListPage`](../src/components/patterns/list-page.tsx). Composes [`PageHeader`](../src/components/patterns/page-header.tsx). Bring your own table/list and empty state via [`EmptyIndicator`](../src/components/ui/empty-indicator.tsx). Heavy filter UI uses the existing [`Filters`](../src/components/patterns/filters.tsx) pattern.
-
-### Analytics page
-
-Showing metrics, trends, and ranked content.
-
-**Live examples**: Post Analytics, Site Stats.
-
-**Chrome shape**: `PageHeader` with `Breadcrumb` or `Title`, a `ContextStrip` for live KPIs ("X reading now"), an optional `Hero` for the resource being analysed (feature image + title + meta), and a `Nav` slot for sub-navigation tabs. Below the header: KPI cards, charts, and ranked `DataList`s.
-
-**Shade pattern**: No dedicated wrapper this milestone. Use `PageHeader` for chrome + existing Shade KPI primitives (`KpiCard`, `KpiTabValue`, `MetricValue`, `TrendBadge`) + `DataList` + `GhAreaChart`. Page-level composition lives in the analytics areas (`apps/posts/views/PostAnalytics`, `apps/stats`) — not in Shade.
+**Shade pattern**: `ListPage` (composes `PageHeader`). Bring your own table/list and empty state via `EmptyIndicator`. Heavy filter UI uses the existing `Filters` pattern.
 
 ### Detail page
 
@@ -37,6 +33,8 @@ Working with a single item — viewing, editing, or both.
 **Shade pattern**: Not built this milestone. Named here so new product surfaces can identify the page type and avoid forcing detail flows into modals or Settings.
 
 ## What's not in this taxonomy (yet)
+
+**Analytics surfaces** — Post Analytics (in `apps/posts`) and Site Stats (in `apps/stats`) are visually rich pages with KPI strips, charts, and ranked content, and `PageHeader` has slots (`ContextStrip`, `Hero`, `Nav`) designed to support them. But they live in two apps that are scheduled to merge, and their page-level composition is intentionally kept inside those apps rather than promoted to a generic Ghost-wide page type. When the apps merge and the analytics surface stabilises, this taxonomy may grow back into an "Analytics page" entry — today it's scoped work, not a recurring shape new features need to identify with.
 
 **Settings pages** — the entire `apps/admin-x-settings/` app. Out of scope for this milestone. Settings has historically been a dumping ground for unresolved product architecture; the page types above exist partly to give new features somewhere else to live.
 
@@ -75,8 +73,8 @@ import {Search} from 'lucide-react';
 </ListPage>
 ```
 
-Run the Shade storybook (`pnpm --filter @tryghost/shade storybook`) to see live shapes for each pattern.
-
 ## Migration status
 
 The new patterns live alongside the legacy header primitives (`ListHeader`, `Header`, `ViewHeader` in `@/components/layout/`) for now. No Admin call-sites have been migrated yet — that's a separate follow-up milestone. The legacy primitives stay exported until migration is complete.
+
+</div>

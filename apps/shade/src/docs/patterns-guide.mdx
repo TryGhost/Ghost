@@ -21,7 +21,7 @@ Patterns compose lower layers (primitives, components, recipes) but stop short o
 - **The name describes what it is, not where it's used.** `FilterBar` works. `MembersFilterBar` doesn't — it names a single surface and will date the moment that surface changes.
 - **Reuse first, abstraction second.** Patterns are the layer most prone to premature abstraction. A candidate has to have been built locally at least twice in different surfaces, with a stable shape, before it's ready to be a pattern.
 
-See the Patterns sidebar for the live list of patterns and their APIs. The taxonomy of which patterns belong to which **page types** (List page, Analytics page, Detail page) is documented in `apps/shade/docs/page-types.md`.
+See the Patterns sidebar for the live list of patterns and their APIs. The taxonomy of which patterns belong to which **page types** (List page, Detail page) is documented on the [Page Types](?path=/docs/patterns-page-types--docs) page.
 
 ## Adding a new pattern
 
@@ -37,8 +37,8 @@ When all that holds:
 
 1. Add the file at `apps/shade/src/components/patterns/<name>.tsx`.
 2. Export it from `apps/shade/src/patterns.ts` so consumers can reach it from `@tryghost/shade/patterns`.
-3. Add a story at `apps/shade/src/components/patterns/<name>.stories.tsx` with the title `Patterns / <Pattern Name>`. The story should cover the canonical shapes the pattern's slots are designed for (e.g. `PageHeader` covers both the list-page shape and the analytics-page shape).
-4. If the pattern is page-shaped (a recipe for a whole page type), update the page-types doc to point to it.
+3. Add a story at `apps/shade/src/components/patterns/<name>.stories.tsx` with the title `Patterns / <Pattern Name>`. The story should cover the canonical shapes the pattern's slots are designed for.
+4. If the pattern is page-shaped (a recipe for a whole page type), update the [Page Types](?path=/docs/patterns-page-types--docs) page to point to it.
 
 If a candidate fails any of the promotion rules, keep it local in the app that needs it and revisit later. Patterns that get extracted too early lock the wrong API in and every consumer pays for every change.
 
@@ -69,6 +69,6 @@ import { Button, Table /* ... */ } from '@tryghost/shade/components';
 </ListPage>
 ```
 
-The same `PageHeader` covers an analytics page by composing different slots — `TopRow` with a `Breadcrumb` and `ContextStrip`, a `Hero` with a feature image, and a `Nav` for sub-navigation. The pattern doesn't know which page type it's rendering; the consumer does, and picks the slots that fit.
+The same `PageHeader` covers richer surfaces by composing different slots — `TopRow` with a `Breadcrumb` and `ContextStrip`, a `Hero` with a feature image, and a `Nav` for sub-navigation. The pattern doesn't know which page type it's rendering; the consumer does, and picks the slots that fit.
 
 </div>
