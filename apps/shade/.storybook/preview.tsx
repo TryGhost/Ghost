@@ -88,9 +88,13 @@ const preview: Preview = {
 				method: 'alphabetical',
 				order: [
 					'Overview',
+					['Introduction', 'Architecture', 'Tokens', 'Contributing', 'Migration'],
 					'Primitives',
+					['Guide', '*'],
 					'Components',
+					['Guide', '*'],
 					'Patterns',
+					['Guide', '*'],
 					'Recipes',
 					'Posts–Stats',
 					'Deprecated',

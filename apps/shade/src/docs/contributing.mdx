@@ -53,7 +53,7 @@ import {ShadeApp} from '@tryghost/shade/app';
 import {Button, Stack} from '@tryghost/shade';
 ```
 
-The full migration story is on the [Root Imports Migration](?path=/docs/overview-root-imports-migration--docs) page.
+The full migration story is on the [Migration](?path=/docs/overview-migration--docs) page.
 
 Inside Shade itself, use the `@/` path alias for cross-file imports. Don't worry about the alias leaking into emitted `.d.ts` files — `tsc-alias` rewrites them to relative paths at build time so consumer apps resolve them correctly.
 

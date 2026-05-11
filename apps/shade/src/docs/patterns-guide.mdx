@@ -1,0 +1,79 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Patterns / Guide" />
+
+<div className="sb-doc">
+
+# Working with patterns
+
+<p className="excerpt">Patterns are Shade's product-shaped layer: the recurring page chrome, header shapes, and filter UIs that show up across Ghost Admin. This page is a practical guide to using existing patterns and adding new ones.</p>
+
+## What a pattern is
+
+A pattern is a composition of primitives and components with knowledge of how Ghost actually uses them. Where a `Button` doesn't know what it sits next to, a `PageHeader` knows it sits at the top of a List page or an Analytics page, and exposes slots shaped to those situations.
+
+Patterns compose lower layers (primitives, components, recipes) but stop short of fetching data or owning routing. They are layout and composition contracts, nothing more.
+
+## The current set
+
+| Pattern | What it's for |
+| --- | --- |
+| `PageHeader` | Canonical page chrome for List and Analytics pages. Replaces the deprecated `ListHeader` / `Header` / `ViewHeader`. |
+| `ListPage` | Vertical layout recipe for the List page type (Members, Tags, Comments, Automations). |
+| `Filters` | Ghost's filter builder — operators, value sources, chips, dropdowns. |
+| `KpiCard` | KPI display surface for analytics pages (header, label, value, trend). |
+| `KpiTabs` | Tabbed metric switcher used above charts on analytics pages. |
+| `GhAreaChart` | Ghost's area-chart variant with diff tooltips and value-formatting hooks. |
+| `ColorPicker` | Reusable color picker (used by branding, design system internals). |
+| `ShareModal` | Generic share-on-social compound. Used directly by Admin onboarding; composed by `PostShareModal` in the `posts-stats/` interim layer. |
+
+The taxonomy of which patterns belong to which **page types** (List page, Analytics page, Detail page) is documented in `apps/shade/docs/page-types.md`.
+
+## How to use a pattern
+
+Patterns expose **named slots** rather than configuration props. Compose them like compound components:
+
+```tsx
+import { PageHeader, ListPage } from '@tryghost/shade/patterns';
+import { Button, Table /* ... */ } from '@tryghost/shade/components';
+
+<ListPage>
+  <PageHeader>
+    <PageHeader.Left>
+      <PageHeader.Title>
+        Members<PageHeader.Count>{count}</PageHeader.Count>
+      </PageHeader.Title>
+    </PageHeader.Left>
+    <PageHeader.Actions>
+      <PageHeader.ActionGroup>
+        <Button>Add member</Button>
+      </PageHeader.ActionGroup>
+    </PageHeader.Actions>
+  </PageHeader>
+  <ListPage.Body>
+    <Table>...</Table>
+  </ListPage.Body>
+</ListPage>
+```
+
+State lives with the consumer — patterns don't fetch, don't route, don't read app-specific context. If you find yourself reaching for `useQuery` inside a pattern, that's the signal to stop and rethink the boundary.
+
+## When to add a new pattern
+
+Patterns are the layer most prone to premature abstraction. They look like obviously-reusable shapes the moment you've built one — and they aren't. The full promotion rules live on the [Architecture](?path=/docs/overview-architecture--docs) page. The short version:
+
+1. **Real reuse exists, not expected reuse.** You've already built substantially the same shape a second time in a different surface.
+2. **The shape has settled.** Slots and composition have been stable across both local copies for at least one iteration cycle.
+3. **The name describes what it is, not where it's used.** `FilterBar` works; `MembersFilterBar` doesn't.
+4. **Composable via slots, not configured via props.** 3–6 named subcomponents, not a prop bag.
+5. **State stays with the consumer.** Pure layout + composition contract.
+
+If a candidate fails any of those, keep it local and revisit when it's ready.
+
+## Where patterns live
+
+- **Source files**: `apps/shade/src/components/patterns/<name>.tsx`
+- **Stories**: `apps/shade/src/components/patterns/<name>.stories.tsx`, surfaced in the **Patterns** sidebar group
+- **Consumer import**: `@tryghost/shade/patterns`
+
+</div>
