@@ -21,7 +21,7 @@ function ListPageToolbar({className, children}: PropsWithChildrenAndClassName) {
 function ListPageBody({className, children}: PropsWithChildrenAndClassName) {
     return (
         <div
-            className={cn('flex-1 min-h-0 min-w-0', className)}
+            className={cn('px-4 lg:px-8 flex-1 min-h-0 min-w-0', className)}
             data-list-page='body'
         >
             {children}
