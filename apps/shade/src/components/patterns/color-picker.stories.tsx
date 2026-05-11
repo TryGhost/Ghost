@@ -7,7 +7,7 @@ import {useState} from 'react';
 import {Input} from '@/components/ui/input';
 
 const meta: Meta<typeof ColorPicker> = {
-    title: 'Features/ColorPicker',
+    title: 'Patterns / Color Picker',
     component: ColorPicker,
     parameters: {
         layout: 'centered'

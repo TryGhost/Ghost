@@ -1,4 +1,4 @@
-import ShareModal, {type ShareModalSocialLink} from '@/components/features/share-modal/share-modal';
+import ShareModal, {type ShareModalSocialLink} from '@/components/patterns/share-modal';
 import {H3} from '@/components/layout/heading';
 import {Button} from '@/components/ui/button';
 import * as DialogPrimitive from '@radix-ui/react-dialog';

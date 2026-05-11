@@ -1,7 +1,7 @@
 import {useMemo, useState} from 'react';
 import {act, fireEvent, render, screen, waitFor} from '../../utils/test-utils';
 import {afterEach, beforeAll, describe, expect, it, vi} from 'vitest';
-import {createFilter, Filter, FilterFieldConfig, Filters, ValueSource} from '../../../../src/components/features/filters/filters';
+import {createFilter, Filter, FilterFieldConfig, Filters, ValueSource} from '../../../../src/components/patterns/filters';
 
 vi.mock('@/components/ui/calendar', () => ({
     Calendar: ({selected, onSelect}: {selected?: Date; onSelect?: unknown}) => {

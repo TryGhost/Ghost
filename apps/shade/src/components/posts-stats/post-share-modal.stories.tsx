@@ -4,7 +4,7 @@ import {Button} from '@/components/ui/button';
 import PostShareModal from './post-share-modal';
 
 const meta = {
-    title: 'Features / Post Share Modal',
+    title: 'Posts–Stats / Post Share Modal',
     component: PostShareModal,
     tags: ['autodocs'],
     argTypes: {

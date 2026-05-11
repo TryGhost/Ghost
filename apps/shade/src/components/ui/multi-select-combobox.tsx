@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/command';
 import {Check, Loader2} from 'lucide-react';
 import {cn} from '@/lib/utils';
-import type {FilterOption, ValueSource} from '@/components/features/filters/filters';
+import type {FilterOption, ValueSource} from '@/components/patterns/filters';
 
 // --- Types ---
 
