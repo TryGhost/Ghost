@@ -24,6 +24,12 @@ const messages = {
     retryEmailNotFailed: 'Only failed emails can be retried'
 };
 
+// Resume scanner won't pick up `submitting` rows older than this. Rows beyond the cutoff
+// are flipped to `failed` on first boot so they surface in admin UI for operator review
+// rather than being silently resumed (and sending stale newsletters to current members).
+// Override via `bulkEmail:resumeMaxAgeMs` in config.
+const DEFAULT_RESUME_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+
 class EmailService {
     #batchSendingService;
     #sendingService;
@@ -193,18 +199,45 @@ class EmailService {
 
     /**
      * Boot-time scanner: resumes newsletter emails left in `submitting` after a
-     * previous container's interrupted send. Gated by the `emailSendRecovery` lab flag
-     * at the call site (boot.js). Iterates sequentially; one failure does not skip others.
+     * previous container's interrupted send. Iterates sequentially; one failure
+     * does not skip others. Rows older than the configured max-age are flipped
+     * to `failed` (not resumed) so stale content does not get sent to current members.
      */
     async resumeInterruptedSends() {
+        const maxAgeMs = this.#config?.get?.('bulkEmail:resumeMaxAgeMs') ?? DEFAULT_RESUME_MAX_AGE_MS;
+        const cutoffIso = new Date(Date.now() - maxAgeMs).toISOString();
+
+        // Stale rows: too old to safely resume. Flip to `failed` so they surface in admin UI
+        // for operator review instead of being silently left in `submitting` forever.
+        const stale = await this.#models.Email.findAll({
+            filter: `status:submitting+created_at:<'${cutoffIso}'`
+        });
+        const staleList = stale.models || stale;
+        for (const email of staleList) {
+            try {
+                const locked = await this.#batchSendingService.updateStatusLock(
+                    this.#models.Email,
+                    email.id,
+                    'failed',
+                    ['submitting']
+                );
+                if (locked) {
+                    logging.warn(`Email resume: ${email.id} created_at=${email.get('created_at') && new Date(email.get('created_at')).toISOString()} exceeds max age (${maxAgeMs}ms) — flipped to failed for operator review`);
+                }
+            } catch (e) {
+                logging.error(e);
+            }
+        }
+
+        // Fresh rows: within the cutoff. Resume through the normal emailJob path.
         const emails = await this.#models.Email.findAll({
-            filter: 'status:submitting'
+            filter: `status:submitting+created_at:>'${cutoffIso}'`
         });
         const list = emails.models || emails;
         if (list.length === 0) {
             return;
         }
-        logging.info(`Email resume: found ${list.length} email(s) in submitting status`);
+        logging.info(`Email resume: found ${list.length} email(s) in submitting status within max age (${maxAgeMs}ms)`);
 
         for (const email of list) {
             try {

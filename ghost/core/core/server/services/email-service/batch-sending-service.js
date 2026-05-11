@@ -472,7 +472,14 @@ class BatchSendingService {
         /** @type {Map<string, import('./email-renderer').EmailBody>} */
         const emailBodyCache = new Map();
 
-        // Calculate deliverytimes for the batches
+        // Spread batches across the target window if one is configured. `deliveryTimes`
+        // handles the past-deadline case internally (resume of an interrupted send or a
+        // delayed job): if the original `created_at + targetDeliveryWindow` deadline has
+        // passed, the function respreads remaining batches over a fresh window starting
+        // now instead of returning undefined for every batch (which would dump every
+        // remaining batch into Mailgun in the same second and break the rate-spread).
+        const targetDeliveryWindow = this.#sendingService.getTargetDeliveryWindow();
+        const shouldApplyDeliveryTimes = targetDeliveryWindow !== undefined && targetDeliveryWindow > 0;
         const deliveryTimes = this.calculateDeliveryTimes(email, batches.length);
 
         // Loop batches and send them via the EmailProvider
@@ -486,8 +493,7 @@ class BatchSendingService {
                     return;
                 }
                 const batchData = {email, batch, post, newsletter, emailBodyCache, deliveryTime: undefined};
-                // Only set a delivery time if we have a deadline and it hasn't past yet
-                if (deadline && deadline.getTime() > Date.now()) {
+                if (shouldApplyDeliveryTimes) {
                     const deliveryTime = deliveryTimes.shift();
                     if (deliveryTime && deliveryTime >= Date.now()) {
                         batchData.deliveryTime = deliveryTime;
@@ -813,22 +819,29 @@ class BatchSendingService {
      * @param {number} numBatches - the number of batches to be sent
      */
     calculateDeliveryTimes(email, numBatches) {
-        const deadline = this.getDeliveryDeadline(email);
-        const now = new Date();
-        // If there is no deadline (target delivery window is not set) or the deadline is in the past, delivery immediately
-        if (!deadline || now >= deadline) {
+        let deadline = this.getDeliveryDeadline(email);
+        if (!deadline) {
             return new Array(numBatches).fill(undefined);
-        } else {
-            const timeToDeadline = deadline.getTime() - now.getTime();
-            const batchDelay = timeToDeadline / numBatches;
-            const deliveryTimes = [];
-            for (let i = 0; i < numBatches; i++) {
-                const delay = batchDelay * i;
-                const deliveryTime = new Date(now.getTime() + delay);
-                deliveryTimes.push(deliveryTime);
-            }
-            return deliveryTimes;
         }
+        const now = new Date();
+        // If the original `created_at + targetDeliveryWindow` deadline has passed (resume
+        // of an interrupted send, or a job that was delayed for any reason), respread
+        // batches over a fresh window of the same size starting now. Otherwise a
+        // 50%-resumed 10-minute send would dump every remaining batch into Mailgun in
+        // the same second and defeat the rate-spread.
+        if (now >= deadline) {
+            const targetDeliveryWindow = this.#sendingService.getTargetDeliveryWindow();
+            deadline = new Date(now.getTime() + targetDeliveryWindow);
+        }
+        const timeToDeadline = deadline.getTime() - now.getTime();
+        const batchDelay = timeToDeadline / numBatches;
+        const deliveryTimes = [];
+        for (let i = 0; i < numBatches; i++) {
+            const delay = batchDelay * i;
+            const deliveryTime = new Date(now.getTime() + delay);
+            deliveryTimes.push(deliveryTime);
+        }
+        return deliveryTimes;
     }
 }
 

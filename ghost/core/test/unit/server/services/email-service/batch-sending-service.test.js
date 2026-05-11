@@ -996,8 +996,11 @@ describe('Batch Sending Service', function () {
             clock.restore();
         });
 
-        it('omits deliverytime if deadline is in the past', async function () {
-            // Set some parameters for sending the batches
+        it('respreads deliverytimes over a fresh window if the deadline is in the past', async function () {
+            // When a send is resumed after the original deadline has passed (e.g. boot-time
+            // recovery of an interrupted send, or a job system delay), we still want to
+            // spread the remaining batches over a fresh window of the same size — otherwise
+            // every remaining batch hits Mailgun in the same second and breaks the rate-spread.
             const now = new Date();
             const clock = sinon.useFakeTimers(now);
             const targetDeliveryWindow = 300000; // 5 minutes
@@ -1014,7 +1017,6 @@ describe('Batch Sending Service', function () {
             });
             let runningCount = 0;
             let maxRunningCount = 0;
-            // Stub the sendBatch method to inspect the delivery times for each batch
             const sendBatch = sinon.stub(service, 'sendBatch').callsFake(async () => {
                 runningCount += 1;
                 maxRunningCount = Math.max(maxRunningCount, runningCount);
@@ -1022,26 +1024,32 @@ describe('Batch Sending Service', function () {
                 runningCount -= 1;
                 return Promise.resolve(true);
             });
-            // Create the batches
             const batches = new Array(numBatches).fill(0).map(() => createModel({}));
-            // Invoke the sendBatches method to send the batches
+            // Advance well past the original deadline (now + 300000)
             clock.tick(1000000);
+            const startedAt = new Date(clock.now);
             await service.sendBatches({
                 email,
                 batches,
                 post: createModel({}),
                 newsletter: createModel({})
             });
-            // Assert that the sendBatch method was called the correct number of times
+
             sinon.assert.callCount(sendBatch, numBatches);
-            // Get the batches there were sent from the sendBatch method calls
             const sendBatches = sendBatch.getCalls().map(call => call.args[0].batch);
-            // Get the delivery times for each batch from the sendBatch method calls
             const deliveryTimes = sendBatch.getCalls().map(call => call.args[0].deliveryTime);
-            // Assert that the deliverytime is not set, since we're past the deadline
-            deliveryTimes.forEach((time) => {
-                assert.equal(time, undefined);
+
+            // Every batch should have a delivery time set; none should be undefined.
+            deliveryTimes.forEach((time, i) => {
+                assert.ok(time instanceof Date, `batch ${i} delivery time should be a Date, got ${time}`);
             });
+            // Times should span roughly the full fresh window (targetDeliveryWindow) from
+            // the moment sendBatches started, with batch 0 at the start and the last batch
+            // near the end.
+            const firstMs = deliveryTimes[0].getTime();
+            const lastMs = deliveryTimes[deliveryTimes.length - 1].getTime();
+            assert.ok(firstMs >= startedAt.getTime() - 100, `first delivery time too early: ${firstMs}`);
+            assert.ok(lastMs - firstMs >= targetDeliveryWindow * 0.8, `spread too narrow: ${lastMs - firstMs}ms (expected ~${targetDeliveryWindow}ms)`);
             assert.deepEqual(sendBatches, batches);
             assert.equal(maxRunningCount, 2);
             clock.restore();
@@ -1918,7 +1926,11 @@ describe('Batch Sending Service', function () {
             clock.restore();
         });
 
-        it('returns an array of undefined values if we are past the deadline', async function () {
+        it('respreads batches over a fresh window if the original deadline has passed', async function () {
+            // Original behavior here was to return [undefined×n] (deliver immediately) when
+            // the deadline had passed. That defeats the rate-spread on resumed sends —
+            // 50% of a 10-min send would dump into Mailgun in the same second on restart.
+            // New contract: respread over a fresh window of the same size, starting now.
             const now = new Date();
             const clock = sinon.useFakeTimers(now);
             const TARGET_DELIVERY_WINDOW = 300000; // 5 minutes
@@ -1926,6 +1938,7 @@ describe('Batch Sending Service', function () {
                 created_at: now
             });
             const numBatches = 5;
+            const delay = TARGET_DELIVERY_WINDOW / numBatches;
             const service = new BatchSendingService({
                 sendingService: {
                     getTargetDeliveryWindow() {
@@ -1933,11 +1946,16 @@ describe('Batch Sending Service', function () {
                     }
                 }
             });
-            const expectedResult = [
-                undefined, undefined, undefined, undefined, undefined
-            ];
-            // Advance time past the deadline
+            // Advance well past the original deadline.
             clock.tick(1000000);
+            const advancedNow = new Date(clock.now);
+            const expectedResult = [
+                new Date(advancedNow.getTime() + (delay * 0)),
+                new Date(advancedNow.getTime() + (delay * 1)),
+                new Date(advancedNow.getTime() + (delay * 2)),
+                new Date(advancedNow.getTime() + (delay * 3)),
+                new Date(advancedNow.getTime() + (delay * 4))
+            ];
             const result = service.calculateDeliveryTimes(email, numBatches);
             assert.deepEqual(result, expectedResult);
             clock.restore();
