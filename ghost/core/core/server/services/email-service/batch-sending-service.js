@@ -8,6 +8,7 @@ const messages = {
 };
 
 const MAX_SENDING_CONCURRENCY = 2;
+const SHUTDOWN_CODE = 'BULK_EMAIL_SHUTDOWN_IN_PROGRESS';
 
 /**
  * @typedef {import('./sending-service')} SendingService
@@ -33,6 +34,8 @@ class BatchSendingService {
     #sentry;
     #debugStorageFilePath;
     #getRequiredUrlRelations;
+    #shuttingDown = false;
+    #inFlight = new Set();
 
     // Retry database queries happening before sending the email
     #BEFORE_RETRY_CONFIG = {maxRetries: 10, maxTime: 10 * 60 * 1000, sleep: 2000};
@@ -117,6 +120,15 @@ class BatchSendingService {
     }
 
     /**
+     * Stops the batch workers and waits for any in-flight sends to finish.
+     * Called by the cleanup pipeline when the container is shutting down. Idempotent.
+     */
+    async onShutdown() {
+        this.#shuttingDown = true;
+        await Promise.allSettled([...this.#inFlight]);
+    }
+
+    /**
      * Schedules a background job that sends the email in the background if it is pending or failed.
      * @param {Email} email
      * @returns {void}
@@ -171,6 +183,10 @@ class BatchSendingService {
                 }, {patch: true, autoRefresh: false});
             }, {...this.#AFTER_RETRY_CONFIG, description: `email ${emailId} -> submitted`});
         } catch (e) {
+            if (e && e.code === SHUTDOWN_CODE) {
+                logging.info(`Email ${email.id} send stopped because the container is shutting down — leaving status=submitting so it can resume on next boot`);
+                return;
+            }
             const ghostError = new errors.EmailError({
                 err: e,
                 code: 'BULK_EMAIL_SEND_FAILED',
@@ -432,6 +448,20 @@ class BatchSendingService {
     }
 
     async sendBatches({email, batches, post, newsletter}) {
+        // Track the in-flight call so onShutdown can await it. The cleanup task
+        // must wait for the Mailgun POST + EmailBatch DB write to settle before
+        // ghost-server schedules process.exit, otherwise mid-flight requests get
+        // killed and EmailBatch rows never record what Mailgun actually accepted.
+        const work = this.#sendBatchesInner({email, batches, post, newsletter});
+        this.#inFlight.add(work);
+        try {
+            return await work;
+        } finally {
+            this.#inFlight.delete(work);
+        }
+    }
+
+    async #sendBatchesInner({email, batches, post, newsletter}) {
         logging.info(`Sending ${batches.length} batches for email ${email.id}`);
         const deadline = this.getDeliveryDeadline(email);
 
@@ -449,11 +479,12 @@ class BatchSendingService {
         let succeededCount = 0;
         const queue = batches.slice();
 
-        // Bind this
-        let runNext;
-        runNext = async () => {
-            const batch = queue.shift();
-            if (batch) {
+        const runWorker = async () => {
+            while (!this.#shuttingDown) {
+                const batch = queue.shift();
+                if (!batch) {
+                    return;
+                }
                 const batchData = {email, batch, post, newsletter, emailBodyCache, deliveryTime: undefined};
                 // Only set a delivery time if we have a deadline and it hasn't past yet
                 if (deadline && deadline.getTime() > Date.now()) {
@@ -465,12 +496,18 @@ class BatchSendingService {
                 if (await this.sendBatch(batchData)) {
                     succeededCount += 1;
                 }
-                await runNext();
             }
         };
 
         // Run maximum MAX_SENDING_CONCURRENCY at the same time
-        await Promise.all(new Array(MAX_SENDING_CONCURRENCY).fill(0).map(() => runNext()));
+        await Promise.all(new Array(MAX_SENDING_CONCURRENCY).fill(0).map(() => runWorker()));
+
+        if (this.#shuttingDown && queue.length > 0) {
+            throw new errors.InternalServerError({
+                code: SHUTDOWN_CODE,
+                message: 'Email send stopped because the container is shutting down'
+            });
+        }
 
         if (succeededCount < batches.length) {
             if (succeededCount > 0) {
@@ -780,3 +817,4 @@ class BatchSendingService {
 }
 
 module.exports = BatchSendingService;
+module.exports.SHUTDOWN_CODE = SHUTDOWN_CODE;

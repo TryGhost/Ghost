@@ -10,7 +10,7 @@ class EmailServiceWrapper {
         return jsonModel.url;
     }
 
-    init() {
+    init({ghostServer} = {}) {
         if (this.service) {
             return;
         }
@@ -130,6 +130,10 @@ class EmailServiceWrapper {
             getRequiredUrlRelations,
             debugStorageFilePath: configService.getContentPath('data')
         });
+
+        if (ghostServer) {
+            ghostServer.registerCleanupTask(() => batchSendingService.onShutdown());
+        }
 
         this.renderer = emailRenderer;
 
