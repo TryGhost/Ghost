@@ -96,6 +96,7 @@ const preview: Preview = {
 					'Patterns',
 					['Patterns Guide', '*'],
 					'Recipes',
+					['Recipes Guide', '*'],
 					'Posts–Stats',
 					['Posts–Stats Overview', '*'],
 					'Deprecated',
