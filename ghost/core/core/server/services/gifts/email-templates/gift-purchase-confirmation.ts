@@ -11,18 +11,16 @@ export interface GiftPurchaseConfirmationData {
 }
 
 export function renderText(data: GiftPurchaseConfirmationData): string {
-    return `Your gift is ready to share!
+    return `Your gift is ready
 
-Thank you for supporting ${data.siteTitle}. Send the link below to share your gift with whoever you'd like.
+Thanks for supporting ${data.siteTitle}. Share the link below to give someone access to ${data.gift.tierName} membership for ${data.gift.cadenceLabel}.
 
-Gift subscription: ${data.gift.tierName} • ${data.gift.cadenceLabel}
+${data.gift.link}
 
-Gift link: ${data.gift.link}
+The link can be redeemed once and expires on ${data.gift.expiresAt}.
 
-This link expires on ${data.gift.expiresAt} and can be redeemed once by anyone who isn't already a paid member of ${data.siteTitle}.
+Happy gifting.
 
 ---
-
-Sent to ${data.toEmail} from ${data.siteDomain}.
-You received this email because you purchased a gift subscription on ${data.siteTitle}.`;
+This message was sent from ${data.siteDomain} to ${data.toEmail}.`;
 }

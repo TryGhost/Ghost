@@ -14,19 +14,15 @@ export interface GiftReminderData {
 }
 
 export function renderText(data: GiftReminderData): string {
-    return `Your gift subscription is ending soon
+    return `Hey there,
 
-Your gift subscription to ${data.siteTitle} ends on ${data.gift.consumesAt}. Continue with a paid subscription to keep reading.
+Your gift subscription expires on ${data.gift.consumesAt}.
 
-Gift subscription: ${data.gift.tierName}
-Ends on: ${data.gift.consumesAt}
-Price after gift ends: ${data.gift.priceAfter}
+If you've been enjoying ${data.siteTitle}, continue your membership for ${data.gift.priceAfter} to keep full access to every post and newsletter.
 
-Continue subscription:
+Continue membership:
 ${data.gift.manageSubscriptionUrl}
 
 ---
-
-Sent to ${data.memberEmail} from ${data.siteDomain}.
-You received this email because your gift subscription to ${data.siteTitle} is ending soon.`;
+This message was sent from ${data.siteDomain} to ${data.memberEmail}.`;
 }

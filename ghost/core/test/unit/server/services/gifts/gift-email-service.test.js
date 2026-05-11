@@ -92,7 +92,7 @@ describe('GiftEmailService', function () {
         const noTitleService = new GiftEmailService({mailer, settingsCache: noTitleSettingsCache, urlUtils, getFromAddress, blogIcon});
         await noTitleService.sendPurchaseConfirmation(defaultData);
 
-        sinon.assert.calledWith(mailer.send, sinon.match.has('text', sinon.match('gift subscription on example.com')));
+        sinon.assert.calledWith(mailer.send, sinon.match.has('text', sinon.match('Thanks for supporting example.com')));
     });
 
     describe('sendReminder', function () {
@@ -116,26 +116,25 @@ describe('GiftEmailService', function () {
             }));
         });
 
-        it('includes tier name, consumesAt, post-gift price and manage subscription url in both HTML and text', async function () {
+        it('includes consumesAt, post-gift price and manage subscription url in both HTML and text', async function () {
             await service.sendReminder(reminderData);
 
             const msg = mailer.send.getCall(0).args[0];
 
             for (const field of ['html', 'text']) {
-                sinon.assert.match(msg[field], sinon.match('Gold'));
                 sinon.assert.match(msg[field], sinon.match('23 Apr 2026'));
                 sinon.assert.match(msg[field], sinon.match('$100.00/year'));
                 sinon.assert.match(msg[field], sinon.match('https://example.com/#/portal/account'));
             }
         });
 
-        it('renders a "Continue subscription" CTA', async function () {
+        it('renders a "Continue membership" CTA', async function () {
             await service.sendReminder(reminderData);
 
             const msg = mailer.send.getCall(0).args[0];
 
-            sinon.assert.match(msg.html, sinon.match('Continue subscription'));
-            sinon.assert.match(msg.text, sinon.match('Continue subscription'));
+            sinon.assert.match(msg.html, sinon.match('Continue membership'));
+            sinon.assert.match(msg.text, sinon.match('Continue membership'));
         });
 
         it('formats month cadence in the post-gift price', async function () {
