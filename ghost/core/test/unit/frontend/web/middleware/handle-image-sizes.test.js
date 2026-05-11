@@ -179,6 +179,30 @@ describe('handleImageSizes middleware', function () {
             });
         });
 
+        it('strips multiple leading slashes when redirecting to the original URL', function (done) {
+            const fakeReq = {
+                url: '/size/w123/image.jpg',
+                originalUrl: '////example.com/content/images/size/w123/image.jpg'
+            };
+            const fakeRes = {
+                redirect(url) {
+                    try {
+                        assert.equal(url, '/example.com/content/images/image.jpg');
+                    } catch (e) {
+                        return done(e);
+                    }
+                    done();
+                },
+                setHeader() {}
+            };
+            handleImageSizes(fakeReq, fakeRes, function next(err) {
+                if (err) {
+                    return done(err);
+                }
+                done(new Error('Should not have called next'));
+            });
+        });
+
         it('redirects for invalid configured size', function (done) {
             const fakeReq = {
                 url: '/size/missing/image.jpg',
