@@ -202,6 +202,7 @@ const GiftRedemptionPage = () => {
                             <div className='gh-portal-gift-checkout-card-stack' data-revealing={showDetails}>
                                 <div className='gh-portal-gift-checkout-card-frame'>
                                     <div ref={cardRef} className='gh-portal-gift-checkout-card'>
+                                        <div className='gh-portal-gift-checkout-card-notch' aria-hidden='true' />
                                         <div className='gh-portal-gift-checkout-card-meta'>
                                             <div className='gh-portal-gift-checkout-card-duration'>{getGiftDurationLabel(gift)}</div>
                                             {/* eslint-disable-next-line i18next/no-literal-string -- copy not yet finalised */}
