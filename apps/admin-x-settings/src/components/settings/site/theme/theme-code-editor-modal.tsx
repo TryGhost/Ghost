@@ -1,7 +1,7 @@
 import CodeMirror, {EditorView} from '@uiw/react-codemirror';
 import InvalidThemeModal, {type FatalErrors} from './invalid-theme-modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
 import ThemeInstalledModal from './theme-installed-modal';
 import {
     ChevronDown,
@@ -565,11 +565,17 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
         updateRoute(getReturnRouteFromHash() ?? 'design/change-theme');
     };
 
+    // Keep a ref to the latest handleSave so the keydown listener can call
+    // the freshest version without re-registering on every render. handleSave
+    // captures state (currentFiles, changes, isSaving, ...) and is recreated
+    // each render — using a ref decouples that churn from the global listener.
+    const handleSaveRef = useRef<() => void>(() => {});
+
     useEffect(() => {
         const handleKeydown = (event: KeyboardEvent) => {
             if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') {
                 event.preventDefault();
-                void handleSave();
+                void handleSaveRef.current();
                 return;
             }
 
@@ -587,7 +593,7 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
         return () => {
             window.removeEventListener('keydown', handleKeydown, true);
         };
-    });
+    }, []);
 
     const ensurePathExpanded = (path: string) => {
         setExpandedDirectories((current) => {
@@ -987,6 +993,10 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
             setIsSaving(false);
         }
     };
+
+    useEffect(() => {
+        handleSaveRef.current = handleSave;
+    });
 
     const openFile = (path: string) => {
         setSelectedNode({type: 'file', path});

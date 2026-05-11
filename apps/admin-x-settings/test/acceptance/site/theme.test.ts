@@ -296,6 +296,44 @@ test.describe('Theme settings', async () => {
         expect(lastApiRequests.uploadTheme?.url).toMatch(/\/themes\/upload\//);
     });
 
+    test('Saves via the Cmd+S keyboard shortcut', async ({page}) => {
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes},
+            downloadTheme: themeDownloadRequest('edition'),
+            uploadTheme: {
+                method: 'POST',
+                path: '/themes/upload/',
+                response: {
+                    themes: [{
+                        name: 'edition',
+                        package: {name: 'Edition', version: '1.0.0'},
+                        active: true,
+                        templates: []
+                    }]
+                }
+            }
+        }});
+
+        const editorModal = await openInstalledThemeEditor(page, 'edition');
+
+        const codeEditor = editorModal.locator('.cm-content');
+        await codeEditor.click();
+        await page.keyboard.press('ControlOrMeta+A');
+        await page.keyboard.insertText('{"name":"edition","version":"1.0.0"}\n');
+
+        // Pressing Cmd+S (or Ctrl+S) should run the same save flow as
+        // clicking Save, with the listener reading the freshest handleSave
+        // through the latest-ref pattern. If the ref ever got out of sync,
+        // the save would see stale state (no changes) and abort with the
+        // "No changes to save" toast instead of opening this confirmation.
+        await page.keyboard.press('ControlOrMeta+S');
+        await page.getByTestId('theme-editor-confirm-modal').getByRole('button', {name: 'Replace theme'}).click();
+
+        await expect(page.getByTestId('toast-success')).toHaveText(/Theme saved/i);
+        expect(lastApiRequests.uploadTheme?.url).toMatch(/\/themes\/upload\//);
+    });
+
     test('Saves built-in themes as a new theme name', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,
