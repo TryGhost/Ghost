@@ -14,13 +14,6 @@ export interface Page<T> {
     };
 }
 
-export interface AutomationSummary {
-    id: string;
-    slug: string;
-    name: string;
-    status: string;
-}
-
 export interface WaitAction {
     id: string;
     type: 'wait';
@@ -54,13 +47,13 @@ export interface Automation {
     slug: string;
     name: string;
     status: string;
-    createdAt: Date;
-    updatedAt: Date;
+    created_at: string;
+    updated_at: string;
     actions: AutomationAction[];
     edges: AutomationEdge[];
 }
 
 export interface AutomationsRepository {
-    browse(): Promise<Page<AutomationSummary>>;
+    browse(): Promise<Page<Automation>>;
     getById(id: string): Promise<Automation | null>;
 }

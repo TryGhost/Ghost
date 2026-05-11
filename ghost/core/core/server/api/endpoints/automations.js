@@ -10,9 +10,7 @@ const controller = {
         },
         permissions: true,
         async query() {
-            return {
-                data: await automationsApi.browse()
-            };
+            return await automationsApi.browse();
         }
     },
 

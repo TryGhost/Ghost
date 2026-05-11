@@ -1,13 +1,37 @@
 const sinon = require('sinon');
 const domainEvents = require('@tryghost/domain-events');
-const assert = require('node:assert/strict');
 const models = require('../../../core/server/models');
 const {getSignedAdminToken} = require('../../../core/server/adapters/scheduling/utils');
 const {agentProvider, fixtureManager, matchers, assertions} = require('../../utils/e2e-framework');
 const StartAutomationsPollEvent = require('../../../core/server/services/automations/events/start-automations-poll-event');
 
-const {anyContentVersion, anyEtag, anyErrorId, anyObjectId} = matchers;
+const {anyContentVersion, anyEtag, anyErrorId, anyISODateTime, anyObjectId} = matchers;
 const {cacheInvalidateHeaderNotSet} = assertions;
+
+const matchAutomation = () => ({
+    id: anyObjectId,
+    created_at: anyISODateTime,
+    updated_at: anyISODateTime,
+    actions: [{
+        id: anyObjectId
+    }, {
+        id: anyObjectId,
+        data: {
+            email_design_setting_id: anyObjectId
+        }
+    }, {
+        id: anyObjectId
+    }, {
+        id: anyObjectId,
+        data: {
+            email_design_setting_id: anyObjectId
+        }
+    }],
+    edges: Array.from({length: 3}, () => ({
+        source_action_id: anyObjectId,
+        target_action_id: anyObjectId
+    }))
+});
 
 describe('Automations API', function () {
     let agent;
@@ -37,42 +61,35 @@ describe('Automations API', function () {
 
     describe('browse', function () {
         it('returns automations sourced from the temporary fake database', async function () {
-            const {body} = await agent
+            await agent
                 .get('automations')
-                .expectStatus(200);
-
-            assert.deepEqual(body.automations, [{
-                id: '670000000000000000000001',
-                name: 'Welcome Email (Free)',
-                slug: 'member-welcome-email-free',
-                status: 'active'
-            }, {
-                id: '670000000000000000000002',
-                name: 'Welcome Email (Paid)',
-                slug: 'member-welcome-email-paid',
-                status: 'active'
-            }]);
+                .expectStatus(200)
+                .expect(cacheInvalidateHeaderNotSet())
+                .matchBodySnapshot({
+                    automations: [
+                        matchAutomation(),
+                        matchAutomation()
+                    ]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
         });
     });
 
     describe('read', function () {
         it('returns the automation, ordered actions, and edges sourced from the temporary fake database', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
             await agent
-                .get('automations/670000000000000000000001')
+                .get(`automations/${browseBody.automations[0].id}`)
                 .expectStatus(200)
                 .expect(cacheInvalidateHeaderNotSet())
                 .matchBodySnapshot({
-                    automations: [{
-                        actions: [{}, {
-                            data: {
-                                email_design_setting_id: anyObjectId
-                            }
-                        }, {}, {
-                            data: {
-                                email_design_setting_id: anyObjectId
-                            }
-                        }]
-                    }]
+                    automations: [matchAutomation()]
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,

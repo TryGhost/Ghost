@@ -6,7 +6,6 @@ import type {
     AutomationAction,
     AutomationEdge,
     AutomationsRepository,
-    AutomationSummary,
     Page
 } from './automations-repository';
 
@@ -46,11 +45,11 @@ export function createFakeDatabaseAutomationsRepository({
     getDatabase: () => DatabaseSync | null;
 }): AutomationsRepository {
     return {
-        async browse(): Promise<Page<AutomationSummary>> {
+        async browse(): Promise<Page<Automation>> {
             const database = getDatabaseOrThrow(getDatabase);
 
             return withTransaction(database, () => {
-                const rows = loadAutomationSummaries(database);
+                const rows = loadAutomations(database).map(row => buildAutomation(database, row));
 
                 return {
                     data: rows,
@@ -109,17 +108,12 @@ function loadAutomation(database: DatabaseSync, automationId: string): Automatio
     return automation ?? null;
 }
 
-function loadAutomationSummaries(database: DatabaseSync): AutomationSummary[] {
-    return (database.prepare(`
-        SELECT id, slug, name, status
+function loadAutomations(database: DatabaseSync): AutomationRow[] {
+    return database.prepare(`
+        SELECT id, slug, name, status, created_at, updated_at
         FROM automations
         ORDER BY created_at, id
-    `).all() as unknown as AutomationSummary[]).map(row => ({
-        id: row.id,
-        slug: row.slug,
-        name: row.name,
-        status: row.status
-    }));
+    `).all() as unknown as AutomationRow[];
 }
 
 function buildAutomation(database: DatabaseSync, automation: AutomationRow): Automation {
@@ -128,11 +122,17 @@ function buildAutomation(database: DatabaseSync, automation: AutomationRow): Aut
         slug: automation.slug,
         name: automation.name,
         status: automation.status,
-        createdAt: new Date(automation.created_at),
-        updatedAt: new Date(automation.updated_at),
+        created_at: serializeDate(automation.created_at),
+        updated_at: serializeDate(automation.updated_at),
         actions: loadActionRows(database, automation.id).map(row => buildActionPayload(row)),
         edges: loadEdgeRows(database, automation.id).map(row => buildEdgePayload(row))
     };
+}
+
+function serializeDate(date: string) {
+    const normalizedDate = new Date(date);
+    normalizedDate.setMilliseconds(0);
+    return normalizedDate.toISOString();
 }
 
 function loadActionRows(database: DatabaseSync, automationId: string): ActionRow[] {

@@ -2,7 +2,6 @@
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import type {DatabaseSync} from 'node:sqlite';
-import type {Automation} from './automations-repository';
 import {createFakeDatabaseAutomationsRepository} from './fake-database-automations-repository';
 
 const domainEvents = require('@tryghost/domain-events');
@@ -25,22 +24,8 @@ const repository = createFakeDatabaseAutomationsRepository({
     }
 });
 
-function serializeAutomation(automation: Automation) {
-    return {
-        id: automation.id,
-        slug: automation.slug,
-        name: automation.name,
-        status: automation.status,
-        created_at: automation.createdAt.toISOString(),
-        updated_at: automation.updatedAt.toISOString(),
-        actions: automation.actions,
-        edges: automation.edges
-    };
-}
-
 async function browse() {
-    const page = await repository.browse();
-    return page.data;
+    return await repository.browse();
 }
 
 async function read(automationId: string) {
@@ -52,7 +37,7 @@ async function read(automationId: string) {
         });
     }
 
-    return serializeAutomation(automation);
+    return automation;
 }
 
 function requestPoll() {
