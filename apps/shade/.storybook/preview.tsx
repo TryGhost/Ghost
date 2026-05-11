@@ -94,7 +94,7 @@ const preview: Preview = {
 					'Components',
 					['Components Guide', '*'],
 					'Patterns',
-					['Patterns Guide', '*'],
+					['Patterns Guide', 'Page Types', '*'],
 					'Recipes',
 					['Recipes Guide', '*'],
 					'Posts–Stats',
