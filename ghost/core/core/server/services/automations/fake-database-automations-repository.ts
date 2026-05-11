@@ -19,8 +19,8 @@ interface AutomationRow {
     slug: string;
     name: string;
     status: string;
-    created_at: number;
-    updated_at: number;
+    created_at: string;
+    updated_at: string;
 }
 
 interface ActionRow {
@@ -128,8 +128,8 @@ function buildAutomation(database: DatabaseSync, automation: AutomationRow): Aut
         slug: automation.slug,
         name: automation.name,
         status: automation.status,
-        createdAt: new Date(automation.created_at * 1000),
-        updatedAt: new Date(automation.updated_at * 1000),
+        createdAt: new Date(automation.created_at),
+        updatedAt: new Date(automation.updated_at),
         actions: loadActionRows(database, automation.id).map(row => buildActionPayload(row)),
         edges: loadEdgeRows(database, automation.id).map(row => buildEdgePayload(row))
     };

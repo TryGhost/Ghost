@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
+import type {DatabaseSync} from 'node:sqlite';
 import type {Automation} from './automations-repository';
 import {createFakeDatabaseAutomationsRepository} from './fake-database-automations-repository';
 
@@ -12,8 +13,16 @@ const messages = {
     automationNotFound: 'Automation not found.'
 };
 
+let testDatabase: DatabaseSync | null = null;
+
 const repository = createFakeDatabaseAutomationsRepository({
-    getDatabase: () => temporaryFakeAutomationsDatabase.getTemporaryFakeAutomationsDatabase()
+    getDatabase: () => {
+        if (process.env.NODE_ENV === 'testing') {
+            testDatabase ??= temporaryFakeAutomationsDatabase.createTemporaryFakeAutomationsDatabase();
+            return testDatabase;
+        }
+        return temporaryFakeAutomationsDatabase.getTemporaryFakeAutomationsDatabase();
+    }
 });
 
 function serializeAutomation(automation: Automation) {

@@ -10,7 +10,8 @@
  * migration once we're sure this schema is correct.
  */
 
-const {default: ObjectID} = require('bson-objectid');
+const errors = require('@tryghost/errors');
+const ObjectId = require('bson-objectid').default;
 
 /**
  * @returns {import('node:sqlite').DatabaseSync}
@@ -19,31 +20,33 @@ function createTemporaryFakeAutomationsDatabase() {
     const {DatabaseSync} = require('node:sqlite');
 
     const database = new DatabaseSync(':memory:');
-    const automationEmailLexical = {
-        freeWelcome: createLexicalDocument([
-            'Welcome to The Daily Dispatch. You are now on the free list, so you will get our weekly editor notes, public essays, and product updates.',
-            'Start with the latest highlights in the archive, then reply to any email when there is a topic you want us to cover next.'
-        ]),
-        freeFollowUp: createLexicalDocument([
-            'It has been a few days since you joined, so here are three reader favorites to help you get settled in.',
-            'If you like the free issues, paid members also receive Friday deep dives, private comments, and early access to new guides.'
-        ]),
-        paidWelcome: createLexicalDocument([
-            'Thank you for becoming a paid member. Your subscription keeps the publication independent and gives you access to every members-only issue.',
-            'You can read the full archive now, join the private discussion on new posts, and expect the first paid briefing in your inbox this week.'
-        ]),
-        paidInsights: createLexicalDocument([
-            'This week for paid members: a behind-the-scenes breakdown of the research process, the charts we did not publish, and what we are watching next.',
-            'Send us your questions before Friday and we will include the best ones in the next member briefing.'
-        ])
-    };
-    const fakeEmailDesignSettingId = new ObjectID().toHexString();
+
+    const id = () => ObjectId().toHexString();
+    const now = () => new Date().toISOString();
+
+    const fakeLexical = JSON.stringify({
+        root: {
+            children: [{
+                type: 'paragraph',
+                children: [{
+                    type: 'text',
+                    text: 'Lorem ipsum.'
+                }]
+            }],
+            direction: null,
+            format: '',
+            indent: 0,
+            type: 'root',
+            version: 1
+        }
+    });
+    const fakeEmailDesignSettingId = id();
 
     database.exec(`
 CREATE TABLE automations (
   id TEXT PRIMARY KEY,
-  created_at INTEGER NOT NULL,
-  updated_at INTEGER NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
   slug TEXT NOT NULL,
   name TEXT NOT NULL,
   status TEXT NOT NULL
@@ -51,16 +54,16 @@ CREATE TABLE automations (
 
 CREATE TABLE automation_actions (
   id TEXT PRIMARY KEY,
-  created_at INTEGER NOT NULL,
-  updated_at INTEGER NOT NULL,
-  deleted_at INTEGER,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  deleted_at TEXT,
   automation_id TEXT NOT NULL REFERENCES automations(id),
   type TEXT NOT NULL
 ) STRICT;
 
 CREATE TABLE automation_action_revisions (
   id TEXT PRIMARY KEY,
-  created_at INTEGER NOT NULL,
+  created_at TEXT NOT NULL,
   action_id TEXT NOT NULL REFERENCES automation_actions(id),
   wait_hours INTEGER,
   email_subject TEXT,
@@ -80,8 +83,8 @@ CREATE TABLE automation_action_edges (
 
 CREATE TABLE automation_runs (
   id TEXT PRIMARY KEY,
-  created_at INTEGER NOT NULL,
-  updated_at INTEGER NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
   automation_id TEXT NOT NULL REFERENCES automations(id),
   member_id TEXT, -- not a real foreign key here
   member_email TEXT NOT NULL
@@ -89,109 +92,238 @@ CREATE TABLE automation_runs (
 
 CREATE TABLE automation_run_steps (
   id TEXT PRIMARY KEY,
-  created_at INTEGER NOT NULL,
-  updated_at INTEGER NOT NULL,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
   automation_run_id TEXT NOT NULL REFERENCES automation_runs(id),
   automation_action_revision_id TEXT NOT NULL REFERENCES automation_action_revisions(id),
-  ready_at INTEGER NOT NULL,
+  ready_at TEXT NOT NULL,
   step_attempts INTEGER NOT NULL,
-  started_at INTEGER,
-  finished_at INTEGER,
+  started_at TEXT,
+  finished_at TEXT,
   status TEXT NOT NULL,
   locked_by TEXT,
-  locked_at INTEGER
+  locked_at TEXT
 ) STRICT;
-
-INSERT INTO automations (id, created_at, updated_at, slug, name, status) VALUES
-('670000000000000000000001', 1715016000, 1715016000, 'member-welcome-email-free', 'Welcome Email (Free)', 'active'),
-('670000000000000000000002', 1715016000, 1715016000, 'member-welcome-email-paid', 'Welcome Email (Paid)', 'active');
-
-INSERT INTO automation_actions (id, created_at, updated_at, automation_id, type) VALUES
-('670000000000000000000011', 1715016000, 1715016000, '670000000000000000000001', 'wait'),
-('670000000000000000000012', 1715016000, 1715016000, '670000000000000000000001', 'send email'),
-('670000000000000000000013', 1715016000, 1715016000, '670000000000000000000001', 'wait'),
-('670000000000000000000014', 1715016000, 1715016000, '670000000000000000000001', 'send email');
-
-INSERT INTO automation_actions (id, created_at, updated_at, automation_id, type) VALUES
-('670000000000000000000021', 1715016000, 1715016000, '670000000000000000000002', 'wait'),
-('670000000000000000000022', 1715016000, 1715016000, '670000000000000000000002', 'send email'),
-('670000000000000000000023', 1715016000, 1715016000, '670000000000000000000002', 'wait'),
-('670000000000000000000024', 1715016000, 1715016000, '670000000000000000000002', 'send email');
-
-INSERT INTO automation_action_revisions (id, created_at, action_id, wait_hours, email_subject, email_lexical, email_design_setting_id) VALUES
-('670000000000000000000111', 1715016001, '670000000000000000000011', 48, NULL, NULL, NULL),
-('670000000000000000000112', 1715016002, '670000000000000000000012', NULL, 'Welcome to The Daily Dispatch', '${automationEmailLexical.freeWelcome}', '${fakeEmailDesignSettingId}'),
-('670000000000000000000113', 1715016003, '670000000000000000000013', 72, NULL, NULL, NULL),
-('670000000000000000000114', 1715016004, '670000000000000000000014', NULL, 'A few reader favorites to get you started', '${automationEmailLexical.freeFollowUp}', '${fakeEmailDesignSettingId}'),
-('670000000000000000000121', 1715016005, '670000000000000000000021', 48, NULL, NULL, NULL),
-('670000000000000000000122', 1715016006, '670000000000000000000022', NULL, 'Welcome, paid member', '${automationEmailLexical.paidWelcome}', '${fakeEmailDesignSettingId}'),
-('670000000000000000000123', 1715016007, '670000000000000000000023', 72, NULL, NULL, NULL),
-('670000000000000000000124', 1715016008, '670000000000000000000024', NULL, 'This week''s member briefing', '${automationEmailLexical.paidInsights}', '${fakeEmailDesignSettingId}');
-
-INSERT INTO automation_action_edges (source_action_id, target_action_id) VALUES
-('670000000000000000000011', '670000000000000000000012'),
-('670000000000000000000012', '670000000000000000000013'),
-('670000000000000000000013', '670000000000000000000014'),
-('670000000000000000000021', '670000000000000000000022'),
-('670000000000000000000022', '670000000000000000000023'),
-('670000000000000000000023', '670000000000000000000024');
 `);
+
+    const freeAutomationId = id();
+    const paidAutomationId = id();
+    const insertAutomation = database.prepare(`
+        INSERT INTO automations
+        (id, created_at, updated_at, slug, name, status) VALUES
+        (:id, :created_at, :updated_at, :slug, :name, :status)
+    `);
+    insertAutomation.run({
+        id: freeAutomationId,
+        created_at: now(),
+        updated_at: now(),
+        slug: 'member-welcome-email-free',
+        name: 'Welcome Email (Free)',
+        status: 'active'
+    });
+    insertAutomation.run({
+        id: paidAutomationId,
+        created_at: now(),
+        updated_at: now(),
+        slug: 'member-welcome-email-paid',
+        name: 'Welcome Email (Paid)',
+        status: 'active'
+    });
+
+    const freeAction1Id = id();
+    const freeAction2Id = id();
+    const freeAction3Id = id();
+    const freeAction4Id = id();
+    const paidAction1Id = id();
+    const paidAction2Id = id();
+    const paidAction3Id = id();
+    const paidAction4Id = id();
+    const insertAction = database.prepare(`
+        INSERT INTO automation_actions
+        (id, created_at, updated_at, automation_id, type) VALUES
+        (:id, :created_at, :updated_at, :automation_id, :type)
+    `);
+    insertAction.run({
+        id: freeAction1Id,
+        created_at: now(),
+        updated_at: now(),
+        automation_id: freeAutomationId,
+        type: 'wait'
+    });
+    insertAction.run({
+        id: freeAction2Id,
+        created_at: now(),
+        updated_at: now(),
+        automation_id: freeAutomationId,
+        type: 'send email'
+    });
+    insertAction.run({
+        id: freeAction3Id,
+        created_at: now(),
+        updated_at: now(),
+        automation_id: freeAutomationId,
+        type: 'wait'
+    });
+    insertAction.run({
+        id: freeAction4Id,
+        created_at: now(),
+        updated_at: now(),
+        automation_id: freeAutomationId,
+        type: 'send email'
+    });
+    insertAction.run({
+        id: paidAction1Id,
+        created_at: now(),
+        updated_at: now(),
+        automation_id: paidAutomationId,
+        type: 'wait'
+    });
+    insertAction.run({
+        id: paidAction2Id,
+        created_at: now(),
+        updated_at: now(),
+        automation_id: paidAutomationId,
+        type: 'send email'
+    });
+    insertAction.run({
+        id: paidAction3Id,
+        created_at: now(),
+        updated_at: now(),
+        automation_id: paidAutomationId,
+        type: 'wait'
+    });
+    insertAction.run({
+        id: paidAction4Id,
+        created_at: now(),
+        updated_at: now(),
+        automation_id: paidAutomationId,
+        type: 'send email'
+    });
+
+    const insertActionRevision = database.prepare(`
+        INSERT INTO automation_action_revisions
+        (id, created_at, action_id, wait_hours, email_subject, email_lexical, email_design_setting_id) VALUES
+        (:id, :created_at, :action_id, :wait_hours, :email_subject, :email_lexical, :email_design_setting_id)
+    `);
+    insertActionRevision.run({
+        id: id(),
+        created_at: now(),
+        action_id: freeAction1Id,
+        wait_hours: 48,
+        email_subject: null,
+        email_lexical: null,
+        email_design_setting_id: null
+    });
+    insertActionRevision.run({
+        id: id(),
+        created_at: now(),
+        action_id: freeAction2Id,
+        wait_hours: null,
+        email_subject: 'Welcome!',
+        email_lexical: fakeLexical,
+        email_design_setting_id: fakeEmailDesignSettingId
+    });
+    insertActionRevision.run({
+        id: id(),
+        created_at: now(),
+        action_id: freeAction3Id,
+        wait_hours: 72,
+        email_subject: null,
+        email_lexical: null,
+        email_design_setting_id: null
+    });
+    insertActionRevision.run({
+        id: id(),
+        created_at: now(),
+        action_id: freeAction4Id,
+        wait_hours: null,
+        email_subject: 'Follow up',
+        email_lexical: fakeLexical,
+        email_design_setting_id: fakeEmailDesignSettingId
+    });
+    insertActionRevision.run({
+        id: id(),
+        created_at: now(),
+        action_id: paidAction1Id,
+        wait_hours: 48,
+        email_subject: null,
+        email_lexical: null,
+        email_design_setting_id: null
+    });
+    insertActionRevision.run({
+        id: id(),
+        created_at: now(),
+        action_id: paidAction2Id,
+        wait_hours: null,
+        email_subject: 'Welcome to Paid!',
+        email_lexical: fakeLexical,
+        email_design_setting_id: fakeEmailDesignSettingId
+    });
+    insertActionRevision.run({
+        id: id(),
+        created_at: now(),
+        action_id: paidAction3Id,
+        wait_hours: 72,
+        email_subject: null,
+        email_lexical: null,
+        email_design_setting_id: null
+    });
+    insertActionRevision.run({
+        id: id(),
+        created_at: now(),
+        action_id: paidAction4Id,
+        wait_hours: null,
+        email_subject: 'Exclusive Insights',
+        email_lexical: fakeLexical,
+        email_design_setting_id: fakeEmailDesignSettingId
+    });
+
+    const insertActionEdge = database.prepare(`
+        INSERT INTO automation_action_edges
+        (source_action_id, target_action_id) VALUES
+        (:source_action_id, :target_action_id)
+    `);
+    insertActionEdge.run({
+        source_action_id: freeAction1Id,
+        target_action_id: freeAction2Id
+    });
+    insertActionEdge.run({
+        source_action_id: freeAction2Id,
+        target_action_id: freeAction3Id
+    });
+    insertActionEdge.run({
+        source_action_id: freeAction3Id,
+        target_action_id: freeAction4Id
+    });
+    insertActionEdge.run({
+        source_action_id: paidAction1Id,
+        target_action_id: paidAction2Id
+    });
+    insertActionEdge.run({
+        source_action_id: paidAction2Id,
+        target_action_id: paidAction3Id
+    });
+    insertActionEdge.run({
+        source_action_id: paidAction3Id,
+        target_action_id: paidAction4Id
+    });
 
     return database;
 }
 
-/**
- * @param {string[]} paragraphs
- * @returns {string}
- */
-function createLexicalDocument(paragraphs) {
-    return JSON.stringify({
-        root: {
-            children: paragraphs.map((/** @type {string} */ text) => ({
-                children: [
-                    {
-                        detail: 0,
-                        format: 0,
-                        mode: 'normal',
-                        style: '',
-                        text,
-                        type: 'text',
-                        version: 1
-                    }
-                ],
-                direction: 'ltr',
-                format: '',
-                indent: 0,
-                type: 'paragraph',
-                version: 1
-            })),
-            direction: 'ltr',
-            format: '',
-            indent: 0,
-            type: 'root',
-            version: 1
-        }
-    });
-}
-
-/** @type {import('node:sqlite').DatabaseSync | null} */
+/** @type {null | import('node:sqlite').DatabaseSync} */
 let cachedDatabase = null;
 
 /**
- * Returns the singleton fake automations database, lazily initializing it on
- * first call. Returns null in production where this fake database must never
- * be used.
- *
- * @returns {import('node:sqlite').DatabaseSync | null}
+ * @returns {import('node:sqlite').DatabaseSync}
  */
 function getTemporaryFakeAutomationsDatabase() {
-    if (cachedDatabase) {
-        return cachedDatabase;
+    if (process.env.NODE_ENV !== 'development') {
+        throw new errors.IncorrectUsageError({
+            message: 'Fake automations database should only be used in development'
+        });
     }
-    if (process.env.NODE_ENV === 'production') {
-        return null;
-    }
-    cachedDatabase = createTemporaryFakeAutomationsDatabase();
+    cachedDatabase ??= createTemporaryFakeAutomationsDatabase();
     return cachedDatabase;
 }
 
