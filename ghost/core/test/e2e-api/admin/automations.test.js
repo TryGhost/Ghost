@@ -6,7 +6,7 @@ const {getSignedAdminToken} = require('../../../core/server/adapters/scheduling/
 const {agentProvider, fixtureManager, matchers, assertions} = require('../../utils/e2e-framework');
 const StartAutomationsPollEvent = require('../../../core/server/services/automations/events/start-automations-poll-event');
 
-const {anyContentVersion, anyEtag, anyErrorId} = matchers;
+const {anyContentVersion, anyEtag, anyErrorId, anyObjectId} = matchers;
 const {cacheInvalidateHeaderNotSet} = assertions;
 
 describe('Automations API', function () {
@@ -61,7 +61,19 @@ describe('Automations API', function () {
                 .get('automations/670000000000000000000001')
                 .expectStatus(200)
                 .expect(cacheInvalidateHeaderNotSet())
-                .matchBodySnapshot()
+                .matchBodySnapshot({
+                    automations: [{
+                        actions: [{}, {
+                            data: {
+                                email_design_setting_id: anyObjectId
+                            }
+                        }, {}, {
+                            data: {
+                                email_design_setting_id: anyObjectId
+                            }
+                        }]
+                    }]
+                })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
                     etag: anyEtag

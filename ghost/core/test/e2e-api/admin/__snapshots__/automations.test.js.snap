@@ -73,3 +73,84 @@ Object {
 }
 `;
 
+exports[`Automations API read returns the automation, ordered actions, and edges sourced from the temporary fake database 1: [body] 1`] = `
+Object {
+  "automations": Array [
+    Object {
+      "actions": Array [
+        Object {
+          "data": Object {
+            "wait_hours": 48,
+          },
+          "id": "670000000000000000000011",
+          "type": "wait",
+        },
+        Object {
+          "data": Object {
+            "email_design_setting_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+            "email_lexical": "{\\"root\\":{\\"children\\":[{\\"children\\":[{\\"detail\\":0,\\"format\\":0,\\"mode\\":\\"normal\\",\\"style\\":\\"\\",\\"text\\":\\"Welcome to The Daily Dispatch. You are now on the free list, so you will get our weekly editor notes, public essays, and product updates.\\",\\"type\\":\\"text\\",\\"version\\":1}],\\"direction\\":\\"ltr\\",\\"format\\":\\"\\",\\"indent\\":0,\\"type\\":\\"paragraph\\",\\"version\\":1},{\\"children\\":[{\\"detail\\":0,\\"format\\":0,\\"mode\\":\\"normal\\",\\"style\\":\\"\\",\\"text\\":\\"Start with the latest highlights in the archive, then reply to any email when there is a topic you want us to cover next.\\",\\"type\\":\\"text\\",\\"version\\":1}],\\"direction\\":\\"ltr\\",\\"format\\":\\"\\",\\"indent\\":0,\\"type\\":\\"paragraph\\",\\"version\\":1}],\\"direction\\":\\"ltr\\",\\"format\\":\\"\\",\\"indent\\":0,\\"type\\":\\"root\\",\\"version\\":1}}",
+            "email_sender_email": null,
+            "email_sender_name": null,
+            "email_sender_reply_to": null,
+            "email_subject": "Welcome to The Daily Dispatch",
+          },
+          "id": "670000000000000000000012",
+          "type": "send email",
+        },
+        Object {
+          "data": Object {
+            "wait_hours": 72,
+          },
+          "id": "670000000000000000000013",
+          "type": "wait",
+        },
+        Object {
+          "data": Object {
+            "email_design_setting_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+            "email_lexical": "{\\"root\\":{\\"children\\":[{\\"children\\":[{\\"detail\\":0,\\"format\\":0,\\"mode\\":\\"normal\\",\\"style\\":\\"\\",\\"text\\":\\"It has been a few days since you joined, so here are three reader favorites to help you get settled in.\\",\\"type\\":\\"text\\",\\"version\\":1}],\\"direction\\":\\"ltr\\",\\"format\\":\\"\\",\\"indent\\":0,\\"type\\":\\"paragraph\\",\\"version\\":1},{\\"children\\":[{\\"detail\\":0,\\"format\\":0,\\"mode\\":\\"normal\\",\\"style\\":\\"\\",\\"text\\":\\"If you like the free issues, paid members also receive Friday deep dives, private comments, and early access to new guides.\\",\\"type\\":\\"text\\",\\"version\\":1}],\\"direction\\":\\"ltr\\",\\"format\\":\\"\\",\\"indent\\":0,\\"type\\":\\"paragraph\\",\\"version\\":1}],\\"direction\\":\\"ltr\\",\\"format\\":\\"\\",\\"indent\\":0,\\"type\\":\\"root\\",\\"version\\":1}}",
+            "email_sender_email": null,
+            "email_sender_name": null,
+            "email_sender_reply_to": null,
+            "email_subject": "A few reader favorites to get you started",
+          },
+          "id": "670000000000000000000014",
+          "type": "send email",
+        },
+      ],
+      "created_at": "2024-05-06T17:20:00.000Z",
+      "edges": Array [
+        Object {
+          "source_action_id": "670000000000000000000011",
+          "target_action_id": "670000000000000000000012",
+        },
+        Object {
+          "source_action_id": "670000000000000000000012",
+          "target_action_id": "670000000000000000000013",
+        },
+        Object {
+          "source_action_id": "670000000000000000000013",
+          "target_action_id": "670000000000000000000014",
+        },
+      ],
+      "id": "670000000000000000000001",
+      "name": "Welcome Email (Free)",
+      "slug": "member-welcome-email-free",
+      "status": "active",
+      "updated_at": "2024-05-06T17:20:00.000Z",
+    },
+  ],
+}
+`;
+
+exports[`Automations API read returns the automation, ordered actions, and edges sourced from the temporary fake database 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "2762",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
