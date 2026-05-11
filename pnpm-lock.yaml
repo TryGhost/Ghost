@@ -74,6 +74,8 @@ overrides:
   underscore@>=1.3.2 <1.12.1: ^1.12.1
   '@xmldom/xmldom@<0.8.13': ^0.8.13
 
+packageExtensionsChecksum: sha256-gFsvptlcVXY90ntXWh9ANUP1/LYyeqXjWoDGw6BCfOY=
+
 importers:
 
   .:
@@ -24071,6 +24073,7 @@ snapshots:
 
   '@doist/react-interpolate@2.2.1(prop-types@15.8.1)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)':
     dependencies:
+      '@babel/runtime': 7.29.2
       prop-types: 15.8.1
       react: 17.0.2
       react-dom: 17.0.2(react@17.0.2)
