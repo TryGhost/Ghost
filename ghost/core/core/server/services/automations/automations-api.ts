@@ -16,7 +16,7 @@ let testDatabase: DatabaseSync | null = null;
 
 const repository = createFakeDatabaseAutomationsRepository({
     getDatabase: () => {
-        if (process.env.NODE_ENV === 'testing') {
+        if (process.env.NODE_ENV?.startsWith('testing')) {
             testDatabase ??= temporaryFakeAutomationsDatabase.createTemporaryFakeAutomationsDatabase();
             return testDatabase;
         }
