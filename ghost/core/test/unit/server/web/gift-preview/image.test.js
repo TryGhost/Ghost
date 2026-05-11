@@ -16,6 +16,10 @@ describe('Gift Preview Image', function () {
             assert.ok(fs.existsSync(path.join(giftPreviewPath, 'Inter.ttf')));
         });
 
+        it('bundles the card noise texture for gift preview image rendering', function () {
+            assert.ok(fs.existsSync(path.join(giftPreviewPath, 'gift-card-noise.png')));
+        });
+
         it('generates a PNG buffer', async function () {
             const result = await imageModule.generateGiftPreviewImage({
                 accentColor: '#FF5733'

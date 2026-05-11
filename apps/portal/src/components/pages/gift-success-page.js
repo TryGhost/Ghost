@@ -150,6 +150,7 @@ const GiftSuccessPage = () => {
                             <div className='gh-portal-gift-checkout-card-stack' data-revealing={showDetails}>
                                 <div className='gh-portal-gift-checkout-card-frame'>
                                     <div ref={cardRef} className='gh-portal-gift-checkout-card'>
+                                        <div className='gh-portal-gift-checkout-card-notch' aria-hidden='true' />
                                         {tier && cadence && (
                                             <div className='gh-portal-gift-checkout-card-meta'>
                                                 <div className='gh-portal-gift-checkout-card-duration'>{getDurationLabel(cadence)}</div>

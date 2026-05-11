@@ -4,6 +4,7 @@ import CloseButton from '../common/close-button';
 import ActionButton from '../common/action-button';
 import LoadingPage from './loading-page';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
+import giftCardNoiseUrl from '../../images/gift-card-noise.webp';
 import giftCardOrbUrl from '../../images/gift-card-orb.webp';
 import {getAvailableProducts, getCurrencySymbol, formatNumber, getStripeAmount, isCookiesDisabled, getActiveInterval} from '../../utils/helpers';
 import useCardTilt from '../../utils/use-card-tilt';
@@ -423,11 +424,12 @@ export const GiftPageStyles = `
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    isolation: isolate;
     transform-style: preserve-3d;
     will-change: transform;
 }
 
-.gh-portal-gift-checkout-card::after {
+.gh-portal-gift-checkout-card::before {
     content: '';
     position: absolute;
     top: 0;
@@ -443,28 +445,41 @@ export const GiftPageStyles = `
     opacity: 0.2;
 }
 
-.gh-portal-gift-checkout-card > * {
-    position: relative;
-    z-index: 1;
+.gh-portal-gift-checkout-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: url("${giftCardNoiseUrl}");
+    background-size: 192px 192px;
+    background-position: 50% 50%;
+    background-repeat: repeat;
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0.1;
 }
 
-.gh-portal-gift-checkout-card::before {
-    content: '';
+.gh-portal-gift-checkout-card > * {
+    position: relative;
+}
+
+.gh-portal-gift-checkout-card-notch {
     position: absolute;
     top: 20px;
     left: 50%;
     width: 56px;
     height: 12px;
     border-radius: 12px;
-    background: rgba(0, 0, 0, 0.35);
+    background: #000;
+    background: color-mix(in srgb, var(--brandcolor) 65%, #000 35%);
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 0 rgba(255, 255, 255, 0.18);
     transform: translateX(-50%);
-    z-index: 2;
+    pointer-events: none;
+    z-index: 3;
 }
-
 
 .gh-portal-gift-checkout-card-meta {
     padding: 56px 28px 0;
+    z-index: 3;
 }
 
 .gh-portal-gift-checkout-card-duration {
@@ -488,6 +503,7 @@ export const GiftPageStyles = `
     display: flex;
     flex-direction: column;
     gap: 8px;
+    z-index: 3;
 }
 
 .gh-portal-gift-checkout-card-detail-label {
@@ -503,7 +519,6 @@ export const GiftPageStyles = `
 }
 
 .gh-portal-gift-checkout-card-site {
-    background: var(--white);
     padding: 16px 28px;
     display: flex;
     align-items: center;
@@ -511,10 +526,20 @@ export const GiftPageStyles = `
     gap: 8px;
 }
 
+.gh-portal-gift-checkout-card-site::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--white);
+    z-index: 1;
+}
+
 .gh-portal-gift-checkout-card-site-icon {
     width: 22px;
     height: 22px;
     object-fit: cover;
+    position: relative;
+    z-index: 3;
 }
 
 .gh-portal-gift-checkout-card-site-name {
@@ -522,6 +547,8 @@ export const GiftPageStyles = `
     font-weight: 600;
     letter-spacing: -0.01em;
     color: var(--grey0);
+    position: relative;
+    z-index: 3;
 }
 
 
@@ -826,6 +853,7 @@ const GiftPage = () => {
                         <div className='gh-portal-gift-checkout-right-panel'>
                             <div className='gh-portal-gift-checkout-card-stack'>
                                 <div ref={cardRef} className='gh-portal-gift-checkout-card'>
+                                    <div className='gh-portal-gift-checkout-card-notch' aria-hidden='true' />
                                     <div className='gh-portal-gift-checkout-card-meta'>
                                         <div className='gh-portal-gift-checkout-card-duration'>{getDurationLabel(activeInterval)}</div>
                                         <div className='gh-portal-gift-checkout-card-tier'>{`${activeProduct.name} membership`}</div>

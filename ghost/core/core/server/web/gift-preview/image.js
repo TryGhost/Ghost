@@ -2,10 +2,12 @@ const fs = require('fs');
 const path = require('path');
 
 const CACHE_MAX_SIZE = 100;
+const GIFT_CARD_NOISE_PATH = path.join(__dirname, 'gift-card-noise.png');
 const GIFT_CARD_ORB_PATH = path.join(__dirname, 'gift-card-orb.png');
 const INTER_FONT_PATH = path.join(__dirname, 'Inter.ttf');
 
 const cache = new Map();
+let giftCardNoiseTile;
 let giftCardOrbImageHref;
 
 function cacheResult(key, value) {
@@ -36,6 +38,53 @@ function getGiftCardOrbImageHref() {
     giftCardOrbImageHref = `data:image/png;base64,${orbPng.toString('base64')}`;
 
     return giftCardOrbImageHref;
+}
+
+async function getGiftCardNoiseTile() {
+    if (giftCardNoiseTile !== undefined) {
+        return giftCardNoiseTile;
+    }
+
+    const sharp = require('sharp');
+
+    giftCardNoiseTile = await sharp(GIFT_CARD_NOISE_PATH)
+        .resize(192, 192, {kernel: 'nearest'})
+        .png()
+        .toBuffer();
+
+    return giftCardNoiseTile;
+}
+
+function parseHexColor(color) {
+    const match = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(`${color || ''}`.trim());
+
+    if (!match) {
+        return null;
+    }
+
+    const hex = match[1].length === 3
+        ? match[1].split('').map(char => char + char).join('')
+        : match[1];
+
+    return {
+        r: parseInt(hex.slice(0, 2), 16),
+        g: parseInt(hex.slice(2, 4), 16),
+        b: parseInt(hex.slice(4, 6), 16)
+    };
+}
+
+function formatHexChannel(value) {
+    return Math.round(value).toString(16).padStart(2, '0');
+}
+
+function mixWithBlack(color, colorWeight = 0.65) {
+    const rgb = parseHexColor(color);
+
+    if (!rgb) {
+        return '#000000';
+    }
+
+    return `#${formatHexChannel(rgb.r * colorWeight)}${formatHexChannel(rgb.g * colorWeight)}${formatHexChannel(rgb.b * colorWeight)}`;
 }
 
 function truncateText(str, maxLength) {
@@ -120,10 +169,21 @@ function buildSvg({accentColor}) {
     <rect width="1200" height="630" fill="#FFFFFF" opacity="0.07"/>
     <rect width="1200" height="630" fill="url(#cardShine)"/>
     <image href="${orbImageHref}" x="0" y="0" width="1200" height="630" opacity="0.2" preserveAspectRatio="none"/>
+</svg>`;
+}
 
-    <rect x="505" y="42" width="190" height="36" rx="18" fill="#000000" opacity="0.36"/>
+function buildNotchOverlay({accentColor}) {
+    const notchFill = escapeXml(mixWithBlack(accentColor));
+
+    const svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+    <rect x="505" y="42" width="190" height="36" rx="18" fill="${notchFill}"/>
     <rect x="510" y="44" width="180" height="3" rx="1.5" fill="#FFFFFF" opacity="0.18"/>
 </svg>`;
+
+    return {
+        input: Buffer.from(svg)
+    };
 }
 
 async function generateGiftPreviewImage({accentColor = '#15171A', siteTitle, tierLabel, cadenceLabel}) {
@@ -141,11 +201,19 @@ async function generateGiftPreviewImage({accentColor = '#15171A', siteTitle, tie
     const sharp = require('sharp');
 
     const svg = buildSvg({accentColor});
+    const noiseTile = await getGiftCardNoiseTile();
     const image = await sharp(Buffer.from(svg), {animated: false})
         .resize(1200, null, {
             withoutEnlargement: false
         })
-        .composite(buildTextOverlays({siteTitle, tierLabel, cadenceLabel}))
+        .composite([
+            {
+                input: noiseTile,
+                tile: true
+            },
+            buildNotchOverlay({accentColor}),
+            ...buildTextOverlays({siteTitle, tierLabel, cadenceLabel})
+        ])
         .png()
         .timeout({seconds: 10})
         .toBuffer();
