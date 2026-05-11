@@ -48,6 +48,10 @@ module.exports = function handleImageSizes(req, res, next) {
         if (format) {
             url = url.replace(`/format/${format}`, '');
         }
+
+        // Strip multiple leading slashes to prevent protocol-relative redirects
+        url = url.replace(/^\/+/, '/');
+
         return res.redirect(url);
     };
 
