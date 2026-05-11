@@ -578,6 +578,36 @@ test.describe('Theme settings', async () => {
         await expect(page.getByTestId('theme')).toBeVisible();
     });
 
+    test('Confirms before discarding unsaved theme edits on close', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes},
+            downloadTheme: themeDownloadRequest('edition')
+        }});
+
+        const editorModal = await openInstalledThemeEditor(page, 'edition');
+
+        const codeEditor = editorModal.locator('.cm-content');
+        await codeEditor.click();
+        await page.keyboard.press('ControlOrMeta+A');
+        await page.keyboard.insertText('{"name":"edition","version":"1.0.0"}\n');
+        await expect(editorModal).toContainText('1 file modified');
+
+        // Cancelling the discard keeps the editor open with the change intact
+        await editorModal.getByRole('button', {name: 'Close'}).click();
+        const confirmModal = page.getByTestId('theme-editor-confirm-modal');
+        await expect(confirmModal).toContainText('You have unsaved theme changes');
+        await confirmModal.getByRole('button', {name: 'Cancel'}).click();
+        await expect(editorModal).toBeVisible();
+        await expect(editorModal).toContainText('1 file modified');
+
+        // Confirming the discard closes the editor
+        await editorModal.getByRole('button', {name: 'Close'}).click();
+        await expect(confirmModal).toContainText('You have unsaved theme changes');
+        await confirmModal.getByRole('button', {name: 'Discard changes'}).click();
+        await expect(page.getByTestId('theme-code-editor-modal')).not.toBeVisible();
+    });
+
     test('Prevents direct access to theme editor route when editing is limited', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,
