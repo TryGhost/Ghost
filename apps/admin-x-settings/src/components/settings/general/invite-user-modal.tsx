@@ -140,7 +140,7 @@ const InviteUserModal = NiceModal.create(() => {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let data = e.data as any; // we have unknown data types in the APIError/error classes
                 if (data?.errors?.[0]?.type === 'EmailError') {
-                    message = (<span>Check your Mailgun configuration.</span>);
+                    message = (<span>Check your email provider (Resend or Mailgun) configuration.</span>);
                 }
             }
             showToast({

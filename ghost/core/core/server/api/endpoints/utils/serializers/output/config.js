@@ -16,6 +16,7 @@ module.exports = {
             'enableDeveloperExperiments',
             'stripeDirect',
             'mailgunIsConfigured',
+            'resendIsConfigured',
             'emailAnalytics',
             'hostSettings',
             'tenor',
