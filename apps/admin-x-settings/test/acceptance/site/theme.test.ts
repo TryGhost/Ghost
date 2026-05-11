@@ -398,6 +398,38 @@ test.describe('Theme settings', async () => {
         await expect(editorModal).toContainText('casper-edited');
     });
 
+    test('Rejects invalid theme names in the save-as flow', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes},
+            downloadTheme: themeDownloadRequest('casper')
+        }});
+
+        const editorModal = await openInstalledThemeEditor(page, 'casper');
+
+        const codeEditor = editorModal.locator('.cm-content');
+        await codeEditor.click();
+        await page.keyboard.press('ControlOrMeta+A');
+        await page.keyboard.insertText('{"name":"casper","version":"1.0.0"}\n');
+
+        const inputModal = page.getByTestId('theme-editor-input-modal');
+
+        // Disallowed characters (spaces, punctuation, leading dots, etc.)
+        // are caught by the new format check and surfaced as a clear toast
+        // instead of being silently renamed by the server's sanitiser.
+        await editorModal.getByRole('button', {name: 'Save'}).click();
+        await inputModal.getByLabel('Theme name').fill('Foo Bar!');
+        await inputModal.getByRole('button', {name: 'Continue'}).click();
+        await expect(page.getByText(/Invalid theme name/i)).toBeVisible();
+
+        // Default theme names go through a separate guard with a more
+        // specific error message that should keep surfacing on its own.
+        await editorModal.getByRole('button', {name: 'Save'}).click();
+        await inputModal.getByLabel('Theme name').fill('casper');
+        await inputModal.getByRole('button', {name: 'Continue'}).click();
+        await expect(page.getByText(/Built-in themes cannot be overwritten/i)).toBeVisible();
+    });
+
     test('Limits uploading new themes and redirect to /pro', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,

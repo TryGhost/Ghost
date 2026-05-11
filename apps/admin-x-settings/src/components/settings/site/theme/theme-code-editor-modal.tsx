@@ -252,6 +252,24 @@ const wouldRenameBinaryFileToEditable = (file: ThemeEditorFile, nextPath: string
     return !file.editable && isEditablePath(nextPath);
 };
 
+// Positive allowlist for theme names typed into the "Save as" flow.
+// The server (BaseStorage.getSanitizedFileName) silently replaces any
+// non [\w@.] characters with a dash, so the file ends up persisted under
+// a name that may not match what the user typed. Failing fast on the
+// client gives a clear error instead of a surprising rename.
+//
+// Rules (input is already lower-cased before the test):
+//  - 1-64 characters total
+//  - first character must be a letter or digit (no leading dash /
+//    underscore, avoiding hidden-file conventions and Unicode oddities)
+//  - remaining characters: word chars or dashes only
+//
+// Dots are deliberately excluded: real Ghost themes are kebab-case and
+// have no legitimate use for dots, while allowing them invites extension
+// confusion (`mytheme.zip` saved as a theme name) and trailing-dot
+// stripping on Windows when the archive is later unzipped.
+const THEME_NAME_PATTERN = /^[a-z0-9][\w-]{0,63}$/;
+
 const iconButtonClass = 'inline-flex h-7 w-7 items-center justify-center rounded-full border border-[#2f333b] bg-transparent text-[#c8ccd3] transition-colors hover:bg-[#1f2228] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a9eff] disabled:cursor-not-allowed disabled:opacity-50';
 const toolbarButtonClass = 'inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-[13px] font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a9eff] disabled:cursor-not-allowed disabled:opacity-50';
 const ghostButtonClass = `${toolbarButtonClass} border-[#2f333b] bg-transparent text-[#e6e7ea] hover:bg-[#1f2228]`;
@@ -863,10 +881,11 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
             return null;
         }
 
-        if (nextName.includes('/') || nextName.includes('\\')) {
+        if (!THEME_NAME_PATTERN.test(nextName)) {
             showToast({
                 type: 'error',
-                title: 'Theme names cannot contain slashes'
+                title: 'Invalid theme name',
+                message: 'Use 1-64 characters, starting with a letter or number. Allowed: letters, numbers, dashes, and underscores.'
             });
             return null;
         }
