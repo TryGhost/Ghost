@@ -265,6 +265,7 @@
     "@types/node-jose": "1.1.13",
     "@types/nodemailer": "6.4.23",
     "@types/on-headers": "1.0.4",
+    "@types/papaparse": "5.5.2",
     "@types/sinon": "17.0.4",
     "@types/supertest": "6.0.3",
     "@typescript-eslint/parser": "8.49.0",
