@@ -811,7 +811,7 @@ importers:
         specifier: 'catalog:'
         version: 2.1.1
       jszip:
-        specifier: ^3.10.1
+        specifier: 3.10.1
         version: 3.10.1
       lucide-react:
         specifier: 0.577.0

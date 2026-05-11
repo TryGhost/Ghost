@@ -60,7 +60,7 @@
     "@tryghost/timezone-data": "catalog:",
     "@uiw/react-codemirror": "4.25.2",
     "clsx": "catalog:",
-    "jszip": "^3.10.1",
+    "jszip": "3.10.1",
     "lucide-react": "0.577.0",
     "mingo": "2.5.3",
     "react": "18.3.1",
