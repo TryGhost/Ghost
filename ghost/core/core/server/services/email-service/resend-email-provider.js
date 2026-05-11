@@ -66,7 +66,7 @@ class ResendEmailProvider {
             };
 
             if (data.replyTo) {
-                emailObj.reply_to = data.replyTo;
+                emailObj.replyTo = data.replyTo;
             }
 
             return emailObj;
@@ -75,18 +75,17 @@ class ResendEmailProvider {
 
     /**
      * @param {import('./sending-service').EmailData} data
-     * @param {object} options
-     * @param {boolean} options.openTrackingEnabled
-     * @param {boolean} options.clickTrackingEnabled
      * @returns {Promise<{id: string}>}
      */
     async send(data) {
-        logging.info(`Sending email to ${data.recipients.length} recipients via Resend`);
+        const recipientCount = data.recipients.length;
+        const firstRecipient = data.recipients[0]?.email;
+        logging.info(`[Resend] Sending email to ${recipientCount} recipients (first: ${firstRecipient}, from: ${data.from}, subject: "${data.subject}")`);
         const startTime = Date.now();
-        debug(`sending message to ${data.recipients.length} recipients`);
+        debug(`sending message to ${recipientCount} recipients`);
 
         if (!this.#resendClient.isConfigured()) {
-            logging.warn('Resend is not configured');
+            logging.warn('[Resend] Provider is not configured — set resend_api_key setting or bulkEmail.resend.apiKey config');
             return null;
         }
 
@@ -99,27 +98,54 @@ class ResendEmailProvider {
             const emails = this.#buildRecipientEmails(data, messageBase);
             const resendInstance = this.#resendClient.getInstance();
 
+            logging.info(`[Resend] Built ${emails.length} per-recipient email objects (replacements: ${data.replacementDefinitions?.length || 0})`);
+
             const BATCH_SIZE = 100;
             let lastId;
+            let totalSent = 0;
 
             for (let i = 0; i < emails.length; i += BATCH_SIZE) {
                 const batch = emails.slice(i, i + BATCH_SIZE);
+                logging.info(`[Resend] Sending batch ${Math.floor(i / BATCH_SIZE) + 1} (${batch.length} emails)`);
                 let response;
                 if (batch.length === 1) {
                     response = await resendInstance.emails.send(batch[0]);
+                    if (response?.error) {
+                        logging.error(`[Resend] emails.send returned error: ${JSON.stringify(response.error)}`);
+                        throw new errors.EmailError({
+                            statusCode: response.error.statusCode,
+                            message: response.error.message || 'Resend API error',
+                            context: response.error.name,
+                            code: 'RESEND_API_ERROR'
+                        });
+                    }
                     lastId = response?.data?.id;
+                    logging.info(`[Resend] Single send accepted, id=${lastId}`);
                 } else {
                     response = await resendInstance.batch.send(batch);
-                    lastId = response?.data?.[0]?.id;
+                    if (response?.error) {
+                        logging.error(`[Resend] batch.send returned error: ${JSON.stringify(response.error)}`);
+                        throw new errors.EmailError({
+                            statusCode: response.error.statusCode,
+                            message: response.error.message || 'Resend API error',
+                            context: response.error.name,
+                            code: 'RESEND_API_ERROR'
+                        });
+                    }
+                    lastId = response?.data?.data?.[0]?.id || response?.data?.[0]?.id;
+                    logging.info(`[Resend] Batch accepted, first id=${lastId}, count=${batch.length}`);
                 }
+                totalSent += batch.length;
             }
 
             debug(`sent message (${Date.now() - startTime}ms)`);
-            logging.info(`Sent message via Resend (${Date.now() - startTime}ms)`);
+            logging.info(`[Resend] Sent ${totalSent} emails in ${Date.now() - startTime}ms`);
 
             return {id: lastId || 'resend-batch'};
         } catch (e) {
             debug(`failed to send message (${Date.now() - startTime}ms)`);
+            logging.error(`[Resend] Send failed after ${Date.now() - startTime}ms: ${e.message}`);
+            logging.error(e);
 
             if (this.#errorHandler) {
                 this.#errorHandler(e);
@@ -128,7 +154,7 @@ class ResendEmailProvider {
             throw new errors.EmailError({
                 statusCode: e.statusCode,
                 message: (e?.message || 'Resend Error').slice(0, 2000),
-                errorDetails: JSON.stringify(e),
+                errorDetails: JSON.stringify({message: e.message, name: e.name, statusCode: e.statusCode}),
                 context: `Resend Error ${e.statusCode}: ${e.message}`,
                 help: 'https://ghost.org/docs/newsletters/#bulk-email-configuration',
                 code: 'BULK_EMAIL_SEND_FAILED'

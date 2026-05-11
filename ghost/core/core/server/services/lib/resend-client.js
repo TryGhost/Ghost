@@ -1,5 +1,6 @@
 const logging = require('@tryghost/logging');
 const metrics = require('@tryghost/metrics');
+const errors = require('@tryghost/errors');
 
 const RESEND_BATCH_SIZE = 100;
 
@@ -69,7 +70,7 @@ module.exports = class ResendClient {
 
             const replyTo = message.replyTo || message.reply_to;
             if (replyTo) {
-                emailObj.reply_to = replyTo;
+                emailObj.replyTo = replyTo;
             }
 
             return emailObj;
@@ -83,10 +84,26 @@ module.exports = class ResendClient {
                 let response;
                 if (batch.length === 1) {
                     response = await resendInstance.emails.send(batch[0]);
+                    if (response?.error) {
+                        throw new errors.EmailError({
+                            statusCode: response.error.statusCode,
+                            message: response.error.message || 'Resend API error',
+                            context: response.error.name,
+                            code: 'RESEND_API_ERROR'
+                        });
+                    }
                     lastId = response?.data?.id;
                 } else {
                     response = await resendInstance.batch.send(batch);
-                    lastId = response?.data?.[0]?.id;
+                    if (response?.error) {
+                        throw new errors.EmailError({
+                            statusCode: response.error.statusCode,
+                            message: response.error.message || 'Resend API error',
+                            context: response.error.name,
+                            code: 'RESEND_API_ERROR'
+                        });
+                    }
+                    lastId = response?.data?.data?.[0]?.id || response?.data?.[0]?.id;
                 }
             }
 
@@ -101,18 +118,22 @@ module.exports = class ResendClient {
 
     #getConfig() {
         const bulkEmailConfig = this.#config.get('bulkEmail');
-        const apiKey = bulkEmailConfig?.resend?.apiKey || this.#settings.get('resend_api_key');
+        const fromConfig = bulkEmailConfig?.resend?.apiKey;
+        const fromSettings = this.#settings.get('resend_api_key');
+        const apiKey = fromConfig || fromSettings;
         if (!apiKey) {
             return null;
         }
-        return {apiKey};
+        return {apiKey, source: fromConfig ? 'config' : 'settings'};
     }
 
     getInstance() {
         const resendConfig = this.#getConfig();
         if (!resendConfig) {
+            logging.warn('[ResendClient] No API key found in config (bulkEmail.resend.apiKey) or settings (resend_api_key)');
             return null;
         }
+        logging.info(`[ResendClient] Using API key from ${resendConfig.source} (key prefix: ${resendConfig.apiKey.slice(0, 6)}...)`);
         const {Resend} = require('resend');
         return new Resend(resendConfig.apiKey);
     }
