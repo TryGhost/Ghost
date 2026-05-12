@@ -24,7 +24,7 @@ export interface WaitAction {
 
 export interface SendEmailAction {
     id: string;
-    type: string;
+    type: 'send_email';
     data: {
         email_subject: string;
         email_lexical: string;

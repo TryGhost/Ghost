@@ -141,7 +141,7 @@ Object {
             "email_subject": "Welcome!",
           },
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "type": "send email",
+          "type": "send_email",
         },
         Object {
           "data": Object {
@@ -160,7 +160,7 @@ Object {
             "email_subject": "Follow up",
           },
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-          "type": "send email",
+          "type": "send_email",
         },
       ],
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,

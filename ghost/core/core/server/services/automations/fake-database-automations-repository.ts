@@ -26,7 +26,7 @@ interface AutomationRow {
 
 interface ActionRow {
     id: string;
-    type: string;
+    type: 'wait' | 'send_email';
     wait_hours: number | null;
     email_subject: string | null;
     email_lexical: string | null;
@@ -189,10 +189,10 @@ function buildActionPayload(row: ActionRow): AutomationAction {
                 wait_hours: requireValue(row.wait_hours, 'wait_hours', row)
             }
         };
-    default:
+    case 'send_email':
         return {
             id: row.id,
-            type: row.type,
+            type: 'send_email',
             data: {
                 email_subject: requireValue(row.email_subject, 'email_subject', row),
                 email_lexical: requireValue(row.email_lexical, 'email_lexical', row),
