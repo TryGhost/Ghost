@@ -7,6 +7,7 @@ import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg'
 import giftCardNoiseUrl from '../../images/gift-card-noise.webp';
 import giftCardOrbUrl from '../../images/gift-card-orb.webp';
 import {getAvailableProducts, getCurrencySymbol, formatNumber, getStripeAmount, isCookiesDisabled, getActiveInterval} from '../../utils/helpers';
+import {getGiftDurationLabel} from '../../utils/gift-redemption-notification';
 import useCardTilt from '../../utils/use-card-tilt';
 
 // TODO: wrap strings with t() once copy is finalised
@@ -651,10 +652,6 @@ function getTierPriceLabel(product, selectedInterval) {
     return formatGiftValue(activePrice);
 }
 
-function getDurationLabel(selectedInterval) {
-    return selectedInterval === 'month' ? '1 month' : '1 year';
-}
-
 const GiftPage = () => {
     const {site, brandColor, action, doAction} = useContext(AppContext);
     const [selectedInterval, setSelectedInterval] = useState(null);
@@ -855,7 +852,7 @@ const GiftPage = () => {
                                 <div ref={cardRef} className='gh-portal-gift-checkout-card'>
                                     <div className='gh-portal-gift-checkout-card-notch' aria-hidden='true' />
                                     <div className='gh-portal-gift-checkout-card-meta'>
-                                        <div className='gh-portal-gift-checkout-card-duration'>{getDurationLabel(activeInterval)}</div>
+                                        <div className='gh-portal-gift-checkout-card-duration'>{getGiftDurationLabel({cadence: activeInterval, duration: 1})}</div>
                                         <div className='gh-portal-gift-checkout-card-tier'>{`${activeProduct.name} membership`}</div>
                                     </div>
                                     <div className='gh-portal-gift-checkout-card-details'>

@@ -3,6 +3,7 @@ import AppContext from '../../app-context';
 import CloseButton from '../common/close-button';
 import copyTextToClipboard from '../../utils/copy-to-clipboard';
 import {getAvailableProducts} from '../../utils/helpers';
+import {getGiftDurationLabel} from '../../utils/gift-redemption-notification';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
 import useCardTilt from '../../utils/use-card-tilt';
 import {formatGiftValue} from './gift-page';
@@ -87,10 +88,6 @@ const ChevronIcon = () => (
     </svg>
 );
 
-function getDurationLabel(cadence) {
-    return cadence === 'month' ? '1 month' : '1 year';
-}
-
 const GiftSuccessPage = () => {
     const {site, pageData} = useContext(AppContext);
     const [copied, setCopied] = useState(false);
@@ -153,7 +150,7 @@ const GiftSuccessPage = () => {
                                         <div className='gh-portal-gift-checkout-card-notch' aria-hidden='true' />
                                         {tier && cadence && (
                                             <div className='gh-portal-gift-checkout-card-meta'>
-                                                <div className='gh-portal-gift-checkout-card-duration'>{getDurationLabel(cadence)}</div>
+                                                <div className='gh-portal-gift-checkout-card-duration'>{getGiftDurationLabel({cadence, duration: 1})}</div>
                                                 <div className='gh-portal-gift-checkout-card-tier'>{`${tier.name} membership`}</div>
                                             </div>
                                         )}
