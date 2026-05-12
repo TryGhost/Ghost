@@ -4,86 +4,25 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 <div className="sb-doc">
 
-# Working with recipes
+# Recipes
 
-<p className="excerpt">Recipes are Shade's CSS-as-a-function layer: small, shared visual rules that several components consume so the chrome stays consistent without each component re-deriving it. They have no JSX and no markup of their own — they're class strings that components apply.</p>
+<p className="excerpt">Class-string functions for visual rules shared by multiple components. No JSX, no markup, no state — recipes return strings that components splice into `className`.</p>
 
-## What a recipe is
+## Use a recipe when
 
-A recipe is a function (or static class string) that owns one visual concern and is consumed by multiple components. The canonical example is `inputSurface`, which owns the border, background, radius, transition, focus ring, and invalid state shared by `Input`, `Textarea`, `InputGroup`, and the `Select` trigger. Without the recipe, each of those components would re-implement the same chrome — and they'd drift apart the moment one of them tweaked a single class.
+- The same chrome (border, background, focus ring) appears on **two or more components**.
+- The rule is one coherent concern (chrome, density, focus state) — not a grab bag.
+- The rule is purely visual.
 
-Recipes are utilities, not components. They have no JSX. A consumer reaches for a recipe the same way it reaches for `cn()`: import the function, call it, splice the resulting class string into the component's `className`.
+Canonical example: `inputSurface`. The border, background, radius, and focus ring shared by `Input`, `Textarea`, `InputGroup`, and the `Select` trigger.
 
-## Guidance
+## Don't
 
-- **A recipe earns its place when at least two components need the same visual rule.** A class string used by one component is just a class string. Don't pre-extract recipes you haven't proven need to be shared.
-- **One concern per recipe.** `inputSurface` owns chrome (border, background, focus, invalid). It doesn't own typography, density, or padding — those are the consumer's job. Mixing concerns makes the recipe unusable for the second consumer that wanted only half of it.
-- **No JSX, no markup, no state.** Recipes are functions that return strings. If you find yourself reaching for `React`, you're building a component.
-- **Drive styles through tokens.** Reference semantic tokens (`border-border-default`, `bg-surface-elevated`, `focus-ring`) inside the recipe — never hex values or palette utilities like `bg-gray-200`. The token system is what lets the recipe flip cleanly in dark mode.
-- **Expose the atoms when consumers need to compose.** Most consumers want the full recipe via the function call. Some need to combine a subset with custom selectors (e.g. wrapping only a specific child). For those, export the atoms as a `const` object alongside the function — `inputSurface` does this with `inputSurfaceClasses`.
+- Pre-extract a recipe for a class string used by only one component.
+- Reach for `React` inside a recipe — that's a component.
+- Hard-code colour or spacing values. Drive styles through semantic tokens so the recipe flips in dark mode.
 
-See the individual recipe entries in the sidebar for the live list of recipes and their atom maps.
-
-## Adding a new recipe
-
-A new recipe is justified when the same visual rule appears across multiple components and you find yourself copy-pasting the same class string. Before adding one, check that:
-
-- At least two existing components need it. "We might use it later" doesn't qualify.
-- The rule is one coherent concern (chrome, density, focus state, etc.) — not a grab bag.
-- The rule is purely visual. If it carries behavior or markup, it's a component or a primitive, not a recipe.
-
-When those check out:
-
-1. Add the file at `apps/shade/src/components/ui/<recipe-name>.ts` (or `.tsx` if it needs auxiliary types). Recipes live next to the components they support.
-2. Export both the **function** (the common path) and the **atoms object** (for consumers that need to compose a subset). Mark the atoms `as const` so TypeScript narrows them to literal strings.
-3. Use semantic tokens throughout. No raw colors or spacing values.
-4. Update the consuming components to use the recipe. The component should be visibly shorter as a result — that's the point.
-5. Add a Storybook entry at `apps/shade/src/components/ui/<recipe-name>.stories.tsx`. Because there's no component to render, the story is docs-only:
-
-    ```tsx
-    const meta: Meta = {
-        title: 'Recipes / <Recipe Name>',
-        tags: ['autodocs']
-    };
-    ```
-
-    Use the story to show what each atom does visually (apply them to a sample `<div>` or `<input>` so reviewers can see the effect) and to list which components consume the recipe.
-
-If a candidate fails the "two consumers" rule, keep the class string inline in the one consumer that needs it. Recipes extracted too early bake in the wrong shape and every consumer pays when you change it.
-
-## Examples
-
-The `inputSurface` recipe is the working example. Consumers reach for the function in the common case:
-
-```tsx
-import {cn} from '@/lib/utils';
-import {inputSurface} from './input-surface';
-
-// Apply directly to a focusable element
-<input className={cn(inputSurface('self'), 'h-9 px-3 text-sm')} />
-
-// Apply to a wrapper whose focusable child should drive focus state
-<div className={cn(inputSurface('within'), 'flex h-9 items-center gap-2 px-3')}>
-    <input className="bg-transparent outline-hidden" />
-</div>
-```
-
-For unusual cases — a wrapper that should only react to one specific child rather than any focusable descendant — compose the atoms directly so Tailwind can statically detect the class names:
-
-```tsx
-import {cn} from '@/lib/utils';
-import {inputSurfaceClasses} from './input-surface';
-
-<div className={cn(
-    inputSurfaceClasses.base,
-    inputSurfaceClasses.invalidWithin,
-    'has-[[data-slot=control]:focus-visible]:border-focus-ring has-[[data-slot=control]:focus-visible]:ring-2'
-)}>
-    ...
-</div>
-```
-
-The shape every recipe follows:
+## Shape every recipe follows
 
 ```ts
 import {cn} from '@/lib/utils';
@@ -95,13 +34,30 @@ export const recipeClasses = {
 } as const;
 
 export function recipe(mode: 'a' | 'b' = 'a') {
-    if (mode === 'a') {
-        return cn(recipeClasses.base, recipeClasses.stateA);
-    }
-    return cn(recipeClasses.base, recipeClasses.stateB);
+    return cn(recipeClasses.base, mode === 'a' ? recipeClasses.stateA : recipeClasses.stateB);
 }
 ```
 
-Function for the easy path, atoms for the edge cases, tokens everywhere underneath.
+Function for the easy path, atoms (the `as const` object) for unusual cases where consumers need to compose a subset. Tokens everywhere underneath.
+
+Full rules: [Layers](?path=/docs/overview-layers--docs). Agent rules: `apps/shade/AGENTS.md`.
+
+## Example
+
+```tsx
+import {cn} from '@/lib/utils';
+import {inputSurface, inputSurfaceClasses} from './input-surface';
+
+// Common case — call the function
+<input className={cn(inputSurface('self'), 'h-9 px-3 text-sm')} />
+
+// Edge case — compose atoms statically so Tailwind can detect them
+<div className={cn(
+    inputSurfaceClasses.base,
+    inputSurfaceClasses.invalidWithin
+)} />
+```
+
+Browse the sidebar for the live list of recipes.
 
 </div>

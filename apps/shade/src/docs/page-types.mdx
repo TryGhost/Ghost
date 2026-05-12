@@ -4,25 +4,21 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 <div className="sb-doc">
 
-# Page types in Ghost Admin
+# Page types
 
-<p className="excerpt">A small vocabulary for naming the kinds of pages Ghost Admin has. The point isn't to enforce a framework — it's so a designer or AI agent can identify what kind of page they're building, and reach for the right Shade pattern instead of inventing chrome from scratch.</p>
+<p className="excerpt">The vocabulary for naming the kinds of pages Ghost Admin has. When a new feature shows up, the first question is "what page type is this?" — then reach for the matching pattern instead of inventing chrome.</p>
 
-When a new feature shows up, the first question is **"what page type is this?"**. The second is **"is it really that, or is it being pushed into Settings by default?"**.
-
-## The page types
-
-### List page
+## List page
 
 Browsing or scanning a collection of items.
 
-**Live examples**: Members, Tags, Comments, Automations, ActivityPub followers and feed.
+**Live examples**: Members, Tags, Comments, Automations, ActivityPub.
 
-**Chrome shape**: `PageHeader` (title + count + search/filter/actions inside `ActionGroup`) → table or list → empty state → pagination.
+**Chrome shape**: `PageHeader` (title + count + search/filter/actions) → table or list → empty state → pagination.
 
-**Shade pattern**: `ListPage` (composes `PageHeader`). Bring your own table/list and empty state via `EmptyIndicator`. Heavy filter UI uses the existing `Filters` pattern.
+**Pattern**: [`ListPage`](?path=/docs/patterns-listpage--docs) (composes [`PageHeader`](?path=/docs/patterns-pageheader--docs)). Heavy filter UI uses [`Filters`](?path=/docs/patterns-filters--docs).
 
-### Detail page
+## Detail page
 
 Working with a single item — viewing, editing, or both.
 
@@ -30,20 +26,18 @@ Working with a single item — viewing, editing, or both.
 
 **Chrome shape**: `PageHeader` with breadcrumb + title + meta, a primary action area (save/cancel), and a content area dedicated to the item itself.
 
-**Shade pattern**: Not built this milestone. Named here so new product surfaces can identify the page type and avoid forcing detail flows into modals or Settings.
+**Pattern**: not built this milestone. Named here so new product surfaces can identify the page type and avoid forcing detail flows into modals or Settings.
 
-## What's not in this taxonomy (yet)
+## Not in the taxonomy
 
-**Settings pages** — the entire `apps/admin-x-settings/` app. Out of scope for this milestone. Settings has historically been a dumping ground for unresolved product architecture; the page types above exist partly to give new features somewhere else to live.
+- **Settings** — out of scope for this milestone. The page types above exist partly to give new features somewhere else to live.
+- **Workflow / multi-step flows** — too few live examples to standardise. Add the page type when there are 2+ concrete examples.
 
-**Workflow pages** — onboarding, multi-step flows. There aren't enough live examples to standardise against yet. Add this page type when there are 2+ concrete examples.
-
-## Using the patterns
+## Example
 
 ```tsx
 import {ListPage, PageHeader} from '@tryghost/shade/patterns';
-import {Button, EmptyIndicator, InputGroup, InputGroupAddon, InputGroupInput, Table /* ... */} from '@tryghost/shade/components';
-import {Search} from 'lucide-react';
+import {Button, EmptyIndicator, Table} from '@tryghost/shade/components';
 
 <ListPage>
   <PageHeader>
@@ -52,27 +46,14 @@ import {Search} from 'lucide-react';
     </PageHeader.Left>
     <PageHeader.Actions>
       <PageHeader.ActionGroup>
-        <InputGroup>
-          <InputGroupAddon><Search className='size-4' /></InputGroupAddon>
-          <InputGroupInput value={search} onChange={e => setSearch(e.target.value)} placeholder='Search members...' />
-        </InputGroup>
         <Button>Add member</Button>
       </PageHeader.ActionGroup>
     </PageHeader.Actions>
   </PageHeader>
-
   <ListPage.Body>
     {items.length === 0 ? <EmptyIndicator title='No members yet' /> : <Table>...</Table>}
   </ListPage.Body>
-
-  <ListPage.Pagination>
-    <Button onClick={loadMore}>Load more</Button>
-  </ListPage.Pagination>
 </ListPage>
 ```
-
-## Migration status
-
-The new patterns live alongside the legacy header primitives (`ListHeader`, `Header`, `ViewHeader` in `@/components/layout/`) for now. No Admin call-sites have been migrated yet — that's a separate follow-up milestone. The legacy primitives stay exported until migration is complete.
 
 </div>

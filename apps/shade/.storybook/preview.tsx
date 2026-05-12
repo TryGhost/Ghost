@@ -88,7 +88,9 @@ const preview: Preview = {
 				method: 'alphabetical',
 				order: [
 					'Overview',
-					['Introduction', 'Architecture', 'Tokens', 'Contributing', 'Migration'],
+					['Introduction', 'Layers', 'Contributing'],
+					'Tokens',
+					['Tokens Guide', 'Colors', 'Typography', 'Spacing', 'Radius', 'Shadows', 'Motion', 'Breakpoints'],
 					'Primitives',
 					['Primitives Guide', '*'],
 					'Components',

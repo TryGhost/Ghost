@@ -4,87 +4,37 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 <div className="sb-doc">
 
-# Working with components
+# Components
 
-<p className="excerpt">Components are Shade's generic, reusable controls — buttons, inputs, dialogs, tabs, cards. They have visual styling and accessible behavior, but they don't know anything about Ghost's product. A Shade Button is the same Button whether it sits inside Stats, Settings, or the post editor.</p>
+<p className="excerpt">Generic, reusable UI controls — `Button`, `Input`, `Dialog`, `Tabs`, `Card`, and so on. Same on every page, no Ghost-specific knowledge.</p>
 
-## What a component is
+## What makes a component "done"
 
-A component does one job. It exposes a public API a consumer can rely on without reading the source. It works in four states — default, hover, focus-visible, disabled — before anything else. And it doesn't know about specific product surfaces; it doesn't accept props that hint at one.
+- Works in all four states: default, hover, focus-visible, disabled.
+- Drives appearance through semantic tokens (`bg-background`, `border-border-default`, `ring-focus-ring`) — no hex values, no `bg-gray-200`-style raw palette utilities.
+- Props express visual or interactive intent (`variant`, `size`, `loading`), not workflow (`isMembersPage`, `layoutMode`).
+- Forwards `className` and merges with `cn(...)`.
+- Has stories covering variants and states.
 
-Most components in Shade start life as a [shadcn/ui](https://ui.shadcn.com) install adapted to Shade's tokens and conventions. The job of this layer is to provide the generic building blocks every screen needs — opinionated enough about chrome, focus rings, and accessibility that consumers don't have to think about them, neutral enough that the same Button works on any page.
+If a component starts collecting workflow-specific props, **stop and extract a Pattern** — don't grow the API.
 
-If a control doesn't yet meet that bar, it isn't ready to be shared. It's a draft.
+## Use a component when
 
-## Guidance
+- The control is generic enough to live on any page (Members, Settings, Stats, the post editor).
+- The name sounds like the open web, not Ghost. `Button`, `Dialog`, `Tabs` — yes. `MembersList`, `PostHeader` — no, that's a Pattern.
 
-- **Pick visual or interactive intent, not workflow.** `variant="destructive"`, `size="sm"`, `loading={true}` are good props — they make sense in any context. `isMembersPage` or `layoutMode="toolbarWithFilterAndStats"` are not; they leak product knowledge into a generic control.
-- **Required states are non-negotiable.** Every interactive component must work in default, hover, focus-visible, and disabled. Optional states (active, loading, error, empty) are documented when they apply. A Button without a focus ring isn't done; a Dialog without escape-to-close isn't done.
-- **Drive appearance through tokens, not raw values.** Components reference semantic tokens (background, border, text, ring) — they don't hard-code hex values or Tailwind palette classes like `bg-gray-500`.
-- **If a component starts collecting workflow-specific props, stop.** That's the signal to extract a Pattern wrapper rather than grow the component's API.
-- **Don't remove existing public API without compatibility notes.** Backward-compatible additions are fine; breaking changes need migration notes; deprecations need an alias period.
+Browse the sidebar for the live inventory and APIs. Full rules: [Layers](?path=/docs/overview-layers--docs). Agent rules: `apps/shade/AGENTS.md`.
 
-See the individual component entries in the sidebar for the live list of components, their APIs, and runnable examples.
-
-## Adding a new component
-
-Most new components in Shade begin as a `shadcn` CLI install:
-
-```bash
-pnpm dlx shadcn@latest add <component-name>
-```
-
-The CLI gives you a working component, but it isn't Shade-ready yet. Adapt the output:
-
-1. **Place it correctly.** Move the file to `apps/shade/src/components/ui/<name>.tsx` if it landed somewhere else.
-2. **Wire it to Shade tokens.** Replace any raw colors or spacing values with the semantic tokens (background, border, text, ring, spacing scale). Don't ship a component referencing palette classes.
-3. **Make the four states work.** Default, hover, focus-visible, disabled. For form controls, drive the chrome through the `inputSurface` recipe rather than rolling your own focus ring.
-4. **Trim the API.** Look for props that hint at a specific surface or workflow. If any slipped in, remove them — that's a Pattern's job, not a component's.
-5. **Write a story.** Add `apps/shade/src/components/ui/<name>.stories.tsx` with the title `Components / <ComponentName>`. The story must cover the four required states and any variants.
-6. **Export.** Add the export to `apps/shade/src/components.ts` so consumers can reach it from `@tryghost/shade/components`.
-
-Before merging, structure the component (in code comments, the PR description, or both) around these five things:
-
-- **Purpose** — one sentence. If it takes a paragraph, the component is doing too much.
-- **Public API** — props, slots, variants you guarantee. Things explicitly out of scope.
-- **State matrix** — default, hover, focus-visible, disabled (and any optional states).
-- **Compatibility promise** — what's safe to add, what would be a breaking change.
-- **Deprecation plan** — only when applicable (alias period, removal target).
-
-That structure works as a human checklist and as a fill-in template for an AI agent generating the component.
-
-## Examples
-
-**Good vs. bad props.** Good props are visual or interactive intents that work in any context:
+## Example: good vs. bad props
 
 ```tsx
-<Button variant="destructive" size="sm" loading={isPending}>Delete</Button>
-```
+// Good — visual intent, works in any context
+<Button loading={isPending} size="sm" variant="destructive">Delete</Button>
 
-Bad props leak product knowledge into the control:
-
-```tsx
-// Don't do this — the component shouldn't know which page it's on
+// Bad — leaks product knowledge into a generic control
 <Button isMembersPage layoutMode="toolbarWithFilterAndStats">Add</Button>
 ```
 
-When you see yourself reaching for the second kind, stop and ask: is this really a generic control, or is it a Pattern wrapper trying to hide as a Button?
-
-**Required-state coverage.** A component's story should make the four states visible:
-
-```tsx
-export const States: Story = {
-    render: () => (
-        <Inline gap="md">
-            <Button>Default</Button>
-            <Button className="hover:bg-...">Hover</Button>
-            <Button className="ring-...">Focus</Button>
-            <Button disabled>Disabled</Button>
-        </Inline>
-    )
-};
-```
-
-If you can't put each state on screen for a reviewer, the component isn't done.
+When you catch yourself reaching for the second kind, that's a Pattern trying to hide as a Button.
 
 </div>
