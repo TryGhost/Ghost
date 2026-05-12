@@ -46,18 +46,11 @@ const Dashboard = () => {
 
     return (
         <div className='shade' style={{padding: '32px', maxWidth: '1240px', margin: '0 auto'}}>
-            <header className='mb-8 flex flex-col gap-2'>
-                <h1 className='text-3xl font-semibold tracking-tight'>Design System Adoption</h1>
-                <p className='max-w-3xl text-base text-muted-foreground'>
-                    A snapshot of how Ghost&apos;s admin surfaces consume design systems today. The goal is Shade
-                    everywhere in Admin. This page tracks how far along we are.
-                </p>
-                <p className='text-xs text-muted-foreground'>
-                    Snapshot generated {generatedLabel} from <code>{snapshot.branch}</code> at{' '}
-                    <code>{snapshot.sha.slice(0, 7)}</code>. Refresh with{' '}
-                    <code>pnpm --filter @tryghost/shade run adoption:extract</code>.
-                </p>
-            </header>
+            <p className='mb-6 text-xs text-muted-foreground'>
+                Snapshot generated {generatedLabel} from <code>{snapshot.branch}</code> at{' '}
+                <code>{snapshot.sha.slice(0, 7)}</code>. Refresh with{' '}
+                <code>pnpm --filter @tryghost/shade run adoption:extract</code>.
+            </p>
 
             <section className='mb-8'>
                 <Card>
