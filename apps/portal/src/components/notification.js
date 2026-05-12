@@ -108,9 +108,8 @@ const NotificationText = ({type, status, message, context}) => {
             </p>
         );
     } else if (type === 'giftRedeem' && status === 'success') {
-        // TODO: Add translation strings once copy has been finalised
         const successMessage = getGiftRedemptionSuccessMessage({member: context.member})
-            || 'Gift redeemed! You\'re all set.';
+            || t('Gift redeemed! You\'re all set.');
 
         return (
             <p>

@@ -1,5 +1,4 @@
-// TODO: wrap strings with t() once copy is finalised
-/* eslint-disable i18next/no-literal-string */
+import {t} from '../../utils/i18n';
 
 const GiftCard = ({cardRef, duration, tierName, name, giftValue, siteIcon, siteTitle}) => {
     const hasMeta = duration && tierName;
@@ -12,20 +11,20 @@ const GiftCard = ({cardRef, duration, tierName, name, giftValue, siteIcon, siteT
                 {hasMeta && (
                     <div className='gh-portal-gift-checkout-card-meta'>
                         <div className='gh-portal-gift-checkout-card-duration'>{duration}</div>
-                        <div className='gh-portal-gift-checkout-card-tier'>{`${tierName} membership`}</div>
+                        <div className='gh-portal-gift-checkout-card-tier'>{t('{tierName} membership', {tierName})}</div>
                     </div>
                 )}
                 {hasDetails && (
                     <div className='gh-portal-gift-checkout-card-details'>
                         {name && (
                             <div className='gh-portal-gift-checkout-card-detail'>
-                                <div className='gh-portal-gift-checkout-card-detail-label'>Name</div>
+                                <div className='gh-portal-gift-checkout-card-detail-label'>{t('Name')}</div>
                                 <div className='gh-portal-gift-checkout-card-detail-value'>{name}</div>
                             </div>
                         )}
                         {giftValue && (
                             <div className='gh-portal-gift-checkout-card-detail'>
-                                <div className='gh-portal-gift-checkout-card-detail-label'>Gift value</div>
+                                <div className='gh-portal-gift-checkout-card-detail-label'>{t('Gift value')}</div>
                                 <div className='gh-portal-gift-checkout-card-detail-value'>{giftValue}</div>
                             </div>
                         )}
