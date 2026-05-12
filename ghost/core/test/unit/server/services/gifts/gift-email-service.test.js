@@ -28,6 +28,19 @@ describe('GiftEmailService', function () {
         getIconUrl: () => 'https://example.com/icon.png'
     };
 
+    const translate = (translations = {}) => (key, options = {}) => {
+        const translatedKey = translations[key] || key;
+        const params = {...options};
+        delete params.interpolation;
+
+        return translatedKey.replace(/\{(\w+)\}/g, (_, name) => {
+            if (params[name] === undefined) {
+                return `{${name}}`;
+            }
+            return String(params[name]);
+        });
+    };
+
     const defaultData = {
         buyerEmail: 'buyer@example.com',
         token: 'abc-123',
@@ -39,7 +52,7 @@ describe('GiftEmailService', function () {
 
     beforeEach(function () {
         mailer = {send: sinon.stub().resolves()};
-        service = new GiftEmailService({mailer, settingsCache, urlUtils, getFromAddress, blogIcon});
+        service = new GiftEmailService({mailer, settingsCache, urlUtils, getFromAddress, blogIcon, t: translate()});
     });
 
     afterEach(function () {
@@ -75,6 +88,37 @@ describe('GiftEmailService', function () {
         sinon.assert.calledWith(mailer.send, sinon.match.has('html', sinon.match('1 month')));
     });
 
+    it('formats the expiry date with the active locale', async function () {
+        const localizedSettingsCache = {
+            get: (key) => {
+                if (key === 'title') {
+                    return 'Test Site';
+                }
+                if (key === 'accent_color') {
+                    return '#ff5500';
+                }
+                if (key === 'locale') {
+                    return 'fr';
+                }
+
+                return '';
+            }
+        };
+        const localizedService = new GiftEmailService({mailer, settingsCache: localizedSettingsCache, urlUtils, getFromAddress, blogIcon, t: translate()});
+
+        await localizedService.sendPurchaseConfirmation(defaultData);
+
+        const msg = mailer.send.getCall(0).args[0];
+        const expectedDate = new Intl.DateTimeFormat('fr', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+        }).format(defaultData.expiresAt);
+
+        sinon.assert.match(msg.html, sinon.match(expectedDate));
+        sinon.assert.match(msg.text, sinon.match(expectedDate));
+    });
+
     it('falls back to site domain when site title is undefined', async function () {
         const noTitleSettingsCache = {
             get: (key) => {
@@ -89,10 +133,42 @@ describe('GiftEmailService', function () {
             }
         };
 
-        const noTitleService = new GiftEmailService({mailer, settingsCache: noTitleSettingsCache, urlUtils, getFromAddress, blogIcon});
+        const noTitleService = new GiftEmailService({mailer, settingsCache: noTitleSettingsCache, urlUtils, getFromAddress, blogIcon, t: translate()});
         await noTitleService.sendPurchaseConfirmation(defaultData);
 
-        sinon.assert.calledWith(mailer.send, sinon.match.has('text', sinon.match('Thanks for supporting example.com')));
+        sinon.assert.calledWith(mailer.send, sinon.match.has('text', sinon.match('Thank you for supporting example.com')));
+    });
+
+    it('escapes user-controlled values containing HTML in the purchase confirmation HTML', async function () {
+        const hostileSettingsCache = {
+            get: (key) => {
+                if (key === 'title') {
+                    return 'Evil <script>alert(1)</script> Site';
+                }
+                if (key === 'accent_color') {
+                    return '#ff5500';
+                }
+                return '';
+            }
+        };
+
+        const hostileService = new GiftEmailService({mailer, settingsCache: hostileSettingsCache, urlUtils, getFromAddress, blogIcon, t: translate()});
+        await hostileService.sendPurchaseConfirmation({
+            ...defaultData,
+            buyerEmail: 'buyer">@example.com',
+            tierName: 'Gold <img src=x onerror=alert(1)>'
+        });
+
+        const msg = mailer.send.getCall(0).args[0];
+
+        // raw markup from injected fields must not appear in the HTML body
+        sinon.assert.match(msg.html, sinon.match(value => !value.includes('<script>alert(1)</script>')));
+        sinon.assert.match(msg.html, sinon.match(value => !value.includes('<img src=x onerror=alert(1)>')));
+        sinon.assert.match(msg.html, sinon.match(value => !value.includes('buyer">@example.com')));
+
+        // but the structural <strong> + <a> tags from the template must still render
+        sinon.assert.match(msg.html, sinon.match(/<strong>Gold &lt;img/));
+        sinon.assert.match(msg.html, sinon.match(/<a class="small" href="mailto:buyer/));
     });
 
     describe('sendReminder', function () {
@@ -120,9 +196,14 @@ describe('GiftEmailService', function () {
             await service.sendReminder(reminderData);
 
             const msg = mailer.send.getCall(0).args[0];
+            const expectedDate = new Intl.DateTimeFormat('en-gb', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+            }).format(reminderData.consumesAt);
 
             for (const field of ['html', 'text']) {
-                sinon.assert.match(msg[field], sinon.match('23 Apr 2026'));
+                sinon.assert.match(msg[field], sinon.match(expectedDate));
                 sinon.assert.match(msg[field], sinon.match('$100.00/year'));
                 sinon.assert.match(msg[field], sinon.match('https://example.com/#/portal/account'));
             }
@@ -147,6 +228,53 @@ describe('GiftEmailService', function () {
             await service.sendReminder({...reminderData, tierCurrency: 'eur', tierPrice: 1500});
 
             sinon.assert.calledWith(mailer.send, sinon.match.has('html', sinon.match('€15.00/year')));
+        });
+
+        it('formats the post-gift price, cadence, and expiry date with the active locale', async function () {
+            const localizedSettingsCache = {
+                get: (key) => {
+                    if (key === 'title') {
+                        return 'Test Site';
+                    }
+                    if (key === 'accent_color') {
+                        return '#ff5500';
+                    }
+                    if (key === 'locale') {
+                        return 'fr';
+                    }
+
+                    return '';
+                }
+            };
+            const localizedService = new GiftEmailService({
+                mailer,
+                settingsCache: localizedSettingsCache,
+                urlUtils,
+                getFromAddress,
+                blogIcon,
+                t: translate({year: 'an'})
+            });
+
+            await localizedService.sendReminder(reminderData);
+
+            const msg = mailer.send.getCall(0).args[0];
+            const expectedPrice = new Intl.NumberFormat('fr', {
+                style: 'currency',
+                currency: reminderData.tierCurrency,
+                currencyDisplay: 'symbol',
+                maximumFractionDigits: 2,
+                minimumFractionDigits: 2
+            }).format(reminderData.tierPrice / 100);
+            const expectedDate = new Intl.DateTimeFormat('fr', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+            }).format(reminderData.consumesAt);
+
+            for (const field of ['html', 'text']) {
+                sinon.assert.match(msg[field], sinon.match(`${expectedPrice}/an`));
+                sinon.assert.match(msg[field], sinon.match(expectedDate));
+            }
         });
     });
 });
