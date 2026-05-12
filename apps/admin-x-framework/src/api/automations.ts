@@ -1,10 +1,12 @@
 import {Meta, createQuery, createQueryWithId} from '../utils/api/hooks';
 
+export type AutomationStatus = 'active' | 'inactive';
+
 export type Automation = {
     id: string;
     name: string;
     slug: string;
-    status: 'active' | 'inactive';
+    status: AutomationStatus;
 }
 
 export type AutomationWaitAction = {
