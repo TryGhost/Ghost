@@ -33,6 +33,15 @@ const matchAutomation = () => ({
     }))
 });
 
+const matchPagination = () => ({
+    page: 1,
+    pages: 1,
+    limit: 'all',
+    total: 2,
+    prev: null,
+    next: null
+});
+
 describe('Automations API', function () {
     let agent;
     let schedulerIntegration;
@@ -69,7 +78,10 @@ describe('Automations API', function () {
                     automations: [
                         matchAutomation(),
                         matchAutomation()
-                    ]
+                    ],
+                    meta: {
+                        pagination: matchPagination()
+                    }
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
