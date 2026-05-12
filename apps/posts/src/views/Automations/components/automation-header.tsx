@@ -3,17 +3,29 @@ import React from 'react';
 import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Skeleton} from '@tryghost/shade/components';
 import {Link} from '@tryghost/admin-x-framework';
 import {LucideIcon} from '@tryghost/shade/utils';
-import type {AutomationDetail} from '@tryghost/admin-x-framework/api/automations';
+import type {AutomationDetail, AutomationStatus} from '@tryghost/admin-x-framework/api/automations';
 
 interface AutomationHeaderProps {
     automation: AutomationDetail | undefined;
-    isLoading: boolean;
+    isLoadingAutomation: boolean;
+    pendingStatus: AutomationStatus | undefined;
+    onPublish: () => void;
+    onTurnOff: () => void;
 }
 
-const AutomationHeader: React.FC<AutomationHeaderProps> = ({automation, isLoading}) => {
+const AutomationHeader: React.FC<AutomationHeaderProps> = ({
+    automation,
+    isLoadingAutomation,
+    pendingStatus,
+    onPublish,
+    onTurnOff
+}) => {
     const name = automation?.name;
     const status = automation?.status;
     const isActive = status === 'active';
+
+    const isPublishing = pendingStatus === 'active';
+    const isUnpublishing = pendingStatus === 'inactive';
 
     return (
         <header className='relative z-10 flex h-14 shrink-0 items-center justify-between bg-background px-4 shadow-sm'>
@@ -23,7 +35,7 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({automation, isLoadin
                         <LucideIcon.ArrowLeft strokeWidth={2} />
                     </Link>
                 </Button>
-                {isLoading ? (
+                {isLoadingAutomation ? (
                     <Skeleton className='h-5 w-40' />
                 ) : (
                     <>
@@ -41,8 +53,7 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({automation, isLoadin
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align='end'>
-                            {/* TODO(NY-1267) Make this button do something */}
-                            <DropdownMenuItem>
+                            <DropdownMenuItem disabled={isUnpublishing} onSelect={onTurnOff}>
                                 <LucideIcon.Power className='size-4' />
                                 Turn off
                             </DropdownMenuItem>
@@ -50,8 +61,8 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({automation, isLoadin
                     </DropdownMenu>
                 )}
                 <Button
-                    // TODO(NY-1267) Make this button do something
-                    disabled={isLoading || isActive}
+                    disabled={!automation || isActive || isPublishing}
+                    onClick={onPublish}
                 >
                     {isActive ? 'Published' : 'Publish changes'}
                 </Button>
