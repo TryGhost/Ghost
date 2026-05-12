@@ -734,6 +734,26 @@ describe('RouterController', function () {
                 }));
             });
 
+            it('uses cancelUrl from the request body when provided', async function () {
+                const controller = createGiftController({tiersService: paidTierService()});
+
+                await controller.createCheckoutSession({
+                    body: {
+                        type: 'gift',
+                        tierId: 'tier_123',
+                        cadence: 'month',
+                        metadata: {},
+                        cancelUrl: 'https://example.com/post/#/portal/gift'
+                    }
+                }, mockRes);
+
+                sinon.assert.calledOnce(getGiftLinkSpy);
+                sinon.assert.calledWith(getGiftLinkSpy, sinon.match({
+                    successUrl: 'https://example.com/',
+                    cancelUrl: 'https://example.com/post/#/portal/gift'
+                }));
+            });
+
             it('rejects when giftSubscriptions labs flag is disabled', async function () {
                 labsService.isSet = sinon.stub().returns(false);
                 const controller = createGiftController();
