@@ -18,7 +18,7 @@ export interface WaitAction {
     id: string;
     type: 'wait';
     data: {
-        wait_hours: number | null;
+        wait_hours: number;
     };
 }
 
@@ -26,12 +26,12 @@ export interface SendEmailAction {
     id: string;
     type: string;
     data: {
-        email_subject: string | null;
-        email_lexical: string | null;
+        email_subject: string;
+        email_lexical: string;
         email_sender_name: string | null;
         email_sender_email: string | null;
         email_sender_reply_to: string | null;
-        email_design_setting_id: string | null;
+        email_design_setting_id: string;
     };
 }
 

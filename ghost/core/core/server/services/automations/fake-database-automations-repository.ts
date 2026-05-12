@@ -10,7 +10,8 @@ import type {
 } from './automations-repository';
 
 const messages = {
-    automationsDatabaseUnavailable: 'Automations database is unavailable in this environment.'
+    automationsDatabaseUnavailable: 'Automations database is unavailable in this environment.',
+    invalidAutomationActionRevision: 'Automation action "{actionId}" of type "{actionType}" is missing required revision field "{field}".'
 };
 
 interface AutomationRow {
@@ -178,7 +179,7 @@ function buildActionPayload(row: ActionRow): AutomationAction {
             id: row.id,
             type: 'wait',
             data: {
-                wait_hours: row.wait_hours
+                wait_hours: requireValue(row.wait_hours, 'wait_hours', row)
             }
         };
     default:
@@ -186,15 +187,29 @@ function buildActionPayload(row: ActionRow): AutomationAction {
             id: row.id,
             type: row.type,
             data: {
-                email_subject: row.email_subject,
-                email_lexical: row.email_lexical,
+                email_subject: requireValue(row.email_subject, 'email_subject', row),
+                email_lexical: requireValue(row.email_lexical, 'email_lexical', row),
                 email_sender_name: row.email_sender_name,
                 email_sender_email: row.email_sender_email,
                 email_sender_reply_to: row.email_sender_reply_to,
-                email_design_setting_id: row.email_design_setting_id
+                email_design_setting_id: requireValue(row.email_design_setting_id, 'email_design_setting_id', row)
             }
         };
     }
+}
+
+function requireValue<T>(value: T | null, field: string, row: ActionRow): T {
+    if (value === null) {
+        throw new errors.InternalServerError({
+            message: tpl(messages.invalidAutomationActionRevision, {
+                actionId: row.id,
+                actionType: row.type,
+                field
+            })
+        });
+    }
+
+    return value;
 }
 
 function buildEdgePayload(edge: EdgeRow): AutomationEdge {
