@@ -46,12 +46,27 @@ describe('Unit: Service: billing', function () {
 
         service.startBillingAppLoadMonitor();
 
-        await waitUntil(() => reloadBillingIframe.called);
-        expect(reportBillingAppLoadFailure.called).to.be.false;
-
         await waitUntil(() => reportBillingAppLoadFailure.called);
 
         expect(reloadBillingIframe.calledOnce).to.be.true;
+        expect(reportBillingAppLoadFailure.calledOnce).to.be.true;
+        expect(reloadBillingIframe.calledBefore(reportBillingAppLoadFailure)).to.be.true;
+    });
+
+    it('re-arms the monitor after the billing app became ready', async function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        service.billingAppLoadTimeoutMs = 1;
+        service.billingAppLoadRetryDelaysMs = [];
+        const reportBillingAppLoadFailure = sinon.stub(service, 'reportBillingAppLoadFailure');
+
+        service.startBillingAppLoadMonitor();
+        service.markBillingAppLoaded();
+        service.startBillingAppLoadMonitor();
+
+        await waitUntil(() => reportBillingAppLoadFailure.called);
+
+        expect(service.billingAppLoadAttempts).to.equal(1);
         expect(reportBillingAppLoadFailure.calledOnce).to.be.true;
     });
 

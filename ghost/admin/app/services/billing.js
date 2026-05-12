@@ -66,8 +66,13 @@ export default class BillingService extends Service {
     }
 
     startBillingAppLoadMonitor() {
-        if (this.billingAppLoaded || this.billingAppLoadTimeout || this.billingAppLoadFailureReported) {
+        if (this.billingAppLoadTimeout || this.billingAppLoadFailureReported) {
             return;
+        }
+
+        if (this.billingAppLoaded) {
+            this.billingAppLoaded = false;
+            this.billingAppLoadAttempts = 0;
         }
 
         this.billingAppLoadAttempts += 1;
