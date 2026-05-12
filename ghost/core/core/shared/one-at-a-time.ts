@@ -1,5 +1,6 @@
-// @ts-check
-const {InternalServerError} = require('@tryghost/errors');
+import {InternalServerError} from '@tryghost/errors';
+
+type State = 'idle' | 'running' | 'running+queued';
 
 /**
  * Wraps an async function so it runs at most one invocation at a time, with at
@@ -13,12 +14,9 @@ const {InternalServerError} = require('@tryghost/errors');
  *
  * Errors are silently swallowed.
  *
- * @param {() => PromiseLike<unknown>} fn
- * @returns {() => void}
  */
-const oneAtATime = (fn) => {
-    /** @type {'idle' | 'running' | 'running+queued'} */
-    let state = 'idle';
+export const oneAtATime = (fn: () => PromiseLike<unknown>): () => void => {
+    let state: State = 'idle';
 
     const run = async () => {
         try {
@@ -52,11 +50,9 @@ const oneAtATime = (fn) => {
         case 'running+queued':
             break;
         default: {
-            /** @type {never} */ const _exhaustive = state;
+            const _exhaustive: never = state;
             throw new InternalServerError({message: `Unexpected state: ${_exhaustive}`});
         }
         }
     };
 };
-
-exports.oneAtATime = oneAtATime;
