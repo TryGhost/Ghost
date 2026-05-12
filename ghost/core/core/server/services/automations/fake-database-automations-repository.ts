@@ -11,7 +11,6 @@ import type {
 } from './automations-repository';
 
 const messages = {
-    automationsDatabaseUnavailable: 'Automations database is unavailable in this environment.',
     invalidAutomationActionRevision: 'Automation action "{actionId}" of type "{actionType}" is missing required revision field "{field}".'
 };
 
@@ -44,11 +43,11 @@ interface EdgeRow {
 export function createFakeDatabaseAutomationsRepository({
     getDatabase
 }: {
-    getDatabase: () => DatabaseSync | null;
+    getDatabase: () => DatabaseSync;
 }): AutomationsRepository {
     return {
         async browse(): Promise<Page<AutomationSummary>> {
-            const database = getDatabaseOrThrow(getDatabase);
+            const database = getDatabase();
 
             return withTransaction(database, () => {
                 const rows = loadAutomations(database).map(row => buildAutomationSummary(row));
@@ -63,7 +62,7 @@ export function createFakeDatabaseAutomationsRepository({
         },
 
         async getById(id: string): Promise<Automation | null> {
-            const database = getDatabaseOrThrow(getDatabase);
+            const database = getDatabase();
             return withTransaction(database, () => {
                 const automation = loadAutomation(database, id);
 
@@ -75,16 +74,6 @@ export function createFakeDatabaseAutomationsRepository({
             });
         }
     };
-}
-
-function getDatabaseOrThrow(getDatabase: () => DatabaseSync | null): DatabaseSync {
-    const database = getDatabase();
-    if (!database) {
-        throw new errors.InternalServerError({
-            message: tpl(messages.automationsDatabaseUnavailable)
-        });
-    }
-    return database;
 }
 
 function withTransaction<T>(database: DatabaseSync, operation: () => T): T {
