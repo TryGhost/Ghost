@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const errors = require('@tryghost/errors');
 const handlebars = require('../../../../core/frontend/services/theme-engine/engine').handlebars;
 const helpers = require('../../../../core/frontend/services/helpers');
 const social_accounts = require('../../../../core/frontend/helpers/social_accounts');
@@ -107,14 +108,14 @@ describe('{{#social_accounts}} helper', function () {
     it('throws an IncorrectUsageError when called with no source', function () {
         assert.throws(
             () => compile(`{{#social_accounts}}x{{/social_accounts}}`).with({}),
-            /requires a source argument/
+            err => err instanceof errors.IncorrectUsageError && /requires a source argument/.test(err.message)
         );
     });
 
     it('throws an IncorrectUsageError when used as an inline helper', function () {
         assert.throws(
             () => compile(`{{social_accounts @site}}`).with({}),
-            /must be used as a block helper/
+            err => err instanceof errors.IncorrectUsageError && /must be used as a block helper/.test(err.message)
         );
     });
 
