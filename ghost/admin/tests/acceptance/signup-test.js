@@ -1,7 +1,8 @@
+import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {blur, click, currentRouteName, currentURL, fillIn, find, focus} from '@ember/test-helpers';
+import {captureAlerts} from '../helpers/captured-alerts';
 import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
-import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -11,13 +12,21 @@ describe('Acceptance: Signup', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 
+    let alerts;
     beforeEach(function () {
         mockAnalyticsApps();
+        alerts = captureAlerts(this.owner);
     });
 
     afterEach(function () {
+        alerts.teardown();
         cleanupMockAnalyticsApps();
     });
+
+    function latestAlertMessage() {
+        const last = alerts.pushed[alerts.pushed.length - 1];
+        return last?.message ?? '';
+    }
 
     // Helper function to setup signup flow
     async function setupSignupFlow(server, {fillForm = true, role = 'Author'} = {}) {
@@ -206,7 +215,7 @@ describe('Acceptance: Signup', function () {
         await visit('/signup/MTQ3MDM0NjAxNzkyOXxrZXZpbit0ZXN0MkBnaG9zdC5vcmd8MmNEblFjM2c3ZlFUajluTks0aUdQU0dmdm9ta0xkWGY2OEZ1V2dTNjZVZz0');
 
         expect(currentRouteName()).to.equal('site');
-        expect(find('.gh-alert-content').textContent).to.have.string('sign out to register');
+        expect(latestAlertMessage()).to.have.string('sign out to register');
     });
 
     it('redirects with alert on invalid token', async function () {
@@ -214,7 +223,7 @@ describe('Acceptance: Signup', function () {
         await visit('/signup/---invalid---');
 
         expect(currentRouteName()).to.equal('signin');
-        expect(find('.gh-alert-content').textContent).to.have.string('Invalid token');
+        expect(latestAlertMessage()).to.have.string('Invalid token');
     });
 
     it('redirects with alert on non-existent or expired token', async function () {
@@ -228,7 +237,7 @@ describe('Acceptance: Signup', function () {
         await visit('/signup/expired');
 
         expect(currentRouteName()).to.equal('signin');
-        expect(find('.gh-alert-content').textContent).to.have.string('not exist');
+        expect(latestAlertMessage()).to.have.string('not exist');
     });
 
     describe('success routing', function () {

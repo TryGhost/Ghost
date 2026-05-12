@@ -102,11 +102,13 @@ body.react-admin {
     overflow: hidden; /* Prevent body scroll */
 }
 
-/* Alerts show at the top and push content down */
-body.react-admin #ember-alerts-wormhole {
+/* System banners (React top/custom server notifications + Ember client-side alerts) */
+body.react-admin #system-banner-stack {
     grid-row: 1;
     grid-column: 1;
-    z-index: 0; /* Hide alerts when settings app modal is open */
+    display: flex;
+    flex-direction: column;
+    z-index: 0; /* Hide banners when settings app modal is open */
 }
 
 /* Main app container - pass through to children (.shade.shade-admin) */

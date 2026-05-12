@@ -2,7 +2,8 @@ import EmberError from '@ember/error';
 import FeatureService, {feature} from 'ghost-admin/services/feature';
 import Pretender from 'pretender';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
-import {describe, it} from 'mocha';
+import {afterEach, beforeEach, describe, it} from 'mocha';
+import {captureAlerts} from '../../helpers/captured-alerts';
 import {expect} from 'chai';
 import {run} from '@ember/runloop';
 import {settled} from '@ember/test-helpers';
@@ -81,12 +82,15 @@ describe('Integration: Service: feature', function () {
     setupTest();
 
     let server;
+    let alerts;
 
     beforeEach(function () {
         server = new Pretender();
+        alerts = captureAlerts(this.owner);
     });
 
     afterEach(function () {
+        alerts.teardown();
         server.shutdown();
     });
 
@@ -279,10 +283,7 @@ describe('Integration: Service: feature', function () {
             'PUT call is made'
         ).to.equal(1);
 
-        expect(
-            service.get('notifications.alerts').length,
-            'number of alerts shown'
-        ).to.equal(1);
+        expect(alerts.pushed.length, 'number of alerts shown').to.equal(1);
 
         expect(service.get('testFlag')).to.be.false;
     });
@@ -311,10 +312,7 @@ describe('Integration: Service: feature', function () {
             'PUT call is made'
         ).to.equal(1);
 
-        expect(
-            service.get('notifications.alerts').length,
-            'number of alerts shown'
-        ).to.equal(1);
+        expect(alerts.pushed.length, 'number of alerts shown').to.equal(1);
 
         expect(service.get('testUserFlag')).to.be.false;
     });

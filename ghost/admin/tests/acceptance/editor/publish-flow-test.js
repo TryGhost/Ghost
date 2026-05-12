@@ -1,6 +1,7 @@
 import loginAsRole from '../../helpers/login-as-role';
 import moment from 'moment-timezone';
 import {blur, click, fillIn, find, findAll, waitFor} from '@ember/test-helpers';
+import {captureAlerts} from '../../helpers/captured-alerts';
 import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../../helpers/mock-analytics-apps';
 import {clickTrigger, removeMultipleOption, selectChoose} from 'ember-power-select/test-support/helpers';
 import {disableMailgun, enableMailgun} from '../../helpers/mailgun';
@@ -16,12 +17,15 @@ describe('Acceptance: Publish flow', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 
+    let alerts;
     beforeEach(function () {
         mockAnalyticsApps();
         this.server.loadFixtures();
+        alerts = captureAlerts(this.owner);
     });
 
     afterEach(function () {
+        alerts.teardown();
         cleanupMockAnalyticsApps();
     });
 
@@ -53,7 +57,7 @@ describe('Acceptance: Publish flow', function () {
 
         await click('[data-test-button="publish-flow"]');
 
-        expect(find('.gh-alert'), 'validation shown in alert').to.exist;
+        expect(alerts.pushed.length, 'validation alert raised').to.be.above(0);
         expect(find('[data-test-modal="publish-flow"]'), 'publish flow modal').to.not.exist;
     });
 

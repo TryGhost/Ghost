@@ -20,7 +20,6 @@ export default class SessionService extends ESASessionService {
     @service frontend;
     @service settings;
     @service ui;
-    @service upgradeStatus;
     @service membersUtils;
     @service stateBridge;
     @service themeManagement;
@@ -70,8 +69,6 @@ export default class SessionService extends ESASessionService {
                 });
             });
         }
-
-        this.loadServerNotifications();
 
         // pre-emptively load editor code in the background to avoid loading state when opening editor
         this.koenig.fetch();
@@ -141,22 +138,6 @@ export default class SessionService extends ESASessionService {
     // TODO: this feels hacky, find a better way than using .send
     triggerAuthorizationFailed() {
         getOwner(this).lookup(`route:${this.router.currentRouteName}`)?.send('authorizationFailed');
-    }
-
-    loadServerNotifications() {
-        if (this.isAuthenticated) {
-            if (!this.user.isAuthorOrContributor) {
-                this.dataStore.findAll('notification', {reload: true}).then((serverNotifications) => {
-                    serverNotifications.forEach((notification) => {
-                        if (notification.top || notification.custom) {
-                            this.notifications.handleNotification(notification);
-                        } else {
-                            this.upgradeStatus.handleUpgradeNotification(notification);
-                        }
-                    });
-                });
-            }
-        }
     }
 
     @task({drop: true})

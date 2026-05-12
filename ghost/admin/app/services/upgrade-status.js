@@ -1,21 +1,12 @@
 import Service, {inject as service} from '@ember/service';
 import classic from 'ember-classic-decorator';
-import {get, set} from '@ember/object';
-import {htmlSafe} from '@ember/template';
+import {set} from '@ember/object';
 
 @classic
 export default class UpgradeStatusService extends Service {
     @service notifications;
 
     isRequired = false;
-    message = '';
-
-    // called when notifications are fetched during app boot for notifications
-    // where the `location` is not 'top' and `custom` is false
-    handleUpgradeNotification(notification) {
-        let message = get(notification, 'message');
-        set(this, 'message', htmlSafe(message));
-    }
 
     // called when a MaintenanceError is encountered
     maintenanceAlert() {

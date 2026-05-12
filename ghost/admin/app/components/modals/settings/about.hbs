@@ -8,14 +8,6 @@
 
     <div class="modal-body">
         <div class="gh-about-box">
-            {{#if this.upgradeStatus.message}}
-                <section class="gh-upgrade-notification">
-                    <strong>Update available!</strong>
-                    <div>
-                        {{this.upgradeStatus.message}}
-                    </div>
-                </section>
-            {{/if}}
             <section class="gh-env-details gh-about-box grey">
                 <ul class="gh-env-list">
                     {{#if this.linkToGitHubReleases}}

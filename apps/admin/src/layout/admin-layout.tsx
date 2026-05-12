@@ -6,6 +6,7 @@ import { useSidebarVisibility } from "@/ember-bridge/ember-bridge";
 import AppSidebar from "./app-sidebar";
 import { MobileNavBar } from "./app-sidebar/mobile-nav-bar";
 import { ContributorUserMenu } from "./app-sidebar/user-menu";
+import NotificationBanner from "./notification-banner";
 
 interface AdminLayoutProps {
     children: React.ReactNode;
@@ -21,6 +22,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         return (
             <div className="relative h-full bg-background">
                 <main className="flex h-full flex-col overflow-y-auto">
+                    <NotificationBanner />
                     <div className="flex-1">{children}</div>
                 </main>
                 <div className="fixed bottom-3.5 left-3.5 z-20 lg:bottom-8 lg:left-8">
@@ -34,6 +36,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         <SidebarProvider open={!!currentUser && sidebarVisible}>
             <AppSidebar />
             <SidebarInset className={`overflow-y-auto bg-background sidebar:max-h-full ${sidebarVisible ? 'max-h-[calc(100%-var(--mobile-navbar-height))]' : 'max-h-full'}`}>
+                <NotificationBanner />
                 <main className="flex-1">{children}</main>
                 <MobileNavBar />
             </SidebarInset>

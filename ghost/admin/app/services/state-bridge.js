@@ -13,6 +13,7 @@ const emberDataTypeMapping = {
     InvitesResponseType: {type: 'invite'},
     LabelsResponseType: null, // labels only exist in React admin
     MembersResponseType: null, // members only exist in React admin
+    NotificationsResponseType: null, // notifications only exist in React admin
     OffersResponseType: {type: 'offer'},
     NewslettersResponseType: {type: 'newsletter'},
     RecommendationResponseType: {type: 'recommendation'},
@@ -208,6 +209,31 @@ export default class StateBridgeService extends Service.extend(Evented) {
         this.trigger('emberAuthChange', {
             isAuthenticated: this.session.isAuthenticated
         });
+    }
+
+    /* Client-side alerts (Ember -> React) ---------------------------------
+
+    The React notification banner is the sole owner of status='alert' state.
+    Ember's `notifications` service is the entry point for ~80 call sites
+    (showAlert, showAPIError, etc.) but it doesn't store alerts — it just
+    fires deltas through this channel. Dismiss happens locally in React; no
+    back-channel from React to Ember.
+
+    */
+
+    @action
+    triggerAlertPush(alert) {
+        this.trigger('alertPush', alert);
+    }
+
+    @action
+    triggerAlertsRemoveByKey(keyBase) {
+        this.trigger('alertsRemoveByKey', {keyBase});
+    }
+
+    @action
+    triggerAlertsClear() {
+        this.trigger('alertsClear');
     }
 
     @action

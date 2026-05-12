@@ -12,6 +12,9 @@ export type StateBridgeEventMap = {
     subscriptionChange: SubscriptionState;
     sidebarVisibilityChange: SidebarVisibilityChangeEvent;
     routeChange: RouteChangeEvent;
+    alertPush: ClientAlert;
+    alertsRemoveByKey: AlertsRemoveByKeyEvent;
+    alertsClear: void;
 }
 
 export interface StateBridge {
@@ -57,6 +60,30 @@ export interface SidebarVisibilityChangeEvent {
 export interface RouteChangeEvent {
     routeName: string;
     queryParams: Record<string, unknown>;
+}
+
+// Messages crossing this bridge are always HTML-safe strings ready to render:
+// the Ember side entity-escapes plain strings and passes htmlSafe-wrapped
+// content through unchanged. The React banner renders them all the same way.
+export interface ClientAlert {
+    id: string;
+    message: string;
+    status: 'alert';
+    type?: 'info' | 'warn' | 'error' | 'success';
+    key?: string;
+    description?: string;
+    icon?: string;
+    actions?: unknown;
+}
+
+export interface AlertsRemoveByKeyEvent {
+    keyBase: string;
+}
+
+export const CLIENT_ALERTS_QUERY_KEY = ['ember-client-alerts'] as const;
+
+function keyBaseFor(key: string | undefined): string | undefined {
+    return key?.split('.').slice(0, 2).join('.');
 }
 
 export type EmberRouting = Pick<StateBridge, 'getRouteUrl' | 'isRouteActive'>;
@@ -192,6 +219,53 @@ export function useEmberAuthSync() {
         return onEmberStateBridgeEvent('emberAuthChange', handleEmberAuthChange);
     }, [queryClient]);
 
+}
+
+/**
+ * Hook to receive Ember-originated client alerts into the React Query cache.
+ * The bridge fires three delta events:
+ *
+ *   - alertPush(alert)             - add (with key/text dedup)
+ *   - alertsRemoveByKey({keyBase}) - remove all alerts whose key starts with keyBase
+ *   - alertsClear                  - empty all client alerts
+ *
+ * The cache is the single source of truth for rendering. Dismiss happens
+ * locally in React; nothing flows back to Ember.
+ */
+export function useEmberClientAlertsBridge() {
+    const queryClient = useQueryClient();
+
+    useEffect(() => {
+        queryClient.setQueryData(CLIENT_ALERTS_QUERY_KEY, []);
+
+        const offPush = onEmberStateBridgeEvent('alertPush', (alert) => {
+            queryClient.setQueryData<ClientAlert[]>(CLIENT_ALERTS_QUERY_KEY, (prev = []) => {
+                const incomingKeyBase = keyBaseFor(alert.key);
+                let next = prev;
+                if (incomingKeyBase) {
+                    next = next.filter(a => keyBaseFor(a.key) !== incomingKeyBase);
+                }
+                next = next.filter(a => a.message !== alert.message);
+                return [...next, alert];
+            });
+        });
+
+        const offRemove = onEmberStateBridgeEvent('alertsRemoveByKey', ({keyBase}) => {
+            queryClient.setQueryData<ClientAlert[]>(CLIENT_ALERTS_QUERY_KEY, (prev = []) =>
+                prev.filter(a => keyBaseFor(a.key) !== keyBase)
+            );
+        });
+
+        const offClear = onEmberStateBridgeEvent('alertsClear', () => {
+            queryClient.setQueryData<ClientAlert[]>(CLIENT_ALERTS_QUERY_KEY, []);
+        });
+
+        return () => {
+            offPush();
+            offRemove();
+            offClear();
+        };
+    }, [queryClient]);
 }
 
 export function useSubscriptionStatus() {

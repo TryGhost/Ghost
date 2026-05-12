@@ -1,467 +1,320 @@
-import EmberObject from '@ember/object';
-import sinon from 'sinon';
 import {AjaxError, InvalidError} from 'ember-ajax/errors';
 import {ServerUnreachableError} from 'ghost-admin/services/ajax';
-import {describe, it} from 'mocha';
+import {beforeEach, describe, it} from 'mocha';
 import {A as emberA} from '@ember/array';
 import {expect} from 'chai';
+import {htmlSafe} from '@ember/template';
 import {run} from '@ember/runloop';
 import {setupTest} from 'ember-mocha';
 
 import {GENERIC_ERROR_MESSAGE} from 'ghost-admin/services/notifications';
 
-// notifications service determines if a notification is a model instance by
-// checking `notification.constructor.modelName === 'notification'`
-const NotificationStub = EmberObject.extend();
-NotificationStub.modelName = 'notification';
+// Alerts no longer live in the notifications service — every alert fires a
+// delta through the state bridge into the React Query cache. These helpers
+// capture the bridge events so tests can assert on what the service sent.
+function attachBridgeRecorder(owner) {
+    const bridge = owner.lookup('service:state-bridge');
+    const events = [];
+    const onPush = alert => events.push({type: 'push', alert});
+    const onRemoveByKey = ({keyBase}) => events.push({type: 'removeByKey', keyBase});
+    const onClear = () => events.push({type: 'clear'});
+    bridge.on('alertPush', onPush);
+    bridge.on('alertsRemoveByKey', onRemoveByKey);
+    bridge.on('alertsClear', onClear);
+    return {
+        events,
+        pushed: () => events.filter(e => e.type === 'push').map(e => e.alert),
+        teardown() {
+            bridge.off('alertPush', onPush);
+            bridge.off('alertsRemoveByKey', onRemoveByKey);
+            bridge.off('alertsClear', onClear);
+        }
+    };
+}
 
 describe('Unit: Service: notifications', function () {
     setupTest();
 
+    let recorder;
+
     beforeEach(function () {
-        this.owner.lookup('service:notifications').set('content', emberA());
-        this.owner.lookup('service:notifications').set('delayedNotifications', emberA());
-    });
-
-    it('filters alerts/notifications', function () {
-        let notifications = this.owner.lookup('service:notifications');
-
-        // wrapped in run-loop to enure alerts/notifications CPs are updated
-        run(() => {
-            notifications.showAlert('Alert');
-            notifications.showNotification('Notification');
-        });
-
-        expect(notifications.alerts.length).to.equal(1);
-        expect(notifications.alerts.firstObject.message).to.equal('Alert');
-
-        expect(notifications.notifications.length).to.equal(1);
-        expect(notifications.notifications.firstObject.message).to.equal('Notification');
-    });
-
-    it('#handleNotification deals with DS.Notification notifications', function () {
-        let notifications = this.owner.lookup('service:notifications');
-        let notification = NotificationStub.create({message: '<h1>Test</h1>', status: 'alert'});
-
-        notifications.handleNotification(notification);
-
-        notification = notifications.alerts[0];
-
-        // alerts received from the server should be marked html safe
-        expect(notification.message).to.have.property('toHTML');
-    });
-
-    it('#handleNotification defaults to notification if no status supplied', function () {
-        let notifications = this.owner.lookup('service:notifications');
-
-        notifications.handleNotification({message: 'Test'}, false);
-
-        expect(notifications.content)
-            .to.deep.include({message: 'Test', status: 'notification'});
-    });
-
-    it('#handleNotification shows generic error message when a word matches built-in error type', function () {
-        let notifications = this.owner.lookup('service:notifications');
-
-        notifications.handleNotification({message: 'TypeError test'});
-        expect(notifications.content[0].message).to.equal(GENERIC_ERROR_MESSAGE);
-
-        notifications.clearAll();
-        expect(notifications.content.length).to.equal(0);
-
-        notifications.handleNotification({message: 'TypeError: Testing'});
-        expect(notifications.content[0].message).to.equal(GENERIC_ERROR_MESSAGE);
-
-        notifications.clearAll();
-        notifications.handleNotification({message: 'Unknown error - TypeError, cannot save invite.'});
-        expect(notifications.content[0].message).to.equal(GENERIC_ERROR_MESSAGE);
-    });
-
-    it('#showAlert adds POJO alerts', function () {
-        let notifications = this.owner.lookup('service:notifications');
-
-        run(() => {
-            notifications.showAlert('Test Alert', {type: 'error'});
-        });
-
-        expect(notifications.alerts)
-            .to.deep.include({message: 'Test Alert', status: 'alert', type: 'error', key: undefined, actions: undefined, description: undefined, icon: undefined});
-    });
-
-    it('#showAlert adds delayed notifications', function () {
-        let notifications = this.owner.lookup('service:notifications');
-
-        run(() => {
-            notifications.showNotification('Test Alert', {type: 'error', delayed: true});
-        });
-
-        expect(notifications.delayedNotifications)
-            .to.deep.include({message: 'Test Alert', status: 'notification', type: 'error', key: undefined, actions: undefined, description: undefined, icon: undefined});
-    });
-
-    // in order to cater for complex keys that are suitable for i18n
-    // we split on the second period and treat the resulting base as
-    // the key for duplicate checking
-    it('#showAlert clears duplicates using keys', function () {
-        let notifications = this.owner.lookup('service:notifications');
-
-        run(() => {
-            notifications.showAlert('Kept');
-            notifications.showAlert('Duplicate', {key: 'duplicate.key.fail'});
-        });
-
-        expect(notifications.alerts.length).to.equal(2);
-
-        run(() => {
-            notifications.showAlert('Duplicate with new message', {key: 'duplicate.key.success'});
-        });
-
-        expect(notifications.alerts.length).to.equal(2);
-        expect(notifications.alerts.lastObject.message).to.equal('Duplicate with new message');
-    });
-
-    it('#showAlert clears duplicates using message text', function () {
-        let notifications = this.owner.lookup('service:notifications');
-
-        notifications.showAlert('Not duplicate');
-        notifications.showAlert('Duplicate', {key: 'duplicate'});
-        notifications.showAlert('Duplicate');
-
-        expect(notifications.alerts.length).to.equal(2);
-        expect(notifications.alerts.lastObject.key).to.not.exist;
-    });
-
-    it('#showNotification adds POJO notifications', function () {
-        let notifications = this.owner.lookup('service:notifications');
-
-        run(() => {
-            notifications.showNotification('Test Notification', {type: 'success'});
-        });
-
-        expect(notifications.notifications)
-            .to.deep.include({message: 'Test Notification', status: 'notification', type: 'success', key: undefined, actions: undefined, description: undefined, icon: undefined});
-    });
-
-    it('#showNotification adds delayed notifications', function () {
-        let notifications = this.owner.lookup('service:notifications');
-
-        run(() => {
-            notifications.showNotification('Test Notification', {delayed: true});
-        });
-
-        expect(notifications.delayedNotifications)
-            .to.deep.include({message: 'Test Notification', status: 'notification', type: undefined, key: undefined, actions: undefined, description: undefined, icon: undefined});
-    });
-
-    it('#showAPIError handles single json response error', function () {
-        let notifications = this.owner.lookup('service:notifications');
-        let error = new AjaxError({errors: [{message: 'Single error'}]});
-
-        run(() => {
-            notifications.showAPIError(error);
-        });
-
-        let [alert] = notifications.alerts;
-        expect(alert.message).to.equal('Single error');
-        expect(alert.status).to.equal('alert');
-        expect(alert.type).to.equal('error');
-        expect(alert.key).to.equal('api-error');
-    });
-
-    it('#showAPIError handles multiple json response errors', function () {
-        let notifications = this.owner.lookup('service:notifications');
-        let error = new AjaxError({errors: [
-            {title: 'First error', message: 'First error message'},
-            {title: 'Second error', message: 'Second error message'}
-        ]});
-
-        run(() => {
-            notifications.showAPIError(error);
-        });
-
-        expect(notifications.alerts.length).to.equal(2);
-        let [alert1, alert2] = notifications.alerts;
-        expect(alert1).to.deep.equal({message: 'First error message', status: 'alert', type: 'error', key: 'api-error.first-error', actions: undefined, description: undefined, icon: undefined});
-        expect(alert2).to.deep.equal({message: 'Second error message', status: 'alert', type: 'error', key: 'api-error.second-error', actions: undefined, description: undefined, icon: undefined});
-    });
-
-    it('#showAPIError displays default error text if response has no error/message', function () {
-        let notifications = this.owner.lookup('service:notifications');
-        let resp = false;
-
-        run(() => {
-            notifications.showAPIError(resp);
-        });
-        expect(notifications.content).to.deep.equal([
-            {message: GENERIC_ERROR_MESSAGE, status: 'alert', type: 'error', key: 'api-error', actions: undefined, description: undefined, icon: undefined}
-        ]);
-
+        const notifications = this.owner.lookup('service:notifications');
         notifications.set('content', emberA());
-
-        run(() => {
-            notifications.showAPIError(resp, {defaultErrorText: 'Overridden default'});
-        });
-        expect(notifications.content).to.deep.equal([
-            {message: 'Overridden default', status: 'alert', type: 'error', key: 'api-error', actions: undefined, description: undefined, icon: undefined}
-        ]);
+        notifications.set('delayedToasts', emberA());
+        notifications.set('delayedAlerts', emberA());
+        recorder = attachBridgeRecorder(this.owner);
     });
 
-    it('#showAPIError sets correct key when passed a base key', function () {
-        let notifications = this.owner.lookup('service:notifications');
-
-        run(() => {
-            notifications.showAPIError('Test', {key: 'test.alert'});
-        });
-
-        expect(notifications.alerts.firstObject.key).to.equal('api-error.test.alert');
+    afterEach(function () {
+        recorder.teardown();
     });
 
-    it('#showAPIError sets correct key when not passed a key', function () {
-        let notifications = this.owner.lookup('service:notifications');
+    describe('toasts (status=notification)', function () {
+        it('defaults to a toast when no status is given', function () {
+            const notifications = this.owner.lookup('service:notifications');
 
-        run(() => {
-            notifications.showAPIError('Test');
+            notifications.handleNotification({message: 'Test'});
+
+            expect(notifications.notifications)
+                .to.deep.include({message: 'Test', status: 'notification'});
+            expect(recorder.pushed(), 'no alert was emitted').to.be.empty;
         });
 
-        expect(notifications.alerts.firstObject.key).to.equal('api-error');
-    });
+        it('removes a toast on closeNotification', function () {
+            const notifications = this.owner.lookup('service:notifications');
+            const toast = {message: 'Close test', status: 'notification'};
 
-    it('#showAPIError parses default ember-ajax errors correctly', function () {
-        let notifications = this.owner.lookup('service:notifications');
-        let error = new InvalidError();
+            notifications.handleNotification(toast);
+            expect(notifications.notifications).to.include(toast);
 
-        run(() => {
-            notifications.showAPIError(error);
+            notifications.closeNotification(toast);
+            expect(notifications.notifications).to.not.include(toast);
         });
 
-        let notification = notifications.alerts.firstObject;
-        expect(notification.message).to.equal('Request was rejected because it was invalid');
-        expect(notification.status).to.equal('alert');
-        expect(notification.type).to.equal('error');
-        expect(notification.key).to.equal('api-error');
-    });
+        it('removes only toasts on closeNotifications', function () {
+            const notifications = this.owner.lookup('service:notifications');
 
-    it('#showAPIError parses custom ember-ajax errors correctly', function () {
-        let notifications = this.owner.lookup('service:notifications');
-        let error = new ServerUnreachableError();
-
-        run(() => {
-            notifications.showAPIError(error);
-        });
-
-        let notification = notifications.alerts.firstObject;
-        expect(notification.message).to.equal('Server was unreachable');
-        expect(notification.status).to.equal('alert');
-        expect(notification.type).to.equal('error');
-        expect(notification.key).to.equal('api-error');
-    });
-
-    it('#showAPIError adds error context to message if available', function () {
-        let notifications = this.owner.lookup('service:notifications');
-        let error = new AjaxError({errors: [{
-            message: 'Authorization Error.',
-            context: 'Please sign in.'
-        }]});
-
-        run(() => {
-            notifications.showAPIError(error);
-        });
-
-        let [alert] = notifications.alerts;
-        expect(alert.message).to.equal('Authorization Error. Please sign in.');
-        expect(alert.status).to.equal('alert');
-        expect(alert.type).to.equal('error');
-        expect(alert.key).to.equal('api-error');
-    });
-
-    it('#showAPIError does not add context to message if it duplicates the message', function () {
-        let notifications = this.owner.lookup('service:notifications');
-        let error = new AjaxError({errors: [{
-            message: 'Authorization Error.',
-            context: 'Authorization Error.'
-        }]});
-
-        run(() => {
-            notifications.showAPIError(error);
-        });
-
-        let [alert] = notifications.alerts;
-        expect(alert.message).to.equal('Authorization Error.');
-        expect(alert.status).to.equal('alert');
-        expect(alert.type).to.equal('error');
-        expect(alert.key).to.equal('api-error');
-    });
-
-    it('#showAPIError shows generic error for built-in error types', function () {
-        let notifications = this.owner.lookup('service:notifications');
-        const error = new TypeError('Testing');
-
-        notifications.showAPIError(error);
-
-        expect(notifications.alerts[0].message).to.equal(GENERIC_ERROR_MESSAGE);
-    });
-
-    it('#displayDelayed moves delayed notifications into content', function () {
-        let notifications = this.owner.lookup('service:notifications');
-
-        run(() => {
-            notifications.showNotification('First', {delayed: true});
-            notifications.showNotification('Second', {delayed: true});
-            notifications.showNotification('Third', {delayed: false});
-            notifications.displayDelayed();
-        });
-
-        expect(notifications.notifications).to.deep.equal([
-            {message: 'Third', status: 'notification', type: undefined, key: undefined, actions: undefined, description: undefined, icon: undefined},
-            {message: 'First', status: 'notification', type: undefined, key: undefined, actions: undefined, description: undefined, icon: undefined},
-            {message: 'Second', status: 'notification', type: undefined, key: undefined, actions: undefined, description: undefined, icon: undefined}
-        ]);
-    });
-
-    it('#closeNotification removes POJO notifications', function () {
-        let notification = {message: 'Close test', status: 'notification'};
-        let notifications = this.owner.lookup('service:notifications');
-
-        run(() => {
-            notifications.handleNotification(notification);
-        });
-
-        expect(notifications.notifications)
-            .to.include(notification);
-
-        run(() => {
-            notifications.closeNotification(notification);
-        });
-
-        expect(notifications.notifications)
-            .to.not.include(notification);
-    });
-
-    it('#closeNotification removes and deletes DS.Notification records', function () {
-        let notifications = this.owner.lookup('service:notifications');
-        let notification = NotificationStub.create({message: 'Close test', status: 'alert'});
-
-        notification.deleteRecord = function () {};
-        sinon.spy(notification, 'deleteRecord');
-        notification.save = function () {
-            return {
-                finally(callback) {
-                    return callback(notification);
-                }
-            };
-        };
-        sinon.spy(notification, 'save');
-
-        run(() => {
-            notifications.handleNotification(notification);
-        });
-
-        expect(notifications.alerts).to.include(notification);
-
-        run(() => {
-            notifications.closeNotification(notification);
-        });
-
-        expect(notification.deleteRecord.calledOnce).to.be.true;
-        expect(notification.save.calledOnce).to.be.true;
-
-        expect(notifications.alerts).to.not.include(notification);
-    });
-
-    it('#closeNotifications only removes notifications', function () {
-        let notifications = this.owner.lookup('service:notifications');
-
-        run(() => {
             notifications.showAlert('First alert');
-            notifications.showNotification('First notification');
-            notifications.showNotification('Second notification');
+            notifications.showNotification('First toast');
+            notifications.showNotification('Second toast');
+
+            expect(notifications.notifications.length).to.equal(2);
+
+            run(() => notifications.closeNotifications());
+
+            expect(notifications.notifications.length).to.equal(0);
+            // alert was never stored locally, only emitted to the bridge
+            expect(recorder.pushed()).to.have.lengthOf(1);
         });
 
-        expect(notifications.alerts.length, 'alerts count').to.equal(1);
-        expect(notifications.notifications.length, 'notifications count').to.equal(2);
+        it('removes only toasts matching a key on closeNotifications(key)', function () {
+            const notifications = this.owner.lookup('service:notifications');
 
-        run(() => {
-            notifications.closeNotifications();
+            notifications.handleNotification({message: 'Keep me', key: 'test.keep', status: 'notification'});
+            notifications.handleNotification({message: 'Drop me', key: 'test.close', status: 'notification'});
+            notifications.handleNotification({message: 'Drop me too', key: 'test.close.sub', status: 'notification'});
+
+            run(() => notifications.closeNotifications('test.close'));
+
+            expect(notifications.notifications.length).to.equal(1);
+            expect(notifications.notifications.firstObject.message).to.equal('Keep me');
         });
 
-        expect(notifications.alerts.length, 'alerts count').to.equal(1);
-        expect(notifications.notifications.length, 'notifications count').to.equal(0);
+        it('moves delayed toasts into content on displayDelayed', function () {
+            const notifications = this.owner.lookup('service:notifications');
+
+            run(() => {
+                notifications.showNotification('First', {delayed: true});
+                notifications.showNotification('Second', {delayed: true});
+                notifications.showNotification('Third', {delayed: false});
+                notifications.displayDelayed();
+            });
+
+            const messages = notifications.notifications.map(t => t.message);
+            expect(messages).to.have.members(['First', 'Second', 'Third']);
+        });
     });
 
-    it('#closeNotifications only closes notifications with specified key', function () {
-        let notifications = this.owner.lookup('service:notifications');
+    describe('alerts (status=alert)', function () {
+        it('emits a push to the bridge for showAlert', function () {
+            const notifications = this.owner.lookup('service:notifications');
 
-        run(() => {
-            notifications.showAlert('First alert');
-            // using handleNotification as showNotification will auto-prune duplicates
-            notifications.handleNotification({message: 'First notification', key: 'test.close', status: 'notification'});
-            notifications.handleNotification({message: 'Second notification', key: 'test.keep', status: 'notification'});
-            notifications.handleNotification({message: 'Third notification', key: 'test.close', status: 'notification'});
+            run(() => notifications.showAlert('Test Alert', {type: 'error'}));
+
+            const [alert] = recorder.pushed();
+            expect(alert).to.include({message: 'Test Alert', status: 'alert', type: 'error'});
+            expect(alert.id).to.be.a('string');
         });
 
-        run(() => {
-            notifications.closeNotifications('test.close');
+        it('emits a removeByKey to the bridge for closeAlerts(key)', function () {
+            const notifications = this.owner.lookup('service:notifications');
+
+            notifications.closeAlerts('test.close.sub');
+
+            expect(recorder.events).to.deep.include({type: 'removeByKey', keyBase: 'test.close'});
         });
 
-        expect(notifications.notifications.length, 'notifications count').to.equal(1);
-        expect(notifications.notifications.firstObject.message, 'notification message').to.equal('Second notification');
-        expect(notifications.alerts.length, 'alerts count').to.equal(1);
-    });
+        it('emits a clear to the bridge for closeAlerts() with no key', function () {
+            const notifications = this.owner.lookup('service:notifications');
 
-    it('#clearAll removes everything without deletion', function () {
-        let notifications = this.owner.lookup('service:notifications');
-        let notificationModel = EmberObject.create({message: 'model'});
-
-        notificationModel.deleteRecord = function () {};
-        sinon.spy(notificationModel, 'deleteRecord');
-        notificationModel.save = function () {
-            return {
-                finally(callback) {
-                    return callback(notificationModel);
-                }
-            };
-        };
-        sinon.spy(notificationModel, 'save');
-
-        notifications.handleNotification(notificationModel);
-        notifications.handleNotification({message: 'pojo'});
-
-        notifications.clearAll();
-
-        expect(notifications.content).to.be.empty;
-        expect(notificationModel.deleteRecord.called).to.be.false;
-        expect(notificationModel.save.called).to.be.false;
-    });
-
-    it('#closeAlerts only removes alerts', function () {
-        let notifications = this.owner.lookup('service:notifications');
-
-        notifications.showNotification('First notification');
-        notifications.showAlert('First alert');
-        notifications.showAlert('Second alert');
-
-        run(() => {
             notifications.closeAlerts();
+
+            expect(recorder.events).to.deep.include({type: 'clear'});
         });
 
-        expect(notifications.alerts.length).to.equal(0);
-        expect(notifications.notifications.length).to.equal(1);
+        it('entity-escapes plain string messages before crossing the bridge', function () {
+            const notifications = this.owner.lookup('service:notifications');
+
+            run(() => notifications.showAlert('<script>x</script>', {type: 'error'}));
+
+            const [alert] = recorder.pushed();
+            expect(alert.message).to.equal('&lt;script&gt;x&lt;/script&gt;');
+        });
+
+        it('passes htmlSafe-wrapped messages through unescaped', function () {
+            const notifications = this.owner.lookup('service:notifications');
+
+            run(() => notifications.showAlert(htmlSafe('A <a href="/">link</a>'), {type: 'info'}));
+
+            const [alert] = recorder.pushed();
+            expect(alert.message).to.equal('A <a href="/">link</a>');
+        });
+
+        it('entity-escapes showAPIError messages so server-controlled payloads cannot inject HTML', function () {
+            const notifications = this.owner.lookup('service:notifications');
+
+            run(() => notifications.showAPIError(new AjaxError({errors: [{message: '<img src=x onerror=1>'}]})));
+
+            const alert = recorder.pushed().at(-1);
+            expect(alert.message).to.equal('&lt;img src=x onerror=1&gt;');
+        });
+
+        it('queues delayed alerts and flushes them on displayDelayed', function () {
+            const notifications = this.owner.lookup('service:notifications');
+
+            run(() => notifications.showAlert('Delayed', {delayed: true, type: 'error'}));
+            expect(recorder.pushed(), 'nothing emitted while queued').to.be.empty;
+
+            run(() => notifications.displayDelayed());
+
+            expect(recorder.pushed()).to.have.lengthOf(1);
+            expect(recorder.pushed()[0].message).to.equal('Delayed');
+        });
     });
 
-    it('#closeAlerts closes only alerts with specified key', function () {
-        let notifications = this.owner.lookup('service:notifications');
+    describe('clearAll', function () {
+        it('empties toasts and emits an alert clear to the bridge', function () {
+            const notifications = this.owner.lookup('service:notifications');
 
-        notifications.showNotification('First notification');
-        notifications.showAlert('First alert', {key: 'test.close'});
-        notifications.showAlert('Second alert', {key: 'test.keep'});
-        notifications.showAlert('Third alert', {key: 'test.close'});
+            notifications.showAlert('Alert');
+            notifications.showNotification('Toast');
 
-        run(() => {
-            notifications.closeAlerts('test.close');
+            notifications.clearAll();
+
+            expect(notifications.content).to.be.empty;
+            expect(recorder.events).to.deep.include({type: 'clear'});
+        });
+    });
+
+    describe('error sanitization', function () {
+        it('substitutes a generic message when the input contains a built-in JS error name', function () {
+            const notifications = this.owner.lookup('service:notifications');
+
+            notifications.handleNotification({message: 'TypeError test', status: 'notification'});
+            expect(notifications.content[0].message).to.equal(GENERIC_ERROR_MESSAGE);
+
+            notifications.set('content', emberA());
+            notifications.handleNotification({message: 'TypeError: Testing', status: 'notification'});
+            expect(notifications.content[0].message).to.equal(GENERIC_ERROR_MESSAGE);
+
+            notifications.set('content', emberA());
+            notifications.handleNotification({message: 'Unknown error - TypeError, cannot save invite.', status: 'notification'});
+            expect(notifications.content[0].message).to.equal(GENERIC_ERROR_MESSAGE);
         });
 
-        expect(notifications.alerts.length).to.equal(1);
-        expect(notifications.alerts.firstObject.message).to.equal('Second alert');
-        expect(notifications.notifications.length).to.equal(1);
+        it('substitutes a generic message for built-in JS Error subclasses passed to showAPIError', function () {
+            const notifications = this.owner.lookup('service:notifications');
+
+            notifications.showAPIError(new TypeError('Testing'));
+
+            expect(recorder.pushed()[0].message).to.equal(GENERIC_ERROR_MESSAGE);
+        });
+    });
+
+    describe('showAPIError', function () {
+        it('parses a single error from a JSON response', function () {
+            const notifications = this.owner.lookup('service:notifications');
+
+            run(() => notifications.showAPIError(new AjaxError({errors: [{message: 'Single error'}]})));
+
+            const [alert] = recorder.pushed();
+            expect(alert).to.include({message: 'Single error', status: 'alert', type: 'error', key: 'api-error'});
+        });
+
+        it('parses multiple errors into separate alerts', function () {
+            const notifications = this.owner.lookup('service:notifications');
+
+            run(() => notifications.showAPIError(new AjaxError({errors: [
+                {title: 'First error', message: 'First error message'},
+                {title: 'Second error', message: 'Second error message'}
+            ]})));
+
+            const pushed = recorder.pushed();
+            expect(pushed).to.have.lengthOf(2);
+            expect(pushed[0]).to.include({message: 'First error message', key: 'api-error.first-error'});
+            expect(pushed[1]).to.include({message: 'Second error message', key: 'api-error.second-error'});
+        });
+
+        it('falls back to a generic message when the response has none', function () {
+            const notifications = this.owner.lookup('service:notifications');
+
+            run(() => notifications.showAPIError(false));
+            expect(recorder.pushed().at(-1)).to.include({message: GENERIC_ERROR_MESSAGE, key: 'api-error'});
+
+            run(() => notifications.showAPIError(false, {defaultErrorText: 'Overridden default'}));
+            expect(recorder.pushed().at(-1)).to.include({message: 'Overridden default', key: 'api-error'});
+        });
+
+        it('namespaces caller-supplied keys under api-error', function () {
+            const notifications = this.owner.lookup('service:notifications');
+
+            run(() => notifications.showAPIError('Test', {key: 'test.alert'}));
+
+            expect(recorder.pushed().at(-1).key).to.equal('api-error.test.alert');
+        });
+
+        it('defaults the key to api-error when none is supplied', function () {
+            const notifications = this.owner.lookup('service:notifications');
+
+            run(() => notifications.showAPIError('Test'));
+
+            expect(recorder.pushed().at(-1).key).to.equal('api-error');
+        });
+
+        it('uses the error message from an ember-ajax InvalidError', function () {
+            const notifications = this.owner.lookup('service:notifications');
+
+            run(() => notifications.showAPIError(new InvalidError()));
+
+            expect(recorder.pushed().at(-1)).to.include({
+                message: 'Request was rejected because it was invalid',
+                type: 'error',
+                key: 'api-error'
+            });
+        });
+
+        it('uses the error message from a ServerUnreachableError', function () {
+            const notifications = this.owner.lookup('service:notifications');
+
+            run(() => notifications.showAPIError(new ServerUnreachableError()));
+
+            expect(recorder.pushed().at(-1)).to.include({
+                message: 'Server was unreachable',
+                type: 'error',
+                key: 'api-error'
+            });
+        });
+
+        it('appends the error context to the message when present', function () {
+            const notifications = this.owner.lookup('service:notifications');
+
+            run(() => notifications.showAPIError(new AjaxError({errors: [{
+                message: 'Authorization Error.',
+                context: 'Please sign in.'
+            }]})));
+
+            expect(recorder.pushed().at(-1).message).to.equal('Authorization Error. Please sign in.');
+        });
+
+        it('does not duplicate the context when it equals the message', function () {
+            const notifications = this.owner.lookup('service:notifications');
+
+            run(() => notifications.showAPIError(new AjaxError({errors: [{
+                message: 'Authorization Error.',
+                context: 'Authorization Error.'
+            }]})));
+
+            expect(recorder.pushed().at(-1).message).to.equal('Authorization Error.');
+        });
     });
 });

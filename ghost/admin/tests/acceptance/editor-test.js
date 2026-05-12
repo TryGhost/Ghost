@@ -2,9 +2,10 @@ import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import moment from 'moment-timezone';
 import sinon from 'sinon';
 import {Response} from 'miragejs';
+import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
-import {beforeEach, describe, it} from 'mocha';
 import {blur, click, currentRouteName, currentURL, fillIn, find, findAll, triggerEvent, typeIn, waitFor} from '@ember/test-helpers';
+import {captureAlerts} from '../helpers/captured-alerts';
 import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
 import {datepickerSelect} from 'ember-power-datepicker/test-support';
 import {editorSelector, pasteInEditor, titleSelector} from '../helpers/editor';
@@ -22,12 +23,15 @@ describe('Acceptance: Editor', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 
+    let alerts;
     beforeEach(async function () {
         mockAnalyticsApps();
         this.server.loadFixtures('configs');
+        alerts = captureAlerts(this.owner);
     });
 
     afterEach(function () {
+        alerts.teardown();
         cleanupMockAnalyticsApps();
     });
 
@@ -218,15 +222,9 @@ describe('Acceptance: Editor', function () {
             await click('[data-test-publishmenu-trigger]');
             await click('[data-test-publishmenu-save]');
 
-            expect(
-                findAll('.gh-alert').length,
-                'number of alerts after invalid title'
-            ).to.equal(1);
-
-            expect(
-                find('.gh-alert').textContent,
-                'alert text after invalid title'
-            ).to.match(/Title cannot be longer than 255 characters/);
+            expect(alerts.pushed.length, 'number of alerts after invalid title').to.equal(1);
+            expect(alerts.pushed[0].message, 'alert text after invalid title')
+                .to.match(/Title cannot be longer than 255 characters/);
         });
 
         it('renders first countdown notification before scheduled time', async function () {
@@ -831,7 +829,8 @@ describe('Acceptance: Editor', function () {
 
             // we should see an error - previously this was failing silently
             // error message comes from editor's own handling rather than our generic API error fallback
-            expect(find('.gh-alert-content')).to.have.trimmed.text('Saving failed: Editor has crashed. Please copy your content and start a new post.');
+            const sawCrashAlert = alerts.pushed.some(a => a.message?.trim() === 'Saving failed: Editor has crashed. Please copy your content and start a new post.');
+            expect(sawCrashAlert, 'crash alert raised').to.be.true;
         });
 
         it('handles 404 from valid PUT API request', async function () {
@@ -860,7 +859,8 @@ describe('Acceptance: Editor', function () {
 
             // we should see an error - previously this was failing silently
             // error message comes from editor's own handling rather than our generic API error fallback
-            expect(find('.gh-alert-content')).to.contain.text('Post has been deleted in a different session');
+            const sawDeletedAlert = alerts.pushed.some(a => a.message?.includes('Post has been deleted in a different session'));
+            expect(sawDeletedAlert, 'deleted-post alert raised').to.be.true;
         });
     });
 });

@@ -1,6 +1,7 @@
 import {Response} from 'miragejs';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
+import {captureAlerts} from '../helpers/captured-alerts';
 import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
 import {click, currentURL, fillIn, find, findAll, waitUntil} from '@ember/test-helpers';
 import {expect} from 'chai';
@@ -12,11 +13,14 @@ describe('Acceptance: Setup', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 
+    let alerts;
     beforeEach(function () {
         mockAnalyticsApps();
+        alerts = captureAlerts(this.owner);
     });
 
     afterEach(function () {
+        alerts.teardown();
         cleanupMockAnalyticsApps();
     });
 
@@ -180,8 +184,8 @@ describe('Acceptance: Setup', function () {
             expect(findAll('.main-error').length, 'main error is not displayed')
                 .to.equal(0);
 
-            expect(findAll('.gh-alert-red').length, 'number of alerts')
-                .to.equal(1);
+            const errorAlerts = alerts.pushed.filter(a => a.type === 'error');
+            expect(errorAlerts.length, 'number of error alerts').to.equal(1);
         });
 
         it('handles invalid origin error on setup', async function () {
