@@ -158,12 +158,12 @@ function loadActionRows(database: DatabaseSync, automationId: string): ActionRow
         FROM automation_actions a
         INNER JOIN automation_action_revisions r ON r.action_id = a.id
         WHERE a.automation_id = ?
-          AND a.deleted_at IS NULL
-          AND r.created_at = (
-              SELECT MAX(created_at)
-              FROM automation_action_revisions
-              WHERE action_id = a.id
-          )
+            AND a.deleted_at IS NULL
+            AND r.created_at = (
+                SELECT MAX(created_at)
+                FROM automation_action_revisions
+                WHERE action_id = a.id
+            )
         ORDER BY a.created_at, a.id
     `).all(automationId) as unknown as ActionRow[];
 }
@@ -173,7 +173,7 @@ function loadEdgeRows(database: DatabaseSync, automationId: string): EdgeRow[] {
         SELECT e.source_action_id, e.target_action_id
         FROM automation_action_edges e
         INNER JOIN automation_actions a ON a.id = e.source_action_id
-          AND a.deleted_at IS NULL
+            AND a.deleted_at IS NULL
         WHERE a.automation_id = ?
         ORDER BY e.source_action_id, e.target_action_id
     `).all(automationId) as unknown as EdgeRow[];
