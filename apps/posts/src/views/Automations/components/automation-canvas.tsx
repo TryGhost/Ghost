@@ -104,8 +104,10 @@ const buildActionData = (action: AutomationAction): StepNodeData => {
         return {icon: LucideIcon.Clock, label: 'Wait', value: formatWait(action.data.wait_hours)};
     case 'send_email':
         return {icon: LucideIcon.Mail, label: 'Send email', value: action.data.email_subject};
-    default:
-        throw new Error(`Unknown automation action type: ${(action as AutomationAction).type}`);
+    default: {
+        const _exhaustive: never = action;
+        throw new Error(`Unknown automation action type: ${_exhaustive}`);
+    }
     }
 };
 
