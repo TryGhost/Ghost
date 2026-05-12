@@ -12,6 +12,10 @@ const messages = {
     automationNotFound: 'Automation not found.'
 };
 
+interface EditAutomationData {
+    status: string;
+}
+
 let testDatabase: DatabaseSync | null = null;
 
 const repository = createFakeDatabaseAutomationsRepository({
@@ -40,12 +44,28 @@ async function read(automationId: string) {
     return automation;
 }
 
+async function edit(automationId: string, data: EditAutomationData) {
+    // TODO (NY-1229): Allow updating other fields and actions/edges.
+    const automation = await repository.edit(automationId, {
+        status: data.status
+    });
+
+    if (!automation) {
+        throw new errors.NotFoundError({
+            message: tpl(messages.automationNotFound)
+        });
+    }
+
+    return automation;
+}
+
 function requestPoll() {
     domainEvents.dispatch(StartAutomationsPollEvent.create());
 }
 
 module.exports = {
     browse,
+    edit,
     read,
     requestPoll
 };

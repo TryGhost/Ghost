@@ -1,4 +1,13 @@
+const errors = require('@tryghost/errors');
 const automationsApi = require('../../services/automations/automations-api');
+
+const VALID_AUTOMATION_STATUSES = ['active', 'inactive'];
+
+const messages = {
+    invalidAutomationStatus: 'Automation status must be one of: active, inactive.',
+    missingAutomationStatus: 'Automation status is required.',
+    invalidAutomationStatusHelp: 'Use "active" or "inactive" for automation status.'
+};
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -24,6 +33,39 @@ const controller = {
         permissions: true,
         async query(frame) {
             return await automationsApi.read(frame.data.id);
+        }
+    },
+
+    edit: {
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'id'
+        ],
+        validation(frame) {
+            const status = frame.data?.automations?.[0]?.status;
+
+            if (status === undefined) {
+                throw new errors.ValidationError({
+                    message: messages.missingAutomationStatus,
+                    help: messages.invalidAutomationStatusHelp,
+                    property: 'status'
+                });
+            }
+
+            if (!VALID_AUTOMATION_STATUSES.includes(status)) {
+                throw new errors.ValidationError({
+                    message: messages.invalidAutomationStatus,
+                    context: `Received status "${status}".`,
+                    help: messages.invalidAutomationStatusHelp,
+                    property: 'status'
+                });
+            }
+        },
+        permissions: true,
+        async query(frame) {
+            return await automationsApi.edit(frame.options.id, frame.data.automations[0]);
         }
     },
 
