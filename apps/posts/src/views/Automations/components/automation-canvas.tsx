@@ -124,6 +124,9 @@ const getInitialActionOrder = (automation: AutomationDetail): AutomationAction[]
         throw new Error(`Could not determine the starting step for automation ${automation.id}.`);
     }
 
+    // NOTE: This doesn't handle branching automations. Our UI doesn't support
+    // them either. If we revisit that, we'll need to revisit this code.
+
     const nextById = new Map(automation.edges.map(edge => [edge.source_action_id, edge.target_action_id]));
     const ordered: AutomationAction[] = [];
     const visited = new Set<string>();
