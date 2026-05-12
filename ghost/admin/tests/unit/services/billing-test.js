@@ -70,6 +70,25 @@ describe('Unit: Service: billing', function () {
         expect(reportBillingAppLoadFailure.calledOnce).to.be.true;
     });
 
+    it('re-arms the monitor after a reported billing app load failure', async function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        service.billingAppLoadTimeoutMs = 1;
+        service.billingAppLoadRetryDelaysMs = [];
+        service.billingAppLoadAttempts = 2;
+        service.billingAppLoadFailureReported = true;
+        const reportBillingAppLoadFailure = sinon.stub(service, 'reportBillingAppLoadFailure');
+
+        service.startBillingAppLoadMonitor();
+
+        expect(service.billingAppLoadAttempts).to.equal(1);
+        expect(service.billingAppLoadFailureReported).to.be.false;
+
+        await waitUntil(() => reportBillingAppLoadFailure.called);
+
+        expect(reportBillingAppLoadFailure.calledOnce).to.be.true;
+    });
+
     it('reloads the billing iframe during a retry', function () {
         const service = this.owner.lookup('service:billing');
         billingService = service;
