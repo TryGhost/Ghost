@@ -5,6 +5,7 @@ import type {
     Automation,
     AutomationAction,
     AutomationEdge,
+    AutomationSummary,
     AutomationsRepository,
     Page
 } from './automations-repository';
@@ -46,11 +47,11 @@ export function createFakeDatabaseAutomationsRepository({
     getDatabase: () => DatabaseSync | null;
 }): AutomationsRepository {
     return {
-        async browse(): Promise<Page<Automation>> {
+        async browse(): Promise<Page<AutomationSummary>> {
             const database = getDatabaseOrThrow(getDatabase);
 
             return withTransaction(database, () => {
-                const rows = loadAutomations(database).map(row => buildAutomation(database, row));
+                const rows = loadAutomations(database).map(row => buildAutomationSummary(row));
 
                 return {
                     data: rows,
@@ -119,14 +120,20 @@ function loadAutomations(database: DatabaseSync): AutomationRow[] {
 
 function buildAutomation(database: DatabaseSync, automation: AutomationRow): Automation {
     return {
+        ...buildAutomationSummary(automation),
+        actions: loadActionRows(database, automation.id).map(row => buildActionPayload(row)),
+        edges: loadEdgeRows(database, automation.id).map(row => buildEdgePayload(row))
+    };
+}
+
+function buildAutomationSummary(automation: AutomationRow): AutomationSummary {
+    return {
         id: automation.id,
         slug: automation.slug,
         name: automation.name,
         status: automation.status,
         created_at: serializeDate(automation.created_at),
-        updated_at: serializeDate(automation.updated_at),
-        actions: loadActionRows(database, automation.id).map(row => buildActionPayload(row)),
-        edges: loadEdgeRows(database, automation.id).map(row => buildEdgePayload(row))
+        updated_at: serializeDate(automation.updated_at)
     };
 }
 

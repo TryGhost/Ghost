@@ -42,18 +42,21 @@ export interface AutomationEdge {
     target_action_id: string;
 }
 
-export interface Automation {
+export interface AutomationSummary {
     id: string;
     slug: string;
     name: string;
     status: string;
     created_at: string;
     updated_at: string;
+}
+
+export interface Automation extends AutomationSummary {
     actions: AutomationAction[];
     edges: AutomationEdge[];
 }
 
 export interface AutomationsRepository {
-    browse(): Promise<Page<Automation>>;
+    browse(): Promise<Page<AutomationSummary>>;
     getById(id: string): Promise<Automation | null>;
 }

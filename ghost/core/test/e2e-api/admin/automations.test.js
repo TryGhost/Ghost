@@ -8,10 +8,14 @@ const StartAutomationsPollEvent = require('../../../core/server/services/automat
 const {anyContentVersion, anyEtag, anyErrorId, anyISODateTime, anyObjectId} = matchers;
 const {cacheInvalidateHeaderNotSet} = assertions;
 
-const matchAutomation = () => ({
+const matchAutomationSummary = () => ({
     id: anyObjectId,
     created_at: anyISODateTime,
-    updated_at: anyISODateTime,
+    updated_at: anyISODateTime
+});
+
+const matchAutomation = () => ({
+    ...matchAutomationSummary(),
     actions: [{
         id: anyObjectId
     }, {
@@ -76,8 +80,8 @@ describe('Automations API', function () {
                 .expect(cacheInvalidateHeaderNotSet())
                 .matchBodySnapshot({
                     automations: [
-                        matchAutomation(),
-                        matchAutomation()
+                        matchAutomationSummary(),
+                        matchAutomationSummary()
                     ],
                     meta: {
                         pagination: matchPagination()
