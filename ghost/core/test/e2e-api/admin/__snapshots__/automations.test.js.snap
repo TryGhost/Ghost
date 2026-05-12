@@ -128,6 +128,37 @@ Object {
 }
 `;
 
+exports[`Automations API edit rejects a missing automation status 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Automation status is required.",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": "Use \\"active\\" or \\"inactive\\" for automation status.",
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Validation error, cannot edit automation.",
+      "property": "status",
+      "type": "ValidationError",
+    },
+  ],
+}
+`;
+
+exports[`Automations API edit rejects a missing automation status 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "312",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
 exports[`Automations API edit rejects an invalid automation status 1: [body] 1`] = `
 Object {
   "errors": Array [

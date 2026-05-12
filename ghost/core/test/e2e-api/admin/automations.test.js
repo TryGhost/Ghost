@@ -178,6 +178,29 @@ describe('Automations API', function () {
                     etag: anyEtag
                 });
         });
+
+        it('rejects a missing automation status', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            await agent
+                .put(`automations/${browseBody.automations[0].id}`)
+                .body({
+                    automations: [{}]
+                })
+                .expectStatus(422)
+                .expect(cacheInvalidateHeaderNotSet())
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
     });
 
     describe('poll', function () {
