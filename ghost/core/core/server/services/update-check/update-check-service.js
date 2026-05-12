@@ -11,6 +11,24 @@ const debug = require('@tryghost/debug')('update-check');
 
 const internal = {context: {internal: true}};
 
+function normalizeMessage(rawMessage, rawNotification) {
+    const notification = rawNotification || {};
+    return {
+        id: rawMessage.id,
+        message: rawMessage.content,
+        status: rawMessage.status || 'alert',
+        type: rawMessage.type || 'info',
+        top: !!rawMessage.top,
+        dismissible: Object.prototype.hasOwnProperty.call(rawMessage, 'dismissible') ? rawMessage.dismissible : true,
+        custom: !!notification.custom,
+        createdAt: notification.created_at ? moment(notification.created_at).toDate() : undefined
+    };
+}
+
+function isCriticalAlert(message) {
+    return message.type === 'alert';
+}
+
 const messages = {
     checkingForUpdatesFailedError: 'Checking for updates failed, your site will continue to function.',
     checkingForUpdatesFailedHelp: 'If you get this error repeatedly, please seek help from {url}'
@@ -51,13 +69,15 @@ class UpdateCheckService {
      * @param {string} options.config.ghostVersion - Ghost instance version
      * @param {Function} options.request - a HTTP request proxy function
      * @param {Function} options.sendEmail - function handling sending an email
+     * @param {Function} options.generateEmailContent - function that renders an email template to {html, text}
     */
-    constructor({api, config, request, sendEmail}) {
+    constructor({api, config, request, sendEmail, generateEmailContent}) {
         this.api = api;
         this.config = config;
         this.logging = logging;
         this.request = request;
         this.sendEmail = sendEmail;
+        this.generateEmailContent = generateEmailContent;
     }
 
     nextCheckTimestamp() {
@@ -327,28 +347,13 @@ class UpdateCheckService {
 
         const siteUrl = this.config.siteUrl;
 
-        for (const message of notification.messages) {
-            const toAdd = {
-                // @NOTE: the update check service returns "0" or "1" (https://github.com/TryGhost/UpdateCheck/issues/43)
-                custom: !!notification.custom,
-                createdAt: moment(notification.created_at).toDate(),
-                status: message.status || 'alert',
-                type: message.type || 'info',
-                id: message.id,
-                dismissible: Object.prototype.hasOwnProperty.call(message, 'dismissible') ? message.dismissible : true,
-                top: !!message.top,
-                message: message.content
-            };
+        for (const rawMessage of notification.messages) {
+            const normalized = normalizeMessage(rawMessage, notification);
 
-            if (toAdd.type === 'alert') {
+            if (isCriticalAlert(normalized)) {
                 for (const email of adminEmails) {
                     try {
-                        this.sendEmail({
-                            to: email,
-                            subject: `Action required: Critical alert from Ghost instance ${siteUrl}`,
-                            html: toAdd.message,
-                            forceTextContent: true
-                        });
+                        await this.sendCriticalAlertEmail({to: email, siteUrl});
                     } catch (err) {
                         this.logging.error(err);
                         if (this.config.rethrowErrors) {
@@ -358,10 +363,25 @@ class UpdateCheckService {
                 }
             }
 
-            debug('Add Custom Notification', toAdd);
-            await this.api.notifications.add({notifications: [toAdd]}, {context: {internal: true}});
+            debug('Add Custom Notification', normalized);
+            await this.api.notifications.add({notifications: [normalized]}, {context: {internal: true}});
         }
     }
+
+    async sendCriticalAlertEmail({to, siteUrl}) {
+        const data = {
+            siteUrl,
+            recipientEmail: to
+        };
+        const {html, text} = await this.generateEmailContent({template: 'critical-update', data});
+        await this.sendEmail({
+            to,
+            subject: 'Critical Ghost security update',
+            html,
+            ...(text ? {text} : {})
+        });
+    }
+
     /**
      * @description Entry point to trigger the update check unit.
      *
@@ -392,3 +412,5 @@ class UpdateCheckService {
 }
 
 module.exports = UpdateCheckService;
+module.exports.normalizeMessage = normalizeMessage;
+module.exports.isCriticalAlert = isCriticalAlert;

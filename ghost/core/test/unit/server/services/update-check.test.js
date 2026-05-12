@@ -4,6 +4,7 @@ const moment = require('moment');
 const crypto = require('crypto');
 const assert = require('node:assert/strict');
 const util = require('util');
+const childProcess = require('child_process');
 const logging = require('@tryghost/logging');
 const request = require('@tryghost/request');
 const UpdateCheckService = require('../../../../core/server/services/update-check/update-check-service');
@@ -28,9 +29,17 @@ describe('Update Check', function () {
             }]
         });
 
-        sinon.stub(util, 'promisify').returns(async () => ({
-            stdout: '10.8.2'
-        }));
+        // Conditional util.promisify stub — only intercepts `child_process.exec`
+        // calls (which update-check uses to capture the npm version). Other
+        // callers — notably @tryghost/request's internal cacheable-lookup
+        // DNS resolution — keep working through the real promisify.
+        const realPromisify = util.promisify;
+        sinon.stub(util, 'promisify').callsFake((fn) => {
+            if (fn === childProcess.exec) {
+                return async () => ({stdout: '10.8.2'});
+            }
+            return realPromisify(fn);
+        });
 
         sinon.stub(logging, 'error');
 
@@ -325,6 +334,13 @@ describe('Update Check', function () {
 
             const notificationsAPIAddStub = sinon.stub().resolves();
             const sendEmailStub = sinon.stub().resolves();
+            const path = require('path');
+            const EmailContentGenerator = require('../../../../core/server/services/lib/email-content-generator');
+            const generator = new EmailContentGenerator({
+                getSiteUrl: () => 'http://127.0.0.1:2369',
+                getSiteTitle: () => 'Test Site',
+                templatesDir: path.resolve(__dirname, '..', '..', '..', '..', 'core', 'server', 'services', 'mail', 'templates')
+            });
 
             const updateCheckService = new UpdateCheckService({
                 api: {
@@ -356,16 +372,19 @@ describe('Update Check', function () {
                     ghostVersion: '0.8.0'
                 },
                 request: request,
-                sendEmail: sendEmailStub
+                sendEmail: sendEmailStub,
+                generateEmailContent: generator.getContent.bind(generator)
             });
 
             await updateCheckService.check();
 
             sinon.assert.called(sendEmailStub);
             assert.equal(sendEmailStub.args[0][0].to, 'jbloggs@example.com');
-            assert.equal(sendEmailStub.args[0][0].subject, 'Action required: Critical alert from Ghost instance http://127.0.0.1:2369');
-            assert.equal(sendEmailStub.args[0][0].html, '<p>Critical message. Upgrade your site!</p>');
-            assert.equal(sendEmailStub.args[0][0].forceTextContent, true);
+            assert.equal(sendEmailStub.args[0][0].subject, 'Critical Ghost security update');
+            assert.match(sendEmailStub.args[0][0].html, /Critical Ghost security update/);
+            assert.match(sendEmailStub.args[0][0].html, /http:\/\/127\.0\.0\.1:2369/);
+            assert.match(sendEmailStub.args[0][0].html, /security\/advisories/);
+            assert.equal(sendEmailStub.args[0][0].forceTextContent, undefined);
 
             sinon.assert.calledOnce(notificationsAPIAddStub);
             assert.equal(notificationsAPIAddStub.args[0][0].notifications.length, 1);
@@ -417,6 +436,136 @@ describe('Update Check', function () {
             await updateCheckService.check();
 
             sinon.assert.notCalled(notificationsAPIAddStub);
+        });
+    });
+
+    describe('sendCriticalAlertEmail', function () {
+        function buildService({sendEmail, generateEmailContent, config} = {}) {
+            return new UpdateCheckService({
+                api: {
+                    settings: {read: settingsStub, edit: settingsStub},
+                    users: {browse: sinon.stub().resolves()},
+                    posts: {browse: sinon.stub().resolves()},
+                    notifications: {add: sinon.stub().resolves()}
+                },
+                config: Object.assign({
+                    ghostVersion: '5.99.0',
+                    siteUrl: 'http://127.0.0.1:2369'
+                }, config || {}),
+                request: requestStub,
+                sendEmail: sendEmail || sinon.stub().resolves(),
+                generateEmailContent: generateEmailContent
+            });
+        }
+
+        it('renders the critical-update template with siteUrl and recipientEmail', async function () {
+            const generateEmailContent = sinon.stub().resolves({
+                html: '<html>rendered</html>',
+                text: 'plain text'
+            });
+            const sendEmail = sinon.stub().resolves();
+
+            const svc = buildService({sendEmail, generateEmailContent});
+
+            await svc.sendCriticalAlertEmail({
+                to: 'owner@example.com',
+                siteUrl: 'http://127.0.0.1:2369'
+            });
+
+            sinon.assert.calledOnce(generateEmailContent);
+            const renderArgs = generateEmailContent.args[0][0];
+            assert.equal(renderArgs.template, 'critical-update');
+            assert.equal(renderArgs.data.siteUrl, 'http://127.0.0.1:2369');
+            assert.equal(renderArgs.data.recipientEmail, 'owner@example.com');
+        });
+
+        it('sends the rendered HTML and text via sendEmail', async function () {
+            const generateEmailContent = sinon.stub().resolves({
+                html: '<html>rendered</html>',
+                text: 'plain text'
+            });
+            const sendEmail = sinon.stub().resolves();
+
+            const svc = buildService({sendEmail, generateEmailContent});
+
+            await svc.sendCriticalAlertEmail({
+                to: 'owner@example.com',
+                siteUrl: 'http://127.0.0.1:2369'
+            });
+
+            sinon.assert.calledOnce(sendEmail);
+            const sentMessage = sendEmail.args[0][0];
+            assert.equal(sentMessage.to, 'owner@example.com');
+            assert.equal(sentMessage.subject, 'Critical Ghost security update');
+            assert.equal(sentMessage.html, '<html>rendered</html>');
+            assert.equal(sentMessage.text, 'plain text');
+            // Critically: we no longer set forceTextContent so the HTML body
+            // reaches the mailbox instead of being stripped.
+            assert.equal(sentMessage.forceTextContent, undefined);
+        });
+    });
+
+    describe('normalizeMessage', function () {
+        const {normalizeMessage} = UpdateCheckService;
+
+        it('applies defaults to a sparse message', function () {
+            const message = normalizeMessage({id: 'm-1', content: 'hello'});
+
+            assert.equal(message.id, 'm-1');
+            assert.equal(message.message, 'hello');
+            assert.equal(message.status, 'alert');
+            assert.equal(message.type, 'info');
+            assert.equal(message.top, false);
+            assert.equal(message.dismissible, true);
+            assert.equal(message.custom, false);
+            assert.equal(message.createdAt, undefined);
+        });
+
+        it('preserves provided values', function () {
+            const message = normalizeMessage({
+                id: 'm-2',
+                content: 'x',
+                status: 'notification',
+                type: 'alert',
+                top: true,
+                dismissible: false
+            });
+
+            assert.equal(message.status, 'notification');
+            assert.equal(message.type, 'alert');
+            assert.equal(message.top, true);
+            assert.equal(message.dismissible, false);
+        });
+
+        it('honors an explicit dismissible:false', function () {
+            const message = normalizeMessage({id: 'm-4', dismissible: false});
+
+            assert.equal(message.dismissible, false);
+        });
+
+        it('absorbs notification-level fields (custom, createdAt)', function () {
+            const message = normalizeMessage(
+                {id: 'm-5', content: 'x'},
+                {custom: 1, created_at: '2026-05-12T08:30:00.000Z'}
+            );
+
+            assert.equal(message.custom, true);
+            assert.ok(message.createdAt instanceof Date);
+            assert.equal(message.createdAt.toISOString(), '2026-05-12T08:30:00.000Z');
+        });
+    });
+
+    describe('isCriticalAlert', function () {
+        const {isCriticalAlert, normalizeMessage} = UpdateCheckService;
+
+        it('is true when the upstream type is alert', function () {
+            assert.equal(isCriticalAlert(normalizeMessage({id: 'm', type: 'alert'})), true);
+        });
+
+        it('is false for any other type', function () {
+            assert.equal(isCriticalAlert(normalizeMessage({id: 'm', type: 'info'})), false);
+            assert.equal(isCriticalAlert(normalizeMessage({id: 'm', type: 'warn'})), false);
+            assert.equal(isCriticalAlert(normalizeMessage({id: 'm'})), false);
         });
     });
 
