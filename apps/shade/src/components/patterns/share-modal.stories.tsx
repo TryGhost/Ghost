@@ -5,7 +5,7 @@ import {Button} from '@/components/ui/button';
 import ShareModal, {type ShareModalSocialLink} from './share-modal';
 
 const meta = {
-    title: 'Features / Share Modal',
+    title: 'Patterns / Share Modal',
     component: ShareModal.Root,
     tags: ['autodocs']
 } satisfies Meta<typeof ShareModal.Root>;

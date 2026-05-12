@@ -1,0 +1,74 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Patterns / Patterns Guide" />
+
+<div className="sb-doc">
+
+# Working with patterns
+
+<p className="excerpt">Patterns are Shade's product-shaped layer: the recurring page chrome, header shapes, and filter UIs that show up across Ghost Admin. They compose primitives and components with knowledge of how Ghost actually uses them — where a Button doesn't know what it sits next to, a `PageHeader` knows it sits at the top of a List page or an Analytics page.</p>
+
+## What a pattern is
+
+A pattern is a composition with product knowledge baked in. It encodes a structure Ghost reuses across surfaces — a page header shape, a filter UI, a KPI card — and exposes named slots tuned for that structure.
+
+Patterns compose lower layers (primitives, components, recipes) but stop short of fetching data or owning routing. They are layout and composition contracts, nothing more. If a pattern starts reaching for `useQuery`, that's the signal the boundary is wrong.
+
+## Guidance
+
+- **Slots, not configuration.** Patterns expose named subcomponents (`.Title`, `.Actions`, `.Body`) — typically 3–6 of them — rather than a prop bag. If the API reads like `<ListPage title="..." onAdd={...} columns={...} emptyText="..." />`, it's a component with too many opinions; break it apart or keep it local.
+- **State stays with the consumer.** Patterns don't fetch data, don't own routing, don't read app-specific context. Bring-your-own state.
+- **The name describes what it is, not where it's used.** `FilterBar` works. `MembersFilterBar` doesn't — it names a single surface and will date the moment that surface changes.
+- **Reuse first, abstraction second.** Patterns are the layer most prone to premature abstraction. A candidate has to have been built locally at least twice in different surfaces, with a stable shape, before it's ready to be a pattern.
+
+See the Patterns sidebar for the live list of patterns and their APIs. The taxonomy of which patterns belong to which **page types** (List page, Detail page) is documented on the [Page Types](?path=/docs/patterns-page-types--docs) page.
+
+## Adding a new pattern
+
+The full promotion rules live on the [Architecture](?path=/docs/overview-architecture--docs) page. The short version of when a candidate is ready:
+
+1. **Real reuse exists, not expected reuse.** You've already built substantially the same shape a second time in a different surface — not "we might reuse this", but actual reuse.
+2. **The shape has settled.** Slots and composition have been stable across both local copies for at least one iteration cycle.
+3. **The name describes what it is, not where it's used.**
+4. **Composable via slots, not configured via props.**
+5. **State stays with the consumer.**
+
+When all that holds:
+
+1. Add the file at `apps/shade/src/components/patterns/<name>.tsx`.
+2. Export it from `apps/shade/src/patterns.ts` so consumers can reach it from `@tryghost/shade/patterns`.
+3. Add a story at `apps/shade/src/components/patterns/<name>.stories.tsx` with the title `Patterns / <Pattern Name>`. The story should cover the canonical shapes the pattern's slots are designed for.
+4. If the pattern is page-shaped (a recipe for a whole page type), update the [Page Types](?path=/docs/patterns-page-types--docs) page to point to it.
+
+If a candidate fails any of the promotion rules, keep it local in the app that needs it and revisit later. Patterns that get extracted too early lock the wrong API in and every consumer pays for every change.
+
+## Examples
+
+Patterns compose like compound components, with named slots:
+
+```tsx
+import { PageHeader, ListPage } from '@tryghost/shade/patterns';
+import { Button, Table /* ... */ } from '@tryghost/shade/components';
+
+<ListPage>
+  <PageHeader>
+    <PageHeader.Left>
+      <PageHeader.Title>
+        Members<PageHeader.Count>{count}</PageHeader.Count>
+      </PageHeader.Title>
+    </PageHeader.Left>
+    <PageHeader.Actions>
+      <PageHeader.ActionGroup>
+        <Button>Add member</Button>
+      </PageHeader.ActionGroup>
+    </PageHeader.Actions>
+  </PageHeader>
+  <ListPage.Body>
+    <Table>...</Table>
+  </ListPage.Body>
+</ListPage>
+```
+
+The same `PageHeader` covers richer surfaces by composing different slots — `TopRow` with a `Breadcrumb` and `ContextStrip`, a `Hero` with a feature image, and a `Nav` for sub-navigation. The pattern doesn't know which page type it's rendering; the consumer does, and picks the slots that fit.
+
+</div>

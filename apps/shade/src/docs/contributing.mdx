@@ -1,6 +1,6 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-<Meta title="Contributing" />
+<Meta title="Overview / Contributing" />
 
 <div className="sb-doc">
 
@@ -10,15 +10,15 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 ## Before you write any code
 
-The first decision is always which layer your change belongs in. The [Architecture](?path=/docs/architecture--docs) page has the full breakdown, but the quick rule:
+The first decision is always which layer your change belongs in. The [Architecture](?path=/docs/overview-architecture--docs) page has the full breakdown, but the quick rule:
 
 - Visual values (colors, sizes, durations) → **Tokens**
 - Layout structure → **Primitives**
 - Generic UI controls → **Components**
-- Shared visual rules used by several components → **Recipes** (alongside components, surfaced under Foundations)
-- Product-shaped compositions → **Features**
+- Shared visual rules used by several components → **Recipes** (alongside components in the Recipes sidebar group)
+- Product-shaped compositions → **Patterns**
 
-If you're not sure between Components and Features, the smell test is: does the thing's name sound like Ghost or like the open web? `KpiCardHeader` is Ghost-y, `Button` is web-y.
+If you're not sure between Components and Patterns, the smell test is: does the thing's name sound like Ghost or like the open web? `KpiCard` is Ghost-y, `Button` is web-y.
 
 The second decision is whether the change belongs in Shade at all. The default is to keep code local to your app first. Build it where you need it, ship it, and only consider promoting it to Shade once you find yourself building the same thing again somewhere else. Premature design system additions are expensive — once an abstraction has consumers, changing it gets harder fast.
 
@@ -30,8 +30,9 @@ apps/shade/
 └── src/
     ├── components/
     │   ├── ui/                Generic controls + recipes
-    │   ├── layout/            Page shells (Page, ListHeader, etc.)
-    │   └── features/          Product compositions
+    │   ├── layout/            Deprecated page shells (Page, ListHeader, etc.)
+    │   ├── patterns/          Product compositions
+    │   └── posts-stats/       Interim shared components for Posts + Stats apps
     └── docs/                  These MDX pages
 ```
 
@@ -53,7 +54,7 @@ import {ShadeApp} from '@tryghost/shade/app';
 import {Button, Stack} from '@tryghost/shade';
 ```
 
-The full migration story is on the [Root Imports Migration](?path=/docs/migration-root-imports--docs) page.
+The full migration story is on the [Migration](?path=/docs/overview-migration--docs) page.
 
 Inside Shade itself, use the `@/` path alias for cross-file imports. Don't worry about the alias leaking into emitted `.d.ts` files — `tsc-alias` rewrites them to relative paths at build time so consumer apps resolve them correctly.
 
@@ -73,11 +74,12 @@ Storybook titles follow the layer convention so the sidebar groups make sense:
 
 | Layer | Title prefix |
 | --- | --- |
-| Recipe / visual rule | `Foundations / X` |
 | Layout primitive | `Primitives / X` |
 | Generic control | `Components / X` |
-| Page shell | `Layout / X` |
-| Product composition | `Features / X` |
+| Product composition | `Patterns / X` |
+| Recipe / visual rule | `Recipes / X` |
+| Posts–Stats interim component | `Posts–Stats / X` |
+| Deprecated page shell | `Deprecated / X` |
 
 ## Writing stories
 
@@ -250,10 +252,10 @@ Before you mark a component done:
 
 A few situations should make you stop and reconsider before pushing through:
 
-- The shared component is starting to grow product-specific props. Extract a Feature wrapper instead.
+- The shared component is starting to grow product-specific props. Extract a Pattern wrapper instead.
 - The API is requiring three or four optional props to do anything useful. Split or simplify.
 - A primitive is sprouting business logic. Move that logic up.
-- You can't decide between `components` and `features`. The decision is probably real — ask before guessing.
+- You can't decide between `components` and `patterns`. The decision is probably real — ask before guessing.
 
 ## Repo conventions
 

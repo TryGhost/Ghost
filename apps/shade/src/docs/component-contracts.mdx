@@ -1,144 +1,90 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-<Meta title="Component Rules and Guarantees" />
+<Meta title="Components / Components Guide" />
 
 <div className="sb-doc">
 
-# What you can rely on from a Shade component
+# Working with components
 
-<p className="excerpt">When you reach for a Shade component, there are some things you should be able to count on without reading the source. This page describes those guarantees, and what we promise about them when the component changes over time.</p>
+<p className="excerpt">Components are Shade's generic, reusable controls — buttons, inputs, dialogs, tabs, cards. They have visual styling and accessible behavior, but they don't know anything about Ghost's product. A Shade Button is the same Button whether it sits inside Stats, Settings, or the post editor.</p>
 
-## The rules in one paragraph
+## What a component is
 
-A shared component in `components/ui/` does one job, has a public API you can use without surprises, and works in four states (default, hover, focus-visible, disabled) before anything else. It doesn't know about specific product surfaces, and it doesn't accept props that hint at one. When we change it, we tell you what changed and what stayed the same.
+A component does one job. It exposes a public API a consumer can rely on without reading the source. It works in four states — default, hover, focus-visible, disabled — before anything else. And it doesn't know about specific product surfaces; it doesn't accept props that hint at one.
 
-If those things aren't true, the component isn't ready to be shared yet — it's still a draft.
+Most components in Shade start life as a [shadcn/ui](https://ui.shadcn.com) install adapted to Shade's tokens and conventions. The job of this layer is to provide the generic building blocks every screen needs — opinionated enough about chrome, focus rings, and accessibility that consumers don't have to think about them, neutral enough that the same Button works on any page.
 
-## Why bother with rules
+If a control doesn't yet meet that bar, it isn't ready to be shared. It's a draft.
 
-For humans, clear rules make code reviews faster (less back-and-forth about whether a prop is appropriate) and reuse decisions less anxious (you can tell from the API whether a component fits your situation).
+## Guidance
 
-For AI agents, the rules are even more important. An agent generating UI code is constantly making choices: which component to use, which prop, which variant. Predictable, narrow component APIs let the agent pick the right tool without inventing components or making up props. Loose APIs invite the agent to guess.
+- **Pick visual or interactive intent, not workflow.** `variant="destructive"`, `size="sm"`, `loading={true}` are good props — they make sense in any context. `isMembersPage` or `layoutMode="toolbarWithFilterAndStats"` are not; they leak product knowledge into a generic control.
+- **Required states are non-negotiable.** Every interactive component must work in default, hover, focus-visible, and disabled. Optional states (active, loading, error, empty) are documented when they apply. A Button without a focus ring isn't done; a Dialog without escape-to-close isn't done.
+- **Drive appearance through tokens, not raw values.** Components reference semantic tokens (background, border, text, ring) — they don't hard-code hex values or Tailwind palette classes like `bg-gray-500`.
+- **If a component starts collecting workflow-specific props, stop.** That's the signal to extract a Pattern wrapper rather than grow the component's API.
+- **Don't remove existing public API without compatibility notes.** Backward-compatible additions are fine; breaking changes need migration notes; deprecations need an alias period.
 
-## What "shared" means
+See the individual component entries in the sidebar for the live list of components, their APIs, and runnable examples.
 
-The current target for documented rules is the set of foundational controls in `components/ui/`:
+## Adding a new component
 
-`Button`, `Input`, `Field`, `Select`, `Tabs`, `Table`, `Dialog`, `DropdownMenu`, `Card`.
+Most new components in Shade begin as a `shadcn` CLI install:
 
-Other things in `components/ui/` (recipes like `inputSurface`, smaller helpers, primitives like `TrendBadge` and `MetricValue`) follow the same spirit but don't yet have formal rule documents.
-
-Some surfaces deliberately sit outside this list — `sidebar`, `multi-select-combobox`, the chart variants. They're large and mix layout, behavior, and styling in ways that the simple rules don't fit cleanly. They're documented at the component level instead.
-
-## What the rules answer
-
-Five questions, in this order:
-
-**What problem does this component solve?** A one- or two-sentence answer. If the answer takes a paragraph, the component is probably doing too much.
-
-**What's the public API?** Props, slots, and variants you can rely on. Things explicitly out of scope (so consumers don't accidentally lean on internal implementation details).
-
-**Which states must always work?** Default, hover, focus-visible, disabled at minimum. Optional ones (active, loading, error, empty) are documented when they apply.
-
-**What's intentionally out of scope?** Workflow-specific behavior, product-specific styling, things that belong in a Feature wrapper instead.
-
-**What's the compatibility promise?** Backward-compatible additions, breaking changes (with migration notes), deprecation timelines if a prop is going away.
-
-## When you're adding or changing a shared component
-
-The minimum loop:
-
-1. Write a one-sentence purpose statement and a list of explicit non-goals.
-2. List the public props and any slots/subcomponents.
-3. Implement the four required states (default, hover, focus-visible, disabled).
-4. Add Storybook stories that prove those states work.
-5. If you changed an existing API, write a short note about what's different and what stayed the same.
-
-If you can't explain a prop in one sentence, the API is probably trying to do too much. Split it.
-
-## When you're an AI agent generating a shared component
-
-Produce this structure first, then implement:
-
-```md
-## Component scope
-- Purpose:
-- Non-goals:
-
-## Public API
-- Props:
-- Slots / subcomponents:
-- Variants:
-- Events / callbacks:
-
-## State matrix
-- default:
-- hover:
-- focus-visible:
-- disabled:
-- optional states (if applicable): active / loading / error / empty
-
-## Compatibility policy
-- Backward-compatible additions:
-- Breaking changes:
-- Migration notes:
-
-## Deprecation plan (if applicable)
-- Alias period:
-- Removal target:
+```bash
+pnpm dlx shadcn@latest add <component-name>
 ```
 
-The hard rules for agents:
+The CLI gives you a working component, but it isn't Shade-ready yet. Adapt the output:
 
-- No product-specific props in shared components. `variant="destructive"` is fine; `isMembersPage` is not.
-- Don't skip required states. A component without a focus-visible style isn't done.
-- Don't remove existing public API without explicit compatibility notes.
-- If behavior is workflow-specific, route it to `features/`, not into the base component.
+1. **Place it correctly.** Move the file to `apps/shade/src/components/ui/<name>.tsx` if it landed somewhere else.
+2. **Wire it to Shade tokens.** Replace any raw colors or spacing values with the semantic tokens (background, border, text, ring, spacing scale). Don't ship a component referencing palette classes.
+3. **Make the four states work.** Default, hover, focus-visible, disabled. For form controls, drive the chrome through the `inputSurface` recipe rather than rolling your own focus ring.
+4. **Trim the API.** Look for props that hint at a specific surface or workflow. If any slipped in, remove them — that's a Pattern's job, not a component's.
+5. **Write a story.** Add `apps/shade/src/components/ui/<name>.stories.tsx` with the title `Components / <ComponentName>`. The story must cover the four required states and any variants.
+6. **Export.** Add the export to `apps/shade/src/components.ts` so consumers can reach it from `@tryghost/shade/components`.
 
-## A worked example: good vs bad props
+Before merging, structure the component (in code comments, the PR description, or both) around these five things:
 
-Good props are visual or interactive intents that make sense in any context:
+- **Purpose** — one sentence. If it takes a paragraph, the component is doing too much.
+- **Public API** — props, slots, variants you guarantee. Things explicitly out of scope.
+- **State matrix** — default, hover, focus-visible, disabled (and any optional states).
+- **Compatibility promise** — what's safe to add, what would be a breaking change.
+- **Deprecation plan** — only when applicable (alias period, removal target).
 
-- `variant="destructive"` — clear visual intent, reusable across surfaces.
-- `size="sm | md | lg"` — bounded scale, no hidden behavior.
-- `loading={true}` — generic state.
+That structure works as a human checklist and as a fill-in template for an AI agent generating the component.
 
-Bad props leak product or workflow knowledge into a generic control:
+## Examples
 
-- `isMembersPage` — the component shouldn't know which page it's on.
-- `layoutMode="toolbarWithFilterAndStats"` — that's a workflow shape, not a component variant.
+**Good vs. bad props.** Good props are visual or interactive intents that work in any context:
 
-When you see yourself reaching for the second kind, stop and ask: is this really a generic control, or is it a Feature wrapper trying to hide as a Button?
+```tsx
+<Button variant="destructive" size="sm" loading={isPending}>Delete</Button>
+```
 
-## State coverage in detail
+Bad props leak product knowledge into the control:
 
-For each required state, the component should define three things:
+```tsx
+// Don't do this — the component shouldn't know which page it's on
+<Button isMembersPage layoutMode="toolbarWithFilterAndStats">Add</Button>
+```
 
-**Visuals**: which semantic tokens drive the appearance (background, border, text, ring).
+When you see yourself reaching for the second kind, stop and ask: is this really a generic control, or is it a Pattern wrapper trying to hide as a Button?
 
-**Interaction behavior**: what happens when the user does the thing (clicks, types, presses Tab).
+**Required-state coverage.** A component's story should make the four states visible:
 
-**Accessibility semantics**: ARIA roles, labels, focus management, keyboard support.
+```tsx
+export const States: Story = {
+    render: () => (
+        <Inline gap="md">
+            <Button>Default</Button>
+            <Button className="hover:bg-...">Hover</Button>
+            <Button className="ring-...">Focus</Button>
+            <Button disabled>Disabled</Button>
+        </Inline>
+    )
+};
+```
 
-Missing required states is a blocker. We don't ship a Button without a focus ring and we don't ship a Dialog without escape-to-close.
-
-## Components vs. features: the dividing line
-
-The honest answer is: pick `components` when the abstraction is genuinely generic, and `features` when it encodes product workflow.
-
-The smell test: if the component name reads like English you'd use in any web app (Button, Input, Tabs), it's a component. If it reads like Ghost-specific jargon (KpiCardHeader, GhAreaChart, FilterBuilder), it's a feature.
-
-When a shared control starts collecting workflow-specific props, that's the signal to extract a Feature wrapper instead of growing the base API.
-
-## Review checklist
-
-Before merging a change to a shared component:
-
-- The rules and guarantees match the implementation.
-- Required states are implemented and visible in stories.
-- The API stays product-agnostic.
-- Compatibility / deprecation notes exist for any API changes.
-
-If any of those isn't true, the change isn't ready yet.
+If you can't put each state on screen for a reviewer, the component isn't done.
 
 </div>

@@ -1,6 +1,6 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-<Meta title="Architecture" />
+<Meta title="Overview / Architecture" />
 
 <div className="sb-doc">
 
@@ -18,11 +18,11 @@ From the bottom up:
 
 **Components** are generic, reusable controls — Button, Input, Dialog, Tabs. They have visual styling and accessible behavior, but they don't know anything about Ghost's product. A Shade Button is the same Button whether it sits inside Stats, Settings, or the post editor.
 
-**Recipes** sit alongside components in a separate sidebar group called Foundations. A recipe is a small, shared visual rule that several components consume — for example `inputSurface`, the border + background + focus ring used by every Input, Textarea, InputGroup, and Select trigger. Recipes are utilities, not components; they have no JSX of their own.
+**Recipes** sit alongside components in their own sidebar group. A recipe is a small, shared visual rule that several components consume — for example `inputSurface`, the border + background + focus ring used by every Input, Textarea, InputGroup, and Select trigger. Recipes are utilities, not components; they have no JSX of their own.
 
-**Features** (sometimes called Patterns) are the product-shaped layer. This is where Ghost-specific compositions live: KPI cards, the area chart on Stats, the filter builder on the Members list. Features compose primitives and components together with knowledge of how Ghost actually uses them.
+**Patterns** are the product-shaped layer. This is where Ghost-specific compositions live: the page header, the list-page recipe, KPI cards, the area chart on Stats, the filter builder on the Members list. Patterns compose primitives and components together with knowledge of how Ghost actually uses them.
 
-That's the whole hierarchy. Tokens → primitives → components & recipes → features. Each layer is allowed to use anything below it. The reverse is forbidden: a Button can't reach into a feature, a primitive can't reach into a component.
+That's the whole hierarchy. Tokens → primitives → components & recipes → patterns. Each layer is allowed to use anything below it. The reverse is forbidden: a Button can't reach into a pattern, a primitive can't reach into a component.
 
 ## Terms
 
@@ -44,23 +44,25 @@ Primitives replace the long `flex flex-col gap-4 items-start` strings that made 
 
 A generic, reusable UI control. Button, Input, Dialog, Tabs, Card, DropdownMenu, and so on. Components are styled, accessible, and themed — but they have no product-specific behavior. A Shade `Button` accepts `variant="destructive"` because "destructive" is a generic visual intent. It does not accept `isMembersPage`, because that's a product concern leaking into a generic control.
 
-If a component starts collecting product-specific props or branches, that's a signal to extract a Feature wrapper instead.
+If a component starts collecting product-specific props or branches, that's a signal to extract a Pattern wrapper instead.
 
 ### Recipe
 
 A small, named visual rule reused by several components — without being a component itself. The canonical example is `inputSurface`: a function that returns the shared border, background, radius, and focus-ring class string used by every form control surface in Shade. `Input`, `Textarea`, `InputGroup`, and the `Select` trigger all consume it.
 
-Recipes are useful when several components need to look identical along one dimension (chrome, focus state, density) but have different shapes otherwise. They live in `components/ui/` next to the components they support, and they show up in Storybook under the **Foundations** group.
+Recipes are useful when several components need to look identical along one dimension (chrome, focus state, density) but have different shapes otherwise. They live in `components/ui/` next to the components they support, and they show up in Storybook under the **Recipes** group.
 
 ### Layout
 
 A reusable page shell. `Page`, `Header`, `ListHeader`, `ViewHeader`, `Heading`. Layouts compose primitives and components into the structural skeleton of a screen, but they don't carry product logic. They're shared scaffolding.
 
-### Feature (also called Pattern)
+### Pattern
 
-A product-shaped composition. Examples in Shade today: `KpiCardHeader`, `KpiTabValue`, `GhAreaChart`, `Filters`. Features know that Ghost has KPIs, area charts with diff tooltips, filterable Members lists. They compose components, primitives, and recipes with that knowledge baked in.
+A product-shaped composition. Examples in Shade today: `PageHeader`, `ListPage`, `Filters`, `KpiCard`, `KpiTabValue`, `GhAreaChart`. Patterns know that Ghost has KPIs, area charts with diff tooltips, filterable Members lists. They compose components, primitives, and recipes with that knowledge baked in.
 
-There's a small terminology mismatch worth knowing: in the file system, this layer lives in `components/features/`, but the package entrypoint that exposes them is called `@tryghost/shade/patterns`. Both names refer to the same thing — features are patterns and vice versa. You'll see both used.
+Page-shaped patterns (those that represent a recurring kind of Admin page — currently List page and Detail page) are documented on the [Page Types](?path=/docs/patterns-page-types--docs) page.
+
+Pattern files live in `components/patterns/` and are exposed via `@tryghost/shade/patterns`.
 
 ### App
 
@@ -76,15 +78,40 @@ If it's a generic interactive control, it's a component. Use the existing one (B
 
 If several components share the same chrome, focus ring, or visual rule, that's a recipe. Extract it to a small utility function in `components/ui/`. Don't try to make it a component if it doesn't have its own markup.
 
-If the thing knows about Ghost — KPIs, members, posts, newsletters, analytics — it's a feature. Put it in `components/features/<feature-name>/`.
+If the thing knows about Ghost — KPIs, members, posts, newsletters, analytics — it's a pattern. Put it in `components/patterns/<pattern-name>.tsx`.
 
-The fast version: **if it has a Ghost-shaped name, it's a feature; if it has a generic name, it's a component or primitive.**
+The fast version: **if it has a Ghost-shaped name, it's a pattern; if it has a generic name, it's a component or primitive.**
 
 ## When to add code to Shade at all
 
 The default is to **keep code local first**. A component used in one place doesn't belong in a design system. Build it in your app, ship it, and leave it there. When you find yourself building the same thing a second time in a different surface, that's when you start considering Shade. By the third time, the case is clear.
 
 Premature abstractions in a design system are expensive — the API gets tuned for too few use cases, and changing it later means hunting through every consumer. Patience pays.
+
+## Promoting to a pattern
+
+Patterns are the layer most prone to premature abstraction, because they look like obviously-reusable shapes the moment you've built one. They're not. A candidate earns its place in `components/patterns/` when **all** of the following are true:
+
+1. **Reuse exists, not just expected.** You've already built substantially the same shape a second time, in a different surface (different app, or a materially different page in the same app). "We might reuse this" doesn't qualify — wait until you actually do.
+
+2. **The shape has settled.** The slots and composition you're about to promote have been stable across both local copies for at least one iteration cycle. Promoting while the shape is still moving means every consumer pays for every API change.
+
+3. **The name describes what it is, not where it's used.** `PageHeader`, `KpiCard`, `PostShareModal` describe concepts that recur. `MembersFilterBar`, `PostAnalyticsHero` name a single surface and will date the moment that surface changes. If you can't think of a name that doesn't include the surface, the pattern isn't ready.
+
+4. **Composable via slots, not configured via props.** Patterns expose 3–6 named subcomponents (`.Title`, `.Actions`, `.Body`) rather than a prop bag. If the API reads like `<ListPage title="..." onAdd={...} columns={...} emptyText="..." />`, it's a component with too many opinions — break it apart or keep it local.
+
+5. **State stays with the consumer.** A pattern doesn't fetch data, doesn't own routing, doesn't read app-specific context. It's a layout and composition contract. Bring-your-own state. If you find yourself reaching for `useQuery` inside a pattern, stop.
+
+### When *not* to promote
+
+- **It's just a wrapper.** A `<MembersTable>` that's a `<Table>` with three pre-set columns belongs in the app, not Shade.
+- **You're reaching for Shade because you can't decide where the thing belongs in the product.** That's a feature-placement question — solve it with the [Page Types](?path=/docs/patterns-page-types--docs) page first. Promoting to Shade to dodge a structural decision will fossilize the wrong placement.
+- **One consumer, but "we want consistency".** Consistency is a side effect of reuse, not a reason to pre-extract.
+- **It's a one-off flow.** Success screens, onboarding steps, single-use modals — keep them in the app.
+
+### Page-shaped patterns
+
+A page-shaped pattern (`ListPage`, future `DetailPage`) must map to a named entry on the [Page Types](?path=/docs/patterns-page-types--docs) page. If a candidate doesn't fit any named page type, either the candidate is wrong or the taxonomy needs a new entry — resolve that before shipping the pattern.
 
 ## Layered package entrypoints
 
@@ -95,11 +122,16 @@ Shade exposes itself through several import paths instead of one giant barrel. T
 | `@tryghost/shade/tokens` | Token names and helpers (CSS variable definitions in `@tryghost/shade/tokens.css`) |
 | `@tryghost/shade/primitives` | Layout primitives + legacy layout shells |
 | `@tryghost/shade/components` | Generic controls, recipes, and visual assets |
-| `@tryghost/shade/patterns` | Features (product compositions) |
+| `@tryghost/shade/patterns` | Patterns (product compositions) |
+| `@tryghost/shade/posts-stats` | **Interim** — components shared between the Posts and Stats apps until they merge |
 | `@tryghost/shade/app` | `ShadeApp`, providers, transitional helpers |
 | `@tryghost/shade/utils` | Generic DS-safe helpers, `LucideIcon`, `Recharts` |
 
-The bare `@tryghost/shade` import is a compatibility lane that re-exports the main DS layers. New code should import from a specific subpath. The migration deadline is documented in the [Root Imports Migration](?path=/docs/migration-root-imports--docs) page.
+The bare `@tryghost/shade` import is a compatibility lane that re-exports the main DS layers. New code should import from a specific subpath. The migration deadline is documented in the [Migration](?path=/docs/overview-migration--docs) page.
+
+### `posts-stats` is intentionally not a pattern layer
+
+`@tryghost/shade/posts-stats` is a temporary parking spot for components shared between the Posts app (`apps/posts`) and the Stats app (`apps/stats`) while those two apps are still separate. The contents are Ghost-specific to the post-analytics surface — they don't pass the [pattern promotion rules](#promoting-to-a-pattern) and shouldn't. When the apps merge, this entrypoint goes away and the components move into the merged app. Don't add to this layer unless the component genuinely needs to be shared across exactly those two apps.
 
 ## File layout
 
@@ -110,7 +142,8 @@ apps/shade/src/
 ├── components/
 │   ├── ui/              Generic controls and recipes
 │   ├── layout/          Page shells (Page, ListHeader, ViewHeader)
-│   └── features/        Product compositions (KPI, charts, filters)
+│   ├── patterns/        Product compositions (PageHeader, ListPage, Filters, KpiCard, GhAreaChart, …)
+│   └── posts-stats/     Interim shared components between the Posts and Stats apps
 ├── docs/                MDX documentation rendered in Storybook
 ├── hooks/               Generic React hooks
 ├── lib/
@@ -127,7 +160,7 @@ apps/shade/src/
 
 **Components are PascalCase**, hooks/functions/types are camelCase.
 
-**Stories live next to their component** as `<name>.stories.tsx`. The Storybook title puts each story in the right sidebar group: `Foundations / X`, `Primitives / X`, `Components / X`, `Layout / X`, `Features / X`.
+**Stories live next to their component** as `<name>.stories.tsx`. The Storybook title puts each story in the right sidebar group: `Primitives / X`, `Components / X`, `Patterns / X`, `Recipes / X`, `Posts–Stats / X`, `Deprecated / X`.
 
 **Use `cn()` to merge classes** (combines `clsx` + `tailwind-merge`). Always merge through `cn()` rather than concatenating strings — it handles Tailwind class conflicts correctly.
 
@@ -139,8 +172,8 @@ apps/shade/src/
 
 A few situations should make you pause:
 
-- A shared component is starting to grow workflow-specific props (`isMembersPage`, `showInPostEditor`). That's a sign the abstraction is wrong; extract a Feature wrapper instead.
-- A primitive is sprouting business logic (an `if` branch that knows about specific data). Move that logic up into the consumer or a Feature.
-- You can't tell whether something belongs in `components` or `features`. Use the rule: generic name → component, Ghost-shaped name → feature. If still unclear, ask — that ambiguity is usually a real design question.
+- A shared component is starting to grow workflow-specific props (`isMembersPage`, `showInPostEditor`). That's a sign the abstraction is wrong; extract a Pattern wrapper instead.
+- A primitive is sprouting business logic (an `if` branch that knows about specific data). Move that logic up into the consumer or a Pattern.
+- You can't tell whether something belongs in `components` or `patterns`. Use the rule: generic name → component, Ghost-shaped name → pattern. If still unclear, ask — that ambiguity is usually a real design question.
 
 </div>

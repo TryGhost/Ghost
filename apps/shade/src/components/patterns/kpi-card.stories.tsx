@@ -6,7 +6,7 @@ import {Card, CardContent} from '@/components/ui/card';
 import {KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue} from './kpi-card';
 
 const meta = {
-    title: 'Features / KPI / Card',
+    title: 'Patterns / KPI Card',
     component: KpiCardHeaderValue,
     tags: ['autodocs'],
     parameters: {

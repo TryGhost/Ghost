@@ -1,6 +1,6 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-<Meta title="Introduction" />
+<Meta title="Overview / Introduction" />
 
 <div className="sb-doc">
 
@@ -20,7 +20,7 @@ A **library of generic UI controls** (Button, Input, Dialog, Tabs, and so on) bu
 
 A **smaller set of product-shaped compositions** for things Ghost does over and over — KPI cards, filter builders, the area chart on Stats — where the generic controls aren't enough.
 
-The line between those four layers is the most important thing to understand about Shade. We cover it in detail on the [Architecture](?path=/docs/architecture--docs) page, including a glossary of terms.
+The line between those four layers is the most important thing to understand about Shade. We cover it in detail on the [Architecture](?path=/docs/overview-architecture--docs) page, including a glossary of terms.
 
 ## Who it's for
 
@@ -71,15 +71,16 @@ export default function App() {
 
 ## Where to go next
 
-If you're new here, read the [Architecture](?path=/docs/architecture--docs) page next. It explains the layers (tokens, primitives, components, recipes, features) with a glossary so the vocabulary makes sense, and a short decision rule for choosing where new code belongs.
+If you're new here, read the [Architecture](?path=/docs/overview-architecture--docs) page next. It explains the layers (tokens, primitives, components, recipes, patterns) with a glossary so the vocabulary makes sense, and a short decision rule for choosing where new code belongs.
 
 If you already know your way around and just want to ship, browse:
 
-- **Foundations** — visual recipes like `inputSurface` that shape every form control's chrome.
 - **Primitives** — `Stack`, `Inline`, `Box`, `Grid`, `Container`, `Text`. The structural vocabulary.
 - **Components** — generic controls (Button, Input, Dialog, etc.).
-- **Layout** — page shells (Page, ListHeader, ViewHeader).
-- **Features** — product compositions (KPI cards, charts, filters).
+- **Patterns** — product compositions (page headers, list pages, KPI cards, filters, charts).
+- **Recipes** — shared visual rules like `inputSurface` that shape every form control's chrome.
+- **Posts–Stats** — interim shared components between the Posts and Stats apps until they merge.
+- **Deprecated** — legacy layout shells (`ListHeader`, `ViewHeader`, etc.) being phased out.
 
 Each section's pages have a description, props, and live examples.
 

@@ -5,7 +5,7 @@ import ColorPicker, {
     ColorPickerFormat,
     ColorPickerRoot,
     ColorPickerSelection
-} from '../../../../src/components/features/color-picker/color-picker';
+} from '../../../../src/components/patterns/color-picker';
 import {render} from '../../utils/test-utils';
 
 describe('ColorPicker Component', () => {

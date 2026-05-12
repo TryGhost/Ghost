@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 
 const meta = {
-    title: 'Components / Filters',
+    title: 'Patterns / Filters',
     component: Filters,
     tags: ['autodocs'],
     parameters: {

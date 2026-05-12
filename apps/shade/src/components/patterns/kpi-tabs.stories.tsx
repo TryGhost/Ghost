@@ -4,7 +4,7 @@ import {Tabs, TabsContent, TabsList} from '@/components/ui/tabs';
 import {KpiTabTrigger, KpiTabValue} from './kpi-tabs';
 
 const meta = {
-    title: 'Features / KPI / Tabs',
+    title: 'Patterns / KPI Tabs',
     component: KpiTabValue,
     tags: ['autodocs'],
     parameters: {
