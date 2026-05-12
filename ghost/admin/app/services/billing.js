@@ -136,10 +136,10 @@ export default class BillingService extends Service {
             return;
         }
 
-        Sentry.captureMessage(BILLING_APP_LOAD_FAILURE_MESSAGE, {
+        Sentry.captureException(BILLING_APP_LOAD_FAILURE_MESSAGE, {
             contexts: {
                 ghost: {
-                    full_error: {
+                    billing_monitor: {
                         attempts: this.billingAppLoadAttempts,
                         has_billing_url: !!this.config.hostSettings?.billing?.url,
                         is_force_upgrade: !!this.config.hostSettings?.forceUpgrade,

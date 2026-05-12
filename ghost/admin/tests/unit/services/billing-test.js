@@ -116,7 +116,7 @@ describe('Unit: Service: billing', function () {
         expect(report.tags).to.deep.include({
             source: 'billing-app-load-monitor'
         });
-        expect(report.originalReport.contexts.ghost.full_error).to.deep.include({
+        expect(report.originalReport.contexts.ghost.billing_monitor).to.deep.include({
             attempts: 2,
             has_billing_url: true,
             is_force_upgrade: false
