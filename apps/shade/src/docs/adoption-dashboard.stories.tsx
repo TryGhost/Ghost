@@ -46,11 +46,7 @@ const Dashboard = () => {
 
     return (
         <div className='shade' style={{padding: '32px', maxWidth: '1240px', margin: '0 auto'}}>
-            <p className='mb-6 text-xs text-muted-foreground'>
-                Snapshot generated {generatedLabel} from <code>{snapshot.branch}</code> at{' '}
-                <code>{snapshot.sha.slice(0, 7)}</code>. Refresh with{' '}
-                <code>pnpm --filter @tryghost/shade run adoption:extract</code>.
-            </p>
+            <p className='mb-6 text-xs text-muted-foreground'>Last snapshot {generatedLabel}</p>
 
             <section className='mb-8'>
                 <Card>
