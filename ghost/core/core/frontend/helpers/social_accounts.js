@@ -1,13 +1,13 @@
 // # Social Accounts Helper
 // Usage:
 //   {{#social_accounts @site}}
-//       <a href="{{url}}" target="_blank" rel="noopener" aria-label="{{name}}">
+//       <a href="{{href}}" target="_blank" rel="noopener" aria-label="{{name}}">
 //           {{> (concat "icons/" type)}}
 //       </a>
 //   {{/social_accounts}}
 //
 // Iterates over the social accounts on the given source object in canonical
-// order, yielding `{type, url, username, name}` for each platform with a
+// order, yielding `{type, href, username, name}` for each platform with a
 // username set.
 //
 // A source must be passed explicitly:
@@ -65,7 +65,7 @@ module.exports = function social_accounts(source, options) { // eslint-disable-l
     const accounts = SOCIAL_PLATFORMS.reduce((acc, {type, name}) => {
         const username = source && source[type];
         if (username && typeof socialUrls[type] === 'function') {
-            acc.push({type, name, username, url: socialUrls[type](username)});
+            acc.push({type, name, username, href: socialUrls[type](username)});
         }
         return acc;
     }, []);

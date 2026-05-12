@@ -42,10 +42,19 @@ describe('{{#social_accounts}} helper', function () {
         assert.equal(out, 'twitter|facebook|linkedin|bluesky|threads|mastodon|tiktok|youtube|instagram|');
     });
 
-    it('exposes type, url, username, and name per iteration', function () {
-        const out = compile(`{{#social_accounts @site}}{{type}}={{url}}|{{name}}|{{username}};{{/social_accounts}}`)
+    it('exposes type, href, username, and name per iteration', function () {
+        const out = compile(`{{#social_accounts @site}}{{type}}={{href}}|{{name}}|{{username}};{{/social_accounts}}`)
             .with({}, {data: {site: {twitter: 'testuser-tw', linkedin: 'testuser-li'}}});
         assert.equal(out, 'twitter=https://x.com/testuser-tw|X|testuser-tw;linkedin=https://www.linkedin.com/in/testuser-li|LinkedIn|testuser-li;');
+    });
+
+    it('uses `href` (not `url`) for the link to avoid collision with the {{url}} helper', function () {
+        // Register a stub `url` helper to ensure that {{href}} inside the block
+        // resolves to the per-iteration property and not the global helper.
+        helpers.registerHelper('url', () => 'WRONG');
+        const out = compile(`{{#social_accounts @site}}{{href}};{{/social_accounts}}`)
+            .with({}, {data: {site: {twitter: 'me'}}});
+        assert.equal(out, 'https://x.com/me;');
     });
 
     it('skips platforms without a username', function () {
