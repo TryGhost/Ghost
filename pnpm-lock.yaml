@@ -2120,8 +2120,8 @@ importers:
         specifier: 'catalog:'
         version: 1.1.103
       '@tryghost/html-to-plaintext':
-        specifier: 1.0.8
-        version: 1.0.8
+        specifier: 1.0.10
+        version: 1.0.10
       '@tryghost/i18n':
         specifier: workspace:*
         version: link:../i18n
@@ -8667,8 +8667,8 @@ packages:
   '@tryghost/html-to-mobiledoc@3.3.1':
     resolution: {integrity: sha512-VH9JVk/2Mt+FTjNUQYT4zbO3XkDGNiuBFuF+f2HYFB050c12FftTPtCF578Lj+zUm+slZLljaJMW+czl7aH/7g==}
 
-  '@tryghost/html-to-plaintext@1.0.8':
-    resolution: {integrity: sha512-CIXoOlmpp9SVrb0BPQ/+cBaSHFpGv53Gew3VFLw0w1v1q04+0e0FRKjl8Cv6oUl+c1I9LwxbwdcV6rxRCgVbIw==}
+  '@tryghost/html-to-plaintext@1.0.10':
+    resolution: {integrity: sha512-kMg2knP6r8NP980WkXq13CV1fUc7bnLoMJRprXHEIcpiuHh2wcT74qJvP76tnofJ7EP7G5gRga4aZ3WCG2i0jg==}
 
   '@tryghost/http-cache-utils@0.1.25':
     resolution: {integrity: sha512-OJAD1ESvV+F81w6IOTKCX0JLGIiJqNn87HVFMskpUC3IUGpqcDP1pCM79d72khxLWy5oRQDYu8xIqicHJ9ST1Q==}
@@ -29617,7 +29617,7 @@ snapshots:
       - canvas
     optional: true
 
-  '@tryghost/html-to-plaintext@1.0.8':
+  '@tryghost/html-to-plaintext@1.0.10':
     dependencies:
       html-to-text: 8.2.1
       lodash: 4.18.1
