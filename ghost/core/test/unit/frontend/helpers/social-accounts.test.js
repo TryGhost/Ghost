@@ -51,10 +51,21 @@ describe('{{#social_accounts}} helper', function () {
     it('uses `href` (not `url`) for the link to avoid collision with the {{url}} helper', function () {
         // Register a stub `url` helper to ensure that {{href}} inside the block
         // resolves to the per-iteration property and not the global helper.
-        helpers.registerHelper('url', () => 'WRONG');
-        const out = compile(`{{#social_accounts @site}}{{href}};{{/social_accounts}}`)
-            .with({}, {data: {site: {twitter: 'me'}}});
-        assert.equal(out, 'https://x.com/me;');
+        // Use handlebars directly (not Ghost's idempotent registerHelper) so we
+        // can override and then restore the previous registration.
+        const originalUrlHelper = handlebars.helpers.url;
+        handlebars.registerHelper('url', () => 'WRONG');
+        try {
+            const out = compile(`{{#social_accounts @site}}{{href}};{{/social_accounts}}`)
+                .with({}, {data: {site: {twitter: 'me'}}});
+            assert.equal(out, 'https://x.com/me;');
+        } finally {
+            if (originalUrlHelper) {
+                handlebars.registerHelper('url', originalUrlHelper);
+            } else {
+                delete handlebars.helpers.url;
+            }
+        }
     });
 
     it('skips platforms without a username', function () {
