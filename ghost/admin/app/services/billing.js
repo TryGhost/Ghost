@@ -1,6 +1,10 @@
+import * as Sentry from '@sentry/ember';
 import Service, {inject as service} from '@ember/service';
 import {inject} from 'ghost-admin/decorators/inject';
 import {tracked} from '@glimmer/tracking';
+
+const BILLING_APP_LOAD_TIMEOUT_MS = 10_000;
+const BILLING_APP_LOAD_FAILURE_MESSAGE = 'Billing app failed to become ready';
 
 export default class BillingService extends Service {
     @service ghostPaths;
@@ -17,6 +21,10 @@ export default class BillingService extends Service {
     @tracked action = null;
     @tracked ownerUser = null;
 
+    billingAppLoaded = false;
+    billingAppLoadTimeout = null;
+    billingAppLoadTimeoutMs = BILLING_APP_LOAD_TIMEOUT_MS;
+
     constructor() {
         super(...arguments);
 
@@ -27,6 +35,11 @@ export default class BillingService extends Service {
                 }
             });
         }
+    }
+
+    willDestroy() {
+        super.willDestroy(...arguments);
+        this.clearBillingAppLoadMonitor();
     }
 
     handleRouteChangeInIframe(destinationRoute) {
@@ -45,6 +58,54 @@ export default class BillingService extends Service {
 
     _isBillingIframeLoaded() {
         return this.getBillingIframe() !== null && this.getBillingIframe().contentWindow;
+    }
+
+    startBillingAppLoadMonitor() {
+        if (this.billingAppLoaded || this.billingAppLoadTimeout) {
+            return;
+        }
+
+        this.billingAppLoadTimeout = setTimeout(() => {
+            this.billingAppLoadTimeout = null;
+            this.reportBillingAppLoadFailure();
+        }, this.billingAppLoadTimeoutMs);
+    }
+
+    markBillingAppLoaded() {
+        this.billingAppLoaded = true;
+        this.clearBillingAppLoadMonitor();
+    }
+
+    clearBillingAppLoadMonitor() {
+        if (!this.billingAppLoadTimeout) {
+            return;
+        }
+
+        clearTimeout(this.billingAppLoadTimeout);
+        this.billingAppLoadTimeout = null;
+    }
+
+    reportBillingAppLoadFailure() {
+        if (!this.config.sentry_dsn) {
+            return;
+        }
+
+        Sentry.captureMessage(BILLING_APP_LOAD_FAILURE_MESSAGE, {
+            contexts: {
+                ghost: {
+                    full_error: {
+                        has_billing_url: !!this.config.hostSettings?.billing?.url,
+                        is_force_upgrade: !!this.config.hostSettings?.forceUpgrade,
+                        location_hash: window.location.hash
+                    }
+                }
+            },
+            tags: {
+                source: 'billing-app-load-monitor',
+                route: this.router.currentRouteName,
+                path: window.location.hash
+            }
+        });
     }
 
     getIframeURL() {
