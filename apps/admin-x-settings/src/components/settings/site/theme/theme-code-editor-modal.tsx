@@ -2,23 +2,13 @@ import CodeMirror, {EditorView} from '@uiw/react-codemirror';
 import InvalidThemeModal, {type FatalErrors} from './invalid-theme-modal';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
+import ThemeEditorConfirmModal from './theme-editor-confirm-modal';
+import ThemeEditorInputModal from './theme-editor-input-modal';
+import ThemeEditorToolbar from './theme-editor-toolbar';
+import ThemeFileTree from './theme-file-tree';
 import ThemeInstalledModal from './theme-installed-modal';
-import {
-    ChevronDown,
-    ChevronRight,
-    CircleDot,
-    FileCode2,
-    Folder,
-    FolderOpen,
-    Pencil,
-    Plus,
-    Save,
-    TextWrap,
-    Trash2,
-    Undo2,
-    X
-} from 'lucide-react';
-import {Modal, TextField, showToast} from '@tryghost/admin-x-design-system';
+import ThemeReviewModal, {buildReviewItems} from './theme-review-modal';
+import {TextWrap, Undo2} from 'lucide-react';
 import {
     cloneThemeFiles,
     createFolderRenameMap,
@@ -33,92 +23,16 @@ import {
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {oneDark} from '@codemirror/theme-one-dark';
 import {search} from '@codemirror/search';
+import {showToast} from '@tryghost/admin-x-design-system';
 import {useBrowseThemes} from '@tryghost/admin-x-framework/api/themes';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useQueryClient} from '@tanstack/react-query';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
-import type {ThemeChange, ThemeEditorFile} from './theme-editor-utils';
+import type {SelectedNode} from './theme-file-tree';
+import type {ThemeEditorConfirmModalProps} from './theme-editor-confirm-modal';
+import type {ThemeEditorFile} from './theme-editor-utils';
+import type {ThemeEditorInputModalProps} from './theme-editor-input-modal';
 import type {ThemesInstallResponseType} from '@tryghost/admin-x-framework/api/themes';
-
-type SelectedNode =
-    | {type: 'file'; path: string}
-    | {type: 'dir'; path: string}
-    | null;
-
-type TreeNode = {
-    type: 'dir' | 'file';
-    name: string;
-    path: string;
-    editable?: boolean;
-    children?: Map<string, TreeNode>;
-};
-
-type ReviewItem = {
-    path: string;
-    editable: boolean;
-    status: ThemeChange['status'];
-    before: string | null;
-    after: string | null;
-};
-
-const buildTree = (files: Record<string, ThemeEditorFile>) => {
-    const root: TreeNode = {
-        type: 'dir',
-        name: '',
-        path: '',
-        children: new Map()
-    };
-
-    for (const path of Object.keys(files).sort()) {
-        const segments = path.split('/');
-        let cursor = root;
-
-        for (let index = 0; index < segments.length; index += 1) {
-            const segment = segments[index];
-            const isLast = index === segments.length - 1;
-
-            if (isLast) {
-                cursor.children!.set(segment, {
-                    type: 'file',
-                    name: segment,
-                    path,
-                    editable: files[path].editable
-                });
-                continue;
-            }
-
-            const dirPath = `${segments.slice(0, index + 1).join('/')}/`;
-            const existing = cursor.children!.get(segment);
-
-            if (existing?.type === 'dir') {
-                cursor = existing;
-                continue;
-            }
-
-            const next: TreeNode = {
-                type: 'dir',
-                name: segment,
-                path: dirPath,
-                children: new Map()
-            };
-
-            cursor.children!.set(segment, next);
-            cursor = next;
-        }
-    }
-
-    return root;
-};
-
-const sortTreeNodes = (nodes: TreeNode[]) => {
-    return nodes.sort((left, right) => {
-        if (left.type !== right.type) {
-            return left.type === 'dir' ? -1 : 1;
-        }
-
-        return left.name.localeCompare(right.name);
-    });
-};
 
 const getLanguageExtension = (path: string) => {
     const extension = getExtension(path);
@@ -199,37 +113,6 @@ const getParentDirectories = (path: string) => {
     return directories;
 };
 
-const buildReviewItems = ({
-    baseFiles,
-    currentFiles,
-    changes
-}: {
-    baseFiles: Record<string, ThemeEditorFile>;
-    currentFiles: Record<string, ThemeEditorFile>;
-    changes: ThemeChange[];
-}) => {
-    return changes.map((change) => {
-        const baseFile = baseFiles[change.path];
-        const currentFile = currentFiles[change.path];
-
-        return {
-            path: change.path,
-            editable: change.editable,
-            status: change.status,
-            before: baseFile?.editable ? (baseFile.content ?? '') : null,
-            after: currentFile?.editable ? (currentFile.content ?? '') : null
-        };
-    });
-};
-
-const formatReviewSummary = (reviewItems: ReviewItem[]) => {
-    const added = reviewItems.filter(item => item.status === 'added').length;
-    const modified = reviewItems.filter(item => item.status === 'modified').length;
-    const deleted = reviewItems.filter(item => item.status === 'deleted').length;
-
-    return `${modified} modified, ${added} added, ${deleted} deleted`;
-};
-
 const getReturnRouteFromHash = () => {
     const hash = window.location.hash.substring(1);
     const domain = `${window.location.protocol}//${window.location.hostname}`;
@@ -270,12 +153,8 @@ const wouldRenameBinaryFileToEditable = (file: ThemeEditorFile, nextPath: string
 // stripping on Windows when the archive is later unzipped.
 const THEME_NAME_PATTERN = /^[a-z0-9][\w-]{0,63}$/;
 
-const iconButtonClass = 'inline-flex h-7 w-7 items-center justify-center rounded-full border border-[#2f333b] bg-transparent text-[#c8ccd3] transition-colors hover:bg-[#1f2228] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a9eff] disabled:cursor-not-allowed disabled:opacity-50';
-const toolbarButtonClass = 'inline-flex items-center gap-2 rounded-md border px-3 py-1.5 text-[13px] font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a9eff] disabled:cursor-not-allowed disabled:opacity-50';
-const ghostButtonClass = `${toolbarButtonClass} border-[#2f333b] bg-transparent text-[#e6e7ea] hover:bg-[#1f2228]`;
-const primaryButtonClass = `${toolbarButtonClass} border-transparent bg-green text-black hover:bg-green-400`;
 const wrapToggleClass = (active: boolean) => `inline-flex h-5 w-5 items-center justify-center rounded-sm text-[#c8ccd3] transition-opacity hover:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a9eff] ${active ? 'opacity-100' : 'opacity-60'}`;
-const fileActionButtonClass = 'inline-flex h-5 w-5 items-center justify-center rounded-sm text-[#c8ccd3] transition-opacity hover:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a9eff] disabled:cursor-not-allowed disabled:opacity-30';
+
 const editorSelectionTheme = EditorView.theme({
     '&.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection': {
         backgroundColor: '#355070'
@@ -284,101 +163,6 @@ const editorSelectionTheme = EditorView.theme({
         color: '#ffffff'
     }
 }, {dark: true});
-
-type ThemeEditorConfirmModalProps = {
-    title: string;
-    prompt: React.ReactNode;
-    cancelLabel?: string;
-    okLabel?: string;
-    okColor?: 'black' | 'red' | 'green' | 'outline';
-};
-
-const ThemeEditorConfirmModal = NiceModal.create<ThemeEditorConfirmModalProps>(({
-    title,
-    prompt,
-    cancelLabel = 'Cancel',
-    okLabel = 'OK',
-    okColor = 'black'
-}) => {
-    const modal = useModal();
-
-    const closeWithResult = (result: boolean) => {
-        modal.resolve(result);
-        modal.remove();
-    };
-
-    return (
-        <Modal
-            backDropClick={false}
-            cancelLabel={cancelLabel}
-            okColor={okColor}
-            okLabel={okLabel}
-            testId='theme-editor-confirm-modal'
-            title={title}
-            width={540}
-            onCancel={() => closeWithResult(false)}
-            onOk={() => closeWithResult(true)}
-        >
-            <div className='py-4'>
-                {prompt}
-            </div>
-        </Modal>
-    );
-});
-
-type ThemeEditorInputModalProps = {
-    title: string;
-    prompt?: React.ReactNode;
-    fieldTitle: string;
-    initialValue: string;
-    placeholder?: string;
-    cancelLabel?: string;
-    okLabel?: string;
-};
-
-const ThemeEditorInputModal = NiceModal.create<ThemeEditorInputModalProps>(({
-    title,
-    prompt,
-    fieldTitle,
-    initialValue,
-    placeholder,
-    cancelLabel = 'Cancel',
-    okLabel = 'Continue'
-}) => {
-    const modal = useModal();
-    const [value, setValue] = useState(initialValue);
-
-    const closeWithResult = (result: string | null) => {
-        modal.resolve(result);
-        modal.remove();
-    };
-
-    return (
-        <Modal
-            backDropClick={false}
-            cancelLabel={cancelLabel}
-            okDisabled={!value.trim()}
-            okLabel={okLabel}
-            testId='theme-editor-input-modal'
-            title={title}
-            width={540}
-            onCancel={() => closeWithResult(null)}
-            onOk={() => closeWithResult(value)}
-        >
-            <div className='flex flex-col gap-4 py-4'>
-                {prompt}
-                <TextField
-                    clearBg={false}
-                    placeholder={placeholder}
-                    title={fieldTitle}
-                    value={value}
-                    autoFocus
-                    onChange={event => setValue(event.target.value)}
-                />
-            </div>
-        </Modal>
-    );
-});
 
 const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
     const modal = useModal();
@@ -398,7 +182,6 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
     const [loadError, setLoadError] = useState<string | null>(null);
     const [isReviewOpen, setIsReviewOpen] = useState(false);
     const [isTextWrapEnabled, setIsTextWrapEnabled] = useState(false);
-    const [selectedReviewPath, setSelectedReviewPath] = useState<string | null>(null);
     const [editorExtensions, setEditorExtensions] = useState<Array<ReturnType<typeof search> | typeof oneDark | typeof editorSelectionTheme | typeof EditorView.lineWrapping | Awaited<ReturnType<typeof getLanguageExtension>>>>([]);
 
     useEffect(() => {
@@ -479,18 +262,6 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
     const changesMap = useMemo(() => new Map(changes.map(change => [change.path, change.status])), [changes]);
     const reviewItems = useMemo(() => buildReviewItems({baseFiles, currentFiles, changes}), [baseFiles, currentFiles, changes]);
     const selectedFile = selectedNode?.type === 'file' ? currentFiles[selectedNode.path] : null;
-    const selectedReviewItem = reviewItems.find(item => item.path === selectedReviewPath) || reviewItems[0] || null;
-
-    useEffect(() => {
-        if (!selectedReviewItem) {
-            setSelectedReviewPath(null);
-            return;
-        }
-
-        if (!selectedReviewPath || !reviewItems.some(item => item.path === selectedReviewPath)) {
-            setSelectedReviewPath(selectedReviewItem.path);
-        }
-    }, [reviewItems, selectedReviewItem, selectedReviewPath]);
 
     useEffect(() => {
         let isMounted = true;
@@ -1027,71 +798,7 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
         ensurePathExpanded(path);
     };
 
-    const renderTreeNode = (node: TreeNode, depth = 0): React.ReactNode => {
-        if (node.type === 'file') {
-            const isSelected = selectedNode?.type === 'file' && selectedNode.path === node.path;
-            const changeStatus = changesMap.get(node.path);
-
-            return (
-                <button
-                    key={node.path}
-                    className={`flex min-h-6 w-full items-center gap-1.5 rounded px-2 py-1 text-left text-[13px] leading-5 ${isSelected ? 'bg-[#243043] text-white' : 'text-[#c8ccd3] hover:bg-[#1f2228]'} ${!node.editable ? 'opacity-70' : ''}`}
-                    style={{paddingLeft: `${depth * 14 + 8}px`}}
-                    type='button'
-                    onClick={() => openFile(node.path)}
-                >
-                    <span className='w-3 shrink-0' />
-                    <FileCode2 size={14} />
-                    <span className='min-w-0 grow truncate'>{node.name}</span>
-                    {changeStatus && (
-                        <span className={`mr-1 h-1.5 w-1.5 shrink-0 rounded-full ${changeStatus === 'deleted' ? 'bg-[#ff6b6b]' : changeStatus === 'added' ? 'bg-[#14b886]' : 'bg-[#f5a623]'}`} />
-                    )}
-                </button>
-            );
-        }
-
-        const isExpanded = expandedDirectories.has(node.path);
-        const isSelected = selectedNode?.type === 'dir' && selectedNode.path === node.path;
-        const children = sortTreeNodes(Array.from(node.children?.values() || []));
-
-        return (
-            <div key={node.path || 'root'}>
-                {node.path && (
-                    <button
-                        className={`flex min-h-6 w-full items-center gap-1.5 rounded px-2 py-1 text-left text-[13px] leading-5 ${isSelected ? 'bg-[#202630] text-white' : 'text-[#c8ccd3] hover:bg-[#1f2228]'}`}
-                        style={{paddingLeft: `${depth * 14 + 8}px`}}
-                        type='button'
-                        onClick={() => {
-                            setSelectedNode({type: 'dir', path: node.path});
-                            setExpandedDirectories((current) => {
-                                const next = new Set(current);
-
-                                if (next.has(node.path)) {
-                                    next.delete(node.path);
-                                } else {
-                                    next.add(node.path);
-                                }
-
-                                return next;
-                            });
-                        }}
-                    >
-                        {isExpanded ? <ChevronDown className='shrink-0 text-[#6a6f78]' size={12} /> : <ChevronRight className='shrink-0 text-[#6a6f78]' size={12} />}
-                        {isExpanded ? <FolderOpen className='shrink-0 text-[#8a8f98]' size={14} /> : <Folder className='shrink-0 text-[#8a8f98]' size={14} />}
-                        <span className='truncate'>{node.name}</span>
-                    </button>
-                )}
-                {(node.path === '' || isExpanded) && (
-                    <div>
-                        {children.map(child => renderTreeNode(child, node.path ? depth + 1 : depth))}
-                    </div>
-                )}
-            </div>
-        );
-    };
-
     const selectedFileStatus = selectedFile ? changesMap.get(selectedFile.path) : null;
-    const reviewSummary = formatReviewSummary(reviewItems);
 
     return (
         <div
@@ -1107,33 +814,14 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
             }}
         >
             <div className='relative flex h-full w-full flex-col overflow-hidden bg-[#15171a]'>
-                <div className='flex items-center gap-3 border-b border-[#23262c] bg-[#1a1d21] px-4 py-3'>
-                    <div className='flex min-w-0 items-baseline gap-2'>
-                        <h2 className='truncate text-[14px] font-semibold text-[#f4f5f7]'>Edit theme</h2>
-                        <span className='truncate text-[12px] text-[#8a8f98]'>{currentThemeName}</span>
-                    </div>
-                    {changes.length > 0 && (
-                        <button
-                            className='rounded-full border border-transparent bg-[#3b2a16] px-2.5 py-1 text-[11px] leading-none text-[#f5a623] hover:bg-[#49311a]'
-                            type='button'
-                            onClick={() => {
-                                setSelectedReviewPath(reviewItems[0]?.path ?? null);
-                                setIsReviewOpen(true);
-                            }}
-                        >
-                            {changes.length} {changes.length === 1 ? 'file modified' : 'files modified'}
-                        </button>
-                    )}
-                    <div className='grow' />
-                    <button className={ghostButtonClass} type='button' onClick={closeEditor}>
-                        <X size={14} />
-                        Close
-                    </button>
-                    <button className={primaryButtonClass} disabled={isSaving} type='button' onClick={() => void handleSave()}>
-                        <Save size={14} />
-                        {isSaving ? 'Saving…' : 'Save'}
-                    </button>
-                </div>
+                <ThemeEditorToolbar
+                    changes={changes}
+                    currentThemeName={currentThemeName}
+                    isSaving={isSaving}
+                    onClose={closeEditor}
+                    onOpenReview={() => setIsReviewOpen(true)}
+                    onSave={() => void handleSave()}
+                />
 
                 {loadError && (
                     <div className='border-b border-[#512828] bg-[#3a1d1d] px-4 py-2 text-[12px] text-[#ffbdbd]'>
@@ -1142,34 +830,19 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
                 )}
 
                 <div className='flex min-h-0 flex-1'>
-                    <aside className='flex w-[280px] shrink-0 flex-col border-r border-[#23262c] bg-[#16181c]'>
-                        <div className='flex items-center justify-between gap-2 border-b border-[#23262c] px-3 py-2'>
-                            <div className='text-[12px] font-medium text-[#c8ccd3]'>{Object.keys(currentFiles).length} files</div>
-                            <div className='flex items-center gap-2'>
-                                <button aria-label='New file' className={fileActionButtonClass} type='button' onClick={handleCreateFile}>
-                                    <Plus size={13} />
-                                </button>
-                                <button aria-label='Rename selected item' className={fileActionButtonClass} disabled={!selectedNode} type='button' onClick={handleRenameSelected}>
-                                    <Pencil size={13} />
-                                </button>
-                                <button aria-label='Delete selected item' className={fileActionButtonClass} disabled={!selectedNode} type='button' onClick={handleDeleteSelected}>
-                                    <Trash2 size={13} />
-                                </button>
-                            </div>
-                        </div>
-                        <div className='min-h-0 flex-1 overflow-y-auto px-2 py-2'>
-                            {isLoading ? (
-                                <div className='flex h-full flex-col items-center justify-center gap-3 text-center text-[13px] text-[#8a8f98]'>
-                                    <div className='h-5 w-5 animate-spin rounded-full border-2 border-[#2f333b] border-t-[#14b886]' />
-                                    <span>Loading theme files…</span>
-                                </div>
-                            ) : Object.keys(currentFiles).length === 0 ? (
-                                <div className='px-3 py-4 text-[12px] text-[#8a8f98]'>This theme archive does not contain any files.</div>
-                            ) : (
-                                renderTreeNode(buildTree(currentFiles))
-                            )}
-                        </div>
-                    </aside>
+                    <ThemeFileTree
+                        changesMap={changesMap}
+                        currentFiles={currentFiles}
+                        expandedDirectories={expandedDirectories}
+                        isLoading={isLoading}
+                        selectedNode={selectedNode}
+                        setExpandedDirectories={setExpandedDirectories}
+                        setSelectedNode={setSelectedNode}
+                        onCreateFile={handleCreateFile}
+                        onDeleteSelected={handleDeleteSelected}
+                        onOpenFile={openFile}
+                        onRenameSelected={handleRenameSelected}
+                    />
 
                     <section className='flex min-w-0 flex-1 flex-col bg-[#16181c]'>
                         <div className='flex items-center gap-2 border-b border-[#23262c] bg-[#17191d] px-4 py-2 text-[12px] text-[#8a8f98]'>
@@ -1256,99 +929,15 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
                 </div>
 
                 {isReviewOpen && (
-                    <div className='absolute inset-0 z-10 flex items-center justify-center bg-[rgba(8,10,14,0.64)]' onClick={() => setIsReviewOpen(false)}>
-                        <div className='flex h-[min(78vh,calc(100%-24px))] w-[min(1240px,calc(100%-24px))] flex-col overflow-hidden rounded-[10px] border border-[#2b3038] bg-[#171a20] p-4 shadow-[0_24px_64px_rgba(0,0,0,0.45)]' onClick={event => event.stopPropagation()}>
-                            <div className='mb-2 flex items-center justify-between gap-3'>
-                                <div>
-                                    <h3 className='text-[16px] font-semibold text-[#f4f5f7]'>All changes</h3>
-                                    <p className='mt-1 text-[12px] text-[#9aa0aa]'>{reviewSummary}</p>
-                                </div>
-                                <button aria-label='Close review' className={iconButtonClass} type='button' onClick={() => setIsReviewOpen(false)}>
-                                    <X size={14} />
-                                </button>
-                            </div>
-
-                            <div className='grid min-h-0 flex-1 grid-cols-[320px_1fr] gap-3'>
-                                <div className='min-h-0 overflow-auto rounded-lg border border-[#2a2d33] bg-[#111319] p-2'>
-                                    {reviewItems.map(item => (
-                                        <button
-                                            key={`${item.status}-${item.path}`}
-                                            className={`flex w-full items-center gap-2 rounded-md border px-3 py-2 text-left text-[13px] ${selectedReviewItem?.path === item.path ? 'border-[#355070] bg-[#243043] text-white' : 'border-transparent text-[#d4d8de] hover:bg-[#1d2028]'}`}
-                                            type='button'
-                                            onClick={() => setSelectedReviewPath(item.path)}
-                                        >
-                                            <span className={`rounded px-1.5 py-0.5 text-[10px] tracking-[0.04em] uppercase ${item.status === 'deleted' ? 'bg-[#4a2222] text-[#ffbdbd]' : item.status === 'added' ? 'bg-[#17342a] text-[#a5e8c8]' : 'bg-[#3b2a16] text-[#f5a623]'}`}>
-                                                {item.status}
-                                            </span>
-                                            <span className='min-w-0 grow truncate'>{item.path}</span>
-                                            {!item.editable && <CircleDot className='text-[#6a6f78]' size={12} />}
-                                        </button>
-                                    ))}
-                                    {reviewItems.length === 0 && (
-                                        <div className='px-3 py-4 text-[12px] text-[#8a8f98]'>No unsaved changes.</div>
-                                    )}
-                                </div>
-
-                                <div className='flex min-h-0 flex-col overflow-hidden rounded-lg border border-[#2a2d33] bg-[#111319]'>
-                                    {selectedReviewItem ? (
-                                        <>
-                                            <div className='flex items-center gap-2 border-b border-[#23262c] px-4 py-3'>
-                                                <div className='min-w-0 grow'>
-                                                    <div className='truncate text-[13px] font-medium text-[#f4f5f7]'>{selectedReviewItem.path}</div>
-                                                    <div className='mt-1 text-[12px] text-[#8a8f98]'>
-                                                        {selectedReviewItem.editable ? 'Text file preview' : 'Binary file'}
-                                                    </div>
-                                                </div>
-                                                {selectedReviewItem.status !== 'deleted' && (
-                                                    <button className={ghostButtonClass} type='button' onClick={() => {
-                                                        openFile(selectedReviewItem.path);
-                                                        setIsReviewOpen(false);
-                                                    }}>
-                                                        Open in editor
-                                                    </button>
-                                                )}
-                                                <button className={ghostButtonClass} type='button' onClick={() => handleRevertPath(selectedReviewItem.path)}>
-                                                    <Undo2 size={14} />
-                                                    Revert
-                                                </button>
-                                            </div>
-
-                                            {!selectedReviewItem.editable ? (
-                                                <div className='flex flex-1 items-center justify-center p-8 text-center text-[13px] text-[#6a6f78]'>
-                                                    Binary files are kept intact in the archive. Open or revert the change from here, but binary contents are not shown.
-                                                </div>
-                                            ) : selectedReviewItem.status === 'added' ? (
-                                                <div className='min-h-0 flex-1 overflow-auto p-4'>
-                                                    <div className='mb-2 text-[11px] font-semibold tracking-[0.08em] text-[#8a8f98] uppercase'>After</div>
-                                                    <pre className='overflow-auto rounded-md border border-[#23262c] bg-[#15171a] p-4 text-[12px] leading-5 text-[#d4d8de]'>{selectedReviewItem.after ?? ''}</pre>
-                                                </div>
-                                            ) : selectedReviewItem.status === 'deleted' ? (
-                                                <div className='min-h-0 flex-1 overflow-auto p-4'>
-                                                    <div className='mb-2 text-[11px] font-semibold tracking-[0.08em] text-[#8a8f98] uppercase'>Before</div>
-                                                    <pre className='overflow-auto rounded-md border border-[#23262c] bg-[#15171a] p-4 text-[12px] leading-5 text-[#d4d8de]'>{selectedReviewItem.before ?? ''}</pre>
-                                                </div>
-                                            ) : (
-                                                <div className='grid min-h-0 flex-1 grid-cols-2 gap-4 p-4'>
-                                                    <div className='min-h-0 overflow-auto'>
-                                                        <div className='mb-2 text-[11px] font-semibold tracking-[0.08em] text-[#8a8f98] uppercase'>Before</div>
-                                                        <pre className='h-full overflow-auto rounded-md border border-[#23262c] bg-[#15171a] p-4 text-[12px] leading-5 text-[#d4d8de]'>{selectedReviewItem.before ?? ''}</pre>
-                                                    </div>
-                                                    <div className='min-h-0 overflow-auto'>
-                                                        <div className='mb-2 text-[11px] font-semibold tracking-[0.08em] text-[#8a8f98] uppercase'>After</div>
-                                                        <pre className='h-full overflow-auto rounded-md border border-[#23262c] bg-[#15171a] p-4 text-[12px] leading-5 text-[#d4d8de]'>{selectedReviewItem.after ?? ''}</pre>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </>
-                                    ) : (
-                                        <div className='flex flex-1 items-center justify-center p-8 text-center text-[13px] text-[#6a6f78]'>
-                                            Select a changed file to review it.
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <ThemeReviewModal
+                        reviewItems={reviewItems}
+                        onClose={() => setIsReviewOpen(false)}
+                        onOpenInEditor={(path) => {
+                            openFile(path);
+                            setIsReviewOpen(false);
+                        }}
+                        onRevert={handleRevertPath}
+                    />
                 )}
             </div>
         </div>
