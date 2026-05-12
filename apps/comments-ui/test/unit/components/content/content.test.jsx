@@ -1,6 +1,7 @@
 import Content from '../../../../src/components/content/content';
 import {AppContext} from '../../../../src/app-context';
-import {render, screen, act} from '@testing-library/react';
+import {act, render, screen} from '@testing-library/react';
+import {buildComment} from '../../../utils/fixtures';
 
 const contextualRender = (ui, {appContext, ...renderOptions}) => {
     const member = appContext?.member ?? null;
@@ -18,10 +19,12 @@ const contextualRender = (ui, {appContext, ...renderOptions}) => {
         comments: [],
         openCommentForms: [],
         member,
+        pageUrl: 'https://example.com/post',
         isMember,
         isPaidOnly,
         hasRequiredTier,
         isCommentingDisabled,
+        dispatchAction: () => {},
         t: str => str,
         ...appContext
     };
@@ -135,6 +138,46 @@ describe('<Content>', function () {
 
             window.removeEventListener('error', onError);
             expect(errors).toHaveLength(0);
+        });
+    });
+
+    describe('threaded display', function () {
+        it('passes the commentsThreads display mode through to rendered comments', function () {
+            const reply1 = buildComment({
+                html: '<p>First reply</p>'
+            });
+            const reply2 = buildComment({
+                html: '<p>Second reply</p>'
+            });
+            const reply3 = buildComment({
+                html: '<p>Third reply</p>'
+            });
+            const reply4 = buildComment({
+                html: '<p>Nested reply</p>',
+                in_reply_to_id: reply1.id,
+                in_reply_to_snippet: 'First reply'
+            });
+            const comment = buildComment({
+                html: '<p>Parent comment</p>',
+                replies: [reply1, reply2, reply3, reply4],
+                count: {
+                    replies: 4
+                }
+            });
+
+            contextualRender(<Content />, {
+                appContext: {
+                    comments: [comment],
+                    commentCount: 1,
+                    labs: {
+                        commentsThreads: true
+                    }
+                }
+            });
+
+            expect(screen.getByText('Nested reply')).toBeInTheDocument();
+            expect(screen.queryByText('Replied to')).not.toBeInTheDocument();
+            expect(screen.queryByTestId('replies-pagination')).not.toBeInTheDocument();
         });
     });
 });
