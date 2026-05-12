@@ -5,7 +5,6 @@ const VALID_AUTOMATION_STATUSES = ['active', 'inactive'];
 
 const messages = {
     invalidAutomationStatus: 'Automation status must be one of: active, inactive.',
-    missingAutomationStatus: 'Automation status is required.',
     invalidAutomationStatusHelp: 'Use "active" or "inactive" for automation status.'
 };
 
@@ -46,18 +45,10 @@ const controller = {
         validation(frame) {
             const status = frame.data?.automations?.[0]?.status;
 
-            if (status === undefined) {
-                throw new errors.ValidationError({
-                    message: messages.missingAutomationStatus,
-                    help: messages.invalidAutomationStatusHelp,
-                    property: 'status'
-                });
-            }
-
             if (!VALID_AUTOMATION_STATUSES.includes(status)) {
                 throw new errors.ValidationError({
                     message: messages.invalidAutomationStatus,
-                    context: `Received status "${status}".`,
+                    context: status === undefined ? undefined : `Received status "${status}".`,
                     help: messages.invalidAutomationStatusHelp,
                     property: 'status'
                 });
