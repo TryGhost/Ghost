@@ -39,7 +39,7 @@
     "mocha": "11.7.5"
   },
   "dependencies": {
-    "@tryghost/debug": "2.1.0",
+    "@tryghost/debug": "2.2.0",
     "i18next": "23.16.8"
   },
   "nx": {
