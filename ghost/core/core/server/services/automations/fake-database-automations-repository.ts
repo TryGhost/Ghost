@@ -165,6 +165,7 @@ function loadEdgeRows(database: DatabaseSync, automationId: string): EdgeRow[] {
         SELECT e.source_action_id, e.target_action_id
         FROM automation_action_edges e
         INNER JOIN automation_actions a ON a.id = e.source_action_id
+          AND a.deleted_at IS NULL
         WHERE a.automation_id = ?
         ORDER BY e.source_action_id, e.target_action_id
     `).all(automationId) as unknown as EdgeRow[];
