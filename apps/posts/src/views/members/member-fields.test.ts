@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {memberFields} from './member-fields';
+import {getMemberFields, memberFields} from './member-fields';
 import type {CodecContext, FilterPredicate} from '../filters/filter-types';
 
 const dateContext: CodecContext = {
@@ -55,12 +55,35 @@ describe('memberFields', () => {
             'is-greater',
             'is-less'
         ]);
-        expect(memberFields.created_at.operators).toEqual([
-            'is-less',
-            'is-or-less',
-            'is-greater',
-            'is-or-greater'
-        ]);
+        const dateOperators = ['is-less', 'is-or-less', 'is-greater', 'is-or-greater'];
+
+        expect(memberFields.created_at.operators).toEqual(dateOperators);
+        expect(memberFields.last_seen_at.operators).toEqual(dateOperators);
+        expect(memberFields['subscriptions.start_date'].operators).toEqual(dateOperators);
+        expect(memberFields['subscriptions.current_period_end'].operators).toEqual(dateOperators);
+    });
+
+    it('appends the past/future relative operator to date fields when the flag is on', () => {
+        const fields = getMemberFields({membersRelativeDateFilters: true});
+
+        expect(fields.created_at.operators).toContain('in-the-last');
+        expect(fields.last_seen_at.operators).toContain('in-the-last');
+        expect(fields['subscriptions.start_date'].operators).toContain('in-the-last');
+        expect(fields['subscriptions.current_period_end'].operators).toContain('in-the-next');
+    });
+
+    it('leaves date fields without relative operators when the flag is off', () => {
+        const fields = getMemberFields({membersRelativeDateFilters: false});
+
+        expect(fields.created_at.operators).not.toContain('in-the-last');
+        expect(fields['subscriptions.current_period_end'].operators).not.toContain('in-the-next');
+    });
+
+    it('leaves date fields without relative operators when no labs object is given', () => {
+        const fields = getMemberFields();
+
+        expect(fields.created_at.operators).not.toContain('in-the-last');
+        expect(fields['subscriptions.current_period_end'].operators).not.toContain('in-the-next');
     });
 
     it('keeps the expected subscription status options', () => {

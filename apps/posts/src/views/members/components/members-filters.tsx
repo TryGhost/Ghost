@@ -70,6 +70,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const emailTrackClicks = getSettingValue<boolean>(settings, 'email_track_clicks') === true;
     const siteTimezone = getSiteTimezone(settings);
     const giftSubscriptionsEnabled = configData?.config?.labs?.giftSubscriptions === true;
+    const labs = configData?.config?.labs;
 
     const tiers = tiersData?.tiers || [];
     const newsletters = newslettersData?.newsletters || [];
@@ -118,7 +119,8 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         emailTrackOpens,
         emailTrackClicks,
         siteTimezone,
-        giftSubscriptionsEnabled
+        giftSubscriptionsEnabled,
+        labs
     });
 
     const hasFilters = filters.length > 0;

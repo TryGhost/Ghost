@@ -28,6 +28,7 @@ Object {
       "lexicalIndicators": true,
       "llmsTxt": true,
       "members": true,
+      "membersRelativeDateFilters": true,
       "pictureImageFormats": true,
       "smarterCounts": true,
       "stripeAutomaticTax": true,
