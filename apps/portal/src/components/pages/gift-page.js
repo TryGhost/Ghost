@@ -2,11 +2,13 @@ import {useContext, useLayoutEffect, useRef, useState} from 'react';
 import AppContext from '../../app-context';
 import CloseButton from '../common/close-button';
 import ActionButton from '../common/action-button';
+import GiftCard from '../common/gift-card';
 import LoadingPage from './loading-page';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
 import giftCardNoiseUrl from '../../images/gift-card-noise.webp';
 import giftCardOrbUrl from '../../images/gift-card-orb.webp';
 import {getAvailableProducts, getCurrencySymbol, formatNumber, getStripeAmount, isCookiesDisabled, getActiveInterval} from '../../utils/helpers';
+import {getGiftDurationLabel} from '../../utils/gift-redemption-notification';
 import useCardTilt from '../../utils/use-card-tilt';
 
 // TODO: wrap strings with t() once copy is finalised
@@ -651,10 +653,6 @@ function getTierPriceLabel(product, selectedInterval) {
     return formatGiftValue(activePrice);
 }
 
-function getDurationLabel(selectedInterval) {
-    return selectedInterval === 'month' ? '1 month' : '1 year';
-}
-
 const GiftPage = () => {
     const {site, brandColor, action, doAction} = useContext(AppContext);
     const [selectedInterval, setSelectedInterval] = useState(null);
@@ -819,7 +817,7 @@ const GiftPage = () => {
                                                                     const key = benefit?.id || `benefit-${idx}`;
                                                                     return (
                                                                         <div className='gh-portal-gift-checkout-benefit' key={key}>
-                                                                            <CheckmarkIcon alt='' />
+                                                                            <CheckmarkIcon aria-hidden='true' focusable='false' />
                                                                             <span>{benefit.name}</span>
                                                                         </div>
                                                                     );
@@ -852,26 +850,14 @@ const GiftPage = () => {
                     <div className='gh-portal-gift-checkout-right' {...cardTiltProps}>
                         <div className='gh-portal-gift-checkout-right-panel'>
                             <div className='gh-portal-gift-checkout-card-stack'>
-                                <div ref={cardRef} className='gh-portal-gift-checkout-card'>
-                                    <div className='gh-portal-gift-checkout-card-notch' aria-hidden='true' />
-                                    <div className='gh-portal-gift-checkout-card-meta'>
-                                        <div className='gh-portal-gift-checkout-card-duration'>{getDurationLabel(activeInterval)}</div>
-                                        <div className='gh-portal-gift-checkout-card-tier'>{`${activeProduct.name} membership`}</div>
-                                    </div>
-                                    <div className='gh-portal-gift-checkout-card-details'>
-                                        <div className='gh-portal-gift-checkout-card-detail'>
-                                            <div className='gh-portal-gift-checkout-card-detail-label'>Gift value</div>
-                                            <div className='gh-portal-gift-checkout-card-detail-value'>{getTierPriceLabel(activeProduct, activeInterval)}</div>
-                                        </div>
-                                    </div>
-                                    <div className='gh-portal-gift-checkout-card-site'>
-                                        {siteIcon && (
-                                            <img className='gh-portal-gift-checkout-card-site-icon' src={siteIcon} alt='' />
-                                        )}
-                                        <span className='gh-portal-gift-checkout-card-site-name'>{siteTitle}</span>
-                                    </div>
-                                </div>
-
+                                <GiftCard
+                                    cardRef={cardRef}
+                                    duration={getGiftDurationLabel({cadence: activeInterval, duration: 1})}
+                                    tierName={activeProduct.name}
+                                    giftValue={getTierPriceLabel(activeProduct, activeInterval)}
+                                    siteIcon={siteIcon}
+                                    siteTitle={siteTitle}
+                                />
                             </div>
                         </div>
                     </div>
