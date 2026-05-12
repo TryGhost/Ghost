@@ -2,9 +2,9 @@ import {describe, expect, it} from 'vitest';
 import {formatWait} from '@src/views/Automations/components/automation-canvas';
 
 describe('formatWait', () => {
-    it('returns "Immediately" for 0 or negative hours', () => {
-        expect(formatWait(0)).toBe('Immediately');
-        expect(formatWait(-5)).toBe('Immediately');
+    it('throws for 0 or negative hours', () => {
+        expect(() => formatWait(0)).toThrow();
+        expect(() => formatWait(-1)).toThrow();
     });
 
     it('formats sub-day waits in hours with correct pluralization', () => {

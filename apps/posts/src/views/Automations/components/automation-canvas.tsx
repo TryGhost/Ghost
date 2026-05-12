@@ -89,7 +89,7 @@ const nodeTypes = {
 
 export const formatWait = (hours: number): string => {
     if (hours <= 0) {
-        return 'Immediately';
+        throw new Error('Wait time must be a positive number of hours.');
     }
     if (hours % 24 === 0) {
         const days = hours / 24;
