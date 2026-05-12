@@ -1,0 +1,145 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import moment from 'moment';
+import logging from '@tryghost/logging';
+import type {InternalApiKey, InternalIntegrationSlug} from '../internal-keys';
+
+// CJS-only modules — typed loosely below. models is the Bookshelf registry
+// without TS declarations; the rest are JS modules without types.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const models = require('../../models');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const urlUtils = require('../../../shared/url-utils');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const {getSignedAdminToken} = require('../../adapters/scheduling/utils');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const events = require('../../lib/common/events');
+
+interface SchedulerJob {
+    time: number;
+    url: string;
+    extra: {
+        httpMethod: string;
+        oldTime?: number | null;
+    };
+}
+
+// Adapters implement scheduling-base; the contract we rely on here is the
+// three callable methods plus the rescheduleOnBoot property that boot reads
+// elsewhere.
+interface SchedulingAdapter {
+    run(): void;
+    // eslint-disable-next-line no-unused-vars
+    schedule(job: SchedulerJob): void;
+    // eslint-disable-next-line no-unused-vars
+    unschedule(job: SchedulerJob, opts?: {bootstrap?: boolean}): void;
+}
+
+interface PostSchedulingDeps {
+    apiUrl: string;
+    adapter: SchedulingAdapter;
+    internalKeys: ReadonlyMap<InternalIntegrationSlug, Promise<InternalApiKey>>;
+}
+
+// Pages live in the posts table with type:'page', so both types are
+// queried through models.Post and discriminated via the type filter.
+const SCHEDULED_RESOURCES = ['post', 'page'] as const;
+type ScheduledResource = typeof SCHEDULED_RESOURCES[number];
+
+export default class PostScheduling {
+    readonly #apiUrl: string;
+    readonly #adapter: SchedulingAdapter;
+    readonly #internalKeys: ReadonlyMap<InternalIntegrationSlug, Promise<InternalApiKey>>;
+
+    constructor({apiUrl, adapter, internalKeys}: PostSchedulingDeps) {
+        this.#apiUrl = apiUrl;
+        this.#adapter = adapter;
+        this.#internalKeys = internalKeys;
+
+        adapter.run();
+
+        SCHEDULED_RESOURCES.forEach((resource) => {
+            events.on(`${resource}.scheduled`, async (model: any) => {
+                try {
+                    const key = await internalKeys.get('ghost-scheduler');
+                    adapter.schedule(this.#normalize({model, key: key!, resourceType: resource}));
+                } catch (err) {
+                    logging.error({event: {name: 'post-scheduling.schedule.error'}, err, resource, id: model.get('id')}, 'Failed to schedule resource');
+                }
+            });
+
+            // Reschedule = matched unschedule + fresh schedule, because tokens
+            // are signed against the published_at timestamp.
+            events.on(`${resource}.rescheduled`, async (model: any) => {
+                try {
+                    const key = await internalKeys.get('ghost-scheduler');
+                    adapter.unschedule(this.#normalize({model, key: key!, resourceType: resource}, 'unscheduled'));
+                    adapter.schedule(this.#normalize({model, key: key!, resourceType: resource}));
+                } catch (err) {
+                    logging.error({event: {name: 'post-scheduling.reschedule.error'}, err, resource, id: model.get('id')}, 'Failed to reschedule resource');
+                }
+            });
+
+            events.on(`${resource}.unscheduled`, async (model: any) => {
+                try {
+                    const key = await internalKeys.get('ghost-scheduler');
+                    adapter.unschedule(this.#normalize({model, key: key!, resourceType: resource}, 'unscheduled'));
+                } catch (err) {
+                    logging.error({event: {name: 'post-scheduling.unschedule.error'}, err, resource, id: model.get('id')}, 'Failed to unschedule resource');
+                }
+            });
+        });
+    }
+
+    /**
+     * Re-issue every queued schedule under the current internal-keys cache.
+     * On boot the previous key is the same as the current key. For key
+     * rotation, the caller passes `previousKey` so unschedule URLs match
+     * the entries the adapter already holds (signed under the previous
+     * secret); schedule URLs are reissued under the current secret.
+     */
+    async rescheduleAll({previousKey}: {previousKey?: InternalApiKey} = {}): Promise<void> {
+        const scheduledResources = await this.#loadScheduledResources();
+        const currentKey = await this.#internalKeys.get('ghost-scheduler');
+        const unscheduleKey = previousKey ?? currentKey!;
+
+        for (const resourceType of Object.keys(scheduledResources) as ScheduledResource[]) {
+            for (const model of scheduledResources[resourceType]) {
+                this.#adapter.unschedule(
+                    this.#normalize({model, key: unscheduleKey, resourceType}),
+                    {bootstrap: true}
+                );
+                this.#adapter.schedule(
+                    this.#normalize({model, key: currentKey!, resourceType})
+                );
+            }
+        }
+    }
+
+    async #loadScheduledResources(): Promise<Record<ScheduledResource, any[]>> {
+        const entries = await Promise.all(SCHEDULED_RESOURCES.map(async (resourceType) => {
+            const found = await models.Post.findAll({
+                filter: `status:scheduled+type:${resourceType}`,
+                columns: ['id', 'published_at', 'created_at', 'type']
+            });
+            return [resourceType, found];
+        }));
+        return Object.fromEntries(entries);
+    }
+
+    #normalize({model, resourceType, key}: {model: any; resourceType: ScheduledResource; key: InternalApiKey}, event: '' | 'unscheduled' = ''): SchedulerJob {
+        const resource = `${resourceType}s`;
+        const publishedAt = (event === 'unscheduled') ? model.previous('published_at') : model.get('published_at');
+        const signedAdminToken = getSignedAdminToken({publishedAt, apiUrl: this.#apiUrl, key});
+        const url = `${urlUtils.urlJoin(this.#apiUrl, 'schedules', resource, model.get('id'))}/?token=${signedAdminToken}`;
+
+        return {
+            // NOTE: The scheduler expects a unix timestamp.
+            time: moment(publishedAt).valueOf(),
+            url,
+            extra: {
+                httpMethod: 'PUT',
+                oldTime: model.previous('published_at') ? moment(model.previous('published_at')).valueOf() : null
+            }
+        };
+    }
+}

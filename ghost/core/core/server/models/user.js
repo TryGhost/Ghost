@@ -174,6 +174,19 @@ User = ghostBookshelf.Model.extend({
         return this.get('status') === 'locked';
     },
 
+    /**
+     * Mark this user as locked and replace their password with an opaque
+     * random value. The old password no longer authenticates; the user will
+     * set a real one via the reset-on-signin flow.
+     */
+    lock: function lock(options) {
+        return this.save({
+            status: 'locked',
+            // secretlint-disable-next-line @secretlint/secretlint-rule-pattern
+            password: security.identifier.uid(50)
+        }, Object.assign({}, options, {patch: true}));
+    },
+
     isInactive: function isInactive() {
         return this.get('status') === 'inactive';
     },

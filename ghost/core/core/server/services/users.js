@@ -56,24 +56,46 @@ class Users {
         this.assignTagToUserPosts = this.assignTagToUserPosts.bind(this);
     }
 
-    async resetAllPasswords(frameOptions) {
-        return this.models.Base.transaction(async (t) => {
-            frameOptions.transacting = t;
-
-            // Reset all passwords
-            const users = await this.models.User.findAll(frameOptions);
-            for (const user of users) {
-                await user.save({
-                    status: 'locked' // Prevent signins before password reset
-                }, frameOptions);
+    /**
+     * Lock every (or every matching) user and invalidate their password.
+     *
+     * Locked users hit `PasswordResetRequiredError` on their next signin
+     * attempt; the session endpoint catches that, generates a reset token,
+     * and emails the user *in context of their own signin*. That avoids
+     * blasting unsolicited "your password has been reset" emails to people
+     * who are not actively signing in, while still funnelling everyone
+     * through a fresh password before they regain access.
+     *
+     * Optional `roles` restricts the action to users with one of the named
+     * roles, leaving the door open for staff-only variants. When unspecified
+     * the action applies to every user.
+     *
+     * @param {Object} frameOptions
+     * @param {Object} [opts]
+     * @param {string[]} [opts.roles] - optional role-name filter
+     * @returns {Promise<{count: number}>}
+     */
+    async lockAll(frameOptions, {roles} = {}) {
+        const lockUsers = async (txOptions) => {
+            const findOptions = Object.assign({}, txOptions);
+            if (roles && roles.length) {
+                findOptions.filter = `roles.name:[${roles.join(',')}]`;
             }
 
-            //Send all password resets
-            for (const user of users) {
-                const token = await this.auth.passwordreset.generateToken(user.get('email'), this.apiSettings, t);
-                await this.auth.passwordreset.sendResetNotification(token, this.apiMail);
+            const users = await this.models.User.findAll(findOptions);
+            for (const user of users.models) {
+                await user.lock(txOptions);
             }
-        });
+            return users.models;
+        };
+
+        // If the caller supplied an outer transaction, run inside it; otherwise
+        // open our own.
+        const users = frameOptions.transacting
+            ? await lockUsers(frameOptions)
+            : await this.models.Base.transaction(t => lockUsers(Object.assign({}, frameOptions, {transacting: t})));
+
+        return {count: users.length};
     }
 
     async assignTagToUserPosts({id, context, transacting}) {

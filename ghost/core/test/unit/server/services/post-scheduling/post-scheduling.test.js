@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const errors = require('@tryghost/errors');
 const sinon = require('sinon');
 const moment = require('moment');
 const testUtils = require('../../../../utils');
@@ -8,16 +7,15 @@ const events = require('../../../../../core/server/lib/common/events');
 const schedulingUtils = require('../../../../../core/server/adapters/scheduling/utils');
 const SchedulingDefault = require('../../../../../core/server/adapters/scheduling/scheduling-default');
 const urlUtils = require('../../../../../core/shared/url-utils');
-const PostSchedulerService = require('../../../../../core/server/services/post-scheduling/post-scheduler-service');
+const PostScheduling = require('../../../../../core/server/services/post-scheduling/post-scheduling').default;
 const nock = require('nock');
 
-describe('Post Scheduler Service', function () {
+describe('PostScheduling', function () {
     let adapter;
     let internalKeys;
 
     beforeEach(function () {
         adapter = new SchedulingDefault();
-
         sinon.stub(schedulingUtils, 'createAdapter').returns(Promise.resolve(adapter));
         sinon.spy(adapter, 'schedule');
         sinon.spy(adapter, 'unschedule');
@@ -32,20 +30,6 @@ describe('Post Scheduler Service', function () {
     });
 
     describe('constructor', function () {
-        it('throws when apiUrl is missing', function () {
-            assert.throws(
-                () => new PostSchedulerService(),
-                err => err instanceof errors.IncorrectUsageError
-            );
-        });
-
-        it('throws when internalKeys is missing', function () {
-            assert.throws(
-                () => new PostSchedulerService({apiUrl: 'http://scheduler.local:1111/'}),
-                err => err instanceof errors.IncorrectUsageError
-            );
-        });
-
         it('wires event handlers and starts the adapter', async function () {
             const post = models.Post.forge(testUtils.DataGenerator.forKnex.createPost({
                 id: 1337,
@@ -55,12 +39,7 @@ describe('Post Scheduler Service', function () {
             nock('http://scheduler.local:1111').post(() => true).query(true).reply(200);
             nock('http://scheduler.local:1111').put(() => true).query(true).reply(200);
 
-            new PostSchedulerService({
-                apiUrl: 'http://scheduler.local:1111/',
-                internalKeys,
-                adapter,
-                events
-            });
+            new PostScheduling({apiUrl: 'http://scheduler.local:1111/', internalKeys, adapter});
 
             events.emit('post.scheduled', post);
             await new Promise((resolve) => {
@@ -77,7 +56,7 @@ describe('Post Scheduler Service', function () {
         });
     });
 
-    describe('reschedule', function () {
+    describe('rescheduleAll', function () {
         it('unschedules with the previous key and reschedules with the current key', async function () {
             const post = models.Post.forge(testUtils.DataGenerator.forKnex.createPost({
                 id: 4004,
@@ -88,17 +67,13 @@ describe('Post Scheduler Service', function () {
                 ['ghost-scheduler', Promise.resolve({id: 'k1', secret: 'aaaabbbb'})]
             ]);
 
-            const service = new PostSchedulerService({
-                apiUrl: 'http://scheduler.local:1111/',
-                internalKeys,
-                adapter,
-                events
+            sinon.stub(models.Post, 'findAll').callsFake(({filter}) => {
+                return Promise.resolve(filter.includes('type:post') ? [post] : []);
             });
 
-            await service.reschedule(
-                {post: [post], page: []},
-                {previousKey: {id: 'k1', secret: 'ccccdddd'}}
-            );
+            const service = new PostScheduling({apiUrl: 'http://scheduler.local:1111/', internalKeys, adapter});
+
+            await service.rescheduleAll({previousKey: {id: 'k1', secret: 'ccccdddd'}});
 
             sinon.assert.calledOnce(adapter.unschedule);
             sinon.assert.calledOnce(adapter.schedule);

@@ -115,6 +115,7 @@ export interface GiftPurchaseData {
 
 interface SchedulerAdapter {
     schedule(job: {time: number; url: string; extra: {httpMethod: string}}): void;
+    unschedule(job: {time: number; url: string; extra: {httpMethod: string}}): void;
 }
 
 type GetSchedulerKey = () => Promise<InternalApiKey>;
@@ -630,6 +631,48 @@ export class GiftService {
             });
         } catch (err) {
             logging.error('Failed to schedule gift reminder', err);
+        }
+    }
+
+    /**
+     * Re-issue every queued reminder under the current scheduler key. Pass
+     * the pre-rotation secret as `previousKey` so each adapter-queued URL
+     * can be reconstructed for unschedule before resigning with the new
+     * key. Reminders whose fire time has already passed are skipped — the
+     * daily cron will pick them up.
+     */
+    async rescheduleAll({previousKey}: {previousKey?: InternalApiKey} = {}): Promise<void> {
+        const {schedulerAdapter, getSchedulerKey, getSignedAdminToken, urlJoin, apiUrl, giftRepository} = this.deps;
+        if (!schedulerAdapter || !getSchedulerKey || !getSignedAdminToken || !urlJoin || !apiUrl) {
+            return;
+        }
+
+        const currentKey = await getSchedulerKey();
+        const unscheduleKey = previousKey ?? currentKey;
+        const pending = await giftRepository.findUnsentReminders();
+
+        for (const gift of pending) {
+            if (!gift.consumesAt) {
+                continue;
+            }
+            const time = gift.consumesAt.getTime() - GIFT_REMINDER_LEAD_MS;
+            if (time <= Date.now()) {
+                continue;
+            }
+
+            const buildJob = (key: InternalApiKey) => {
+                const signedAdminToken = getSignedAdminToken({
+                    publishedAt: new Date(time).toISOString(),
+                    apiUrl,
+                    key
+                });
+                const url = new URL(urlJoin(apiUrl, 'gifts', 'flush_reminders'));
+                url.searchParams.set('token', signedAdminToken);
+                return {time, url: url.toString(), extra: {httpMethod: 'PUT'}};
+            };
+
+            schedulerAdapter.unschedule(buildJob(unscheduleKey));
+            schedulerAdapter.schedule(buildJob(currentKey));
         }
     }
 

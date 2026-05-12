@@ -12,7 +12,29 @@ const apiMail = require('./index').mail;
 const apiSettings = require('./index').settings;
 const UsersService = require('../../services/users');
 const userService = new UsersService({dbBackup, models, auth, apiMail, apiSettings});
-const {deleteAllSessions} = require('../../services/auth/session');
+const internalKeys = require('../../services/internal-keys').default;
+const postScheduling = require('../../services/post-scheduling').default;
+const automations = require('../../services/automations');
+const giftService = require('../../services/gifts').service;
+
+const resetAuthentication = auth.resetAuthentication({
+    models,
+    internalKeys,
+    postScheduling,
+    automations,
+    giftService,
+    userService,
+    deleteAllSessions: auth.session.deleteAllSessions
+});
+
+async function destroyRequestSession(req) {
+    if (!req || !req.session) {
+        return;
+    }
+    await new Promise((resolve, reject) => {
+        req.session.destroy(err => (err ? reject(err) : resolve()));
+    });
+}
 
 const messages = {
     notTheBlogOwner: 'You are not the site owner.'
@@ -224,15 +246,22 @@ const controller = {
         }
     },
 
-    resetAllPasswords: {
-        statusCode: 204,
+    reset: {
+        statusCode: 200,
         headers: {
             cacheInvalidate: false
         },
         permissions: true,
         async query(frame) {
-            await userService.resetAllPasswords(frame.options);
-            await deleteAllSessions();
+            const result = await resetAuthentication({options: frame.options});
+
+            // Express-session would otherwise re-save the current request's
+            // session on the response, resurrecting the row deleteAllSessions
+            // just wiped. Destroying the request session prevents the re-save
+            // and emits a Set-Cookie that expires the cookie on the client.
+            await destroyRequestSession(frame.original.session && frame.original.session.req);
+
+            return result;
         }
     }
 };

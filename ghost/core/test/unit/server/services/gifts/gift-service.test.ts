@@ -38,6 +38,7 @@ describe('GiftService', function () {
         findPendingConsumption: sinon.SinonStub<[], Promise<Gift[]>>;
         findPendingExpiration: sinon.SinonStub<[], Promise<Gift[]>>;
         findPendingReminder: sinon.SinonStub<[FindPendingReminderOptions], Promise<Gift[]>>;
+        findUnsentReminders: sinon.SinonStub<[], Promise<Gift[]>>;
         create: sinon.SinonStub;
         update: sinon.SinonStub;
         transaction: sinon.SinonStub<Parameters<GiftRepository['transaction']>, Promise<unknown>>;
@@ -86,6 +87,7 @@ describe('GiftService', function () {
             findPendingConsumption: sinon.stub<[], Promise<Gift[]>>().resolves([]),
             findPendingExpiration: sinon.stub<[], Promise<Gift[]>>().resolves([]),
             findPendingReminder: sinon.stub<[FindPendingReminderOptions], Promise<Gift[]>>().resolves([]),
+            findUnsentReminders: sinon.stub<[], Promise<Gift[]>>().resolves([]),
             create: sinon.stub(),
             update: sinon.stub(),
             transaction: sinon.stub<Parameters<GiftRepository['transaction']>, Promise<unknown>>().callsFake(async (callback) => {
@@ -129,7 +131,7 @@ describe('GiftService', function () {
     });
 
     function createService(overrides: {
-        schedulerAdapter?: {schedule: sinon.SinonStub} | null;
+        schedulerAdapter?: {schedule: sinon.SinonStub; unschedule: sinon.SinonStub} | null;
         getSchedulerKey?: (() => Promise<{id: string; secret: string}>) | null;
         getSignedAdminToken?: sinon.SinonStub | null;
         urlJoin?: sinon.SinonStub | null;
@@ -1336,13 +1338,14 @@ describe('GiftService', function () {
 
         function buildSchedulerDeps() {
             const schedule = sinon.stub();
+            const unschedule = sinon.stub();
             const getSignedAdminToken = sinon.stub().returns('signed-token');
             const urlJoin = sinon.stub().callsFake((...parts: string[]) => parts.join('/'));
             const key = {id: 'key-id', secret: '00'.repeat(32)};
             const getSchedulerKey = sinon.stub().resolves(key);
 
             return {
-                schedulerAdapter: {schedule},
+                schedulerAdapter: {schedule, unschedule},
                 key,
                 getSchedulerKey,
                 getSignedAdminToken,
@@ -1410,9 +1413,10 @@ describe('GiftService', function () {
             giftRepository.getByToken.resolves(gift);
 
             const schedule = sinon.stub();
+            const unschedule = sinon.stub();
             // schedulerAdapter provided but apiUrl missing
             const service = createService({
-                schedulerAdapter: {schedule},
+                schedulerAdapter: {schedule, unschedule},
                 getSchedulerKey: null,
                 getSignedAdminToken: sinon.stub(),
                 urlJoin: sinon.stub(),
@@ -2044,6 +2048,85 @@ describe('GiftService', function () {
             );
             sinon.assert.notCalled(memberRepository.update);
             sinon.assert.notCalled(giftRepository.update);
+        });
+    });
+
+    describe('rescheduleAll', function () {
+        const apiUrl = 'https://example.com/ghost/api/admin';
+
+        function buildSchedulerDeps() {
+            const schedule = sinon.stub();
+            const unschedule = sinon.stub();
+            const getSignedAdminToken = sinon.stub().callsFake((opts: {key: {secret: string}}) => `tok-${opts.key.secret}`);
+            const urlJoin = sinon.stub().callsFake((...parts: string[]) => parts.join('/'));
+            const currentKey = {id: 'k', secret: 'current'};
+            const getSchedulerKey = sinon.stub().resolves(currentKey);
+            return {
+                schedulerAdapter: {schedule, unschedule},
+                currentKey,
+                getSchedulerKey,
+                getSignedAdminToken,
+                urlJoin,
+                apiUrl
+            };
+        }
+
+        function buildPendingGift(daysAhead: number): Gift {
+            return buildGift({
+                token: `tok-${daysAhead}`,
+                status: 'redeemed',
+                redeemerMemberId: 'm_1',
+                redeemedAt: new Date(),
+                consumesAt: new Date(Date.now() + daysAhead * 24 * 60 * 60 * 1000)
+            });
+        }
+
+        it('unschedules each pending reminder with previousKey and schedules with current', async function () {
+            const deps = buildSchedulerDeps();
+            const service = createService(deps);
+            giftRepository.findUnsentReminders.resolves([buildPendingGift(30), buildPendingGift(60)]);
+
+            await service.rescheduleAll({previousKey: {id: 'k', secret: 'old'}});
+
+            sinon.assert.calledTwice(deps.schedulerAdapter.unschedule);
+            sinon.assert.calledTwice(deps.schedulerAdapter.schedule);
+            // Tokens distinguish old vs new key
+            const unscheduleJobs = deps.schedulerAdapter.unschedule.getCalls().map(c => c.args[0]);
+            const scheduleJobs = deps.schedulerAdapter.schedule.getCalls().map(c => c.args[0]);
+            assert.ok(unscheduleJobs.every(j => j.url.endsWith('token=tok-old')));
+            assert.ok(scheduleJobs.every(j => j.url.endsWith('token=tok-current')));
+        });
+
+        it('uses current key for both unschedule and schedule when previousKey omitted', async function () {
+            const deps = buildSchedulerDeps();
+            const service = createService(deps);
+            giftRepository.findUnsentReminders.resolves([buildPendingGift(30)]);
+
+            await service.rescheduleAll();
+
+            const unscheduleJob = deps.schedulerAdapter.unschedule.getCall(0).args[0];
+            assert.ok(unscheduleJob.url.endsWith('token=tok-current'));
+        });
+
+        it('is a no-op when scheduler deps are missing', async function () {
+            const service = createService({});
+            giftRepository.findUnsentReminders.resolves([buildPendingGift(30)]);
+
+            await service.rescheduleAll({previousKey: {id: 'k', secret: 'old'}});
+
+            sinon.assert.notCalled(giftRepository.findUnsentReminders);
+        });
+
+        it('skips reminders whose fire time has already passed', async function () {
+            const deps = buildSchedulerDeps();
+            const service = createService(deps);
+            // consumesAt 1 day ahead → reminder fires at consumesAt - 7d → in the past
+            giftRepository.findUnsentReminders.resolves([buildPendingGift(1)]);
+
+            await service.rescheduleAll({previousKey: {id: 'k', secret: 'old'}});
+
+            sinon.assert.notCalled(deps.schedulerAdapter.unschedule);
+            sinon.assert.notCalled(deps.schedulerAdapter.schedule);
         });
     });
 });

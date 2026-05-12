@@ -5,49 +5,111 @@ const DomainEvents = require('@tryghost/domain-events/lib/DomainEvents');
 const Users = require('../../../../../core/server/services/users');
 
 describe('Users service', function () {
-    describe('resetAllPasswords', function () {
-        it('resets all user passwords', async function () {
-            const userToReset = {
-                save: sinon.mock().resolves(),
-                get: sinon.mock().withArgs('email').returns('test_email@example.com')
-            };
-            const mockOptions = {
-                dbBackup: {
-                    backup: sinon.mock().resolves('backup/path/file.json')
+    describe('lockAll', function () {
+        function makeUser({email} = {}) {
+            const user = {
+                locked: false,
+                lock() {
+                    this.locked = true;
+                    return Promise.resolve();
                 },
-                models: {
-                    Base: {
-                        transaction: (cb) => {
-                            return cb('fake_transaction');
-                        }
-                    },
-                    User: {
-                        findAll: sinon.mock().resolves([userToReset])
+                get: sinon.stub().withArgs('email').returns(email ?? 'test_email@example.com')
+            };
+            return user;
+        }
+
+        /**
+         * Stand up a Users service against an in-memory pretend-DB. The pretend-DB
+         * honours `filter: roles.name:[…]` so the test asserts on which users
+         * actually got locked, not on what arguments we passed around.
+         */
+        function makeService({users} = {users: [makeUser()]}) {
+            const userRoles = new Map(); // user → string[]
+
+            const findAll = (options = {}) => {
+                let matching = users;
+                if (options.filter) {
+                    const rolesMatch = options.filter.match(/^roles\.name:\[(.+)\]$/);
+                    if (rolesMatch) {
+                        const filterRoles = rolesMatch[1].split(',');
+                        matching = users.filter((u) => {
+                            const roles = userRoles.get(u) || [];
+                            return roles.some(r => filterRoles.includes(r));
+                        });
                     }
+                }
+                return Promise.resolve({models: matching});
+            };
+
+            const service = new Users({
+                dbBackup: {backup: sinon.stub().resolves()},
+                models: {
+                    Base: {transaction: cb => cb('fake_transaction')},
+                    User: {findAll}
                 },
                 auth: {
                     passwordreset: {
-                        generateToken: sinon.mock().resolves('secret_fake_token'),
-                        sendResetNotification: sinon.mock().resolves('reset_notification_sent')
+                        generateToken: sinon.stub().resolves('secret_fake_token'),
+                        sendResetNotification: sinon.stub().resolves()
                     }
                 },
                 apiMail: 'fake_api_mail',
                 apiSettings: 'fake_api_settings'
-            };
-            const usersService = new Users(mockOptions);
-
-            await usersService.resetAllPasswords({
-                context: {}
             });
 
-            sinon.assert.calledOnce(mockOptions.auth.passwordreset.generateToken);
-            assert.equal(mockOptions.auth.passwordreset.generateToken.args[0][0], 'test_email@example.com');
-            assert.equal(mockOptions.auth.passwordreset.generateToken.args[0][1], 'fake_api_settings');
-            assert.equal(mockOptions.auth.passwordreset.generateToken.args[0][2], 'fake_transaction');
+            // Helper for tests that exercise role filtering — attach roles to users
+            // in our pretend-DB lookup table.
+            service._assignRoles = (user, roles) => userRoles.set(user, roles);
 
-            sinon.assert.calledOnce(mockOptions.auth.passwordreset.sendResetNotification);
-            assert.equal(mockOptions.auth.passwordreset.sendResetNotification.args[0][0], 'secret_fake_token');
-            assert.equal(mockOptions.auth.passwordreset.sendResetNotification.args[0][1], 'fake_api_mail');
+            return service;
+        }
+
+        it('locks every user when no role filter is given', async function () {
+            const a = makeUser({email: 'a@example.com'});
+            const b = makeUser({email: 'b@example.com'});
+            const usersService = makeService({users: [a, b]});
+
+            const result = await usersService.lockAll({context: {}});
+
+            assert.equal(result.count, 2);
+            assert.equal(a.locked, true);
+            assert.equal(b.locked, true);
+        });
+
+        it('does not proactively send any reset emails', async function () {
+            const usersService = makeService({
+                users: [makeUser({email: 'a@example.com'}), makeUser({email: 'b@example.com'})]
+            });
+
+            await usersService.lockAll({context: {}});
+
+            sinon.assert.notCalled(usersService.auth.passwordreset.generateToken);
+            sinon.assert.notCalled(usersService.auth.passwordreset.sendResetNotification);
+        });
+
+        it('returns count=0 when no users match', async function () {
+            const usersService = makeService({users: []});
+
+            const result = await usersService.lockAll({context: {}});
+
+            assert.equal(result.count, 0);
+        });
+
+        it('only locks users with one of the named roles', async function () {
+            const owner = makeUser({email: 'owner@example.com'});
+            const editor = makeUser({email: 'editor@example.com'});
+            const contributor = makeUser({email: 'contributor@example.com'});
+            const usersService = makeService({users: [owner, editor, contributor]});
+            usersService._assignRoles(owner, ['Owner']);
+            usersService._assignRoles(editor, ['Editor']);
+            usersService._assignRoles(contributor, ['Contributor']);
+
+            const result = await usersService.lockAll({context: {}}, {roles: ['Owner', 'Editor']});
+
+            assert.equal(result.count, 2);
+            assert.equal(owner.locked, true);
+            assert.equal(editor.locked, true);
+            assert.equal(contributor.locked, false);
         });
     });
 
