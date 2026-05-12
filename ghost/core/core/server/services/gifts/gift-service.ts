@@ -3,6 +3,7 @@ import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import {Gift} from './gift';
 import type {GiftRepository} from './gift-repository';
+import type {InternalApiKey} from '../internal-keys';
 import tpl from '@tryghost/tpl';
 import {GIFT_REMINDER_FLOOR_DAYS, GIFT_REMINDER_LEAD_DAYS} from './constants';
 import {MEMBER_WELCOME_EMAIL_SLUGS} from '../member-welcome-emails/constants';
@@ -118,14 +119,12 @@ interface SchedulerAdapter {
     schedule(job: {time: number; url: string; extra: {httpMethod: string}}): void;
 }
 
-interface SchedulerIntegration {
-    api_keys: Array<{id: string; secret: string}>;
-}
+type GetSchedulerKey = () => Promise<InternalApiKey>;
 
 type GetSignedAdminToken = (options: {
     publishedAt: string;
     apiUrl: string;
-    integration: SchedulerIntegration;
+    key: InternalApiKey;
 }) => string;
 
 type UrlJoin = (...parts: string[]) => string;
@@ -137,7 +136,7 @@ interface GiftServiceDeps {
     giftEmailService: GiftEmailService;
     staffServiceEmails: StaffServiceEmails;
     schedulerAdapter: SchedulerAdapter | null;
-    schedulerIntegration: SchedulerIntegration | null;
+    getSchedulerKey: GetSchedulerKey | null;
     getSignedAdminToken: GetSignedAdminToken | null;
     urlJoin: UrlJoin | null;
     apiUrl: string | null;
@@ -358,7 +357,7 @@ export class GiftService {
                 logging.error('Failed to notify staff of gift redemption', err);
             }
 
-            this.scheduleReminder(redeemed);
+            await this.scheduleReminder(redeemed);
         };
 
         if (options.transacting) {
@@ -598,10 +597,10 @@ export class GiftService {
         return {expiredCount};
     }
 
-    private scheduleReminder(gift: Gift): void {
-        const {schedulerAdapter, schedulerIntegration, getSignedAdminToken, urlJoin, apiUrl} = this.deps;
+    private async scheduleReminder(gift: Gift): Promise<void> {
+        const {schedulerAdapter, getSchedulerKey, getSignedAdminToken, urlJoin, apiUrl} = this.deps;
 
-        if (!schedulerAdapter || !schedulerIntegration || !getSignedAdminToken || !urlJoin || !apiUrl) {
+        if (!schedulerAdapter || !getSchedulerKey || !getSignedAdminToken || !urlJoin || !apiUrl) {
             return;
         }
 
@@ -616,10 +615,11 @@ export class GiftService {
         }
 
         try {
+            const key = await getSchedulerKey();
             const signedAdminToken = getSignedAdminToken({
                 publishedAt: new Date(time).toISOString(),
                 apiUrl,
-                integration: schedulerIntegration
+                key
             });
 
             const url = new URL(urlJoin(apiUrl, 'gifts', 'flush_reminders'));

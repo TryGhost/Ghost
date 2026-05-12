@@ -51,7 +51,7 @@ const matchPagination = () => ({
 
 describe('Automations API', function () {
     let agent;
-    let schedulerIntegration;
+    let schedulerKey;
     let schedulerToken;
 
     before(async function () {
@@ -59,15 +59,12 @@ describe('Automations API', function () {
         await fixtureManager.init('users', 'integrations', 'api_keys');
         await agent.loginAsOwner();
 
-        schedulerIntegration = await models.Integration.findOne(
-            {slug: 'ghost-scheduler'},
-            {withRelated: 'api_keys'}
-        );
+        schedulerKey = await models.Integration.getApiKeyBySlug('ghost-scheduler', 'admin');
 
         schedulerToken = getSignedAdminToken({
             publishedAt: new Date().toISOString(),
             apiUrl: '/admin/',
-            integration: schedulerIntegration.toJSON()
+            key: schedulerKey
         });
     });
 
@@ -796,7 +793,7 @@ describe('Automations API', function () {
             const invalidSchedulerToken = getSignedAdminToken({
                 publishedAt: new Date().toISOString(),
                 apiUrl: '/members/',
-                integration: schedulerIntegration.toJSON()
+                key: schedulerKey
             });
 
             await agent

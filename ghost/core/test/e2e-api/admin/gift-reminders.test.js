@@ -10,22 +10,19 @@ const {cacheInvalidateHeaderNotSet} = assertions;
 
 describe('Gift Reminders API', function () {
     let agent;
-    let schedulerIntegration;
+    let schedulerKey;
     let schedulerToken;
 
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('integrations', 'api_keys');
 
-        schedulerIntegration = await models.Integration.findOne(
-            {slug: 'ghost-scheduler'},
-            {withRelated: 'api_keys'}
-        );
+        schedulerKey = await models.Integration.getApiKeyBySlug('ghost-scheduler', 'admin');
 
         schedulerToken = getSignedAdminToken({
             publishedAt: new Date().toISOString(),
             apiUrl: '/admin/',
-            integration: schedulerIntegration.toJSON()
+            key: schedulerKey
         });
     });
 
@@ -64,7 +61,7 @@ describe('Gift Reminders API', function () {
             const invalidSchedulerToken = getSignedAdminToken({
                 publishedAt: new Date().toISOString(),
                 apiUrl: '/members/',
-                integration: schedulerIntegration.toJSON()
+                key: schedulerKey
             });
 
             await agent
