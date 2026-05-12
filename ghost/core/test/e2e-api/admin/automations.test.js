@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const domainEvents = require('@tryghost/domain-events');
 const models = require('../../../core/server/models');
@@ -5,7 +6,7 @@ const {getSignedAdminToken} = require('../../../core/server/adapters/scheduling/
 const {agentProvider, fixtureManager, matchers, assertions} = require('../../utils/e2e-framework');
 const StartAutomationsPollEvent = require('../../../core/server/services/automations/events/start-automations-poll-event');
 
-const {anyContentVersion, anyEtag, anyErrorId, anyISODateTime, anyObjectId} = matchers;
+const {anyContentLength, anyContentVersion, anyEtag, anyErrorId, anyISODateTime, anyObjectId} = matchers;
 const {cacheInvalidateHeaderNotSet} = assertions;
 
 const matchAutomationSummary = () => ({
@@ -106,6 +107,94 @@ describe('Automations API', function () {
                 .expect(cacheInvalidateHeaderNotSet())
                 .matchBodySnapshot({
                     automations: [matchAutomation()]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+    });
+
+    describe('edit', function () {
+        it('edits automation status, ignoring name, actions and edges', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            const automationId = browseBody.automations[0].id;
+
+            const {body: beforeBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            const {body: editBody} = await agent
+                .put(`automations/${automationId}`)
+                .body({
+                    automations: [{
+                        name: 'Edited Welcome Email',
+                        status: 'inactive',
+                        actions: [],
+                        edges: []
+                    }]
+                })
+                .expectStatus(200)
+                .expect(cacheInvalidateHeaderNotSet())
+                .matchBodySnapshot({
+                    automations: [matchAutomation()]
+                })
+                .matchHeaderSnapshot({
+                    'content-length': anyContentLength,
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+
+            assert.equal(editBody.automations[0].status, 'inactive');
+            assert.equal(editBody.automations[0].name, beforeBody.automations[0].name);
+            assert.deepEqual(editBody.automations[0].actions, beforeBody.automations[0].actions);
+            assert.deepEqual(editBody.automations[0].edges, beforeBody.automations[0].edges);
+        });
+
+        it('rejects an invalid automation status', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            await agent
+                .put(`automations/${browseBody.automations[0].id}`)
+                .body({
+                    automations: [{
+                        status: 'paused'
+                    }]
+                })
+                .expectStatus(422)
+                .expect(cacheInvalidateHeaderNotSet())
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
+        it('rejects a missing automation status', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            await agent
+                .put(`automations/${browseBody.automations[0].id}`)
+                .body({
+                    automations: [{}]
+                })
+                .expectStatus(422)
+                .expect(cacheInvalidateHeaderNotSet())
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,

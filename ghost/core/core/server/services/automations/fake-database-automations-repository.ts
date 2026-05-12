@@ -72,6 +72,27 @@ export function createFakeDatabaseAutomationsRepository({
 
                 return buildAutomation(database, automation);
             });
+        },
+
+        async edit(id: string, data: Pick<AutomationSummary, 'status'>): Promise<Automation | null> {
+            const database = getDatabase();
+
+            return withTransaction(database, () => {
+                const automation = loadAutomation(database, id);
+
+                if (!automation) {
+                    return null;
+                }
+
+                // TODO (NY-1229): Allow updating other fields and actions/edges.
+                const updatedAutomation = updateAutomation(database, {
+                    ...automation,
+                    status: data.status,
+                    updated_at: new Date().toISOString()
+                });
+
+                return buildAutomation(database, updatedAutomation);
+            });
         }
     };
 }
@@ -105,6 +126,31 @@ function loadAutomations(database: DatabaseSync): AutomationRow[] {
         FROM automations
         ORDER BY created_at, id
     `).all() as unknown as AutomationRow[];
+}
+
+function updateAutomation(database: DatabaseSync, automation: AutomationRow): AutomationRow {
+    database.prepare(`
+        UPDATE automations
+        SET status = :status,
+            updated_at = :updated_at
+        WHERE id = :id
+    `).run({
+        id: automation.id,
+        status: automation.status,
+        updated_at: automation.updated_at
+    });
+
+    return requireAutomation(loadAutomation(database, automation.id), automation.id);
+}
+
+function requireAutomation(automation: AutomationRow | null, id: string): AutomationRow {
+    if (!automation) {
+        throw new errors.InternalServerError({
+            message: `Updated automation "${id}" could not be loaded.`
+        });
+    }
+
+    return automation;
 }
 
 function buildAutomation(database: DatabaseSync, automation: AutomationRow): Automation {

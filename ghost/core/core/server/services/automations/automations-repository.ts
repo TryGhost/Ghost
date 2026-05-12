@@ -59,4 +59,5 @@ export interface Automation extends AutomationSummary {
 export interface AutomationsRepository {
     browse(): Promise<Page<AutomationSummary>>;
     getById(id: string): Promise<Automation | null>;
+    edit(id: string, data: Pick<AutomationSummary, 'status'>): Promise<Automation | null>;
 }
