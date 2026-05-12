@@ -1,7 +1,7 @@
 module.exports = function (data) {
     // Be careful when you indent the email, because whitespaces are visible in emails!
     return `
-Someone redeemed a gift subscription
+A gift subscription was redeemed
 
 Member: ${data.memberData.name}
 Tier: ${data.tierData.name}${data.tierData.details ? ` • ${data.tierData.details}` : ''}
