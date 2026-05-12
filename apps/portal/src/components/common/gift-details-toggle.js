@@ -21,7 +21,7 @@ const GiftDetailsToggle = ({description, benefits, showDetails, onToggle}) => {
 
             return (
                 <div className='gh-portal-gift-checkout-benefit' key={benefitKey}>
-                    <CheckmarkIcon alt='' />
+                    <CheckmarkIcon aria-hidden='true' focusable='false' />
                     <span>{benefitName}</span>
                 </div>
             );

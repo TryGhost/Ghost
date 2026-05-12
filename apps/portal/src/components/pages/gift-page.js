@@ -817,7 +817,7 @@ const GiftPage = () => {
                                                                     const key = benefit?.id || `benefit-${idx}`;
                                                                     return (
                                                                         <div className='gh-portal-gift-checkout-benefit' key={key}>
-                                                                            <CheckmarkIcon alt='' />
+                                                                            <CheckmarkIcon aria-hidden='true' focusable='false' />
                                                                             <span>{benefit.name}</span>
                                                                         </div>
                                                                     );
