@@ -835,7 +835,7 @@ const GiftPage = () => {
                             <div className='gh-portal-gift-checkout-cta-wrapper'>
                                 <ActionButton
                                     dataTestId='purchase-gift'
-                                    label='Continue to checkout'
+                                    label='Continue'
                                     onClick={handlePurchase}
                                     disabled={isDisabled}
                                     isRunning={isPurchasing}
