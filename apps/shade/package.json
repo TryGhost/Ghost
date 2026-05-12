@@ -64,7 +64,8 @@
         "lint": "pnpm lint:code && pnpm lint:test",
         "lint:test": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx test/ --cache",
         "storybook": "storybook dev -p 6006",
-        "build-storybook": "storybook build"
+        "build-storybook": "storybook build",
+        "adoption:extract": "node scripts/extract-adoption.mjs"
     },
     "files": [
         "es",
