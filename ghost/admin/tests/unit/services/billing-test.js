@@ -12,6 +12,8 @@ const {sentryTransport, testkit} = sentryTestKit();
 describe('Unit: Service: billing', function () {
     setupTest();
 
+    let billingService;
+
     before(function () {
         Sentry.init(getSentryTestConfig(sentryTransport));
     });
@@ -29,23 +31,46 @@ describe('Unit: Service: billing', function () {
     });
 
     afterEach(function () {
+        billingService?.clearBillingAppLoadMonitor();
+        billingService = null;
         sinon.restore();
     });
 
-    it('starts a load monitor for the billing app', async function () {
+    it('retries loading the billing app before reporting', async function () {
         const service = this.owner.lookup('service:billing');
+        billingService = service;
         service.billingAppLoadTimeoutMs = 1;
+        service.billingAppLoadRetryDelaysMs = [1];
+        const reloadBillingIframe = sinon.stub(service, 'reloadBillingIframe');
         const reportBillingAppLoadFailure = sinon.stub(service, 'reportBillingAppLoadFailure');
 
         service.startBillingAppLoadMonitor();
 
+        await waitUntil(() => reloadBillingIframe.called);
+        expect(reportBillingAppLoadFailure.called).to.be.false;
+
         await waitUntil(() => reportBillingAppLoadFailure.called);
 
+        expect(reloadBillingIframe.calledOnce).to.be.true;
         expect(reportBillingAppLoadFailure.calledOnce).to.be.true;
+    });
+
+    it('reloads the billing iframe during a retry', function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        const iframe = {src: ''};
+        sinon.stub(service, 'getBillingIframe').returns(iframe);
+        sinon.stub(service, 'getIframeURL').returns('https://billing.example.test/pro');
+
+        service.reloadBillingIframe();
+
+        expect(iframe.src).to.equal('https://billing.example.test/pro');
     });
 
     it('reports to Sentry when the billing app does not become ready', async function () {
         const service = this.owner.lookup('service:billing');
+        billingService = service;
+        service.billingAppLoadAttempts = 2;
 
         service.reportBillingAppLoadFailure();
 
@@ -58,6 +83,7 @@ describe('Unit: Service: billing', function () {
             source: 'billing-app-load-monitor'
         });
         expect(report.originalReport.contexts.ghost.full_error).to.deep.include({
+            attempts: 2,
             has_billing_url: true,
             is_force_upgrade: false
         });
@@ -65,11 +91,13 @@ describe('Unit: Service: billing', function () {
 
     it('does not report when the billing app becomes ready before the timeout', function () {
         const service = this.owner.lookup('service:billing');
+        billingService = service;
 
         service.startBillingAppLoadMonitor();
         service.markBillingAppLoaded();
 
         expect(service.billingAppLoadTimeout).to.be.null;
+        expect(service.billingAppRetryTimeout).to.be.null;
         expect(testkit.reports()).to.have.lengthOf(0);
     });
 
@@ -78,6 +106,7 @@ describe('Unit: Service: billing', function () {
         config.sentry_dsn = null;
 
         const service = this.owner.lookup('service:billing');
+        billingService = service;
 
         service.reportBillingAppLoadFailure();
 
