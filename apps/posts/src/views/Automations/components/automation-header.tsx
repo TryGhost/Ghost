@@ -5,7 +5,7 @@ import {LucideIcon} from '@tryghost/shade/utils';
 import type {AutomationDetail} from '@tryghost/admin-x-framework/api/automations';
 
 interface AutomationHeaderProps {
-    automation: undefined | AutomationDetail;
+    automation: AutomationDetail | undefined;
     isLoading: boolean;
 }
 
