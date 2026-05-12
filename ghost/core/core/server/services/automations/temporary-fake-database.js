@@ -20,6 +20,7 @@ function createTemporaryFakeAutomationsDatabase() {
     const {DatabaseSync} = require('node:sqlite');
 
     const database = new DatabaseSync(':memory:');
+    database.exec('PRAGMA foreign_keys = ON;');
 
     const id = () => ObjectId().toHexString();
     const now = () => new Date().toISOString();
