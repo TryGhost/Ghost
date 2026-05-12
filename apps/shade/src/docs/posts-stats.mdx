@@ -6,29 +6,29 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 # Posts–Stats
 
-<p className="excerpt">A temporary parking spot for components shared between the Posts app (<code>apps/posts</code>) and the Stats app (<code>apps/stats</code>) — until those two apps are merged. Not a pattern layer.</p>
+<p className="excerpt">A temporary parking spot for components shared between the Posts (<code>apps/posts</code>) and Stats (<code>apps/stats</code>) apps until they merge. Not a pattern layer.</p>
 
 ## Why this exists
 
-The Posts and Stats apps were split apart by an earlier architectural decision that is being reversed. While they're still separate, some components need to be shared between them, and Shade is the only place they can sit. These components are Ghost-specific to the post-analytics surface — they don't pass the [pattern promotion rules](?path=/docs/overview-architecture--docs) and shouldn't try to.
+The Posts and Stats apps were split apart by an earlier architectural decision that is being reversed. While they're still separate, some components need to be shared between them — and those are post-analytics-specific, so they don't qualify as real Shade patterns ([Layers](?path=/docs/overview-layers--docs)).
 
-Today this category holds `PostShareModal` (used by Post Analytics in `apps/posts` and by the Stats overview's "latest post" card in `apps/stats`).
+Today this folder holds [`PostShareModal`](?path=/docs/posts-stats-postsharemodal--docs).
 
-## How to use it
+## Usage
 
 ```tsx
-import { PostShareModal } from '@tryghost/shade/posts-stats';
+import {PostShareModal} from '@tryghost/shade/posts-stats';
 ```
 
-Import from `@tryghost/shade/posts-stats`, not from `@tryghost/shade/patterns`. The separate entrypoint is deliberate — it makes the temporary status visible at the call site and makes the eventual cleanup mechanical (delete the entrypoint, move the files into the merged app).
+The separate `@tryghost/shade/posts-stats` entrypoint is deliberate — it makes the temporary status visible at the call site so the eventual cleanup is mechanical.
 
 ## When this category goes away
 
-When the Posts and Stats apps are merged into a single app, this folder and entrypoint disappear and the components move into the merged app. Treat anything in `posts-stats/` as a future migration target, not a candidate for promotion to a real Shade pattern.
+When the Posts and Stats apps merge, this folder and its entrypoint disappear and the components move into the merged app.
 
-## When *not* to add things here
+## Don't add things here that are
 
-- **A component shared across three or more apps** — that's a real Shade pattern. Apply the [promotion rules](?path=/docs/overview-architecture--docs) and add it under `patterns/` instead.
-- **A component shared between two apps that aren't Posts and Stats** — this folder is named for one specific historical situation. Don't generalise it. New cross-app temporary needs get their own named category.
+- **Shared across 3+ apps** — that's a real Shade Pattern. Apply the [promotion rules](?path=/docs/overview-layers--docs) and add under `patterns/`.
+- **Shared between two apps that aren't Posts and Stats** — this folder is named for one historical situation. Don't generalise it.
 
 </div>

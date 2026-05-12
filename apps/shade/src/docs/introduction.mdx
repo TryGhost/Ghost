@@ -4,84 +4,30 @@ import { Meta } from '@storybook/addon-docs/blocks';
 
 <div className="sb-doc">
 
-# Welcome to Shade
+# Shade
 
-<p className="excerpt">Shade is the design system that powers Ghost's product surfaces. It exists so that engineers, designers, and AI agents can build admin UI quickly without reinventing the same components, spacing decisions, or color choices each time.</p>
+<p className="excerpt">Shade is the design system that powers Ghost Admin. Tokens, layout primitives, generic UI controls, and product-shaped patterns — all in one place so designers, engineers, and AI agents stop reinventing them.</p>
 
-## What Shade gives you
+## In one screen
 
-If you're shipping admin features, Shade gives you four things:
+- **[Tokens](?path=/docs/tokens-tokens-guide--docs)** — colour, type, spacing, radius, motion. Visual galleries in the sidebar.
+- **[Primitives](?path=/docs/primitives-primitives-guide--docs)** — `Stack`, `Inline`, `Box`, `Grid`, `Container`, `Text`. Layout, not chrome.
+- **Components** — `Button`, `Input`, `Dialog`, `Tabs`… Generic and accessible. Built on Radix + ShadCN.
+- **Patterns** — `PageHeader`, `ListPage`, `KpiCard`, `Filters`. Product-shaped compositions.
 
-A **set of visual values** (color, type, spacing, radius, motion) that automatically work in light and dark mode.
+The boundaries between those layers are the whole point. See **[Layers](?path=/docs/overview-layers--docs)** for the decision flow.
 
-A **set of layout primitives** (`Stack`, `Inline`, `Box`, `Grid`, `Container`, `Text`) that replace the endless `flex flex-col gap-4` strings with something readable.
+## Working in Shade
 
-A **library of generic UI controls** (Button, Input, Dialog, Tabs, and so on) built on Radix and ShadCN, accessible by default.
-
-A **smaller set of product-shaped compositions** for things Ghost does over and over — KPI cards, filter builders, the area chart on Stats — where the generic controls aren't enough.
-
-The line between those four layers is the most important thing to understand about Shade. We cover it in detail on the [Architecture](?path=/docs/overview-architecture--docs) page, including a glossary of terms.
-
-## Who it's for
-
-**Designers** working in code use Shade to compose screens fast. The primitives and components do the heavy lifting; you focus on the structure and content of the surface you're designing.
-
-**Engineers** use it as a reliable substrate. If a control already exists in Shade, use it — it's accessible, themed, and tested. If it doesn't, the design system tells you which layer to build into.
-
-**AI agents** generating UI code use Shade as a constraint. The layer rules and the typed component APIs let the agent pick the right tool without inventing components or making up tokens.
-
-## Getting set up
-
-Shade lives in the Ghost monorepo (`apps/shade`) and is consumed by the React admin apps via `@tryghost/shade/*` entrypoints. There's nothing to install separately — just import:
+Shade is the **default source for Ghost Admin UI**. It's already wired into every admin app — just import:
 
 ```tsx
 import {Button} from '@tryghost/shade/components';
-
-function MyComponent() {
-    return <Button>Continue</Button>;
-}
+import {Stack} from '@tryghost/shade/primitives';
 ```
 
-To pick up Shade's CSS in your app, import its stylesheet once at your entry point:
+If a control exists, use it. If it doesn't and you'll reuse it, [Layers](?path=/docs/overview-layers--docs) tells you which folder to add it to.
 
-```css
-@import "@tryghost/shade/styles.css";
-```
-
-If you're using Tailwind v4, add Shade's source paths to your `@source` directives so utility generation picks up classes used inside Shade components.
-
-## Light and dark mode
-
-Every Shade component is themed. To toggle modes, wrap your tree in `ShadeApp`:
-
-```tsx
-import {ShadeApp} from '@tryghost/shade/app';
-import {Button} from '@tryghost/shade/components';
-
-export default function App() {
-    return (
-        <ShadeApp darkMode={false}>
-            <Button>Continue</Button>
-        </ShadeApp>
-    );
-}
-```
-
-`ShadeApp` adds a `.shade` scope to your tree and toggles a `.dark` class inside it. If you'd rather not use the wrapper, you can apply those two classes manually — the components will respond.
-
-## Where to go next
-
-If you're new here, read the [Architecture](?path=/docs/overview-architecture--docs) page next. It explains the layers (tokens, primitives, components, recipes, patterns) with a glossary so the vocabulary makes sense, and a short decision rule for choosing where new code belongs.
-
-If you already know your way around and just want to ship, browse:
-
-- **Primitives** — `Stack`, `Inline`, `Box`, `Grid`, `Container`, `Text`. The structural vocabulary.
-- **Components** — generic controls (Button, Input, Dialog, etc.).
-- **Patterns** — product compositions (page headers, list pages, KPI cards, filters, charts).
-- **Recipes** — shared visual rules like `inputSurface` that shape every form control's chrome.
-- **Posts–Stats** — interim shared components between the Posts and Stats apps until they merge.
-- **Deprecated** — legacy layout shells (`ListHeader`, `ViewHeader`, etc.) being phased out.
-
-Each section's pages have a description, props, and live examples.
+For AI-assisted work, see `apps/shade/AGENTS.md` — the canonical rules for where new code goes.
 
 </div>
