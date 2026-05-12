@@ -2,6 +2,7 @@ import {useContext, useLayoutEffect, useRef, useState} from 'react';
 import AppContext from '../../app-context';
 import CloseButton from '../common/close-button';
 import ActionButton from '../common/action-button';
+import GiftCard from '../common/gift-card';
 import LoadingPage from './loading-page';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
 import giftCardNoiseUrl from '../../images/gift-card-noise.webp';
@@ -849,26 +850,14 @@ const GiftPage = () => {
                     <div className='gh-portal-gift-checkout-right' {...cardTiltProps}>
                         <div className='gh-portal-gift-checkout-right-panel'>
                             <div className='gh-portal-gift-checkout-card-stack'>
-                                <div ref={cardRef} className='gh-portal-gift-checkout-card'>
-                                    <div className='gh-portal-gift-checkout-card-notch' aria-hidden='true' />
-                                    <div className='gh-portal-gift-checkout-card-meta'>
-                                        <div className='gh-portal-gift-checkout-card-duration'>{getGiftDurationLabel({cadence: activeInterval, duration: 1})}</div>
-                                        <div className='gh-portal-gift-checkout-card-tier'>{`${activeProduct.name} membership`}</div>
-                                    </div>
-                                    <div className='gh-portal-gift-checkout-card-details'>
-                                        <div className='gh-portal-gift-checkout-card-detail'>
-                                            <div className='gh-portal-gift-checkout-card-detail-label'>Gift value</div>
-                                            <div className='gh-portal-gift-checkout-card-detail-value'>{getTierPriceLabel(activeProduct, activeInterval)}</div>
-                                        </div>
-                                    </div>
-                                    <div className='gh-portal-gift-checkout-card-site'>
-                                        {siteIcon && (
-                                            <img className='gh-portal-gift-checkout-card-site-icon' src={siteIcon} alt='' />
-                                        )}
-                                        <span className='gh-portal-gift-checkout-card-site-name'>{siteTitle}</span>
-                                    </div>
-                                </div>
-
+                                <GiftCard
+                                    cardRef={cardRef}
+                                    duration={getGiftDurationLabel({cadence: activeInterval, duration: 1})}
+                                    tierName={activeProduct.name}
+                                    giftValue={getTierPriceLabel(activeProduct, activeInterval)}
+                                    siteIcon={siteIcon}
+                                    siteTitle={siteTitle}
+                                />
                             </div>
                         </div>
                     </div>

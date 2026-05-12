@@ -1,20 +1,15 @@
 import React from 'react';
 import ActionButton from '../common/action-button';
 import CloseButton from '../common/close-button';
+import GiftCard from '../common/gift-card';
+import GiftDetailsToggle from '../common/gift-details-toggle';
 import InboxLinkButton from '../common/inbox-link-button';
 import AppContext from '../../app-context';
 import {ReactComponent as EnvelopeIcon} from '../../images/icons/envelope.svg';
-import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
 import {isIos} from '../../utils/is-ios';
 import {t} from '../../utils/i18n';
 import {getGiftDurationLabel} from '../../utils/gift-redemption-notification';
 import {formatGiftValue} from './gift-page';
-
-const ChevronIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <polyline points="6 9 12 15 18 9"/>
-    </svg>
-);
 
 export const MagicLinkStyles = `
     .gh-portal-icon-envelope {
@@ -347,80 +342,21 @@ export default class MagicLinkPage extends React.Component {
                         <div className='gh-portal-gift-checkout-right'>
                             <div className='gh-portal-gift-checkout-right-panel'>
                                 <div className='gh-portal-gift-checkout-card-stack' data-revealing={this.state.showDetails}>
-                                    <div className='gh-portal-gift-checkout-card-frame'>
-                                        <div className='gh-portal-gift-checkout-card'>
-                                            <div className='gh-portal-gift-checkout-card-meta'>
-                                                <div className='gh-portal-gift-checkout-card-duration'>{getGiftDurationLabel(gift)}</div>
-                                                {/* eslint-disable-next-line i18next/no-literal-string -- copy not yet finalised */}
-                                                <div className='gh-portal-gift-checkout-card-tier'>{`${gift.tier?.name} membership`}</div>
-                                            </div>
-                                            <div className='gh-portal-gift-checkout-card-details'>
-                                                {submittedName && (
-                                                    <div className='gh-portal-gift-checkout-card-detail'>
-                                                        {/* eslint-disable-next-line i18next/no-literal-string -- copy not yet finalised */}
-                                                        <div className='gh-portal-gift-checkout-card-detail-label'>Name</div>
-                                                        <div className='gh-portal-gift-checkout-card-detail-value'>{submittedName}</div>
-                                                    </div>
-                                                )}
-                                                <div className='gh-portal-gift-checkout-card-detail'>
-                                                    {/* eslint-disable-next-line i18next/no-literal-string -- copy not yet finalised */}
-                                                    <div className='gh-portal-gift-checkout-card-detail-label'>Gift value</div>
-                                                    <div className='gh-portal-gift-checkout-card-detail-value'>{formatGiftValue(gift)}</div>
-                                                </div>
-                                            </div>
-                                            <div className='gh-portal-gift-checkout-card-site'>
-                                                {siteIcon && (
-                                                    <img className='gh-portal-gift-checkout-card-site-icon' src={siteIcon} alt='' />
-                                                )}
-                                                <span className='gh-portal-gift-checkout-card-site-name'>{siteTitle}</span>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <GiftCard
+                                        duration={getGiftDurationLabel(gift)}
+                                        tierName={gift.tier?.name}
+                                        name={submittedName || null}
+                                        giftValue={formatGiftValue(gift)}
+                                        siteIcon={siteIcon}
+                                        siteTitle={siteTitle}
+                                    />
 
-                                    {(tierDescription || benefits.length > 0) && (
-                                        <>
-                                            <div
-                                                className='gh-portal-gift-checkout-details'
-                                                data-open={this.state.showDetails}
-                                                aria-hidden={!this.state.showDetails}
-                                            >
-                                                <div className='gh-portal-gift-checkout-details-inner'>
-                                                    {tierDescription && (
-                                                        <p className='gh-portal-gift-checkout-details-description'>{tierDescription}</p>
-                                                    )}
-                                                    {benefits.length > 0 && (
-                                                        <div className='gh-portal-gift-checkout-benefits'>
-                                                            {benefits.map((benefit, index) => {
-                                                                const benefitName = typeof benefit === 'string' ? benefit : benefit?.name;
-                                                                const benefitKey = typeof benefit === 'string' ? benefit : benefit?.id || `gift-benefit-${index}`;
-
-                                                                if (!benefitName) {
-                                                                    return null;
-                                                                }
-
-                                                                return (
-                                                                    <div className='gh-portal-gift-checkout-benefit' key={benefitKey}>
-                                                                        <CheckmarkIcon />
-                                                                        <span>{benefitName}</span>
-                                                                    </div>
-                                                                );
-                                                            })}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            <button
-                                                type='button'
-                                                className={'gh-portal-gift-checkout-details-toggle' + (this.state.showDetails ? ' is-open' : '')}
-                                                onClick={() => this.setState(s => ({showDetails: !s.showDetails}))}
-                                                aria-expanded={this.state.showDetails}
-                                            >
-                                                {/* eslint-disable-next-line i18next/no-literal-string -- copy not yet finalised */}
-                                                {this.state.showDetails ? 'Hide details' : 'Gift details'}
-                                                <ChevronIcon />
-                                            </button>
-                                        </>
-                                    )}
+                                    <GiftDetailsToggle
+                                        description={tierDescription}
+                                        benefits={benefits}
+                                        showDetails={this.state.showDetails}
+                                        onToggle={() => this.setState(s => ({showDetails: !s.showDetails}))}
+                                    />
                                 </div>
                             </div>
                         </div>
