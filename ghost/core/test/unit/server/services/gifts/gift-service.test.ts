@@ -130,7 +130,7 @@ describe('GiftService', function () {
 
     function createService(overrides: {
         schedulerAdapter?: {schedule: sinon.SinonStub} | null;
-        schedulerIntegration?: {api_keys: Array<{id: string; secret: string}>} | null;
+        getSchedulerKey?: (() => Promise<{id: string; secret: string}>) | null;
         getSignedAdminToken?: sinon.SinonStub | null;
         urlJoin?: sinon.SinonStub | null;
         apiUrl?: string | null;
@@ -142,7 +142,7 @@ describe('GiftService', function () {
             giftEmailService,
             staffServiceEmails,
             schedulerAdapter: overrides.schedulerAdapter ?? null,
-            schedulerIntegration: overrides.schedulerIntegration ?? null,
+            getSchedulerKey: overrides.getSchedulerKey ?? null,
             getSignedAdminToken: overrides.getSignedAdminToken ?? null,
             urlJoin: overrides.urlJoin ?? null,
             apiUrl: overrides.apiUrl ?? null
@@ -1364,10 +1364,13 @@ describe('GiftService', function () {
             const schedule = sinon.stub();
             const getSignedAdminToken = sinon.stub().returns('signed-token');
             const urlJoin = sinon.stub().callsFake((...parts: string[]) => parts.join('/'));
+            const key = {id: 'key-id', secret: '00'.repeat(32)};
+            const getSchedulerKey = sinon.stub().resolves(key);
 
             return {
                 schedulerAdapter: {schedule},
-                schedulerIntegration: {api_keys: [{id: 'key-id', secret: '00'.repeat(32)}]},
+                key,
+                getSchedulerKey,
                 getSignedAdminToken,
                 urlJoin,
                 apiUrl
@@ -1407,7 +1410,7 @@ describe('GiftService', function () {
             sinon.assert.calledOnceWithExactly(deps.getSignedAdminToken, {
                 publishedAt: new Date(expectedTime).toISOString(),
                 apiUrl,
-                integration: deps.schedulerIntegration
+                key: deps.key
             });
         });
 
@@ -1436,7 +1439,7 @@ describe('GiftService', function () {
             // schedulerAdapter provided but apiUrl missing
             const service = createService({
                 schedulerAdapter: {schedule},
-                schedulerIntegration: null,
+                getSchedulerKey: null,
                 getSignedAdminToken: sinon.stub(),
                 urlJoin: sinon.stub(),
                 apiUrl: null
