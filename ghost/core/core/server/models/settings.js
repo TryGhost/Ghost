@@ -19,6 +19,7 @@ const messages = {
 const internalContext = {context: {internal: true}};
 let Settings;
 let defaultSettings;
+const systemMediaSettingKeys = new Set(['pintura_js_url', 'pintura_css_url']);
 
 const doBlock = fn => fn();
 
@@ -91,6 +92,17 @@ function getDefaultSettings() {
     }
 
     return defaultSettings;
+}
+
+async function syncSystemMediaVisibilityForSetting(setting) {
+    if (!setting || !systemMediaSettingKeys.has(setting.get('key'))) {
+        return setting;
+    }
+
+    const mediaLibrary = require('../services/media-library');
+    await mediaLibrary.setVisibilityForUrl(setting.get('value'), 'system');
+
+    return setting;
 }
 
 // Each setting is saved as a separate row in the database,
@@ -233,7 +245,7 @@ Settings = ghostBookshelf.Model.extend({
                 if (setting) {
                     // it's allowed to edit all attributes in case of importing/migrating
                     if (options.importing) {
-                        return setting.save(item, options);
+                        return setting.save(item, options).then(syncSystemMediaVisibilityForSetting);
                     } else {
                         // If we have a value, set it.
                         if (Object.prototype.hasOwnProperty.call(item, 'value')) {
@@ -246,10 +258,10 @@ Settings = ghostBookshelf.Model.extend({
 
                         // If anything has changed, save the updated model
                         if (setting.hasChanged()) {
-                            return setting.save(null, options);
+                            return setting.save(null, options).then(syncSystemMediaVisibilityForSetting);
                         }
 
-                        return setting;
+                        return syncSystemMediaVisibilityForSetting(setting);
                     }
                 }
 

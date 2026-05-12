@@ -1,5 +1,6 @@
 const urlUtils = require('../../../shared/url-utils');
 const models = require('../../models');
+const mediaLibrary = require('../../services/media-library');
 const getPostServiceInstance = require('../../services/posts/posts-service-instance');
 const allowedIncludes = [
     'tags',
@@ -173,6 +174,8 @@ const controller = {
         },
         async query(frame) {
             const model = await models.Post.add(frame.data.posts[0], frame.options);
+            await mediaLibrary.syncPostResourceUsage(model);
+
             if (model.get('status') === 'published') {
                 frame.setHeader('X-Cache-Invalidate', '/*');
             }
@@ -227,6 +230,7 @@ const controller = {
                     }
                 }
             });
+            await mediaLibrary.syncPostResourceUsage(model);
 
             return model;
         }
@@ -276,7 +280,9 @@ const controller = {
             method: 'destroy'
         },
         async query(frame) {
-            return await postsService.bulkDestroy(frame.options);
+            const result = await postsService.bulkDestroy(frame.options);
+            await mediaLibrary.clearResourceUsages('post', result.deleteIds);
+            return result;
         }
     },
 
@@ -302,8 +308,10 @@ const controller = {
         permissions: {
             unsafeAttrs: unsafeAttrs
         },
-        query(frame) {
-            return models.Post.destroy({...frame.options, require: true});
+        async query(frame) {
+            const model = await models.Post.destroy({...frame.options, require: true});
+            await mediaLibrary.clearResourceUsages('post', frame.options.id);
+            return model;
         }
     },
 

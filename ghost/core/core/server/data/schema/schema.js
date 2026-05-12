@@ -956,11 +956,14 @@ module.exports = {
         mime_type: {type: 'string', maxlength: 191, nullable: true},
         extension: {type: 'string', maxlength: 50, nullable: true},
         name: {type: 'string', maxlength: 191, nullable: false},
+        alt_text: {type: 'string', maxlength: 2000, nullable: true},
+        caption: {type: 'text', maxlength: 65535, nullable: true},
         size_bytes: {type: 'bigInteger', nullable: true, unsigned: true},
         width: {type: 'integer', nullable: true, unsigned: true},
         height: {type: 'integer', nullable: true, unsigned: true},
         thumbnail_url: {type: 'string', maxlength: 2000, nullable: true},
-        source: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'upload', validations: {isIn: [['upload', 'backfill', 'reference']]}},
+        source: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'upload', validations: {isIn: [['upload', 'external', 'unsplash', 'tenor']]}},
+        visibility: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'library', validations: {isIn: [['library', 'system', 'hidden']]}},
         // eslint-disable-next-line no-restricted-syntax
         created_by: {type: 'string', maxlength: 24, nullable: true, references: 'users.id', setNullDelete: true},
         created_at: {type: 'dateTime', nullable: false},
@@ -970,6 +973,7 @@ module.exports = {
             ['storage_type'],
             ['media_type'],
             ['source'],
+            ['visibility'],
             ['created_at']
         ]
     },

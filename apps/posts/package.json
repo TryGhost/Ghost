@@ -20,6 +20,7 @@
             "require": "./dist/posts.umd.cjs"
         },
         "./api": "./src/api.ts",
+        "./label-picker": "./src/components/label-picker/label-picker.tsx",
         "./members": "./src/views/members/members.tsx"
     },
     "private": true,

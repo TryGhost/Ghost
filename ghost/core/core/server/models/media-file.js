@@ -15,7 +15,9 @@ const MediaFile = ghostBookshelf.Model.extend({
         queryBuilder.where(function () {
             this.where('media_files.name', 'like', `%${query}%`)
                 .orWhere('media_files.url', 'like', `%${query}%`)
-                .orWhere('media_files.mime_type', 'like', `%${query}%`);
+                .orWhere('media_files.mime_type', 'like', `%${query}%`)
+                .orWhere('media_files.alt_text', 'like', `%${query}%`)
+                .orWhere('media_files.caption', 'like', `%${query}%`);
         });
     }
 }, {

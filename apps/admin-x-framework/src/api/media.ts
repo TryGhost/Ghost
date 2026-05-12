@@ -4,8 +4,9 @@ import {apiUrl, useFetchApi} from '../utils/api/fetch-api';
 import {useFramework} from '../providers/framework-provider';
 
 export type MediaType = 'image' | 'video' | 'audio' | 'file';
-export type MediaSource = 'upload' | 'backfill' | 'reference';
+export type MediaSource = 'upload' | 'external' | 'unsplash' | 'tenor';
 export type MediaStorageType = 'images' | 'files' | 'media';
+export type MediaVisibility = 'library' | 'system' | 'hidden';
 
 export interface MediaFileUsage {
     id: string;
@@ -14,6 +15,14 @@ export interface MediaFileUsage {
     resource_id: string;
     field: string;
     created_at: string;
+    resource?: {
+        id: string;
+        type: 'post' | 'page';
+        title: string;
+        slug: string;
+        status: string;
+        editor_url: string;
+    };
 }
 
 export interface MediaFile {
@@ -26,11 +35,14 @@ export interface MediaFile {
     mime_type: string | null;
     extension: string | null;
     name: string;
+    alt_text: string | null;
+    caption: string | null;
     size_bytes: number | null;
     width: number | null;
     height: number | null;
     thumbnail_url: string | null;
     source: MediaSource;
+    visibility: MediaVisibility;
     created_by: string | null;
     created_at: string;
     updated_at: string;
@@ -116,7 +128,7 @@ export const useReadMedia = createQueryWithId<MediaResponseType>({
     path: id => `/media/${id}/`
 });
 
-export const useEditMedia = createMutation<MediaResponseType, Pick<MediaFile, 'id'> & Partial<Pick<MediaFile, 'folder_id'>>>({
+export const useEditMedia = createMutation<MediaResponseType, Pick<MediaFile, 'id'> & Partial<Pick<MediaFile, 'name' | 'folder_id' | 'alt_text' | 'caption'>>>({
     method: 'PUT',
     path: media => `/media/${media.id}/`,
     body: media => ({media: [media]}),
@@ -162,6 +174,14 @@ export const useDeleteMediaFolder = createMutation<void, string>({
     }
 });
 
+export const useDeleteMediaFile = createMutation<void, string>({
+    method: 'DELETE',
+    path: id => `/media/${id}/`,
+    invalidateQueries: {
+        dataType: mediaDataType
+    }
+});
+
 export const useUploadMediaFile = () => {
     const fetchApi = useFetchApi();
     const queryClient = useQueryClient();
@@ -182,6 +202,28 @@ export const useUploadMediaFile = () => {
 
             return fetchApi(apiUrl(target.endpoint), {
                 method: 'POST',
+                body: formData
+            });
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries([mediaDataType]);
+            onInvalidate(mediaDataType);
+        }
+    });
+};
+
+export const useReplaceMediaFile = () => {
+    const fetchApi = useFetchApi();
+    const queryClient = useQueryClient();
+    const {onInvalidate} = useFramework();
+
+    return useMutation<MediaResponseType, unknown, {id: string; file: File}>({
+        mutationFn: ({id, file}) => {
+            const formData = new FormData();
+            formData.append('file', file, file.name);
+
+            return fetchApi(apiUrl(`/media/${id}/file/`), {
+                method: 'PUT',
                 body: formData
             });
         },

@@ -118,6 +118,22 @@ export const routes: RouteObject[] = [
                 lazy: lazyComponent(() => import("./media/media-library")),
             },
             {
+                path: "media/:folderSlug",
+                lazy: lazyComponent(() => import("./media/media-library")),
+            },
+            {
+                path: "media/:mediaId/edit",
+                lazy: lazyComponent(() => import("./media/media-library")),
+            },
+            {
+                path: "media/:folderSlug/:mediaId/edit",
+                lazy: lazyComponent(() => import("./media/media-library")),
+            },
+            {
+                path: "media/:folderSlug/:mediaId",
+                lazy: lazyComponent(() => import("./media/media-library")),
+            },
+            {
                 path: "",
                 element: (
                     <FeatureFlagsProvider>

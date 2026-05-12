@@ -1,8 +1,10 @@
 import React from "react"
 
+import {useLocation} from "@tryghost/admin-x-framework";
 import {SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuBadge} from "@tryghost/shade/components"
 import {formatNumber, LucideIcon} from "@tryghost/shade/utils"
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
+import {useBrowseMediaFolders} from "@tryghost/admin-x-framework/api/media";
 import { canManageMedia, canManageMembers, canManageTags } from "@tryghost/admin-x-framework/api/users";
 import { NavMenuItem } from "./nav-menu-item";
 import { useMemberCount } from "./hooks/use-member-count";
@@ -16,6 +18,11 @@ import { useEmberRouting } from "@/ember-bridge";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
 
 const LEGACY_MEMBERS_ACTIVE_ROUTES = ['member', 'member.new', 'members-activity'];
+
+const getMediaFolderSlug = (pathname: string) => {
+    const match = pathname.match(/^\/?media\/([^/]+)/);
+    return match ? decodeURIComponent(match[1]) : null;
+};
 
 function PostsNavItemContent({isActive, to}: {isActive: boolean; to: string}) {
     return (
@@ -70,12 +77,14 @@ function MembersNavItemContent({
 function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const { data: currentUser } = useCurrentUser();
     const [savedPostsExpanded, setPostsExpanded] = useNavigationExpanded('posts');
+    const [savedMediaExpanded, setMediaExpanded] = useNavigationExpanded('media');
     const [savedMembersExpanded, setMembersExpanded] = useNavigationExpanded('members');
     const postCustomViews = useCustomSidebarViews('posts');
     const memberViews = useMemberSidebarViews();
     const hasMemberViews = memberViews.length > 0;
     const memberCount = useMemberCount();
     const routing = useEmberRouting();
+    const location = useLocation();
     const commentModerationEnabled = useFeatureFlag('commentModeration');
     const automationsEnabled = useFeatureFlag('automations');
     const isMembersRouteActive = useIsActiveLink({path: 'members', activeOnSubpath: true});
@@ -83,6 +92,14 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const showTags = currentUser && canManageTags(currentUser);
     const showMedia = currentUser && canManageMedia(currentUser);
     const showMembers = currentUser && canManageMembers(currentUser);
+    const {data: mediaFoldersData} = useBrowseMediaFolders({enabled: !!showMedia});
+    const mediaFolders = mediaFoldersData?.media_folders || [];
+    const activeMediaFolderSlug = getMediaFolderSlug(location.pathname);
+    const hasMediaFolders = mediaFolders.length > 0;
+    const hasActiveMediaFolder = hasMediaFolders && mediaFolders.some(folder => folder.slug === activeMediaFolderSlug);
+    const isMediaRouteActive = useIsActiveLink({path: 'media', activeOnSubpath: true});
+    const mediaExpanded = isMediaRouteActive && savedMediaExpanded;
+    const mediaNavActive = isMediaRouteActive && (!activeMediaFolderSlug || (!mediaExpanded && hasActiveMediaFolder));
     const isDraftPostsRouteActive = routing.isRouteActive('posts', {type: 'draft'});
     const isScheduledPostsRouteActive = routing.isRouteActive('posts', {type: 'scheduled'});
     const isPublishedPostsRouteActive = routing.isRouteActive('posts', {type: 'published'});
@@ -158,15 +175,49 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                     </NavMenuItem>
 
                     {showMedia && (
-                        <NavMenuItem>
-                            <NavMenuItem.Link
-                                to="media"
-                                activeOnSubpath
-                            >
-                                <LucideIcon.Image />
-                                <NavMenuItem.Label>Media</NavMenuItem.Label>
-                            </NavMenuItem.Link>
-                        </NavMenuItem>
+                        <>
+                            {hasMediaFolders ? (
+                                <NavMenuItem.Collapsible
+                                    expanded={mediaExpanded}
+                                    id="media-submenu"
+                                    onExpandedChange={setMediaExpanded}
+                                >
+                                    <NavMenuItem.CollapsibleItem ariaLabel="Toggle media folders">
+                                        <NavMenuItem.Link
+                                            to="media"
+                                            isActive={mediaNavActive}
+                                        >
+                                            <LucideIcon.Image className="pointer-events-none opacity-0 transition-all sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0" />
+                                            <NavMenuItem.Label>Media</NavMenuItem.Label>
+                                        </NavMenuItem.Link>
+                                    </NavMenuItem.CollapsibleItem>
+
+                                    <NavMenuItem.CollapsibleMenu>
+                                        {mediaFolders.map(folder => (
+                                            <NavMenuItem key={folder.id}>
+                                                <NavMenuItem.Link
+                                                    className="pl-9"
+                                                    to={`media/${encodeURIComponent(folder.slug)}`}
+                                                    isActive={activeMediaFolderSlug === folder.slug}
+                                                >
+                                                    <NavMenuItem.Label>{folder.name}</NavMenuItem.Label>
+                                                </NavMenuItem.Link>
+                                            </NavMenuItem>
+                                        ))}
+                                    </NavMenuItem.CollapsibleMenu>
+                                </NavMenuItem.Collapsible>
+                            ) : (
+                                <NavMenuItem>
+                                    <NavMenuItem.Link
+                                        to="media"
+                                        activeOnSubpath
+                                    >
+                                        <LucideIcon.Image />
+                                        <NavMenuItem.Label>Media</NavMenuItem.Label>
+                                    </NavMenuItem.Link>
+                                </NavMenuItem>
+                            )}
+                        </>
                     )}
 
                     {showTags && (

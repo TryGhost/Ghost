@@ -35,6 +35,12 @@ module.exports = {
         };
     },
 
+    replaceFile(response, apiConfig, frame) {
+        frame.response = {
+            media: [response.toJSON(frame.options)]
+        };
+    },
+
     browseFolders(response, apiConfig, frame) {
         frame.response = {
             media_folders: response.data.map(model => model.toJSON(frame.options)),

@@ -1,7 +1,7 @@
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {act, renderHook, waitFor} from '@testing-library/react';
 import React, {ReactNode} from 'react';
-import {useBrowseMedia, useReadMedia, useUploadMediaFile} from '../../../src/api/media';
+import {useBrowseMedia, useEditMedia, useReadMedia, useUploadMediaFile} from '../../../src/api/media';
 import {FrameworkProvider} from '../../../src/providers/framework-provider';
 import {withMockFetch} from '../../utils/mock-fetch';
 
@@ -89,6 +89,38 @@ describe('media API hooks', () => {
 
             expect(result.current.data?.media[0].id).toBe('media-id');
             expect(mock.calls[0][0]).toBe('http://localhost:3000/ghost/api/admin/media/media-id/');
+        });
+
+        queryClient.clear();
+    });
+
+    it('edits media metadata', async () => {
+        const {wrapper, queryClient} = createWrapper();
+
+        await withMockFetch({
+            json: {media: [{id: 'media-id', name: 'renamed.jpg', alt_text: 'Alt', caption: 'Caption'}]}
+        }, async (mock) => {
+            const {result} = renderHook(() => useEditMedia(), {wrapper});
+
+            await act(async () => {
+                await result.current.mutateAsync({
+                    id: 'media-id',
+                    name: 'renamed.jpg',
+                    alt_text: 'Alt',
+                    caption: 'Caption'
+                });
+            });
+
+            expect(mock.calls[0][0]).toBe('http://localhost:3000/ghost/api/admin/media/media-id/');
+            expect(mock.calls[0][1].method).toBe('PUT');
+            expect(JSON.parse(mock.calls[0][1].body as string)).toEqual({
+                media: [{
+                    id: 'media-id',
+                    name: 'renamed.jpg',
+                    alt_text: 'Alt',
+                    caption: 'Caption'
+                }]
+            });
         });
 
         queryClient.clear();

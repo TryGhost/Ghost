@@ -10,13 +10,16 @@ import {
 } from '@tryghost/shade/components';
 import {EditRow} from './edit-row';
 import {Label} from '@tryghost/admin-x-framework/api/labels';
-import {LucideIcon} from '@tryghost/shade/utils';
+import {LucideIcon, cn} from '@tryghost/shade/utils';
 
 export interface LabelPickerProps {
     labels: Label[];
     optionSource: ComboboxOptionSource<string>;
     selectedSlugs: string[];
     resolvedSelectedLabels?: Label[];
+    inputAriaLabel?: string;
+    placeholder?: string;
+    triggerClassName?: string;
     onToggle: (slug: string) => void;
     // Creation
     canCreateFromSearch?: (inputValue: string) => boolean;
@@ -204,6 +207,9 @@ const LabelPicker: React.FC<LabelPickerProps> = ({
     optionSource,
     selectedSlugs,
     resolvedSelectedLabels,
+    inputAriaLabel,
+    placeholder = 'Search labels...',
+    triggerClassName,
     onToggle,
     canCreateFromSearch,
     onCreate,
@@ -219,12 +225,15 @@ const LabelPicker: React.FC<LabelPickerProps> = ({
     return (
         <ComboboxPicker
             canCreateFromSearch={canCreateFromSearch}
+            inputAriaLabel={inputAriaLabel}
             isCreating={isCreating}
             isDuplicateName={isDuplicateName}
             labels={labels}
             optionSource={optionSource}
+            placeholder={placeholder}
             selectedLabels={selectedLabels}
             selectedSlugs={selectedSlugs}
+            triggerClassName={triggerClassName}
             onCreate={onCreate}
             onDelete={onDelete}
             onEdit={onEdit}
@@ -237,9 +246,12 @@ const LabelPicker: React.FC<LabelPickerProps> = ({
 
 interface ComboboxPickerProps {
     labels: Label[];
+    inputAriaLabel?: string;
     optionSource: ComboboxOptionSource<string>;
+    placeholder: string;
     selectedLabels: Label[];
     selectedSlugs: string[];
+    triggerClassName?: string;
     onToggle: (slug: string) => void;
     canCreateFromSearch?: (inputValue: string) => boolean;
     onCreate?: (name: string) => Promise<Label | undefined>;
@@ -251,9 +263,12 @@ interface ComboboxPickerProps {
 
 const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
     labels,
+    inputAriaLabel,
     optionSource,
+    placeholder,
     selectedLabels,
     selectedSlugs,
+    triggerClassName,
     onToggle,
     canCreateFromSearch,
     onCreate,
@@ -301,7 +316,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
     return (
         <div ref={containerRef} className="relative">
             <div
-                className="flex min-h-9 w-full cursor-text flex-wrap items-center gap-1.5 rounded-md border border-transparent bg-gray-150 px-3 py-1 text-sm transition-colors focus-within:border-green focus-within:bg-transparent focus-within:shadow-[0_0_0_2px_rgba(48,207,67,.25)] dark:bg-gray-900"
+                className={cn('flex min-h-9 w-full cursor-text flex-wrap items-center gap-1.5 rounded-md border border-transparent bg-gray-150 px-3 py-1 text-sm transition-colors focus-within:border-green focus-within:bg-transparent focus-within:shadow-[0_0_0_2px_rgba(48,207,67,.25)] dark:bg-gray-900', triggerClassName)}
                 role="combobox"
                 onClick={() => {
                     inputRef.current?.focus();
@@ -311,8 +326,9 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
                 <SelectedPills labels={selectedLabels} onToggle={onToggle} />
                 <input
                     ref={inputRef}
+                    aria-label={inputAriaLabel}
                     className="min-w-[80px] flex-1 bg-transparent text-sm outline-hidden placeholder:text-muted-foreground"
-                    placeholder={selectedLabels.length === 0 ? 'Search labels...' : ''}
+                    placeholder={selectedLabels.length === 0 ? placeholder : ''}
                     value={search}
                     onChange={(e) => {
                         handleSearchChange(e.target.value);

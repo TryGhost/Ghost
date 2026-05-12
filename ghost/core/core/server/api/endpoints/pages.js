@@ -1,6 +1,7 @@
 const models = require('../../models');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
+const mediaLibrary = require('../../services/media-library');
 const getPostServiceInstance = require('../../services/posts/posts-service-instance');
 const ALLOWED_INCLUDES = ['tags', 'authors', 'authors.roles', 'tiers', 'count.signups', 'count.paid_conversions', 'post_revisions', 'post_revisions.author'];
 const UNSAFE_ATTRS = ['status', 'authors', 'visibility'];
@@ -119,6 +120,8 @@ const controller = {
         },
         async query(frame) {
             const model = await models.Post.add(frame.data.pages[0], frame.options);
+            await mediaLibrary.syncPostResourceUsage(model);
+
             if (model.get('status') === 'published') {
                 frame.setHeader('X-Cache-Invalidate', '/*');
             }
@@ -162,6 +165,7 @@ const controller = {
         },
         async query(frame) {
             const model = await models.Post.edit(frame.data.pages[0], frame.options);
+            await mediaLibrary.syncPostResourceUsage(model);
 
             const cacheInvalidation = postsService.handleCacheInvalidation(model);
 
@@ -221,7 +225,9 @@ const controller = {
             method: 'destroy'
         },
         async query(frame) {
-            return await postsService.bulkDestroy(frame.options);
+            const result = await postsService.bulkDestroy(frame.options);
+            await mediaLibrary.clearResourceUsages('post', result.deleteIds);
+            return result;
         }
     },
 
@@ -248,8 +254,10 @@ const controller = {
             docName: 'posts',
             unsafeAttrs: UNSAFE_ATTRS
         },
-        query(frame) {
-            return models.Post.destroy({...frame.options, require: true});
+        async query(frame) {
+            const model = await models.Post.destroy({...frame.options, require: true});
+            await mediaLibrary.clearResourceUsages('post', frame.options.id);
+            return model;
         }
     },
 

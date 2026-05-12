@@ -7,6 +7,8 @@ const storage = require('../../adapters/storage');
 const config = require('../../../shared/config');
 const mediaLibrary = require('../../services/media-library');
 
+const getUploadFolderId = frame => frame.data.folder_id || frame.original?.body?.folder_id || null;
+
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
     docName: 'images',
@@ -64,7 +66,7 @@ const controller = {
                         path: out
                     },
                     createdBy: frame.options.context?.user,
-                    folderId: frame.data.folder_id || null
+                    folderId: getUploadFolderId(frame)
                 });
 
                 let processedImageName = path.basename(processedImageUrl);
@@ -97,7 +99,7 @@ const controller = {
                 storageType: 'images',
                 file: frame.file,
                 createdBy: frame.options.context?.user,
-                folderId: frame.data.folder_id || null
+                folderId: getUploadFolderId(frame)
             });
 
             return imageUrl;

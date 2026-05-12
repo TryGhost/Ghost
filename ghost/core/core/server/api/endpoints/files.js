@@ -2,6 +2,8 @@ const storage = require('../../adapters/storage');
 const {getStorageContentType} = require('../../services/files/file-type-utils');
 const mediaLibrary = require('../../services/media-library');
 
+const getUploadFolderId = frame => frame.data.folder_id || frame.original?.body?.folder_id || null;
+
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
     docName: 'files',
@@ -26,7 +28,7 @@ const controller = {
                 storageType: 'files',
                 file,
                 createdBy: frame.options.context?.user,
-                folderId: frame.data.folder_id || null
+                folderId: getUploadFolderId(frame)
             });
 
             return {

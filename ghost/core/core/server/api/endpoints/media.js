@@ -4,6 +4,39 @@ const db = require('../../data/db');
 const models = require('../../models');
 const mediaLibrary = require('../../services/media-library');
 
+const getUploadFolderId = frame => frame.data.folder_id || frame.original?.body?.folder_id || null;
+const editableMediaFields = ['name', 'folder_id', 'alt_text', 'caption'];
+const libraryVisibility = 'library';
+const libraryVisibilityFilter = `visibility:${libraryVisibility}`;
+
+function withLibraryVisibilityFilter(options = {}) {
+    return {
+        ...options,
+        filter: options.filter ? `(${options.filter})+${libraryVisibilityFilter}` : libraryVisibilityFilter
+    };
+}
+
+function displayNameWithoutExtension(name, extension) {
+    const trimmedName = (name || '').trim();
+    const extensionSuffix = extension ? `.${extension.toLowerCase()}` : '';
+
+    if (extensionSuffix && trimmedName.toLowerCase().endsWith(extensionSuffix)) {
+        return trimmedName.slice(0, -extensionSuffix.length);
+    }
+
+    return trimmedName;
+}
+
+function getEditableMediaData(data) {
+    return editableMediaFields.reduce((attrs, field) => {
+        if (Object.prototype.hasOwnProperty.call(data, field)) {
+            attrs[field] = typeof data[field] === 'string' ? data[field].trim() : data[field];
+        }
+
+        return attrs;
+    }, {});
+}
+
 async function saveThumbnail(files) {
     if (!files.thumbnail || !files.thumbnail[0]) {
         return null;
@@ -29,7 +62,7 @@ const controller = {
         permissions: true,
         async query(frame) {
             await mediaLibrary.ensureBackfilled();
-            return models.MediaFile.findPage(frame.options);
+            return models.MediaFile.findPage(withLibraryVisibilityFilter(frame.options));
         }
     },
 
@@ -43,11 +76,16 @@ const controller = {
         permissions: true,
         async query(frame) {
             await mediaLibrary.ensureBackfilled();
-            return models.MediaFile.findOne(frame.data, {
+            const mediaFile = await models.MediaFile.findOne({
+                ...frame.data,
+                visibility: libraryVisibility
+            }, {
                 ...frame.options,
                 withRelated: ['usages'],
                 require: true
             });
+
+            return await mediaLibrary.enrichUsageDetails(mediaFile);
         }
     },
 
@@ -60,10 +98,74 @@ const controller = {
         ],
         permissions: true,
         async query(frame) {
-            return await models.MediaFile.edit(frame.data.media[0], {
+            const editableData = getEditableMediaData(frame.data.media[0]);
+            const mediaFile = await models.MediaFile.findOne({
+                id: frame.options.id,
+                visibility: libraryVisibility
+            }, {require: true});
+
+            if (Object.prototype.hasOwnProperty.call(editableData, 'name')) {
+                editableData.name = displayNameWithoutExtension(editableData.name, mediaFile.get('extension'));
+            }
+
+            return await models.MediaFile.edit(editableData, {
                 ...frame.options,
                 require: true
             });
+        }
+    },
+
+    replaceFile: {
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'id'
+        ],
+        permissions: {
+            docName: 'media',
+            method: 'edit'
+        },
+        async query(frame) {
+            const mediaFile = await models.MediaFile.findOne({
+                id: frame.options.id,
+                visibility: libraryVisibility
+            }, {
+                require: true
+            });
+
+            await mediaLibrary.replaceFile(mediaFile, frame.file);
+
+            const replacedMediaFile = await models.MediaFile.findOne({id: frame.options.id}, {
+                withRelated: ['usages'],
+                require: true
+            });
+
+            return await mediaLibrary.enrichUsageDetails(replacedMediaFile);
+        }
+    },
+
+    destroy: {
+        statusCode: 204,
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'id'
+        ],
+        permissions: {
+            docName: 'media',
+            method: 'edit'
+        },
+        async query(frame) {
+            const mediaFile = await models.MediaFile.findOne({
+                id: frame.options.id,
+                visibility: libraryVisibility
+            }, {
+                require: true
+            });
+
+            await mediaLibrary.destroyFile(mediaFile);
         }
     },
 
@@ -163,7 +265,7 @@ const controller = {
                 file: frame.files.file[0],
                 thumbnailUrl: thumbnailPath,
                 createdBy: frame.options.context?.user,
-                folderId: frame.data.folder_id || null
+                folderId: getUploadFolderId(frame)
             });
 
             return {

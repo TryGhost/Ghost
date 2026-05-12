@@ -270,6 +270,15 @@ describe('Unit: Service: state-bridge', function () {
             expect(store.unloadAll.called).to.be.false;
         });
 
+        it('skips processing for media library data types', function () {
+            run(() => {
+                service.onInvalidate('MediaResponseType');
+                service.onInvalidate('MediaFoldersResponseType');
+            });
+
+            expect(store.unloadAll.called).to.be.false;
+        });
+
         it('warns when trying to invalidate singleton types', function () {
             const consoleWarnStub = sinon.stub(console, 'warn');
 

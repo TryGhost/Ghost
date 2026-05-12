@@ -19,7 +19,7 @@ const mediaFilesSpec = {
     width: {type: 'integer', nullable: true, unsigned: true},
     height: {type: 'integer', nullable: true, unsigned: true},
     thumbnail_url: {type: 'string', maxlength: 2000, nullable: true},
-    source: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'upload', validations: {isIn: [['upload', 'backfill', 'reference']]}},
+    source: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'upload', validations: {isIn: [['upload', 'external', 'unsplash', 'tenor']]}},
     created_by: {type: 'string', maxlength: 24, nullable: true, references: 'users.id', setNullDelete: true},
     created_at: {type: 'dateTime', nullable: false},
     updated_at: {type: 'dateTime', nullable: true},
