@@ -234,10 +234,12 @@ class EmailService {
             filter: `status:submitting+created_at:>'${cutoffIso}'`
         });
         const list = emails.models || emails;
-        if (list.length === 0) {
+        if (staleList.length === 0 && list.length === 0) {
             return;
         }
-        logging.info(`Email resume: found ${list.length} email(s) in submitting status within max age (${maxAgeMs}ms)`);
+        if (list.length > 0) {
+            logging.info(`Email resume: found ${list.length} email(s) in submitting status within max age (${maxAgeMs}ms)`);
+        }
 
         for (const email of list) {
             try {
@@ -246,6 +248,8 @@ class EmailService {
                 logging.error(e);
             }
         }
+
+        logging.info(`Email resume scan complete: ${staleList.length} stale email(s) flipped to failed, ${list.length} fresh email(s) rescheduled`);
     }
 
     async #resumeOneEmail(email) {

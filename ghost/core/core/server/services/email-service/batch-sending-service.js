@@ -125,7 +125,11 @@ class BatchSendingService {
      */
     async onShutdown() {
         this.#shuttingDown = true;
+        if (this.#inFlight.size > 0) {
+            logging.warn(`Email send shutdown: awaiting ${this.#inFlight.size} in-flight sendBatches call(s) to settle`);
+        }
         await Promise.allSettled([...this.#inFlight]);
+        logging.warn(`Email send shutdown: drain complete`);
     }
 
     /**
@@ -507,6 +511,8 @@ class BatchSendingService {
 
         // Run maximum MAX_SENDING_CONCURRENCY at the same time
         await Promise.all(new Array(MAX_SENDING_CONCURRENCY).fill(0).map(() => runWorker()));
+
+        logging.info(`Email ${email.id} send done: ${succeededCount}/${batches.length} batches succeeded, ${queue.length} unstarted`);
 
         if (this.#shuttingDown && queue.length > 0) {
             throw new errors.InternalServerError({
