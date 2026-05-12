@@ -789,7 +789,7 @@ module.exports = class RouterController {
                 ...data,
                 duration: 1, // gifts are currently 1 month or 1 year only
                 successUrl: this._urlUtils.getSiteUrl(),
-                cancelUrl: this._urlUtils.getSiteUrl()
+                cancelUrl: options.cancelUrl || this._urlUtils.getSiteUrl()
             });
         }
 
