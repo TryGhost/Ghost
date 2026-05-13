@@ -835,8 +835,8 @@ importers:
         specifier: 'catalog:'
         version: 8.57.1
       eslint-plugin-i18next:
-        specifier: 6.1.3
-        version: 6.1.3
+        specifier: 6.1.4
+        version: 6.1.4
       eslint-plugin-react-hooks:
         specifier: 4.6.2
         version: 4.6.2(eslint@8.57.1)
@@ -920,8 +920,8 @@ importers:
         specifier: 'catalog:'
         version: 8.57.1
       eslint-plugin-i18next:
-        specifier: 6.1.3
-        version: 6.1.3
+        specifier: 6.1.4
+        version: 6.1.4
       jsdom:
         specifier: 28.1.0
         version: 28.1.0(@noble/hashes@1.8.0)
@@ -13620,8 +13620,8 @@ packages:
     peerDependencies:
       eslint: '>=5.11.0'
 
-  eslint-plugin-i18next@6.1.3:
-    resolution: {integrity: sha512-z/h4oBRd9wI1ET60HqcLSU6XPeAh/EPOrBBTyCdkWeMoYrWAaUVA+DOQkWTiNIyCltG4NTmy62SQisVXxoXurw==}
+  eslint-plugin-i18next@6.1.4:
+    resolution: {integrity: sha512-BekXQu1VaVFkREepQGsntBYoKuPsf89V16n/s2xpKMtsw0/lDseds1wBhj3RtO1dKnHsfTPaG+xul1vF0R7LEQ==}
     engines: {node: '>=18.10.0'}
 
   eslint-plugin-mocha@7.0.1:
@@ -37283,7 +37283,7 @@ snapshots:
       - '@babel/core'
       - supports-color
 
-  eslint-plugin-i18next@6.1.3:
+  eslint-plugin-i18next@6.1.4:
     dependencies:
       lodash: 4.18.1
       requireindex: 1.1.0
