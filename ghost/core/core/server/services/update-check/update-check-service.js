@@ -8,6 +8,7 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const debug = require('@tryghost/debug')('update-check');
+const {toNotificationInputs} = require('./notification-handler');
 
 const internal = {context: {internal: true}};
 
@@ -247,10 +248,6 @@ class UpdateCheckService {
      * @return {Promise}
      */
     async updateCheckResponse(response) {
-        let notifications = [];
-        let notificationGroups = (this.config.notificationGroups || []).concat(['all']);
-
-        debug('Notification Groups', notificationGroups);
         debug('Response Update Check Service', response);
 
         await this.api.settings.edit({
@@ -260,41 +257,13 @@ class UpdateCheckService {
             }]
         }, internal);
 
-        /**
-         * @NOTE:
-         *
-         * When we refactored notifications in Ghost 1.20, the service did not support returning multiple messages.
-         * But we wanted to already add the support for future functionality.
-         * That's why this helper supports two ways: returning an array of messages or returning an object with
-         * a "notifications" key. The second one is probably the best, because we need to support "next_check"
-         * on the root level of the response.
-         */
+        let notifications;
         if (_.isArray(response)) {
             notifications = response;
         } else if ((Object.prototype.hasOwnProperty.call(response, 'notifications') && _.isArray(response.notifications))) {
             notifications = response.notifications;
         } else {
-            // CASE: default right now
             notifications = [response];
-        }
-
-        // CASE: Hook into received notifications and decide whether you are allowed to receive custom group messages.
-        if (notificationGroups.length) {
-            notifications = notifications.filter(function (notification) {
-                // CASE: release notification, keep
-                if (!notification.custom) {
-                    return true;
-                }
-
-                // CASE: filter out messages based on your groups
-                return _.includes(notificationGroups.map(function (groupIdentifier) {
-                    if (notification && notification.version && notification.version.match(new RegExp(groupIdentifier))) {
-                        return true;
-                    }
-
-                    return false;
-                }), true) === true;
-            });
         }
 
         for (const notification of notifications) {
@@ -303,50 +272,35 @@ class UpdateCheckService {
     }
 
     /**
-     * @description Create a Ghost notification and call the API controller.
+     * @description Map a wire notification through the feed handler and add the
+     * resulting notifications to Ghost, emailing admins for any alerts.
      *
      * @param {Object} notification
      * @return {Promise}
      */
     async createCustomNotification(notification) {
-        if (!notification || !notification.messages || notification.messages.length === 0) {
-            debug(`Skipping notification creation as there are no messages to process`);
+        const inputs = toNotificationInputs(notification, {
+            notificationGroups: this.config.notificationGroups || []
+        });
+
+        if (inputs.length === 0) {
+            debug('Skipping notification creation as no inputs were produced');
             return;
         }
 
-        debug(`creating custom notifications for ${notification.messages.length} notifications`);
-        const {users} = await this.api.users.browse(Object.assign({
-            limit: 'all',
-            include: ['roles'],
-            filter: 'status:active'
-        }, internal));
+        debug(`creating ${inputs.length} notification(s)`);
 
-        const adminEmails = users
-            .filter(user => ['Owner', 'Administrator'].includes(user.roles[0].name))
-            .map(user => user.email);
-
-        const siteUrl = this.config.siteUrl;
-
-        for (const message of notification.messages) {
-            const toAdd = {
-                // @NOTE: the update check service returns "0" or "1" (https://github.com/TryGhost/UpdateCheck/issues/43)
-                custom: !!notification.custom,
-                createdAt: moment(notification.created_at).toDate(),
-                status: message.status || 'alert',
-                type: message.type || 'info',
-                id: message.id,
-                dismissible: Object.prototype.hasOwnProperty.call(message, 'dismissible') ? message.dismissible : true,
-                top: !!message.top,
-                message: message.content
-            };
-
-            if (toAdd.type === 'alert') {
+        const alerts = inputs.filter(input => input.type === 'alert');
+        if (alerts.length > 0) {
+            const adminEmails = await this.fetchAdminEmails();
+            const siteUrl = this.config.siteUrl;
+            for (const input of alerts) {
                 for (const email of adminEmails) {
                     try {
                         this.sendEmail({
                             to: email,
                             subject: `Action required: Critical alert from Ghost instance ${siteUrl}`,
-                            html: toAdd.message,
+                            html: input.message,
                             forceTextContent: true
                         });
                     } catch (err) {
@@ -357,10 +311,21 @@ class UpdateCheckService {
                     }
                 }
             }
-
-            debug('Add Custom Notification', toAdd);
-            await this.api.notifications.add({notifications: [toAdd]}, {context: {internal: true}});
         }
+
+        await this.api.notifications.add({notifications: inputs}, {context: {internal: true}});
+    }
+
+    async fetchAdminEmails() {
+        const {users} = await this.api.users.browse(Object.assign({
+            limit: 'all',
+            include: ['roles'],
+            filter: 'status:active'
+        }, internal));
+
+        return users
+            .filter(user => ['Owner', 'Administrator'].includes(user.roles[0].name))
+            .map(user => user.email);
     }
     /**
      * @description Entry point to trigger the update check unit.

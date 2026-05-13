@@ -358,7 +358,7 @@ describe('Notification domain (integration)', function () {
                 .reply(200, JSON.stringify(body), {'Content-Type': 'application/json'});
         }
 
-        it('stores a release notification alongside the running Ghost version', async function () {
+        it('produces a notification with the expected shape from a release-style wire response', async function () {
             const messageId = '11111111-1111-4111-8111-111111111111';
             mockEndpoint({
                 id: 1,
@@ -377,10 +377,15 @@ describe('Notification domain (integration)', function () {
 
             const stored = await readStoredNotifications();
             assert.equal(stored.length, 1);
-            assert.equal(stored[0].id, messageId);
-            assert.equal(stored[0].message, '<p>Ghost X is now available</p>');
-            assert.equal(stored[0].type, 'info');
-            assert.equal(stored[0].createdAtVersion, ghostVersion.full);
+            const n = stored[0];
+            assert.equal(n.id, messageId);
+            assert.equal(n.message, '<p>Ghost X is now available</p>');
+            assert.equal(n.type, 'info');
+            assert.equal(n.custom, false);
+            assert.equal(n.dismissible, true);
+            assert.equal(n.top, true);
+            assert.equal(n.createdAtVersion, ghostVersion.full);
+            assert.deepEqual(n.seenBy, []);
         });
 
         it('sends an alert email to Owner and Administrator users when the update-check service publishes an alert', async function () {
