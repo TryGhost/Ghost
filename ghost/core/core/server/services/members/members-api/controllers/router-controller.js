@@ -65,6 +65,45 @@ function extractGiftToken(input) {
     return input.trim();
 }
 
+/**
+ * Validate that a candidate return URL (e.g. Stripe Checkout success/cancel URL) points back
+ * to the configured Ghost site. Returns `undefined` when the candidate is missing, malformed,
+ * on a different origin, or outside of the site's subpath (for subpath installs) — leaving
+ * the downstream Stripe service to fall back to its configured default URL.
+ *
+ * This prevents the public checkout endpoints being abused as open-redirect surfaces.
+ *
+ * @param {string | undefined} candidate - URL provided in the request body
+ * @param {string} siteUrl - The site URL returned by urlUtils.getSiteUrl()
+ * @returns {string | undefined} The candidate URL if same-origin, otherwise undefined
+ */
+function sanitizeReturnUrl(candidate, siteUrl) {
+    if (typeof candidate !== 'string' || candidate.length === 0) {
+        return undefined;
+    }
+
+    let site;
+    let url;
+
+    try {
+        site = new URL(siteUrl);
+        url = new URL(candidate);
+    } catch {
+        return undefined;
+    }
+
+    if (url.origin !== site.origin) {
+        return undefined;
+    }
+
+    // Normalize site/candidate paths to trailing-slash form so that /blog and /blog/
+    // are treated equivalently when the site is configured at a subpath.
+    const sitePath = site.pathname.endsWith('/') ? site.pathname : `${site.pathname}/`;
+    const urlPath = url.pathname.endsWith('/') ? url.pathname : `${url.pathname}/`;
+
+    return urlPath.startsWith(sitePath) ? url.href : undefined;
+}
+
 module.exports = class RouterController {
     #inboxLinksDnsResolver = new dns.Resolver({maxTimeout: 1000});
 
@@ -202,9 +241,10 @@ module.exports = class RouterController {
             customer = await this._stripeAPIService.getCustomer(subscription.get('customer_id'));
         }
 
+        const siteUrl = this._urlUtils.getSiteUrl();
         const session = await this._stripeAPIService.createCheckoutSetupSession(customer, {
-            successUrl: req.body.successUrl,
-            cancelUrl: req.body.cancelUrl,
+            successUrl: sanitizeReturnUrl(req.body.successUrl, siteUrl),
+            cancelUrl: sanitizeReturnUrl(req.body.cancelUrl, siteUrl),
             subscription_id: req.body.subscription_id,
             currency
         });
@@ -267,8 +307,9 @@ module.exports = class RouterController {
 
         const configurationId = this._settingsCache.get('stripe_billing_portal_configuration_id');
 
+        const siteUrl = this._urlUtils.getSiteUrl();
         const session = await this._stripeAPIService.createBillingPortalSession(customer, {
-            returnUrl: req.body.returnUrl,
+            returnUrl: sanitizeReturnUrl(req.body.returnUrl, siteUrl),
             ...(configurationId && {configurationId})
         });
         const sessionInfo = {
@@ -694,10 +735,14 @@ module.exports = class RouterController {
             metadata.newsletters = JSON.stringify(await this._validateNewsletters(JSON.parse(metadata.newsletters)));
         }
 
+        const siteUrl = this._urlUtils.getSiteUrl();
+        const successUrl = sanitizeReturnUrl(req.body.successUrl, siteUrl);
+        const cancelUrl = sanitizeReturnUrl(req.body.cancelUrl, siteUrl);
+
         // Build options
         const options = {
-            successUrl: req.body.successUrl,
-            cancelUrl: req.body.cancelUrl,
+            successUrl,
+            cancelUrl,
             email: req.body.customerEmail,
             member,
             metadata,
@@ -788,8 +833,8 @@ module.exports = class RouterController {
                 ...options,
                 ...data,
                 duration: 1, // gifts are currently 1 month or 1 year only
-                successUrl: this._urlUtils.getSiteUrl(),
-                cancelUrl: options.cancelUrl || this._urlUtils.getSiteUrl()
+                successUrl: siteUrl,
+                cancelUrl: options.cancelUrl || siteUrl
             });
         }
 
