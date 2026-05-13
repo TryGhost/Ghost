@@ -74,6 +74,8 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align='end'>
+                            {/* It's unlikely you'll be able to click this because there's
+                                a modal in the way, but we disable it to be safe. */}
                             <DropdownMenuItem disabled={isUnpublishing} onSelect={onTurnOff}>
                                 <LucideIcon.Power className='size-4' />
                                 Turn off
