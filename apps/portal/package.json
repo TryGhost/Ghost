@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/portal",
-  "version": "2.68.42",
+  "version": "2.68.43",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -134,7 +134,7 @@
     "vitest": "3.2.4"
   },
   "dependencies": {
-    "@tryghost/debug": "2.1.0"
+    "@tryghost/debug": "2.2.0"
   },
   "nx": {
     "tags": [
