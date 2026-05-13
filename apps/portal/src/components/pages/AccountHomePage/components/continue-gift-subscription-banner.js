@@ -1,6 +1,7 @@
 import AppContext from '../../../../app-context';
 import ActionButton from '../../../common/action-button';
 import {getSubscriptionExpiry, isArchivedTier, isGiftMember, isStripeConfigured} from '../../../../utils/helpers';
+import {t} from '../../../../utils/i18n';
 import {useContext} from 'react';
 
 const ContinueGiftSubscriptionBanner = () => {
@@ -18,13 +19,11 @@ const ContinueGiftSubscriptionBanner = () => {
 
     const isRunning = action === 'continueGiftSubscription:running';
 
-    // TODO: Add translation strings once copy has been finalised
-    /* eslint-disable i18next/no-literal-string */
     return (
         <div className='gh-portal-cancelcontinue-container'>
             <div className='gh-portal-cancel-banner'>
                 <p style={{maxWidth: 'none', margin: '0 0 16px', textAlign: 'center', textWrap: 'pretty'}}>
-                    Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.
+                    {t('Continue with a paid subscription anytime. Your remaining gift period will be added as a free trial.')}
                 </p>
                 <ActionButton
                     onClick={() => doAction('continueGiftSubscription')}
@@ -32,7 +31,7 @@ const ContinueGiftSubscriptionBanner = () => {
                     disabled={isRunning}
                     isPrimary={true}
                     brandColor={brandColor}
-                    label='Continue subscription'
+                    label={t('Continue subscription')}
                     style={{
                         width: '100%'
                     }}

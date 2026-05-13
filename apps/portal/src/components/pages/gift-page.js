@@ -9,10 +9,8 @@ import giftCardNoiseUrl from '../../images/gift-card-noise.webp';
 import giftCardOrbUrl from '../../images/gift-card-orb.webp';
 import {getAvailableProducts, getCurrencySymbol, formatNumber, getStripeAmount, isCookiesDisabled, getActiveInterval} from '../../utils/helpers';
 import {getGiftDurationLabel} from '../../utils/gift-redemption-notification';
+import {t} from '../../utils/i18n';
 import useCardTilt from '../../utils/use-card-tilt';
-
-// TODO: wrap strings with t() once copy is finalised
-/* eslint-disable i18next/no-literal-string */
 
 export const GiftPageStyles = `
 @property --shine-angle {
@@ -627,14 +625,14 @@ function GiftPriceSwitch({selectedInterval, setSelectedInterval}) {
                 className={'gh-portal-btn' + (selectedInterval === 'month' ? ' active' : '')}
                 onClick={() => setSelectedInterval('month')}
             >
-                1 month
+                {t('1 month')}
             </button>
             <button
                 data-test-button='switch-yearly'
                 className={'gh-portal-btn' + (selectedInterval === 'year' ? ' active' : '')}
                 onClick={() => setSelectedInterval('year')}
             >
-                1 year
+                {t('1 year')}
             </button>
         </div>
     );
@@ -719,9 +717,9 @@ const GiftPage = () => {
                             <div className='gh-portal-gift-checkout-bg' aria-hidden='true' />
                             <div className='gh-portal-gift-checkout-inner'>
                                 <header className='gh-portal-gift-checkout-header'>
-                                    <h1 className='gh-portal-main-title'>Gift a membership</h1>
+                                    <h1 className='gh-portal-main-title'>{t('Gift a membership')}</h1>
                                     <p className='gh-portal-gift-checkout-subtitle'>
-                                        Gift subscriptions are not available right now.
+                                        {t('Gift subscriptions are not available right now.')}
                                     </p>
                                 </header>
                             </div>
@@ -756,9 +754,9 @@ const GiftPage = () => {
                         <div className='gh-portal-gift-checkout-bg' aria-hidden='true' />
                         <div className='gh-portal-gift-checkout-inner' ref={innerRef}>
                             <header className='gh-portal-gift-checkout-header'>
-                                <h1 className='gh-portal-main-title'>Gift a membership</h1>
+                                <h1 className='gh-portal-main-title'>{t('Gift a membership')}</h1>
                                 <p className='gh-portal-gift-checkout-subtitle'>
-                                    Share a full membership to {siteTitle} with a friend or colleague
+                                    {t('Share a full membership to {siteTitle} with a friend or colleague', {siteTitle})}
                                 </p>
                             </header>
 
@@ -770,11 +768,11 @@ const GiftPage = () => {
                             </div>
 
                             <div className='gh-portal-gift-checkout-section'>
-                                <div className='gh-portal-gift-checkout-label'>{isSingleTier ? 'Membership details' : 'Tier'}</div>
+                                <div className='gh-portal-gift-checkout-label'>{isSingleTier ? t('Membership details') : t('Tier')}</div>
                                 <div
                                     className={'gh-portal-gift-checkout-tiers' + (isSingleTier ? ' single' : '')}
                                     role={isSingleTier ? undefined : 'radiogroup'}
-                                    aria-label={isSingleTier ? undefined : 'Tier'}
+                                    aria-label={isSingleTier ? undefined : t('Tier')}
                                 >
                                     {products.map((product) => {
                                         const isSelected = product.id === activeProduct.id;
@@ -835,7 +833,7 @@ const GiftPage = () => {
                             <div className='gh-portal-gift-checkout-cta-wrapper'>
                                 <ActionButton
                                     dataTestId='purchase-gift'
-                                    label='Continue'
+                                    label={t('Continue')}
                                     onClick={handlePurchase}
                                     disabled={isDisabled}
                                     isRunning={isPurchasing}

@@ -22,7 +22,6 @@ export const GiftRedemptionStyles = `
 }
 `;
 
-// TODO: Add translation strings once copy has been finalised
 const GiftRedemptionPage = () => {
     const {action, brandColor, doAction, member, pageData, site} = useContext(AppContext);
     const gift = pageData?.gift;
@@ -150,13 +149,13 @@ const GiftRedemptionPage = () => {
 
     const isRedeeming = action === 'redeemGift:running';
     const buttonLabel = isRedeeming
-        ? 'Redeeming gift...' // TODO: Add translation strings once copy has been finalised
-        : 'Redeem your membership'; // TODO: Add translation strings once copy has been finalised
+        ? t('Redeeming...')
+        : t('Redeem your membership');
     const siteIcon = site?.icon;
     const siteTitle = site?.title || '';
     const headerText = siteTitle
-        ? `You've been gifted a membership to ${siteTitle}`
-        : 'You\'ve been gifted a membership';
+        ? t('You\'ve been gifted a membership to {siteTitle}', {siteTitle})
+        : t('You\'ve been gifted a membership');
     const benefits = gift.tier.benefits || [];
     const tierDescription = gift.tier.description || '';
 
@@ -169,8 +168,7 @@ const GiftRedemptionPage = () => {
                         <div className='gh-portal-gift-checkout-bg' aria-hidden='true' />
                         <div className='gh-portal-gift-checkout-inner'>
                             <header className='gh-portal-gift-checkout-header'>
-                                {/* eslint-disable-next-line i18next/no-literal-string -- copy not yet finalised */}
-                                <h1 className='gh-portal-main-title'>A gift, just for you</h1>
+                                <h1 className='gh-portal-main-title'>{t('A gift, just for you')}</h1>
                                 <p className='gh-portal-gift-checkout-subtitle'>{headerText}</p>
                             </header>
 

@@ -6,11 +6,9 @@ import GiftDetailsToggle from '../common/gift-details-toggle';
 import copyTextToClipboard from '../../utils/copy-to-clipboard';
 import {getAvailableProducts} from '../../utils/helpers';
 import {getGiftDurationLabel} from '../../utils/gift-redemption-notification';
+import {t} from '../../utils/i18n';
 import useCardTilt from '../../utils/use-card-tilt';
 import {formatGiftValue} from './gift-page';
-
-// TODO: wrap strings with t() once copy is finalised
-/* eslint-disable i18next/no-literal-string */
 
 export const GiftSuccessStyle = `
 .gh-portal-gift-success-link {
@@ -115,9 +113,9 @@ const GiftSuccessPage = () => {
                         <div className='gh-portal-gift-checkout-bg' aria-hidden='true' />
                         <div className='gh-portal-gift-checkout-inner'>
                             <header className='gh-portal-gift-checkout-header'>
-                                <h1 className='gh-portal-main-title'>Your gift is ready!</h1>
+                                <h1 className='gh-portal-main-title'>{t('Your gift is ready!')}</h1>
                                 <p className='gh-portal-gift-checkout-subtitle'>
-                                    Send the link below to share it with whoever you&apos;d like.
+                                    {t('Send the link below to share it with whoever you\'d like.')}
                                 </p>
                             </header>
 
@@ -126,13 +124,13 @@ const GiftSuccessPage = () => {
                                     <span className='gh-portal-gift-success-link-url'>{redeemUrl}</span>
                                     <button className='gh-portal-gift-success-copy' onClick={handleCopy} type='button'>
                                         {copied ? <CheckIcon /> : <CopyIcon />}
-                                        {copied ? 'Copied' : 'Copy'}
+                                        {copied ? t('Copied') : t('Copy')}
                                     </button>
                                 </div>
                             </div>
 
                             <p className='gh-portal-gift-success-footer'>
-                                Not ready to share? We&apos;ve also emailed a copy to your inbox.
+                                {t('Not ready to share? We\'ve also emailed a copy to your inbox.')}
                             </p>
                         </div>
                     </div>

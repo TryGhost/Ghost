@@ -1,7 +1,5 @@
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
-
-// TODO: wrap strings with t() once copy is finalised
-/* eslint-disable i18next/no-literal-string */
+import {t} from '../../utils/i18n';
 
 const ChevronIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -56,7 +54,7 @@ const GiftDetailsToggle = ({description, benefits, showDetails, onToggle}) => {
                 onClick={onToggle}
                 aria-expanded={showDetails}
             >
-                {showDetails ? 'Hide details' : 'Gift details'}
+                {showDetails ? t('Hide details') : t('Gift details')}
                 <ChevronIcon />
             </button>
         </>
