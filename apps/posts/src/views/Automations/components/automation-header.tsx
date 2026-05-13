@@ -1,17 +1,19 @@
 import AutomationStatusBadge from './automation-status-badge';
 import React from 'react';
-import {Button, type ButtonProps, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, LoadingIndicator, Skeleton} from '@tryghost/shade/components';
+import {Button, type ButtonProps, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Skeleton} from '@tryghost/shade/components';
 import {Link} from '@tryghost/admin-x-framework';
 import {LucideIcon} from '@tryghost/shade/utils';
 import type {AutomationDetail} from '@tryghost/admin-x-framework/api/automations';
-import type {AutomationEditState} from '../types';
 
 export type AutomationRequestState = 'idle' | 'loading' | 'error';
 
 interface AutomationHeaderProps {
     automation: AutomationDetail | undefined;
     isLoadingAutomation: boolean;
-    editState: AutomationEditState;
+    isPublishButtonEnabled: boolean;
+    publishButtonVariant: ButtonProps['variant'];
+    isTurnOffButtonEnabled: boolean;
+    publishButtonChildren: React.ReactNode;
     onPublish: () => void;
     onTurnOff: () => void;
 }
@@ -19,50 +21,15 @@ interface AutomationHeaderProps {
 const AutomationHeader: React.FC<AutomationHeaderProps> = ({
     automation,
     isLoadingAutomation,
-    editState,
+    isPublishButtonEnabled,
+    publishButtonVariant,
+    isTurnOffButtonEnabled,
+    publishButtonChildren,
     onPublish,
     onTurnOff
 }) => {
     const name = automation?.name;
     const status = automation?.status;
-
-    let isPublishButtonEnabled = automation?.status === 'inactive';
-    let publishButtonVariant: ButtonProps['variant'] = 'default';
-    let isTurnOffButtonEnabled = true;
-    let publishButtonChildren: React.ReactNode = automation?.status === 'active' ? 'Published' : 'Publish changes';
-    switch (editState) {
-    case 'idle':
-        break;
-    case 'publishing':
-        isPublishButtonEnabled = false;
-        isTurnOffButtonEnabled = false;
-        publishButtonChildren = (
-            <>
-                <LoadingIndicator color='light' size='sm' />
-                Publishing...
-            </>
-        );
-        break;
-    case 'unpublishing':
-        isPublishButtonEnabled = false;
-        isTurnOffButtonEnabled = false;
-        break;
-    case 'confirming unpublish':
-        isPublishButtonEnabled = false;
-        isTurnOffButtonEnabled = false;
-        break;
-    case 'failed to publish':
-        publishButtonVariant = 'destructive';
-        publishButtonChildren = 'Retry';
-        break;
-    case 'failed to unpublish':
-        isTurnOffButtonEnabled = true;
-        break;
-    default: {
-        const _exhaustive: never = editState;
-        throw new Error(`Unhandled edit state: ${_exhaustive}`);
-    }
-    }
 
     return (
         <header className='relative z-10 flex h-14 shrink-0 items-center justify-between bg-background px-4 shadow-sm'>
