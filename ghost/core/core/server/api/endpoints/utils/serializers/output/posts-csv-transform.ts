@@ -7,14 +7,13 @@ type Row = Record<string, unknown>;
 // Streaming Transform that converts post objects into CSV bytes one row at a time.
 // Pipe a Readable of post objects in, pipe CSV bytes out.
 export function createCSVTransform(): Transform {
-    let isFirstChunk = true;
     let fields: string[] | null = null;
 
     return new Transform({
         objectMode: true,
         transform(post: Row, _encoding: BufferEncoding, callback: TransformCallback) {
             try {
-                if (isFirstChunk) {
+                if (fields === null) {
                     // Lock the column list from the first row's keys, then emit
                     // the header + the row in a single chunk.
                     fields = Object.keys(post);
@@ -24,7 +23,6 @@ export function createCSVTransform(): Transform {
                         newline: '\r\n'
                     });
 
-                    isFirstChunk = false;
                     callback(null, csv);
                     return;
                 }
