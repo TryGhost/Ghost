@@ -32,6 +32,22 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
     const hasPublishError = publishState === 'error' && !isActive;
     const isUnpublishing = unpublishState === 'loading';
 
+    let publishButtonChildren: React.ReactNode;
+    if (isPublishing) {
+        publishButtonChildren = (
+            <>
+                <LoadingIndicator color='light' size='sm' />
+                Publishing...
+            </>
+        );
+    } else if (hasPublishError) {
+        publishButtonChildren = 'Retry';
+    } else if (isActive) {
+        publishButtonChildren = 'Published';
+    } else {
+        publishButtonChildren = 'Publish changes';
+    }
+
     return (
         <header className='relative z-10 flex h-14 shrink-0 items-center justify-between bg-background px-4 shadow-sm'>
             <div className='flex min-w-0 items-center gap-3'>
@@ -70,18 +86,7 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
                     variant={hasPublishError ? 'destructive' : 'default'}
                     onClick={onPublish}
                 >
-                    {isPublishing ? (
-                        <>
-                            <LoadingIndicator color='light' size='sm' />
-                            Publishing...
-                        </>
-                    ) : hasPublishError ? (
-                        'Retry'
-                    ) : isActive ? (
-                        'Published'
-                    ) : (
-                        'Publish changes'
-                    )}
+                    {publishButtonChildren}
                 </Button>
             </div>
         </header>
