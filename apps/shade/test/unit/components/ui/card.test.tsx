@@ -22,7 +22,7 @@ describe('Card Components', () => {
     });
 
     it('renders Card with plain variant', () => {
-        render(<Card variant="plain" data-testid="card">Card Content</Card>);
+        render(<Card data-testid="card" variant="plain">Card Content</Card>);
         const card = screen.getByTestId('card');
 
         assert.ok(card, 'Card should be rendered');
@@ -51,7 +51,7 @@ describe('Card Components', () => {
 
     it('renders CardHeader with plain variant styling', () => {
         render(
-            <Card variant="plain" data-testid="card">
+            <Card data-testid="card" variant="plain">
                 <CardHeader data-testid="card-header">Header Content</CardHeader>
             </Card>
         );
@@ -93,7 +93,7 @@ describe('Card Components', () => {
 
     it('renders CardContent with plain variant styling', () => {
         render(
-            <Card variant="plain" data-testid="card">
+            <Card data-testid="card" variant="plain">
                 <CardContent data-testid="card-content">Content</CardContent>
             </Card>
         );
@@ -117,7 +117,7 @@ describe('Card Components', () => {
 
     it('renders CardFooter with plain variant styling', () => {
         render(
-            <Card variant="plain" data-testid="card">
+            <Card data-testid="card" variant="plain">
                 <CardFooter data-testid="card-footer">Footer Content</CardFooter>
             </Card>
         );
