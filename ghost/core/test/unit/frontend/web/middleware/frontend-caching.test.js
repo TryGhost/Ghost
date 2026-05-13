@@ -21,7 +21,7 @@ describe('frontendCaching', function () {
         await configUtils.restore();
     });
 
-    async function requestWithFrontendCaching({path = '/', member, isPrivateBlog} = {}) {
+    async function requestWithFrontendCaching({path = '/', member, isPrivateBlog, previewHeader} = {}) {
         const app = express();
         const middleware = await frontendCaching.getMiddleware(async () => freeTier);
 
@@ -35,9 +35,13 @@ describe('frontendCaching', function () {
             res.sendStatus(204);
         });
 
-        return request(app)
-            .get(path)
-            .expect(204);
+        const frontendRequest = request(app).get(path);
+
+        if (previewHeader) {
+            frontendRequest.set('x-ghost-preview', previewHeader);
+        }
+
+        return frontendRequest.expect(204);
     }
 
     it('should set cache control to private if the blog is private', async function () {
@@ -108,13 +112,9 @@ describe('frontendCaching', function () {
         assert.equal(headers['x-member-cache-tier'], 'freeTierId');
     });
 
-    it('should set cache control to no-cache if the request includes preview data', function () {
-        req.header = sinon.stub().withArgs('x-ghost-preview').returns('c=%23ff0000');
-
-        middleware(req, res, next);
-
-        sinon.assert.calledOnce(res.set);
-        sinon.assert.calledWith(res.set, {'Cache-Control': testUtils.cacheRules.noCache});
+    it('should set cache control to no-cache if the request includes preview data', async function () {
+        const {headers} = await requestWithFrontendCaching({previewHeader: 'c=%23ff0000'});
+        assert.equal(headers['cache-control'], testUtils.cacheRules.noCache);
     });
 
     describe('calculateMemberTier', function () {
