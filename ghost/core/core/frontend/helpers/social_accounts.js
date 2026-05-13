@@ -27,8 +27,11 @@ const messages = {
 };
 
 // Canonical order mirrors the admin settings UI (SOCIAL_PLATFORM_KEYS).
+// `type` is the theme-facing key (used for icon partial names and CSS hooks)
+// and `sourceKey` is the schema field on the source object (defaults to `type`).
+// X is the only platform where they differ: the DB field is still `twitter`.
 const SOCIAL_PLATFORMS = [
-    {type: 'twitter', name: 'X'},
+    {type: 'x', sourceKey: 'twitter', name: 'X'},
     {type: 'facebook', name: 'Facebook'},
     {type: 'linkedin', name: 'LinkedIn'},
     {type: 'bluesky', name: 'Bluesky'},
@@ -62,10 +65,10 @@ module.exports = function social_accounts(source, options) { // eslint-disable-l
         });
     }
 
-    const accounts = SOCIAL_PLATFORMS.reduce((acc, {type, name}) => {
-        const username = source && source[type];
-        if (username && typeof socialUrls[type] === 'function') {
-            acc.push({type, name, username, href: socialUrls[type](username)});
+    const accounts = SOCIAL_PLATFORMS.reduce((acc, {type, name, sourceKey = type}) => {
+        const username = source && source[sourceKey];
+        if (username && typeof socialUrls[sourceKey] === 'function') {
+            acc.push({type, name, username, href: socialUrls[sourceKey](username)});
         }
         return acc;
     }, []);
