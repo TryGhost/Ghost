@@ -177,7 +177,10 @@ export const Subview: Story = {
                 <PageHeader.Title>Analytics</PageHeader.Title>
             </PageHeader.Left>
             <PageHeader.Actions>
-                <span className="text-sm text-muted-foreground">18 online</span>
+                <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <span className="size-2 rounded-full bg-green-500" />
+                    18 online
+                </span>
             </PageHeader.Actions>
             <PageHeader.ViewBar>
                 <PageMenu defaultValue="overview" responsive>

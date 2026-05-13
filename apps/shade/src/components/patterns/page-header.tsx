@@ -307,7 +307,7 @@ function PageHeaderActions({className, children}: PropsWithChildrenAndClassName)
     return (
         <Inline
             align='center'
-            className={cn('shrink-0', className)}
+            className={cn('shrink-0 min-h-(--control-height)', className)}
             data-page-header='actions'
             gap='lg'
         >
