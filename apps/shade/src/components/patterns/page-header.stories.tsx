@@ -9,6 +9,7 @@ import {
     BreadcrumbSeparator
 } from '@/components/ui/breadcrumb';
 import {Button} from '@/components/ui/button';
+import {DropdownMenuItem} from '@/components/ui/dropdown-menu';
 import {InputGroup, InputGroupAddon, InputGroupInput} from '@/components/ui/input-group';
 import {PageHeader} from './page-header';
 import {PageMenu, PageMenuItem} from '@/components/ui/pagemenu';
@@ -73,7 +74,7 @@ export const Structure: Story = {
 
                 {/* Actions: search, filter, primary action */}
                 <PageHeader.Actions>
-                    <PageHeader.ActionGroup>
+                    <PageHeader.ActionGroup mobileMenuBreakpoint={1200}>
                         <InputGroup className="w-full sm:w-56">
                             <InputGroupInput placeholder="Search members..." type="search" />
                             <InputGroupAddon>
@@ -87,6 +88,23 @@ export const Structure: Story = {
                             <FilterIcon className="size-4" />
                             Filter
                         </Button>
+                        <PageHeader.ActionGroup.MobileMenu>
+                            <PageHeader.ActionGroup.MobileMenuTrigger>
+                                <Button aria-label="More actions" size="icon" variant="outline">
+                                    <Ellipsis className="size-4" />
+                                </Button>
+                            </PageHeader.ActionGroup.MobileMenuTrigger>
+                            <PageHeader.ActionGroup.MobileMenuContent>
+                                <DropdownMenuItem>
+                                    <Search className="size-4" />
+                                    Search
+                                </DropdownMenuItem>
+                                <DropdownMenuItem>
+                                    <FilterIcon className="size-4" />
+                                    Filter
+                                </DropdownMenuItem>
+                            </PageHeader.ActionGroup.MobileMenuContent>
+                        </PageHeader.ActionGroup.MobileMenu>
                         <PageHeader.ActionGroup.Primary>
                             <Button>
                                 <Plus className="size-4" />
@@ -147,7 +165,7 @@ export const Basic: Story = {
                 <PageHeader.Title>Posts</PageHeader.Title>
             </PageHeader.Left>
             <PageHeader.Actions>
-                <PageHeader.ActionGroup>
+                <PageHeader.ActionGroup mobileMenuBreakpoint={1200}>
                     <InputGroup className="w-full sm:w-56">
                         <InputGroupInput placeholder="Search posts..." type="search" />
                         <InputGroupAddon>
@@ -158,6 +176,23 @@ export const Basic: Story = {
                         <FilterIcon className="size-4" />
                         Filter
                     </Button>
+                    <PageHeader.ActionGroup.MobileMenu>
+                        <PageHeader.ActionGroup.MobileMenuTrigger>
+                            <Button aria-label="More actions" size="icon" variant="outline">
+                                <Ellipsis className="size-4" />
+                            </Button>
+                        </PageHeader.ActionGroup.MobileMenuTrigger>
+                        <PageHeader.ActionGroup.MobileMenuContent>
+                            <DropdownMenuItem>
+                                <Search className="size-4" />
+                                Search
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                                <FilterIcon className="size-4" />
+                                Filter
+                            </DropdownMenuItem>
+                        </PageHeader.ActionGroup.MobileMenuContent>
+                    </PageHeader.ActionGroup.MobileMenu>
                     <PageHeader.ActionGroup.Primary>
                         <Button>
                             <Plus className="size-4" />
@@ -224,7 +259,7 @@ export const FilteredList: Story = {
                     </PageHeader.Title>
                 </PageHeader.Left>
                 <PageHeader.Actions>
-                    <PageHeader.ActionGroup>
+                    <PageHeader.ActionGroup mobileMenuBreakpoint={1200}>
                         <InputGroup className="w-full sm:w-56">
                             <InputGroupInput placeholder="Search members..." type="search" />
                             <InputGroupAddon>
@@ -234,6 +269,19 @@ export const FilteredList: Story = {
                         <Button aria-label="More actions" size="icon" variant="outline">
                             <Ellipsis className="size-4" />
                         </Button>
+                        <PageHeader.ActionGroup.MobileMenu>
+                            <PageHeader.ActionGroup.MobileMenuTrigger>
+                                <Button aria-label="More actions" size="icon" variant="outline">
+                                    <Ellipsis className="size-4" />
+                                </Button>
+                            </PageHeader.ActionGroup.MobileMenuTrigger>
+                            <PageHeader.ActionGroup.MobileMenuContent>
+                                <DropdownMenuItem>
+                                    <Search className="size-4" />
+                                    Search
+                                </DropdownMenuItem>
+                            </PageHeader.ActionGroup.MobileMenuContent>
+                        </PageHeader.ActionGroup.MobileMenu>
                         <PageHeader.ActionGroup.Primary>
                             <Button>
                                 <Plus className="size-4" />

@@ -112,7 +112,7 @@ function PageHeaderTitle({className, children}: PropsWithChildrenAndClassName) {
 
     if (subTextChildren.length > 0) {
         return (
-            <Stack data-page-header='title-body' gap='xs'>
+            <Stack data-page-header='title-body' gap='none'>
                 {heading}
                 {subTextChildren}
             </Stack>
