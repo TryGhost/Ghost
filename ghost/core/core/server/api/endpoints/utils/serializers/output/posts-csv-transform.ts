@@ -14,7 +14,7 @@ export function createCSVTransform(): Transform {
 
     return new Transform({
         objectMode: true,
-        transform(post: Row, _encoding: BufferEncoding, callback: TransformCallback) {
+        transform(post: Row, _encoding: unknown, callback: TransformCallback) {
             try {
                 if (fields === null) {
                     // Lock the column list from the first row's keys, then emit
