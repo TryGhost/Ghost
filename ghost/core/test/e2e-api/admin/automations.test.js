@@ -317,7 +317,7 @@ describe('Automations API', function () {
                 .get(`automations/${automationId}`)
                 .expectStatus(200);
 
-            await agent
+            const {body: errorBody} = await agent
                 .put(`automations/${automationId}`)
                 .body({
                     automations: [{
@@ -332,6 +332,8 @@ describe('Automations API', function () {
                 })
                 .expectStatus(422)
                 .expect(cacheInvalidateHeaderNotSet());
+
+            assert.match(errorBody.errors[0].context, /actions\.0\.type/);
 
             const {body: afterBody} = await agent
                 .get(`automations/${automationId}`)

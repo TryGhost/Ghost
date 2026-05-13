@@ -118,11 +118,24 @@ function validateEditData(data: unknown): EditAutomationData {
             throwValidationError(messages.invalidAutomationStatus, 'status');
         }
 
-        throwValidationError(messages.invalidAutomationPayload);
+        throwValidationError(buildInvalidAutomationPayloadMessage(result.error.issues));
     }
 
     validateGraph(result.data.actions, result.data.edges);
     return result.data;
+}
+
+function buildInvalidAutomationPayloadMessage(issues: z.core.$ZodIssue[]) {
+    if (!issues.length) {
+        return messages.invalidAutomationPayload;
+    }
+
+    const issueSummaries = issues.slice(0, 3).map((issue) => {
+        const path = issue.path.length ? issue.path.join('.') : 'payload';
+        return `${path}: ${issue.message}`;
+    });
+
+    return `${messages.invalidAutomationPayload} ${issueSummaries.join('; ')}.`;
 }
 
 function validateGraph(actions: EditAutomationData['actions'], edges: EditAutomationData['edges']) {
