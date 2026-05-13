@@ -62,6 +62,61 @@ describe('<CommentComponent>', function () {
         const {container} = contextualRender(<CommentComponent comment={comment} />, {appContext});
         expect(container.querySelector('[data-member-uuid="123"]')).not.toBeInTheDocument();
     });
+
+    it('renders nested reply threads when commentsThreads is enabled', function () {
+        const reply1 = buildComment({
+            html: '<p>First reply</p>'
+        });
+        const reply2 = buildComment({
+            in_reply_to_id: reply1.id,
+            html: '<p>Second reply</p>'
+        });
+        const comment = buildComment({
+            replies: [reply1, reply2],
+            count: {
+                replies: 2
+            }
+        });
+        const appContext = {
+            comments: [comment],
+            dispatchAction: () => {},
+            labs: {
+                commentsThreads: true
+            }
+        };
+
+        const {container} = contextualRender(<CommentComponent comment={comment} useThreading={true} />, {appContext});
+
+        expect(screen.getByText('First reply')).toBeInTheDocument();
+        expect(screen.getByText('Second reply')).toBeInTheDocument();
+        expect(container.ownerDocument.getElementById(reply2.id)).toHaveAttribute('data-testid', 'animated-comment');
+        expect(screen.queryByTestId('replies-pagination')).not.toBeInTheDocument();
+    });
+
+    it('hides reply-to-reply context when commentsThreads is enabled', function () {
+        const reply1 = buildComment({
+            html: '<p>First reply</p>'
+        });
+        const reply2 = buildComment({
+            in_reply_to_id: reply1.id,
+            in_reply_to_snippet: 'First reply',
+            html: '<p>Second reply</p>'
+        });
+        const parent = buildComment({
+            replies: [reply1, reply2]
+        });
+        const appContext = {
+            comments: [parent],
+            labs: {
+                commentsThreads: true
+            }
+        };
+
+        contextualRender(<CommentComponent comment={reply2} parent={parent} useThreading={true} />, {appContext});
+
+        expect(screen.queryByText('Replied to')).not.toBeInTheDocument();
+        expect(screen.queryByText('First reply')).not.toBeInTheDocument();
+    });
 });
 
 describe('<RepliedToSnippet>', function () {
