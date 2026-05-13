@@ -380,3 +380,54 @@ export const TitleRowWithTabs: Story = {
         </PageHeader>
     )
 };
+
+export const WithHeroImage: Story = {
+    name: 'Title with hero image + description',
+    render: () => (
+        <PageHeader>
+            <PageHeader.Left>
+                <PageHeader.Breadcrumb>
+                    <Breadcrumb>
+                        <BreadcrumbList>
+                            <BreadcrumbItem>
+                                <BreadcrumbLink href="/posts">Posts</BreadcrumbLink>
+                            </BreadcrumbItem>
+                            <BreadcrumbSeparator />
+                            <BreadcrumbItem>
+                                <BreadcrumbPage>Post analytics</BreadcrumbPage>
+                            </BreadcrumbItem>
+                        </BreadcrumbList>
+                    </Breadcrumb>
+                </PageHeader.Breadcrumb>
+                <PageHeader.Title>
+                    <PageHeader.HeroImage src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=400" />
+                    The future of independent publishing
+                    <PageHeader.Description>Published and sent on November 18, 2025 at 9:00 AM</PageHeader.Description>
+                </PageHeader.Title>
+            </PageHeader.Left>
+            <PageHeader.Actions>
+                <PageHeader.ActionGroup>
+                    <Button variant="outline">
+                        <Ellipsis className="size-4" />
+                    </Button>
+                </PageHeader.ActionGroup>
+            </PageHeader.Actions>
+            <PageHeader.ViewTabs>
+                <PageMenu defaultValue="overview" responsive>
+                    <PageMenuItem value="overview">
+                        <Gauge />
+                        Overview
+                    </PageMenuItem>
+                    <PageMenuItem value="newsletter">
+                        <Mail />
+                        Newsletter
+                    </PageMenuItem>
+                    <PageMenuItem value="growth">
+                        <Sprout />
+                        Growth
+                    </PageMenuItem>
+                </PageMenu>
+            </PageHeader.ViewTabs>
+        </PageHeader>
+    )
+};

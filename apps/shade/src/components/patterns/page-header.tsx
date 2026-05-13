@@ -22,7 +22,7 @@ function PageHeaderBreadcrumb({className, children}: PropsWithChildrenAndClassNa
     return (
         <Inline
             align='center'
-            className={cn('text-sm text-muted-foreground', className)}
+            className={cn('text-sm text-muted-foreground pt-1', className)}
             data-page-header='breadcrumb'
             gap='sm'
         >
@@ -474,7 +474,7 @@ const PageHeader: PageHeaderComponent = Object.assign(
         return (
             <header
                 className={cn(
-                    'flex flex-col gap-6 px-4 lg:px-8',
+                    'flex flex-col gap-4 px-4 lg:px-8',
                     sticky && 'sticky top-0 z-50',
                     blurredBackground && 'bg-gradient-to-b from-background via-background/70 to-background/70 backdrop-blur-md dark:bg-black',
                     className
