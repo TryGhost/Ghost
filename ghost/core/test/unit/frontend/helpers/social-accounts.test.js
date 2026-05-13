@@ -133,4 +133,15 @@ describe('{{#social_accounts}} helper', function () {
             .with({}, {data: {site: {twitter: 'ghost'}}});
         assert.equal(out, 'x=X;');
     });
+
+    // User-reported reproduction shape (TryGhost/Ghost#27871): theme used
+    //   {{#author}}{{#social_accounts this}}{{> (concat "icons/social/" type)}}{{/social_accounts}}{{/author}}
+    // and got a 500 because the dynamic partial pointed at `twitter.hbs` while
+    // the theme only shipped `x.hbs`. With the fix, the emitted type matches
+    // the theme's partial filename.
+    it('emits type "x" when iterating an author inside {{#author}}', function () {
+        const out = compile(`{{#author}}{{#social_accounts this}}{{type}}{{/social_accounts}}{{/author}}`)
+            .with({author: {twitter: 'author-tw'}});
+        assert.equal(out, 'x');
+    });
 });
