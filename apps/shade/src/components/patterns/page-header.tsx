@@ -73,35 +73,12 @@ function PageHeaderMeta({className, children}: PropsWithChildrenAndClassName) {
     );
 }
 
-type PageHeaderHeroImageProps = React.ImgHTMLAttributes<HTMLDivElement> & {
-    src: string;
-    className?: string;
-};
-
-function PageHeaderHeroImage({src, className, ...rest}: PageHeaderHeroImageProps) {
-    return (
-        <div
-            className={cn(
-                'aspect-[16/10] w-full max-w-[100px] rounded-md bg-cover bg-center md:max-w-[132px] shrink-0',
-                className
-            )}
-            data-page-header='hero-image'
-            role='img'
-            style={{backgroundImage: `url(${src})`}}
-            {...rest}
-        />
-    );
-}
-
 /**
- * `Title` accepts heading text plus optional `HeroImage`, `Count`, `Description`,
- * and `Meta` children. It partitions them so that:
- *   - HeroImage renders alongside the heading block.
- *   - Count flows inline with the heading text inside the H1.
- *   - Description / Meta render below the heading.
+ * `Title` accepts heading text plus optional `Count`, `Description`, and `Meta`
+ * children. `Count` flows inline inside the H1; `Description` and `Meta` stack
+ * below the heading.
  */
 function PageHeaderTitle({className, children}: PropsWithChildrenAndClassName) {
-    const heroImageChildren: React.ReactNode[] = [];
     const headingChildren: React.ReactNode[] = [];
     const subTextChildren: React.ReactNode[] = [];
 
@@ -112,9 +89,6 @@ function PageHeaderTitle({className, children}: PropsWithChildrenAndClassName) {
         }
 
         switch (child.type) {
-        case PageHeaderHeroImage:
-            heroImageChildren.push(child);
-            break;
         case PageHeaderDescription:
         case PageHeaderMeta:
             subTextChildren.push(child);
@@ -136,28 +110,16 @@ function PageHeaderTitle({className, children}: PropsWithChildrenAndClassName) {
         </H1>
     );
 
-    const body = subTextChildren.length > 0 ? (
-        <Stack data-page-header='title-body' gap='xs'>
-            {heading}
-            {subTextChildren}
-        </Stack>
-    ) : heading;
-
-    if (heroImageChildren.length > 0) {
+    if (subTextChildren.length > 0) {
         return (
-            <Inline
-                align='center'
-                className='w-full'
-                data-page-header='title-row'
-                gap='lg'
-            >
-                {heroImageChildren}
-                {body}
-            </Inline>
+            <Stack data-page-header='title-body' gap='xs'>
+                {heading}
+                {subTextChildren}
+            </Stack>
         );
     }
 
-    return body;
+    return heading;
 }
 
 // ---------------------------------------------------------------------------
@@ -355,15 +317,15 @@ function PageHeaderActions({className, children}: PropsWithChildrenAndClassName)
 }
 
 // ---------------------------------------------------------------------------
-// View row — ViewTabs + ViewActions
+// View row — ViewBar + ViewActions
 // ---------------------------------------------------------------------------
 
-function PageHeaderViewTabs({className, children}: PropsWithChildrenAndClassName) {
+function PageHeaderViewBar({className, children}: PropsWithChildrenAndClassName) {
     return (
         <Inline
             align='center'
             className={cn('flex-1', className)}
-            data-page-header='view-tabs'
+            data-page-header='view-bar'
             gap='sm'
         >
             {children}
@@ -417,10 +379,9 @@ type PageHeaderComponent = React.FC<PageHeaderProps> & {
     Count: React.FC<PropsWithChildrenAndClassName>;
     Description: React.FC<PropsWithChildrenAndClassName>;
     Meta: React.FC<PropsWithChildrenAndClassName>;
-    HeroImage: React.FC<PageHeaderHeroImageProps>;
     Actions: React.FC<PropsWithChildrenAndClassName>;
     ActionGroup: PageHeaderActionGroupComponent;
-    ViewTabs: React.FC<PropsWithChildrenAndClassName>;
+    ViewBar: React.FC<PropsWithChildrenAndClassName>;
     ViewActions: React.FC<PropsWithChildrenAndClassName>;
     FilterBar: React.FC<PropsWithChildrenAndClassName>;
 };
@@ -434,15 +395,14 @@ type PageHeaderComponent = React.FC<PageHeaderProps> & {
  *   1. Main row — `Inline align=start justify=between`:
  *        `Left` (stack: `Breadcrumb` + `Title`) | `Actions`
  *   2. View row — `Inline align=center justify=between`:
- *        `ViewTabs` | `ViewActions`
+ *        `ViewBar` | `ViewActions`
  *   3. Filter bar — plain container.
  *
- * `Title` accepts an optional `HeroImage`, an inline `Count`, and stacked
- * `Description`/`Meta` children.
+ * `Title` accepts an inline `Count` and stacked `Description`/`Meta` children.
  */
 const PageHeader: PageHeaderComponent = Object.assign(
     function PageHeader({className, children, sticky = true, blurredBackground = true}: PageHeaderProps) {
-        const viewTabsChildren: React.ReactNode[] = [];
+        const viewBarChildren: React.ReactNode[] = [];
         const viewActionsChildren: React.ReactNode[] = [];
         const filterBarChildren: React.ReactNode[] = [];
         const mainChildren: React.ReactNode[] = [];
@@ -454,8 +414,8 @@ const PageHeader: PageHeaderComponent = Object.assign(
             }
 
             switch (child.type) {
-            case PageHeaderViewTabs:
-                viewTabsChildren.push(child);
+            case PageHeaderViewBar:
+                viewBarChildren.push(child);
                 break;
             case PageHeaderViewActions:
                 viewActionsChildren.push(child);
@@ -469,7 +429,7 @@ const PageHeader: PageHeaderComponent = Object.assign(
         });
 
         const hasMainRow = mainChildren.length > 0;
-        const hasViewRow = viewTabsChildren.length > 0 || viewActionsChildren.length > 0;
+        const hasViewRow = viewBarChildren.length > 0 || viewActionsChildren.length > 0;
 
         return (
             <header
@@ -500,7 +460,7 @@ const PageHeader: PageHeaderComponent = Object.assign(
                         gap='lg'
                         justify='between'
                     >
-                        {viewTabsChildren.length > 0 ? viewTabsChildren : <span />}
+                        {viewBarChildren.length > 0 ? viewBarChildren : <span />}
                         {viewActionsChildren.length > 0 && viewActionsChildren}
                     </Inline>
                 )}
@@ -515,10 +475,9 @@ const PageHeader: PageHeaderComponent = Object.assign(
         Count: PageHeaderCount,
         Description: PageHeaderDescription,
         Meta: PageHeaderMeta,
-        HeroImage: PageHeaderHeroImage,
         Actions: PageHeaderActions,
         ActionGroup: PageHeaderActionGroup,
-        ViewTabs: PageHeaderViewTabs,
+        ViewBar: PageHeaderViewBar,
         ViewActions: PageHeaderViewActions,
         FilterBar: PageHeaderFilterBar
     }
@@ -532,14 +491,13 @@ export {
     PageHeaderCount,
     PageHeaderDescription,
     PageHeaderMeta,
-    PageHeaderHeroImage,
     PageHeaderActions,
     PageHeaderActionGroup,
     PageHeaderActionGroupPrimary,
     PageHeaderActionGroupMobileMenu,
     PageHeaderActionGroupMobileMenuTrigger,
     PageHeaderActionGroupMobileMenuContent,
-    PageHeaderViewTabs,
+    PageHeaderViewBar,
     PageHeaderViewActions,
     PageHeaderFilterBar
 };
