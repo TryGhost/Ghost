@@ -2,7 +2,7 @@ import AutomationEditor from '@src/views/Automations/editor';
 import React from 'react';
 import {MemoryRouter, Route, Routes} from 'react-router';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {fireEvent, render, screen} from '@testing-library/react';
+import {fireEvent, render, screen, waitFor} from '@testing-library/react';
 
 const mockUseReadAutomation = vi.fn();
 const mockEditMutation = {
@@ -94,7 +94,8 @@ const renderEditor = () => render(
 
 describe('AutomationEditor', () => {
     beforeEach(() => {
-        vi.clearAllMocks();
+        mockUseReadAutomation.mockReset();
+        mockEditMutation.mutate.mockReset();
         mockEditMutation.isLoading = false;
         mockEditMutation.variables = undefined;
     });
@@ -216,7 +217,7 @@ describe('AutomationEditor', () => {
         expect(screen.queryByRole('button', {name: 'Automation options'})).not.toBeInTheDocument();
     });
 
-    it('disables the publish button while a publish request is in flight', () => {
+    it('disables the publish button and shows loading UI while a publish request is in flight', () => {
         mockUseReadAutomation.mockReturnValue({
             data: {automations: [{...automationDetail, status: 'inactive'}]},
             isLoading: false,
@@ -227,7 +228,9 @@ describe('AutomationEditor', () => {
 
         renderEditor();
 
-        expect(screen.getByRole('button', {name: 'Publish changes'})).toBeDisabled();
+        const button = screen.getByRole('button', {name: 'Publishing...'});
+        expect(button).toBeDisabled();
+        expect(button.querySelector('.animate-spin')).toBeInTheDocument();
     });
 
     it('disables the Turn off menu item while an unpublish request is in flight', async () => {
@@ -247,6 +250,26 @@ describe('AutomationEditor', () => {
 
         const turnOff = await screen.findByRole('menuitem', {name: /Turn off/});
         expect(turnOff).toHaveAttribute('aria-disabled', 'true');
+    });
+
+    it('shows a retry state when publishing fails', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [{...automationDetail, status: 'inactive'}]},
+            isLoading: false,
+            isError: false
+        });
+        mockEditMutation.mutate.mockImplementation((_payload, options) => {
+            options.onError();
+        });
+
+        renderEditor();
+
+        fireEvent.click(screen.getByRole('button', {name: 'Publish changes'}));
+
+        const button = await screen.findByRole('button', {name: 'Retry'});
+        expect(button).not.toBeDisabled();
+        expect(button).toHaveClass('bg-destructive');
+        expect(screen.queryByText(/Couldn.t publish automation/)).not.toBeInTheDocument();
     });
 
     it('turns off an active automation when confirming from the dropdown', async () => {
@@ -276,6 +299,74 @@ describe('AutomationEditor', () => {
             },
             expect.any(Object)
         );
+    });
+
+    it('disables the Turn off confirmation button and shows loading UI while unpublishing', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        const trigger = screen.getByRole('button', {name: 'Automation options'});
+        fireEvent.pointerDown(trigger, {button: 0, ctrlKey: false});
+        fireEvent.click(trigger);
+        fireEvent.click(await screen.findByRole('menuitem', {name: /Turn off/}));
+        fireEvent.click(screen.getByRole('button', {name: 'Turn off'}));
+
+        const button = screen.getByRole('button', {name: 'Turning off...'});
+        expect(button).toBeDisabled();
+        expect(button.querySelector('.animate-spin')).toBeInTheDocument();
+    });
+
+    it('shows a retry state in the confirmation modal when unpublishing fails', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+        mockEditMutation.mutate.mockImplementation((_payload, options) => {
+            options.onError();
+        });
+
+        renderEditor();
+
+        const trigger = screen.getByRole('button', {name: 'Automation options'});
+        fireEvent.pointerDown(trigger, {button: 0, ctrlKey: false});
+        fireEvent.click(trigger);
+        fireEvent.click(await screen.findByRole('menuitem', {name: /Turn off/}));
+        fireEvent.click(screen.getByRole('button', {name: 'Turn off'}));
+
+        const button = await screen.findByRole('button', {name: 'Retry'});
+        expect(button).not.toBeDisabled();
+        expect(button).toHaveClass('bg-destructive');
+        expect(screen.getByText('Turn off this automation?')).toBeInTheDocument();
+        expect(screen.queryByText(/Couldn.t turn off automation/)).not.toBeInTheDocument();
+    });
+
+    it('closes the confirmation modal after unpublishing succeeds', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+        mockEditMutation.mutate.mockImplementation((_payload, options) => {
+            options.onSuccess();
+        });
+
+        renderEditor();
+
+        const trigger = screen.getByRole('button', {name: 'Automation options'});
+        fireEvent.pointerDown(trigger, {button: 0, ctrlKey: false});
+        fireEvent.click(trigger);
+        fireEvent.click(await screen.findByRole('menuitem', {name: /Turn off/}));
+        fireEvent.click(screen.getByRole('button', {name: 'Turn off'}));
+
+        await waitFor(() => {
+            expect(screen.queryByText('Turn off this automation?')).not.toBeInTheDocument();
+        });
     });
 
     it('links the back button to the automations list', () => {

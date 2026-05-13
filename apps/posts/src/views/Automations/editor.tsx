@@ -1,19 +1,11 @@
 import AutomationCanvas from './components/automation-canvas';
-import AutomationHeader from './components/automation-header';
+import AutomationHeader, {type AutomationRequestState} from './components/automation-header';
 import React from 'react';
-import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle} from '@tryghost/shade/components';
+import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, LoadingIndicator} from '@tryghost/shade/components';
 import {useEditAutomation, useReadAutomation} from '@tryghost/admin-x-framework/api/automations';
 import {useParams} from '@tryghost/admin-x-framework';
 
 type ErrorKind = 'publish' | 'unpublish';
-
-const errorMessageFor = (kind: ErrorKind, error: unknown): string => {
-    const detail = error instanceof Error && error.message ? error.message : 'An unexpected error occurred.';
-    if (kind === 'publish') {
-        return `We couldn't publish this automation. ${detail} Please try again in a moment.`;
-    }
-    return `We couldn't turn off this automation. ${detail} Please try again in a moment. The automation is still running.`;
-};
 
 const AutomationEditor: React.FC = () => {
     const {id = ''} = useParams<{id: string}>();
@@ -29,12 +21,24 @@ const AutomationEditor: React.FC = () => {
         : undefined;
 
     const [isConfirmingUnpublish, setIsConfirmingUnpublish] = React.useState(false);
-    const [errorState, setErrorState] = React.useState<{kind: ErrorKind; message: string} | null>(null);
+    const [requestStates, setRequestStates] = React.useState<Record<ErrorKind, AutomationRequestState>>({
+        publish: 'idle',
+        unpublish: 'idle'
+    });
 
-    const runEdit = (kind: ErrorKind, status: 'active' | 'inactive') => {
+    React.useEffect(() => {
+        setRequestStates({publish: 'idle', unpublish: 'idle'});
+        setIsConfirmingUnpublish(false);
+    }, [automation?.id]);
+
+    const publishState = pendingStatus === 'active' ? 'loading' : requestStates.publish;
+    const unpublishState = pendingStatus === 'inactive' ? 'loading' : requestStates.unpublish;
+
+    const runEdit = (kind: ErrorKind, status: 'active' | 'inactive', onSuccess?: () => void) => {
         if (!automation) {
             throw new Error('Cannot edit an automation that has not loaded.');
         }
+        setRequestStates(state => ({...state, [kind]: 'loading'}));
         editMutation.mutate(
             {
                 id: automation.id,
@@ -43,8 +47,12 @@ const AutomationEditor: React.FC = () => {
                 edges: automation.edges
             },
             {
-                onError: (error) => {
-                    setErrorState({kind, message: errorMessageFor(kind, error)});
+                onSuccess: () => {
+                    setRequestStates(state => ({...state, [kind]: 'idle'}));
+                    onSuccess?.();
+                },
+                onError: () => {
+                    setRequestStates(state => ({...state, [kind]: 'error'}));
                 }
             }
         );
@@ -55,12 +63,22 @@ const AutomationEditor: React.FC = () => {
     };
 
     const handleTurnOffRequested = () => {
+        setRequestStates(state => ({...state, unpublish: 'idle'}));
         setIsConfirmingUnpublish(true);
     };
 
     const handleConfirmTurnOff = () => {
-        setIsConfirmingUnpublish(false);
-        runEdit('unpublish', 'inactive');
+        runEdit('unpublish', 'inactive', () => setIsConfirmingUnpublish(false));
+    };
+
+    const handleConfirmingUnpublishChange = (open: boolean) => {
+        if (unpublishState === 'loading') {
+            return;
+        }
+        if (!open) {
+            setRequestStates(state => ({...state, unpublish: 'idle'}));
+        }
+        setIsConfirmingUnpublish(open);
     };
 
     return (
@@ -68,13 +86,14 @@ const AutomationEditor: React.FC = () => {
             <AutomationHeader
                 automation={automation}
                 isLoadingAutomation={isLoadingAutomation}
-                pendingStatus={pendingStatus}
+                publishState={publishState}
+                unpublishState={unpublishState}
                 onPublish={handlePublish}
                 onTurnOff={handleTurnOffRequested}
             />
             <AutomationCanvas automation={automation} isError={isError} isLoading={isLoadingAutomation} />
 
-            <AlertDialog open={isConfirmingUnpublish} onOpenChange={setIsConfirmingUnpublish}>
+            <AlertDialog open={isConfirmingUnpublish} onOpenChange={handleConfirmingUnpublishChange}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Turn off this automation?</AlertDialogTitle>
@@ -83,31 +102,23 @@ const AutomationEditor: React.FC = () => {
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleConfirmTurnOff}>Turn off</AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-
-            <AlertDialog
-                open={errorState !== null}
-                onOpenChange={(open) => {
-                    if (!open) {
-                        setErrorState(null);
-                    }
-                }}
-            >
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>
-                            {errorState?.kind === 'publish' ? 'Couldn’t publish automation' : 'Couldn’t turn off automation'}
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                            {errorState?.message}
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogAction onClick={() => setErrorState(null)}>OK</AlertDialogAction>
+                        <AlertDialogCancel disabled={unpublishState === 'loading'}>Cancel</AlertDialogCancel>
+                        <Button
+                            disabled={unpublishState === 'loading'}
+                            variant={unpublishState === 'error' ? 'destructive' : 'default'}
+                            onClick={handleConfirmTurnOff}
+                        >
+                            {unpublishState === 'loading' ? (
+                                <>
+                                    <LoadingIndicator color='light' size='sm' />
+                                    Turning off...
+                                </>
+                            ) : unpublishState === 'error' ? (
+                                'Retry'
+                            ) : (
+                                'Turn off'
+                            )}
+                        </Button>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>

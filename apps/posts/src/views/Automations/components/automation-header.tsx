@@ -1,14 +1,17 @@
 import AutomationStatusBadge from './automation-status-badge';
 import React from 'react';
-import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Skeleton} from '@tryghost/shade/components';
+import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, LoadingIndicator, Skeleton} from '@tryghost/shade/components';
 import {Link} from '@tryghost/admin-x-framework';
 import {LucideIcon} from '@tryghost/shade/utils';
-import type {AutomationDetail, AutomationStatus} from '@tryghost/admin-x-framework/api/automations';
+import type {AutomationDetail} from '@tryghost/admin-x-framework/api/automations';
+
+export type AutomationRequestState = 'idle' | 'loading' | 'error';
 
 interface AutomationHeaderProps {
     automation: AutomationDetail | undefined;
     isLoadingAutomation: boolean;
-    pendingStatus: AutomationStatus | undefined;
+    publishState: AutomationRequestState;
+    unpublishState: AutomationRequestState;
     onPublish: () => void;
     onTurnOff: () => void;
 }
@@ -16,7 +19,8 @@ interface AutomationHeaderProps {
 const AutomationHeader: React.FC<AutomationHeaderProps> = ({
     automation,
     isLoadingAutomation,
-    pendingStatus,
+    publishState,
+    unpublishState,
     onPublish,
     onTurnOff
 }) => {
@@ -24,8 +28,9 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
     const status = automation?.status;
     const isActive = status === 'active';
 
-    const isPublishing = pendingStatus === 'active';
-    const isUnpublishing = pendingStatus === 'inactive';
+    const isPublishing = publishState === 'loading';
+    const hasPublishError = publishState === 'error' && !isActive;
+    const isUnpublishing = unpublishState === 'loading';
 
     return (
         <header className='relative z-10 flex h-14 shrink-0 items-center justify-between bg-background px-4 shadow-sm'>
@@ -62,9 +67,21 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
                 )}
                 <Button
                     disabled={!automation || isActive || isPublishing}
+                    variant={hasPublishError ? 'destructive' : 'default'}
                     onClick={onPublish}
                 >
-                    {isActive ? 'Published' : 'Publish changes'}
+                    {isPublishing ? (
+                        <>
+                            <LoadingIndicator color='light' size='sm' />
+                            Publishing...
+                        </>
+                    ) : hasPublishError ? (
+                        'Retry'
+                    ) : isActive ? (
+                        'Published'
+                    ) : (
+                        'Publish changes'
+                    )}
                 </Button>
             </div>
         </header>
