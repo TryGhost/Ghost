@@ -110,30 +110,30 @@
   },
   "devDependencies": {
     "@doist/react-interpolate": "2.2.1",
-    "@sentry/react": "7.120.4",
+    "@sentry/react": "catalog:",
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "12.1.5",
     "@testing-library/user-event": "14.6.1",
     "@tryghost/i18n": "workspace:*",
     "@typescript-eslint/eslint-plugin": "8.49.0",
-    "@typescript-eslint/parser": "8.49.0",
-    "@vitejs/plugin-react": "4.7.0",
+    "@typescript-eslint/parser": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
     "@vitest/coverage-v8": "4.1.2",
-    "concurrently": "8.2.2",
+    "concurrently": "catalog:",
     "cross-fetch": "4.1.0",
     "dompurify": "3.4.1",
     "eslint": "catalog:",
     "eslint-plugin-i18next": "6.1.4",
-    "jsdom": "28.1.0",
+    "jsdom": "catalog:",
     "react": "17.0.2",
     "react-dom": "17.0.2",
-    "vite": "7.3.2",
+    "vite": "catalog:",
     "vite-plugin-css-injected-by-js": "3.5.2",
-    "vite-plugin-svgr": "4.5.0",
-    "vitest": "4.1.2"
+    "vite-plugin-svgr": "catalog:",
+    "vitest": "catalog:"
   },
   "dependencies": {
-    "@tryghost/debug": "2.2.0"
+    "@tryghost/debug": "catalog:"
   },
   "nx": {
     "tags": [

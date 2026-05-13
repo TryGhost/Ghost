@@ -139,7 +139,7 @@
     ]
   },
   "devDependencies": {
-    "@playwright/test": "1.59.1",
+    "@playwright/test": "catalog:",
     "@secretlint/secretlint-rule-pattern": "12.3.1",
     "@secretlint/secretlint-rule-preset-recommend": "12.3.1",
     "eslint": "catalog:",
@@ -153,7 +153,7 @@
     "rimraf": "6.1.3",
     "secretlint": "12.3.1",
     "semver": "7.7.4",
-    "typescript": "5.9.3"
+    "typescript": "catalog:"
   },
   "nx": {
     "includedScripts": [],
