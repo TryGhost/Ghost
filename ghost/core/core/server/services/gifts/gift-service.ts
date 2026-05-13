@@ -13,7 +13,6 @@ const GIFT_REMINDER_LEAD_MS = GIFT_REMINDER_LEAD_DAYS * MS_PER_DAY;
 const GIFT_REMINDER_FLOOR_MS = GIFT_REMINDER_FLOOR_DAYS * MS_PER_DAY;
 
 const errorMessages = {
-    giftSubscriptionsNotEnabled: 'Gift subscriptions are not enabled on this site.',
     giftNotFound: 'This gift does not exist.',
     giftAlreadyRedeemed: 'This gift has already been redeemed.',
     giftConsumed: 'This gift has already been consumed.',

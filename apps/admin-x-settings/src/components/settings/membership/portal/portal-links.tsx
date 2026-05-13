@@ -1,5 +1,4 @@
 import React, {useEffect, useId, useState} from 'react';
-import useFeatureFlag from '../../../../hooks/use-feature-flag';
 import {Button, List, ListItem, ModalPage, Select, TextField} from '@tryghost/admin-x-design-system';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
@@ -39,7 +38,6 @@ const PortalLinks: React.FC = () => {
     const {siteData} = useGlobalData();
     const {data: {tiers: allTiers} = {}} = useBrowseTiers();
     const tiers = getPaidActiveTiers(allTiers || []);
-    const hasGiftSubscriptions = useFeatureFlag('giftSubscriptions');
 
     const toggleIsDataAttributes = () => {
         setIsDataAttributes(!isDataAttributes);
@@ -68,7 +66,7 @@ const PortalLinks: React.FC = () => {
                 <PortalLink name='Default' value={isDataAttributes ? 'data-portal' : `${homePageURL}#/portal`} />
                 <PortalLink name='Sign in' value={isDataAttributes ? 'data-portal="signin"' : `${homePageURL}#/portal/signin`} />
                 <PortalLink name='Sign up' value={isDataAttributes ? 'data-portal="signup"' : `${homePageURL}#/portal/signup`} />
-                {hasGiftSubscriptions && <PortalLink name='Gift subscriptions' value={isDataAttributes ? 'data-portal="gift"' : `${homePageURL}#/portal/gift`} />}
+                <PortalLink name='Gift subscriptions' value={isDataAttributes ? 'data-portal="gift"' : `${homePageURL}#/portal/gift`} />
             </List>
 
             <List className='mt-14' title='Tiers' titleSize='lg'>

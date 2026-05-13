@@ -790,21 +790,6 @@ describe('RouterController', function () {
                 }));
             });
 
-            it('rejects when giftSubscriptions labs flag is disabled', async function () {
-                labsService.isSet = sinon.stub().returns(false);
-                const controller = createGiftController();
-
-                try {
-                    await controller.createCheckoutSession({
-                        body: {type: 'gift', tierId: 'tier_123', cadence: 'month', metadata: {}}
-                    }, mockRes);
-
-                    assert.fail('Should have thrown');
-                } catch (error) {
-                    assert(error instanceof errors.BadRequestError);
-                }
-            });
-
             it('rejects when offerId is provided', async function () {
                 const controller = createGiftController();
 
