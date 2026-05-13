@@ -1,7 +1,7 @@
 import * as helpers from '../../../src/utils/helpers';
 import moment, {DurationInputObject} from 'moment';
 import sinon from 'sinon';
-import {buildAnonymousMember, buildComment, buildDeletedMember} from '../../utils/fixtures';
+import {buildAnonymousMember, buildComment, buildDeletedMember, buildReply} from '../../utils/fixtures';
 
 describe('COMMENT_HASH_PREFIX', function () {
     it('exports the correct prefix', function () {
@@ -127,6 +127,94 @@ describe('findCommentById', function () {
     it('finds a reply', function () {
         const comments: any[] = [{id: '1', replies: [{id: '2'}]}, {id: '3'}];
         expect(helpers.findCommentById(comments, '2')).toEqual({id: '2'});
+    });
+});
+
+describe('buildThreadModel', function () {
+    it('calculates nested reply depths from flat replies', function () {
+        const comment = buildComment({
+            replies: [
+                buildReply({id: '1'}),
+                buildReply({id: '2', in_reply_to_id: '1'}),
+                buildReply({id: '3', in_reply_to_id: '2'})
+            ]
+        });
+
+        const model = helpers.buildThreadModel(comment);
+
+        expect(model.roots.map(reply => reply.id)).toEqual(['1']);
+        expect(model.depthById.get('1')).toEqual(1);
+        expect(model.depthById.get('2')).toEqual(2);
+        expect(model.depthById.get('3')).toEqual(3);
+    });
+
+    it('treats replies with missing parents as root replies', function () {
+        const comment = buildComment({
+            replies: [
+                buildReply({id: '1', in_reply_to_id: 'missing'})
+            ]
+        });
+
+        const model = helpers.buildThreadModel(comment);
+
+        expect(model.roots.map(reply => reply.id)).toEqual(['1']);
+        expect(model.parentById.get('1')).toBeNull();
+        expect(model.depthById.get('1')).toEqual(1);
+    });
+});
+
+describe('getFocusedThread', function () {
+    function buildNestedComment(depth: number) {
+        const replies = [];
+        let parentId: string | undefined;
+
+        for (let i = 1; i <= depth; i += 1) {
+            const id = `${i}`;
+            replies.push(buildReply({
+                id,
+                ...(parentId ? {in_reply_to_id: parentId} : {})
+            }));
+            parentId = id;
+        }
+
+        return buildComment({id: 'top-level', replies});
+    }
+
+    it('does not focus a shallow permalink', function () {
+        const comment = buildNestedComment(4);
+
+        expect(helpers.getFocusedThread([comment], '4')).toBeNull();
+    });
+
+    it('does not focus a level 4 permalink because it is visible in the main list', function () {
+        const comment = buildNestedComment(6);
+
+        expect(helpers.getFocusedThread([comment], '4')).toBeNull();
+    });
+
+    it('focuses the visible parent for a level 5 permalink', function () {
+        const comment = buildNestedComment(6);
+        const focusedThread = helpers.getFocusedThread([comment], '5');
+
+        expect(focusedThread?.topLevelComment.id).toEqual('top-level');
+        expect(focusedThread?.focusedComment.id).toEqual('4');
+        expect(focusedThread?.backComment.id).toEqual('4');
+    });
+
+    it('focuses the context comment for the nearest detail window', function () {
+        const comment = buildNestedComment(9);
+        const focusedThread = helpers.getFocusedThread([comment], '9');
+
+        expect(focusedThread?.focusedComment.id).toEqual('8');
+        expect(focusedThread?.backComment.id).toEqual('8');
+    });
+
+    it('focuses the existing detail window for a permalink visible in that window', function () {
+        const comment = buildNestedComment(9);
+        const focusedThread = helpers.getFocusedThread([comment], '8');
+
+        expect(focusedThread?.focusedComment.id).toEqual('4');
+        expect(focusedThread?.backComment.id).toEqual('4');
     });
 });
 

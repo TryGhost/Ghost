@@ -89,7 +89,7 @@ describe('<CommentComponent>', function () {
 
         expect(screen.getByText('First reply')).toBeInTheDocument();
         expect(screen.getByText('Second reply')).toBeInTheDocument();
-        expect(container.ownerDocument.getElementById(reply2.id)).toHaveAttribute('data-testid', 'animated-comment');
+        expect(container.ownerDocument.getElementById(reply2.id)).toHaveTextContent('Second reply');
         expect(screen.queryByTestId('replies-pagination')).not.toBeInTheDocument();
     });
 

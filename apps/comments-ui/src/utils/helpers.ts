@@ -18,36 +18,136 @@ export function flattenComments(comments: Comment[]): Comment[] {
     return comments.flatMap(comment => [comment, ...(comment.replies || [])]);
 }
 
+export const MOBILE_MAX_THREAD_DEPTH = 3;
+export const DESKTOP_MAX_THREAD_DEPTH = 4;
+export const THREAD_DEPTH_MOBILE_BREAKPOINT = 640;
+export const MAX_THREAD_DEPTH = DESKTOP_MAX_THREAD_DEPTH;
+
 export type ThreadedReply = Comment & {
     nestedReplies: ThreadedReply[];
+    depth: number;
+    parentReplyId: string | null;
 };
 
-export function buildThreadedReplies(threadParentComment: Comment): ThreadedReply[] {
+export type ThreadModel = {
+    roots: ThreadedReply[];
+    byId: Map<string, ThreadedReply>;
+    parentById: Map<string, string | null>;
+    depthById: Map<string, number>;
+};
+
+export type FocusedThread = {
+    topLevelComment: Comment;
+    focusedComment: ThreadedReply;
+    backComment: Comment;
+};
+
+export function buildThreadModel(threadParentComment: Comment): ThreadModel {
     const replies = threadParentComment.replies || [];
     const byId = new Map<string, ThreadedReply>();
+    const parentById = new Map<string, string | null>();
+    const depthById = new Map<string, number>();
 
     replies.forEach((reply) => {
-        byId.set(reply.id, {...reply, nestedReplies: []});
+        byId.set(reply.id, {...reply, depth: 1, parentReplyId: null, nestedReplies: []});
     });
 
     const topLevelReplies: ThreadedReply[] = [];
 
     replies.forEach((reply) => {
         const threadedReply = byId.get(reply.id);
-        const parentReply = reply.in_reply_to_id ? byId.get(reply.in_reply_to_id) : null;
-
         if (!threadedReply) {
             return;
         }
 
+        const parentReply = reply.in_reply_to_id ? byId.get(reply.in_reply_to_id) : null;
+
         if (parentReply && parentReply.id !== threadedReply.id) {
+            threadedReply.parentReplyId = parentReply.id;
+            parentById.set(threadedReply.id, parentReply.id);
             parentReply.nestedReplies.push(threadedReply);
         } else {
+            parentById.set(threadedReply.id, null);
             topLevelReplies.push(threadedReply);
         }
     });
 
-    return topLevelReplies;
+    const assignDepth = (reply: ThreadedReply, depth: number) => {
+        reply.depth = depth;
+        depthById.set(reply.id, depth);
+
+        reply.nestedReplies.forEach((nestedReply) => {
+            assignDepth(nestedReply, depth + 1);
+        });
+    };
+
+    topLevelReplies.forEach(reply => assignDepth(reply, 1));
+
+    return {
+        roots: topLevelReplies,
+        byId,
+        parentById,
+        depthById
+    };
+}
+
+export function buildThreadedReplies(threadParentComment: Comment): ThreadedReply[] {
+    return buildThreadModel(threadParentComment).roots;
+}
+
+function getAncestorAtDepth(model: ThreadModel, comment: ThreadedReply, depth: number): ThreadedReply {
+    let current = comment;
+
+    while (current.depth > depth) {
+        const parentId = model.parentById.get(current.id);
+        const parent = parentId ? model.byId.get(parentId) : null;
+
+        if (!parent) {
+            return current;
+        }
+
+        current = parent;
+    }
+
+    return current;
+}
+
+export function getFocusedThread(comments: Comment[], targetId: string | null, maxDepth = MAX_THREAD_DEPTH): FocusedThread | null {
+    if (!targetId) {
+        return null;
+    }
+
+    for (const topLevelComment of comments) {
+        if (topLevelComment.id === targetId) {
+            return null;
+        }
+
+        const model = buildThreadModel(topLevelComment);
+        const targetComment = model.byId.get(targetId);
+
+        if (!targetComment) {
+            continue;
+        }
+
+        if (targetComment.depth <= maxDepth) {
+            return null;
+        }
+
+        // Sliding-window view: each focused thread is rooted at a depth that's a
+        // multiple of maxDepth, with the focused (boundary) comment shared with
+        // the previous window so "Back" returns the user to the prior view.
+        // e.g. maxDepth=4 → windows rooted at depths 4, 8, 12, ...
+        const focusDepth = Math.floor((targetComment.depth - 1) / maxDepth) * maxDepth;
+        const focusedComment = getAncestorAtDepth(model, targetComment, focusDepth);
+
+        return {
+            topLevelComment,
+            focusedComment,
+            backComment: focusedComment
+        };
+    }
+
+    return null;
 }
 
 export function findCommentById(comments: Comment[], id: string): Comment | undefined {
@@ -238,6 +338,20 @@ export const scrollToElement = (element: HTMLElement) => {
             behavior: 'smooth'
         });
     }
+};
+
+export const scrollToElementInstantly = (element: HTMLElement) => {
+    const elementHeight = element.offsetHeight;
+    const yMin = getScrollToPosition(element);
+    const yMax = yMin + elementHeight;
+    const viewportHeight = window.innerHeight;
+    const yCenter = (yMin + yMax) / 2;
+
+    window.scrollTo({
+        top: yCenter - viewportHeight / 2,
+        left: 0,
+        behavior: 'auto'
+    });
 };
 
 export function getCommentInReplyToSnippet(comment: {html?: string}): string {
