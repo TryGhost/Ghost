@@ -54,9 +54,9 @@ export type {DropdownMenuCheckboxItemProps as DropdownMenuCheckboxItemProps} fro
 export {IconComponents as Icon} from './components/ui/icon';
 
 // Visual assets
-export {ReactComponent as FacebookLogo} from './assets/images/facebook-logo.svg';
-export {ReactComponent as GhostLogo} from './assets/images/ghost-logo.svg';
-export {ReactComponent as GhostOrb} from './assets/images/ghost-orb.svg';
-export {ReactComponent as GoogleLogo} from './assets/images/google-logo.svg';
-export {ReactComponent as TwitterLogo} from './assets/images/twitter-logo.svg';
-export {ReactComponent as XLogo} from './assets/images/x-logo.svg';
+export {default as FacebookLogo} from './assets/images/facebook-logo.svg?react';
+export {default as GhostLogo} from './assets/images/ghost-logo.svg?react';
+export {default as GhostOrb} from './assets/images/ghost-orb.svg?react';
+export {default as GoogleLogo} from './assets/images/google-logo.svg?react';
+export {default as TwitterLogo} from './assets/images/twitter-logo.svg?react';
+export {default as XLogo} from './assets/images/x-logo.svg?react';
