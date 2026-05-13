@@ -1,44 +1,40 @@
 import AutomationCanvas from './components/automation-canvas';
-import AutomationHeader, {type AutomationRequestState} from './components/automation-header';
+import AutomationHeader from './components/automation-header';
 import React from 'react';
 import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, LoadingIndicator} from '@tryghost/shade/components';
-import {useEditAutomation, useReadAutomation} from '@tryghost/admin-x-framework/api/automations';
+import {AutomationStatus, useEditAutomation, useReadAutomation} from '@tryghost/admin-x-framework/api/automations';
 import {useParams} from '@tryghost/admin-x-framework';
-
-type ErrorKind = 'publish' | 'unpublish';
+import type {AutomationEditState} from './types';
 
 const AutomationEditor: React.FC = () => {
     const {id = ''} = useParams<{id: string}>();
+
     const {data, isLoading: isLoadingAutomation, isError} = useReadAutomation(id, {
         defaultErrorHandler: false
     });
-
     const automation = data?.automations[0];
 
     const editMutation = useEditAutomation();
-    const pendingStatus = editMutation.isLoading && editMutation.variables?.id === automation?.id
-        ? editMutation.variables?.status
-        : undefined;
-
-    const [isConfirmingUnpublish, setIsConfirmingUnpublish] = React.useState(false);
-    const [requestStates, setRequestStates] = React.useState<Record<ErrorKind, AutomationRequestState>>({
-        publish: 'idle',
-        unpublish: 'idle'
-    });
-
-    React.useEffect(() => {
-        setRequestStates({publish: 'idle', unpublish: 'idle'});
-        setIsConfirmingUnpublish(false);
-    }, [automation?.id]);
-
-    const publishState = pendingStatus === 'active' ? 'loading' : requestStates.publish;
-    const unpublishState = pendingStatus === 'inactive' ? 'loading' : requestStates.unpublish;
-
-    const runEdit = (kind: ErrorKind, status: 'active' | 'inactive', onSuccess?: () => void) => {
+    const [editState, setEditState] = React.useState<AutomationEditState>('idle');
+    const editStatus = (status: AutomationStatus): void => {
         if (!automation) {
             throw new Error('Cannot edit an automation that has not loaded.');
         }
-        setRequestStates(state => ({...state, [kind]: 'loading'}));
+        let errorState: AutomationEditState;
+        switch (status) {
+        case 'active':
+            setEditState('publishing');
+            errorState = 'failed to publish';
+            break;
+        case 'inactive':
+            setEditState('unpublishing');
+            errorState = 'failed to unpublish';
+            break;
+        default: {
+            const _exhaustive: never = status;
+            throw new Error(`Unhandled status: ${_exhaustive}`);
+        }
+        }
         editMutation.mutate(
             {
                 id: automation.id,
@@ -47,54 +43,76 @@ const AutomationEditor: React.FC = () => {
                 edges: automation.edges
             },
             {
-                onSuccess: () => {
-                    setRequestStates(state => ({...state, [kind]: 'idle'}));
-                    onSuccess?.();
-                },
-                onError: () => {
-                    setRequestStates(state => ({...state, [kind]: 'error'}));
-                }
+                onSuccess: () => setEditState('idle'),
+                onError: () => setEditState(errorState)
             }
         );
     };
 
-    const handlePublish = () => {
-        runEdit('publish', 'active');
-    };
+    let isConfirmUnpublishAlertOpen = false;
+    let isEditRequestActive = false;
+    let turnOffButtonChildren: React.ReactNode = 'Turn off';
+    switch (editState) {
+    case 'publishing':
+        isEditRequestActive = true;
+        break;
+    case 'unpublishing':
+        isEditRequestActive = true;
+        isConfirmUnpublishAlertOpen = true;
+        turnOffButtonChildren = (
+            <>
+                <LoadingIndicator color='light' size='sm' />
+                Turning off...
+            </>
+        );
+        break;
+    case 'confirming unpublish':
+        isConfirmUnpublishAlertOpen = true;
+        break;
+    case 'failed to unpublish':
+        isConfirmUnpublishAlertOpen = true;
+        turnOffButtonChildren = 'Retry';
+        break;
+    }
 
-    const handleTurnOffRequested = () => {
-        setRequestStates(state => ({...state, unpublish: 'idle'}));
-        setIsConfirmingUnpublish(true);
-    };
-
-    const handleConfirmTurnOff = () => {
-        runEdit('unpublish', 'inactive', () => setIsConfirmingUnpublish(false));
-    };
-
-    const handleConfirmingUnpublishChange = (open: boolean) => {
-        if (unpublishState === 'loading') {
-            return;
-        }
-        if (!open) {
-            setRequestStates(state => ({...state, unpublish: 'idle'}));
-        }
-        setIsConfirmingUnpublish(open);
+    const onConfirmUnpublishOpenChange = (open: boolean): void => {
+        setEditState((oldEditState) => {
+            switch (oldEditState) {
+            case 'idle':
+            case 'failed to publish':
+                return open ? 'confirming unpublish' : editState;
+            case 'failed to unpublish':
+                return open ? 'confirming unpublish' : 'idle';
+            case 'publishing':
+                throw new Error('It should be impossible to hit this state');
+            case 'unpublishing':
+                return editState;
+            case 'confirming unpublish':
+                return 'idle';
+            default: {
+                const _exhaustive: never = oldEditState;
+                throw new Error(`Unexpected edit state ${_exhaustive}`);
+            }
+            }
+        });
     };
 
     return (
         <div className='flex h-full w-full flex-col' data-testid='automation-editor'>
             <AutomationHeader
                 automation={automation}
+                editState={editState}
                 isLoadingAutomation={isLoadingAutomation}
-                publishState={publishState}
-                unpublishState={unpublishState}
-                onPublish={handlePublish}
-                onTurnOff={handleTurnOffRequested}
+                onPublish={() => editStatus('active')}
+                onTurnOff={() => setEditState('confirming unpublish')}
             />
 
             <AutomationCanvas automation={automation} isError={isError} isLoading={isLoadingAutomation} />
 
-            <AlertDialog open={isConfirmingUnpublish} onOpenChange={handleConfirmingUnpublishChange}>
+            <AlertDialog
+                open={isConfirmUnpublishAlertOpen}
+                onOpenChange={onConfirmUnpublishOpenChange}
+            >
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Turn off this automation?</AlertDialogTitle>
@@ -103,22 +121,13 @@ const AutomationEditor: React.FC = () => {
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel disabled={unpublishState === 'loading'}>Cancel</AlertDialogCancel>
+                        <AlertDialogCancel disabled={isEditRequestActive}>Cancel</AlertDialogCancel>
                         <Button
-                            disabled={unpublishState === 'loading'}
-                            variant={unpublishState === 'error' ? 'destructive' : 'default'}
-                            onClick={handleConfirmTurnOff}
+                            disabled={isEditRequestActive}
+                            variant={editState === 'failed to unpublish' ? 'destructive' : 'default'}
+                            onClick={() => editStatus('inactive')}
                         >
-                            {unpublishState === 'loading' ? (
-                                <>
-                                    <LoadingIndicator color='light' size='sm' />
-                                    Turning off...
-                                </>
-                            ) : unpublishState === 'error' ? (
-                                'Retry'
-                            ) : (
-                                'Turn off'
-                            )}
+                            {turnOffButtonChildren}
                         </Button>
                     </AlertDialogFooter>
                 </AlertDialogContent>

@@ -1,17 +1,17 @@
 import AutomationStatusBadge from './automation-status-badge';
 import React from 'react';
-import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, LoadingIndicator, Skeleton} from '@tryghost/shade/components';
+import {Button, type ButtonProps, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, LoadingIndicator, Skeleton} from '@tryghost/shade/components';
 import {Link} from '@tryghost/admin-x-framework';
 import {LucideIcon} from '@tryghost/shade/utils';
 import type {AutomationDetail} from '@tryghost/admin-x-framework/api/automations';
+import type {AutomationEditState} from '../types';
 
 export type AutomationRequestState = 'idle' | 'loading' | 'error';
 
 interface AutomationHeaderProps {
     automation: AutomationDetail | undefined;
     isLoadingAutomation: boolean;
-    publishState: AutomationRequestState;
-    unpublishState: AutomationRequestState;
+    editState: AutomationEditState;
     onPublish: () => void;
     onTurnOff: () => void;
 }
@@ -19,33 +19,49 @@ interface AutomationHeaderProps {
 const AutomationHeader: React.FC<AutomationHeaderProps> = ({
     automation,
     isLoadingAutomation,
-    publishState,
-    unpublishState,
+    editState,
     onPublish,
     onTurnOff
 }) => {
     const name = automation?.name;
     const status = automation?.status;
-    const isActive = status === 'active';
 
-    const isPublishing = publishState === 'loading';
-    const hasPublishError = publishState === 'error' && !isActive;
-    const isUnpublishing = unpublishState === 'loading';
-
-    let publishButtonChildren: React.ReactNode;
-    if (isPublishing) {
+    let isPublishButtonEnabled = automation?.status === 'inactive';
+    let publishButtonVariant: ButtonProps['variant'] = 'default';
+    let isTurnOffButtonEnabled = true;
+    let publishButtonChildren: React.ReactNode = automation?.status === 'active' ? 'Published' : 'Publish changes';
+    switch (editState) {
+    case 'idle':
+        break;
+    case 'publishing':
+        isPublishButtonEnabled = false;
+        isTurnOffButtonEnabled = false;
         publishButtonChildren = (
             <>
                 <LoadingIndicator color='light' size='sm' />
                 Publishing...
             </>
         );
-    } else if (hasPublishError) {
+        break;
+    case 'unpublishing':
+        isPublishButtonEnabled = false;
+        isTurnOffButtonEnabled = false;
+        break;
+    case 'confirming unpublish':
+        isPublishButtonEnabled = false;
+        isTurnOffButtonEnabled = false;
+        break;
+    case 'failed to publish':
+        publishButtonVariant = 'destructive';
         publishButtonChildren = 'Retry';
-    } else if (isActive) {
-        publishButtonChildren = 'Published';
-    } else {
-        publishButtonChildren = 'Publish changes';
+        break;
+    case 'failed to unpublish':
+        isTurnOffButtonEnabled = true;
+        break;
+    default: {
+        const _exhaustive: never = editState;
+        throw new Error(`Unhandled edit state: ${_exhaustive}`);
+    }
     }
 
     return (
@@ -66,7 +82,7 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
                 )}
             </div>
             <div className='flex shrink-0 items-center gap-3'>
-                {isActive && (
+                {status === 'active' && (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button aria-label='Automation options' size='icon' variant='ghost'>
@@ -74,9 +90,7 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align='end'>
-                            {/* It's unlikely you'll be able to click this because there's
-                                a modal in the way, but we disable it to be safe. */}
-                            <DropdownMenuItem disabled={isUnpublishing} onSelect={onTurnOff}>
+                            <DropdownMenuItem disabled={!isTurnOffButtonEnabled} onSelect={onTurnOff}>
                                 <LucideIcon.Power className='size-4' />
                                 Turn off
                             </DropdownMenuItem>
@@ -84,8 +98,8 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
                     </DropdownMenu>
                 )}
                 <Button
-                    disabled={!automation || isActive || isPublishing}
-                    variant={hasPublishError ? 'destructive' : 'default'}
+                    disabled={!isPublishButtonEnabled}
+                    variant={publishButtonVariant}
                     onClick={onPublish}
                 >
                     {publishButtonChildren}
