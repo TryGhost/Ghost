@@ -11,7 +11,6 @@ export function createCSVTransform(): Transform {
     let fields: string[] | null = null;
 
     return new Transform({
-        // We receive JS objects from the exporter, not bytes.
         objectMode: true,
         transform(post: Row, _encoding: BufferEncoding, callback: TransformCallback) {
             try {
