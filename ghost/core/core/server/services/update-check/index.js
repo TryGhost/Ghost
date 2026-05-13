@@ -35,6 +35,15 @@ module.exports = async ({
         }
     }
 
+    const notificationsEnabled = config.get('updateCheck:enabled') !== false;
+    const telemetryEnabled = !config.isPrivacyDisabled('useUpdateCheck');
+
+    // Skip polling entirely only when neither purpose remains: the operator
+    // wants no notifications AND no telemetry leaves the instance.
+    if (!notificationsEnabled && !telemetryEnabled) {
+        return;
+    }
+
     const updateChecker = new UpdateCheckService({
         api: {
             settings: {
@@ -54,7 +63,8 @@ module.exports = async ({
             env: config.get('env'),
             databaseType: databaseInfo.getEngine(),
             checkEndpoint: updateCheckUrl,
-            isPrivacyDisabled: config.isPrivacyDisabled('useUpdateCheck'),
+            isPrivacyDisabled: !telemetryEnabled,
+            notificationsEnabled,
             notificationGroups: config.get('notificationGroups'),
             siteUrl: urlUtils.urlFor('home', true),
             forceUpdate,

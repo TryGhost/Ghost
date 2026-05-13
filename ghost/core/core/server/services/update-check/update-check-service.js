@@ -45,6 +45,7 @@ class UpdateCheckService {
      * @param {string} options.config.databaseType
      * @param {string} options.config.checkEndpoint - update check service URL
      * @param {boolean} [options.config.isPrivacyDisabled]
+     * @param {boolean} [options.config.notificationsEnabled] - when false, telemetry still flows but no notifications are created from the response
      * @param {string[]} [options.config.notificationGroups] - example values ["migration", "something"]
      * @param {boolean} [options.config.rethrowErrors] - allows to force throwing errors (useful in worker threads)
      * @param {string} options.config.siteUrl - Ghost instance URL
@@ -255,6 +256,10 @@ class UpdateCheckService {
                 value: response.next_check
             }]
         }, internal);
+
+        if (this.config.notificationsEnabled === false) {
+            return;
+        }
 
         let notifications;
         if (_.isArray(response)) {

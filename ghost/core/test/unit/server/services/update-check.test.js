@@ -220,6 +220,58 @@ describe('Update Check', function () {
         });
     });
 
+    describe('Notifications gate', function () {
+        it('writes next_update_check but skips notification creation when notificationsEnabled is false', async function () {
+            const notificationsAddSpy = sinon.spy();
+            const updateCheckService = new UpdateCheckService({
+                api: {
+                    settings: {edit: settingsStub},
+                    users: {browse: sinon.stub().resolves({users: []})},
+                    posts: {browse: sinon.stub().resolves()}
+                },
+                notifications: {add: notificationsAddSpy},
+                config: {
+                    notificationsEnabled: false
+                },
+                request
+            });
+
+            await updateCheckService.updateCheckResponse({
+                next_check: moment().add(1, 'day').unix(),
+                messages: [{id: 'x', content: '<p>hi</p>', type: 'info'}]
+            });
+
+            sinon.assert.calledOnce(settingsStub);
+            sinon.assert.notCalled(notificationsAddSpy);
+        });
+
+        it('processes notifications normally when notificationsEnabled is true', async function () {
+            const notificationsAddSpy = sinon.stub().resolves();
+            const updateCheckService = new UpdateCheckService({
+                api: {
+                    settings: {edit: settingsStub},
+                    users: {browse: sinon.stub().resolves({users: []})},
+                    posts: {browse: sinon.stub().resolves()}
+                },
+                notifications: {add: notificationsAddSpy},
+                config: {
+                    notificationsEnabled: true,
+                    notificationGroups: ['all']
+                },
+                request
+            });
+
+            await updateCheckService.updateCheckResponse({
+                custom: true,
+                version: 'all',
+                next_check: moment().add(1, 'day').unix(),
+                messages: [{id: 'x', content: '<p>hi</p>', type: 'info'}]
+            });
+
+            sinon.assert.called(notificationsAddSpy);
+        });
+    });
+
     describe('Error handling', function () {
         it('logs an error when error', function () {
             const updateCheckService = new UpdateCheckService({
