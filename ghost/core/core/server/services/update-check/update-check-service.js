@@ -37,8 +37,8 @@ class UpdateCheckService {
      * @param {Function} options.api.posts.browse - method allowing to read Ghost's posts
      * @param {Object} options.api.users - Users API methods
      * @param {Function} options.api.users.browse - method allowing to read Ghost's users
-     * @param {Object} options.api.notifications - Notification API methods
-     * @param {Function} options.api.notifications.add - method allowing to add Ghost notifications
+     * @param {Object} options.notifications - Notification service
+     * @param {Function} options.notifications.add - method allowing to add Ghost notifications
      * @param {Object} options.config
      * @param {Object} options.config.mail
      * @param {string} options.config.env
@@ -51,14 +51,13 @@ class UpdateCheckService {
      * @param {boolean} [options.config.forceUpdate]
      * @param {string} options.config.ghostVersion - Ghost instance version
      * @param {Function} options.request - a HTTP request proxy function
-     * @param {Function} options.sendEmail - function handling sending an email
     */
-    constructor({api, config, request, sendEmail}) {
+    constructor({api, notifications, config, request}) {
         this.api = api;
+        this.notifications = notifications;
         this.config = config;
         this.logging = logging;
         this.request = request;
-        this.sendEmail = sendEmail;
     }
 
     nextCheckTimestamp() {
@@ -273,7 +272,8 @@ class UpdateCheckService {
 
     /**
      * @description Map a wire notification through the feed handler and add the
-     * resulting notifications to Ghost, emailing admins for any alerts.
+     * resulting notifications to Ghost. Alert-type notifications trigger emails
+     * via the notification service's reactor.
      *
      * @param {Object} notification
      * @return {Promise}
@@ -289,43 +289,7 @@ class UpdateCheckService {
         }
 
         debug(`creating ${inputs.length} notification(s)`);
-
-        const alerts = inputs.filter(input => input.type === 'alert');
-        if (alerts.length > 0) {
-            const adminEmails = await this.fetchAdminEmails();
-            const siteUrl = this.config.siteUrl;
-            for (const input of alerts) {
-                for (const email of adminEmails) {
-                    try {
-                        this.sendEmail({
-                            to: email,
-                            subject: `Action required: Critical alert from Ghost instance ${siteUrl}`,
-                            html: input.message,
-                            forceTextContent: true
-                        });
-                    } catch (err) {
-                        this.logging.error(err);
-                        if (this.config.rethrowErrors) {
-                            throw err;
-                        }
-                    }
-                }
-            }
-        }
-
-        await this.api.notifications.add({notifications: inputs}, {context: {internal: true}});
-    }
-
-    async fetchAdminEmails() {
-        const {users} = await this.api.users.browse(Object.assign({
-            limit: 'all',
-            include: ['roles'],
-            filter: 'status:active'
-        }, internal));
-
-        return users
-            .filter(user => ['Owner', 'Administrator'].includes(user.roles[0].name))
-            .map(user => user.email);
+        await this.notifications.add(inputs);
     }
     /**
      * @description Entry point to trigger the update check unit.

@@ -10,6 +10,7 @@ const databaseInfo = require('../../data/db/info');
 
 const request = require('@tryghost/request');
 const ghostVersion = require('@tryghost/version');
+const {notifications} = require('../notifications');
 const UpdateCheckService = require('./update-check-service');
 
 /**
@@ -34,9 +35,6 @@ module.exports = async ({
         }
     }
 
-    const {GhostMailer} = require('../mail');
-    const ghostMailer = new GhostMailer();
-
     const updateChecker = new UpdateCheckService({
         api: {
             settings: {
@@ -48,11 +46,9 @@ module.exports = async ({
             },
             users: {
                 browse: api.users.browse
-            },
-            notifications: {
-                add: api.notifications.add
             }
         },
+        notifications,
         config: {
             mail: config.get('mail'),
             env: config.get('env'),
@@ -65,8 +61,7 @@ module.exports = async ({
             ghostVersion: ghostVersion.original,
             rethrowErrors
         },
-        request,
-        sendEmail: ghostMailer.send.bind(ghostMailer)
+        request
     });
 
     await updateChecker.check();

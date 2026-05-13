@@ -27,13 +27,16 @@ export interface NotificationInput {
 export class NotificationService {
     private readonly repository: NotificationRepository;
     private readonly ghostVersion: GhostVersion;
+    private readonly afterAdd?: (notification: domain.Notification) => Promise<void>;
 
     constructor(deps: {
         repository: NotificationRepository;
         ghostVersion: GhostVersion;
+        afterAdd?: (notification: domain.Notification) => Promise<void>;
     }) {
         this.repository = deps.repository;
         this.ghostVersion = deps.ghostVersion;
+        this.afterAdd = deps.afterAdd;
     }
 
     browse(userId: string): domain.Notification[] {
@@ -59,6 +62,11 @@ export class NotificationService {
         }
 
         const added = await this.repository.saveAll(built);
+        if (this.afterAdd) {
+            for (const notification of added) {
+                await this.afterAdd(notification);
+            }
+        }
         await this.repository.pruneOlderThan(new Date(Date.now() - TWO_MONTHS_MS));
         return added;
     }

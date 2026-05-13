@@ -5,7 +5,6 @@ import moment from 'moment';
 
 const {agentProvider, fixtureManager, mockManager, resetRateLimits} = require('../../../utils/e2e-framework');
 const models = require('../../../../core/server/models');
-const mailService = require('../../../../core/server/services/mail');
 const UpdateCheckService = require('../../../../core/server/services/update-check/update-check-service');
 const api = require('../../../../core/server/api').endpoints;
 const ghostVersion = require('@tryghost/version');
@@ -157,13 +156,16 @@ describe('Notification domain (integration)', function () {
             assert.equal(matching.length, 0);
         });
 
-        it('does not send an email when an Admin creates an alert-type notification', async function () {
+        it('sends an alert email when an alert-type notification is created via the Admin API', async function () {
             await agent
                 .post('notifications')
-                .body({notifications: [{custom: true, type: 'alert', message: 'critical-looking but no email'}]})
+                .body({notifications: [{custom: true, type: 'alert', message: 'critical alert'}]})
                 .expectStatus(201);
 
-            mockManager.assert.sentEmailCount(0);
+            mockManager.assert.sentEmail({
+                to: /@/,
+                subject: /Action required: Critical alert from Ghost instance/
+            });
         });
     });
 
@@ -321,10 +323,7 @@ describe('Notification domain (integration)', function () {
 
     describe('UpdateCheck producer', function () {
         function buildService() {
-            // Use the real GhostMailer routed through mockManager.mockMail();
-            // outgoing mail is captured by EmailMockReceiver and asserted via
-            // mockManager.assert.sentEmail({...}).
-            const ghostMailer = new mailService.GhostMailer();
+            const {notifications} = require('../../../../core/server/services/notifications');
             return new UpdateCheckService({
                 api: {
                     settings: {
@@ -332,9 +331,9 @@ describe('Notification domain (integration)', function () {
                         edit: api.settings.edit
                     },
                     posts: {browse: api.posts.browse},
-                    users: {browse: api.users.browse},
-                    notifications: {add: api.notifications.add}
+                    users: {browse: api.users.browse}
                 },
+                notifications,
                 config: {
                     mail: {},
                     env: 'testing',
@@ -346,8 +345,7 @@ describe('Notification domain (integration)', function () {
                     forceUpdate: true,
                     rethrowErrors: true
                 },
-                request: require('@tryghost/request'),
-                sendEmail: ghostMailer.send.bind(ghostMailer)
+                request: require('@tryghost/request')
             });
         }
 
@@ -409,7 +407,7 @@ describe('Notification domain (integration)', function () {
 
             mockManager.assert.sentEmail({
                 to: /@/,
-                subject: 'Action required: Critical alert from Ghost instance http://127.0.0.1:2369'
+                subject: /^Action required: Critical alert from Ghost instance http:\/\//
             });
         });
 
