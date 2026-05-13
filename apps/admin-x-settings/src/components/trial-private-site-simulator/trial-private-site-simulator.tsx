@@ -15,8 +15,13 @@ type TrialPrivateSiteSimulatorContextValue = {
 
 const STORAGE_KEY = 'ghost-trial-private-site-simulator-mode';
 
-const FIRST_WORDS = ['silver', 'quiet', 'bright', 'lunar', 'green', 'blue', 'wild', 'golden', 'hidden', 'north'];
-const SECOND_WORDS = ['river', 'garden', 'signal', 'harbor', 'studio', 'meadow', 'anchor', 'paper', 'window', 'summit'];
+const ACCESS_CODE_WORDS = [
+    'anchor', 'aurora', 'beacon', 'birch', 'bright', 'cedar', 'cloud', 'comet', 'copper', 'coral',
+    'ember', 'fern', 'field', 'forest', 'golden', 'green', 'harbor', 'hidden', 'horizon', 'juniper',
+    'lagoon', 'lunar', 'maple', 'meadow', 'midnight', 'north', 'ocean', 'olive', 'paper', 'pine',
+    'quiet', 'river', 'sage', 'signal', 'silver', 'solstice', 'sparrow', 'stone', 'studio', 'summit',
+    'sunrise', 'thistle', 'valley', 'violet', 'willow', 'window', 'winter', 'wild'
+];
 
 const TrialPrivateSiteSimulatorContext = createContext<TrialPrivateSiteSimulatorContextValue | undefined>(undefined);
 
@@ -34,10 +39,10 @@ function getStoredMode(): TrialPrivateSiteSimulatorMode {
 }
 
 function generateAccessCode() {
-    const firstWord = FIRST_WORDS[Math.floor(Math.random() * FIRST_WORDS.length)];
-    const secondWord = SECOND_WORDS[Math.floor(Math.random() * SECOND_WORDS.length)];
+    const word = ACCESS_CODE_WORDS[Math.floor(Math.random() * ACCESS_CODE_WORDS.length)];
+    const number = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
 
-    return `${firstWord}-${secondWord}`;
+    return `${word}${number}`;
 }
 
 function normalizeAccessCode(value: string | null | undefined) {
@@ -45,7 +50,7 @@ function normalizeAccessCode(value: string | null | undefined) {
 }
 
 function isOldSpikeAccessCode(value: string) {
-    return /^[a-z]+-[a-z]+-\d{2}$/.test(value);
+    return /^[a-z]+-[a-z]+(?:-\d{2})?$/.test(value);
 }
 
 const TrialPrivateSiteSimulatorProviderInternal: React.FC<{children: React.ReactNode}> = ({children}) => {

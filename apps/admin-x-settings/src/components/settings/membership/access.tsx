@@ -1,8 +1,10 @@
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {Button, Hint, MultiSelect, type MultiSelectOption, Select, Separator, SettingGroupContent, TextField, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Banner, Button as ShadeButton} from '@tryghost/shade/components';
 import {type GroupBase, type MultiValue} from 'react-select';
+import {Hint, MultiSelect, type MultiSelectOption, Select, Separator, SettingGroupContent, TextField, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {RefreshCw} from 'lucide-react';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useGlobalData} from '../../providers/global-data-provider';
@@ -91,7 +93,7 @@ function normalizeAccessCode(value: string | null | undefined) {
 
 const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {settings} = useGlobalData();
-    const {isTrialMode, isUpgradedMode, password: simulatorPassword, regenerateAccessCode} = useTrialPrivateSiteSimulator();
+    const {isTrialMode, password: simulatorPassword, regenerateAccessCode} = useTrialPrivateSiteSimulator();
     const [isRegenerating, setIsRegenerating] = React.useState(false);
     const {
         localSettings,
@@ -147,27 +149,11 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
         updateSetting('default_content_visibility_tiers', JSON.stringify(selectedTiers));
     };
 
-    const copyAccessCode = async () => {
-        if (!effectivePassword) {
-            return;
-        }
-
-        await navigator.clipboard.writeText(effectivePassword);
-        showToast({
-            type: 'success',
-            title: 'Access code copied'
-        });
-    };
-
     const handleRegenerateAccessCode = async () => {
         setIsRegenerating(true);
 
         try {
             await regenerateAccessCode();
-            showToast({
-                type: 'success',
-                title: 'Access code regenerated'
-            });
         } catch {
             showToast({
                 type: 'error',
@@ -180,10 +166,22 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const form = (
         <SettingGroupContent className='gap-y-4' columns={1}>
+            {isTrialMode && (
+                <Banner className='mb-2 flex w-full cursor-default flex-col gap-4 border-0 p-6 pt-5 transition-none hover:translate-y-0 hover:scale-100 hover:shadow-[-7px_-6px_42px_8px_rgb(75_225_226_/_28%),7px_6px_42px_8px_rgb(202_103_255_/_32%)] md:flex-row md:items-center md:justify-between dark:hover:shadow-[-7px_-6px_42px_8px_rgb(75_225_226_/_36%),7px_6px_42px_8px_rgb(202_103_255_/_38%)]' size='lg' variant='gradient'>
+                    <div>
+                        <div className='text-base font-semibold'>Pre-launch mode</div>
+                        <div className='mt-2 text-sm text-gray-700'>
+                            During your free trial, a private access code is required to browse your site. When you&apos;re ready to launch, pick a plan to upgrade your account and make everything public.
+                        </div>
+                    </div>
+                    <ShadeButton className='shrink-0 self-start md:self-center' asChild><a href="#/pro/billing/plans">Upgrade now</a></ShadeButton>
+                </Banner>
+            )}
             <div className="flex flex-col content-center items-center gap-4 md:flex-row">
                 <div className="w-full max-w-none min-w-[160px] md:w-2/3 md:max-w-[320px]">Who should be able to browse your site?</div>
                 <div className="w-full md:flex-1">
                     <Select
+                        containerClassName={isTrialMode ? 'relative z-10' : undefined}
                         disabled={isTrialMode}
                         options={SITE_VISIBILITY_OPTIONS}
                         selectedOption={SITE_VISIBILITY_OPTIONS.find(option => option.value === (effectiveIsPrivate ? 'private' : 'public'))}
@@ -200,35 +198,24 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     <div className="w-full max-w-none min-w-[160px] md:w-2/3 md:max-w-[320px] md:pt-3">What access code should visitors use?</div>
                     <div className="w-full md:flex-1">
                         <TextField
+                            containerClassName={isTrialMode ? 'relative z-10' : undefined}
                             data-testid='site-access-code'
                             disabled={isTrialMode}
                             error={!!errors.password}
                             hint={errors.password}
                             placeholder="Enter access code"
                             rightPlaceholder={(
-                                <span className='flex h-full items-center gap-1'>
-                                    <Button
+                                <span className='flex h-full items-center'>
+                                    <button
                                         aria-label='Regenerate access code'
+                                        className='mr-[5px] flex size-5 cursor-pointer items-center justify-center p-0 text-grey-900 disabled:cursor-not-allowed disabled:opacity-40 dark:text-grey-400'
                                         disabled={isRegenerating}
-                                        icon='reload'
-                                        label='Regenerate access code'
-                                        size='sm'
                                         title='Regenerate access code'
-                                        hideLabel
-                                        link
+                                        type='button'
                                         onClick={handleRegenerateAccessCode}
-                                    />
-                                    <Button
-                                        aria-label='Copy access code'
-                                        disabled={!effectivePassword}
-                                        icon='duplicate'
-                                        label='Copy access code'
-                                        size='sm'
-                                        title='Copy access code'
-                                        hideLabel
-                                        link
-                                        onClick={copyAccessCode}
-                                    />
+                                    >
+                                        <RefreshCw aria-hidden={true} className='size-3.5' strokeWidth={1.5} />
+                                    </button>
                                 </span>
                             )}
                             title='Access code'
@@ -240,19 +227,9 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             }}
                             onKeyDown={() => clearError('password')}
                         />
-                        {privateRssUrl && (
+                        {privateRssUrl && !isTrialMode && (
                             <Hint className='mt-2'>
                                 <>A private RSS feed is available <a className='text-green' href={privateRssUrl} rel="noopener noreferrer" target='_blank'>here</a></>
-                            </Hint>
-                        )}
-                        {isTrialMode && (
-                            <Hint className='mt-2'>
-                                Trial sites are private while you set up. Share this access code with anyone you want to <a className='text-green' href={siteData?.url || '/'} rel="noopener noreferrer" target='_blank'>preview your site</a>.
-                            </Hint>
-                        )}
-                        {isUpgradedMode && (
-                            <Hint className='mt-2'>
-                                Your site is still private. You can make it public whenever you&apos;re ready.
                             </Hint>
                         )}
                     </div>
@@ -331,6 +308,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
             keywords={keywords}
             navid='members'
             saveState={saveState}
+            styles={isTrialMode ? 'overflow-hidden' : undefined}
             testId='access'
             title='Access'
             hideEditButton
