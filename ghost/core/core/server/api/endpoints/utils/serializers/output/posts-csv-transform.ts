@@ -1,5 +1,6 @@
 import {Transform, TransformCallback} from 'node:stream';
 import * as papaparse from 'papaparse';
+import {InternalServerError} from '@tryghost/errors';
 
 type Row = Record<string, unknown>;
 
@@ -39,7 +40,7 @@ export function createCSVTransform(): Transform {
                 // so we add exactly one CRLF to separate this row from the previous.
                 callback(null, '\r\n' + csv);
             } catch (err) {
-                callback(err as Error);
+                callback(err instanceof Error ? err : new InternalServerError({message: String(err)}));
             }
         }
     });
