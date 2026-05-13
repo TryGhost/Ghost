@@ -487,6 +487,25 @@ jobs:
       - name: E2E tests
         run: pnpm nx run ghost:test:ci:e2e
 
+      - name: Start MinIO for integration tests
+        run: |
+          docker run -d --rm --name minio \
+            -p 9000:9000 \
+            -e MINIO_ROOT_USER=minio-user \
+            -e MINIO_ROOT_PASSWORD=minio-pass \
+            minio/minio:RELEASE.2024-12-13T22-19-12Z@sha256:149fdd73108553247ceee85fc65466f51034bd6e145d6e0c0e415167f5f1274f \
+            server /data
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:9000/minio/health/ready; then
+              echo "MinIO ready after ${i}s"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "MinIO did not become ready in time" >&2
+          docker logs minio
+          exit 1
+
       - name: Integration tests
         run: pnpm nx run ghost:test:ci:integration
 
