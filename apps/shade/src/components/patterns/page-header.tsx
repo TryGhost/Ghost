@@ -317,58 +317,6 @@ function PageHeaderActions({className, children}: PropsWithChildrenAndClassName)
 }
 
 // ---------------------------------------------------------------------------
-// View row — ViewBar + ViewActions
-// ---------------------------------------------------------------------------
-
-function PageHeaderViewBar({className, children}: PropsWithChildrenAndClassName) {
-    return (
-        <Inline
-            align='center'
-            className={cn('flex-1', className)}
-            data-page-header='view-bar'
-            gap='sm'
-        >
-            {children}
-        </Inline>
-    );
-}
-
-function PageHeaderViewActions({className, children}: PropsWithChildrenAndClassName) {
-    return (
-        <Inline
-            align='center'
-            className={cn('shrink-0', className)}
-            data-page-header='view-actions'
-            gap='sm'
-        >
-            {children}
-        </Inline>
-    );
-}
-
-// ---------------------------------------------------------------------------
-// Filter bar
-// ---------------------------------------------------------------------------
-
-function PageHeaderFilterBar({className, children}: PropsWithChildrenAndClassName) {
-    if (React.Children.count(children) === 0) {
-        return null;
-    }
-
-    return (
-        <Inline
-            align='center'
-            className={cn('w-full', className)}
-            data-page-header='filter-bar'
-            gap='sm'
-            justify='between'
-        >
-            {children}
-        </Inline>
-    );
-}
-
-// ---------------------------------------------------------------------------
 // Root
 // ---------------------------------------------------------------------------
 
@@ -381,9 +329,6 @@ type PageHeaderComponent = React.FC<PageHeaderProps> & {
     Meta: React.FC<PropsWithChildrenAndClassName>;
     Actions: React.FC<PropsWithChildrenAndClassName>;
     ActionGroup: PageHeaderActionGroupComponent;
-    ViewBar: React.FC<PropsWithChildrenAndClassName>;
-    ViewActions: React.FC<PropsWithChildrenAndClassName>;
-    FilterBar: React.FC<PropsWithChildrenAndClassName>;
 };
 
 /**
@@ -402,69 +347,25 @@ type PageHeaderComponent = React.FC<PageHeaderProps> & {
  */
 const PageHeader: PageHeaderComponent = Object.assign(
     function PageHeader({className, children, sticky = true, blurredBackground = true}: PageHeaderProps) {
-        const viewBarChildren: React.ReactNode[] = [];
-        const viewActionsChildren: React.ReactNode[] = [];
-        const filterBarChildren: React.ReactNode[] = [];
-        const mainChildren: React.ReactNode[] = [];
-
-        React.Children.forEach(children, (child) => {
-            if (!React.isValidElement(child)) {
-                mainChildren.push(child);
-                return;
-            }
-
-            switch (child.type) {
-            case PageHeaderViewBar:
-                viewBarChildren.push(child);
-                break;
-            case PageHeaderViewActions:
-                viewActionsChildren.push(child);
-                break;
-            case PageHeaderFilterBar:
-                filterBarChildren.push(child);
-                break;
-            default:
-                mainChildren.push(child);
-            }
-        });
-
-        const hasMainRow = mainChildren.length > 0;
-        const hasViewRow = viewBarChildren.length > 0 || viewActionsChildren.length > 0;
-
         return (
             <header
                 className={cn(
-                    'flex flex-col gap-4 px-4 lg:px-8',
+                    'flex flex-col',
                     sticky && 'sticky top-0 z-50',
                     blurredBackground && 'bg-gradient-to-b from-background via-background/70 to-background/70 backdrop-blur-md dark:bg-black',
                     className
                 )}
                 data-page-header='page-header'
             >
-                {hasMainRow && (
-                    <Inline
-                        align='start'
-                        className='w-full'
-                        data-page-header='main'
-                        gap='lg'
-                        justify='between'
-                    >
-                        {mainChildren}
-                    </Inline>
-                )}
-                {hasViewRow && (
-                    <Inline
-                        align='center'
-                        className='w-full'
-                        data-page-header='view-row'
-                        gap='lg'
-                        justify='between'
-                    >
-                        {viewBarChildren.length > 0 ? viewBarChildren : <span />}
-                        {viewActionsChildren.length > 0 && viewActionsChildren}
-                    </Inline>
-                )}
-                {filterBarChildren.length > 0 && filterBarChildren}
+                <Inline
+                    align='start'
+                    className='w-full'
+                    data-page-header='main'
+                    gap='lg'
+                    justify='between'
+                >
+                    {children}
+                </Inline>
             </header>
         );
     },
@@ -476,10 +377,7 @@ const PageHeader: PageHeaderComponent = Object.assign(
         Description: PageHeaderDescription,
         Meta: PageHeaderMeta,
         Actions: PageHeaderActions,
-        ActionGroup: PageHeaderActionGroup,
-        ViewBar: PageHeaderViewBar,
-        ViewActions: PageHeaderViewActions,
-        FilterBar: PageHeaderFilterBar
+        ActionGroup: PageHeaderActionGroup
     }
 );
 
@@ -496,8 +394,5 @@ export {
     PageHeaderActionGroupPrimary,
     PageHeaderActionGroupMobileMenu,
     PageHeaderActionGroupMobileMenuTrigger,
-    PageHeaderActionGroupMobileMenuContent,
-    PageHeaderViewBar,
-    PageHeaderViewActions,
-    PageHeaderFilterBar
+    PageHeaderActionGroupMobileMenuContent
 };

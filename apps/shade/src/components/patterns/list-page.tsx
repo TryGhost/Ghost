@@ -10,7 +10,7 @@ type ListPageProps = PropsWithChildrenAndClassName;
 function ListPageToolbar({className, children}: PropsWithChildrenAndClassName) {
     return (
         <div
-            className={cn('px-4 lg:px-8', className)}
+            className={className}
             data-list-page='toolbar'
         >
             {children}
@@ -21,7 +21,7 @@ function ListPageToolbar({className, children}: PropsWithChildrenAndClassName) {
 function ListPageBody({className, children}: PropsWithChildrenAndClassName) {
     return (
         <div
-            className={cn('px-4 lg:px-8 flex-1 min-h-0 min-w-0', className)}
+            className={cn('flex-1 min-h-0 min-w-0', className)}
             data-list-page='body'
         >
             {children}
@@ -32,7 +32,7 @@ function ListPageBody({className, children}: PropsWithChildrenAndClassName) {
 function ListPagePagination({className, children}: PropsWithChildrenAndClassName) {
     return (
         <div
-            className={cn('flex items-center justify-center px-4 py-4 lg:px-8', className)}
+            className={cn('flex items-center justify-center py-4', className)}
             data-list-page='pagination'
         >
             {children}

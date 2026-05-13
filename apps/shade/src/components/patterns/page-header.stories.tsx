@@ -1,4 +1,3 @@
-import {useState} from 'react';
 import type {Meta, StoryObj} from '@storybook/react-vite';
 import {
     Breadcrumb,
@@ -12,9 +11,7 @@ import {Button} from '@/components/ui/button';
 import {DropdownMenuItem} from '@/components/ui/dropdown-menu';
 import {InputGroup, InputGroupAddon, InputGroupInput} from '@/components/ui/input-group';
 import {PageHeader} from '@/components/patterns/page-header';
-import {PageMenu, PageMenuItem} from '@/components/ui/pagemenu';
-import {Filters, createFilter, type Filter, type FilterFieldConfig} from '@/components/patterns/filters';
-import {CalendarDays, Circle, Ellipsis, Filter as FilterIcon, Gauge, Mail, Plus, Search, Sprout, X} from 'lucide-react';
+import {Ellipsis, Filter as FilterIcon, Plus, Search} from 'lucide-react';
 
 const meta = {
     title: 'Patterns / Page Header',
@@ -28,133 +25,71 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof PageHeader>;
 
-const memberStatusFields: FilterFieldConfig[] = [
-    {
-        key: 'memberStatus',
-        label: 'Member status',
-        type: 'select',
-        icon: <Circle className="size-4" />,
-        options: [
-            {value: 'free', label: 'Free'},
-            {value: 'paid', label: 'Paid'},
-            {value: 'complimentary', label: 'Complimentary'}
-        ]
-    }
-];
-
 export const Structure: Story = {
-    render: () => {
-        const [filters, setFilters] = useState<Filter[]>([
-            createFilter('memberStatus', 'is', ['complimentary'])
-        ]);
-
-        return (
-            <PageHeader>
-                {/* Left: Breadcrumb + Title (with Count and Description) */}
-                <PageHeader.Left>
-                    <PageHeader.Breadcrumb>
-                        <Breadcrumb>
-                            <BreadcrumbList>
-                                <BreadcrumbItem>
-                                    <BreadcrumbLink href="/">Audience</BreadcrumbLink>
-                                </BreadcrumbItem>
-                                <BreadcrumbSeparator />
-                                <BreadcrumbItem>
-                                    <BreadcrumbPage>Members</BreadcrumbPage>
-                                </BreadcrumbItem>
-                            </BreadcrumbList>
-                        </Breadcrumb>
-                    </PageHeader.Breadcrumb>
-                    <PageHeader.Title>
-                        Members
-                        <PageHeader.Count>12,345</PageHeader.Count>
-                        <PageHeader.Description>All members across free, paid and complimentary tiers</PageHeader.Description>
-                    </PageHeader.Title>
-                </PageHeader.Left>
-
-                {/* Actions: search, filter, primary action */}
-                <PageHeader.Actions>
-                    <PageHeader.ActionGroup mobileMenuBreakpoint={800}>
-                        <InputGroup className="w-full sm:w-56">
-                            <InputGroupInput placeholder="Search members..." type="search" />
-                            <InputGroupAddon>
-                                <Search className="size-4" />
-                            </InputGroupAddon>
-                        </InputGroup>
-                        <Button aria-label="More actions" size="icon" variant="outline">
-                            <Ellipsis className="size-4" />
-                        </Button>
-                        <Button variant="outline">
-                            <FilterIcon className="size-4" />
-                            Filter
-                        </Button>
-                        <PageHeader.ActionGroup.MobileMenu>
-                            <PageHeader.ActionGroup.MobileMenuTrigger>
-                                <Button aria-label="More actions" size="icon" variant="outline">
-                                    <Ellipsis className="size-4" />
-                                </Button>
-                            </PageHeader.ActionGroup.MobileMenuTrigger>
-                            <PageHeader.ActionGroup.MobileMenuContent>
-                                <DropdownMenuItem>
-                                    <Search className="size-4" />
-                                    Search
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                    <FilterIcon className="size-4" />
-                                    Filter
-                                </DropdownMenuItem>
-                            </PageHeader.ActionGroup.MobileMenuContent>
-                        </PageHeader.ActionGroup.MobileMenu>
-                        <PageHeader.ActionGroup.Primary>
-                            <Button>
-                                <Plus className="size-4" />
-                                Add member
-                            </Button>
-                        </PageHeader.ActionGroup.Primary>
-                    </PageHeader.ActionGroup>
-                </PageHeader.Actions>
-
-                {/* ViewBar: tab navigation */}
-                <PageHeader.ViewBar>
-                    <PageMenu defaultValue="overview" responsive>
-                        <PageMenuItem value="overview">
-                            <Gauge />
-                            Overview
-                        </PageMenuItem>
-                        <PageMenuItem value="newsletter">
-                            <Mail />
-                            Newsletter
-                        </PageMenuItem>
-                        <PageMenuItem value="growth">
-                            <Sprout />
-                            Growth
-                        </PageMenuItem>
-                    </PageMenu>
-                </PageHeader.ViewBar>
-
-                {/* ViewActions: date range or other view-level controls */}
-                <PageHeader.ViewActions>
-                    <Button variant="outline">
-                        <CalendarDays className="size-4" />
-                        Last 30 days
+    render: () => (
+        <PageHeader>
+            <PageHeader.Left>
+                <PageHeader.Breadcrumb>
+                    <Breadcrumb>
+                        <BreadcrumbList>
+                            <BreadcrumbItem>
+                                <BreadcrumbLink href="/">Audience</BreadcrumbLink>
+                            </BreadcrumbItem>
+                            <BreadcrumbSeparator />
+                            <BreadcrumbItem>
+                                <BreadcrumbPage>Members</BreadcrumbPage>
+                            </BreadcrumbItem>
+                        </BreadcrumbList>
+                    </Breadcrumb>
+                </PageHeader.Breadcrumb>
+                <PageHeader.Title>
+                    Members
+                    <PageHeader.Count>12,345</PageHeader.Count>
+                    <PageHeader.Description>All members across free, paid and complimentary tiers</PageHeader.Description>
+                </PageHeader.Title>
+            </PageHeader.Left>
+            <PageHeader.Actions>
+                <PageHeader.ActionGroup mobileMenuBreakpoint={800}>
+                    <InputGroup className="w-full sm:w-56">
+                        <InputGroupInput placeholder="Search members..." type="search" />
+                        <InputGroupAddon>
+                            <Search className="size-4" />
+                        </InputGroupAddon>
+                    </InputGroup>
+                    <Button aria-label="More actions" size="icon" variant="outline">
+                        <Ellipsis className="size-4" />
                     </Button>
-                </PageHeader.ViewActions>
-
-                {/* FilterBar: active filters + save view */}
-                <PageHeader.FilterBar>
-                    <Filters
-                        addButtonText="Add filter"
-                        clearButtonIcon={<X className="size-4" />}
-                        clearButtonText="Clear"
-                        fields={memberStatusFields}
-                        filters={filters}
-                        showClearButton={true}
-                        onChange={setFilters}
-                    />
-                </PageHeader.FilterBar>
-            </PageHeader>
-        );
-    }
+                    <Button variant="outline">
+                        <FilterIcon className="size-4" />
+                        Filter
+                    </Button>
+                    <PageHeader.ActionGroup.MobileMenu>
+                        <PageHeader.ActionGroup.MobileMenuTrigger>
+                            <Button aria-label="More actions" size="icon" variant="outline">
+                                <Ellipsis className="size-4" />
+                            </Button>
+                        </PageHeader.ActionGroup.MobileMenuTrigger>
+                        <PageHeader.ActionGroup.MobileMenuContent>
+                            <DropdownMenuItem>
+                                <Search className="size-4" />
+                                Search
+                            </DropdownMenuItem>
+                            <DropdownMenuItem>
+                                <FilterIcon className="size-4" />
+                                Filter
+                            </DropdownMenuItem>
+                        </PageHeader.ActionGroup.MobileMenuContent>
+                    </PageHeader.ActionGroup.MobileMenu>
+                    <PageHeader.ActionGroup.Primary>
+                        <Button>
+                            <Plus className="size-4" />
+                            Add member
+                        </Button>
+                    </PageHeader.ActionGroup.Primary>
+                </PageHeader.ActionGroup>
+            </PageHeader.Actions>
+        </PageHeader>
+    )
 };
 
 export const Basic: Story = {
@@ -216,94 +151,54 @@ export const Subview: Story = {
                     18 online
                 </span>
             </PageHeader.Actions>
-            <PageHeader.ViewBar>
-                <PageMenu defaultValue="overview" responsive>
-                    <PageMenuItem value="overview">
-                        <Gauge />
-                        Overview
-                    </PageMenuItem>
-                    <PageMenuItem value="newsletter">
-                        <Mail />
-                        Newsletter
-                    </PageMenuItem>
-                    <PageMenuItem value="growth">
-                        <Sprout />
-                        Growth
-                    </PageMenuItem>
-                </PageMenu>
-            </PageHeader.ViewBar>
-            <PageHeader.ViewActions>
-                <Button variant="outline">
-                    <CalendarDays className="size-4" />
-                    Last 30 days
-                </Button>
-            </PageHeader.ViewActions>
         </PageHeader>
     )
 };
 
 export const FilteredList: Story = {
     name: 'Filtered list',
-    render: () => {
-        const [filters, setFilters] = useState<Filter[]>([
-            createFilter('memberStatus', 'is', ['complimentary'])
-        ]);
-
-        return (
-            <PageHeader>
-                <PageHeader.Left>
-                    <PageHeader.Title>
-                        Members
-                        <PageHeader.Count>1,886</PageHeader.Count>
-                    </PageHeader.Title>
-                </PageHeader.Left>
-                <PageHeader.Actions>
-                    <PageHeader.ActionGroup mobileMenuBreakpoint={800}>
-                        <InputGroup className="w-full sm:w-56">
-                            <InputGroupInput placeholder="Search members..." type="search" />
-                            <InputGroupAddon>
-                                <Search className="size-4" />
-                            </InputGroupAddon>
-                        </InputGroup>
-                        <Button aria-label="More actions" size="icon" variant="outline">
-                            <Ellipsis className="size-4" />
-                        </Button>
-                        <PageHeader.ActionGroup.MobileMenu>
-                            <PageHeader.ActionGroup.MobileMenuTrigger>
-                                <Button aria-label="More actions" size="icon" variant="outline">
-                                    <Ellipsis className="size-4" />
-                                </Button>
-                            </PageHeader.ActionGroup.MobileMenuTrigger>
-                            <PageHeader.ActionGroup.MobileMenuContent>
-                                <DropdownMenuItem>
-                                    <Search className="size-4" />
-                                    Search
-                                </DropdownMenuItem>
-                            </PageHeader.ActionGroup.MobileMenuContent>
-                        </PageHeader.ActionGroup.MobileMenu>
-                        <PageHeader.ActionGroup.Primary>
-                            <Button>
-                                <Plus className="size-4" />
-                                New member
+    render: () => (
+        <PageHeader>
+            <PageHeader.Left>
+                <PageHeader.Title>
+                    Members
+                    <PageHeader.Count>1,886</PageHeader.Count>
+                </PageHeader.Title>
+            </PageHeader.Left>
+            <PageHeader.Actions>
+                <PageHeader.ActionGroup mobileMenuBreakpoint={800}>
+                    <InputGroup className="w-full sm:w-56">
+                        <InputGroupInput placeholder="Search members..." type="search" />
+                        <InputGroupAddon>
+                            <Search className="size-4" />
+                        </InputGroupAddon>
+                    </InputGroup>
+                    <Button aria-label="More actions" size="icon" variant="outline">
+                        <Ellipsis className="size-4" />
+                    </Button>
+                    <PageHeader.ActionGroup.MobileMenu>
+                        <PageHeader.ActionGroup.MobileMenuTrigger>
+                            <Button aria-label="More actions" size="icon" variant="outline">
+                                <Ellipsis className="size-4" />
                             </Button>
-                        </PageHeader.ActionGroup.Primary>
-                    </PageHeader.ActionGroup>
-                </PageHeader.Actions>
-                <PageHeader.FilterBar>
-                    <Filters
-                        addButtonText="Add filter"
-                        fields={memberStatusFields}
-                        filters={filters}
-                        onChange={setFilters}
-                    />
-                    <div className="flex items-center">
-                        <Button variant="ghost" onClick={() => setFilters([])}>Clear</Button>
-                        <Button variant="ghost">Save view</Button>
-                    </div>
-                </PageHeader.FilterBar>
-            </PageHeader>
-        );
-    }
+                        </PageHeader.ActionGroup.MobileMenuTrigger>
+                        <PageHeader.ActionGroup.MobileMenuContent>
+                            <DropdownMenuItem>
+                                <Search className="size-4" />
+                                Search
+                            </DropdownMenuItem>
+                        </PageHeader.ActionGroup.MobileMenuContent>
+                    </PageHeader.ActionGroup.MobileMenu>
+                    <PageHeader.ActionGroup.Primary>
+                        <Button>
+                            <Plus className="size-4" />
+                            New member
+                        </Button>
+                    </PageHeader.ActionGroup.Primary>
+                </PageHeader.ActionGroup>
+            </PageHeader.Actions>
+        </PageHeader>
+    )
 };
 
 export const DetailPage: Story = {
