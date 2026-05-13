@@ -11,9 +11,9 @@ import {
 import {Button} from '@/components/ui/button';
 import {DropdownMenuItem} from '@/components/ui/dropdown-menu';
 import {InputGroup, InputGroupAddon, InputGroupInput} from '@/components/ui/input-group';
-import {PageHeader} from './page-header';
+import {PageHeader} from '@/components/patterns/page-header';
 import {PageMenu, PageMenuItem} from '@/components/ui/pagemenu';
-import {Filters, createFilter, type Filter, type FilterFieldConfig} from './filters';
+import {Filters, createFilter, type Filter, type FilterFieldConfig} from '@/components/patterns/filters';
 import {CalendarDays, Circle, Ellipsis, Filter as FilterIcon, Gauge, Mail, Plus, Search, Sprout, X} from 'lucide-react';
 
 const meta = {
@@ -74,7 +74,7 @@ export const Structure: Story = {
 
                 {/* Actions: search, filter, primary action */}
                 <PageHeader.Actions>
-                    <PageHeader.ActionGroup mobileMenuBreakpoint={1200}>
+                    <PageHeader.ActionGroup mobileMenuBreakpoint={800}>
                         <InputGroup className="w-full sm:w-56">
                             <InputGroupInput placeholder="Search members..." type="search" />
                             <InputGroupAddon>
@@ -151,7 +151,6 @@ export const Structure: Story = {
                         showClearButton={true}
                         onChange={setFilters}
                     />
-                    <Button size="sm" variant="ghost">Save view</Button>
                 </PageHeader.FilterBar>
             </PageHeader>
         );
@@ -165,7 +164,7 @@ export const Basic: Story = {
                 <PageHeader.Title>Posts</PageHeader.Title>
             </PageHeader.Left>
             <PageHeader.Actions>
-                <PageHeader.ActionGroup mobileMenuBreakpoint={1200}>
+                <PageHeader.ActionGroup mobileMenuBreakpoint={800}>
                     <InputGroup className="w-full sm:w-56">
                         <InputGroupInput placeholder="Search posts..." type="search" />
                         <InputGroupAddon>
@@ -259,7 +258,7 @@ export const FilteredList: Story = {
                     </PageHeader.Title>
                 </PageHeader.Left>
                 <PageHeader.Actions>
-                    <PageHeader.ActionGroup mobileMenuBreakpoint={1200}>
+                    <PageHeader.ActionGroup mobileMenuBreakpoint={800}>
                         <InputGroup className="w-full sm:w-56">
                             <InputGroupInput placeholder="Search members..." type="search" />
                             <InputGroupAddon>
