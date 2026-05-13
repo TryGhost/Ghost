@@ -4,6 +4,7 @@ const domainEvents = require('@tryghost/domain-events');
 const ObjectId = require('bson-objectid').default;
 const models = require('../../../core/server/models');
 const {getSignedAdminToken} = require('../../../core/server/adapters/scheduling/utils');
+const automationsApi = require('../../../core/server/services/automations/automations-api');
 const {agentProvider, fixtureManager, matchers, assertions} = require('../../utils/e2e-framework');
 const StartAutomationsPollEvent = require('../../../core/server/services/automations/events/start-automations-poll-event');
 
@@ -72,6 +73,7 @@ describe('Automations API', function () {
 
     afterEach(function () {
         sinon.restore();
+        automationsApi._resetTestDatabase();
     });
 
     describe('browse', function () {
@@ -266,7 +268,9 @@ describe('Automations API', function () {
             await agent
                 .put(`automations/${browseBody.automations[0].id}`)
                 .body({
-                    automations: [{}]
+                    automations: [{
+                        actions: null
+                    }]
                 })
                 .expectStatus(422)
                 .expect(cacheInvalidateHeaderNotSet());

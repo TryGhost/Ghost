@@ -223,7 +223,14 @@ function requestPoll() {
     domainEvents.dispatch(StartAutomationsPollEvent.create());
 }
 
+function _resetTestDatabase() {
+    if (process.env.NODE_ENV?.startsWith('testing')) {
+        testDatabase = null;
+    }
+}
+
 module.exports = {
+    _resetTestDatabase,
     browse,
     edit,
     read,
