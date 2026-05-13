@@ -1,4 +1,4 @@
-import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
+import CheckmarkIcon from '../../images/icons/checkmark.svg?react';
 import {t} from '../../utils/i18n';
 
 const ChevronIcon = () => (

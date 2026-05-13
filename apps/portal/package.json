@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/portal",
-  "version": "2.68.45",
+  "version": "2.68.46",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -118,8 +118,7 @@
     "@typescript-eslint/eslint-plugin": "8.49.0",
     "@typescript-eslint/parser": "8.49.0",
     "@vitejs/plugin-react": "4.7.0",
-    "@vitest/coverage-v8": "3.2.4",
-    "@vitest/ui": "3.2.4",
+    "@vitest/coverage-v8": "4.1.2",
     "concurrently": "8.2.2",
     "cross-fetch": "4.1.0",
     "dompurify": "3.4.1",
@@ -128,10 +127,10 @@
     "jsdom": "28.1.0",
     "react": "17.0.2",
     "react-dom": "17.0.2",
-    "vite": "5.4.21",
+    "vite": "7.3.2",
     "vite-plugin-css-injected-by-js": "3.5.2",
-    "vite-plugin-svgr": "3.3.0",
-    "vitest": "3.2.4"
+    "vite-plugin-svgr": "4.5.0",
+    "vitest": "4.1.2"
   },
   "dependencies": {
     "@tryghost/debug": "2.2.0"
