@@ -435,6 +435,20 @@ describe('Portal Data links:', () => {
             expect(triggerButtonFrame).toBeInTheDocument();
             expect(popupFrame).not.toBeInTheDocument();
         });
+
+        test('does not open when Stripe is disconnected', async () => {
+            window.location.hash = '#/portal/gift';
+
+            let {
+                popupFrame, triggerButtonFrame
+            } = await setup({
+                site: {...FixtureSite.singleTier.withoutStripe, labs: {giftSubscriptions: true}},
+                showPopup: false
+            });
+
+            expect(triggerButtonFrame).toBeInTheDocument();
+            expect(popupFrame).not.toBeInTheDocument();
+        });
     });
 
     describe('#/portal/gift/redeem/<token>', () => {

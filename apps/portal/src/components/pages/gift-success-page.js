@@ -1,14 +1,14 @@
 import {useContext, useState} from 'react';
 import AppContext from '../../app-context';
 import CloseButton from '../common/close-button';
+import GiftCard from '../common/gift-card';
+import GiftDetailsToggle from '../common/gift-details-toggle';
 import copyTextToClipboard from '../../utils/copy-to-clipboard';
 import {getAvailableProducts} from '../../utils/helpers';
-import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
+import {getGiftDurationLabel} from '../../utils/gift-redemption-notification';
+import {t} from '../../utils/i18n';
 import useCardTilt from '../../utils/use-card-tilt';
 import {formatGiftValue} from './gift-page';
-
-// TODO: wrap strings with t() once copy is finalised
-/* eslint-disable i18next/no-literal-string */
 
 export const GiftSuccessStyle = `
 .gh-portal-gift-success-link {
@@ -81,16 +81,6 @@ const CheckIcon = () => (
     </svg>
 );
 
-const ChevronIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <polyline points="6 9 12 15 18 9"/>
-    </svg>
-);
-
-function getDurationLabel(cadence) {
-    return cadence === 'month' ? '1 month' : '1 year';
-}
-
 const GiftSuccessPage = () => {
     const {site, pageData} = useContext(AppContext);
     const [copied, setCopied] = useState(false);
@@ -123,25 +113,24 @@ const GiftSuccessPage = () => {
                         <div className='gh-portal-gift-checkout-bg' aria-hidden='true' />
                         <div className='gh-portal-gift-checkout-inner'>
                             <header className='gh-portal-gift-checkout-header'>
-                                <h1 className='gh-portal-main-title'>Your gift is ready!</h1>
+                                <h1 className='gh-portal-main-title'>{t('Your gift is ready')}</h1>
                                 <p className='gh-portal-gift-checkout-subtitle'>
-                                    Send the link below to share it with whoever you&apos;d like.
+                                    {t('Send the link below to share it with whoever you\'d like.')}
                                 </p>
                             </header>
 
                             <div className='gh-portal-gift-checkout-section'>
-                                <div className='gh-portal-gift-checkout-label'>Shareable link</div>
                                 <div className='gh-portal-gift-success-link'>
                                     <span className='gh-portal-gift-success-link-url'>{redeemUrl}</span>
                                     <button className='gh-portal-gift-success-copy' onClick={handleCopy} type='button'>
                                         {copied ? <CheckIcon /> : <CopyIcon />}
-                                        {copied ? 'Copied' : 'Copy'}
+                                        {copied ? t('Copied') : t('Copy')}
                                     </button>
                                 </div>
                             </div>
 
                             <p className='gh-portal-gift-success-footer'>
-                                Not ready to share? We&apos;ve also emailed a copy to your inbox.
+                                {t('Not ready to share? We\'ve also emailed a copy to your inbox.')}
                             </p>
                         </div>
                     </div>
@@ -149,67 +138,22 @@ const GiftSuccessPage = () => {
                     <div className='gh-portal-gift-checkout-right' {...cardTiltProps}>
                         <div className='gh-portal-gift-checkout-right-panel'>
                             <div className='gh-portal-gift-checkout-card-stack' data-revealing={showDetails}>
-                                <div className='gh-portal-gift-checkout-card-frame'>
-                                    <div ref={cardRef} className='gh-portal-gift-checkout-card'>
-                                        {tier && cadence && (
-                                            <div className='gh-portal-gift-checkout-card-meta'>
-                                                <div className='gh-portal-gift-checkout-card-duration'>{getDurationLabel(cadence)}</div>
-                                                <div className='gh-portal-gift-checkout-card-tier'>{`${tier.name} membership`}</div>
-                                            </div>
-                                        )}
-                                        {tier && cadence && (
-                                            <div className='gh-portal-gift-checkout-card-details'>
-                                                <div className='gh-portal-gift-checkout-card-detail'>
-                                                    <div className='gh-portal-gift-checkout-card-detail-label'>Gift value</div>
-                                                    <div className='gh-portal-gift-checkout-card-detail-value'>{formatGiftValue(cadence === 'month' ? tier.monthlyPrice : tier.yearlyPrice)}</div>
-                                                </div>
-                                            </div>
-                                        )}
-                                        <div className='gh-portal-gift-checkout-card-site'>
-                                            {siteIcon && (
-                                                <img className='gh-portal-gift-checkout-card-site-icon' src={siteIcon} alt='' />
-                                            )}
-                                            <span className='gh-portal-gift-checkout-card-site-name'>{siteTitle}</span>
-                                        </div>
-                                    </div>
-                                </div>
+                                <GiftCard
+                                    cardRef={cardRef}
+                                    duration={tier && cadence ? getGiftDurationLabel({cadence, duration: 1}) : null}
+                                    tierName={tier && cadence ? tier.name : null}
+                                    giftValue={tier && cadence ? formatGiftValue(cadence === 'month' ? tier.monthlyPrice : tier.yearlyPrice) : null}
+                                    siteIcon={siteIcon}
+                                    siteTitle={siteTitle}
+                                />
 
-                                {tier && (tier.description || (tier.benefits && tier.benefits.length > 0)) && (
-                                    <>
-                                        <div
-                                            className='gh-portal-gift-checkout-details'
-                                            data-open={showDetails}
-                                            aria-hidden={!showDetails}
-                                        >
-                                            <div className='gh-portal-gift-checkout-details-inner'>
-                                                {tier.description && (
-                                                    <p className='gh-portal-gift-checkout-details-description'>{tier.description}</p>
-                                                )}
-                                                {tier.benefits && tier.benefits.length > 0 && (
-                                                    <div className='gh-portal-gift-checkout-benefits'>
-                                                        {tier.benefits.map((benefit, idx) => {
-                                                            const key = benefit?.id || `benefit-${idx}`;
-                                                            return (
-                                                                <div className='gh-portal-gift-checkout-benefit' key={key}>
-                                                                    <CheckmarkIcon alt='' />
-                                                                    <span>{benefit.name}</span>
-                                                                </div>
-                                                            );
-                                                        })}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                        <button
-                                            type='button'
-                                            className={'gh-portal-gift-checkout-details-toggle' + (showDetails ? ' is-open' : '')}
-                                            onClick={() => setShowDetails(s => !s)}
-                                            aria-expanded={showDetails}
-                                        >
-                                            {showDetails ? 'Hide details' : 'Gift details'}
-                                            <ChevronIcon />
-                                        </button>
-                                    </>
+                                {tier && (
+                                    <GiftDetailsToggle
+                                        description={tier.description}
+                                        benefits={tier.benefits}
+                                        showDetails={showDetails}
+                                        onToggle={() => setShowDetails(s => !s)}
+                                    />
                                 )}
                             </div>
                         </div>

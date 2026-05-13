@@ -349,10 +349,6 @@ module.exports = class MemberBREADService {
             withRelated.add('productEvents');
         }
 
-        if (withRelated.has('email_recipients')) {
-            withRelated.add('email_recipients.email');
-        }
-
         const model = await this.memberRepository.get(data, {
             ...options,
             withRelated: Array.from(withRelated)
@@ -608,10 +604,6 @@ module.exports = class MemberBREADService {
 
         if (!withRelated.has('productEvents')) {
             withRelated.add('productEvents');
-        }
-
-        if (withRelated.has('email_recipients')) {
-            withRelated.add('email_recipients.email');
         }
 
         //option param to skip distinct from count query, distinct adds a lot of latency and in this case the result set will always be unique.

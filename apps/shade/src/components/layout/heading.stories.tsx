@@ -2,7 +2,7 @@ import type {Meta, StoryObj} from '@storybook/react-vite';
 import {H1, H2, H3, H4, HeadingProps} from './heading';
 
 const meta = {
-    title: 'Layout / Heading',
+    title: 'Deprecated / Heading',
     tags: ['autodocs']
 } satisfies Meta<HeadingProps>;
 

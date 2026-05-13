@@ -317,7 +317,7 @@ class StaffServiceEmails {
      *
      * @returns {Promise<void>}
      */
-    async notifyGiftReceived({name, email, memberId, amount, currency, tierName, cadence, duration}) {
+    async notifyGiftPurchased({name, email, memberId, amount, currency, tierName, cadence, duration}) {
         const users = await this.models.User.getEmailAlertUsers('gift-subscriptions');
         const formattedAmount = this.getFormattedAmount({currency, amount: amount / 100});
 

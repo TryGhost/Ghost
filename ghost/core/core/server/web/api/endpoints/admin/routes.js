@@ -189,6 +189,7 @@ module.exports = function apiRoutes() {
     router.get('/automations', mw.authAdminApi, http(api.automations.browse));
     router.get('/automations/:id', mw.authAdminApi, http(api.automations.read));
     router.put('/automations/poll', mw.authAdminApiWithUrl, http(api.automations.poll));
+    router.put('/automations/:id', mw.authAdminApi, http(api.automations.edit));
 
     // ## Automated Emails
     router.get('/automated_emails', mw.authAdminApi, http(api.automatedEmails.browse));

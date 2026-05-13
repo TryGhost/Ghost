@@ -59,7 +59,6 @@
 @import "layouts/billing.css";
 @import "layouts/post-history.css";
 @import "layouts/post-preview.css";
-@import "layouts/dashboard.css";
 @import "layouts/tiers.css";
 @import "layouts/explore.css";
 
@@ -987,17 +986,8 @@ input:focus,
     border-top: 1px solid var(--grey-900);
 }
 
-.gh-dashboard-metric.is-embedded {
-    background: var(--white);
-}
-
 .gh-btn-green svg {
     fill: #fff !important;
-}
-
-.gh-dashboard-box {
-    flex: 1;
-    border: 1px solid var(--lightgrey);
 }
 
 .gh-notification {
@@ -1043,84 +1033,8 @@ kbd {
 }
 
 
-/* Dashboard */
-
-.gh-dashboard-box.is-secondary, .gh-dashboard-resource-box,
 .gh-main-section-content.grey {
     background: #1C1E22;
-}
-
-.gh-dashboard .gh-dashboard-anchor .gh-dashboard-list-header,
-.gh-dashboard .gh-dashboard-anchor .gh-dashboard-list-item,
-.gh-dashboard .gh-dashboard-anchor .gh-dashboard-list-footer,
-.gh-dashboard .gh-dashboard-resource-title.has-border {
-    border-color: #394047;
-}
-
-.gh-dashboard .gh-dashboard-minichart,
-.gh-dashboard .gh-dashboard-column {
-    border-color: #2b2d31;
-}
-
-.gh-dashboard .gh-dashboard-breakout {
-    background: #111213;
-}
-
-.gh-dashboard-explore-mrr {
-    color: var(--black);
-}
-
-.gh-dashboard-explore-feed .gh-dashboard-resource-title:hover a:not(.gh-dashboard-explore-add) {
-    color: var(--middarkgrey-l1);
-}
-
-.gh-dashboard-explore-add:hover {
-    color: var(--pink-l2);
-}
-
-.gh-dashboard-community .gh-dashboard-list-footer {
-    border-color: transparent;
-}
-
-.gh-dashboard-chart-gradient {
-    background: rgb(21,23,25);
-    background: linear-gradient(270deg, rgba(21,23,25,0) 0%, rgba(21,23,25,1) 100%);
-}
-
-.gh-dashboard-resource-box.is-secondary .gh-dashboard-resource-footer {
-    border-color: #26282b;
-}
-
-.gh-dashboard-list-item:hover {
-    background: #1c1e21;
-}
-
-.gh-dashboard-recents .gh-dashboard-list-item:hover, .gh-dashboard-attribution .gh-dashboard-list-item:hover {
-    background: linear-gradient(90deg, rgba(21,23,25,0) 0%, rgba(21,23,25,1) 100%);
-}
-
-.gh-all-sources .gh-dashboard-list-body:before, .gh-all-sources .gh-dashboard-list-body:after {
-    background: transparent;
-}
-
-.gh-dashboard-resource .gh-dashboard-list-item:hover {
-    background: transparent;
-}
-
-.gh-dashboard-community .gh-dashboard-resource-footer {
-    color: #fff;
-}
-
-.gh-dashboard-zero {
-    background: rgb(21, 23, 25, 0.8);
-}
-
-.gh-dashboard-zero-message {
-    background-color: #1c1e21;
-}
-
-.gh-dashboard-tooltip {
-    background: var(--whitegrey-l2);
 }
 
 /* Empty states */
@@ -1247,18 +1161,6 @@ kbd {
     color: var(--darkgrey);
 }
 
-.gh-dashboard-mentions-container {
-    background: #1c1e21;
-}
-
-.gh-dashboard-mentions-header {
-    border-color: #2b2d31;
-}
-
-.gh-dashboard-mention:hover {
-    background: var(--whitegrey-d1);
-}
-
 /* Feedback form */
 .gh-editor-feedback-dropdown {
     background: var(--whitegrey-l1);
@@ -1268,69 +1170,6 @@ kbd {
 .gh-update-banner {
     background: var(--main-color-content-greybg);
 }
-
-/* ---------------------------------
-Onboarding checklist */
-
-.gh-onboarding-wrapper {
-    background: none;
-}
-
-.gh-onboarding-items {
-    border-color: var(--lightgrey);
-}
-
-.gh-onboarding-item {
-    border-color: var(--lightgrey);
-}
-
-.gh-onboarding-item--next {
-    background: #1c1e21;
-}
-
-.gh-onboarding-help a:hover {
-    color: var(--black);
-}
-
-.gh-onboarding-skip {
-    color: var(--middarkgrey);
-    border: 1px solid var(--lightgrey);
-}
-
-.gh-onboarding-ghost-logo-overlay {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    background: hsl(216deg 11% 70% / 1%);
-}
-
-/* ---------------------------------
-Onboarding checklist: Share publication modal */
-
-.gh-share-card-container {
-    border: 1px solid #394047;
-}
-
-.gh-copy-publication-link {
-    background: #394047;
-    border: none;
-}
-
-.gh-copy-publication-link:hover {
-    border: none;
-    opacity: .8;
-}
-
-.gh-share-links li a {
-    border: 1px solid #394047;
-}
-
-.gh-share-links li a:hover {
-    background: #394047;
-}
-
 
 /* ---------------------------------
 Publish flow: Share modal */

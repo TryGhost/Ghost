@@ -1,6 +1,11 @@
+import type {Translate} from '../gift-email-renderer';
+
 export interface GiftPurchaseConfirmationData {
     siteTitle: string;
+    siteUrl: string;
+    siteIconUrl: string | null;
     siteDomain: string;
+    accentColor: string | undefined;
     toEmail: string;
     gift: {
         tierName: string;
@@ -10,19 +15,33 @@ export interface GiftPurchaseConfirmationData {
     };
 }
 
-export function renderText(data: GiftPurchaseConfirmationData): string {
-    return `Your gift is ready to share!
+export function renderText(data: GiftPurchaseConfirmationData, t: Translate): string {
+    const intro = `${t('Thank you for supporting {siteTitle}.', {
+        siteTitle: data.siteTitle,
+        interpolation: {escapeValue: false}
+    })} ${t('Share the link below to give someone access to {tierName} membership for {cadenceLabel}.', {
+        tierName: data.gift.tierName,
+        cadenceLabel: data.gift.cadenceLabel,
+        interpolation: {escapeValue: false}
+    })}`;
 
-Thank you for supporting ${data.siteTitle}. Send the link below to share your gift with whoever you'd like.
+    return `${t('Your gift is ready')}
 
-Gift subscription: ${data.gift.tierName} • ${data.gift.cadenceLabel}
+${intro}
 
-Gift link: ${data.gift.link}
+${data.gift.link}
 
-This link expires on ${data.gift.expiresAt} and can be redeemed once by anyone who isn't already a paid member of ${data.siteTitle}.
+${t('The link can be redeemed once and expires on {expiresAt}.', {
+        expiresAt: data.gift.expiresAt,
+        interpolation: {escapeValue: false}
+    })}
+
+${t('Happy gifting.')}
 
 ---
-
-Sent to ${data.toEmail} from ${data.siteDomain}.
-You received this email because you purchased a gift subscription on ${data.siteTitle}.`;
+${t('This message was sent from {siteDomain} to {email}.', {
+        siteDomain: data.siteDomain,
+        email: data.toEmail,
+        interpolation: {escapeValue: false}
+    })}`;
 }

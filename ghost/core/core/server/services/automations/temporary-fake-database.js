@@ -20,6 +20,7 @@ function createTemporaryFakeAutomationsDatabase() {
     const {DatabaseSync} = require('node:sqlite');
 
     const database = new DatabaseSync(':memory:');
+    database.exec('PRAGMA foreign_keys = ON;');
 
     const id = () => ObjectId().toHexString();
     const now = () => new Date().toISOString();
@@ -155,7 +156,7 @@ CREATE TABLE automation_run_steps (
         created_at: now(),
         updated_at: now(),
         automation_id: freeAutomationId,
-        type: 'send email'
+        type: 'send_email'
     });
     insertAction.run({
         id: freeAction3Id,
@@ -169,7 +170,7 @@ CREATE TABLE automation_run_steps (
         created_at: now(),
         updated_at: now(),
         automation_id: freeAutomationId,
-        type: 'send email'
+        type: 'send_email'
     });
     insertAction.run({
         id: paidAction1Id,
@@ -183,7 +184,7 @@ CREATE TABLE automation_run_steps (
         created_at: now(),
         updated_at: now(),
         automation_id: paidAutomationId,
-        type: 'send email'
+        type: 'send_email'
     });
     insertAction.run({
         id: paidAction3Id,
@@ -197,7 +198,7 @@ CREATE TABLE automation_run_steps (
         created_at: now(),
         updated_at: now(),
         automation_id: paidAutomationId,
-        type: 'send email'
+        type: 'send_email'
     });
 
     const insertActionRevision = database.prepare(`

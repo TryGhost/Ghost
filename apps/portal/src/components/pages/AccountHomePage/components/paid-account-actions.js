@@ -1,9 +1,9 @@
 import AppContext from '../../../../app-context';
-import {getSubscriptionExpiry, getMemberSubscription, getMemberTierName, hasMultipleProductsFeature, hasOnlyFreePlan, isArchivedTier, isComplimentaryMember, isGiftMember, isPaidMember, subscriptionHasFreeTrial} from '../../../../utils/helpers';
+import {getSubscriptionExpiry, getMemberSubscription, getMemberTierName, hasMultipleProductsFeature, hasOnlyFreePlan, isArchivedTier, isComplimentaryMember, isGiftMember, isPaidMember, isStripeConfigured, subscriptionHasFreeTrial} from '../../../../utils/helpers';
 import {getDateString} from '../../../../utils/date-time';
-import {ReactComponent as GiftIcon} from '../../../../images/icons/gift.svg';
-import {ReactComponent as LoaderIcon} from '../../../../images/icons/loader.svg';
-import {ReactComponent as OfferTagIcon} from '../../../../images/icons/offer-tag.svg';
+import GiftIcon from '../../../../images/icons/gift.svg?react';
+import LoaderIcon from '../../../../images/icons/loader.svg?react';
+import OfferTagIcon from '../../../../images/icons/offer-tag.svg?react';
 import {useContext} from 'react';
 import {t} from '../../../../utils/i18n';
 
@@ -16,8 +16,7 @@ const PaidAccountActions = () => {
     };
 
     const openUpdatePlan = () => {
-        const {is_stripe_configured: isStripeConfigured} = site;
-        if (isStripeConfigured) {
+        if (isStripeConfigured({site})) {
             doAction('switchPage', {
                 page: 'accountPlan',
                 lastPage: 'accountHome'
@@ -100,6 +99,11 @@ const PaidAccountActions = () => {
 
     const PlanUpdateButton = ({isPaid}) => {
         const hasGiftSubscription = isGiftMember({member});
+
+        if (hasGiftSubscription && !isStripeConfigured({site})) {
+            return null;
+        }
+
         const canContinueGiftSubscription = hasGiftSubscription && !isArchivedTier({member, site});
 
         // If no paid tiers are available, hide the plan update button for:

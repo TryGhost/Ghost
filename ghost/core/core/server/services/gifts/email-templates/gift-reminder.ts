@@ -1,3 +1,5 @@
+import type {Translate} from '../gift-email-renderer';
+
 export interface GiftReminderData {
     siteTitle: string;
     siteUrl: string;
@@ -13,20 +15,27 @@ export interface GiftReminderData {
     };
 }
 
-export function renderText(data: GiftReminderData): string {
-    return `Your gift subscription is ending soon
+export function renderText(data: GiftReminderData, t: Translate): string {
+    return `${t('Hey there,')}
 
-Your gift subscription to ${data.siteTitle} ends on ${data.gift.consumesAt}. Continue with a paid subscription to keep reading.
+${t('Your gift subscription expires on {consumesAt}.', {
+        consumesAt: data.gift.consumesAt,
+        interpolation: {escapeValue: false}
+    })}
 
-Gift subscription: ${data.gift.tierName}
-Ends on: ${data.gift.consumesAt}
-Price after gift ends: ${data.gift.priceAfter}
+${t('If you\'ve been enjoying {siteTitle}, continue your membership for {priceAfter} to keep full access to every post and newsletter.', {
+        siteTitle: data.siteTitle,
+        priceAfter: data.gift.priceAfter,
+        interpolation: {escapeValue: false}
+    })}
 
-Continue subscription:
+${t('Continue membership')}:
 ${data.gift.manageSubscriptionUrl}
 
 ---
-
-Sent to ${data.memberEmail} from ${data.siteDomain}.
-You received this email because your gift subscription to ${data.siteTitle} is ending soon.`;
+${t('This message was sent from {siteDomain} to {email}.', {
+        siteDomain: data.siteDomain,
+        email: data.memberEmail,
+        interpolation: {escapeValue: false}
+    })}`;
 }

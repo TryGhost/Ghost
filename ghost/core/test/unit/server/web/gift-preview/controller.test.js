@@ -5,6 +5,7 @@ const labs = require('../../../../../core/shared/labs');
 const urlUtils = require('../../../../../core/shared/url-utils');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const giftServiceWrapper = require('../../../../../core/server/services/gifts');
+const tiersService = require('../../../../../core/server/services/tiers');
 
 // Initialise i18n before requiring the controller so its destructured `t`
 // import resolves to the live i18next instance. The init helper falls back
@@ -17,6 +18,7 @@ describe('Gift Preview Controller', function () {
     let req;
     let res;
     let originalGiftService;
+    let originalTiersApi;
 
     beforeEach(function () {
         req = {
@@ -31,15 +33,22 @@ describe('Gift Preview Controller', function () {
             set: sinon.stub()
         };
         originalGiftService = giftServiceWrapper.service;
+        originalTiersApi = tiersService.api;
 
         sinon.stub(urlUtils, 'getSiteUrl').returns('https://example.com/');
         sinon.stub(settingsCache, 'get');
         settingsCache.get.withArgs('title').returns('Test Blog');
         settingsCache.get.withArgs('accent_color').returns('#FF5733');
+        tiersService.api = {
+            read: sinon.stub().resolves({
+                name: 'Premium'
+            })
+        };
     });
 
     afterEach(function () {
         giftServiceWrapper.service = originalGiftService;
+        tiersService.api = originalTiersApi;
 
         sinon.restore();
     });
@@ -95,7 +104,7 @@ describe('Gift Preview Controller', function () {
             sinon.assert.calledOnce(res.send);
 
             const html = res.send.firstCall.args[0];
-            const expectedTitle = '<meta property="og:title" content="You\'ve been gifted 1 year of Test Blog">';
+            const expectedTitle = '<meta property="og:title" content="You\'ve been gifted a 1-year Premium membership to Test Blog">';
             const expectedDescription = '<meta property="og:description" content="' +
                 'Open this link to redeem your gift.">';
             const expectedImage = '<meta property="og:image" content="https://example.com/gift/test-token-123/image">';
@@ -140,7 +149,7 @@ describe('Gift Preview Controller', function () {
 
             const html = res.send.firstCall.args[0];
 
-            assert.ok(html.includes('You\'ve been gifted 3 months of Test Blog'));
+            assert.ok(html.includes('You\'ve been gifted a 3-month Premium membership to Test Blog'));
             assert.ok(html.includes('Open this link to redeem your gift.'));
         });
 
@@ -159,7 +168,7 @@ describe('Gift Preview Controller', function () {
 
             const html = res.send.firstCall.args[0];
 
-            assert.ok(html.includes('You\'ve been gifted 1 year of Ghost'));
+            assert.ok(html.includes('You\'ve been gifted a 1-year Premium membership to Ghost'));
         });
     });
 
@@ -171,6 +180,39 @@ describe('Gift Preview Controller', function () {
 
             sinon.assert.calledOnce(res.sendStatus);
             sinon.assert.calledWith(res.sendStatus, 404);
+        });
+
+        it('returns a PNG image for a valid gift', async function () {
+            sinon.stub(labs, 'isSet').withArgs('giftSubscriptions').returns(true);
+            giftServiceWrapper.service = {
+                getByToken: sinon.stub().resolves({
+                    token: 'test-token-123',
+                    tierId: 'tier_1',
+                    cadence: 'year',
+                    duration: 1,
+                    amount: 5000,
+                    currency: 'USD'
+                })
+            };
+            tiersService.api = {
+                read: sinon.stub().withArgs('tier_1').resolves({
+                    name: 'Gold'
+                })
+            };
+
+            await controller.giftPreviewImage(req, res);
+
+            sinon.assert.calledWith(res.set, 'Content-Type', 'image/png');
+            sinon.assert.calledWith(res.set, 'Cache-Control', 'public, max-age=86400');
+            sinon.assert.calledOnce(res.send);
+
+            const image = res.send.firstCall.args[0];
+
+            assert.ok(Buffer.isBuffer(image));
+            assert.equal(image[0], 0x89);
+            assert.equal(image[1], 0x50);
+            assert.equal(image[2], 0x4E);
+            assert.equal(image[3], 0x47);
         });
     });
 });

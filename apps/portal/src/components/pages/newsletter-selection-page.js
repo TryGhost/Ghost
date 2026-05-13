@@ -3,7 +3,7 @@ import {useContext, useState} from 'react';
 import Switch from '../common/switch';
 import {getSiteNewsletters, hasOnlyFreePlan} from '../../utils/helpers';
 import ActionButton from '../common/action-button';
-import {ReactComponent as LockIcon} from '../../images/icons/lock.svg';
+import LockIcon from '../../images/icons/lock.svg?react';
 import {t} from '../../utils/i18n';
 
 function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribedNewsletters}) {
