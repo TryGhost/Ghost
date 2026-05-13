@@ -1,3 +1,4 @@
+import AutomationStatusBadge from './automation-status-badge';
 import React from 'react';
 import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Skeleton} from '@tryghost/shade/components';
 import {Link} from '@tryghost/admin-x-framework';
@@ -11,7 +12,8 @@ interface AutomationHeaderProps {
 
 const AutomationHeader: React.FC<AutomationHeaderProps> = ({automation, isLoading}) => {
     const name = automation?.name;
-    const isActive = automation?.status === 'active';
+    const status = automation?.status;
+    const isActive = status === 'active';
 
     return (
         <header className='relative z-10 flex h-14 shrink-0 items-center justify-between bg-background px-4 shadow-sm'>
@@ -24,7 +26,10 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({automation, isLoadin
                 {isLoading ? (
                     <Skeleton className='h-5 w-40' />
                 ) : (
-                    <span className='truncate font-medium'>{name}</span>
+                    <>
+                        <span className='truncate font-medium'>{name}</span>
+                        {status && <AutomationStatusBadge status={status} />}
+                    </>
                 )}
             </div>
             <div className='flex shrink-0 items-center gap-3'>

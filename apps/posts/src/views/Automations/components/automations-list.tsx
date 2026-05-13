@@ -1,3 +1,4 @@
+import AutomationStatusBadge from './automation-status-badge';
 import React from 'react';
 import {Automation} from '@tryghost/admin-x-framework/api/automations';
 import {Link} from '@tryghost/admin-x-framework';
@@ -6,28 +7,6 @@ import {Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow}
 const AUTOMATION_DESCRIPTIONS: Record<string, string> = {
     'member-welcome-email-free': 'Onboard new free members with a short welcome email.',
     'member-welcome-email-paid': 'Greet new paid members and point them at member-only content.'
-};
-
-const AutomationsStatusBadge: React.FC<{status: Automation['status']}> = ({status}) => {
-    switch (status) {
-    case 'active':
-        return (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-green/20 px-2 py-0.5 text-xs font-medium text-green">
-                <span className="size-1.5 rounded-full bg-green" />
-                LIVE
-            </span>
-        );
-    case 'inactive':
-        return (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
-                OFF
-            </span>
-        );
-    default: {
-        const invalidStatus: never = status;
-        throw new Error(`Unhandled status: ${invalidStatus}`);
-    }
-    }
 };
 
 interface AutomationsListProps {
@@ -104,7 +83,7 @@ const AutomationsList: React.FC<AutomationsListProps> = ({automations = [], isLo
                                 )}
                             </TableCell>
                             <TableCell className="lg:w-32 lg:p-4">
-                                <AutomationsStatusBadge status={automation.status} />
+                                <AutomationStatusBadge status={automation.status} />
                             </TableCell>
                         </TableRow>
                     );
