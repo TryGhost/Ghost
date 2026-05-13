@@ -1,45 +1,36 @@
 import assert from 'node:assert/strict';
-import {Readable, PassThrough, Writable} from 'stream';
+import {once} from 'node:events';
+import {Readable, Writable} from 'node:stream';
+import {text} from 'node:stream/consumers';
 import {createCSVTransform} from '../../../../../../../core/server/api/endpoints/utils/serializers/output/posts-csv-transform';
-const papaparse = require('papaparse');
+import * as papaparse from 'papaparse';
 const postsSerializer = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/posts');
 
 describe('Unit: posts CSV streaming transform', function () {
-    it('Transforms a stream of objects into CSV matching papaparse output', function (done) {
+    it('Transforms a stream of objects into CSV matching papaparse output', async function () {
         const data = [
             {id: '1', title: 'First Post', status: 'published'},
             {id: '2', title: 'Second, "Quoted" Post', status: 'sent'}
         ];
         const source = Readable.from(data, {objectMode: true});
         const csvTransform = createCSVTransform();
-        const collector = new PassThrough();
-        let csvOutput = '';
 
-        collector.on('data', (chunk: Buffer) => {
-            csvOutput += chunk.toString();
+        source.pipe(csvTransform);
+
+        const csvOutput = await text(csvTransform);
+
+        const expected = papaparse.unparse(data, {
+            escapeFormulae: true,
+            newline: '\r\n'
         });
-
-        collector.on('end', () => {
-            const expected = papaparse.unparse(data, {
-                escapeFormulae: true,
-                newline: '\r\n'
-            });
-
-            assert.equal(csvOutput, expected);
-            done();
-        });
-
-        source.pipe(csvTransform).pipe(collector);
+        assert.equal(csvOutput, expected);
     });
 
-    it('Forwards transform errors to the stream pipeline', function (done) {
+    it('Forwards transform errors to the stream pipeline', async function () {
         const csvTransform = createCSVTransform();
         const boom = new Error('boom');
+        const errorPromise = once(csvTransform, 'error');
 
-        csvTransform.on('error', (err: Error) => {
-            assert.equal(err, boom);
-            done();
-        });
         csvTransform.on('data', () => {});
 
         // Object.keys(proxy) invokes the ownKeys trap, which throws —
@@ -50,27 +41,24 @@ describe('Unit: posts CSV streaming transform', function () {
             }
         });
         csvTransform.write(exploding);
+
+        const [err] = await errorPromise;
+        assert.equal(err, boom);
     });
 
-    it('Emits no output when the input stream is empty', function (done) {
+    it('Emits no output when the input stream is empty', async function () {
         const source = Readable.from([], {objectMode: true});
         const csvTransform = createCSVTransform();
-        let output = '';
-
-        csvTransform.on('data', (chunk: Buffer) => {
-            output += chunk.toString();
-        });
-        csvTransform.on('end', () => {
-            assert.equal(output, '');
-            done();
-        });
 
         source.pipe(csvTransform);
+
+        const output = await text(csvTransform);
+        assert.equal(output, '');
     });
 });
 
 describe('Unit: posts CSV export serializer', function () {
-    it('Passes response stream errors to next', function (done) {
+    it('Passes response stream errors to next', async function () {
         const sourceError = new Error('response failed');
         const source = Readable.from([{id: '1', title: 'Post'}], {objectMode: true});
         const frame: {response?: Function} = {};
@@ -86,9 +74,10 @@ describe('Unit: posts CSV export serializer', function () {
         response.getHeader = () => {};
         response.on('error', () => {});
 
-        frame.response!(null, response, (err: unknown) => {
-            assert.equal(err, sourceError);
-            done();
+        const err = await new Promise((resolve) => {
+            frame.response!(null, response, resolve);
         });
+
+        assert.equal(err, sourceError);
     });
 });
