@@ -14,6 +14,7 @@ import {searchKeywords as growthSearchKeywords} from './settings/growth/growth-s
 import {searchKeywords as membershipSearchKeywords} from './settings/membership/membership-settings';
 import {searchKeywords as siteSearchKeywords} from './settings/site/site-settings';
 
+import useFeatureFlag from '../hooks/use-feature-flag';
 import {useGlobalData} from './providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {useScrollSectionContext, useScrollSectionNav} from '../hooks/use-scroll-section';
@@ -52,6 +53,17 @@ const Sidebar: React.FC = () => {
     const {updateRoute} = useRouting();
     const searchInputRef = useRef<HTMLInputElement | null>(null);
     const {isAnyTextFieldFocused} = useFocusContext();
+    const {settings, config} = useGlobalData();
+    const [hasTipsAndDonations, isPrivate] = getSettingValues(settings, ['donations_enabled', 'is_private']) as [string, boolean];
+    const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
+    const hasAutomations = useFeatureFlag('automations');
+    const visibleMembershipSearchKeywords = React.useMemo(() => [
+        membershipSearchKeywords.access,
+        membershipSearchKeywords.tiers,
+        membershipSearchKeywords.portal,
+        ...(hasAutomations ? [] : [membershipSearchKeywords.memberEmails]),
+        membershipSearchKeywords.tips
+    ].flat(), [hasAutomations]);
 
     // Focus in on search field when pressing "/"
     useEffect(() => {
@@ -84,7 +96,7 @@ const Sidebar: React.FC = () => {
     useEffect(() => {
         if (!checkVisible(Object.values(generalSearchKeywords).flat()) &&
             !checkVisible(Object.values(siteSearchKeywords).flat()) &&
-            !checkVisible(Object.values(membershipSearchKeywords).flat()) &&
+            !checkVisible(visibleMembershipSearchKeywords) &&
             !checkVisible(Object.values(growthSearchKeywords).flat()) &&
             !checkVisible(Object.values(emailSearchKeywords).flat()) &&
             !checkVisible(Object.values(advancedSearchKeywords).flat())) {
@@ -92,7 +104,7 @@ const Sidebar: React.FC = () => {
         } else {
             setNoResult(false);
         }
-    }, [checkVisible, setNoResult, filter]);
+    }, [checkVisible, setNoResult, filter, visibleMembershipSearchKeywords]);
 
     useEffect(() => {
         const searchInput = searchInputRef.current;
@@ -115,10 +127,6 @@ const Sidebar: React.FC = () => {
             searchInput?.removeEventListener('keydown', handleKeyDown);
         };
     }, [filter]);
-
-    const {settings, config} = useGlobalData();
-    const [hasTipsAndDonations, isPrivate] = getSettingValues(settings, ['donations_enabled', 'is_private']) as [string, boolean];
-    const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
 
     const handleSectionClick = (e?: React.MouseEvent<HTMLAnchorElement>) => {
         if (e) {
@@ -195,7 +203,7 @@ const Sidebar: React.FC = () => {
                 </SettingNavSection>
 
                 {/* Membership settings */}
-                <SettingNavSection isVisible={checkVisible([...Object.values(membershipSearchKeywords).flat(), ...emailSearchKeywords.newslettersNavMenu])} title="Membership">
+                <SettingNavSection isVisible={checkVisible([...visibleMembershipSearchKeywords, ...emailSearchKeywords.newslettersNavMenu])} title="Membership">
                     <NavItem
                         icon='key'
                         keywords={membershipSearchKeywords.access}
@@ -210,7 +218,7 @@ const Sidebar: React.FC = () => {
                     />
                     <NavItem icon='bills' keywords={membershipSearchKeywords.tiers} navid='tiers' title="Tiers" onClick={handleSectionClick} />
                     <NavItem icon='portal' keywords={membershipSearchKeywords.portal} navid='portal' title="Signup portal" onClick={handleSectionClick} />
-                    <NavItem icon='mailplus' keywords={membershipSearchKeywords.memberEmails} navid='memberemails' title="Welcome emails" onClick={handleSectionClick} />
+                    {!hasAutomations && <NavItem icon='mailplus' keywords={membershipSearchKeywords.memberEmails} navid='memberemails' title="Welcome emails" onClick={handleSectionClick} />}
                     {hasTipsAndDonations && hasStripeEnabled && <NavItem icon='piggybank' keywords={membershipSearchKeywords.tips} navid='tips-and-donations' title="Tips & donations" onClick={handleSectionClick} />}
                     <NavItem icon='email' keywords={emailSearchKeywords.newslettersNavMenu} navid={['enable-newsletters', 'default-recipients', 'newsletters', 'mailgun']} title="Newsletters" onClick={handleSectionClick} />
                 </SettingNavSection>
