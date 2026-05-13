@@ -237,7 +237,8 @@
     "terser": "5.46.1",
     "tiny-glob": "0.2.9",
     "ua-parser-js": "1.0.41",
-    "xml": "1.0.1"
+    "xml": "1.0.1",
+    "zod": "4.1.12"
   },
   "overrides": {
     "lodash.template": "4.5.0"
