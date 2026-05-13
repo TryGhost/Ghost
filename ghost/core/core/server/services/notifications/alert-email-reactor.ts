@@ -19,8 +19,22 @@ export function createAlertEmailReactor(
         if (notification.type !== 'alert') {
             return;
         }
-        const adminEmails = await deps.fetchAdminEmails();
-        const siteUrl = deps.getSiteUrl();
+        let adminEmails: string[];
+        let siteUrl: string;
+        try {
+            adminEmails = await deps.fetchAdminEmails();
+            siteUrl = deps.getSiteUrl();
+        } catch (err) {
+            logging.error(
+                {
+                    event: {name: 'notifications.resolve-recipients.error'},
+                    err,
+                    notificationId: notification.id
+                },
+                'Failed to resolve recipients for alert email'
+            );
+            return;
+        }
         for (const email of adminEmails) {
             try {
                 await deps.sendEmail({
@@ -30,7 +44,15 @@ export function createAlertEmailReactor(
                     forceTextContent: true
                 });
             } catch (err) {
-                logging.error(err);
+                logging.error(
+                    {
+                        event: {name: 'notifications.send-alert-email.error'},
+                        err,
+                        notificationId: notification.id,
+                        recipientEmail: email
+                    },
+                    'Failed to send notification alert email'
+                );
             }
         }
     };
