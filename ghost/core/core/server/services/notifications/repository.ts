@@ -1,10 +1,10 @@
 import {Notification} from './notification';
 
-export interface SettingsCacheLike {
+interface SettingsCacheLike {
     get(key: string): unknown;
 }
 
-export interface SettingsModelLike {
+interface SettingsModelLike {
     edit(
         updates: Array<{key: string; value: string}>,
         options: {context: {internal: true}}
@@ -41,21 +41,31 @@ export class NotificationRepository {
         return notifications;
     }
 
-    findById(id: string): Notification | null {
-        return this.findAll().find(n => n.id === id) ?? null;
-    }
-
-    async save(notification: Notification): Promise<void> {
-        const all = this.findAll();
-        if (all.some(n => n.id === notification.id)) {
-            return;
+    async saveAll(notifications: Notification[]): Promise<Notification[]> {
+        const existing = this.findAll();
+        const ids = new Set(existing.map(n => n.id));
+        const added: Notification[] = [];
+        for (const notification of notifications) {
+            if (ids.has(notification.id)) {
+                continue;
+            }
+            ids.add(notification.id);
+            added.push(notification);
         }
-        all.push(notification);
-        await this.persist(all);
+        if (added.length === 0) {
+            return [];
+        }
+        await this.persist([...existing, ...added]);
+        return added;
     }
 
     async replaceAll(notifications: Notification[]): Promise<void> {
         await this.persist(notifications);
+    }
+
+    async deleteReleaseNotifications(): Promise<void> {
+        const survivors = this.findAll().filter(n => n.custom !== false);
+        await this.persist(survivors);
     }
 
     async pruneOlderThan(threshold: Date): Promise<void> {

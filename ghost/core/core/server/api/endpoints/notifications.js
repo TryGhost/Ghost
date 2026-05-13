@@ -1,7 +1,4 @@
 const {notifications} = require('../../services/notifications');
-const settingsService = require('../../services/settings/settings-service');
-const settingsBREADService = settingsService.getSettingsBREADServiceInstance();
-const internalContext = {context: {internal: true}};
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -13,11 +10,7 @@ const controller = {
         },
         permissions: true,
         query(frame) {
-            return notifications.browse({
-                user: {
-                    id: frame.user && frame.user.id
-                }
-            });
+            return notifications.browse(frame.user.id);
         }
     },
 
@@ -34,18 +27,7 @@ const controller = {
         },
         permissions: true,
         async query(frame) {
-            const {allNotifications, notificationsToAdd} = notifications.add({
-                notifications: frame.data.notifications
-            });
-
-            if (notificationsToAdd.length){
-                await settingsBREADService.edit([{
-                    key: 'notifications',
-                    // @NOTE: We always need to store all notifications!
-                    value: allNotifications.concat(notificationsToAdd)
-                }], internalContext);
-                return notificationsToAdd;
-            }
+            return notifications.add(frame.data.notifications);
         }
     },
 
@@ -64,23 +46,11 @@ const controller = {
         },
         permissions: true,
         async query(frame) {
-            const allNotifications = await notifications.destroy({
-                notificationId: frame.options.notification_id,
-                user: {
-                    id: frame.user && frame.user.id
-                }
-            });
-
-            await settingsBREADService.edit([{
-                key: 'notifications',
-                value: allNotifications
-            }], internalContext);
+            await notifications.dismiss(frame.options.notification_id, frame.user.id);
         }
     },
 
     /**
-     * Clears all notifications. Method used in tests only
-     *
      * @private Not exposed over HTTP
      */
     destroyAll: {
@@ -91,13 +61,8 @@ const controller = {
         permissions: {
             method: 'destroy'
         },
-        async query() {
-            const allNotifications = notifications.destroyAll();
-
-            await settingsBREADService.edit([{
-                key: 'notifications',
-                value: allNotifications
-            }], internalContext);
+        async query(frame) {
+            await notifications.dismissAll(frame.user.id);
         }
     }
 };

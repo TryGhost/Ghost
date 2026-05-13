@@ -7,23 +7,26 @@ module.exports = {
             return;
         }
 
-        if (!response || !response.length) {
+        if (!response.length) {
             frame.response = {
                 notifications: []
             };
-
             return;
         }
 
-        response.forEach((notification) => {
-            delete notification.seen;
-            delete notification.seenBy;
-            delete notification.addedAt;
-            delete notification.createdAtVersion;
-        });
+        const serialized = response.map(notification => ({
+            id: notification.id,
+            custom: notification.custom,
+            type: notification.type,
+            message: notification.message,
+            dismissible: notification.dismissible,
+            top: notification.top ?? false,
+            location: 'bottom',
+            status: 'alert'
+        }));
 
         frame.response = {
-            notifications: response
+            notifications: serialized
         };
     }
 };

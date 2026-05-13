@@ -83,38 +83,3 @@ events.on('settings.timezone.edited', function (settingModel, options) {
     });
 });
 
-/**
- * Remove all notifications, which are seen, older than 3 months.
- * No transaction, because notifications are not sensitive and we would have to add `forUpdate`
- * to the settings model to create real lock.
- */
-events.on('settings.notifications.edited', function (settingModel) {
-    let allNotifications = JSON.parse(settingModel.attributes.value || []);
-    const options = {context: {internal: true}};
-    let skip = true;
-
-    allNotifications = allNotifications.filter(function (notification) {
-        // Do not delete the release notification
-        if (Object.prototype.hasOwnProperty.call(notification, 'custom') && !notification.custom) {
-            return true;
-        }
-
-        if (notification.seen && moment().diff(moment(notification.addedAt), 'month') > 2) {
-            skip = false;
-            return false;
-        }
-
-        return true;
-    });
-
-    if (skip) {
-        return;
-    }
-
-    return models.Settings.edit({
-        key: 'notifications',
-        value: JSON.stringify(allNotifications)
-    }, options).catch(function (err) {
-        errors.logError(err);
-    });
-});

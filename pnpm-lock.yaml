@@ -2444,6 +2444,9 @@ importers:
       '@types/papaparse':
         specifier: 5.5.2
         version: 5.5.2
+      '@types/semver':
+        specifier: 7.7.1
+        version: 7.7.1
       '@types/sinon':
         specifier: 17.0.4
         version: 17.0.4
@@ -9198,6 +9201,9 @@ packages:
 
   '@types/rimraf@2.0.5':
     resolution: {integrity: sha512-YyP+VfeaqAyFmXoTh3HChxOQMyjByRMsHU7kc5KOJkSlXudhMhQIALbYV7rHh/l8d2lX3VUQzprrcAgWdRuU8g==}
+
+  '@types/semver@7.7.1':
+    resolution: {integrity: sha512-FmgJfu+MOcQ370SD0ev7EI8TlCAfKYU+B4m5T3yXc1CiRN94g/SZPtsCkk506aUDtlMnFZvasDwHHUcZUEaYuA==}
 
   '@types/send@0.17.6':
     resolution: {integrity: sha512-Uqt8rPBE8SY0RK8JB1EzVOIZ32uqy8HwdxCnoCOsYrvnswqmFZ/k+9Ikidlk/ImhsdvBsloHbAlewb2IEBV/Og==}
@@ -30839,6 +30845,8 @@ snapshots:
     dependencies:
       '@types/glob': 9.0.0
       '@types/node': 25.6.0
+
+  '@types/semver@7.7.1': {}
 
   '@types/send@0.17.6':
     dependencies:
