@@ -1,7 +1,6 @@
 const DomainEvents = require('@tryghost/domain-events');
 const config = require('../../../shared/config');
 const {URLResourceUpdatedEvent} = require('../../../shared/events');
-const toPlain = require('../../../server/lib/common/to-plain');
 const IndexMapGenerator = require('./site-map-index-generator');
 const PagesMapGenerator = require('./page-map-generator');
 const PostsMapGenerator = require('./post-map-generator');
@@ -155,61 +154,143 @@ class SiteMapManager {
         const urlService = require('../../../server/services/url');
         const facade = urlService.facade;
 
-        // Use TagPublic/Author for the shouldHavePosts gate (so tags/users
-        // with no published posts are excluded). The visibility filter is
-        // applied in TYPE_BROWSE_OPTIONS below; together these mirror what
-        // the eager URL service does in services/url/config.js.
         await Promise.all([
-            this._loadType(models.Post, 'posts', this.posts, facade),
-            this._loadType(models.Post, 'pages', this.pages, facade),
-            this._loadType(models.TagPublic, 'tags', this.tags, facade),
-            this._loadType(models.Author, 'authors', this.users, facade)
+            this._loadType('posts', this.posts, facade, models),
+            this._loadType('pages', this.pages, facade, models),
+            this._loadType('tags', this.tags, facade, models),
+            this._loadType('authors', this.users, facade, models)
         ]);
     }
 
-    async _loadType(Model, type, generator, facade) {
-        const baseOptions = browseOptionsFor(type);
-        let page = 1;
-        // eslint-disable-next-line no-constant-condition
-        while (true) {
-            const result = await Model.findPage({...baseOptions, page});
-            for (const model of result.data) {
-                const datum = toPlain(model);
-                const url = facade.getUrlForResource({...datum, type}, {absolute: true});
-                if (url && !url.match(/\/404\//)) {
-                    generator.addUrl(url, datum);
-                }
+    async _loadType(type, generator, facade, models) {
+        const fetchOptions = TYPE_FETCH_OPTIONS[type];
+        if (!fetchOptions) {
+            return;
+        }
+        // Use the same raw-knex path as the eager URL service's resource
+        // fetcher (services/url/resources.js → raw_knex.fetchAll). The
+        // previous implementation went through Bookshelf's findPage and
+        // toPlain per row, which is minutes-not-seconds for 50k posts —
+        // slow enough that edge proxies 503 on the first sitemap request.
+        const objects = await models.Base.Model.raw_knex.fetchAll(fetchOptions);
+        for (const datum of objects) {
+            const url = facade.getUrlForResource({...datum, type}, {absolute: true});
+            if (url && !url.match(/\/404\//)) {
+                generator.addUrl(url, datum);
             }
-            const totalPages = result?.meta?.pagination?.pages;
-            // Guard against unexpected response shapes (missing meta,
-            // empty page) so we don't loop forever.
-            if (!totalPages || page >= totalPages || result.data.length === 0) {
-                break;
-            }
-            page += 1;
         }
     }
 }
 
-// Per-router-type browse options for the lazy populate path. Mirrors the
-// eager URL service's resource queries (services/url/config.js): posts/pages
-// filter by published+type, tags/authors by visibility:public.
+// Mirrors the eager URL service's resource configs (services/url/config.js)
+// so the lazy sitemap renders the same URL set as the eager service would.
+// When the eager service is removed this becomes the only copy — kept
+// inline (rather than imported from services/url) so the eager removal is
+// a clean delete.
 //
-// `withRelated: ['tags', 'authors']` for posts: needed so the Bookshelf
-// model's toJSON output includes `primary_tag` and `primary_author`, which
-// custom permalink templates like `/:primary_tag/:slug/` evaluate against.
-// Without this preload the lazy sitemap would emit `/undefined/.../` for
-// any site using a primary_tag/primary_author permalink. Pages exclude
-// these in the eager config so we mirror that.
-const TYPE_BROWSE_OPTIONS = {
-    posts: {limit: 200, status: 'published', filter: 'type:post', withRelated: ['tags', 'authors']},
-    pages: {limit: 200, status: 'published', filter: 'type:page'},
-    tags: {limit: 200, filter: 'visibility:public'},
-    authors: {limit: 200, filter: 'visibility:public'}
+// The `exclude` lists trim heavy columns (mobiledoc, lexical, html,
+// plaintext, codeinjection, og/twitter card fields, …) before they ever
+// reach memory. Without them, fetchAll loads the full body of every post
+// — multiple GB on a 50k-post site.
+//
+// `withRelated: ['tags', 'authors']` for posts is what surfaces
+// `primary_tag` / `primary_author` on the result: Post.toJSON's computed
+// `primary_tag` field (models/post.js) and the authors-relation
+// serialize mixin both run as part of raw_knex.fetchAll's per-row
+// toJSON pass, gated only on the relation being loaded.
+const TYPE_FETCH_OPTIONS = {
+    posts: {
+        modelName: 'Post',
+        filter: 'status:published+type:post',
+        exclude: [
+            'title',
+            'mobiledoc',
+            'lexical',
+            'html',
+            'plaintext',
+            'status',
+            'codeinjection_head',
+            'codeinjection_foot',
+            'meta_title',
+            'meta_description',
+            'custom_excerpt',
+            'og_image',
+            'og_title',
+            'og_description',
+            'twitter_image',
+            'twitter_title',
+            'twitter_description',
+            'custom_template',
+            'locale',
+            'newsletter_id',
+            'show_title_and_feature_image',
+            'email_recipient_filter',
+            'comment_id',
+            'tiers'
+        ],
+        withRelated: ['tags', 'authors'],
+        withRelatedFields: {
+            tags: ['tags.id', 'tags.slug'],
+            authors: ['users.id', 'users.slug']
+        }
+    },
+    pages: {
+        modelName: 'Post',
+        filter: 'status:published+type:page',
+        exclude: [
+            'title',
+            'mobiledoc',
+            'lexical',
+            'html',
+            'plaintext',
+            'codeinjection_head',
+            'codeinjection_foot',
+            'meta_title',
+            'meta_description',
+            'custom_excerpt',
+            'og_image',
+            'og_title',
+            'og_description',
+            'twitter_image',
+            'twitter_title',
+            'twitter_description',
+            'custom_template',
+            'locale',
+            'tags',
+            'authors',
+            'primary_tag',
+            'primary_author',
+            'newsletter_id',
+            'show_title_and_feature_image',
+            'email_recipient_filter',
+            'comment_id',
+            'tiers'
+        ]
+    },
+    tags: {
+        modelName: 'Tag',
+        filter: 'visibility:public',
+        exclude: ['description', 'meta_title', 'meta_description', 'parent_id'],
+        shouldHavePosts: {joinTo: 'tag_id', joinTable: 'posts_tags'}
+    },
+    authors: {
+        modelName: 'User',
+        filter: 'visibility:public',
+        exclude: [
+            'bio',
+            'website',
+            'location',
+            'facebook',
+            'twitter',
+            'locale',
+            'accessibility',
+            'meta_title',
+            'meta_description',
+            'tour',
+            'last_seen'
+        ],
+        shouldHavePosts: {joinTo: 'author_id', joinTable: 'posts_authors'}
+    }
 };
-
-function browseOptionsFor(type) {
-    return TYPE_BROWSE_OPTIONS[type] || {limit: 200};
-}
 
 module.exports = SiteMapManager;
