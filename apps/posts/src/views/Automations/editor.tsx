@@ -64,7 +64,7 @@ const AutomationEditor: React.FC = () => {
         publishButtonChildren = (
             <>
                 <LoadingIndicator color='light' size='sm' />
-                Publishing...
+                <span className='sr-only'>Publishing...</span>
             </>
         );
         break;
@@ -76,7 +76,7 @@ const AutomationEditor: React.FC = () => {
         turnOffButtonChildren = (
             <>
                 <LoadingIndicator color='light' size='sm' />
-                Turning off...
+                <span className='sr-only'>Turning off...</span>
             </>
         );
         break;
