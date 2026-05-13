@@ -25,7 +25,7 @@ describe('Primitives', () => {
     });
 
     it('maps Stack custom gap/align/justify props to classes', () => {
-        render(<Stack data-testid="stack" gap="xl" align="center" justify="between">A</Stack>);
+        render(<Stack align="center" data-testid="stack" gap="xl" justify="between">A</Stack>);
         const stack = screen.getByTestId('stack');
 
         assert.ok(stack.className.includes('gap-6'));
@@ -47,7 +47,7 @@ describe('Primitives', () => {
     });
 
     it('renders Inline polymorphically with as and maps wrap', () => {
-        render(<Inline data-testid="inline" as="nav" wrap gap="sm">A</Inline>);
+        render(<Inline as="nav" data-testid="inline" gap="sm" wrap>A</Inline>);
         const inline = screen.getByTestId('inline');
 
         assert.equal(inline.tagName.toLowerCase(), 'nav');
@@ -84,7 +84,7 @@ describe('Primitives', () => {
         assert.ok(container.className.includes('mx-auto'));
 
         render(
-            <Container data-testid="container-custom" size="prose" centered={false} paddingX="md">
+            <Container centered={false} data-testid="container-custom" paddingX="md" size="prose">
                 B
             </Container>
         );
@@ -106,7 +106,7 @@ describe('Primitives', () => {
         assert.ok(grid.className.includes('justify-start'));
 
         render(
-            <Grid data-testid="grid-custom" columns={3} gap="2xl" align="end" justify="evenly">
+            <Grid align="end" columns={3} data-testid="grid-custom" gap="2xl" justify="evenly">
                 B
             </Grid>
         );
@@ -130,12 +130,12 @@ describe('Primitives', () => {
 
         render(
             <Text
-                data-testid="text-custom"
                 as="h2"
-                size="2xl"
-                weight="bold"
-                tone="secondary"
+                data-testid="text-custom"
                 leading="heading"
+                size="2xl"
+                tone="secondary"
+                weight="bold"
                 truncate
             >
                 Heading
