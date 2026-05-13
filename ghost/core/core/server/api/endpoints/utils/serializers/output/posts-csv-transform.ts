@@ -22,8 +22,7 @@ export function createCSVTransform(): Transform {
                     fields = Object.keys(post);
                     const csv = papaparse.unparse({fields, data: [post]}, {
                         header: true,
-                        escapeFormulae: true,
-                        newline: '\r\n'
+                        escapeFormulae: true
                     });
 
                     callback(null, csv);
