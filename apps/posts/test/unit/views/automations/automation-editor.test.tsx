@@ -223,33 +223,35 @@ describe('AutomationEditor', () => {
             isLoading: false,
             isError: false
         });
-        mockEditMutation.isLoading = true;
-        mockEditMutation.variables = {id: 'automation-id-1', status: 'active'};
 
         renderEditor();
+
+        fireEvent.click(screen.getByRole('button', {name: 'Publish changes'}));
 
         const button = screen.getByRole('button', {name: 'Publishing...'});
         expect(button).toBeDisabled();
         expect(button.querySelector('.animate-spin')).toBeInTheDocument();
     });
 
-    it('disables the Turn off menu item while an unpublish request is in flight', async () => {
+    it('disables the confirmation modal controls while an unpublish request is in flight', async () => {
         mockUseReadAutomation.mockReturnValue({
             data: {automations: [automationDetail]},
             isLoading: false,
             isError: false
         });
-        mockEditMutation.isLoading = true;
-        mockEditMutation.variables = {id: 'automation-id-1', status: 'inactive'};
 
         renderEditor();
 
         const trigger = screen.getByRole('button', {name: 'Automation options'});
         fireEvent.pointerDown(trigger, {button: 0, ctrlKey: false});
         fireEvent.click(trigger);
+        fireEvent.click(await screen.findByRole('menuitem', {name: /Turn off/}));
+        fireEvent.click(screen.getByRole('button', {name: 'Turn off'}));
 
-        const turnOff = await screen.findByRole('menuitem', {name: /Turn off/});
-        expect(turnOff).toHaveAttribute('aria-disabled', 'true');
+        expect(screen.getByRole('button', {name: 'Cancel'})).toBeDisabled();
+        const turnOff = screen.getByRole('button', {name: 'Turning off...'});
+        expect(turnOff).toBeDisabled();
+        expect(turnOff.querySelector('.animate-spin')).toBeInTheDocument();
     });
 
     it('shows a retry state when publishing fails', async () => {
