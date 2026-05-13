@@ -1,4 +1,5 @@
 /* eslint-disable ghost/mocha/no-setup-in-describe */
+import React from 'react';
 import assert from 'assert/strict';
 import {describe, it, vi} from 'vitest';
 import {fireEvent, screen} from '@testing-library/react';
@@ -74,9 +75,9 @@ describe('Banner Component', () => {
     it('allows overriding ARIA attributes via standard props', () => {
         render(
             <Banner
-                role="region"
-                aria-live="assertive"
                 aria-label="Test banner"
+                aria-live="assertive"
+                role="region"
             >
                 Content
             </Banner>
@@ -167,14 +168,14 @@ describe('Banner Component', () => {
     });
 
     it('forwards ref correctly', () => {
-        const ref = {current: null};
-        render(<Banner ref={ref as any}>Content</Banner>);
+        const ref = React.createRef<HTMLDivElement>();
+        render(<Banner ref={ref}>Content</Banner>);
 
         assert.ok(ref.current, 'Ref should be forwarded');
     });
 
     it('renders with region role when specified', () => {
-        render(<Banner role="region" aria-label="Important region">Content</Banner>);
+        render(<Banner aria-label="Important region" role="region">Content</Banner>);
         const banner = screen.getByRole('region');
 
         assert.ok(banner, 'Banner should render with region role');

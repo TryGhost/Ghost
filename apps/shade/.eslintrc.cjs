@@ -1,6 +1,7 @@
 const tailwindCssConfig = `${__dirname}/../admin/src/index.css`;
 
 module.exports = {
+    root: true,
     extends: [
         'plugin:ghost/ts',
         'plugin:react/recommended',
