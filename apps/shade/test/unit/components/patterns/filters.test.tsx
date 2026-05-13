@@ -35,8 +35,8 @@ const ALL_OPTIONS: TestOption[] = [
 
 interface DateFiltersProps {
     initialValue?: string;
-    onFiltersChange: ReturnType<typeof vi.fn>;
-    onInputChange: ReturnType<typeof vi.fn>;
+    onFiltersChange: ReturnType<typeof vi.fn<(value: string) => void>>;
+    onInputChange: ReturnType<typeof vi.fn<(value: string) => void>>;
 }
 
 function TestFilters({valueSource}: Readonly<{valueSource: ValueSource<string>}>) {
@@ -373,7 +373,6 @@ describe('Filters', () => {
 
         function MultiselectTestFilters({initialFilters, onChangeSpy}: Readonly<{
             initialFilters: Filter<string>[];
-            // eslint-disable-next-line no-unused-vars
             onChangeSpy: (filters: Filter<string>[]) => void;
         }>) {
             const [filters, setFilters] = useState<Filter<string>[]>(initialFilters);
