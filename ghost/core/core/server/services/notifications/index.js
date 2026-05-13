@@ -2,7 +2,7 @@ const settingsCache = require('../../../shared/settings-cache');
 const models = require('../../models');
 const ghostVersion = require('@tryghost/version');
 const urlUtils = require('../../../shared/url-utils');
-const {GhostMailer} = require('../mail');
+const mail = require('../mail');
 const {NotificationRepository} = require('./repository');
 const {NotificationService} = require('./service');
 const {createAlertEmailReactor} = require('./alert-email-reactor');
@@ -12,7 +12,7 @@ const repository = new NotificationRepository({
     settingsModel: models.Settings
 });
 
-const ghostMailer = new GhostMailer();
+const ghostMailer = new mail.GhostMailer();
 
 const fetchAdminEmails = async () => {
     const users = await models.User.findActiveAdministrators();
@@ -22,7 +22,8 @@ const fetchAdminEmails = async () => {
 const alertEmailReactor = createAlertEmailReactor({
     sendEmail: ghostMailer.send.bind(ghostMailer),
     fetchAdminEmails,
-    getSiteUrl: () => urlUtils.urlFor('home', true)
+    getSiteUrl: () => urlUtils.urlFor('home', true),
+    renderTemplate: mail.utils.generateContent
 });
 
 module.exports.notifications = new NotificationService({

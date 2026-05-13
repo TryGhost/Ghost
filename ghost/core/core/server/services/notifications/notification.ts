@@ -15,7 +15,9 @@ export const Notification = z.object({
     top: z.boolean().optional(),
     createdAtVersion: z.string(),
     addedAt: z.coerce.date(),
-    seenBy: z.array(z.string()).default([])
+    seenBy: z.array(z.string()).default([]),
+    template: z.string().optional(),
+    variables: z.record(z.string(), z.string()).default({})
 });
 
 export type Notification = z.infer<typeof Notification>;
