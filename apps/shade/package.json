@@ -33,6 +33,11 @@
             "import": "./es/patterns.js",
             "default": "./es/patterns.js"
         },
+        "./page-templates": {
+            "types": "./types/page-templates.d.ts",
+            "import": "./es/page-templates.js",
+            "default": "./es/page-templates.js"
+        },
         "./posts-stats": {
             "types": "./types/posts-stats.d.ts",
             "import": "./es/posts-stats.js",

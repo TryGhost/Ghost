@@ -1,6 +1,6 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-<Meta title="Patterns / Page Types" />
+<Meta title="Page Templates / Page Types" />
 
 <div className="sb-doc">
 
@@ -16,7 +16,7 @@ Browsing or scanning a collection of items.
 
 **Chrome shape**: `PageHeader` (title + count + search/filter/actions) → table or list → empty state → pagination.
 
-**Pattern**: [`ListPage`](?path=/docs/patterns-listpage--docs) (composes [`PageHeader`](?path=/docs/patterns-pageheader--docs)). Heavy filter UI uses [`Filters`](?path=/docs/patterns-filters--docs).
+**Pattern**: [`ListPage`](?path=/docs/page-templates-list-page--docs) (composes [`PageHeader`](?path=/docs/patterns-pageheader--docs)). Heavy filter UI uses [`Filters`](?path=/docs/patterns-filters--docs).
 
 ## Detail page
 
@@ -36,20 +36,26 @@ Working with a single item — viewing, editing, or both.
 ## Example
 
 ```tsx
-import {ListPage, PageHeader} from '@tryghost/shade/patterns';
+import {ListPage} from '@tryghost/shade/page-templates';
+import {PageHeader, ViewBar, FilterBar} from '@tryghost/shade/patterns';
 import {Button, EmptyIndicator, Table} from '@tryghost/shade/components';
 
 <ListPage>
-  <PageHeader>
-    <PageHeader.Left>
-      <PageHeader.Title>Members<PageHeader.Count>{count}</PageHeader.Count></PageHeader.Title>
-    </PageHeader.Left>
-    <PageHeader.Actions>
-      <PageHeader.ActionGroup>
-        <Button>Add member</Button>
-      </PageHeader.ActionGroup>
-    </PageHeader.Actions>
-  </PageHeader>
+  <ListPage.Header>
+    {/* Pass sticky={false} — ListPage.Header handles stickiness and blur */}
+    <PageHeader sticky={false} blurredBackground={false}>
+      <PageHeader.Left>
+        <PageHeader.Title>Members<PageHeader.Count>{count}</PageHeader.Count></PageHeader.Title>
+      </PageHeader.Left>
+      <PageHeader.Actions>
+        <PageHeader.ActionGroup>
+          <Button>Add member</Button>
+        </PageHeader.ActionGroup>
+      </PageHeader.Actions>
+    </PageHeader>
+    <ViewBar>{/* optional */}</ViewBar>
+    <FilterBar>{/* optional — auto-collapses when empty */}</FilterBar>
+  </ListPage.Header>
   <ListPage.Body>
     {items.length === 0 ? <EmptyIndicator title='No members yet' /> : <Table>...</Table>}
   </ListPage.Body>
