@@ -113,7 +113,7 @@ const GiftSuccessPage = () => {
                         <div className='gh-portal-gift-checkout-bg' aria-hidden='true' />
                         <div className='gh-portal-gift-checkout-inner'>
                             <header className='gh-portal-gift-checkout-header'>
-                                <h1 className='gh-portal-main-title'>{t('Your gift is ready!')}</h1>
+                                <h1 className='gh-portal-main-title'>{t('Your gift is ready')}</h1>
                                 <p className='gh-portal-gift-checkout-subtitle'>
                                     {t('Send the link below to share it with whoever you\'d like.')}
                                 </p>
