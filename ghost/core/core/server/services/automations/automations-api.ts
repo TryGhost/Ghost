@@ -13,6 +13,8 @@ const domainEvents = require('@tryghost/domain-events');
 const StartAutomationsPollEvent = require('./events/start-automations-poll-event');
 const temporaryFakeAutomationsDatabase = require('./temporary-fake-database');
 
+const MAX_AUTOMATION_ACTIONS = 20;
+
 const messages = {
     automationNotFound: 'Automation not found.',
     invalidAutomationPayload: 'Automation edit payload must include status, actions, and edges.',
@@ -64,7 +66,7 @@ const editAutomationDataSchema = z.object({
     actions: z.array(z.discriminatedUnion('type', [
         waitActionSchema,
         sendEmailActionSchema
-    ])).min(1),
+    ])).min(1).max(MAX_AUTOMATION_ACTIONS),
     edges: z.array(edgeSchema)
 }).strict();
 
