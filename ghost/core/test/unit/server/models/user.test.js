@@ -566,9 +566,59 @@ describe('Unit: models/user', function () {
             sinon.stub(models.User, 'findAll');
         });
 
-        it('can filter out only Admin and Owner users', function () {
+        function stubFindAllWith(usersList) {
             const users = sinon.stub();
+            users.toJSON = sinon.stub().returns(usersList);
+            models.User.findAll.resolves(users);
+        }
 
+        it('returns only Admin and Owner users with the opt-in flag set', async function () {
+            stubFindAllWith([
+                {...testUtils.permissions.owner.user, free_member_signup_notification: true},
+                {...testUtils.permissions.admin.user, free_member_signup_notification: true},
+                {...testUtils.permissions.editor.user, free_member_signup_notification: true},
+                {...testUtils.permissions.author.user, free_member_signup_notification: true},
+                {...testUtils.permissions.contributor.user, free_member_signup_notification: true}
+            ]);
+
+            const alertUsers = await models.User.getEmailAlertUsers('free-signup', {});
+
+            assert.equal(alertUsers.length, 2);
+            assert.equal(alertUsers[0].roles[0].name, 'Owner');
+            assert.equal(alertUsers[1].roles[0].name, 'Administrator');
+        });
+
+        it('excludes users who have not opted into the alert type', async function () {
+            stubFindAllWith([
+                {...testUtils.permissions.owner.user, free_member_signup_notification: true},
+                {...testUtils.permissions.admin.user, free_member_signup_notification: false}
+            ]);
+
+            const alertUsers = await models.User.getEmailAlertUsers('free-signup', {});
+
+            assert.equal(alertUsers.length, 1);
+            assert.equal(alertUsers[0].roles[0].name, 'Owner');
+        });
+
+        it('returns all admins when the alert type has no opt-in flag', async function () {
+            stubFindAllWith([
+                testUtils.permissions.owner.user,
+                testUtils.permissions.admin.user
+            ]);
+
+            const alertUsers = await models.User.getEmailAlertUsers('unknown-type', {});
+
+            assert.equal(alertUsers.length, 2);
+        });
+    });
+
+    describe('findActiveAdministrators', function () {
+        beforeEach(function () {
+            sinon.stub(models.User, 'findAll');
+        });
+
+        it('returns only Owner and Administrator users', async function () {
+            const users = sinon.stub();
             users.toJSON = sinon.stub().returns([
                 testUtils.permissions.owner.user,
                 testUtils.permissions.admin.user,
@@ -576,16 +626,26 @@ describe('Unit: models/user', function () {
                 testUtils.permissions.author.user,
                 testUtils.permissions.contributor.user
             ]);
+            models.User.findAll.resolves(users);
 
-            models.User
-                .findAll
-                .resolves(users);
+            const result = await models.User.findActiveAdministrators();
 
-            return models.User.getEmailAlertUsers('free-signup', {}).then((alertUsers) => {
-                assert.equal(alertUsers.length, 2);
-                assert.equal(alertUsers[0].roles[0].name, 'Owner');
-                assert.equal(alertUsers[1].roles[0].name, 'Administrator');
-            });
+            assert.equal(result.length, 2);
+            assert.equal(result[0].roles[0].name, 'Owner');
+            assert.equal(result[1].roles[0].name, 'Administrator');
+        });
+
+        it('passes status:active as the findAll filter', async function () {
+            const users = sinon.stub();
+            users.toJSON = sinon.stub().returns([]);
+            models.User.findAll.resolves(users);
+
+            await models.User.findActiveAdministrators();
+
+            sinon.assert.calledWith(models.User.findAll, sinon.match({
+                filter: 'status:active',
+                withRelated: ['roles']
+            }));
         });
     });
 

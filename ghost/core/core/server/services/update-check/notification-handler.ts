@@ -10,7 +10,7 @@ const UpdateCheckMessage = z.object({
 });
 
 export const UpdateCheckNotification = z.object({
-    custom: z.union([z.boolean(), z.literal(0), z.literal(1)]).default(false),
+    custom: z.boolean().default(false),
     version: z.string().optional(),
     messages: z.array(UpdateCheckMessage).default([])
 });

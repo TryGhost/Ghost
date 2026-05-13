@@ -49,6 +49,18 @@ const messages = {
 const inactiveStates = ['inactive', 'locked'];
 
 const allStates = activeStates.concat(inactiveStates);
+
+const ALERT_TYPE_FLAGS = {
+    'free-signup': 'free_member_signup_notification',
+    'paid-started': 'paid_subscription_started_notification',
+    'paid-canceled': 'paid_subscription_canceled_notification',
+    'mention-received': 'mention_notifications',
+    'milestone-received': 'milestone_notifications',
+    donation: 'donation_notifications',
+    'recommendation-received': 'recommendation_notifications',
+    'gift-subscriptions': 'gift_subscription_purchase_notification'
+};
+
 let User;
 let Users;
 
@@ -491,40 +503,31 @@ User = ghostBookshelf.Model.extend({
     },
 
     /**
+     * Returns all active Owner and Administrator users as plain JSON objects.
+     * Use this for queries that don't need per-type opt-in filtering.
+     * @param {any} [options]
+     * @return {Promise<Object[]>}
+     */
+    async findActiveAdministrators(options) {
+        options = options || {};
+        const updatedOptions = Object.assign({}, options, {
+            filter: 'status:active',
+            withRelated: ['roles']
+        });
+        const users = await this.findAll(updatedOptions);
+        return users.toJSON().filter(user => user?.roles?.some(role => ['Owner', 'Administrator'].includes(role.name)));
+    },
+
+    /**
      * Returns users who should receive a specific type of alert
      * @param {'free-signup'|'paid-started'|'paid-canceled'} type The type of alert to fetch users for
      * @param {any} options
      * @return {Promise<[Object]>} Array of users
      */
-    getEmailAlertUsers(type, options) {
-        options = options || {};
-
-        let filter = 'status:active';
-        if (type === 'free-signup') {
-            filter += '+free_member_signup_notification:true';
-        } else if (type === 'paid-started') {
-            filter += '+paid_subscription_started_notification:true';
-        } else if (type === 'paid-canceled') {
-            filter += '+paid_subscription_canceled_notification:true';
-        } else if (type === 'mention-received') {
-            filter += '+mention_notifications:true';
-        } else if (type === 'milestone-received') {
-            filter += '+milestone_notifications:true';
-        } else if (type === 'donation') {
-            filter += '+donation_notifications:true';
-        } else if (type === 'recommendation-received') {
-            filter += '+recommendation_notifications:true';
-        } else if (type === 'gift-subscriptions') {
-            filter += '+gift_subscription_purchase_notification:true';
-        }
-        const updatedOptions = Object.assign({}, options, {filter, withRelated: ['roles']});
-        return this.findAll(updatedOptions).then((users) => {
-            return users.toJSON().filter((user) => {
-                return user?.roles?.some((role) => {
-                    return ['Owner', 'Administrator'].includes(role.name);
-                });
-            });
-        });
+    async getEmailAlertUsers(type, options) {
+        const users = await this.findActiveAdministrators(options);
+        const flag = ALERT_TYPE_FLAGS[type];
+        return flag ? users.filter(user => user[flag]) : users;
     },
 
     /**

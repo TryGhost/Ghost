@@ -360,7 +360,7 @@ describe('Notification domain (integration)', function () {
             const messageId = '11111111-1111-4111-8111-111111111111';
             mockEndpoint({
                 id: 1,
-                custom: 0,
+                custom: false,
                 next_check: moment().add(1, 'day').unix(),
                 messages: [{
                     id: messageId,
@@ -390,7 +390,7 @@ describe('Notification domain (integration)', function () {
             const messageId = '22222222-2222-4222-8222-222222222222';
             mockEndpoint({
                 id: 2,
-                custom: 1,
+                custom: true,
                 version: 'all',
                 next_check: moment().add(1, 'day').unix(),
                 messages: [{
@@ -414,7 +414,7 @@ describe('Notification domain (integration)', function () {
         it('does not send an email for non-alert notifications from the update-check service', async function () {
             mockEndpoint({
                 id: 3,
-                custom: 1,
+                custom: true,
                 version: 'all',
                 next_check: moment().add(1, 'day').unix(),
                 messages: [{
@@ -434,7 +434,7 @@ describe('Notification domain (integration)', function () {
             const messageId = '44444444-4444-4444-8444-444444444444';
             const payload = {
                 id: 4,
-                custom: 1,
+                custom: true,
                 version: 'all',
                 next_check: moment().add(1, 'day').unix(),
                 messages: [{

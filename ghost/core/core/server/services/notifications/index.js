@@ -14,19 +14,9 @@ const repository = new NotificationRepository({
 
 const ghostMailer = new GhostMailer();
 
-// api is required lazily to avoid a circular load between
-// api/endpoints/notifications.js and this bootstrap.
 const fetchAdminEmails = async () => {
-    const api = require('../../api').endpoints;
-    const {users} = await api.users.browse({
-        limit: 'all',
-        include: ['roles'],
-        filter: 'status:active',
-        context: {internal: true}
-    });
-    return users
-        .filter(user => ['Owner', 'Administrator'].includes(user.roles[0].name))
-        .map(user => user.email);
+    const users = await models.User.findActiveAdministrators();
+    return users.map(user => user.email);
 };
 
 const alertEmailReactor = createAlertEmailReactor({
