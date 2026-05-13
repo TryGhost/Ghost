@@ -56,8 +56,14 @@ export interface Automation extends AutomationSummary {
     edges: AutomationEdge[];
 }
 
+export interface EditAutomationData {
+    status: string;
+    actions: AutomationAction[];
+    edges: AutomationEdge[];
+}
+
 export interface AutomationsRepository {
     browse(): Promise<Page<AutomationSummary>>;
     getById(id: string): Promise<Automation | null>;
-    edit(id: string, data: Pick<AutomationSummary, 'status'>): Promise<Automation | null>;
+    edit(id: string, data: EditAutomationData): Promise<Automation | null>;
 }

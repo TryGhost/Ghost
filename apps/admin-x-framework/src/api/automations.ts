@@ -1,4 +1,4 @@
-import {Meta, createQuery, createQueryWithId} from '../utils/api/hooks';
+import {Meta, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
 
 export type AutomationStatus = 'active' | 'inactive';
 
@@ -44,6 +44,13 @@ export type AutomationDetail = Automation & {
     edges: AutomationEdge[];
 }
 
+export type EditAutomationPayload = {
+    id: string;
+    status: AutomationStatus;
+    actions: AutomationAction[];
+    edges: AutomationEdge[];
+}
+
 export interface AutomationsResponseType {
     meta?: Meta;
     automations: Automation[];
@@ -63,4 +70,19 @@ export const useBrowseAutomations = createQuery<AutomationsResponseType>({
 export const useReadAutomation = createQueryWithId<AutomationDetailResponseType>({
     dataType,
     path: id => `/automations/${id}/`
+});
+
+export const useEditAutomation = createMutation<AutomationDetailResponseType, EditAutomationPayload>({
+    method: 'PUT',
+    path: ({id}) => `/automations/${id}/`,
+    body: ({status, actions, edges}) => ({
+        automations: [{
+            status,
+            actions,
+            edges
+        }]
+    }),
+    invalidateQueries: {
+        dataType
+    }
 });
