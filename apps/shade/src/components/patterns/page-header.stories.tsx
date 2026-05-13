@@ -1,3 +1,4 @@
+import {useState} from 'react';
 import type {Meta, StoryObj} from '@storybook/react-vite';
 import {
     Breadcrumb,
@@ -8,12 +9,11 @@ import {
     BreadcrumbSeparator
 } from '@/components/ui/breadcrumb';
 import {Button} from '@/components/ui/button';
-import {DropdownMenuItem} from '@/components/ui/dropdown-menu';
 import {InputGroup, InputGroupAddon, InputGroupInput} from '@/components/ui/input-group';
-import {Navbar, NavbarNavigation} from '@/components/ui/navbar';
 import {PageHeader} from './page-header';
 import {PageMenu, PageMenuItem} from '@/components/ui/pagemenu';
-import {Ellipsis, Filter, Gauge, Globe, Mail, Plus, Search, Share, Sprout} from 'lucide-react';
+import {Filters, createFilter, type Filter, type FilterFieldConfig} from './filters';
+import {CalendarDays, Circle, Ellipsis, Filter as FilterIcon, Gauge, Mail, Plus, Search, Sprout, X} from 'lucide-react';
 
 const meta = {
     title: 'Patterns / Page Header',
@@ -27,224 +27,356 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof PageHeader>;
 
-export const ListPageShape: Story = {
-    name: 'List page (Members)',
-    args: {
-        children: (
-            <>
-                <PageHeader.Left>
-                    <PageHeader.Title>
-                        Members
-                        <PageHeader.Count>12,345</PageHeader.Count>
-                    </PageHeader.Title>
-                </PageHeader.Left>
-                <PageHeader.Actions>
-                    <PageHeader.ActionGroup>
-                        <Button variant="outline">Import</Button>
-                        <Button variant="outline">Export</Button>
-                        <Button>Add member</Button>
-                    </PageHeader.ActionGroup>
-                </PageHeader.Actions>
-            </>
-        )
+const memberStatusFields: FilterFieldConfig[] = [
+    {
+        key: 'memberStatus',
+        label: 'Member status',
+        type: 'select',
+        icon: <Circle className="size-4" />,
+        options: [
+            {value: 'free', label: 'Free'},
+            {value: 'paid', label: 'Paid'},
+            {value: 'complimentary', label: 'Complimentary'}
+        ]
     }
-};
+];
 
-export const ListPageWithBreadcrumb: Story = {
-    name: 'List page with breadcrumb + description',
-    args: {
-        children: (
-            <>
-                <PageHeader.Left>
-                    <PageHeader.Breadcrumb>
-                        <Breadcrumb>
-                            <BreadcrumbList>
-                                <BreadcrumbItem>
-                                    <BreadcrumbLink href="/">Home</BreadcrumbLink>
-                                    <BreadcrumbSeparator />
-                                    <BreadcrumbPage>Members</BreadcrumbPage>
-                                </BreadcrumbItem>
-                            </BreadcrumbList>
-                        </Breadcrumb>
-                    </PageHeader.Breadcrumb>
-                    <PageHeader.Title>
-                        Members
-                        <PageHeader.Count>12,345</PageHeader.Count>
-                    </PageHeader.Title>
-                    <PageHeader.Description>Manage your members</PageHeader.Description>
-                </PageHeader.Left>
-                <PageHeader.Actions>
-                    <PageHeader.ActionGroup>
-                        <Button variant="outline">Import</Button>
-                        <Button variant="outline">Export</Button>
-                        <Button>Add member</Button>
-                    </PageHeader.ActionGroup>
-                </PageHeader.Actions>
-            </>
-        )
-    }
-};
-
-export const ListPageMobileResponsive: Story = {
-    name: 'List page (mobile responsive)',
+export const Plain: Story = {
     render: () => (
         <PageHeader>
             <PageHeader.Left>
-                <PageHeader.Title>
-                    Members
-                    <PageHeader.Count>12,345</PageHeader.Count>
-                </PageHeader.Title>
+                <PageHeader.Title>Page title</PageHeader.Title>
             </PageHeader.Left>
             <PageHeader.Actions>
-                <PageHeader.ActionGroup mobileMenuBreakpoint={740}>
+                <PageHeader.ActionGroup>
                     <InputGroup className="w-full sm:w-56">
-                        <InputGroupInput placeholder="Search members..." type="search" />
+                        <InputGroupInput placeholder="Search..." type="search" />
                         <InputGroupAddon>
                             <Search className="size-4" />
                         </InputGroupAddon>
                     </InputGroup>
-                    <Button className="justify-center" variant="outline">
-                        <Filter className="size-4" />
+                    <Button aria-label="More actions" size="icon" variant="outline">
+                        <Ellipsis className="size-4" />
+                    </Button>
+                    <Button variant="outline">
+                        <FilterIcon className="size-4" />
                         Filter
                     </Button>
                     <PageHeader.ActionGroup.Primary>
-                        <Button className="justify-center">
+                        <Button>
                             <Plus className="size-4" />
-                            <span className='hidden sm:inline-block'>Add member</span>
+                            New
                         </Button>
                     </PageHeader.ActionGroup.Primary>
-                    <PageHeader.ActionGroup.MobileMenu>
-                        <PageHeader.ActionGroup.MobileMenuTrigger>
-                            <Button aria-label="Open members action menu" className="justify-center" size="icon" variant="outline">
-                                <Ellipsis className="size-4" />
-                            </Button>
-                        </PageHeader.ActionGroup.MobileMenuTrigger>
-                        <PageHeader.ActionGroup.MobileMenuContent className="w-72">
-                            <div className="p-2">
-                                <InputGroup className="w-full">
-                                    <InputGroupInput placeholder="Search members..." type="search" />
-                                    <InputGroupAddon>
-                                        <Search className="size-4" />
-                                    </InputGroupAddon>
-                                </InputGroup>
-                            </div>
-                            <DropdownMenuItem>
-                                <Filter className="size-4" />
-                                Filter
-                            </DropdownMenuItem>
-                        </PageHeader.ActionGroup.MobileMenuContent>
-                    </PageHeader.ActionGroup.MobileMenu>
                 </PageHeader.ActionGroup>
             </PageHeader.Actions>
         </PageHeader>
     )
 };
 
-export const AnalyticsPageShape: Story = {
-    name: 'Analytics page (Site Stats)',
+export const TitleRowOnly: Story = {
+    name: 'Breadcrumb + actions',
     render: () => (
         <PageHeader>
             <PageHeader.Left>
-                <PageHeader.Title>Analytics</PageHeader.Title>
-            </PageHeader.Left>
-            <PageHeader.Actions>
-                <PageHeader.ContextStrip>
-                    <Globe className="size-4 text-muted-foreground" />
-                    <a className="text-sm font-medium" href="https://example.com">example.com</a>
-                    <span className="text-border">|</span>
-                    <span>1,234 online</span>
-                    <span className="size-2 rounded-full bg-green-500" />
-                </PageHeader.ContextStrip>
-            </PageHeader.Actions>
-            <PageHeader.Nav>
-                <Navbar>
-                    <NavbarNavigation>
-                        <PageMenu defaultValue="/analytics/" responsive>
-                            <PageMenuItem value="/analytics/">
-                                <Gauge />
-                                Overview
-                            </PageMenuItem>
-                            <PageMenuItem value="/analytics/web/">
-                                <Globe />
-                                Web traffic
-                            </PageMenuItem>
-                            <PageMenuItem value="/analytics/newsletters/">
-                                <Mail />
-                                Newsletters
-                            </PageMenuItem>
-                            <PageMenuItem value="/analytics/growth/">
-                                <Sprout />
-                                Growth
-                            </PageMenuItem>
-                        </PageMenu>
-                    </NavbarNavigation>
-                </Navbar>
-            </PageHeader.Nav>
-        </PageHeader>
-    )
-};
-
-export const AnalyticsPageWithHero: Story = {
-    name: 'Analytics page (Post Analytics)',
-    render: () => (
-        <PageHeader>
-            <PageHeader.TopRow>
                 <PageHeader.Breadcrumb>
                     <Breadcrumb>
                         <BreadcrumbList>
                             <BreadcrumbItem>
-                                <BreadcrumbLink href="/analytics">Analytics</BreadcrumbLink>
+                                <BreadcrumbLink href="/">Breadcrumbs</BreadcrumbLink>
                             </BreadcrumbItem>
                             <BreadcrumbSeparator />
                             <BreadcrumbItem>
-                                <BreadcrumbPage>Post analytics</BreadcrumbPage>
+                                <BreadcrumbPage>This page</BreadcrumbPage>
                             </BreadcrumbItem>
                         </BreadcrumbList>
                     </Breadcrumb>
                 </PageHeader.Breadcrumb>
-                <PageHeader.ContextStrip>
-                    <span>423 reading now</span>
-                    <span className="size-2 rounded-full bg-green-500" />
-                    <Button variant="outline">
-                        <Share className="size-4" />
-                        Share
-                    </Button>
-                    <Button size="icon" variant="outline">
+                <PageHeader.Title>Page title</PageHeader.Title>
+            </PageHeader.Left>
+            <PageHeader.Actions>
+                <PageHeader.ActionGroup>
+                    <InputGroup className="w-full sm:w-56">
+                        <InputGroupInput placeholder="Search..." type="search" />
+                        <InputGroupAddon>
+                            <Search className="size-4" />
+                        </InputGroupAddon>
+                    </InputGroup>
+                    <Button aria-label="More actions" size="icon" variant="outline">
                         <Ellipsis className="size-4" />
                     </Button>
-                </PageHeader.ContextStrip>
-            </PageHeader.TopRow>
-            <PageHeader.Hero>
-                <PageHeader.HeroImage src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=400" />
-                <PageHeader.HeroBody>
-                    <PageHeader.Title>The future of independent publishing</PageHeader.Title>
-                    <PageHeader.Meta>Published and sent on November 18, 2025 at 9:00 AM</PageHeader.Meta>
-                </PageHeader.HeroBody>
-            </PageHeader.Hero>
-            <PageHeader.Nav>
-                <Navbar>
-                    <NavbarNavigation>
-                        <PageMenu defaultValue="Overview" responsive>
-                            <PageMenuItem value="Overview">
-                                <Gauge />
-                                Overview
-                            </PageMenuItem>
-                            <PageMenuItem value="Web">
-                                <Globe />
-                                Web traffic
-                            </PageMenuItem>
-                            <PageMenuItem value="Newsletter">
-                                <Mail />
-                                Newsletter
-                            </PageMenuItem>
-                            <PageMenuItem value="Growth">
-                                <Sprout />
-                                Growth
-                            </PageMenuItem>
-                        </PageMenu>
-                    </NavbarNavigation>
-                </Navbar>
-            </PageHeader.Nav>
+                    <Button variant="outline">
+                        <FilterIcon className="size-4" />
+                        Filter
+                    </Button>
+                    <PageHeader.ActionGroup.Primary>
+                        <Button>
+                            <Plus className="size-4" />
+                            New
+                        </Button>
+                    </PageHeader.ActionGroup.Primary>
+                </PageHeader.ActionGroup>
+            </PageHeader.Actions>
+        </PageHeader>
+    )
+};
+
+export const TitleRowWithFilters: Story = {
+    name: 'Breadcrumb + actions + filters',
+    render: () => {
+        const [filters, setFilters] = useState<Filter[]>([
+            createFilter('memberStatus', 'is', ['complimentary'])
+        ]);
+
+        return (
+            <PageHeader>
+                <PageHeader.Left>
+                    <PageHeader.Breadcrumb>
+                        <Breadcrumb>
+                            <BreadcrumbList>
+                                <BreadcrumbItem>
+                                    <BreadcrumbLink href="/">Breadcrumbs</BreadcrumbLink>
+                                </BreadcrumbItem>
+                                <BreadcrumbSeparator />
+                                <BreadcrumbItem>
+                                    <BreadcrumbPage>This page</BreadcrumbPage>
+                                </BreadcrumbItem>
+                            </BreadcrumbList>
+                        </Breadcrumb>
+                    </PageHeader.Breadcrumb>
+                    <PageHeader.Title>Page title</PageHeader.Title>
+                </PageHeader.Left>
+                <PageHeader.Actions>
+                    <PageHeader.ActionGroup>
+                        <InputGroup className="w-full sm:w-56">
+                            <InputGroupInput placeholder="Search..." type="search" />
+                            <InputGroupAddon>
+                                <Search className="size-4" />
+                            </InputGroupAddon>
+                        </InputGroup>
+                        <Button aria-label="More actions" size="icon" variant="outline">
+                            <Ellipsis className="size-4" />
+                        </Button>
+                        <Button variant="outline">
+                            <FilterIcon className="size-4" />
+                            Filter
+                        </Button>
+                        <PageHeader.ActionGroup.Primary>
+                            <Button>
+                                <Plus className="size-4" />
+                                New
+                            </Button>
+                        </PageHeader.ActionGroup.Primary>
+                    </PageHeader.ActionGroup>
+                </PageHeader.Actions>
+                <PageHeader.FilterBar>
+                    <Filters
+                        addButtonText="Add filter"
+                        clearButtonIcon={<X className="size-4" />}
+                        clearButtonText="Clear"
+                        fields={memberStatusFields}
+                        filters={filters}
+                        showClearButton={true}
+                        onChange={setFilters}
+                    />
+                    <Button size="sm" variant="ghost">Save view</Button>
+                </PageHeader.FilterBar>
+            </PageHeader>
+        );
+    }
+};
+
+export const TabsAndFilters: Story = {
+    name: 'Tabs + view actions + filters (no title-row actions)',
+    render: () => {
+        const [filters, setFilters] = useState<Filter[]>([
+            createFilter('memberStatus', 'is', ['complimentary'])
+        ]);
+
+        return (
+            <PageHeader>
+                <PageHeader.Left>
+                    <PageHeader.Title>Page title</PageHeader.Title>
+                </PageHeader.Left>
+                <PageHeader.ViewTabs>
+                    <PageMenu defaultValue="overview" responsive>
+                        <PageMenuItem value="overview">
+                            <Gauge />
+                            Overview
+                        </PageMenuItem>
+                        <PageMenuItem value="newsletter">
+                            <Mail />
+                            Newsletter
+                        </PageMenuItem>
+                        <PageMenuItem value="growth">
+                            <Sprout />
+                            Growth
+                        </PageMenuItem>
+                    </PageMenu>
+                </PageHeader.ViewTabs>
+                <PageHeader.ViewActions>
+                    <Button variant="outline">
+                        <CalendarDays className="size-4" />
+                        Last 30 days
+                    </Button>
+                </PageHeader.ViewActions>
+                <PageHeader.FilterBar>
+                    <Filters
+                        addButtonText="Add filter"
+                        clearButtonIcon={<X className="size-4" />}
+                        clearButtonText="Clear"
+                        fields={memberStatusFields}
+                        filters={filters}
+                        showClearButton={true}
+                        onChange={setFilters}
+                    />
+                    <Button size="sm" variant="ghost">Save view</Button>
+                </PageHeader.FilterBar>
+            </PageHeader>
+        );
+    }
+};
+
+export const FullNoViewActions: Story = {
+    name: 'Breadcrumb + actions + tabs + filters (no view actions)',
+    render: () => {
+        const [filters, setFilters] = useState<Filter[]>([
+            createFilter('memberStatus', 'is', ['complimentary'])
+        ]);
+
+        return (
+            <PageHeader>
+                <PageHeader.Left>
+                    <PageHeader.Breadcrumb>
+                        <Breadcrumb>
+                            <BreadcrumbList>
+                                <BreadcrumbItem>
+                                    <BreadcrumbLink href="/">Breadcrumbs</BreadcrumbLink>
+                                </BreadcrumbItem>
+                                <BreadcrumbSeparator />
+                                <BreadcrumbItem>
+                                    <BreadcrumbPage>This page</BreadcrumbPage>
+                                </BreadcrumbItem>
+                            </BreadcrumbList>
+                        </Breadcrumb>
+                    </PageHeader.Breadcrumb>
+                    <PageHeader.Title>Page title</PageHeader.Title>
+                </PageHeader.Left>
+                <PageHeader.Actions>
+                    <PageHeader.ActionGroup>
+                        <InputGroup className="w-full sm:w-56">
+                            <InputGroupInput placeholder="Search..." type="search" />
+                            <InputGroupAddon>
+                                <Search className="size-4" />
+                            </InputGroupAddon>
+                        </InputGroup>
+                        <Button aria-label="More actions" size="icon" variant="outline">
+                            <Ellipsis className="size-4" />
+                        </Button>
+                        <Button variant="outline">
+                            <FilterIcon className="size-4" />
+                            Filter
+                        </Button>
+                        <PageHeader.ActionGroup.Primary>
+                            <Button>
+                                <Plus className="size-4" />
+                                New
+                            </Button>
+                        </PageHeader.ActionGroup.Primary>
+                    </PageHeader.ActionGroup>
+                </PageHeader.Actions>
+                <PageHeader.ViewTabs>
+                    <PageMenu defaultValue="overview" responsive>
+                        <PageMenuItem value="overview">
+                            <Gauge />
+                            Overview
+                        </PageMenuItem>
+                        <PageMenuItem value="newsletter">
+                            <Mail />
+                            Newsletter
+                        </PageMenuItem>
+                        <PageMenuItem value="growth">
+                            <Sprout />
+                            Growth
+                        </PageMenuItem>
+                    </PageMenu>
+                </PageHeader.ViewTabs>
+                <PageHeader.FilterBar>
+                    <Filters
+                        addButtonText="Add filter"
+                        clearButtonIcon={<X className="size-4" />}
+                        clearButtonText="Clear"
+                        fields={memberStatusFields}
+                        filters={filters}
+                        showClearButton={true}
+                        onChange={setFilters}
+                    />
+                    <Button size="sm" variant="ghost">Save view</Button>
+                </PageHeader.FilterBar>
+            </PageHeader>
+        );
+    }
+};
+
+export const TitleRowWithTabs: Story = {
+    name: 'Breadcrumb + actions + tabs',
+    render: () => (
+        <PageHeader>
+            <PageHeader.Left>
+                <PageHeader.Breadcrumb>
+                    <Breadcrumb>
+                        <BreadcrumbList>
+                            <BreadcrumbItem>
+                                <BreadcrumbLink href="/">Breadcrumbs</BreadcrumbLink>
+                            </BreadcrumbItem>
+                            <BreadcrumbSeparator />
+                            <BreadcrumbItem>
+                                <BreadcrumbPage>This page</BreadcrumbPage>
+                            </BreadcrumbItem>
+                        </BreadcrumbList>
+                    </Breadcrumb>
+                </PageHeader.Breadcrumb>
+                <PageHeader.Title>Page title</PageHeader.Title>
+            </PageHeader.Left>
+            <PageHeader.Actions>
+                <PageHeader.ActionGroup>
+                    <InputGroup className="w-full sm:w-56">
+                        <InputGroupInput placeholder="Search..." type="search" />
+                        <InputGroupAddon>
+                            <Search className="size-4" />
+                        </InputGroupAddon>
+                    </InputGroup>
+                    <Button aria-label="More actions" size="icon" variant="outline">
+                        <Ellipsis className="size-4" />
+                    </Button>
+                    <Button variant="outline">
+                        <FilterIcon className="size-4" />
+                        Filter
+                    </Button>
+                    <PageHeader.ActionGroup.Primary>
+                        <Button>
+                            <Plus className="size-4" />
+                            New
+                        </Button>
+                    </PageHeader.ActionGroup.Primary>
+                </PageHeader.ActionGroup>
+            </PageHeader.Actions>
+            <PageHeader.ViewTabs>
+                <PageMenu defaultValue="overview" responsive>
+                    <PageMenuItem value="overview">
+                        <Gauge />
+                        Overview
+                    </PageMenuItem>
+                    <PageMenuItem value="newsletter">
+                        <Mail />
+                        Newsletter
+                    </PageMenuItem>
+                    <PageMenuItem value="growth">
+                        <Sprout />
+                        Growth
+                    </PageMenuItem>
+                </PageMenu>
+            </PageHeader.ViewTabs>
         </PageHeader>
     )
 };
