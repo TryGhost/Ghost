@@ -1,5 +1,9 @@
 import setupGhostApi from '../../../src/utils/api';
-import {vi} from 'vitest';
+import {afterEach, vi} from 'vitest';
+
+afterEach(() => {
+    vi.restoreAllMocks();
+});
 
 test('should call counts endpoint', () => {
     const spy = vi.spyOn(window, 'fetch');

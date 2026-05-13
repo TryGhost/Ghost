@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/comments-ui",
-  "version": "1.4.14",
+  "version": "1.4.15",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -66,7 +66,7 @@
     "@testing-library/react": "12.1.5",
     "@tryghost/i18n": "workspace:*",
     "@vitejs/plugin-react": "4.7.0",
-    "@vitest/coverage-v8": "0.34.6",
+    "@vitest/coverage-v8": "4.1.2",
     "autoprefixer": "10.4.21",
     "bson-objectid": "2.0.4",
     "concurrently": "8.2.2",
@@ -80,9 +80,9 @@
     "postcss": "8.5.6",
     "sinon": "21.1.1",
     "tailwindcss": "3.4.18",
-    "vite": "5.4.21",
-    "vite-plugin-svgr": "3.3.0",
-    "vitest": "1.6.1"
+    "vite": "7.3.2",
+    "vite-plugin-svgr": "4.5.0",
+    "vitest": "4.1.2"
   },
   "nx": {
     "tags": [
