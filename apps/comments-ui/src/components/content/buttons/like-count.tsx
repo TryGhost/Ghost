@@ -1,4 +1,4 @@
-import {ReactComponent as LikeIcon} from '../../../images/icons/like.svg';
+import LikeIcon from '../../../images/icons/like.svg?react';
 
 type Props = {
     count: number;
