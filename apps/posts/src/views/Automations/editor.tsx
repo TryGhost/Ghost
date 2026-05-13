@@ -80,13 +80,13 @@ const AutomationEditor: React.FC = () => {
             switch (oldEditState) {
             case 'idle':
             case 'failed to publish':
-                return open ? 'confirming unpublish' : editState;
+                return open ? 'confirming unpublish' : oldEditState;
             case 'failed to unpublish':
                 return open ? 'confirming unpublish' : 'idle';
             case 'publishing':
                 throw new Error('It should be impossible to hit this state');
             case 'unpublishing':
-                return editState;
+                return oldEditState;
             case 'confirming unpublish':
                 return 'idle';
             default: {
