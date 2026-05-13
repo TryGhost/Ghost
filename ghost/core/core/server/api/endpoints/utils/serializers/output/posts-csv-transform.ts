@@ -4,8 +4,11 @@ const papaparse = require('papaparse');
 
 type Row = Record<string, unknown>;
 
-// Streaming Transform that converts post objects into CSV bytes one row at a time.
-// Pipe a Readable of post objects in, pipe CSV bytes out.
+/**
+ * Converts post objects into a CSV, one row at a time.
+ *
+ * Pipe a `Readable` of post objects in, pipe CSV string out.
+ */
 export function createCSVTransform(): Transform {
     let fields: string[] | null = null;
 
