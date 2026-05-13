@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
-import {Transform, TransformCallback} from 'stream';
-const papaparse = require('papaparse');
+import {Transform, TransformCallback} from 'node:stream';
+import * as papaparse from 'papaparse';
 
 type Row = Record<string, unknown>;
 
