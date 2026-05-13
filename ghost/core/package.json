@@ -219,7 +219,7 @@
     "node-fetch": "2.7.0",
     "node-jose": "2.2.0",
     "nodemailer": "8.0.5",
-    "on-headers": "^1.1.0",
+    "on-headers": "1.1.0",
     "otplib": "12.0.1",
     "papaparse": "5.5.3",
     "path-match": "1.2.4",
