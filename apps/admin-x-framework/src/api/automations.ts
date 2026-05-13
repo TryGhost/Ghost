@@ -1,6 +1,8 @@
+import ObjectId from 'bson-objectid';
 import {Meta, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
 
 export type AutomationStatus = 'active' | 'inactive';
+export const MAX_AUTOMATION_ACTIONS = 20;
 
 export type Automation = {
     id: string;
@@ -86,3 +88,94 @@ export const useEditAutomation = createMutation<AutomationDetailResponseType, Ed
         dataType
     }
 });
+
+const generateActionId = (): string => ObjectId().toHexString();
+
+// TODO NY-1253: replace this placeholder when email content can be edited.
+const PLACEHOLDER_EMAIL_LEXICAL = JSON.stringify({
+    root: {
+        children: [{
+            type: 'paragraph',
+            children: [{
+                type: 'text',
+                text: 'Untitled email body.'
+            }]
+        }],
+        direction: null,
+        format: '',
+        indent: 0,
+        type: 'root',
+        version: 1
+    }
+});
+
+const buildWaitAction = (): AutomationWaitAction => ({
+    id: generateActionId(),
+    type: 'wait',
+    data: {wait_hours: 24}
+});
+
+const buildSendEmailAction = (): AutomationSendEmailAction => ({
+    id: generateActionId(),
+    type: 'send_email',
+    data: {
+        email_subject: 'Untitled email',
+        email_lexical: PLACEHOLDER_EMAIL_LEXICAL,
+        email_sender_name: null,
+        email_sender_email: null,
+        email_sender_reply_to: null,
+        // TODO NY-1252: replace this placeholder when email design settings are available.
+        email_design_setting_id: 'placeholder'
+    }
+});
+
+// Anchor for where to splice a new action into the chain. `undefined` on either side means "no
+// real action there" — i.e. inserting at the head (no previousActionId) or the tail (no
+// nextActionId). When both are defined, we're inserting between two existing actions and the
+// direct edge between them is replaced.
+export type InsertActionAnchor = {
+    previousActionId?: string;
+    nextActionId?: string;
+};
+
+type SpliceActionArgs = {
+    detail: AutomationDetail;
+    action: AutomationAction;
+    anchor: InsertActionAnchor;
+};
+
+type InsertActionArgs = {
+    detail: AutomationDetail;
+    anchor: InsertActionAnchor;
+};
+
+const isActionId = (detail: AutomationDetail, id: string | undefined): id is string => (
+    !!id && detail.actions.some(action => action.id === id)
+);
+
+const spliceAction = ({detail, action, anchor}: SpliceActionArgs): AutomationDetail => {
+    const {previousActionId, nextActionId} = anchor;
+    const actions = [...detail.actions, action];
+    const removed = (previousActionId && nextActionId)
+        ? detail.edges.find(edge => edge.source_action_id === previousActionId && edge.target_action_id === nextActionId)
+        : undefined;
+    const remaining = removed ? detail.edges.filter(edge => edge !== removed) : detail.edges;
+    const newEdges = [...remaining];
+    // Anchor IDs that don't correspond to a real action are silently skipped — keeps the resulting
+    // edge graph well-formed even if the caller passes a stale ID.
+    if (isActionId(detail, previousActionId)) {
+        newEdges.push({source_action_id: previousActionId, target_action_id: action.id});
+    }
+    if (isActionId(detail, nextActionId)) {
+        newEdges.push({source_action_id: action.id, target_action_id: nextActionId});
+    }
+    return {...detail, actions, edges: newEdges};
+};
+
+export const insertWaitAction = ({detail, anchor}: InsertActionArgs): AutomationDetail => (
+    spliceAction({detail, action: buildWaitAction(), anchor})
+);
+
+export const insertSendEmailAction = ({detail, anchor}: InsertActionArgs): AutomationDetail => (
+    spliceAction({detail, action: buildSendEmailAction(), anchor})
+);

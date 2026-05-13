@@ -2,9 +2,82 @@ import AutomationCanvas from './components/automation-canvas';
 import AutomationHeader from './components/automation-header';
 import React from 'react';
 import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, type ButtonProps, LoadingIndicator} from '@tryghost/shade/components';
-import {AutomationStatus, useEditAutomation, useReadAutomation} from '@tryghost/admin-x-framework/api/automations';
+import {AutomationDetail, AutomationStatus, useEditAutomation, useReadAutomation} from '@tryghost/admin-x-framework/api/automations';
 import {useParams} from '@tryghost/admin-x-framework';
 import type {AutomationEditState} from './types';
+
+// Recursive structural equality. Used by the dirty check to compare the user-editable slice of an
+// automation (status, actions, edges) without depending on the key order of server-parsed JSON.
+const deepEqual = (a: unknown, b: unknown): boolean => {
+    if (a === b) {
+        return true;
+    }
+    if (a === null || b === null || typeof a !== 'object' || typeof b !== 'object') {
+        return false;
+    }
+    if (Array.isArray(a)) {
+        if (!Array.isArray(b) || a.length !== b.length) {
+            return false;
+        }
+        return a.every((item, index) => deepEqual(item, b[index]));
+    }
+    if (Array.isArray(b)) {
+        return false;
+    }
+    const aKeys = Object.keys(a as Record<string, unknown>);
+    const bKeys = Object.keys(b as Record<string, unknown>);
+    if (aKeys.length !== bKeys.length) {
+        return false;
+    }
+    return aKeys.every(key => deepEqual(
+        (a as Record<string, unknown>)[key],
+        (b as Record<string, unknown>)[key]
+    ));
+};
+
+const editableSlice = (automation: AutomationDetail) => ({
+    status: automation.status,
+    actions: automation.actions,
+    edges: automation.edges
+});
+
+type DerivePublishButtonChildrenArgs = {
+    editState: AutomationEditState;
+    draftStatus: AutomationStatus | undefined;
+    hasUnsavedChanges: boolean;
+};
+
+const derivePublishButtonChildren = ({
+    editState,
+    draftStatus,
+    hasUnsavedChanges
+}: DerivePublishButtonChildrenArgs): React.ReactNode => {
+    switch (editState) {
+    case 'publishing':
+        return (
+            <>
+                <LoadingIndicator color='light' size='sm' />
+                <span className='sr-only'>Publishing...</span>
+            </>
+        );
+    case 'failed to publish':
+        return 'Retry';
+    case 'idle':
+    case 'unpublishing':
+    case 'confirming unpublish':
+    case 'failed to unpublish':
+        if (draftStatus === 'active') {
+            return hasUnsavedChanges ? 'Publish changes' : 'Published';
+        }
+        // Inactive (or not yet loaded): "Publish" reads better than "Publish changes" because the
+        // automation has never been published in its current state.
+        return 'Publish';
+    default: {
+        const _exhaustive: never = editState;
+        throw new Error(`Unhandled edit state: ${_exhaustive}`);
+    }
+    }
+};
 
 const AutomationEditor: React.FC = () => {
     const {id = ''} = useParams<{id: string}>();
@@ -16,8 +89,37 @@ const AutomationEditor: React.FC = () => {
 
     const editMutation = useEditAutomation();
     const [editState, setEditState] = React.useState<AutomationEditState>('idle');
+
+    // Draft is the user-facing, locally mutable copy. The React Query cache stays as server truth;
+    // staged edits (adding steps, etc.) live here until the user publishes. Seeded once when the
+    // automation first loads, and reset to the response after every successful edit.
+    const [draft, setDraft] = React.useState<AutomationDetail | undefined>(undefined);
+    React.useEffect(() => {
+        if (automation && !draft) {
+            setDraft(automation);
+        }
+    }, [automation, draft]);
+
+    // Only compare the fields the user can edit; server-stamped fields like `updated_at` would
+    // otherwise flip the dirty flag immediately after every successful publish.
+    const hasUnsavedChanges = !!draft
+        && !!automation
+        && !deepEqual(editableSlice(draft), editableSlice(automation));
+
+    // A local edit clears the previous failure state — the user is moving forward, so the
+    // destructive Retry affordance shouldn't linger.
+    const onDraftChange = (next: AutomationDetail) => {
+        setDraft(next);
+        setEditState((prev) => {
+            if (prev === 'failed to publish' || prev === 'failed to unpublish') {
+                return 'idle';
+            }
+            return prev;
+        });
+    };
+
     const editStatus = (status: AutomationStatus): void => {
-        if (!automation) {
+        if (!draft) {
             throw new Error('Cannot edit an automation that has not loaded.');
         }
         let errorState: AutomationEditState;
@@ -37,13 +139,19 @@ const AutomationEditor: React.FC = () => {
         }
         editMutation.mutate(
             {
-                id: automation.id,
+                id: draft.id,
                 status,
-                actions: automation.actions,
-                edges: automation.edges
+                actions: draft.actions,
+                edges: draft.edges
             },
             {
-                onSuccess: () => setEditState('idle'),
+                onSuccess: (response) => {
+                    const updated = response.automations[0];
+                    if (updated) {
+                        setDraft(updated);
+                    }
+                    setEditState('idle');
+                },
                 onError: () => setEditState(errorState)
             }
         );
@@ -51,22 +159,15 @@ const AutomationEditor: React.FC = () => {
 
     let isConfirmUnpublishAlertOpen = false;
     let isEditRequestActive = false;
-    let isPublishButtonEnabled = automation?.status === 'inactive';
+    let isPublishButtonEnabled = draft?.status === 'inactive' || hasUnsavedChanges;
     let publishButtonVariant: ButtonProps['variant'] = 'default';
     let isTurnOffButtonEnabled = true;
-    let publishButtonChildren: React.ReactNode = automation?.status === 'active' ? 'Published' : 'Publish changes';
     let turnOffButtonChildren: React.ReactNode = 'Turn off';
     switch (editState) {
     case 'publishing':
         isEditRequestActive = true;
         isPublishButtonEnabled = false;
         isTurnOffButtonEnabled = false;
-        publishButtonChildren = (
-            <>
-                <LoadingIndicator color='light' size='sm' />
-                <span className='sr-only'>Publishing...</span>
-            </>
-        );
         break;
     case 'unpublishing':
         isEditRequestActive = true;
@@ -87,7 +188,6 @@ const AutomationEditor: React.FC = () => {
         break;
     case 'failed to publish':
         publishButtonVariant = 'destructive';
-        publishButtonChildren = 'Retry';
         break;
     case 'failed to unpublish':
         isConfirmUnpublishAlertOpen = true;
@@ -95,6 +195,11 @@ const AutomationEditor: React.FC = () => {
         turnOffButtonChildren = 'Retry';
         break;
     }
+    const publishButtonChildren = derivePublishButtonChildren({
+        editState,
+        draftStatus: draft?.status,
+        hasUnsavedChanges
+    });
 
     const onConfirmUnpublishOpenChange = (open: boolean): void => {
         setEditState((oldEditState) => {
@@ -121,7 +226,7 @@ const AutomationEditor: React.FC = () => {
     return (
         <div className='flex h-full w-full flex-col' data-testid='automation-editor'>
             <AutomationHeader
-                automation={automation}
+                automation={draft}
                 isLoadingAutomation={isLoadingAutomation}
                 isPublishButtonEnabled={isPublishButtonEnabled}
                 isTurnOffButtonEnabled={isTurnOffButtonEnabled}
@@ -131,7 +236,12 @@ const AutomationEditor: React.FC = () => {
                 onTurnOff={() => setEditState('confirming unpublish')}
             />
 
-            <AutomationCanvas automation={automation} isError={isError} isLoading={isLoadingAutomation} />
+            <AutomationCanvas
+                automation={draft}
+                isError={isError}
+                isLoading={isLoadingAutomation}
+                onChange={onDraftChange}
+            />
 
             <AlertDialog
                 open={isConfirmUnpublishAlertOpen}
