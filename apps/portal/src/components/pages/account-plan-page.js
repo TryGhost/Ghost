@@ -5,7 +5,7 @@ import CloseButton from '../common/close-button';
 import BackButton from '../common/back-button';
 import {MultipleProductsPlansSection} from '../common/plans-section';
 import {getDateString} from '../../utils/date-time';
-import {addMonths, formatNumber, formatPrice, getAvailablePrices, getCurrencySymbol, getFilteredPrices, isFreeMonthsOffer, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getOfferOffAmount, getPriceFromSubscription, getProductFromPrice, getSubscriptionFromId, getUpdatedOfferPrice, getUpgradeProducts, hasMultipleProductsFeature, isComplimentaryMember, isPaidMember} from '../../utils/helpers';
+import {addMonths, formatNumber, formatPrice, getAvailablePrices, getCurrencySymbol, getFilteredPrices, isArchivedTier, isFreeMonthsOffer, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getOfferOffAmount, getPriceFromSubscription, getProductFromPrice, getSubscriptionFromId, getUpdatedOfferPrice, getUpgradeProducts, hasMultipleProductsFeature, isComplimentaryMember, isGiftMember, isPaidMember} from '../../utils/helpers';
 import Interpolate from '@doist/react-interpolate';
 import {t} from '../../utils/i18n';
 import {translateCadence} from '../../utils/helpers';
@@ -93,6 +93,9 @@ const Header = ({showConfirmation, confirmationType, pendingOffer}) => {
 const CancelSubscriptionButton = ({member, onCancelSubscription, action, brandColor}) => {
     const {site} = useContext(AppContext);
     if (!member.paid) {
+        return null;
+    }
+    if (isGiftMember({member})) {
         return null;
     }
     const subscription = getMemberSubscription({member});
@@ -441,8 +444,8 @@ const PlansContainer = ({
     onAcceptRetentionOffer, onDeclineRetentionOffer
 }) => {
     const {member} = useContext(AppContext);
-    // Plan upgrade flow for free member or complimentary member
-    if (!isPaidMember({member}) || isComplimentaryMember({member})) {
+    // Plan upgrade flow for free, complimentary, or gift members.
+    if (!isPaidMember({member}) || isComplimentaryMember({member}) || isGiftMember({member})) {
         return (
             <UpgradePlanSection
                 {...{plans, selectedPlan, onPlanSelect, onPlanCheckout}}
@@ -493,10 +496,19 @@ export default class AccountPlanPage extends React.Component {
     }
 
     componentDidMount() {
-        const {member} = this.context;
+        const {member, site} = this.context;
         if (!member) {
             this.context.doAction('switchPage', {
                 page: 'signin'
+            });
+            return;
+        }
+
+        // Gift members on an active tier can only continue on the same tier via AccountHomePage "Continue" button
+        // Redirect them home if they land here via deep link (#/portal/account/plans)
+        if (isGiftMember({member}) && !isArchivedTier({member, site})) {
+            this.context.doAction('switchPage', {
+                page: 'accountHome'
             });
             return;
         }
@@ -611,7 +623,7 @@ export default class AccountPlanPage extends React.Component {
             selectedPlan = priceId;
         }
 
-        if (isPaidMember({member}) && !isComplimentaryMember({member})) {
+        if (isPaidMember({member}) && !isComplimentaryMember({member}) && !isGiftMember({member})) {
             const subscription = getMemberSubscription({member});
             const subscriptionId = subscription ? subscription.id : '';
             if (subscriptionId) {
@@ -627,8 +639,8 @@ export default class AccountPlanPage extends React.Component {
 
         const {member} = this.context;
 
-        // Work as checkboxes for free member plan selection and button for paid members
-        if (!isPaidMember({member}) || isComplimentaryMember({member})) {
+        // Work as checkboxes for free, complimentary, and gift members and as button for paid Stripe members.
+        if (!isPaidMember({member}) || isComplimentaryMember({member}) || isGiftMember({member})) {
             // Hack: React checkbox gets out of sync with dom state with instant update
             this.timeoutId = setTimeout(() => {
                 this.setState(() => {

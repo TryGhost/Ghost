@@ -10,7 +10,7 @@ const generateFeed = require('../../../../../core/frontend/services/rss/generate
 describe('RSS: Generate Feed', function () {
     const data = {};
     let baseUrl;
-    let routerManagerGetUrlByResourceIdStub;
+    let routerManagerGetUrlForResourceStub;
 
     // Static set of posts
     let posts;
@@ -45,7 +45,7 @@ describe('RSS: Generate Feed', function () {
     });
 
     beforeEach(function () {
-        routerManagerGetUrlByResourceIdStub = sinon.stub(routerManager, 'getUrlByResourceId');
+        routerManagerGetUrlForResourceStub = sinon.stub(routerManager, 'getUrlForResource');
 
         baseUrl = '/rss/';
 
@@ -91,7 +91,7 @@ describe('RSS: Generate Feed', function () {
             data.posts = posts;
 
             _.each(data.posts, function (post) {
-                routerManagerGetUrlByResourceIdStub.withArgs(post.id, {absolute: true}).returns('http://my-ghost-blog.com/' + post.slug + '/');
+                routerManagerGetUrlForResourceStub.withArgs(sinon.match({id: post.id}), {absolute: true}).returns('http://my-ghost-blog.com/' + post.slug + '/');
             });
 
             const xmlData = await generateFeed(baseUrl, data);
@@ -189,7 +189,7 @@ describe('RSS: Generate Feed', function () {
             data.posts = [posts[0]];
 
             _.each(data.posts, function (post) {
-                routerManagerGetUrlByResourceIdStub.withArgs(post.id, {absolute: true}).returns('http://my-ghost-blog.com/' + post.slug + '/');
+                routerManagerGetUrlForResourceStub.withArgs(sinon.match({id: post.id}), {absolute: true}).returns('http://my-ghost-blog.com/' + post.slug + '/');
             });
 
             const xmlData = await generateFeed(baseUrl, data);

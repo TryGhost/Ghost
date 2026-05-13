@@ -1,10 +1,9 @@
 import React from 'react';
+import membersAudienceImage from '../../../assets/members/members-1.jpg';
+import membersSubscribersImage from '../../../assets/members/members-2.jpg';
 import {LucideIcon} from '@tryghost/shade/utils';
-import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 
 const MembersHelpCards: React.FC = () => {
-    const {assetRoot} = getGhostPaths();
-
     return (
         <div className="mx-auto grid w-full max-w-lg grid-cols-1 gap-4 sm:grid-cols-2">
             <a
@@ -15,7 +14,7 @@ const MembersHelpCards: React.FC = () => {
             >
                 <div
                     className="h-36 w-full bg-cover bg-center"
-                    style={{backgroundImage: `url(${assetRoot}img/marketing/members-1.jpg)`}}
+                    style={{backgroundImage: `url(${membersAudienceImage})`}}
                 />
                 <div className="flex grow flex-col p-5">
                     <h4 className="text-sm font-semibold">
@@ -39,7 +38,7 @@ const MembersHelpCards: React.FC = () => {
             >
                 <div
                     className="h-36 w-full bg-cover bg-center"
-                    style={{backgroundImage: `url(${assetRoot}img/marketing/members-2.jpg)`}}
+                    style={{backgroundImage: `url(${membersSubscribersImage})`}}
                 />
                 <div className="flex grow flex-col p-5">
                     <h4 className="text-sm font-semibold">

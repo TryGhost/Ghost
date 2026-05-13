@@ -2,34 +2,46 @@ import {useContext, useLayoutEffect, useRef, useState} from 'react';
 import AppContext from '../../app-context';
 import CloseButton from '../common/close-button';
 import ActionButton from '../common/action-button';
+import GiftCard from '../common/gift-card';
 import LoadingPage from './loading-page';
 import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
-import giftCardOrbUrl from '../../images/gift-card-orb.svg';
+import giftCardNoiseUrl from '../../images/gift-card-noise.webp';
+import giftCardOrbUrl from '../../images/gift-card-orb.webp';
 import {getAvailableProducts, getCurrencySymbol, formatNumber, getStripeAmount, isCookiesDisabled, getActiveInterval} from '../../utils/helpers';
+import {getGiftDurationLabel} from '../../utils/gift-redemption-notification';
+import {t} from '../../utils/i18n';
 import useCardTilt from '../../utils/use-card-tilt';
 
-// TODO: wrap strings with t() once copy is finalised
-/* eslint-disable i18next/no-literal-string */
-
 export const GiftPageStyles = `
+@property --shine-angle {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 243.43deg;
+}
+
 .gh-portal-popup-container.full-size.gift,
 .gh-portal-popup-container.full-size.giftSuccess,
 .gh-portal-popup-container.full-size.giftRedemption {
     padding: 0;
 }
 
-/* Close icon sits over the brand-coloured right panel, so override the
-   default grey from Frame.styles.js to a translucent white. */
+.gh-portal-popup-container.full-size.gift .gh-portal-closeicon-container,
+.gh-portal-popup-container.full-size.giftSuccess .gh-portal-closeicon-container,
+.gh-portal-popup-container.full-size.giftRedemption .gh-portal-closeicon-container {
+    top: 32px;
+    right: 32px;
+}
+
 .gh-portal-popup-container.full-size.gift .gh-portal-closeicon,
 .gh-portal-popup-container.full-size.giftSuccess .gh-portal-closeicon,
 .gh-portal-popup-container.full-size.giftRedemption .gh-portal-closeicon {
-    color: rgba(255, 255, 255, 0.7);
+    color: rgba(255, 255, 255, 0.5);
 }
 
 .gh-portal-popup-container.full-size.gift .gh-portal-closeicon:hover,
 .gh-portal-popup-container.full-size.giftSuccess .gh-portal-closeicon:hover,
 .gh-portal-popup-container.full-size.giftRedemption .gh-portal-closeicon:hover {
-    color: rgba(255, 255, 255, 0.95);
+    color: rgba(255, 255, 255, 0.8);
 }
 
 .gh-portal-content.gift,
@@ -53,14 +65,11 @@ export const GiftPageStyles = `
     align-items: center;
     justify-content: center;
     background: var(--white);
-    padding: 64px 48px 128px;
+    padding: 64px 48px;
 }
 
-/* On the selection page only, the inner content's vertical position is
-   locked once on first paint by useLayoutEffect (so tier switches push the
-   CTA down rather than re-centering). flex-start lets that JS-applied
-   margin-top do the actual centering math. Other gift pages keep the
-   default flex centering. */
+/* Selection page only: useLayoutEffect locks the inner's vertical
+   position; flex-start lets that JS-applied margin-top do the centering. */
 .gh-portal-content.gift .gh-portal-gift-checkout-left {
     align-items: flex-start;
 }
@@ -92,6 +101,7 @@ export const GiftPageStyles = `
     font-size: 1.6rem;
     line-height: 1.45em;
     color: var(--grey3);
+    text-wrap: pretty;
 }
 
 .gh-portal-gift-checkout-section {
@@ -114,13 +124,9 @@ export const GiftPageStyles = `
 .gh-portal-gift-checkout-tiers {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
 }
 
-/* Each tier renders as an accordion item: the radio button row sits at top,
-   and the benefits accordion expands below when selected. The border, radius
-   and selected-state styling live on the wrapper so the benefits feel like
-   they belong to the same card. */
 .gh-portal-gift-checkout-tier-item {
     background: var(--white);
     border: 1px solid var(--grey11);
@@ -133,6 +139,10 @@ export const GiftPageStyles = `
     border-color: var(--grey9);
 }
 
+.gh-portal-gift-checkout-tiers.single .gh-portal-gift-checkout-tier-item:hover {
+    border-color: var(--grey11);
+}
+
 .gh-portal-gift-checkout-tier-item.selected {
     border-color: var(--brandcolor);
     background: color-mix(in srgb, var(--brandcolor) 6%, var(--white));
@@ -141,7 +151,7 @@ export const GiftPageStyles = `
 
 .gh-portal-gift-checkout-tier {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 10px;
     width: 100%;
     background: transparent;
@@ -153,10 +163,15 @@ export const GiftPageStyles = `
     color: inherit;
 }
 
+.gh-portal-gift-checkout-tiers.single .gh-portal-gift-checkout-tier {
+    cursor: default;
+}
+
 .gh-portal-gift-checkout-tier-radio {
     flex-shrink: 0;
     width: 18px;
     height: 18px;
+    margin-top: 3px;
     border-radius: 50%;
     border: 1.5px solid var(--grey9);
     background: var(--white);
@@ -180,6 +195,20 @@ export const GiftPageStyles = `
     transform: translate(-50%, -50%);
 }
 
+.gh-portal-gift-checkout-tier-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.gh-portal-gift-checkout-tier-heading {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+}
+
 .gh-portal-gift-checkout-tier-name {
     flex: 1;
     font-size: 1.5rem;
@@ -193,15 +222,20 @@ export const GiftPageStyles = `
     color: var(--grey0);
 }
 
-/* Accordion wrapper inside each tier — collapses and expands its benefit
-   list using the grid-template-rows trick, matching the 0.3s ease used by
-   the right-side details toggle. */
+.gh-portal-gift-checkout-tier-description {
+    margin: 0;
+    margin-top: -2px;
+    font-size: 1.4rem;
+    line-height: 1.4;
+    color: var(--grey4);
+}
+
 .gh-portal-gift-checkout-tier-benefits {
     display: grid;
     grid-template-rows: 0fr;
     transition: grid-template-rows 0.3s ease;
-    /* Clip the grid item: even with min-height: 0, the inner's padding still
-       renders ~20px tall, which Chrome leaks the first benefit through. */
+    /* overflow + padding-free inner: Chrome leaks the first benefit through
+       a 0fr track if the grid item has padding (min-size includes padding). */
     overflow: hidden;
 }
 
@@ -210,11 +244,6 @@ export const GiftPageStyles = `
 }
 
 .gh-portal-gift-checkout-tier-benefits-inner {
-    /* min-height: 0 overrides the default min-height: auto on grid items.
-       Padding on this element contributes to the grid track's min-size
-       (Chrome resolves 0fr to the inner padding-bottom otherwise), so we
-       keep the inner padding-free and put the spacing on the benefits
-       list instead. */
     min-height: 0;
     overflow: hidden;
 }
@@ -241,18 +270,16 @@ export const GiftPageStyles = `
 .gh-portal-gift-checkout-benefit svg {
     width: 14px;
     height: 14px;
-    margin-top: 4px;
+    margin-top: 3px;
     color: var(--grey1);
     flex-shrink: 0;
 }
 
-/* Inside the brand-coloured right panel, lighten benefit text + checkmark
-   so they read against the saturated background. The checkmark SVG uses a
-   hard-coded stroke so we override it explicitly rather than via color. */
 .gh-portal-gift-checkout-right-panel .gh-portal-gift-checkout-benefit {
     color: rgba(255, 255, 255, 0.85);
 }
 
+/* Checkmark SVG hard-codes its stroke so it can't be themed via color. */
 .gh-portal-gift-checkout-right-panel .gh-portal-gift-checkout-benefit svg path {
     stroke: rgba(255, 255, 255, 0.85);
 }
@@ -261,15 +288,10 @@ export const GiftPageStyles = `
     border-radius: 999px;
 }
 
-/* Sticky wrapper around the CTA: keeps the button visible at the bottom of
-   the viewport when the left column is long enough to scroll, and adds a
-   white→transparent fade at the top so scrolling content tucks under it
-   instead of cutting against the button edge.
-   Same pattern as .gh-portal-btn-container.sticky in frame.styles.js. */
 .gh-portal-gift-checkout-cta-wrapper {
     position: sticky;
     bottom: 0;
-    margin: 32px 0 -64px;
+    margin: 0 0 -64px;
     padding: 32px 0 64px;
     background: linear-gradient(0deg, rgba(var(--whitergb), 1) 60%, rgba(var(--whitergb), 0) 100%);
     z-index: 1;
@@ -292,17 +314,18 @@ export const GiftPageStyles = `
     overflow-y: auto;
 }
 
-/* Inner brand-coloured panel that holds the card. Inset 12px from top, right
-   and bottom of the right column (no left inset — flush with the column
-   boundary), with 32px rounded corners. */
 .gh-portal-gift-checkout-right-panel {
     flex: 1;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    background: var(--brandcolor);
+    background:
+        linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0) 100%),
+        var(--brandcolor);
     border-radius: 32px;
-    padding: 64px 48px 128px;
+    padding: 64px 48px 64px;
+    overflow-y: auto;
+    min-height: 0;
 }
 
 .gh-portal-gift-checkout-card-stack {
@@ -310,17 +333,19 @@ export const GiftPageStyles = `
     flex-direction: column;
     align-items: center;
     width: 100%;
-    max-width: 440px;
+    max-width: 280px;
+    margin-block: auto;
+    flex-shrink: 0;
 }
 
-/* Wraps the card so we can tilt it forward when "Gift details" is expanded,
-   making the benefits feel like they're sliding out from behind the card.
-   Composes cleanly with the cursor-driven tilt applied to the card itself. */
 .gh-portal-gift-checkout-card-frame {
     width: 100%;
     transform-style: preserve-3d;
     perspective: 1200px;
     transition: transform 0.3s ease;
+    position: sticky;
+    top: 0;
+    z-index: 1;
 }
 
 .gh-portal-gift-checkout-card-stack[data-revealing="true"] .gh-portal-gift-checkout-card-frame {
@@ -374,89 +399,91 @@ export const GiftPageStyles = `
     overflow: hidden;
 }
 
-/* Card is split into two zones via a hard-stop gradient: the brand-coloured
-   top (~70%) holds the duration + tier in white text, the white bottom (~30%)
-   holds the site icon + name. flex-direction: column-reverse so the existing
-   site → meta DOM order maps to bottom → top visually. */
+.gh-portal-gift-checkout-details-description {
+    margin: 0 0 12px;
+    font-size: 1.45rem;
+    line-height: 1.4;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.gh-portal-gift-checkout-details-description:last-child {
+    margin-bottom: 0;
+}
+
 .gh-portal-gift-checkout-card {
     position: relative;
     width: 100%;
-    max-width: 440px;
-    aspect-ratio: 1.7 / 1;
-    background: linear-gradient(to bottom, color-mix(in srgb, var(--brandcolor) 70%, var(--white)) 75%, var(--white) 75%);
+    max-width: 280px;
+    aspect-ratio: 1 / 1.45;
+    background:
+        linear-gradient(var(--shine-angle, 243.43deg), rgba(255, 255, 255, 0) 3.94%, rgba(255, 255, 255, 0.31) 49.99%, rgba(255, 255, 255, 0) 95.16%),
+        linear-gradient(0deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.07)),
+        var(--brandcolor);
     border-radius: 24px;
-    padding: 28px 28px 20px;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 24px 48px rgba(var(--blackrgb), 0.08), 0 4px 12px rgba(var(--blackrgb), 0.04);
     display: flex;
-    flex-direction: column-reverse;
-    justify-content: space-between;
+    flex-direction: column;
     overflow: hidden;
+    isolation: isolate;
     transform-style: preserve-3d;
     will-change: transform;
 }
 
-/* Soft orb glow layer on the brand surface. Sits behind the content
-   (z-index 0) and is clipped to the brand area only (bottom: 25%) so it
-   doesn't bleed into the white strip. */
-.gh-portal-gift-checkout-card::after {
+.gh-portal-gift-checkout-card::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    bottom: 25%;
+    bottom: 0;
     background-image: url("${giftCardOrbUrl}");
-    background-size: 100% auto;
-    background-position: 100px 100%;
+    background-size: 120% auto;
+    background-position: -60% -180%;
     background-repeat: no-repeat;
     pointer-events: none;
     z-index: 0;
-    opacity: 0.4;
+    opacity: 0.2;
 }
 
-/* Make sure the card content paints above the orb glow. */
-.gh-portal-gift-checkout-card > * {
-    position: relative;
-    z-index: 1;
-}
-
-/* Lanyard slot — small semi-transparent pill at the top center of the card,
-   so the brand-coloured top reads as an ID-badge surface. */
-.gh-portal-gift-checkout-card::before {
+.gh-portal-gift-checkout-card::after {
     content: '';
     position: absolute;
-    top: 16px;
+    inset: 0;
+    background-image: url("${giftCardNoiseUrl}");
+    background-size: 192px 192px;
+    background-position: 50% 50%;
+    background-repeat: repeat;
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0.1;
+}
+
+.gh-portal-gift-checkout-card > * {
+    position: relative;
+}
+
+.gh-portal-gift-checkout-card-notch {
+    position: absolute;
+    top: 20px;
     left: 50%;
     width: 56px;
-    height: 8px;
-    border-radius: 4px;
-    background: rgba(255, 255, 255, 0.25);
+    height: 12px;
+    border-radius: 12px;
+    background: #000;
+    background: color-mix(in srgb, var(--brandcolor) 65%, #000 35%);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 0 rgba(255, 255, 255, 0.18);
     transform: translateX(-50%);
-    z-index: 2;
+    pointer-events: none;
+    z-index: 3;
 }
 
-
-.gh-portal-gift-checkout-card-site {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.gh-portal-gift-checkout-card-site-icon {
-    width: 24px;
-    height: 24px;
-    object-fit: cover;
-}
-
-.gh-portal-gift-checkout-card-site-name {
-    font-size: 1.4rem;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    color: var(--grey0);
+.gh-portal-gift-checkout-card-meta {
+    padding: 56px 28px 0;
+    z-index: 3;
 }
 
 .gh-portal-gift-checkout-card-duration {
-    font-size: 2.6rem;
+    font-size: 2.8rem;
     font-weight: 600;
     color: var(--white);
     letter-spacing: -0.01em;
@@ -465,39 +492,110 @@ export const GiftPageStyles = `
 
 .gh-portal-gift-checkout-card-tier {
     margin-top: 6px;
-    font-size: 1.4rem;
-    color: rgba(255, 255, 255, 0.8);
+    font-size: 1.5rem;
+    color: var(--white);
     line-height: 1.3;
+}
+
+.gh-portal-gift-checkout-card-details {
+    margin-top: auto;
+    padding: 0 28px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 3;
+}
+
+.gh-portal-gift-checkout-card-detail-label {
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: -5px;
+}
+
+.gh-portal-gift-checkout-card-detail-value {
+    font-size: 1.3rem;
+    font-weight: 500;
+    color: var(--white);
+}
+
+.gh-portal-gift-checkout-card-site {
+    padding: 16px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.gh-portal-gift-checkout-card-site::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--white);
+    z-index: 1;
+}
+
+.gh-portal-gift-checkout-card-site-icon {
+    width: 22px;
+    height: 22px;
+    object-fit: cover;
+    position: relative;
+    z-index: 3;
+}
+
+.gh-portal-gift-checkout-card-site-name {
+    font-size: 1.4rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--grey0);
+    position: relative;
+    z-index: 3;
 }
 
 
 @media (max-width: 880px) {
+    .gh-portal-popup-container.full-size.gift,
+    .gh-portal-popup-container.full-size.giftSuccess,
+    .gh-portal-popup-container.full-size.giftRedemption {
+        padding: 0 !important;
+    }
+
     .gh-portal-gift-checkout {
         grid-template-columns: 1fr;
         min-height: 0;
     }
 
-    /* Drop sticky/100vh sizing — on mobile the right column should sit naturally
-       above the left content, taking only the height it needs. */
     .gh-portal-gift-checkout-right {
         order: -1;
         position: static;
         height: auto;
-        padding: 12px 12px 0;
+        padding: 0;
         overflow: visible;
     }
 
     .gh-portal-gift-checkout-right-panel {
-        padding: 32px 24px;
+        padding: 56px 24px 32px;
+        border-radius: 0 0 32px 32px;
     }
 
     .gh-portal-gift-checkout-left {
-        padding: 32px 24px 80px;
+        padding: 32px 24px 0;
+    }
+
+    /* Screens without a sticky CTA wrapper need their own bottom padding. */
+    .gh-portal-content.giftSuccess .gh-portal-gift-checkout-left,
+    .gh-portal-content.giftRedemption .gh-portal-gift-checkout-left {
+        padding-bottom: 24px;
     }
 
     .gh-portal-gift-checkout-card,
     .gh-portal-gift-checkout-card-stack {
-        max-width: 320px;
+        max-width: 240px;
+    }
+
+    .gh-portal-gift-checkout-cta-wrapper {
+        bottom: 0;
+        margin: 0;
+        padding: 32px 0 24px;
     }
 }
 
@@ -527,32 +625,30 @@ function GiftPriceSwitch({selectedInterval, setSelectedInterval}) {
                 className={'gh-portal-btn' + (selectedInterval === 'month' ? ' active' : '')}
                 onClick={() => setSelectedInterval('month')}
             >
-                1 month
+                {t('1 month')}
             </button>
             <button
                 data-test-button='switch-yearly'
                 className={'gh-portal-btn' + (selectedInterval === 'year' ? ' active' : '')}
                 onClick={() => setSelectedInterval('year')}
             >
-                1 year
+                {t('1 year')}
             </button>
         </div>
     );
 }
 
-function getTierPriceLabel(product, selectedInterval) {
-    const activePrice = selectedInterval === 'month' ? product.monthlyPrice : product.yearlyPrice;
-
-    if (!activePrice) {
+export function formatGiftValue(price) {
+    const {amount, currency} = price ?? {};
+    if (amount === null || amount === undefined || !currency) {
         return '';
     }
-
-    const currencySymbol = getCurrencySymbol(activePrice.currency);
-    return `${currencySymbol}${formatNumber(getStripeAmount(activePrice.amount))}`;
+    return `${getCurrencySymbol(currency)}${formatNumber(getStripeAmount(amount))}`;
 }
 
-function getDurationLabel(selectedInterval) {
-    return selectedInterval === 'month' ? '1 month' : '1 year';
+function getTierPriceLabel(product, selectedInterval) {
+    const activePrice = selectedInterval === 'month' ? product.monthlyPrice : product.yearlyPrice;
+    return formatGiftValue(activePrice);
 }
 
 const GiftPage = () => {
@@ -569,6 +665,8 @@ const GiftPage = () => {
     // half. After this single measurement we never recompute — so when the
     // benefits change height on tier switch, only the bottom of the column
     // (the CTA) shifts, leaving the title and tier picker anchored.
+    // Skipped on mobile (single-column stack) where natural top-aligned flow
+    // is what we want; centering would push content under the sticky CTA.
     useLayoutEffect(() => {
         if (centeringDoneRef.current) {
             return;
@@ -576,6 +674,11 @@ const GiftPage = () => {
         const inner = innerRef.current;
         const left = leftRef.current;
         if (!inner || !left) {
+            return;
+        }
+        if (typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 880px)').matches) {
+            inner.style.marginTop = '';
+            centeringDoneRef.current = true;
             return;
         }
         const leftRect = left.getBoundingClientRect();
@@ -614,9 +717,9 @@ const GiftPage = () => {
                             <div className='gh-portal-gift-checkout-bg' aria-hidden='true' />
                             <div className='gh-portal-gift-checkout-inner'>
                                 <header className='gh-portal-gift-checkout-header'>
-                                    <h1 className='gh-portal-main-title'>Gift a membership</h1>
+                                    <h1 className='gh-portal-main-title'>{t('Gift a membership')}</h1>
                                     <p className='gh-portal-gift-checkout-subtitle'>
-                                        Gift subscriptions are not available right now.
+                                        {t('Gift subscriptions are not available right now.')}
                                     </p>
                                 </header>
                             </div>
@@ -629,6 +732,7 @@ const GiftPage = () => {
     }
 
     const activeProduct = products.find(p => p.id === selectedProductId) || products[0];
+    const isSingleTier = products.length === 1;
     const isPurchasing = action === 'checkoutGift:running';
     const isDisabled = isCookiesDisabled() || isPurchasing;
 
@@ -650,9 +754,9 @@ const GiftPage = () => {
                         <div className='gh-portal-gift-checkout-bg' aria-hidden='true' />
                         <div className='gh-portal-gift-checkout-inner' ref={innerRef}>
                             <header className='gh-portal-gift-checkout-header'>
-                                <h1 className='gh-portal-main-title'>Gift a membership</h1>
+                                <h1 className='gh-portal-main-title'>{t('Gift a membership')}</h1>
                                 <p className='gh-portal-gift-checkout-subtitle'>
-                                    Share a full membership to {siteTitle} with a friend or colleague
+                                    {t('Share a full membership to {siteTitle} with a friend or colleague', {siteTitle})}
                                 </p>
                             </header>
 
@@ -664,27 +768,40 @@ const GiftPage = () => {
                             </div>
 
                             <div className='gh-portal-gift-checkout-section'>
-                                <div className='gh-portal-gift-checkout-label'>Tier</div>
-                                <div className='gh-portal-gift-checkout-tiers' role='radiogroup' aria-label='Tier'>
+                                <div className='gh-portal-gift-checkout-label'>{isSingleTier ? t('Membership details') : t('Tier')}</div>
+                                <div
+                                    className={'gh-portal-gift-checkout-tiers' + (isSingleTier ? ' single' : '')}
+                                    role={isSingleTier ? undefined : 'radiogroup'}
+                                    aria-label={isSingleTier ? undefined : t('Tier')}
+                                >
                                     {products.map((product) => {
                                         const isSelected = product.id === activeProduct.id;
                                         const benefits = product.benefits || [];
                                         return (
                                             <div
                                                 key={product.id}
-                                                className={'gh-portal-gift-checkout-tier-item' + (isSelected ? ' selected' : '')}
+                                                className={'gh-portal-gift-checkout-tier-item' + (isSelected && !isSingleTier ? ' selected' : '')}
                                             >
                                                 <button
                                                     type='button'
-                                                    role='radio'
-                                                    aria-checked={isSelected}
+                                                    role={isSingleTier ? undefined : 'radio'}
+                                                    aria-checked={isSingleTier ? undefined : isSelected}
                                                     className='gh-portal-gift-checkout-tier'
                                                     onClick={() => setSelectedProductId(product.id)}
                                                     data-test-tier={product.name}
                                                 >
-                                                    <span className='gh-portal-gift-checkout-tier-radio' aria-hidden='true' />
-                                                    <span className='gh-portal-gift-checkout-tier-name'>{product.name}</span>
-                                                    <span className='gh-portal-gift-checkout-tier-price'>{getTierPriceLabel(product, activeInterval)}</span>
+                                                    {!isSingleTier && (
+                                                        <span className='gh-portal-gift-checkout-tier-radio' aria-hidden='true' />
+                                                    )}
+                                                    <div className='gh-portal-gift-checkout-tier-content'>
+                                                        <div className='gh-portal-gift-checkout-tier-heading'>
+                                                            <span className='gh-portal-gift-checkout-tier-name'>{product.name}</span>
+                                                            <span className='gh-portal-gift-checkout-tier-price'>{getTierPriceLabel(product, activeInterval)}</span>
+                                                        </div>
+                                                        {product.description && (
+                                                            <p className='gh-portal-gift-checkout-tier-description'>{product.description}</p>
+                                                        )}
+                                                    </div>
                                                 </button>
                                                 {benefits.length > 0 && (
                                                     <div
@@ -698,7 +815,7 @@ const GiftPage = () => {
                                                                     const key = benefit?.id || `benefit-${idx}`;
                                                                     return (
                                                                         <div className='gh-portal-gift-checkout-benefit' key={key}>
-                                                                            <CheckmarkIcon alt='' />
+                                                                            <CheckmarkIcon aria-hidden='true' focusable='false' />
                                                                             <span>{benefit.name}</span>
                                                                         </div>
                                                                     );
@@ -716,7 +833,7 @@ const GiftPage = () => {
                             <div className='gh-portal-gift-checkout-cta-wrapper'>
                                 <ActionButton
                                     dataTestId='purchase-gift'
-                                    label='Continue to checkout'
+                                    label={t('Continue')}
                                     onClick={handlePurchase}
                                     disabled={isDisabled}
                                     isRunning={isPurchasing}
@@ -731,19 +848,14 @@ const GiftPage = () => {
                     <div className='gh-portal-gift-checkout-right' {...cardTiltProps}>
                         <div className='gh-portal-gift-checkout-right-panel'>
                             <div className='gh-portal-gift-checkout-card-stack'>
-                                <div ref={cardRef} className='gh-portal-gift-checkout-card'>
-                                    <div className='gh-portal-gift-checkout-card-site'>
-                                        {siteIcon && (
-                                            <img className='gh-portal-gift-checkout-card-site-icon' src={siteIcon} alt='' />
-                                        )}
-                                        <span className='gh-portal-gift-checkout-card-site-name'>{siteTitle}</span>
-                                    </div>
-                                    <div className='gh-portal-gift-checkout-card-meta'>
-                                        <div className='gh-portal-gift-checkout-card-duration'>{getDurationLabel(activeInterval)}</div>
-                                        <div className='gh-portal-gift-checkout-card-tier'>{`${activeProduct.name} membership`}</div>
-                                    </div>
-                                </div>
-
+                                <GiftCard
+                                    cardRef={cardRef}
+                                    duration={getGiftDurationLabel({cadence: activeInterval, duration: 1})}
+                                    tierName={activeProduct.name}
+                                    giftValue={getTierPriceLabel(activeProduct, activeInterval)}
+                                    siteIcon={siteIcon}
+                                    siteTitle={siteTitle}
+                                />
                             </div>
                         </div>
                     </div>

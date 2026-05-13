@@ -608,6 +608,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
         },
 
         async checkoutGift({tierId, cadence} = {}) {
+            const siteUrlObj = new URL(siteUrl);
             const url = endpointFor({type: 'members', resource: 'create-stripe-checkout-session'});
 
             let identity = null;
@@ -617,6 +618,9 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 // Not authenticated - that's fine for gift purchases
             }
 
+            const cancelUrlObj = window.location.href.startsWith(siteUrlObj.href) ? new URL(window.location.href) : new URL(siteUrl);
+            cancelUrlObj.hash = '#/portal/gift';
+
             const body = {
                 identity,
                 metadata: {
@@ -624,7 +628,8 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 },
                 type: 'gift',
                 tierId,
-                cadence
+                cadence,
+                cancelUrl: cancelUrlObj.href
             };
 
             const response = await makeRequest({

@@ -173,8 +173,9 @@ const Content = () => {
     const showMainForm = canComment;
     const showDisabledBox = !canComment && isCommentingDisabled;
     const showCtaBox = !canComment && !isCommentingDisabled;
+    const useThreading = !!labs.commentsThreads;
 
-    const commentsComponents = comments.map(comment => <Comment key={comment.id} comment={comment} />);
+    const commentsComponents = comments.map(comment => <Comment key={comment.id} comment={comment} useThreading={useThreading} />);
 
     return (
         <>

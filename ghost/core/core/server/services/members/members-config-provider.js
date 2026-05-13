@@ -1,5 +1,4 @@
 const logging = require('@tryghost/logging');
-const {URL} = require('url');
 const createKeypair = require('keypair');
 
 class MembersConfigProvider {

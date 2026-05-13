@@ -50,7 +50,7 @@ describe('GiftService', function () {
         enqueueWelcomeEmailRun: sinon.SinonStub;
     };
     let staffServiceEmails: {
-        notifyGiftReceived: sinon.SinonStub;
+        notifyGiftPurchased: sinon.SinonStub;
         notifyGiftSubscriptionStarted: sinon.SinonStub;
     };
     let giftEmailService: {
@@ -102,7 +102,7 @@ describe('GiftService', function () {
             enqueueWelcomeEmailRun: sinon.stub().resolves(undefined)
         };
         staffServiceEmails = {
-            notifyGiftReceived: sinon.stub(),
+            notifyGiftPurchased: sinon.stub(),
             notifyGiftSubscriptionStarted: sinon.stub()
         };
         giftEmailService = {
@@ -280,9 +280,9 @@ describe('GiftService', function () {
 
             await service.recordPurchase(purchaseData);
 
-            sinon.assert.calledOnce(staffServiceEmails.notifyGiftReceived);
+            sinon.assert.calledOnce(staffServiceEmails.notifyGiftPurchased);
 
-            const emailData = staffServiceEmails.notifyGiftReceived.getCall(0).args[0];
+            const emailData = staffServiceEmails.notifyGiftPurchased.getCall(0).args[0];
 
             assert.equal(emailData.name, 'Member Name');
             assert.equal(emailData.email, 'member@example.com');
@@ -304,7 +304,7 @@ describe('GiftService', function () {
                 {message: 'Tier not found: tier_1'}
             );
 
-            sinon.assert.notCalled(staffServiceEmails.notifyGiftReceived);
+            sinon.assert.notCalled(staffServiceEmails.notifyGiftPurchased);
             sinon.assert.notCalled(giftEmailService.sendPurchaseConfirmation);
         });
 
@@ -313,9 +313,9 @@ describe('GiftService', function () {
 
             await service.recordPurchase({...purchaseData, stripeCustomerId: null});
 
-            sinon.assert.calledOnce(staffServiceEmails.notifyGiftReceived);
+            sinon.assert.calledOnce(staffServiceEmails.notifyGiftPurchased);
 
-            const emailData = staffServiceEmails.notifyGiftReceived.getCall(0).args[0];
+            const emailData = staffServiceEmails.notifyGiftPurchased.getCall(0).args[0];
 
             assert.equal(emailData.name, null);
             assert.equal(emailData.email, 'buyer@example.com');

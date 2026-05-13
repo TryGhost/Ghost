@@ -1,0 +1,58 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Overview / Layers" />
+
+<div className="sb-doc">
+
+# Layers
+
+<p className="excerpt">Shade is a stack of layers. Each layer has one job and lives in one folder. Pick the right layer when you build, and the rest of the system answers itself.</p>
+
+## The stack
+
+| Layer | What it is | Lives in | Examples |
+|---|---|---|---|
+| **Tokens** | Named visual values (colour, size, duration). No markup. | `theme-variables.css`, `tailwind.theme.css` | `--background`, `--text-base`, `--radius-md` |
+| **Primitives** | Layout vocabulary — rows, columns, padding, gaps. No domain meaning. | `src/components/primitives/` | `Stack`, `Inline`, `Box`, `Grid`, `Container`, `Text` |
+| **Components** | Generic, accessible UI controls. Same on every page. | `src/components/ui/` | `Button`, `Input`, `Dialog`, `Tabs`, `Card` |
+| **Recipes** | Shared visual rules (class-string functions). No JSX. | `src/components/ui/<name>.ts` | `inputSurface` — chrome shared by Input, Textarea, Select trigger |
+| **Patterns** | Product-shaped compositions. Know Ghost. | `src/components/patterns/` | `PageHeader`, `ListPage`, `Filters`, `KpiCard`, `GhAreaChart` |
+
+Each layer is allowed to use anything below it. The reverse is forbidden: a Button can't reach into a Pattern, a Primitive can't import a Component.
+
+## Picking a layer
+
+Ask: **what is this thing doing?**
+
+- Changing spacing, alignment, or structure? → **Primitive** (`Stack`, `Inline`, `Box`, `Grid`, `Container`).
+- A generic interactive control with no Ghost-specific knowledge? → **Component** (use an existing one; otherwise add to `components/ui/`).
+- The same chrome, focus ring, or visual rule appears on multiple components? → **Recipe** (a class-string function in `components/ui/`).
+- It knows about Ghost — KPIs, members, posts, newsletters? → **Pattern** (`components/patterns/<name>.tsx`).
+
+Quick gut check: **generic name → component; Ghost-shaped name → pattern.** `Button` is web-y. `KpiCard` is Ghost-y.
+
+## When to add to Shade at all
+
+The default is to **keep code local first**. A component used in one place doesn't belong in a design system.
+
+Promote to Shade when:
+
+1. **Real reuse exists, not expected reuse.** You've already built substantially the same shape a second time in a different surface.
+2. **The shape has settled.** Slots and composition have been stable across both local copies for at least one iteration.
+3. **The name is generic.** `PageHeader`, `KpiCard`, `PostShareModal` describe concepts. `MembersFilterBar` names a single surface and will date the moment that surface changes.
+4. **API is slots, not props.** 3–6 named subcomponents (`.Title`, `.Actions`, `.Body`) — not a prop bag.
+5. **State stays with the consumer.** No `useQuery` inside a pattern. No app context reads. Bring-your-own state.
+
+When in doubt: **keep it local**, build it again somewhere else, then promote.
+
+## Posts–Stats (temporary)
+
+The `posts-stats/` folder is an interim home for components shared between the Posts and Stats apps until they merge. Don't generalise it — that category goes away on its own.
+
+## Where to go next
+
+- **Browse the galleries.** The sidebar lists every primitive, component, recipe, and pattern with live examples.
+- **For implementation rules** (where new files go, naming, ShadCN guardrails, commit format): see [Contributing](?path=/docs/overview-contributing--docs).
+- **For agent-facing rules**: see `apps/shade/AGENTS.md` — the canonical decision flow for AI-assisted work.
+
+</div>

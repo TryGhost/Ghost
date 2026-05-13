@@ -277,8 +277,8 @@ export default class StateBridgeService extends Service.extend(Evented) {
         
         // Check if current route matches any of the specified routes
         const routeMatches = routes.some((route) => {
-            // Support both exact matches and subpath matches (e.g., "members"
-            // matches "members.index")
+            // Support both exact matches and subpath matches (e.g., "settings"
+            // matches "settings.history")
             return currentRouteName === route || currentRouteName.startsWith(route + '.');
         });
         

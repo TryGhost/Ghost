@@ -135,8 +135,11 @@ module.exports = class AdapterManager {
                     throw new errors.IncorrectUsageError({err});
                 }
 
-                // Catch missing dependencies BUT NOT missing adapter
-                if (!err.message.includes(pathToAdapter)) {
+                // Catch missing dependencies BUT NOT missing adapter.
+                // Only check the first line — Node appends a "Require stack"
+                // that includes the adapter's own path, which would false-positive.
+                const firstLine = err.message.split('\n')[0];
+                if (!firstLine.includes(pathToAdapter)) {
                     throw new errors.IncorrectUsageError({
                         message: `You are missing dependencies in your adapter ${pathToAdapter}`,
                         err

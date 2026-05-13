@@ -6,6 +6,7 @@ export * from './components/ui/badge';
 export * from './components/ui/banner';
 export * from './components/ui/breadcrumb';
 export * from './components/ui/button';
+export * from './components/ui/calendar';
 export * from './components/ui/card';
 export * from './components/ui/chart';
 export * from './components/ui/checkbox';
@@ -47,11 +48,6 @@ export * from './components/ui/textarea';
 export * from './components/ui/toggle-group';
 export * from './components/ui/tooltip';
 export * from './components/ui/trend-badge';
-
-// Feature components — product-shaped compositions of UI primitives
-export * from './components/features/charts/gh-chart';
-export * from './components/features/kpi/kpi-card';
-export * from './components/features/kpi/kpi-tabs';
 
 export type {DropdownMenuCheckboxItemProps as DropdownMenuCheckboxItemProps} from '@radix-ui/react-dropdown-menu';
 

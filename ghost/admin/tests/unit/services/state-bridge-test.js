@@ -531,7 +531,7 @@ describe('Unit: Service: state-bridge', function () {
     });
 
     describe('#getRouteUrl', function () {
-        let postsController, membersController, originalLookup;
+        let postsController, settingsHistoryController, originalLookup;
 
         beforeEach(function () {
             // Mock controllers
@@ -540,9 +540,9 @@ describe('Unit: Service: state-bridge', function () {
                 type: null
             });
 
-            membersController = EmberObject.create({
-                queryParams: [{filterParam: 'filter'}],
-                filterParam: null
+            settingsHistoryController = EmberObject.create({
+                queryParams: [{excludedEvents: 'excludedEvents'}],
+                excludedEvents: null
             });
 
             // Stub the owner's lookup method to return our mock controllers
@@ -551,8 +551,8 @@ describe('Unit: Service: state-bridge', function () {
                 if (name === 'controller:posts') {
                     return postsController;
                 }
-                if (name === 'controller:members') {
-                    return membersController;
+                if (name === 'controller:settings.history') {
+                    return settingsHistoryController;
                 }
                 // Fall back to original lookup for services, etc.
                 return originalLookup(name);
@@ -586,10 +586,10 @@ describe('Unit: Service: state-bridge', function () {
         });
 
         it('returns base route when on a subpath of the route', function () {
-            sinon.stub(service.router, 'currentRouteName').get(() => 'members.index');
+            sinon.stub(service.router, 'currentRouteName').get(() => 'settings.history');
 
-            const url = service.getRouteUrl('members');
-            expect(url).to.equal('members');
+            const url = service.getRouteUrl('settings');
+            expect(url).to.equal('settings');
         });
 
         it('generates URL with provided query params', function () {
@@ -639,11 +639,11 @@ describe('Unit: Service: state-bridge', function () {
 
         it('handles mapped query params correctly', function () {
             sinon.stub(service.router, 'currentRouteName').get(() => 'dashboard');
-            membersController.set('filterParam', 'status:free');
+            settingsHistoryController.set('excludedEvents', 'user.updated');
 
-            // The controller has {filterParam: 'filter'}, so the URL should use 'filter' not 'filterParam'
-            const url = service.getRouteUrl('members');
-            expect(url).to.equal('members?filter=status%3Afree');
+            // The controller has {excludedEvents: 'excludedEvents'}, so the URL should use the mapped param
+            const url = service.getRouteUrl('settings.history');
+            expect(url).to.equal('settings.history?excludedEvents=user.updated');
         });
 
         it('returns base route when controller does not exist', function () {
@@ -697,10 +697,10 @@ describe('Unit: Service: state-bridge', function () {
         });
 
         it('returns true when current route is a subpath of provided route', function () {
-            sinon.stub(service.router, 'currentRouteName').get(() => 'members.index');
+            sinon.stub(service.router, 'currentRouteName').get(() => 'settings.history');
             sinon.stub(service.customViews, 'activeView').get(() => null);
 
-            const isActive = service.isRouteActive('members');
+            const isActive = service.isRouteActive('settings');
             expect(isActive).to.be.true;
         });
 

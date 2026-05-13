@@ -30,17 +30,17 @@ module.exports = class ResourceService {
      */
     async getByURL(url) {
         const path = this.#urlUtils.absoluteToRelative(url.href, {withoutSubdirectory: true});
-        const resource = this.#urlService.getResource(path);
-        if (resource?.config?.type === 'posts') {
+        const resource = await this.#urlService.facade.resolveUrl(path);
+        if (resource?.type === 'posts') {
             return {
                 type: 'post',
-                id: ObjectID.createFromHexString(resource.data.id)
+                id: ObjectID.createFromHexString(resource.id)
             };
         }
-        if (resource?.config?.type === 'pages') {
+        if (resource?.type === 'pages') {
             return {
                 type: 'page',
-                id: ObjectID.createFromHexString(resource.data.id)
+                id: ObjectID.createFromHexString(resource.id)
             };
         }
         return {

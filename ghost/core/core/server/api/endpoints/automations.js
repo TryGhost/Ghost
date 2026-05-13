@@ -1,6 +1,12 @@
-const domainEvents = require('@tryghost/domain-events');
-const models = require('../../models');
-const StartAutomationsPollEvent = require('../../services/welcome-email-automations/events/start-automations-poll-event');
+const errors = require('@tryghost/errors');
+const automationsApi = require('../../services/automations/automations-api');
+
+const VALID_AUTOMATION_STATUSES = ['active', 'inactive'];
+
+const messages = {
+    invalidAutomationStatus: 'Automation status must be one of: active, inactive.',
+    invalidAutomationStatusHelp: 'Use "active" or "inactive" for automation status.'
+};
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -12,15 +18,7 @@ const controller = {
         },
         permissions: true,
         async query() {
-            const automations = await models.WelcomeEmailAutomation.findAll();
-            return {
-                data: automations.map(automation => ({
-                    id: automation.get('id'),
-                    name: automation.get('name'),
-                    slug: automation.get('slug'),
-                    status: automation.get('status')
-                }))
-            };
+            return await automationsApi.browse();
         }
     },
 
@@ -32,38 +30,33 @@ const controller = {
             'id'
         ],
         permissions: true,
-        query(frame) {
-            // TODO: NY-1265 - replace this static payload with persisted automation data.
-            return {
-                id: frame.data.id,
-                slug: 'member-welcome-email-free',
-                name: 'Welcome email',
-                status: 'active',
-                created_at: '2026-05-05T00:00:00.000Z',
-                updated_at: '2026-05-05T00:00:00.000Z',
-                actions: [{
-                    id: '67f3f3f3f3f3f3f3f3f3f3f4',
-                    type: 'delay',
-                    data: {
-                        delay_hours: 24
-                    }
-                }, {
-                    id: '67f3f3f3f3f3f3f3f3f3f3f5',
-                    type: 'send email',
-                    data: {
-                        email_subject: 'Welcome!',
-                        email_lexical: '{"root":{"children":[]}}',
-                        email_sender_name: null,
-                        email_sender_email: null,
-                        email_sender_reply_to: null,
-                        email_design_setting_id: '680000000000000000000001'
-                    }
-                }],
-                edges: [{
-                    source_action_id: '67f3f3f3f3f3f3f3f3f3f3f4',
-                    target_action_id: '67f3f3f3f3f3f3f3f3f3f3f5'
-                }]
-            };
+        async query(frame) {
+            return await automationsApi.read(frame.data.id);
+        }
+    },
+
+    edit: {
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'id'
+        ],
+        validation(frame) {
+            const status = frame.data?.automations?.[0]?.status;
+
+            if (!VALID_AUTOMATION_STATUSES.includes(status)) {
+                throw new errors.ValidationError({
+                    message: messages.invalidAutomationStatus,
+                    context: status === undefined ? undefined : `Received status "${status}".`,
+                    help: messages.invalidAutomationStatusHelp,
+                    property: 'status'
+                });
+            }
+        },
+        permissions: true,
+        async query(frame) {
+            return await automationsApi.edit(frame.options.id, frame.data.automations[0]);
         }
     },
 
@@ -77,7 +70,7 @@ const controller = {
             method: 'poll'
         },
         query() {
-            domainEvents.dispatch(StartAutomationsPollEvent.create());
+            automationsApi.requestPoll();
         }
     }
 };

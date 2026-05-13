@@ -73,7 +73,12 @@ module.exports = function collectionController(req, res, next) {
              * People should always invert their filters to ensure that the database query loads unique posts per collection.
              */
             result.posts = _.filter(result.posts, (post) => {
-                if (routerManager.owns(res.routerOptions.identifier, post.id)) {
+                // Tag the resource with the router-level type — the post
+                // objects from the API have their DB `type` column stripped
+                // by the serializer, but the collection router knows what
+                // type it serves.
+                const resource = {...post, type: res.routerOptions.resourceType};
+                if (routerManager.ownsResource(res.routerOptions.identifier, resource)) {
                     return post;
                 }
 

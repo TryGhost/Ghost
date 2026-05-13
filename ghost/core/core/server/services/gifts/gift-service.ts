@@ -80,7 +80,7 @@ interface GiftEmailService {
 }
 
 interface StaffServiceEmails {
-    notifyGiftReceived(data: {
+    notifyGiftPurchased(data: {
         name: string | null;
         email: string;
         memberId: string | null;
@@ -208,7 +208,7 @@ export class GiftService {
         }
 
         try {
-            await this.deps.staffServiceEmails.notifyGiftReceived({
+            await this.deps.staffServiceEmails.notifyGiftPurchased({
                 name: member?.get('name') ?? null,
                 email: member?.get('email') ?? data.buyerEmail,
                 memberId: member?.id ?? null,

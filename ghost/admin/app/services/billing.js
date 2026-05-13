@@ -1,6 +1,11 @@
+import * as Sentry from '@sentry/ember';
 import Service, {inject as service} from '@ember/service';
 import {inject} from 'ghost-admin/decorators/inject';
 import {tracked} from '@glimmer/tracking';
+
+const BILLING_APP_LOAD_TIMEOUT_MS = 10_000;
+const BILLING_APP_LOAD_RETRY_DELAYS_MS = [1_000];
+const BILLING_APP_LOAD_FAILURE_MESSAGE = 'Billing app failed to become ready';
 
 export default class BillingService extends Service {
     @service ghostPaths;
@@ -17,6 +22,14 @@ export default class BillingService extends Service {
     @tracked action = null;
     @tracked ownerUser = null;
 
+    billingAppLoaded = false;
+    billingAppLoadTimeout = null;
+    billingAppRetryTimeout = null;
+    billingAppLoadAttempts = 0;
+    billingAppLoadFailureReported = false;
+    billingAppLoadTimeoutMs = BILLING_APP_LOAD_TIMEOUT_MS;
+    billingAppLoadRetryDelaysMs = BILLING_APP_LOAD_RETRY_DELAYS_MS;
+
     constructor() {
         super(...arguments);
 
@@ -27,6 +40,11 @@ export default class BillingService extends Service {
                 }
             });
         }
+    }
+
+    willDestroy() {
+        super.willDestroy(...arguments);
+        this.clearBillingAppLoadMonitor();
     }
 
     handleRouteChangeInIframe(destinationRoute) {
@@ -45,6 +63,97 @@ export default class BillingService extends Service {
 
     _isBillingIframeLoaded() {
         return this.getBillingIframe() !== null && this.getBillingIframe().contentWindow;
+    }
+
+    startBillingAppLoadMonitor() {
+        if (this.billingAppLoadTimeout || this.billingAppRetryTimeout) {
+            return;
+        }
+
+        if (this.billingAppLoaded || this.billingAppLoadFailureReported) {
+            this.billingAppLoaded = false;
+            this.billingAppLoadAttempts = 0;
+            this.billingAppLoadFailureReported = false;
+        }
+
+        this.billingAppLoadAttempts += 1;
+        this.billingAppLoadTimeout = setTimeout(() => {
+            this.billingAppLoadTimeout = null;
+            this.handleBillingAppLoadTimeout();
+        }, this.billingAppLoadTimeoutMs);
+    }
+
+    handleBillingAppLoadTimeout() {
+        const retryDelay = this.billingAppLoadRetryDelaysMs[this.billingAppLoadAttempts - 1];
+
+        if (retryDelay !== undefined) {
+            this.billingAppRetryTimeout = setTimeout(() => {
+                this.billingAppRetryTimeout = null;
+                this.reloadBillingIframe();
+                this.startBillingAppLoadMonitor();
+            }, retryDelay);
+            return;
+        }
+
+        this.reportBillingAppLoadFailure();
+    }
+
+    reloadBillingIframe() {
+        const iframe = this.getBillingIframe();
+
+        if (!iframe || this.billingAppLoaded) {
+            return;
+        }
+
+        iframe.src = this.getIframeURL();
+    }
+
+    markBillingAppLoaded() {
+        this.billingAppLoaded = true;
+        this.clearBillingAppLoadMonitor();
+    }
+
+    clearBillingAppLoadMonitor() {
+        if (this.billingAppLoadTimeout) {
+            clearTimeout(this.billingAppLoadTimeout);
+            this.billingAppLoadTimeout = null;
+        }
+
+        if (this.billingAppRetryTimeout) {
+            clearTimeout(this.billingAppRetryTimeout);
+            this.billingAppRetryTimeout = null;
+        }
+    }
+
+    reportBillingAppLoadFailure() {
+        if (this.billingAppLoadFailureReported) {
+            return;
+        }
+
+        this.billingAppLoadFailureReported = true;
+
+        if (!this.config.sentry_dsn) {
+            return;
+        }
+
+        Sentry.captureException(BILLING_APP_LOAD_FAILURE_MESSAGE, {
+            contexts: {
+                ghost: {
+                    billing_monitor: {
+                        attempts: this.billingAppLoadAttempts,
+                        has_billing_url: !!this.config.hostSettings?.billing?.url,
+                        is_force_upgrade: !!this.config.hostSettings?.forceUpgrade,
+                        location_hash: window.location.hash,
+                        retry_delays_ms: this.billingAppLoadRetryDelaysMs
+                    }
+                }
+            },
+            tags: {
+                source: 'billing-app-load-monitor',
+                route: this.router.currentRouteName,
+                path: window.location.hash
+            }
+        });
     }
 
     getIframeURL() {
