@@ -4,8 +4,11 @@ import nock from 'nock';
 import moment from 'moment';
 
 const {agentProvider, fixtureManager, mockManager, resetRateLimits} = require('../../../utils/e2e-framework');
+const configUtils = require('../../../utils/config-utils');
 const models = require('../../../../core/server/models');
 const UpdateCheckService = require('../../../../core/server/services/update-check/update-check-service');
+const notificationsModule = require('../../../../core/server/services/notifications');
+const ghsa = require('../../../../core/server/services/notifications/feeds/ghsa') as typeof import('../../../../core/server/services/notifications/feeds/ghsa');
 const api = require('../../../../core/server/api').endpoints;
 const ghostVersion = require('@tryghost/version');
 
@@ -56,10 +59,11 @@ describe('Notification domain (integration)', function () {
         await resetRateLimits();
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         sinon.restore();
         nock.cleanAll();
         mockManager.restore();
+        await configUtils.restore();
     });
 
     // ─────────────────────────────────────────────────────────────────
@@ -451,6 +455,134 @@ describe('Notification domain (integration)', function () {
 
             const stored = await readStoredNotifications();
             assert.equal(stored.filter(n => n.id === messageId).length, 1);
+        });
+    });
+
+    // ─────────────────────────────────────────────────────────────────
+    // GHSA producer
+    // ─────────────────────────────────────────────────────────────────
+
+    describe('GHSA producer', function () {
+        const {notifications} = notificationsModule;
+
+        function buildAdvisory(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+            return {
+                ghsa_id: 'GHSA-test-0000',
+                severity: 'critical',
+                html_url: 'https://github.com/TryGhost/Ghost/security/advisories/GHSA-test-0000',
+                state: 'published',
+                vulnerabilities: [{
+                    package: {ecosystem: 'npm', name: 'ghost'},
+                    vulnerable_version_range: '>= 0.0.1'
+                }],
+                ...overrides
+            };
+        }
+
+        function makeFetchImpl(advisories: unknown[]): typeof fetch {
+            const impl = async () => ({
+                ok: true,
+                status: 200,
+                statusText: 'OK',
+                json: async () => advisories
+            });
+            return impl as unknown as typeof fetch;
+        }
+
+        async function poll(advisories: unknown[]): Promise<void> {
+            await ghsa.runCheck(notifications, makeFetchImpl(advisories));
+        }
+
+        it('stores a dismissible alert and sends the templated email for a critical advisory affecting the current version', async function () {
+            const advisory = buildAdvisory({
+                ghsa_id: 'GHSA-aaaa-bbbb-cccc',
+                severity: 'critical'
+            });
+
+            await poll([advisory]);
+
+            const stored = await readStoredNotifications();
+            const match = stored.find(n => n.id === 'ghsa-GHSA-aaaa-bbbb-cccc');
+            assert.ok(match, 'expected a stored notification for the critical advisory');
+            assert.equal(match!.type, 'alert');
+            assert.equal(match!.dismissible, true);
+            assert.equal(match!.custom, true);
+            assert.equal(match!.top, true);
+            assert.match(match!.message!, /GHSA-aaaa-bbbb-cccc/);
+
+            mockManager.assert.sentEmail({
+                to: /@/,
+                subject: 'Critical Ghost security update'
+            });
+        });
+
+        it('stores a dismissible banner-only notification and does not send an email for a high-severity advisory', async function () {
+            const advisory = buildAdvisory({
+                ghsa_id: 'GHSA-high-only',
+                severity: 'high'
+            });
+
+            await poll([advisory]);
+
+            const stored = await readStoredNotifications();
+            const match = stored.find(n => n.id === 'ghsa-GHSA-high-only');
+            assert.ok(match, 'expected a stored notification for the high advisory');
+            assert.equal(match!.type, 'info');
+            assert.equal(match!.dismissible, true);
+
+            mockManager.assert.sentEmailCount(0);
+        });
+
+        it('ignores advisories whose vulnerable_version_range does not include the running Ghost version', async function () {
+            const advisory = buildAdvisory({
+                ghsa_id: 'GHSA-old-only',
+                severity: 'critical',
+                vulnerabilities: [{
+                    package: {ecosystem: 'npm', name: 'ghost'},
+                    vulnerable_version_range: '< 0.1.0'
+                }]
+            });
+
+            await poll([advisory]);
+
+            const stored = await readStoredNotifications();
+            assert.equal(stored.find(n => n.id === 'ghsa-GHSA-old-only'), undefined);
+            mockManager.assert.sentEmailCount(0);
+        });
+
+        it('ignores draft/closed advisories that are not in the published state', async function () {
+            const advisory = buildAdvisory({
+                ghsa_id: 'GHSA-draft',
+                state: 'draft'
+            });
+
+            await poll([advisory]);
+
+            const stored = await readStoredNotifications();
+            assert.equal(stored.find(n => n.id === 'ghsa-GHSA-draft'), undefined);
+            mockManager.assert.sentEmailCount(0);
+        });
+
+        it('does not register the GHSA cron when updateCheck:enabled is false', function () {
+            configUtils.set('updateCheck:enabled', false);
+            const fakeJobs = {addJob: sinon.spy()};
+
+            ghsa.register(fakeJobs);
+
+            sinon.assert.notCalled(fakeJobs.addJob);
+        });
+
+        it('registers a daily cron pointing at the GHSA worker when enabled', function () {
+            configUtils.set('updateCheck:enabled', true);
+            const fakeJobs = {addJob: sinon.spy()};
+
+            ghsa.register(fakeJobs);
+
+            sinon.assert.calledOnce(fakeJobs.addJob);
+            const spec = fakeJobs.addJob.firstCall.args[0];
+            assert.equal(spec.name, 'ghsa-check');
+            assert.match(spec.at, /^\d{1,2} \d{1,2} \d{1,2} \* \* \*$/);
+            assert.match(spec.job, /feeds\/ghsa\/worker\.(ts|js)$/);
         });
     });
 });

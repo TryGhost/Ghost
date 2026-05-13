@@ -11,7 +11,8 @@
     },
     "updateCheck": {
         "url": "https://updates.ghost.org",
-        "forceUpdate": false
+        "forceUpdate": false,
+        "advisoriesUrl": "https://api.github.com/repos/TryGhost/Ghost/security-advisories"
     },
     "privacy": false,
     "security": {

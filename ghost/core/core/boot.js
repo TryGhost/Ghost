@@ -448,6 +448,10 @@ async function initBackgroundServices({config}) {
     const updateCheck = require('./server/services/update-check');
     updateCheck.scheduleRecurringJobs();
 
+    const jobsService = require('./server/services/jobs');
+    const notifications = require('./server/services/notifications');
+    notifications.registerWorkers(jobsService);
+
     const milestonesService = require('./server/services/milestones');
     milestonesService.initAndRun();
 

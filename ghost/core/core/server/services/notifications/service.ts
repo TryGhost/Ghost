@@ -22,6 +22,8 @@ export interface NotificationInput {
     dismissible?: boolean;
     top?: boolean;
     id?: string;
+    template?: string;
+    variables?: Record<string, string>;
 }
 
 export class NotificationService {
