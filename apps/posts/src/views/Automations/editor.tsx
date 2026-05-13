@@ -91,6 +91,7 @@ const AutomationEditor: React.FC = () => {
                 onPublish={handlePublish}
                 onTurnOff={handleTurnOffRequested}
             />
+
             <AutomationCanvas automation={automation} isError={isError} isLoading={isLoadingAutomation} />
 
             <AlertDialog open={isConfirmingUnpublish} onOpenChange={handleConfirmingUnpublishChange}>
