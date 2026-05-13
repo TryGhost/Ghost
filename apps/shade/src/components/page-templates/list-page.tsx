@@ -7,11 +7,28 @@ type PropsWithChildrenAndClassName = React.PropsWithChildren & {
 
 type ListPageProps = PropsWithChildrenAndClassName;
 
-function ListPageToolbar({className, children}: PropsWithChildrenAndClassName) {
+/**
+ * Sticky, full-bleed header stack. Place `PageHeader`, `ViewBar`, and/or
+ * `FilterBar` directly inside — they stack with a consistent gap.
+ *
+ * Full-bleed is achieved by negating the parent's horizontal padding
+ * (`-mx-4 lg:-mx-8`) and re-applying it (`px-4 lg:px-8`), so the blurred
+ * background spans edge-to-edge while content stays aligned with the body.
+ *
+ * Pass `sticky={false} blurredBackground={false}` to `PageHeader` when using
+ * it here — stickiness and blur are handled by `ListPage.Header` instead.
+ */
+function ListPageHeader({className, children}: PropsWithChildrenAndClassName) {
     return (
         <div
-            className={className}
-            data-list-page='toolbar'
+            className={cn(
+                '-mx-4 lg:-mx-8 px-4 lg:px-8',
+                'sticky top-0 z-50',
+                'bg-gradient-to-b from-background via-background/70 to-background/70 backdrop-blur-md dark:bg-black',
+                'flex flex-col gap-3 py-4',
+                className
+            )}
+            data-list-page='header'
         >
             {children}
         </div>
@@ -41,7 +58,7 @@ function ListPagePagination({className, children}: PropsWithChildrenAndClassName
 }
 
 type ListPageComponent = React.FC<ListPageProps> & {
-    Toolbar: React.FC<PropsWithChildrenAndClassName>;
+    Header: React.FC<PropsWithChildrenAndClassName>;
     Body: React.FC<PropsWithChildrenAndClassName>;
     Pagination: React.FC<PropsWithChildrenAndClassName>;
 };
@@ -50,13 +67,13 @@ type ListPageComponent = React.FC<ListPageProps> & {
  * ListPage is the canonical recipe for the **List page** type — the recurring
  * structure used by Members, Tags, Comments, Automations, etc.
  *
- * It is intentionally thin: a vertical layout container that provides the
- * standard gap and padding for list-page chrome. Bring your own `PageHeader`,
- * `FilterBar`, table/list, and empty state.
+ * It is intentionally thin: a vertical flex-col stack with horizontal padding.
+ * Drop the named slots in as direct children.
  *
  * Composition:
- *  - `<PageHeader>...</PageHeader>` (typically first child)
- *  - `<ListPage.Toolbar>` — optional padded row for `FilterBar` or other controls
+ *  - `<ListPage.Header>` — sticky, blurred, full-bleed chrome band. Place
+ *    `PageHeader`, `ViewBar`, and/or `FilterBar` directly inside as siblings.
+ *    `FilterBar` auto-collapses when it has no active filters.
  *  - `<ListPage.Body>` — main content area (table, list, or empty state)
  *  - `<ListPage.Pagination>` — optional centered pagination row (load-more, page links)
  */
@@ -64,7 +81,7 @@ const ListPage: ListPageComponent = Object.assign(
     function ListPage({className, children}: ListPageProps) {
         return (
             <div
-                className={cn('flex flex-col gap-4 h-full min-h-0', className)}
+                className={cn('flex flex-col h-full min-h-0 px-4 lg:px-8', className)}
                 data-list-page='list-page'
             >
                 {children}
@@ -72,7 +89,7 @@ const ListPage: ListPageComponent = Object.assign(
         );
     },
     {
-        Toolbar: ListPageToolbar,
+        Header: ListPageHeader,
         Body: ListPageBody,
         Pagination: ListPagePagination
     }
@@ -80,7 +97,7 @@ const ListPage: ListPageComponent = Object.assign(
 
 export {
     ListPage,
-    ListPageToolbar,
+    ListPageHeader,
     ListPageBody,
     ListPagePagination
 };
