@@ -18,7 +18,7 @@ const EXPORT_WITH_RELATED = [
 
 function parseExportLimit(limit) {
     if (limit === 'all') {
-        return null;
+        return Infinity;
     }
 
     if (limit === undefined || limit === null) {
@@ -68,7 +68,7 @@ class PostsExporter {
     async export({filter, order, limit}) {
         const exportContext = await this.#getExportContext();
         const requestedLimit = parseExportLimit(limit);
-        const pageLimit = requestedLimit === null ? EXPORT_BATCH_SIZE : Math.min(EXPORT_BATCH_SIZE, requestedLimit);
+        const pageLimit = Math.min(EXPORT_BATCH_SIZE, requestedLimit);
 
         return Readable.from(this.#streamPosts({
             filter,
@@ -96,7 +96,7 @@ class PostsExporter {
      * @param {object} options
      * @param {string} [options.filter]
      * @param {string} [options.order]
-     * @param {number|null} options.requestedLimit - null means unbounded
+     * @param {number} options.requestedLimit - Infinity means unbounded
      * @param {number} options.pageLimit
      * @param {ExportContext} options.exportContext
      * @returns {AsyncGenerator<object>}
@@ -105,7 +105,7 @@ class PostsExporter {
         let page = 1;
         let emitted = 0;
 
-        while (requestedLimit === null || emitted < requestedLimit) {
+        while (emitted < requestedLimit) {
             const posts = await this.#models.Post.findPage({
                 filter: filter ?? 'status:published,status:sent',
                 order,
@@ -120,7 +120,7 @@ class PostsExporter {
                 break;
             }
 
-            const remaining = requestedLimit === null ? posts.data.length : requestedLimit - emitted;
+            const remaining = requestedLimit - emitted;
             const mapped = this.#mapPosts(posts.data.slice(0, remaining), exportContext);
 
             for (const row of mapped) {
