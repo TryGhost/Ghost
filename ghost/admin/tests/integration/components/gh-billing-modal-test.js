@@ -48,6 +48,19 @@ describe('Integration: Component: gh-billing-modal', function () {
         expect(find('[data-test-billing-load-error] a')).to.have.attribute('href', 'mailto:support@ghost.org');
     });
 
+    it('clears a reported error when the billing app sends a late message', async function () {
+        billing.billingAppLoadFailureReported = true;
+
+        await render(hbs`<GhBillingModal @billingWindowOpen={{true}} />`);
+
+        expect(find('[data-test-billing-load-error]')).to.exist;
+
+        billing.markBillingAppLoaded();
+        await settled();
+
+        expect(find('[data-test-billing-load-error]')).to.not.exist;
+    });
+
     it('does not show loading or error states when the billing window is closed', async function () {
         await render(hbs`<GhBillingModal @billingWindowOpen={{false}} />`);
 

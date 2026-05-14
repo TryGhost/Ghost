@@ -15,6 +15,8 @@ export default class GhBillingModal extends Component {
     }
 
     get showErrorState() {
-        return this.args.billingWindowOpen && this.billing.billingAppLoadFailureReported;
+        return this.args.billingWindowOpen
+            && this.billing.billingAppLoadFailureReported
+            && !this.billing.billingAppLoaded;
     }
 }
