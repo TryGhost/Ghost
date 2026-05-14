@@ -1,9 +1,9 @@
 import {MutableRefObject, RefObject, useCallback, useEffect, useMemo, useRef} from 'react';
-import {NavActions} from '../../utils/nav-actions';
-import {ROOT_DIV_ID} from '../../utils/constants';
-import {ThreadWindow} from '../../utils/thread-graph';
-import {parseCommentIdFromHash, scrollToElement, scrollToElementInstantly} from '../../utils/helpers';
-import {useAppContext} from '../../app-context';
+import {NavActions} from '../../../utils/nav-actions';
+import {ROOT_DIV_ID} from '../../../utils/constants';
+import {ThreadWindow} from '../../../utils/thread-graph';
+import {parseCommentIdFromHash, scrollToElement, scrollToElementInstantly} from '../../../utils/helpers';
+import {useAppContext} from '../../../app-context';
 
 /**
  * Find the iframe element that contains the current window, if any.

@@ -11,7 +11,7 @@ import {SortingForm} from './forms/sorting-form';
 import {ThreadingContext} from '../../utils/threading-context';
 import {getFocusedThread} from '../../utils/thread-graph';
 import {useAppContext, useLabs} from '../../app-context';
-import {useCommentNavigation} from './use-comment-navigation';
+import {useCommentNavigation} from './hooks/use-comment-navigation';
 import {useEffect, useMemo, useRef, useState} from 'react';
 
 const MOBILE_MEDIA_QUERY = `(max-width: ${MOBILE_BREAKPOINT - 1}px)`;
