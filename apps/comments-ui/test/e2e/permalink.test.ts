@@ -357,8 +357,7 @@ test.describe('Comment Permalinks', async () => {
         await expect(parentContent.locator('mark')).toHaveCount(0);
         await expect(replyContent.locator('mark')).toContainText('Target nested reply');
 
-        await page.waitForTimeout(3500);
-        await expect(replyContent.locator('mark')).toHaveCount(0);
+        await expect(replyContent.locator('mark')).toHaveCount(0, {timeout: 7000});
     });
 
     test('highlights target reply instead of focused ancestor in commentsThreads focused view', async ({page}) => {
