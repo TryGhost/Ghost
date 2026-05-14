@@ -1,9 +1,9 @@
+import EditIcon from '../../../images/icons/edit.svg?react';
 import React from 'react';
+import SpinnerIcon from '../../../images/icons/spinner.svg?react';
 import {Avatar} from '../avatar';
 import {Comment, OpenCommentForm, useAppContext} from '../../../app-context';
-import {ReactComponent as EditIcon} from '../../../images/icons/edit.svg';
 import {Editor, EditorContent} from '@tiptap/react';
-import {ReactComponent as SpinnerIcon} from '../../../images/icons/spinner.svg';
 import {Transition} from '@headlessui/react';
 import {useCallback, useEffect, useRef, useState} from 'react';
 import {usePopupOpen} from '../../../utils/hooks';

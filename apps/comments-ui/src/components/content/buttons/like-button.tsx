@@ -1,5 +1,5 @@
+import LikeIcon from '../../../images/icons/like.svg?react';
 import {Comment, useAppContext} from '../../../app-context';
-import {ReactComponent as LikeIcon} from '../../../images/icons/like.svg';
 import {useState} from 'react';
 
 type Props = {

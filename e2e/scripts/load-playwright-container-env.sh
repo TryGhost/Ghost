@@ -10,7 +10,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 cd "$REPO_ROOT"
 
-PLAYWRIGHT_VERSION="$(node -p 'require("./e2e/package.json").devDependencies["@playwright/test"]')"
+PLAYWRIGHT_VERSION="$(cd e2e && node -p "require('@playwright/test/package.json').version")"
 PLAYWRIGHT_IMAGE="mcr.microsoft.com/playwright:v${PLAYWRIGHT_VERSION}-noble"
 WORKSPACE_PATH="${GITHUB_WORKSPACE:-$REPO_ROOT}"
 

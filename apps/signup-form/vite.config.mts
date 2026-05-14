@@ -1,7 +1,6 @@
 import pkg from './package.json';
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
-import {SUPPORTED_LOCALES} from '@tryghost/i18n';
 import {defineConfig} from 'vitest/config';
 import {resolve} from 'path';
 
@@ -55,7 +54,14 @@ export default (function viteConfig() {
             commonjsOptions: {
                 include: [/ghost/, /node_modules/],
                 dynamicRequireRoot: '../../',
-                dynamicRequireTargets: SUPPORTED_LOCALES.map(locale => `../../ghost/i18n/locales/${locale}/signup-form.json`)
+                // Use a single glob instead of expanding SUPPORTED_LOCALES into
+                // ~60 explicit paths. Under vite 7's bundled
+                // @rollup/plugin-commonjs, each entry triggers a full directory
+                // crawl from dynamicRequireRoot (= repo root) at the start of
+                // the build, so the N-paths form adds ~1 second per locale.
+                // The glob is resolved by a single crawl and produces the same
+                // bundle output.
+                dynamicRequireTargets: ['../../ghost/i18n/locales/*/signup-form.json']
             }
         },
         test: {
