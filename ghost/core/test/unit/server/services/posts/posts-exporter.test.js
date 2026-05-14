@@ -1,7 +1,7 @@
 const PostsExporter = require('../../../../../core/server/services/posts/posts-exporter');
 const assert = require('node:assert/strict');
 const {assertMatchSnapshot} = require('../../../../utils/assertions');
-const {Readable} = require('stream');
+const {Readable} = require('node:stream');
 const {createModelClass, createModel} = require('./utils');
 
 class SettingsCache {
@@ -16,14 +16,6 @@ class SettingsCache {
     set(key, value) {
         this.settings[key] = value;
     }
-}
-
-async function collectStream(stream) {
-    const items = [];
-    for await (const item of stream) {
-        items.push(item);
-    }
-    return items;
 }
 
 describe('PostsExporter', function () {
@@ -125,7 +117,7 @@ describe('PostsExporter', function () {
         });
 
         it('Can export posts', async function () {
-            const posts = await collectStream(await exporter.export({}));
+            const posts = await Array.fromAsync(await exporter.export({}));
             assert.equal(posts.length, 1);
 
             // Hides newsletter column
@@ -137,7 +129,7 @@ describe('PostsExporter', function () {
 
         it('Can export posts without an email', async function () {
             post.email = null;
-            const posts = await collectStream(await exporter.export({}));
+            const posts = await Array.fromAsync(await exporter.export({}));
             assert.equal(posts.length, 1);
 
             // Hides newsletter column
@@ -158,7 +150,7 @@ describe('PostsExporter', function () {
                 ...post,
                 newsletter_id: models.Newsletter.options.findAll[1].id
             });
-            const posts = await collectStream(await exporter.export({}));
+            const posts = await Array.fromAsync(await exporter.export({}));
             assert.equal(posts.length, 2);
 
             // Shows newsletter column
@@ -172,7 +164,7 @@ describe('PostsExporter', function () {
 
         it('Hides feedback columns if feedback disabled for all newsletters', async function () {
             defaultNewsletter.feedback_enabled = false;
-            const posts = await collectStream(await exporter.export({}));
+            const posts = await Array.fromAsync(await exporter.export({}));
 
             // Hides feedback columns
             assert.equal(posts[0].feedback_more_like_this, undefined);
@@ -187,7 +179,7 @@ describe('PostsExporter', function () {
             };
             models.Newsletter.options.findAll.push(secondNewsletter);
             post.status = 'draft';
-            const posts = await collectStream(await exporter.export({}));
+            const posts = await Array.fromAsync(await exporter.export({}));
 
             // Feedback columns are empty, but present because of global settings (newsletter with feedback enabled)
             assert.equal(posts[0].feedback_more_like_this, null);
@@ -206,7 +198,7 @@ describe('PostsExporter', function () {
 
         it('Hides member related columns if members disabled', async function () {
             settingsHelpers.isMembersEnabled = () => false;
-            const posts = await collectStream(await exporter.export({}));
+            const posts = await Array.fromAsync(await exporter.export({}));
             assert.equal(posts[0].email_recipients, undefined);
 
             // No feedback columns
@@ -225,7 +217,7 @@ describe('PostsExporter', function () {
 
         it('Hides clicks if disabled', async function () {
             settingsCache.set('email_track_clicks', false);
-            const posts = await collectStream(await exporter.export({}));
+            const posts = await Array.fromAsync(await exporter.export({}));
 
             assert.notEqual(posts[0].email_recipients, undefined);
             assert.notEqual(posts[0].feedback_more_like_this, undefined);
@@ -240,7 +232,7 @@ describe('PostsExporter', function () {
 
         it('Hides opens if disabled', async function () {
             settingsCache.set('email_track_opens', false);
-            const posts = await collectStream(await exporter.export({}));
+            const posts = await Array.fromAsync(await exporter.export({}));
 
             assert.notEqual(posts[0].email_recipients, undefined);
             assert.notEqual(posts[0].feedback_more_like_this, undefined);
@@ -255,7 +247,7 @@ describe('PostsExporter', function () {
 
         it('Hides paid member related columns if paid members disabled', async function () {
             settingsHelpers.arePaidMembersEnabled = () => false;
-            const posts = await collectStream(await exporter.export({}));
+            const posts = await Array.fromAsync(await exporter.export({}));
 
             assert.notEqual(posts[0].email_recipients, undefined);
             assert.notEqual(posts[0].feedback_more_like_this, undefined);
@@ -275,7 +267,7 @@ describe('PostsExporter', function () {
             delete post.count__positive_feedback;
             delete post.count__negative_feedback;
 
-            const posts = await collectStream(await exporter.export({}));
+            const posts = await Array.fromAsync(await exporter.export({}));
             assert.equal(posts.length, 1);
 
             assert.equal(posts[0].clicks, 0);
@@ -315,7 +307,7 @@ describe('PostsExporter', function () {
             const stream = await exporter.export({limit: 75});
             assert.ok(stream instanceof Readable || typeof stream.pipe === 'function');
 
-            const exportedPosts = await collectStream(stream);
+            const exportedPosts = await Array.fromAsync(stream);
             assert.equal(exportedPosts.length, 75);
             assert.deepEqual(exportedPosts.map(exportedPost => exportedPost.id), posts.slice(0, 75).map(data => data.id));
             assert.deepEqual(findPageCalls.map(call => call.limit), [50, 50]);
@@ -365,7 +357,7 @@ describe('PostsExporter', function () {
                 }
             };
 
-            const exportedPosts = await collectStream(await exporter.export({
+            const exportedPosts = await Array.fromAsync(await exporter.export({
                 limit: 'all',
                 order: 'published_at desc'
             }));
@@ -406,7 +398,7 @@ describe('PostsExporter', function () {
                 }
             };
 
-            const exportedPosts = await collectStream(await exporter.export({}));
+            const exportedPosts = await Array.fromAsync(await exporter.export({}));
 
             assert.equal(exportedPosts.length, 15);
             assert.deepEqual(exportedPosts.map(exportedPost => exportedPost.id), posts.slice(0, 15).map(data => data.id));
@@ -436,7 +428,7 @@ describe('PostsExporter', function () {
                 }
             };
 
-            const exportedPosts = await collectStream(await exporter.export({limit: 'invalid'}));
+            const exportedPosts = await Array.fromAsync(await exporter.export({limit: 'invalid'}));
 
             assert.equal(exportedPosts.length, 15);
             assert.deepEqual(exportedPosts.map(exportedPost => exportedPost.id), posts.slice(0, 15).map(data => data.id));
