@@ -49,6 +49,19 @@ const matchPagination = () => ({
     next: null
 });
 
+const buildWaitAction = () => ({
+    id: ObjectId().toHexString(),
+    type: 'wait',
+    data: {
+        wait_hours: 24
+    }
+});
+
+const buildLinearEdges = actions => actions.slice(1).map((action, index) => ({
+    source_action_id: actions[index].id,
+    target_action_id: action.id
+}));
+
 describe('Automations API', function () {
     let agent;
     let schedulerIntegration;
@@ -236,6 +249,67 @@ describe('Automations API', function () {
                 .expectStatus(200);
 
             assert.deepEqual(readBody.automations[0], automation);
+        });
+
+        it('allows an automation with 20 actions', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            const automationId = browseBody.automations[0].id;
+            const actions = Array.from({length: 20}, buildWaitAction);
+            const edges = buildLinearEdges(actions);
+
+            const {body: editBody} = await agent
+                .put(`automations/${automationId}`)
+                .body({
+                    automations: [{
+                        status: 'inactive',
+                        actions,
+                        edges
+                    }]
+                })
+                .expectStatus(200)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            const automation = editBody.automations[0];
+            assert.equal(automation.status, 'inactive');
+            assert.equal(automation.actions.length, 20);
+            assert.equal(automation.edges.length, 19);
+            assert.deepEqual(automation.actions, actions);
+            assert.deepEqual(automation.edges, edges);
+        });
+
+        it('rejects an automation with more than 20 actions', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            const automationId = browseBody.automations[0].id;
+
+            const {body: beforeBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            const actions = Array.from({length: 21}, buildWaitAction);
+
+            await agent
+                .put(`automations/${automationId}`)
+                .body({
+                    automations: [{
+                        status: 'inactive',
+                        actions,
+                        edges: buildLinearEdges(actions)
+                    }]
+                })
+                .expectStatus(422)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            const {body: afterBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            assert.deepEqual(afterBody, beforeBody);
         });
 
         it('rejects an invalid automation status', async function () {
