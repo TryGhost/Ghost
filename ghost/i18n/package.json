@@ -33,10 +33,10 @@
   "devDependencies": {
     "c8": "catalog:",
     "eslint": "catalog:",
-    "fs-extra": "11.3.4",
+    "fs-extra": "catalog:",
     "glob": "13.0.6",
     "i18next-parser": "9.3.0",
-    "mocha": "11.7.5"
+    "mocha": "catalog:"
   },
   "dependencies": {
     "@tryghost/debug": "catalog:",
