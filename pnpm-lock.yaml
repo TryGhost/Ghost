@@ -9,9 +9,72 @@ catalogs:
     '@eslint/js':
       specifier: 8.57.1
       version: 8.57.1
+    '@playwright/test':
+      specifier: 1.59.1
+      version: 1.59.1
+    '@sentry/react':
+      specifier: 7.120.4
+      version: 7.120.4
+    '@tanstack/react-query':
+      specifier: 4.36.1
+      version: 4.36.1
+    '@tryghost/debug':
+      specifier: 2.2.0
+      version: 2.2.0
+    '@types/react':
+      specifier: 18.3.28
+      version: 18.3.28
+    '@types/react-dom':
+      specifier: 18.3.7
+      version: 18.3.7
+    '@typescript-eslint/parser':
+      specifier: 8.49.0
+      version: 8.49.0
+    '@vitejs/plugin-react':
+      specifier: 4.7.0
+      version: 4.7.0
+    c8:
+      specifier: 10.1.3
+      version: 10.1.3
+    clsx:
+      specifier: 2.1.1
+      version: 2.1.1
+    concurrently:
+      specifier: 8.2.2
+      version: 8.2.2
     eslint:
       specifier: 8.57.1
       version: 8.57.1
+    eslint-plugin-react-refresh:
+      specifier: 0.4.24
+      version: 0.4.24
+    jsdom:
+      specifier: 28.1.0
+      version: 28.1.0
+    postcss:
+      specifier: 8.5.6
+      version: 8.5.6
+    sonner:
+      specifier: 2.0.7
+      version: 2.0.7
+    typescript:
+      specifier: 5.9.3
+      version: 5.9.3
+    validator:
+      specifier: 13.12.0
+      version: 13.12.0
+    vite:
+      specifier: 7.3.2
+      version: 7.3.2
+    vite-plugin-svgr:
+      specifier: 4.5.0
+      version: 4.5.0
+    vitest:
+      specifier: 4.1.2
+      version: 4.1.2
+    zod:
+      specifier: 4.1.12
+      version: 4.1.12
   eslint9:
     '@eslint/js':
       specifier: 9.37.0
@@ -81,7 +144,7 @@ importers:
   .:
     devDependencies:
       '@playwright/test':
-        specifier: 1.59.1
+        specifier: 'catalog:'
         version: 1.59.1
       '@secretlint/secretlint-rule-pattern':
         specifier: 12.3.1
@@ -123,7 +186,7 @@ importers:
         specifier: 7.7.4
         version: 7.7.4
       typescript:
-        specifier: 5.9.3
+        specifier: 'catalog:'
         version: 5.9.3
 
   apps/activitypub:
@@ -135,7 +198,7 @@ importers:
         specifier: 0.1.8
         version: 0.1.8(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tanstack/react-query':
-        specifier: 4.36.1
+        specifier: 'catalog:'
         version: 4.36.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tryghost/admin-x-framework':
         specifier: workspace:*
@@ -144,7 +207,7 @@ importers:
         specifier: workspace:*
         version: link:../shade
       clsx:
-        specifier: 2.1.1
+        specifier: 'catalog:'
         version: 2.1.1
       dompurify:
         specifier: 3.4.1
@@ -165,17 +228,17 @@ importers:
         specifier: 7.14.0
         version: 7.14.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       sonner:
-        specifier: 2.0.7
+        specifier: 'catalog:'
         version: 2.0.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       use-debounce:
         specifier: 10.1.1
         version: 10.1.1(react@18.3.1)
       zod:
-        specifier: 4.1.12
+        specifier: 'catalog:'
         version: 4.1.12
     devDependencies:
       '@playwright/test':
-        specifier: 1.59.1
+        specifier: 'catalog:'
         version: 1.59.1
       '@testing-library/react':
         specifier: 14.3.1
@@ -184,10 +247,10 @@ importers:
         specifier: 29.5.14
         version: 29.5.14
       '@types/react':
-        specifier: 18.3.28
+        specifier: 'catalog:'
         version: 18.3.28
       '@types/react-dom':
-        specifier: 18.3.7
+        specifier: 'catalog:'
         version: 18.3.7(@types/react@18.3.28)
       eslint:
         specifier: 'catalog:'
@@ -196,7 +259,7 @@ importers:
         specifier: 4.6.2
         version: 4.6.2(eslint@8.57.1)
       eslint-plugin-react-refresh:
-        specifier: 0.4.24
+        specifier: 'catalog:'
         version: 0.4.24(eslint@8.57.1)
       eslint-plugin-tailwindcss:
         specifier: 4.0.0-beta.0
@@ -208,10 +271,10 @@ importers:
         specifier: 4.2.2
         version: 4.2.2
       vite:
-        specifier: 7.3.2
+        specifier: 'catalog:'
         version: 7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
       vitest:
-        specifier: 4.1.2
+        specifier: 'catalog:'
         version: 4.1.2(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.12.14(@types/node@25.6.0)(typescript@5.9.3))(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   apps/admin:
@@ -247,7 +310,7 @@ importers:
         specifier: 18.3.1
         version: 18.3.1(react@18.3.1)
       zod:
-        specifier: 4.1.12
+        specifier: 'catalog:'
         version: 4.1.12
     devDependencies:
       '@eslint/js':
@@ -257,7 +320,7 @@ importers:
         specifier: 4.2.1
         version: 4.2.1(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       '@tanstack/react-query':
-        specifier: 4.36.1
+        specifier: 'catalog:'
         version: 4.36.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@testing-library/jest-dom':
         specifier: 6.9.1
@@ -269,10 +332,10 @@ importers:
         specifier: 25.6.0
         version: 25.6.0
       '@types/react':
-        specifier: 18.3.28
+        specifier: 'catalog:'
         version: 18.3.28
       '@types/react-dom':
-        specifier: 18.3.7
+        specifier: 'catalog:'
         version: 18.3.7(@types/react@18.3.28)
       '@vitejs/plugin-react-swc':
         specifier: 4.1.0
@@ -287,7 +350,7 @@ importers:
         specifier: 5.2.0
         version: 5.2.0(eslint@9.37.0(jiti@2.6.1))
       eslint-plugin-react-refresh:
-        specifier: 0.4.24
+        specifier: 'catalog:'
         version: 0.4.24(eslint@9.37.0(jiti@2.6.1))
       eslint-plugin-tailwindcss:
         specifier: 4.0.0-beta.0
@@ -299,7 +362,7 @@ importers:
         specifier: 7.0.0
         version: 7.0.0(jest@29.7.0(@types/node@25.6.0)(babel-plugin-macros@3.1.0)(node-notifier@10.0.1)(ts-node@10.9.2(@swc/core@1.15.21(@swc/helpers@0.5.21))(@types/node@25.6.0)(typescript@5.9.3)))(typescript@5.9.3)
       jsdom:
-        specifier: 28.1.0
+        specifier: 'catalog:'
         version: 28.1.0(@noble/hashes@1.8.0)
       msw:
         specifier: 2.12.14
@@ -311,19 +374,19 @@ importers:
         specifier: 4.2.2
         version: 4.2.2
       typescript:
-        specifier: 5.9.3
+        specifier: 'catalog:'
         version: 5.9.3
       typescript-eslint:
         specifier: 8.58.0
         version: 8.58.0(eslint@9.37.0(jiti@2.6.1))(typescript@5.9.3)
       vite:
-        specifier: 7.3.2
+        specifier: 'catalog:'
         version: 7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
       vite-tsconfig-paths:
         specifier: 5.1.4
         version: 5.1.4(typescript@5.9.3)(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       vitest:
-        specifier: 4.1.2
+        specifier: 'catalog:'
         version: 4.1.2(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(jsdom@28.1.0(@noble/hashes@1.8.0))(msw@2.12.14(@types/node@25.6.0)(typescript@5.9.3))(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   apps/admin-x-design-system:
@@ -365,7 +428,7 @@ importers:
         specifier: 1.2.8
         version: 1.2.8(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@sentry/react':
-        specifier: 7.120.4
+        specifier: 'catalog:'
         version: 7.120.4(react@18.3.1)
       '@tryghost/shade':
         specifier: workspace:*
@@ -374,7 +437,7 @@ importers:
         specifier: 4.25.2
         version: 4.25.2(@babel/runtime@7.29.2)(@codemirror/autocomplete@6.20.1)(@codemirror/language@6.12.3)(@codemirror/lint@6.9.5)(@codemirror/search@6.6.0)(@codemirror/state@6.6.0)(@codemirror/theme-one-dark@6.1.3)(@codemirror/view@6.40.0)(codemirror@5.65.21)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       clsx:
-        specifier: 2.1.1
+        specifier: 'catalog:'
         version: 2.1.1
       react-colorful:
         specifier: 5.6.1
@@ -417,25 +480,25 @@ importers:
         specifier: 4.17.12
         version: 4.17.12
       '@types/react':
-        specifier: 18.3.28
+        specifier: 'catalog:'
         version: 18.3.28
       '@types/react-dom':
-        specifier: 18.3.7
+        specifier: 'catalog:'
         version: 18.3.7(@types/react@18.3.28)
       '@types/validator':
         specifier: 13.15.10
         version: 13.15.10
       '@typescript-eslint/parser':
-        specifier: 8.49.0
+        specifier: 'catalog:'
         version: 8.49.0(eslint@8.57.1)(typescript@5.9.3)
       '@vitejs/plugin-react':
-        specifier: 4.7.0
+        specifier: 'catalog:'
         version: 4.7.0(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       autoprefixer:
         specifier: 10.4.21
         version: 10.4.21(postcss@8.5.6)
       c8:
-        specifier: 10.1.3
+        specifier: 'catalog:'
         version: 10.1.3
       chai:
         specifier: 4.5.0
@@ -447,7 +510,7 @@ importers:
         specifier: 4.6.2
         version: 4.6.2(eslint@8.57.1)
       eslint-plugin-react-refresh:
-        specifier: 0.4.24
+        specifier: 'catalog:'
         version: 0.4.24(eslint@8.57.1)
       eslint-plugin-tailwindcss:
         specifier: 4.0.0-beta.0
@@ -456,13 +519,13 @@ importers:
         specifier: 10.5.0
         version: 10.5.0
       jsdom:
-        specifier: 28.1.0
+        specifier: 'catalog:'
         version: 28.1.0(@noble/hashes@1.8.0)
       lodash-es:
         specifier: 4.18.1
         version: 4.18.1
       postcss:
-        specifier: 8.5.6
+        specifier: 'catalog:'
         version: 8.5.6
       postcss-import:
         specifier: 16.1.1
@@ -483,19 +546,19 @@ importers:
         specifier: 4.2.1
         version: 4.2.1
       typescript:
-        specifier: 5.9.3
+        specifier: 'catalog:'
         version: 5.9.3
       validator:
-        specifier: 13.12.0
+        specifier: 'catalog:'
         version: 13.12.0
       vite:
-        specifier: 7.3.2
+        specifier: 'catalog:'
         version: 7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
       vite-plugin-svgr:
-        specifier: 4.5.0
+        specifier: 'catalog:'
         version: 4.5.0(rollup@4.60.0)(typescript@5.9.3)(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       vitest:
-        specifier: 4.1.2
+        specifier: 'catalog:'
         version: 4.1.2(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(jsdom@28.1.0(@noble/hashes@1.8.0))(msw@2.12.14(@types/node@25.6.0)(typescript@5.9.3))(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   apps/admin-x-framework:
@@ -504,10 +567,10 @@ importers:
         specifier: 1.2.13
         version: 1.2.13(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@sentry/react':
-        specifier: 7.120.4
+        specifier: 'catalog:'
         version: 7.120.4(react@18.3.1)
       '@tanstack/react-query':
-        specifier: 4.36.1
+        specifier: 'catalog:'
         version: 4.36.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tinybirdco/charts':
         specifier: 0.2.4
@@ -532,7 +595,7 @@ importers:
         version: 7.14.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     devDependencies:
       '@playwright/test':
-        specifier: 1.59.1
+        specifier: 'catalog:'
         version: 1.59.1
       '@testing-library/jest-dom':
         specifier: 5.17.0
@@ -544,19 +607,19 @@ importers:
         specifier: 1.8.1
         version: 1.8.1
       '@types/react':
-        specifier: 18.3.28
+        specifier: 'catalog:'
         version: 18.3.28
       '@types/react-dom':
-        specifier: 18.3.7
+        specifier: 'catalog:'
         version: 18.3.7(@types/react@18.3.28)
       '@vitejs/plugin-react':
-        specifier: 4.7.0
+        specifier: 'catalog:'
         version: 4.7.0(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       '@vitest/coverage-v8':
         specifier: 4.1.5
         version: 4.1.5(vitest@4.1.2(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(jsdom@28.1.0(@noble/hashes@1.8.0))(msw@2.12.14(@types/node@25.6.0)(typescript@5.9.3))(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))
       c8:
-        specifier: 10.1.3
+        specifier: 'catalog:'
         version: 10.1.3
       eslint:
         specifier: 'catalog:'
@@ -565,7 +628,7 @@ importers:
         specifier: 4.6.2
         version: 4.6.2(eslint@8.57.1)
       eslint-plugin-react-refresh:
-        specifier: 0.4.24
+        specifier: 'catalog:'
         version: 0.4.24(eslint@8.57.1)
       eslint-plugin-tailwindcss:
         specifier: 4.0.0-beta.0
@@ -574,25 +637,25 @@ importers:
         specifier: 10.5.0
         version: 10.5.0
       jsdom:
-        specifier: 28.1.0
+        specifier: 'catalog:'
         version: 28.1.0(@noble/hashes@1.8.0)
       msw:
         specifier: 2.12.14
         version: 2.12.14(@types/node@25.6.0)(typescript@5.9.3)
       typescript:
-        specifier: 5.9.3
+        specifier: 'catalog:'
         version: 5.9.3
       vite:
-        specifier: 7.3.2
+        specifier: 'catalog:'
         version: 7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
       vite-plugin-css-injected-by-js:
         specifier: 3.5.2
         version: 3.5.2(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       vite-plugin-svgr:
-        specifier: 4.5.0
+        specifier: 'catalog:'
         version: 4.5.0(rollup@4.60.0)(typescript@5.9.3)(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       vitest:
-        specifier: 4.1.2
+        specifier: 'catalog:'
         version: 4.1.2(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(jsdom@28.1.0(@noble/hashes@1.8.0))(msw@2.12.14(@types/node@25.6.0)(typescript@5.9.3))(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   apps/admin-x-settings:
@@ -607,10 +670,10 @@ importers:
         specifier: 1.2.13
         version: 1.2.13(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@sentry/react':
-        specifier: 7.120.4
+        specifier: 'catalog:'
         version: 7.120.4(react@18.3.1)
       '@tanstack/react-query':
-        specifier: 4.36.1
+        specifier: 'catalog:'
         version: 4.36.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tryghost/color-utils':
         specifier: 0.2.16
@@ -634,7 +697,7 @@ importers:
         specifier: 4.25.2
         version: 4.25.2(@babel/runtime@7.29.2)(@codemirror/autocomplete@6.20.1)(@codemirror/language@6.12.3)(@codemirror/lint@6.9.5)(@codemirror/search@6.6.0)(@codemirror/state@6.6.0)(@codemirror/theme-one-dark@6.1.3)(@codemirror/view@6.40.0)(codemirror@5.65.21)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       clsx:
-        specifier: 2.1.1
+        specifier: 'catalog:'
         version: 2.1.1
       lucide-react:
         specifier: 0.577.0
@@ -655,14 +718,14 @@ importers:
         specifier: 5.10.2
         version: 5.10.2(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       sonner:
-        specifier: 2.0.7
+        specifier: 'catalog:'
         version: 2.0.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       validator:
-        specifier: 13.12.0
+        specifier: 'catalog:'
         version: 13.12.0
     devDependencies:
       '@playwright/test':
-        specifier: 1.59.1
+        specifier: 'catalog:'
         version: 1.59.1
       '@testing-library/jest-dom':
         specifier: 6.9.1
@@ -686,10 +749,10 @@ importers:
         specifier: 22.19.17
         version: 22.19.17
       '@types/react':
-        specifier: 18.3.28
+        specifier: 'catalog:'
         version: 18.3.28
       '@types/react-dom':
-        specifier: 18.3.7
+        specifier: 'catalog:'
         version: 18.3.7(@types/react@18.3.28)
       '@types/validator':
         specifier: 13.15.10
@@ -701,7 +764,7 @@ importers:
         specifier: 4.6.2
         version: 4.6.2(eslint@8.57.1)
       eslint-plugin-react-refresh:
-        specifier: 0.4.24
+        specifier: 'catalog:'
         version: 0.4.24(eslint@8.57.1)
       eslint-plugin-tailwindcss:
         specifier: 4.0.0-beta.0
@@ -710,10 +773,10 @@ importers:
         specifier: 4.2.2
         version: 4.2.2
       vite:
-        specifier: 7.3.2
+        specifier: 'catalog:'
         version: 7.3.2(@types/node@22.19.17)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
       vitest:
-        specifier: 4.1.2
+        specifier: 'catalog:'
         version: 4.1.2(@opentelemetry/api@1.9.1)(@types/node@22.19.17)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.12.14(@types/node@22.19.17)(typescript@5.9.3))(vite@7.3.2(@types/node@22.19.17)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   apps/announcement-bar:
@@ -726,13 +789,13 @@ importers:
         version: 17.0.2(react@17.0.2)
     devDependencies:
       '@vitejs/plugin-react':
-        specifier: 4.7.0
+        specifier: 'catalog:'
         version: 4.7.0(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       '@vitest/coverage-v8':
         specifier: 4.1.2
         version: 4.1.2(vitest@4.1.2(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(jsdom@28.1.0(@noble/hashes@1.8.0))(msw@2.12.14(@types/node@25.6.0)(typescript@5.9.3))(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))
       concurrently:
-        specifier: 8.2.2
+        specifier: 'catalog:'
         version: 8.2.2
       cross-fetch:
         specifier: 4.1.0
@@ -741,16 +804,16 @@ importers:
         specifier: 'catalog:'
         version: 8.57.1
       jsdom:
-        specifier: 28.1.0
+        specifier: 'catalog:'
         version: 28.1.0(@noble/hashes@1.8.0)
       vite:
-        specifier: 7.3.2
+        specifier: 'catalog:'
         version: 7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
       vite-plugin-svgr:
-        specifier: 4.5.0
+        specifier: 'catalog:'
         version: 4.5.0(rollup@4.60.0)(typescript@5.9.3)(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       vitest:
-        specifier: 4.1.2
+        specifier: 'catalog:'
         version: 4.1.2(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(jsdom@28.1.0(@noble/hashes@1.8.0))(msw@2.12.14(@types/node@25.6.0)(typescript@5.9.3))(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   apps/comments-ui:
@@ -792,7 +855,7 @@ importers:
         specifier: 2.26.3
         version: 2.26.3(@tiptap/core@2.26.3(@tiptap/pm@2.26.3))(@tiptap/pm@2.26.3)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@tryghost/debug':
-        specifier: 2.2.0
+        specifier: 'catalog:'
         version: 2.2.0
       react:
         specifier: 17.0.2
@@ -805,7 +868,7 @@ importers:
         version: 1.1.1
     devDependencies:
       '@playwright/test':
-        specifier: 1.59.1
+        specifier: 'catalog:'
         version: 1.59.1
       '@testing-library/jest-dom':
         specifier: 5.17.0
@@ -817,7 +880,7 @@ importers:
         specifier: workspace:*
         version: link:../../ghost/i18n
       '@vitejs/plugin-react':
-        specifier: 4.7.0
+        specifier: 'catalog:'
         version: 4.7.0(vite@7.3.2(@types/node@25.6.0)(jiti@1.21.7)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       '@vitest/coverage-v8':
         specifier: 4.1.2
@@ -829,7 +892,7 @@ importers:
         specifier: 2.0.4
         version: 2.0.4
       concurrently:
-        specifier: 8.2.2
+        specifier: 'catalog:'
         version: 8.2.2
       eslint:
         specifier: 'catalog:'
@@ -841,19 +904,19 @@ importers:
         specifier: 4.6.2
         version: 4.6.2(eslint@8.57.1)
       eslint-plugin-react-refresh:
-        specifier: 0.4.24
+        specifier: 'catalog:'
         version: 0.4.24(eslint@8.57.1)
       eslint-plugin-tailwindcss:
         specifier: 3.18.2
         version: 3.18.2(tailwindcss@3.4.18(tsx@4.21.0)(yaml@2.8.3))
       jsdom:
-        specifier: 28.1.0
+        specifier: 'catalog:'
         version: 28.1.0(@noble/hashes@1.8.0)
       moment:
         specifier: 2.30.1
         version: 2.30.1
       postcss:
-        specifier: 8.5.6
+        specifier: 'catalog:'
         version: 8.5.6
       sinon:
         specifier: 21.1.1
@@ -862,26 +925,26 @@ importers:
         specifier: 3.4.18
         version: 3.4.18(tsx@4.21.0)(yaml@2.8.3)
       vite:
-        specifier: 7.3.2
+        specifier: 'catalog:'
         version: 7.3.2(@types/node@25.6.0)(jiti@1.21.7)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
       vite-plugin-svgr:
-        specifier: 4.5.0
+        specifier: 'catalog:'
         version: 4.5.0(rollup@4.60.0)(typescript@5.9.3)(vite@7.3.2(@types/node@25.6.0)(jiti@1.21.7)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       vitest:
-        specifier: 4.1.2
+        specifier: 'catalog:'
         version: 4.1.2(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(jsdom@28.1.0(@noble/hashes@1.8.0))(msw@2.12.14(@types/node@25.6.0)(typescript@5.9.3))(vite@7.3.2(@types/node@25.6.0)(jiti@1.21.7)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   apps/portal:
     dependencies:
       '@tryghost/debug':
-        specifier: 2.2.0
+        specifier: 'catalog:'
         version: 2.2.0
     devDependencies:
       '@doist/react-interpolate':
         specifier: 2.2.1
         version: 2.2.1(prop-types@15.8.1)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@sentry/react':
-        specifier: 7.120.4
+        specifier: 'catalog:'
         version: 7.120.4(react@17.0.2)
       '@testing-library/jest-dom':
         specifier: 6.9.1
@@ -899,16 +962,16 @@ importers:
         specifier: 8.49.0
         version: 8.49.0(@typescript-eslint/parser@8.49.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
       '@typescript-eslint/parser':
-        specifier: 8.49.0
+        specifier: 'catalog:'
         version: 8.49.0(eslint@8.57.1)(typescript@5.9.3)
       '@vitejs/plugin-react':
-        specifier: 4.7.0
+        specifier: 'catalog:'
         version: 4.7.0(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       '@vitest/coverage-v8':
         specifier: 4.1.2
         version: 4.1.2(vitest@4.1.2(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(jsdom@28.1.0(@noble/hashes@1.8.0))(msw@2.12.14(@types/node@25.6.0)(typescript@5.9.3))(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))
       concurrently:
-        specifier: 8.2.2
+        specifier: 'catalog:'
         version: 8.2.2
       cross-fetch:
         specifier: 4.1.0
@@ -923,7 +986,7 @@ importers:
         specifier: 6.1.4
         version: 6.1.4
       jsdom:
-        specifier: 28.1.0
+        specifier: 'catalog:'
         version: 28.1.0(@noble/hashes@1.8.0)
       react:
         specifier: 17.0.2
@@ -932,16 +995,16 @@ importers:
         specifier: 17.0.2
         version: 17.0.2(react@17.0.2)
       vite:
-        specifier: 7.3.2
+        specifier: 'catalog:'
         version: 7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
       vite-plugin-css-injected-by-js:
         specifier: 3.5.2
         version: 3.5.2(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       vite-plugin-svgr:
-        specifier: 4.5.0
+        specifier: 'catalog:'
         version: 4.5.0(rollup@4.60.0)(typescript@5.9.3)(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       vitest:
-        specifier: 4.1.2
+        specifier: 'catalog:'
         version: 4.1.2(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(jsdom@28.1.0(@noble/hashes@1.8.0))(msw@2.12.14(@types/node@25.6.0)(typescript@5.9.3))(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   apps/posts:
@@ -977,7 +1040,7 @@ importers:
         specifier: 7.14.0
         version: 7.14.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       sonner:
-        specifier: 2.0.7
+        specifier: 'catalog:'
         version: 2.0.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       temporal-polyfill:
         specifier: 0.3.0
@@ -986,14 +1049,14 @@ importers:
         specifier: 10.1.1
         version: 10.1.1(react@18.3.1)
       zod:
-        specifier: 4.1.12
+        specifier: 'catalog:'
         version: 4.1.12
     devDependencies:
       '@playwright/test':
-        specifier: 1.59.1
+        specifier: 'catalog:'
         version: 1.59.1
       '@tanstack/react-query':
-        specifier: 4.36.1
+        specifier: 'catalog:'
         version: 4.36.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tanstack/react-virtual':
         specifier: 3.13.23
@@ -1011,7 +1074,7 @@ importers:
         specifier: 5.5.2
         version: 5.5.2
       '@types/react':
-        specifier: 18.3.28
+        specifier: 'catalog:'
         version: 18.3.28
       '@vitest/coverage-v8':
         specifier: 4.1.5
@@ -1023,7 +1086,7 @@ importers:
         specifier: 4.6.2
         version: 4.6.2(eslint@8.57.1)
       eslint-plugin-react-refresh:
-        specifier: 0.4.24
+        specifier: 'catalog:'
         version: 0.4.24(eslint@8.57.1)
       eslint-plugin-tailwindcss:
         specifier: 4.0.0-beta.0
@@ -1035,10 +1098,10 @@ importers:
         specifier: 4.2.2
         version: 4.2.2
       vite:
-        specifier: 7.3.2
+        specifier: 'catalog:'
         version: 7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
       vitest:
-        specifier: 4.1.2
+        specifier: 'catalog:'
         version: 4.1.2(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.12.14(@types/node@25.6.0)(typescript@5.9.3))(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   apps/shade:
@@ -1104,10 +1167,10 @@ importers:
         specifier: 1.2.8
         version: 1.2.8(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@types/react':
-        specifier: 18.3.28
+        specifier: 'catalog:'
         version: 18.3.28
       '@types/react-dom':
-        specifier: 18.3.7
+        specifier: 'catalog:'
         version: 18.3.7(@types/react@18.3.28)
       '@types/validator':
         specifier: 13.15.10
@@ -1116,7 +1179,7 @@ importers:
         specifier: 0.7.1
         version: 0.7.1
       clsx:
-        specifier: 2.1.1
+        specifier: 'catalog:'
         version: 2.1.1
       cmdk:
         specifier: 1.1.1
@@ -1155,16 +1218,16 @@ importers:
         specifier: 2.15.4
         version: 2.15.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       sonner:
-        specifier: 2.0.7
+        specifier: 'catalog:'
         version: 2.0.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       tailwind-merge:
         specifier: 3.5.0
         version: 3.5.0
       validator:
-        specifier: 13.12.0
+        specifier: 'catalog:'
         version: 13.12.0
       zod:
-        specifier: 4.1.12
+        specifier: 'catalog:'
         version: 4.1.12
     devDependencies:
       '@storybook/addon-docs':
@@ -1189,16 +1252,16 @@ importers:
         specifier: 1.6.0
         version: 1.6.0
       '@typescript-eslint/parser':
-        specifier: 8.49.0
+        specifier: 'catalog:'
         version: 8.49.0(eslint@8.57.1)(typescript@5.9.3)
       '@vitejs/plugin-react':
-        specifier: 4.7.0
+        specifier: 'catalog:'
         version: 4.7.0(vite@7.3.2(@types/node@22.19.17)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       '@vitest/coverage-v8':
         specifier: 4.1.2
         version: 4.1.2(vitest@4.1.2(@opentelemetry/api@1.9.1)(@types/node@22.19.17)(jsdom@28.1.0(@noble/hashes@1.8.0))(msw@2.12.14(@types/node@22.19.17)(typescript@5.9.3))(vite@7.3.2(@types/node@22.19.17)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))
       c8:
-        specifier: 10.1.3
+        specifier: 'catalog:'
         version: 10.1.3
       eslint:
         specifier: 'catalog:'
@@ -1207,7 +1270,7 @@ importers:
         specifier: 4.6.2
         version: 4.6.2(eslint@8.57.1)
       eslint-plugin-react-refresh:
-        specifier: 0.4.24
+        specifier: 'catalog:'
         version: 0.4.24(eslint@8.57.1)
       eslint-plugin-storybook:
         specifier: 10.3.5
@@ -1219,10 +1282,10 @@ importers:
         specifier: 10.5.0
         version: 10.5.0
       jsdom:
-        specifier: 28.1.0
+        specifier: 'catalog:'
         version: 28.1.0(@noble/hashes@1.8.0)
       postcss:
-        specifier: 8.5.6
+        specifier: 'catalog:'
         version: 8.5.6
       remark-gfm:
         specifier: 4.0.1
@@ -1240,22 +1303,22 @@ importers:
         specifier: 1.4.0
         version: 1.4.0
       typescript:
-        specifier: 5.9.3
+        specifier: 'catalog:'
         version: 5.9.3
       vite:
-        specifier: 7.3.2
+        specifier: 'catalog:'
         version: 7.3.2(@types/node@22.19.17)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
       vite-plugin-svgr:
-        specifier: 4.5.0
+        specifier: 'catalog:'
         version: 4.5.0(rollup@4.60.0)(typescript@5.9.3)(vite@7.3.2(@types/node@22.19.17)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       vitest:
-        specifier: 4.1.2
+        specifier: 'catalog:'
         version: 4.1.2(@opentelemetry/api@1.9.1)(@types/node@22.19.17)(jsdom@28.1.0(@noble/hashes@1.8.0))(msw@2.12.14(@types/node@22.19.17)(typescript@5.9.3))(vite@7.3.2(@types/node@22.19.17)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   apps/signup-form:
     dependencies:
       '@tryghost/debug':
-        specifier: 2.2.0
+        specifier: 'catalog:'
         version: 2.2.0
       react:
         specifier: 18.3.1
@@ -1265,7 +1328,7 @@ importers:
         version: 18.3.1(react@18.3.1)
     devDependencies:
       '@playwright/test':
-        specifier: 1.59.1
+        specifier: 'catalog:'
         version: 1.59.1
       '@storybook/addon-docs':
         specifier: 10.3.5
@@ -1283,19 +1346,19 @@ importers:
         specifier: workspace:*
         version: link:../../ghost/i18n
       '@types/react':
-        specifier: 18.3.28
+        specifier: 'catalog:'
         version: 18.3.28
       '@types/react-dom':
-        specifier: 18.3.7
+        specifier: 'catalog:'
         version: 18.3.7(@types/react@18.3.28)
       '@vitejs/plugin-react':
-        specifier: 4.7.0
+        specifier: 'catalog:'
         version: 4.7.0(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       autoprefixer:
         specifier: 10.4.21
         version: 10.4.21(postcss@8.5.6)
       concurrently:
-        specifier: 8.2.2
+        specifier: 'catalog:'
         version: 8.2.2
       eslint:
         specifier: 'catalog:'
@@ -1304,16 +1367,16 @@ importers:
         specifier: 4.6.2
         version: 4.6.2(eslint@8.57.1)
       eslint-plugin-react-refresh:
-        specifier: 0.4.24
+        specifier: 'catalog:'
         version: 0.4.24(eslint@8.57.1)
       eslint-plugin-tailwindcss:
         specifier: 3.18.2
         version: 3.18.2(tailwindcss@3.4.18(tsx@4.21.0)(yaml@2.8.3))
       jsdom:
-        specifier: 28.1.0
+        specifier: 'catalog:'
         version: 28.1.0(@noble/hashes@1.8.0)
       postcss:
-        specifier: 8.5.6
+        specifier: 'catalog:'
         version: 8.5.6
       postcss-import:
         specifier: 16.1.1
@@ -1325,19 +1388,19 @@ importers:
         specifier: 3.4.18
         version: 3.4.18(tsx@4.21.0)(yaml@2.8.3)
       vite:
-        specifier: 7.3.2
+        specifier: 'catalog:'
         version: 7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
       vite-plugin-svgr:
-        specifier: 4.5.0
+        specifier: 'catalog:'
         version: 4.5.0(rollup@4.60.0)(typescript@5.9.3)(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       vitest:
-        specifier: 4.1.2
+        specifier: 'catalog:'
         version: 4.1.2(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(jsdom@28.1.0(@noble/hashes@1.8.0))(msw@2.12.14(@types/node@25.6.0)(typescript@5.9.3))(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   apps/sodo-search:
     dependencies:
       '@tryghost/debug':
-        specifier: 2.2.0
+        specifier: 'catalog:'
         version: 2.2.0
       '@tryghost/i18n':
         specifier: workspace:*
@@ -1359,13 +1422,13 @@ importers:
         specifier: 12.1.5
         version: 12.1.5(@types/react@18.3.28)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@vitejs/plugin-react':
-        specifier: 4.7.0
+        specifier: 'catalog:'
         version: 4.7.0(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       '@vitest/coverage-v8':
         specifier: 4.1.2
         version: 4.1.2(vitest@4.1.2(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(jsdom@28.1.0(@noble/hashes@1.8.0))(msw@2.12.14(@types/node@25.6.0)(typescript@5.9.3))(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)))
       concurrently:
-        specifier: 8.2.2
+        specifier: 'catalog:'
         version: 8.2.2
       cross-fetch:
         specifier: 4.1.0
@@ -1374,7 +1437,7 @@ importers:
         specifier: 'catalog:'
         version: 8.57.1
       jsdom:
-        specifier: 28.1.0
+        specifier: 'catalog:'
         version: 28.1.0(@noble/hashes@1.8.0)
       nock:
         specifier: 13.5.6
@@ -1383,13 +1446,13 @@ importers:
         specifier: 3.4.18
         version: 3.4.18(tsx@4.21.0)(yaml@2.8.3)
       vite:
-        specifier: 7.3.2
+        specifier: 'catalog:'
         version: 7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
       vite-plugin-svgr:
-        specifier: 4.5.0
+        specifier: 'catalog:'
         version: 4.5.0(rollup@4.60.0)(typescript@5.9.3)(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       vitest:
-        specifier: 4.1.2
+        specifier: 'catalog:'
         version: 4.1.2(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(jsdom@28.1.0(@noble/hashes@1.8.0))(msw@2.12.14(@types/node@25.6.0)(typescript@5.9.3))(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   apps/stats:
@@ -1426,7 +1489,7 @@ importers:
         specifier: 9.9.0
         version: 9.9.0
       '@playwright/test':
-        specifier: 1.59.1
+        specifier: 'catalog:'
         version: 1.59.1
       '@testing-library/jest-dom':
         specifier: 6.9.1
@@ -1441,7 +1504,7 @@ importers:
         specifier: 22.19.17
         version: 22.19.17
       '@types/react':
-        specifier: 18.3.28
+        specifier: 'catalog:'
         version: 18.3.28
       '@types/react-svg-map':
         specifier: 2.1.4
@@ -1459,7 +1522,7 @@ importers:
         specifier: 4.6.2
         version: 4.6.2(eslint@8.57.1)
       eslint-plugin-react-refresh:
-        specifier: 0.4.24
+        specifier: 'catalog:'
         version: 0.4.24(eslint@8.57.1)
       eslint-plugin-tailwindcss:
         specifier: 4.0.0-beta.0
@@ -1468,13 +1531,13 @@ importers:
         specifier: 4.2.2
         version: 4.2.2
       vite:
-        specifier: 7.3.2
+        specifier: 'catalog:'
         version: 7.3.2(@types/node@22.19.17)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3)
       vite-plugin-svgr:
-        specifier: 4.5.0
+        specifier: 'catalog:'
         version: 4.5.0(rollup@4.60.0)(typescript@5.9.3)(vite@7.3.2(@types/node@22.19.17)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
       vitest:
-        specifier: 4.1.2
+        specifier: 'catalog:'
         version: 4.1.2(@opentelemetry/api@1.9.1)(@types/node@22.19.17)(jsdom@29.0.2(@noble/hashes@1.8.0))(msw@2.12.14(@types/node@22.19.17)(typescript@5.9.3))(vite@7.3.2(@types/node@22.19.17)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.31.1)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   e2e:
@@ -1486,10 +1549,10 @@ importers:
         specifier: 8.4.1
         version: 8.4.1
       '@playwright/test':
-        specifier: 1.59.1
+        specifier: 'catalog:'
         version: 1.59.1
       '@tryghost/debug':
-        specifier: 2.2.0
+        specifier: 'catalog:'
         version: 2.2.0
       '@tryghost/logging':
         specifier: 4.2.0
@@ -1531,7 +1594,7 @@ importers:
         specifier: 8.222.0
         version: 8.222.0
       typescript:
-        specifier: 5.9.3
+        specifier: 'catalog:'
         version: 5.9.3
       typescript-eslint:
         specifier: 8.58.0
@@ -1907,7 +1970,7 @@ importers:
         specifier: 0.12.5
         version: 0.12.5
       validator:
-        specifier: 13.12.0
+        specifier: 'catalog:'
         version: 13.12.0
       walk-sync:
         specifier: 3.0.0
@@ -1955,7 +2018,7 @@ importers:
         specifier: 0.3.35
         version: 0.3.35
       '@tryghost/debug':
-        specifier: 2.2.0
+        specifier: 'catalog:'
         version: 2.2.0
       '@tryghost/domain-events':
         specifier: 1.0.8
@@ -2117,7 +2180,7 @@ importers:
         specifier: 0.22.0
         version: 0.22.0
       clsx:
-        specifier: 2.1.1
+        specifier: 'catalog:'
         version: 2.1.1
       common-tags:
         specifier: 1.8.2
@@ -2234,7 +2297,7 @@ importers:
         specifier: 4.1.1
         version: 4.1.1
       jsdom:
-        specifier: 28.1.0
+        specifier: 'catalog:'
         version: 28.1.0(@noble/hashes@1.8.0)
       jsonc-parser:
         specifier: 3.3.1
@@ -2454,13 +2517,13 @@ importers:
         specifier: 6.0.3
         version: 6.0.3
       '@typescript-eslint/parser':
-        specifier: 8.49.0
+        specifier: 'catalog:'
         version: 8.49.0(eslint@8.57.1)(typescript@5.9.3)
       bunyan:
         specifier: 1.8.15
         version: 1.8.15
       c8:
-        specifier: 10.1.3
+        specifier: 'catalog:'
         version: 10.1.3
       chai:
         specifier: 4.5.0
@@ -2514,7 +2577,7 @@ importers:
         specifier: 3.1.14
         version: 3.1.14
       postcss:
-        specifier: 8.5.6
+        specifier: 'catalog:'
         version: 8.5.6
       postcss-cli:
         specifier: 11.0.1
@@ -2538,10 +2601,10 @@ importers:
         specifier: 4.21.0
         version: 4.21.0
       typescript:
-        specifier: 5.9.3
+        specifier: 'catalog:'
         version: 5.9.3
       validator:
-        specifier: 13.12.0
+        specifier: 'catalog:'
         version: 13.12.0
     optionalDependencies:
       '@tryghost/html-to-mobiledoc':
@@ -2554,14 +2617,14 @@ importers:
   ghost/i18n:
     dependencies:
       '@tryghost/debug':
-        specifier: 2.2.0
+        specifier: 'catalog:'
         version: 2.2.0
       i18next:
         specifier: 23.16.8
         version: 23.16.8
     devDependencies:
       c8:
-        specifier: 10.1.3
+        specifier: 'catalog:'
         version: 10.1.3
       eslint:
         specifier: 'catalog:'
@@ -2589,10 +2652,10 @@ importers:
         specifier: 25.6.0
         version: 25.6.0
       '@typescript-eslint/parser':
-        specifier: 8.49.0
+        specifier: 'catalog:'
         version: 8.49.0(eslint@8.57.1)(typescript@5.9.3)
       c8:
-        specifier: 10.1.3
+        specifier: 'catalog:'
         version: 10.1.3
       eslint:
         specifier: 'catalog:'
@@ -2604,7 +2667,7 @@ importers:
         specifier: 4.21.0
         version: 4.21.0
       typescript:
-        specifier: 5.9.3
+        specifier: 'catalog:'
         version: 5.9.3
 
 packages:
@@ -2633,10 +2696,6 @@ packages:
 
   '@asamuzakjp/css-color@4.1.2':
     resolution: {integrity: sha512-NfBUvBaYgKIuq6E/RBLY1m0IohzNHAYyaJGuTK79Z23uNwmz2jl1mPsC5ZxCCxylinKhT1Amn5oNTlx1wN8cQg==}
-
-  '@asamuzakjp/css-color@5.0.1':
-    resolution: {integrity: sha512-2SZFvqMyvboVV1d15lMf7XiI3m7SDqXUuKaTymJYLN6dSGadqp+fVojqJlVoMlbZnlTmu3S0TLwLTJpvBMO1Aw==}
-    engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0}
 
   '@asamuzakjp/css-color@5.1.11':
     resolution: {integrity: sha512-KVw6qIiCTUQhByfTd78h2yD1/00waTmm9uy/R7Ck/ctUyAPj+AEDLkQIdJW0T8+qGgj3j5bpNKK7Q3G+LedJWg==}
@@ -3700,14 +3759,6 @@ packages:
     engines: {node: '>=20.19.0'}
     peerDependencies:
       '@csstools/css-tokenizer': ^4.0.0
-
-  '@csstools/css-syntax-patches-for-csstree@1.1.2':
-    resolution: {integrity: sha512-5GkLzz4prTIpoyeUiIu3iV6CSG3Plo7xRVOFPKI7FVEJ3mZ0A8SwK0XU3Gl7xAkiQ+mDyam+NNp875/C5y+jSA==}
-    peerDependencies:
-      css-tree: ^3.2.1
-    peerDependenciesMeta:
-      css-tree:
-        optional: true
 
   '@csstools/css-syntax-patches-for-csstree@1.1.3':
     resolution: {integrity: sha512-SH60bMfrRCJF3morcdk57WklujF4Jr/EsQUzqkarfHXEFcAR1gg7fS/chAE922Sehgzc1/+Tz5H3Ypa1HiEKrg==}
@@ -16682,10 +16733,6 @@ packages:
   lru-cache@10.4.3:
     resolution: {integrity: sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ==}
 
-  lru-cache@11.2.7:
-    resolution: {integrity: sha512-aY/R+aEsRelme17KGQa/1ZSIpLpNYYrhcrepKTZgE+W3WM16YMCaPwOHLHsmopZHELU0Ojin1lPVxKR0MihncA==}
-    engines: {node: 20 || >=22}
-
   lru-cache@11.3.5:
     resolution: {integrity: sha512-NxVFwLAnrd9i7KUBxC4DrUhmgjzOs+1Qm50D3oF1/oL+r1NpZ4gA7xvG0/zJ8evR7zIKn4vLf7qTNduWFtCrRw==}
     engines: {node: 20 || >=22}
@@ -18070,9 +18117,6 @@ packages:
 
   parse5@7.3.0:
     resolution: {integrity: sha512-IInvU7fabl34qmi9gY8XOVxhYyMyuH2xUNpb2q8/Y+7552KlejkRvqvD19nMoUW/uQGGbqNpA6Tufu5FL5BZgw==}
-
-  parse5@8.0.0:
-    resolution: {integrity: sha512-9m4m5GSgXjL4AjumKzq1Fgfp3Z8rsvjRNbnkVwfu2ImRqE5D0LnY2QfDen18FSY9C573YU5XxSapdHZTZ2WolA==}
 
   parse5@8.0.1:
     resolution: {integrity: sha512-z1e/HMG90obSGeidlli3hj7cbocou0/wa5HacvI3ASx34PecNjNQeaHNo5WIZpWofN9kgkqV1q5YvXe3F0FoPw==}
@@ -21304,10 +21348,6 @@ packages:
     resolution: {integrity: sha512-sC+b0tB1whOCzbtlx20fx3WgCXwkW627p4EA9uM+/tNNPkSS+eSEld6pAs9nDv7WbY1UUljBMYPtu9BCOrCWKA==}
     engines: {node: '>=18.17'}
 
-  undici@7.24.6:
-    resolution: {integrity: sha512-Xi4agocCbRzt0yYMZGMA6ApD7gvtUFaxm4ZmeacWI4cZxaF6C+8I8QfofC20NAePiB/IcvZmzkJ7XPa471AEtA==}
-    engines: {node: '>=20.18.1'}
-
   undici@7.25.0:
     resolution: {integrity: sha512-xXnp4kTyor2Zq+J1FfPI6Eq3ew5h6Vl0F/8d9XU5zZQf1tX9s2Su1/3PiMmUANFULpmksxkClamIZcaUqryHsQ==}
     engines: {node: '>=20.18.1'}
@@ -22277,14 +22317,6 @@ snapshots:
       '@csstools/css-tokenizer': 4.0.0
       lru-cache: 11.3.5
 
-  '@asamuzakjp/css-color@5.0.1':
-    dependencies:
-      '@csstools/css-calc': 3.2.0(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)
-      '@csstools/css-color-parser': 4.1.0(@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0))(@csstools/css-tokenizer@4.0.0)
-      '@csstools/css-parser-algorithms': 4.0.0(@csstools/css-tokenizer@4.0.0)
-      '@csstools/css-tokenizer': 4.0.0
-      lru-cache: 11.2.7
-
   '@asamuzakjp/css-color@5.1.11':
     dependencies:
       '@asamuzakjp/generational-cache': 1.0.1
@@ -22299,7 +22331,7 @@ snapshots:
       bidi-js: 1.0.3
       css-tree: 3.2.1
       is-potential-custom-element-name: 1.0.1
-      lru-cache: 11.2.7
+      lru-cache: 11.3.5
 
   '@asamuzakjp/dom-selector@7.1.1':
     dependencies:
@@ -24083,10 +24115,6 @@ snapshots:
   '@csstools/css-parser-algorithms@4.0.0(@csstools/css-tokenizer@4.0.0)':
     dependencies:
       '@csstools/css-tokenizer': 4.0.0
-
-  '@csstools/css-syntax-patches-for-csstree@1.1.2(css-tree@3.2.1)':
-    optionalDependencies:
-      css-tree: 3.2.1
 
   '@csstools/css-syntax-patches-for-csstree@1.1.3(css-tree@3.2.1)':
     optionalDependencies:
@@ -34918,10 +34946,10 @@ snapshots:
 
   cssstyle@6.2.0:
     dependencies:
-      '@asamuzakjp/css-color': 5.0.1
-      '@csstools/css-syntax-patches-for-csstree': 1.1.2(css-tree@3.2.1)
+      '@asamuzakjp/css-color': 5.1.11
+      '@csstools/css-syntax-patches-for-csstree': 1.1.3(css-tree@3.2.1)
       css-tree: 3.2.1
-      lru-cache: 11.2.7
+      lru-cache: 11.3.5
 
   csstype@3.2.3: {}
 
@@ -38845,7 +38873,7 @@ snapshots:
       lodash: 4.18.1
       multer: 2.1.1
       semver: 7.8.0
-      validator: 13.12.0
+      validator: 13.15.35
     transitivePeerDependencies:
       - '@75lb/nature'
       - '@opentelemetry/exporter-trace-otlp-http'
@@ -40529,11 +40557,11 @@ snapshots:
       http-proxy-agent: 7.0.2
       https-proxy-agent: 7.0.6
       is-potential-custom-element-name: 1.0.1
-      parse5: 8.0.0
+      parse5: 8.0.1
       saxes: 6.0.0
       symbol-tree: 3.2.4
       tough-cookie: 6.0.1
-      undici: 7.24.6
+      undici: 7.25.0
       w3c-xmlserializer: 5.0.0
       webidl-conversions: 8.0.1
       whatwg-mimetype: 5.0.0
@@ -41372,8 +41400,6 @@ snapshots:
   lowercase-keys@3.0.0: {}
 
   lru-cache@10.4.3: {}
-
-  lru-cache@11.2.7: {}
 
   lru-cache@11.3.5: {}
 
@@ -43366,10 +43392,6 @@ snapshots:
   parse5@6.0.1: {}
 
   parse5@7.3.0:
-    dependencies:
-      entities: 6.0.1
-
-  parse5@8.0.0:
     dependencies:
       entities: 6.0.1
 
@@ -46377,7 +46399,7 @@ snapshots:
       lines-and-columns: 1.2.4
       mz: 2.7.0
       pirates: 4.0.7
-      tinyglobby: 0.2.15
+      tinyglobby: 0.2.16
       ts-interface-checker: 0.1.13
 
   sum-up@1.0.3:
@@ -47278,8 +47300,6 @@ snapshots:
   undici-types@7.24.7: {}
 
   undici@6.24.1: {}
-
-  undici@7.24.6: {}
 
   undici@7.25.0: {}
 

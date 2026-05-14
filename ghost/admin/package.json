@@ -149,7 +149,7 @@
     "testem": "3.19.1",
     "tracked-built-ins": "3.4.0",
     "util": "0.12.5",
-    "validator": "13.12.0",
+    "validator": "catalog:",
     "walk-sync": "3.0.0"
   },
   "ember-addon": {
