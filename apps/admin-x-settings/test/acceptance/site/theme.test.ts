@@ -702,6 +702,47 @@ test.describe('Theme settings', async () => {
         await expect(page.getByTestId('theme-code-editor-modal')).not.toBeVisible();
     });
 
+    test('Ignores from= values that point outside the editor return allowlist', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes},
+            downloadTheme: themeDownloadRequest('edition')
+        }});
+
+        // An attacker-crafted from= pointing at an unrelated admin route
+        // should not be honoured. The editor should still load, but on close
+        // we should land on the safe fallback (design/change-theme) rather
+        // than the crafted destination.
+        await page.goto('/#/settings/theme/edit/edition?from=staff/owner-transfer');
+
+        const editorModal = page.getByTestId('theme-code-editor-modal');
+        await expect(editorModal).toBeVisible();
+
+        await editorModal.getByRole('button', {name: 'Close'}).click();
+
+        await expect(page).not.toHaveURL(/staff\/owner-transfer/);
+        await expect(page).toHaveURL(/#\/settings\/design\/change-theme/);
+    });
+
+    test('Honours legitimate from= values when closing the editor', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes},
+            downloadTheme: themeDownloadRequest('edition')
+        }});
+
+        // A from= value pointing at the theme settings page is in the
+        // allowlist and should be honoured on close.
+        await page.goto('/#/settings/theme/edit/edition?from=theme');
+
+        const editorModal = page.getByTestId('theme-code-editor-modal');
+        await expect(editorModal).toBeVisible();
+
+        await editorModal.getByRole('button', {name: 'Close'}).click();
+
+        await expect(page).toHaveURL(/#\/settings\/theme$/);
+    });
+
     test('Prevents direct access to theme editor route when editing is limited', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,

@@ -113,12 +113,27 @@ const getParentDirectories = (path: string) => {
     return directories;
 };
 
+const ALLOWED_RETURN_ROUTE_PREFIXES = ['theme', 'design'];
+
+const isAllowedReturnRoute = (route: string): boolean => {
+    return ALLOWED_RETURN_ROUTE_PREFIXES.some(prefix => route === prefix || route.startsWith(`${prefix}/`));
+};
+
 const getReturnRouteFromHash = () => {
     const hash = window.location.hash.substring(1);
     const domain = `${window.location.protocol}//${window.location.hostname}`;
     const url = new URL(hash || '/', domain);
+    const from = url.searchParams.get('from');
 
-    return url.searchParams.get('from');
+    if (from === null) {
+        return null;
+    }
+
+    if (from === '' || isAllowedReturnRoute(from)) {
+        return from;
+    }
+
+    return null;
 };
 
 const buildThemeEditorRoute = (themeName: string, fromRoute: string | null) => {
