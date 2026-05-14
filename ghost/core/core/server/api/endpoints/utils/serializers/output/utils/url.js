@@ -48,6 +48,23 @@ const forPost = (id, attrs, frame, type = 'posts') => {
         delete attrs.url;
     }
 
+    // The lazyRouting input-serializer fix force-loads tags+authors when
+    // `?fields=url` is requested so the URL serializer can evaluate
+    // tag- and author-filtered routes. The framework's column filter only
+    // strips scalar attributes — Bookshelf relations land on the JSON
+    // before the strip and would otherwise bleed into the response. Strip
+    // the relations the URL computation caused to be loaded so the wire
+    // shape matches what the caller asked for via `?fields=`. `primary_tag`
+    // and `primary_author` are computed from the relations by Post.toJSON
+    // and need the same treatment.
+    if (frame.options.columns) {
+        for (const key of ['tags', 'authors', 'primary_tag', 'primary_author']) {
+            if (!frame.options.columns.includes(key) && Object.hasOwn(attrs, key)) {
+                delete attrs[key];
+            }
+        }
+    }
+
     return attrs;
 };
 

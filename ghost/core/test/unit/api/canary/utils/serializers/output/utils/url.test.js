@@ -90,6 +90,86 @@ describe('Unit: endpoints/utils/serializers/output/utils/url', function () {
             assert.equal(resource.id, 'post-id');
             assert.equal(resource.type, 'posts');
         });
+
+        // The lazyRouting URL fix in input/posts.js force-loads tags+authors
+        // when `?fields=url` is requested so the URL serializer can evaluate
+        // tag- and author-filtered routes. The framework's column filter
+        // (_.pick on model.attributes) only strips scalar attributes —
+        // Bookshelf relations land on jsonModel before the strip and bleed
+        // into the response. forPost is the seam that owns the URL output;
+        // it strips the relations it caused to be loaded so the wire shape
+        // matches what the caller asked for via `?fields=`.
+        it('strips force-loaded tags relation when columns excludes tags', function () {
+            const post = {
+                id: 'p1',
+                slug: 'hello',
+                tags: [{id: 't1', slug: 'news'}]
+            };
+
+            urlUtil.forPost('p1', post, {options: {columns: ['id', 'url']}});
+
+            assert.equal(post.tags, undefined, 'tags should be stripped from response');
+            assert.equal(post.url, 'getUrlForResource', 'url should still be computed');
+        });
+
+        it('strips force-loaded authors relation when columns excludes authors', function () {
+            const post = {
+                id: 'p1',
+                slug: 'hello',
+                authors: [{id: 'a1', slug: 'jane'}]
+            };
+
+            urlUtil.forPost('p1', post, {options: {columns: ['id', 'url']}});
+
+            assert.equal(post.authors, undefined);
+        });
+
+        it('strips force-loaded primary_tag and primary_author when columns excludes them', function () {
+            // Post.toJSON computes primary_tag / primary_author from the
+            // tags / authors relations. They surface even when the caller
+            // didn't ask for them via `?fields=`.
+            const post = {
+                id: 'p1',
+                slug: 'hello',
+                tags: [{id: 't1', slug: 'news'}],
+                authors: [{id: 'a1', slug: 'jane'}],
+                primary_tag: {id: 't1', slug: 'news'},
+                primary_author: {id: 'a1', slug: 'jane'}
+            };
+
+            urlUtil.forPost('p1', post, {options: {columns: ['id', 'url']}});
+
+            assert.equal(post.primary_tag, undefined);
+            assert.equal(post.primary_author, undefined);
+        });
+
+        it('keeps relations the caller explicitly asked for', function () {
+            const post = {
+                id: 'p1',
+                slug: 'hello',
+                tags: [{id: 't1', slug: 'news'}],
+                authors: [{id: 'a1', slug: 'jane'}]
+            };
+
+            urlUtil.forPost('p1', post, {options: {columns: ['id', 'url', 'tags', 'authors']}});
+
+            assert.deepEqual(post.tags, [{id: 't1', slug: 'news'}]);
+            assert.deepEqual(post.authors, [{id: 'a1', slug: 'jane'}]);
+        });
+
+        it('does not strip relations when columns is not set (caller wants the default response shape)', function () {
+            const post = {
+                id: 'p1',
+                slug: 'hello',
+                tags: [{id: 't1', slug: 'news'}],
+                authors: [{id: 'a1', slug: 'jane'}]
+            };
+
+            urlUtil.forPost('p1', post, {options: {}});
+
+            assert.deepEqual(post.tags, [{id: 't1', slug: 'news'}]);
+            assert.deepEqual(post.authors, [{id: 'a1', slug: 'jane'}]);
+        });
     });
 
     describe('forTag', function () {

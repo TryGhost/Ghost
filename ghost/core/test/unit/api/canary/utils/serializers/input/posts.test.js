@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
+const configUtils = require('../../../../../../utils/config-utils');
 const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
 const postsSchema = require('../../../../../../../core/server/data/schema').tables.posts;
 
@@ -127,6 +128,108 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
 
             serializers.input.posts.browse(apiConfig, frame);
             assert.equal(frame.options.order, 'updated_at desc');
+        });
+
+        // The lazy URL service computes URLs at serialization time by
+        // evaluating each registered router's NQL filter against the loaded
+        // resource. EXPANSIONS rewrites `tag:foo` → `tags.slug:foo` (and
+        // similarly for author), so a routes.yaml with any tag- or
+        // author-filtered router will silently 404 every URL on a posts
+        // browse that fetched without those relations. The defaultRelations
+        // chokepoint is where Admin browse/read normalize their fetch
+        // options, so this is the right place to force-load the relations
+        // when `url` is in the response shape.
+        describe('lazyRouting + thin columns', function () {
+            afterEach(async function () {
+                await configUtils.restore();
+            });
+
+            it('forces tags+authors into withRelated when columns include url under lazyRouting', function () {
+                configUtils.set('lazyRouting', true);
+                const apiConfig = {};
+                const frame = {
+                    apiType: 'admin',
+                    options: {
+                        context: {user: 1},
+                        columns: ['id', 'url', 'title']
+                    }
+                };
+
+                serializers.input.posts.browse(apiConfig, frame);
+
+                assert.ok(frame.options.withRelated, 'withRelated should be set');
+                assert.ok(
+                    frame.options.withRelated.includes('tags'),
+                    `expected 'tags' in withRelated, got: ${JSON.stringify(frame.options.withRelated)}`
+                );
+                assert.ok(
+                    frame.options.withRelated.includes('authors'),
+                    `expected 'authors' in withRelated, got: ${JSON.stringify(frame.options.withRelated)}`
+                );
+            });
+
+            it('does not force withRelated when columns omit url even under lazyRouting', function () {
+                configUtils.set('lazyRouting', true);
+                const apiConfig = {};
+                const frame = {
+                    apiType: 'admin',
+                    options: {
+                        context: {user: 1},
+                        columns: ['id', 'title']
+                    }
+                };
+
+                serializers.input.posts.browse(apiConfig, frame);
+
+                // No url in the response → no need to load relations the URL
+                // computation would have wanted.
+                assert.equal(frame.options.withRelated, undefined);
+            });
+
+            it('does not force withRelated with thin columns when lazyRouting is off', function () {
+                // Default config has lazyRouting: false; just being explicit.
+                configUtils.set('lazyRouting', false);
+                const apiConfig = {};
+                const frame = {
+                    apiType: 'admin',
+                    options: {
+                        context: {user: 1},
+                        columns: ['id', 'url', 'title']
+                    }
+                };
+
+                serializers.input.posts.browse(apiConfig, frame);
+
+                // Eager mode precomputes URLs at boot; the serializer just
+                // looks them up by id. No need to force-load relations.
+                assert.equal(frame.options.withRelated, undefined);
+            });
+
+            it('merges tags+authors into withRelated when caller passes both ?fields=url and ?include=email', function () {
+                // Regression for the bypass: the previous shape returned
+                // early when withRelated was already set, so a caller
+                // combining ?fields=id,url with ?include=email would have
+                // its withRelated stay as ['email'] only and the URL would
+                // 404 under lazyRouting. The fix forces tags+authors
+                // unconditionally when columns include url, merging with
+                // whatever the caller asked for.
+                configUtils.set('lazyRouting', true);
+                const apiConfig = {};
+                const frame = {
+                    apiType: 'admin',
+                    options: {
+                        context: {user: 1},
+                        columns: ['id', 'url', 'title'],
+                        withRelated: ['email']
+                    }
+                };
+
+                serializers.input.posts.browse(apiConfig, frame);
+
+                assert.ok(frame.options.withRelated.includes('email'), 'caller-requested email must be preserved');
+                assert.ok(frame.options.withRelated.includes('tags'), 'tags must be force-loaded for URL');
+                assert.ok(frame.options.withRelated.includes('authors'), 'authors must be force-loaded for URL');
+            });
         });
 
         describe('Content API', function () {

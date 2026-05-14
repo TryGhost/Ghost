@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const config = require('../../../../../../shared/config');
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:input:posts');
 const {ValidationError} = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
@@ -78,12 +79,27 @@ function defaultRelations(frame) {
     // Apply same mapping as content API
     mapWithRelated(frame);
 
+    // Under lazyRouting the URL is computed at serialization time from the
+    // resource's tags/authors (LazyUrlService re-evaluates each router's
+    // NQL filter against the loaded record). A thin column request like
+    // ?fields=id,url would otherwise produce /404/ for every tag- or
+    // author-filtered route in routes.yaml. Force-load the relations
+    // whenever `url` is in the response shape — even if the caller already
+    // set withRelated via ?include=, since their list may not include
+    // tags/authors. The output mapper strips force-loaded relations from
+    // the JSON response when the caller didn't ask for them.
+    if (config.get('lazyRouting')
+        && Array.isArray(frame.options.columns)
+        && frame.options.columns.includes('url')) {
+        frame.options.withRelated = _.union(frame.options.withRelated || [], ['tags', 'authors']);
+    }
+
     // Additional defaults for admin API
     if (frame.options.withRelated) {
         return;
     }
 
-    if (frame.options.columns && !frame.options.withRelated) {
+    if (frame.options.columns) {
         return false;
     }
 
