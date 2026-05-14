@@ -44,6 +44,24 @@ describe('web utils', function () {
         });
     });
 
+    describe('getCompressedSizeLimitError', function () {
+        it('returns a structured theme upload size limit error', function () {
+            const err = validation.getCompressedSizeLimitError({field: 'file'}, {
+                get: () => '1073741825'
+            });
+
+            assert.equal(err.errorType, 'UnsupportedMediaTypeError');
+            assert.equal(err.message, 'Theme upload exceeds maximum compressed size.');
+            assert.equal(err.context, 'Theme upload exceeds the maximum compressed size.');
+            assert.equal(err.code, 'COMPRESSED_TOO_LARGE');
+            assert.deepEqual(err.errorDetails, {
+                observedBytes: 1073741825,
+                limitBytes: 1073741824,
+                fieldName: 'file'
+            });
+        });
+    });
+
     describe('sanitizeSvgContent', function () {
         it('it removes <script> tags from SVGs', async function () {
             const filepath = path.join(__dirname, imageFixturePath, 'svg-with-unsafe-script.svg');

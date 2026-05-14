@@ -49,6 +49,12 @@ describe('Themes', function () {
                 .then((checkedTheme) => {
                     sinon.assert.calledOnce(checkZipStub);
                     sinon.assert.calledWith(checkZipStub, testTheme);
+                    sinon.assert.calledWith(checkZipStub, testTheme, sinon.match({
+                        limits: {
+                            perEntryUncompressedBytes: 536870912,
+                            totalUncompressedBytes: 4294967296
+                        }
+                    }));
                     sinon.assert.notCalled(checkStub);
                     sinon.assert.calledOnce(formatStub);
                     assert(_.isPlainObject(checkedTheme));
