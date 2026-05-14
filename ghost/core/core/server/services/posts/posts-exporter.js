@@ -27,7 +27,7 @@ function parseExportLimit(limit) {
 
     const parsed = Number.parseInt(limit, 10);
 
-    if (Number.isNaN(parsed)) {
+    if (!Number.isSafeInteger(parsed)) {
         return DEFAULT_EXPORT_LIMIT;
     }
 
