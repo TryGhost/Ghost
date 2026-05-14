@@ -1,13 +1,9 @@
 import CommentComponent from './comment';
 import React from 'react';
 import ReplyTree from './reply-tree';
-import {FocusedThread as FocusedThreadData, buildCommentPermalink} from '../../utils/helpers';
+import {FocusedThread as FocusedThreadData, buildCommentPermalink, buildCommentsRootPermalink} from '../../utils/helpers';
 import {useAppContext} from '../../app-context';
 import {useNavActions} from '../../utils/nav-actions';
-
-function buildCommentsRootPermalink(pageUrl: string) {
-    return `${pageUrl.replace(/#.*$/, '')}#ghost-comments`;
-}
 
 type FocusedThreadProps = {
     focusedThread: FocusedThreadData;

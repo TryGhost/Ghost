@@ -36,6 +36,23 @@ describe('buildCommentPermalink', function () {
     });
 });
 
+describe('buildCommentsRootPermalink', function () {
+    it('builds permalink with comments root hash', function () {
+        expect(helpers.buildCommentsRootPermalink('https://example.com/post'))
+            .toEqual('https://example.com/post#ghost-comments');
+    });
+
+    it('removes existing hash from base URL', function () {
+        expect(helpers.buildCommentsRootPermalink('https://example.com/post#existing'))
+            .toEqual('https://example.com/post#ghost-comments');
+    });
+
+    it('handles URL with query parameters', function () {
+        expect(helpers.buildCommentsRootPermalink('https://example.com/post?ref=twitter'))
+            .toEqual('https://example.com/post?ref=twitter#ghost-comments');
+    });
+});
+
 describe('parseCommentIdFromHash', function () {
     it('extracts comment ID from valid hash', function () {
         expect(helpers.parseCommentIdFromHash('#ghost-comments-abc123'))

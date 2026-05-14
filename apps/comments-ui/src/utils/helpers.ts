@@ -8,6 +8,11 @@ export function buildCommentPermalink(baseUrl: string, commentId: string): strin
     return `${cleanUrl}#${COMMENT_HASH_PREFIX}${commentId}`;
 }
 
+export function buildCommentsRootPermalink(baseUrl: string): string {
+    const cleanUrl = baseUrl.replace(/#.*$/, '');
+    return `${cleanUrl}#ghost-comments`;
+}
+
 export function parseCommentIdFromHash(hash: string): string | null {
     const regex = new RegExp(`^#${COMMENT_HASH_PREFIX}([a-f0-9]+)$`, 'i');
     const match = hash.match(regex);
