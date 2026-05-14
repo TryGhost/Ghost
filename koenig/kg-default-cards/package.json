@@ -37,7 +37,7 @@
   "devDependencies": {
     "@eslint/js": "9.39.4",
     "@types/mocha": "10.0.10",
-    "@types/node": "24.12.3",
+    "@types/node": "24.12.4",
     "@types/should": "13.0.0",
     "@types/sinon": "21.0.1",
     "c8": "11.0.0",
