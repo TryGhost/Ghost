@@ -2351,8 +2351,8 @@ importers:
         specifier: 13.0.0
         version: 13.0.0
       gscan:
-        specifier: 6.0.2
-        version: 6.0.2
+        specifier: 6.1.0
+        version: 6.1.0
       handlebars:
         specifier: 4.7.9
         version: 4.7.9
@@ -8817,8 +8817,8 @@ packages:
   '@tryghost/security@1.0.6':
     resolution: {integrity: sha512-h4FiUK4ndHezlXeuRzfwTZrX/a8ZdCS/FRqmZWCHcMUiBH6lewHv8eIjsPemN6e6Gn9jtsWZsKnuYM2mD0meSQ==}
 
-  '@tryghost/server@2.2.0':
-    resolution: {integrity: sha512-lcXZJWrcy3P1tYYvnGQOWJf6bXVi4bRQKWNlcO/ehubPNj7G7O/jdhTThbIGWeglDRi94GCeWfUJqYCjTjhnjw==}
+  '@tryghost/server@2.2.1':
+    resolution: {integrity: sha512-WY7YGd+PIIuX5IaZnNV2X3tMNBpAX4fHpEj887ZWRPReUvxoVj6ODOTQnNCN7UlCoNmDS88KrfLUDA4IQCDEmA==}
 
   '@tryghost/social-urls@0.1.62':
     resolution: {integrity: sha512-ii5DDsZEqOsoj2rs3JwPbdtH3geqZgXR/YOOXoVYA7VEnu6IITX08Pk3rDmDqbICTIWPDejzoT8hCo88q18F4Q==}
@@ -8864,6 +8864,9 @@ packages:
 
   '@tryghost/zip@3.2.0':
     resolution: {integrity: sha512-za6DHBBWI9HnDYzlsv2bej8h9LR2Ri/ycymcYgmXzT2sHJ5JtForAM3czCcMXGiDjrwmk3rFIcTlq5CfrFu/mA==}
+
+  '@tryghost/zip@3.3.1':
+    resolution: {integrity: sha512-D8ChQHmqbSsdhCLuRwgy4wKViICiLoB9f/NzolD+koGWtpsUTq9IwDeaAPHenIzeHbds8RmeZGIJlShNutEblg==}
 
   '@tsconfig/node10@1.0.12':
     resolution: {integrity: sha512-UCYBaeFvM11aU2y3YPZ//O5Rhj+xKyzy7mvcIoAjASbigy8mHMryP5cK7dgjlz2hWxh1g5pLw084E0a/wlUSFQ==}
@@ -14659,8 +14662,8 @@ packages:
   growly@1.3.0:
     resolution: {integrity: sha512-+xGQY0YyAWCnqy7Cd++hc2JqMYzlm0dG30Jd0beaA64sROr8C4nt8Yc9V5Ro3avlSUDTN0ulqP/VBKi1/lLygw==}
 
-  gscan@6.0.2:
-    resolution: {integrity: sha512-bh6DfJtrg4ZpRY5axnQTVzVfKkaj9bs5rMOEpAaMdc4BE6FGf+LBGbqqfh+hxIdce7NuyMHDY8RkJUhtL06yhQ==}
+  gscan@6.1.0:
+    resolution: {integrity: sha512-FWAOKmJzxzBDXuZijjDkkpBXsyerw1N/de+VGg1tZnOcvC73rtPVKi31pFfNuj4n1AcrQWMom+2+QnhxbY64uQ==}
     engines: {node: ^22.13.1 || ^24.0.0}
     hasBin: true
 
@@ -30004,7 +30007,7 @@ snapshots:
       '@tryghost/string': 0.2.21
       bcryptjs: 3.0.3
 
-  '@tryghost/server@2.2.0':
+  '@tryghost/server@2.2.1':
     dependencies:
       '@tryghost/debug': 2.2.0
       '@tryghost/logging': 4.2.0
@@ -30089,6 +30092,17 @@ snapshots:
       p-wait-for: 6.0.0
 
   '@tryghost/zip@3.2.0':
+    dependencies:
+      '@tryghost/errors': 1.3.13
+      archiver: 7.0.1
+      extract-zip: 2.0.1
+    transitivePeerDependencies:
+      - bare-abort-controller
+      - bare-buffer
+      - react-native-b4a
+      - supports-color
+
+  '@tryghost/zip@3.3.1':
     dependencies:
       '@tryghost/errors': 1.3.13
       archiver: 7.0.1
@@ -38476,7 +38490,7 @@ snapshots:
 
   growly@1.3.0: {}
 
-  gscan@6.0.2:
+  gscan@6.1.0:
     dependencies:
       '@sentry/node': 10.52.0
       '@tryghost/config': 2.2.0
@@ -38485,8 +38499,8 @@ snapshots:
       '@tryghost/logging': 4.2.0
       '@tryghost/nql': 0.12.10
       '@tryghost/pretty-cli': 3.2.0
-      '@tryghost/server': 2.2.0
-      '@tryghost/zip': 3.2.0
+      '@tryghost/server': 2.2.1
+      '@tryghost/zip': 3.3.1
       chalk: 5.6.2
       express: 5.2.1
       express-handlebars: 8.0.1
