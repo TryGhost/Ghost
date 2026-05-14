@@ -22,11 +22,12 @@ export default class BillingService extends Service {
     @tracked action = null;
     @tracked ownerUser = null;
 
-    billingAppLoaded = false;
+    @tracked billingAppLoaded = false;
+    @tracked billingAppLoadFailureReported = false;
+
     billingAppLoadTimeout = null;
     billingAppRetryTimeout = null;
     billingAppLoadAttempts = 0;
-    billingAppLoadFailureReported = false;
     billingAppLoadTimeoutMs = BILLING_APP_LOAD_TIMEOUT_MS;
     billingAppLoadRetryDelaysMs = BILLING_APP_LOAD_RETRY_DELAYS_MS;
 

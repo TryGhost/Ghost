@@ -47,7 +47,7 @@
         "eslint-plugin-react-hooks": "4.6.2",
         "eslint-plugin-react-refresh": "catalog:",
         "eslint-plugin-tailwindcss": "4.0.0-beta.0",
-        "glob": "10.5.0",
+        "glob": "catalog:",
         "jsdom": "catalog:",
         "lodash-es": "4.18.1",
         "postcss": "catalog:",
