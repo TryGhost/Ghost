@@ -383,6 +383,17 @@ jobs:
           NX_SKIP_LOG_GROUPING: true
           logging__level: fatal
 
+      - name: Run vitest unit tests
+        # ghost/core is mid-migration from mocha to vitest. The vitest
+        # target covers a scoped subset (see ghost/core/vitest.config.ts)
+        # and runs additively alongside mocha — both runners run the same
+        # files during the migration as a divergence safety net.
+        run: pnpm nx run-many -t test:vitest -p "${{ needs.job_setup.outputs.affected_projects_str }}"
+        env:
+          FORCE_COLOR: 0
+          NX_SKIP_LOG_GROUPING: true
+          logging__level: fatal
+
       - name: Check for unexpected file changes
         run: |
           if [ -n "$(git status --porcelain)" ]; then
