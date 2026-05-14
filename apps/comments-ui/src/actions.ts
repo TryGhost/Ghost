@@ -486,13 +486,18 @@ function setScrollTarget({data: commentId}: {data: string | null}) {
     return {commentIdToScrollTo: commentId};
 }
 
+function setHashCommentId({data: commentId}: {data: string | null}) {
+    return {commentIdFromHash: commentId};
+}
+
 // Sync actions make use of setState((currentState) => newState), to avoid 'race' conditions
 export const SyncActions = {
     openPopup,
     closePopup,
     closeCommentForm,
     setCommentFormHasUnsavedChanges,
-    setScrollTarget
+    setScrollTarget,
+    setHashCommentId
 };
 
 export type SyncActionType = keyof typeof SyncActions;
