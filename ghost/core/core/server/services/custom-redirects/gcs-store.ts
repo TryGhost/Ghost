@@ -5,8 +5,7 @@ import {
     NoSuchKey,
     NotFound,
     PutObjectCommand,
-    S3Client,
-    S3ClientConfig
+    S3Client
 } from '@aws-sdk/client-s3';
 import tpl from '@tryghost/tpl';
 import * as errors from '@tryghost/errors';
@@ -19,19 +18,13 @@ const DEFAULT_KEY = 'redirects.json';
 
 const messages = {
     missingBucket: 'GCSStore requires a bucket name',
-    partialCredentials: 'GCSStore requires both accessKeyId and secretAccessKey, or neither'
+    missingClient: 'GCSStore requires an S3 client',
+    missingResponseBody: 'S3 GetObject returned no body'
 };
 
 export interface GCSStoreOptions {
     bucket: string;
-    key?: string;
-    region?: string;
-    endpoint?: string;
-    forcePathStyle?: boolean;
-    accessKeyId?: string;
-    secretAccessKey?: string;
-    sessionToken?: string;
-    s3Client?: S3Client;
+    s3Client: S3Client;
     getBackupKey?: (key: string) => string;
 }
 
@@ -44,7 +37,6 @@ export interface GCSStoreOptions {
 export class GCSStore implements RedirectsStore {
     private readonly client: S3Client;
     private readonly bucket: string;
-    private readonly key: string;
     private readonly getBackupKey: (key: string) => string;
 
     constructor(options: GCSStoreOptions) {
@@ -53,36 +45,15 @@ export class GCSStore implements RedirectsStore {
                 message: tpl(messages.missingBucket)
             });
         }
+        if (!options.s3Client) {
+            throw new errors.IncorrectUsageError({
+                message: tpl(messages.missingClient)
+            });
+        }
 
         this.bucket = options.bucket;
-        this.key = options.key || DEFAULT_KEY;
+        this.client = options.s3Client;
         this.getBackupKey = options.getBackupKey || getBackupRedirectsFilePath;
-
-        if (options.s3Client) {
-            this.client = options.s3Client;
-        } else {
-            if (Boolean(options.accessKeyId) !== Boolean(options.secretAccessKey)) {
-                throw new errors.IncorrectUsageError({
-                    message: tpl(messages.partialCredentials)
-                });
-            }
-
-            const clientConfig: S3ClientConfig = {
-                region: options.region,
-                endpoint: options.endpoint,
-                forcePathStyle: options.forcePathStyle
-            };
-
-            if (options.accessKeyId && options.secretAccessKey) {
-                clientConfig.credentials = {
-                    accessKeyId: options.accessKeyId,
-                    secretAccessKey: options.secretAccessKey,
-                    sessionToken: options.sessionToken
-                };
-            }
-
-            this.client = new S3Client(clientConfig);
-        }
     }
 
     async getAll(): Promise<RedirectConfig[]> {
@@ -90,9 +61,14 @@ export class GCSStore implements RedirectsStore {
         try {
             const response = await this.client.send(new GetObjectCommand({
                 Bucket: this.bucket,
-                Key: this.key
+                Key: DEFAULT_KEY
             }));
-            body = await response.Body!.transformToString('utf-8');
+            if (!response.Body) {
+                throw new errors.InternalServerError({
+                    message: tpl(messages.missingResponseBody)
+                });
+            }
+            body = await response.Body.transformToString('utf-8');
         } catch (err) {
             if (this._isNotFound(err)) {
                 return [];
@@ -107,14 +83,14 @@ export class GCSStore implements RedirectsStore {
         if (await this._canonicalExists()) {
             await this.client.send(new CopyObjectCommand({
                 Bucket: this.bucket,
-                Key: this.getBackupKey(this.key),
-                CopySource: `${this.bucket}/${this.key}`
+                Key: this.getBackupKey(DEFAULT_KEY),
+                CopySource: `${this.bucket}/${DEFAULT_KEY}`
             }));
         }
 
         await this.client.send(new PutObjectCommand({
             Bucket: this.bucket,
-            Key: this.key,
+            Key: DEFAULT_KEY,
             Body: JSON.stringify(redirects),
             ContentType: 'application/json'
         }));
@@ -124,7 +100,7 @@ export class GCSStore implements RedirectsStore {
         try {
             await this.client.send(new HeadObjectCommand({
                 Bucket: this.bucket,
-                Key: this.key
+                Key: DEFAULT_KEY
             }));
             return true;
         } catch (err) {

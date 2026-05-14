@@ -11,17 +11,10 @@ describe('UNIT: GCSStore', function () {
             );
         });
 
-        it('throws when only accessKeyId is provided', function () {
+        it('throws when no S3 client is provided', function () {
             assert.throws(
-                () => new GCSStore({bucket: 'x', accessKeyId: 'a'}),
-                {errorType: 'IncorrectUsageError', message: /accessKeyId and secretAccessKey/}
-            );
-        });
-
-        it('throws when only secretAccessKey is provided', function () {
-            assert.throws(
-                () => new GCSStore({bucket: 'x', secretAccessKey: 's'}),
-                {errorType: 'IncorrectUsageError', message: /accessKeyId and secretAccessKey/}
+                () => new GCSStore({bucket: 'x'} as never),
+                {errorType: 'IncorrectUsageError', message: /S3 client/}
             );
         });
     });
