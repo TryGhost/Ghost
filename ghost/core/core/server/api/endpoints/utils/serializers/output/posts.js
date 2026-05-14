@@ -62,7 +62,10 @@ module.exports = {
             res.setHeader('Content-Type', 'text/csv; charset=utf-8');
             res.setHeader('Content-Disposition', `Attachment; filename="post-analytics.${todayIsoDate}.csv"`);
             const cacheControl = res.getHeader('Cache-Control');
-            res.setHeader('Cache-Control', cacheControl ? `${cacheControl}, no-transform` : 'no-transform');
+            const cacheControlDirectives = cacheControl ? String(cacheControl).split(',').map(value => value.trim().toLowerCase()) : [];
+            if (!cacheControlDirectives.includes('no-transform')) {
+                res.setHeader('Cache-Control', cacheControl ? `${cacheControl}, no-transform` : 'no-transform');
+            }
 
             pipeline(models.data, csvTransform, res, (err) => {
                 // On success, pipeline has already ended the response and there's no

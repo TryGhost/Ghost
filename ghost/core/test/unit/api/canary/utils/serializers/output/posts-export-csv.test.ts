@@ -44,6 +44,58 @@ describe('Unit: posts CSV export serializer', function () {
         assert.deepEqual(nextCalls, []);
     });
 
+    it('Appends no-transform to an existing Cache-Control header', async function () {
+        const source = Readable.from([{id: '1', title: 'Post'}], {objectMode: true});
+        const frame: {response?: Function} = {};
+        const headers: Record<string, string> = {};
+
+        postsSerializer.exportCSV({data: source}, null, frame);
+
+        const response: any = new Writable({
+            write(_chunk: Buffer, _encoding: string, callback: Function) {
+                callback();
+            }
+        });
+        response.setHeader = (key: string, value: string) => {
+            headers[key] = value;
+        };
+        response.getHeader = (key: string) => {
+            return key === 'Cache-Control' ? 'public, max-age=3600' : undefined;
+        };
+
+        frame.response!(null, response, () => {});
+
+        await once(response, 'finish');
+
+        assert.equal(headers['Cache-Control'], 'public, max-age=3600, no-transform');
+    });
+
+    it('Does not duplicate an existing no-transform Cache-Control directive', async function () {
+        const source = Readable.from([{id: '1', title: 'Post'}], {objectMode: true});
+        const frame: {response?: Function} = {};
+        const headers: Record<string, string> = {};
+
+        postsSerializer.exportCSV({data: source}, null, frame);
+
+        const response: any = new Writable({
+            write(_chunk: Buffer, _encoding: string, callback: Function) {
+                callback();
+            }
+        });
+        response.setHeader = (key: string, value: string) => {
+            headers[key] = value;
+        };
+        response.getHeader = (key: string) => {
+            return key === 'Cache-Control' ? 'public, max-age=3600, No-Transform' : undefined;
+        };
+
+        frame.response!(null, response, () => {});
+
+        await once(response, 'finish');
+
+        assert.equal(headers['Cache-Control'], undefined);
+    });
+
     it('Passes response stream errors to next', async function () {
         const sourceError = new Error('response failed');
         const source = Readable.from([{id: '1', title: 'Post'}], {objectMode: true});
