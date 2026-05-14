@@ -65,11 +65,12 @@
         "test": "pnpm test:types && vitest run --coverage",
         "test:unit": "pnpm test:types && vitest run",
         "test:types": "tsc --noEmit",
-        "lint:code": "eslint --ext .js,.ts,.cjs,.tsx src/ --cache",
+        "lint:code": "eslint --ext .js,.ts,.cjs,.tsx src/ scripts/ --cache",
         "lint": "pnpm lint:code && pnpm lint:test",
         "lint:test": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx test/ --cache",
         "storybook": "storybook dev -p 6006",
-        "build-storybook": "storybook build"
+        "build-storybook": "storybook build",
+        "adoption:extract": "tsx scripts/extract-adoption.ts"
     },
     "files": [
         "es",
@@ -104,6 +105,7 @@
         "storybook": "catalog:",
         "tailwindcss": "4.2.1",
         "tsc-alias": "1.8.17",
+        "tsx": "4.21.0",
         "tw-animate-css": "1.4.0",
         "typescript": "catalog:",
         "vite": "catalog:",
