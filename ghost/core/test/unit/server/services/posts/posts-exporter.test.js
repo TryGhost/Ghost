@@ -305,7 +305,7 @@ describe('PostsExporter', function () {
             };
 
             const stream = await exporter.export({limit: 75});
-            assert.ok(stream instanceof Readable || typeof stream.pipe === 'function');
+            assert.ok(Readable.isReadable(stream));
 
             const exportedPosts = await Array.fromAsync(stream);
             assert.equal(exportedPosts.length, 75);
