@@ -64,7 +64,7 @@
     flex-direction: column;
     align-items: center;
     gap: 12px;
-    max-width: 560px;
+    max-width: 760px;
     color: var(--black);
     text-align: center;
 }
