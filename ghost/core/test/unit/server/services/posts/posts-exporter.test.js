@@ -332,9 +332,6 @@ describe('PostsExporter', function () {
 
             models.Post = {
                 findPage: async (options) => {
-                    if (options.stableOrder && !options.order.split(',').some(orderPart => orderPart.trim().toLowerCase().startsWith('id '))) {
-                        options.order = `${options.order}, id desc`;
-                    }
                     findPageCalls.push(options);
 
                     // Simulate a database returning a different tie order for page 2
@@ -372,6 +369,46 @@ describe('PostsExporter', function () {
                 duplicateIds,
                 missingIds
             });
+        });
+
+        it('Preserves custom export order when it already includes id', async function () {
+            const findPageCalls = [];
+
+            models.Post = {
+                findPage: async (options) => {
+                    findPageCalls.push(options);
+
+                    return {
+                        data: []
+                    };
+                }
+            };
+
+            await Array.fromAsync(await exporter.export({
+                order: 'published_at desc, id asc'
+            }));
+
+            assert.equal(findPageCalls[0].order, 'published_at desc, id asc');
+        });
+
+        it('Preserves custom export order when it already includes posts.id', async function () {
+            const findPageCalls = [];
+
+            models.Post = {
+                findPage: async (options) => {
+                    findPageCalls.push(options);
+
+                    return {
+                        data: []
+                    };
+                }
+            };
+
+            await Array.fromAsync(await exporter.export({
+                order: 'published_at desc, posts.id desc'
+            }));
+
+            assert.equal(findPageCalls[0].order, 'published_at desc, posts.id desc');
         });
 
         it('Preserves the default export limit when no limit is supplied', async function () {

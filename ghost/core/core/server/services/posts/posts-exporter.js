@@ -34,6 +34,24 @@ function parseExportLimit(limit) {
     return Math.max(parsed, 1);
 }
 
+function hasIdOrder(order) {
+    return String(order)
+        .split(',')
+        .map(orderPart => orderPart.trim().toLowerCase())
+        .some((orderPart) => {
+            const [field] = orderPart.split(/\s+/);
+            return field === 'id' || field === 'posts.id';
+        });
+}
+
+function withStableExportOrder(order) {
+    if (!order || hasIdOrder(order)) {
+        return order;
+    }
+
+    return `${order}, id desc`;
+}
+
 class PostsExporter {
     #models;
     #getPostUrl;
@@ -72,7 +90,7 @@ class PostsExporter {
 
         return Readable.from(this.#streamPosts({
             filter,
-            order,
+            order: withStableExportOrder(order),
             requestedLimit,
             pageLimit,
             exportContext
@@ -111,7 +129,6 @@ class PostsExporter {
                 limit: pageLimit,
                 page,
                 skipPagination: true,
-                stableOrder: true,
                 withRelated: EXPORT_WITH_RELATED
             });
 
