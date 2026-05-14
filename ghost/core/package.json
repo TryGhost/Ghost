@@ -54,6 +54,7 @@
     "pretest": "pnpm build:assets",
     "test": "pnpm test:unit",
     "test:base": "mocha --reporter dot --node-option import=tsx --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js,test.ts",
+    "test:vitest": "NODE_OPTIONS='--import tsx' vitest run",
     "test:single": "f() { q=$(echo \"$1\" | sed 's/\\.test\\.[jt]s$//'); case \"$q\" in */*) pnpm test:base --timeout=60000 \"$1\" ;; *) pnpm test:base --timeout=60000 \"test/**/*$q*.test.{js,ts}\" ;; esac; }; f",
     "test:all": "pnpm test:unit && pnpm test:integration && pnpm test:e2e && pnpm lint",
     "test:debug": "DEBUG=ghost:test* pnpm test",
@@ -301,7 +302,9 @@
     "tmp": "0.2.5",
     "tsx": "4.21.0",
     "typescript": "catalog:",
-    "validator": "catalog:"
+    "validator": "catalog:",
+    "vitest": "catalog:",
+    "@vitest/coverage-v8": "catalog:"
   },
   "nx": {
     "tags": [
