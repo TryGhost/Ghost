@@ -70,7 +70,7 @@
     "@tryghost/admin-x-framework": "workspace:*",
     "@tryghost/custom-fonts": "catalog:",
     "@tryghost/shade": "workspace:*",
-    "@types/node": "22.19.17",
+    "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@types/validator": "catalog:",
