@@ -26,7 +26,6 @@ export const MAX_THREAD_DEPTH = DESKTOP_MAX_THREAD_DEPTH;
 export type ThreadedReply = Comment & {
     nestedReplies: ThreadedReply[];
     depth: number;
-    parentReplyId: string | null;
 };
 
 export type ThreadModel = {
@@ -49,7 +48,7 @@ export function buildThreadModel(threadParentComment: Comment): ThreadModel {
     const depthById = new Map<string, number>();
 
     replies.forEach((reply) => {
-        byId.set(reply.id, {...reply, depth: 1, parentReplyId: null, nestedReplies: []});
+        byId.set(reply.id, {...reply, depth: 1, nestedReplies: []});
     });
 
     const topLevelReplies: ThreadedReply[] = [];
@@ -63,7 +62,6 @@ export function buildThreadModel(threadParentComment: Comment): ThreadModel {
         const parentReply = reply.in_reply_to_id ? byId.get(reply.in_reply_to_id) : null;
 
         if (parentReply && parentReply.id !== threadedReply.id) {
-            threadedReply.parentReplyId = parentReply.id;
             parentById.set(threadedReply.id, parentReply.id);
             parentReply.nestedReplies.push(threadedReply);
         } else {
