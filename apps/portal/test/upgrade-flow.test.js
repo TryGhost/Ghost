@@ -201,6 +201,12 @@ describe('Logged-in free member', () => {
             const singleTierProduct = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
 
             fireEvent.click(viewPlansButton);
+            // Wait for the full plan picker to render (Yearly is the second
+            // option) before clicking Monthly. Mirrors the yearly-plan test
+            // and gives React time to attach event handlers — without this
+            // settle point, the first test in the file occasionally raced
+            // against initial render under JIT/module-loading warm-up.
+            await within(popupIframeDocument).findByText('Yearly');
             const monthlyPlanContainer = await within(popupIframeDocument).findByText('Monthly');
             fireEvent.click(monthlyPlanContainer);
             // added fake timeout for react state delay in setting plan

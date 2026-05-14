@@ -88,7 +88,13 @@ export default defineConfig((config) => {
             globals: true,
             environment: 'jsdom',
             setupFiles: './test/setup-tests.js',
-            testTimeout: 10000,
+            // The first test in a heavy integration-style file (e.g. upgrade-flow,
+            // which runs the full Portal app under JSDOM) pays a module-loading
+            // and JIT warm-up cost on top of its actual work. Hardcoding 10s
+            // left flakes when CI workers were slow; 20s gives clear headroom
+            // for warm-up while still keeping the suite honest. Other Ghost
+            // apps use the same env-var override pattern for one-off CI bumps.
+            testTimeout: process.env.TIMEOUT ? parseInt(process.env.TIMEOUT) : 20000,
             coverage: {
                 reporter: ['cobertura', 'text-summary', 'html']
             }
