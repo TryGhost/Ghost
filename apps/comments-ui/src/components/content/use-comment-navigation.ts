@@ -312,6 +312,7 @@ export function useCommentNavigation({
     containerRef,
     focusedThread
 }: UseCommentNavigationOptions): NavActions {
+    const {dispatchAction} = useAppContext();
     const focusedThreadViewCommentId = useRef<string | null>(null);
     const instantScrollCommentId = useRef<string | null>(null);
     const helpers = useNavigationHelpers(containerRef);
@@ -328,6 +329,13 @@ export function useCommentNavigation({
         },
         requestInstantScroll: (commentId) => {
             instantScrollCommentId.current = commentId;
+        },
+        navigateBackToParent: (commentId, permalink) => {
+            instantScrollCommentId.current = commentId;
+            getParentWindow(containerRef)?.history.pushState(null, '', permalink);
+            dispatchAction('setHashCommentId', commentId);
+            dispatchAction('setScrollTarget', null);
+            dispatchAction('setHighlightComment', null);
         }
-    }), []);
+    }), [containerRef, dispatchAction]);
 }

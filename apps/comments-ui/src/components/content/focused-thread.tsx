@@ -1,5 +1,5 @@
 import CommentComponent from './comment';
-import React from 'react';
+import React, {useCallback} from 'react';
 import ReplyTree from './reply-tree';
 import {ThreadWindow} from '../../utils/thread-graph';
 import {buildCommentPermalink, buildCommentsRootPermalink} from '../../utils/helpers';
@@ -11,10 +11,14 @@ type FocusedThreadProps = {
 };
 
 const FocusedThread: React.FC<FocusedThreadProps> = ({focusedThread}) => {
-    const {dispatchAction, pageUrl, t} = useAppContext();
-    const {requestInstantScroll} = useNavActions();
+    const {pageUrl, t} = useAppContext();
+    const {navigateBackToParent} = useNavActions();
     const {backComment, focusedComment, topLevelComment} = focusedThread;
     const backPermalink = buildCommentPermalink(pageUrl, backComment.id);
+    const handleBackClick = useCallback((event: React.MouseEvent<HTMLAnchorElement>) => {
+        event.preventDefault();
+        navigateBackToParent(backComment.id, backPermalink);
+    }, [backComment.id, backPermalink, navigateBackToParent]);
 
     return (
         <div>
@@ -24,14 +28,7 @@ const FocusedThread: React.FC<FocusedThreadProps> = ({focusedThread}) => {
                     data-testid="back-to-parent"
                     href={backPermalink}
                     target="_parent"
-                    onClick={(event) => {
-                        event.preventDefault();
-                        requestInstantScroll(backComment.id);
-                        window.parent.history.pushState(null, '', backPermalink);
-                        dispatchAction('setHashCommentId', backComment.id);
-                        dispatchAction('setScrollTarget', null);
-                        dispatchAction('setHighlightComment', null);
-                    }}
+                    onClick={handleBackClick}
                 >
                     &larr; {t('Back')}
                 </a>
