@@ -58,9 +58,9 @@ module.exports = {
         frame.response = function streamResponse(req, res, next) {
             const csvTransform = createCSVTransform();
 
-            const datetime = (new Date()).toJSON().substring(0, 10);
+            const todayIsoDate = (new Date()).toJSON().substring(0, 10);
             res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-            res.setHeader('Content-Disposition', `Attachment; filename="post-analytics.${datetime}.csv"`);
+            res.setHeader('Content-Disposition', `Attachment; filename="post-analytics.${todayIsoDate}.csv"`);
             const cacheControl = res.getHeader('Cache-Control');
             res.setHeader('Cache-Control', cacheControl ? `${cacheControl}, no-transform` : 'no-transform');
 
