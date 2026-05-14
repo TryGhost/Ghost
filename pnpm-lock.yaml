@@ -1389,6 +1389,9 @@ importers:
       tsc-alias:
         specifier: 1.8.17
         version: 1.8.17
+      tsx:
+        specifier: 4.21.0
+        version: 4.21.0
       tw-animate-css:
         specifier: 1.4.0
         version: 1.4.0
@@ -46719,7 +46722,7 @@ snapshots:
   tsx@4.21.0:
     dependencies:
       esbuild: 0.27.4
-      get-tsconfig: 4.13.7
+      get-tsconfig: 4.14.0
     optionalDependencies:
       fsevents: 2.3.3
 
