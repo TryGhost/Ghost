@@ -334,6 +334,47 @@ test.describe('Theme settings', async () => {
         expect(lastApiRequests.uploadTheme?.url).toMatch(/\/themes\/upload\//);
     });
 
+    test('Surfaces server-side upload size-limit errors with a user-friendly toast', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes},
+            downloadTheme: themeDownloadRequest('edition'),
+            uploadTheme: {
+                method: 'POST',
+                path: '/themes/upload/',
+                responseStatus: 415,
+                response: {
+                    errors: [{
+                        message: 'Zip entry exceeds maximum uncompressed size.',
+                        errorType: 'UnsupportedMediaTypeError',
+                        code: 'ENTRY_TOO_LARGE',
+                        errorDetails: {
+                            entryName: 'partials/huge.hbs',
+                            observedBytes: 2_000_000,
+                            limitBytes: 1_048_576
+                        }
+                    }]
+                }
+            }
+        }});
+
+        const editorModal = await openInstalledThemeEditor(page, 'edition');
+        const codeEditor = editorModal.locator('.cm-content');
+        await codeEditor.click();
+        await page.keyboard.press('ControlOrMeta+A');
+        await page.keyboard.insertText('{"name":"edition","version":"1.0.0"}\n');
+
+        await editorModal.getByRole('button', {name: 'Save'}).click();
+        await page.getByTestId('theme-editor-confirm-modal').getByRole('button', {name: 'Replace theme'}).click();
+
+        // The toast should mention the offending file and the limit, not just
+        // a generic "something went wrong" message.
+        const errorToast = page.getByTestId('toast-error');
+        await expect(errorToast).toContainText(/partials\/huge\.hbs/);
+        await expect(errorToast).toContainText(/1\.0 MB/);
+        await expect(errorToast).not.toContainText(/something went wrong/i);
+    });
+
     test('Loads CodeMirror with the dynamic language extension applied', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,

@@ -175,6 +175,51 @@ const wouldRenameBinaryFileToEditable = (file: ThemeEditorFile, nextPath: string
 // stripping on Windows when the archive is later unzipped.
 const THEME_NAME_PATTERN = /^[a-z0-9][\w-]{0,63}$/;
 
+type UploadSizeLimitError = {
+    message?: string;
+    code?: string;
+    errorDetails?: {
+        entryName?: string;
+        observedBytes?: number;
+        limitBytes?: number;
+    };
+};
+
+const UPLOAD_SIZE_LIMIT_TITLES: Record<string, string> = {
+    COMPRESSED_TOO_LARGE: 'Theme too large to upload',
+    ENTRY_TOO_LARGE: 'File too large',
+    TOTAL_TOO_LARGE: 'Theme contents too large'
+};
+
+const formatLimitBytes = (bytes: number | undefined) => {
+    if (!bytes || bytes <= 0) {
+        return 'the allowed size';
+    }
+    const mb = bytes / (1024 * 1024);
+    if (mb >= 1) {
+        return `${mb.toFixed(1)} MB`;
+    }
+    return `${Math.round(bytes / 1024)} KB`;
+};
+
+const buildUploadSizeLimitMessage = (err: UploadSizeLimitError) => {
+    const {entryName, limitBytes} = err.errorDetails ?? {};
+    const limit = formatLimitBytes(limitBytes);
+
+    switch (err.code) {
+    case 'COMPRESSED_TOO_LARGE':
+        return `The theme archive is too large to upload (max ${limit}).`;
+    case 'ENTRY_TOO_LARGE':
+        return entryName
+            ? `The file "${entryName}" is too large (max ${limit} per file).`
+            : `One of the files is too large (max ${limit} per file).`;
+    case 'TOTAL_TOO_LARGE':
+        return `The theme contents exceed the maximum allowed size of ${limit}.`;
+    default:
+        return err.message || 'Theme upload failed.';
+    }
+};
+
 const wrapToggleClass = (active: boolean) => `inline-flex h-5 w-5 items-center justify-center rounded-sm text-[#c8ccd3] transition-opacity hover:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a9eff] ${active ? 'opacity-100' : 'opacity-60'}`;
 
 const editorPaneEmptyStateClass = 'flex h-full items-center justify-center p-8 text-center text-[13px] text-[#6a6f78]';
@@ -777,7 +822,18 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
                     return;
                 }
 
-                throw new Error((data as {errors?: Array<{message?: string}>} | null)?.errors?.[0]?.message || 'Theme upload failed.');
+                const serverError = (data as {errors?: Array<UploadSizeLimitError>} | null)?.errors?.[0];
+
+                if (serverError?.code && UPLOAD_SIZE_LIMIT_TITLES[serverError.code]) {
+                    showToast({
+                        type: 'error',
+                        title: UPLOAD_SIZE_LIMIT_TITLES[serverError.code],
+                        message: buildUploadSizeLimitMessage(serverError)
+                    });
+                    return;
+                }
+
+                throw new Error(serverError?.message || 'Theme upload failed.');
             }
 
             const uploadedTheme = data.themes[0];
