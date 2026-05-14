@@ -122,7 +122,14 @@ const isAllowedReturnRoute = (route: string): boolean => {
 const getReturnRouteFromHash = () => {
     const hash = window.location.hash.substring(1);
     const domain = `${window.location.protocol}//${window.location.hostname}`;
-    const url = new URL(hash || '/', domain);
+
+    let url: URL;
+    try {
+        url = new URL(hash || '/', domain);
+    } catch {
+        return null;
+    }
+
     const from = url.searchParams.get('from');
 
     if (from === null) {
