@@ -14,6 +14,15 @@ import crypto from 'node:crypto';
 import chalk from 'chalk';
 import {beforeAll, afterEach, afterAll} from 'vitest';
 
+// Mocha exposes `before`/`after` as suite-scope hooks; vitest only ships
+// `beforeAll`/`afterAll`. Alias them globally so we don't have to rewrite
+// hundreds of test files. The semantics are the same: run once per
+// describe block.
+// eslint-disable-next-line no-undef
+(globalThis as Record<string, unknown>).before = beforeAll;
+// eslint-disable-next-line no-undef
+(globalThis as Record<string, unknown>).after = afterAll;
+
 process.env.NODE_ENV = process.env.NODE_ENV || 'testing';
 process.env.WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_SECRET';
 
