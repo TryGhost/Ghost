@@ -105,12 +105,12 @@ const EmailNotificationsInputs: React.FC<{ user: User; setUserData: (user: User)
                         />}
                         {hasStripeEnabled && hasGiftSubscriptions && <Toggle
                             align='center'
-                            checked={user.gift_subscription_purchase_notification}
+                            checked={user.gift_subscription_notifications}
                             direction='rtl'
                             hint='Every time someone purchases or redeems a gift subscription'
                             label='Gift subscriptions'
                             onChange={(e) => {
-                                setUserData?.({...user, gift_subscription_purchase_notification: e.target.checked});
+                                setUserData?.({...user, gift_subscription_notifications: e.target.checked});
                             }}
                         />}
                     </div>
