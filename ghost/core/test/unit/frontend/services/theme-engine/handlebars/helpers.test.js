@@ -13,7 +13,7 @@ describe('Helpers', function () {
         'asset', 'authors', 'body_class', 'cancel_link', 'color_to_rgba', 'concat', 'content', 'content_api_key', 'content_api_url', 'contrast_text_color', 'date', 'encode', 'excerpt', 'facebook_url', 'foreach', 'get',
         'ghost_foot', 'ghost_head', 'has', 'img_url', 'is', 'json', 'link', 'link_class', 'meta_description', 'meta_title', 'navigation',
         'next_post', 'page_url', 'pagination', 'plural', 'post_class', 'prev_post', 'price', 'raw', 'reading_time', 'split', 't', 'tags', 'title','total_members', 'total_paid_members', 'twitter_url',
-        'url', 'comment_count', 'collection', 'recommendations', 'readable_url', 'social_url'
+        'url', 'comment_count', 'collection', 'recommendations', 'readable_url', 'social_url', 'social_accounts'
     ];
     const experimentalHelpers = ['match', 'tiers', 'comments', 'search'];
 

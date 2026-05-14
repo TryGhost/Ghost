@@ -1,6 +1,5 @@
 // Feature-level compositions and pattern contracts
 export * from './components/patterns/page-header';
-export * from './components/patterns/list-page';
 export * from './components/patterns/gh-chart';
 export * from './components/patterns/kpi-card';
 export * from './components/patterns/kpi-tabs';

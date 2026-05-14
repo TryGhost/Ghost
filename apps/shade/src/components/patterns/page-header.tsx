@@ -14,84 +14,20 @@ type PageHeaderProps = PropsWithChildrenAndClassName & {
     blurredBackground?: boolean;
 };
 
+// ---------------------------------------------------------------------------
+// Title-block primitives
+// ---------------------------------------------------------------------------
+
 function PageHeaderBreadcrumb({className, children}: PropsWithChildrenAndClassName) {
     return (
         <Inline
             align='center'
-            className={cn('text-sm text-muted-foreground', className)}
+            className={cn('text-sm text-muted-foreground pt-1', className)}
             data-page-header='breadcrumb'
             gap='sm'
         >
             {children}
         </Inline>
-    );
-}
-
-function PageHeaderContextStrip({className, children}: PropsWithChildrenAndClassName) {
-    return (
-        <Inline
-            align='center'
-            className={cn('text-sm text-muted-foreground', className)}
-            data-page-header='context-strip'
-            gap='sm'
-        >
-            {children}
-        </Inline>
-    );
-}
-
-function PageHeaderTopRow({className, children}: PropsWithChildrenAndClassName) {
-    return (
-        <Inline
-            align='center'
-            className={cn('w-full', className)}
-            data-page-header='top-row'
-            gap='lg'
-            justify='between'
-        >
-            {children}
-        </Inline>
-    );
-}
-
-function PageHeaderLeft({className, children}: PropsWithChildrenAndClassName) {
-    return (
-        <Stack
-            className={cn('min-w-0 h-full min-h-(--control-height)', className)}
-            data-page-header='left'
-            gap='xs'
-            justify='center'
-        >
-            {children}
-        </Stack>
-    );
-}
-
-function PageHeaderTitle({className, children}: PropsWithChildrenAndClassName) {
-    return (
-        <H1
-            className={cn(
-                'text-2xl leading-[1.2em] sidebar:text-[2.5rem] whitespace-nowrap',
-                className
-            )}
-            data-page-header='title'
-        >
-            {children}
-        </H1>
-    );
-}
-
-function PageHeaderDescription({className, children}: PropsWithChildrenAndClassName) {
-    return (
-        <Text
-            as='p'
-            className={className}
-            data-page-header='description'
-            size='sm'
-            tone='secondary'
-        >
-            {children}
-        </Text>
     );
 }
 
@@ -103,6 +39,20 @@ function PageHeaderCount({className, children}: PropsWithChildrenAndClassName) {
             data-page-header='count'
             tone='secondary'
             weight='regular'
+        >
+            {children}
+        </Text>
+    );
+}
+
+function PageHeaderDescription({className, children}: PropsWithChildrenAndClassName) {
+    return (
+        <Text
+            as='p'
+            className={className}
+            data-page-header='description'
+            size='sm'
+            tone='secondary'
         >
             {children}
         </Text>
@@ -123,52 +73,69 @@ function PageHeaderMeta({className, children}: PropsWithChildrenAndClassName) {
     );
 }
 
-type PageHeaderHeroImageProps = React.ImgHTMLAttributes<HTMLDivElement> & {
-    src: string;
-    className?: string;
-};
+/**
+ * `Title` accepts heading text plus optional `Count`, `Description`, and `Meta`
+ * children. `Count` flows inline inside the H1; `Description` and `Meta` stack
+ * below the heading.
+ */
+function PageHeaderTitle({className, children}: PropsWithChildrenAndClassName) {
+    const headingChildren: React.ReactNode[] = [];
+    const subTextChildren: React.ReactNode[] = [];
 
-function PageHeaderHeroImage({src, className, ...rest}: PageHeaderHeroImageProps) {
-    return (
-        <div
+    React.Children.forEach(children, (child) => {
+        if (!React.isValidElement(child)) {
+            headingChildren.push(child);
+            return;
+        }
+
+        switch (child.type) {
+        case PageHeaderDescription:
+        case PageHeaderMeta:
+            subTextChildren.push(child);
+            break;
+        default:
+            headingChildren.push(child);
+        }
+    });
+
+    const heading = (
+        <H1
             className={cn(
-                'aspect-[16/10] w-full max-w-[100px] rounded-md bg-cover bg-center md:max-w-[132px] shrink-0',
+                'text-2xl leading-[1.2em] sidebar:text-[2.5rem] whitespace-nowrap',
                 className
             )}
-            data-page-header='hero-image'
-            role='img'
-            style={{backgroundImage: `url(${src})`}}
-            {...rest}
-        />
+            data-page-header='title'
+        >
+            {headingChildren}
+        </H1>
     );
+
+    if (subTextChildren.length > 0) {
+        return (
+            <Stack data-page-header='title-body' gap='none'>
+                {heading}
+                {subTextChildren}
+            </Stack>
+        );
+    }
+
+    return heading;
 }
 
-function PageHeaderHeroBody({className, children}: PropsWithChildrenAndClassName) {
-    return (
-        <div className={cn('min-w-0', className)} data-page-header='hero-body'>
-            {children}
-        </div>
-    );
-}
+// ---------------------------------------------------------------------------
+// Main row — Left (stack: Breadcrumb + Title) + Actions
+// ---------------------------------------------------------------------------
 
-function PageHeaderHero({className, children}: PropsWithChildrenAndClassName) {
+function PageHeaderLeft({className, children}: PropsWithChildrenAndClassName) {
     return (
-        <Inline
-            align='start'
-            className={cn('w-full md:items-center', className)}
-            data-page-header='hero'
-            gap='lg'
+        <Stack
+            className={cn('min-w-0 h-full min-h-(--control-height)', className)}
+            data-page-header='left'
+            gap='xs'
+            justify='center'
         >
             {children}
-        </Inline>
-    );
-}
-
-function PageHeaderNav({className, children}: PropsWithChildrenAndClassName) {
-    return (
-        <div className={cn('w-full', className)} data-page-header='nav'>
-            {children}
-        </div>
+        </Stack>
     );
 }
 
@@ -340,7 +307,7 @@ function PageHeaderActions({className, children}: PropsWithChildrenAndClassName)
     return (
         <Inline
             align='center'
-            className={cn('shrink-0', className)}
+            className={cn('shrink-0 min-h-(--control-height)', className)}
             data-page-header='actions'
             gap='lg'
         >
@@ -349,126 +316,83 @@ function PageHeaderActions({className, children}: PropsWithChildrenAndClassName)
     );
 }
 
+// ---------------------------------------------------------------------------
+// Root
+// ---------------------------------------------------------------------------
+
 type PageHeaderComponent = React.FC<PageHeaderProps> & {
-    TopRow: React.FC<PropsWithChildrenAndClassName>;
-    Breadcrumb: React.FC<PropsWithChildrenAndClassName>;
-    ContextStrip: React.FC<PropsWithChildrenAndClassName>;
     Left: React.FC<PropsWithChildrenAndClassName>;
+    Breadcrumb: React.FC<PropsWithChildrenAndClassName>;
     Title: React.FC<PropsWithChildrenAndClassName>;
     Count: React.FC<PropsWithChildrenAndClassName>;
     Description: React.FC<PropsWithChildrenAndClassName>;
     Meta: React.FC<PropsWithChildrenAndClassName>;
-    Hero: React.FC<PropsWithChildrenAndClassName>;
-    HeroImage: React.FC<PageHeaderHeroImageProps>;
-    HeroBody: React.FC<PropsWithChildrenAndClassName>;
     Actions: React.FC<PropsWithChildrenAndClassName>;
     ActionGroup: PageHeaderActionGroupComponent;
-    Nav: React.FC<PropsWithChildrenAndClassName>;
 };
 
 /**
- * PageHeader is the canonical page-chrome component for the List and Analytics
- * page types in Ghost Admin. It supersedes `ListHeader`, `Header`, and
- * `ViewHeader` (still exported from `@/components/layout/*` for migration).
+ * PageHeader is the canonical page-chrome component for Ghost Admin pages.
  *
- * Composition:
- *  - `Left` + `Actions` render in a single flex row (the ListHeader-equivalent shape).
- *  - `TopRow`, `Hero`, and `Nav` render as additional rows in the order declared.
- *  - `Nav` is rendered as a sticky sibling so sub-navigation can dock under the header.
+ * Structure (a vertical stack of three rows; any row collapses if its slots
+ * are absent):
+ *
+ *   1. Main row — `Inline align=start justify=between`:
+ *        `Left` (stack: `Breadcrumb` + `Title`) | `Actions`
+ *   2. View row — `Inline align=center justify=between`:
+ *        `ViewBar` | `ViewActions`
+ *   3. Filter bar — plain container.
+ *
+ * `Title` accepts an inline `Count` and stacked `Description`/`Meta` children.
  */
 const PageHeader: PageHeaderComponent = Object.assign(
     function PageHeader({className, children, sticky = true, blurredBackground = true}: PageHeaderProps) {
-        const topRowChildren: React.ReactNode[] = [];
-        const heroChildren: React.ReactNode[] = [];
-        const navChildren: React.ReactNode[] = [];
-        const mainChildren: React.ReactNode[] = [];
-
-        React.Children.forEach(children, (child) => {
-            if (!React.isValidElement(child)) {
-                mainChildren.push(child);
-                return;
-            }
-
-            switch (child.type) {
-            case PageHeaderTopRow:
-                topRowChildren.push(child);
-                break;
-            case PageHeaderHero:
-                heroChildren.push(child);
-                break;
-            case PageHeaderNav:
-                navChildren.push(child);
-                break;
-            default:
-                mainChildren.push(child);
-            }
-        });
-
-        const hasMainRow = mainChildren.length > 0;
-
         return (
             <header
                 className={cn(
-                    'flex flex-col gap-6 px-4 lg:px-8',
+                    'flex flex-col',
                     sticky && 'sticky top-0 z-50',
                     blurredBackground && 'bg-gradient-to-b from-background via-background/70 to-background/70 backdrop-blur-md dark:bg-black',
                     className
                 )}
                 data-page-header='page-header'
             >
-                {topRowChildren.length > 0 && topRowChildren}
-                {hasMainRow && (
-                    <Inline
-                        align='start'
-                        className='w-full'
-                        data-page-header='main'
-                        gap='lg'
-                        justify='between'
-                    >
-                        {mainChildren}
-                    </Inline>
-                )}
-                {heroChildren.length > 0 && heroChildren}
-                {navChildren.length > 0 && navChildren}
+                <Inline
+                    align='start'
+                    className='w-full'
+                    data-page-header='main'
+                    gap='lg'
+                    justify='between'
+                >
+                    {children}
+                </Inline>
             </header>
         );
     },
     {
-        TopRow: PageHeaderTopRow,
-        Breadcrumb: PageHeaderBreadcrumb,
-        ContextStrip: PageHeaderContextStrip,
         Left: PageHeaderLeft,
+        Breadcrumb: PageHeaderBreadcrumb,
         Title: PageHeaderTitle,
         Count: PageHeaderCount,
         Description: PageHeaderDescription,
         Meta: PageHeaderMeta,
-        Hero: PageHeaderHero,
-        HeroImage: PageHeaderHeroImage,
-        HeroBody: PageHeaderHeroBody,
         Actions: PageHeaderActions,
-        ActionGroup: PageHeaderActionGroup,
-        Nav: PageHeaderNav
+        ActionGroup: PageHeaderActionGroup
     }
 );
 
 export {
     PageHeader,
-    PageHeaderTopRow,
-    PageHeaderBreadcrumb,
-    PageHeaderContextStrip,
     PageHeaderLeft,
+    PageHeaderBreadcrumb,
     PageHeaderTitle,
     PageHeaderCount,
     PageHeaderDescription,
     PageHeaderMeta,
-    PageHeaderHero,
-    PageHeaderHeroImage,
-    PageHeaderHeroBody,
     PageHeaderActions,
     PageHeaderActionGroup,
     PageHeaderActionGroupPrimary,
     PageHeaderActionGroupMobileMenu,
     PageHeaderActionGroupMobileMenuTrigger,
-    PageHeaderActionGroupMobileMenuContent,
-    PageHeaderNav
+    PageHeaderActionGroupMobileMenuContent
 };

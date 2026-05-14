@@ -1,9 +1,9 @@
 import AppContext from '../../../../app-context';
 import {getSubscriptionExpiry, getMemberSubscription, getMemberTierName, hasMultipleProductsFeature, hasOnlyFreePlan, isArchivedTier, isComplimentaryMember, isGiftMember, isPaidMember, isStripeConfigured, subscriptionHasFreeTrial} from '../../../../utils/helpers';
 import {getDateString} from '../../../../utils/date-time';
-import {ReactComponent as GiftIcon} from '../../../../images/icons/gift.svg';
-import {ReactComponent as LoaderIcon} from '../../../../images/icons/loader.svg';
-import {ReactComponent as OfferTagIcon} from '../../../../images/icons/offer-tag.svg';
+import GiftIcon from '../../../../images/icons/gift.svg?react';
+import LoaderIcon from '../../../../images/icons/loader.svg?react';
+import OfferTagIcon from '../../../../images/icons/offer-tag.svg?react';
 import {useContext} from 'react';
 import {t} from '../../../../utils/i18n';
 

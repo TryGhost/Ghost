@@ -5,7 +5,7 @@ import GiftCard from '../common/gift-card';
 import GiftDetailsToggle from '../common/gift-details-toggle';
 import InboxLinkButton from '../common/inbox-link-button';
 import AppContext from '../../app-context';
-import {ReactComponent as EnvelopeIcon} from '../../images/icons/envelope.svg';
+import EnvelopeIcon from '../../images/icons/envelope.svg?react';
 import {isIos} from '../../utils/is-ios';
 import {t} from '../../utils/i18n';
 import {getGiftDurationLabel} from '../../utils/gift-redemption-notification';

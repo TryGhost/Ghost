@@ -18,6 +18,38 @@ export function flattenComments(comments: Comment[]): Comment[] {
     return comments.flatMap(comment => [comment, ...(comment.replies || [])]);
 }
 
+export type ThreadedReply = Comment & {
+    nestedReplies: ThreadedReply[];
+};
+
+export function buildThreadedReplies(threadParentComment: Comment): ThreadedReply[] {
+    const replies = threadParentComment.replies || [];
+    const byId = new Map<string, ThreadedReply>();
+
+    replies.forEach((reply) => {
+        byId.set(reply.id, {...reply, nestedReplies: []});
+    });
+
+    const topLevelReplies: ThreadedReply[] = [];
+
+    replies.forEach((reply) => {
+        const threadedReply = byId.get(reply.id);
+        const parentReply = reply.in_reply_to_id ? byId.get(reply.in_reply_to_id) : null;
+
+        if (!threadedReply) {
+            return;
+        }
+
+        if (parentReply && parentReply.id !== threadedReply.id) {
+            parentReply.nestedReplies.push(threadedReply);
+        } else {
+            topLevelReplies.push(threadedReply);
+        }
+    });
+
+    return topLevelReplies;
+}
+
 export function findCommentById(comments: Comment[], id: string): Comment | undefined {
     return comments.find(comment => comment?.id === id)
         || comments.flatMap(comment => comment.replies || []).find(reply => reply?.id === id);
