@@ -15,7 +15,13 @@ const controller = {
                 filter: 'type:post',
                 limit: '10000',
                 order: 'updated_at DESC',
-                columns: ['id', 'slug', 'title', 'excerpt', 'url', 'updated_at', 'visibility']
+                columns: ['id', 'slug', 'title', 'excerpt', 'url', 'updated_at', 'visibility'],
+                // Under lazyRouting the URL is computed at serialization
+                // time from the resource's tags/authors; without them
+                // every URL resolves to /404/ for any tag- or
+                // author-filtered route. See the matching comment in
+                // search-index.js (the Admin counterpart).
+                withRelated: ['tags', 'authors']
             };
 
             return postsService.browsePosts(options);
