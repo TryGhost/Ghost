@@ -13,7 +13,7 @@ describe('Scheduling Default Adapter', function () {
     let clock;
 
     beforeEach(function () {
-        clock = sinon.useFakeTimers();
+        clock = sinon.useFakeTimers({shouldAdvanceTime: true});
         scope.adapter = new SchedulingDefault();
     });
 

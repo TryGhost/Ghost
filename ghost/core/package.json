@@ -297,7 +297,7 @@
     "postcss-cli": "11.0.1",
     "qs": "6.14.2",
     "rewire": "9.0.1",
-    "sinon": "18.0.1",
+    "sinon": "catalog:",
     "supertest": "6.3.4",
     "tmp": "0.2.5",
     "tsx": "4.21.0",
