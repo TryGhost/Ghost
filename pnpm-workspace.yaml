@@ -4,6 +4,7 @@ packages:
   - 'e2e'
 
 strictDepBuilds: true
+catalogMode: strict
 
 catalog:
   '@eslint/js': 8.57.1
