@@ -39,6 +39,7 @@
     "docker:build": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} build",
     "docker:clean": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile all down -v --remove-orphans --rmi local",
     "docker:down": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} down",
+    "docker:rebase": "git fetch ${GHOST_UPSTREAM:-origin} main && git rebase ${GHOST_UPSTREAM:-origin}/main && pnpm install && pnpm nx run-many -t build --projects=@tryghost/shade,@tryghost/admin-x-design-system,@tryghost/admin-x-framework && docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} up -d --build --force-recreate ghost-dev",
     "knip": "knip",
     "knip:fix": "knip --fix --allow-remove-files=false",
     "lint": "pnpm nx run-many -t lint",

@@ -1,7 +1,7 @@
 const {promises: fs, readFileSync} = require('fs');
 const path = require('path');
 const moment = require('moment');
-const glob = require('glob');
+const {globSync} = require('glob');
 const EmailAddressParser = require('../email-address/email-address-parser');
 
 class StaffServiceEmails {
@@ -545,7 +545,7 @@ class StaffServiceEmails {
 
     registerPartials() {
         const rootDirname = './email-templates/partials/';
-        const files = glob.sync('*.hbs', {cwd: path.join(__dirname, rootDirname)});
+        const files = globSync('*.hbs', {cwd: path.join(__dirname, rootDirname)});
         files.forEach((fileName) => {
             const name = fileName.replace(/.hbs$/, '');
             const filePath = path.join(__dirname, rootDirname, `${name}.hbs`);
