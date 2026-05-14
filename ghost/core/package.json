@@ -176,7 +176,7 @@
     "form-data": "4.0.5",
     "fs-extra": "catalog:",
     "ghost-storage-base": "1.1.2",
-    "glob": "8.1.0",
+    "glob": "catalog:",
     "got": "13.0.0",
     "gscan": "6.0.2",
     "handlebars": "4.7.9",

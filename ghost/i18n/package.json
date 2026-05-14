@@ -34,7 +34,7 @@
     "c8": "catalog:",
     "eslint": "catalog:",
     "fs-extra": "catalog:",
-    "glob": "13.0.6",
+    "glob": "catalog:",
     "i18next-parser": "9.3.0",
     "mocha": "catalog:"
   },

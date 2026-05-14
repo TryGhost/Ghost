@@ -1,4 +1,4 @@
-const glob = require('glob');
+const {globSync} = require('glob');
 const path = require('path');
 
 const handlebars = require('./handlebars');
@@ -21,7 +21,7 @@ const registerHelper = (name, helperFn) => {
 };
 
 const registerDir = (helperPath) => {
-    let helperFiles = glob.sync('!(index).js', {cwd: helperPath});
+    let helperFiles = globSync('!(index).js', {cwd: helperPath});
     helperFiles.forEach((helper) => {
         const name = helper.replace(/.js$/, '');
         const fn = require(path.join(helperPath, helper));
