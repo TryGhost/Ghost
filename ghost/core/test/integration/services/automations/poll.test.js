@@ -23,7 +23,7 @@ describe('automations poll', function () {
     beforeEach(async function () {
         await cleanupTables();
 
-        sinon.useFakeTimers(new Date('2026-04-12T12:00:00.000Z'));
+        sinon.useFakeTimers({now: new Date('2026-04-12T12:00:00.000Z'), shouldAdvanceTime: true});
 
         options = {
             memberWelcomeEmailService: {

@@ -75,7 +75,7 @@ describe('Last Seen At Updater', function () {
 
             mockManager.mockSetting('timezone', 'CET');
 
-            const clock = sinon.useFakeTimers(firstDate);
+            const clock = sinon.useFakeTimers({now: firstDate, shouldAdvanceTime: true});
 
             await membersEvents.lastSeenAtUpdater.cachedUpdateLastSeenAt(memberId, previousLastSeen, firstDate);
 
@@ -107,7 +107,7 @@ describe('Last Seen At Updater', function () {
 
             mockManager.mockSetting('timezone', 'CET');
 
-            const clock = sinon.useFakeTimers(firstDate);
+            const clock = sinon.useFakeTimers({now: firstDate, shouldAdvanceTime: true});
 
             const spy = sinon.spy(membersEvents.lastSeenAtUpdater, 'updateLastSeenAt');
 

@@ -22,7 +22,7 @@ describe('Actions API', function () {
     it('Can request actions for resource', async function () {
         let postUpdatedAt;
 
-        const clock = sinon.useFakeTimers(Date.now());
+        const clock = sinon.useFakeTimers({now: Date.now(), shouldAdvanceTime: true});
 
         const res = await request
             .post(localUtils.API.getApiQuery('posts/'))

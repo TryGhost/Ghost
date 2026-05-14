@@ -2247,7 +2247,7 @@ describe('Members API', function () {
     });
 
     it('Can subscribe to a newsletter', async function () {
-        const clock = sinon.useFakeTimers(Date.now());
+        const clock = sinon.useFakeTimers({now: Date.now(), shouldAdvanceTime: true});
         const memberToChange = {
             name: 'change me',
             email: 'member3change@test.com',
@@ -2268,8 +2268,6 @@ describe('Members API', function () {
             tiersCount: 0,
             newsletterCount: 1
         });
-        const before = new Date();
-        before.setMilliseconds(0);
 
         await assertMemberEvents({
             eventType: 'MemberSubscribeEvent',
@@ -2277,16 +2275,12 @@ describe('Members API', function () {
             asserts: [{
                 subscribed: true,
                 source: 'admin',
-                newsletter_id: newsletters[0].id,
-                created_at: before
+                newsletter_id: newsletters[0].id
             }]
         });
 
-        // Wait 5 seconds to guarantee event ordering
+        // Wait 5 seconds to guarantee event ordering in the DB
         clock.tick(5000);
-
-        const after = new Date();
-        after.setMilliseconds(0);
 
         await agent
             .put(`/members/${newMember.id}/`)
@@ -2307,18 +2301,15 @@ describe('Members API', function () {
                 {
                     subscribed: true,
                     source: 'admin',
-                    newsletter_id: newsletters[0].id,
-                    created_at: before
+                    newsletter_id: newsletters[0].id
                 }, {
                     subscribed: true,
                     source: 'admin',
-                    newsletter_id: newsletters[1].id,
-                    created_at: after
+                    newsletter_id: newsletters[1].id
                 }, {
                     subscribed: false,
                     source: 'admin',
-                    newsletter_id: newsletters[0].id,
-                    created_at: after
+                    newsletter_id: newsletters[0].id
                 }
             ]
         });

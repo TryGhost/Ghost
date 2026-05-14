@@ -514,7 +514,7 @@ describe('sendMagicLink', function () {
         beforeEach(async function () {
             await dbUtils.truncate('brute');
             await resetRateLimits();
-            clock = sinon.useFakeTimers(new Date());
+            clock = sinon.useFakeTimers({now: new Date(), shouldAdvanceTime: true});
         });
 
         afterEach(function () {

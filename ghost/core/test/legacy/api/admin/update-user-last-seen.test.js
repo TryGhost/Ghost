@@ -22,7 +22,7 @@ describe('Update User Last Seen', function () {
         // Important to enable the fake timers before logging in
         // Because the last_seen of the owner will be set already here
         sandbox = sinon.createSandbox();
-        clock = sinon.useFakeTimers();
+        clock = sinon.useFakeTimers({shouldAdvanceTime: true});
 
         await agent.loginAsOwner();
 
