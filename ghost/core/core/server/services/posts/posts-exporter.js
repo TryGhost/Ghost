@@ -120,10 +120,10 @@ class PostsExporter {
                 break;
             }
 
-            const mapped = this.#mapPosts(posts.data, exportContext);
-            const remaining = requestedLimit === null ? mapped.length : requestedLimit - emitted;
+            const remaining = requestedLimit === null ? posts.data.length : requestedLimit - emitted;
+            const mapped = this.#mapPosts(posts.data.slice(0, remaining), exportContext);
 
-            for (const row of mapped.slice(0, remaining)) {
+            for (const row of mapped) {
                 emitted += 1;
                 yield row;
             }
