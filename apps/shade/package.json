@@ -97,7 +97,7 @@
         "eslint-plugin-react-refresh": "catalog:",
         "eslint-plugin-storybook": "10.3.5",
         "eslint-plugin-tailwindcss": "4.0.0-beta.0",
-        "glob": "10.5.0",
+        "glob": "catalog:",
         "jsdom": "catalog:",
         "postcss": "catalog:",
         "remark-gfm": "4.0.1",
