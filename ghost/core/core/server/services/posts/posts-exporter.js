@@ -102,10 +102,9 @@ class PostsExporter {
      * @returns {AsyncGenerator<object>}
      */
     async *#streamPosts({filter, order, requestedLimit, pageLimit, exportContext}) {
-        let page = 1;
         let emitted = 0;
 
-        while (emitted < requestedLimit) {
+        for (let page = 1; emitted < requestedLimit; page++) {
             const posts = await this.#models.Post.findPage({
                 filter: filter ?? 'status:published,status:sent',
                 order,
@@ -121,18 +120,14 @@ class PostsExporter {
             }
 
             const remaining = requestedLimit - emitted;
-            const mapped = this.#mapPosts(posts.data.slice(0, remaining), exportContext);
-
-            for (const row of mapped) {
-                emitted += 1;
-                yield row;
-            }
+            const batch = posts.data.slice(0, remaining);
+            const mapped = this.#mapPosts(batch, exportContext);
+            emitted += mapped.length;
+            yield* mapped;
 
             if (posts.data.length < pageLimit) {
                 break;
             }
-
-            page += 1;
         }
     }
 
