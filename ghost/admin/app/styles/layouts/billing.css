@@ -111,6 +111,7 @@
     color: var(--midgrey);
     font-size: 1.6rem;
     line-height: 1.35;
+    text-wrap: pretty;
 }
 
 .gh-billing-status-error a {
