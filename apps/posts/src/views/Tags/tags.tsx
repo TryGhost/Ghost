@@ -1,17 +1,16 @@
 import MainLayout from '@components/layout/main-layout';
 import React from 'react';
 import TagsList from './components/tags-list';
-import {Button, EmptyIndicator, LoadingIndicator, ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
-import {Link, useLocation} from '@tryghost/admin-x-framework';
+import {Button, DropdownMenuCheckboxItem, EmptyIndicator, LoadingIndicator, ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
+import {Link, useSearchParams} from '@tryghost/admin-x-framework';
 import {ListPage} from '@tryghost/shade/page-templates';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {PageHeader} from '@tryghost/shade/patterns';
 import {useBrowseTags} from '@tryghost/admin-x-framework/api/tags';
 
 const Tags: React.FC = () => {
-    const {search} = useLocation();
-    const qs = new URLSearchParams(search);
-    const type = qs.get('type') ?? 'public';
+    const [searchParams, setSearchParams] = useSearchParams();
+    const type = searchParams.get('type') ?? 'public';
 
     const {
         data,
@@ -44,10 +43,34 @@ const Tags: React.FC = () => {
                                         <Link to="/tags?type=internal">Internal tags</Link>
                                     </ToggleGroupItem>
                                 </ToggleGroup>
+                                <PageHeader.ActionGroup.MobileMenu>
+                                    <PageHeader.ActionGroup.MobileMenuTrigger>
+                                        <Button variant='outline'>
+                                            <LucideIcon.MoreHorizontal className='size-4' />
+                                        </Button>
+                                    </PageHeader.ActionGroup.MobileMenuTrigger>
+                                    <PageHeader.ActionGroup.MobileMenuContent>
+                                        <DropdownMenuCheckboxItem
+                                            checked={type === 'public'}
+                                            onCheckedChange={() => setSearchParams({})}
+                                        >
+                                            Public tags
+                                        </DropdownMenuCheckboxItem>
+                                        <DropdownMenuCheckboxItem
+                                            checked={type === 'internal'}
+                                            onCheckedChange={() => setSearchParams({type: 'internal'})}
+                                        >
+                                            Internal tags
+                                        </DropdownMenuCheckboxItem>
+                                    </PageHeader.ActionGroup.MobileMenuContent>
+                                </PageHeader.ActionGroup.MobileMenu>
                             </PageHeader.ActionGroup>
                             <PageHeader.ActionGroup>
                                 <Button asChild>
-                                    <a className="font-bold" href="#/tags/new">New tag</a>
+                                    <a className="font-bold" href="#/tags/new">
+                                        <LucideIcon.Plus className='size-4' />
+                                        <span className='hidden sm:inline'>New tag</span>
+                                    </a>
                                 </Button>
                             </PageHeader.ActionGroup>
                         </PageHeader.Actions>
