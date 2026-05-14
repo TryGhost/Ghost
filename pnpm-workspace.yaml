@@ -9,20 +9,49 @@ catalog:
   '@eslint/js': 8.57.1
   '@playwright/test': 1.59.1
   '@sentry/react': 7.120.4
+  '@storybook/addon-docs': 10.3.5
+  '@storybook/addon-links': 10.3.5
+  '@storybook/react-vite': 10.3.5
   '@tanstack/react-query': 4.36.1
+  '@tryghost/color-utils': 0.2.16
+  '@tryghost/custom-fonts': 1.0.8
   '@tryghost/debug': 2.2.0
+  '@tryghost/helpers': 1.1.103
+  '@tryghost/kg-clean-basic-html': 4.3.1
+  '@tryghost/kg-converters': 1.2.1
+  '@tryghost/koenig-lexical': 1.8.1
+  '@tryghost/limit-service': 1.5.2
+  '@tryghost/logging': 4.2.0
+  '@tryghost/nql': 0.12.10
+  '@tryghost/nql-lang': 0.6.4
+  '@tryghost/string': 0.3.2
+  '@tryghost/timezone-data': 0.4.18
+  '@types/express': 4.17.25
+  '@types/jest': 29.5.14
   '@types/react': 18.3.28
   '@types/react-dom': 18.3.7
+  '@types/validator': 13.15.10
   '@typescript-eslint/parser': 8.49.0
   '@vitejs/plugin-react': 4.7.0
+  '@vitest/coverage-v8': 4.1.5
   c8: 10.1.3
+  chai: 4.5.0
   clsx: 2.1.1
   concurrently: 8.2.2
+  cross-fetch: 4.1.0
+  dompurify: 3.4.1
+  dotenv: 17.3.1
   eslint: 8.57.1
   eslint-plugin-react-refresh: 0.4.24
+  fs-extra: 11.3.4
   jsdom: 28.1.0
+  jsonc-parser: 3.3.1
+  mocha: 11.7.5
+  msw: 2.12.14
   postcss: 8.5.6
+  react-router: 7.14.0
   sonner: 2.0.7
+  storybook: 10.3.5
   typescript: 5.9.3
   validator: 13.12.0
   vite: 7.3.2

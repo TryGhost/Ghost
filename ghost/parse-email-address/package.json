@@ -29,7 +29,7 @@
     "@typescript-eslint/parser": "catalog:",
     "c8": "catalog:",
     "eslint": "catalog:",
-    "mocha": "11.7.5",
+    "mocha": "catalog:",
     "tsx": "4.21.0",
     "typescript": "catalog:"
   },

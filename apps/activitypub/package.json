@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/activitypub",
-  "version": "3.1.20",
+  "version": "3.1.21",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -39,7 +39,7 @@
   "devDependencies": {
     "@playwright/test": "catalog:",
     "@testing-library/react": "14.3.1",
-    "@types/jest": "29.5.14",
+    "@types/jest": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "eslint": "catalog:",
@@ -84,12 +84,12 @@
     "@tryghost/admin-x-framework": "workspace:*",
     "@tryghost/shade": "workspace:*",
     "clsx": "catalog:",
-    "dompurify": "3.4.1",
+    "dompurify": "catalog:",
     "html2canvas-objectfit-fix": "1.2.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-hook-form": "7.72.1",
-    "react-router": "7.14.0",
+    "react-router": "catalog:",
     "sonner": "catalog:",
     "use-debounce": "10.1.1",
     "zod": "catalog:"

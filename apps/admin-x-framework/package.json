@@ -76,11 +76,11 @@
         "@playwright/test": "catalog:",
         "@testing-library/jest-dom": "5.17.0",
         "@testing-library/react": "14.3.1",
-        "@tryghost/koenig-lexical": "1.8.1",
+        "@tryghost/koenig-lexical": "catalog:",
         "@types/react": "catalog:",
         "@types/react-dom": "catalog:",
         "@vitejs/plugin-react": "catalog:",
-        "@vitest/coverage-v8": "4.1.5",
+        "@vitest/coverage-v8": "catalog:",
         "c8": "catalog:",
         "eslint": "catalog:",
         "eslint-plugin-react-hooks": "4.6.2",
@@ -88,7 +88,7 @@
         "eslint-plugin-tailwindcss": "4.0.0-beta.0",
         "glob": "10.5.0",
         "jsdom": "catalog:",
-        "msw": "2.12.14",
+        "msw": "catalog:",
         "typescript": "catalog:",
         "vite": "catalog:",
         "vite-plugin-css-injected-by-js": "3.5.2",
@@ -105,7 +105,7 @@
         "react": "18.3.1",
         "react-dom": "18.3.1",
         "react-hot-toast": "2.6.0",
-        "react-router": "7.14.0"
+        "react-router": "catalog:"
     },
     "peerDependencies": {
         "react": "^18.2.0",
