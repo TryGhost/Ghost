@@ -307,6 +307,14 @@ export const getScrollToPosition = (element: HTMLElement) => {
     return y;
 };
 
+const getCenterScrollPosition = (element: HTMLElement) => {
+    const yMin = getScrollToPosition(element);
+    const yMax = yMin + element.offsetHeight;
+    const yCenter = (yMin + yMax) / 2;
+
+    return yCenter - window.innerHeight / 2;
+};
+
 /**
  * Scroll to an element that is in an iframe, only if it is outside the current viewport
  */
@@ -329,10 +337,8 @@ export const scrollToElement = (element: HTMLElement) => {
 
     if (yMin - offset < viewPortYMin || yMax + offset > viewPortYMax) {
         // Center the form in the viewport
-        const yCenter = (yMin + yMax) / 2;
-
         window.scrollTo({
-            top: yCenter - viewportHeight / 2,
+            top: getCenterScrollPosition(element),
             left: 0,
             behavior: 'smooth'
         });
@@ -340,14 +346,8 @@ export const scrollToElement = (element: HTMLElement) => {
 };
 
 export const scrollToElementInstantly = (element: HTMLElement) => {
-    const elementHeight = element.offsetHeight;
-    const yMin = getScrollToPosition(element);
-    const yMax = yMin + elementHeight;
-    const viewportHeight = window.innerHeight;
-    const yCenter = (yMin + yMax) / 2;
-
     window.scrollTo({
-        top: yCenter - viewportHeight / 2,
+        top: getCenterScrollPosition(element),
         left: 0,
         behavior: 'auto'
     });
