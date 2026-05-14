@@ -99,7 +99,11 @@ module.exports = {
             };
         } catch (error) {
             if (isThemeUploadSizeLimitError(error)) {
-                reportThemeUploadSizeLimitError(error, {themeName, zip});
+                try {
+                    reportThemeUploadSizeLimitError(error, {themeName, zip});
+                } catch (reportingError) {
+                    logging.error(reportingError);
+                }
             }
 
             // restore backup if we renamed an existing theme but saving failed

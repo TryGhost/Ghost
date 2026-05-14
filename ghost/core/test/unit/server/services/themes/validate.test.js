@@ -7,6 +7,7 @@ const adapterManager = require('../../../../../core/server/services/adapter-mana
 const InMemoryCache = require('../../../../../core/server/adapters/cache/MemoryCache');
 const logging = require('@tryghost/logging');
 const _ = require('lodash');
+const config = require('../../../../../core/shared/config');
 
 describe('Themes', function () {
     let checkZipStub;
@@ -51,8 +52,8 @@ describe('Themes', function () {
                     sinon.assert.calledWith(checkZipStub, testTheme);
                     sinon.assert.calledWith(checkZipStub, testTheme, sinon.match({
                         limits: {
-                            perEntryUncompressedBytes: 536870912,
-                            totalUncompressedBytes: 4294967296
+                            perEntryUncompressedBytes: config.get('theme:uploadLimits:entryUncompressedBytes'),
+                            totalUncompressedBytes: config.get('theme:uploadLimits:totalUncompressedBytes')
                         }
                     }));
                     sinon.assert.notCalled(checkStub);
