@@ -225,7 +225,7 @@ module.exports = function apiRoutes() {
 
     router.post('/themes/upload',
         mw.authAdminApi,
-        apiMw.upload.single('file'),
+        apiMw.upload.themeZip('file'),
         apiMw.upload.validation({type: 'themes'}),
         http(api.themes.upload)
     );
