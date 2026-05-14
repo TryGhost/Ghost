@@ -17,6 +17,14 @@
     "toolSettings": {
         "nodeMaxMemory": 1024
     },
+    // Run `pnpm dedupe` after every lockfile update. The shared preset still
+    // passes `yarnDedupeHighest`, which is a no-op for pnpm — Renovate's array
+    // merge concats both, so this entry is what actually consolidates duplicate
+    // transitive versions in `pnpm-lock.yaml`. Local override pending an upstream
+    // swap in tryghost/renovate-config.
+    "postUpdateOptions": [
+        "pnpmDedupe"
+    ],
     // We have to disable platform based automerge (forcing renovate to do it manually)
     // as otherwise renovate wont follow our schedule
     "platformAutomerge": false,
