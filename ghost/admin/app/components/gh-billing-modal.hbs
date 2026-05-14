@@ -1,5 +1,17 @@
 <div class="{{this.visibilityClass}}">
     <div class="gh-billing-container">
         <GhBillingIframe></GhBillingIframe>
+
+        {{#if this.showLoadingState}}
+            <div class="gh-billing-status gh-billing-status-loading" data-test-billing-loading>
+                <div class="gh-loading-spinner"></div>
+            </div>
+        {{/if}}
+
+        {{#if this.showErrorState}}
+            <div class="gh-billing-status gh-billing-status-error" role="alert" data-test-billing-load-error>
+                <p>We weren't able to load the Ghost(Pro) app. Please refresh the page and check that no extensions are blocking the app. If the issue continues, contact <a href="mailto:support@ghost.org">support@ghost.org</a>.</p>
+            </div>
+        {{/if}}
     </div>
 </div>

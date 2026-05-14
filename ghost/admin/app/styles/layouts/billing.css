@@ -42,6 +42,37 @@
     transform: translate3d(0, 0, 0);
 }
 
+.gh-billing-status {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--main-bg-color);
+}
+
+.gh-billing-status-error {
+    padding: 32px;
+}
+
+.gh-billing-status-error p {
+    max-width: 520px;
+    margin: 0;
+    color: var(--midgrey);
+    font-size: 1.6rem;
+    line-height: 1.5;
+    text-align: center;
+}
+
+.gh-billing-status-error a {
+    color: inherit;
+    text-decoration: underline;
+}
+
 .gh-billing-close {
     width: calc(50vw - 200px)
 }
