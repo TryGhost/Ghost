@@ -20,7 +20,8 @@ export function flattenComments(comments: Comment[]): Comment[] {
 
 export const MOBILE_MAX_THREAD_DEPTH = 3;
 export const DESKTOP_MAX_THREAD_DEPTH = 4;
-export const THREAD_DEPTH_MOBILE_BREAKPOINT = 640;
+// Note, this should be the same as breakpoint defined in Tailwind config
+export const MOBILE_BREAKPOINT = 480;
 export const MAX_THREAD_DEPTH = DESKTOP_MAX_THREAD_DEPTH;
 
 export type ThreadedReply = Comment & {
@@ -110,7 +111,7 @@ function getAncestorAtDepth(model: ThreadModel, comment: ThreadedReply, depth: n
     return current;
 }
 
-export function getFocusedThread(comments: Comment[], targetId: string | null, maxDepth = MAX_THREAD_DEPTH): FocusedThread | null {
+export function getFocusedThread(comments: Comment[], targetId: string | null, maxDepth: number): FocusedThread | null {
     if (!targetId) {
         return null;
     }
@@ -268,7 +269,7 @@ export function getMemberInitialsFromComment(comment: Comment, t: TranslationFun
 // Rudimentary check for screen width
 // Note, this should be the same as breakpoint defined in Tailwind config
 export function isMobile() {
-    return (Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) < 480);
+    return (Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) < MOBILE_BREAKPOINT);
 }
 
 export function isCommentPublished(comment: Comment) {

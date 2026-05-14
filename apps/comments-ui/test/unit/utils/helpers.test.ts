@@ -183,18 +183,18 @@ describe('getFocusedThread', function () {
     it('does not focus a shallow permalink', function () {
         const comment = buildNestedComment(4);
 
-        expect(helpers.getFocusedThread([comment], '4')).toBeNull();
+        expect(helpers.getFocusedThread([comment], '4', helpers.MAX_THREAD_DEPTH)).toBeNull();
     });
 
     it('does not focus a level 4 permalink because it is visible in the main list', function () {
         const comment = buildNestedComment(6);
 
-        expect(helpers.getFocusedThread([comment], '4')).toBeNull();
+        expect(helpers.getFocusedThread([comment], '4', helpers.MAX_THREAD_DEPTH)).toBeNull();
     });
 
     it('focuses the visible parent for a level 5 permalink', function () {
         const comment = buildNestedComment(6);
-        const focusedThread = helpers.getFocusedThread([comment], '5');
+        const focusedThread = helpers.getFocusedThread([comment], '5', helpers.MAX_THREAD_DEPTH);
 
         expect(focusedThread?.topLevelComment.id).toEqual('top-level');
         expect(focusedThread?.focusedComment.id).toEqual('4');
@@ -203,7 +203,7 @@ describe('getFocusedThread', function () {
 
     it('focuses the context comment for the nearest detail window', function () {
         const comment = buildNestedComment(9);
-        const focusedThread = helpers.getFocusedThread([comment], '9');
+        const focusedThread = helpers.getFocusedThread([comment], '9', helpers.MAX_THREAD_DEPTH);
 
         expect(focusedThread?.focusedComment.id).toEqual('8');
         expect(focusedThread?.backComment.id).toEqual('8');
@@ -211,7 +211,7 @@ describe('getFocusedThread', function () {
 
     it('focuses the existing detail window for a permalink visible in that window', function () {
         const comment = buildNestedComment(9);
-        const focusedThread = helpers.getFocusedThread([comment], '8');
+        const focusedThread = helpers.getFocusedThread([comment], '8', helpers.MAX_THREAD_DEPTH);
 
         expect(focusedThread?.focusedComment.id).toEqual('4');
         expect(focusedThread?.backComment.id).toEqual('4');

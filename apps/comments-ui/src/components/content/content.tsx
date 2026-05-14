@@ -5,7 +5,7 @@ import ContentTitle from './content-title';
 import FocusedThread from './focused-thread';
 import MainForm from './forms/main-form';
 import Pagination from './pagination';
-import {DESKTOP_MAX_THREAD_DEPTH, MOBILE_MAX_THREAD_DEPTH, THREAD_DEPTH_MOBILE_BREAKPOINT, getFocusedThread, parseCommentIdFromHash, scrollToElement, scrollToElementInstantly} from '../../utils/helpers';
+import {DESKTOP_MAX_THREAD_DEPTH, MOBILE_BREAKPOINT, MOBILE_MAX_THREAD_DEPTH, getFocusedThread, parseCommentIdFromHash, scrollToElement, scrollToElementInstantly} from '../../utils/helpers';
 import {NavActions, NavActionsContext} from '../../utils/nav-actions';
 import {ROOT_DIV_ID} from '../../utils/constants';
 import {SortingForm} from './forms/sorting-form';
@@ -39,7 +39,7 @@ function findContainingIframe(doc: Document): HTMLIFrameElement | null {
 // Fallback timeout if iframe height doesn't change (content fits exactly)
 const IFRAME_RESIZE_TIMEOUT_MS = 500;
 
-const MOBILE_MEDIA_QUERY = `(max-width: ${THREAD_DEPTH_MOBILE_BREAKPOINT - 1}px)`;
+const MOBILE_MEDIA_QUERY = `(max-width: ${MOBILE_BREAKPOINT - 1}px)`;
 
 function getCurrentMaxThreadDepth() {
     if (typeof window === 'undefined' || !window.matchMedia) {
