@@ -1,7 +1,6 @@
 import {
     getActiveInterval,
     isStripeConfigured,
-    canPurchaseGift,
     hasAvailablePrices,
     getAllProductsForSite,
     getAvailableProducts,
@@ -934,20 +933,6 @@ describe('Helpers - ', () => {
 
         test('returns false when site is undefined', () => {
             expect(isStripeConfigured({})).toBe(false);
-        });
-    });
-
-    describe('canPurchaseGift', () => {
-        test('returns true when Stripe is configured', () => {
-            expect(canPurchaseGift({site: {is_stripe_configured: true}})).toBe(true);
-        });
-
-        test('returns false when Stripe is not configured', () => {
-            expect(canPurchaseGift({site: {is_stripe_configured: false}})).toBe(false);
-        });
-
-        test('returns false when site is empty', () => {
-            expect(canPurchaseGift({site: {}})).toBe(false);
         });
     });
 

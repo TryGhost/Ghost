@@ -274,10 +274,6 @@ export function isStripeConfigured({site}) {
     return site?.is_stripe_configured === true;
 }
 
-export function canPurchaseGift({site}) {
-    return isStripeConfigured({site});
-}
-
 export function isSigninAllowed({site}) {
     return site?.members_signup_access !== 'none';
 }
