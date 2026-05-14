@@ -72,6 +72,8 @@ typings/
 .vscode/*
 !.vscode/launch.json
 !.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/extensions.json
 
 # OSX
 .DS_Store
@@ -127,7 +129,6 @@ test/functional/*.png
 /ghost/core/core/frontend/public/private.min.js
 # Caddyfile - for local development with ssl + caddy
 Caddyfile
-!docker/caddy/Caddyfile
 !docker/dev-gateway/Caddyfile
 
 # Playwright state with cookies it keeps across tests

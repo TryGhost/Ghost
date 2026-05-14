@@ -9,7 +9,7 @@ const {NotFoundError} = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
 const crypto = require('crypto');
 const hasActiveOffer = require('../utils/has-active-offer');
-const StartAutomationsPollEvent = require('../../../welcome-email-automations/events/start-automations-poll-event');
+const StartAutomationsPollEvent = require('../../../automations/events/start-automations-poll-event');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../member-welcome-emails/constants');
 
 const messages = {
@@ -174,6 +174,57 @@ module.exports = class MemberRepository {
     }
 
     /**
+     * Looks up the active welcome email automation for the given slug and enqueues a
+     * `WelcomeEmailAutomationRun` for the member. Dispatches `StartAutomationsPollEvent`
+     * so the poll picks it up. Returns the created run, or null if there is no active
+     * automation/email for that slug.
+     *
+     * Callers are responsible for any eligibility gating (member status, source, etc.)
+     * before calling this — this helper just looks up + inserts + dispatches. Pass
+     * `options.transacting` to run the insert inside an existing transaction; the
+     * dispatch is automatically deferred until that transaction commits.
+     *
+     * @param {string} memberId
+     * @param {string} slug automation slug, see MEMBER_WELCOME_EMAIL_SLUGS
+     * @param {object} [options] bookshelf options (transacting, context, etc.)
+     */
+    async enqueueWelcomeEmailRun(memberId, slug, options = {}) {
+        if (!this._WelcomeEmailAutomation || !this._WelcomeEmailAutomationRun) {
+            return null;
+        }
+
+        const automation = await this._WelcomeEmailAutomation.findOne(
+            {slug},
+            {...options, withRelated: ['welcomeEmailAutomatedEmail']}
+        );
+        const email = automation?.related('welcomeEmailAutomatedEmail');
+        const isActive = Boolean(
+            automation &&
+            email &&
+            email.get('lexical') &&
+            automation.get('status') === 'active'
+        );
+
+        if (!isActive) {
+            return null;
+        }
+
+        const run = await this._WelcomeEmailAutomationRun.add({
+            welcome_email_automation_id: automation.id,
+            member_id: memberId,
+            next_welcome_email_automated_email_id: email.id,
+            ready_at: new Date(),
+            step_started_at: null,
+            step_attempts: 0,
+            exit_reason: null
+        }, options);
+
+        this.dispatchEvent(StartAutomationsPollEvent.create(), options);
+
+        return run;
+    }
+
+    /**
      * Maps the framework context to members_*.source table record value
      * @param {Object} context instance of ghost framework context object
      * @returns {'import' | 'system' | 'api' | 'admin' | 'member'}
@@ -330,19 +381,6 @@ module.exports = class MemberRepository {
 
         memberData.email_disabled = !!memberData.email_disabled;
 
-        if (memberData.products && memberData.products.length > 1) {
-            throw new errors.BadRequestError({message: tpl(messages.moreThanOneProduct)});
-        }
-
-        if (memberData.products) {
-            for (const productData of memberData.products) {
-                const product = await this._productRepository.get(productData);
-                if (product.get('active') !== true) {
-                    throw new errors.BadRequestError({message: tpl(messages.tierArchived)});
-                }
-            }
-        }
-
         if (memberData.status && !MEMBER_STATUSES.includes(memberData.status)) {
             throw new errors.ValidationError({
                 message: tpl(messages.invalidMemberStatus, {statuses: MEMBER_STATUSES.join(', ')}),
@@ -355,6 +393,21 @@ module.exports = class MemberRepository {
                 memberData.status = 'comped';
             } else {
                 memberData.status = 'free';
+            }
+        }
+
+        if (memberData.products && memberData.products.length > 1) {
+            throw new errors.BadRequestError({message: tpl(messages.moreThanOneProduct)});
+        }
+
+        // Don't allow to use archived tiers
+        // Exception: Gifts remain redeemable even if the tier is later archived, since the entitlement has already been paid for
+        if (memberData.products && memberData.status !== 'gift') {
+            for (const productData of memberData.products) {
+                const product = await this._productRepository.get(productData);
+                if (product.get('active') !== true) {
+                    throw new errors.BadRequestError({message: tpl(messages.tierArchived)});
+                }
             }
         }
 
@@ -380,41 +433,15 @@ module.exports = class MemberRepository {
         let member;
 
         const isFreeSignup = !stripeCustomer && memberData.status === 'free';
-        const shouldCheckFreeWelcomeEmail = WELCOME_EMAIL_SOURCES.includes(source) && isFreeSignup;
-        let isFreeWelcomeEmailActive = false;
-        let freeWelcomeAutomation = null;
-        let freeWelcomeEmail = null;
 
-        if (shouldCheckFreeWelcomeEmail && this._WelcomeEmailAutomation) {
-            freeWelcomeAutomation = await this._WelcomeEmailAutomation.findOne(
-                {slug: MEMBER_WELCOME_EMAIL_SLUGS.free},
-                {...options, withRelated: ['welcomeEmailAutomatedEmail']}
-            );
-            freeWelcomeEmail = freeWelcomeAutomation?.related('welcomeEmailAutomatedEmail');
-            isFreeWelcomeEmailActive = Boolean(
-                freeWelcomeAutomation &&
-                freeWelcomeEmail &&
-                freeWelcomeEmail.get('lexical') &&
-                freeWelcomeAutomation.get('status') === 'active'
-            );
-        }
-
-        if (isFreeWelcomeEmailActive && isFreeSignup) {
+        if (isFreeSignup && WELCOME_EMAIL_SOURCES.includes(source)) {
             const runMemberCreation = async (transacting) => {
                 const newMember = await this._Member.add({
                     ...memberData,
                     labels
                 }, {...memberAddOptions, transacting});
 
-                await this._WelcomeEmailAutomationRun.add({
-                    welcome_email_automation_id: freeWelcomeAutomation.id,
-                    member_id: newMember.id,
-                    next_welcome_email_automated_email_id: freeWelcomeEmail.id,
-                    ready_at: new Date(),
-                    step_started_at: null,
-                    step_attempts: 0,
-                    exit_reason: null
-                }, {transacting});
+                await this.enqueueWelcomeEmailRun(newMember.id, MEMBER_WELCOME_EMAIL_SLUGS.free, {transacting});
 
                 return newMember;
             };
@@ -424,8 +451,6 @@ module.exports = class MemberRepository {
             } else {
                 member = await this._Member.transaction(runMemberCreation);
             }
-
-            this.dispatchEvent(StartAutomationsPollEvent.create(), memberAddOptions);
         } else {
             member = await this._Member.add({
                 ...memberData,
@@ -449,6 +474,7 @@ module.exports = class MemberRepository {
             member_id: member.id,
             from_status: null,
             to_status: member.get('status'),
+            batch_id: options.batch_id ?? null,
             ...eventData
         }, options);
 
@@ -674,7 +700,9 @@ module.exports = class MemberRepository {
                 });
             }
 
-            if (product.get('active') !== true) {
+            // Don't allow to use archived tiers
+            // Exception: Gifts remain redeemable even if the tier is later archived, since the entitlement has already been paid for
+            if (product.get('active') !== true && memberStatusData.status !== 'gift') {
                 throw new errors.BadRequestError({message: tpl(messages.tierArchived)});
             }
         }
@@ -780,7 +808,8 @@ module.exports = class MemberRepository {
             await this._MemberStatusEvent.add({
                 member_id: member.id,
                 from_status: member._previousAttributes.status,
-                to_status: member.get('status')
+                to_status: member.get('status'),
+                batch_id: options.batch_id ?? null
             }, sharedOptions);
         }
 
@@ -1495,42 +1524,23 @@ module.exports = class MemberRepository {
                 member_id: data.id,
                 from_status: updatedMember._previousAttributes.status,
                 to_status: updatedMember.get('status'),
+                batch_id: options.batch_id ?? null,
                 ...eventData
             }, options);
 
             const context = options?.context || {};
             const source = this._resolveContextSource(context);
-            const shouldSendPaidWelcomeEmail = WELCOME_EMAIL_SOURCES.includes(source);
-            let isPaidWelcomeEmailActive = false;
-            let paidWelcomeAutomation = null;
-            let paidWelcomeEmail = null;
-            if (shouldSendPaidWelcomeEmail && this._WelcomeEmailAutomation) {
-                paidWelcomeAutomation = await this._WelcomeEmailAutomation.findOne(
-                    {slug: MEMBER_WELCOME_EMAIL_SLUGS.paid},
-                    {...options, withRelated: ['welcomeEmailAutomatedEmail']}
-                );
-                paidWelcomeEmail = paidWelcomeAutomation?.related('welcomeEmailAutomatedEmail');
-                isPaidWelcomeEmailActive = Boolean(
-                    paidWelcomeAutomation &&
-                    paidWelcomeEmail &&
-                    paidWelcomeEmail.get('lexical') &&
-                    paidWelcomeAutomation.get('status') === 'active'
-                );
-            }
-            // Send paid welcome email if:
-            // 1. The paid welcome email is active
+
+            // Enqueue paid welcome email if:
+            // 1. The source is allowed to send welcome emails
             // 2. The member status changed to 'paid'
-            if (updatedMember.get('status') === 'paid' && isPaidWelcomeEmailActive) {
-                await this._WelcomeEmailAutomationRun.add({
-                    welcome_email_automation_id: paidWelcomeAutomation.id,
-                    member_id: memberModel.id,
-                    next_welcome_email_automated_email_id: paidWelcomeEmail.id,
-                    ready_at: new Date(),
-                    step_started_at: null,
-                    step_attempts: 0,
-                    exit_reason: null
-                }, options);
-                this.dispatchEvent(StartAutomationsPollEvent.create(), options);
+            // 3. The previous status wasn't 'gift', as gift members already received the paid welcome email on redemption
+            if (
+                WELCOME_EMAIL_SOURCES.includes(source) &&
+                updatedMember.get('status') === 'paid' &&
+                updatedMember._previousAttributes.status !== 'gift'
+            ) {
+                await this.enqueueWelcomeEmailRun(memberModel.id, MEMBER_WELCOME_EMAIL_SLUGS.paid, options);
             }
         }
     }
@@ -1944,15 +1954,15 @@ module.exports = class MemberRepository {
             });
         }
 
-        const zeroValuePrices = defaultProduct.stripePrices.filter((price) => {
-            return price.amount === 0;
+        const complimentaryPrices = defaultProduct.stripePrices.filter((price) => {
+            return price.amount === 0 && this.isComplimentaryPlanNickname(price.nickname);
         });
 
         if (activeSubscriptions.length) {
             for (const subscription of activeSubscriptions) {
                 const price = await subscription.related('stripePrice').fetch(options);
 
-                let zeroValuePrice = zeroValuePrices.find((p) => {
+                let zeroValuePrice = complimentaryPrices.find((p) => {
                     return p.currency.toLowerCase() === price.get('currency').toLowerCase();
                 });
 
@@ -1970,9 +1980,14 @@ module.exports = class MemberRepository {
                         }]
                     }, options)).toJSON();
                     zeroValuePrice = product.stripePrices.find((p) => {
-                        return p.currency.toLowerCase() === price.get('currency').toLowerCase() && p.amount === 0;
+                        return p.currency.toLowerCase() === price.get('currency').toLowerCase() && p.amount === 0 && this.isComplimentaryPlanNickname(p.nickname);
                     });
-                    zeroValuePrices.push(zeroValuePrice);
+                    if (!zeroValuePrice) {
+                        throw new errors.NotFoundError({
+                            message: `Failed to locate a complimentary (zero-amount, nickname matched by isComplimentaryPlanNickname) Stripe price for currency "${price.get('currency')}" on product ${product.id} after update. Returned stripePrices: ${JSON.stringify(product.stripePrices)}`
+                        });
+                    }
+                    complimentaryPrices.push(zeroValuePrice);
                 }
 
                 const stripeSubscription = await this._stripeAPIService.getSubscription(
@@ -2004,7 +2019,7 @@ module.exports = class MemberRepository {
                 name: stripeCustomer.name
             }, sharedOptions);
 
-            let zeroValuePrice = zeroValuePrices[0];
+            let zeroValuePrice = complimentaryPrices[0];
 
             if (!zeroValuePrice) {
                 const product = (await this._productRepository.update({
@@ -2020,9 +2035,14 @@ module.exports = class MemberRepository {
                     }]
                 }, sharedOptions)).toJSON();
                 zeroValuePrice = product.stripePrices.find((price) => {
-                    return price.currency.toLowerCase() === 'usd' && price.amount === 0;
+                    return price.currency.toLowerCase() === 'usd' && price.amount === 0 && this.isComplimentaryPlanNickname(price.nickname);
                 });
-                zeroValuePrices.push(zeroValuePrice);
+                if (!zeroValuePrice) {
+                    throw new errors.NotFoundError({
+                        message: `Failed to locate a complimentary (zero-amount, nickname matched by isComplimentaryPlanNickname) Stripe price for currency "USD" on product ${product.id} after update. Returned stripePrices: ${JSON.stringify(product.stripePrices)}`
+                    });
+                }
+                complimentaryPrices.push(zeroValuePrice);
             }
 
             const subscription = await this._stripeAPIService.createSubscription(

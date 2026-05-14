@@ -1,7 +1,7 @@
 import {Button, DialogFooter, LoadingIndicator, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from '@tryghost/shade/components';
-import {FIELD_MAPPINGS, MembersFieldMapping} from '../mapping';
 import {LabelPicker} from '@src/components/label-picker';
-import {LucideIcon, cn} from '@tryghost/shade/utils';
+import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
+import {MembersFieldMapping} from '../mapping';
 import {UseLabelPickerResult} from '@src/hooks/use-label-picker';
 
 interface MappingPreviewRow {
@@ -20,6 +20,7 @@ interface MappingStepProps {
     dataPreviewIndex: number;
     hasPrevRecord: boolean;
     hasNextRecord: boolean;
+    fieldMappings: {label: string; value: string}[];
     labelPicker: UseLabelPickerResult;
     onUpdateMapping: (from: string, to: string | null) => void;
     onDataPreviewIndexChange: (next: number) => void;
@@ -37,6 +38,7 @@ export function MappingStep({
     dataPreviewIndex,
     hasPrevRecord,
     hasNextRecord,
+    fieldMappings,
     labelPicker,
     onUpdateMapping,
     onDataPreviewIndexChange,
@@ -72,7 +74,7 @@ export function MappingStep({
                                             <TableHead className="w-1/3">
                                                 <div className="flex items-center justify-between">
                                                     <span>
-                                                        Sample data <span className="text-muted-foreground">(#{(dataPreviewIndex + 1).toLocaleString()})</span>
+                                                        Sample data <span className="text-muted-foreground">(#{formatNumber(dataPreviewIndex + 1)})</span>
                                                     </span>
                                                     <div className="flex items-center">
                                                         <button
@@ -126,7 +128,7 @@ export function MappingStep({
                                                             </SelectTrigger>
                                                             <SelectContent>
                                                                 <SelectItem value="__not_imported__">Not imported</SelectItem>
-                                                                {FIELD_MAPPINGS.map(field => (
+                                                                {fieldMappings.map(field => (
                                                                     <SelectItem key={field.value} value={field.value}>
                                                                         {field.label}
                                                                     </SelectItem>
@@ -164,15 +166,13 @@ export function MappingStep({
                                 canCreateFromSearch={labelPicker.canCreateFromSearch}
                                 isCreating={labelPicker.isCreating}
                                 isDuplicateName={labelPicker.isDuplicateName}
-                                isLoading={labelPicker.isLoading}
                                 labels={labelPicker.labels}
+                                optionSource={labelPicker.optionSource}
                                 resolvedSelectedLabels={labelPicker.resolvedSelectedLabels}
-                                searchValue={labelPicker.searchValue}
                                 selectedSlugs={labelPicker.selectedSlugs}
                                 onCreate={labelPicker.createLabel}
                                 onDelete={labelPicker.deleteLabel}
                                 onEdit={labelPicker.editLabel}
-                                onSearchChange={labelPicker.onSearchChange}
                                 onToggle={labelPicker.toggleLabel}
                             />
                         </div>
@@ -198,7 +198,7 @@ export function MappingStep({
                             Uploading
                         </span>
                     ) : membersCount > 0 ? (
-                        `Import ${membersCount.toLocaleString()} ${membersCount === 1 ? 'member' : 'members'}`
+                        `Import ${formatNumber(membersCount)} ${membersCount === 1 ? 'member' : 'members'}`
                     ) : (
                         'Import members'
                     )}

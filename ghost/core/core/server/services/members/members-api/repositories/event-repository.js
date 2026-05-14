@@ -86,7 +86,8 @@ module.exports = class EventRepository {
                 {type: 'payment_event', action: 'getPaymentEvents'},
                 {type: 'email_change_event', action: 'getEmailChangeEvent'},
                 {type: 'gift_purchase_event', action: 'getGiftPurchaseEvents'},
-                {type: 'gift_redemption_event', action: 'getGiftRedemptionEvents'}
+                {type: 'gift_redemption_event', action: 'getGiftRedemptionEvents'},
+                {type: 'gift_ended_event', action: 'getGiftEndedEvents'}
             );
 
             if (this._AutomatedEmailRecipient) {
@@ -129,6 +130,21 @@ module.exports = class EventRepository {
                     const diff = new Date(b.data.created_at).getTime() - new Date(a.data.created_at).getTime();
                     if (diff !== 0) {
                         return diff;
+                    }
+                    // Tiebreaker for events sharing the same created_at:
+                    // Signup > Newsletter subscription > Subscription / gift redemption event > Login
+                    const tieOrder = {
+                        login_event: 0,
+                        subscription_event: 1,
+                        gift_redemption_event: 1,
+                        gift_ended_event: 1,
+                        newsletter_event: 2,
+                        signup_event: 3
+                    };
+                    const orderA = tieOrder[a.type];
+                    const orderB = tieOrder[b.type];
+                    if (orderA !== undefined && orderB !== undefined && orderA !== orderB) {
+                        return orderA - orderB;
                     }
                     return b.data.id.localeCompare(a.data.id);
                 }
@@ -230,12 +246,14 @@ module.exports = class EventRepository {
         const data = models.map((model) => {
             const tierName = model.related('stripeSubscription') && model.related('stripeSubscription').related('stripePrice') && model.related('stripeSubscription').related('stripePrice').related('stripeProduct') && model.related('stripeSubscription').related('stripePrice').related('stripeProduct').related('product') ? model.related('stripeSubscription').related('stripePrice').related('stripeProduct').related('product').get('name') : null;
 
+            const subscriptionCreatedEvent = model.related('subscriptionCreatedEvent');
+
             // Prevent toJSON on stripeSubscription (we don't have everything loaded)
             delete model.relations.stripeSubscription;
             const d = {
                 ...model.toJSON(options),
-                attribution: model.get('type') === 'created' && model.related('subscriptionCreatedEvent') && model.related('subscriptionCreatedEvent').id ? this._memberAttributionService.getEventAttribution(model.related('subscriptionCreatedEvent')) : null,
-                signup: model.get('type') === 'created' && model.related('subscriptionCreatedEvent') && model.related('subscriptionCreatedEvent').id && model.related('subscriptionCreatedEvent').related('memberCreatedEvent') && model.related('subscriptionCreatedEvent').related('memberCreatedEvent').id ? true : false,
+                attribution: model.get('type') === 'created' && subscriptionCreatedEvent && subscriptionCreatedEvent.id ? this._memberAttributionService.getEventAttribution(subscriptionCreatedEvent) : null,
+                signup: model.get('type') === 'created' && subscriptionCreatedEvent && subscriptionCreatedEvent.id && subscriptionCreatedEvent.related('memberCreatedEvent') && subscriptionCreatedEvent.related('memberCreatedEvent').id ? true : false,
                 tierName
             };
             delete d.stripeSubscription;
@@ -324,7 +342,8 @@ module.exports = class EventRepository {
                 'member',
                 'postAttribution',
                 'userAttribution',
-                'tagAttribution'
+                'tagAttribution',
+                'signupStatusEvent'
             ],
             filter: 'subscriptionCreatedEvent.id:null+custom:true',
             useBasicCount: true,
@@ -357,10 +376,13 @@ module.exports = class EventRepository {
             delete json.postAttribution?.mobiledoc;
             delete json.postAttribution?.lexical;
             delete json.postAttribution?.plaintext;
+            const createdWithStatus = json.signupStatusEvent?.to_status ?? null;
+            delete json.signupStatusEvent;
             return {
                 type: 'signup_event',
                 data: {
                     ...json,
+                    created_with_status: createdWithStatus,
                     attribution: this._memberAttributionService.getEventAttribution(model)
                 }
             };
@@ -514,6 +536,46 @@ module.exports = class EventRepository {
                     amount: json.amount,
                     currency: json.currency,
                     created_at: json.redeemed_at
+                }
+            };
+        });
+
+        return {
+            data,
+            meta
+        };
+    }
+
+    async getGiftEndedEvents(options = {}, filter) {
+        options = {
+            ...options,
+            withRelated: ['member'],
+            filter: 'from_status:gift+to_status:free+custom:true',
+            useBasicCount: true,
+            mongoTransformer: chainTransformers(
+                // First set the filter manually
+                replaceCustomFilterTransformer(filter),
+
+                // Map the used keys in that filter
+                ...mapKeys({
+                    'data.created_at': 'created_at',
+                    'data.member_id': 'member_id'
+                })
+            )
+        };
+
+        const {data: models, meta} = await this._MemberStatusEvent.findPage(options);
+
+        const data = models.map((model) => {
+            const json = model.toJSON(options);
+
+            return {
+                type: 'gift_ended_event',
+                data: {
+                    id: json.id,
+                    member: json.member || null,
+                    member_id: json.member_id,
+                    created_at: json.created_at
                 }
             };
         });
@@ -1132,14 +1194,16 @@ module.exports = class EventRepository {
                     date: result.date,
                     paid: result.paid_delta,
                     comped: result.comped_delta,
-                    free: result.free_delta
+                    free: result.free_delta,
+                    gift: result.gift_delta
                 }];
             }
             return accumulator.concat([{
                 date: result.date,
                 paid: result.paid_delta + accumulator[index - 1].paid,
                 comped: result.comped_delta + accumulator[index - 1].comped,
-                free: result.free_delta + accumulator[index - 1].free
+                free: result.free_delta + accumulator[index - 1].free,
+                gift: result.gift_delta + accumulator[index - 1].gift
             }]);
         }, []);
 

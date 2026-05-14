@@ -1,5 +1,5 @@
 import React from 'react';
-import {ReactComponent as UserIcon} from '../assets/icons/single-user-fill.svg';
+import UserIcon from '../assets/icons/single-user-fill.svg?react';
 import * as AvatarPrimitive from '@radix-ui/react-avatar';
 
 type AvatarSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl';

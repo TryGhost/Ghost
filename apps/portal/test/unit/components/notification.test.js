@@ -121,7 +121,7 @@ describe('Notification', () => {
 
         fireEvent.click(container.querySelector('.gh-portal-notification-closeicon'));
 
-        expect(clearURLParams).toHaveBeenCalledWith(['action', 'success', 'giftRedemption']);
+        expect(clearURLParams).toHaveBeenCalledWith(['action', 'success', 'giftRedemption', 'errorCode']);
         expect(doAction).toHaveBeenCalledWith('refreshMemberData');
     });
 
@@ -203,6 +203,40 @@ describe('Notification', () => {
 
         await waitFor(() => {
             expect(getByText('You now have access to Ultra until 29 May 2027. Enjoy!')).toBeInTheDocument();
+        });
+    });
+
+    test('renders title and subtitle from a gift redemption error message object', async () => {
+        NotificationParser.mockReturnValue({
+            type: 'giftRedeem',
+            status: 'error',
+            message: {
+                title: 'Gift could not be redeemed',
+                subtitle: 'This gift has expired.'
+            },
+            autoHide: false,
+            duration: 3000
+        });
+
+        const site = {url: 'https://example.com', title: 'Example Site'};
+
+        const {getByText} = render(
+            <AppContext.Provider value={{
+                site,
+                member: null,
+                brandColor: '#000000',
+                showPopup: false,
+                doAction: vi.fn(),
+                notification: null
+            }}
+            >
+                <Notification />
+            </AppContext.Provider>
+        );
+
+        await waitFor(() => {
+            expect(getByText('Gift could not be redeemed')).toBeInTheDocument();
+            expect(getByText('This gift has expired.')).toBeInTheDocument();
         });
     });
 });

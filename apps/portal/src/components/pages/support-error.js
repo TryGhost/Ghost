@@ -2,7 +2,7 @@ import {useContext} from 'react';
 import AppContext from '../../app-context';
 import CloseButton from '../common/close-button';
 import ActionButton from '../common/action-button';
-import {ReactComponent as WarningIcon} from '../../images/icons/warning-outline.svg';
+import WarningIcon from '../../images/icons/warning-outline.svg?react';
 import * as Sentry from '@sentry/react';
 import {t} from '../../utils/i18n';
 

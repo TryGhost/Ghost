@@ -5,7 +5,7 @@ import {LucideIcon, Recharts, formatNumber} from '@tryghost/shade/utils';
 import {formatQueryDate, getRangeDates} from '@tryghost/shade/app';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
-import {useMemberCountHistory, useSubscriptionStats} from '@tryghost/admin-x-framework/api/stats';
+import {useSubscriptionStats} from '@tryghost/admin-x-framework/api/stats';
 
 type NewSubscribersCadenceProps = {
     isLoading: boolean;
@@ -47,11 +47,6 @@ const CustomTooltip = ({active, payload}: {
 
 const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({isLoading, range}) => {
     const {data: subscriptionStatsResponse} = useSubscriptionStats();
-    const {data: memberCountResponse} = useMemberCountHistory({
-        searchParams: {
-            date_from: formatQueryDate(getRangeDates(range).startDate)
-        }
-    });
     const {data: {tiers: tierObjects = []} = {}} = useBrowseTiers();
     const [breakdownType, setBreakdownType] = useState<BreakdownType>('billing-period');
 
@@ -69,39 +64,6 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({isLoading,
                 name: tier.name
             }));
     }, [tierObjects]);
-
-    // Calculate complimentary member signups (change in comped) within date range
-    const compedSignups = useMemo(() => {
-        if (!memberCountResponse?.stats || memberCountResponse.stats.length === 0) {
-            return 0;
-        }
-
-        const stats = memberCountResponse.stats;
-        const dateFromMoment = moment(dateFrom);
-        const dateToMoment = moment(dateTo);
-
-        // Filter stats to the date range
-        const filteredStats = stats.filter((item) => {
-            const itemDate = moment(item.date);
-            return itemDate.isSameOrAfter(dateFromMoment) && itemDate.isSameOrBefore(dateToMoment);
-        });
-
-        if (filteredStats.length === 0) {
-            return 0;
-        }
-
-        // Sort by date to get first and last in range
-        const sortedStats = [...filteredStats].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-        );
-
-        const firstComped = sortedStats[0].comped;
-        const lastComped = sortedStats[sortedStats.length - 1].comped;
-
-        // Return the delta (new complimentary signups in the period)
-        // Only return positive values (new signups, not removals)
-        const delta = lastComped - firstComped;
-        return delta > 0 ? delta : 0;
-    }, [memberCountResponse, dateFrom, dateTo]);
 
     // Process subscription data for billing period breakdown (cadence) - NEW SUBSCRIBERS in date range
     const billingPeriodData = useMemo(() => {
@@ -127,11 +89,6 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({isLoading,
                 return acc;
             }, {} as Record<string, number>);
 
-        // Add complimentary signups if any exist
-        if (compedSignups > 0) {
-            cadenceTotals.complimentary = compedSignups;
-        }
-
         // Convert to array format for pie chart
         const chartData = Object.entries(cadenceTotals).map(([cadence, count], index) => {
             // Map cadence values to display labels and colors
@@ -147,10 +104,6 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({isLoading,
                 label = 'Annual';
                 fillGradient = 'url(#gradientTeal)';
                 solidColor = 'var(--chart-teal)';
-            } else if (cadence === 'complimentary') {
-                label = 'Complimentary';
-                fillGradient = 'url(#gradientBlue)';
-                solidColor = 'var(--chart-blue)';
             }
 
             return {
@@ -163,7 +116,7 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({isLoading,
         });
 
         return chartData;
-    }, [subscriptionStatsResponse, dateFrom, dateTo, compedSignups]);
+    }, [subscriptionStatsResponse, dateFrom, dateTo]);
 
     // Process subscription data for tier breakdown - NEW SUBSCRIBERS in date range
     const tierData = useMemo(() => {

@@ -16,15 +16,24 @@ function getUrl(data, absolute) {
          *
          * A long term solution should be part of the final version of Dynamic Routing.
          */
-        if (data.status !== 'published' && urlService.getUrlByResourceId(data.id) === '/404/') {
+        // checks.isPost matches both posts and pages (they share the Post
+        // model and only differ on the page-only `show_title_and_feature_image`
+        // field). Disambiguate so the router-level type is correct in both
+        // cases.
+        const postResource = {...data, type: checks.isPage(data) ? 'pages' : 'posts'};
+        if (data.status !== 'published' && urlService.facade.getUrlForResource(postResource) === '/404/') {
             return urlUtils.urlFor({relativeUrl: urlUtils.urlJoin('/p', data.uuid, '/')}, null, absolute);
         }
 
-        return urlService.getUrlByResourceId(data.id, {absolute: absolute, withSubdirectory: true});
+        return urlService.facade.getUrlForResource(postResource, {absolute: absolute, withSubdirectory: true});
     }
 
-    if (checks.isTag(data) || checks.isUser(data)) {
-        return urlService.getUrlByResourceId(data.id, {absolute: absolute, withSubdirectory: true});
+    if (checks.isTag(data)) {
+        return urlService.facade.getUrlForResource({...data, type: 'tags'}, {absolute: absolute, withSubdirectory: true});
+    }
+
+    if (checks.isUser(data)) {
+        return urlService.facade.getUrlForResource({...data, type: 'authors'}, {absolute: absolute, withSubdirectory: true});
     }
 
     if (checks.isNav(data)) {

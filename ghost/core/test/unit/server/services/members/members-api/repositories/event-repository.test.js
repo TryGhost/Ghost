@@ -658,4 +658,102 @@ describe('EventRepository', function () {
             assert.equal(event.data.member_id, null);
         });
     });
+
+    describe('getGiftEndedEvents', function () {
+        let eventRepository;
+        let fake;
+
+        before(function () {
+            fake = sinon.fake.returns({data: [{
+                toJSON: () => ({
+                    id: 'status-event-1',
+                    member_id: 'member-abc',
+                    member: {id: 'member-abc', name: 'Test Member', email: 'member@example.com'},
+                    from_status: 'gift',
+                    to_status: 'free',
+                    created_at: '2024-10-15T08:00:00.000Z'
+                })
+            }]});
+            eventRepository = new EventRepository({
+                EmailRecipient: null,
+                MemberSubscribeEvent: null,
+                MemberPaymentEvent: null,
+                MemberStatusEvent: {
+                    findPage: fake
+                },
+                MemberLoginEvent: null,
+                MemberPaidSubscriptionEvent: null,
+                labsService: null
+            });
+        });
+
+        afterEach(function () {
+            fake.resetHistory();
+        });
+
+        it('queries with correct options', async function () {
+            await eventRepository.getGiftEndedEvents({
+                filter: 'not used',
+                order: 'created_at desc, id desc'
+            }, {
+                type: 'unused'
+            });
+
+            sinon.assert.calledOnceWithMatch(fake, {
+                withRelated: ['member'],
+                filter: 'from_status:gift+to_status:free+custom:true',
+                order: 'created_at desc, id desc'
+            });
+        });
+
+        it('returns correctly formatted gift_ended_event', async function () {
+            const result = await eventRepository.getGiftEndedEvents({
+                order: 'created_at desc, id desc'
+            }, {});
+
+            assert.equal(result.data.length, 1);
+
+            const event = result.data[0];
+
+            assert.equal(event.type, 'gift_ended_event');
+            assert.equal(event.data.id, 'status-event-1');
+            assert.equal(event.data.member_id, 'member-abc');
+            assert.equal(event.data.created_at, '2024-10-15T08:00:00.000Z');
+            assert.deepEqual(event.data.member, {
+                id: 'member-abc',
+                name: 'Test Member',
+                email: 'member@example.com'
+            });
+        });
+
+        it('sets member to null when member relation is not present', async function () {
+            const nullMemberFake = sinon.fake.returns({data: [{
+                toJSON: () => ({
+                    id: 'status-event-2',
+                    member_id: 'member-xyz',
+                    member: null,
+                    from_status: 'gift',
+                    to_status: 'free',
+                    created_at: '2024-11-01T12:00:00.000Z'
+                })
+            }]});
+            const repo = new EventRepository({
+                EmailRecipient: null,
+                MemberSubscribeEvent: null,
+                MemberPaymentEvent: null,
+                MemberStatusEvent: {
+                    findPage: nullMemberFake
+                },
+                MemberLoginEvent: null,
+                MemberPaidSubscriptionEvent: null,
+                labsService: null
+            });
+
+            const result = await repo.getGiftEndedEvents({}, {});
+            const event = result.data[0];
+
+            assert.equal(event.data.member, null);
+            assert.equal(event.data.member_id, 'member-xyz');
+        });
+    });
 });

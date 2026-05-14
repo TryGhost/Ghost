@@ -143,6 +143,93 @@ describe('MemberRepository', function () {
                 assert.equal(err.message, 'Could not find Product "default"');
             }
         });
+
+        it('ignores non-complimentary zero-value prices when creating a complimentary subscription', async function () {
+            const member = {
+                id: 'member_id_123',
+                get: sinon.stub().withArgs('email').returns('member@example.com'),
+                related: () => {
+                    return {
+                        fetch: sinon.stub().resolves({
+                            models: []
+                        })
+                    };
+                }
+            };
+            Member.findOne.resolves(member);
+
+            const activeSubscriptionPrice = {
+                stripe_price_id: 'price_active_subscription',
+                nickname: 'Active Subscription',
+                currency: 'usd',
+                amount: 0
+            };
+            const complimentaryPrice = {
+                stripe_price_id: 'price_complimentary',
+                nickname: 'Complimentary',
+                currency: 'usd',
+                amount: 0
+            };
+
+            productRepository = {
+                getDefaultProduct: sinon.stub().resolves({
+                    toJSON: () => {
+                        return {
+                            id: 'product_id_123',
+                            name: 'Default tier',
+                            description: null,
+                            stripePrices: [activeSubscriptionPrice]
+                        };
+                    }
+                }),
+                update: sinon.stub().resolves({
+                    toJSON: () => {
+                        return {
+                            stripePrices: [
+                                activeSubscriptionPrice,
+                                complimentaryPrice
+                            ]
+                        };
+                    }
+                })
+            };
+
+            const stripeAPIService = {
+                configured: true,
+                createCustomer: sinon.stub().resolves({
+                    id: 'cus_123',
+                    email: 'member@example.com',
+                    name: null
+                }),
+                createSubscription: sinon.stub().resolves({
+                    id: 'sub_123',
+                    customer: 'cus_123'
+                })
+            };
+
+            const StripeCustomer = {
+                upsert: sinon.stub().resolves()
+            };
+
+            const repo = new MemberRepository({
+                Member,
+                StripeCustomer,
+                stripeAPIService,
+                productRepository,
+                OfferRedemption: mockOfferRedemption
+            });
+            sinon.stub(repo, 'linkSubscription').resolves();
+
+            await repo.setComplimentarySubscription({
+                id: 'member_id_123'
+            }, {
+                transacting: true
+            });
+
+            sinon.assert.calledOnce(productRepository.update);
+            sinon.assert.calledWith(stripeAPIService.createSubscription, 'cus_123', 'price_complimentary');
+            sinon.assert.neverCalledWith(stripeAPIService.createSubscription, 'cus_123', 'price_active_subscription');
+        });
     });
 
     describe('newsletter subscriptions', function () {
@@ -1538,7 +1625,7 @@ describe('MemberRepository', function () {
             process.env.NODE_ENV = oldNodeEnv;
         });
 
-        it('creates automation run for allowed source', async function () {
+        it('creates automation run for free member signup (free welcome email)', async function () {
             const repo = new MemberRepository({
                 Member,
                 Outbox,
@@ -1638,6 +1725,7 @@ describe('MemberRepository', function () {
 
             sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
         });
+
         it('does NOT create automation run when member is signing up for a paid subscription (stripeCustomer is present)', async function () {
             const StripeCustomer = {
                 upsert: sinon.stub().resolves()
@@ -1678,25 +1766,6 @@ describe('MemberRepository', function () {
             }, {});
 
             // The free welcome email should NOT be sent when stripeCustomer is present
-            sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
-            sinon.assert.notCalled(WelcomeEmailAutomation.findOne);
-            sinon.assert.notCalled(Member.transaction);
-        });
-
-        it('does NOT create automation run when member is created with a non-free status (e.g. gift)', async function () {
-            const repo = new MemberRepository({
-                Member,
-                Outbox,
-                WelcomeEmailAutomationRun,
-                MemberStatusEvent,
-                MemberSubscribeEventModel: MemberSubscribeEvent,
-                newslettersService,
-                WelcomeEmailAutomation,
-                OfferRedemption: mockOfferRedemption
-            });
-
-            await repo.create({email: 'test@example.com', name: 'Test Member', status: 'gift'}, {});
-
             sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
             sinon.assert.notCalled(WelcomeEmailAutomation.findOne);
             sinon.assert.notCalled(Member.transaction);
@@ -2014,6 +2083,45 @@ describe('MemberRepository', function () {
 
             sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
         });
+
+        it('does NOT create automation run when previous status was "gift" (already received paid welcome at redemption)', async function () {
+            Member.edit.resolves({
+                attributes: {status: 'paid'},
+                _previousAttributes: {status: 'gift'},
+                get: sinon.stub().callsFake((key) => {
+                    const data = {status: 'paid'};
+                    return data[key];
+                })
+            });
+
+            const repo = new MemberRepository({
+                Member,
+                Outbox,
+                WelcomeEmailAutomationRun,
+                MemberPaidSubscriptionEvent,
+                StripeCustomerSubscription,
+                MemberProductEvent,
+                MemberStatusEvent,
+                stripeAPIService,
+                productRepository,
+                WelcomeEmailAutomation,
+                OfferRedemption: mockOfferRedemption
+            });
+
+            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+            await repo.linkSubscription({
+                id: 'member_id_123',
+                subscription: subscriptionData
+            }, {
+                transacting: {
+                    executionPromise: Promise.resolve()
+                },
+                context: {}
+            });
+
+            sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
+        });
     });
 
     describe('create - member status', function () {
@@ -2136,6 +2244,45 @@ describe('MemberRepository', function () {
 
             sinon.assert.notCalled(Member.add);
             sinon.assert.notCalled(Member.transaction);
+        });
+
+        it('allows gift members to be created on an archived tier (gift was valid at purchase time)', async function () {
+            productRepository.get = sinon.stub().resolves({
+                id: 'tier_1',
+                get: sinon.stub().withArgs('active').returns(false)
+            });
+
+            await buildRepo().create({
+                email: 'test@example.com',
+                name: 'Test Member',
+                status: 'gift',
+                products: [{id: 'tier_1'}]
+            }, {});
+
+            sinon.assert.calledOnce(memberAdd);
+            assert.equal(memberAdd.firstCall.args[0].status, 'gift');
+        });
+
+        it('rejects non-gift members being created on an archived tier', async function () {
+            productRepository.get = sinon.stub().resolves({
+                id: 'tier_1',
+                get: sinon.stub().withArgs('active').returns(false)
+            });
+
+            try {
+                await buildRepo().create({
+                    email: 'test@example.com',
+                    name: 'Test Member',
+                    products: [{id: 'tier_1'}]
+                }, {});
+
+                assert.fail('Expected create to reject archived tier for non-gift member');
+            } catch (err) {
+                assert.equal(err instanceof errors.BadRequestError, true);
+                assert.equal(err.message, 'Cannot use archived Tiers');
+            }
+
+            sinon.assert.notCalled(memberAdd);
         });
     });
 
@@ -2308,6 +2455,47 @@ describe('MemberRepository', function () {
 
             sinon.assert.calledOnce(memberEdit);
             assert.equal(memberEdit.firstCall.args[0].status, 'free');
+        });
+
+        it('allows gift redemption on an archived tier (gift was valid at purchase time)', async function () {
+            productRepository.get = sinon.stub().resolves({
+                id: 'tier_1',
+                get: sinon.stub().withArgs('active').returns(false)
+            });
+            stripeAPIService.configured = true;
+
+            await buildRepo().update({
+                status: 'gift',
+                products: [{id: 'tier_1'}]
+            }, {
+                id: 'member_id_123'
+            });
+
+            sinon.assert.calledOnce(memberEdit);
+            assert.equal(memberEdit.firstCall.args[0].status, 'gift');
+        });
+
+        it('rejects adding an archived tier to a non-gift member', async function () {
+            productRepository.get = sinon.stub().resolves({
+                id: 'tier_1',
+                get: sinon.stub().withArgs('active').returns(false)
+            });
+            stripeAPIService.configured = true;
+
+            try {
+                await buildRepo().update({
+                    products: [{id: 'tier_1'}]
+                }, {
+                    id: 'member_id_123'
+                });
+
+                assert.fail('Expected update to reject archived tier for non-gift member');
+            } catch (err) {
+                assert.equal(err instanceof errors.BadRequestError, true);
+                assert.equal(err.message, 'Cannot use archived Tiers');
+            }
+
+            sinon.assert.notCalled(memberEdit);
         });
     });
 

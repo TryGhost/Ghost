@@ -85,12 +85,8 @@ export default function () {
         const url = new URL(request.url, window.location.origin);
         const limit = url.searchParams.get('limit');
 
-        const ALLOWED_LIMIT_ALL = [
-            '/api/admin/members/upload/'
-        ];
-
         // limit=all is completely blocked, we shouldn't have any requests reach the server with this
-        if (limit === 'all' && !ALLOWED_LIMIT_ALL.some(allowed => path.includes(allowed))) {
+        if (limit === 'all') {
             throw new Error(`Blocked mirage request with limit=all: ${verb} ${path}.`);
         }
 

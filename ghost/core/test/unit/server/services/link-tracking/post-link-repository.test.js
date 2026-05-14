@@ -25,9 +25,6 @@ describe('UNIT: PostLinkRepository class', function () {
         });
     });
 
-    beforeEach(function () {
-    });
-
     afterEach(function () {
         sinon.restore();
     });

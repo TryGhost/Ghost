@@ -1,4 +1,4 @@
-import {ReactComponent as AvatarIcon} from '../../images/icons/avatar.svg';
+import AvatarIcon from '../../images/icons/avatar.svg?react';
 import {Member, useAppContext} from '../../app-context';
 import {getInitials, getMemberName} from '../../utils/helpers';
 

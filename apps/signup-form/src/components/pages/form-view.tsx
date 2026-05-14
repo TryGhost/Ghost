@@ -1,5 +1,5 @@
+import LoadingIcon from '../../../assets/icons/spinner.svg?react';
 import React, {FormEventHandler} from 'react';
-import {ReactComponent as LoadingIcon} from '../../../assets/icons/spinner.svg';
 import {useAppContext} from '../../app-context';
 
 export const FormView: React.FC<FormProps & {

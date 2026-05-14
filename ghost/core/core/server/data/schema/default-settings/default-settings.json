@@ -150,6 +150,41 @@
             "defaultValue": "@ghost",
             "type": "string"
         },
+        "threads": {
+            "defaultValue": null,
+            "flags": "PUBLIC",
+            "type": "string"
+        },
+        "bluesky": {
+            "defaultValue": null,
+            "flags": "PUBLIC",
+            "type": "string"
+        },
+        "mastodon": {
+            "defaultValue": null,
+            "flags": "PUBLIC",
+            "type": "string"
+        },
+        "tiktok": {
+            "defaultValue": null,
+            "flags": "PUBLIC",
+            "type": "string"
+        },
+        "youtube": {
+            "defaultValue": null,
+            "flags": "PUBLIC",
+            "type": "string"
+        },
+        "instagram": {
+            "defaultValue": null,
+            "flags": "PUBLIC",
+            "type": "string"
+        },
+        "linkedin": {
+            "defaultValue": null,
+            "flags": "PUBLIC",
+            "type": "string"
+        },
         "navigation": {
             "defaultValue": "[{\"label\":\"Home\",\"url\":\"/\"},{\"label\":\"About\",\"url\":\"/about/\"}]",
             "type": "array"

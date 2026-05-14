@@ -1,4 +1,4 @@
-import type {Meta, StoryObj} from '@storybook/react';
+import type {Meta, StoryObj} from '@storybook/react-vite';
 
 import SettingNavItem from './setting-nav-item';
 import SettingNavSection from './setting-nav-section';

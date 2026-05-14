@@ -15,7 +15,6 @@ describe('UNIT: Settings Service', function () {
 
     beforeEach(async function () {
         await configUtils.restore();
-        models.init();
         settingsCacheStub = sinon.stub();
         settingsCache.get = settingsCacheStub;
         loggingStub = sinon.stub();

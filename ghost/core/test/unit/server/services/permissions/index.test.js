@@ -10,10 +10,6 @@ const permissions = require('../../../../../core/server/services/permissions');
 describe('Permissions', function () {
     let fakePermissions = [];
 
-    before(function () {
-        models.init();
-    });
-
     beforeEach(function () {
         sinon.stub(models.Permission, 'findAll').callsFake(function () {
             return Promise.resolve(models.Permissions.forge(fakePermissions));
@@ -73,42 +69,38 @@ describe('Permissions', function () {
     });
 
     describe('Init (build actions map)', function () {
-        it('can load an actions map from existing permissions', function (done) {
+        it('can load an actions map from existing permissions', async function () {
             fakePermissions = loadFakePermissions();
 
-            permissions.init().then(function (actions) {
-                assertExists(actions);
+            const actions = await permissions.init();
 
-                assert.doesNotThrow(permissions.canThis);
+            assertExists(actions);
 
-                assert.deepEqual(_.keys(actions), ['browse', 'edit', 'add', 'destroy']);
+            assert.doesNotThrow(permissions.canThis);
 
-                assert.deepEqual(actions.browse, ['post']);
-                assert.deepEqual(actions.edit, ['post', 'tag', 'user', 'page']);
-                assert.deepEqual(actions.add, ['post', 'user', 'page']);
-                assert.deepEqual(actions.destroy, ['post', 'user']);
+            assert.deepEqual(_.keys(actions), ['browse', 'edit', 'add', 'destroy']);
 
-                done();
-            }).catch(done);
+            assert.deepEqual(actions.browse, ['post']);
+            assert.deepEqual(actions.edit, ['post', 'tag', 'user', 'page']);
+            assert.deepEqual(actions.add, ['post', 'user', 'page']);
+            assert.deepEqual(actions.destroy, ['post', 'user']);
         });
 
-        it('can load an actions map from existing permissions, and deduplicate', function (done) {
+        it('can load an actions map from existing permissions, and deduplicate', async function () {
             fakePermissions = loadFakePermissions({extra: true});
 
-            permissions.init().then(function (actions) {
-                assertExists(actions);
+            const actions = await permissions.init();
 
-                assert.doesNotThrow(permissions.canThis);
+            assertExists(actions);
 
-                assert.deepEqual(_.keys(actions), ['browse', 'edit', 'add', 'destroy']);
+            assert.doesNotThrow(permissions.canThis);
 
-                assert.deepEqual(actions.browse, ['post']);
-                assert.deepEqual(actions.edit, ['post', 'tag', 'user', 'page']);
-                assert.deepEqual(actions.add, ['post', 'user', 'page']);
-                assert.deepEqual(actions.destroy, ['post', 'user']);
+            assert.deepEqual(_.keys(actions), ['browse', 'edit', 'add', 'destroy']);
 
-                done();
-            }).catch(done);
+            assert.deepEqual(actions.browse, ['post']);
+            assert.deepEqual(actions.edit, ['post', 'tag', 'user', 'page']);
+            assert.deepEqual(actions.add, ['post', 'user', 'page']);
+            assert.deepEqual(actions.destroy, ['post', 'user']);
         });
     });
 });

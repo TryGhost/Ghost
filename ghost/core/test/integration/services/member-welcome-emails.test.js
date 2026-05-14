@@ -130,30 +130,32 @@ describe('Member Welcome Emails Integration', function () {
         });
 
         it('creates automation run when member source is "member"', async function () {
-            const before = new Date(Date.now() - 1000);
+            await db.knex.transaction(async (trx) => {
+                const before = new Date(Date.now() - 1000);
 
-            const member = await membersService.api.members.create({
-                email: 'welcome-test@example.com',
-                name: 'Welcome Test Member'
-            }, {});
+                const member = await membersService.api.members.create({
+                    email: 'welcome-test@example.com',
+                    name: 'Welcome Test Member'
+                }, {transacting: trx});
 
-            const after = new Date(Date.now() + 1000);
+                const after = new Date(Date.now() + 1000);
 
-            const runs = await db.knex('welcome_email_automation_runs')
-                .where('member_id', member.id);
+                const runs = await trx('welcome_email_automation_runs')
+                    .where('member_id', member.id);
 
-            assert.equal(runs.length, 1);
-            const run = runs[0];
-            assert.equal(run.member_id, member.id);
-            assert.ok(run.welcome_email_automation_id);
-            assert.ok(run.next_welcome_email_automated_email_id);
-            assert.equal(run.step_started_at, null);
-            assert.equal(run.step_attempts, 0);
-            assert.equal(run.exit_reason, null);
+                assert.equal(runs.length, 1);
+                const run = runs[0];
+                assert.equal(run.member_id, member.id);
+                assert.ok(run.welcome_email_automation_id);
+                assert.ok(run.next_welcome_email_automated_email_id);
+                assert.equal(run.step_started_at, null);
+                assert.equal(run.step_attempts, 0);
+                assert.equal(run.exit_reason, null);
 
-            const timestamp = parseDatabaseDate(run.ready_at);
-            assert(timestamp >= before);
-            assert(timestamp <= after);
+                const timestamp = parseDatabaseDate(run.ready_at);
+                assert(timestamp >= before);
+                assert(timestamp <= after);
+            });
         });
 
         it('does NOT create automation run when member is imported', async function () {

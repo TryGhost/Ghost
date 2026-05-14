@@ -16,6 +16,7 @@ const models = require('../../models');
 const {GhostMailer} = require('../mail');
 const jobsService = require('../jobs');
 const tiersService = require('../tiers');
+const giftService = require('../gifts');
 const VerificationTrigger = require('../verification-trigger');
 const {verificationWebhookService} = require('../verification/verification-webhook-service');
 const DatabaseInfo = require('@tryghost/database-info');
@@ -72,6 +73,7 @@ const initMembersCSVImporter = ({stripeAPIService}) => {
 
             return null;
         },
+        getGiftService: () => giftService.service,
         sendEmail: ghostMailer.send.bind(ghostMailer),
         isSet: flag => labsService.isSet(flag),
         addJob: jobsService.addJob.bind(jobsService),
@@ -134,6 +136,7 @@ module.exports = {
             cookieSecure: urlUtils.isSSL(urlUtils.getSiteUrl()),
             cookieKeys: [settingsCache.get('theme_session_secret')],
             cookieName: 'ghost-members-ssr',
+            cookiePath: urlUtils.getSubdir() || '/',
             getMembersApi: () => module.exports.api
         });
 
@@ -165,13 +168,6 @@ module.exports = {
 
         // Schedule daily cron job to clean expired tokens
         memberJobs.scheduleTokenCleanupJob();
-
-        // Schedule daily cron jobs to clean up consumed/expired gifts and to
-        // send gift reminder emails.
-        if (labsService.isSet('giftSubscriptions')) {
-            memberJobs.scheduleGiftCleanupJob();
-            memberJobs.scheduleGiftReminderJob();
-        }
     },
     contentGating: require('./content-gating'),
 

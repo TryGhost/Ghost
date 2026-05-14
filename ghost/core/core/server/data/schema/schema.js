@@ -182,7 +182,7 @@ module.exports = {
         recommendation_notifications: {type: 'boolean', nullable: false, defaultTo: true},
         milestone_notifications: {type: 'boolean', nullable: false, defaultTo: true},
         donation_notifications: {type: 'boolean', nullable: false, defaultTo: true},
-        gift_subscription_purchase_notification: {type: 'boolean', nullable: false, defaultTo: true},
+        gift_subscription_notifications: {type: 'boolean', nullable: false, defaultTo: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
     },
@@ -441,7 +441,8 @@ module.exports = {
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         '@@INDEXES@@': [
-            ['email_disabled']
+            ['email_disabled'],
+            ['created_at', 'id']
         ]
     },
     // NOTE: this is the tiers table
@@ -595,7 +596,8 @@ module.exports = {
                 isIn: [['free', 'paid', 'comped', 'gift']]
             }
         },
-        created_at: {type: 'dateTime', nullable: false}
+        created_at: {type: 'dateTime', nullable: false},
+        batch_id: {type: 'string', maxlength: 24, nullable: true}
     },
     members_product_events: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
@@ -1199,7 +1201,7 @@ module.exports = {
         ready_at: {type: 'dateTime', nullable: true},
         step_started_at: {type: 'dateTime', nullable: true},
         step_attempts: {type: 'integer', unsigned: true, nullable: false, defaultTo: 0},
-        exit_reason: {type: 'string', maxlength: 50, nullable: true, validations: {isIn: [['email send failed', 'member unsubscribed', 'member changed status', 'finished']]}},
+        exit_reason: {type: 'string', maxlength: 50, nullable: true, validations: {isIn: [['email send failed', 'member unsubscribed', 'member changed status', 'finished', 'automation disabled']]}},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         '@@INDEXES@@': [

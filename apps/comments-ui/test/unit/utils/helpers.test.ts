@@ -3,7 +3,6 @@ import moment, {DurationInputObject} from 'moment';
 import sinon from 'sinon';
 import {buildAnonymousMember, buildComment, buildDeletedMember} from '../../utils/fixtures';
 
-
 describe('COMMENT_HASH_PREFIX', function () {
     it('exports the correct prefix', function () {
         expect(helpers.COMMENT_HASH_PREFIX).toEqual('ghost-comments-');
@@ -85,6 +84,37 @@ describe('flattenComments', function () {
             {id: '2'},
             {id: '3', replies: []}
         ]);
+    });
+});
+
+describe('buildThreadedReplies', function () {
+    it('builds nested replies from a flat reply list', function () {
+        const threadParentComment = buildComment({
+            id: 'root',
+            replies: [
+                {id: 'reply-1', in_reply_to_id: null},
+                {id: 'reply-2', in_reply_to_id: 'reply-1'},
+                {id: 'reply-3', in_reply_to_id: 'reply-2'},
+                {id: 'reply-4', in_reply_to_id: null}
+            ]
+        });
+
+        const threadedReplies = helpers.buildThreadedReplies(threadParentComment);
+
+        expect(threadedReplies.map(reply => reply.id)).toEqual(['reply-1', 'reply-4']);
+        expect(threadedReplies[0].nestedReplies.map(reply => reply.id)).toEqual(['reply-2']);
+        expect(threadedReplies[0].nestedReplies[0].nestedReplies.map(reply => reply.id)).toEqual(['reply-3']);
+    });
+
+    it('keeps replies with missing parents at the root', function () {
+        const threadParentComment = buildComment({
+            id: 'root',
+            replies: [
+                {id: 'reply-1', in_reply_to_id: 'missing'}
+            ]
+        });
+
+        expect(helpers.buildThreadedReplies(threadParentComment).map(reply => reply.id)).toEqual(['reply-1']);
     });
 });
 
