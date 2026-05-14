@@ -117,7 +117,7 @@
 .gh-billing-status-error a {
     color: inherit;
     padding-bottom: 1px;
-    border-bottom: 1px solid currentColor;
+    border-bottom: 1px solid currentcolor;
     text-decoration: none;
 }
 
