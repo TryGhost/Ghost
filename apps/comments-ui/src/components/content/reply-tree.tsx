@@ -1,7 +1,8 @@
 import CommentComponent from './comment';
 import React from 'react';
 import {Comment, useAppContext} from '../../app-context';
-import {ThreadedReply, buildCommentPermalink} from '../../utils/helpers';
+import {ThreadedReply} from '../../utils/thread-graph';
+import {buildCommentPermalink} from '../../utils/helpers';
 import {useNavActions} from '../../utils/nav-actions';
 import {useThreadingContext} from '../../utils/threading-context';
 

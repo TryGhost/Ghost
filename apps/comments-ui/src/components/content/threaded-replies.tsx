@@ -1,7 +1,7 @@
 import React, {useEffect, useMemo, useRef} from 'react';
 import ReplyTree from './reply-tree';
 import {Comment, useAppContext} from '../../app-context';
-import {buildThreadedReplies} from '../../utils/helpers';
+import {buildThreadedReplies} from '../../utils/thread-graph';
 
 export type ThreadedRepliesProps = {
     comment: Comment;

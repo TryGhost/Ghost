@@ -1,12 +1,13 @@
 import CommentComponent from './comment';
 import React from 'react';
 import ReplyTree from './reply-tree';
-import {FocusedThread as FocusedThreadData, buildCommentPermalink, buildCommentsRootPermalink} from '../../utils/helpers';
+import {ThreadWindow} from '../../utils/thread-graph';
+import {buildCommentPermalink, buildCommentsRootPermalink} from '../../utils/helpers';
 import {useAppContext} from '../../app-context';
 import {useNavActions} from '../../utils/nav-actions';
 
 type FocusedThreadProps = {
-    focusedThread: FocusedThreadData;
+    focusedThread: ThreadWindow;
 };
 
 const FocusedThread: React.FC<FocusedThreadProps> = ({focusedThread}) => {
