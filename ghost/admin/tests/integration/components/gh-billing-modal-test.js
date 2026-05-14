@@ -43,9 +43,10 @@ describe('Integration: Component: gh-billing-modal', function () {
         await render(hbs`<GhBillingModal @billingWindowOpen={{true}} />`);
 
         expect(find('[data-test-billing-loading]')).to.not.exist;
-        expect(find('[data-test-billing-load-error]')).to.contain.text('We couldn\'t load your Ghost(Pro) settings.');
-        expect(find('[data-test-billing-load-error]')).to.contain.text('support@ghost.org');
-        expect(find('[data-test-billing-load-error] a')).to.have.attribute('href', 'mailto:support@ghost.org');
+        expect(find('[data-test-billing-load-error]')).to.exist;
+        expect(find('[data-test-billing-load-error-title]').textContent.trim()).to.equal('We couldn\'t load your Ghost(Pro) settings');
+        expect(find('[data-test-billing-load-error-description]').textContent.trim()).to.equal('Refresh the page and try again. If the issue continues, contact support@ghost.org.');
+        expect(find('[data-test-billing-load-error-description] a')).to.have.attribute('href', 'mailto:support@ghost.org');
     });
 
     it('clears a reported error when the billing app sends a late message', async function () {
