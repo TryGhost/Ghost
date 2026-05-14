@@ -8,7 +8,8 @@ import {
     createTestBucket,
     emptyTestBucket,
     deleteTestBucket,
-    getObject
+    getObject,
+    putObject
 } from '../../../utils/minio';
 import {runStoreContract} from '../../../unit/server/services/custom-redirects/helpers/store-contract';
 
@@ -36,6 +37,19 @@ describe('Integration: GCSStore', function () {
 
     runStoreContract({
         createStore: () => new GCSStore({s3Client: client, bucket})
+    });
+
+    describe('getAll: error handling', function () {
+        it('throws when redirects.json is corrupt', async function () {
+            await putObject(client, bucket, 'redirects.json', '{not valid');
+
+            const store = new GCSStore({s3Client: client, bucket});
+
+            await assert.rejects(
+                () => store.getAll(),
+                {errorType: 'BadRequestError'}
+            );
+        });
     });
 
     describe('replaceAll: timestamped backups', function () {

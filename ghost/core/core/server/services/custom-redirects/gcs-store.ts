@@ -92,10 +92,7 @@ export class GCSStore implements RedirectsStore {
                 Bucket: this.bucket,
                 Key: this.key
             }));
-            if (!response.Body) {
-                return [];
-            }
-            body = await response.Body.transformToString('utf-8');
+            body = await response.Body!.transformToString('utf-8');
         } catch (err) {
             if (this._isNotFound(err)) {
                 return [];
