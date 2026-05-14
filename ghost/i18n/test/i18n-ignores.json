@@ -69,6 +69,16 @@
                 "comment": "translated text doesn't fit on the button"
             },
             {
+                "file": "eu/ghost.json",
+                "key": "{count} month_one",
+                "comment": "There is no need for the variable in Basque since there is this word that means one month. Utilising the number not only would it be redundant but wouldn't make any sense either."
+            },
+            {
+                "file": "eu/ghost.json",
+                "key": "{count} year_one",
+                "comment": "There is no need for the variable in Basque since there is this word that means one year. Utilising the number not only would it be redundant but wouldn't make any sense either."
+            },
+            {
                 "file": "is/portal.json",
                 "key": "{trialDays} days free",
                 "comment": "FIXME: This error was automatically ignored. Please update the translation, or explain why a variable is ignored"
