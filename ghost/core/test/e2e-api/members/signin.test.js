@@ -230,6 +230,7 @@ describe('Members Signin', function () {
             // Remove ms precision (not supported by MySQL)
             startDate.setMilliseconds(0);
 
+            // TODO: shouldAdvanceTime is a fake-timer + HTTP-await workaround; see docs/dep-consolidation.md
             clock = sinon.useFakeTimers({now: startDate, shouldAdvanceTime: true});
         });
 

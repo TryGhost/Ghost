@@ -23,6 +23,7 @@ describe('Job: Clean tokens', function () {
 
     it('Deletes tokens that are older than 24 hours', async function () {
         // Go back 25 hours (reason: the job will be run at the current time, no way to change that)
+        // TODO: shouldAdvanceTime is a fake-timer + async-await workaround; see docs/dep-consolidation.md
         clock = sinon.useFakeTimers({now: Date.now() - 25 * 60 * 60 * 1000, shouldAdvanceTime: true});
 
         // Create some tokens

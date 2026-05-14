@@ -514,6 +514,7 @@ describe('sendMagicLink', function () {
         beforeEach(async function () {
             await dbUtils.truncate('brute');
             await resetRateLimits();
+            // TODO: shouldAdvanceTime is a fake-timer + HTTP-await workaround; see docs/dep-consolidation.md
             clock = sinon.useFakeTimers({now: new Date(), shouldAdvanceTime: true});
         });
 

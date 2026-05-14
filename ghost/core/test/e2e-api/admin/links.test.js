@@ -24,6 +24,7 @@ describe('Links API', function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('posts', 'links');
         await agent.loginAsOwner();
+        // TODO: shouldAdvanceTime is a fake-timer + HTTP-await workaround; see docs/dep-consolidation.md
         clock = sinon.useFakeTimers({now: new Date(), shouldAdvanceTime: true});
     });
 

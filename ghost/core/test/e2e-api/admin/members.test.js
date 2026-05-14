@@ -2247,6 +2247,7 @@ describe('Members API', function () {
     });
 
     it('Can subscribe to a newsletter', async function () {
+        // TODO: shouldAdvanceTime is a fake-timer + HTTP-await workaround; see docs/dep-consolidation.md
         const clock = sinon.useFakeTimers({now: Date.now(), shouldAdvanceTime: true});
         const memberToChange = {
             name: 'change me',

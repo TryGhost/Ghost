@@ -23,6 +23,7 @@ describe('automations poll', function () {
     beforeEach(async function () {
         await cleanupTables();
 
+        // TODO: shouldAdvanceTime is a fake-timer + async-await workaround; see docs/dep-consolidation.md
         sinon.useFakeTimers({now: new Date('2026-04-12T12:00:00.000Z'), shouldAdvanceTime: true});
 
         options = {

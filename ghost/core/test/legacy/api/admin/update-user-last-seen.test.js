@@ -22,6 +22,7 @@ describe('Update User Last Seen', function () {
         // Important to enable the fake timers before logging in
         // Because the last_seen of the owner will be set already here
         sandbox = sinon.createSandbox();
+        // TODO: shouldAdvanceTime is a fake-timer + HTTP-await workaround; see docs/dep-consolidation.md
         clock = sinon.useFakeTimers({shouldAdvanceTime: true});
 
         await agent.loginAsOwner();
