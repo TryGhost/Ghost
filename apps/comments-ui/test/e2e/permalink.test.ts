@@ -413,6 +413,63 @@ test.describe('Comment Permalinks', async () => {
         await expect(commentsFrame.getByTestId('back-to-parent')).not.toBeVisible();
     });
 
+    test('opens commentsThreads focused view when target reply is not in the initial comments response', async ({page}) => {
+        const mockedApi = new MockedApi({});
+        mockedApi.setMember({});
+
+        const parentId = 'aaa0000000000000000300';
+        const replyIds = [
+            'aaa0000000000000000301',
+            'aaa0000000000000000302',
+            'aaa0000000000000000303',
+            'aaa0000000000000000304',
+            'aaa0000000000000000305',
+            'aaa0000000000000000306'
+        ];
+
+        mockedApi.addComment({
+            id: parentId,
+            html: '<p>Parent comment</p>',
+            replies: replyIds.map((id, index) => mockedApi.buildReply({
+                id,
+                html: `<p>Lazy nested reply ${index + 1}</p>`,
+                parent_id: parentId,
+                ...(index > 0 ? {in_reply_to_id: replyIds[index - 1]} : {})
+            })),
+            count: {
+                replies: replyIds.length
+            }
+        });
+
+        const originalBrowse = mockedApi.browseComments.bind(mockedApi);
+        mockedApi.browseComments = function (options) {
+            const result = originalBrowse(options);
+            result.comments = result.comments.map((comment) => {
+                if (comment.id === parentId) {
+                    return {...comment, replies: comment.replies.slice(0, 3)};
+                }
+                return comment;
+            });
+            return result;
+        };
+
+        const targetReplyId = replyIds[4];
+        const commentsFrame = await setupPermalinkTest(
+            page,
+            mockedApi,
+            `#ghost-comments-${targetReplyId}`,
+            undefined,
+            {commentsThreads: true}
+        );
+
+        await expect(commentsFrame.getByTestId('back-to-parent')).toBeVisible();
+        await expect(commentsFrame.getByText('Lazy nested reply 4')).toBeVisible();
+        await expect(commentsFrame.getByText('Lazy nested reply 5')).toBeVisible();
+
+        const targetReplyContent = commentsFrame.locator(`[id="${targetReplyId}"]`).getByTestId('comment-content').first();
+        await expect(targetReplyContent.locator('mark')).toContainText('Lazy nested reply 5');
+    });
+
     test('loads reply on later page when permalinking to it', async ({page}) => {
         const mockedApi = new MockedApi({});
         mockedApi.setMember({});
