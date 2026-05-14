@@ -1,4 +1,6 @@
-#!/usr/bin/env node
+#!/usr/bin/env tsx
+/// <reference types="node" />
+/* eslint-disable no-console -- this is a CLI script; stdout is the UI */
 
 /**
  * Design System Adoption — snapshot extractor.
@@ -9,10 +11,17 @@
  * Storybook page at src/docs/adoption-dashboard.stories.tsx.
  *
  * Run with: pnpm --filter @tryghost/shade run adoption:extract
+ *
+ * Why regex instead of the TypeScript compiler API:
+ *  - We only need to count files importing two specific packages and
+ *    enumerate their named imports. Dynamic imports and re-exports of these
+ *    packages don't occur in this codebase, so the regex captures the full
+ *    signal at a fraction of the cost (faster, no `typescript` runtime dep,
+ *    smaller and more readable than an AST walker).
  */
 
 import {execSync} from 'node:child_process';
-import {readFileSync, writeFileSync, statSync} from 'node:fs';
+import {readFileSync, statSync, writeFileSync} from 'node:fs';
 import {dirname, join, relative} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {globSync} from 'glob';
@@ -30,7 +39,7 @@ const ADMIN_REACT_APPS = [
     'stats',
     'activitypub',
     'admin-x-settings'
-];
+] as const;
 
 const PUBLIC_APPS = [
     'portal',
@@ -38,17 +47,53 @@ const PUBLIC_APPS = [
     'signup-form',
     'sodo-search',
     'announcement-bar'
-];
+] as const;
 
-const SHADE_IMPORT_RE = /from\s+['"]@tryghost\/shade(?:\/[^'"]*)?['"]/g;
-const ADMINX_DS_IMPORT_RE = /from\s+['"]@tryghost\/admin-x-design-system['"]/g;
+type ComponentCount = {name: string; count: number};
+
+type AppReport = {
+    name: string;
+    files: number;
+    shadeFiles: number;
+    adminXDsFiles: number;
+    shadeComponents: ComponentCount[];
+    adminXDsComponents: ComponentCount[];
+};
+
+type EmberReport = {
+    hbsFiles: number;
+    spiritUtilityFiles: number;
+    patternFiles: number;
+    componentCssFiles: number;
+};
+
+type AdoptionData = {
+    snapshot: {
+        generatedAt: string;
+        sha: string;
+        branch: string;
+    };
+    summary: {
+        adminReactFilesTotal: number;
+        adminReactFilesUsingShade: number;
+        shadeAdoptionPct: number;
+        uniqueShadeComponentsUsed: number;
+        adminXDsComponentsStillUsed: number;
+    };
+    apps: AppReport[];
+    topShadeComponents: ComponentCount[];
+    adminXDsComponentsAggregate: ComponentCount[];
+    ember: EmberReport | null;
+    publicApps: {
+        count: number;
+        names: readonly string[];
+    };
+};
 
 // Pull named imports out of a single import statement. Handles multiline,
-// type imports, and `As` aliases (we keep the original name).
-function parseNamedImports(importSource) {
-    const named = [];
-    // Match `import { ... } from '...'` (greedy on braces, single-line after
-    // normalizing newlines to spaces).
+// type imports, and `as` aliases (we keep the original name).
+function parseNamedImports(importSource: string): string[] {
+    const named: string[] = [];
     const normalized = importSource.replace(/\s+/g, ' ');
     const m = normalized.match(/import\s+(?:type\s+)?(?:[^{,]*,\s*)?\{([^}]+)\}/);
     if (!m) {
@@ -68,12 +113,12 @@ function parseNamedImports(importSource) {
     return named;
 }
 
-// Pull every `import ... from 'module'` block out of a file's text.
-function extractImports(text, targetModuleRegex) {
-    const results = [];
-    // Match the full import block ending at the matching `from '...'`.
+// Pull every `import ... from 'module'` block out of a file's text where
+// `module` matches `targetModuleRegex`.
+function extractImports(text: string, targetModuleRegex: RegExp): string[] {
+    const results: string[] = [];
     const re = /import\s+(?:type\s+)?[^;]*?from\s+['"]([^'"]+)['"]/gs;
-    let match;
+    let match: RegExpExecArray | null;
     while ((match = re.exec(text)) !== null) {
         if (targetModuleRegex.test(match[1])) {
             results.push(match[0]);
@@ -82,15 +127,14 @@ function extractImports(text, targetModuleRegex) {
     return results;
 }
 
-function scanApp(appName) {
+function scanApp(appName: string): AppReport | null {
     const appDir = join(REPO_ROOT, 'apps', appName, 'src');
-    let files;
     try {
         statSync(appDir);
     } catch {
         return null;
     }
-    files = globSync('**/*.{ts,tsx}', {
+    const files = globSync('**/*.{ts,tsx}', {
         cwd: appDir,
         ignore: [
             '**/node_modules/**',
@@ -108,8 +152,8 @@ function scanApp(appName) {
 
     let shadeFiles = 0;
     let adminXDsFiles = 0;
-    const shadeComponentCounts = new Map();
-    const adminXDsComponentCounts = new Map();
+    const shadeComponentCounts = new Map<string, number>();
+    const adminXDsComponentCounts = new Map<string, number>();
 
     for (const filePath of files) {
         const text = readFileSync(filePath, 'utf8');
@@ -119,7 +163,7 @@ function scanApp(appName) {
             shadeFiles += 1;
             for (const imp of shadeImports) {
                 for (const name of parseNamedImports(imp)) {
-                    shadeComponentCounts.set(name, (shadeComponentCounts.get(name) || 0) + 1);
+                    shadeComponentCounts.set(name, (shadeComponentCounts.get(name) ?? 0) + 1);
                 }
             }
         }
@@ -129,7 +173,7 @@ function scanApp(appName) {
             adminXDsFiles += 1;
             for (const imp of adminXDsImports) {
                 for (const name of parseNamedImports(imp)) {
-                    adminXDsComponentCounts.set(name, (adminXDsComponentCounts.get(name) || 0) + 1);
+                    adminXDsComponentCounts.set(name, (adminXDsComponentCounts.get(name) ?? 0) + 1);
                 }
             }
         }
@@ -149,7 +193,7 @@ function scanApp(appName) {
     };
 }
 
-function scanEmber() {
+function scanEmber(): EmberReport | null {
     const appDir = join(REPO_ROOT, 'ghost', 'admin', 'app');
     try {
         statSync(appDir);
@@ -164,7 +208,7 @@ function scanEmber() {
     return {hbsFiles, spiritUtilityFiles, patternFiles, componentCssFiles};
 }
 
-function getGitInfo() {
+function getGitInfo(): {sha: string; branch: string} {
     try {
         const sha = execSync('git rev-parse HEAD', {cwd: REPO_ROOT}).toString().trim();
         const branch = execSync('git rev-parse --abbrev-ref HEAD', {cwd: REPO_ROOT}).toString().trim();
@@ -174,8 +218,10 @@ function getGitInfo() {
     }
 }
 
-function main() {
-    const apps = ADMIN_REACT_APPS.map(scanApp).filter(Boolean);
+function main(): void {
+    const apps = ADMIN_REACT_APPS
+        .map(name => scanApp(name))
+        .filter((a): a is AppReport => a !== null);
 
     const adminReactFilesTotal = apps.reduce((sum, a) => sum + a.files, 0);
     const adminReactFilesUsingShade = apps.reduce((sum, a) => sum + a.shadeFiles, 0);
@@ -183,27 +229,21 @@ function main() {
         ? 0
         : Math.round((adminReactFilesUsingShade / adminReactFilesTotal) * 1000) / 10;
 
-    const allShadeComponents = new Set();
-    let adminXDsComponentsStillUsed = 0;
-    const adminXDsTotal = new Map();
+    const allShadeComponents = new Set<string>();
+    const adminXDsTotal = new Map<string, number>();
+    const aggregateShadeComponentCounts = new Map<string, number>();
+
     for (const app of apps) {
         for (const c of app.shadeComponents) {
             allShadeComponents.add(c.name);
+            aggregateShadeComponentCounts.set(c.name, (aggregateShadeComponentCounts.get(c.name) ?? 0) + c.count);
         }
         for (const c of app.adminXDsComponents) {
-            adminXDsTotal.set(c.name, (adminXDsTotal.get(c.name) || 0) + c.count);
-        }
-    }
-    adminXDsComponentsStillUsed = adminXDsTotal.size;
-
-    const aggregateShadeComponentCounts = new Map();
-    for (const app of apps) {
-        for (const c of app.shadeComponents) {
-            aggregateShadeComponentCounts.set(c.name, (aggregateShadeComponentCounts.get(c.name) || 0) + c.count);
+            adminXDsTotal.set(c.name, (adminXDsTotal.get(c.name) ?? 0) + c.count);
         }
     }
 
-    const data = {
+    const data: AdoptionData = {
         snapshot: {
             generatedAt: new Date().toISOString(),
             ...getGitInfo()
@@ -213,7 +253,7 @@ function main() {
             adminReactFilesUsingShade,
             shadeAdoptionPct,
             uniqueShadeComponentsUsed: allShadeComponents.size,
-            adminXDsComponentsStillUsed
+            adminXDsComponentsStillUsed: adminXDsTotal.size
         },
         apps,
         topShadeComponents: [...aggregateShadeComponentCounts.entries()]
@@ -235,7 +275,7 @@ function main() {
     console.log(`  Admin React files: ${adminReactFilesTotal}`);
     console.log(`  Files using Shade: ${adminReactFilesUsingShade} (${shadeAdoptionPct}%)`);
     console.log(`  Unique Shade components used: ${allShadeComponents.size}`);
-    console.log(`  admin-x-DS components still in use: ${adminXDsComponentsStillUsed}`);
+    console.log(`  admin-x-DS components still in use: ${adminXDsTotal.size}`);
 }
 
 main();

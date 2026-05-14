@@ -1,13 +1,13 @@
 {
   "snapshot": {
-    "generatedAt": "2026-05-12T14:31:07.194Z",
-    "sha": "2616e6afa5038a5cbb8c06832d11cbad770591fa",
+    "generatedAt": "2026-05-14T12:48:13.889Z",
+    "sha": "dda8ad24d456384d13a15f844000e69faa49bf64",
     "branch": "DES-1375/design-system-adoption"
   },
   "summary": {
-    "adminReactFilesTotal": 608,
-    "adminReactFilesUsingShade": 218,
-    "shadeAdoptionPct": 35.9,
+    "adminReactFilesTotal": 613,
+    "adminReactFilesUsingShade": 221,
+    "shadeAdoptionPct": 36.1,
     "uniqueShadeComponentsUsed": 217,
     "adminXDsComponentsStillUsed": 97
   },
@@ -175,17 +175,17 @@
     },
     {
       "name": "posts",
-      "files": 153,
-      "shadeFiles": 92,
+      "files": 158,
+      "shadeFiles": 95,
       "adminXDsFiles": 0,
       "shadeComponents": [
         {
           "name": "LucideIcon",
-          "count": 44
+          "count": 46
         },
         {
           "name": "Button",
-          "count": 42
+          "count": 44
         },
         {
           "name": "cn",
@@ -212,6 +212,10 @@
           "count": 11
         },
         {
+          "name": "LoadingIndicator",
+          "count": 10
+        },
+        {
           "name": "EmptyIndicator",
           "count": 9
         },
@@ -234,10 +238,6 @@
         {
           "name": "CardTitle",
           "count": 9
-        },
-        {
-          "name": "LoadingIndicator",
-          "count": 8
         },
         {
           "name": "Dialog",
@@ -288,6 +288,22 @@
           "count": 5
         },
         {
+          "name": "DropdownMenu",
+          "count": 5
+        },
+        {
+          "name": "DropdownMenuContent",
+          "count": 5
+        },
+        {
+          "name": "DropdownMenuItem",
+          "count": 5
+        },
+        {
+          "name": "DropdownMenuTrigger",
+          "count": 5
+        },
+        {
           "name": "TableHead",
           "count": 5
         },
@@ -310,22 +326,6 @@
         {
           "name": "ValueSourceState",
           "count": 5
-        },
-        {
-          "name": "DropdownMenu",
-          "count": 4
-        },
-        {
-          "name": "DropdownMenuContent",
-          "count": 4
-        },
-        {
-          "name": "DropdownMenuItem",
-          "count": 4
-        },
-        {
-          "name": "DropdownMenuTrigger",
-          "count": 4
         },
         {
           "name": "Sheet",
@@ -384,6 +384,10 @@
           "count": 4
         },
         {
+          "name": "Skeleton",
+          "count": 4
+        },
+        {
           "name": "FilterFieldConfig",
           "count": 3
         },
@@ -425,10 +429,6 @@
         },
         {
           "name": "SheetTrigger",
-          "count": 3
-        },
-        {
-          "name": "Skeleton",
           "count": 3
         },
         {
@@ -488,6 +488,10 @@
           "count": 2
         },
         {
+          "name": "Banner",
+          "count": 2
+        },
+        {
           "name": "createFilter",
           "count": 2
         },
@@ -513,6 +517,34 @@
         },
         {
           "name": "PostShareModal",
+          "count": 2
+        },
+        {
+          "name": "AlertDialog",
+          "count": 2
+        },
+        {
+          "name": "AlertDialogCancel",
+          "count": 2
+        },
+        {
+          "name": "AlertDialogContent",
+          "count": 2
+        },
+        {
+          "name": "AlertDialogDescription",
+          "count": 2
+        },
+        {
+          "name": "AlertDialogFooter",
+          "count": 2
+        },
+        {
+          "name": "AlertDialogHeader",
+          "count": 2
+        },
+        {
+          "name": "AlertDialogTitle",
           "count": 2
         },
         {
@@ -584,6 +616,10 @@
           "count": 2
         },
         {
+          "name": "ButtonProps",
+          "count": 2
+        },
+        {
           "name": "ComboboxOptionSource",
           "count": 2
         },
@@ -616,10 +652,6 @@
           "count": 1
         },
         {
-          "name": "Banner",
-          "count": 1
-        },
-        {
           "name": "Dropzone",
           "count": 1
         },
@@ -648,35 +680,7 @@
           "count": 1
         },
         {
-          "name": "AlertDialog",
-          "count": 1
-        },
-        {
           "name": "AlertDialogAction",
-          "count": 1
-        },
-        {
-          "name": "AlertDialogCancel",
-          "count": 1
-        },
-        {
-          "name": "AlertDialogContent",
-          "count": 1
-        },
-        {
-          "name": "AlertDialogDescription",
-          "count": 1
-        },
-        {
-          "name": "AlertDialogFooter",
-          "count": 1
-        },
-        {
-          "name": "AlertDialogHeader",
-          "count": 1
-        },
-        {
-          "name": "AlertDialogTitle",
           "count": 1
         },
         {
@@ -2058,11 +2062,11 @@
   "topShadeComponents": [
     {
       "name": "LucideIcon",
-      "count": 121
+      "count": 123
     },
     {
       "name": "Button",
-      "count": 99
+      "count": 101
     },
     {
       "name": "formatNumber",
@@ -2074,7 +2078,7 @@
     },
     {
       "name": "LoadingIndicator",
-      "count": 25
+      "count": 27
     },
     {
       "name": "EmptyIndicator",
@@ -2090,7 +2094,7 @@
     },
     {
       "name": "Skeleton",
-      "count": 21
+      "count": 22
     },
     {
       "name": "DialogContent",
