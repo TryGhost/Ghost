@@ -45,7 +45,7 @@
         "@testing-library/jest-dom": "6.9.1",
         "@testing-library/react": "14.3.1",
         "@types/jest": "catalog:",
-        "@types/node": "22.19.17",
+        "@types/node": "catalog:",
         "@types/react": "catalog:",
         "@types/react-svg-map": "2.1.4",
         "@vitest/coverage-v8": "catalog:",

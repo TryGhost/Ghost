@@ -86,7 +86,7 @@
         "@storybook/react-vite": "catalog:",
         "@tailwindcss/postcss": "4.2.1",
         "@testing-library/react": "14.3.1",
-        "@types/node": "22.19.17",
+        "@types/node": "catalog:",
         "@types/react-world-flags": "1.6.0",
         "@typescript-eslint/parser": "catalog:",
         "@vitejs/plugin-react": "catalog:",
