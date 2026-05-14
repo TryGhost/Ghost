@@ -3,6 +3,10 @@ import {CircleDot, Undo2, X} from 'lucide-react';
 import {ghostButtonClass, iconButtonClass} from './theme-editor-styles';
 import type {ThemeChange, ThemeEditorFile} from './theme-editor-utils';
 
+const previewBlockClass = 'overflow-auto rounded-md border border-[#23262c] bg-[#15171a] p-4 text-[12px] leading-5 text-[#d4d8de]';
+const previewSectionLabelClass = 'mb-2 text-[11px] font-semibold tracking-[0.08em] text-[#8a8f98] uppercase';
+const previewEmptyStateClass = 'flex flex-1 items-center justify-center p-8 text-center text-[13px] text-[#6a6f78]';
+
 export type ReviewItem = {
     path: string;
     editable: boolean;
@@ -130,34 +134,34 @@ const ThemeReviewModal: React.FC<ThemeReviewModalProps> = ({
                                 </div>
 
                                 {!selectedReviewItem.editable ? (
-                                    <div className='flex flex-1 items-center justify-center p-8 text-center text-[13px] text-[#6a6f78]'>
+                                    <div className={previewEmptyStateClass}>
                                         Binary files are kept intact in the archive. Open or revert the change from here, but binary contents are not shown.
                                     </div>
                                 ) : selectedReviewItem.status === 'added' ? (
                                     <div className='min-h-0 flex-1 overflow-auto p-4'>
-                                        <div className='mb-2 text-[11px] font-semibold tracking-[0.08em] text-[#8a8f98] uppercase'>After</div>
-                                        <pre className='overflow-auto rounded-md border border-[#23262c] bg-[#15171a] p-4 text-[12px] leading-5 text-[#d4d8de]'>{selectedReviewItem.after ?? ''}</pre>
+                                        <div className={previewSectionLabelClass}>After</div>
+                                        <pre className={previewBlockClass}>{selectedReviewItem.after ?? ''}</pre>
                                     </div>
                                 ) : selectedReviewItem.status === 'deleted' ? (
                                     <div className='min-h-0 flex-1 overflow-auto p-4'>
-                                        <div className='mb-2 text-[11px] font-semibold tracking-[0.08em] text-[#8a8f98] uppercase'>Before</div>
-                                        <pre className='overflow-auto rounded-md border border-[#23262c] bg-[#15171a] p-4 text-[12px] leading-5 text-[#d4d8de]'>{selectedReviewItem.before ?? ''}</pre>
+                                        <div className={previewSectionLabelClass}>Before</div>
+                                        <pre className={previewBlockClass}>{selectedReviewItem.before ?? ''}</pre>
                                     </div>
                                 ) : (
                                     <div className='grid min-h-0 flex-1 grid-cols-2 gap-4 p-4'>
                                         <div className='min-h-0 overflow-auto'>
-                                            <div className='mb-2 text-[11px] font-semibold tracking-[0.08em] text-[#8a8f98] uppercase'>Before</div>
-                                            <pre className='h-full overflow-auto rounded-md border border-[#23262c] bg-[#15171a] p-4 text-[12px] leading-5 text-[#d4d8de]'>{selectedReviewItem.before ?? ''}</pre>
+                                            <div className={previewSectionLabelClass}>Before</div>
+                                            <pre className={`h-full ${previewBlockClass}`}>{selectedReviewItem.before ?? ''}</pre>
                                         </div>
                                         <div className='min-h-0 overflow-auto'>
-                                            <div className='mb-2 text-[11px] font-semibold tracking-[0.08em] text-[#8a8f98] uppercase'>After</div>
-                                            <pre className='h-full overflow-auto rounded-md border border-[#23262c] bg-[#15171a] p-4 text-[12px] leading-5 text-[#d4d8de]'>{selectedReviewItem.after ?? ''}</pre>
+                                            <div className={previewSectionLabelClass}>After</div>
+                                            <pre className={`h-full ${previewBlockClass}`}>{selectedReviewItem.after ?? ''}</pre>
                                         </div>
                                     </div>
                                 )}
                             </>
                         ) : (
-                            <div className='flex flex-1 items-center justify-center p-8 text-center text-[13px] text-[#6a6f78]'>
+                            <div className={previewEmptyStateClass}>
                                 Select a changed file to review it.
                             </div>
                         )}

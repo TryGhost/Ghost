@@ -177,6 +177,8 @@ const THEME_NAME_PATTERN = /^[a-z0-9][\w-]{0,63}$/;
 
 const wrapToggleClass = (active: boolean) => `inline-flex h-5 w-5 items-center justify-center rounded-sm text-[#c8ccd3] transition-opacity hover:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a9eff] ${active ? 'opacity-100' : 'opacity-60'}`;
 
+const editorPaneEmptyStateClass = 'flex h-full items-center justify-center p-8 text-center text-[13px] text-[#6a6f78]';
+
 const editorSelectionTheme = EditorView.theme({
     '&.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection': {
         backgroundColor: '#355070'
@@ -905,19 +907,19 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
 
                         <div className='min-h-0 flex-1'>
                             {!selectedNode && !isLoading && (
-                                <div className='flex h-full items-center justify-center p-8 text-center text-[13px] text-[#6a6f78]'>
+                                <div className={editorPaneEmptyStateClass}>
                                     Select a file from the tree to start editing.
                                 </div>
                             )}
 
                             {selectedNode?.type === 'dir' && (
-                                <div className='flex h-full items-center justify-center p-8 text-center text-[13px] text-[#6a6f78]'>
+                                <div className={editorPaneEmptyStateClass}>
                                     Folder selected. Choose a file to edit, or rename or delete the folder from the file pane.
                                 </div>
                             )}
 
                             {selectedFile && !selectedFile.editable && (
-                                <div className='flex h-full items-center justify-center p-8 text-center text-[13px] text-[#6a6f78]'>
+                                <div className={editorPaneEmptyStateClass}>
                                     This file cannot be edited in the browser.
                                 </div>
                             )}
