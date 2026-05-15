@@ -756,4 +756,5 @@ describe('EventRepository', function () {
             assert.equal(event.data.member_id, 'member-xyz');
         });
     });
+
 });
