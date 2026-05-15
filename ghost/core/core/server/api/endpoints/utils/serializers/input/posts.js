@@ -75,24 +75,28 @@ function mapWithRelated(frame) {
     }
 }
 
-function defaultRelations(frame) {
-    // Apply same mapping as content API
-    mapWithRelated(frame);
-
-    // Under lazyRouting the URL is computed at serialization time from the
-    // resource's tags/authors (LazyUrlService re-evaluates each router's
-    // NQL filter against the loaded record). A thin column request like
-    // ?fields=id,url would otherwise produce /404/ for every tag- or
-    // author-filtered route in routes.yaml. Force-load the relations
-    // whenever `url` is in the response shape — even if the caller already
-    // set withRelated via ?include=, since their list may not include
-    // tags/authors. The output mapper strips force-loaded relations from
-    // the JSON response when the caller didn't ask for them.
+// Under lazyRouting the URL is computed at serialization time from the
+// resource's tags/authors (LazyUrlService re-evaluates each router's NQL
+// filter against the loaded record). A thin column request like
+// ?fields=id,url would otherwise produce /404/ for every tag- or
+// author-filtered route in routes.yaml. Force-load the relations whenever
+// `url` is in the response shape — even if the caller already set
+// withRelated via ?include=, since their list may not include
+// tags/authors. The output mapper strips force-loaded relations from the
+// JSON response when the caller didn't ask for them.
+function forceUrlRelationsWhenLazy(frame) {
     if (config.get('lazyRouting')
         && Array.isArray(frame.options.columns)
         && frame.options.columns.includes('url')) {
         frame.options.withRelated = _.union(frame.options.withRelated || [], ['tags', 'authors']);
     }
+}
+
+function defaultRelations(frame) {
+    // Apply same mapping as content API
+    mapWithRelated(frame);
+
+    forceUrlRelationsWhenLazy(frame);
 
     // Additional defaults for admin API
     if (frame.options.withRelated) {
@@ -182,6 +186,7 @@ module.exports = {
             setDefaultOrder(frame);
             forceVisibilityColumn(frame);
             mapWithRelated(frame);
+            forceUrlRelationsWhenLazy(frame);
         }
 
         if (!localUtils.isContentAPI(frame)) {
@@ -208,6 +213,7 @@ module.exports = {
 
             setDefaultOrder(frame);
             forceVisibilityColumn(frame);
+            forceUrlRelationsWhenLazy(frame);
         }
 
         if (!localUtils.isContentAPI(frame)) {

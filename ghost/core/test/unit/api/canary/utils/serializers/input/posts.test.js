@@ -230,6 +230,31 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
                 assert.ok(frame.options.withRelated.includes('tags'), 'tags must be force-loaded for URL');
                 assert.ok(frame.options.withRelated.includes('authors'), 'authors must be force-loaded for URL');
             });
+
+            it('forces tags+authors on the Content API path too', async function () {
+                // The Content API uses mapWithRelated rather than
+                // defaultRelations, so the admin-side patch doesn't cover
+                // it. A `?fields=url` request on the Content API would
+                // otherwise resolve every URL to /404/ for tag/author
+                // filtered routes under lazyRouting.
+                configUtils.set('lazyRouting', true);
+                const apiConfig = {};
+                const frame = {
+                    apiType: 'content',
+                    options: {
+                        context: {
+                            api_key: {id: 1, type: 'content'}
+                        },
+                        columns: ['id', 'url']
+                    }
+                };
+
+                serializers.input.posts.browse(apiConfig, frame);
+
+                assert.ok(frame.options.withRelated, 'withRelated should be set');
+                assert.ok(frame.options.withRelated.includes('tags'));
+                assert.ok(frame.options.withRelated.includes('authors'));
+            });
         });
 
         describe('Content API', function () {
