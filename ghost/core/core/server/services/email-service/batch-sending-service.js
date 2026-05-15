@@ -203,7 +203,12 @@ class BatchSendingService {
         }, {...this.#getBeforeRetryConfig(email), description: `getLazyRelation newsletter for email ${email.id}`});
 
         const post = await this.retryDb(async () => {
-            return await email.getLazyRelation('post', {require: true, withRelated: ['posts_meta', 'authors']});
+            // tags+authors needed so urlService.facade.getUrlForResource()
+            // (called from email-renderer when building post URLs) can
+            // resolve tag- and author-filtered routes under lazyRouting.
+            // Without these the post URL embedded in the newsletter would
+            // fall through to /404/.
+            return await email.getLazyRelation('post', {require: true, withRelated: ['posts_meta', 'authors', 'tags']});
         }, {...this.#getBeforeRetryConfig(email), description: `getLazyRelation post for email ${email.id}`});
 
         let batches = await this.retryDb(async () => {

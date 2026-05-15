@@ -302,6 +302,36 @@ describe('Batch Sending Service', function () {
             const argument = sendBatches.firstCall.args[0];
             assert.equal(argument.batches, createdBatches);
         });
+
+        it('loads the post with tags and authors so URL serialization can resolve filtered routes under lazyRouting', async function () {
+            // The post is loaded here and threaded through to the email
+            // renderer, which calls urlService.facade.getUrlForResource() to
+            // build the post URL embedded in the newsletter. Under
+            // lazyRouting that call evaluates each router's NQL filter
+            // against the loaded record; a route filtered by `tag:` or
+            // `author:` needs the relations populated or the URL falls
+            // through to /404/ and the newsletter ships with broken links.
+            const EmailBatch = createModelClass({findAll: []});
+            const service = new BatchSendingService({
+                models: {EmailBatch}
+            });
+            const getLazyRelation = sinon.stub();
+            getLazyRelation.withArgs('newsletter', sinon.match.any).resolves(createModel({}));
+            getLazyRelation.withArgs('post', sinon.match.any).resolves(createModel({}));
+            const email = {
+                id: 'email1',
+                get: () => null,
+                getLazyRelation
+            };
+            sinon.stub(service, 'sendBatches').resolves();
+            sinon.stub(service, 'createBatches').resolves([createModel({})]);
+
+            await service.sendEmail(email);
+
+            sinon.assert.calledWith(getLazyRelation, 'post', sinon.match({
+                withRelated: sinon.match.array.contains(['tags', 'authors'])
+            }));
+        });
     });
 
     describe('createBatches', function () {
