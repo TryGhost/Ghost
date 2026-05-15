@@ -160,9 +160,19 @@
             "matchPackageNames": [
                 "@tryghost/color-utils",
                 "@tryghost/custom-fonts",
-                "@tryghost/limit-service",
                 "@tryghost/members-csv",
                 "@tryghost/timezone-data"
+            ]
+        },
+
+        // Bump @tryghost/limit-service on its own. Limit changes are feature-tied
+        // (each new flag is consumed by specific BREAD/limit-helper code) and we
+        // want the version bump landing as an isolated, reviewable PR rather than
+        // riding in with unrelated admin-support package updates.
+        {
+            "groupName": "@tryghost/limit-service",
+            "matchPackageNames": [
+                "@tryghost/limit-service"
             ]
         },
         {
