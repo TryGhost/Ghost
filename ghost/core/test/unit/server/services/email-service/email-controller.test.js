@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const sinon = require('sinon');
 const EmailController = require('../../../../../core/server/services/email-service/email-controller');
 const {createModel, createModelClass} = require('./utils');
 
@@ -142,6 +143,34 @@ describe('Email Controller', function () {
                 }
             });
             assert.equal(segment, 'free');
+        });
+
+        it('loads the post with tags and authors so URL serialization can resolve filtered routes under lazyRouting', async function () {
+            // Email previews and test sends both render the post through
+            // email-renderer, which calls urlService.facade.getUrlForResource
+            // to embed the post URL. Under lazyRouting that call evaluates
+            // each router's NQL filter against the loaded record; without
+            // tags/authors, tag- or author-filtered routes fall through to
+            // /404/ and the preview / test email shows broken links.
+            const Post = createModelClass({
+                findOne: {newsletter: createModel({slug: 'n'})}
+            });
+            const findOneSpy = sinon.spy(Post, 'findOne');
+            const controller = new EmailController({}, {
+                models: {Post}
+            });
+
+            // Both branches: id-via-options and id-via-data
+            await controller._getFrameData({options: {id: 'opt-id'}, data: {}});
+            await controller._getFrameData({options: {}, data: {id: 'data-id'}});
+
+            sinon.assert.calledTwice(findOneSpy);
+            const [, firstOpts] = findOneSpy.firstCall.args;
+            const [, secondOpts] = findOneSpy.secondCall.args;
+            assert.ok(firstOpts.withRelated.includes('tags'), `expected 'tags' in first call withRelated, got ${JSON.stringify(firstOpts.withRelated)}`);
+            assert.ok(firstOpts.withRelated.includes('authors'), `expected 'authors' in first call`);
+            assert.ok(secondOpts.withRelated.includes('tags'), `expected 'tags' in second call withRelated, got ${JSON.stringify(secondOpts.withRelated)}`);
+            assert.ok(secondOpts.withRelated.includes('authors'), `expected 'authors' in second call`);
         });
     });
 
