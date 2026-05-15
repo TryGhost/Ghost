@@ -9,7 +9,7 @@ import {CommentMetrics, buildThreadLink} from './comment-metrics';
 import {Link, useSearchParams} from '@tryghost/admin-x-framework';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {forwardRef, useEffect, useRef, useState} from 'react';
-import {useGlobalData} from '@src/providers/post-analytics-context';
+import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';
 import {useScrollRestoration} from '@components/virtual-table/use-scroll-restoration';
 import {useVirtualListWindow} from '@components/virtual-table/virtual-list-window';
@@ -67,8 +67,8 @@ function CommentsList({
     const {mutate: hideComment} = useHideComment();
     const {mutate: showComment} = useShowComment();
     const {mutate: unpinComment} = useUnpinComment();
-    const {data: globalData} = useGlobalData();
-    const commentsPinningEnabled = globalData?.labs?.commentsPinning === true;
+    const {data: configData} = useBrowseConfig();
+    const commentsPinningEnabled = configData?.config?.labs?.commentsPinning === true;
 
     const handleCloseSidebar = (open: boolean) => {
         setThreadSidebarOpen(open);

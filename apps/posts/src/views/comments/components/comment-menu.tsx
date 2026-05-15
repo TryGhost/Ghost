@@ -2,8 +2,8 @@ import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMen
 import {Comment, usePinComment, useUnpinComment} from '@tryghost/admin-x-framework/api/comments';
 import {DisableCommentingDialog} from './disable-commenting-dialog';
 import {LucideIcon} from '@tryghost/shade/utils';
+import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useDisableMemberCommenting, useEnableMemberCommenting} from '@tryghost/admin-x-framework/api/members';
-import {useGlobalData} from '@src/providers/post-analytics-context';
 import {useState} from 'react';
 
 interface CommentMenuProps {
@@ -18,8 +18,8 @@ export function CommentMenu({
     const {mutate: pinComment} = usePinComment();
     const {mutate: unpinComment} = useUnpinComment();
     const [disableDialogOpen, setDisableDialogOpen] = useState(false);
-    const {data: globalData} = useGlobalData();
-    const commentsPinningEnabled = globalData?.labs?.commentsPinning === true;
+    const {data: configData} = useBrowseConfig();
+    const commentsPinningEnabled = configData?.config?.labs?.commentsPinning === true;
 
     const {id: commentId, post, member} = comment;
     const postUrl = post?.url;
