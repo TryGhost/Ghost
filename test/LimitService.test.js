@@ -157,6 +157,19 @@ describe('Limit Service', function () {
             limitService.isLimited('limitSocialWeb').should.be.true();
         });
 
+        it('can load publicSiteAccess flag limit', function () {
+            const limitService = new LimitService();
+
+            let limits = {publicSiteAccess: {disabled: true}};
+
+            limitService.loadLimits({limits, errors});
+
+            limitService.limits.should.be.an.Object().with.properties(['publicSiteAccess']);
+            limitService.limits.publicSiteAccess.should.be.an.instanceOf(FlagLimit);
+            limitService.isLimited('publicSiteAccess').should.be.true();
+            limitService.isDisabled('publicSiteAccess').should.be.true();
+        });
+
         it('can load camel cased limits', function () {
             const limitService = new LimitService();
 
