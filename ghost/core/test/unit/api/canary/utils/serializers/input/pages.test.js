@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
+const configUtils = require('../../../../../../utils/config-utils');
 const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
 const postsSchema = require('../../../../../../../core/server/data/schema').tables.posts;
 
@@ -67,6 +68,65 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
             assert(!frame.options.formats.includes('lexical'));
             assert(frame.options.formats.includes('html'));
             assert(frame.options.formats.includes('plaintext'));
+        });
+
+        // Same gap as the posts.* serializer: under lazyRouting the URL is
+        // computed at serialization time from tags/authors. A `?fields=url`
+        // request without those relations resolves every URL to /404/ for
+        // tag- or author-filtered routes in routes.yaml.
+        describe('lazyRouting + thin columns', function () {
+            afterEach(async function () {
+                await configUtils.restore();
+            });
+
+            it('forces tags+authors into withRelated when columns include url under lazyRouting (admin)', function () {
+                configUtils.set('lazyRouting', true);
+                const frame = {
+                    apiType: 'admin',
+                    options: {
+                        context: {user: 1},
+                        columns: ['id', 'url', 'title']
+                    }
+                };
+
+                serializers.input.pages.browse({}, frame);
+
+                assert.ok(frame.options.withRelated);
+                assert.ok(frame.options.withRelated.includes('tags'));
+                assert.ok(frame.options.withRelated.includes('authors'));
+            });
+
+            it('forces tags+authors on the Content API path too', function () {
+                configUtils.set('lazyRouting', true);
+                const frame = {
+                    apiType: 'content',
+                    options: {
+                        context: {api_key: {id: 1, type: 'content'}},
+                        columns: ['id', 'url']
+                    }
+                };
+
+                serializers.input.pages.browse({}, frame);
+
+                assert.ok(frame.options.withRelated);
+                assert.ok(frame.options.withRelated.includes('tags'));
+                assert.ok(frame.options.withRelated.includes('authors'));
+            });
+
+            it('does not force withRelated when lazyRouting is off', function () {
+                configUtils.set('lazyRouting', false);
+                const frame = {
+                    apiType: 'admin',
+                    options: {
+                        context: {user: 1},
+                        columns: ['id', 'url', 'title']
+                    }
+                };
+
+                serializers.input.pages.browse({}, frame);
+
+                assert.equal(frame.options.withRelated, undefined);
+            });
         });
 
         describe('Content API', function () {
