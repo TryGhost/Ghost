@@ -589,7 +589,12 @@ module.exports = class EventRepository {
     async getCommentEvents(options = {}, filter) {
         options = {
             ...options,
-            withRelated: ['member', 'post', 'parent'],
+            // post.tags / post.authors needed by url.forPost (in
+            // mappers/comments.js → mappers/activity-feed-events.js) so
+            // urlService.facade.getUrlForResource can resolve tag- /
+            // author-filtered routes under lazyRouting; otherwise the
+            // post URL on every comment row is /404/.
+            withRelated: ['member', 'post', 'post.tags', 'post.authors', 'parent'],
             filter: 'member_id:-null+custom:true',
             useBasicCount: true,
             mongoTransformer: chainTransformers(
@@ -623,7 +628,10 @@ module.exports = class EventRepository {
     async getClickEvents(options = {}, filter) {
         options = {
             ...options,
-            withRelated: ['member', 'link', 'link.post'],
+            // link.post.tags / link.post.authors needed for the post URL
+            // embedded in click-event rows under lazyRouting (same as
+            // getCommentEvents above).
+            withRelated: ['member', 'link', 'link.post', 'link.post.tags', 'link.post.authors'],
             filter: 'custom:true',
             useBasicCount: true,
             mongoTransformer: chainTransformers(
@@ -777,7 +785,10 @@ module.exports = class EventRepository {
     async getFeedbackEvents(options = {}, filter) {
         options = {
             ...options,
-            withRelated: ['member', 'post'],
+            // post.tags / post.authors needed for URL serialization
+            // under lazyRouting (same as the other post-embedding events
+            // above).
+            withRelated: ['member', 'post', 'post.tags', 'post.authors'],
             filter: 'custom:true',
             useBasicCount: true,
             mongoTransformer: chainTransformers(

@@ -756,4 +756,74 @@ describe('EventRepository', function () {
             assert.equal(event.data.member_id, 'member-xyz');
         });
     });
+
+    // The activity-feed mappers (mappers/activity-feed-events.js,
+    // mappers/comments.js) call url.forPost on the embedded post, which
+    // routes to urlService.facade.getUrlForResource. Under lazyRouting
+    // that needs the post's tags+authors loaded or it returns /404/ for
+    // any tag- or author-filtered route in routes.yaml.
+    describe('lazyRouting URL relations on post-embedding events', function () {
+        it('getCommentEvents loads post.tags and post.authors so URL serialization can resolve filtered routes', async function () {
+            const fake = sinon.fake.returns({data: []});
+            const repo = new EventRepository({
+                EmailRecipient: null,
+                MemberSubscribeEvent: null,
+                MemberPaymentEvent: null,
+                MemberStatusEvent: null,
+                MemberLoginEvent: null,
+                MemberPaidSubscriptionEvent: null,
+                Comment: {findPage: fake},
+                labsService: null
+            });
+
+            await repo.getCommentEvents({}, {});
+
+            sinon.assert.calledOnce(fake);
+            const opts = fake.firstCall.args[0];
+            assert.ok(opts.withRelated.includes('post.tags'), `expected post.tags in ${JSON.stringify(opts.withRelated)}`);
+            assert.ok(opts.withRelated.includes('post.authors'), `expected post.authors in ${JSON.stringify(opts.withRelated)}`);
+        });
+
+        it('getClickEvents loads link.post.tags and link.post.authors', async function () {
+            const fake = sinon.fake.returns({data: []});
+            const repo = new EventRepository({
+                EmailRecipient: null,
+                MemberSubscribeEvent: null,
+                MemberPaymentEvent: null,
+                MemberStatusEvent: null,
+                MemberLoginEvent: null,
+                MemberPaidSubscriptionEvent: null,
+                MemberLinkClickEvent: {findPage: fake},
+                labsService: null
+            });
+
+            await repo.getClickEvents({}, {});
+
+            sinon.assert.calledOnce(fake);
+            const opts = fake.firstCall.args[0];
+            assert.ok(opts.withRelated.includes('link.post.tags'), `expected link.post.tags in ${JSON.stringify(opts.withRelated)}`);
+            assert.ok(opts.withRelated.includes('link.post.authors'), `expected link.post.authors in ${JSON.stringify(opts.withRelated)}`);
+        });
+
+        it('getFeedbackEvents loads post.tags and post.authors', async function () {
+            const fake = sinon.fake.returns({data: []});
+            const repo = new EventRepository({
+                EmailRecipient: null,
+                MemberSubscribeEvent: null,
+                MemberPaymentEvent: null,
+                MemberStatusEvent: null,
+                MemberLoginEvent: null,
+                MemberPaidSubscriptionEvent: null,
+                MemberFeedback: {findPage: fake},
+                labsService: null
+            });
+
+            await repo.getFeedbackEvents({}, {});
+
+            sinon.assert.calledOnce(fake);
+            const opts = fake.firstCall.args[0];
+            assert.ok(opts.withRelated.includes('post.tags'), `expected post.tags in ${JSON.stringify(opts.withRelated)}`);
+            assert.ok(opts.withRelated.includes('post.authors'), `expected post.authors in ${JSON.stringify(opts.withRelated)}`);
+        });
+    });
 });
