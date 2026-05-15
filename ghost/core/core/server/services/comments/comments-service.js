@@ -15,7 +15,8 @@ const messages = {
     cannotEditComment: 'You do not have permission to edit comments',
     cannotPinReply: 'Replies cannot be pinned',
     cannotPinDeletedComment: 'Deleted comments cannot be pinned',
-    invalidPinnedValue: 'Pinned must be a boolean value'
+    invalidPinnedValue: 'Pinned must be a boolean value',
+    commentsPinningNotEnabled: 'Comment pinning is not enabled for this site.'
 };
 
 function withPinnedSelect(options = {}) {
@@ -42,6 +43,9 @@ class CommentsService {
 
         /** @private */
         this.contentGating = contentGating;
+
+        /** @private */
+        this.labs = labs;
 
         const Emails = require('./comments-service-emails');
         /** @private */
@@ -190,7 +194,8 @@ class CommentsService {
      */
     async getComments(options) {
         this.checkEnabled();
-        const page = await this.models.Comment.findPage(withPinnedSelect({...options, parentId: null, pinnedFirst: true}));
+        const pinnedFirst = this.labs?.isSet('commentsPinning');
+        const page = await this.models.Comment.findPage(withPinnedSelect({...options, parentId: null, pinnedFirst}));
 
         return page;
     }
@@ -233,7 +238,8 @@ class CommentsService {
 
     async getAdminComments(options) {
         this.checkEnabled();
-        const page = await this.models.Comment.findPage(withPinnedSelect({...options, parentId: null, isAdmin: true, pinnedFirst: true}));
+        const pinnedFirst = this.labs?.isSet('commentsPinning');
+        const page = await this.models.Comment.findPage(withPinnedSelect({...options, parentId: null, isAdmin: true, pinnedFirst}));
 
         return page;
     }
@@ -250,6 +256,12 @@ class CommentsService {
         }
 
         if (Object.prototype.hasOwnProperty.call(data, 'pinned')) {
+            if (!this.labs?.isSet('commentsPinning')) {
+                throw new errors.MethodNotAllowedError({
+                    message: tpl(messages.commentsPinningNotEnabled)
+                });
+            }
+
             if (typeof data.pinned !== 'boolean') {
                 throw new errors.BadRequestError({
                     message: tpl(messages.invalidPinnedValue)

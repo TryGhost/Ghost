@@ -9,6 +9,7 @@ import {CommentMetrics, buildThreadLink} from './comment-metrics';
 import {Link, useSearchParams} from '@tryghost/admin-x-framework';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {forwardRef, useEffect, useRef, useState} from 'react';
+import {useGlobalData} from '@src/providers/post-analytics-context';
 import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';
 import {useScrollRestoration} from '@components/virtual-table/use-scroll-restoration';
 import {useVirtualListWindow} from '@components/virtual-table/virtual-list-window';
@@ -66,6 +67,8 @@ function CommentsList({
     const {mutate: hideComment} = useHideComment();
     const {mutate: showComment} = useShowComment();
     const {mutate: unpinComment} = useUnpinComment();
+    const {data: globalData} = useGlobalData();
+    const commentsPinningEnabled = globalData?.labs?.commentsPinning === true;
 
     const handleCloseSidebar = (open: boolean) => {
         setThreadSidebarOpen(open);
@@ -153,13 +156,13 @@ function CommentsList({
                                             canComment={item.member?.can_comment}
                                             createdAt={item.created_at}
                                             isHidden={item.status === 'hidden'}
-                                            isPinned={item.pinned}
+                                            isPinned={commentsPinningEnabled && item.pinned}
                                             memberId={item.member?.id}
                                             memberName={item.member?.name}
                                             postTitle={item.post?.title}
                                             onAuthorClick={item.member?.id ? () => onAddFilter('author', item.member!.id) : undefined}
                                             onPostClick={item.post?.id ? () => onAddFilter('post', item.post!.id) : undefined}
-                                            onUnpinClick={() => unpinComment({id: item.id})}
+                                            onUnpinClick={commentsPinningEnabled ? () => unpinComment({id: item.id}) : undefined}
                                         />
 
                                         {item.in_reply_to_snippet && (

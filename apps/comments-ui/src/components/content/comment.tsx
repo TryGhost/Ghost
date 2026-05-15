@@ -8,7 +8,7 @@ import ReplyButton from './buttons/reply-button';
 import ReplyForm from './forms/reply-form';
 import ThreadedReplies from './threaded-replies';
 import {Avatar, BlankAvatar} from './avatar';
-import {Comment, OpenCommentForm, useAppContext} from '../../app-context';
+import {Comment, OpenCommentForm, useAppContext, useLabs} from '../../app-context';
 import {ReactComponent as PinIcon} from '../../images/icons/pin.svg';
 import {ReactComponent as PinOffIcon} from '../../images/icons/pin-off.svg';
 import {Transition} from '@headlessui/react';
@@ -280,8 +280,9 @@ const EditedInfo: React.FC<{comment: Comment}> = ({comment}) => {
 
 const PinnedLabel: React.FC<{comment: Comment}> = ({comment}) => {
     const {dispatchAction, isAdmin, t} = useAppContext();
+    const labs = useLabs();
 
-    if (!comment.pinned) {
+    if (!labs?.commentsPinning || !comment.pinned) {
         return null;
     }
 
