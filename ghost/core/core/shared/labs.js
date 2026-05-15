@@ -51,7 +51,8 @@ const PRIVATE_FEATURES = [
     'pictureImageFormats',
     'smarterCounts',
     'giftSubscriptions',
-    'commentsThreads'
+    'commentsThreads',
+    'commentsPinning'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
