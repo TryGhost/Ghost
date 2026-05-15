@@ -35,7 +35,16 @@ const controller = {
             }
         },
         async query(frame) {
-            const model = await models.Post.findOne(Object.assign(frame.data, {status: 'sent'}), frame.options);
+            // tags+authors are needed by url.forPost (called from the
+            // email-posts output mapper) so urlService.facade.getUrlForResource
+            // can resolve tag- and author-filtered routes under lazyRouting.
+            // Merge with any caller-supplied withRelated so we don't clobber.
+            const callerIncludes = Array.isArray(frame.options.withRelated) ? frame.options.withRelated : [];
+            const options = {
+                ...frame.options,
+                withRelated: [...new Set([...callerIncludes, 'tags', 'authors'])]
+            };
+            const model = await models.Post.findOne(Object.assign(frame.data, {status: 'sent'}), options);
 
             if (!model) {
                 throw new errors.NotFoundError({
