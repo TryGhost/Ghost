@@ -52,6 +52,7 @@ catalog:
   mocha: 11.7.5
   msw: 2.12.14
   postcss: 8.5.6
+  react-codemirror-merge: 4.25.2
   react-router: 7.14.0
   sonner: 2.0.7
   storybook: 10.3.5

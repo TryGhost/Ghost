@@ -1,7 +1,13 @@
+import CodeMirrorMerge from 'react-codemirror-merge';
 import React, {useEffect, useState} from 'react';
 import {CircleDot, Undo2, X} from 'lucide-react';
+import {EditorView} from '@uiw/react-codemirror';
+import {getLanguageExtension} from './theme-editor-languages';
 import {ghostButtonClass, iconButtonClass} from './theme-editor-styles';
+import {oneDark} from '@codemirror/theme-one-dark';
 import type {ThemeChange, ThemeEditorFile} from './theme-editor-utils';
+
+type LanguageExtension = Awaited<ReturnType<typeof getLanguageExtension>>;
 
 const previewBlockClass = 'overflow-auto rounded-md border border-[#23262c] bg-[#15171a] p-4 text-[12px] leading-5 text-[#d4d8de]';
 const previewSectionLabelClass = 'mb-2 text-[11px] font-semibold tracking-[0.08em] text-[#8a8f98] uppercase';
@@ -60,6 +66,7 @@ const ThemeReviewModal: React.FC<ThemeReviewModalProps> = ({
     onRevert
 }) => {
     const [selectedReviewPath, setSelectedReviewPath] = useState<string | null>(null);
+    const [diffLanguageExtension, setDiffLanguageExtension] = useState<LanguageExtension | null>(null);
     const selectedReviewItem = reviewItems.find(item => item.path === selectedReviewPath) || reviewItems[0] || null;
 
     // Keep selectedReviewPath valid as reviewItems change. If the currently
@@ -75,6 +82,31 @@ const ThemeReviewModal: React.FC<ThemeReviewModalProps> = ({
             setSelectedReviewPath(selectedReviewItem.path);
         }
     }, [reviewItems, selectedReviewItem, selectedReviewPath]);
+
+    // Lazy-load the language extension for the merge view so it matches the
+    // syntax highlighting users see in the editor. Tracking the path/status
+    // separately keeps the effect from re-firing on identity-only changes to
+    // selectedReviewItem (it's rebuilt on every render).
+    const diffPath = selectedReviewItem?.path ?? null;
+    const diffStatus = selectedReviewItem?.status ?? null;
+    const diffIsEditable = selectedReviewItem?.editable ?? false;
+    useEffect(() => {
+        if (!diffPath || diffStatus !== 'modified' || !diffIsEditable) {
+            setDiffLanguageExtension(null);
+            return;
+        }
+
+        let cancelled = false;
+        getLanguageExtension(diffPath).then((extension) => {
+            if (!cancelled) {
+                setDiffLanguageExtension(extension);
+            }
+        });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [diffPath, diffStatus, diffIsEditable]);
 
     const reviewSummary = formatReviewSummary(reviewItems);
 
@@ -148,15 +180,27 @@ const ThemeReviewModal: React.FC<ThemeReviewModalProps> = ({
                                         <pre className={previewBlockClass}>{selectedReviewItem.before ?? ''}</pre>
                                     </div>
                                 ) : (
-                                    <div className='grid min-h-0 flex-1 grid-cols-2 gap-4 p-4'>
-                                        <div className='min-h-0 overflow-auto'>
-                                            <div className={previewSectionLabelClass}>Before</div>
-                                            <pre className={`h-full ${previewBlockClass}`}>{selectedReviewItem.before ?? ''}</pre>
-                                        </div>
-                                        <div className='min-h-0 overflow-auto'>
-                                            <div className={previewSectionLabelClass}>After</div>
-                                            <pre className={`h-full ${previewBlockClass}`}>{selectedReviewItem.after ?? ''}</pre>
-                                        </div>
+                                    <div className='gte-merge min-h-0 flex-1 overflow-auto' data-testid='theme-review-diff'>
+                                        <CodeMirrorMerge
+                                            // Re-mounting on path keeps the merge view's internal diff
+                                            // computation aligned when the user switches files — CodeMirror
+                                            // merge does not always recompute chunks when both panes' values
+                                            // change in the same render.
+                                            key={selectedReviewItem.path}
+                                            orientation='a-b'
+                                            theme={oneDark}
+                                        >
+                                            <CodeMirrorMerge.Original
+                                                extensions={diffLanguageExtension ? [diffLanguageExtension, EditorView.lineWrapping] : [EditorView.lineWrapping]}
+                                                readOnly={true}
+                                                value={selectedReviewItem.before ?? ''}
+                                            />
+                                            <CodeMirrorMerge.Modified
+                                                extensions={diffLanguageExtension ? [diffLanguageExtension, EditorView.lineWrapping] : [EditorView.lineWrapping]}
+                                                readOnly={true}
+                                                value={selectedReviewItem.after ?? ''}
+                                            />
+                                        </CodeMirrorMerge>
                                     </div>
                                 )}
                             </>

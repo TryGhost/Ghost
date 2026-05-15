@@ -401,6 +401,47 @@ test.describe('Theme settings', async () => {
         await expect(editorModal).toContainText(/1 file modified/);
     });
 
+    test('Renders a CodeMirror merge view when reviewing a modified file', async ({page}) => {
+        // The shared theme.zip fixture has __MACOSX entries that suppress
+        // rootPrefix detection and complicate tree navigation. Build a clean
+        // archive so the test is focused on the diff view itself.
+        const themeZip = await createArchiveBuffer((zip) => {
+            zip.file('package.json', '{"name":"edition","version":"1.0.0"}\n');
+        });
+
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes},
+            downloadTheme: {
+                method: 'GET',
+                path: '/themes/edition/download/',
+                response: '',
+                rawResponse: themeZip,
+                responseHeaders: {'content-type': 'application/zip'}
+            }
+        }});
+
+        const editorModal = await openInstalledThemeEditor(page, 'edition');
+
+        const codeEditor = editorModal.locator('.cm-content');
+        await expect(codeEditor).toBeVisible();
+        await codeEditor.click();
+        await page.keyboard.press('ControlOrMeta+A');
+        await page.keyboard.insertText('{"name":"edition","version":"99.0.0"}\n');
+        await expect(editorModal).toContainText(/1 file modified/);
+
+        // Open the review modal via the "files modified" badge.
+        await editorModal.getByRole('button', {name: /files? modified/}).click();
+        await expect(page.getByRole('heading', {name: 'All changes'})).toBeVisible();
+
+        // The merge view should render two CodeMirror panes side-by-side. If
+        // either pane fails to mount (e.g. language extension import error or
+        // a missing peer dep), only the wrapper renders and this count drops.
+        const diffView = page.getByTestId('theme-review-diff');
+        await expect(diffView).toBeVisible();
+        await expect(diffView.locator('.cm-editor')).toHaveCount(2);
+    });
+
     test('Saves built-in themes as a new theme name', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,

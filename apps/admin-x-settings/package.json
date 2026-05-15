@@ -64,6 +64,7 @@
     "lucide-react": "0.577.0",
     "mingo": "2.5.3",
     "react": "18.3.1",
+    "react-codemirror-merge": "catalog:",
     "react-dom": "18.3.1",
     "react-hot-toast": "2.6.0",
     "react-select": "5.10.2",
