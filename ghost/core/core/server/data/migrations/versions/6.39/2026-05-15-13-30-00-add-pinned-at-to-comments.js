@@ -20,6 +20,11 @@ module.exports = createNonTransactionalMigration(
         await addIndex('comments', ['post_id', 'parent_id', 'pinned_at'], knex);
     },
     async function down(knex) {
+        // The composite [post_id, parent_id, pinned_at] index is the only one
+        // covering the post_id FK on comments. Add a single-column [post_id]
+        // index back before dropping the composite, otherwise MySQL refuses
+        // with "needed in a foreign key constraint".
+        await addIndex('comments', ['post_id'], knex);
         await dropIndex('comments', ['post_id', 'parent_id', 'pinned_at'], knex);
 
         const hasPinnedAtColumn = await knex.schema.hasColumn('comments', 'pinned_at');
