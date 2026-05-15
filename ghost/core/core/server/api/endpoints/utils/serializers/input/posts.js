@@ -75,17 +75,21 @@ function mapWithRelated(frame) {
     }
 }
 
-function defaultRelations(frame) {
-    // Apply same mapping as content API
-    mapWithRelated(frame);
-
-    // Under lazyRouting, urlService.facade.getUrlForResource evaluates
-    // router filters against tags/authors, so ?fields=url needs them loaded.
+// Under lazyRouting, urlService.facade.getUrlForResource evaluates
+// router filters against tags/authors, so ?fields=url needs them loaded.
+function forceUrlRelationsWhenLazy(frame) {
     if (config.get('lazyRouting')
         && Array.isArray(frame.options.columns)
         && frame.options.columns.includes('url')) {
         frame.options.withRelated = _.union(frame.options.withRelated || [], ['tags', 'authors']);
     }
+}
+
+function defaultRelations(frame) {
+    // Apply same mapping as content API
+    mapWithRelated(frame);
+
+    forceUrlRelationsWhenLazy(frame);
 
     // Additional defaults for admin API
     if (frame.options.withRelated) {
@@ -175,6 +179,7 @@ module.exports = {
             setDefaultOrder(frame);
             forceVisibilityColumn(frame);
             mapWithRelated(frame);
+            forceUrlRelationsWhenLazy(frame);
         }
 
         if (!localUtils.isContentAPI(frame)) {
@@ -201,6 +206,7 @@ module.exports = {
 
             setDefaultOrder(frame);
             forceVisibilityColumn(frame);
+            forceUrlRelationsWhenLazy(frame);
         }
 
         if (!localUtils.isContentAPI(frame)) {

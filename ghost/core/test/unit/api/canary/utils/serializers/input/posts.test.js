@@ -157,6 +157,29 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             }
         });
 
+        it('lazyRouting: forces tags+authors on the Content API path', async function () {
+            // Content API uses mapWithRelated rather than defaultRelations;
+            // both branches must invoke the helper.
+            configUtils.set('lazyRouting', true);
+            try {
+                const frame = {
+                    apiType: 'content',
+                    options: {
+                        context: {api_key: {id: 1, type: 'content'}},
+                        columns: ['id', 'url']
+                    }
+                };
+
+                serializers.input.posts.browse({}, frame);
+
+                assert.ok(frame.options.withRelated);
+                assert.ok(frame.options.withRelated.includes('tags'));
+                assert.ok(frame.options.withRelated.includes('authors'));
+            } finally {
+                await configUtils.restore();
+            }
+        });
+
         describe('Content API', function () {
             it('selects all columns from the posts schema but mobiledoc and lexical when no columns are specified', function () {
                 const apiConfig = {};
