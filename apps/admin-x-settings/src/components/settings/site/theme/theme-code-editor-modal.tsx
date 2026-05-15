@@ -707,6 +707,35 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
         setFilesAndSelection(nextFiles);
     };
 
+    const handleRevertAll = async () => {
+        if (changes.length === 0) {
+            return;
+        }
+
+        const confirmed = await requestConfirmation({
+            title: 'Revert all changes?',
+            prompt: `Discard all ${changes.length} pending change${changes.length === 1 ? '' : 's'} and restore the theme to its last saved state? This cannot be undone.`,
+            okLabel: 'Revert all',
+            okColor: 'red'
+        });
+
+        if (!confirmed) {
+            return;
+        }
+
+        const nextFiles: Record<string, ThemeEditorFile> = {};
+
+        for (const [path, file] of Object.entries(baseFiles)) {
+            nextFiles[path] = {
+                ...file,
+                binary: file.binary ? new Uint8Array(file.binary) : null
+            };
+        }
+
+        setFilesAndSelection(nextFiles);
+        setIsReviewOpen(false);
+    };
+
     const requestSaveAsThemeName = async () => {
         const requestedName = await requestInput({
             title: 'Save as new theme',
@@ -1017,6 +1046,7 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
                             setIsReviewOpen(false);
                         }}
                         onRevert={handleRevertPath}
+                        onRevertAll={() => void handleRevertAll()}
                     />
                 )}
             </div>

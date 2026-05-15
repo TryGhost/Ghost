@@ -399,6 +399,61 @@ test.describe('Theme settings', async () => {
         await expect(editorModal).toContainText(/1 file modified/);
     });
 
+    test('Reverts all pending changes from the review modal', async ({page}) => {
+        // Build a minimal clean theme archive — the shared theme.zip fixture
+        // contains __MACOSX junk that pollutes the file tree and prevents
+        // detectCommonRoot() from collapsing the leading folder, making it
+        // brittle to drive multi-file edits against.
+        const themeZip = await createArchiveBuffer((zip) => {
+            zip.file('package.json', '{"name":"edition","version":"1.0.0"}\n');
+            zip.file('styles.css', 'body { color: black; }\n');
+        });
+
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes},
+            downloadTheme: {
+                method: 'GET',
+                path: '/themes/edition/download/',
+                response: '',
+                rawResponse: themeZip,
+                responseHeaders: {'content-type': 'application/zip'}
+            }
+        }});
+
+        const editorModal = await openInstalledThemeEditor(page, 'edition');
+
+        // Modify the first editable file (the alphabetically-first editable
+        // file — package.json — is auto-selected when the editor opens).
+        const codeEditor = editorModal.locator('.cm-content');
+        await expect(codeEditor).toBeVisible();
+        await codeEditor.click();
+        await page.keyboard.press('ControlOrMeta+A');
+        await page.keyboard.insertText('{"name":"edition","version":"99.0.0"}\n');
+        await expect(editorModal).toContainText(/1 file modified/);
+
+        // Switch to a second editable file and modify it too — we want to
+        // prove revert-all clears every change, not just the active one.
+        await editorModal.getByRole('button', {name: 'styles.css', exact: true}).click();
+        await codeEditor.click();
+        await page.keyboard.press('ControlOrMeta+A');
+        await page.keyboard.insertText('body { color: red; }\n');
+        await expect(editorModal).toContainText(/2 files modified/);
+
+        // Open the review modal via the "files modified" badge and revert all.
+        await editorModal.getByRole('button', {name: /files modified/}).click();
+        await expect(page.getByRole('heading', {name: 'All changes'})).toBeVisible();
+        await page.getByRole('button', {name: 'Revert all'}).click();
+
+        // Destructive prompt should require confirmation before discarding.
+        await page.getByTestId('theme-editor-confirm-modal').getByRole('button', {name: 'Revert all'}).click();
+
+        // Review modal closes and the toolbar's "files modified" badge is gone,
+        // proving every pending change was discarded.
+        await expect(page.getByRole('heading', {name: 'All changes'})).not.toBeVisible();
+        await expect(editorModal).not.toContainText(/files? modified/);
+    });
+
     test('Saves built-in themes as a new theme name', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,

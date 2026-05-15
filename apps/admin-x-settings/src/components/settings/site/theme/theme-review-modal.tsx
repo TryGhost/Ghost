@@ -51,13 +51,15 @@ type ThemeReviewModalProps = {
     onClose: () => void;
     onOpenInEditor: (path: string) => void;
     onRevert: (path: string) => void;
+    onRevertAll: () => void;
 };
 
 const ThemeReviewModal: React.FC<ThemeReviewModalProps> = ({
     reviewItems,
     onClose,
     onOpenInEditor,
-    onRevert
+    onRevert,
+    onRevertAll
 }) => {
     const [selectedReviewPath, setSelectedReviewPath] = useState<string | null>(null);
     const selectedReviewItem = reviewItems.find(item => item.path === selectedReviewPath) || reviewItems[0] || null;
@@ -86,9 +88,17 @@ const ThemeReviewModal: React.FC<ThemeReviewModalProps> = ({
                         <h3 className='text-[16px] font-semibold text-[#f4f5f7]'>All changes</h3>
                         <p className='mt-1 text-[12px] text-[#9aa0aa]'>{reviewSummary}</p>
                     </div>
-                    <button aria-label='Close review' className={iconButtonClass} type='button' onClick={onClose}>
-                        <X size={14} />
-                    </button>
+                    <div className='flex items-center gap-2'>
+                        {reviewItems.length > 0 && (
+                            <button className={ghostButtonClass} type='button' onClick={onRevertAll}>
+                                <Undo2 size={14} />
+                                Revert all
+                            </button>
+                        )}
+                        <button aria-label='Close review' className={iconButtonClass} type='button' onClick={onClose}>
+                            <X size={14} />
+                        </button>
+                    </div>
                 </div>
 
                 <div className='grid min-h-0 flex-1 grid-cols-[320px_1fr] gap-3'>
