@@ -40,6 +40,8 @@ const createArchiveBuffer = async (build: (zip: JSZip) => void) => {
     return Buffer.from(await zip.generateAsync({type: 'uint8array'}));
 };
 
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 async function openChangeThemeModal(page: Page) {
     await page.goto('/#/settings/theme');
     await page.getByTestId('theme').getByRole('button', {name: 'Change theme'}).click();
@@ -51,7 +53,7 @@ async function openInstalledThemeEditor(page: Page, themeName: string) {
     const modal = await openChangeThemeModal(page);
     await modal.getByRole('tab', {name: 'Installed'}).click();
 
-    const themeListItem = modal.getByTestId('theme-list-item').filter({hasText: new RegExp(themeName, 'i')});
+    const themeListItem = modal.getByTestId('theme-list-item').filter({hasText: new RegExp(escapeRegExp(themeName), 'i')});
     await themeListItem.getByRole('button', {name: 'Menu'}).click();
     await page.getByTestId('popover-content').getByRole('button', {name: 'Edit code'}).click();
 
