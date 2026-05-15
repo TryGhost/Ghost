@@ -201,7 +201,11 @@ class CommentsService {
      */
     async getAdminAllComments({includeNested, filter, mongoTransformer, reportCount, order, page, limit}) {
         return await this.models.Comment.findPage({
-            withRelated: ['member', 'post', 'count.replies', 'count.direct_replies', 'count.likes', 'count.reports', 'in_reply_to', 'parent'],
+            // post.tags / post.authors needed so url.forPost (in
+            // mappers/comments.js) can resolve tag- / author-filtered
+            // routes under lazyRouting; otherwise the post URL on every
+            // comment row is /404/ for sites using collection routing.
+            withRelated: ['member', 'post', 'post.tags', 'post.authors', 'count.replies', 'count.direct_replies', 'count.likes', 'count.reports', 'in_reply_to', 'parent'],
             filter,
             mongoTransformer,
             reportCount,
