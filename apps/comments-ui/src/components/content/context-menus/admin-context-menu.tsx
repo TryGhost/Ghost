@@ -1,11 +1,11 @@
+import ExternalLinkIcon from '../../../images/icons/external-link.svg?react';
+import EyeIcon from '../../../images/icons/eye.svg?react';
+import EyeOffIcon from '../../../images/icons/eye-off.svg?react';
+import PencilIcon from '../../../images/icons/pencil.svg?react';
+import PinIcon from '../../../images/icons/pin.svg?react';
+import PinOffIcon from '../../../images/icons/pin-off.svg?react';
+import TrashIcon from '../../../images/icons/trash.svg?react';
 import {Comment, useAppContext, useLabs} from '../../../app-context';
-import {ReactComponent as ExternalLinkIcon} from '../../../images/icons/external-link.svg';
-import {ReactComponent as EyeIcon} from '../../../images/icons/eye.svg';
-import {ReactComponent as EyeOffIcon} from '../../../images/icons/eye-off.svg';
-import {ReactComponent as PencilIcon} from '../../../images/icons/pencil.svg';
-import {ReactComponent as PinIcon} from '../../../images/icons/pin.svg';
-import {ReactComponent as PinOffIcon} from '../../../images/icons/pin-off.svg';
-import {ReactComponent as TrashIcon} from '../../../images/icons/trash.svg';
 
 type Props = {
     comment: Comment;

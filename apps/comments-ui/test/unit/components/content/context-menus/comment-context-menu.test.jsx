@@ -42,7 +42,7 @@ describe('<CommentContextMenu>', () => {
         const dispatchAction = sinon.spy();
         const comment = buildComment({pinned: false});
 
-        contextualRender(<CommentContextMenu close={() => {}} comment={comment} />, {appContext: {dispatchAction, isAdmin: true}});
+        contextualRender(<CommentContextMenu close={() => {}} comment={comment} />, {appContext: {dispatchAction, isAdmin: true, labs: {commentsPinning: true}}});
 
         fireEvent.click(screen.getByTestId('pin-button'));
 
@@ -59,7 +59,7 @@ describe('<CommentContextMenu>', () => {
             pinned: false
         });
 
-        contextualRender(<CommentContextMenu close={() => {}} comment={comment} toggleEdit={() => {}} />, {appContext: {dispatchAction, isAdmin: true, member}});
+        contextualRender(<CommentContextMenu close={() => {}} comment={comment} toggleEdit={() => {}} />, {appContext: {dispatchAction, isAdmin: true, member, labs: {commentsPinning: true}}});
 
         expect(screen.getByTestId('edit')).toBeInTheDocument();
         expect(screen.getByTestId('delete')).toBeInTheDocument();
@@ -73,7 +73,7 @@ describe('<CommentContextMenu>', () => {
         const dispatchAction = sinon.spy();
         const comment = buildComment({pinned: true});
 
-        contextualRender(<CommentContextMenu close={() => {}} comment={comment} />, {appContext: {dispatchAction, isAdmin: true}});
+        contextualRender(<CommentContextMenu close={() => {}} comment={comment} />, {appContext: {dispatchAction, isAdmin: true, labs: {commentsPinning: true}}});
 
         fireEvent.click(screen.getByTestId('unpin-button'));
 
@@ -82,6 +82,15 @@ describe('<CommentContextMenu>', () => {
 
     it('does not show pin action for replies', () => {
         const comment = buildComment({parent_id: buildComment().id});
+
+        contextualRender(<CommentContextMenu close={() => {}} comment={comment} />, {appContext: {isAdmin: true, labs: {commentsPinning: true}}});
+
+        expect(screen.queryByTestId('pin-button')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('unpin-button')).not.toBeInTheDocument();
+    });
+
+    it('does not show pin action when commentsPinning labs flag is disabled', () => {
+        const comment = buildComment({pinned: false});
 
         contextualRender(<CommentContextMenu close={() => {}} comment={comment} />, {appContext: {isAdmin: true}});
 

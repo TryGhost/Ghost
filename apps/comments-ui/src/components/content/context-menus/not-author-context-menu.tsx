@@ -1,6 +1,6 @@
+import FlagIcon from '../../../images/icons/flag.svg?react';
 import React from 'react';
 import {Comment, useAppContext} from '../../../app-context';
-import {ReactComponent as FlagIcon} from '../../../images/icons/flag.svg';
 
 type Props = {
     comment: Comment;

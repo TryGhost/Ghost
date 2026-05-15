@@ -249,7 +249,7 @@ describe('<CommentComponent>', function () {
         const comment = buildComment({
             pinned: true
         });
-        const appContext = {comments: [comment]};
+        const appContext = {comments: [comment], labs: {commentsPinning: true}};
 
         contextualRender(<CommentComponent comment={comment} />, {appContext});
 
@@ -263,7 +263,7 @@ describe('<CommentComponent>', function () {
             pinned: true
         });
         const dispatchAction = vi.fn();
-        const appContext = {comments: [comment], dispatchAction, isAdmin: true};
+        const appContext = {comments: [comment], dispatchAction, isAdmin: true, labs: {commentsPinning: true}};
 
         contextualRender(<CommentComponent comment={comment} />, {appContext});
 
