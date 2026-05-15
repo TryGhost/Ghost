@@ -399,6 +399,121 @@ test.describe('Theme settings', async () => {
         await expect(editorModal).toContainText(/1 file modified/);
     });
 
+    test('Tree keyboard navigation moves selection and arrows expand folders', async ({page}) => {
+        // Clean fixture so detectCommonRoot collapses the leading folder and
+        // the tree shows a stable flat list of editable files / folders.
+        const themeZip = await createArchiveBuffer((zip) => {
+            zip.file('package.json', '{"name":"edition","version":"1.0.0"}\n');
+            zip.file('styles.css', 'body { color: black; }\n');
+            zip.file('partials/header.hbs', '<header></header>\n');
+        });
+
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes},
+            downloadTheme: {
+                method: 'GET',
+                path: '/themes/edition/download/',
+                response: '',
+                rawResponse: themeZip,
+                responseHeaders: {'content-type': 'application/zip'}
+            }
+        }});
+
+        const editorModal = await openInstalledThemeEditor(page, 'edition');
+
+        // package.json is the default selection — confirm it carries
+        // aria-selected so the roving-tabindex pattern landed correctly.
+        const packageItem = editorModal.getByRole('treeitem', {name: 'package.json'});
+        await expect(packageItem).toHaveAttribute('aria-selected', 'true');
+
+        // Visible order: dirs first, then files alphabetically — so
+        // [partials/, package.json, styles.css]. Default selection is
+        // package.json (index 1). Walk down to styles.css with ArrowDown.
+        await packageItem.focus();
+        await page.keyboard.press('ArrowDown');
+        await expect(editorModal.getByRole('treeitem', {name: 'styles.css'})).toHaveAttribute('aria-selected', 'true');
+        // Editor breadcrumb should reflect the new selection — proves the
+        // arrow-key flow drives the same state that opens files on click.
+        await expect(editorModal).toContainText('styles.css');
+
+        // ArrowUp twice walks back to the partials folder (above package.json).
+        await page.keyboard.press('ArrowUp');
+        await page.keyboard.press('ArrowUp');
+        const partialsItem = editorModal.getByRole('treeitem', {name: /partials/});
+        await expect(partialsItem).toHaveAttribute('aria-selected', 'true');
+        await expect(partialsItem).toHaveAttribute('aria-expanded', 'false');
+
+        // ArrowRight expands the folder; ArrowLeft collapses it again.
+        await page.keyboard.press('ArrowRight');
+        await expect(partialsItem).toHaveAttribute('aria-expanded', 'true');
+        await expect(editorModal.getByRole('treeitem', {name: 'header.hbs'})).toBeVisible();
+        await page.keyboard.press('ArrowLeft');
+        await expect(partialsItem).toHaveAttribute('aria-expanded', 'false');
+    });
+
+    test('F2 opens rename and Delete opens delete confirmation', async ({page}) => {
+        const themeZip = await createArchiveBuffer((zip) => {
+            zip.file('package.json', '{"name":"edition","version":"1.0.0"}\n');
+            zip.file('styles.css', 'body { color: black; }\n');
+        });
+
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes},
+            downloadTheme: {
+                method: 'GET',
+                path: '/themes/edition/download/',
+                response: '',
+                rawResponse: themeZip,
+                responseHeaders: {'content-type': 'application/zip'}
+            }
+        }});
+
+        const editorModal = await openInstalledThemeEditor(page, 'edition');
+
+        const packageItem = editorModal.getByRole('treeitem', {name: 'package.json'});
+        await packageItem.focus();
+        await page.keyboard.press('F2');
+
+        const renameModal = page.getByTestId('theme-editor-input-modal');
+        await expect(renameModal).toBeVisible();
+        await renameModal.getByRole('button', {name: 'Cancel'}).click();
+        await expect(renameModal).not.toBeVisible();
+
+        await packageItem.focus();
+        await page.keyboard.press('Delete');
+
+        const confirmModal = page.getByTestId('theme-editor-confirm-modal');
+        await expect(confirmModal).toBeVisible();
+        await expect(confirmModal).toContainText(/delete/i);
+    });
+
+    test('Toolbar button opens the keyboard shortcuts cheat sheet', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes},
+            downloadTheme: themeDownloadRequest('edition')
+        }});
+
+        const editorModal = await openInstalledThemeEditor(page, 'edition');
+        await expect(editorModal).toBeVisible();
+
+        await editorModal.getByRole('button', {name: 'Show keyboard shortcuts'}).click();
+        const shortcutsModal = page.getByTestId('theme-editor-shortcuts-modal');
+        await expect(shortcutsModal).toBeVisible();
+        await expect(shortcutsModal).toContainText('Keyboard shortcuts');
+        // Surface at least one shortcut from each section so a future copy
+        // change can't silently empty the cheat sheet.
+        await expect(shortcutsModal).toContainText('Save and upload theme');
+        await expect(shortcutsModal).toContainText('Move selection');
+
+        // Closing returns focus to the editor frame without closing it.
+        await shortcutsModal.getByRole('button', {name: 'Close keyboard shortcuts'}).click();
+        await expect(shortcutsModal).not.toBeVisible();
+        await expect(editorModal).toBeVisible();
+    });
+
     test('Saves built-in themes as a new theme name', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,

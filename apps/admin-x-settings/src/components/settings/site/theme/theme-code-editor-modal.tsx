@@ -4,6 +4,7 @@ import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import ThemeEditorConfirmModal from './theme-editor-confirm-modal';
 import ThemeEditorInputModal from './theme-editor-input-modal';
+import ThemeEditorShortcutsModal from './theme-editor-shortcuts-modal';
 import ThemeEditorToolbar from './theme-editor-toolbar';
 import ThemeFileTree from './theme-file-tree';
 import ThemeInstalledModal from './theme-installed-modal';
@@ -250,6 +251,13 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
     const [isSaving, setIsSaving] = useState(false);
     const [loadError, setLoadError] = useState<string | null>(null);
     const [isReviewOpen, setIsReviewOpen] = useState(false);
+    const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+    // CodeMirror is keyed by file path, so it re-mounts every time the user
+    // switches files. The default `autoFocus` then steals focus from the tree
+    // each time arrow keys move selection onto a file — making keyboard nav
+    // unusable. Gate autoFocus on a one-shot flag: true on first mount and
+    // when a tree click explicitly opens a file, false otherwise.
+    const [editorAutoFocus, setEditorAutoFocus] = useState(true);
     const [isTextWrapEnabled, setIsTextWrapEnabled] = useState(false);
     const [editorExtensions, setEditorExtensions] = useState<Array<ReturnType<typeof search> | typeof oneDark | typeof editorSelectionTheme | typeof EditorView.lineWrapping | Awaited<ReturnType<typeof getLanguageExtension>>>>([]);
 
@@ -435,6 +443,16 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
     const handleSaveRef = useRef<() => void>(() => {});
 
     useEffect(() => {
+        const isTypingTarget = (target: EventTarget | null) => {
+            if (!(target instanceof HTMLElement)) {
+                return false;
+            }
+            if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') {
+                return true;
+            }
+            return target.isContentEditable;
+        };
+
         const handleKeydown = (event: KeyboardEvent) => {
             if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') {
                 event.preventDefault();
@@ -442,13 +460,18 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
                 return;
             }
 
-            if (event.key !== 'Escape') {
+            if (event.key === '?' && !event.metaKey && !event.ctrlKey && !event.altKey && !isTypingTarget(event.target)) {
+                event.preventDefault();
+                setIsShortcutsOpen(true);
                 return;
             }
 
-            event.preventDefault();
-            event.stopPropagation();
-            event.stopImmediatePropagation();
+            // Intentionally do not consume Escape here. Sub-dialogs (the
+            // shortcuts cheat sheet, the review modal, and NiceModal-rendered
+            // confirm/input modals) each manage their own Esc dismissal, and
+            // swallowing Esc here would either block them outright or force
+            // users to press Esc twice. Leaving Esc alone lets each layer
+            // close itself before the next press can reach the editor frame.
         };
 
         window.addEventListener('keydown', handleKeydown, true);
@@ -876,6 +899,11 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
     const openFile = (path: string) => {
         setSelectedNode({type: 'file', path});
         ensurePathExpanded(path);
+        // Explicit open via click (or review-modal "Open in editor") — focus
+        // the editor so the user can start typing. Keyboard arrow-key
+        // navigation in the tree goes through setSelectedNode directly and
+        // skips this, so focus stays in the tree.
+        setEditorAutoFocus(true);
     };
 
     const selectedFileStatus = selectedFile ? changesMap.get(selectedFile.path) : null;
@@ -900,6 +928,7 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
                     isSaving={isSaving}
                     onClose={closeEditor}
                     onOpenReview={() => setIsReviewOpen(true)}
+                    onOpenShortcuts={() => setIsShortcutsOpen(true)}
                     onSave={() => void handleSave()}
                 />
 
@@ -988,11 +1017,20 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
                                         highlightActiveLineGutter: false
                                     }}
                                     className='h-full [&_.cm-button]:h-8 [&_.cm-button]:rounded-md [&_.cm-button]:border [&_.cm-button]:border-[#2f333b] [&_.cm-button]:bg-[#1f2228] [&_.cm-button]:bg-none [&_.cm-button]:px-3 [&_.cm-button]:text-[13px] [&_.cm-button]:text-[#c8ccd3] [&_.cm-button:hover]:bg-[#2a2d33] [&_.cm-content]:min-h-full [&_.cm-content]:py-3 [&_.cm-content_*::selection]:bg-[#355070] [&_.cm-cursor]:border-l-[#e6e7ea] [&_.cm-editor]:h-full [&_.cm-editor]:rounded-none [&_.cm-editor]:border-0 [&_.cm-editor]:bg-[#16181c] [&_.cm-gutters]:border-r-[#23262c] [&_.cm-gutters]:bg-[#17191d] [&_.cm-line::selection]:bg-[#355070] [&_.cm-panel]:bg-[#17191d] [&_.cm-panel]:shadow-none [&_.cm-panel.cm-search]:gap-2 [&_.cm-panel.cm-search]:px-3 [&_.cm-panel.cm-search]:py-2 [&_.cm-panel.cm-search]:text-[13px] [&_.cm-panels]:border-b [&_.cm-panels]:border-[#23262c] [&_.cm-panels]:bg-[#17191d] [&_.cm-panels]:text-[#c8ccd3] [&_.cm-scroller]:min-h-full [&_.cm-scroller]:overflow-auto [&_.cm-scroller]:bg-[#16181c] [&_.cm-search]:flex [&_.cm-search]:flex-wrap [&_.cm-search]:items-center [&_.cm-search]:gap-2 [&_.cm-search_label]:inline-flex [&_.cm-search_label]:items-center [&_.cm-search_label]:gap-1.5 [&_.cm-search_label]:text-[#a5abb4] [&_.cm-search_label_input]:h-4 [&_.cm-search_label_input]:w-4 [&_.cm-search_label_input]:accent-[#14b886] [&_.cm-searchMatch]:bg-[#243043] [&_.cm-searchMatch-selected]:bg-[#3b2a16] [&_.cm-searchMatch-selected]:outline-none [&_.cm-selectionBackground]:!bg-[#355070] [&_.cm-selectionLayer_.cm-selectionBackground]:!bg-[#355070] [&_.cm-textfield]:h-8 [&_.cm-textfield]:min-w-[220px] [&_.cm-textfield]:rounded-md [&_.cm-textfield]:border [&_.cm-textfield]:border-[#2f333b] [&_.cm-textfield]:bg-[#16181c] [&_.cm-textfield]:px-2.5 [&_.cm-textfield]:text-[#e6e7ea] [&_.cm-textfield]:outline-none [&_.cm-textfield]:placeholder:text-[#6a6f78]'
+                                    autoFocus={editorAutoFocus}
                                     extensions={editorExtensions}
                                     height='full'
                                     theme={oneDark}
                                     value={selectedFile.content || ''}
-                                    autoFocus
+                                    onCreateEditor={() => {
+                                        // Consume the one-shot flag once
+                                        // CodeMirror has mounted and focused.
+                                        // Next remount (e.g. arrow-key
+                                        // navigation) will see autoFocus=false.
+                                        if (editorAutoFocus) {
+                                            setEditorAutoFocus(false);
+                                        }
+                                    }}
                                     onChange={(value) => {
                                         setCurrentFiles(files => ({
                                             ...files,
@@ -1018,6 +1056,10 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
                         }}
                         onRevert={handleRevertPath}
                     />
+                )}
+
+                {isShortcutsOpen && (
+                    <ThemeEditorShortcutsModal onClose={() => setIsShortcutsOpen(false)} />
                 )}
             </div>
         </div>

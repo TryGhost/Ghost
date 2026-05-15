@@ -1,6 +1,6 @@
 import React from 'react';
-import {Save, X} from 'lucide-react';
-import {ghostButtonClass, primaryButtonClass} from './theme-editor-styles';
+import {Keyboard, Save, X} from 'lucide-react';
+import {ghostButtonClass, iconButtonClass, primaryButtonClass} from './theme-editor-styles';
 import type {ThemeChange} from './theme-editor-utils';
 
 type ThemeEditorToolbarProps = {
@@ -8,6 +8,7 @@ type ThemeEditorToolbarProps = {
     changes: ThemeChange[];
     isSaving: boolean;
     onOpenReview: () => void;
+    onOpenShortcuts: () => void;
     onClose: () => void;
     onSave: () => void;
 };
@@ -17,6 +18,7 @@ const ThemeEditorToolbar: React.FC<ThemeEditorToolbarProps> = ({
     changes,
     isSaving,
     onOpenReview,
+    onOpenShortcuts,
     onClose,
     onSave
 }) => {
@@ -36,6 +38,9 @@ const ThemeEditorToolbar: React.FC<ThemeEditorToolbarProps> = ({
                 </button>
             )}
             <div className='grow' />
+            <button aria-label='Show keyboard shortcuts' className={iconButtonClass} title='Keyboard shortcuts (?)' type='button' onClick={onOpenShortcuts}>
+                <Keyboard size={14} />
+            </button>
             <button className={ghostButtonClass} type='button' onClick={onClose}>
                 <X size={14} />
                 Close
