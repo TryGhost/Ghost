@@ -314,7 +314,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -1205,7 +1205,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -1651,7 +1651,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -2142,7 +2142,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -2587,7 +2587,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -3515,7 +3515,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -3961,7 +3961,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -4407,7 +4407,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -4857,7 +4857,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -5302,7 +5302,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -5752,7 +5752,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -6586,7 +6586,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -7032,7 +7032,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -7479,7 +7479,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -7926,7 +7926,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -8435,7 +8435,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
