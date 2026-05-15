@@ -272,7 +272,7 @@ describe('UNIT > Settings BREAD Service:', function () {
 
                 await assert.rejects(
                     service.edit([{key: 'is_private', value: false}], {context: {user: 'test'}}, null),
-                    /Site visibility and access code are managed by Ghost/
+                    /Site visibility and access code cannot be changed/
                 );
             });
 
@@ -281,7 +281,7 @@ describe('UNIT > Settings BREAD Service:', function () {
 
                 await assert.rejects(
                     service.edit([{key: 'password', value: 'attacker-chosen-code'}], {context: {user: 'test'}}, null),
-                    /Site visibility and access code are managed by Ghost/
+                    /Site visibility and access code cannot be changed/
                 );
             });
 

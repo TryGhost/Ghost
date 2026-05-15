@@ -13,7 +13,7 @@ const messages = {
     problemFindingSetting: 'Problem finding setting: {key}',
     accessCoreSettingFromExtReq: 'Attempted to access core setting from external request',
     invalidEmail: 'Invalid email address',
-    publicSiteAccessLocked: 'Site visibility and access code are managed by Ghost while this site is on a trial.'
+    publicSiteAccessLocked: 'Site visibility and access code cannot be changed.'
 };
 
 class SettingsBREADService {
