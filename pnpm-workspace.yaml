@@ -21,7 +21,7 @@ catalog:
   '@tryghost/kg-clean-basic-html': 4.3.1
   '@tryghost/kg-converters': 1.2.1
   '@tryghost/koenig-lexical': 1.8.1
-  '@tryghost/limit-service': 1.5.2
+  '@tryghost/limit-service': 1.5.5
   '@tryghost/logging': 4.2.0
   '@tryghost/nql': 0.12.10
   '@tryghost/nql-lang': 0.6.4
