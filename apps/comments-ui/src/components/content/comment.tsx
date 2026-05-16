@@ -2,15 +2,14 @@ import EditForm from './forms/edit-form';
 import LikeButton from './buttons/like-button';
 import LikeCount from './buttons/like-count';
 import MoreButton from './buttons/more-button';
-import PinIcon from '../../images/icons/pin.svg?react';
-import PinOffIcon from '../../images/icons/pin-off.svg?react';
+import PinnedLabel from './pinned-label';
 import React, {useCallback} from 'react';
 import Replies, {RepliesProps} from './replies';
 import ReplyButton from './buttons/reply-button';
 import ReplyForm from './forms/reply-form';
 import ThreadedReplies from './threaded-replies';
 import {Avatar, BlankAvatar} from './avatar';
-import {Comment, OpenCommentForm, useAppContext, useLabs} from '../../app-context';
+import {Comment, OpenCommentForm, useAppContext} from '../../app-context';
 import {Transition} from '@headlessui/react';
 import {buildCommentPermalink, findCommentById, formatExplicitTime, getCommentInReplyToSnippet, getMemberNameFromComment} from '../../utils/helpers';
 import {useRelativeTime} from '../../utils/hooks';
@@ -274,44 +273,6 @@ const EditedInfo: React.FC<{comment: Comment}> = ({comment}) => {
     return (
         <span>
             &nbsp;({t('edited')})
-        </span>
-    );
-};
-
-const PinnedLabel: React.FC<{comment: Comment}> = ({comment}) => {
-    const {dispatchAction, isAdmin, t} = useAppContext();
-    const labs = useLabs();
-
-    if (!labs?.commentsPinning || !comment.pinned) {
-        return null;
-    }
-
-    const labelClassName = 'inline-flex items-center gap-1 rounded-full border border-amber-300/70 bg-amber-50 px-2 py-0.5 font-sans text-xs font-medium leading-none text-amber-800 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-100';
-
-    if (isAdmin) {
-        const handleUnpinClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-            event.stopPropagation();
-            dispatchAction('unpinComment', comment);
-        };
-
-        return (
-            <button aria-label={t('Unpin comment')} className={`${labelClassName} group hover:border-amber-400 hover:bg-amber-100 dark:hover:border-amber-400/50 dark:hover:bg-amber-400/20`} data-testid="pinned-comment-label" type="button" onClick={handleUnpinClick}>
-                <span className="grid size-3 shrink-0">
-                    <PinIcon aria-hidden="true" className="col-start-1 row-start-1 size-3 group-hover:opacity-0 group-focus-visible:opacity-0" />
-                    <PinOffIcon aria-hidden="true" className="col-start-1 row-start-1 size-3 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100" />
-                </span>
-                <span className="grid justify-items-start text-left">
-                    <span className="col-start-1 row-start-1 group-hover:opacity-0 group-focus-visible:opacity-0">{t('Pinned')}</span>
-                    <span className="col-start-1 row-start-1 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100">{t('Unpin')}</span>
-                </span>
-            </button>
-        );
-    }
-
-    return (
-        <span className={labelClassName} data-testid="pinned-comment-label">
-            <PinIcon aria-hidden="true" className="size-3" />
-            {t('Pinned')}
         </span>
     );
 };
