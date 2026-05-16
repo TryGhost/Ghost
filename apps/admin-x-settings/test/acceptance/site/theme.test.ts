@@ -487,6 +487,16 @@ test.describe('Theme settings', async () => {
         const confirmModal = page.getByTestId('theme-editor-confirm-modal');
         await expect(confirmModal).toBeVisible();
         await expect(confirmModal).toContainText(/delete/i);
+        await confirmModal.getByRole('button', {name: 'Cancel'}).click();
+        await expect(confirmModal).not.toBeVisible();
+
+        // Cmd/Ctrl+Backspace is the macOS-style delete shortcut — should
+        // open the same confirmation as Delete. Plain Backspace stays a
+        // no-op so the tree doesn't surprise users who hit it by reflex.
+        await packageItem.focus();
+        await page.keyboard.press('ControlOrMeta+Backspace');
+        await expect(confirmModal).toBeVisible();
+        await expect(confirmModal).toContainText(/delete/i);
     });
 
     test('Toolbar button opens the keyboard shortcuts cheat sheet', async ({page}) => {

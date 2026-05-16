@@ -27,6 +27,11 @@ type TreeNode = {
 type VisibleNode = {
     node: TreeNode;
     depth: number;
+    // 1-based position among visible siblings at the same depth + the total
+    // count of siblings, surfaced as aria-posinset / aria-setsize so screen
+    // readers can announce "item N of M" inside the flattened tree.
+    posInSet: number;
+    setSize: number;
 };
 
 const buildTree = (files: Record<string, ThemeEditorFile>) => {
@@ -91,17 +96,17 @@ const sortTreeNodes = (nodes: TreeNode[]) => {
 const collectVisibleNodes = (root: TreeNode, expanded: Set<string>): VisibleNode[] => {
     const result: VisibleNode[] = [];
 
-    const visit = (node: TreeNode, depth: number) => {
-        result.push({node, depth});
+    const visit = (node: TreeNode, depth: number, posInSet: number, setSize: number) => {
+        result.push({node, depth, posInSet, setSize});
 
         if (node.type === 'dir' && expanded.has(node.path) && node.children) {
             const sorted = sortTreeNodes(Array.from(node.children.values()));
-            sorted.forEach(child => visit(child, depth + 1));
+            sorted.forEach((child, index) => visit(child, depth + 1, index + 1, sorted.length));
         }
     };
 
     const topLevel = sortTreeNodes(Array.from(root.children?.values() || []));
-    topLevel.forEach(node => visit(node, 0));
+    topLevel.forEach((node, index) => visit(node, 0, index + 1, topLevel.length));
 
     return result;
 };
@@ -224,7 +229,12 @@ const ThemeFileTree: React.FC<ThemeFileTreeProps> = ({
             return;
         }
 
-        if (event.metaKey || event.ctrlKey || event.altKey) {
+        // Plain modifier combos belong to the surrounding admin (Cmd+S, Cmd+R
+        // and friends) — bail out unless this is the Cmd/Ctrl+Backspace
+        // delete shortcut, which we want to land in the Backspace case below.
+        const isDeleteShortcut = event.key === 'Backspace' && (event.metaKey || event.ctrlKey);
+
+        if ((event.metaKey || event.ctrlKey || event.altKey) && !isDeleteShortcut) {
             return;
         }
 
@@ -284,12 +294,12 @@ const ThemeFileTree: React.FC<ThemeFileTreeProps> = ({
             return;
         case 'Delete':
         case 'Backspace':
-            if (event.key === 'Backspace' && !event.metaKey) {
+            if (event.key === 'Backspace' && !(event.metaKey || event.ctrlKey)) {
                 // Plain Backspace inside a content-editable would normally
-                // delete text; we only treat it as "delete node" when meta
-                // isn't held (the editor itself listens for Cmd/Ctrl+S etc).
-                // We still skip it to avoid surprising users typing in modals
-                // that render on top of the tree.
+                // delete text. We only treat it as "delete node" when Cmd
+                // or Ctrl is held (matching the macOS Finder / VS Code
+                // delete shortcut), which is the only way Backspace gets
+                // past the modifier bailout above.
                 return;
             }
             event.preventDefault();
@@ -310,7 +320,7 @@ const ThemeFileTree: React.FC<ThemeFileTreeProps> = ({
     }, []);
 
     const renderTreeItem = (entry: VisibleNode, index: number) => {
-        const {node, depth} = entry;
+        const {node, depth, posInSet, setSize} = entry;
         const isSelected = index === selectedIndex;
         const isTabbable = index === tabbableIndex;
         const key = refKeyFor(node.type, node.path);
@@ -323,7 +333,9 @@ const ThemeFileTree: React.FC<ThemeFileTreeProps> = ({
                     key={node.path}
                     ref={registerButtonRef(key)}
                     aria-level={depth + 1}
+                    aria-posinset={posInSet}
                     aria-selected={isSelected}
+                    aria-setsize={setSize}
                     className={`flex min-h-6 w-full items-center gap-1.5 rounded px-2 py-1 text-left text-[13px] leading-5 ${isSelected ? 'bg-[#243043] text-white' : 'text-[#c8ccd3] hover:bg-[#1f2228]'} ${!node.editable ? 'opacity-70' : ''}`}
                     data-tree-item='true'
                     role='treeitem'
@@ -350,7 +362,9 @@ const ThemeFileTree: React.FC<ThemeFileTreeProps> = ({
                 ref={registerButtonRef(key)}
                 aria-expanded={isExpanded}
                 aria-level={depth + 1}
+                aria-posinset={posInSet}
                 aria-selected={isSelected}
+                aria-setsize={setSize}
                 className={`flex min-h-6 w-full items-center gap-1.5 rounded px-2 py-1 text-left text-[13px] leading-5 ${isSelected ? 'bg-[#202630] text-white' : 'text-[#c8ccd3] hover:bg-[#1f2228]'}`}
                 data-tree-item='true'
                 role='treeitem'
