@@ -96,10 +96,21 @@ const ThemeReviewModal: React.FC<ThemeReviewModalProps> = ({
             return;
         }
 
+        // Clear before loading so switching files doesn't briefly render the
+        // previous file's highlighting against the new content.
+        setDiffLanguageExtension(null);
+
         let cancelled = false;
         getLanguageExtension(diffPath).then((extension) => {
             if (!cancelled) {
                 setDiffLanguageExtension(extension);
+            }
+        }).catch(() => {
+            // Dynamic language imports can fail (network, missing chunk).
+            // Fall back to plain text — the merge view still renders without
+            // syntax highlighting.
+            if (!cancelled) {
+                setDiffLanguageExtension(null);
             }
         });
 
