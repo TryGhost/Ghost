@@ -39,7 +39,7 @@
     "devDependencies": {
         "@playwright/test": "catalog:",
         "@tanstack/react-query": "catalog:",
-        "@tanstack/react-virtual": "3.13.23",
+        "@tanstack/react-virtual": "3.13.24",
         "@testing-library/jest-dom": "6.9.1",
         "@testing-library/react": "14.3.1",
         "@types/jest": "catalog:",
