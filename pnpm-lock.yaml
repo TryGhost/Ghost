@@ -2264,8 +2264,8 @@ importers:
         specifier: 3.2.0
         version: 3.2.0
       body-parser:
-        specifier: 1.20.4
-        version: 1.20.4
+        specifier: 1.20.5
+        version: 1.20.5
       bookshelf:
         specifier: 1.2.0
         version: 1.2.0(knex@2.4.2(mysql2@3.18.1(@types/node@22.19.18))(sqlite3@5.1.7))
@@ -10415,8 +10415,8 @@ packages:
     resolution: {integrity: sha512-7rAxByjUMqQ3/bHJy7D6OGXvx/MMc4IqBn/X0fcM1QUcAItpZrBEYhWGem+tzXH90c+G01ypMcYJBO9Y30203g==}
     engines: {node: '>= 0.8', npm: 1.2.8000 || >= 1.4.16}
 
-  body-parser@1.20.4:
-    resolution: {integrity: sha512-ZTgYYLMOXY9qKU/57FAo8F+HA2dGX7bqGc71txDRC1rS4frdFI5R7NhluHxH6M0YItAP0sHB4uqAOcYKxO6uGA==}
+  body-parser@1.20.5:
+    resolution: {integrity: sha512-3grm+/2tUOvu2cjJkvsIxrv/wVpfXQW4PsQHYm7yk4vfpu7Ekl6nEsYBoJUL6qDwZUx8wUhQ8tR2qz+ad9c9OA==}
     engines: {node: '>= 0.8', npm: 1.2.8000 || >= 1.4.16}
 
   body-parser@2.2.2:
@@ -18923,6 +18923,10 @@ packages:
 
   qs@6.14.2:
     resolution: {integrity: sha512-V/yCWTTF7VJ9hIh18Ugr2zhJMP01MY7c5kh4J870L7imm6/DIzBsNLTXzMwUA3yZ5b/KBqLx8Kp3uRvd7xSe3Q==}
+    engines: {node: '>=0.6'}
+
+  qs@6.15.1:
+    resolution: {integrity: sha512-6YHEFRL9mfgcAvql/XhwTvf5jKcOiiupt2FiJxHkiX1z4j7WL8J/jRHYLluORvc1XxB5rV20KoeK00gVJamspg==}
     engines: {node: '>=0.6'}
 
   quansync@0.2.11:
@@ -31942,7 +31946,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  body-parser@1.20.4:
+  body-parser@1.20.5:
     dependencies:
       bytes: 3.1.2
       content-type: 1.0.5
@@ -31952,7 +31956,7 @@ snapshots:
       http-errors: 2.0.1
       iconv-lite: 0.4.24
       on-finished: 2.4.1
-      qs: 6.14.2
+      qs: 6.15.1
       raw-body: 2.5.3
       type-is: 1.6.18
       unpipe: 1.0.0
@@ -34780,7 +34784,7 @@ snapshots:
   ember-cli-code-coverage@1.0.3:
     dependencies:
       babel-plugin-istanbul: 6.1.1
-      body-parser: 1.20.4
+      body-parser: 1.20.5
       ember-cli-version-checker: 5.1.2
       fs-extra: 9.1.0
       istanbul-lib-coverage: 3.2.2
@@ -36824,7 +36828,7 @@ snapshots:
     dependencies:
       accepts: 1.3.8
       array-flatten: 1.1.1
-      body-parser: 1.20.4
+      body-parser: 1.20.5
       content-disposition: 0.5.4
       content-type: 1.0.5
       cookie: 0.7.2
@@ -43526,6 +43530,10 @@ snapshots:
     dependencies:
       side-channel: 1.1.0
 
+  qs@6.15.1:
+    dependencies:
+      side-channel: 1.1.0
+
   quansync@0.2.11: {}
 
   querystring-es3@0.2.1: {}
@@ -44565,7 +44573,7 @@ snapshots:
 
   sentry-testkit@5.0.10:
     dependencies:
-      body-parser: 1.20.4
+      body-parser: 1.20.5
       express: 4.21.2
     transitivePeerDependencies:
       - supports-color
