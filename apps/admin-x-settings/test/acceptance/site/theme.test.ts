@@ -958,7 +958,7 @@ test.describe('Theme settings', async () => {
 
         const editorModal = await openInstalledThemeEditor(page, 'edition');
 
-        await editorModal.getByRole('button', {name: '.DS_Store'}).click();
+        await editorModal.getByRole('treeitem', {name: '.DS_Store'}).click();
 
         await expect(editorModal).toContainText('This file cannot be edited in the browser.');
         await expect(editorModal.locator('.cm-editor')).toHaveCount(0);
