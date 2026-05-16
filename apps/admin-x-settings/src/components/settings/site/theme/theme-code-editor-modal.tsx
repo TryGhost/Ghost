@@ -19,8 +19,8 @@ import {
     normaliseRelativePath,
     packThemeArchive
 } from './theme-editor-utils';
-import {getLanguageExtension, getLanguageLabel} from './theme-editor-languages';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
+import {getLanguageExtension, getLanguageLabel} from './theme-editor-languages';
 import {oneDark} from '@codemirror/theme-one-dark';
 import {search} from '@codemirror/search';
 import {showToast} from '@tryghost/admin-x-design-system';
