@@ -141,7 +141,7 @@
     "@tryghost/validator": "0.2.22",
     "@tryghost/version": "2.2.0",
     "@tryghost/zip": "3.2.0",
-    "body-parser": "1.20.4",
+    "body-parser": "1.20.5",
     "bookshelf": "1.2.0",
     "bookshelf-relations": "2.8.0",
     "brute-knex": "4.0.1",
