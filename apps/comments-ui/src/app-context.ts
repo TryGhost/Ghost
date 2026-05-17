@@ -24,6 +24,7 @@ export type Comment = {
     liked: boolean,
     count: {
         replies: number,
+        total_replies?: number,
         likes: number,
     },
     member: Member | null,
@@ -87,6 +88,7 @@ export type EditableAppContext = {
     commentsIsLoading?: boolean,
     commentIdToHighlight: string | null,
     commentIdToScrollTo: string | null,
+    commentIdFromHash: string | null,
     showMissingCommentNotice: boolean,
     pageUrl: string,
     supportEmail: string | null,

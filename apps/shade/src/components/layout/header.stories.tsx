@@ -12,7 +12,7 @@ import {Header} from './header';
 import {PageMenu, PageMenuItem} from '@/components/ui/pagemenu';
 
 const meta = {
-    title: 'Layout / Page Header',
+    title: 'Deprecated / Page Header',
     component: Header,
     tags: ['autodocs'],
     parameters: {

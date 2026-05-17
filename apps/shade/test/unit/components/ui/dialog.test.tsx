@@ -24,8 +24,8 @@ describe('Dialog Components', () => {
                     </DialogHeader>
                     <p>Dialog Content</p>
                     <DialogFooter>
-                        <button>Cancel</button>
-                        <button>Submit</button>
+                        <button type="button">Cancel</button>
+                        <button type="button">Submit</button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
@@ -61,7 +61,7 @@ describe('Dialog Components', () => {
                     <DialogTitle>Required Title</DialogTitle>
                     <DialogDescription>Required Description</DialogDescription>
                     <DialogFooter className="custom-footer-class" data-testid="dialog-footer">
-                        <button>Button</button>
+                        <button type="button">Button</button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
@@ -149,8 +149,8 @@ describe('Dialog Components', () => {
                     </DialogHeader>
                     <div>Dialog body content</div>
                     <DialogFooter data-testid="dialog-footer">
-                        <button>Cancel</button>
-                        <button>Confirm</button>
+                        <button type="button">Cancel</button>
+                        <button type="button">Confirm</button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
@@ -314,7 +314,7 @@ describe('Dialog Components', () => {
                     </DialogHeader>
                     <div>Main Content</div>
                     <DialogFooter data-testid="dialog-footer">
-                        <button>Footer Button</button>
+                        <button type="button">Footer Button</button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

@@ -85,7 +85,7 @@ for (const [key, val] of Object.entries(pkg.dependencies || {})) {
 
     console.log(`  Packing ${key} → components/${tgzName}`);
     execFileSync(
-        'npm',
+        'pnpm',
         ['pack', '--pack-destination', componentsDir],
         {cwd: depDir, stdio: 'pipe'}
     );

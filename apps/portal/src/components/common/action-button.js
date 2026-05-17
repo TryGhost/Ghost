@@ -1,4 +1,4 @@
-import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
+import LoaderIcon from '../../images/icons/loader.svg?react';
 import {isCookiesDisabled} from '../../utils/helpers';
 
 export const ActionButtonStyles = `

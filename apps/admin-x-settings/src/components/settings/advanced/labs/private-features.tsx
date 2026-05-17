@@ -67,6 +67,14 @@ const features: Feature[] = [{
     title: 'Gift Subscriptions',
     description: 'Allow site visitors to purchase gift subscriptions for others',
     flag: 'giftSubscriptions'
+}, {
+    title: 'Comments Threads',
+    description: 'Enable deeper threading view in Comments-UI',
+    flag: 'commentsThreads'
+}, {
+    title: 'Comments Pinning',
+    description: 'Allow staff to pin top-level comments in Comments-UI and Admin',
+    flag: 'commentsPinning'
 }];
 
 const AlphaFeatures: React.FC = () => {

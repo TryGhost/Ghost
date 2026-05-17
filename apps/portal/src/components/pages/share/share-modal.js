@@ -1,15 +1,15 @@
 import CloseButton from '../../common/close-button';
 import copyTextToClipboard from '../../../utils/copy-to-clipboard';
 import useShareData from './use-share-data';
-import {ReactComponent as BlueSkyIcon} from '../../../images/icons/share-bluesky.svg';
-import {ReactComponent as CheckmarkIcon} from '../../../images/icons/checkmark.svg';
-import {ReactComponent as EnvelopeIcon} from '../../../images/icons/envelope.svg';
-import {ReactComponent as EllipsisIcon} from '../../../images/icons/ellipsis.svg';
-import {ReactComponent as FacebookIcon} from '../../../images/icons/share-facebook.svg';
-import {ReactComponent as LinkIcon} from '../../../images/icons/share-link.svg';
-import {ReactComponent as LinkedinIcon} from '../../../images/icons/share-linkedin.svg';
-import {ReactComponent as ThreadsIcon} from '../../../images/icons/share-threads.svg';
-import {ReactComponent as XIcon} from '../../../images/icons/share-x.svg';
+import BlueSkyIcon from '../../../images/icons/share-bluesky.svg?react';
+import CheckmarkIcon from '../../../images/icons/checkmark.svg?react';
+import EnvelopeIcon from '../../../images/icons/envelope.svg?react';
+import EllipsisIcon from '../../../images/icons/ellipsis.svg?react';
+import FacebookIcon from '../../../images/icons/share-facebook.svg?react';
+import LinkIcon from '../../../images/icons/share-link.svg?react';
+import LinkedinIcon from '../../../images/icons/share-linkedin.svg?react';
+import ThreadsIcon from '../../../images/icons/share-threads.svg?react';
+import XIcon from '../../../images/icons/share-x.svg?react';
 import {useEffect, useRef, useState} from 'react';
 import {t} from '../../../utils/i18n';
 

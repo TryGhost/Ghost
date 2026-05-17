@@ -1024,9 +1024,9 @@ describe('StaffService', function () {
             });
         });
 
-        describe('notifyGiftReceived', function () {
+        describe('notifyGiftPurchased', function () {
             it('sends gift email with correct subject', async function () {
-                await service.emails.notifyGiftReceived({
+                await service.emails.notifyGiftPurchased({
                     name: 'Alice',
                     email: 'alice@example.com',
                     memberId: null,
@@ -1043,7 +1043,7 @@ describe('StaffService', function () {
             });
 
             it('includes amount in HTML', async function () {
-                await service.emails.notifyGiftReceived({
+                await service.emails.notifyGiftPurchased({
                     name: 'Bob',
                     email: 'bob@example.com',
                     memberId: null,
@@ -1059,7 +1059,7 @@ describe('StaffService', function () {
             });
 
             it('includes purchaser name in HTML', async function () {
-                await service.emails.notifyGiftReceived({
+                await service.emails.notifyGiftPurchased({
                     name: 'Charlie',
                     email: 'charlie@example.com',
                     memberId: null,
@@ -1075,7 +1075,7 @@ describe('StaffService', function () {
             });
 
             it('includes amount in plain text', async function () {
-                await service.emails.notifyGiftReceived({
+                await service.emails.notifyGiftPurchased({
                     name: 'Diana',
                     email: 'diana@example.com',
                     memberId: null,
@@ -1091,7 +1091,7 @@ describe('StaffService', function () {
             });
 
             it('falls back to email when name is null', async function () {
-                await service.emails.notifyGiftReceived({
+                await service.emails.notifyGiftPurchased({
                     name: null,
                     email: 'anon@example.com',
                     memberId: null,
@@ -1107,7 +1107,7 @@ describe('StaffService', function () {
             });
 
             it('includes tier and cadence in HTML when provided', async function () {
-                await service.emails.notifyGiftReceived({
+                await service.emails.notifyGiftPurchased({
                     name: 'Erin',
                     email: 'erin@example.com',
                     memberId: null,
@@ -1124,7 +1124,7 @@ describe('StaffService', function () {
             });
 
             it('formats cadence with pluralized unit when duration is greater than 1', async function () {
-                await service.emails.notifyGiftReceived({
+                await service.emails.notifyGiftPurchased({
                     name: 'Erin',
                     email: 'erin@example.com',
                     memberId: null,

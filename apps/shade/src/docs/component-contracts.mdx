@@ -1,144 +1,40 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-<Meta title="Component Rules and Guarantees" />
+<Meta title="Components / Components Guide" />
 
 <div className="sb-doc">
 
-# What you can rely on from a Shade component
+# Components
 
-<p className="excerpt">When you reach for a Shade component, there are some things you should be able to count on without reading the source. This page describes those guarantees, and what we promise about them when the component changes over time.</p>
+<p className="excerpt">Generic, reusable UI controls — `Button`, `Input`, `Dialog`, `Tabs`, `Card`, and so on. Same on every page, no Ghost-specific knowledge.</p>
 
-## The rules in one paragraph
+## What makes a component "done"
 
-A shared component in `components/ui/` does one job, has a public API you can use without surprises, and works in four states (default, hover, focus-visible, disabled) before anything else. It doesn't know about specific product surfaces, and it doesn't accept props that hint at one. When we change it, we tell you what changed and what stayed the same.
+- Works in all four states: default, hover, focus-visible, disabled.
+- Drives appearance through semantic tokens (`bg-background`, `border-border-default`, `ring-focus-ring`) — no hex values, no `bg-gray-200`-style raw palette utilities.
+- Props express visual or interactive intent (`variant`, `size`, `loading`), not workflow (`isMembersPage`, `layoutMode`).
+- Forwards `className` and merges with `cn(...)`.
+- Has stories covering variants and states.
 
-If those things aren't true, the component isn't ready to be shared yet — it's still a draft.
+If a component starts collecting workflow-specific props, **stop and extract a Pattern** — don't grow the API.
 
-## Why bother with rules
+## Use a component when
 
-For humans, clear rules make code reviews faster (less back-and-forth about whether a prop is appropriate) and reuse decisions less anxious (you can tell from the API whether a component fits your situation).
+- The control is generic enough to live on any page (Members, Settings, Stats, the post editor).
+- The name sounds like the open web, not Ghost. `Button`, `Dialog`, `Tabs` — yes. `MembersList`, `PostHeader` — no, that's a Pattern.
 
-For AI agents, the rules are even more important. An agent generating UI code is constantly making choices: which component to use, which prop, which variant. Predictable, narrow component APIs let the agent pick the right tool without inventing components or making up props. Loose APIs invite the agent to guess.
+Browse the sidebar for the live inventory and APIs. Full rules: [Layers](?path=/docs/overview-layers--docs). Agent rules: `apps/shade/AGENTS.md`.
 
-## What "shared" means
+## Example: good vs. bad props
 
-The current target for documented rules is the set of foundational controls in `components/ui/`:
+```tsx
+// Good — visual intent, works in any context
+<Button loading={isPending} size="sm" variant="destructive">Delete</Button>
 
-`Button`, `Input`, `Field`, `Select`, `Tabs`, `Table`, `Dialog`, `DropdownMenu`, `Card`.
-
-Other things in `components/ui/` (recipes like `inputSurface`, smaller helpers, primitives like `TrendBadge` and `MetricValue`) follow the same spirit but don't yet have formal rule documents.
-
-Some surfaces deliberately sit outside this list — `sidebar`, `multi-select-combobox`, the chart variants. They're large and mix layout, behavior, and styling in ways that the simple rules don't fit cleanly. They're documented at the component level instead.
-
-## What the rules answer
-
-Five questions, in this order:
-
-**What problem does this component solve?** A one- or two-sentence answer. If the answer takes a paragraph, the component is probably doing too much.
-
-**What's the public API?** Props, slots, and variants you can rely on. Things explicitly out of scope (so consumers don't accidentally lean on internal implementation details).
-
-**Which states must always work?** Default, hover, focus-visible, disabled at minimum. Optional ones (active, loading, error, empty) are documented when they apply.
-
-**What's intentionally out of scope?** Workflow-specific behavior, product-specific styling, things that belong in a Feature wrapper instead.
-
-**What's the compatibility promise?** Backward-compatible additions, breaking changes (with migration notes), deprecation timelines if a prop is going away.
-
-## When you're adding or changing a shared component
-
-The minimum loop:
-
-1. Write a one-sentence purpose statement and a list of explicit non-goals.
-2. List the public props and any slots/subcomponents.
-3. Implement the four required states (default, hover, focus-visible, disabled).
-4. Add Storybook stories that prove those states work.
-5. If you changed an existing API, write a short note about what's different and what stayed the same.
-
-If you can't explain a prop in one sentence, the API is probably trying to do too much. Split it.
-
-## When you're an AI agent generating a shared component
-
-Produce this structure first, then implement:
-
-```md
-## Component scope
-- Purpose:
-- Non-goals:
-
-## Public API
-- Props:
-- Slots / subcomponents:
-- Variants:
-- Events / callbacks:
-
-## State matrix
-- default:
-- hover:
-- focus-visible:
-- disabled:
-- optional states (if applicable): active / loading / error / empty
-
-## Compatibility policy
-- Backward-compatible additions:
-- Breaking changes:
-- Migration notes:
-
-## Deprecation plan (if applicable)
-- Alias period:
-- Removal target:
+// Bad — leaks product knowledge into a generic control
+<Button isMembersPage layoutMode="toolbarWithFilterAndStats">Add</Button>
 ```
 
-The hard rules for agents:
-
-- No product-specific props in shared components. `variant="destructive"` is fine; `isMembersPage` is not.
-- Don't skip required states. A component without a focus-visible style isn't done.
-- Don't remove existing public API without explicit compatibility notes.
-- If behavior is workflow-specific, route it to `features/`, not into the base component.
-
-## A worked example: good vs bad props
-
-Good props are visual or interactive intents that make sense in any context:
-
-- `variant="destructive"` — clear visual intent, reusable across surfaces.
-- `size="sm | md | lg"` — bounded scale, no hidden behavior.
-- `loading={true}` — generic state.
-
-Bad props leak product or workflow knowledge into a generic control:
-
-- `isMembersPage` — the component shouldn't know which page it's on.
-- `layoutMode="toolbarWithFilterAndStats"` — that's a workflow shape, not a component variant.
-
-When you see yourself reaching for the second kind, stop and ask: is this really a generic control, or is it a Feature wrapper trying to hide as a Button?
-
-## State coverage in detail
-
-For each required state, the component should define three things:
-
-**Visuals**: which semantic tokens drive the appearance (background, border, text, ring).
-
-**Interaction behavior**: what happens when the user does the thing (clicks, types, presses Tab).
-
-**Accessibility semantics**: ARIA roles, labels, focus management, keyboard support.
-
-Missing required states is a blocker. We don't ship a Button without a focus ring and we don't ship a Dialog without escape-to-close.
-
-## Components vs. features: the dividing line
-
-The honest answer is: pick `components` when the abstraction is genuinely generic, and `features` when it encodes product workflow.
-
-The smell test: if the component name reads like English you'd use in any web app (Button, Input, Tabs), it's a component. If it reads like Ghost-specific jargon (KpiCardHeader, GhAreaChart, FilterBuilder), it's a feature.
-
-When a shared control starts collecting workflow-specific props, that's the signal to extract a Feature wrapper instead of growing the base API.
-
-## Review checklist
-
-Before merging a change to a shared component:
-
-- The rules and guarantees match the implementation.
-- Required states are implemented and visible in stories.
-- The API stays product-agnostic.
-- Compatibility / deprecation notes exist for any API changes.
-
-If any of those isn't true, the change isn't ready yet.
+When you catch yourself reaching for the second kind, that's a Pattern trying to hide as a Button.
 
 </div>

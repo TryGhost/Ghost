@@ -22,9 +22,9 @@ interface IconProps extends
         className?: string;
 }
 
-const iconModules = import.meta.glob<{ReactComponent: React.FC<IconProps> }>(
+const iconModules = import.meta.glob<{default: React.FC<IconProps>}>(
     '../../assets/icons/*.svg',
-    {eager: true}
+    {eager: true, query: '?react'}
 );
 
 const Icon = Object.entries(iconModules).reduce((acc, [path, module]) => {
@@ -34,7 +34,7 @@ const Icon = Object.entries(iconModules).reduce((acc, [path, module]) => {
     const IconComponent = (props: IconProps) => {
         const {size, className, ...rest} = props;
         const iconClassName = cn(iconVariants({size, className}));
-        return React.createElement(module.ReactComponent, {
+        return React.createElement(module.default, {
             ...rest,
             className: iconClassName
         });

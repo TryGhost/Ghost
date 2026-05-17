@@ -1,19 +1,19 @@
 const assert = require('node:assert/strict');
 const path = require('path');
 
-const glob = require('glob');
+const {globSync} = require('glob');
 
 describe('API', function () {
     describe('Cache Invalidation', function () {
         it('Controller actions explicitly declare cacheInvalidate header', async function () {
             const controllersRootPath = path.join(__dirname, '../../../core/server/api/endpoints');
-            const controllerPaths = glob.sync('*.js', {
+            const controllerPaths = globSync('*.js', {
                 cwd: controllersRootPath,
                 ignore: [
                     'index.js',
                     'identities.js' // The identities controller can not be required directly due to requiring other parts of Ghost to have been initialised first
                 ],
-                realpath: true
+                absolute: true
             });
 
             assert.ok(controllerPaths.length > 0, `No controllers found in ${controllersRootPath}`);

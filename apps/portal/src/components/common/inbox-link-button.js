@@ -1,4 +1,4 @@
-import {ReactComponent as EnvelopeIcon} from '../../images/icons/envelope.svg';
+import EnvelopeIcon from '../../images/icons/envelope.svg?react';
 import {isAndroidChrome} from '../../utils/is-android-chrome';
 import {getOwn} from '../../utils/get-own';
 import {t} from '../../utils/i18n';

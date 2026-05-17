@@ -3,7 +3,7 @@
   <head>
     <meta name="viewport" content="width=device-width">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>Your gift subscription confirmation</title>
+    <title>{{t 'Your gift subscription confirmation'}}</title>
     <style>
       @media only screen and (max-width: 620px) {
         table.body h1 { font-size: 22px !important; padding-bottom: 16px !important; }
@@ -12,13 +12,12 @@
         table.body .content { padding: 0 !important; }
         table.body .container { padding: 0 !important; width: 100% !important; }
         table.body .main { border-radius: 0 !important; }
-        table.body p.large, table.body p.large a { font-size: 18px !important; }
-        table.body p.small, table.body a.small { font-size: 12px !important; }
+        table.body p.small, table.body a.small { font-size: 11px !important; }
       }
     </style>
   </head>
   <body style="background-color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.5em; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%;">
-    <span class="preheader" style="color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;">Thank you for supporting {{siteTitle}}.</span>
+    <span class="preheader" style="color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;">{{t 'Thank you for supporting {siteTitle}.' siteTitle=siteTitle}}</span>
     <table border="0" cellpadding="0" cellspacing="0" class="body" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;">
       <tr>
         <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;">&nbsp;</td>
@@ -40,47 +39,26 @@
                     {{/if}}
                     <tr>
                       <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;">
-                        <h1 style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 26px; color: #15212A; font-weight: bold; line-height: 28px; margin: 0; padding-bottom: 12px;">Your gift is ready to&nbsp;share!</h1>
-                        <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; padding-bottom: 24px;">Thank you for supporting {{siteTitle}}. Send the link below to share your gift with whoever you'd like.</p>
-                        <table width="100%" border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; table-layout: fixed; width: 100%; min-width: 100%; box-sizing: border-box; background: #F4F5F6; border-radius: 8px;">
+                        <h1 style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 26px; color: #15212A; font-weight: bold; line-height: 28px; margin: 0; padding-bottom: 16px;">{{t 'Your gift is ready'}}</h1>
+                        <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; line-height: 24px; margin: 0; padding-bottom: 24px;">{{t 'Thank you for supporting {siteTitle}.' siteTitle=siteTitle}} {{t 'Share the link below to give someone access to {tierName} membership for {cadenceLabel}.' tierName=(strong gift.tierName) cadenceLabel=(strong gift.cadenceLabel)}}</p>
+                        <table width="100%" border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; table-layout: fixed; width: 100%; min-width: 100%; box-sizing: border-box; background: #F4F5F6; border-radius: 6px;">
                           <tbody>
                             <tr>
-                              <td align="left" style="padding: 24px;">
-                                <table border="0" cellpadding="0" cellspacing="0">
-                                  <tr>
-                                    <td style="padding-right: 8px; background-color: #F4F5F6; text-align: left; vertical-align: middle;" valign="middle">
-                                      <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; margin: 0; padding-bottom: 4px; color: #15171A; font-weight: 700;">Gift subscription</p>
-                                      <p class="large" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 18px; margin: 0; padding-bottom: 24px; color: #15171A; font-weight: 400;">{{gift.tierName}} &bull; {{gift.cadenceLabel}}</p>
-                                      <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; margin: 0; padding-bottom: 4px; color: #15171A; font-weight: 700;">Gift link</p>
-                                      <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; margin: 0; padding-bottom: 0; color: #738A94; word-break: break-all;"><a href="{{gift.link}}" style="color: {{accentColor}}; text-decoration: none;">{{gift.link}}</a></p>
-                                    </td>
-                                  </tr>
-                                </table>
+                              <td align="left" style="padding: 14px 16px;">
+                                <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; line-height: 22px; color: #15212A; margin: 0; word-break: break-all;">{{gift.link}}</p>
                               </td>
                             </tr>
                           </tbody>
                         </table>
-
-                        <!-- EXPIRY NOTE -->
-                        <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; padding-top: 16px;">
-                          <tr>
-                            <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;">
-                              <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 13px; margin: 0; padding-bottom: 0; color: #738A94;">This link expires on {{gift.expiresAt}} and can be redeemed once by anyone who isn't already a paid member of {{siteTitle}}.</p>
-                            </td>
-                          </tr>
-                        </table>
+                        <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; line-height: 24px; margin: 0; padding-top: 24px; padding-bottom: 24px;">{{t 'The link can be redeemed once and expires on {expiresAt}.' expiresAt=(strong gift.expiresAt)}}</p>
+                        <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; line-height: 24px; margin: 0;">{{t 'Happy gifting.'}}</p>
                       </td>
                     </tr>
 
                     <!-- START FOOTER -->
                     <tr>
-                      <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 12px; vertical-align: top; padding-top: 56px;">
-                        <p class="small" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; line-height: 18px; font-size: 12px; color: #7C8B9A; font-weight: normal; margin: 0;">This message was sent from <a class="small" href="{{siteUrl}}" style="text-decoration: underline; color: #7C8B9A; font-size: 12px;">{{siteDomain}}</a> to <a class="small" href="mailto:{{toEmail}}" style="text-decoration: underline; color: #7C8B9A; font-size: 12px;">{{toEmail}}</a></p>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 12px; vertical-align: top;">
-                        <p class="small" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; line-height: 18px; font-size: 12px; color: #7C8B9A; font-weight: normal; margin: 0;">You received this email because you purchased a gift subscription on <a class="small" href="{{siteUrl}}" style="text-decoration: underline; color: #7C8B9A; font-size: 12px;">{{siteTitle}}</a>.</p>
+                      <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; padding-top: 80px;">
+                        <p class="small" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; line-height: 16px; font-size: 11px; color: #738A94; font-weight: normal; margin: 0;">{{t 'This message was sent from {siteDomain} to {email}.' siteDomain=(linkTag siteUrl siteDomain class="small" style="text-decoration: underline; color: #738A94; font-size: 11px;") email=(linkTag (mailto toEmail) toEmail class="small" style="text-decoration: underline; color: #738A94; font-size: 11px;")}}</p>
                       </td>
                     </tr>
 

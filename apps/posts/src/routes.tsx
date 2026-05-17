@@ -71,7 +71,16 @@ export const routes: RouteObject[] = [
             },
             {
                 path: 'automations',
-                lazy: lazyComponent(() => import('@views/Automations/automations'))
+                children: [
+                    {
+                        index: true,
+                        lazy: lazyComponent(() => import('@views/Automations/automations'))
+                    },
+                    {
+                        path: ':id',
+                        lazy: lazyComponent(() => import('@views/Automations/editor'))
+                    }
+                ]
             },
 
             // Error handling

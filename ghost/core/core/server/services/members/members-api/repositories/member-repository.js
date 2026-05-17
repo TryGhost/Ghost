@@ -1954,15 +1954,15 @@ module.exports = class MemberRepository {
             });
         }
 
-        const zeroValuePrices = defaultProduct.stripePrices.filter((price) => {
-            return price.amount === 0;
+        const complimentaryPrices = defaultProduct.stripePrices.filter((price) => {
+            return price.amount === 0 && this.isComplimentaryPlanNickname(price.nickname);
         });
 
         if (activeSubscriptions.length) {
             for (const subscription of activeSubscriptions) {
                 const price = await subscription.related('stripePrice').fetch(options);
 
-                let zeroValuePrice = zeroValuePrices.find((p) => {
+                let zeroValuePrice = complimentaryPrices.find((p) => {
                     return p.currency.toLowerCase() === price.get('currency').toLowerCase();
                 });
 
@@ -1980,9 +1980,14 @@ module.exports = class MemberRepository {
                         }]
                     }, options)).toJSON();
                     zeroValuePrice = product.stripePrices.find((p) => {
-                        return p.currency.toLowerCase() === price.get('currency').toLowerCase() && p.amount === 0;
+                        return p.currency.toLowerCase() === price.get('currency').toLowerCase() && p.amount === 0 && this.isComplimentaryPlanNickname(p.nickname);
                     });
-                    zeroValuePrices.push(zeroValuePrice);
+                    if (!zeroValuePrice) {
+                        throw new errors.NotFoundError({
+                            message: `Failed to locate a complimentary (zero-amount, nickname matched by isComplimentaryPlanNickname) Stripe price for currency "${price.get('currency')}" on product ${product.id} after update. Returned stripePrices: ${JSON.stringify(product.stripePrices)}`
+                        });
+                    }
+                    complimentaryPrices.push(zeroValuePrice);
                 }
 
                 const stripeSubscription = await this._stripeAPIService.getSubscription(
@@ -2014,7 +2019,7 @@ module.exports = class MemberRepository {
                 name: stripeCustomer.name
             }, sharedOptions);
 
-            let zeroValuePrice = zeroValuePrices[0];
+            let zeroValuePrice = complimentaryPrices[0];
 
             if (!zeroValuePrice) {
                 const product = (await this._productRepository.update({
@@ -2030,9 +2035,14 @@ module.exports = class MemberRepository {
                     }]
                 }, sharedOptions)).toJSON();
                 zeroValuePrice = product.stripePrices.find((price) => {
-                    return price.currency.toLowerCase() === 'usd' && price.amount === 0;
+                    return price.currency.toLowerCase() === 'usd' && price.amount === 0 && this.isComplimentaryPlanNickname(price.nickname);
                 });
-                zeroValuePrices.push(zeroValuePrice);
+                if (!zeroValuePrice) {
+                    throw new errors.NotFoundError({
+                        message: `Failed to locate a complimentary (zero-amount, nickname matched by isComplimentaryPlanNickname) Stripe price for currency "USD" on product ${product.id} after update. Returned stripePrices: ${JSON.stringify(product.stripePrices)}`
+                    });
+                }
+                complimentaryPrices.push(zeroValuePrice);
             }
 
             const subscription = await this._stripeAPIService.createSubscription(

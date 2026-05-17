@@ -9,7 +9,6 @@ const emailAddressService = require('../email-address');
 const settingsHelpers = require('../settings-helpers');
 const EmailAddressParser = require('../email-address/email-address-parser');
 const mail = require('../mail');
-// @ts-expect-error type checker has trouble with the dynamic exporting in models
 const {WelcomeEmailAutomation, WelcomeEmailAutomatedEmail, Newsletter} = require('../../models');
 const MemberWelcomeEmailRenderer = require('./member-welcome-email-renderer');
 const {MEMBER_WELCOME_EMAIL_LOG_KEY, MEMBER_WELCOME_EMAIL_TAG, MEMBER_WELCOME_EMAIL_SLUGS, MESSAGES} = require('./constants');

@@ -149,7 +149,7 @@ export default class ParseMemberEventHelper extends Helper {
         }
 
         if (event.type === 'gift_ended_event') {
-            icon = 'expired-gift';
+            icon = 'gift';
         }
 
         if (event.type === 'email_change_event') {

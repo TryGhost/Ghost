@@ -19,8 +19,7 @@ export function getGiftRedemptionSuccessMessage({member} = {}) {
     if (!tierName || !expiryDate) {
         return null;
     }
-    // TODO: Add translation strings once copy has been finalised
-    return `You now have access to ${tierName} until ${expiryDate}. Enjoy!`;
+    return t('You now have access to {tierName} until {expiryDate}. Enjoy!', {tierName, expiryDate});
 }
 
 export function getGiftRedemptionErrorMessage(error) {

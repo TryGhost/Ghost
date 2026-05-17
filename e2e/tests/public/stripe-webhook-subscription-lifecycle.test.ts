@@ -1,6 +1,7 @@
 import {APIRequestContext, Page} from '@playwright/test';
 import {HomePage, MemberDetailsPage, MembersPage, PortalAccountPage} from '@/helpers/pages';
 import {MembersService} from '@/helpers/services/members';
+import {SettingsService} from '@/helpers/services/settings/settings-service';
 import {expect, test} from '@/helpers/playwright';
 
 async function waitForMemberStatus(request: APIRequestContext, email: string, status: string) {
@@ -84,6 +85,9 @@ test.describe('Portal - Stripe Subscription Lifecycle via Webhooks', () => {
     });
 
     test('subscription-deleted webhook - shows free membership in portal', async ({page, stripe}) => {
+        const settingsService = new SettingsService(page.request);
+        await settingsService.setCommentsEnabled('off');
+
         const email = `portal-free-${Date.now()}@example.com`;
         const {subscription} = await stripe!.createPaidMemberViaWebhooks({email, name: 'Portal Free Member'});
 

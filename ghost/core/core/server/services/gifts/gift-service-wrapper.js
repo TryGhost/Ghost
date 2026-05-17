@@ -51,6 +51,7 @@ class GiftServiceWrapper {
         const EmailAddressParser = require('../email-address/email-address-parser');
         const {blogIcon} = require('../../../server/lib/image');
         const {getSignedAdminToken} = require('../../adapters/scheduling/utils');
+        const {t} = require('../i18n');
 
         const repository = new GiftBookshelfRepository({
             GiftModel
@@ -61,7 +62,8 @@ class GiftServiceWrapper {
             settingsCache,
             urlUtils,
             getFromAddress: () => EmailAddressParser.stringify(settingsHelpers.getDefaultEmail()),
-            blogIcon
+            blogIcon,
+            t
         });
 
         this.service = new GiftService({
