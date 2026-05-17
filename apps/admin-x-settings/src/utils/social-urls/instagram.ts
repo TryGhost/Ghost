@@ -8,6 +8,12 @@ export function validateInstagramUrl(newUrl: string) {
         return '';
     }
 
+    // Allow mid-typing: don't reject URLs that are clearly incomplete
+    if (newUrl.length < 3 && !newUrl.includes('instagram.com')) {
+        // User is still typing a short handle — don't validate aggressively
+        return '';
+    }
+
     let username: string;
 
     // Extract username from URL or handle
@@ -29,12 +35,17 @@ export function validateInstagramUrl(newUrl: string) {
     }
 
     // Validate username: alphanumeric, underscore, period, 1–30 chars, no leading/trailing/consecutive periods
+    // Allow short or incomplete usernames during typing (no final validation until complete)
     if (
         !username.match(/^[a-zA-Z0-9_][a-zA-Z0-9._]{0,28}[a-zA-Z0-9_]$/) ||
         username.includes('..') ||
         username.length > 30
     ) {
-        throw new Error(invalidUsernameMessage);
+        // If the username is short (1-2 chars), it's likely mid-typing — don't throw
+        if (username.trim().length >= 3) {
+            throw new Error(invalidUsernameMessage);
+        }
+        return '';
     }
 
     // Construct and validate full URL
