@@ -2,11 +2,6 @@
     "overrides": {
         "ghost/i18n/no-undefined-variables": [
             {
-                "file": "da/portal.json",
-                "key": "Try free for {amount} days, then {originalPrice}.",
-                "comment": "FIXME: This translation doesn't work and needs to be updated"
-            },
-            {
                 "file": "de-CH/portal.json",
                 "key": "Memberships unavailable, contact the owner for access.",
                 "comment": "FIXME: This translation doesn't work and needs to be updated"
@@ -17,37 +12,12 @@
                 "comment": "FIXME: This translation doesn't work and needs to be updated"
             },
             {
-                "file": "is/portal.json",
-                "key": "Your subscription will renew on {renewalDate}",
-                "comment": "FIXME: This translation doesn't work and needs to be updated"
-            },
-            {
                 "file": "lv/portal.json",
                 "key": "There was a problem submitting your feedback. Please try again a little later.",
-                "comment": "FIXME: This translation doesn't work and needs to be updated"
-            },
-            {
-                "file": "si/portal.json",
-                "key": "Your subscription will renew on {renewalDate}",
-                "comment": "FIXME: This translation doesn't work and needs to be updated"
-            },
-            {
-                "file": "si/portal.json",
-                "key": "Your subscription will start on {subscriptionStart}",
-                "comment": "FIXME: This translation doesn't work and needs to be updated"
-            },
-            {
-                "file": "th/portal.json",
-                "key": "Try free for {amount} days, then {originalPrice}.",
                 "comment": "FIXME: This translation doesn't work and needs to be updated"
             }
         ],
         "ghost/i18n/no-unused-variables": [
-            {
-                "file": "da/portal.json",
-                "key": "Try free for {amount} days, then {originalPrice}.",
-                "comment": "FIXME: This error was automatically ignored. Please update the translation, or explain why a variable is ignored"
-            },
             {
                 "file": "de-CH/ghost.json",
                 "key": "Confirm your email update for {siteTitle}!",
@@ -71,11 +41,6 @@
             {
                 "file": "is/portal.json",
                 "key": "{trialDays} days free",
-                "comment": "FIXME: This error was automatically ignored. Please update the translation, or explain why a variable is ignored"
-            },
-            {
-                "file": "is/portal.json",
-                "key": "Your subscription will renew on {renewalDate}",
                 "comment": "FIXME: This error was automatically ignored. Please update the translation, or explain why a variable is ignored"
             },
             {
@@ -109,16 +74,6 @@
                 "comment": "FIXME: This error was automatically ignored. Please update the translation, or explain why a variable is ignored"
             },
             {
-                "file": "si/portal.json",
-                "key": "Your subscription will renew on {renewalDate}",
-                "comment": "FIXME: This error was automatically ignored. Please update the translation, or explain why a variable is ignored"
-            },
-            {
-                "file": "si/portal.json",
-                "key": "Your subscription will start on {subscriptionStart}",
-                "comment": "FIXME: This error was automatically ignored. Please update the translation, or explain why a variable is ignored"
-            },
-            {
                 "file": "sk/ghost.json",
                 "key": "By {authors}",
                 "comment": "FIXME: This error was automatically ignored. Please update the translation, or explain why a variable is ignored"
@@ -131,11 +86,6 @@
             {
                 "file": "sq/portal.json",
                 "key": "Expires {expiryDate}",
-                "comment": "FIXME: This error was automatically ignored. Please update the translation, or explain why a variable is ignored"
-            },
-            {
-                "file": "th/portal.json",
-                "key": "Try free for {amount} days, then {originalPrice}.",
                 "comment": "FIXME: This error was automatically ignored. Please update the translation, or explain why a variable is ignored"
             }
         ]
