@@ -56,12 +56,27 @@ function selectAllAllowedColumns(frame) {
 // is computed at serialization time from tags/authors, so a `?fields=url`
 // request without those relations resolves every URL to /404/ for tag-
 // or author-filtered routes in routes.yaml. Force-load (merging with any
-// caller-supplied withRelated) so the URL serializer can do its work.
+// caller-supplied withRelated) so the URL serializer can do its work, and
+// record which relations we added so the output mapper can strip them
+// from the response — preserving any relation the caller asked for via
+// ?include=.
 function forceUrlRelationsWhenLazy(frame) {
-    if (config.get('lazyRouting')
+    if (!(config.get('lazyRouting')
         && Array.isArray(frame.options.columns)
-        && frame.options.columns.includes('url')) {
-        frame.options.withRelated = _.union(frame.options.withRelated || [], ['tags', 'authors']);
+        && frame.options.columns.includes('url'))) {
+        return;
+    }
+    const userRequested = new Set(frame.options.withRelated || []);
+    const forceLoaded = [];
+    if (!userRequested.has('tags')) {
+        forceLoaded.push('tags', 'primary_tag');
+    }
+    if (!userRequested.has('authors')) {
+        forceLoaded.push('authors', 'primary_author');
+    }
+    frame.options.withRelated = _.union([...userRequested], ['tags', 'authors']);
+    if (forceLoaded.length) {
+        frame.options._forceLoadedForUrl = forceLoaded;
     }
 }
 

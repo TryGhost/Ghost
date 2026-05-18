@@ -53,12 +53,12 @@ const forPost = (id, attrs, frame, type = 'posts') => {
     // tag- and author-filtered routes. The framework's column filter only
     // strips scalar attributes — Bookshelf relations land on the JSON
     // before the strip and would otherwise bleed into the response. Strip
-    // the relations the URL computation caused to be loaded so the wire
-    // shape matches what the caller asked for via `?fields=`. `primary_tag`
-    // and `primary_author` are computed from the relations by Post.toJSON
-    // and need the same treatment.
-    if (frame.options.columns) {
-        for (const key of ['tags', 'authors', 'primary_tag', 'primary_author']) {
+    // only relations we force-loaded ourselves (tagged on the frame by
+    // the input serializer); relations the caller explicitly asked for
+    // via `?include=` stay in the response.
+    const forceLoaded = frame.options._forceLoadedForUrl;
+    if (Array.isArray(forceLoaded) && frame.options.columns) {
+        for (const key of forceLoaded) {
             if (!frame.options.columns.includes(key) && Object.hasOwn(attrs, key)) {
                 delete attrs[key];
             }

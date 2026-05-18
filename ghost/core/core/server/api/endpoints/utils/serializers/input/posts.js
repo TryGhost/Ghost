@@ -85,10 +85,25 @@ function mapWithRelated(frame) {
 // tags/authors. The output mapper strips force-loaded relations from the
 // JSON response when the caller didn't ask for them.
 function forceUrlRelationsWhenLazy(frame) {
-    if (config.get('lazyRouting')
+    if (!(config.get('lazyRouting')
         && Array.isArray(frame.options.columns)
-        && frame.options.columns.includes('url')) {
-        frame.options.withRelated = _.union(frame.options.withRelated || [], ['tags', 'authors']);
+        && frame.options.columns.includes('url'))) {
+        return;
+    }
+    // Record which relations we added (vs. what the caller asked for via
+    // ?include=) so the output mapper knows what to strip from the JSON
+    // response — preserving any relation the caller explicitly requested.
+    const userRequested = new Set(frame.options.withRelated || []);
+    const forceLoaded = [];
+    if (!userRequested.has('tags')) {
+        forceLoaded.push('tags', 'primary_tag');
+    }
+    if (!userRequested.has('authors')) {
+        forceLoaded.push('authors', 'primary_author');
+    }
+    frame.options.withRelated = _.union([...userRequested], ['tags', 'authors']);
+    if (forceLoaded.length) {
+        frame.options._forceLoadedForUrl = forceLoaded;
     }
 }
 

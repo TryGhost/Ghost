@@ -98,7 +98,10 @@ describe('Unit: endpoints/utils/serializers/output/utils/url', function () {
         // Bookshelf relations land on jsonModel before the strip and bleed
         // into the response. forPost is the seam that owns the URL output;
         // it strips the relations it caused to be loaded so the wire shape
-        // matches what the caller asked for via `?fields=`.
+        // matches what the caller asked for via `?fields=`. The input
+        // serializer tags the force-loaded set on frame.options as
+        // `_forceLoadedForUrl` so the strip knows what to drop without
+        // affecting relations the caller asked for via ?include=.
         it('strips force-loaded tags relation when columns excludes tags', function () {
             const post = {
                 id: 'p1',
@@ -106,7 +109,10 @@ describe('Unit: endpoints/utils/serializers/output/utils/url', function () {
                 tags: [{id: 't1', slug: 'news'}]
             };
 
-            urlUtil.forPost('p1', post, {options: {columns: ['id', 'url']}});
+            urlUtil.forPost('p1', post, {options: {
+                columns: ['id', 'url'],
+                _forceLoadedForUrl: ['tags', 'primary_tag']
+            }});
 
             assert.equal(post.tags, undefined, 'tags should be stripped from response');
             assert.equal(post.url, 'getUrlForResource', 'url should still be computed');
@@ -119,7 +125,10 @@ describe('Unit: endpoints/utils/serializers/output/utils/url', function () {
                 authors: [{id: 'a1', slug: 'jane'}]
             };
 
-            urlUtil.forPost('p1', post, {options: {columns: ['id', 'url']}});
+            urlUtil.forPost('p1', post, {options: {
+                columns: ['id', 'url'],
+                _forceLoadedForUrl: ['authors', 'primary_author']
+            }});
 
             assert.equal(post.authors, undefined);
         });
@@ -137,13 +146,19 @@ describe('Unit: endpoints/utils/serializers/output/utils/url', function () {
                 primary_author: {id: 'a1', slug: 'jane'}
             };
 
-            urlUtil.forPost('p1', post, {options: {columns: ['id', 'url']}});
+            urlUtil.forPost('p1', post, {options: {
+                columns: ['id', 'url'],
+                _forceLoadedForUrl: ['tags', 'primary_tag', 'authors', 'primary_author']
+            }});
 
             assert.equal(post.primary_tag, undefined);
             assert.equal(post.primary_author, undefined);
         });
 
-        it('keeps relations the caller explicitly asked for', function () {
+        it('keeps relations the caller explicitly asked for via ?include=', function () {
+            // Caller passed ?fields=id,title&include=tags,authors — input
+            // serializer DOES NOT force-load (url isn't in fields), so the
+            // marker is absent and the strip skips the relations entirely.
             const post = {
                 id: 'p1',
                 slug: 'hello',
@@ -151,10 +166,31 @@ describe('Unit: endpoints/utils/serializers/output/utils/url', function () {
                 authors: [{id: 'a1', slug: 'jane'}]
             };
 
-            urlUtil.forPost('p1', post, {options: {columns: ['id', 'url', 'tags', 'authors']}});
+            urlUtil.forPost('p1', post, {options: {columns: ['id', 'title']}});
 
             assert.deepEqual(post.tags, [{id: 't1', slug: 'news'}]);
             assert.deepEqual(post.authors, [{id: 'a1', slug: 'jane'}]);
+        });
+
+        it('keeps relations even when url is requested, if the caller also asked for the relation via ?include=', function () {
+            // Caller passed ?fields=id,url&include=tags. Input serializer
+            // sees `tags` already in withRelated, so it tags only `authors`
+            // as force-loaded. forPost strips authors (not requested) but
+            // keeps tags (caller requested).
+            const post = {
+                id: 'p1',
+                slug: 'hello',
+                tags: [{id: 't1', slug: 'news'}],
+                authors: [{id: 'a1', slug: 'jane'}]
+            };
+
+            urlUtil.forPost('p1', post, {options: {
+                columns: ['id', 'url'],
+                _forceLoadedForUrl: ['authors', 'primary_author']
+            }});
+
+            assert.deepEqual(post.tags, [{id: 't1', slug: 'news'}], 'caller-requested tags must stay');
+            assert.equal(post.authors, undefined, 'force-loaded authors must be stripped');
         });
 
         it('does not strip relations when columns is not set (caller wants the default response shape)', function () {

@@ -231,6 +231,55 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
                 assert.ok(frame.options.withRelated.includes('authors'), 'authors must be force-loaded for URL');
             });
 
+            it('tags _forceLoadedForUrl when relations were added (not when caller already requested them)', function () {
+                // The output mapper uses this marker to strip only what we
+                // force-loaded. Caller-requested relations (via ?include=)
+                // must NOT appear in the marker, or the strip would drop
+                // them from the response.
+                configUtils.set('lazyRouting', true);
+                const frame = {
+                    apiType: 'admin',
+                    options: {
+                        context: {user: 1},
+                        columns: ['id', 'url'],
+                        withRelated: ['tags'] // caller asked for tags via ?include=tags
+                    }
+                };
+
+                serializers.input.posts.browse({}, frame);
+
+                assert.ok(Array.isArray(frame.options._forceLoadedForUrl), '_forceLoadedForUrl must be set');
+                assert.ok(!frame.options._forceLoadedForUrl.includes('tags'), 'caller-requested tags must NOT be flagged for stripping');
+                assert.ok(frame.options._forceLoadedForUrl.includes('authors'), 'force-loaded authors must be flagged');
+                // primary_author follows authors (computed by Post.toJSON
+                // when authors is loaded), so it inherits the same flag.
+                assert.ok(frame.options._forceLoadedForUrl.includes('primary_author'), 'primary_author follows authors');
+                assert.ok(!frame.options._forceLoadedForUrl.includes('primary_tag'), 'primary_tag follows caller-requested tags');
+            });
+
+            it('does not tag _forceLoadedForUrl when url is not in columns', function () {
+                // Regression for the legacy posts.test.js failure: caller
+                // does ?fields=id,title,primary_tag,doesnotexist&include=
+                // authors,tags,email — url not requested. We must not
+                // touch withRelated and must not set the strip marker,
+                // otherwise the output mapper drops authors/tags that
+                // the caller asked for.
+                configUtils.set('lazyRouting', true);
+                const frame = {
+                    apiType: 'admin',
+                    options: {
+                        context: {user: 1},
+                        columns: ['id', 'title', 'primary_tag', 'doesnotexist'],
+                        withRelated: ['authors', 'tags', 'email']
+                    }
+                };
+
+                serializers.input.posts.browse({}, frame);
+
+                assert.equal(frame.options._forceLoadedForUrl, undefined);
+                assert.deepEqual(frame.options.withRelated, ['authors', 'tags', 'email']);
+            });
+
             it('forces tags+authors on the Content API path too', async function () {
                 // The Content API uses mapWithRelated rather than
                 // defaultRelations, so the admin-side patch doesn't cover
