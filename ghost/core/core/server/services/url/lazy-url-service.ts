@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 const nql = require('@tryghost/nql');
 const debug = require('@tryghost/debug')('services:url:lazy');
+const logging = require('@tryghost/logging');
+const errors = require('@tryghost/errors');
 const localUtils = require('../../../shared/url-utils');
 /* eslint-enable @typescript-eslint/no-require-imports */
 
@@ -127,6 +129,12 @@ export class LazyUrlService implements LazyUrlServiceBackend {
         }
         const candidates = this.routerConfigs.filter(c => c.resourceType === routerType);
         for (const config of candidates) {
+            // Warn loudly when a caller passes a resource that's missing
+            // the relations a tag- or author-filtered router needs. The
+            // URL silently falls through to /404/ on those routes; the
+            // log lets operators alert on any caller that hasn't been
+            // inflated with withRelated: ['tags', 'authors'].
+            this._warnIfThin(config, resource, routerType);
             // NQL filters are evaluated against the original resource (with
             // its singular DB `type` field intact) because the page:true/false
             // transformer rewrites to type:'post'/'page'.
@@ -136,6 +144,41 @@ export class LazyUrlService implements LazyUrlServiceBackend {
             }
         }
         return this._formatPath('/404/', options);
+    }
+
+    /**
+     * Warn when a caller passes a thin resource (missing tags/authors)
+     * against a router whose filter references those relations. The
+     * filter eval will fail silently and the URL will resolve to /404/.
+     * Detection is conservative: only fires when the router filter
+     * actually references the relation, so a tag-less router (`filter:
+     * featured:true`) doesn't log for a tag-less resource.
+     */
+    private _warnIfThin(config: RouterConfig, resource: Resource, routerType: string): void {
+        if (!config.filter) {
+            return;
+        }
+        const needsTags = /\btags?\b|\bprimary_tag\b/.test(config.filter);
+        const needsAuthors = /\bauthors?\b|\bprimary_author\b/.test(config.filter);
+        const r = resource as Record<string, unknown>;
+        const missingTags = needsTags && !Array.isArray(r.tags);
+        const missingAuthors = needsAuthors && !Array.isArray(r.authors);
+        if (!missingTags && !missingAuthors) {
+            return;
+        }
+        const missing = [missingTags && 'tags', missingAuthors && 'authors']
+            .filter(Boolean) as string[];
+        logging.error(new errors.InternalServerError({
+            message: 'Thin resource passed to LazyUrlService.getUrlForResource',
+            code: 'LAZY_URL_THIN_RESOURCE',
+            errorDetails: {
+                resourceType: routerType,
+                resourceId: resource.id,
+                routerIdentifier: config.identifier,
+                filter: config.filter,
+                missing
+            }
+        }));
     }
 
     ownsResource(routerIdentifier: string, resource: Resource | null): boolean {
