@@ -35,7 +35,7 @@ const AdminContextMenu: React.FC<Props> = ({comment, close, showAuthorActions = 
     const unpinComment = closeAfter(() => dispatchAction('unpinComment', comment));
 
     const isHidden = comment.status !== 'published';
-    const canPin = !!labs?.commentsPinning && !comment.parent_id && comment.status !== 'deleted';
+    const canPin = labs?.commentsPinning === true && !comment.parent_id && comment.status !== 'deleted';
     const adminCommentUrl = adminUrl ? `${adminUrl}#/comments/?id=is:${comment.id}` : null;
     const baseItemClassName = 'flex w-full items-center gap-3 rounded px-3 py-2 text-left text-[14px] leading-5 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-700';
     const itemClassName = `${baseItemClassName} text-neutral-900 dark:text-white`;

@@ -1,16 +1,5 @@
 const commentsService = require('../../services/comments');
 const errors = require('@tryghost/errors');
-function handleCacheHeaders(model, frame) {
-    if (model) {
-        const postId = model.get('post_id');
-        const parentId = model.get('parent_id');
-        const pathsToInvalidate = [
-            postId ? `/api/members/comments/post/${postId}/` : null,
-            parentId ? `/api/members/comments/${parentId}/replies/` : null
-        ].filter(path => path !== null);
-        frame.setHeader('X-Cache-Invalidate', pathsToInvalidate.join(', '));
-    }
-}
 
 function validateCommentData(data) {
     if (!data.post_id && !data.parent_id) {
@@ -163,7 +152,7 @@ const controller = {
                     validatedCreatedAt
                 );
             
-            handleCacheHeaders(result, frame);
+            commentsService.controller.setCacheInvalidationHeaders(result, frame);
             
             return result;
         }

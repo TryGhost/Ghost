@@ -7,7 +7,7 @@ const PinnedLabel: React.FC<{comment: Comment}> = ({comment}) => {
     const {dispatchAction, isAdmin, t} = useAppContext();
     const labs = useLabs();
 
-    if (!labs?.commentsPinning || !comment.pinned) {
+    if (labs?.commentsPinning !== true || !comment.pinned) {
         return null;
     }
 

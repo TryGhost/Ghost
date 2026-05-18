@@ -185,17 +185,29 @@ module.exports = class CommentsController {
             frame.options
         );
 
-        if (result) {
-            const postId = result.get('post_id');
-            const parentId = result.get('parent_id');
-            const pathsToInvalidate = [
-                postId ? `/api/members/comments/post/${postId}/` : null,
-                parentId ? `/api/members/comments/${parentId}/replies/` : null
-            ].filter(path => path !== null);
-            frame.setHeader('X-Cache-Invalidate', pathsToInvalidate.join(', '));
-        }
+        this.setCacheInvalidationHeaders(result, frame);
 
         return result;
+    }
+
+    /**
+     * Sets the X-Cache-Invalidate response header so the public/member-facing
+     * comments endpoints get evicted when an admin mutates a comment. Shared
+     * with the comments endpoint module so both sites stay in sync.
+     */
+    setCacheInvalidationHeaders(model, frame) {
+        if (!model) {
+            return;
+        }
+
+        const postId = model.get('post_id');
+        const parentId = model.get('parent_id');
+        const pathsToInvalidate = [
+            postId ? `/api/members/comments/post/${postId}/` : null,
+            parentId ? `/api/members/comments/${parentId}/replies/` : null
+        ].filter(path => path !== null);
+
+        frame.setHeader('X-Cache-Invalidate', pathsToInvalidate.join(', '));
     }
 
     /**
