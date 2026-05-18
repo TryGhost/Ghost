@@ -589,7 +589,7 @@ module.exports = class EventRepository {
     async getCommentEvents(options = {}, filter) {
         options = {
             ...options,
-            withRelated: ['member', 'post', 'parent'],
+            withRelated: ['member', 'post', 'post.tags', 'post.authors', 'parent'],
             filter: 'member_id:-null+custom:true',
             useBasicCount: true,
             mongoTransformer: chainTransformers(
@@ -623,7 +623,7 @@ module.exports = class EventRepository {
     async getClickEvents(options = {}, filter) {
         options = {
             ...options,
-            withRelated: ['member', 'link', 'link.post'],
+            withRelated: ['member', 'link', 'link.post', 'link.post.tags', 'link.post.authors'],
             filter: 'custom:true',
             useBasicCount: true,
             mongoTransformer: chainTransformers(
@@ -777,7 +777,7 @@ module.exports = class EventRepository {
     async getFeedbackEvents(options = {}, filter) {
         options = {
             ...options,
-            withRelated: ['member', 'post'],
+            withRelated: ['member', 'post', 'post.tags', 'post.authors'],
             filter: 'custom:true',
             useBasicCount: true,
             mongoTransformer: chainTransformers(

@@ -1,6 +1,7 @@
 // @ts-check
 const urlUtils = require('../../../shared/url-utils');
 const {oneAtATime} = require('../../../shared/one-at-a-time');
+const logging = require('@tryghost/logging');
 const {getSignedAdminToken} = require('../../adapters/scheduling/utils');
 const StartAutomationsPollEvent = require('./events/start-automations-poll-event');
 const {poll} = require('./poll');
@@ -19,15 +20,6 @@ const memberWelcomeEmailService = require('../member-welcome-emails/service');
  * }) => void} schedule
  */
 
-/**
- * @internal
- * @typedef {object} SchedulerIntegration
- * @prop {Array<{
- *     id: string;
- *     secret: string;
- * }>} api_keys
- */
-
 class AutomationsService {
     #initialized = false;
 
@@ -36,10 +28,10 @@ class AutomationsService {
      * @param {Pick<DomainEvents, 'dispatch' | 'subscribe'>} options.domainEvents
      * @param {string} options.apiUrl
      * @param {SchedulerAdapter} options.schedulerAdapter
-     * @param {SchedulerIntegration} options.schedulerIntegration
+     * @param {ReadonlyMap<string, Promise<{id: string, secret: string}>>} options.internalKeys
      * @returns {void}
      */
-    init({domainEvents, apiUrl, schedulerAdapter, schedulerIntegration}) {
+    init({domainEvents, apiUrl, schedulerAdapter, internalKeys}) {
         if (this.#initialized) {
             return;
         }
@@ -51,21 +43,16 @@ class AutomationsService {
         /**
          * @param {Readonly<Date>} date
          */
-        const enqueuePollAt = (date) => {
-            const signedAdminToken = getSignedAdminToken({
-                publishedAt: date.toISOString(),
-                apiUrl,
-                integration: schedulerIntegration
-            });
-            const url = new URL(urlUtils.urlJoin(apiUrl, 'automations', 'poll'));
-            url.searchParams.set('token', signedAdminToken);
-            schedulerAdapter.schedule({
-                time: date.getTime(),
-                url: url.toString(),
-                extra: {
-                    httpMethod: 'PUT'
-                }
-            });
+        const enqueuePollAt = async (date) => {
+            try {
+                const key = await internalKeys.get('ghost-scheduler');
+                const signedAdminToken = getSignedAdminToken({publishedAt: date.toISOString(), apiUrl, key});
+                const url = new URL(urlUtils.urlJoin(apiUrl, 'automations', 'poll'));
+                url.searchParams.set('token', signedAdminToken);
+                schedulerAdapter.schedule({time: date.getTime(), url: url.toString(), extra: {httpMethod: 'PUT'}});
+            } catch (err) {
+                logging.error({event: {name: 'automations.enqueue-poll.error'}, err, at: date.toISOString()}, 'Failed to enqueue automations poll');
+            }
         };
 
         domainEvents.subscribe(StartAutomationsPollEvent, oneAtATime(async () => {

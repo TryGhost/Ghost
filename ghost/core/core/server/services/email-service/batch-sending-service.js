@@ -203,7 +203,7 @@ class BatchSendingService {
         }, {...this.#getBeforeRetryConfig(email), description: `getLazyRelation newsletter for email ${email.id}`});
 
         const post = await this.retryDb(async () => {
-            return await email.getLazyRelation('post', {require: true, withRelated: ['posts_meta', 'authors']});
+            return await email.getLazyRelation('post', {require: true, withRelated: ['posts_meta', 'authors', 'tags']});
         }, {...this.#getBeforeRetryConfig(email), description: `getLazyRelation post for email ${email.id}`});
 
         let batches = await this.retryDb(async () => {
