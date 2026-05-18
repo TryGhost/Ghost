@@ -1047,6 +1047,9 @@ importers:
       postcss:
         specifier: 'catalog:'
         version: 8.5.6
+      postcss-import:
+        specifier: 16.1.1
+        version: 16.1.1(postcss@8.5.6)
       sinon:
         specifier: 21.1.1
         version: 21.1.1
