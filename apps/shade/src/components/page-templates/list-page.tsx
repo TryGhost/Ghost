@@ -37,7 +37,7 @@ function ListPageHeader({className, children, ...rest}: ListPageProps) {
 function ListPageBody({className, children, ...rest}: ListPageProps) {
     return (
         <Stack
-            className={cn('grow min-h-0 min-w-0', className)}
+            className={cn('grow min-h-0 min-w-0 pb-4 lg:pb-8', className)}
             data-list-page='body'
             gap='none'
             {...rest}
