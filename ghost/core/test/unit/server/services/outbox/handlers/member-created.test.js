@@ -6,7 +6,7 @@ const {captureLoggerOutput, findByEvent} = require('../../../../../utils/logging
 describe('member-created handler', function () {
     let handler;
     let memberWelcomeEmailServiceStub;
-    let WelcomeEmailAutomationStub;
+    let AutomationStub;
     let AutomatedEmailRecipientStub;
     let logCapture;
 
@@ -19,7 +19,7 @@ describe('member-created handler', function () {
             }
         };
 
-        WelcomeEmailAutomationStub = {
+        AutomationStub = {
             findOne: sinon.stub().resolves({
                 id: 'automation123',
                 related: sinon.stub().callsFake((relation) => {
@@ -37,7 +37,7 @@ describe('member-created handler', function () {
         logCapture = captureLoggerOutput();
 
         handler.__set__('memberWelcomeEmailService', memberWelcomeEmailServiceStub);
-        handler.__set__('WelcomeEmailAutomation', WelcomeEmailAutomationStub);
+        handler.__set__('Automation', AutomationStub);
         handler.__set__('AutomatedEmailRecipient', AutomatedEmailRecipientStub);
     });
 
@@ -102,7 +102,7 @@ describe('member-created handler', function () {
     });
 
     it('logs warning when no automated email found for slug', async function () {
-        WelcomeEmailAutomationStub.findOne.resolves(null);
+        AutomationStub.findOne.resolves(null);
 
         await handler.handle({
             payload: {

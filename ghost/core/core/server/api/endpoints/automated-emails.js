@@ -9,7 +9,7 @@ const messages = {
 };
 
 // NOTE: This file is in a transitionary state. The `automated_emails` database table was split into
-// `welcome_email_automations` (automation metadata: status, name, slug) and
+// `automations` (automation metadata: status, name, slug) and
 // `welcome_email_automated_emails` (email content: subject, lexical, sender fields). This controller
 // acts as a facade that joins/splits data between those two models while preserving the original
 // `automated_emails` API shape externally.
@@ -51,7 +51,7 @@ const controller = {
         ],
         permissions: true,
         async query(frame) {
-            const result = await models.WelcomeEmailAutomation.findPage({
+            const result = await models.Automation.findPage({
                 ...frame.options,
                 withRelated: ['welcomeEmailAutomatedEmail']
             });
@@ -75,7 +75,7 @@ const controller = {
         ],
         permissions: true,
         async query(frame) {
-            const model = await models.WelcomeEmailAutomation.findOne(frame.data, {
+            const model = await models.Automation.findOne(frame.data, {
                 ...frame.options,
                 withRelated: ['welcomeEmailAutomatedEmail']
             });
@@ -102,7 +102,7 @@ const controller = {
             const automationData = _.pick(data, AUTOMATION_FIELDS);
 
             return models.Base.transaction(async (transacting) => {
-                const automation = await models.WelcomeEmailAutomation.add(automationData, {...frame.options, transacting});
+                const automation = await models.Automation.add(automationData, {...frame.options, transacting});
                 const email = await models.WelcomeEmailAutomatedEmail.add(
                     {
                         ...emailData,
@@ -139,7 +139,7 @@ const controller = {
             const automationData = _.pick(data, AUTOMATION_FIELDS);
 
             return models.Base.transaction(async (transacting) => {
-                let automation = await models.WelcomeEmailAutomation.findOne({id: frame.options.id}, {
+                let automation = await models.Automation.findOne({id: frame.options.id}, {
                     transacting,
                     withRelated: ['welcomeEmailAutomatedEmail']
                 });
@@ -159,7 +159,7 @@ const controller = {
                 }
 
                 if (Object.keys(automationData).length > 0) {
-                    automation = await models.WelcomeEmailAutomation.edit(automationData, {
+                    automation = await models.Automation.edit(automationData, {
                         ...frame.options,
                         transacting
                     });
