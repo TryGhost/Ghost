@@ -3,13 +3,11 @@
  */
 
 /**
- * @typedef {import('@sentry/types').Integration} SentryIntegration
- */
-
-/**
  * Sentry Knex tracing integration
  *
- * @implements {SentryIntegration}
+ * Implements the Sentry `Integration` interface. The type is not annotated via
+ * JSDoc because `Integration` is only exported from `@sentry/types`, which is
+ * not a direct dependency of ghost/core (only `@sentry/node` is).
  */
 class SentryKnexTracingIntegration {
     static id = 'Knex';
