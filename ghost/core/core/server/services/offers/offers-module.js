@@ -9,7 +9,7 @@ const OffersAPI = require('./application/offers-api');
 class OffersModule {
     /**
      * @param {OffersAPI} offersAPI
-     * @param {import('@tryghost/express-dynamic-redirects')} redirectManager
+     * @param {import('../lib/dynamic-redirect-manager')} redirectManager
      * @param {any} repository
      */
     constructor(offersAPI, redirectManager, repository) {
@@ -54,7 +54,7 @@ class OffersModule {
 
     /**
      * @param {object} deps
-     * @param {import('@tryghost/express-dynamic-redirects')} deps.redirectManager
+     * @param {import('../lib/dynamic-redirect-manager')} deps.redirectManager
      * @param {any} deps.repository
      *
      * @returns {OffersModule}
