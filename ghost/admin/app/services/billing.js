@@ -33,7 +33,7 @@ export default class BillingService extends Service {
     billingAppIframeSrcSetAt = null;
     billingAppIframeLoadFired = false;
 
-    _loadListenerAttached = false;
+    _loadListenerAttachedTo = null;
 
     constructor() {
         super(...arguments);
@@ -108,11 +108,11 @@ export default class BillingService extends Service {
         if (!iframe) {
             return;
         }
-        if (!this._loadListenerAttached && typeof iframe.addEventListener === 'function') {
+        if (this._loadListenerAttachedTo !== iframe && typeof iframe.addEventListener === 'function') {
             iframe.addEventListener('load', () => {
                 this.billingAppIframeLoadFired = true;
             });
-            this._loadListenerAttached = true;
+            this._loadListenerAttachedTo = iframe;
         }
         this.billingAppIframeLoadFired = false;
         this.billingAppIframeSrcSetAt = Date.now();
