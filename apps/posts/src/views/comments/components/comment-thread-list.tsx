@@ -7,7 +7,7 @@ import {CommentMenu} from './comment-menu';
 import {CommentMetrics, buildThreadLink} from './comment-metrics';
 import {Link, useSearchParams} from '@tryghost/admin-x-framework';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
-import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
+import {useCommentsPinningEnabled} from '@src/hooks/use-comments-pinning-enabled';
 
 function RepliesLine({hasReplies}: {hasReplies: boolean}) {
     if (!hasReplies) {
@@ -34,8 +34,7 @@ function CommentRow({comment, isReply = false, isSelectedComment = false, select
     const {mutate: hideComment} = useHideComment();
     const {mutate: showComment} = useShowComment();
     const {mutate: unpinComment} = useUnpinComment();
-    const {data: configData} = useBrowseConfig();
-    const commentsPinningEnabled = configData?.config?.labs?.commentsPinning === true;
+    const commentsPinningEnabled = useCommentsPinningEnabled();
 
     // Check replies array for loaded objects, or count.direct_replies for unloaded
     // TODO: remove count.replies fallback once backend is fully rolled out
