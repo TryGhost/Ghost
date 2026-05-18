@@ -12,7 +12,7 @@ const _ = require('lodash');
 module.exports = class SubscriptionEventService {
     /**
      * @param {object} deps
-     * @param {import('../../repositories/MemberRepository')} deps.memberRepository
+     * @param {import('../../../members/members-api/repositories/member-repository')} deps.memberRepository
      */
     constructor(deps) {
         this.deps = deps;
