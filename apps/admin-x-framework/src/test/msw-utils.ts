@@ -31,6 +31,9 @@ export const fixtures = {
         navigation: [],
         secondary_navigation: [],
         llms_enabled: true,
+        machine_payments_enabled: false,
+        machine_payments_currency: 'USD',
+        machine_payments_amount: 100,
         meta_title: null,
         meta_description: null
     },

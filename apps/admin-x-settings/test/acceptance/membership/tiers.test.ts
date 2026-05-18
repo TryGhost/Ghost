@@ -1,7 +1,49 @@
 import {expect, test} from '@playwright/test';
-import {expectExternalNavigate, globalDataRequests, limitRequests, mockApi, responseFixtures, settingsWithStripe} from '@tryghost/admin-x-framework/test/acceptance';
+import {expectExternalNavigate, globalDataRequests, limitRequests, mockApi, responseFixtures, settingsWithStripe, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Tier settings', async () => {
+    test('Supports enabling agent payments for premium content', async ({page}) => {
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            ...limitRequests,
+            browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
+            browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers},
+            editSettings: {method: 'PUT', path: '/settings/', response: updatedSettingsResponse([
+                {key: 'machine_payments_enabled', value: true}
+            ])}
+        }});
+
+        await page.goto('/#/settings/tiers');
+
+        const section = page.getByTestId('tiers');
+        const toggle = section.getByLabel('Accept payments from AI agents');
+
+        await expect(toggle).toBeVisible();
+        await expect(toggle).not.toBeChecked();
+        await expect(section).toContainText('Charge LLMs and AI agents for access to paid-members posts');
+
+        await toggle.check();
+
+        await expect.poll(() => lastApiRequests.editSettings?.body).toEqual({
+            settings: [
+                {key: 'machine_payments_enabled', value: true}
+            ]
+        });
+        await expect(section).toContainText('By default, AI agents can\'t access content for paid members. When enabled, this setting offers agents a checkout flow to purchase access to individual posts.');
+
+        const priceInput = section.getByRole('textbox', {name: 'Price per post'});
+        await expect(priceInput).toBeVisible();
+        await expect(priceInput).toHaveValue('1');
+
+        await priceInput.fill('2.50');
+
+        await expect.poll(() => lastApiRequests.editSettings?.body).toEqual({
+            settings: [
+                {key: 'machine_payments_amount', value: '250'}
+            ]
+        });
+    });
+
     test('Supports creating a new tier', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,
