@@ -33,16 +33,16 @@ const PickerOption: React.FC<PickerOptionProps> = ({icon: Icon, label, descripti
 const StepPicker: React.FC<StepPickerProps> = ({onPick}) => (
     <div className='flex w-64 flex-col gap-1 p-1' data-testid='step-picker'>
         <PickerOption
-            description='Pause the sequence for a set time'
+            description='Send an email'
+            icon={LucideIcon.Mail}
+            label='Email'
+            onClick={() => onPick('send_email')}
+        />
+        <PickerOption
+            description='Wait for a time or a date'
             icon={LucideIcon.Clock}
             label='Wait'
             onClick={() => onPick('wait')}
-        />
-        <PickerOption
-            description='Send an email to the member'
-            icon={LucideIcon.Mail}
-            label='Send email'
-            onClick={() => onPick('send_email')}
         />
     </div>
 );

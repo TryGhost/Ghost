@@ -91,28 +91,22 @@ describe('automations api helpers', () => {
             expect(ObjectId.isValid(next.actions[0].id)).toBe(true);
         });
 
-        it('skips wiring an edge when previousActionId references a non-existent action', () => {
+        it('throws when previousActionId references a non-existent action', () => {
             const detail = baseDetail(
                 [{id: 'a', type: 'wait', data: {wait_hours: 24}}],
                 []
             );
 
-            const next = insertWaitAction({detail, anchor: {previousActionId: 'does-not-exist'}});
-
-            expect(next.actions).toHaveLength(2);
-            expect(next.edges).toEqual([]);
+            expect(() => insertWaitAction({detail, anchor: {previousActionId: 'does-not-exist'}})).toThrow(/unknown action id "does-not-exist"/);
         });
 
-        it('skips wiring an edge when nextActionId references a non-existent action', () => {
+        it('throws when nextActionId references a non-existent action', () => {
             const detail = baseDetail(
                 [{id: 'a', type: 'wait', data: {wait_hours: 24}}],
                 []
             );
 
-            const next = insertWaitAction({detail, anchor: {nextActionId: 'does-not-exist'}});
-
-            expect(next.actions).toHaveLength(2);
-            expect(next.edges).toEqual([]);
+            expect(() => insertWaitAction({detail, anchor: {nextActionId: 'does-not-exist'}})).toThrow(/unknown action id "does-not-exist"/);
         });
     });
 

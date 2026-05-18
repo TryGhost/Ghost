@@ -149,24 +149,30 @@ type InsertActionArgs = {
     anchor: InsertActionAnchor;
 };
 
-const isActionId = (detail: AutomationDetail, id: string | undefined): id is string => (
-    !!id && detail.actions.some(action => action.id === id)
-);
+const assertActionExists = (detail: AutomationDetail, id: string): void => {
+    if (!detail.actions.some(action => action.id === id)) {
+        throw new Error(`spliceAction: anchor references unknown action id "${id}"`);
+    }
+};
 
 const spliceAction = ({detail, action, anchor}: SpliceActionArgs): AutomationDetail => {
     const {previousActionId, nextActionId} = anchor;
+    if (previousActionId !== undefined) {
+        assertActionExists(detail, previousActionId);
+    }
+    if (nextActionId !== undefined) {
+        assertActionExists(detail, nextActionId);
+    }
     const actions = [...detail.actions, action];
     const removed = (previousActionId && nextActionId)
         ? detail.edges.find(edge => edge.source_action_id === previousActionId && edge.target_action_id === nextActionId)
         : undefined;
     const remaining = removed ? detail.edges.filter(edge => edge !== removed) : detail.edges;
     const newEdges = [...remaining];
-    // Anchor IDs that don't correspond to a real action are silently skipped — keeps the resulting
-    // edge graph well-formed even if the caller passes a stale ID.
-    if (isActionId(detail, previousActionId)) {
+    if (previousActionId !== undefined) {
         newEdges.push({source_action_id: previousActionId, target_action_id: action.id});
     }
-    if (isActionId(detail, nextActionId)) {
+    if (nextActionId !== undefined) {
         newEdges.push({source_action_id: action.id, target_action_id: nextActionId});
     }
     return {...detail, actions, edges: newEdges};

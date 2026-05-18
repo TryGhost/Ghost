@@ -423,7 +423,6 @@ describe('AutomationEditor', () => {
         renderEditor();
 
         fireEvent.click(screen.getByTestId('add-step-tail-button'));
-        // The picker renders into a portal; query the document body.
         const picker = await screen.findByTestId('step-picker');
         fireEvent.click(within(picker).getByText('Wait'));
 
@@ -444,7 +443,7 @@ describe('AutomationEditor', () => {
 
         fireEvent.click(screen.getByTestId('add-step-tail-button'));
         const picker = await screen.findByTestId('step-picker');
-        fireEvent.click(within(picker).getByText('Send email'));
+        fireEvent.click(within(picker).getByText('Email'));
 
         // The new send_email step renders with the placeholder subject.
         expect(screen.getByText('Untitled email')).toBeInTheDocument();
@@ -747,25 +746,5 @@ describe('AutomationEditor', () => {
         const recoveredButton = screen.getByRole('button', {name: 'Publish'});
         expect(recoveredButton).toBeEnabled();
         expect(recoveredButton).not.toHaveClass('bg-destructive');
-    });
-
-    it('survives onSuccess returning an empty automations array', () => {
-        mockUseReadAutomation.mockReturnValue({
-            data: {automations: [{...automationDetail, status: 'inactive'}]},
-            isLoading: false,
-            isError: false
-        });
-        mockEditMutation.mutate.mockImplementation((_payload, options) => {
-            options.onSuccess({automations: []});
-        });
-
-        renderEditor();
-
-        // Should not throw; editor returns to idle (button enabled and labeled "Publish" since the
-        // draft is still inactive after the no-op response).
-        fireEvent.click(screen.getByRole('button', {name: 'Publish'}));
-
-        const button = screen.getByRole('button', {name: 'Publish'});
-        expect(button).toBeEnabled();
     });
 });

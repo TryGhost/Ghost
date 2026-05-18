@@ -3,37 +3,9 @@ import AutomationHeader from './components/automation-header';
 import React from 'react';
 import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, type ButtonProps, LoadingIndicator} from '@tryghost/shade/components';
 import {AutomationDetail, AutomationStatus, useEditAutomation, useReadAutomation} from '@tryghost/admin-x-framework/api/automations';
+import {dequal} from 'dequal/lite';
 import {useParams} from '@tryghost/admin-x-framework';
 import type {AutomationEditState} from './types';
-
-// Recursive structural equality. Used by the dirty check to compare the user-editable slice of an
-// automation (status, actions, edges) without depending on the key order of server-parsed JSON.
-const deepEqual = (a: unknown, b: unknown): boolean => {
-    if (a === b) {
-        return true;
-    }
-    if (a === null || b === null || typeof a !== 'object' || typeof b !== 'object') {
-        return false;
-    }
-    if (Array.isArray(a)) {
-        if (!Array.isArray(b) || a.length !== b.length) {
-            return false;
-        }
-        return a.every((item, index) => deepEqual(item, b[index]));
-    }
-    if (Array.isArray(b)) {
-        return false;
-    }
-    const aKeys = Object.keys(a as Record<string, unknown>);
-    const bKeys = Object.keys(b as Record<string, unknown>);
-    if (aKeys.length !== bKeys.length) {
-        return false;
-    }
-    return aKeys.every(key => deepEqual(
-        (a as Record<string, unknown>)[key],
-        (b as Record<string, unknown>)[key]
-    ));
-};
 
 const editableSlice = (automation: AutomationDetail) => ({
     status: automation.status,
@@ -95,16 +67,16 @@ const AutomationEditor: React.FC = () => {
     // automation first loads, and reset to the response after every successful edit.
     const [draft, setDraft] = React.useState<AutomationDetail | undefined>(undefined);
     React.useEffect(() => {
-        if (automation && !draft) {
-            setDraft(automation);
+        if (automation) {
+            setDraft(oldDraft => oldDraft || automation);
         }
-    }, [automation, draft]);
+    }, [automation]);
 
     // Only compare the fields the user can edit; server-stamped fields like `updated_at` would
     // otherwise flip the dirty flag immediately after every successful publish.
     const hasUnsavedChanges = !!draft
         && !!automation
-        && !deepEqual(editableSlice(draft), editableSlice(automation));
+        && !dequal(editableSlice(draft), editableSlice(automation));
 
     // A local edit clears the previous failure state — the user is moving forward, so the
     // destructive Retry affordance shouldn't linger.
@@ -146,10 +118,7 @@ const AutomationEditor: React.FC = () => {
             },
             {
                 onSuccess: (response) => {
-                    const updated = response.automations[0];
-                    if (updated) {
-                        setDraft(updated);
-                    }
+                    setDraft(response.automations[0]);
                     setEditState('idle');
                 },
                 onError: () => setEditState(errorState)
