@@ -37,6 +37,29 @@ describe('buildThreadedReplies', function () {
         expect(threadedReplies[0].nestedReplies[0].nestedReplies.map(reply => reply.id)).toEqual(['reply-3']);
     });
 
+    it('decorates replies with sibling position metadata', function () {
+        const threadParentComment = buildComment({
+            id: 'root',
+            replies: [
+                {id: 'reply-1', in_reply_to_id: null},
+                {id: 'reply-2', in_reply_to_id: 'reply-1'},
+                {id: 'reply-3', in_reply_to_id: 'reply-1'},
+                {id: 'reply-4', in_reply_to_id: null}
+            ]
+        });
+
+        const threadedReplies = buildThreadedReplies(threadParentComment);
+
+        expect(threadedReplies[0].siblingIndex).toEqual(0);
+        expect(threadedReplies[0].siblingCount).toEqual(2);
+        expect(threadedReplies[1].siblingIndex).toEqual(1);
+        expect(threadedReplies[1].siblingCount).toEqual(2);
+        expect(threadedReplies[0].nestedReplies[0].siblingIndex).toEqual(0);
+        expect(threadedReplies[0].nestedReplies[0].siblingCount).toEqual(2);
+        expect(threadedReplies[0].nestedReplies[1].siblingIndex).toEqual(1);
+        expect(threadedReplies[0].nestedReplies[1].siblingCount).toEqual(2);
+    });
+
     it('keeps replies with missing parents at the root', function () {
         const threadParentComment = buildComment({
             id: 'root',
