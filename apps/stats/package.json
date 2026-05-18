@@ -54,6 +54,7 @@
         "eslint-plugin-react-hooks": "4.6.2",
         "eslint-plugin-react-refresh": "catalog:",
         "eslint-plugin-tailwindcss": "4.0.0-beta.0",
+        "jsdom": "catalog:",
         "tailwindcss": "4.2.2",
         "vite": "catalog:",
         "vite-plugin-svgr": "catalog:",

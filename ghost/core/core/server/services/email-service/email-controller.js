@@ -27,9 +27,9 @@ class EmailController {
         // So we need to handle both cases.
         let post;
         if (frame.options.id) {
-            post = await this.models.Post.findOne({...frame.options, status: 'all'}, {withRelated: ['posts_meta', 'authors']});
+            post = await this.models.Post.findOne({...frame.options, status: 'all'}, {withRelated: ['posts_meta', 'authors', 'tags']});
         } else {
-            post = await this.models.Post.findOne({...frame.data, status: 'all'}, {...frame.options, withRelated: ['posts_meta', 'authors']});
+            post = await this.models.Post.findOne({...frame.data, status: 'all'}, {...frame.options, withRelated: ['posts_meta', 'authors', 'tags']});
         }
 
         if (!post) {
