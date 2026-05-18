@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/comments-ui",
-  "version": "1.4.16",
+  "version": "1.4.17",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -73,8 +73,6 @@
     "concurrently": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-i18next": "6.1.4",
-    "eslint-plugin-react-hooks": "4.6.2",
-    "eslint-plugin-react-refresh": "catalog:",
     "eslint-plugin-tailwindcss": "3.18.2",
     "jsdom": "catalog:",
     "moment": "2.30.1",

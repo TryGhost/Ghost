@@ -1029,12 +1029,6 @@ importers:
       eslint-plugin-i18next:
         specifier: 6.1.4
         version: 6.1.4
-      eslint-plugin-react-hooks:
-        specifier: 4.6.2
-        version: 4.6.2(eslint@8.57.1)
-      eslint-plugin-react-refresh:
-        specifier: 'catalog:'
-        version: 0.4.24(eslint@8.57.1)
       eslint-plugin-tailwindcss:
         specifier: 3.18.2
         version: 3.18.2(tailwindcss@3.4.18(tsx@4.21.0)(yaml@2.8.3))
@@ -1501,12 +1495,6 @@ importers:
       eslint:
         specifier: 'catalog:'
         version: 8.57.1
-      eslint-plugin-react-hooks:
-        specifier: 4.6.2
-        version: 4.6.2(eslint@8.57.1)
-      eslint-plugin-react-refresh:
-        specifier: 'catalog:'
-        version: 0.4.24(eslint@8.57.1)
       eslint-plugin-tailwindcss:
         specifier: 3.18.2
         version: 3.18.2(tailwindcss@3.4.18(tsx@4.21.0)(yaml@2.8.3))
