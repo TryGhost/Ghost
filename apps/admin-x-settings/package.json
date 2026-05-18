@@ -82,10 +82,12 @@
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@types/validator": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-react-hooks": "4.6.2",
     "eslint-plugin-react-refresh": "catalog:",
     "eslint-plugin-tailwindcss": "4.0.0-beta.0",
+    "jsdom": "catalog:",
     "tailwindcss": "4.2.2",
     "vite": "catalog:",
     "vitest": "catalog:"
