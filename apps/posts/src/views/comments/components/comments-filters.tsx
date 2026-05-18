@@ -31,6 +31,9 @@ const CommentsFilters: React.FC<CommentsFiltersProps> = ({
             addButtonIcon={hasFilters ? <LucideIcon.FunnelPlus /> : <LucideIcon.Funnel />}
             addButtonText={hasFilters ? 'Add filter' : 'Filter'}
             allowMultiple={false}
+            className={`[&>button]:order-last ${
+                hasFilters ? '[&>button]:border-none' : 'w-auto'
+            }`}
             clearButtonClassName='font-normal text-muted-foreground'
             clearButtonIcon={<LucideIcon.X />}
             clearButtonText='Clear'
