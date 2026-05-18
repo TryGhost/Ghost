@@ -1,8 +1,6 @@
 import React from "react"
 
-import {
-    Sidebar
-} from "@tryghost/shade"
+import {Sidebar} from "@tryghost/shade/components"
 
 import AppSidebarHeader from "./app-sidebar-header";
 import AppSidebarFooter from "./app-sidebar-footer";
@@ -13,7 +11,7 @@ function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <Sidebar {...props}>
             <AppSidebarHeader className="px-5 pt-6 pb-0" />
             <AppSidebarContent />
-            <AppSidebarFooter className="p-3 gap-0" />
+            <AppSidebarFooter className="gap-0 p-3" />
         </Sidebar>
     )
 }

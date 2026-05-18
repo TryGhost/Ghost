@@ -1,0 +1,6 @@
+# Auth state from Playwright setup
+.auth/state.json
+
+# Playwright test results and reports
+test-results/
+playwright-report/

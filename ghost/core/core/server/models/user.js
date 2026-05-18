@@ -61,6 +61,7 @@ User = ghostBookshelf.Model.extend({
 
     defaults: function defaults() {
         return {
+            // secretlint-disable-next-line @secretlint/secretlint-rule-pattern
             password: security.identifier.uid(50),
             visibility: 'public',
             status: 'active',
@@ -71,7 +72,8 @@ User = ghostBookshelf.Model.extend({
             mention_notifications: true,
             recommendation_notifications: true,
             milestone_notifications: true,
-            donation_notifications: true
+            donation_notifications: true,
+            gift_subscription_notifications: true
         };
     },
 
@@ -383,7 +385,7 @@ User = ghostBookshelf.Model.extend({
 
     /**
      * Returns an array of keys permitted in a method's `options` hash, depending on the current method.
-     * @param {String} methodName The name of the method to check valid options for.
+     * @param {string} methodName The name of the method to check valid options for.
      * @return {Array} Keys allowed in the `options` hash of the model's method.
      */
     permittedOptions: function permittedOptions(methodName, options) {
@@ -512,6 +514,8 @@ User = ghostBookshelf.Model.extend({
             filter += '+donation_notifications:true';
         } else if (type === 'recommendation-received') {
             filter += '+recommendation_notifications:true';
+        } else if (type === 'gift-subscriptions') {
+            filter += '+gift_subscription_notifications:true';
         }
         const updatedOptions = Object.assign({}, options, {filter, withRelated: ['roles']});
         return this.findAll(updatedOptions).then((users) => {
@@ -1053,7 +1057,6 @@ User = ghostBookshelf.Model.extend({
         const userId = object.user_id;
         const oldPassword = object.oldPassword;
         const isLoggedInUser = userId === options.context.user;
-        const skipSessionID = unfilteredOptions.skipSessionID;
 
         options.require = true;
         options.withRelated = ['sessions'];
@@ -1069,11 +1072,13 @@ User = ghostBookshelf.Model.extend({
 
         const updatedUser = await user.save({password: newPassword});
 
+        // Destroy every active session for this user. The caller must mint a
+        // fresh session (with a new session_id) for self password-changes so
+        // that stolen or cloned cookies are invalidated alongside distinct
+        // concurrent sessions.
         const sessions = user.related('sessions');
         for (const session of sessions) {
-            if (session.get('session_id') !== skipSessionID) {
-                await session.destroy(options);
-            }
+            await session.destroy(options);
         }
 
         return updatedUser;

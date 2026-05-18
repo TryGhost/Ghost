@@ -5,6 +5,19 @@
     "Already have an account?": "Already have an account?",
     "Page {page} of {totalPages}": "Page {page} of {totalPages}",
     "This site is private.": "This site is private.",
-    "Password": "Password",
-    "Access site": "Access site"
+    "Access code": "Access code",
+    "Access site": "Access site",
+    "Enter": "Enter",
+    "Enter access code": "Enter access code",
+    "Close": "Close",
+    "Your email address": "Your email address",
+    "Subscribe": "Subscribe",
+    "Please enter a valid email address": "Please enter a valid email address",
+    "Something went wrong, please try again.": "Something went wrong, please try again.",
+    "Subscription confirmed!": "Subscription confirmed!",
+    "Thanks! Now check your email to confirm.": "Thanks! Now check your email to confirm.",
+    "Signups from this email domain are currently restricted.": "Signups from this email domain are currently restricted.",
+    "Too many sign-up attempts, try again later": "Too many sign-up attempts, try again later",
+    "Failed to send magic link email": "Failed to send magic link email",
+    "Site owner login": "Site owner login"
 }

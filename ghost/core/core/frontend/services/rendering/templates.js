@@ -107,7 +107,7 @@ _private.getEntryTemplateHierarchy = function getEntryTemplateHierarchy(postObje
  * Cycle through and find the first one which has a match in the theme
  *
  * @param {Array|String} templateList
- * @param {String} fallback - a fallback template
+ * @param {string} fallback - a fallback template
  */
 _private.pickTemplate = function pickTemplate(templateList, fallback) {
     let template;

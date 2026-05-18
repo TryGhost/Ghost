@@ -19,7 +19,10 @@ const generateTags = function generateTags(data) {
 const generateItem = function generateItem(post) {
     const cheerio = require('cheerio');
 
-    const itemUrl = routerManager.getUrlByResourceId(post.id, {absolute: true});
+    // RSS feeds carry posts (pages don't appear in RSS), so the router-level
+    // type is always 'posts'. The post object on the public API has its DB
+    // `type` column stripped by the serializer, so we tag the resource here.
+    const itemUrl = routerManager.getUrlForResource({...post, type: 'posts'}, {absolute: true});
     const htmlContent = cheerio.load(post.html || '');
     const item = {
         title: post.title,

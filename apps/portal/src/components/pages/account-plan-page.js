@@ -5,18 +5,15 @@ import CloseButton from '../common/close-button';
 import BackButton from '../common/back-button';
 import {MultipleProductsPlansSection} from '../common/plans-section';
 import {getDateString} from '../../utils/date-time';
-import {addMonths, formatNumber, getAvailablePrices, getCurrencySymbol, getFilteredPrices, isFreeMonthsOffer, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getOfferOffAmount, getPriceFromSubscription, getProductFromPrice, getSubscriptionFromId, getUpdatedOfferPrice, getUpgradeProducts, hasMultipleProductsFeature, isComplimentaryMember, isPaidMember} from '../../utils/helpers';
+import {addMonths, formatNumber, formatPrice, getAvailablePrices, getCurrencySymbol, getFilteredPrices, isArchivedTier, isFreeMonthsOffer, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getOfferOffAmount, getPriceFromSubscription, getProductFromPrice, getSubscriptionFromId, getUpdatedOfferPrice, getUpgradeProducts, hasMultipleProductsFeature, isComplimentaryMember, isGiftMember, isPaidMember} from '../../utils/helpers';
 import Interpolate from '@doist/react-interpolate';
 import {t} from '../../utils/i18n';
+import {translateCadence} from '../../utils/helpers';
 
 export const AccountPlanPageStyles = `
     .account-plan.full-size .gh-portal-main-title {
         font-size: 3.2rem;
         margin-top: 44px;
-    }
-
-    .account-plan:not(.full-size) .gh-portal-detail-header {
-        padding-inline: 60px;
     }
 
     .gh-portal-accountplans-main {
@@ -98,6 +95,9 @@ const CancelSubscriptionButton = ({member, onCancelSubscription, action, brandCo
     if (!member.paid) {
         return null;
     }
+    if (isGiftMember({member})) {
+        return null;
+    }
     const subscription = getMemberSubscription({member});
     if (!subscription) {
         return null;
@@ -152,7 +152,7 @@ const PlanConfirmationSection = ({plan, type, onConfirm}) => {
         planStartingMessage = t('Starting today');
     }
     const priceString = formatNumber(plan.price);
-    const planStartMessage = `${plan.currency_symbol}${priceString}/${t(plan.interval)} – ${planStartingMessage}`;
+    const planStartMessage = `${plan.currency_symbol}${priceString}/${translateCadence(plan.interval)} – ${planStartingMessage}`;
     const product = getProductFromPrice({site, priceId: plan?.id});
     const priceLabel = hasMultipleProductsFeature({site}) ? product?.name : t('Price');
     if (type === 'changePlan') {
@@ -276,7 +276,7 @@ function getRetentionOfferLabel(offer, amountOff) {
         return t('{months} months free', {months});
     }
 
-    return t('{amountOff} off', {amountOff});
+    return t('{amount} off', {amount: amountOff});
 }
 
 function getRetentionOfferMessage(offer, originalPrice, currency, amountOff, subscription) {
@@ -303,15 +303,15 @@ function getRetentionOfferMessage(offer, originalPrice, currency, amountOff, sub
     }
 
     if (offer.duration === 'once') {
-        return t('Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.', {amountOff, currency, originalPrice, cadence: offer.cadence});
+        return t('Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.', {amountOff, currency, originalPrice, cadence: translateCadence(offer.cadence)});
     }
 
     if (offer.duration === 'repeating' && offer.duration_in_months === 1) {
-        return t('Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.', {amountOff, currency, originalPrice, cadence: offer.cadence});
+        return t('Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.', {amountOff, currency, originalPrice, cadence: translateCadence(offer.cadence)});
     }
 
     if (offer.duration === 'repeating' && offer.duration_in_months > 1) {
-        return t('Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.', {amountOff, durationInMonths: offer.duration_in_months, currency, originalPrice, cadence: offer.cadence});
+        return t('Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.', {amountOff, durationInMonths: offer.duration_in_months, currency, originalPrice, cadence: translateCadence(offer.cadence)});
     }
 
     return '';
@@ -322,9 +322,11 @@ const RetentionOfferSection = ({subscription, offer, onAcceptOffer, onDeclineOff
     const isAcceptingOffer = action === 'applyOffer:running';
 
     const price = getPriceFromSubscription({subscription});
-    const originalPrice = formatNumber(price.amount / 100);
+    const originalAmount = price.amount / 100;
+    const originalPrice = formatPrice(originalAmount);
     const currency = getCurrencySymbol(price.currency);
-    const discountedPrice = formatNumber(getUpdatedOfferPrice({offer, price}));
+    const updatedAmount = getUpdatedOfferPrice({offer, price});
+    const discountedPrice = formatPrice(updatedAmount);
     const amountOff = getOfferOffAmount({offer});
 
     const cadenceLabel = offer.cadence === 'month' ? t('Monthly') : t('Yearly');
@@ -442,8 +444,8 @@ const PlansContainer = ({
     onAcceptRetentionOffer, onDeclineRetentionOffer
 }) => {
     const {member} = useContext(AppContext);
-    // Plan upgrade flow for free member or complimentary member
-    if (!isPaidMember({member}) || isComplimentaryMember({member})) {
+    // Plan upgrade flow for free, complimentary, or gift members.
+    if (!isPaidMember({member}) || isComplimentaryMember({member}) || isGiftMember({member})) {
         return (
             <UpgradePlanSection
                 {...{plans, selectedPlan, onPlanSelect, onPlanCheckout}}
@@ -494,10 +496,19 @@ export default class AccountPlanPage extends React.Component {
     }
 
     componentDidMount() {
-        const {member} = this.context;
+        const {member, site} = this.context;
         if (!member) {
             this.context.doAction('switchPage', {
                 page: 'signin'
+            });
+            return;
+        }
+
+        // Gift members on an active tier can only continue on the same tier via AccountHomePage "Continue" button
+        // Redirect them home if they land here via deep link (#/portal/account/plans)
+        if (isGiftMember({member}) && !isArchivedTier({member, site})) {
+            this.context.doAction('switchPage', {
+                page: 'accountHome'
             });
             return;
         }
@@ -612,7 +623,7 @@ export default class AccountPlanPage extends React.Component {
             selectedPlan = priceId;
         }
 
-        if (isPaidMember({member}) && !isComplimentaryMember({member})) {
+        if (isPaidMember({member}) && !isComplimentaryMember({member}) && !isGiftMember({member})) {
             const subscription = getMemberSubscription({member});
             const subscriptionId = subscription ? subscription.id : '';
             if (subscriptionId) {
@@ -628,8 +639,8 @@ export default class AccountPlanPage extends React.Component {
 
         const {member} = this.context;
 
-        // Work as checkboxes for free member plan selection and button for paid members
-        if (!isPaidMember({member}) || isComplimentaryMember({member})) {
+        // Work as checkboxes for free, complimentary, and gift members and as button for paid Stripe members.
+        if (!isPaidMember({member}) || isComplimentaryMember({member}) || isGiftMember({member})) {
             // Hack: React checkbox gets out of sync with dom state with instant update
             this.timeoutId = setTimeout(() => {
                 this.setState(() => {

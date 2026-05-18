@@ -1,23 +1,22 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {
     Badge,
-    Button,
+    type ComboboxOptionSource,
     Command,
     CommandEmpty,
     CommandGroup,
     CommandItem,
-    CommandList,
-    LucideIcon,
-    Popover,
-    PopoverContent,
-    PopoverTrigger
-} from '@tryghost/shade';
+    CommandList
+} from '@tryghost/shade/components';
+import {EditRow} from './edit-row';
 import {Label} from '@tryghost/admin-x-framework/api/labels';
+import {LucideIcon} from '@tryghost/shade/utils';
 
 export interface LabelPickerProps {
     labels: Label[];
+    optionSource: ComboboxOptionSource<string>;
     selectedSlugs: string[];
-    isLoading?: boolean;
+    resolvedSelectedLabels?: Label[];
     onToggle: (slug: string) => void;
     // Creation
     canCreateFromSearch?: (inputValue: string) => boolean;
@@ -27,155 +26,7 @@ export interface LabelPickerProps {
     onEdit?: (id: string, name: string) => Promise<void>;
     onDelete?: (id: string) => Promise<void>;
     isDuplicateName?: (name: string, excludeId?: string) => boolean;
-    // Layout
-    inline?: boolean;
-    align?: 'start' | 'end';
 }
-
-// --- EditRow ---
-
-interface EditRowProps {
-    label: Label;
-    onSave: (id: string, name: string) => Promise<void>;
-    onCancel: () => void;
-    onDelete: (id: string) => Promise<void>;
-    isDuplicateName?: (name: string, excludeId?: string) => boolean;
-}
-
-const EditRow: React.FC<EditRowProps> = ({label, onSave, onCancel, onDelete, isDuplicateName}) => {
-    const [name, setName] = useState(label.name);
-    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    const [error, setError] = useState('');
-    const [isSaving, setIsSaving] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false);
-    const inputRef = useRef<HTMLInputElement>(null);
-    const isBusy = isSaving || isDeleting;
-
-    useEffect(() => {
-        inputRef.current?.focus();
-        inputRef.current?.select();
-    }, []);
-
-    const validate = (value: string): string => {
-        const trimmed = value.trim();
-        if (!trimmed) {
-            return 'Name is required';
-        }
-        if (isDuplicateName?.(trimmed, label.id)) {
-            return 'A label with this name already exists';
-        }
-        return '';
-    };
-
-    const handleSave = async () => {
-        const validationError = validate(name);
-        if (validationError) {
-            setError(validationError);
-            return;
-        }
-        setIsSaving(true);
-        try {
-            await onSave(label.id, name.trim());
-            onCancel();
-        } catch {
-            setIsSaving(false);
-        }
-    };
-
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            handleSave();
-        } else if (e.key === 'Escape') {
-            e.preventDefault();
-            if (!isBusy) {
-                onCancel();
-            }
-        }
-    };
-
-    const handleDelete = async () => {
-        setIsDeleting(true);
-        try {
-            await onDelete(label.id);
-        } catch {
-            setIsDeleting(false);
-            setShowDeleteConfirm(false);
-        }
-    };
-
-    return (
-        <div className="flex flex-col gap-2 py-1.5" data-edit-row>
-            <input
-                ref={inputRef}
-                className="h-7 w-full rounded border border-border bg-background px-2 text-sm outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
-                disabled={isBusy}
-                type="text"
-                value={name}
-                onChange={(e) => {
-                    setName(e.target.value);
-                    setError('');
-                }}
-                onKeyDown={handleKeyDown}
-            />
-            {error && <span className="text-xs text-destructive">{error}</span>}
-            {showDeleteConfirm ? (
-                <div className="flex items-center gap-1 text-sm">
-                    <span className="flex-1 font-semibold">Delete label?</span>
-                    <Button
-                        className="h-6 px-2 text-xs"
-                        disabled={isBusy}
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setShowDeleteConfirm(false)}
-                    >
-                        Cancel
-                    </Button>
-                    <Button
-                        className="h-6 px-2 text-xs"
-                        disabled={isBusy}
-                        size="sm"
-                        variant="destructive"
-                        onClick={handleDelete}
-                    >
-                        {isDeleting ? 'Deleting...' : 'Delete'}
-                    </Button>
-                </div>
-            ) : (
-                <div className="flex items-center">
-                    <Button
-                        className="h-6 gap-1 px-1.5 text-xs text-red hover:bg-red/5 hover:text-red"
-                        disabled={isBusy}
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => setShowDeleteConfirm(true)}
-                    >
-                        Delete
-                    </Button>
-                    <div className="ml-auto flex gap-1">
-                        <Button
-                            className="h-6 px-2 text-xs"
-                            disabled={isBusy}
-                            size="sm"
-                            variant="outline"
-                            onClick={onCancel}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            className="h-6 px-2 text-xs"
-                            disabled={isBusy}
-                            size="sm"
-                            onClick={handleSave}
-                        >
-                            {isSaving ? 'Saving...' : 'Save'}
-                        </Button>
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-};
 
 // --- LabelRow: single label item with overlapping check/edit icon ---
 
@@ -246,11 +97,12 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
     onSearchClear
 }) => {
     const [editingLabelId, setEditingLabelId] = useState<string | null>(null);
-
-    const filteredLabels = labels.filter(l => l.name.toLowerCase().includes(search.toLowerCase()));
+    const normalizedSearch = search.trim().toLowerCase();
+    const visibleLabels = normalizedSearch
+        ? labels.filter(label => label.name.toLowerCase().includes(normalizedSearch))
+        : labels;
     const showCreate = !!onCreate && search.trim() && canCreateFromSearch?.(search);
     const showEdit = !!onEdit;
-
     const handleCreate = async () => {
         if (onCreate) {
             const newLabel = await onCreate(search.trim());
@@ -276,12 +128,12 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
 
     return (
         <>
-            {!showCreate && filteredLabels.length === 0 && (
+            {!showCreate && visibleLabels.length === 0 && (
                 <CommandEmpty>No labels found</CommandEmpty>
             )}
-            {filteredLabels.length > 0 && (
+            {visibleLabels.length > 0 && (
                 <CommandGroup className="[&_[cmdk-group-heading]]:hidden">
-                    {filteredLabels.map(label => (
+                    {visibleLabels.map(label => (
                         editingLabelId === label.id ? (
                             <EditRow
                                 key={label.id}
@@ -349,50 +201,28 @@ const SelectedPills: React.FC<SelectedPillsProps> = ({labels, onToggle}) => (
 
 const LabelPicker: React.FC<LabelPickerProps> = ({
     labels,
+    optionSource,
     selectedSlugs,
-    isLoading,
+    resolvedSelectedLabels,
     onToggle,
     canCreateFromSearch,
     onCreate,
     isCreating,
     onEdit,
     onDelete,
-    isDuplicateName,
-    inline = false,
-    align = 'start'
+    isDuplicateName
 }) => {
-    const selectedLabels = selectedSlugs
+    const selectedLabels = resolvedSelectedLabels || selectedSlugs
         .map(slug => labels.find(l => l.slug === slug))
         .filter((l): l is Label => !!l);
 
-    // --- Inline mode (for filter cells): minimal trigger + popover ---
-    if (inline) {
-        return (
-            <InlinePopover
-                align={align}
-                canCreateFromSearch={canCreateFromSearch}
-                isCreating={isCreating}
-                isDuplicateName={isDuplicateName}
-                isLoading={isLoading}
-                labels={labels}
-                selectedLabels={selectedLabels}
-                selectedSlugs={selectedSlugs}
-                onCreate={onCreate}
-                onDelete={onDelete}
-                onEdit={onEdit}
-                onToggle={onToggle}
-            />
-        );
-    }
-
-    // --- Default mode (for modals): combobox-like input with chips + dropdown ---
     return (
         <ComboboxPicker
             canCreateFromSearch={canCreateFromSearch}
             isCreating={isCreating}
             isDuplicateName={isDuplicateName}
-            isLoading={isLoading}
             labels={labels}
+            optionSource={optionSource}
             selectedLabels={selectedLabels}
             selectedSlugs={selectedSlugs}
             onCreate={onCreate}
@@ -403,152 +233,14 @@ const LabelPicker: React.FC<LabelPickerProps> = ({
     );
 };
 
-// --- InlinePopover: trigger + popover aligned to parent container (for filter cells) ---
-
-interface InlinePopoverProps {
-    labels: Label[];
-    selectedLabels: Label[];
-    selectedSlugs: string[];
-    onToggle: (slug: string) => void;
-    isLoading?: boolean;
-    align?: 'start' | 'end';
-    canCreateFromSearch?: (inputValue: string) => boolean;
-    onCreate?: (name: string) => Promise<Label | undefined>;
-    isCreating?: boolean;
-    onEdit?: (id: string, name: string) => Promise<void>;
-    onDelete?: (id: string) => Promise<void>;
-    isDuplicateName?: (name: string, excludeId?: string) => boolean;
-}
-
-const InlinePopover: React.FC<InlinePopoverProps> = ({
-    labels,
-    selectedLabels,
-    selectedSlugs,
-    onToggle,
-    isLoading,
-    align = 'start',
-    canCreateFromSearch,
-    onCreate,
-    isCreating,
-    onEdit,
-    onDelete,
-    isDuplicateName
-}) => {
-    const triggerRef = useRef<HTMLButtonElement>(null);
-    const [alignOffset, setAlignOffset] = useState(0);
-
-    // Measure the offset between the trigger and its parent wrapper so
-    // the popover aligns with the outer container edge, not the padded inner
-    const updateAlignOffset = useCallback(() => {
-        const trigger = triggerRef.current;
-        const parent = trigger?.parentElement;
-        if (trigger && parent) {
-            const triggerRect = trigger.getBoundingClientRect();
-            const parentRect = parent.getBoundingClientRect();
-            setAlignOffset(Math.round(parentRect.left - triggerRect.left));
-        }
-    }, []);
-
-    const triggerText = selectedLabels.length === 0
-        ? 'Select...'
-        : selectedLabels.length === 1
-            ? selectedLabels[0].name
-            : `${selectedLabels.length} labels`;
-
-    return (
-        <Popover
-            onOpenChange={(open) => {
-                if (open) {
-                    updateAlignOffset();
-                }
-            }}
-        >
-            <PopoverTrigger asChild>
-                <button
-                    ref={triggerRef}
-                    className="flex size-full items-center truncate text-left text-sm"
-                    type="button"
-                >
-                    {triggerText}
-                </button>
-            </PopoverTrigger>
-            <PopoverContent align={align} alignOffset={alignOffset} className="w-64 p-0">
-                {isLoading ? (
-                    <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
-                        Loading labels...
-                    </div>
-                ) : (
-                    <InlineList
-                        canCreateFromSearch={canCreateFromSearch}
-                        isCreating={isCreating}
-                        isDuplicateName={isDuplicateName}
-                        labels={labels}
-                        selectedLabels={selectedLabels}
-                        selectedSlugs={selectedSlugs}
-                        onCreate={onCreate}
-                        onDelete={onDelete}
-                        onEdit={onEdit}
-                        onToggle={onToggle}
-                    />
-                )}
-            </PopoverContent>
-        </Popover>
-    );
-};
-
-// --- InlineList: Command with its own search (for filter popover) ---
-
-interface InlineListProps {
-    labels: Label[];
-    selectedLabels: Label[];
-    selectedSlugs: string[];
-    onToggle: (slug: string) => void;
-    canCreateFromSearch?: (inputValue: string) => boolean;
-    onCreate?: (name: string) => Promise<Label | undefined>;
-    isCreating?: boolean;
-    onEdit?: (id: string, name: string) => Promise<void>;
-    onDelete?: (id: string) => Promise<void>;
-    isDuplicateName?: (name: string, excludeId?: string) => boolean;
-}
-
-const InlineList: React.FC<InlineListProps> = ({selectedLabels, ...rest}) => {
-    const [search, setSearch] = useState('');
-
-    return (
-        <Command shouldFilter={false}>
-            {selectedLabels.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 border-b px-3 py-2">
-                    <SelectedPills labels={selectedLabels} onToggle={rest.onToggle} />
-                </div>
-            )}
-            <div className="flex items-center border-b px-3">
-                <LucideIcon.Search className="mr-2 size-4 shrink-0 opacity-50" />
-                <input
-                    className="flex h-9 w-full bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground"
-                    placeholder="Search labels..."
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                />
-            </div>
-            <CommandList className="max-h-64 overflow-y-auto">
-                <LabelListItems
-                    {...rest}
-                    search={search}
-                    onSearchClear={() => setSearch('')}
-                />
-            </CommandList>
-        </Command>
-    );
-};
-
 // --- ComboboxPicker: chips-in-input + popover dropdown (for modals) ---
 
 interface ComboboxPickerProps {
     labels: Label[];
+    optionSource: ComboboxOptionSource<string>;
     selectedLabels: Label[];
     selectedSlugs: string[];
     onToggle: (slug: string) => void;
-    isLoading?: boolean;
     canCreateFromSearch?: (inputValue: string) => boolean;
     onCreate?: (name: string) => Promise<Label | undefined>;
     isCreating?: boolean;
@@ -559,10 +251,10 @@ interface ComboboxPickerProps {
 
 const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
     labels,
+    optionSource,
     selectedLabels,
     selectedSlugs,
     onToggle,
-    isLoading,
     canCreateFromSearch,
     onCreate,
     isCreating,
@@ -574,6 +266,11 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
     const [search, setSearch] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+
+    const handleSearchChange = useCallback((value: string) => {
+        setSearch(value);
+        optionSource.onSearchChange?.(value);
+    }, [optionSource]);
 
     // Close on click outside — no Radix Popover portal needed since this
     // component lives inside a Dialog. Avoiding the portal keeps the dropdown
@@ -614,11 +311,11 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
                 <SelectedPills labels={selectedLabels} onToggle={onToggle} />
                 <input
                     ref={inputRef}
-                    className="min-w-[80px] flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                    className="min-w-[80px] flex-1 bg-transparent text-sm outline-hidden placeholder:text-muted-foreground"
                     placeholder={selectedLabels.length === 0 ? 'Search labels...' : ''}
                     value={search}
                     onChange={(e) => {
-                        setSearch(e.target.value);
+                        handleSearchChange(e.target.value);
                         if (!open) {
                             setOpen(true);
                         }
@@ -628,8 +325,8 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
                 />
             </div>
             {open && (
-                <div className="absolute left-0 top-full z-50 mt-1 w-full rounded-md border bg-white shadow-md dark:bg-gray-950">
-                    {isLoading ? (
+                <div className="absolute top-full left-0 z-50 mt-1 w-full rounded-md border bg-white shadow-md dark:bg-gray-950">
+                    {optionSource.isInitialLoad ? (
                         <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
                             Loading labels...
                         </div>
@@ -646,7 +343,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
                                     onCreate={onCreate}
                                     onDelete={onDelete}
                                     onEdit={onEdit}
-                                    onSearchClear={() => setSearch('')}
+                                    onSearchClear={() => handleSearchChange('')}
                                     onToggle={onToggle}
                                 />
                             </CommandList>

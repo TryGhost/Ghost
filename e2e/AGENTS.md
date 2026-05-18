@@ -6,34 +6,36 @@ E2E testing guidance for AI assistants (Claude, Codex, etc.) working with Ghost 
 
 ## Critical Rules
 1. **Always follow ADRs** in `../adr/` folder (ADR-0001: AAA pattern, ADR-0002: Page Objects)
-2. **Always use yarn**, never npm
-3. **Always run after changes**: `yarn lint` and `yarn test:types`
+2. **Always use pnpm**, never npm
+3. **Always run after changes**: `pnpm lint` and `pnpm test:types`
 4. **Never use CSS/XPath selectors** - only semantic locators or data-testid
 5. **Prefer less comments and giving things clear names**
 
-## Essential Commands
-```bash
-yarn test                                       # Run all tests
-yarn test tests/path/to/test.ts                 # Run specific test
-yarn lint                                       # Required after writing tests
-yarn test:types                                 # Check TypeScript errors
-yarn build                                      # Required after factory changes
-yarn test --debug                               # See browser during execution, for debugging
-PRESERVE_ENV=true yarn test                     # Debug failed tests (keeps containers)
-```
+## Running E2E Tests
 
-## Dev Environment Mode (Recommended)
+**`pnpm dev` must be running before you run E2E tests.** The E2E test runner auto-detects
+whether the admin dev server is reachable at `http://127.0.0.1:5174`. If it is, tests run
+in **dev mode** (fast, no pre-built Docker image required). If not, tests fall back to
+**build mode** which requires a `ghost-e2e:local` Docker image that is only built in CI.
 
-When `yarn dev` is running, e2e tests automatically use a more efficient execution mode:
+**If you see the error `Build image not found: ghost-e2e:local`, it means `pnpm dev` is
+not running.** Start it first, wait for the admin dev server to be ready, then re-run tests.
 
 ```bash
-# Terminal 1: Start dev environment
-yarn dev
+# Terminal 1 (or background): Start dev environment from the repo root
+pnpm dev
 
-# Terminal 2: Run e2e tests (automatically uses dev environment)
-cd e2e && yarn test
+# Wait for the admin dev server to be reachable (http://127.0.0.1:5174)
+
+# Terminal 2: Run e2e tests from the e2e/ directory
+pnpm test                                       # Run all tests
+pnpm test tests/path/to/test.ts                 # Run specific test
+pnpm lint                                       # Required after writing tests
+pnpm test:types                                 # Check TypeScript errors
+pnpm build                                      # Required after factory changes
+pnpm test --debug                               # See browser during execution, for debugging
+PRESERVE_ENV=true pnpm test                     # Debug failed tests (keeps containers)
 ```
-
 ## Test Structure
 
 ### Naming Conventions
@@ -109,15 +111,21 @@ const post = await postFactory.create({userId: user.id});
 ## Best Practices
 
 ### DO ✅
-- Each test gets fresh Ghost instance (automatic isolation)
+- Use `usePerTestIsolation()` from `@/helpers/playwright/isolation` if a file needs per-test isolation
+- Treat `config` and `labs` as environment-identity inputs: changing them should be an intentional part of test setup
+- Use `resetEnvironment()` only in `beforeEach` hooks when you need a forced recycle inside per-file mode
+- Keep `stripeEnabled` tests in per-test mode; the fixture forces this automatically
 - Use factories for all test data
 - Use Playwright's auto-waiting
 - Run tests multiple times to ensure stability
 - Use `test.only()` for debugging single tests
 
 ### DON'T ❌
+- Use `test.describe.parallel(...)` or `test.describe.serial(...)` in e2e tests
+- Use nested `test.describe.configure({mode: ...})` (mode toggles are root-level only)
+- Call `resetEnvironment()` after resolving `baseURL`, `page`, `pageWithAuthenticatedUser`, or `ghostAccountOwner`
 - Hard-coded waits (`waitForTimeout`)
-- networkidle in waits** (`networkidle`) 
+- networkidle in waits (`networkidle`)
 - Test dependencies (Test B needs Test A)
 - Direct database manipulation
 - Multiple scenarios in one test
@@ -133,9 +141,9 @@ const post = await postFactory.create({userId: user.id});
 
 ## Validation Checklist
 After writing tests, verify:
-1. Test passes: `yarn test path/to/test.ts`
-2. Linting passes: `yarn lint`
-3. Types check: `yarn test:types`
+1. Test passes: `pnpm test path/to/test.ts`
+2. Linting passes: `pnpm lint`
+3. Types check: `pnpm test:types`
 4. Follows AAA pattern with clear sections
 5. Uses page objects appropriately
 6. Uses semantic locators or data-testid only

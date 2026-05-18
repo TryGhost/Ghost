@@ -5,6 +5,7 @@ const nock = require('nock');
 const externalRequest = require('../../../../../core/server/lib/request-external.js');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
+const dnsPromises = require('node:dns').promises;
 const {createModel} = require('./utils/index.js');
 
 // mock up job service
@@ -514,15 +515,22 @@ describe('MentionSendingService', function () {
         });
 
         it('Does not send to private IP behind DNS', async function () {
-            this.retries(1);
-            // Test that we don't make a request when a domain resolves to a private IP
-            // domaincontrol.com -> 127.0.0.1
-            const service = new MentionSendingService({externalRequest});
-            await assert.rejects(service.send({
-                source: new URL('https://example.com/source'),
-                target: new URL('https://target.com/target'),
-                endpoint: new URL('http://domaincontrol.com/webmentions')
-            }), /non-permitted private IP/);
+            // Stub DNS to return a private IP for the target domain
+            dnsPromises.lookup.restore?.();
+            const dnsStub = sinon.stub(dnsPromises, 'lookup').callsFake(() => {
+                return Promise.resolve({address: '127.0.0.1', family: 4});
+            });
+
+            try {
+                const service = new MentionSendingService({externalRequest});
+                await assert.rejects(service.send({
+                    source: new URL('https://example.com/source'),
+                    target: new URL('https://target.com/target'),
+                    endpoint: new URL('http://domaincontrol.com/webmentions')
+                }), /non-permitted private IP/);
+            } finally {
+                dnsStub.restore();
+            }
         });
     });
 });

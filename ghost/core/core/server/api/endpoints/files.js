@@ -1,4 +1,5 @@
 const storage = require('../../adapters/storage');
+const {getStorageContentType} = require('../../services/files/file-type-utils');
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -13,7 +14,7 @@ const controller = {
             const filePath = await storage.getStorage('files').save({
                 name: frame.file.originalname,
                 path: frame.file.path,
-                type: frame.file.mimetype
+                type: getStorageContentType(frame.file.originalname)
             });
 
             return {

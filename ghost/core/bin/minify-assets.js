@@ -75,6 +75,13 @@ const filesToMinify = [
         options: {
             bundle: false
         }
+    },
+    {
+        src: 'core/frontend/public/private.js',
+        dest: 'core/frontend/public/private.min.js',
+        options: {
+            bundle: false
+        }
     }
 ];
 

@@ -70,20 +70,17 @@ describe('Unit: services/url/UrlService', function () {
         assert.equal(urlService.urlGenerators.length, 1);
     });
 
-    it('fn: getResourceById', function (done) {
+    it('fn: getResourceById', function () {
         urlService.urls.getByResourceId.withArgs('id123').returns({resource: true});
         assert.equal(urlService.getResourceById('id123'), true);
 
         urlService.urls.getByResourceId.withArgs('id12345').returns(null);
 
-        try {
-            assert.equal(urlService.getResourceById('id12345'), true);
-            done(new Error('expected error'));
-        } catch (err) {
-            assertExists(err);
-            assert.equal(err.code, 'URLSERVICE_RESOURCE_NOT_FOUND');
-            done();
-        }
+        assert.throws(() => {
+            urlService.getResourceById('id12345');
+        }, {
+            code: 'URLSERVICE_RESOURCE_NOT_FOUND'
+        });
     });
 
     describe('fn: getResource', function () {

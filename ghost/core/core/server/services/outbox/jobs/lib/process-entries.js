@@ -43,7 +43,12 @@ async function markEntryCompleted({db, entryId}) {
 async function processEntry({db, entry}) {
     const handler = EVENT_HANDLERS[entry.event_type];
     if (!handler) {
-        logging.warn(`${OUTBOX_LOG_KEY} No handler for event type: ${entry.event_type}`);
+        logging.warn({
+            system: {
+                event: 'outbox.entry.no_handler',
+                event_type: entry.event_type
+            }
+        }, `${OUTBOX_LOG_KEY} No handler for event type: ${entry.event_type}`);
         await updateFailedEntry({db, entryId: entry.id, retryCount: entry.retry_count, errorMessage: `No handler for event type: ${entry.event_type}`});
         return {success: false};
     }
@@ -57,9 +62,21 @@ async function processEntry({db, entry}) {
         await updateFailedEntry({db, entryId: entry.id, retryCount: entry.retry_count, errorMessage});
 
         if (!payload) {
-            logging.error(`${handler.LOG_KEY} Failed to parse payload for entry ${entry.id}: ${errorMessage}`);
+            logging.error({
+                system: {
+                    event: 'outbox.entry.payload_parse_failed',
+                    entry_id: entry.id
+                },
+                err
+            }, `${handler.LOG_KEY} Failed to parse payload for entry ${entry.id}.`);
         } else {
-            logging.error(`${handler.LOG_KEY} Failed to send to ${handler.getLogInfo(payload)}: ${errorMessage}`);
+            logging.error({
+                system: {
+                    event: 'outbox.entry.send_failed',
+                    entry_id: entry.id
+                },
+                err
+            }, `${handler.LOG_KEY} Failed to send to ${handler.getLogInfo(payload)}.`);
         }
 
         return {success: false};
@@ -68,9 +85,14 @@ async function processEntry({db, entry}) {
     try {
         await deleteProcessedEntry({db, entryId: entry.id});
     } catch (err) {
-        const cleanupError = err?.message ?? 'Unknown error';
         await markEntryCompleted({db, entryId: entry.id});
-        logging.error(`${handler.LOG_KEY} Sent to ${handler.getLogInfo(payload)} but failed to delete outbox entry ${entry.id}: ${cleanupError}`);
+        logging.error({
+            system: {
+                event: 'outbox.entry.delete_failed',
+                entry_id: entry.id
+            },
+            err
+        }, `${handler.LOG_KEY} Sent to ${handler.getLogInfo(payload)} but failed to delete outbox entry ${entry.id}.`);
     }
 
     return {success: true};

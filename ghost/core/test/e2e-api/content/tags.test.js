@@ -2,7 +2,6 @@ const assert = require('node:assert/strict');
 const {assertExists} = require('../../utils/assertions');
 const supertest = require('supertest');
 const _ = require('lodash');
-const url = require('url');
 const configUtils = require('../../utils/config-utils');
 const config = require('../../../core/shared/config');
 const testUtils = require('../../utils');
@@ -50,9 +49,8 @@ describe('Tags Content API', function () {
             assert.equal(jsonResponse.tags[4].name, 'kitchen sink');
         }
 
-        assertExists(res.body.tags[0].url);
-        assertExists(url.parse(res.body.tags[0].url).protocol);
-        assertExists(url.parse(res.body.tags[0].url).host);
+        assert(new URL(res.body.tags[0].url).protocol);
+        assert(new URL(res.body.tags[0].url).host);
     });
 
     it('Can request tags with limit=all', async function () {

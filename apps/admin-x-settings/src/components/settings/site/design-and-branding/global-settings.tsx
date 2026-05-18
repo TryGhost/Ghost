@@ -70,7 +70,7 @@ const Option: React.FC<OptionProps<FontSelectOption, false>> = ({children, ...op
     <components.Option {...optionProps}>
         <div className={optionProps.isSelected ? 'relative flex w-full items-center justify-between gap-2' : 'group'} data-testid="select-option" data-value={optionProps.data.value}>
             <div className='flex items-center gap-3'>
-                <div className='dark:group-hover:bg-grey-800 flex size-12 items-center justify-center rounded-md bg-grey-150 text-2xl font-bold group-hover:bg-grey-250 dark:bg-grey-900'>Aa</div>
+                <div className='flex size-12 items-center justify-center rounded-md bg-grey-150 text-2xl font-bold group-hover:bg-grey-250 dark:bg-grey-900 dark:group-hover:bg-grey-800'>Aa</div>
                 <div className='flex flex-col'>
                     <span className='text-md'>{children}</span>
                     <span className='font-sans text-xs font-normal text-grey-700 dark:text-grey-600'>{optionProps.data.creator}</span>
@@ -196,12 +196,12 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                 <div className='flex items-start justify-between'>
                     <div>
                         <div>Publication icon</div>
-                        <Hint className='!mt-0 mr-5 max-w-[160px]'>A square, social icon, at least 60x60px</Hint>
+                        <Hint className='mt-0! mr-5 max-w-[160px]'>A square, social icon, at least 60x60px</Hint>
                     </div>
                     <div className='flex gap-3'>
                         <ImageUpload
-                            deleteButtonClassName='!top-1 !right-1'
-                            editButtonClassName='!top-1 !right-1'
+                            deleteButtonClassName='top-1! right-1!'
+                            editButtonClassName='top-1! right-1!'
                             height={values.icon ? '66px' : '36px'}
                             id='logo'
                             imageBWCheckedBg={true}
@@ -227,11 +227,11 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                 <div className={`flex items-start justify-between ${values.icon && 'mt-2'}`}>
                     <div>
                         <div>Publication logo</div>
-                        <Hint className='!mt-0 mr-5 max-w-[160px]'>Appears usually in the main header of your theme</Hint>
+                        <Hint className='mt-0! mr-5 max-w-[160px]'>Appears usually in the main header of your theme</Hint>
                     </div>
                     <div>
                         <ImageUpload
-                            deleteButtonClassName='!top-1 !right-1'
+                            deleteButtonClassName='top-1! right-1!'
                             height='60px'
                             id='site-logo'
                             imageBWCheckedBg={true}
@@ -258,11 +258,11 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                 <div className='mt-2 flex items-start justify-between' data-testid="publication-cover">
                     <div>
                         <div>Publication cover</div>
-                        <Hint className='!mt-0 mr-5 max-w-[160px]'>Usually as a large banner image on your index pages</Hint>
+                        <Hint className='mt-0! mr-5 max-w-[160px]'>Usually as a large banner image on your index pages</Hint>
                     </div>
                     <ImageUpload
-                        deleteButtonClassName='!top-1 !right-1'
-                        editButtonClassName='!top-1 !right-10'
+                        deleteButtonClassName='top-1! right-1!'
+                        editButtonClassName='top-1! right-10!'
                         height='95px'
                         id='cover'
                         imageURL={values.coverImage || ''}
@@ -282,7 +282,7 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                                 })
                             }
                         }
-                        unsplashButtonClassName='!bg-transparent !h-6 !top-1.5 !w-6 !right-1.5 z-50'
+                        unsplashButtonClassName='bg-transparent! h-6! top-1.5! w-6! right-1.5! z-50'
                         unsplashEnabled={unsplashEnabled}
                         width='160px'
                         onDelete={() => updateSetting('cover_image', null)}
@@ -322,7 +322,7 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                 <Select
                     className={selectFont(selectedHeadingFont.label, true)}
                     components={{Option, SingleValue}}
-                    controlClasses={{control: '!min-h-16 !pl-2', option: '!pl-2'}}
+                    controlClasses={{control: 'min-h-16! pl-2!', option: 'pl-2!'}}
                     hint={''}
                     menuShouldScrollIntoView={true}
                     options={customHeadingFonts}
@@ -342,7 +342,7 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                 <Select
                     className={selectFont(selectedBodyFont.label, false)}
                     components={{Option, SingleValue}}
-                    controlClasses={{control: '!min-h-16 !pl-2', option: '!pl-2'}}
+                    controlClasses={{control: 'min-h-16! pl-2!', option: 'pl-2!'}}
                     hint={''}
                     maxMenuHeight={200}
                     menuPosition='fixed'

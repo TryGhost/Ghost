@@ -23,7 +23,7 @@ class Resource extends EventEmitter {
 
     /**
      * @description Get the type of the resource e.g. posts, users ...
-     * @returns {String} type
+     * @returns {string} type
      */
     getType() {
         return this.config.type;

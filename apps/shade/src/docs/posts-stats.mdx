@@ -1,0 +1,34 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Posts–Stats / Posts–Stats Overview" />
+
+<div className="sb-doc">
+
+# Posts–Stats
+
+<p className="excerpt">A temporary parking spot for components shared between the Posts (<code>apps/posts</code>) and Stats (<code>apps/stats</code>) apps until they merge. Not a pattern layer.</p>
+
+## Why this exists
+
+The Posts and Stats apps were split apart by an earlier architectural decision that is being reversed. While they're still separate, some components need to be shared between them — and those are post-analytics-specific, so they don't qualify as real Shade patterns ([Layers](?path=/docs/overview-layers--docs)).
+
+Today this folder holds [`PostShareModal`](?path=/docs/posts-stats-postsharemodal--docs).
+
+## Usage
+
+```tsx
+import {PostShareModal} from '@tryghost/shade/posts-stats';
+```
+
+The separate `@tryghost/shade/posts-stats` entrypoint is deliberate — it makes the temporary status visible at the call site so the eventual cleanup is mechanical.
+
+## When this category goes away
+
+When the Posts and Stats apps merge, this folder and its entrypoint disappear and the components move into the merged app.
+
+## Don't add things here that are
+
+- **Shared across 3+ apps** — that's a real Shade Pattern. Apply the [promotion rules](?path=/docs/overview-layers--docs) and add under `patterns/`.
+- **Shared between two apps that aren't Posts and Stats** — this folder is named for one historical situation. Don't generalise it.
+
+</div>

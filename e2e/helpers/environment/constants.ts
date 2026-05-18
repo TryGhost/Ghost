@@ -53,7 +53,7 @@ export const TINYBIRD = {
 
 /**
  * Configuration for dev environment mode.
- * Used when yarn dev infrastructure is detected.
+ * Used when pnpm dev infrastructure is detected.
  */
 export const DEV_ENVIRONMENT = {
     projectNamespace: DEV_COMPOSE_PROJECT,

@@ -9,7 +9,7 @@ import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const SignupOptionImage: React.FC<{color:string, title: string, price: string}> = ({title, color, price}) => {
     return (
-        <div className='rounded-lg bg-grey-100/70 px-3 pb-3 pt-1.5'>
+        <div className='rounded-lg bg-grey-100/70 px-3 pt-1.5 pb-3'>
             <div className='font-space-grotesk text-[1.5rem] font-bold' style={{
                 color: color
             }}>{title}</div>
@@ -43,8 +43,8 @@ const Portal: React.FC<{ keywords: string[] }> = ({keywords}) => {
             testId='portal'
             title="Signup portal"
         >
-            <div className="relative isolate -mx-5 -mb-5 hidden flex-col items-center justify-end overflow-hidden rounded-b-xl bg-grey-50 px-5 pt-6 text-black sm:!visible sm:!flex md:-mx-7 md:-mb-7">
-                <div className='absolute bottom-6 right-6 flex size-12 items-center justify-center rounded-full text-white shadow-lg' style={{
+            <div className="relative isolate -mx-5 -mb-5 hidden flex-col items-center justify-end overflow-hidden rounded-b-xl bg-grey-50 px-5 pt-6 text-black sm:visible! sm:flex! md:-mx-7 md:-mb-7">
+                <div className='absolute right-6 bottom-6 flex size-12 items-center justify-center rounded-full text-white shadow-lg' style={{
                     backgroundColor: color
                 }}>
                     <img className='size-6' src={UserAddIcon} />

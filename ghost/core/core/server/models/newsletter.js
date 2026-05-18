@@ -26,6 +26,7 @@ const Newsletter = ghostBookshelf.Model.extend({
             show_comment_cta: true,
             show_subscription_details: false,
             show_latest_posts: false,
+            show_share_button: false,
             background_color: 'light',
             feedback_enabled: false,
             show_excerpt: false,
@@ -121,7 +122,7 @@ const Newsletter = ghostBookshelf.Model.extend({
 }, {
     /**
      * Returns an array of keys permitted in a method's `options` hash, depending on the current method.
-     * @param {String} methodName The name of the method to check valid options for.
+     * @param {string} methodName The name of the method to check valid options for.
      * @return {Array} Keys allowed in the `options` hash of the model's method.
      */
     permittedOptions: function permittedOptions(methodName) {

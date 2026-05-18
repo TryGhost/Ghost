@@ -11,6 +11,7 @@ const DomainEvents = require('@tryghost/domain-events');
 const emailService = require('../../../../core/server/services/email-service');
 const {mockSetting, stripeMocker} = require('../../../utils/e2e-framework-mock-manager');
 const {sendEmail, sendFailedEmail, matchEmailSnapshot, getDefaultNewsletter, retryEmail} = require('../../../utils/batch-email-utils');
+const {setupEmailVerificationUtils, restoreEmailVerificationUtils} = require('../../../utils/email-verification-utils');
 
 const mobileDocExample = '{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"Hello world"]]]],"ghostVersion":"4.0"}';
 const mobileDocWithPaywall = '{"version":"0.3.1","markups":[],"atoms":[],"cards":[["paywall",{}]],"sections":[[1,"p",[[0,[],0,"Free content"]]],[10,0],[1,"p",[[0,[],0,"Members content"]]]]}';
@@ -503,12 +504,10 @@ describe.skip('Batch sending tests', function () {
 
     it('Cannot send an email if verification is required', async function () {
         // First enable import thresholds
-        configUtils.set('hostSettings:emailVerification', {
+        setupEmailVerificationUtils({
             apiThreshold: 100,
             adminThreshold: 100,
-            importThreshold: 100,
-            verified: false,
-            escalationAddress: 'test@example.com'
+            importThreshold: 100
         });
 
         // We stub a lot of imported members to mimic a large import that is in progress but is not yet finished
@@ -552,7 +551,7 @@ describe.skip('Batch sending tests', function () {
         sinon.assert.calledTwice(getSignupEvents);
         assert.equal(settingsCache.get('email_verification_required'), true);
 
-        await configUtils.restore();
+        await restoreEmailVerificationUtils();
     });
 
     // FLAKEY
@@ -898,6 +897,69 @@ describe.skip('Batch sending tests', function () {
 
             // undo
             await models.Newsletter.edit({show_comment_cta: true}, {id: defaultNewsletter.id});
+        });
+
+        it('Shows share button when enabled in newsletter for public, members, paid, and tiers posts', async function () {
+            mockSetting('email_track_clicks', false); // Disable link replacement for this test
+
+            const defaultNewsletter = await getDefaultNewsletter();
+            const originalShowShareButton = defaultNewsletter.get('show_share_button');
+            await models.Newsletter.edit({show_share_button: true}, {id: defaultNewsletter.id});
+
+            try {
+                for (const visibility of ['public', 'members', 'paid', 'tiers']) {
+                    const {html} = await sendEmail(agent, {
+                        title: `This is a test post title (${visibility})`,
+                        mobiledoc: mobileDocExample,
+                        visibility
+                    });
+
+                    assert.match(html, /#\/share/, `Expected share button for "${visibility}" visibility`);
+                }
+            } finally {
+                await models.Newsletter.edit({show_share_button: originalShowShareButton}, {id: defaultNewsletter.id});
+            }
+        });
+
+        it('Hides share button for email-only posts', async function () {
+            mockSetting('email_track_clicks', false); // Disable link replacement for this test
+
+            const defaultNewsletter = await getDefaultNewsletter();
+            const originalShowShareButton = defaultNewsletter.get('show_share_button');
+            await models.Newsletter.edit({show_share_button: true}, {id: defaultNewsletter.id});
+
+            try {
+                const {html} = await sendEmail(agent, {
+                    title: 'This is a test post title',
+                    mobiledoc: mobileDocExample,
+                    visibility: 'members',
+                    email_only: true
+                });
+
+                assert.doesNotMatch(html, /#\/share/);
+            } finally {
+                await models.Newsletter.edit({show_share_button: originalShowShareButton}, {id: defaultNewsletter.id});
+            }
+        });
+
+        it('Hides share button when disabled in newsletter', async function () {
+            mockSetting('email_track_clicks', false); // Disable link replacement for this test
+
+            const defaultNewsletter = await getDefaultNewsletter();
+            const originalShowShareButton = defaultNewsletter.get('show_share_button');
+            await models.Newsletter.edit({show_share_button: false}, {id: defaultNewsletter.id});
+
+            try {
+                const {html} = await sendEmail(agent, {
+                    title: 'This is a test post title',
+                    mobiledoc: mobileDocExample,
+                    visibility: 'public'
+                });
+
+                assert.doesNotMatch(html, /#\/share/);
+            } finally {
+                await models.Newsletter.edit({show_share_button: originalShowShareButton}, {id: defaultNewsletter.id});
+            }
         });
 
         it('Shows subscription details box for free members', async function () {

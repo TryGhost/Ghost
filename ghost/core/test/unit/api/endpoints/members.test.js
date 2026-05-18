@@ -6,7 +6,6 @@ describe('Members controller', function () {
 
     before(function () {
         models = require('../../../../core/server/models');
-        models.init();
     });
 
     beforeEach(function () {

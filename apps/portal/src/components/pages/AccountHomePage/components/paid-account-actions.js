@@ -1,8 +1,9 @@
 import AppContext from '../../../../app-context';
-import {addMonths, getCompExpiry, getMemberSubscription, getMemberTierName, hasMultipleProductsFeature, hasOnlyFreePlan, isComplimentaryMember, isPaidMember, subscriptionHasFreeTrial} from '../../../../utils/helpers';
+import {getSubscriptionExpiry, getMemberSubscription, getMemberTierName, hasMultipleProductsFeature, hasOnlyFreePlan, isArchivedTier, isComplimentaryMember, isGiftMember, isPaidMember, isStripeConfigured, subscriptionHasFreeTrial} from '../../../../utils/helpers';
 import {getDateString} from '../../../../utils/date-time';
-import {ReactComponent as LoaderIcon} from '../../../../images/icons/loader.svg';
-import {ReactComponent as OfferTagIcon} from '../../../../images/icons/offer-tag.svg';
+import GiftIcon from '../../../../images/icons/gift.svg?react';
+import LoaderIcon from '../../../../images/icons/loader.svg?react';
+import OfferTagIcon from '../../../../images/icons/offer-tag.svg?react';
 import {useContext} from 'react';
 import {t} from '../../../../utils/i18n';
 
@@ -15,8 +16,7 @@ const PaidAccountActions = () => {
     };
 
     const openUpdatePlan = () => {
-        const {is_stripe_configured: isStripeConfigured} = site;
-        if (isStripeConfigured) {
+        if (isStripeConfigured({site})) {
             doAction('switchPage', {
                 page: 'accountPlan',
                 lastPage: 'accountHome'
@@ -33,12 +33,22 @@ const PaidAccountActions = () => {
             label = `${Intl.NumberFormat('en', {currency, style: 'currency'}).format(amount / 100)}/${t(interval)}`;
         }
 
-        const compExpiry = getCompExpiry({member});
-        if (isComplimentary) {
-            if (compExpiry) {
-                label = `${t('Complimentary')} - ${t('Expires {expiryDate}', {expiryDate: compExpiry})}`;
+        const subscriptionExpiry = getSubscriptionExpiry({member});
+
+        if (isGiftMember({member}) && subscriptionExpiry) {
+            return (
+                <p className="gh-portal-account-discountcontainer">
+                    <GiftIcon className="gh-portal-account-tagicon" />
+                    <span>{t('Gift subscription')}</span>
+                    <span className="gh-portal-account-expiry-separator">-</span>
+                    <span className="gh-portal-account-expiry">{t('Expires {expiryDate}', {expiryDate: subscriptionExpiry})}</span>
+                </p>
+            );
+        } else if (isComplimentary) {
+            if (subscriptionExpiry) {
+                label = `${t('Complimentary')} - ${t('Expires {expiryDate}', {expiryDate: subscriptionExpiry})}`;
             } else {
-                label = label ? `${t('Complimentary')} (${label})` : t(`Complimentary`);
+                label = t('Complimentary');
             }
         }
 
@@ -59,10 +69,7 @@ const PaidAccountActions = () => {
             );
         }
 
-        let offerLabelStr = getOfferLabel({
-            nextPayment,
-            currentPeriodEnd: subscription?.current_period_end
-        });
+        let offerLabelStr = getOfferLabel({nextPayment});
 
         if (offerLabelStr) {
             oldPriceClassName = 'gh-portal-account-old-price';
@@ -91,8 +98,34 @@ const PaidAccountActions = () => {
     };
 
     const PlanUpdateButton = ({isPaid}) => {
-        if (hasOnlyFreePlan({site}) && !isPaid) {
+        const hasGiftSubscription = isGiftMember({member});
+
+        if (hasGiftSubscription && !isStripeConfigured({site})) {
             return null;
+        }
+
+        const canContinueGiftSubscription = hasGiftSubscription && !isArchivedTier({member, site});
+
+        // If no paid tiers are available, hide the plan update button for:
+        // - Free members, as they have no paid plans to upgrade to
+        // - Gift members on archived tiers, as they have no paid plans to upgrade to
+        //
+        // In constrast, still render the button for:
+        // - Paid members so that they can adjust the cadence on their existing sub
+        // - Comped members so that they can contact publishers to make changes to their complimentary access
+        if (hasOnlyFreePlan({site}) && (!isPaid || (hasGiftSubscription && !canContinueGiftSubscription))) {
+            return null;
+        }
+
+        if (canContinueGiftSubscription) {
+            return (
+                <button
+                    className='gh-portal-btn gh-portal-btn-list' onClick={() => doAction('continueGiftSubscription')}
+                    data-test-button='continue-gift-subscription'
+                >
+                    {t('Continue')}
+                </button>
+            );
         }
         return (
             <button
@@ -116,14 +149,11 @@ const PaidAccountActions = () => {
         return null;
     };
 
-    const BillingSection = ({defaultCardLast4, isComplimentary}) => {
+    const BillingSection = ({defaultCardLast4}) => {
         const {action} = useContext(AppContext);
         const label = action === 'manageBilling:running' ? (
             <LoaderIcon className='gh-portal-billing-button-loader' />
         ) : t('Update');
-        if (isComplimentary) {
-            return null;
-        }
 
         return (
             <section>
@@ -144,6 +174,7 @@ const PaidAccountActions = () => {
 
     const subscription = getMemberSubscription({member});
     const isComplimentary = isComplimentaryMember({member});
+    const isGift = isGiftMember({member});
     const isPaid = isPaidMember({member});
     if (subscription || isComplimentary) {
         const {
@@ -174,7 +205,7 @@ const PaidAccountActions = () => {
                     </div>
                     <PlanUpdateButton isPaid={isPaid} />
                 </section>
-                <BillingSection isComplimentary={isComplimentary} defaultCardLast4={defaultCardLast4} />
+                {!isComplimentary && !isGift && <BillingSection defaultCardLast4={defaultCardLast4} />}
             </>
         );
     }
@@ -212,14 +243,13 @@ function FreeTrialLabel({subscription}) {
  * @param {'once'|'repeating'|'forever'} nextPayment.discount.duration
  * @param {number|null} nextPayment.discount.duration_in_months - Discount duration in months for "repeating" offers
  * @param {string} nextPayment.discount.start - Discount start date (ISO 8601 date string)
- * @param {string|null} nextPayment.discount.end - Discount end date (ISO 8601 date string), null for forever / once offers
+ * @param {string|null} nextPayment.discount.end - Discount end date (ISO 8601 date string), null for forever offers
  * @param {'fixed'|'percent'} nextPayment.discount.type
  * @param {number} nextPayment.discount.amount - Discount amount (e.g. 20 for 20% percent offer, or 2 for $2 fixed offer)
- * @param {string} currentPeriodEnd - Subscription current period end (ISO 8601 date string)
  *
  * @returns {string}
  */
-function getOfferLabel({nextPayment, currentPeriodEnd}) {
+function getOfferLabel({nextPayment}) {
     if (!nextPayment) {
         return '';
     }
@@ -231,19 +261,9 @@ function getOfferLabel({nextPayment, currentPeriodEnd}) {
         return '';
     }
 
-    let durationLabel = '';
-    if (discount.duration === 'forever') {
-        durationLabel = t('Forever');
-    } else if (discount.duration === 'repeating' && currentPeriodEnd) {
-        // Stripe discount dates are anchored to redemption time, not billing cycle, so we can't use discount.end here
-        const offerEndDate = addMonths(currentPeriodEnd, discount.duration_in_months - 1);
-        if (offerEndDate) {
-            durationLabel = t('Ends {offerEndDate}', {offerEndDate: getDateString(offerEndDate)});
-        }
-    } else if (discount.duration === 'once' && currentPeriodEnd) {
-        // By design, "once" offers don't have a discount end in Stripe. They expire at the end of the current billing period.
-        durationLabel = t('Ends {offerEndDate}', {offerEndDate: getDateString(currentPeriodEnd)});
-    }
+    const durationLabel = discount.end
+        ? t('Ends {offerEndDate}', {offerEndDate: getDateString(discount.end)})
+        : t('Forever');
 
     const formattedPrice = Intl.NumberFormat('en', {currency: nextPayment.currency, style: 'currency'}).format(nextPayment.amount / 100);
 

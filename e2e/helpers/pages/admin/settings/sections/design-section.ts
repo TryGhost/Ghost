@@ -7,6 +7,7 @@ export class DesignSection extends BasePage {
     readonly designModal: Locator;
     readonly unsplashButton: Locator;
     readonly unsplashHeading: Locator;
+    readonly unsplashPhotos: Locator;
     readonly coverImage: Locator;
 
     constructor(page: Page) {
@@ -17,6 +18,7 @@ export class DesignSection extends BasePage {
         this.designModal = page.getByTestId('design-modal');
         this.unsplashButton = page.getByTestId('toggle-unsplash-button');
         this.unsplashHeading = page.getByRole('heading', {name: 'Unsplash', level: 1});
+        this.unsplashPhotos = page.locator('[data-kg-unsplash-gallery-img]');
         this.coverImage = page.getByTestId('publication-cover');
     }
 

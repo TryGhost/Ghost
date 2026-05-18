@@ -1,4 +1,4 @@
-import {ErrorPage} from '@tryghost/shade';
+import {ErrorPage} from '@tryghost/shade/primitives';
 import {RouteObject, lazyComponent} from '@tryghost/admin-x-framework';
 // import {withFeatureFlag} from '@src/hooks/with-feature-flag';
 
@@ -70,8 +70,17 @@ export const routes: RouteObject[] = [
                 lazy: lazyComponent(() => import('@views/comments/comments'))
             },
             {
-                path: 'members-forward',
-                lazy: lazyComponent(() => import('@views/members/members'))
+                path: 'automations',
+                children: [
+                    {
+                        index: true,
+                        lazy: lazyComponent(() => import('@views/Automations/automations'))
+                    },
+                    {
+                        path: ':id',
+                        lazy: lazyComponent(() => import('@views/Automations/editor'))
+                    }
+                ]
             },
 
             // Error handling

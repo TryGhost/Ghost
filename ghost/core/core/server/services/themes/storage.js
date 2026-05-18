@@ -12,6 +12,10 @@ const ThemeStorage = require('./theme-storage');
 const themeLoader = require('./loader');
 const activator = require('./activation-bridge');
 const toJSON = require('./to-json');
+const {
+    isThemeUploadSizeLimitError,
+    reportThemeUploadSizeLimitError
+} = require('./upload-size-limit-reporter');
 
 const settingsCache = require('../../../shared/settings-cache');
 
@@ -94,6 +98,14 @@ module.exports = {
                 theme: toJSON(themeName, themeErrors)
             };
         } catch (error) {
+            if (isThemeUploadSizeLimitError(error)) {
+                try {
+                    reportThemeUploadSizeLimitError(error, {themeName, zip});
+                } catch (reportingError) {
+                    logging.error(reportingError);
+                }
+            }
+
             // restore backup if we renamed an existing theme but saving failed
             if (renamedExisting) {
                 return getStorage().exists(themeName).then((themeExists) => {

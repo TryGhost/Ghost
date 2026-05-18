@@ -6,9 +6,6 @@ const {Store} = require('express-session');
 const sinon = require('sinon');
 
 describe('Auth Service SessionStore', function () {
-    before(function () {
-        models.init();
-    });
     afterEach(function () {
         sinon.restore();
     });

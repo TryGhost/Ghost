@@ -5,7 +5,7 @@ const sinon = require('sinon');
 const CheckoutSessionEventService = require('../../../../../../../core/server/services/stripe/services/webhook/checkout-session-event-service');
 
 describe('CheckoutSessionEventService', function () {
-    let api, memberRepository, donationRepository, staffServiceEmails, sendSignupEmail, isPaidWelcomeEmailActive;
+    let api, memberRepository, donationRepository, giftService, staffServiceEmails, sendSignupEmail, isPaidWelcomeEmailActive;
 
     beforeEach(function () {
         api = {
@@ -31,6 +31,10 @@ describe('CheckoutSessionEventService', function () {
             save: sinon.stub()
         };
 
+        giftService = {
+            recordPurchase: sinon.stub().resolves(true)
+        };
+
         staffServiceEmails = {
             notifyDonationReceived: sinon.stub()
         };
@@ -44,6 +48,7 @@ describe('CheckoutSessionEventService', function () {
             api,
             memberRepository,
             donationRepository,
+            giftService,
             staffServiceEmails,
             sendSignupEmail,
             isPaidWelcomeEmailActive,
@@ -82,18 +87,30 @@ describe('CheckoutSessionEventService', function () {
             sinon.assert.calledWith(handleDonationEventStub, session);
         });
 
-        it('should do nothing if session mode is not setup, subscription, or payment', async function () {
+        it('should call handleGiftEvent if session mode is payment and session metadata ghost_gift is present', async function () {
+            const service = createService();
+            const session = {mode: 'payment', metadata: {ghost_gift: 'true'}};
+            const handleGiftEventStub = sinon.stub(service, 'handleGiftEvent');
+
+            await service.handleEvent(session);
+
+            sinon.assert.calledWith(handleGiftEventStub, session);
+        });
+
+        it('should do nothing if session mode is unsupported', async function () {
             const service = createService();
             const session = {mode: 'unsupported_mode'};
             const handleSetupEventStub = sinon.stub(service, 'handleSetupEvent');
             const handleSubscriptionEventStub = sinon.stub(service, 'handleSubscriptionEvent');
             const handleDonationEventStub = sinon.stub(service, 'handleDonationEvent');
+            const handleGiftEventStub = sinon.stub(service, 'handleGiftEvent');
 
             await service.handleEvent(session);
 
             sinon.assert.notCalled(handleSetupEventStub);
             sinon.assert.notCalled(handleSubscriptionEventStub);
             sinon.assert.notCalled(handleDonationEventStub);
+            sinon.assert.notCalled(handleGiftEventStub);
         });
     });
 
@@ -544,6 +561,75 @@ describe('CheckoutSessionEventService', function () {
             } catch (err) {
                 assert(err instanceof errors.ConflictError);
             }
+        });
+    });
+
+    describe('handleGiftEvent', function () {
+        it('calls giftService.recordPurchase with session data', async function () {
+            const service = createService();
+            const session = {
+                id: 'cs_test_123',
+                mode: 'payment',
+                amount_total: 5000,
+                currency: 'usd',
+                customer: 'cust_123',
+                payment_intent: 'pi_test_456',
+                customer_details: {
+                    email: 'buyer@example.com'
+                },
+                metadata: {
+                    ghost_gift: 'true',
+                    gift_token: 'abc-123-token',
+                    tier_id: 'tier_456',
+                    cadence: 'year',
+                    duration: '1'
+                }
+            };
+
+            await service.handleGiftEvent(session);
+
+            sinon.assert.calledOnce(giftService.recordPurchase);
+
+            const purchaseData = giftService.recordPurchase.getCall(0).args[0];
+
+            assert.equal(purchaseData.token, 'abc-123-token');
+            assert.equal(purchaseData.buyerEmail, 'buyer@example.com');
+            assert.equal(purchaseData.stripeCustomerId, 'cust_123');
+            assert.equal(purchaseData.tierId, 'tier_456');
+            assert.equal(purchaseData.cadence, 'year');
+            assert.equal(purchaseData.duration, '1');
+            assert.equal(purchaseData.currency, 'usd');
+            assert.equal(purchaseData.amount, 5000);
+            assert.equal(purchaseData.stripeCheckoutSessionId, 'cs_test_123');
+            assert.equal(purchaseData.stripePaymentIntentId, 'pi_test_456');
+        });
+
+        it('passes null stripeCustomerId for unauthenticated purchasers', async function () {
+            const service = createService();
+            const session = {
+                id: 'cs_test_123',
+                mode: 'payment',
+                amount_total: 3000,
+                currency: 'gbp',
+                customer: null,
+                payment_intent: 'pi_test_789',
+                customer_details: {
+                    email: 'guest@example.com'
+                },
+                metadata: {
+                    ghost_gift: 'true',
+                    gift_token: 'def-456-token',
+                    tier_id: 'tier_111',
+                    cadence: 'month',
+                    duration: '1'
+                }
+            };
+
+            await service.handleGiftEvent(session);
+
+            const purchaseData = giftService.recordPurchase.getCall(0).args[0];
+
+            assert.equal(purchaseData.stripeCustomerId, null);
         });
     });
 

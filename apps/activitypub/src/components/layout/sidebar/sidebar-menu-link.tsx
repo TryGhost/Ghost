@@ -1,6 +1,7 @@
 import * as React from 'react';
-import {Button, ButtonProps, cn, formatNumber} from '@tryghost/shade';
+import {Button, ButtonProps} from '@tryghost/shade/components';
 import {Link, resetScrollPosition, useLocation, useNavigationStack} from '@tryghost/admin-x-framework';
+import {cn, formatNumber} from '@tryghost/shade/utils';
 
 import {useAppBasePath} from '@src/hooks/use-app-base-path';
 

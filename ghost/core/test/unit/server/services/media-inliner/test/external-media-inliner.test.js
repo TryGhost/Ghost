@@ -5,6 +5,8 @@ const sinon = require('sinon');
 const nock = require('nock');
 const path = require('path');
 const loggingLib = require('@tryghost/logging');
+const configUtils = require('../../../../../utils/config-utils');
+const urlUtils = require('../../../../../../core/shared/url-utils');
 const ExternalMediaInliner = require('../../../../../../core/server/services/media-inliner/external-media-inliner');
 
 describe('ExternalMediaInliner', function () {
@@ -987,6 +989,149 @@ describe('ExternalMediaInliner', function () {
 
             assert.equal(matches.length, 1);
             assert.equal(matches[0], 'https://example.com/image/one.png');
+        });
+    });
+
+    describe('CDN storage adapter', function () {
+        const CDN_BASE_URL = 'https://storage.ghost.is/c/6f/a3/site';
+        let originalAssetBaseUrls;
+
+        beforeEach(function () {
+            configUtils.set('urls:image', CDN_BASE_URL);
+            configUtils.set('urls:media', CDN_BASE_URL);
+            configUtils.set('urls:files', CDN_BASE_URL);
+
+            originalAssetBaseUrls = {...urlUtils._assetBaseUrls};
+            urlUtils._assetBaseUrls = {
+                image: CDN_BASE_URL,
+                media: CDN_BASE_URL,
+                files: CDN_BASE_URL
+            };
+        });
+
+        afterEach(async function () {
+            urlUtils._assetBaseUrls = originalAssetBaseUrls;
+            await configUtils.restore();
+        });
+
+        it('inlineContent stores correct __GHOST_URL__ path when saveRaw returns CDN URL', async function () {
+            const imageURL = 'https://external.com/files/photo.jpg';
+            const cdnUrl = 'https://storage.ghost.is/c/6f/a3/site/content/images/unique-photo.jpg';
+            nock('https://external.com')
+                .get('/files/photo.jpg')
+                .reply(200, GIF1x1);
+
+            sinon.stub(path, 'relative')
+                .withArgs('/content/images', '/content/images/unique-photo.jpg')
+                .returns('unique-photo.jpg');
+
+            const inliner = new ExternalMediaInliner({
+                PostModel: postModelStub,
+                PostMetaModel: postMetaModelStub,
+                TagModel: tagModelStub,
+                UserModel: userModelStub,
+                getMediaStorage: sinon.stub().withArgs('.gif').returns({
+                    storagePath: '/content/images',
+                    staticFileURLPrefix: '/content/images',
+                    getTargetDir: () => '/content/images',
+                    getUniqueFileName: () => '/content/images/unique-photo.jpg',
+                    saveRaw: () => cdnUrl
+                })
+            });
+
+            const content = `{"cards":[["image",{"src":"${imageURL}"}]]}`;
+            const result = await inliner.inlineContent(content, ['https://external.com']);
+
+            assert.equal(result, '{"cards":[["image",{"src":"__GHOST_URL__/content/images/unique-photo.jpg"}]]}');
+        });
+
+        it('inlineContent stores correct __GHOST_URL__ path when saveRaw returns relative path (local storage)', async function () {
+            const imageURL = 'https://external.com/files/photo.jpg';
+            nock('https://external.com')
+                .get('/files/photo.jpg')
+                .reply(200, GIF1x1);
+
+            sinon.stub(path, 'relative')
+                .withArgs('/content/images', '/content/images/unique-photo.jpg')
+                .returns('unique-photo.jpg');
+
+            const inliner = new ExternalMediaInliner({
+                PostModel: postModelStub,
+                PostMetaModel: postMetaModelStub,
+                TagModel: tagModelStub,
+                UserModel: userModelStub,
+                getMediaStorage: sinon.stub().withArgs('.gif').returns({
+                    storagePath: '/content/images',
+                    staticFileURLPrefix: '/content/images',
+                    getTargetDir: () => '/content/images',
+                    getUniqueFileName: () => '/content/images/unique-photo.jpg',
+                    saveRaw: () => '/content/images/unique-photo.jpg'
+                })
+            });
+
+            const content = `{"cards":[["image",{"src":"${imageURL}"}]]}`;
+            const result = await inliner.inlineContent(content, ['https://external.com']);
+
+            assert.equal(result, '{"cards":[["image",{"src":"__GHOST_URL__/content/images/unique-photo.jpg"}]]}');
+        });
+
+        it('inlineFields stores correct __GHOST_URL__ path when saveRaw returns CDN URL', async function () {
+            const imageURL = 'https://external.com/files/feature.jpg';
+            const cdnUrl = 'https://storage.ghost.is/c/6f/a3/site/content/images/unique-feature.jpg';
+            nock('https://external.com')
+                .get('/files/feature.jpg')
+                .reply(200, GIF1x1);
+
+            sinon.stub(path, 'relative')
+                .withArgs('/content/images', '/content/images/unique-feature.jpg')
+                .returns('unique-feature.jpg');
+
+            const inliner = new ExternalMediaInliner({
+                getMediaStorage: sinon.stub().withArgs('.gif').returns({
+                    storagePath: '/content/images',
+                    staticFileURLPrefix: '/content/images',
+                    getTargetDir: () => '/content/images',
+                    getUniqueFileName: () => '/content/images/unique-feature.jpg',
+                    saveRaw: () => cdnUrl
+                })
+            });
+
+            const resourceStub = {
+                get: sinon.stub().withArgs('feature_image').returns(imageURL)
+            };
+
+            const updatedFields = await inliner.inlineFields(resourceStub, ['feature_image'], ['https://external.com']);
+
+            assert.equal(updatedFields.feature_image, '__GHOST_URL__/content/images/unique-feature.jpg');
+        });
+
+        it('inlineFields stores correct __GHOST_URL__ path when saveRaw returns relative path (local storage)', async function () {
+            const imageURL = 'https://external.com/files/feature.jpg';
+            nock('https://external.com')
+                .get('/files/feature.jpg')
+                .reply(200, GIF1x1);
+
+            sinon.stub(path, 'relative')
+                .withArgs('/content/images', '/content/images/unique-feature.jpg')
+                .returns('unique-feature.jpg');
+
+            const inliner = new ExternalMediaInliner({
+                getMediaStorage: sinon.stub().withArgs('.gif').returns({
+                    storagePath: '/content/images',
+                    staticFileURLPrefix: '/content/images',
+                    getTargetDir: () => '/content/images',
+                    getUniqueFileName: () => '/content/images/unique-feature.jpg',
+                    saveRaw: () => '/content/images/unique-feature.jpg'
+                })
+            });
+
+            const resourceStub = {
+                get: sinon.stub().withArgs('feature_image').returns(imageURL)
+            };
+
+            const updatedFields = await inliner.inlineFields(resourceStub, ['feature_image'], ['https://external.com']);
+
+            assert.equal(updatedFields.feature_image, '__GHOST_URL__/content/images/unique-feature.jpg');
         });
     });
 

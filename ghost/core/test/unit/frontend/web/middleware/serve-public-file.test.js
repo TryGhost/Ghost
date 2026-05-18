@@ -190,4 +190,26 @@ describe('servePublicFile', function () {
 
         assert(fileStub.firstCall.args[0].endsWith('/public/something.css'));
     });
+
+    it('can serve the private page runtime asset from the static public directory', function () {
+        const middleware = servePublicFile('static', 'public/private.min.js', 'application/javascript', 3600);
+        const body = 'console.log("private");';
+        req.path = '/public/private.min.js';
+
+        let fileStub = sinon.stub(fs, 'readFile').callsFake(function (file, cb) {
+            cb(null, body);
+        });
+
+        res = {
+            writeHead: sinon.spy(),
+            end: sinon.spy()
+        };
+
+        middleware(req, res, next);
+
+        sinon.assert.notCalled(next);
+        sinon.assert.called(res.writeHead);
+        assert.equal(res.writeHead.args[0][0], 200);
+        assert(fileStub.firstCall.args[0].endsWith('core/frontend/public/private.min.js'));
+    });
 });

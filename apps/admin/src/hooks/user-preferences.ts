@@ -10,14 +10,27 @@ const WhatsNewPreferencesSchema = z.looseObject({
     lastSeenDate: isoDatetimeToDate.optional().catch(undefined),
 });
 
+export const DEFAULT_ONBOARDING_PREFERENCES = {
+    completedSteps: [] as string[],
+    checklistState: "pending" as const,
+    startedAt: undefined as Date | undefined,
+};
+
+export const OnboardingPreferencesSchema = z.looseObject({
+    completedSteps: z.array(z.string()).default(DEFAULT_ONBOARDING_PREFERENCES.completedSteps).catch(DEFAULT_ONBOARDING_PREFERENCES.completedSteps),
+    checklistState: z.enum(["pending", "started", "completed", "dismissed"]).default(DEFAULT_ONBOARDING_PREFERENCES.checklistState).catch(DEFAULT_ONBOARDING_PREFERENCES.checklistState),
+    startedAt: isoDatetimeToDate.optional().catch(DEFAULT_ONBOARDING_PREFERENCES.startedAt),
+});
+
 export const DEFAULT_NAVIGATION_PREFERENCES = {
-    expanded: { posts: true },
+    expanded: { posts: true, members: true },
     menu: { visible: true },
 } as const;
 
 export const NavigationPreferencesSchema = z.looseObject({
     expanded: z.object({
         posts: z.boolean(),
+        members: z.boolean().default(true),
     }),
     menu: z.object({
         visible: z.boolean(),
@@ -27,11 +40,13 @@ export const NavigationPreferencesSchema = z.looseObject({
 const PreferencesSchema = z.looseObject({
     whatsNew: WhatsNewPreferencesSchema.optional().catch(undefined),
     nightShift: z.boolean().optional(),
+    onboarding: OnboardingPreferencesSchema.default(DEFAULT_ONBOARDING_PREFERENCES).catch(DEFAULT_ONBOARDING_PREFERENCES),
     navigation: NavigationPreferencesSchema.default(DEFAULT_NAVIGATION_PREFERENCES).catch(DEFAULT_NAVIGATION_PREFERENCES),
 });
 
 export type Preferences = z.infer<typeof PreferencesSchema>;
 export type WhatsNewPreferences = z.infer<typeof WhatsNewPreferencesSchema>;
+export type OnboardingPreferences = z.infer<typeof OnboardingPreferencesSchema>;
 export type NavigationPreferences = z.infer<typeof NavigationPreferencesSchema>;
 
 const userPreferencesQueryKey = (user: User | undefined) => ["userPreferences", user?.id, user?.accessibility] as const;
@@ -55,6 +70,7 @@ export function useUserPreferences<TData = Preferences>(
             return PreferencesSchema.parse(parsed);
         },
         enabled: !!user,
+        keepPreviousData: true,
         staleTime: Infinity,
         // Query key includes user?.accessibility to automatically react to changes from ANY source
         // (our mutation, other code calling editUser, external updates, etc.). When accessibility
@@ -78,7 +94,6 @@ export const useEditUserPreferences = (): UseMutationResult<void, Error, DeepPar
 
             const currentPreferences = queryClient.getQueryData<Preferences>(userPreferencesQueryKey(user)) ?? PreferencesSchema.parse({});
 
-            // TODO: use zod to validate?
             const newPreferences = deepMerge(currentPreferences, updatedPreferences);
 
             const encodedForStorage = PreferencesSchema.encode(newPreferences);

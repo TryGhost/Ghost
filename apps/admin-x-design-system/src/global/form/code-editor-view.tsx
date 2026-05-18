@@ -105,7 +105,7 @@ const CodeEditorView = forwardRef<ReactCodeMirrorRef, CodeEditorProps>(function 
                 onFocus={handleFocus}
                 {...props}
             />
-            {title && <Heading className={'order-1 !text-grey-700 peer-focus:!text-black'} htmlFor={id} useLabelTag={true}>{title}</Heading>}
+            {title && <Heading className={'order-1 text-grey-700! peer-focus:text-black!'} htmlFor={id} useLabelTag={true}>{title}</Heading>}
             {hint && <Hint className='order-3' color={error ? 'red' : ''}>{hint}</Hint>}
         </div>}
     </>;

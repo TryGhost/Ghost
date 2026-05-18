@@ -1,12 +1,6 @@
-import {
-    Button,
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle
-} from '@tryghost/shade';
+import {Button, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from '@tryghost/shade/components';
 import {LabelPicker} from '@src/components/label-picker';
+import {formatNumber} from '@tryghost/shade/utils';
 import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
 import {useCallback, useMemo, useState} from 'react';
 import {useLabelPicker} from '@src/hooks/use-label-picker';
@@ -15,6 +9,7 @@ interface RemoveLabelModalProps {
     open: boolean;
     memberCount: number;
     nql?: string;
+    search?: string;
     onOpenChange: (open: boolean) => void;
     onConfirm: (labelIds: string[]) => void;
     isLoading?: boolean;
@@ -24,6 +19,7 @@ export function RemoveLabelModal({
     open,
     memberCount,
     nql,
+    search,
     onOpenChange,
     onConfirm,
     isLoading = false
@@ -34,6 +30,7 @@ export function RemoveLabelModal({
     const {data: membersData, isLoading: isMembersLoading} = useBrowseMembers({
         searchParams: {
             ...(nql ? {filter: nql} : {}),
+            ...(search ? {search} : {}),
             include: 'labels',
             limit: 'all',
             fields: 'id'
@@ -57,8 +54,10 @@ export function RemoveLabelModal({
         onSelectionChange: setSelectedSlugs
     });
 
-    // Filter labels to only those assigned to the filtered members
-    const availableLabels = useMemo(() => picker.labels.filter(l => memberLabelSlugs.has(l.slug)), [picker.labels, memberLabelSlugs]);
+    const availableOptionSource = {
+        ...picker.optionSource,
+        options: picker.optionSource.options.filter(option => memberLabelSlugs.has(String(option.value)))
+    };
 
     const handleOpenChange = useCallback((isOpen: boolean) => {
         if (!isOpen) {
@@ -81,15 +80,19 @@ export function RemoveLabelModal({
             <DialogContent className="gap-5" onOpenAutoFocus={e => e.preventDefault()}>
                 <DialogHeader>
                     <DialogTitle>
-                        Remove label from {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}
+                        Remove label from {formatNumber(memberCount)} {memberCount === 1 ? 'member' : 'members'}
                     </DialogTitle>
                 </DialogHeader>
 
                 <LabelPicker
                     isDuplicateName={picker.isDuplicateName}
-                    isLoading={picker.isLoading || isMembersLoading}
-                    labels={availableLabels}
-                    selectedSlugs={picker.selectedSlugs}
+                    labels={picker.labels.filter(label => memberLabelSlugs.has(label.slug))}
+                    optionSource={{
+                        ...availableOptionSource,
+                        isInitialLoad: availableOptionSource.isInitialLoad || isMembersLoading
+                    }}
+                    resolvedSelectedLabels={picker.resolvedSelectedLabels.filter(label => memberLabelSlugs.has(label.slug))}
+                    selectedSlugs={selectedSlugs}
                     onDelete={picker.deleteLabel}
                     onEdit={picker.editLabel}
                     onToggle={picker.toggleLabel}
@@ -103,7 +106,7 @@ export function RemoveLabelModal({
                         disabled={selectedSlugs.length === 0 || isLoading}
                         onClick={handleConfirm}
                     >
-                        {isLoading ? 'Removing...' : selectedSlugs.length > 1 ? `Remove ${selectedSlugs.length} labels` : 'Remove label'}
+                        {isLoading ? 'Removing...' : selectedSlugs.length > 1 ? `Remove ${formatNumber(selectedSlugs.length)} labels` : 'Remove label'}
                     </Button>
                 </DialogFooter>
             </DialogContent>

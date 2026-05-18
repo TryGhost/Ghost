@@ -127,9 +127,9 @@ class PostEmailHandler {
     /**
      * Calculates if the email should be tried to be sent out
      *
-     * @param {String} currentStatus current status from the post model
-     * @param {String} previousStatus previous status from the post model
-     * @returns {Boolean}
+     * @param {string} currentStatus current status from the post model
+     * @param {string} previousStatus previous status from the post model
+     * @returns {boolean}
      */
     shouldSendEmail(currentStatus, previousStatus) {
         return EMAIL_SENDING_STATUSES.includes(currentStatus)

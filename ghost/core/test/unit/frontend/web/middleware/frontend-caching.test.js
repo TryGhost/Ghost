@@ -73,6 +73,15 @@ describe('frontendCaching', function () {
         sinon.assert.calledWith(res.set, {'Cache-Control': testUtils.cacheRules.noCache});
     });
 
+    it('should set cache control to no-cache if the request includes preview data', function () {
+        req.header = sinon.stub().withArgs('x-ghost-preview').returns('c=%23ff0000');
+
+        middleware(req, res, next);
+
+        sinon.assert.calledOnce(res.set);
+        sinon.assert.calledWith(res.set, {'Cache-Control': testUtils.cacheRules.noCache});
+    });
+
     describe('calculateMemberTier', function () {
         it('should return null if the member has more than one active subscription', function () {
             const member = {

@@ -12,7 +12,7 @@ class SettingsLoader {
     /**
      * @param {Object} options
      * @param {Function} options.parseYaml yaml parser
-     * @param {String} options.settingFilePath routes settings file path
+     * @param {string} options.settingFilePath routes settings file path
      */
     constructor({parseYaml, settingFilePath}) {
         this.parseYaml = parseYaml;

@@ -4,6 +4,5 @@ name = "Ghost"
 
 [setup]
 script = '''
-git submodule update --init --recursive
-yarn
+pnpm run setup
 '''

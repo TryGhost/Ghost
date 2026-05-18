@@ -3,29 +3,26 @@ const configUtils = require('../../../utils/config-utils');
 const {mockManager} = require('../../../utils/e2e-framework');
 
 const proxy = require('../../../../core/frontend/services/proxy');
+const internalKeys = require('../../../../core/server/services/internal-keys').default;
 const {html} = require('common-tags');
 const {settingsCache} = proxy;
 
 const {registerHelper, shouldCompileToExpected} = require('./utils/handlebars');
 
 describe('{{comment_count}} helper', function () {
-    let keyStub;
-
     before(function () {
-        keyStub = sinon.stub().resolves('xyz');
-        const dataService = {
-            getFrontendKey: keyStub
-        };
-        proxy.init({dataService});
         registerHelper('comment_count');
     });
 
     beforeEach(function () {
+        internalKeys.clear();
+        internalKeys.set('ghost-internal-frontend', Promise.resolve({id: 'k', secret: 'xyz'}));
         mockManager.mockMail();
         sinon.stub(settingsCache, 'get');
     });
 
     afterEach(async function () {
+        internalKeys.clear();
         mockManager.restore();
         sinon.restore();
         await configUtils.restore();

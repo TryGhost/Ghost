@@ -27,8 +27,8 @@ module.exports = {
 
     get cards() {
         if (!cards) {
-            const CardFactory = require('@tryghost/kg-card-factory');
-            const defaultCards = require('@tryghost/kg-default-cards');
+            const {CardFactory} = require('@tryghost/kg-card-factory');
+            const {cards: defaultCards} = require('@tryghost/kg-default-cards');
 
             cardFactory = new CardFactory({
                 siteUrl: config.get('url'),
@@ -54,12 +54,12 @@ module.exports = {
     },
 
     get atoms() {
-        return require('@tryghost/kg-default-atoms');
+        return require('@tryghost/kg-default-atoms').atoms;
     },
 
     get mobiledocHtmlRenderer() {
         if (!mobiledocHtmlRenderer) {
-            const MobiledocHtmlRenderer = require('@tryghost/kg-mobiledoc-html-renderer');
+            const {MobiledocHtmlRenderer} = require('@tryghost/kg-mobiledoc-html-renderer');
 
             mobiledocHtmlRenderer = new MobiledocHtmlRenderer({
                 cards: this.cards,
@@ -85,13 +85,13 @@ module.exports = {
                 console.time('require @tryghost/html-to-mobiledoc'); // eslint-disable-line no-console
             }
 
-            const toMobiledoc = require('@tryghost/html-to-mobiledoc').toMobiledoc;
+            const {htmlToMobiledoc} = require('@tryghost/html-to-mobiledoc');
 
             if (process.env.CI) {
                 console.timeEnd('require @tryghost/html-to-mobiledoc'); // eslint-disable-line no-console
             }
 
-            return toMobiledoc;
+            return htmlToMobiledoc;
         } catch (err) {
             return () => {
                 throw new errors.InternalServerError({
@@ -140,7 +140,7 @@ module.exports = {
                     size = await getUnsplashSize(payload.src);
                 } else if (isRelativeImagePath || storageUtils.isLocalImage(payload.src)) {
                     size = await imageSize.getOriginalImageSizeFromStorageUrl(payload.src);
-                } else {
+                } else if (storageUtils.isInternalImage(payload.src)) {
                     size = await imageSize.getImageSizeFromUrl(payload.src);
                 }
 

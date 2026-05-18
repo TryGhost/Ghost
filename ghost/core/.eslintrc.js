@@ -124,6 +124,21 @@ module.exports = {
                 'ghost/filenames/match-regex': ['error', '^[a-z0-9_.-]+$', false]
             }
         },
+        {
+            // Browser-only scripts served by the admin iframe bridge. They run in
+            // the reader's browser, so `window`/`fetch` etc. are real globals,
+            // Ghost's Node-only `@tryghost/errors` classes are unavailable, and
+            // `console` is the only diagnostic channel available for debugging
+            // bridge configuration/integration issues in devtools.
+            files: 'core/frontend/src/admin-auth/**/*.js',
+            env: {
+                browser: true
+            },
+            rules: {
+                'ghost/ghost-custom/no-native-error': 'off',
+                'no-console': 'off'
+            }
+        },
         /**
          * @TODO: enable these soon
          */

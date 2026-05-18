@@ -21,7 +21,7 @@ class TagsImporter extends TableImporter {
     }
 
     generate() {
-        let name = `${faker.color.human()} ${faker.name.jobType()} ${faker.random.numeric(3)}`;
+        let name = `${faker.color.human()} ${faker.name.jobType()} ${faker.random.numeric(10)}`;
         name = `${name[0].toUpperCase()}${name.slice(1)}`;
         const threeYearsAgo = new Date();
         threeYearsAgo.setFullYear(threeYearsAgo.getFullYear() - 3);

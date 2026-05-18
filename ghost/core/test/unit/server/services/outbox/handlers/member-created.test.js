@@ -6,7 +6,7 @@ const {captureLoggerOutput, findByEvent} = require('../../../../../utils/logging
 describe('member-created handler', function () {
     let handler;
     let memberWelcomeEmailServiceStub;
-    let AutomatedEmailStub;
+    let AutomationStub;
     let AutomatedEmailRecipientStub;
     let logCapture;
 
@@ -19,8 +19,15 @@ describe('member-created handler', function () {
             }
         };
 
-        AutomatedEmailStub = {
-            findOne: sinon.stub().resolves({id: 'ae123'})
+        AutomationStub = {
+            findOne: sinon.stub().resolves({
+                id: 'automation123',
+                related: sinon.stub().callsFake((relation) => {
+                    if (relation === 'welcomeEmailAutomatedEmail') {
+                        return {id: 'ae123'};
+                    }
+                })
+            })
         };
 
         AutomatedEmailRecipientStub = {
@@ -30,7 +37,7 @@ describe('member-created handler', function () {
         logCapture = captureLoggerOutput();
 
         handler.__set__('memberWelcomeEmailService', memberWelcomeEmailServiceStub);
-        handler.__set__('AutomatedEmail', AutomatedEmailStub);
+        handler.__set__('Automation', AutomationStub);
         handler.__set__('AutomatedEmailRecipient', AutomatedEmailRecipientStub);
     });
 
@@ -90,6 +97,29 @@ describe('member-created handler', function () {
         assert.deepEqual(warningLog.system, {
             event: 'outbox.member_created.no_slug_mapping',
             member_status: 'comped'
+        });
+        sinon.assert.notCalled(AutomatedEmailRecipientStub.add);
+    });
+
+    it('logs warning when no automated email found for slug', async function () {
+        AutomationStub.findOne.resolves(null);
+
+        await handler.handle({
+            payload: {
+                memberId: 'member123',
+                uuid: 'uuid-123',
+                email: 'test@example.com',
+                name: 'Test Member',
+                status: 'free'
+            }
+        });
+
+        sinon.assert.calledOnce(memberWelcomeEmailServiceStub.api.send);
+        const warningLog = findByEvent(logCapture.output, 'outbox.member_created.no_automated_email');
+        assert.ok(warningLog);
+        assert.deepEqual(warningLog.system, {
+            event: 'outbox.member_created.no_automated_email',
+            slug: 'member-welcome-email-free'
         });
         sinon.assert.notCalled(AutomatedEmailRecipientStub.add);
     });

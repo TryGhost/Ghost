@@ -9,14 +9,13 @@ test.describe('Post Preview Modal', () => {
         postFactory = createPostFactory(page.request);
     });
 
-    test('closes preview modal with ESC key when iframe has focus', async ({page}) => {
+    test('preview modal opens and can be closed via close button, ESC from header, and ESC from iframe', async ({page}) => {
         const post = await postFactory.create({
-            title: 'Test Post for ESC Key',
+            title: 'Test Post for Preview Modal',
             status: 'draft'
         });
 
-        // create a published post that will be in read more section of preview modal that you can preview
-        // to ensure that iframe preview modal is focused when ESC key is pressed
+        // create a published post that will be in read more section of preview modal
         await postFactory.create({
             title: 'clickpost',
             status: 'published'
@@ -25,6 +24,22 @@ test.describe('Post Preview Modal', () => {
         const postEditorPage = new PostEditorPage(page);
         await postEditorPage.gotoPost(post.id);
 
+        // Close via close button
+        await postEditorPage.previewButton.click();
+        await expect(postEditorPage.previewModal.modal).toBeVisible();
+
+        await postEditorPage.previewModal.close();
+        await expect(postEditorPage.previewModal.modal).toBeHidden();
+
+        // Close via ESC key from modal header
+        await postEditorPage.previewButton.click();
+        await expect(postEditorPage.previewModal.modal).toBeVisible();
+
+        await postEditorPage.previewModal.header.click();
+        await postEditorPage.pressKey('Escape');
+        await expect(postEditorPage.previewModal.modal).toBeHidden();
+
+        // Close via ESC key when iframe has focus
         await postEditorPage.previewButton.click();
         await expect(postEditorPage.previewModal.modal).toBeVisible();
 
@@ -32,39 +47,6 @@ test.describe('Post Preview Modal', () => {
         await postEditorPage.previewModalDesktopFrame.focus();
 
         await postEditorPage.pressKey('Escape');
-        await expect(postEditorPage.previewModal.modal).toBeHidden();
-    });
-
-    test('closes preview modal with ESC key when modal header has focus', async ({page}) => {
-        const post = await postFactory.create({
-            title: 'Test Post for ESC Key Baseline',
-            status: 'draft'
-        });
-
-        const postEditorPage = new PostEditorPage(page);
-
-        await postEditorPage.gotoPost(post.id);
-        await postEditorPage.previewButton.click();
-        await expect(postEditorPage.previewModal.modal).toBeVisible();
-
-        await postEditorPage.previewModal.header.click();
-        await postEditorPage.pressKey('Escape');
-        await expect(postEditorPage.previewModal.modal).toBeHidden();
-    });
-
-    test('closes preview modal using close button', async ({page}) => {
-        const post = await postFactory.create({
-            title: 'Test Post for Close Button',
-            status: 'draft'
-        });
-
-        const postEditorPage = new PostEditorPage(page);
-        await postEditorPage.gotoPost(post.id);
-
-        await postEditorPage.previewButton.click();
-        await expect(postEditorPage.previewModal.modal).toBeVisible();
-
-        await postEditorPage.previewModal.close();
         await expect(postEditorPage.previewModal.modal).toBeHidden();
     });
 });

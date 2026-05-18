@@ -655,4 +655,206 @@ describe('StripeAPI', function () {
             assert(mockStripe.checkout.sessions.create.firstCall.firstArg.custom_fields.length <= 3);
         });
     });
+
+    describe('createGiftCheckoutSession', function () {
+        beforeEach(function () {
+            mockStripe = {
+                checkout: {
+                    sessions: {
+                        create: sinon.stub().resolves({url: 'https://checkout.stripe.com/session'})
+                    }
+                }
+            };
+
+            sinon.stub(mockLabs, 'isSet');
+
+            const mockStripeConstructor = sinon.stub().returns(mockStripe);
+
+            StripeAPI.__set__('Stripe', mockStripeConstructor);
+
+            api.configure({
+                checkoutSessionSuccessUrl: '/success',
+                checkoutSessionCancelUrl: '/cancel',
+                checkoutSetupSessionSuccessUrl: '/setup-success',
+                checkoutSetupSessionCancelUrl: '/setup-cancel',
+                secretKey: ''
+            });
+        });
+
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        it('creates a session with mode payment and inline price_data', async function () {
+            await api.createGiftCheckoutSession({
+                amount: 5000,
+                currency: 'usd',
+                tierName: 'Pro',
+                cadence: 'year',
+                duration: 1,
+                successUrl: '/gift-success',
+                cancelUrl: '/gift-cancel',
+                metadata: {ghost_gift: 'true', gift_token: 'abc-123'}
+            });
+
+            const args = mockStripe.checkout.sessions.create.firstCall.firstArg;
+
+            assert.equal(args.mode, 'payment');
+            assert.equal(args.submit_type, 'pay');
+            assert.equal(args.success_url, '/gift-success');
+            assert.equal(args.cancel_url, '/gift-cancel');
+            assert.equal(args.line_items[0].quantity, 1);
+            assert.equal(args.line_items[0].price_data.unit_amount, 5000);
+            assert.equal(args.line_items[0].price_data.currency, 'usd');
+            assert.equal(args.line_items[0].price_data.product_data.name, 'Gift Subscription - Pro (1 year)');
+        });
+
+        it('uses 1 month label for monthly cadence', async function () {
+            await api.createGiftCheckoutSession({
+                amount: 1000,
+                currency: 'usd',
+                tierName: 'Basic',
+                cadence: 'month',
+                duration: 1,
+                successUrl: '/gift-success',
+                cancelUrl: '/gift-cancel',
+                metadata: {}
+            });
+
+            const args = mockStripe.checkout.sessions.create.firstCall.firstArg;
+
+            assert.equal(args.line_items[0].price_data.product_data.name, 'Gift Subscription - Basic (1 month)');
+        });
+
+        it('pluralises cadence label when duration is greater than 1', async function () {
+            await api.createGiftCheckoutSession({
+                amount: 3000,
+                currency: 'usd',
+                tierName: 'Pro',
+                cadence: 'month',
+                duration: 3,
+                successUrl: '/gift-success',
+                cancelUrl: '/gift-cancel',
+                metadata: {}
+            });
+
+            const args = mockStripe.checkout.sessions.create.firstCall.firstArg;
+
+            assert.equal(args.line_items[0].price_data.product_data.name, 'Gift Subscription - Pro (3 months)');
+        });
+
+        it('passes metadata through directly', async function () {
+            const metadata = {
+                ghost_gift: 'true',
+                gift_token: 'token-xyz',
+                tier_id: 'tier_123',
+                cadence: 'month'
+            };
+
+            await api.createGiftCheckoutSession({
+                amount: 1000,
+                currency: 'usd',
+                tierName: 'Basic',
+                cadence: 'month',
+                duration: 1,
+                successUrl: '/gift-success',
+                cancelUrl: '/gift-cancel',
+                metadata
+            });
+
+            const args = mockStripe.checkout.sessions.create.firstCall.firstArg;
+
+            assert.deepEqual(args.metadata, metadata);
+        });
+
+        it('passes customer ID when customer is provided', async function () {
+            await api.createGiftCheckoutSession({
+                amount: 5000,
+                currency: 'usd',
+                tierName: 'Pro',
+                cadence: 'year',
+                duration: 1,
+                successUrl: '/gift-success',
+                cancelUrl: '/gift-cancel',
+                metadata: {},
+                customer: {id: mockCustomerId}
+            });
+
+            const args = mockStripe.checkout.sessions.create.firstCall.firstArg;
+
+            assert.equal(args.customer, mockCustomerId);
+        });
+
+        it('does not include invoice_creation or custom_fields', async function () {
+            await api.createGiftCheckoutSession({
+                amount: 5000,
+                currency: 'usd',
+                tierName: 'Pro',
+                cadence: 'year',
+                duration: 1,
+                successUrl: '/gift-success',
+                cancelUrl: '/gift-cancel',
+                metadata: {}
+            });
+
+            const args = mockStripe.checkout.sessions.create.firstCall.firstArg;
+
+            assert.equal(args.invoice_creation, undefined);
+            assert.equal(args.custom_fields, undefined);
+        });
+
+        it('sets customer_update when customer and automatic tax are enabled', async function () {
+            api.configure({
+                checkoutSessionSuccessUrl: '/success',
+                checkoutSessionCancelUrl: '/cancel',
+                checkoutSetupSessionSuccessUrl: '/setup-success',
+                checkoutSetupSessionCancelUrl: '/setup-cancel',
+                secretKey: '',
+                enableAutomaticTax: true
+            });
+
+            await api.createGiftCheckoutSession({
+                amount: 5000,
+                currency: 'usd',
+                tierName: 'Pro',
+                cadence: 'year',
+                duration: 1,
+                successUrl: '/gift-success',
+                cancelUrl: '/gift-cancel',
+                metadata: {},
+                customer: {id: mockCustomerId}
+            });
+
+            const args = mockStripe.checkout.sessions.create.firstCall.firstArg;
+
+            assert.deepEqual(args.customer_update, {address: 'auto'});
+        });
+
+        it('does not set customer_update without customer', async function () {
+            api.configure({
+                checkoutSessionSuccessUrl: '/success',
+                checkoutSessionCancelUrl: '/cancel',
+                checkoutSetupSessionSuccessUrl: '/setup-success',
+                checkoutSetupSessionCancelUrl: '/setup-cancel',
+                secretKey: '',
+                enableAutomaticTax: true
+            });
+
+            await api.createGiftCheckoutSession({
+                amount: 5000,
+                currency: 'usd',
+                tierName: 'Pro',
+                cadence: 'year',
+                duration: 1,
+                successUrl: '/gift-success',
+                cancelUrl: '/gift-cancel',
+                metadata: {},
+                customerEmail: mockCustomerEmail
+            });
+
+            const args = mockStripe.checkout.sessions.create.firstCall.firstArg;
+
+            assert.equal(args.customer_update, undefined);
+        });
+    });
 });

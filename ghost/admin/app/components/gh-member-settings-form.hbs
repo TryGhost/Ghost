@@ -120,11 +120,11 @@
                                             <div class="flex items-start">
                                                 {{#if sub.hasActiveDiscount}}
                                                     <span class="currency-symbol">{{sub.discountedPrice.currencySymbol}}</span>
-                                                    <span class="amount">{{format-number sub.discountedPrice.nonDecimalAmount}}</span>
-                                                    <span class="gh-membertier-original-price">{{sub.originalPrice.currencySymbol}}{{format-number sub.originalPrice.nonDecimalAmount}}</span>
+                                                    <span class="amount">{{gh-price-amount sub.discountedPrice.amount}}</span>
+                                                    <span class="gh-membertier-original-price">{{sub.originalPrice.currencySymbol}}{{gh-price-amount sub.originalPrice.amount}}</span>
                                                 {{else}}
                                                     <span class="currency-symbol">{{sub.price.currencySymbol}}</span>
-                                                    <span class="amount">{{format-number sub.price.nonDecimalAmount}}</span>
+                                                    <span class="amount">{{gh-price-amount sub.price.amount}}</span>
                                                 {{/if}}
                                             </div>
                                             <div class="period">{{if (eq sub.price.interval "year") "yearly" "monthly"}}</div>
@@ -137,6 +137,8 @@
                                                 {{else if sub.cancel_at_period_end}}
                                                     <span class="gh-badge archived" data-test-text="member-subscription-status">Canceled</span>
                                                 {{else if sub.compExpiry}}
+                                                    <span class="gh-badge active" data-test-text="member-subscription-status">Active</span>
+                                                {{else if sub.giftExpiry}}
                                                     <span class="gh-badge active" data-test-text="member-subscription-status">Active</span>
                                                 {{else if sub.trialUntil}}
                                                     <span class="gh-badge active" data-test-text="member-subscription-status">Active</span>
@@ -153,7 +155,9 @@
                                             </div>
                                             <Member::SubscriptionDetailBox @sub={{sub}} @index={{index}} />
                                         </div>
-                                        {{#if sub.isComplimentary}}
+                                        {{#if sub.isGift}}
+                                            {{! Gift subscriptions have no action menu }}
+                                        {{else if sub.isComplimentary}}
                                             <span class="action-menu">
                                                 <GhDropdownButton
                                                     @dropdownName="subscription-menu-complimentary"
@@ -185,7 +189,12 @@
                                             </span>
                                         {{else}}
                                             <span class="action-menu">
-                                                <GhDropdownButton @dropdownName="subscription-menu-{{sub.id}}" @classNames="gh-btn gh-btn-outline gh-btn-icon fill gh-btn-subscription-action icon-only" @title="Actions">
+                                                <GhDropdownButton
+                                                    @dropdownName="subscription-menu-{{sub.id}}"
+                                                    @classNames="gh-btn gh-btn-outline gh-btn-icon fill gh-btn-subscription-action icon-only"
+                                                    @title="Actions"
+                                                    data-test-button="subscription-actions"
+                                                >
                                                     <span>
                                                         {{svg-jar "dotdotdot"}}
                                                         <span class="hidden">Subscription menu</span>

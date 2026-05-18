@@ -39,8 +39,8 @@ exports.getLocalImagesStoragePath = function getLocalImagesStoragePath(imagePath
 
 /**
  * @description compares the imagePath with a regex that reflects our local file storage
- * @param {String} imagePath as URL or filepath
- * @returns {Boolean}
+ * @param {string} imagePath as URL or filepath
+ * @returns {boolean}
  */
 
 exports.isLocalImage = function isLocalImage(imagePath) {
@@ -55,8 +55,8 @@ exports.isLocalImage = function isLocalImage(imagePath) {
 
 /**
  * @description Checks whether the image is managed by Ghost storage (local or CDN)
- * @param {String} imagePath as URL or filepath
- * @returns {Boolean}
+ * @param {string} imagePath as URL or filepath
+ * @returns {boolean}
  */
 exports.isInternalImage = function isInternalImage(imagePath) {
     if (this.isLocalImage(imagePath)) {

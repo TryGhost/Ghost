@@ -1,4 +1,4 @@
-import { useEditUserPreferences, useUserPreferences, type NavigationPreferences } from "@/hooks/user-preferences";
+import { DEFAULT_NAVIGATION_PREFERENCES, useEditUserPreferences, useUserPreferences, type NavigationPreferences } from "@/hooks/user-preferences";
 import { useMutation, type UseMutationResult, type UseQueryResult } from "@tanstack/react-query";
 
 
@@ -29,6 +29,7 @@ export const useNavigationExpanded = (expandedKey: keyof NavigationPreferences['
     const setExpanded = async (value: boolean) => {
         return editNavigationPreferences({
             expanded: {
+                ...(navigationPreferences?.expanded ?? DEFAULT_NAVIGATION_PREFERENCES.expanded),
                 [expandedKey]: value
             },
         });

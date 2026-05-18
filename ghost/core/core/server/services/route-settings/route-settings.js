@@ -28,8 +28,8 @@ class RouteSettings {
      *
      * @param {Object} options
      * @param {Object} options.settingsLoader
-     * @param {String} options.settingsPath
-     * @param {String} options.backupPath
+     * @param {string} options.settingsPath
+     * @param {string} options.backupPath
      */
     constructor({settingsLoader, settingsPath, backupPath}) {
         /**
@@ -45,8 +45,8 @@ class RouteSettings {
 
     /**
      * @private
-     * @param {String} settingsPath
-     * @param {String} backupPath
+     * @param {string} settingsPath
+     * @param {string} backupPath
      */
     async createBackupFile(settingsPath, backupPath) {
         return await fs.copy(settingsPath, backupPath);
@@ -54,8 +54,8 @@ class RouteSettings {
 
     /**
      * @private
-     * @param {String} settingsPath
-     * @param {String} backupPath
+     * @param {string} settingsPath
+     * @param {string} backupPath
      */
     async restoreBackupFile(settingsPath, backupPath) {
         return await fs.copy(backupPath, settingsPath);
@@ -63,8 +63,8 @@ class RouteSettings {
 
     /**
      * @private
-     * @param {String} filePath
-     * @param {String} settingsPath
+     * @param {string} filePath
+     * @param {string} settingsPath
      */
     async saveFile(filePath, settingsPath) {
         return await fs.copy(filePath, settingsPath);
@@ -72,7 +72,7 @@ class RouteSettings {
 
     /**
      * @private
-     * @param {String} settingsFilePath
+     * @param {string} settingsFilePath
      */
     async readFile(settingsFilePath) {
         return fs.readFile(settingsFilePath, 'utf-8')
@@ -95,10 +95,20 @@ class RouteSettings {
         await this.createBackupFile(this.settingsPath, this.backupPath);
         await this.saveFile(filePath, this.settingsPath);
 
-        urlService.resetGenerators({releaseResourcesOnly: true});
+        const isLazy = urlService.facade.isLazy();
+        const resetUrlState = () => {
+            if (isLazy) {
+                // Drop registered router configs; reloadFrontend re-registers them.
+                urlService.facade.reset();
+            } else {
+                urlService.resetGenerators({releaseResourcesOnly: true});
+            }
+        };
+
+        resetUrlState();
 
         const bringBackValidRoutes = async () => {
-            urlService.resetGenerators({releaseResourcesOnly: true});
+            resetUrlState();
 
             await this.restoreBackupFile(this.settingsPath, this.backupPath);
 
@@ -112,6 +122,12 @@ class RouteSettings {
                 .finally(() => {
                     throw err;
                 });
+        }
+
+        // The lazy URL service has nothing to precompute, so the readiness
+        // poll below is unnecessary; hasFinished() returns true immediately.
+        if (isLazy) {
+            return;
         }
 
         // @TODO: how can we get rid of this from here?

@@ -7,8 +7,8 @@ const TestAgent = require('./test-agent');
  * @constructor
  * @param {Object} app  Ghost express app instance
  * @param {Object} options
- * @param {String} options.apiURL
- * @param {String} options.originURL
+ * @param {string} options.apiURL
+ * @param {string} options.originURL
  */
 class GhostAPITestAgent extends TestAgent {
     constructor(app, options) {

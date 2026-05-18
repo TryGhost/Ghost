@@ -10,7 +10,7 @@ test.describe('Tier settings', async () => {
             browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers}
         }});
 
-        await page.goto('/');
+        await page.goto('/#/settings/tiers');
 
         const section = page.getByTestId('tiers');
 
@@ -88,7 +88,7 @@ test.describe('Tier settings', async () => {
             }}
         }});
 
-        await page.goto('/');
+        await page.goto('/#/settings/tiers');
 
         const section = page.getByTestId('tiers');
 
@@ -175,7 +175,7 @@ test.describe('Tier settings', async () => {
             }}
         }});
 
-        await page.goto('/');
+        await page.goto('/#/settings/tiers');
 
         const section = page.getByTestId('tiers');
 
@@ -231,7 +231,7 @@ test.describe('Tier settings', async () => {
             }
         }});
 
-        await page.goto('/');
+        await page.goto('/#/settings/tiers');
 
         const section = page.getByTestId('tiers');
 
@@ -279,7 +279,7 @@ test.describe('Tier settings', async () => {
             }
         }});
 
-        await page.goto('/');
+        await page.goto('/#/settings/tiers');
 
         const section = page.getByTestId('tiers');
 

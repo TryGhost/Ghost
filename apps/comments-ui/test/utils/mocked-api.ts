@@ -66,6 +66,17 @@ export class MockedApi {
             ...overrides,
             post_id: this.postId
         });
+
+        // If this is a reply, add it to the parent's replies array (not top-level)
+        if (overrides.parent_id) {
+            const parent = this.comments.find(c => c.id === overrides.parent_id);
+            if (parent) {
+                parent.replies.push(fixture);
+                parent.count.replies = parent.replies.length;
+                return;
+            }
+        }
+
         this.comments.push(fixture);
     }
 
@@ -207,7 +218,7 @@ export class MockedApi {
             comments: comments.map((comment) => {
                 return {
                     ...comment,
-                    replies: comment.replies ? comment.replies?.slice(0, 3) : [],
+                    replies: comment.replies ? comment.replies : [],
                     count: {
                         ...comment.count,
                         replies: comment.replies ? comment.replies?.length : 0

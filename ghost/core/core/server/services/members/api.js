@@ -20,6 +20,7 @@ const memberAttributionService = require('../member-attribution');
 const emailSuppressionList = require('../email-suppression-list');
 const commentsService = require('../comments');
 const emailAddressService = require('../email-address');
+const giftService = require('../gifts');
 const {t} = require('../i18n');
 const sentry = require('../../../shared/sentry');
 
@@ -241,8 +242,10 @@ function createApiInstance(config) {
             MemberFeedback: models.MemberFeedback,
             EmailSpamComplaintEvent: models.EmailSpamComplaintEvent,
             Outbox: models.Outbox,
-            AutomatedEmail: models.AutomatedEmail,
-            AutomatedEmailRecipient: models.AutomatedEmailRecipient
+            Automation: models.Automation,
+            WelcomeEmailAutomationRun: models.WelcomeEmailAutomationRun,
+            AutomatedEmailRecipient: models.AutomatedEmailRecipient,
+            Gift: models.Gift
         },
         stripeAPIService: stripeService.api,
         tiersService: tiersService,
@@ -256,7 +259,8 @@ function createApiInstance(config) {
         settingsHelpers,
         urlUtils,
         commentsService,
-        emailAddressService: emailAddressService.service
+        emailAddressService: emailAddressService.service,
+        giftService
     });
 
     return membersApiInstance;

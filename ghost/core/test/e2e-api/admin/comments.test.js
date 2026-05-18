@@ -279,8 +279,9 @@ describe(`Admin Comments API`, function () {
 
             const res = await adminApi.get('/comments/post/' + postId + '/');
             const item = res.body.comments.find(cmt => parent.id === cmt.id);
-            const lastReply = item.replies[item.replies.length - 1];
-            const filter = encodeURIComponent(`id:>'${lastReply.id}'`);
+            // Use the 3rd reply as cursor to simulate "load more after first 3"
+            const thirdReply = item.replies[2];
+            const filter = encodeURIComponent(`id:>'${thirdReply.id}'`);
             const res2 = await adminApi.get(`/comments/${parent.id}/replies?limit=5&filter=${filter}`);
             assert.equal(res2.body.comments.length, 3);
         });
@@ -319,8 +320,10 @@ describe(`Admin Comments API`, function () {
 
             const res = await adminApi.get('/comments/post/' + postId + '/');
             const item = res.body.comments.find(cmt => parent.id === cmt.id);
-            const lastReply = item.replies[item.replies.length - 1];
-            const filter = encodeURIComponent(`id:>'${lastReply.id}'`);
+            // Admin browse returns all non-deleted replies (published + hidden)
+            // Use the 3rd reply as cursor to simulate "load more after first 3"
+            const thirdReply = item.replies[2];
+            const filter = encodeURIComponent(`id:>'${thirdReply.id}'`);
             const res2 = await adminApi.get(`/comments/${parent.id}/replies?limit=5&filter=${filter}`);
             assert.equal(res2.body.comments.length, 3);
         });
@@ -351,8 +354,9 @@ describe(`Admin Comments API`, function () {
 
             const res = await adminApi.get('/comments/post/' + postId + '/');
             const item = res.body.comments.find(cmt => parent.id === cmt.id);
-            const lastReply = item.replies[item.replies.length - 1];
-            const filter = encodeURIComponent(`id:>'${lastReply.id}'`);
+            // Use the 3rd reply as cursor to fetch remaining replies
+            const thirdReply = item.replies[2];
+            const filter = encodeURIComponent(`id:>'${thirdReply.id}'`);
             const res2 = await adminApi.get(`/comments/${parent.id}/replies?limit=5&filter=${filter}`);
             assert.equal(res2.body.comments.length, 1);
             assert.equal(res2.body.comments[0].html, 'Reply 4');
@@ -441,8 +445,9 @@ describe(`Admin Comments API`, function () {
 
             const res = await adminApi.get('/comments/post/' + postId + '/');
             const item = res.body.comments.find(cmt => parent.id === cmt.id);
-            const lastReply = item.replies[item.replies.length - 1];
-            const filter = encodeURIComponent(`id:>'${lastReply.id}'`);
+            // Use the 3rd reply as cursor to simulate "load more after first 3"
+            const thirdReply = item.replies[2];
+            const filter = encodeURIComponent(`id:>'${thirdReply.id}'`);
             const res2 = await adminApi.get(`/comments/${parent.id}/replies?limit=10&filter=${filter}`);
             assert.equal(res2.body.comments.length, 3);
             assert.equal(res2.body.comments[0].html, 'Reply 4');
@@ -1358,14 +1363,20 @@ describe(`Admin Comments API`, function () {
             await dbFns.addCommentWithReplies({
                 member_id: fixtureManager.get('members', 0).id,
                 html: '<p>Parent</p>',
-                replies: [{member_id: fixtureManager.get('members', 1).id, html: '<p>Reply</p>'}]
+                created_at: new Date('2025-01-01T00:00:00.000Z'),
+                replies: [{
+                    member_id: fixtureManager.get('members', 1).id,
+                    html: '<p>Reply</p>',
+                    created_at: new Date('2025-01-01T00:00:01.000Z')
+                }]
             });
 
-            // Both parent and reply appear as separate items in flat list
+            // Both parent and reply appear as separate items in flat list,
+            // reply first because default order is `created_at desc`.
             await adminApi.get('/comments/')
                 .expectStatus(200)
                 .matchBodySnapshot({
-                    comments: [commentMatcher, commentMatcherWithParent]
+                    comments: [commentMatcherWithParent, commentMatcher]
                 });
         });
 

@@ -1,12 +1,6 @@
-import {
-    Button,
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle
-} from '@tryghost/shade';
+import {Button, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from '@tryghost/shade/components';
 import {LabelPicker} from '@src/components/label-picker';
+import {formatNumber} from '@tryghost/shade/utils';
 import {useCallback, useState} from 'react';
 import {useLabelPicker} from '@src/hooks/use-label-picker';
 
@@ -53,7 +47,7 @@ export function AddLabelModal({
             <DialogContent className="gap-5" onOpenAutoFocus={e => e.preventDefault()}>
                 <DialogHeader>
                     <DialogTitle>
-                        Add label to {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}
+                        Add label to {formatNumber(memberCount)} {memberCount === 1 ? 'member' : 'members'}
                     </DialogTitle>
                 </DialogHeader>
 
@@ -61,9 +55,10 @@ export function AddLabelModal({
                     canCreateFromSearch={picker.canCreateFromSearch}
                     isCreating={picker.isCreating}
                     isDuplicateName={picker.isDuplicateName}
-                    isLoading={picker.isLoading}
                     labels={picker.labels}
-                    selectedSlugs={picker.selectedSlugs}
+                    optionSource={picker.optionSource}
+                    resolvedSelectedLabels={picker.resolvedSelectedLabels}
+                    selectedSlugs={selectedSlugs}
                     onCreate={picker.createLabel}
                     onDelete={picker.deleteLabel}
                     onEdit={picker.editLabel}
@@ -78,7 +73,7 @@ export function AddLabelModal({
                         disabled={selectedSlugs.length === 0 || isLoading}
                         onClick={handleConfirm}
                     >
-                        {isLoading ? 'Adding...' : selectedSlugs.length > 1 ? `Add ${selectedSlugs.length} labels` : 'Add label'}
+                        {isLoading ? 'Adding...' : selectedSlugs.length > 1 ? `Add ${formatNumber(selectedSlugs.length)} labels` : 'Add label'}
                     </Button>
                 </DialogFooter>
             </DialogContent>

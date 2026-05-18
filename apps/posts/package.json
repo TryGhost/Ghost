@@ -14,38 +14,63 @@
     ],
     "main": "./dist/posts.umd.cjs",
     "module": "./dist/posts.js",
+    "exports": {
+        ".": {
+            "import": "./dist/posts.js",
+            "require": "./dist/posts.umd.cjs"
+        },
+        "./api": "./src/api.ts",
+        "./members": "./src/views/members/members.tsx"
+    },
     "private": true,
     "scripts": {
         "dev": "vite build --watch",
         "dev:start": "vite",
         "build": "tsc && vite build",
         "test:unit": "vitest run test/unit",
-        "lint": "yarn run lint:code && yarn run lint:test",
+        "lint": "pnpm run lint:code && pnpm run lint:test",
         "lint:code": "eslint --ext .js,.ts,.cjs,.tsx --cache src",
         "lint:code:fix": "eslint --ext .js,.ts,.cjs,.tsx --cache --fix src",
         "lint:test": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx --cache test",
         "lint:fix": "eslint --ext .js,.ts,.cjs,.tsx --cache src --fix",
         "preview": "vite preview",
-        "test": "yarn test:unit --coverage"
+        "test": "pnpm test:unit --coverage"
     },
     "devDependencies": {
-        "@tanstack/react-query": "4.36.1",
-        "@tanstack/react-virtual": "3.13.12",
+        "@playwright/test": "catalog:",
+        "@tanstack/react-query": "catalog:",
+        "@tanstack/react-virtual": "3.13.24",
+        "@testing-library/jest-dom": "6.9.1",
         "@testing-library/react": "14.3.1",
-        "@types/jest": "29.5.14",
-        "@types/react": "18.3.26",
-        "msw": "2.11.5",
-        "vite": "5.4.20",
-        "vitest": "1.6.1"
+        "@types/jest": "catalog:",
+        "@types/papaparse": "5.5.2",
+        "@types/react": "catalog:",
+        "@vitest/coverage-v8": "catalog:",
+        "eslint": "catalog:",
+        "eslint-plugin-react-hooks": "4.6.2",
+        "eslint-plugin-react-refresh": "catalog:",
+        "eslint-plugin-tailwindcss": "4.0.0-beta.0",
+        "jsdom": "catalog:",
+        "msw": "catalog:",
+        "tailwindcss": "4.2.2",
+        "vite": "catalog:",
+        "vitest": "catalog:"
     },
     "dependencies": {
-        "@tryghost/admin-x-framework": "0.0.0",
-        "@tryghost/shade": "0.0.0",
+        "@tryghost/admin-x-framework": "workspace:*",
+        "@tryghost/nql-lang": "catalog:",
+        "@tryghost/shade": "workspace:*",
+        "@xyflow/react": "12.8.6",
         "i18n-iso-countries": "7.14.0",
-        "moment": "2.24.0",
         "moment-timezone": "0.5.45",
+        "papaparse": "5.5.3",
         "react": "18.3.1",
-        "react-dom": "18.3.1"
+        "react-dom": "18.3.1",
+        "react-router": "catalog:",
+        "sonner": "catalog:",
+        "temporal-polyfill": "0.3.0",
+        "use-debounce": "10.1.1",
+        "zod": "catalog:"
     },
     "nx": {
         "targets": {

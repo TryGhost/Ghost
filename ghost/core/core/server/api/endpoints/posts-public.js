@@ -4,7 +4,7 @@ const errors = require('@tryghost/errors');
 const postsPublicService = require('../../services/posts-public');
 const getPostServiceInstance = require('../../services/posts/posts-service-instance');
 const postsService = getPostServiceInstance();
-const {rejectPrivateFieldsTransformer} = require('./utils/public-endpoint-utils');
+const {rejectContentApiRestrictedFieldsTransformer} = require('./utils/api-filter-utils');
 
 const ALLOWED_INCLUDES = ['tags', 'authors', 'tiers', 'sentiment'];
 
@@ -70,6 +70,7 @@ const controller = {
                     'absolute_urls',
                     'collection'
                 ]),
+                skipPagination: frame.options?.skipPagination === true,
                 auth: generateAuthData(frame),
                 method: 'browse'
             };
@@ -84,7 +85,8 @@ const controller = {
             'page',
             'debug',
             'absolute_urls',
-            'collection'
+            'collection',
+            'skipPagination'
         ],
         validation: {
             options: {
@@ -100,7 +102,7 @@ const controller = {
         query(frame) {
             const options = {
                 ...frame.options,
-                mongoTransformer: rejectPrivateFieldsTransformer
+                mongoTransformer: rejectContentApiRestrictedFieldsTransformer
             };
             return postsService.browsePosts(options);
         }
@@ -154,7 +156,7 @@ const controller = {
         async query(frame) {
             const options = {
                 ...frame.options,
-                mongoTransformer: rejectPrivateFieldsTransformer
+                mongoTransformer: rejectContentApiRestrictedFieldsTransformer
             };
             const model = await models.Post.findOne(frame.data, options);
             if (!model) {

@@ -42,6 +42,10 @@ export function createVitestConfig(options: VitestConfigOptions = {}) {
         test: {
             globals: true,
             environment: 'jsdom',
+            // pool: 'forks' for process-level isolation in jsdom-heavy
+            // React suites; sidesteps Vitest threads-pool edge cases.
+            pool: 'forks',
+            isolate: true,
             setupFiles,
             include,
             silent,

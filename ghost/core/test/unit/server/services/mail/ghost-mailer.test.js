@@ -1,4 +1,3 @@
-const dns = require('dns');
 const sinon = require('sinon');
 const mail = require('../../../../../core/server/services/mail');
 const settingsCache = require('../../../../../core/shared/settings-cache');
@@ -76,7 +75,8 @@ describe('Mail: Ghostmailer', function () {
         mailer = new mail.GhostMailer();
 
         assert('transport' in mailer);
-        assert.equal(mailer.transport.transporter.name, 'SMTP (direct)');
+        assert.equal(mailer.transport.transporter.name, 'SMTP');
+        assert.equal(mailer.transport.transporter.options.direct, true);
     });
 
     it('sends valid message successfully ', function (done) {
@@ -123,8 +123,6 @@ describe('Mail: Ghostmailer', function () {
             configUtils.set({mail: {}});
 
             mailer = new mail.GhostMailer();
-
-            sinon.stub(dns, 'resolveMx').yields(null, []);
         });
 
         afterEach(function () {
@@ -133,17 +131,20 @@ describe('Mail: Ghostmailer', function () {
         });
 
         it('return correct failure message for domain doesn\'t exist', async function () {
-            assert.equal(mailer.transport.transporter.name, 'SMTP (direct)');
+            assert.equal(mailer.transport.transporter.name, 'SMTP');
+            assert.equal(mailer.transport.transporter.options.direct, true);
             await assert.rejects(mailer.send(mailDataNoDomain), /Failed to send email/);
         });
 
         it('return correct failure message for no mail server at this address', async function () {
-            assert.equal(mailer.transport.transporter.name, 'SMTP (direct)');
+            assert.equal(mailer.transport.transporter.name, 'SMTP');
+            assert.equal(mailer.transport.transporter.options.direct, true);
             await assert.rejects(mailer.send(mailDataNoServer), /Failed to send email/);
         });
 
         it('return correct failure message for incomplete data', async function () {
-            assert.equal(mailer.transport.transporter.name, 'SMTP (direct)');
+            assert.equal(mailer.transport.transporter.name, 'SMTP');
+            assert.equal(mailer.transport.transporter.options.direct, true);
             await assert.rejects(mailer.send(mailDataIncomplete), /Incomplete message data/);
         });
     });
@@ -467,6 +468,23 @@ describe('Mail: Ghostmailer', function () {
                 'tag-7'
             ]);
             sinon.assert.called(warnStub);
+        });
+
+        it('should copy headers to h: prefixed keys for Mailgun transport', async function () {
+            mailer = new mail.GhostMailer();
+            mailer.state.usingMailgun = true;
+            const sendMailSpy = sandbox.stub(mailer.transport, 'sendMail').resolves({});
+            sandbox.stub(settingsCache, 'get').returns(false);
+
+            await mailer.send({
+                to: 'user@example.com',
+                subject: 'test',
+                html: 'content'
+            });
+
+            const sentMessage = sendMailSpy.firstCall.args[0];
+            assert.ok(sentMessage['h:Sender'], 'h:Sender should be set');
+            assert.equal(sentMessage['h:Sender'], sentMessage.from);
         });
 
         it('should not add tag when not using Mailgun transport', async function () {

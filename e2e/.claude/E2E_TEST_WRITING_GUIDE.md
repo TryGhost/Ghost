@@ -11,22 +11,22 @@ This guide provides instructions for writing E2E tests in the `/e2e/` directory 
 cd e2e
 
 # Run all tests
-yarn test
+pnpm test
 
 # Run specific test file
-yarn test tests/admin/feature.test.ts
+pnpm test tests/admin/feature.test.ts
 
 # Run with visible browser (debugging)
-yarn test --debug
+pnpm test --debug
 
 # Run with specific timeout
-yarn test --timeout=60000
+pnpm test --timeout=60000
 
 # Keep environment running after test (useful for Playwright MCP exploration)
-PRESERVE_ENV=true yarn test
+PRESERVE_ENV=true pnpm test
 
 # Enable debug logging
-DEBUG=@tryghost/e2e:* yarn test
+DEBUG=@tryghost/e2e:* pnpm test
 ```
 
 ## Test Organization
@@ -221,13 +221,33 @@ The `ghostInstance` fixture provides:
 - `database`: Database name for this test
 - `port`: Port number the instance is running on
 
+Additional standalone fixtures exported from `helpers/playwright/fixture.ts` and re-exported by `@/helpers/playwright`:
+- `resolvedIsolation`: `'per-file' | 'per-test'`
+- `resetEnvironment()`: force a full environment recycle in per-file mode before stateful fixtures are resolved
+
 ```typescript
-test('example with fixtures', async ({page, ghostInstance}) => {
-    // page is already authenticated
-    // ghostInstance provides instance details if needed
-    console.log('Testing on:', ghostInstance.baseUrl);
+test.beforeEach(async ({resetEnvironment, resolvedIsolation}) => {
+    if (resolvedIsolation === 'per-file') {
+        await resetEnvironment();
+    }
 });
 ```
+
+Isolation rules:
+- Default is per-file isolation, so the underlying Ghost environment can be reused across tests in the same file.
+- Call `usePerTestIsolation()` at the root of a file to switch to per-test isolation and force a fresh Ghost environment for each test.
+- Import it from `@/helpers/playwright/isolation`.
+- `config` and `labs` participate in the per-file environment identity. If either changes, the shared environment is recycled.
+- `stripeEnabled` always forces per-test isolation because Ghost must boot against a per-test fake Stripe server.
+- `resetEnvironment()` is a hook-only escape hatch. Do not call it after `baseURL`, `page`, `pageWithAuthenticatedUser`, or `ghostAccountOwner` has already been resolved.
+- Do not treat `resetEnvironment()` as an in-test cleanup step. If you recycle the environment, you must re-establish any stateful fixtures, and the supported pattern is to call it in `beforeEach` before those fixtures are created.
+- ESLint catches direct misuse, but the runtime guard in the fixture is the final enforcement.
+
+When to use each option:
+- `config`: for boot-time Ghost config such as billing URLs or force-upgrade flags.
+- `labs`: for tests that need specific labs flags on or off.
+- `stripeEnabled`: for tests that need the fake Stripe server and Stripe-backed Ghost boot config.
+- `usePerTestIsolation()`: for whole files that mutate shared state heavily and should never reuse a Ghost environment across tests.
 
 ## Data Factories
 
@@ -358,7 +378,7 @@ When creating new Page Objects or discovering selectors for unfamiliar UI:
 ### 1. Start Ghost with Preserved Environment
 ```bash
 # Start Ghost and keep it running
-PRESERVE_ENV=true yarn test
+PRESERVE_ENV=true pnpm test
 
 # The test will output the Ghost instance URL (usually http://localhost:2369)
 ```
@@ -389,25 +409,25 @@ Based on your exploration, create the Page Object with discovered selectors:
 ### Debug Mode
 ```bash
 # See browser while test runs
-yarn test --debug
+pnpm test --debug
 
 # UI mode for interactive debugging
-yarn test --ui
+pnpm test --ui
 ```
 
 ### Debug Logging
 ```bash
 # Enable all e2e debug logs
-DEBUG=@tryghost/e2e:* yarn test
+DEBUG=@tryghost/e2e:* pnpm test
 
 # Specific debug namespace
-DEBUG=@tryghost/e2e:ghost-fixture yarn test
+DEBUG=@tryghost/e2e:ghost-fixture pnpm test
 ```
 
 ### Preserve Environment
 ```bash
 # Keep containers running after test
-PRESERVE_ENV=true yarn test
+PRESERVE_ENV=true pnpm test
 ```
 
 ### Test Artifacts
@@ -469,10 +489,10 @@ test.describe('Feature', () => {
 
 ### Run Commands
 ```bash
-yarn test                           # All tests
-yarn test path/to/test.ts          # Specific test
-yarn test --debug                   # With browser
-yarn test --grep "pattern"         # Pattern matching
-PRESERVE_ENV=true yarn test         # Keep environment
-DEBUG=@tryghost/e2e:* yarn test     # Debug logs
+pnpm test                           # All tests
+pnpm test path/to/test.ts          # Specific test
+pnpm test --debug                   # With browser
+pnpm test --grep "pattern"         # Pattern matching
+PRESERVE_ENV=true pnpm test         # Keep environment
+DEBUG=@tryghost/e2e:* pnpm test     # Debug logs
 ```

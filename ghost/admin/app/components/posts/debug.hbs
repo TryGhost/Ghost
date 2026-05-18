@@ -6,9 +6,9 @@
                     Posts
                 </LinkTo>
                 {{svg-jar "arrow-right-small"}}
-                <LinkTo @route="posts-x" @model={{this.post.id}}>
+                <a href="#/posts/analytics/{{this.post.id}}">
                     Analytics
-                </LinkTo>
+                </a>
                 {{svg-jar "arrow-right-small"}}
                 Debug
             </div>
@@ -375,10 +375,10 @@
                         <td>Last event time:</td>
                         <td>{{ this.analyticsStatus.missing.lastEventTimestamp }}</td>
                     </tr>
+                    <tr>
+                        <td colspan="2"><hr></td>
+                    </tr>
                     {{#if (and this.analyticsStatus this.analyticsStatus.scheduled this.analyticsStatus.scheduled.schedule) }}
-                        <tr>
-                            <td colspan="2"><hr></td>
-                        </tr>
                         <tr>
                             <td>Analytics Scheduled running:</td>
                             <td class="gh-email-debug-settings-icon">
@@ -409,11 +409,29 @@
                             </tr>
                         {{/unless}}
                     {{else}}
-                        <tr>
-                            <td colspan="2">
-                                <button type="button" class="gh-email-debug-schedule-analytics" {{on "click" this.scheduleAnalytics }}>{{svg-jar "reload"}}Refetch Analytics</button>
-                            </td>
-                        </tr>
+                        {{#if this.showCustomSchedule}}
+                            <tr>
+                                <td><label for="custom-begin-date">Begin:</label></td>
+                                <td><input id="custom-begin-date" type="datetime-local" value={{this.customBeginDate}} {{on "input" this.updateCustomBeginDate}} style="border: 1px solid #ccc; padding: 6px 10px; border-radius: 4px; background: #f9f9f9; cursor: pointer; font-size: 1.3rem;" /></td>
+                            </tr>
+                            <tr>
+                                <td><label for="custom-end-date">End:</label></td>
+                                <td><input id="custom-end-date" type="datetime-local" value={{this.customEndDate}} {{on "input" this.updateCustomEndDate}} style="border: 1px solid #ccc; padding: 6px 10px; border-radius: 4px; background: #f9f9f9; cursor: pointer; font-size: 1.3rem;" /></td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">
+                                    <button type="button" class="gh-email-debug-schedule-analytics" {{on "click" this.scheduleAnalytics }}>{{svg-jar "reload"}}Schedule Custom Refetch</button>
+                                    <button type="button" class="gh-email-debug-schedule-analytics" {{on "click" this.toggleCustomSchedule }}>Cancel</button>
+                                </td>
+                            </tr>
+                        {{else}}
+                            <tr>
+                                <td colspan="2">
+                                    <button type="button" class="gh-email-debug-schedule-analytics" {{on "click" this.scheduleAnalytics }}>{{svg-jar "reload"}}Refetch Analytics</button>
+                                    <button type="button" class="gh-email-debug-schedule-analytics" {{on "click" this.toggleCustomSchedule }}>Custom Date Range</button>
+                                </td>
+                            </tr>
+                        {{/if}}
                     {{/if}}
                 </tbody>
             </table>

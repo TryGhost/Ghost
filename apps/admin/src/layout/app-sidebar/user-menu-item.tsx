@@ -1,7 +1,5 @@
 import React from 'react';
-import {
-    DropdownMenuItem
-} from '@tryghost/shade';
+import {DropdownMenuItem} from '@tryghost/shade/components';
 
 interface UserMenuLabelProps extends React.HTMLAttributes<HTMLSpanElement> {
     children?: React.ReactNode

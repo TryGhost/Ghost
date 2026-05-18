@@ -3,8 +3,10 @@ import {t} from './i18n';
 
 export function removePortalLinkFromUrl() {
     const [path] = window.location.hash.substr(1).split('?');
-    const linkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)*))?\/?$/;
-    if (path && linkRegex.test(path)) {
+    const portalLinkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)*))?\/?$/;
+    const giftRedemptionLinkRegex = /^\/portal\/gift\/redeem\/([^/?#]+)\/?$/;
+    const shareLinkRegex = /^\/share\/?$/;
+    if (path && (portalLinkRegex.test(path) || giftRedemptionLinkRegex.test(path) || shareLinkRegex.test(path))) {
         window.history.pushState('', document.title, window.location.pathname + window.location.search);
     }
 }
@@ -69,6 +71,10 @@ export function isPaidMember({member = {}}) {
     return (member && member.paid);
 }
 
+export function isGiftMember({member = {}}) {
+    return member?.status === 'gift';
+}
+
 export function getProductCurrency({product}) {
     if (!product?.monthlyPrice) {
         return null;
@@ -91,12 +97,24 @@ export function hasNewsletterSendingEnabled({site}) {
     return site?.editor_default_email_recipients !== 'disabled';
 }
 
-export function getCompExpiry({member}) {
+export function getSubscriptionExpiry({member}) {
     const subscription = getMemberSubscription({member});
     if (subscription?.tier?.expiry_at) {
         return getDateString(subscription.tier.expiry_at);
     }
     return '';
+}
+
+export function isArchivedTier({member, site}) {
+    const subscription = getMemberSubscription({member});
+    const tierId = subscription?.tier?.id;
+
+    if (!tierId) {
+        return false;
+    }
+
+    // Archived tiers are filtered out of site.products
+    return !getProductFromId({site, productId: tierId});
 }
 
 export function getUpgradeProducts({site, member}) {
@@ -250,6 +268,18 @@ export function hasAvailablePrices({site = {}, pageQuery = ''}) {
 
 export function hasRecommendations({site}) {
     return site?.recommendations_enabled === true;
+}
+
+export function hasGiftSubscriptions({site}) {
+    return site?.labs?.giftSubscriptions === true;
+}
+
+export function isStripeConfigured({site}) {
+    return site?.is_stripe_configured === true;
+}
+
+export function canPurchaseGift({site}) {
+    return hasGiftSubscriptions({site}) && isStripeConfigured({site});
 }
 
 export function isSigninAllowed({site}) {
@@ -582,11 +612,10 @@ export function getProductCadenceFromPrice({site, priceId}) {
 
 export function getAvailablePrices({site, products = null}) {
     const {
-        portal_plans: portalPlans = [],
-        is_stripe_configured: isStripeConfigured
+        portal_plans: portalPlans = []
     } = site || {};
 
-    if (!isStripeConfigured) {
+    if (!isStripeConfigured({site})) {
         return [];
     }
 
@@ -760,6 +789,23 @@ export const formatNumber = (amount) => {
     return amount.toLocaleString();
 };
 
+export const formatPrice = (amount, locale) => {
+    if (amount === undefined || amount === null) {
+        return '';
+    }
+
+    const normalizedAmount = Number(amount);
+    if (Number.isNaN(normalizedAmount)) {
+        return '';
+    }
+
+    const options = Number.isInteger(normalizedAmount)
+        ? undefined
+        : {minimumFractionDigits: 2, maximumFractionDigits: 2};
+
+    return normalizedAmount.toLocaleString(locale, options);
+};
+
 export const createPopupNotification = ({type, status, autoHide, duration = 2600, closeable, state, message, meta = {}}) => {
     let count = 0;
     if (state && state.popupNotification) {
@@ -772,6 +818,23 @@ export const createPopupNotification = ({type, status, autoHide, duration = 2600
         closeable,
         duration,
         meta,
+        message,
+        count
+    };
+};
+
+export const createNotification = ({type, status, autoHide, duration = 2600, closeable, state, message}) => {
+    const previousCount = Number.isInteger(state?.notificationSequence)
+        ? state.notificationSequence
+        : state?.notification?.count;
+    const count = Number.isInteger(previousCount) ? previousCount + 1 : 0;
+
+    return {
+        type,
+        status,
+        autoHide,
+        closeable,
+        duration,
         message,
         count
     };
@@ -805,7 +868,7 @@ export const getOfferOffAmount = ({offer}) => {
 
         return t('{months} months', {months});
     } else if (offer.type === 'fixed') {
-        return `${getCurrencySymbol(offer.currency)}${offer.amount / 100}`;
+        return `${getCurrencySymbol(offer.currency)}${formatPrice(offer.amount / 100)}`;
     } else if (offer.type === 'percent') {
         return `${offer.amount}%`;
     }
@@ -978,4 +1041,40 @@ export function isRecentMember({member}) {
     const diffHours = Math.round(diff / (1000 * 60 * 60));
 
     return diffHours < 24;
+}
+
+export function getActiveInterval({portalPlans, portalDefaultPlan, selectedInterval}) {
+    if (selectedInterval === 'month' && portalPlans.includes('monthly')) {
+        return 'month';
+    }
+
+    if (selectedInterval === 'year' && portalPlans.includes('yearly')) {
+        return 'year';
+    }
+
+    if (portalDefaultPlan) {
+        if (portalDefaultPlan === 'monthly' && portalPlans.includes('monthly')) {
+            return 'month';
+        }
+    }
+
+    if (portalPlans.includes('yearly')) {
+        return 'year';
+    }
+
+    if (portalPlans.includes('monthly')) {
+        return 'month';
+    }
+
+    return undefined;
+}
+
+// Translate cadence to human readable string
+export function translateCadence(cadence) {
+    if (cadence === 'month') {
+        return t('month');
+    } else if (cadence === 'year') {
+        return t('year');
+    }
+    return cadence;
 }

@@ -29,50 +29,29 @@ describe('Images API', function () {
             .expect(422);
     });
 
-    it('Can\'t import with unsupported file', function (done) {
-        request.post(localUtils.API.getApiQuery('images/upload'))
+    it('Can\'t import with unsupported file', async function () {
+        await request.post(localUtils.API.getApiQuery('images/upload'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .attach('file', path.join(__dirname, '/../../../utils/fixtures/csv/single-column-with-header.csv'))
-            .expect(415)
-            .end(function (err) {
-                if (err) {
-                    return done(err);
-                }
-
-                done();
-            });
+            .expect(415);
     });
 
-    it('Can\'t upload incorrect extension', function (done) {
-        request.post(localUtils.API.getApiQuery('images/upload'))
+    it('Can\'t upload incorrect extension', async function () {
+        await request.post(localUtils.API.getApiQuery('images/upload'))
             .set('Origin', config.get('url'))
             .set('content-type', 'image/png')
             .expect('Content-Type', /json/)
             .attach('file', path.join(__dirname, '/../../../utils/fixtures/images/ghost-logo.pngx'))
-            .expect(415)
-            .end(function (err) {
-                if (err) {
-                    return done(err);
-                }
-
-                done();
-            });
+            .expect(415);
     });
 
-    it('Can\'t import if profile image is not square', function (done) {
-        request.post(localUtils.API.getApiQuery('images/upload'))
+    it('Can\'t import if profile image is not square', async function () {
+        await request.post(localUtils.API.getApiQuery('images/upload'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
             .field('purpose', 'profile_image')
             .attach('file', path.join(__dirname, '/../../../utils/fixtures/images/favicon_not_square.png'))
-            .expect(422)
-            .end(function (err) {
-                if (err) {
-                    return done(err);
-                }
-
-                done();
-            });
+            .expect(422);
     });
 });

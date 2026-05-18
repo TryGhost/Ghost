@@ -1,6 +1,7 @@
 const {expect} = require('chai');
 const sinon = require('sinon');
-const path = require('path');
+const {BrowserService} = require('../../../../core/frontend/src/ghost-stats/browser-service.js');
+const {GhostStats} = require('../../../../core/frontend/src/ghost-stats/ghost-stats.js');
 
 describe('ghost-stats.js', function () {
     let sandbox;
@@ -144,11 +145,9 @@ describe('ghost-stats.js', function () {
         global.sessionStorage = mockStorage;
 
         // Create browser service instance with mocks
-        const {BrowserService} = require(path.resolve(__dirname, '../../../../core/frontend/src/ghost-stats/browser-service.js'));
         browserService = new BrowserService(mockWindow, mockDocument);
 
         // Create GhostStats instance with mocked browser service
-        const {GhostStats} = require(path.resolve(__dirname, '../../../../core/frontend/src/ghost-stats/ghost-stats.js'));
         ghostStats = new GhostStats(browserService);
     });
 

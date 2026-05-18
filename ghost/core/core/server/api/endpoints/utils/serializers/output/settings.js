@@ -8,7 +8,7 @@ const mappers = require('./mappers');
  * Filters an object based on a given filter object
  * @private
  * @param {Object} settings
- * @param {String} filter
+ * @param {string} filter
  * @returns {*}
  */
 function settingsFilter(settings, filter) {

@@ -14,8 +14,15 @@
     "logging": {
         "level": "error"
     },
+    "adapters": {
+        "Redis": {
+            "host": "127.0.0.1",
+            "port": 6379
+        }
+    },
     "security": {
-        "staffDeviceVerification": false
+        "staffDeviceVerification": false,
+        "allowWebhookInternalIPs": true
     },
     "spam": {
         "user_login": {

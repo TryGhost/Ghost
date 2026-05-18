@@ -28,7 +28,7 @@ const Start: React.FC<{onNext?: () => void}> = ({onNext}) => {
                 <Heading level={3}>Getting paid</Heading>
                 <img alt='Stripe Verified Partner Badge' src={StripeVerifiedBadge} />
             </div>
-            <div className='mb-7 mt-6'>
+            <div className='mt-6 mb-7'>
                 Stripe is our exclusive direct payments partner. Ghost collects <strong>no fees</strong> on any payments! If you don’t have a Stripe account yet, you can <a className='underline' href="https://stripe.com" rel="noopener noreferrer" target="_blank">sign up here</a>.
             </div>
             <StripeButton label={<>I have a Stripe account, let&apos;s go &rarr;</>} onClick={onNext} />
@@ -132,11 +132,11 @@ const Connect: React.FC = () => {
                 />
             </div>
             <Heading level={6} grey>Step 1 — <span className='text-black dark:text-white'>Generate secure key</span></Heading>
-            <div className='mb-4 mt-2'>
+            <div className='mt-2 mb-4'>
                 Click on the <strong>“Connect with Stripe”</strong> button to generate a secure key that connects your Ghost site with Stripe.
             </div>
             <StripeButton href={stripeConnectUrl} tag='a' target='_blank' />
-            <Heading className='mb-2 mt-8' level={6} grey>Step 2 — <span className='text-black dark:text-white'>Paste secure key</span></Heading>
+            <Heading className='mt-8 mb-2' level={6} grey>Step 2 — <span className='text-black dark:text-white'>Paste secure key</span></Heading>
             <TextArea error={Boolean(error)} hint={error || undefined} placeholder='Paste your secure key here' onChange={onTokenChange}></TextArea>
             {submitEnabled && <Button className='mt-5' color='green' label='Save Stripe settings' onClick={onSubmit} />}
         </div>
@@ -193,7 +193,7 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
             </div>
             <div className='flex flex-col items-center'>
                 <Heading level={6}>Read next</Heading>
-                <a className='w-100 mt-5 flex flex-col items-stretch justify-between rounded-sm border border-grey-200 transition-all hover:border-grey-400 md:flex-row dark:border-grey-900' href="https://ghost.org/resources/managing-your-stripe-account/?ref=admin" rel="noopener noreferrer" target="_blank">
+                <a className='mt-5 flex w-100 flex-col items-stretch justify-between rounded-sm border border-grey-200 transition-all hover:border-grey-400 md:flex-row dark:border-grey-900' href="https://ghost.org/resources/managing-your-stripe-account/?ref=admin" rel="noopener noreferrer" target="_blank">
                     <div className='order-2 p-4 md:order-1'>
                         <div className='font-bold'>How to setup and manage your Stripe account</div>
                         <div className='mt-1 text-sm text-grey-800 dark:text-grey-500'>Learn how to configure your Stripe account to work with Ghost, from custom branding to payment receipt emails.</div>
@@ -204,7 +204,7 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
                             <span>by Kym Ellis</span>
                         </div>
                     </div>
-                    <div className='order-1 hidden w-[200px] shrink-0 items-center justify-center overflow-hidden md:!visible md:order-2 md:!flex'>
+                    <div className='order-1 hidden w-[200px] shrink-0 items-center justify-center overflow-hidden md:visible! md:order-2 md:flex!'>
                         <img alt="Bookmark Thumb" className='min-h-full min-w-full shrink-0' src={BookmarkThumb} />
                     </div>
                 </a>

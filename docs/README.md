@@ -7,7 +7,7 @@ Welcome to the Ghost contributor documentation! This guide will help you underst
 ### Prerequisites
 
 - **Node.js** - Recommended to install via [nvm](https://github.com/nvm-sh/nvm)
-- **Yarn** - Package manager
+- **pnpm** - Package manager
 - **Docker** - For MySQL database and development services
 
 ### Initial Setup
@@ -30,14 +30,15 @@ git remote add origin git@github.com:<YourUsername>/Ghost.git
 
 ```bash
 # Install dependencies and initialize submodules
-yarn setup
+corepack enable pnpm
+pnpm run setup
 ```
 
 #### 3. Start Ghost
 
 ```bash
 # Start development (runs Docker backend services + frontend dev servers)
-yarn dev
+pnpm dev
 ```
 
 Ghost will be available at:
@@ -50,13 +51,13 @@ If you encounter issues during setup:
 
 ```bash
 # Fix dependency issues
-yarn fix
+pnpm fix
 
 # Update to latest main branch
-yarn main
+pnpm main
 
 # Reset running dev data
-yarn reset:data
+pnpm reset:data
 ```
 
 ## Repository Structure

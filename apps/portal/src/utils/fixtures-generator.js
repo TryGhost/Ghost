@@ -164,6 +164,7 @@ export function getMemberData({
     firstname = 'Jamie',
     subscriptions = [],
     paid = false,
+    status,
     avatarImage: avatar_image = '',
     subscribed = true,
     email_suppression = {
@@ -172,7 +173,7 @@ export function getMemberData({
     },
     newsletters = []
 } = {}) {
-    return {
+    const member = {
         uuid: generateUuid(),
         email,
         name,
@@ -184,6 +185,16 @@ export function getMemberData({
         email_suppression,
         newsletters
     };
+
+    if (status !== undefined) {
+        member.status = status;
+    } else if (paid) {
+        member.status = 'paid';
+    } else {
+        member.status = 'free';
+    }
+
+    return member;
 }
 
 export function getNewsletterData({
@@ -460,18 +471,23 @@ export const offer = getOfferData({
 });
 
 export const member = {
-    free: getMemberData(),
+    free: getMemberData({
+        status: 'free'
+    }),
     paid: getMemberData({
+        status: 'paid',
         paid: true,
         subscriptions: [
             getSubscriptionData()
         ]
     }),
     complimentary: getMemberData({
+        status: 'comped',
         paid: true,
         subscriptions: []
     }),
     complimentaryWithSubscription: getMemberData({
+        status: 'comped',
         paid: true,
         subscriptions: [
             getSubscriptionData({
@@ -480,6 +496,7 @@ export const member = {
         ]
     }),
     preview: getMemberData({
+        status: 'paid',
         paid: true,
         subscriptions: [
             getSubscriptionData({

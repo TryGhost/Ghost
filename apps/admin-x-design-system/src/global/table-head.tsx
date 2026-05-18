@@ -14,7 +14,7 @@ const TableHead: React.FC<TableHeadProps> = ({
     ...props
 }) => {
     const tableCellClasses = clsx(
-        '!py-2 !pl-0 !pr-6 text-left align-top',
+        'py-2! pr-6! pl-0! text-left align-top',
         sticky && 'sticky top-0 bg-white',
         props.onClick && 'hover:cursor-pointer',
         className

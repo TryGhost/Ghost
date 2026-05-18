@@ -1,5 +1,6 @@
 {
     "url": "http://localhost:2368",
+    "lazyRouting": false,
     "server": {
         "host": "127.0.0.1",
         "port": 2368,
@@ -14,6 +15,7 @@
     },
     "privacy": false,
     "security": {
+        "allowWebhookInternalIPs": false,
         "staffDeviceVerification": true
     },
     "useMinFiles": true,
@@ -211,6 +213,13 @@
             "skipBootChecks": false
         }
     },
+    "theme": {
+        "uploadLimits": {
+            "compressedBytes": 1073741824,
+            "entryUncompressedBytes": 536870912,
+            "totalUncompressedBytes": 4294967296
+        }
+    },
     "imageOptimization": {
         "resize": true,
         "srcsets": true
@@ -240,7 +249,7 @@
     },
     "portal": {
         "url": "https://cdn.jsdelivr.net/ghost/portal@~{version}/umd/portal.min.js",
-        "version": "2.65"
+        "version": "2.68"
     },
     "sodoSearch": {
         "url": "https://cdn.jsdelivr.net/ghost/sodo-search@~{version}/umd/sodo-search.min.js",
@@ -253,7 +262,7 @@
     },
     "comments": {
         "url": "https://cdn.jsdelivr.net/ghost/comments-ui@~{version}/umd/comments-ui.min.js",
-        "version": "1.3"
+        "version": "1.4"
     },
     "signupForm": {
         "url": "https://cdn.jsdelivr.net/ghost/signup-form@~{version}/umd/signup-form.min.js",

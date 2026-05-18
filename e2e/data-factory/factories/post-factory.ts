@@ -1,6 +1,8 @@
 import {Factory} from '@/data-factory';
+import {buildLexical} from './lexical';
 import {faker} from '@faker-js/faker';
 import {generateId, generateSlug, generateUuid} from '@/data-factory';
+import type {CardSpec} from './lexical';
 
 export interface Post {
     id: string;
@@ -30,6 +32,7 @@ export interface Post {
     newsletter_id: string | null;
     show_title_and_feature_image: boolean;
     tags?: Array<{id: string}>;
+    tiers?: Array<{id: string}>;
 }
 
 export class PostFactory extends Factory<Partial<Post>, Post> {
@@ -46,7 +49,7 @@ export class PostFactory extends Factory<Partial<Post>, Post> {
             title: title,
             slug: options.slug || generateSlug(title) + '-' + Date.now().toString(16),
             mobiledoc: null,
-            lexical: JSON.stringify(this.lexicalDetails(content)),
+            lexical: buildLexical(),
             html: `<p>${content}</p>`,
             comment_id: generateId(),
             plaintext: content,
@@ -79,32 +82,8 @@ export class PostFactory extends Factory<Partial<Post>, Post> {
         return {...defaults, ...options, published_at: publishedAt} as Post;
     }
 
-    // Generate lexical format (Ghost's current editor)
-    private lexicalDetails(content: string) {
-        return {
-            root: {
-                children: [{
-                    children: [{
-                        detail: 0,
-                        format: 0,
-                        mode: 'normal',
-                        style: '',
-                        text: content,
-                        type: 'text',
-                        version: 1
-                    }],
-                    direction: 'ltr',
-                    format: '',
-                    indent: 0,
-                    type: 'paragraph',
-                    version: 1
-                }],
-                direction: 'ltr',
-                format: '',
-                indent: 0,
-                type: 'root',
-                version: 1
-            }
-        };
+    async createWithCards(cards: CardSpec | CardSpec[], options: Partial<Post> = {}): Promise<Post> {
+        const cardArray = Array.isArray(cards) ? cards : [cards];
+        return this.create({...options, lexical: buildLexical(...cardArray)});
     }
 }

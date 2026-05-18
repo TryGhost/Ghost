@@ -2,6 +2,7 @@
 const {VersionMismatchError} = require('@tryghost/errors');
 // @ts-ignore
 const debug = require('@tryghost/debug')('stripe');
+const ghostConfig = require('../../../shared/config');
 const Stripe = require('stripe').Stripe;
 
 /* Stripe has the following rate limits:
@@ -125,9 +126,22 @@ module.exports = class StripeAPI {
         // Lazyloaded to protect sites without Stripe configured
         const LeakyBucket = require('leaky-bucket');
 
-        this._stripe = new Stripe(config.secretKey, {
+        const stripeConfig = {
             apiVersion: STRIPE_API_VERSION
-        });
+        };
+        const stripeApiHost = ghostConfig.get('STRIPE_API_HOST');
+        if (stripeApiHost) {
+            stripeConfig.host = stripeApiHost;
+        }
+        const stripeApiPort = ghostConfig.get('STRIPE_API_PORT');
+        if (stripeApiPort !== undefined && stripeApiPort !== null && stripeApiPort !== '') {
+            stripeConfig.port = parseInt(stripeApiPort, 10);
+        }
+        const stripeApiProtocol = ghostConfig.get('STRIPE_API_PROTOCOL');
+        if (stripeApiProtocol) {
+            stripeConfig.protocol = stripeApiProtocol;
+        }
+        this._stripe = new Stripe(config.secretKey, stripeConfig);
         this._config = config;
         this._testMode = config.secretKey && config.secretKey.startsWith('sk_test_');
         if (this._testMode) {
@@ -665,6 +679,59 @@ module.exports = class StripeAPI {
 
         // @ts-ignore
         const session = await this._stripe.checkout.sessions.create(stripeSessionOptions);
+        return session;
+    }
+
+    /**
+     * Create a new Stripe Checkout Session for a gift subscription.
+     *
+     * @param {object} options
+     * @param {number} options.amount
+     * @param {string} options.currency
+     * @param {string} options.tierName
+     * @param {'month'|'year'} options.cadence
+     * @param {number} options.duration
+     * @param {object} options.metadata
+     * @param {string} options.successUrl
+     * @param {string} options.cancelUrl
+     * @param {ICustomer|null} options.customer
+     *
+     * @returns {Promise<ICheckoutSession>}
+     */
+    async createGiftCheckoutSession({amount, currency, tierName, cadence, duration, metadata, successUrl, cancelUrl, customer}) {
+        await this._rateLimitBucket.throttle();
+
+        const cadenceLabel = duration === 1 ? `1 ${cadence}` : `${duration} ${cadence}s`;
+
+        const stripeSessionOptions = {
+            mode: 'payment',
+            success_url: successUrl,
+            cancel_url: cancelUrl,
+            automatic_tax: {
+                enabled: this._config.enableAutomaticTax
+            },
+            metadata,
+            customer: customer ? customer.id : undefined,
+            submit_type: 'pay',
+            line_items: [{
+                price_data: {
+                    currency,
+                    unit_amount: amount,
+                    product_data: {
+                        name: `Gift Subscription - ${tierName} (${cadenceLabel})`
+                    }
+                },
+                quantity: 1
+            }]
+        };
+
+        if (customer && this._config.enableAutomaticTax) {
+            stripeSessionOptions.customer_update = {address: 'auto'};
+        }
+
+        // @ts-ignore
+        const session = await this._stripe.checkout.sessions.create(stripeSessionOptions);
+
         return session;
     }
 

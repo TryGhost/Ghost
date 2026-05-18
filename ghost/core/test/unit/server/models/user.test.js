@@ -8,10 +8,6 @@ const security = require('@tryghost/security');
 const testUtils = require('../../../utils');
 
 describe('Unit: models/user', function () {
-    before(function () {
-        models.init();
-    });
-
     afterEach(function () {
         sinon.restore();
     });
@@ -161,17 +157,14 @@ describe('Unit: models/user', function () {
             };
         }
 
-        it('cannot delete owner', function (done) {
+        it('cannot delete owner', async function () {
             const mockUser = getUserModel(1, 'Owner');
             const context = {user: 1};
 
-            models.User.permissible(mockUser, 'destroy', context, {}, testUtils.permissions.owner, true, true, true).then(() => {
-                done(new Error('Permissible function should have errored'));
-            }).catch((error) => {
-                assert(error instanceof errors.NoPermissionError);
-                sinon.assert.calledOnce(mockUser.hasRole);
-                done();
-            });
+            await assert.rejects(async () => {
+                await models.User.permissible(mockUser, 'destroy', context, {}, testUtils.permissions.owner, true, true, true);
+            }, errors.NoPermissionError);
+            sinon.assert.calledOnce(mockUser.hasRole);
         });
 
         it('can always edit self', function () {
@@ -312,46 +305,37 @@ describe('Unit: models/user', function () {
         });
 
         describe('as editor', function () {
-            it('can\'t edit another editor', function (done) {
+            it('can\'t edit another editor', async function () {
                 const mockUser = getUserModel(3, 'Editor');
                 const context = {user: 2};
 
-                models.User.permissible(mockUser, 'edit', context, {}, testUtils.permissions.editor, true, true, true).then(() => {
-                    done(new Error('Permissible function should have errored'));
-                }).catch((error) => {
-                    assert(error instanceof errors.NoPermissionError);
-                    sinon.assert.called(mockUser.hasRole);
-                    sinon.assert.calledOnce(mockUser.get);
-                    done();
-                });
+                await assert.rejects(async () => {
+                    await models.User.permissible(mockUser, 'edit', context, {}, testUtils.permissions.editor, true, true, true);
+                }, errors.NoPermissionError);
+                sinon.assert.called(mockUser.hasRole);
+                sinon.assert.calledOnce(mockUser.get);
             });
 
-            it('can\'t edit owner', function (done) {
+            it('can\'t edit owner', async function () {
                 const mockUser = getUserModel(3, 'Owner');
                 const context = {user: 2};
 
-                models.User.permissible(mockUser, 'edit', context, {}, testUtils.permissions.editor, true, true, true).then(() => {
-                    done(new Error('Permissible function should have errored'));
-                }).catch((error) => {
-                    assert(error instanceof errors.NoPermissionError);
-                    sinon.assert.called(mockUser.hasRole);
-                    sinon.assert.calledOnce(mockUser.get);
-                    done();
-                });
+                await assert.rejects(async () => {
+                    await models.User.permissible(mockUser, 'edit', context, {}, testUtils.permissions.editor, true, true, true);
+                }, errors.NoPermissionError);
+                sinon.assert.called(mockUser.hasRole);
+                sinon.assert.calledOnce(mockUser.get);
             });
 
-            it('can\'t edit an admin', function (done) {
+            it('can\'t edit an admin', async function () {
                 const mockUser = getUserModel(3, 'Administrator');
                 const context = {user: 2};
 
-                models.User.permissible(mockUser, 'edit', context, {}, testUtils.permissions.editor, true, true, true).then(() => {
-                    done(new Error('Permissible function should have errored'));
-                }).catch((error) => {
-                    assert(error instanceof errors.NoPermissionError);
-                    sinon.assert.called(mockUser.hasRole);
-                    sinon.assert.calledOnce(mockUser.get);
-                    done();
-                });
+                await assert.rejects(async () => {
+                    await models.User.permissible(mockUser, 'edit', context, {}, testUtils.permissions.editor, true, true, true);
+                }, errors.NoPermissionError);
+                sinon.assert.called(mockUser.hasRole);
+                sinon.assert.calledOnce(mockUser.get);
             });
 
             it('can edit author', function () {
@@ -384,32 +368,26 @@ describe('Unit: models/user', function () {
                 });
             });
 
-            it('can\'t destroy another editor', function (done) {
+            it('can\'t destroy another editor', async function () {
                 const mockUser = getUserModel(3, 'Editor');
                 const context = {user: 2};
 
-                models.User.permissible(mockUser, 'destroy', context, {}, testUtils.permissions.editor, true, true, true).then(() => {
-                    done(new Error('Permissible function should have errored'));
-                }).catch((error) => {
-                    assert(error instanceof errors.NoPermissionError);
-                    sinon.assert.called(mockUser.hasRole);
-                    sinon.assert.calledOnce(mockUser.get);
-                    done();
-                });
+                await assert.rejects(async () => {
+                    await models.User.permissible(mockUser, 'destroy', context, {}, testUtils.permissions.editor, true, true, true);
+                }, errors.NoPermissionError);
+                sinon.assert.called(mockUser.hasRole);
+                sinon.assert.calledOnce(mockUser.get);
             });
 
-            it('can\'t destroy an admin', function (done) {
+            it('can\'t destroy an admin', async function () {
                 const mockUser = getUserModel(3, 'Administrator');
                 const context = {user: 2};
 
-                models.User.permissible(mockUser, 'destroy', context, {}, testUtils.permissions.editor, true, true, true).then(() => {
-                    done(new Error('Permissible function should have errored'));
-                }).catch((error) => {
-                    assert(error instanceof errors.NoPermissionError);
-                    sinon.assert.called(mockUser.hasRole);
-                    sinon.assert.calledOnce(mockUser.get);
-                    done();
-                });
+                await assert.rejects(async () => {
+                    await models.User.permissible(mockUser, 'destroy', context, {}, testUtils.permissions.editor, true, true, true);
+                }, errors.NoPermissionError);
+                sinon.assert.called(mockUser.hasRole);
+                sinon.assert.calledOnce(mockUser.get);
             });
 
             it('can destroy an author', function () {

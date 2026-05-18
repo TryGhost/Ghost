@@ -84,7 +84,7 @@ async function ping(post) {
     }
 
     try {
-        const url = urlService.getUrlByResourceId(post.id, {absolute: true});
+        const url = urlService.facade.getUrlForResource({...post, type: 'posts'}, {absolute: true});
 
         // Get the API key (auto-generated on boot by settings service)
         const key = getApiKey();

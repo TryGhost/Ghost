@@ -4,7 +4,7 @@
         "lib": ["DOM", "DOM.Iterable", "ESNext"],
         "module": "ESNext",
         "skipLibCheck": true,
-        "types": ["vite/client", "jest"],
+        "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom/vitest"],
 
         /* Bundler mode */
         "moduleResolution": "bundler",
@@ -18,6 +18,7 @@
         "strict": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
+        "erasableSyntaxOnly": true,
         "noFallthroughCasesInSwitch": true,
 
         /* Path aliases */

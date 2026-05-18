@@ -91,6 +91,56 @@ describe('OffersAPI', function () {
             assert.equal(result[0].id, 'offer-1');
         });
 
+        it('returns public facing offer DTO', async function () {
+            const tierId = new ObjectID().toHexString();
+            const offers = [
+                createMockOffer('offer-1', {tierId, cadence: 'month', redemptionType: 'retention'})
+            ];
+
+            const repository = createMockRepository({
+                getAll: sinon.stub().resolves(offers),
+                getRedeemedOfferIdsForSubscription: sinon.stub().resolves([])
+            });
+
+            const api = new OffersAPI(/** @type {OfferBookshelfRepository} */ (/** @type {unknown} */ (repository)));
+
+            const result = await api.listOffersAvailableToSubscription({
+                subscriptionId: 'sub_123',
+                tierId,
+                cadence: 'month',
+                redemptionType: 'retention'
+            });
+
+            assert.equal(result.length, 1);
+
+            const keys = Object.keys(result[0]);
+
+            assert.deepEqual(keys.sort(), [
+                'amount',
+                'cadence',
+                'currency',
+                'display_description',
+                'display_title',
+                'duration',
+                'duration_in_months',
+                'id',
+                'redemption_type',
+                'status',
+                'tier',
+                'type'
+            ]);
+
+            assert.equal(result[0].name, undefined);
+            assert.equal(result[0].code, undefined);
+            assert.equal(result[0].currency_restriction, undefined);
+            assert.equal(result[0].redemption_count, undefined);
+            assert.equal(result[0].created_at, undefined);
+            assert.equal(result[0].last_redeemed, undefined);
+
+            assert.deepEqual(Object.keys(result[0].tier).sort(), ['id']);
+            assert.equal(result[0].tier.name, undefined);
+        });
+
         it('excludes trial offers', async function () {
             const tierId = new ObjectID().toHexString();
             const offers = [
@@ -294,6 +344,31 @@ describe('OffersAPI', function () {
                 }),
                 /subscriptionId, tierId, and cadence are required/
             );
+        });
+
+        it('queries for offers without redemption stats', async function () {
+            const tierId = new ObjectID().toHexString();
+            const offer = createMockOffer('offer-1', {tierId, cadence: 'month', status: 'active', redemptionType: 'retention'});
+
+            const repository = createMockRepository({
+                getAll: sinon.stub().resolves([offer]),
+                getRedeemedOfferIdsForSubscription: sinon.stub().resolves([])
+            });
+
+            const api = new OffersAPI(/** @type {OfferBookshelfRepository} */ (/** @type {unknown} */ (repository)));
+
+            const result = await api.listOffersAvailableToSubscription({
+                subscriptionId: 'sub_123',
+                tierId,
+                cadence: 'month',
+                redemptionType: 'retention'
+            });
+
+            sinon.assert.calledOnce(repository.getAll);
+            assert.deepEqual(repository.getAll.firstCall.args[1], {withRedemptionStats: false});
+
+            assert.equal(result.length, 1);
+            assert.equal(result[0].id, 'offer-1');
         });
     });
 
@@ -523,6 +598,22 @@ describe('OffersAPI', function () {
 
             // Should create a new transaction
             sinon.assert.calledOnce(repository.createTransaction);
+        });
+    });
+
+    describe('#archiveActiveRetentionOffers', function () {
+        it('queries for offers without redemption stats', async function () {
+            const repository = createMockRepository({
+                getAll: sinon.stub().resolves([])
+            });
+
+            const api = new OffersAPI(/** @type {OfferBookshelfRepository} */ (/** @type {unknown} */ (repository)));
+
+            await api.archiveActiveRetentionOffers('offer-id', 'month');
+
+            sinon.assert.calledOnce(repository.getAll);
+            assert.equal(repository.getAll.firstCall.args[0].filter, 'status:active+redemption_type:retention');
+            assert.deepEqual(repository.getAll.firstCall.args[1], {withRedemptionStats: false});
         });
     });
 });

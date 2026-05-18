@@ -60,13 +60,13 @@ const SortMenu: React.FC<SortMenuProps> = ({
     };
 
     if (!trigger) {
-        trigger = <Button className='flex-row-reverse' icon={`${localDirection === 'asc' ? 'arrow-up' : 'arrow-down'}`} iconColorClass='!w-3 !h-3 !mr-0 ml-1.5' label={`${localItems.find(item => item.selected)?.label}`} {...triggerButtonProps} />;
+        trigger = <Button className='flex-row-reverse' icon={`${localDirection === 'asc' ? 'arrow-up' : 'arrow-down'}`} iconColorClass='w-3! h-3! mr-0! ml-1.5' label={`${localItems.find(item => item.selected)?.label}`} {...triggerButtonProps} />;
     }
 
     return (
         <Popover position={position} trigger={trigger}>
             <div className='flex flex-col'>
-                <div className='cursor-default select-none border-b border-b-grey-200 p-2 pl-3 text-sm font-semibold dark:border-b-grey-800'>Sort by</div>
+                <div className='cursor-default border-b border-b-grey-200 p-2 pl-3 text-sm font-semibold select-none dark:border-b-grey-800'>Sort by</div>
                 <div className="flex min-w-[160px] flex-col justify-stretch py-1" role="none">
                     {localItems.map(item => (
                         <button key={item.id} className="group relative mx-1 flex grow cursor-pointer items-center rounded-[2.5px] px-8 py-1.5 pr-12 text-left text-sm hover:bg-grey-100 dark:hover:bg-grey-800" type="button" onClick={() => {
