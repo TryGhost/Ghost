@@ -11,7 +11,8 @@ const ReplyTreeNode: React.FC<{
     threadParentComment: Comment;
     useThreading: boolean;
     depth: number;
-}> = ({reply, threadParentComment, useThreading, depth}) => {
+    isLastSibling?: boolean;
+}> = ({reply, threadParentComment, useThreading, depth, isLastSibling = false}) => {
     const {pageUrl, t} = useAppContext();
     const {requestFocusedThreadView} = useNavActions();
     const {maxThreadDepth} = useThreadingContext();
@@ -21,10 +22,11 @@ const ReplyTreeNode: React.FC<{
     let nestedReplies: React.ReactNode = null;
 
     if (hasNestedReplies && !atMaxDepth) {
-        nestedReplies = reply.nestedReplies.map(childReply => (
+        nestedReplies = reply.nestedReplies.map((childReply, idx, arr) => (
             <ReplyTreeNode
                 key={childReply.id}
                 depth={depth + 1}
+                isLastSibling={idx === arr.length - 1}
                 reply={childReply}
                 threadParentComment={threadParentComment}
                 useThreading={useThreading}
@@ -45,7 +47,7 @@ const ReplyTreeNode: React.FC<{
     }
 
     return (
-        <CommentComponent comment={reply} parent={threadParentComment} useThreading={useThreading}>
+        <CommentComponent comment={reply} isLastSibling={isLastSibling} parent={threadParentComment} useThreading={useThreading} isChild>
             {nestedReplies}
         </CommentComponent>
     );
@@ -59,10 +61,11 @@ const ReplyTree: React.FC<{
 }> = ({replies, threadParentComment, useThreading, startDepth = 1}) => {
     return (
         <>
-            {replies.map(reply => (
+            {replies.map((reply, idx, arr) => (
                 <ReplyTreeNode
                     key={reply.id}
                     depth={startDepth}
+                    isLastSibling={idx === arr.length - 1}
                     reply={reply}
                     threadParentComment={threadParentComment}
                     useThreading={useThreading}

@@ -38,7 +38,15 @@ const Replies: React.FC<RepliesProps> = ({comment}) => {
 
     return (
         <div>
-            {visibleReplies.map((reply => <CommentComponent key={reply.id} comment={reply} parent={comment} />))}
+            {visibleReplies.map((reply, idx) => (
+                <CommentComponent
+                    key={reply.id}
+                    comment={reply}
+                    isLastSibling={idx === visibleReplies.length - 1}
+                    parent={comment}
+                    isChild
+                />
+            ))}
             {totalHiddenCount > 0 && <RepliesPagination count={totalHiddenCount} loadMore={loadMore}/>}
         </div>
     );
