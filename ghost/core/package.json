@@ -145,7 +145,7 @@
     "bookshelf": "1.2.0",
     "bookshelf-relations": "2.8.0",
     "brute-knex": "4.0.1",
-    "bson-objectid": "2.0.4",
+    "bson-objectid": "catalog:",
     "cache-manager": "4.1.0",
     "cache-manager-ioredis": "2.1.0",
     "chalk": "4.1.2",

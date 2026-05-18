@@ -36,6 +36,7 @@ catalog:
   '@typescript-eslint/parser': 8.49.0
   '@vitejs/plugin-react': 4.7.0
   '@vitest/coverage-v8': 4.1.5
+  bson-objectid: 2.0.4
   c8: 10.1.3
   chai: 4.5.0
   clsx: 2.1.1
