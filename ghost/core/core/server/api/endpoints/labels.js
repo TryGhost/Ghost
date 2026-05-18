@@ -7,6 +7,21 @@ const messages = {
     labelAlreadyExists: 'Label already exists'
 };
 
+const errorCodes = {
+    labelAlreadyExists: 'LABEL_ALREADY_EXISTS'
+};
+
+const normalizeDuplicateLabelError = (error) => {
+    if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
+        throw new errors.ValidationError({
+            message: tpl(messages.labelAlreadyExists),
+            code: errorCodes.labelAlreadyExists
+        });
+    }
+
+    throw error;
+};
+
 const ALLOWED_INCLUDES = ['count.members'];
 
 /** @type {import('@tryghost/api-framework').Controller} */
@@ -89,13 +104,7 @@ const controller = {
         permissions: true,
         query(frame) {
             return models.Label.add(frame.data.labels[0], frame.options)
-                .catch((error) => {
-                    if (error.code && error.message.toLowerCase().indexOf('unique') !== -1) {
-                        throw new errors.ValidationError({message: tpl(messages.labelAlreadyExists)});
-                    }
-
-                    throw error;
-                });
+                .catch(normalizeDuplicateLabelError);
         }
     },
 
@@ -119,7 +128,8 @@ const controller = {
         },
         permissions: true,
         async query(frame) {
-            const model = await models.Label.edit(frame.data.labels[0], frame.options);
+            const model = await models.Label.edit(frame.data.labels[0], frame.options)
+                .catch(normalizeDuplicateLabelError);
             if (!model) {
                 throw new errors.NotFoundError({
                     message: tpl(messages.labelNotFound)

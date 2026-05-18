@@ -1,4 +1,5 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {AlreadyExistsError} from '@tryghost/admin-x-framework/errors';
 import {
     Badge,
     type ComboboxOptionSource,
@@ -97,19 +98,31 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
     onSearchClear
 }) => {
     const [editingLabelId, setEditingLabelId] = useState<string | null>(null);
+    const [createError, setCreateError] = useState('');
     const normalizedSearch = search.trim().toLowerCase();
     const visibleLabels = normalizedSearch
         ? labels.filter(label => label.name.toLowerCase().includes(normalizedSearch))
         : labels;
     const showCreate = !!onCreate && search.trim() && canCreateFromSearch?.(search);
     const showEdit = !!onEdit;
+
+    useEffect(() => {
+        setCreateError('');
+    }, [search]);
     const handleCreate = async () => {
         if (onCreate) {
-            const newLabel = await onCreate(search.trim());
-            if (newLabel) {
-                onToggle(newLabel.slug);
+            try {
+                const newLabel = await onCreate(search.trim());
+                if (newLabel) {
+                    onToggle(newLabel.slug);
+                }
+                onSearchClear?.();
+            } catch (error) {
+                if (error instanceof AlreadyExistsError) {
+                    setCreateError(error.message);
+                }
+                return;
             }
-            onSearchClear?.();
         }
     };
 
@@ -157,15 +170,22 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
                 </CommandGroup>
             )}
             {showCreate && (
-                <CommandGroup className="[&_[cmdk-group-heading]]:hidden">
-                    <CommandItem
-                        disabled={isCreating}
-                        onSelect={handleCreate}
-                    >
-                        <LucideIcon.Plus className="size-4" />
-                        {isCreating ? 'Creating...' : `Create "${search.trim()}"`}
-                    </CommandItem>
-                </CommandGroup>
+                <>
+                    <CommandGroup className="[&_[cmdk-group-heading]]:hidden">
+                        <CommandItem
+                            disabled={isCreating}
+                            onSelect={handleCreate}
+                        >
+                            <LucideIcon.Plus className="size-4" />
+                            {isCreating ? 'Creating...' : `Create "${search.trim()}"`}
+                        </CommandItem>
+                    </CommandGroup>
+                    {createError && (
+                        <div className="px-2 pb-2 text-xs text-destructive">
+                            {createError}
+                        </div>
+                    )}
+                </>
             )}
         </>
     );

@@ -149,4 +149,42 @@ describe('Labels API', function () {
                 etag: anyEtag
             });
     });
+
+    it('Errors when editing label with the same name', async function () {
+        const loggingStub = sinon.stub(logging, 'error');
+
+        await agent
+            .post('labels')
+            .body({labels: [{
+                name: 'edit-source-label'
+            }]})
+            .expectStatus(201);
+
+        const {body} = await agent
+            .post('labels')
+            .body({labels: [{
+                name: 'edit-target-label'
+            }]})
+            .expectStatus(201);
+
+        const id = body.labels[0].id;
+
+        await agent
+            .put(`labels/${id}`)
+            .body({labels: [{
+                name: 'edit-source-label'
+            }]})
+            .expectStatus(422)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+
+        sinon.assert.calledOnce(loggingStub);
+    });
 });

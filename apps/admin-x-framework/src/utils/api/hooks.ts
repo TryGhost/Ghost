@@ -156,6 +156,7 @@ interface MutationOptions<ResponseData, Payload> extends Omit<QueryOptions<Respo
     headers?: Record<string, string>;
     body?: (payload: Payload) => FormData | object;
     searchParams?: (payload: Payload) => { [key: string]: string; };
+    mapError?: (error: unknown, payload: Payload) => unknown;
     invalidateQueries?: { dataType: string; } | {
         filters?: InvalidateQueryFilters<unknown>,
         options?: InvalidateOptions,
@@ -187,7 +188,7 @@ const mutate = <ResponseData, Payload>({fetchApi, path, payload, searchParams, o
     });
 };
 
-export const createMutation = <ResponseData, Payload>({path, searchParams, defaultSearchParams, updateQueries, invalidateQueries, ...mutateOptions}: MutationOptions<ResponseData, Payload>) => () => {
+export const createMutation = <ResponseData, Payload>({path, searchParams, defaultSearchParams, updateQueries, invalidateQueries, mapError, ...mutateOptions}: MutationOptions<ResponseData, Payload>) => () => {
     const fetchApi = useFetchApi();
     const queryClient = useQueryClient();
     const {onUpdate, onInvalidate, onDelete} = useFramework();
@@ -215,7 +216,13 @@ export const createMutation = <ResponseData, Payload>({path, searchParams, defau
     }, [onInvalidate, onUpdate, onDelete, queryClient]);
 
     return useMutation<ResponseData, unknown, Payload>({
-        mutationFn: payload => mutate({fetchApi, path: path(payload), payload, searchParams: searchParams?.(payload) || defaultSearchParams, options: mutateOptions}),
+        mutationFn: async (payload) => {
+            try {
+                return await mutate({fetchApi, path: path(payload), payload, searchParams: searchParams?.(payload) || defaultSearchParams, options: mutateOptions});
+            } catch (error) {
+                throw (mapError?.(error, payload) ?? error);
+            }
+        },
         onSuccess: afterMutate
     });
 };

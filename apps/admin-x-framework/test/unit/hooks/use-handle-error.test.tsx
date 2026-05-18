@@ -2,7 +2,7 @@ import {renderHook} from '@testing-library/react';
 import React, {ReactNode} from 'react';
 import useHandleError from '../../../src/hooks/use-handle-error';
 import {FrameworkProvider} from '../../../src/providers/framework-provider';
-import {APIError, ValidationError} from '../../../src/utils/errors';
+import {APIError, AlreadyExistsError, ValidationError} from '../../../src/utils/errors';
 
 // Mock external dependencies
 vi.mock('@sentry/react', () => ({
@@ -230,6 +230,18 @@ describe('useHandleError', () => {
 
         expect(showToast).toHaveBeenCalledWith({
             message: 'Field is required',
+            type: 'error'
+        });
+    });
+
+    it('shows AlreadyExistsError message', () => {
+        const wrapper = createWrapper();
+        const {result} = renderHook(() => useHandleError(), {wrapper});
+
+        result.current(new AlreadyExistsError('A label with this name already exists'));
+
+        expect(showToast).toHaveBeenCalledWith({
+            message: 'A label with this name already exists',
             type: 'error'
         });
     });

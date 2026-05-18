@@ -1,6 +1,8 @@
+import {AlreadyExistsError} from '@tryghost/admin-x-framework/errors';
 import {Label, useCreateLabel, useDeleteLabel, useEditLabel} from '@tryghost/admin-x-framework/api/labels';
 import {ValueSource} from '@tryghost/shade/patterns';
 import {useCallback, useMemo, useRef, useState} from 'react';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useLabelValueSource} from './filter-sources/use-label-value-source';
 import type {ComboboxOptionSource} from '@tryghost/shade/components';
 
@@ -32,6 +34,7 @@ export function useLabelPicker({
 }: UseLabelPickerOptions): UseLabelPickerResult {
     const defaultLabelValueSource = useLabelValueSource();
     const labelValueSource = valueSource ?? defaultLabelValueSource;
+    const handleError = useHandleError();
     const [searchValue, setSearchValue] = useState('');
     const labelSourceState = labelValueSource.useOptions({
         query: searchValue,
@@ -61,6 +64,15 @@ export function useLabelPicker({
     const {mutateAsync: createLabelMutation, isLoading: isCreating} = useCreateLabel();
     const {mutateAsync: editLabelMutation} = useEditLabel();
     const {mutateAsync: deleteLabelMutation} = useDeleteLabel();
+
+    const handleMutationError = useCallback((error: unknown) => {
+        if (error instanceof AlreadyExistsError) {
+            throw error;
+        }
+
+        handleError(error);
+        throw error;
+    }, [handleError]);
 
     // Ref to always read the latest selectedSlugs in callbacks,
     // avoiding stale closures and keeping callbacks stable
@@ -94,10 +106,14 @@ export function useLabelPicker({
         if (!trimmed || isDuplicateName(trimmed)) {
             return undefined;
         }
-        const result = await createLabelMutation({name: trimmed});
-        const newLabel = result?.labels?.[0];
-        return newLabel;
-    }, [createLabelMutation, isDuplicateName]);
+        try {
+            const result = await createLabelMutation({name: trimmed});
+            const newLabel = result?.labels?.[0];
+            return newLabel;
+        } catch (error) {
+            handleMutationError(error);
+        }
+    }, [createLabelMutation, handleMutationError, isDuplicateName]);
 
     const editLabel = useCallback(async (id: string, name: string) => {
         const trimmed = name.trim();
@@ -105,27 +121,35 @@ export function useLabelPicker({
             return;
         }
         const oldLabel = labels.find(l => l.id === id);
-        const result = await editLabelMutation({id, name: trimmed});
-        const updatedLabel = result?.labels?.[0];
-        // If the slug changed and the old slug was selected, swap it
-        if (oldLabel && updatedLabel && oldLabel.slug !== updatedLabel.slug) {
-            const current = selectedSlugsRef.current;
-            if (current.includes(oldLabel.slug)) {
-                onSelectionChange(current.map(s => (s === oldLabel.slug ? updatedLabel.slug : s)));
+        try {
+            const result = await editLabelMutation({id, name: trimmed});
+            const updatedLabel = result?.labels?.[0];
+            // If the slug changed and the old slug was selected, swap it
+            if (oldLabel && updatedLabel && oldLabel.slug !== updatedLabel.slug) {
+                const current = selectedSlugsRef.current;
+                if (current.includes(oldLabel.slug)) {
+                    onSelectionChange(current.map(s => (s === oldLabel.slug ? updatedLabel.slug : s)));
+                }
             }
+        } catch (error) {
+            handleMutationError(error);
         }
-    }, [editLabelMutation, isDuplicateName, labels, onSelectionChange]);
+    }, [editLabelMutation, handleMutationError, isDuplicateName, labels, onSelectionChange]);
 
     const deleteLabel = useCallback(async (id: string) => {
         const label = labels.find(l => l.id === id);
-        await deleteLabelMutation(id);
-        if (label) {
-            const current = selectedSlugsRef.current;
-            if (current.includes(label.slug)) {
-                onSelectionChange(current.filter(s => s !== label.slug));
+        try {
+            await deleteLabelMutation(id);
+            if (label) {
+                const current = selectedSlugsRef.current;
+                if (current.includes(label.slug)) {
+                    onSelectionChange(current.filter(s => s !== label.slug));
+                }
             }
+        } catch (error) {
+            handleMutationError(error);
         }
-    }, [deleteLabelMutation, labels, onSelectionChange]);
+    }, [deleteLabelMutation, handleMutationError, labels, onSelectionChange]);
 
     return {
         labels,

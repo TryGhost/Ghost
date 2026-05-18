@@ -1,4 +1,5 @@
 import React, {useCallback, useRef, useState} from 'react';
+import {AlreadyExistsError} from '@tryghost/admin-x-framework/errors';
 import {
     Button,
     CommandItem,
@@ -24,6 +25,7 @@ const LabelFilterRenderer: React.FC<CustomRendererProps<string>> = ({field, valu
 
     const triggerRef = useRef<HTMLButtonElement>(null);
     const [alignOffset, setAlignOffset] = useState(0);
+    const [createError, setCreateError] = useState('');
 
     const updateAlignOffset = useCallback(() => {
         const trigger = triggerRef.current;
@@ -113,19 +115,32 @@ const LabelFilterRenderer: React.FC<CustomRendererProps<string>> = ({field, valu
                     disabled={picker.isCreating}
                     variant="ghost"
                     onClick={async () => {
-                        const newLabel = await picker.createLabel(searchInput.trim());
-                        if (newLabel) {
-                            picker.toggleLabel(newLabel.slug);
+                        try {
+                            const newLabel = await picker.createLabel(searchInput.trim());
+                            if (newLabel) {
+                                picker.toggleLabel(newLabel.slug);
+                            }
+                            setCreateError('');
+                            clearSearch();
+                        } catch (error) {
+                            if (error instanceof AlreadyExistsError) {
+                                setCreateError(error.message);
+                            }
+                            return;
                         }
-                        clearSearch();
                     }}
                 >
                     <LucideIcon.Plus className="size-4" />
                     {picker.isCreating ? 'Creating...' : `Create "${searchInput.trim()}"`}
                 </Button>
+                {createError && (
+                    <div className="px-2 pt-1 text-xs text-destructive">
+                        {createError}
+                    </div>
+                )}
             </div>
         );
-    }, [picker]);
+    }, [createError, picker]);
 
     return (
         <Popover
@@ -164,6 +179,10 @@ const LabelFilterRenderer: React.FC<CustomRendererProps<string>> = ({field, valu
                         renderItem={renderItem}
                         values={values}
                         onChange={onChange}
+                        onSearchChange={(value) => {
+                            setCreateError('');
+                            picker.onSearchChange(value);
+                        }}
                     />
                 )}
             </PopoverContent>

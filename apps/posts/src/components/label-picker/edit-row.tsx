@@ -1,4 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
+import {AlreadyExistsError} from '@tryghost/admin-x-framework/errors';
 import {Button} from '@tryghost/shade/components';
 import {Label} from '@tryghost/admin-x-framework/api/labels';
 
@@ -45,7 +46,10 @@ export const EditRow: React.FC<EditRowProps> = ({label, onSave, onCancel, onDele
         try {
             await onSave(label.id, name.trim());
             onCancel();
-        } catch {
+        } catch (saveError) {
+            if (saveError instanceof AlreadyExistsError) {
+                setError(saveError.message);
+            }
             setIsSaving(false);
         }
     };

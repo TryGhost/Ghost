@@ -37,6 +37,9 @@ export function setupShadeMocks() {
         value: ResizeObserverMock
     });
 
+    // Mock scrollIntoView - required for cmdk-based components
+    Element.prototype.scrollIntoView = () => {};
+
     // Mock getBoundingClientRect - required for positioning calculations
     Element.prototype.getBoundingClientRect = () => ({
         width: 0,
