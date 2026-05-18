@@ -40,13 +40,13 @@ describe('{{#social_accounts}} helper', function () {
 
     it('iterates over @site accounts in canonical order', function () {
         const out = compile(`{{#social_accounts @site}}{{type}}|{{/social_accounts}}`).with({});
-        assert.equal(out, 'twitter|facebook|linkedin|bluesky|threads|mastodon|tiktok|youtube|instagram|');
+        assert.equal(out, 'x|facebook|linkedin|bluesky|threads|mastodon|tiktok|youtube|instagram|');
     });
 
     it('exposes type, href, username, and name per iteration', function () {
         const out = compile(`{{#social_accounts @site}}{{type}}={{href}}|{{name}}|{{username}};{{/social_accounts}}`)
             .with({}, {data: {site: {twitter: 'testuser-tw', linkedin: 'testuser-li'}}});
-        assert.equal(out, 'twitter=https://x.com/testuser-tw|X|testuser-tw;linkedin=https://www.linkedin.com/in/testuser-li|LinkedIn|testuser-li;');
+        assert.equal(out, 'x=https://x.com/testuser-tw|X|testuser-tw;linkedin=https://www.linkedin.com/in/testuser-li|LinkedIn|testuser-li;');
     });
 
     it('uses `href` (not `url`) for the link to avoid collision with the {{url}} helper', function () {
@@ -72,7 +72,7 @@ describe('{{#social_accounts}} helper', function () {
     it('skips platforms without a username', function () {
         const out = compile(`{{#social_accounts @site}}{{type}},{{/social_accounts}}`)
             .with({}, {data: {site: {twitter: 'me', instagram: 'me-ig'}}});
-        assert.equal(out, 'twitter,instagram,');
+        assert.equal(out, 'x,instagram,');
     });
 
     it('renders the {{else}} block when nothing is set', function () {
@@ -90,19 +90,19 @@ describe('{{#social_accounts}} helper', function () {
     it('iterates over a passed author object', function () {
         const out = compile(`{{#social_accounts author}}{{type}}={{username}};{{/social_accounts}}`)
             .with({author: {twitter: 'author-tw', bluesky: 'author.bsky.social'}});
-        assert.equal(out, 'twitter=author-tw;bluesky=author.bsky.social;');
+        assert.equal(out, 'x=author-tw;bluesky=author.bsky.social;');
     });
 
     it('iterates over the current context with `this`', function () {
         const out = compile(`{{#social_accounts this}}{{type}}={{username}};{{/social_accounts}}`)
             .with({twitter: 'ctx-tw', mastodon: 'mastodon.social/@me'});
-        assert.equal(out, 'twitter=ctx-tw;mastodon=mastodon.social/@me;');
+        assert.equal(out, 'x=ctx-tw;mastodon=mastodon.social/@me;');
     });
 
     it('exposes @first, @last, @index iteration vars', function () {
         const out = compile(`{{#social_accounts @site}}{{@index}}:{{type}}{{#if @first}}!{{/if}}{{#if @last}}*{{/if}} {{/social_accounts}}`)
             .with({}, {data: {site: {twitter: 'tw', facebook: 'fb', instagram: 'ig'}}});
-        assert.equal(out, '0:twitter! 1:facebook 2:instagram* ');
+        assert.equal(out, '0:x! 1:facebook 2:instagram* ');
     });
 
     it('throws an IncorrectUsageError when called with no source', function () {
@@ -123,5 +123,25 @@ describe('{{#social_accounts}} helper', function () {
         const out = compile(`{{#social_accounts missingVar}}x{{else}}none{{/social_accounts}}`)
             .with({});
         assert.equal(out, 'none');
+    });
+
+    // Reported bug: the helper emitted `type: "twitter"`, causing
+    // `{{> (concat "icons/" type)}}` to 500 in themes that ship an `x.hbs`
+    // partial (matching the admin "X" label and modern branding).
+    it('emits type "x" (not "twitter") for the X/Twitter platform', function () {
+        const out = compile(`{{#social_accounts @site}}{{type}}={{name}};{{/social_accounts}}`)
+            .with({}, {data: {site: {twitter: 'ghost'}}});
+        assert.equal(out, 'x=X;');
+    });
+
+    // User-reported reproduction shape (TryGhost/Ghost#27871): theme used
+    //   {{#author}}{{#social_accounts this}}{{> (concat "icons/social/" type)}}{{/social_accounts}}{{/author}}
+    // and got a 500 because the dynamic partial pointed at `twitter.hbs` while
+    // the theme only shipped `x.hbs`. With the fix, the emitted type matches
+    // the theme's partial filename.
+    it('emits type "x" when iterating an author inside {{#author}}', function () {
+        const out = compile(`{{#author}}{{#social_accounts this}}{{type}}{{/social_accounts}}{{/author}}`)
+            .with({author: {twitter: 'author-tw'}});
+        assert.equal(out, 'x');
     });
 });

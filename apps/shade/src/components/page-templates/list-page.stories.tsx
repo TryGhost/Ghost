@@ -23,11 +23,10 @@ const meta = {
                 component: `
 ListPage is the canonical recipe for the **List page** type — the recurring structure used by Members, Tags, Comments, Automations, etc.
 
-It is intentionally thin: a vertical flex-col stack with horizontal padding. Drop the named slots in as direct children.
+It is intentionally thin: a vertical flex-col stack with horizontal padding that grows to fill its flex parent. Drop the named slots in as direct children.
 
 - \`<ListPage.Header>\` — sticky, blurred, full-bleed chrome band. Place \`PageHeader\`, \`ViewBar\`, and/or \`FilterBar\` directly inside as siblings. \`FilterBar\` auto-collapses when it has no active filters.
-- \`<ListPage.Body>\` — main content area (table, list, or empty state)
-- \`<ListPage.Pagination>\` — optional centered pagination row (load-more, page links)
+- \`<ListPage.Body>\` — grows to fill remaining space. Use \`flex-1 flex items-center justify-center\` on the immediate child to vertically center empty/loading states.
 
 \`\`\`tsx
 <ListPage>
@@ -37,7 +36,6 @@ It is intentionally thin: a vertical flex-col stack with horizontal padding. Dro
     <FilterBar>…</FilterBar>      {/* optional — auto-collapses when empty */}
   </ListPage.Header>
   <ListPage.Body>…</ListPage.Body>
-  <ListPage.Pagination>…</ListPage.Pagination>
 </ListPage>
 \`\`\`
                 `
@@ -131,9 +129,6 @@ export const WithData: Story = {
                         </TableBody>
                     </Table>
                 </ListPage.Body>
-                <ListPage.Pagination>
-                    <Button variant='outline'>Load more</Button>
-                </ListPage.Pagination>
             </ListPage>
         );
     }
@@ -159,9 +154,11 @@ export const EmptyState: Story = {
                 </PageHeader>
             </ListPage.Header>
             <ListPage.Body>
-                <EmptyIndicator title='No members yet'>
-                    <Users />
-                </EmptyIndicator>
+                <div className='flex flex-1 items-center justify-center'>
+                    <EmptyIndicator title='No members yet'>
+                        <Users />
+                    </EmptyIndicator>
+                </div>
             </ListPage.Body>
         </ListPage>
     )
@@ -286,9 +283,6 @@ export const WithViewBar: Story = {
                     </TableBody>
                 </Table>
             </ListPage.Body>
-            <ListPage.Pagination>
-                <Button variant='outline'>Load more</Button>
-            </ListPage.Pagination>
         </ListPage>
     )
 };
@@ -365,9 +359,6 @@ export const WithFilterBar: Story = {
                         </TableBody>
                     </Table>
                 </ListPage.Body>
-                <ListPage.Pagination>
-                    <Button variant='outline'>Load more</Button>
-                </ListPage.Pagination>
             </ListPage>
         );
     }

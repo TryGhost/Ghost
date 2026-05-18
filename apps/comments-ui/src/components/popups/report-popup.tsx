@@ -1,7 +1,7 @@
 import CloseButton from './close-button';
+import SpinnerIcon from '../../images/icons/spinner.svg?react';
+import SuccessIcon from '../../images/icons/success.svg?react';
 import {Comment} from '../../app-context';
-import {ReactComponent as SpinnerIcon} from '../../images/icons/spinner.svg';
-import {ReactComponent as SuccessIcon} from '../../images/icons/success.svg';
 import {useAppContext} from '../../app-context';
 import {useState} from 'react';
 

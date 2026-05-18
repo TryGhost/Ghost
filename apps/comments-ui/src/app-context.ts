@@ -88,6 +88,7 @@ export type EditableAppContext = {
     commentsIsLoading?: boolean,
     commentIdToHighlight: string | null,
     commentIdToScrollTo: string | null,
+    commentIdFromHash: string | null,
     showMissingCommentNotice: boolean,
     pageUrl: string,
     supportEmail: string | null,

@@ -30,6 +30,8 @@
     "dev:storage": "DEV_COMPOSE_FILES='-f compose.dev.storage.yaml' pnpm nx run ghost-monorepo:docker:dev",
     "dev:stripe": "./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:docker:dev",
     "dev:all": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml -f compose.dev.storage.yaml' ./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:docker:dev",
+    "dev:supervisor": "node scripts/dev-supervisor.js",
+    "dev:status": "node scripts/dev-supervisor.js status",
     "fix": "pnpm store prune && rimraf -g '**/node_modules' && pnpm install && pnpm nx reset",
     "knex-migrator": "pnpm --filter ghost run knex-migrator",
     "setup": "pnpm install && git submodule update --init --recursive",
@@ -39,6 +41,7 @@
     "docker:build": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} build",
     "docker:clean": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile all down -v --remove-orphans --rmi local",
     "docker:down": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} down",
+    "docker:rebase": "git fetch ${GHOST_UPSTREAM:-origin} main && git rebase ${GHOST_UPSTREAM:-origin}/main && pnpm install && pnpm nx run-many -t build --projects=@tryghost/shade,@tryghost/admin-x-design-system,@tryghost/admin-x-framework && docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} up -d --build --force-recreate ghost-dev",
     "knip": "knip",
     "knip:fix": "knip --fix --allow-remove-files=false",
     "lint": "pnpm nx run-many -t lint",
@@ -63,7 +66,7 @@
   "pnpm": {
     "overrides": {
       "@tryghost/errors": "^1.3.7",
-      "@tryghost/logging": "4.2.0",
+      "@tryghost/logging": "catalog:",
       "jackspeak": "2.3.6",
       "moment": "2.30.1",
       "moment-timezone": "0.5.45",
@@ -139,21 +142,21 @@
     ]
   },
   "devDependencies": {
-    "@playwright/test": "1.59.1",
+    "@playwright/test": "catalog:",
     "@secretlint/secretlint-rule-pattern": "12.3.1",
     "@secretlint/secretlint-rule-preset-recommend": "12.3.1",
     "eslint": "catalog:",
     "eslint-plugin-ghost": "3.5.0",
     "eslint-plugin-react": "7.37.5",
     "husky": "9.1.7",
-    "jsonc-parser": "3.3.1",
+    "jsonc-parser": "catalog:",
     "knip": "6.12.0",
     "lint-staged": "16.4.0",
     "nx": "22.0.4",
     "rimraf": "6.1.3",
     "secretlint": "12.3.1",
     "semver": "7.7.4",
-    "typescript": "5.9.3"
+    "typescript": "catalog:"
   },
   "nx": {
     "includedScripts": [],

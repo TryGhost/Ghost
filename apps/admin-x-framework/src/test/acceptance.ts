@@ -44,6 +44,7 @@ interface MockRequestConfig {
     method: string;
     path: string | RegExp;
     response: unknown;
+    rawResponse?: string | ArrayBuffer | Uint8Array | Buffer;
     responseStatus?: number;
     responseHeaders?: {[key: string]: string};
 }
@@ -208,6 +209,22 @@ export function createMockRequests(overrides: Record<string, MockRequestConfig> 
 export async function mockApi<Requests extends Record<string, MockRequestConfig>>({page, requests, options = {}}: {page: Page, requests: Requests, options?: {useActivityPub?: boolean}}) {
     const lastApiRequests: {[key in keyof Requests]?: RequestRecord} = {};
 
+    const getResponseBody = (matchingMock: MockRequestConfig) => {
+        if (typeof matchingMock.rawResponse === 'string' || Buffer.isBuffer(matchingMock.rawResponse)) {
+            return matchingMock.rawResponse;
+        }
+
+        if (matchingMock.rawResponse instanceof ArrayBuffer) {
+            return Buffer.from(matchingMock.rawResponse);
+        }
+
+        if (matchingMock.rawResponse instanceof Uint8Array) {
+            return Buffer.from(matchingMock.rawResponse);
+        }
+
+        return typeof matchingMock.response === 'string' ? matchingMock.response : JSON.stringify(matchingMock.response);
+    };
+
     const namedRequests = Object.entries(requests).reduce(
         (array, [key, value]) => array.concat({name: key, ...value}),
         [] as Array<MockRequestConfig & {name: keyof Requests}>
@@ -260,7 +277,7 @@ export async function mockApi<Requests extends Record<string, MockRequestConfig>
 
         await route.fulfill({
             status: matchingMock.responseStatus || 200,
-            body: typeof matchingMock.response === 'string' ? matchingMock.response : JSON.stringify(matchingMock.response),
+            body: getResponseBody(matchingMock),
             headers: matchingMock.responseHeaders || {}
         });
     });

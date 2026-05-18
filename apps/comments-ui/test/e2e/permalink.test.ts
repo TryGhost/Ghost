@@ -11,9 +11,15 @@ async function setupPermalinkTest(
     page: Page,
     mockedApi: MockedApi,
     hash: string,
-    bodyHtml = '<html><head><meta charset="UTF-8" /></head><body></body></html>'
+    bodyHtml = '<html><head><meta charset="UTF-8" /></head><body></body></html>',
+    labs = {}
 ): Promise<FrameLocator> {
     const sitePath = MOCKED_SITE_URL;
+    mockedApi.setSettings({
+        settings: {
+            labs
+        }
+    });
 
     await page.route(sitePath, async (route) => {
         await route.fulfill({status: 200, body: bodyHtml});
@@ -304,6 +310,163 @@ test.describe('Comment Permalinks', async () => {
         // The element should have the correct ID for highlighting
         const targetElement = commentsFrame.locator(`[id="${targetReplyId}"]`);
         await expect(targetElement).toBeVisible();
+    });
+
+    test('highlights nested reply instead of top-level parent with commentsThreads enabled', async ({page}) => {
+        const mockedApi = new MockedApi({});
+        mockedApi.setMember({});
+
+        const parentId = 'aaa0000000000000000100';
+        const intermediateReplyId = 'aaa0000000000000000101';
+        const targetReplyId = 'aaa0000000000000000102';
+        mockedApi.addComment({
+            id: parentId,
+            html: '<p>Parent comment</p>',
+            replies: [
+                mockedApi.buildReply({
+                    id: intermediateReplyId,
+                    html: '<p>Intermediate nested reply</p>',
+                    parent_id: parentId
+                }),
+                mockedApi.buildReply({
+                    id: targetReplyId,
+                    html: '<p>Target nested reply</p>',
+                    in_reply_to_id: intermediateReplyId,
+                    parent_id: parentId
+                })
+            ],
+            count: {
+                replies: 2
+            }
+        });
+
+        const commentsFrame = await setupPermalinkTest(
+            page,
+            mockedApi,
+            `#ghost-comments-${targetReplyId}`,
+            undefined,
+            {commentsThreads: true}
+        );
+
+        await expect(commentsFrame.getByText('Target nested reply')).toBeVisible();
+
+        const parentContent = commentsFrame.locator(`[id="${parentId}"]`).getByTestId('comment-content').first();
+        const replyContent = commentsFrame.locator(`[id="${targetReplyId}"]`).getByTestId('comment-content').first();
+
+        await expect(commentsFrame.locator(`[id="${parentId}"] mark`)).toHaveCount(0);
+        await expect(parentContent.locator('mark')).toHaveCount(0);
+        await expect(replyContent.locator('mark')).toContainText('Target nested reply');
+
+        await expect(replyContent.locator('mark')).toHaveCount(0, {timeout: 7000});
+    });
+
+    test('highlights target reply instead of focused ancestor in commentsThreads focused view', async ({page}) => {
+        const mockedApi = new MockedApi({});
+        mockedApi.setMember({});
+
+        const parentId = 'aaa0000000000000000200';
+        const replyIds = [
+            'aaa0000000000000000201',
+            'aaa0000000000000000202',
+            'aaa0000000000000000203',
+            'aaa0000000000000000204',
+            'aaa0000000000000000205',
+            'aaa0000000000000000206'
+        ];
+
+        mockedApi.addComment({
+            id: parentId,
+            html: '<p>Parent comment</p>',
+            replies: replyIds.map((id, index) => mockedApi.buildReply({
+                id,
+                html: `<p>Nested reply ${index + 1}</p>`,
+                parent_id: parentId,
+                ...(index > 0 ? {in_reply_to_id: replyIds[index - 1]} : {})
+            })),
+            count: {
+                replies: replyIds.length
+            }
+        });
+
+        const targetReplyId = replyIds[4];
+        const commentsFrame = await setupPermalinkTest(
+            page,
+            mockedApi,
+            `#ghost-comments-${targetReplyId}`,
+            undefined,
+            {commentsThreads: true}
+        );
+
+        await expect(commentsFrame.getByTestId('back-to-parent')).toBeVisible();
+        await expect(commentsFrame.getByText('Nested reply 4')).toBeVisible();
+        await expect(commentsFrame.getByText('Nested reply 5')).toBeVisible();
+
+        const targetReplyContent = commentsFrame.locator(`[id="${targetReplyId}"]`).getByTestId('comment-content').first();
+
+        await expect(targetReplyContent.locator('mark')).toContainText('Nested reply 5');
+
+        await commentsFrame.getByTestId('back-to-parent').click();
+
+        await expect(page).toHaveURL(new RegExp(`#ghost-comments-${replyIds[3]}$`));
+        await expect(commentsFrame.getByText('Nested reply 4')).toBeVisible();
+        await expect(commentsFrame.getByTestId('back-to-parent')).not.toBeVisible();
+    });
+
+    test('opens commentsThreads focused view when target reply is not in the initial comments response', async ({page}) => {
+        const mockedApi = new MockedApi({});
+        mockedApi.setMember({});
+
+        const parentId = 'aaa0000000000000000300';
+        const replyIds = [
+            'aaa0000000000000000301',
+            'aaa0000000000000000302',
+            'aaa0000000000000000303',
+            'aaa0000000000000000304',
+            'aaa0000000000000000305',
+            'aaa0000000000000000306'
+        ];
+
+        mockedApi.addComment({
+            id: parentId,
+            html: '<p>Parent comment</p>',
+            replies: replyIds.map((id, index) => mockedApi.buildReply({
+                id,
+                html: `<p>Lazy nested reply ${index + 1}</p>`,
+                parent_id: parentId,
+                ...(index > 0 ? {in_reply_to_id: replyIds[index - 1]} : {})
+            })),
+            count: {
+                replies: replyIds.length
+            }
+        });
+
+        const originalBrowse = mockedApi.browseComments.bind(mockedApi);
+        mockedApi.browseComments = function (options) {
+            const result = originalBrowse(options);
+            result.comments = result.comments.map((comment) => {
+                if (comment.id === parentId) {
+                    return {...comment, replies: comment.replies.slice(0, 3)};
+                }
+                return comment;
+            });
+            return result;
+        };
+
+        const targetReplyId = replyIds[4];
+        const commentsFrame = await setupPermalinkTest(
+            page,
+            mockedApi,
+            `#ghost-comments-${targetReplyId}`,
+            undefined,
+            {commentsThreads: true}
+        );
+
+        await expect(commentsFrame.getByTestId('back-to-parent')).toBeVisible();
+        await expect(commentsFrame.getByText('Lazy nested reply 4')).toBeVisible();
+        await expect(commentsFrame.getByText('Lazy nested reply 5')).toBeVisible();
+
+        const targetReplyContent = commentsFrame.locator(`[id="${targetReplyId}"]`).getByTestId('comment-content').first();
+        await expect(targetReplyContent.locator('mark')).toContainText('Lazy nested reply 5');
     });
 
     test('loads reply on later page when permalinking to it', async ({page}) => {

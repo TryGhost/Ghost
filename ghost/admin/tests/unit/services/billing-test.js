@@ -92,7 +92,7 @@ describe('Unit: Service: billing', function () {
     it('reloads the billing iframe during a retry', function () {
         const service = this.owner.lookup('service:billing');
         billingService = service;
-        const iframe = {src: ''};
+        const iframe = {src: '', addEventListener: sinon.stub()};
         sinon.stub(service, 'getBillingIframe').returns(iframe);
         sinon.stub(service, 'getIframeURL').returns('https://billing.example.test/pro');
 
@@ -101,26 +101,43 @@ describe('Unit: Service: billing', function () {
         expect(iframe.src).to.equal('https://billing.example.test/pro');
     });
 
-    it('reports to Sentry when the billing app does not become ready', async function () {
+    it('reports to Sentry with diagnostics when the billing app does not become ready', async function () {
         const service = this.owner.lookup('service:billing');
         billingService = service;
+        sinon.stub(service, 'getBillingIframe').returns(null);
         service.billingAppLoadAttempts = 2;
+        service.billingAppIframeSrcSetAt = Date.now() - 1234;
+        service.billingAppIframeLoadFired = true;
+        service.billingWindowOpen = true;
 
         service.reportBillingAppLoadFailure();
 
         await waitUntil(() => testkit.reports().length > 0);
 
-        expect(testkit.reports()).to.have.lengthOf(1);
         const report = testkit.reports()[0];
         expect(report.message).to.equal('Billing app failed to become ready');
-        expect(report.tags).to.deep.include({
-            source: 'billing-app-load-monitor'
-        });
-        expect(report.originalReport.contexts.ghost.billing_monitor).to.deep.include({
+        expect(report.level).to.equal('warning');
+        expect(report.originalReport.fingerprint).to.deep.equal([
+            'billing-app-load-failure',
+            document.visibilityState,
+            '2'
+        ]);
+        expect(report.tags).to.deep.include({source: 'billing-app-load-monitor'});
+
+        const billingMonitor = report.originalReport.contexts.ghost.billing_monitor;
+        expect(billingMonitor).to.deep.include({
             attempts: 2,
             has_billing_url: true,
-            is_force_upgrade: false
+            is_force_upgrade: false,
+            iframe_load_fired: true,
+            billing_window_open: true,
+            navigator_online: navigator.onLine,
+            document_visibility_state: document.visibilityState,
+            bma_boot_accessible: false,
+            bma_boot_has_mark_ready: false,
+            bma_boot_threw: false
         });
+        expect(billingMonitor.ms_since_src_set).to.be.a('number').and.to.be.at.least(1234);
     });
 
     it('does not report when the billing app becomes ready before the timeout', function () {

@@ -61,7 +61,7 @@ module.exports = class MemberRepository {
      * @param {any} deps.StripeCustomerSubscription
      * @param {any} deps.OfferRedemption
      * @param {any} deps.Outbox
-     * @param {import('../../services/stripe-api')} deps.stripeAPIService
+     * @param {import('../../../stripe/stripe-api')} deps.stripeAPIService
      * @param {any} deps.productRepository
      * @param {any} deps.offersAPI
      * @param {ITokenService} deps.tokenService
@@ -341,7 +341,7 @@ module.exports = class MemberRepository {
      * @param {Object} [data.stripeCustomer]
      * @param {string} [data.offerId]
      * @param {string} [data.status]
-     * @param {import('@tryghost/member-attribution/lib/Attribution').AttributionResource} [data.attribution]
+     * @param {import('../../../member-attribution/attribution-builder').AttributionResource} [data.attribution]
      * @param {boolean} [data.email_disabled]
      * @param {*} options
      * @returns
@@ -1024,7 +1024,7 @@ module.exports = class MemberRepository {
      * @param {string} data.id - member ID
      * @param {Object} data.subscription
      * @param {string} data.offerId
-     * @param {import('@tryghost/member-attribution/lib/Attribution').AttributionResource} [data.attribution]
+     * @param {import('../../../member-attribution/attribution-builder').AttributionResource} [data.attribution]
      * @param {*} options
      * @returns
      */

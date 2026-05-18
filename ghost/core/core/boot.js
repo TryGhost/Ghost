@@ -206,21 +206,14 @@ async function initServicesForFrontend({bootLogger}) {
     await offers.init();
     debug('End: Offers');
 
-    const frontendDataService = require('./server/services/frontend-data-service');
-    let dataService = await frontendDataService.init();
-
     debug('End: initServicesForFrontend');
-    return {dataService};
 }
 
 /**
  * Frontend is intended to be just Ghost's frontend
  */
-async function initFrontend(dataService) {
+async function initFrontend() {
     debug('Begin: initFrontend');
-
-    const proxyService = require('./frontend/services/proxy');
-    proxyService.init({dataService});
 
     const helperService = require('./frontend/services/helpers');
     await helperService.init();
@@ -353,20 +346,15 @@ async function initServices() {
     const domainEvents = require('@tryghost/domain-events');
     const AutomationsService = require('./server/services/automations');
 
-    const {
-        createAdapter: createSchedulerAdapter,
-        getSchedulerIntegration
-    } = require('./server/adapters/scheduling/utils');
+    const {createAdapter: createSchedulerAdapter} = require('./server/adapters/scheduling/utils');
     const urlUtils = require('./shared/url-utils');
+    const internalKeys = require('./server/services/internal-keys').default;
 
     // Initialize things that other services depend on first.
     emailAddressService.init();
     const apiUrl = urlUtils.urlFor('api', {type: 'admin'}, true);
     const schedulerAdapter = createSchedulerAdapter();
-    const [schedulerIntegration] = await Promise.all([
-        getSchedulerIntegration(),
-        stripe.init()
-    ]);
+    await stripe.init();
 
     await Promise.all([
         identityTokens.init(),
@@ -388,7 +376,7 @@ async function initServices() {
         postScheduling.init({
             apiUrl,
             adapter: schedulerAdapter,
-            integration: schedulerIntegration
+            internalKeys
         }),
         comments.init(),
         linkTracking.init(),
@@ -402,13 +390,13 @@ async function initServices() {
         giftService.init({
             apiUrl,
             schedulerAdapter,
-            schedulerIntegration
+            internalKeys
         }),
         new AutomationsService().init({
             domainEvents,
             apiUrl,
             schedulerAdapter,
-            schedulerIntegration
+            internalKeys
         })
     ]);
 
@@ -565,10 +553,10 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
             prometheusClient.instrumentKnex(connection);
         }
 
-        const {dataService} = await initServicesForFrontend({bootLogger});
+        await initServicesForFrontend({bootLogger});
 
         if (frontend) {
-            await initFrontend(dataService);
+            await initFrontend();
         }
         const ghostApp = await initExpressApps({frontend, backend, config});
 

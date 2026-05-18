@@ -558,7 +558,7 @@
     "comments": {
         "comments_enabled": {
             "type": "string",
-            "defaultValue": "off",
+            "defaultValue": "all",
             "validations": {
                 "isEmpty": false,
                 "isIn": [[

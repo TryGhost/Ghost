@@ -177,9 +177,7 @@ describe('Unit: sitemap/manager', function () {
     // for the right resources.
     describe('_populateFromDatabase', function () {
         let sandbox;
-        let postFindPage;
-        let tagFindPage;
-        let userFindPage;
+        let fetchAll;
         let getUrlForResource;
 
         const models = require('../../../../../core/server/models');
@@ -191,11 +189,13 @@ describe('Unit: sitemap/manager', function () {
         // beforeEach failure can't leak stubs across cases.
         beforeEach(function () {
             sandbox = sinon.createSandbox();
-            postFindPage = sandbox.stub(models.Post, 'findPage');
-            // Sitemap populate uses TagPublic and Author (the scoped models
-            // with shouldHavePosts gating) instead of Tag/User.
-            tagFindPage = sandbox.stub(models.TagPublic, 'findPage');
-            userFindPage = sandbox.stub(models.Author, 'findPage');
+            // The lazy sitemap populate goes through raw_knex.fetchAll —
+            // the same fast path the eager URL service uses
+            // (services/url/resources.js). All four resource types route
+            // through this single static method, discriminated by
+            // `modelName` and `filter` in the options.
+            fetchAll = sandbox.stub(models.Base.Model.raw_knex, 'fetchAll');
+            fetchAll.resolves([]);
 
             sandbox.stub(PageGenerator.prototype, 'addUrl');
             sandbox.stub(TagGenerator.prototype, 'addUrl');
@@ -212,13 +212,6 @@ describe('Unit: sitemap/manager', function () {
             sandbox.restore();
         });
 
-        function paged(rows) {
-            return {
-                data: rows.map(r => ({...r, toJSON: () => r})),
-                meta: {pagination: {pages: 1}}
-            };
-        }
-
         function makeLazyManager() {
             return new SiteMapManager({
                 posts: new PostGenerator(),
@@ -229,15 +222,16 @@ describe('Unit: sitemap/manager', function () {
             });
         }
 
+        const postsMatcher = sinon.match({modelName: 'Post', filter: 'status:published+type:post'});
+        const pagesMatcher = sinon.match({modelName: 'Post', filter: 'status:published+type:page'});
+        const tagsMatcher = sinon.match({modelName: 'Tag'});
+        const authorsMatcher = sinon.match({modelName: 'User'});
+
         it('feeds non-/404/ URLs into the per-type generators', async function () {
-            postFindPage
-                .withArgs(sinon.match({filter: 'type:post'}))
-                .resolves(paged([{id: 'p1', slug: 'hello', type: 'post'}]));
-            postFindPage
-                .withArgs(sinon.match({filter: 'type:page'}))
-                .resolves(paged([{id: 'pg1', slug: 'about', type: 'page'}]));
-            tagFindPage.resolves(paged([{id: 't1', slug: 'food'}]));
-            userFindPage.resolves(paged([{id: 'u1', slug: 'jane'}]));
+            fetchAll.withArgs(postsMatcher).resolves([{id: 'p1', slug: 'hello', type: 'post'}]);
+            fetchAll.withArgs(pagesMatcher).resolves([{id: 'pg1', slug: 'about', type: 'page'}]);
+            fetchAll.withArgs(tagsMatcher).resolves([{id: 't1', slug: 'food'}]);
+            fetchAll.withArgs(authorsMatcher).resolves([{id: 'u1', slug: 'jane'}]);
 
             getUrlForResource.callsFake((resource) => {
                 if (resource.id === 'p1') {
@@ -265,53 +259,76 @@ describe('Unit: sitemap/manager', function () {
         });
 
         it('preloads tags+authors for posts so primary_tag permalinks resolve', async function () {
-            postFindPage.resolves(paged([]));
-            tagFindPage.resolves(paged([]));
-            userFindPage.resolves(paged([]));
             getUrlForResource.returns('http://example.com/x/');
 
             await makeLazyManager().ensurePopulatedFromDatabase();
 
             // Sites using `/:primary_tag/:slug/` permalinks need
-            // `primary_tag` populated on the resource. Bookshelf only fills
-            // it in toJSON when the `tags` relation is loaded.
-            sinon.assert.calledWith(postFindPage, sinon.match({
-                filter: 'type:post',
+            // `primary_tag` populated on the resource. raw_knex.fetchAll
+            // attaches relations listed in withRelated and runs Post.toJSON
+            // per row; toJSON's computed primary_tag/primary_author fields
+            // only fire when the underlying tags/authors relation is loaded,
+            // so `withRelated: ['tags', 'authors']` is the load-bearing key
+            // here.
+            sinon.assert.calledWith(fetchAll, sinon.match({
+                modelName: 'Post',
+                filter: 'status:published+type:post',
                 withRelated: ['tags', 'authors']
             }));
         });
 
-        it('queries tags and authors with visibility:public to mirror the eager URL service', async function () {
-            postFindPage.resolves(paged([]));
-            tagFindPage.resolves(paged([]));
-            userFindPage.resolves(paged([]));
+        it('excludes heavy post body columns from the fetch so a large site does not OOM', async function () {
             getUrlForResource.returns('http://example.com/x/');
 
             await makeLazyManager().ensurePopulatedFromDatabase();
 
-            // Pin the full options shape so a future drop of `limit` or a
-            // change in the filter expression still fails this test. The
-            // tag schema permits visibility:'internal' and the user schema
-            // defaults to 'public' but doesn't enforce it; without these
-            // filters the lazy sitemap diverges from the eager URL service
-            // (services/url/config.js applies both).
-            sinon.assert.calledWith(tagFindPage, sinon.match({
-                limit: 200,
-                filter: 'visibility:public'
+            // The sitemap only needs slug + dates + the primary_tag/author
+            // computed fields. Without `exclude`, raw_knex.fetchAll falls
+            // through to `SELECT *` and loads multi-MB mobiledoc/lexical/
+            // html/plaintext columns for every post into memory at once.
+            // Mirrors the eager URL service's exclude list at
+            // services/url/config.js.
+            sinon.assert.calledWith(fetchAll, sinon.match({
+                modelName: 'Post',
+                filter: 'status:published+type:post',
+                exclude: sinon.match.array
+                    .contains(['mobiledoc', 'lexical', 'html', 'plaintext'])
             }));
-            sinon.assert.calledWith(userFindPage, sinon.match({
-                limit: 200,
-                filter: 'visibility:public'
+            sinon.assert.calledWith(fetchAll, sinon.match({
+                modelName: 'Post',
+                filter: 'status:published+type:page',
+                exclude: sinon.match.array
+                    .contains(['mobiledoc', 'lexical', 'html', 'plaintext'])
+            }));
+        });
+
+        it('queries tags and authors with visibility:public + shouldHavePosts to mirror the eager URL service', async function () {
+            getUrlForResource.returns('http://example.com/x/');
+
+            await makeLazyManager().ensurePopulatedFromDatabase();
+
+            // shouldHavePosts at the raw_knex layer is the gate that the
+            // TagPublic/Author scoped models used to apply. Without it,
+            // tags/users with no published posts would appear in the
+            // sitemap (and in particular staff User accounts could be
+            // exposed by author-slug guessing).
+            sinon.assert.calledWith(fetchAll, sinon.match({
+                modelName: 'Tag',
+                filter: 'visibility:public',
+                shouldHavePosts: {joinTo: 'tag_id', joinTable: 'posts_tags'}
+            }));
+            sinon.assert.calledWith(fetchAll, sinon.match({
+                modelName: 'User',
+                filter: 'visibility:public',
+                shouldHavePosts: {joinTo: 'author_id', joinTable: 'posts_authors'}
             }));
         });
 
         it('skips resources whose URL would be /404/', async function () {
-            postFindPage.resolves(paged([
+            fetchAll.withArgs(postsMatcher).resolves([
                 {id: 'p1', slug: 'good', type: 'post'},
                 {id: 'p2', slug: 'orphan', type: 'post'}
-            ]));
-            tagFindPage.resolves(paged([]));
-            userFindPage.resolves(paged([]));
+            ]);
 
             getUrlForResource.callsFake((resource) => {
                 return resource.id === 'p1' ? 'http://example.com/good/' : '/404/';
@@ -334,19 +351,13 @@ describe('Unit: sitemap/manager', function () {
             // Fix: only clear _populating if it still points to T1's promise.
             let unblockT1;
             let unblockT2;
-            postFindPage
-                .withArgs(sinon.match({filter: 'type:post'}))
+            fetchAll.withArgs(postsMatcher)
                 .onFirstCall().returns(new Promise((resolve) => {
-                    unblockT1 = () => resolve(paged([]));
+                    unblockT1 = () => resolve([]);
                 }))
                 .onSecondCall().returns(new Promise((resolve) => {
-                    unblockT2 = () => resolve(paged([]));
+                    unblockT2 = () => resolve([]);
                 }));
-            postFindPage
-                .withArgs(sinon.match({filter: 'type:page'}))
-                .resolves(paged([]));
-            tagFindPage.resolves(paged([]));
-            userFindPage.resolves(paged([]));
             getUrlForResource.returns('http://example.com/x/');
 
             const manager = makeLazyManager();
@@ -376,19 +387,13 @@ describe('Unit: sitemap/manager', function () {
         });
 
         it('routers.reset during a populate cancels the populate via the generation token', async function () {
-            // The "post" findPage call hangs until we explicitly resolve it,
+            // The posts fetchAll call hangs until we explicitly resolve it,
             // simulating a slow DB load that races with a routes.yaml reload.
             let unblockPopulate;
-            postFindPage
-                .withArgs(sinon.match({filter: 'type:post'}))
+            fetchAll.withArgs(postsMatcher)
                 .returns(new Promise((resolve) => {
-                    unblockPopulate = () => resolve(paged([]));
+                    unblockPopulate = () => resolve([]);
                 }));
-            postFindPage
-                .withArgs(sinon.match({filter: 'type:page'}))
-                .resolves(paged([]));
-            tagFindPage.resolves(paged([]));
-            userFindPage.resolves(paged([]));
             getUrlForResource.returns('http://example.com/x/');
 
             const manager = makeLazyManager();
@@ -409,10 +414,10 @@ describe('Unit: sitemap/manager', function () {
             // must re-issue the DB queries because the previous populate's
             // result was invalidated by the routers.reset. (Asserting on the
             // private `_populated` flag would couple to internal state.)
-            const callsBefore = postFindPage.callCount;
+            const callsBefore = fetchAll.callCount;
             await manager.ensurePopulatedFromDatabase();
             assert.ok(
-                postFindPage.callCount > callsBefore,
+                fetchAll.callCount > callsBefore,
                 'A reset mid-populate must invalidate the in-flight result so the next call re-queries'
             );
         });

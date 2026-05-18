@@ -29,7 +29,6 @@ const AnimatedComment: React.FC<React.PropsWithChildren<AnimatedCommentProps>> =
             enter="transition-opacity duration-300 ease-out"
             enterFrom="opacity-0"
             enterTo="opacity-100"
-            id={comment.id}
             leave="transition-opacity duration-100"
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
@@ -107,7 +106,7 @@ type PublishedCommentProps = CommentProps & {
     useThreading: boolean;
 }
 const PublishedComment: React.FC<PublishedCommentProps> = ({children, comment, parent, openEditMode, useThreading}) => {
-    const {dispatchAction, openCommentForms, isAdmin, commentIdToHighlight} = useAppContext();
+    const {dispatchAction, openCommentForms, isAdmin, commentIdToHighlight, commentIdFromHash} = useAppContext();
     const hasNestedReplies = React.Children.count(children) > 0;
 
     // Determine if the comment should be displayed with reduced opacity
@@ -148,10 +147,13 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({children, comment, p
     const hasReplies = displayReplyForm || hasNestedReplies || (comment.replies && comment.replies.length > 0);
     const avatar = (<Avatar member={comment.member} />);
     const replyFormParent = parent || comment;
+    const isHighlighted = commentIdFromHash
+        ? comment.id === commentIdFromHash && commentIdToHighlight === commentIdFromHash
+        : comment.id === commentIdToHighlight;
 
     return (
         <CommentLayout avatar={avatar} className={hiddenClass} hasReplies={hasReplies} memberUuid={comment.member?.uuid}>
-            <div>
+            <div id={comment.id}>
                 {isInEditMode ? (
                     <>
                         <CommentHeader className={hiddenClass} comment={comment} useThreading={useThreading} />
@@ -160,7 +162,7 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({children, comment, p
                 ) : (
                     <>
                         <CommentHeader className={hiddenClass} comment={comment} useThreading={useThreading} />
-                        <CommentBody className={hiddenClass} html={comment.html} isHighlighted={comment.id === commentIdToHighlight} />
+                        <CommentBody className={hiddenClass} html={comment.html} isHighlighted={isHighlighted} />
                         <CommentMenu
                             comment={comment}
                             highlightReplyButton={highlightReplyButton}
@@ -205,7 +207,7 @@ const UnpublishedComment: React.FC<React.PropsWithChildren<UnpublishedCommentPro
 
     return (
         <CommentLayout avatar={avatar} hasReplies={hasReplies}>
-            <div className="mt-[-3px] flex items-start">
+            <div className="mt-[-3px] flex items-start" id={comment.id}>
                 <div className="flex h-10 flex-row items-center gap-4 pb-[8px] pr-4">
                     <p className="text-md mt-[4px] font-sans leading-normal text-neutral-900/40 sm:text-lg dark:text-white/60">
                         {notPublishedMessage}

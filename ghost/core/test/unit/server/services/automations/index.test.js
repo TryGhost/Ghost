@@ -7,7 +7,6 @@ describe('AutomationsService', function () {
     let service;
     let domainEvents;
     let schedulerAdapter;
-    let schedulerIntegration;
     let initOptions;
 
     beforeEach(function () {
@@ -19,17 +18,13 @@ describe('AutomationsService', function () {
         schedulerAdapter = {
             schedule: sinon.stub()
         };
-        schedulerIntegration = {
-            api_keys: [{
-                id: 'fake-key-id',
-                secret: '00'.repeat(32)
-            }]
-        };
         initOptions = {
             domainEvents,
             apiUrl: 'https://fake.example.com/ghost/api/admin',
             schedulerAdapter,
-            schedulerIntegration
+            internalKeys: new Map([
+                ['ghost-scheduler', Promise.resolve({id: 'k1', secret: 'aaaa'})]
+            ])
         };
     });
 

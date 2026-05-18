@@ -9,8 +9,6 @@ import svgrPlugin from 'vite-plugin-svgr';
 
 import pkg from './package.json';
 
-import {SUPPORTED_LOCALES} from '@tryghost/i18n';
-
 export default defineConfig((config) => {
     const outputFileName = pkg.name[0] === '@' ? pkg.name.slice(pkg.name.indexOf('/') + 1) : pkg.name;
 
@@ -79,7 +77,11 @@ export default defineConfig((config) => {
             commonjsOptions: {
                 include: [/ghost/, /node_modules/],
                 dynamicRequireRoot: '../../',
-                dynamicRequireTargets: SUPPORTED_LOCALES.map(locale => `../../ghost/i18n/locales/${locale}/portal.json`)
+                // Single glob expands to all SUPPORTED_LOCALES; passing each
+                // locale as an explicit path triggers a full repo-root
+                // directory crawl per entry under vite 7's bundled
+                // @rollup/plugin-commonjs, adding ~1s per locale to build time.
+                dynamicRequireTargets: ['../../ghost/i18n/locales/*/portal.json']
             }
         },
         test: {

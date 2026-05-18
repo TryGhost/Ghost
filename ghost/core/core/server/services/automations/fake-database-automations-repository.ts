@@ -1,5 +1,6 @@
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
+import ObjectId from 'bson-objectid';
 import type {DatabaseSync} from 'node:sqlite';
 import type {
     Automation,
@@ -7,11 +8,14 @@ import type {
     AutomationEdge,
     AutomationSummary,
     AutomationsRepository,
+    EditAutomationData,
     Page
 } from './automations-repository';
 
 const messages = {
-    invalidAutomationActionRevision: 'Automation action "{actionId}" of type "{actionType}" is missing required revision field "{field}".'
+    invalidAutomationActionRevision: 'Automation action "{actionId}" of type "{actionType}" is missing required revision field "{field}".',
+    conflictingAutomationActionId: 'Automation action "{actionId}" already exists and cannot be inserted.',
+    conflictingAutomationActionType: 'Automation action "{actionId}" already exists with a different type.'
 };
 
 interface AutomationRow {
@@ -74,7 +78,7 @@ export function createFakeDatabaseAutomationsRepository({
             });
         },
 
-        async edit(id: string, data: Pick<AutomationSummary, 'status'>): Promise<Automation | null> {
+        async edit(id: string, data: EditAutomationData): Promise<Automation | null> {
             const database = getDatabase();
 
             return withTransaction(database, () => {
@@ -84,12 +88,13 @@ export function createFakeDatabaseAutomationsRepository({
                     return null;
                 }
 
-                // TODO (NY-1229): Allow updating other fields and actions/edges.
                 const updatedAutomation = updateAutomation(database, {
                     ...automation,
                     status: data.status,
                     updated_at: new Date().toISOString()
                 });
+
+                replaceAutomationGraph(database, updatedAutomation.id, data.actions, data.edges);
 
                 return buildAutomation(database, updatedAutomation);
             });
@@ -141,6 +146,210 @@ function updateAutomation(database: DatabaseSync, automation: AutomationRow): Au
     });
 
     return requireAutomation(loadAutomation(database, automation.id), automation.id);
+}
+
+function replaceAutomationGraph(database: DatabaseSync, automationId: string, actions: AutomationAction[], edges: AutomationEdge[]) {
+    const existingActions = loadAutomationActionRows(database, automationId);
+    const existingActionIds = new Set(existingActions.map(action => action.id));
+    const submittedActionIds = new Set(actions.map(action => action.id));
+    const now = new Date().toISOString();
+
+    for (const action of actions) {
+        if (existingActionIds.has(action.id)) {
+            const existingAction = existingActions.find(({id}) => id === action.id);
+
+            if (existingAction?.type !== action.type) {
+                throw new errors.ValidationError({
+                    message: tpl(messages.conflictingAutomationActionType, {
+                        actionId: action.id
+                    }),
+                    property: 'actions.type'
+                });
+            }
+        } else {
+            if (loadActionOwner(database, action.id)) {
+                throw new errors.ValidationError({
+                    message: tpl(messages.conflictingAutomationActionId, {
+                        actionId: action.id
+                    }),
+                    property: 'actions.id'
+                });
+            }
+
+            insertAction(database, {
+                id: action.id,
+                created_at: now,
+                updated_at: now,
+                automation_id: automationId,
+                type: action.type
+            });
+        }
+
+        // TODO (NY-1283): Deduplicate revisions before inserting them.
+        insertActionRevision(database, action.id, action, now);
+    }
+
+    for (const existingAction of existingActions) {
+        if (!submittedActionIds.has(existingAction.id)) {
+            softDeleteAction(database, existingAction.id, now);
+        }
+    }
+
+    deleteAutomationEdges(database, automationId);
+
+    for (const edge of edges) {
+        insertActionEdge(database, edge);
+    }
+}
+
+function loadAutomationActionRows(database: DatabaseSync, automationId: string): Array<Pick<ActionRow, 'id' | 'type'>> {
+    return database.prepare(`
+        SELECT id, type
+        FROM automation_actions
+        WHERE automation_id = ?
+            AND deleted_at IS NULL
+    `).all(automationId) as unknown as Array<Pick<ActionRow, 'id' | 'type'>>;
+}
+
+function loadActionOwner(database: DatabaseSync, actionId: string): string | null {
+    const row = database.prepare(`
+        SELECT automation_id
+        FROM automation_actions
+        WHERE id = ?
+    `).get(actionId) as {automation_id: string} | undefined;
+
+    return row?.automation_id ?? null;
+}
+
+function insertAction(database: DatabaseSync, action: {
+    id: string;
+    created_at: string;
+    updated_at: string;
+    automation_id: string;
+    type: string;
+}) {
+    database.prepare(`
+        INSERT INTO automation_actions
+        (id, created_at, updated_at, automation_id, type) VALUES
+        (:id, :created_at, :updated_at, :automation_id, :type)
+    `).run(action);
+}
+
+function softDeleteAction(database: DatabaseSync, actionId: string, deletedAt: string) {
+    database.prepare(`
+        UPDATE automation_actions
+        SET deleted_at = :deleted_at,
+            updated_at = :updated_at
+        WHERE id = :id
+    `).run({
+        id: actionId,
+        deleted_at: deletedAt,
+        updated_at: deletedAt
+    });
+}
+
+function insertActionRevision(database: DatabaseSync, actionId: string, action: AutomationAction, createdAt: string) {
+    const revision = buildActionRevision(actionId, action, getNextRevisionCreatedAt(database, actionId, createdAt));
+
+    database.prepare(`
+        INSERT INTO automation_action_revisions
+        (
+            id,
+            created_at,
+            action_id,
+            wait_hours,
+            email_subject,
+            email_lexical,
+            email_sender_name,
+            email_sender_email,
+            email_sender_reply_to,
+            email_design_setting_id
+        ) VALUES (
+            :id,
+            :created_at,
+            :action_id,
+            :wait_hours,
+            :email_subject,
+            :email_lexical,
+            :email_sender_name,
+            :email_sender_email,
+            :email_sender_reply_to,
+            :email_design_setting_id
+        )
+    `).run(revision);
+}
+
+function getNextRevisionCreatedAt(database: DatabaseSync, actionId: string, requestedCreatedAt: string) {
+    const row = database.prepare(`
+        SELECT MAX(created_at) AS created_at
+        FROM automation_action_revisions
+        WHERE action_id = ?
+    `).get(actionId) as {created_at: string | null} | undefined;
+
+    if (!row?.created_at) {
+        return requestedCreatedAt;
+    }
+
+    const requestedTime = new Date(requestedCreatedAt).getTime();
+    const latestTime = new Date(row.created_at).getTime();
+
+    if (requestedTime > latestTime) {
+        return requestedCreatedAt;
+    }
+
+    return new Date(latestTime + 1).toISOString();
+}
+
+function buildActionRevision(actionId: string, action: AutomationAction, createdAt: string) {
+    if (action.type === 'wait') {
+        return {
+            id: ObjectId().toString(),
+            created_at: createdAt,
+            action_id: actionId,
+            wait_hours: action.data.wait_hours,
+            email_subject: null,
+            email_lexical: null,
+            email_sender_name: null,
+            email_sender_email: null,
+            email_sender_reply_to: null,
+            email_design_setting_id: null
+        };
+    }
+
+    return {
+        id: ObjectId().toString(),
+        created_at: createdAt,
+        action_id: actionId,
+        wait_hours: null,
+        email_subject: action.data.email_subject,
+        email_lexical: action.data.email_lexical,
+        email_sender_name: action.data.email_sender_name,
+        email_sender_email: action.data.email_sender_email,
+        email_sender_reply_to: action.data.email_sender_reply_to,
+        email_design_setting_id: action.data.email_design_setting_id
+    };
+}
+
+function deleteAutomationEdges(database: DatabaseSync, automationId: string) {
+    database.prepare(`
+        DELETE FROM automation_action_edges
+        WHERE source_action_id IN (
+            SELECT id
+            FROM automation_actions
+            WHERE automation_id = ?
+        )
+    `).run(automationId);
+}
+
+function insertActionEdge(database: DatabaseSync, edge: AutomationEdge) {
+    database.prepare(`
+        INSERT INTO automation_action_edges
+        (source_action_id, target_action_id) VALUES
+        (:source_action_id, :target_action_id)
+    `).run({
+        source_action_id: edge.source_action_id,
+        target_action_id: edge.target_action_id
+    });
 }
 
 function requireAutomation(automation: AutomationRow | null, id: string): AutomationRow {
@@ -207,9 +416,12 @@ function loadEdgeRows(database: DatabaseSync, automationId: string): EdgeRow[] {
     return database.prepare(`
         SELECT e.source_action_id, e.target_action_id
         FROM automation_action_edges e
-        INNER JOIN automation_actions a ON a.id = e.source_action_id
-            AND a.deleted_at IS NULL
-        WHERE a.automation_id = ?
+        INNER JOIN automation_actions source_action ON source_action.id = e.source_action_id
+            AND source_action.deleted_at IS NULL
+        INNER JOIN automation_actions target_action ON target_action.id = e.target_action_id
+            AND target_action.deleted_at IS NULL
+            AND target_action.automation_id = source_action.automation_id
+        WHERE source_action.automation_id = ?
         ORDER BY e.source_action_id, e.target_action_id
     `).all(automationId) as unknown as EdgeRow[];
 }

@@ -1,5 +1,5 @@
+import ChevronIcon from '../../../images/icons/chevron-down.svg?react';
 import React, {useEffect, useRef, useState} from 'react';
-import {ReactComponent as ChevronIcon} from '../../../images/icons/chevron-down.svg';
 import {useAppContext, useOrderChange} from '../../../app-context';
 
 export const SortingForm: React.FC = () => {
