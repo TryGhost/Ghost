@@ -181,7 +181,7 @@ const LabelFilterRenderer: React.FC<CustomRendererProps<string>> = ({field, valu
                         onChange={onChange}
                         onSearchChange={(value) => {
                             setCreateError('');
-                            picker.onSearchChange(value);
+                            picker.optionSource.onSearchChange?.(value);
                         }}
                     />
                 )}
