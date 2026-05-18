@@ -117,8 +117,8 @@ module.exports = class RouterController {
      * @param {any} deps.StripePrice
      * @param {() => boolean} deps.allowSelfSignup
      * @param {any} deps.magicLinkService
-     * @param {import('@tryghost/members-stripe-service')} deps.stripeAPIService
-     * @param {import('@tryghost/member-attribution')} deps.memberAttributionService
+     * @param {import('../../../stripe/stripe-api')} deps.stripeAPIService
+     * @param {import('../../../member-attribution')} deps.memberAttributionService
      * @param {any} deps.tokenService
      * @param {any} deps.sendEmailWithMagicLink
      * @param {{isSet(name: string): boolean}} deps.labsService
