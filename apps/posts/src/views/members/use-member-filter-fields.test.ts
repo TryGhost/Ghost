@@ -52,6 +52,11 @@ describe('useMemberFilterFields', () => {
         const emailPostField = emailFields.find(field => field.key === 'emails.post_id');
 
         expect(labelField?.operators?.map(operator => operator.value)).toEqual(memberFields.label.operators);
+        expect(labelField?.operators?.map(operator => operator.label)).toEqual([
+            'is any of',
+            'is all of',
+            'is none of'
+        ]);
         expect(labelField).toMatchObject({
             options: [],
             valueSource: labelValueSource

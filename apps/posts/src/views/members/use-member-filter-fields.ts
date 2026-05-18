@@ -31,6 +31,7 @@ type SearchableFieldOverrides = Pick<FilterFieldConfig, 'options' | 'valueSource
 
 const MEMBER_OPERATOR_LABELS: Record<string, string> = {
     'is-any': 'is any of',
+    'is-all': 'is all of',
     'is-not-any': 'is none of',
     'does-not-contain': 'does not contain',
     ...DATE_OPERATOR_LABELS,

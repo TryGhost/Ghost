@@ -168,13 +168,85 @@ function matchFeedbackGroupedNode(node: AstNode): ParsedPredicate | null {
     };
 }
 
+function extractLabelAllOfPredicate(children: AstNode[]): {predicate: ParsedPredicate; remaining: AstNode[]} | null {
+    const labelValues: string[] = [];
+    const remaining: AstNode[] = [];
+
+    for (const child of children) {
+        const keys = Object.keys(child);
+        const key = keys[0];
+        const value = child[key];
+
+        if (
+            keys.length === 1 &&
+            (key === 'label' || key === 'labels') &&
+            typeof value === 'string'
+        ) {
+            labelValues.push(value);
+            continue;
+        }
+
+        remaining.push(child);
+    }
+
+    if (labelValues.length < 2) {
+        return null;
+    }
+
+    return {
+        predicate: {
+            field: 'label',
+            operator: 'is-all',
+            values: labelValues
+        },
+        remaining
+    };
+}
+
 const MEMBER_COMPOUND_MATCHERS: CompoundMatcher[] = [
     matchSubscribedNode,
     matchNewsletterGroupedNode,
     matchFeedbackGroupedNode
 ];
 
-function parseMemberNode(node: AstNode, timezone: string): ParsedPredicate[] {
+function hasOuterGrouping(filter: string): boolean {
+    const trimmed = filter.trim();
+
+    if (!trimmed.startsWith('(') || !trimmed.endsWith(')')) {
+        return false;
+    }
+
+    let depth = 0;
+    let quote: string | null = null;
+
+    for (let index = 0; index < trimmed.length; index += 1) {
+        const char = trimmed[index];
+        const previousChar = trimmed[index - 1];
+
+        if ((char === '\'' || char === '"') && previousChar !== '\\') {
+            quote = quote === char ? null : quote ?? char;
+            continue;
+        }
+
+        if (quote) {
+            continue;
+        }
+
+        if (char === '(') {
+            depth += 1;
+        } else if (char === ')') {
+            depth -= 1;
+
+            if (depth === 0 && index < trimmed.length - 1) {
+                return false;
+            }
+        }
+    }
+
+    return depth === 0;
+}
+
+function parseMemberNode(node: AstNode, timezone: string, isGroupedContext = false): ParsedPredicate[] {
     for (const matcher of MEMBER_COMPOUND_MATCHERS) {
         const parsed = matcher(node);
 
@@ -186,7 +258,16 @@ function parseMemberNode(node: AstNode, timezone: string): ParsedPredicate[] {
     const compound = getCompoundChildren(node);
 
     if (compound?.operator === '$and') {
-        return compound.children.flatMap(child => parseMemberNode(child, timezone));
+        const labelAllOf = isGroupedContext ? extractLabelAllOfPredicate(compound.children) : null;
+
+        if (labelAllOf) {
+            return [
+                labelAllOf.predicate,
+                ...labelAllOf.remaining.flatMap(child => parseMemberNode(child, timezone, true))
+            ];
+        }
+
+        return compound.children.flatMap(child => parseMemberNode(child, timezone, true));
     }
 
     return dispatchSimpleNodes([node], memberFields, timezone);
@@ -199,7 +280,7 @@ export function parseMemberFilter(filter: string | undefined, timezone: string):
         return [];
     }
 
-    return stampPredicates(parseMemberNode(ast, timezone));
+    return stampPredicates(parseMemberNode(ast, timezone, hasOuterGrouping(filter ?? '')));
 }
 
 export function hasTimezoneSensitiveMemberFilter(filter: string | undefined): boolean {

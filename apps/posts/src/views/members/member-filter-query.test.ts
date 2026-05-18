@@ -51,6 +51,26 @@ describe('member-filter-query', () => {
         ]);
     });
 
+    it('parses grouped positive label filters into an all-of predicate', () => {
+        expect(stripIds(parseMemberFilter('(label:alpha+label:vip)', 'UTC'))).toEqual([
+            {field: 'label', operator: 'is-all', values: ['alpha', 'vip']}
+        ]);
+    });
+
+    it('parses grouped label all-of filters alongside other predicates', () => {
+        expect(stripIds(parseMemberFilter('(label:alpha+label:vip)+status:paid', 'UTC'))).toEqual([
+            {field: 'label', operator: 'is-all', values: ['alpha', 'vip']},
+            {field: 'status', operator: 'is', values: ['paid']}
+        ]);
+    });
+
+    it('keeps ungrouped repeated positive label filters as separate predicates', () => {
+        expect(stripIds(parseMemberFilter('label:alpha+label:vip', 'UTC'))).toEqual([
+            {field: 'label', operator: 'is-any', values: ['alpha']},
+            {field: 'label', operator: 'is-any', values: ['vip']}
+        ]);
+    });
+
     it('best-effort parses compat subscribed booleans into subscribed filters', () => {
         expect(stripIds(parseMemberFilter('subscribed:true', 'UTC'))).toEqual([
             {field: 'subscribed', operator: 'is', values: ['subscribed']}
@@ -136,6 +156,15 @@ describe('member-filter-query', () => {
         ];
 
         expect(serializeMemberFilters(predicates, 'UTC')).toBe('label:[alpha,vip]+status:paid');
+    });
+
+    it('serializes label all-of filters as repeated AND clauses', () => {
+        const predicates: FilterPredicate[] = [
+            {id: '1', field: 'label', operator: 'is-all', values: ['vip', 'alpha']},
+            {id: '2', field: 'status', operator: 'is', values: ['paid']}
+        ];
+
+        expect(serializeMemberFilters(predicates, 'UTC')).toBe('(label:alpha+label:vip)+status:paid');
     });
 
     it('round-trips canonical member examples', () => {

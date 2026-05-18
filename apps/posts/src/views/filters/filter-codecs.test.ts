@@ -272,6 +272,17 @@ describe('setCodec', () => {
         expect(setCodec().serialize(predicate, labelContext)).toEqual(['label:[alpha,vip]']);
     });
 
+    it('serializes all-of set membership as AND clauses', () => {
+        const predicate: FilterPredicate = {
+            id: '1',
+            field: 'label',
+            operator: 'is-all',
+            values: ['vip', 'alpha']
+        };
+
+        expect(setCodec().serialize(predicate, labelContext)).toEqual(['(label:alpha+label:vip)']);
+    });
+
     it('can serialize singleton string values as quoted scalars', () => {
         const predicate: FilterPredicate = {
             id: '1',

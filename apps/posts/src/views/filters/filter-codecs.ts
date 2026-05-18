@@ -269,13 +269,19 @@ export function setCodec(config?: CodecConfig): FilterCodec {
                 return null;
             }
 
+            const values = normalizeMultiValue(predicate.values);
+
+            if (predicate.operator === 'is-all') {
+                const clauses = values.map(value => `${field}:${serializeScalarValue(value, config)}`);
+
+                return [`(${clauses.join('+')})`];
+            }
+
             const operator = SET_OPERATOR_SYMBOLS[predicate.operator];
 
             if (operator === undefined) {
                 return null;
             }
-
-            const values = normalizeMultiValue(predicate.values);
 
             if (config?.serializeSingletonAsScalar && values.length === 1) {
                 return [`${field}:${operator}${serializeScalarValue(values[0], config)}`];
