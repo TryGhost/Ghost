@@ -82,7 +82,7 @@ const Tags: React.FC = () => {
                             <LoadingIndicator size="lg" />
                         </div>
                     ) : isError ? (
-                        <div className="mb-16 flex flex-1 flex-col items-center justify-center">
+                        <div className="flex flex-1 flex-col items-center justify-center">
                             <h2 className="mb-2 text-xl font-medium">
                                 Error loading tags
                             </h2>
