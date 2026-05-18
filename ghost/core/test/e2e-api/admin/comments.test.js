@@ -127,6 +127,12 @@ describe(`Admin Comments API`, function () {
         await dbUtils.truncate('comments');
         await dbUtils.truncate('comment_likes');
         await dbUtils.truncate('comment_reports');
+
+        // mockManager.restore() runs at file-level `after()`, not `afterEach`,
+        // so labs state set by individual tests would otherwise leak across
+        // them. Re-enable commentsPinning at the start of every test so the
+        // disable-case test below cleanly resets without affecting siblings.
+        mockManager.mockLabsEnabled('commentsPinning');
     });
 
     after(function () {
@@ -310,6 +316,24 @@ describe(`Admin Comments API`, function () {
             const deletedComment = await models.Comment.findOne({id: pinnedComment.id});
             assert.equal(deletedComment.get('status'), 'deleted');
             assert.equal(deletedComment.get('pinned_at'), null);
+        });
+
+        it('Rejects pin attempts with 405 when commentsPinning labs flag is disabled', async function () {
+            mockManager.mockLabsDisabled('commentsPinning');
+
+            const commentToPin = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id
+            });
+
+            await adminApi.put(`comments/${commentToPin.id}/`).body({
+                comments: [{
+                    id: commentToPin.id,
+                    pinned: true
+                }]
+            }).expectStatus(405);
+
+            const unchangedComment = await models.Comment.findOne({id: commentToPin.id});
+            assert.equal(unchangedComment.get('pinned_at'), null);
         });
     });
 
