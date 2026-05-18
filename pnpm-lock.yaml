@@ -378,6 +378,9 @@ importers:
       '@tryghost/admin-x-settings':
         specifier: workspace:*
         version: link:../admin-x-settings
+      '@tryghost/kg-unsplash-selector':
+        specifier: 0.4.1
+        version: 0.4.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tryghost/koenig-lexical':
         specifier: 'catalog:'
         version: 1.8.1
