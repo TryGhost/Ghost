@@ -148,7 +148,8 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({children, comment, p
         }
     }, [comment, parent, openForm, dispatchAction]);
 
-    const hasReplies = displayReplyForm || hasNestedReplies || (comment.replies && comment.replies.length > 0);
+    const hasChildReplies = hasNestedReplies || (comment.replies && comment.replies.length > 0);
+    const hasReplies = displayReplyForm || hasChildReplies;
     const avatar = (<Avatar member={comment.member} />);
     const replyFormParent = parent || comment;
     const isHighlighted = commentIdFromHash
@@ -163,7 +164,7 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({children, comment, p
             layoutVariant={layoutVariant}
             memberUuid={comment.member?.uuid}
             replies={<RepliesContainer comment={comment} parent={parent} useThreading={useThreading}>{children}</RepliesContainer>}
-            replyForm={displayReplyForm ? <ReplyFormBox openForm={openForm} parent={replyFormParent} useThreading={useThreading} /> : null}
+            replyForm={displayReplyForm ? <ReplyFormBox continueLine={hasChildReplies} openForm={openForm} parent={replyFormParent} useThreading={useThreading} /> : null}
             useThreading={useThreading}
         >
             <div id={comment.id}>
@@ -211,7 +212,8 @@ const UnpublishedComment: React.FC<React.PropsWithChildren<UnpublishedCommentPro
             '';
 
     const {openForm, displayReplyForm} = getReplyFormDisplayState(comment, openCommentForms, useThreading);
-    const hasReplies = displayReplyForm || hasNestedReplies || (comment.replies && comment.replies.length > 0);
+    const hasChildReplies = hasNestedReplies || (comment.replies && comment.replies.length > 0);
+    const hasReplies = displayReplyForm || hasChildReplies;
 
     // Only show MoreButton for hidden (not deleted) comments when admin
     const showMoreButton = isAdmin && comment.status === 'hidden';
@@ -225,7 +227,7 @@ const UnpublishedComment: React.FC<React.PropsWithChildren<UnpublishedCommentPro
             isLastSibling={isLastSibling}
             layoutVariant={layoutVariant}
             replies={<RepliesContainer comment={comment} parent={parent} useThreading={useThreading}>{children}</RepliesContainer>}
-            replyForm={displayReplyForm ? <ReplyFormBox openForm={openForm} parent={replyFormParent} useThreading={useThreading} /> : null}
+            replyForm={displayReplyForm ? <ReplyFormBox continueLine={hasChildReplies} openForm={openForm} parent={replyFormParent} useThreading={useThreading} /> : null}
             useThreading={useThreading}
         >
             <div className="mt-[-3px] flex items-start" id={comment.id}>
@@ -290,8 +292,9 @@ type ReplyFormBoxProps = {
     openForm: OpenCommentForm;
     parent: Comment;
     useThreading: boolean;
+    continueLine?: boolean;
 };
-const ReplyFormBox: React.FC<ReplyFormBoxProps> = ({openForm, parent, useThreading}) => {
+const ReplyFormBox: React.FC<ReplyFormBoxProps> = ({openForm, parent, useThreading, continueLine = false}) => {
     if (!useThreading) {
         return (
             <div className="my-8 sm:my-10">
@@ -300,17 +303,23 @@ const ReplyFormBox: React.FC<ReplyFormBoxProps> = ({openForm, parent, useThreadi
         );
     }
 
+    const spacingClass = continueLine ? 'pb-8 sm:pb-10' : 'mb-8 sm:mb-10';
+
     return (
-        <div className="relative my-8 ml-10 sm:my-10 sm:ml-11">
+        <div className={`relative ml-8 sm:ml-9 ${spacingClass}`}>
+            {continueLine && (
+                <div
+                    className="pointer-events-none absolute inset-y-0 -left-4 w-px bg-neutral-300 sm:-left-5 dark:bg-neutral-700"
+                    data-testid="reply-form-continuation-line"
+                    aria-hidden
+                />
+            )}
             <div
-                className="pointer-events-none absolute -left-6 -top-8 h-8 w-px bg-neutral-300 sm:-left-7 sm:-top-10 sm:h-10 dark:bg-neutral-700"
+                className="pointer-events-none absolute -left-4 top-0 h-4 w-3 border-b border-l border-neutral-300 [border-bottom-left-radius:12px_16px] sm:-left-5 sm:w-4 sm:[border-bottom-left-radius:16px_16px] dark:border-neutral-700"
+                data-testid="reply-form-elbow"
                 aria-hidden
             />
-            <div
-                className="pointer-events-none absolute -left-6 top-0 h-4 w-3 border-b border-l border-neutral-300 [border-bottom-left-radius:12px_16px] sm:-left-7 sm:w-4 sm:[border-bottom-left-radius:16px_16px] dark:border-neutral-700"
-                aria-hidden
-            />
-            <ReplyForm openForm={openForm} parent={parent} />
+            <ReplyForm openForm={openForm} parent={parent} threadedLayout={true} />
         </div>
     );
 };
@@ -551,8 +560,8 @@ const CommentLayout: React.FC<CommentLayoutProps> = ({children, avatar, hasRepli
                     {children}
                 </div>
             </div>
-            {hasReplies && replies}
             {replyForm}
+            {hasReplies && replies}
         </div>
     );
 };

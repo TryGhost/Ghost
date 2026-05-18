@@ -1,7 +1,13 @@
+import React from 'react';
 import {AppContext} from '../../../../src/app-context';
 import {CommentComponent, RepliedToSnippet} from '../../../../src/components/content/comment';
 import {buildComment} from '../../../utils/fixtures';
 import {render, screen} from '@testing-library/react';
+import {vi} from 'vitest';
+
+vi.mock('../../../../src/components/content/forms/reply-form', () => ({
+    default: () => React.createElement('div', {'data-testid': 'reply-form'}, 'Reply form')
+}));
 
 const contextualRender = (ui, {appContext, ...renderOptions}) => {
     const contextWithDefaults = {
@@ -116,6 +122,127 @@ describe('<CommentComponent>', function () {
 
         expect(screen.queryByText('Replied to')).not.toBeInTheDocument();
         expect(screen.queryByText('First reply')).not.toBeInTheDocument();
+    });
+
+    it('renders threaded reply forms directly below the comment being replied to', function () {
+        const reply1 = buildComment({
+            html: '<p>First reply</p>'
+        });
+        const reply2 = buildComment({
+            in_reply_to_id: reply1.id,
+            html: '<p>Second reply</p>'
+        });
+        const parent = buildComment({
+            replies: [reply1, reply2],
+            count: {
+                replies: 2
+            }
+        });
+        const appContext = {
+            comments: [parent],
+            dispatchAction: () => {},
+            openCommentForms: [{
+                id: reply1.id,
+                parent_id: parent.id,
+                type: 'reply',
+                hasUnsavedChanges: false
+            }]
+        };
+
+        contextualRender(<CommentComponent comment={parent} useThreading={true} />, {appContext});
+
+        const replyForm = screen.getByTestId('reply-form');
+        const firstReply = document.getElementById(reply1.id);
+        const secondReply = document.getElementById(reply2.id);
+
+        expect(firstReply.compareDocumentPosition(replyForm) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        expect(replyForm.compareDocumentPosition(secondReply) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
+    it('continues the threaded reply form line when child replies remain below it', function () {
+        const reply1 = buildComment({
+            html: '<p>First reply</p>'
+        });
+        const reply2 = buildComment({
+            in_reply_to_id: reply1.id,
+            html: '<p>Second reply</p>'
+        });
+        const parent = buildComment({
+            replies: [reply1, reply2],
+            count: {
+                replies: 2
+            }
+        });
+        const appContext = {
+            comments: [parent],
+            dispatchAction: () => {},
+            openCommentForms: [{
+                id: reply1.id,
+                parent_id: parent.id,
+                type: 'reply',
+                hasUnsavedChanges: false
+            }]
+        };
+
+        contextualRender(<CommentComponent comment={parent} useThreading={true} />, {appContext});
+
+        expect(screen.getByTestId('reply-form-elbow')).toBeInTheDocument();
+        expect(screen.getByTestId('reply-form-continuation-line')).toBeInTheDocument();
+    });
+
+    it('does not continue the threaded reply form line when there are no child replies below it', function () {
+        const comment = buildComment({
+            html: '<p>Parent comment</p>',
+            count: {
+                replies: 0
+            }
+        });
+        const appContext = {
+            comments: [comment],
+            dispatchAction: () => {},
+            openCommentForms: [{
+                id: comment.id,
+                type: 'reply',
+                hasUnsavedChanges: false
+            }]
+        };
+
+        contextualRender(<CommentComponent comment={comment} useThreading={true} />, {appContext});
+
+        expect(screen.getByTestId('reply-form-elbow')).toBeInTheDocument();
+        expect(screen.queryByTestId('reply-form-continuation-line')).not.toBeInTheDocument();
+    });
+
+    it('keeps non-threaded reply-to-reply forms at the end of the parent reply list', function () {
+        const reply1 = buildComment({
+            html: '<p>First reply</p>'
+        });
+        const reply2 = buildComment({
+            html: '<p>Second reply</p>'
+        });
+        const parent = buildComment({
+            replies: [reply1, reply2],
+            count: {
+                replies: 2
+            }
+        });
+        const appContext = {
+            comments: [parent],
+            dispatchAction: () => {},
+            openCommentForms: [{
+                id: reply1.id,
+                parent_id: parent.id,
+                type: 'reply',
+                hasUnsavedChanges: false
+            }]
+        };
+
+        contextualRender(<CommentComponent comment={parent} />, {appContext});
+
+        const replyForm = screen.getByTestId('reply-form');
+        const secondReply = document.getElementById(reply2.id);
+
+        expect(secondReply.compareDocumentPosition(replyForm) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     });
 });
 
