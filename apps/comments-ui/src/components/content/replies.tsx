@@ -43,8 +43,8 @@ const Replies: React.FC<RepliesProps> = ({comment}) => {
                     key={reply.id}
                     comment={reply}
                     isLastSibling={idx === visibleReplies.length - 1}
+                    layoutVariant="reply"
                     parent={comment}
-                    isChild
                 />
             ))}
             {totalHiddenCount > 0 && <RepliesPagination count={totalHiddenCount} loadMore={loadMore}/>}

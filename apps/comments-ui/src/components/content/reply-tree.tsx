@@ -46,7 +46,7 @@ const ReplyTreeNode: React.FC<{
     }
 
     return (
-        <CommentComponent comment={reply} isLastSibling={isLastSibling} parent={threadParentComment} useThreading={useThreading} isChild>
+        <CommentComponent comment={reply} isLastSibling={isLastSibling} layoutVariant="reply" parent={threadParentComment} useThreading={useThreading}>
             {nestedReplies}
         </CommentComponent>
     );

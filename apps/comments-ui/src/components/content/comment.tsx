@@ -13,15 +13,17 @@ import {Transition} from '@headlessui/react';
 import {buildCommentPermalink, findCommentById, formatExplicitTime, getCommentInReplyToSnippet, getMemberNameFromComment} from '../../utils/helpers';
 import {useRelativeTime} from '../../utils/hooks';
 
+type CommentLayoutVariant = 'root' | 'reply';
+
 type AnimatedCommentProps = {
     comment: Comment;
     parent?: Comment;
     useThreading?: boolean;
-    isChild?: boolean;
+    layoutVariant?: CommentLayoutVariant;
     isLastSibling?: boolean;
 };
 
-const AnimatedComment: React.FC<React.PropsWithChildren<AnimatedCommentProps>> = ({children, comment, parent, useThreading, isChild, isLastSibling}) => {
+const AnimatedComment: React.FC<React.PropsWithChildren<AnimatedCommentProps>> = ({children, comment, parent, useThreading, layoutVariant, isLastSibling}) => {
     const {commentsIsLoading} = useAppContext();
 
     return (
@@ -37,14 +39,14 @@ const AnimatedComment: React.FC<React.PropsWithChildren<AnimatedCommentProps>> =
             show={true}
             appear
         >
-            <CommentComponent comment={comment} isChild={isChild} isLastSibling={isLastSibling} parent={parent} useThreading={useThreading}>
+            <CommentComponent comment={comment} isLastSibling={isLastSibling} layoutVariant={layoutVariant} parent={parent} useThreading={useThreading}>
                 {children}
             </CommentComponent>
         </Transition>
     );
 };
 
-export const CommentComponent: React.FC<CommentProps> = ({children, comment, parent, useThreading = false, isChild = false, isLastSibling = false}) => {
+export const CommentComponent: React.FC<CommentProps> = ({children, comment, parent, useThreading = false, layoutVariant = 'root', isLastSibling = false}) => {
     const {dispatchAction, isAdmin} = useAppContext();
     const hasNestedReplies = React.Children.count(children) > 0;
     const {showDeletedMessage, showHiddenMessage, showCommentContent} = useCommentVisibility(comment, isAdmin, hasNestedReplies);
@@ -61,9 +63,9 @@ export const CommentComponent: React.FC<CommentProps> = ({children, comment, par
     }, [comment.id, dispatchAction]);
 
     if (showDeletedMessage || showHiddenMessage) {
-        return <UnpublishedComment comment={comment} isChild={isChild} isLastSibling={isLastSibling} openEditMode={openEditMode} parent={parent} useThreading={useThreading}>{children}</UnpublishedComment>;
+        return <UnpublishedComment comment={comment} isLastSibling={isLastSibling} layoutVariant={layoutVariant} openEditMode={openEditMode} parent={parent} useThreading={useThreading}>{children}</UnpublishedComment>;
     } else if (showCommentContent && !showHiddenMessage) {
-        return <PublishedComment comment={comment} isChild={isChild} isLastSibling={isLastSibling} openEditMode={openEditMode} parent={parent} useThreading={useThreading}>{children}</PublishedComment>;
+        return <PublishedComment comment={comment} isLastSibling={isLastSibling} layoutVariant={layoutVariant} openEditMode={openEditMode} parent={parent} useThreading={useThreading}>{children}</PublishedComment>;
     }
 
     return null;
@@ -107,7 +109,7 @@ type PublishedCommentProps = CommentProps & {
     openEditMode: () => void;
     useThreading: boolean;
 }
-const PublishedComment: React.FC<PublishedCommentProps> = ({children, comment, parent, openEditMode, useThreading, isChild = false, isLastSibling = false}) => {
+const PublishedComment: React.FC<PublishedCommentProps> = ({children, comment, parent, openEditMode, useThreading, layoutVariant = 'root', isLastSibling = false}) => {
     const {dispatchAction, openCommentForms, isAdmin, commentIdToHighlight, commentIdFromHash} = useAppContext();
     const hasNestedReplies = React.Children.count(children) > 0;
 
@@ -157,8 +159,8 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({children, comment, p
             avatar={avatar}
             className={hiddenClass}
             hasReplies={hasReplies}
-            isChild={isChild}
             isLastSibling={isLastSibling}
+            layoutVariant={layoutVariant}
             memberUuid={comment.member?.uuid}
             replies={<RepliesContainer comment={comment} parent={parent} useThreading={useThreading}>{children}</RepliesContainer>}
             replyForm={displayReplyForm ? <ReplyFormBox openForm={openForm} parent={replyFormParent} /> : null}
@@ -191,10 +193,10 @@ type UnpublishedCommentProps = {
     openEditMode: () => void;
     parent?: Comment;
     useThreading: boolean;
-    isChild?: boolean;
+    layoutVariant?: CommentLayoutVariant;
     isLastSibling?: boolean;
 }
-const UnpublishedComment: React.FC<React.PropsWithChildren<UnpublishedCommentProps>> = ({children, comment, openEditMode, parent, useThreading, isChild = false, isLastSibling = false}) => {
+const UnpublishedComment: React.FC<React.PropsWithChildren<UnpublishedCommentProps>> = ({children, comment, openEditMode, parent, useThreading, layoutVariant = 'root', isLastSibling = false}) => {
     const {isAdmin, openCommentForms, t} = useAppContext();
     const hasNestedReplies = React.Children.count(children) > 0;
 
@@ -219,8 +221,8 @@ const UnpublishedComment: React.FC<React.PropsWithChildren<UnpublishedCommentPro
         <CommentLayout
             avatar={avatar}
             hasReplies={hasReplies}
-            isChild={isChild}
             isLastSibling={isLastSibling}
+            layoutVariant={layoutVariant}
             replies={<RepliesContainer comment={comment} parent={parent} useThreading={useThreading}>{children}</RepliesContainer>}
             replyForm={displayReplyForm ? <ReplyFormBox openForm={openForm} parent={replyFormParent} /> : null}
         >
@@ -482,21 +484,23 @@ type CommentLayoutProps = {
     hasReplies: boolean;
     className?: string;
     memberUuid?: string;
-    isChild?: boolean;
     isLastSibling?: boolean;
+    layoutVariant?: CommentLayoutVariant;
     replies?: React.ReactNode;
     replyForm?: React.ReactNode;
 }
-const CommentLayout: React.FC<CommentLayoutProps> = ({children, avatar, hasReplies, className = '', memberUuid = '', isChild = false, isLastSibling = false, replies, replyForm}) => {
+const CommentLayout: React.FC<CommentLayoutProps> = ({children, avatar, hasReplies, className = '', memberUuid = '', isLastSibling = false, layoutVariant = 'root', replies, replyForm}) => {
+    const isReplyLayout = layoutVariant === 'reply';
+
     return (
         <div className={`relative flow-root ${hasReplies ? 'pb-4 sm:pb-0' : 'pb-7'}`}>
-            {isChild && !isLastSibling && (
+            {isReplyLayout && !isLastSibling && (
                 <div
                     className="pointer-events-none absolute inset-y-0 -left-4 w-px bg-neutral-300 sm:-left-5 dark:bg-neutral-700"
                     aria-hidden
                 />
             )}
-            {isChild && (
+            {isReplyLayout && (
                 <div
                     className="pointer-events-none absolute -left-4 top-0 h-4 w-3 border-b border-l border-neutral-300 [border-bottom-left-radius:12px_16px] sm:-left-5 sm:w-4 sm:[border-bottom-left-radius:16px_16px] dark:border-neutral-700"
                     aria-hidden
