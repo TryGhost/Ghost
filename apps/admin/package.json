@@ -16,6 +16,7 @@
     "@tryghost/activitypub": "workspace:*",
     "@tryghost/admin-x-framework": "workspace:*",
     "@tryghost/admin-x-settings": "workspace:*",
+    "@tryghost/kg-unsplash-selector": "0.4.1",
     "@tryghost/koenig-lexical": "catalog:",
     "@tryghost/posts": "workspace:*",
     "@tryghost/shade": "workspace:*",
