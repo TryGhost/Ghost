@@ -13,44 +13,6 @@ const editableSlice = (automation: AutomationDetail) => ({
     edges: automation.edges
 });
 
-type DerivePublishButtonChildrenArgs = {
-    editState: AutomationEditState;
-    draftStatus: AutomationStatus | undefined;
-    hasUnsavedChanges: boolean;
-};
-
-const derivePublishButtonChildren = ({
-    editState,
-    draftStatus,
-    hasUnsavedChanges
-}: DerivePublishButtonChildrenArgs): React.ReactNode => {
-    switch (editState) {
-    case 'publishing':
-        return (
-            <>
-                <LoadingIndicator color='light' size='sm' />
-                <span className='sr-only'>Publishing...</span>
-            </>
-        );
-    case 'failed to publish':
-        return 'Retry';
-    case 'idle':
-    case 'unpublishing':
-    case 'confirming unpublish':
-    case 'failed to unpublish':
-        if (draftStatus === 'active') {
-            return hasUnsavedChanges ? 'Publish changes' : 'Published';
-        }
-        // Inactive (or not yet loaded): "Publish" reads better than "Publish changes" because the
-        // automation has never been published in its current state.
-        return 'Publish';
-    default: {
-        const _exhaustive: never = editState;
-        throw new Error(`Unhandled edit state: ${_exhaustive}`);
-    }
-    }
-};
-
 const AutomationEditor: React.FC = () => {
     const {id = ''} = useParams<{id: string}>();
 
@@ -130,6 +92,11 @@ const AutomationEditor: React.FC = () => {
     let isEditRequestActive = false;
     let isPublishButtonEnabled = draft?.status === 'inactive' || hasUnsavedChanges;
     let publishButtonVariant: ButtonProps['variant'] = 'default';
+    // Inactive (or not yet loaded): "Publish" reads better than "Publish changes" because the
+    // automation has never been published in its current state.
+    let publishButtonChildren: React.ReactNode = draft?.status === 'active'
+        ? (hasUnsavedChanges ? 'Publish changes' : 'Published')
+        : 'Publish';
     let isTurnOffButtonEnabled = true;
     let turnOffButtonChildren: React.ReactNode = 'Turn off';
     switch (editState) {
@@ -137,6 +104,12 @@ const AutomationEditor: React.FC = () => {
         isEditRequestActive = true;
         isPublishButtonEnabled = false;
         isTurnOffButtonEnabled = false;
+        publishButtonChildren = (
+            <>
+                <LoadingIndicator color='light' size='sm' />
+                <span className='sr-only'>Publishing...</span>
+            </>
+        );
         break;
     case 'unpublishing':
         isEditRequestActive = true;
@@ -157,6 +130,7 @@ const AutomationEditor: React.FC = () => {
         break;
     case 'failed to publish':
         publishButtonVariant = 'destructive';
+        publishButtonChildren = 'Retry';
         break;
     case 'failed to unpublish':
         isConfirmUnpublishAlertOpen = true;
@@ -164,11 +138,6 @@ const AutomationEditor: React.FC = () => {
         turnOffButtonChildren = 'Retry';
         break;
     }
-    const publishButtonChildren = derivePublishButtonChildren({
-        editState,
-        draftStatus: draft?.status,
-        hasUnsavedChanges
-    });
 
     const onConfirmUnpublishOpenChange = (open: boolean): void => {
         setEditState((oldEditState) => {

@@ -89,6 +89,7 @@
         "glob": "catalog:",
         "jsdom": "catalog:",
         "msw": "catalog:",
+        "type-fest": "catalog:",
         "typescript": "catalog:",
         "vite": "catalog:",
         "vite-plugin-css-injected-by-js": "3.5.2",

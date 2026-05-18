@@ -1,5 +1,6 @@
 import ObjectId from 'bson-objectid';
 import {Meta, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
+import type {ReadonlyDeep} from 'type-fest';
 
 export type AutomationStatus = 'active' | 'inactive';
 export const MAX_AUTOMATION_ACTIONS = 20;
@@ -139,17 +140,17 @@ export type InsertActionAnchor = {
 };
 
 type SpliceActionArgs = {
-    detail: AutomationDetail;
+    detail: ReadonlyDeep<AutomationDetail>;
     action: AutomationAction;
-    anchor: InsertActionAnchor;
+    anchor: ReadonlyDeep<InsertActionAnchor>;
 };
 
 type InsertActionArgs = {
-    detail: AutomationDetail;
-    anchor: InsertActionAnchor;
+    detail: ReadonlyDeep<AutomationDetail>;
+    anchor: ReadonlyDeep<InsertActionAnchor>;
 };
 
-const assertActionExists = (detail: AutomationDetail, id: string): void => {
+const assertActionExists = (detail: ReadonlyDeep<AutomationDetail>, id: string): void => {
     if (!detail.actions.some(action => action.id === id)) {
         throw new Error(`spliceAction: anchor references unknown action id "${id}"`);
     }

@@ -60,7 +60,7 @@ const AddStepEdge: React.FC<EdgeProps> = ({
                 'flex size-7 items-center justify-center rounded-full border transition-opacity focus-visible:opacity-100 focus-visible:outline-none',
                 INSERT_BUTTON_CLASSES,
                 visible ? 'opacity-100' : 'opacity-0',
-                edgeData.disabled && 'cursor-not-allowed'
+                edgeData.disabled && 'cursor-not-allowed!'
             )}
             data-testid={`add-step-button-${edgeData.sourceId}-${edgeData.targetId}`}
             disabled={edgeData.disabled}
