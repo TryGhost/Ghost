@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
+const logging = require('@tryghost/logging');
 const LazyUrlService = require('../../../../../core/server/services/url/lazy-url-service');
 
 function makeUrlUtils() {
@@ -153,6 +154,72 @@ describe('LazyUrlService', function () {
             const post = {type: 'posts', id: 'p', slug: 'hello'};
             assert.equal(service.getUrlForResource(post, {absolute: true}), 'https://example.com/hello/');
             assert.equal(service.getUrlForResource(post, {withSubdirectory: true}), '/sub/hello/');
+        });
+
+        // The warn log is the alerting hook operators wire into their
+        // monitoring once they flip lazyRouting. A caller that passes a
+        // thin resource (no tags/authors loaded) against a tag- or
+        // author-filtered router silently 404s the URL — the log surfaces
+        // it as a regression rather than a missing dashboard.
+        describe('thin-resource warning', function () {
+            let warnStub;
+
+            beforeEach(function () {
+                warnStub = sinon.stub(logging, 'warn');
+            });
+
+            afterEach(function () {
+                warnStub.restore();
+            });
+
+            it('warns when a tag-filtered router is evaluated against a resource with no tags array', function () {
+                const service = new LazyUrlService({urlUtils});
+                service.onRouterAddedType('news', 'tag:news', 'posts', '/:slug/');
+
+                service.getUrlForResource({type: 'posts', id: 'p1', slug: 'hello'});
+
+                sinon.assert.calledOnce(warnStub);
+                const msg = warnStub.firstCall.args[0];
+                assert.match(msg, /posts#p1/);
+                assert.match(msg, /tags/);
+                assert.match(msg, /tag:news/);
+            });
+
+            it('warns when an author-filtered router is evaluated against a resource with no authors array', function () {
+                const service = new LazyUrlService({urlUtils});
+                service.onRouterAddedType('jane', 'author:jane', 'posts', '/:slug/');
+
+                service.getUrlForResource({type: 'posts', id: 'p1', slug: 'hello'});
+
+                sinon.assert.calledOnce(warnStub);
+                assert.match(warnStub.firstCall.args[0], /authors/);
+            });
+
+            it('does not warn when the resource has the relations the filter needs', function () {
+                const service = new LazyUrlService({urlUtils});
+                service.onRouterAddedType('news', 'tag:news', 'posts', '/:slug/');
+
+                service.getUrlForResource({
+                    type: 'posts',
+                    id: 'p1',
+                    slug: 'hello',
+                    tags: [{slug: 'news'}]
+                });
+
+                sinon.assert.notCalled(warnStub);
+            });
+
+            it('does not warn for unfiltered routers or filters that do not reference relations', function () {
+                const service = new LazyUrlService({urlUtils});
+                service.onRouterAddedType('default', null, 'posts', '/:slug/');
+                service.onRouterAddedType('featured', 'featured:true', 'posts', '/featured/:slug/');
+
+                service.getUrlForResource({
+                    type: 'posts', id: 'p1', slug: 'hello', featured: true
+                });
+
+                sinon.assert.notCalled(warnStub);
+            });
         });
     });
 
