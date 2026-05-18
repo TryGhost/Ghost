@@ -61,7 +61,7 @@ module.exports = class MemberRepository {
      * @param {any} deps.StripeCustomerSubscription
      * @param {any} deps.OfferRedemption
      * @param {any} deps.Outbox
-     * @param {import('../../services/stripe-api')} deps.stripeAPIService
+     * @param {import('../../../stripe/stripe-api')} deps.stripeAPIService
      * @param {any} deps.productRepository
      * @param {any} deps.offersAPI
      * @param {ITokenService} deps.tokenService
