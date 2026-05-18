@@ -69,7 +69,7 @@
     "@vitejs/plugin-react": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "autoprefixer": "10.4.21",
-    "bson-objectid": "2.0.4",
+    "bson-objectid": "catalog:",
     "concurrently": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-i18next": "6.1.4",
