@@ -6,9 +6,10 @@ import {useRef, useState} from 'react';
 const INITIAL_REPLIES_SHOWN = 3;
 
 export type RepliesProps = {
-    comment: Comment
+    comment: Comment;
+    useThreading?: boolean;
 };
-const Replies: React.FC<RepliesProps> = ({comment}) => {
+const Replies: React.FC<RepliesProps> = ({comment, useThreading = false}) => {
     const {dispatchAction, commentIdToScrollTo} = useAppContext();
     const initialReplyIds = useRef(new Set(comment.replies.map(reply => reply.id)));
 
@@ -43,7 +44,7 @@ const Replies: React.FC<RepliesProps> = ({comment}) => {
                     key={reply.id}
                     comment={reply}
                     isLastSibling={idx === visibleReplies.length - 1}
-                    layoutVariant="reply"
+                    layoutVariant={useThreading ? 'reply' : 'root'}
                     parent={comment}
                 />
             ))}

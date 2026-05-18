@@ -163,7 +163,8 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({children, comment, p
             layoutVariant={layoutVariant}
             memberUuid={comment.member?.uuid}
             replies={<RepliesContainer comment={comment} parent={parent} useThreading={useThreading}>{children}</RepliesContainer>}
-            replyForm={displayReplyForm ? <ReplyFormBox openForm={openForm} parent={replyFormParent} /> : null}
+            replyForm={displayReplyForm ? <ReplyFormBox openForm={openForm} parent={replyFormParent} useThreading={useThreading} /> : null}
+            useThreading={useThreading}
         >
             <div id={comment.id}>
                 {isInEditMode ? (
@@ -224,7 +225,8 @@ const UnpublishedComment: React.FC<React.PropsWithChildren<UnpublishedCommentPro
             isLastSibling={isLastSibling}
             layoutVariant={layoutVariant}
             replies={<RepliesContainer comment={comment} parent={parent} useThreading={useThreading}>{children}</RepliesContainer>}
-            replyForm={displayReplyForm ? <ReplyFormBox openForm={openForm} parent={replyFormParent} /> : null}
+            replyForm={displayReplyForm ? <ReplyFormBox openForm={openForm} parent={replyFormParent} useThreading={useThreading} /> : null}
+            useThreading={useThreading}
         >
             <div className="mt-[-3px] flex items-start" id={comment.id}>
                 <div className="flex h-10 flex-row items-center gap-4 pb-[8px] pr-4">
@@ -278,8 +280,8 @@ const RepliesContainer: React.FC<React.PropsWithChildren<RepliesProps & {classNa
     }
 
     return (
-        <div className={`ml-8 flow-root sm:ml-9 ${className}`}>
-            {hasNestedReplies ? children : shouldRenderThreadedReplies ? <ThreadedReplies comment={comment} useThreading={useThreading} /> : <Replies comment={comment} />}
+        <div className={`${useThreading ? 'ml-8 flow-root sm:ml-9' : '-ml-2 mb-4 mt-7 sm:mb-0 sm:mt-8'} ${className}`}>
+            {hasNestedReplies ? children : shouldRenderThreadedReplies ? <ThreadedReplies comment={comment} useThreading={useThreading} /> : <Replies comment={comment} useThreading={useThreading} />}
         </div>
     );
 };
@@ -287,8 +289,17 @@ const RepliesContainer: React.FC<React.PropsWithChildren<RepliesProps & {classNa
 type ReplyFormBoxProps = {
     openForm: OpenCommentForm;
     parent: Comment;
+    useThreading: boolean;
 };
-const ReplyFormBox: React.FC<ReplyFormBoxProps> = ({openForm, parent}) => {
+const ReplyFormBox: React.FC<ReplyFormBoxProps> = ({openForm, parent, useThreading}) => {
+    if (!useThreading) {
+        return (
+            <div className="my-8 sm:my-10">
+                <ReplyForm openForm={openForm} parent={parent} />
+            </div>
+        );
+    }
+
     return (
         <div className="relative my-8 ml-10 sm:my-10 sm:ml-11">
             <div
@@ -470,9 +481,13 @@ const CommentMenu: React.FC<CommentMenuProps> = ({comment, openReplyForm, highli
 // -- Layout --
 //
 
-const RepliesLine: React.FC<{hasReplies: boolean}> = ({hasReplies}) => {
+const RepliesLine: React.FC<{hasReplies: boolean; useThreading: boolean}> = ({hasReplies, useThreading}) => {
     if (!hasReplies) {
         return null;
+    }
+
+    if (!useThreading) {
+        return (<div className="mb-2 h-full w-px grow rounded bg-gradient-to-b from-neutral-900/15 from-70% to-transparent dark:from-white/20 dark:from-70%" data-testid="replies-line" />);
     }
 
     return (<div className="ml-4 h-full w-px grow self-start bg-neutral-300 dark:bg-neutral-700" data-testid="replies-line" />);
@@ -488,9 +503,28 @@ type CommentLayoutProps = {
     layoutVariant?: CommentLayoutVariant;
     replies?: React.ReactNode;
     replyForm?: React.ReactNode;
+    useThreading: boolean;
 }
-const CommentLayout: React.FC<CommentLayoutProps> = ({children, avatar, hasReplies, className = '', memberUuid = '', isLastSibling = false, layoutVariant = 'root', replies, replyForm}) => {
+const CommentLayout: React.FC<CommentLayoutProps> = ({children, avatar, hasReplies, className = '', memberUuid = '', isLastSibling = false, layoutVariant = 'root', replies, replyForm, useThreading}) => {
     const isReplyLayout = layoutVariant === 'reply';
+
+    if (!useThreading) {
+        return (
+            <div className={`flex w-full flex-row ${hasReplies === true ? 'mb-0' : 'mb-7'}`} data-member-uuid={memberUuid} data-testid="comment-component">
+                <div className="mr-2 flex flex-col items-center justify-start sm:mr-3">
+                    <div className={`flex-0 mb-3 sm:mb-4 ${className}`}>
+                        {avatar}
+                    </div>
+                    <RepliesLine hasReplies={hasReplies} useThreading={useThreading} />
+                </div>
+                <div className="grow">
+                    {children}
+                    {hasReplies && replies}
+                    {replyForm}
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className={`relative flow-root ${hasReplies ? 'pb-4 sm:pb-0' : 'pb-7'}`}>
@@ -511,7 +545,7 @@ const CommentLayout: React.FC<CommentLayoutProps> = ({children, avatar, hasRepli
                     <div className={`flex-0 mb-1 ${className}`}>
                         {avatar}
                     </div>
-                    <RepliesLine hasReplies={hasReplies} />
+                    <RepliesLine hasReplies={hasReplies} useThreading={useThreading} />
                 </div>
                 <div className={`grow ${hasReplies ? 'pb-7 sm:pb-8' : ''}`}>
                     {children}
