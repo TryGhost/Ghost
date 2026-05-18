@@ -13,6 +13,7 @@ Object {
       "adminUIRefresh": true,
       "automations": true,
       "commentModeration": true,
+      "commentsPinning": true,
       "commentsThreads": true,
       "customFonts": true,
       "editorExcerpt": true,

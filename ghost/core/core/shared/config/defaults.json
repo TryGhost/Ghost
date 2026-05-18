@@ -213,6 +213,13 @@
             "skipBootChecks": false
         }
     },
+    "theme": {
+        "uploadLimits": {
+            "compressedBytes": 1073741824,
+            "entryUncompressedBytes": 536870912,
+            "totalUncompressedBytes": 4294967296
+        }
+    },
     "imageOptimization": {
         "resize": true,
         "srcsets": true

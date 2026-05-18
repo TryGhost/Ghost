@@ -8,6 +8,7 @@ const {agentProvider, fixtureManager, mockManager, matchers, configUtils} = requ
 const {stringMatching, anyEtag, anyUuid, anyContentLength, anyContentVersion} = matchers;
 const models = require('../../../core/server/models');
 const membersService = require('../../../core/server/services/members');
+const limits = require('../../../core/server/services/limits');
 const {anyErrorId} = matchers;
 
 // Updated to reflect current total based on test output
@@ -735,6 +736,68 @@ describe('Settings API', function () {
                 });
 
             emailMockReceiver.assertSentEmailCount(0);
+        });
+    });
+
+    describe('publicSiteAccess limit', function () {
+        function stubPublicSiteAccessDisabled(disabled) {
+            // Stub the singleton directly rather than driving the limit through configUtils +
+            // limits.init(). The hostSettings.limits config is registered once at boot from the
+            // `@tryghost/limit-service` allowlist; bumps of that package are owned by Renovate
+            // so this PR cannot rely on `publicSiteAccess` being a recognised name yet.
+            sinon.stub(limits, 'isDisabled').withArgs('publicSiteAccess').returns(disabled);
+        }
+
+        it('marks is_private and password as is_read_only when the limit is disabled', async function () {
+            stubPublicSiteAccessDisabled(true);
+
+            const response = await agent.get('settings/').expectStatus(200);
+            const byKey = Object.fromEntries(response.body.settings.map(s => [s.key, s]));
+
+            assert.equal(byKey.is_private.is_read_only, true);
+            assert.equal(byKey.password.is_read_only, true);
+        });
+
+        it('rejects external attempts to set is_private = false', async function () {
+            stubPublicSiteAccessDisabled(true);
+            sinon.stub(logging, 'error');
+
+            await agent.put('settings/')
+                .body({
+                    settings: [{key: 'is_private', value: false}]
+                })
+                .expectStatus(403)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                });
+        });
+
+        it('rejects external attempts to change the access code', async function () {
+            stubPublicSiteAccessDisabled(true);
+            sinon.stub(logging, 'error');
+
+            await agent.put('settings/')
+                .body({
+                    settings: [{key: 'password', value: 'attacker-chosen-code'}]
+                })
+                .expectStatus(403)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                });
+        });
+
+        it('does not mark is_private or password as is_read_only when the limit is not disabled', async function () {
+            stubPublicSiteAccessDisabled(false);
+
+            const response = await agent.get('settings/').expectStatus(200);
+            const byKey = Object.fromEntries(response.body.settings.map(s => [s.key, s]));
+
+            assert.notEqual(byKey.is_private.is_read_only, true);
+            assert.notEqual(byKey.password.is_read_only, true);
         });
     });
 

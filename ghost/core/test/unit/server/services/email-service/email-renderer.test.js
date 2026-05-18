@@ -1655,6 +1655,27 @@ describe('Email renderer', function () {
             assert.equal($('.preheader').text(), 'Lexical Test some text for both');
         });
 
+        it('excludes preheader spacing characters from plaintext', async function () {
+            const post = createModel(basePost);
+            const newsletter = createModel(baseNewsletter);
+
+            const response = await emailRenderer.renderBody(
+                post,
+                newsletter,
+                null,
+                {}
+            );
+
+            // These characters are in the spacing after the preheader, which should be excluded
+            const FIGURE_SPACE = '\u2007';
+            const COMBINING_GRAPHEME_JOINER = '\u034F';
+            const SOFT_HYPHEN = '\u00AD';
+
+            assert(!response.plaintext.includes(FIGURE_SPACE), 'plaintext should not contain preheader figure space');
+            assert(!response.plaintext.includes(COMBINING_GRAPHEME_JOINER), 'plaintext should not contain preheader combining grapheme joiner');
+            assert(!response.plaintext.includes(SOFT_HYPHEN), 'plaintext should not contain preheader soft hyphen');
+        });
+
         it('only includes first author if more than 2', async function () {
             const post = createModel({...basePost, authors: [
                 createModel({

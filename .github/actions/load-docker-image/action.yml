@@ -48,7 +48,24 @@ runs:
       run: |
         IMAGE_TAG=$(printf '%s\n' "$IMAGE_TAGS" | head -n1)
         echo "Pulling image from registry: $IMAGE_TAG"
-        docker pull "$IMAGE_TAG"
+
+        max_attempts=5
+        delay_seconds=10
+
+        for attempt in $(seq 1 "$max_attempts"); do
+          if docker pull "$IMAGE_TAG"; then
+            exit 0
+          fi
+
+          if [ "$attempt" -eq "$max_attempts" ]; then
+            echo "Failed to pull $IMAGE_TAG after $max_attempts attempts"
+            exit 1
+          fi
+
+          echo "Pull failed, retrying in ${delay_seconds}s (${attempt}/${max_attempts})..."
+          sleep "$delay_seconds"
+          delay_seconds=$((delay_seconds * 2))
+        done
 
     - name: Verify image is available
       id: verify

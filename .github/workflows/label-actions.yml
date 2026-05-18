@@ -18,4 +18,4 @@ jobs:
     runs-on: ubuntu-latest
     if: github.repository_owner == 'TryGhost'
     steps:
-      - uses: tryghost/actions/actions/label-actions@20b5ae5f266e86f7b5f0815d92731d6388b8ce46 # main
+      - uses: tryghost/actions/actions/label-actions@bf96db0e7f57eb048ead40594f6c222b4a7e3e93 # main
