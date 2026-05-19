@@ -156,6 +156,10 @@ const assertActionExists = (detail: ReadonlyDeep<AutomationDetail>, id: string):
     }
 };
 
+const hasEdge = (detail: ReadonlyDeep<AutomationDetail>, sourceActionId: string, targetActionId: string): boolean => (
+    detail.edges.some(edge => edge.source_action_id === sourceActionId && edge.target_action_id === targetActionId)
+);
+
 const spliceAction = ({detail, action, anchor}: SpliceActionArgs): AutomationDetail => {
     const {previousActionId, nextActionId} = anchor;
     if (previousActionId !== undefined) {
@@ -163,6 +167,18 @@ const spliceAction = ({detail, action, anchor}: SpliceActionArgs): AutomationDet
     }
     if (nextActionId !== undefined) {
         assertActionExists(detail, nextActionId);
+    }
+    if (previousActionId === undefined && nextActionId === undefined && detail.actions.length > 0) {
+        throw new Error('spliceAction: anchor is required when inserting into a non-empty automation');
+    }
+    if (previousActionId !== undefined && nextActionId !== undefined && !hasEdge(detail, previousActionId, nextActionId)) {
+        throw new Error(`spliceAction: anchor edge "${previousActionId}" -> "${nextActionId}" does not exist`);
+    }
+    if (previousActionId !== undefined && nextActionId === undefined && detail.edges.some(edge => edge.source_action_id === previousActionId)) {
+        throw new Error(`spliceAction: anchor previousActionId "${previousActionId}" is not the tail action`);
+    }
+    if (previousActionId === undefined && nextActionId !== undefined && detail.edges.some(edge => edge.target_action_id === nextActionId)) {
+        throw new Error(`spliceAction: anchor nextActionId "${nextActionId}" is not the head action`);
     }
     const actions = [...detail.actions, action];
     const newEdges = detail.edges.filter(edge => !(edge.source_action_id === previousActionId && edge.target_action_id === nextActionId));

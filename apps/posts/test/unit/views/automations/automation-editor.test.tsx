@@ -418,11 +418,11 @@ describe('AutomationEditor', () => {
     });
 
     it('inserts a wait step at the tail when the tail + is clicked and a type is picked', async () => {
-        // Use a 12-hour wait in the fixture so the appended 24h step's "1 day" label is distinguishable.
+        // Use a 48-hour wait in the fixture so the appended 24h step's "1 day" label is distinguishable.
         const fixture: AutomationDetail = {
             ...automationDetail,
             actions: [
-                {id: 'action-wait', type: 'wait', data: {wait_hours: 12}},
+                {id: 'action-wait', type: 'wait', data: {wait_hours: 48}},
                 automationDetail.actions[1]
             ]
         };
