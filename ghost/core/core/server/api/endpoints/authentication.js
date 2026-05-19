@@ -13,16 +13,13 @@ const apiSettings = require('./index').settings;
 const UsersService = require('../../services/users');
 const userService = new UsersService({dbBackup, models, auth, apiMail, apiSettings});
 const internalKeys = require('../../services/internal-keys').default;
-const postScheduling = require('../../services/post-scheduling').default;
-const automations = require('../../services/automations');
-const giftService = require('../../services/gifts').service;
+const adapterManager = require('../../services/adapter-manager');
+const schedulerAdapter = adapterManager.getAdapter('scheduling');
 
 const resetAuthentication = auth.resetAuthentication({
     models,
     internalKeys,
-    postScheduling,
-    automations,
-    giftService,
+    schedulerAdapter,
     userService,
     deleteAllSessions: auth.session.deleteAllSessions
 });

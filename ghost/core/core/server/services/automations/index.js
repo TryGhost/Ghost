@@ -18,6 +18,7 @@ const memberWelcomeEmailService = require('../member-welcome-emails/service');
  *         httpMethod: string;
  *     };
  * }) => void} schedule
+ * @prop {(rescheduler: {rescheduleAll: () => unknown}) => void} register
  */
 
 class AutomationsService {
@@ -57,6 +58,8 @@ class AutomationsService {
             enqueueAnotherPollNow: this.#enqueuePollNow,
             enqueueAnotherPollAt: enqueuePollAt
         })));
+
+        schedulerAdapter.register(this);
 
         this.#enqueuePollNow();
         this.#initialized = true;

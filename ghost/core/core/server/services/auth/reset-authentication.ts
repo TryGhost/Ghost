@@ -2,16 +2,13 @@
 // models/index.js is the Bookshelf model registry — a JS module without
 // TypeScript declarations. The contracts we need from it are narrow, so
 // we accept `any` rather than introduce a sweeping shim here.
-import logging from '@tryghost/logging';
 import type {Knex} from 'knex';
 import type {InternalApiKey, InternalIntegrationSlug} from '../internal-keys';
 
 interface ResetAuthenticationDeps {
     models: any;
     internalKeys: Map<InternalIntegrationSlug, Promise<InternalApiKey>>;
-    postScheduling: {rescheduleAll(opts: {previousKey?: InternalApiKey}): Promise<void>};
-    automations: {rescheduleAll(opts: {previousKey?: InternalApiKey}): Promise<void> | void};
-    giftService: {rescheduleAll(opts: {previousKey?: InternalApiKey}): Promise<void>};
+    schedulerAdapter: {rescheduleAll(opts: {previousKey?: InternalApiKey}): Promise<unknown>};
     userService: {lockAll(options: any): Promise<{count: number}>};
     deleteAllSessions: () => Promise<void>;
 }
@@ -35,16 +32,15 @@ interface ResetAuthenticationResult {
  * so app crashes mid-flight can't leave the system in a half-rotated state or
  * lose the audit trail. After the commit, session deletion runs as a critical
  * step (errors propagate) so a partial response can't leave stale sessions
- * for an attacker. The three reschedule calls run last as best-effort under
- * Promise.allSettled — a failure in one doesn't block the others or roll back
- * the rotation, and the daily cron/event paths re-issue on the next trigger.
+ * for an attacker. The scheduler-adapter's `rescheduleAll` runs last; each
+ * registered scheduler-user is invoked under Promise.allSettled by the
+ * adapter, so a failure in one doesn't block the others or roll back the
+ * rotation. Daily cron and event paths re-issue on the next trigger.
  */
 export default function createResetAuthentication({
     models,
     internalKeys,
-    postScheduling,
-    automations,
-    giftService,
+    schedulerAdapter,
     userService,
     deleteAllSessions
 }: ResetAuthenticationDeps) {
@@ -87,25 +83,10 @@ export default function createResetAuthentication({
         // leave stale sessions live for an attacker.
         await deleteAllSessions();
 
-        // Reschedules are operational continuity, not security. Run them as
-        // best-effort: one failing doesn't block the others, and none can
-        // unwind the rotation. The daily cron and event paths catch up.
-        const rescheduleOptions = {previousKey: previousSchedulerKey};
-        const results = await Promise.allSettled([
-            postScheduling.rescheduleAll(rescheduleOptions),
-            automations.rescheduleAll(rescheduleOptions),
-            giftService.rescheduleAll(rescheduleOptions)
-        ]);
-        const steps = ['post-scheduling', 'automations', 'gift-service'];
-        results.forEach((r, i) => {
-            if (r.status === 'rejected') {
-                logging.error({
-                    event: {name: 'reset_authentication.reschedule_failed'},
-                    err: r.reason,
-                    step: steps[i]
-                }, 'Post-rotation reschedule failed');
-            }
-        });
+        // The adapter delegates to every registered scheduler-user under
+        // Promise.allSettled; a single failure doesn't unwind the others
+        // or the rotation. The chain catches up via cron/events afterward.
+        await schedulerAdapter.rescheduleAll({previousKey: previousSchedulerKey});
 
         return {apiKeysRotated, usersLocked};
     };

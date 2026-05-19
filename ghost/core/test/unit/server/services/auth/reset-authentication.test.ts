@@ -36,7 +36,7 @@ function buildModels({rotated, locked, onAction}: {rotated: number; locked: numb
 }
 
 describe('reset-authentication service', function () {
-    it('rotates keys, locks users, writes audit, reschedules, and destroys sessions', async function () {
+    it('rotates keys, locks users, writes audit, wipes sessions, asks adapter to reschedule', async function () {
         const actions: RecordedAction[] = [];
         const calls: string[] = [];
         const models = buildModels({rotated: 4, locked: 3, onAction: a => actions.push(a)});
@@ -53,14 +53,8 @@ describe('reset-authentication service', function () {
         const reset = createResetAuthentication({
             models: models as unknown as Parameters<typeof createResetAuthentication>[0]['models'],
             internalKeys,
-            postScheduling: {rescheduleAll: async (opts) => {
-                calls.push(`postScheduling.rescheduleAll:${opts.previousKey?.secret}`);
-            }},
-            automations: {rescheduleAll: async (opts) => {
-                calls.push(`automations.rescheduleAll:${opts.previousKey?.secret}`);
-            }},
-            giftService: {rescheduleAll: async (opts) => {
-                calls.push(`giftService.rescheduleAll:${opts.previousKey?.secret}`);
+            schedulerAdapter: {rescheduleAll: async (opts) => {
+                calls.push(`schedulerAdapter.rescheduleAll:${opts.previousKey?.secret}`);
             }},
             userService: {lockAll: async () => ({count: models._locked})},
             deleteAllSessions: async () => {
@@ -84,14 +78,14 @@ describe('reset-authentication service', function () {
         assert.equal(actions[0].options.autoRefresh, false);
         assert.equal(models._isCommitted(), true);
 
-        // Sessions must be wiped before any reschedule has a chance to throw.
+        // Cache clear → session wipe → adapter rescheduleAll. Sessions must be
+        // wiped before the adapter is asked, so a failure in the adapter can't
+        // leave stale sessions live.
+        const cacheIndex = calls.indexOf('internalKeys.clear');
         const sessionIndex = calls.indexOf('deleteAllSessions');
-        const reschedules = ['postScheduling.rescheduleAll:old-secret', 'automations.rescheduleAll:old-secret', 'giftService.rescheduleAll:old-secret'];
-        assert.ok(calls.indexOf('internalKeys.clear') < sessionIndex, 'cache clear before session wipe');
-        for (const r of reschedules) {
-            assert.ok(calls.indexOf(r) > sessionIndex, `${r} runs after session wipe`);
-            assert.ok(calls.includes(r), `${r} was invoked`);
-        }
+        const rescheduleIndex = calls.indexOf('schedulerAdapter.rescheduleAll:old-secret');
+        assert.ok(cacheIndex < sessionIndex, 'cache clear before session wipe');
+        assert.ok(sessionIndex < rescheduleIndex, 'session wipe before adapter rescheduleAll');
     });
 
     it('captures the pre-rotation key snapshot before rotation occurs', async function () {
@@ -118,12 +112,10 @@ describe('reset-authentication service', function () {
         const reset = createResetAuthentication({
             models: models as unknown as Parameters<typeof createResetAuthentication>[0]['models'],
             internalKeys,
-            postScheduling: {rescheduleAll: async (opts) => {
+            schedulerAdapter: {rescheduleAll: async (opts) => {
                 observedPreviousSecret = opts.previousKey?.secret;
                 assert.equal(rotated, true, 'rotation runs before reschedule');
             }},
-            automations: {rescheduleAll: async () => {}},
-            giftService: {rescheduleAll: async () => {}},
             userService: {lockAll: async () => ({count: 0})},
             deleteAllSessions: async () => {}
         });
@@ -143,9 +135,7 @@ describe('reset-authentication service', function () {
         const reset = createResetAuthentication({
             models: models as unknown as Parameters<typeof createResetAuthentication>[0]['models'],
             internalKeys,
-            postScheduling: {rescheduleAll: async () => {}},
-            automations: {rescheduleAll: async () => {}},
-            giftService: {rescheduleAll: async () => {}},
+            schedulerAdapter: {rescheduleAll: async () => {}},
             userService: {lockAll: async () => ({count: 0})},
             deleteAllSessions: async () => {}
         });
@@ -180,14 +170,8 @@ describe('reset-authentication service', function () {
         const reset = createResetAuthentication({
             models: models as unknown as Parameters<typeof createResetAuthentication>[0]['models'],
             internalKeys,
-            postScheduling: {rescheduleAll: async () => {
-                calls.push('postScheduling');
-            }},
-            automations: {rescheduleAll: async () => {
-                calls.push('automations');
-            }},
-            giftService: {rescheduleAll: async () => {
-                calls.push('giftService');
+            schedulerAdapter: {rescheduleAll: async () => {
+                calls.push('schedulerAdapter');
             }},
             userService: {lockAll: async () => {
                 throw new Error('lock failed');
@@ -199,42 +183,5 @@ describe('reset-authentication service', function () {
 
         await assert.rejects(reset({options: {context: {user: 'user-1'}}}), /lock failed/);
         assert.deepEqual(calls, ['rollback'], 'no post-commit work fires when the transaction rolls back');
-    });
-
-    it('still wipes sessions and runs other reschedules when one reschedule throws', async function () {
-        const calls: string[] = [];
-        const models = buildModels({rotated: 1, locked: 1, onAction: () => {}});
-
-        const internalKeys = new Map([
-            ['ghost-scheduler', Promise.resolve({id: 'kid', secret: 'aaa'})]
-        ]) as Map<'ghost-scheduler', Promise<{id: string; secret: string}>> & {clear: () => void};
-
-        const reset = createResetAuthentication({
-            models: models as unknown as Parameters<typeof createResetAuthentication>[0]['models'],
-            internalKeys,
-            postScheduling: {rescheduleAll: async () => {
-                calls.push('postScheduling');
-                throw new Error('post-scheduling failed');
-            }},
-            automations: {rescheduleAll: async () => {
-                calls.push('automations');
-            }},
-            giftService: {rescheduleAll: async () => {
-                calls.push('giftService');
-            }},
-            userService: {lockAll: async () => ({count: 1})},
-            deleteAllSessions: async () => {
-                calls.push('sessions');
-            }
-        });
-
-        const result = await reset({options: {context: {user: 'user-1'}}});
-
-        assert.deepEqual(result, {apiKeysRotated: 1, usersLocked: 1});
-        // Sessions must have been wiped before any reschedule got to throw.
-        assert.equal(calls.indexOf('sessions') < calls.indexOf('postScheduling'), true);
-        // The other two reschedules must have run despite the first failing.
-        assert.ok(calls.includes('automations'), 'automations.rescheduleAll runs even when post-scheduling throws');
-        assert.ok(calls.includes('giftService'), 'giftService.rescheduleAll runs even when post-scheduling throws');
     });
 });

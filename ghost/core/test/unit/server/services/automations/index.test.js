@@ -19,7 +19,8 @@ describe('automations service', function () {
             subscribe: sinon.stub()
         };
         schedulerAdapter = {
-            schedule: sinon.stub()
+            schedule: sinon.stub(),
+            register: sinon.stub()
         };
         initOptions = {
             domainEvents,

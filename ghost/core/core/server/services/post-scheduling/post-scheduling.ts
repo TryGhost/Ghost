@@ -32,6 +32,8 @@ interface SchedulingAdapter {
     schedule(job: SchedulerJob): void;
     // eslint-disable-next-line no-unused-vars
     unschedule(job: SchedulerJob, opts?: {bootstrap?: boolean}): void;
+    // eslint-disable-next-line no-unused-vars
+    register(rescheduler: {rescheduleAll(opts?: {previousKey?: InternalApiKey}): Promise<void>}): void;
 }
 
 interface PostSchedulingDeps {
@@ -86,6 +88,8 @@ export default class PostScheduling {
                 }
             });
         });
+
+        adapter.register(this);
     }
 
     /**

@@ -116,6 +116,7 @@ export interface GiftPurchaseData {
 interface SchedulerAdapter {
     schedule(job: {time: number; url: string; extra: {httpMethod: string}}): void;
     unschedule(job: {time: number; url: string; extra: {httpMethod: string}}): void;
+    register?(rescheduler: {rescheduleAll(opts?: {previousKey?: InternalApiKey}): Promise<void>}): void;
 }
 
 type GetSchedulerKey = () => Promise<InternalApiKey>;
@@ -152,6 +153,7 @@ export class GiftService {
 
     constructor(deps: GiftServiceDeps) {
         this.deps = deps;
+        deps.schedulerAdapter?.register?.(this);
     }
 
     generateToken(): string {
