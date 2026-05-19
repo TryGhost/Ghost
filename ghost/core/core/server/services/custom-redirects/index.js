@@ -2,7 +2,7 @@ const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');
 
 const DynamicRedirectManager = require('../lib/dynamic-redirect-manager');
-const {FileStore} = require('./file-store');
+const {FileStore} = require('../../adapters/redirects/FileStore');
 const {RedirectsService} = require('./redirects-service');
 const validation = require('./validation');
 

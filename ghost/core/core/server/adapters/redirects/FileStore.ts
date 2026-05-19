@@ -1,9 +1,10 @@
 import fs from 'fs-extra';
 import path from 'path';
 
-import {parseJson, parseYaml} from './redirect-config-parser';
-import {getBackupRedirectsFilePath} from './utils';
-import type {RedirectConfig, RedirectsStore} from './types';
+import RedirectsStoreBase from './RedirectsStoreBase';
+import {parseJson, parseYaml} from '../../services/custom-redirects/redirect-config-parser';
+import {getBackupRedirectsFilePath} from '../../services/custom-redirects/utils';
+import type {RedirectConfig, RedirectsStore} from '../../services/custom-redirects/types';
 
 const YAML_FILENAME = 'redirects.yaml';
 const JSON_FILENAME = 'redirects.json';
@@ -19,11 +20,12 @@ interface FileStoreOptions {
  * `.json`. The previous canonical file becomes a timestamped backup on
  * every successive `replaceAll`.
  */
-export class FileStore implements RedirectsStore {
+export class FileStore extends RedirectsStoreBase implements RedirectsStore {
     private readonly basePath: string;
     private readonly getBackupFilePath: (filePath: string) => string;
 
     constructor({basePath, getBackupFilePath = getBackupRedirectsFilePath}: FileStoreOptions) {
+        super();
         this.basePath = basePath;
         this.getBackupFilePath = getBackupFilePath;
     }
