@@ -3,6 +3,8 @@ import {Comment} from '../app-context';
 export type ThreadedReply = Comment & {
     nestedReplies: ThreadedReply[];
     depth: number;
+    siblingIndex: number;
+    siblingCount: number;
 };
 
 export type ThreadGraph = {
@@ -24,7 +26,7 @@ export function buildThreadGraph(rootComment: Comment): ThreadGraph {
     const depthById = new Map<string, number>();
 
     replies.forEach((reply) => {
-        byId.set(reply.id, {...reply, depth: 1, nestedReplies: []});
+        byId.set(reply.id, {...reply, depth: 1, nestedReplies: [], siblingIndex: 0, siblingCount: 0});
     });
 
     const roots: ThreadedReply[] = [];
@@ -46,16 +48,18 @@ export function buildThreadGraph(rootComment: Comment): ThreadGraph {
         }
     });
 
-    const assignDepth = (reply: ThreadedReply, depth: number) => {
-        reply.depth = depth;
-        depthById.set(reply.id, depth);
+    const assignThreadMetadata = (siblings: ThreadedReply[], depth: number) => {
+        siblings.forEach((reply, index) => {
+            reply.depth = depth;
+            reply.siblingIndex = index;
+            reply.siblingCount = siblings.length;
+            depthById.set(reply.id, depth);
 
-        reply.nestedReplies.forEach((nestedReply) => {
-            assignDepth(nestedReply, depth + 1);
+            assignThreadMetadata(reply.nestedReplies, depth + 1);
         });
     };
 
-    roots.forEach(reply => assignDepth(reply, 1));
+    assignThreadMetadata(roots, 1);
 
     const getReply = (commentId: string) => byId.get(commentId);
     const getAncestorAtDepth = (comment: ThreadedReply, depth: number) => {

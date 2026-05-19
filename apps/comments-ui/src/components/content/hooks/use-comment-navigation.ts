@@ -233,9 +233,19 @@ function useScrollToHashTarget(
 ) {
     const {comments, commentsIsLoading, commentIdFromHash, commentIdToScrollTo, dispatchAction} = useAppContext();
     const {scrollToComment} = helpers;
+    // Permalink targets stay in state so loaded replies can preserve context,
+    // but unrelated comment changes must not re-trigger the initial scroll.
+    const lastScrolledCommentId = useRef<string | null>(null);
 
     useEffect(() => {
         if (!commentIdToScrollTo || commentsIsLoading || !containerRef.current) {
+            if (!commentIdToScrollTo) {
+                lastScrolledCommentId.current = null;
+            }
+            return;
+        }
+
+        if (lastScrolledCommentId.current === commentIdToScrollTo) {
             return;
         }
 
@@ -254,11 +264,13 @@ function useScrollToHashTarget(
 
         const iframe = findContainingIframe(doc);
         if (iframe) {
+            lastScrolledCommentId.current = commentIdToScrollTo;
             return onIframeResize(iframe, () => {
                 scrollToComment(element, commentIdToScrollTo, {preserveScrollTarget: commentIdToScrollTo === commentIdFromHash});
             });
         }
 
+        lastScrolledCommentId.current = commentIdToScrollTo;
         scrollToComment(element, commentIdToScrollTo, {preserveScrollTarget: commentIdToScrollTo === commentIdFromHash});
     }, [commentIdToScrollTo, commentIdFromHash, commentsIsLoading, comments, containerRef, dispatchAction, scrollToComment]);
 }

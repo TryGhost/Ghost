@@ -293,6 +293,7 @@ type FormWrapperProps = {
     isOpen: boolean;
     reduced: boolean;
     openForm?: OpenCommentForm;
+    threadedLayout?: boolean;
     children: React.ReactNode;
 };
 
@@ -301,6 +302,7 @@ const FormWrapper: React.FC<FormWrapperProps> = ({
     isOpen,
     reduced,
     openForm,
+    threadedLayout = false,
     children
 }) => {
     const {member, dispatchAction} = useAppContext();
@@ -362,14 +364,14 @@ const FormWrapper: React.FC<FormWrapperProps> = ({
     }, [editor, editName, memberName]);
 
     return (
-        <div className={`-mx-2 mt-[-10px] rounded-md transition duration-200 ${isOpen ? 'cursor-default' : 'cursor-pointer'}`}>
+        <div className={`${threadedLayout ? '' : '-mx-2 mt-[-10px]'} rounded-md transition duration-200 ${isOpen ? 'cursor-default' : 'cursor-pointer'}`}>
             <div className="relative w-full" onClick={focusEditor}>
                 <div className="pr-[1px] font-sans leading-normal dark:text-neutral-300">
                     <div className={`relative mb-7 w-full pl-[40px] transition-[padding] delay-100 duration-150 sm:pl-[44px] ${reduced && 'pl-0'} ${openStyles}`}>
                         {children}
                     </div>
                 </div>
-                <div className='absolute left-0 top-1 flex h-11 w-full items-start justify-start sm:h-12'>
+                <div className={`absolute left-0 flex h-11 w-full items-start justify-start sm:h-12 ${threadedLayout ? 'top-0' : 'top-1'}`}>
                     <div className="pointer-events-none mr-2 grow-0 sm:mr-3">
                         <Avatar member={member} />
                     </div>
