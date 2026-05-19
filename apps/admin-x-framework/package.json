@@ -103,7 +103,7 @@
         "@tinybirdco/charts": "0.2.4",
         "@tryghost/admin-x-design-system": "workspace:*",
         "@tryghost/shade": "workspace:*",
-        "bson-objectid": "2.0.4",
+        "bson-objectid": "catalog:",
         "react": "18.3.1",
         "react-dom": "18.3.1",
         "react-hot-toast": "2.6.0",

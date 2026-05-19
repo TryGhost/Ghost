@@ -693,7 +693,7 @@ importers:
         specifier: workspace:*
         version: link:../shade
       bson-objectid:
-        specifier: 2.0.4
+        specifier: 'catalog:'
         version: 2.0.4
       react:
         specifier: 18.3.1

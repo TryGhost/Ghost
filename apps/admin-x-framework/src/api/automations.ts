@@ -139,16 +139,16 @@ export type InsertActionAnchor = {
     nextActionId?: string;
 };
 
-type SpliceActionArgs = {
-    detail: ReadonlyDeep<AutomationDetail>;
+type SpliceActionArgs = ReadonlyDeep<{
+    detail: AutomationDetail;
     action: AutomationAction;
-    anchor: ReadonlyDeep<InsertActionAnchor>;
-};
+    anchor: InsertActionAnchor;
+}>;
 
-type InsertActionArgs = {
-    detail: ReadonlyDeep<AutomationDetail>;
-    anchor: ReadonlyDeep<InsertActionAnchor>;
-};
+type InsertActionArgs = ReadonlyDeep<{
+    detail: AutomationDetail;
+    anchor: InsertActionAnchor;
+}>;
 
 const assertActionExists = (detail: ReadonlyDeep<AutomationDetail>, id: string): void => {
     if (!detail.actions.some(action => action.id === id)) {

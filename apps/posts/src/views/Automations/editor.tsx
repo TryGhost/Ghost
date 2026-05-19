@@ -3,7 +3,7 @@ import AutomationHeader from './components/automation-header';
 import React from 'react';
 import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, type ButtonProps, LoadingIndicator} from '@tryghost/shade/components';
 import {AutomationDetail, AutomationStatus, useEditAutomation, useReadAutomation} from '@tryghost/admin-x-framework/api/automations';
-import {dequal} from 'dequal/lite';
+import {dequal} from 'dequal';
 import {useParams} from '@tryghost/admin-x-framework';
 import type {AutomationEditState} from './types';
 
@@ -40,8 +40,6 @@ const AutomationEditor: React.FC = () => {
         && !!automation
         && !dequal(editableSlice(draft), editableSlice(automation));
 
-    // A local edit clears the previous failure state — the user is moving forward, so the
-    // destructive Retry affordance shouldn't linger.
     const onDraftChange = (next: AutomationDetail) => {
         setDraft(next);
         setEditState((prev) => {
@@ -92,8 +90,6 @@ const AutomationEditor: React.FC = () => {
     let isEditRequestActive = false;
     let isPublishButtonEnabled = draft?.status === 'inactive' || hasUnsavedChanges;
     let publishButtonVariant: ButtonProps['variant'] = 'default';
-    // Inactive (or not yet loaded): "Publish" reads better than "Publish changes" because the
-    // automation has never been published in its current state.
     let publishButtonChildren: React.ReactNode = draft?.status === 'active'
         ? (hasUnsavedChanges ? 'Publish changes' : 'Published')
         : 'Publish';

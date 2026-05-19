@@ -12,9 +12,8 @@ const NODE_GAP_Y = 180;
 const DISABLED_REASON = `Limit of ${MAX_AUTOMATION_ACTIONS} steps reached`;
 
 // React Flow node IDs for the trigger and tail nodes. The canvas builds the visual graph using
-// these; they are not action IDs and never reach the API. Exported so add-step-edge can recognize
-// them when building its anchor data.
-export const TRIGGER_CANVAS_ID = 'trigger';
+// these; they are not action IDs and never reach the API.
+export const TRIGGER_CANVAS_ID = '__trigger__';
 export const TAIL_CANVAS_ID = '__tail__';
 
 // Canvas-local anchor: React Flow node IDs of the two nodes between which a step is being inserted.
