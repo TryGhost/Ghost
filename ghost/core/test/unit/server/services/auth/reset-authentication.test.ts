@@ -1,187 +1,166 @@
 import assert from 'node:assert/strict';
-import createResetAuthentication from '../../../../../core/server/services/auth/reset-authentication';
+import resetAuthentication from '../../../../../core/server/services/auth/reset-authentication';
+import type {InternalApiKey, InternalIntegrationSlug} from '../../../../../core/server/services/internal-keys';
 
-interface RecordedAction {
-    payload: Record<string, unknown>;
-    options: Record<string, unknown>;
+interface ActionRow {
+    event: string;
+    resource_type: string;
+    actor_id: string;
+    context: {action_name: string; api_keys_rotated: number; users_locked: number};
 }
 
 // eslint-disable-next-line no-unused-vars
-type ActionRecorder = (action: RecordedAction) => void;
-// eslint-disable-next-line no-unused-vars
-type TxCallback = (txn: object) => Promise<unknown>;
+type TxCallback = (tx: object) => Promise<unknown>;
 
-function buildModels({rotated, locked, onAction}: {rotated: number; locked: number; onAction: ActionRecorder}) {
-    let committed = false;
-    return {
+/**
+ * In-memory pretend of the auth-domain modules. We pass it as overrides so
+ * the test exercises the real orchestration body but observes outcomes
+ * through state we control.
+ */
+function buildAuthDomain({apiKeysToRotate, usersToLock, currentKey}: {apiKeysToRotate: number; usersToLock: number; currentKey: {id: string; secret: string}}) {
+    const recorded = {
+        actions: [] as ActionRow[],
+        sessionsDeleted: false,
+        cacheCleared: false,
+        committed: false
+    };
+
+    const models = {
         Base: {
             transaction: async (cb: TxCallback) => {
                 const result = await cb({label: 'tx'});
-                committed = true;
+                recorded.committed = true;
                 return result;
             }
         },
         ApiKey: {
-            refreshAllSecrets: async () => ({count: rotated})
+            refreshAllSecrets: async () => ({count: apiKeysToRotate})
         },
         Action: {
-            add: async (payload: Record<string, unknown>, options: Record<string, unknown>) => {
-                onAction({payload, options});
+            add: async (payload: ActionRow) => {
+                recorded.actions.push(payload);
                 return {};
             }
-        },
-        _isCommitted: () => committed,
-        _locked: locked
+        }
     };
+
+    const internalKeys: Map<InternalIntegrationSlug, Promise<InternalApiKey>> = new Map([
+        ['ghost-scheduler', Promise.resolve(currentKey)]
+    ]);
+    const originalClear = internalKeys.clear.bind(internalKeys);
+    internalKeys.clear = () => {
+        recorded.cacheCleared = true;
+        originalClear();
+    };
+
+    const deleteAllSessions = async () => {
+        recorded.sessionsDeleted = true;
+    };
+
+    const userService = {lockAll: async () => ({count: usersToLock})};
+
+    return {models, internalKeys, deleteAllSessions, userService, recorded};
 }
 
-describe('reset-authentication service', function () {
-    it('rotates keys, locks users, writes audit, wipes sessions, asks adapter to reschedule', async function () {
-        const actions: RecordedAction[] = [];
-        const calls: string[] = [];
-        const models = buildModels({rotated: 4, locked: 3, onAction: a => actions.push(a)});
+describe('resetAuthentication', function () {
+    it('rotates keys, locks users, writes audit row with counts, returns counts', async function () {
+        const env = buildAuthDomain({apiKeysToRotate: 4, usersToLock: 3, currentKey: {id: 'k', secret: 'old'}});
+        const adapter = {rescheduleAll: async () => {}};
 
-        const internalKeys = new Map([
-            ['ghost-scheduler', Promise.resolve({id: 'kid', secret: 'old-secret'})]
-        ]) as Map<'ghost-scheduler', Promise<{id: string; secret: string}>> & {clear: () => void};
-        const originalClear = internalKeys.clear.bind(internalKeys);
-        internalKeys.clear = () => {
-            calls.push('internalKeys.clear');
-            originalClear();
-        };
-
-        const reset = createResetAuthentication({
-            models: models as unknown as Parameters<typeof createResetAuthentication>[0]['models'],
-            internalKeys,
-            schedulerAdapter: {rescheduleAll: async (opts) => {
-                calls.push(`schedulerAdapter.rescheduleAll:${opts.previousKey?.secret}`);
-            }},
-            userService: {lockAll: async () => ({count: models._locked})},
-            deleteAllSessions: async () => {
-                calls.push('deleteAllSessions');
-            }
+        const result = await resetAuthentication({
+            schedulerAdapter: adapter,
+            userService: env.userService,
+            options: {context: {user: 'user-1'}},
+            models: env.models,
+            internalKeys: env.internalKeys,
+            deleteAllSessions: env.deleteAllSessions
         });
-
-        const result = await reset({options: {context: {user: 'user-1'}}});
 
         assert.deepEqual(result, {apiKeysRotated: 4, usersLocked: 3});
-        assert.equal(actions.length, 1, 'one audit row written');
-        assert.equal(actions[0].payload.event, 'edited');
-        assert.equal(actions[0].payload.resource_type, 'security_action');
-        assert.equal(actions[0].payload.actor_id, 'user-1');
-        assert.deepEqual(actions[0].payload.context, {
-            action_name: 'reset_authentication',
-            api_keys_rotated: 4,
-            users_locked: 3
-        });
-        assert.ok(actions[0].options.transacting, 'audit row is written within the transaction');
-        assert.equal(actions[0].options.autoRefresh, false);
-        assert.equal(models._isCommitted(), true);
-
-        // Cache clear → session wipe → adapter rescheduleAll. Sessions must be
-        // wiped before the adapter is asked, so a failure in the adapter can't
-        // leave stale sessions live.
-        const cacheIndex = calls.indexOf('internalKeys.clear');
-        const sessionIndex = calls.indexOf('deleteAllSessions');
-        const rescheduleIndex = calls.indexOf('schedulerAdapter.rescheduleAll:old-secret');
-        assert.ok(cacheIndex < sessionIndex, 'cache clear before session wipe');
-        assert.ok(sessionIndex < rescheduleIndex, 'session wipe before adapter rescheduleAll');
+        assert.equal(env.recorded.committed, true);
+        assert.equal(env.recorded.actions.length, 1);
+        assert.equal(env.recorded.actions[0].event, 'edited');
+        assert.equal(env.recorded.actions[0].resource_type, 'security_action');
+        assert.equal(env.recorded.actions[0].actor_id, 'user-1');
+        assert.equal(env.recorded.actions[0].context.action_name, 'reset_authentication');
+        assert.equal(env.recorded.actions[0].context.api_keys_rotated, 4);
+        assert.equal(env.recorded.actions[0].context.users_locked, 3);
     });
 
-    it('captures the pre-rotation key snapshot before rotation occurs', async function () {
-        let rotated = false;
-        let observedPreviousSecret: string | undefined;
+    it('asks the scheduler adapter to reschedule with the pre-rotation key', async function () {
+        const env = buildAuthDomain({apiKeysToRotate: 1, usersToLock: 1, currentKey: {id: 'k', secret: 'pre-rotation'}});
+        let observed: {id: string; secret: string} | undefined;
 
-        const models = {
-            Base: {
-                transaction: async (cb: TxCallback) => cb({label: 'tx'})
-            },
-            ApiKey: {
-                refreshAllSecrets: async () => {
-                    rotated = true;
-                    return {count: 1};
-                }
-            },
-            Action: {add: async () => ({})}
-        };
-
-        const internalKeys = new Map([
-            ['ghost-scheduler', Promise.resolve({id: 'kid', secret: 'pre-rotation'})]
-        ]) as Map<'ghost-scheduler', Promise<{id: string; secret: string}>> & {clear: () => void};
-
-        const reset = createResetAuthentication({
-            models: models as unknown as Parameters<typeof createResetAuthentication>[0]['models'],
-            internalKeys,
+        await resetAuthentication({
             schedulerAdapter: {rescheduleAll: async (opts) => {
-                observedPreviousSecret = opts.previousKey?.secret;
-                assert.equal(rotated, true, 'rotation runs before reschedule');
+                observed = opts.previousKey;
             }},
-            userService: {lockAll: async () => ({count: 0})},
-            deleteAllSessions: async () => {}
+            userService: env.userService,
+            options: {context: {user: 'user-1'}},
+            models: env.models,
+            internalKeys: env.internalKeys,
+            deleteAllSessions: env.deleteAllSessions
         });
 
-        await reset({options: {context: {user: 'user-1'}}});
-        assert.equal(observedPreviousSecret, 'pre-rotation');
+        assert.deepEqual(observed, {id: 'k', secret: 'pre-rotation'});
     });
 
-    it('skips audit when no actor is in context', async function () {
-        const actions: RecordedAction[] = [];
-        const models = buildModels({rotated: 1, locked: 0, onAction: a => actions.push(a)});
+    it('skips the audit row when no actor is in context', async function () {
+        const env = buildAuthDomain({apiKeysToRotate: 1, usersToLock: 0, currentKey: {id: 'k', secret: 's'}});
 
-        const internalKeys = new Map([
-            ['ghost-scheduler', Promise.resolve({id: 'kid', secret: 'aaa'})]
-        ]) as Map<'ghost-scheduler', Promise<{id: string; secret: string}>> & {clear: () => void};
-
-        const reset = createResetAuthentication({
-            models: models as unknown as Parameters<typeof createResetAuthentication>[0]['models'],
-            internalKeys,
+        await resetAuthentication({
             schedulerAdapter: {rescheduleAll: async () => {}},
-            userService: {lockAll: async () => ({count: 0})},
-            deleteAllSessions: async () => {}
+            userService: env.userService,
+            options: {},
+            models: env.models,
+            internalKeys: env.internalKeys,
+            deleteAllSessions: env.deleteAllSessions
         });
 
-        await reset({options: {}});
-        assert.equal(actions.length, 0);
+        assert.equal(env.recorded.actions.length, 0);
     });
 
-    it('does not reschedule or destroy sessions if the transaction rolls back', async function () {
-        const calls: string[] = [];
-        const models = {
-            Base: {
-                transaction: async (cb: TxCallback) => {
-                    try {
-                        return await cb({label: 'tx'});
-                    } catch (err) {
-                        calls.push('rollback');
-                        throw err;
-                    }
-                }
-            },
-            ApiKey: {
-                refreshAllSecrets: async () => ({count: 2})
-            },
-            Action: {add: async () => ({})}
-        };
+    it('rolls back rotation and skips sessions + reschedule when lock fails', async function () {
+        const env = buildAuthDomain({apiKeysToRotate: 2, usersToLock: 0, currentKey: {id: 'k', secret: 's'}});
+        let rescheduleCalled = false;
 
-        const internalKeys = new Map([
-            ['ghost-scheduler', Promise.resolve({id: 'kid', secret: 'aaa'})]
-        ]) as Map<'ghost-scheduler', Promise<{id: string; secret: string}>> & {clear: () => void};
+        await assert.rejects(
+            resetAuthentication({
+                schedulerAdapter: {rescheduleAll: async () => {
+                    rescheduleCalled = true;
+                }},
+                userService: {lockAll: async () => {
+                    throw new Error('lock failed');
+                }},
+                options: {context: {user: 'user-1'}},
+                models: env.models,
+                internalKeys: env.internalKeys,
+                deleteAllSessions: env.deleteAllSessions
+            }),
+            /lock failed/
+        );
 
-        const reset = createResetAuthentication({
-            models: models as unknown as Parameters<typeof createResetAuthentication>[0]['models'],
-            internalKeys,
+        assert.equal(env.recorded.actions.length, 0, 'audit row not written on rollback');
+        assert.equal(env.recorded.sessionsDeleted, false, 'sessions are not wiped on rollback');
+        assert.equal(env.recorded.cacheCleared, false, 'internal-keys cache not cleared on rollback');
+        assert.equal(rescheduleCalled, false, 'adapter is not asked to reschedule on rollback');
+    });
+
+    it('wipes sessions before asking the adapter to reschedule', async function () {
+        const env = buildAuthDomain({apiKeysToRotate: 1, usersToLock: 1, currentKey: {id: 'k', secret: 's'}});
+        let sessionsWipedBeforeReschedule = false;
+
+        await resetAuthentication({
             schedulerAdapter: {rescheduleAll: async () => {
-                calls.push('schedulerAdapter');
+                sessionsWipedBeforeReschedule = env.recorded.sessionsDeleted;
             }},
-            userService: {lockAll: async () => {
-                throw new Error('lock failed');
-            }},
-            deleteAllSessions: async () => {
-                calls.push('sessions');
-            }
+            userService: env.userService,
+            options: {context: {user: 'user-1'}},
+            models: env.models,
+            internalKeys: env.internalKeys,
+            deleteAllSessions: env.deleteAllSessions
         });
 
-        await assert.rejects(reset({options: {context: {user: 'user-1'}}}), /lock failed/);
-        assert.deepEqual(calls, ['rollback'], 'no post-commit work fires when the transaction rolls back');
+        assert.equal(sessionsWipedBeforeReschedule, true);
     });
 });

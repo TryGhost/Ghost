@@ -12,17 +12,8 @@ const apiMail = require('./index').mail;
 const apiSettings = require('./index').settings;
 const UsersService = require('../../services/users');
 const userService = new UsersService({dbBackup, models, auth, apiMail, apiSettings});
-const internalKeys = require('../../services/internal-keys').default;
 const adapterManager = require('../../services/adapter-manager');
 const schedulerAdapter = adapterManager.getAdapter('scheduling');
-
-const resetAuthentication = auth.resetAuthentication({
-    models,
-    internalKeys,
-    schedulerAdapter,
-    userService,
-    deleteAllSessions: auth.session.deleteAllSessions
-});
 
 async function destroyRequestSession(req) {
     if (!req || !req.session) {
@@ -250,7 +241,11 @@ const controller = {
         },
         permissions: true,
         async query(frame) {
-            const result = await resetAuthentication({options: frame.options});
+            const result = await auth.resetAuthentication({
+                schedulerAdapter,
+                userService,
+                options: frame.options
+            });
 
             // Express-session would otherwise re-save the current request's
             // session on the response, resurrecting the row deleteAllSessions
