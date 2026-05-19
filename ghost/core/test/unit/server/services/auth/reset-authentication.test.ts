@@ -72,7 +72,7 @@ describe('reset-authentication service', function () {
 
         assert.deepEqual(result, {apiKeysRotated: 4, usersLocked: 3});
         assert.equal(actions.length, 1, 'one audit row written');
-        assert.equal(actions[0].payload.event, 'reset_authentication');
+        assert.equal(actions[0].payload.event, 'edited');
         assert.equal(actions[0].payload.resource_type, 'security_action');
         assert.equal(actions[0].payload.actor_id, 'user-1');
         assert.deepEqual(actions[0].payload.context, {

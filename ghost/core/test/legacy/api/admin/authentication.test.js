@@ -590,11 +590,22 @@ describe('Authentication API', function () {
             const sessions = await models.Session.fetchAll();
             assert.equal(sessions.length, 0, 'There should be no sessions left in the DB');
 
-            // Audit entry recorded
+            // Audit entry recorded. The `context` column is stored as a JSON
+            // string; the Action model doesn't auto-parse it on read.
             const auditRows = await models.Action.findAll({
-                filter: 'resource_type:security_action+event:reset_authentication'
+                filter: 'resource_type:security_action+event:edited'
             });
-            assert.ok(auditRows.length >= 1, 'expected an audit entry for reset_authentication');
+            assert.ok(
+                auditRows.some((row) => {
+                    const raw = row.get('context');
+                    if (!raw) {
+                        return false;
+                    }
+                    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                    return parsed.action_name === 'reset_authentication';
+                }),
+                'expected an audit entry with action_name=reset_authentication'
+            );
 
             // No proactive emails — the reset email is sent by the session
             // endpoint when a locked user next attempts to sign in.

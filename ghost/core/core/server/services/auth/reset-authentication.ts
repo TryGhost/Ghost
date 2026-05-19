@@ -62,7 +62,7 @@ export default function createResetAuthentication({
 
             if (actorId) {
                 await models.Action.add({
-                    event: 'reset_authentication',
+                    event: 'edited',
                     resource_type: 'security_action',
                     resource_id: null,
                     actor_type: 'user',
