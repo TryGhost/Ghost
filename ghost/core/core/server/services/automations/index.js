@@ -72,6 +72,4 @@ class AutomationsService {
     }
 }
 
-// Export a singleton so callers outside boot can invoke rescheduleAll
-// without holding a reference to the instance boot constructed.
 module.exports = new AutomationsService();

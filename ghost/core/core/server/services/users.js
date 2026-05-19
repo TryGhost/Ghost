@@ -89,8 +89,6 @@ class Users {
             return users.models;
         };
 
-        // If the caller supplied an outer transaction, run inside it; otherwise
-        // open our own.
         const users = frameOptions.transacting
             ? await lockUsers(frameOptions)
             : await this.models.Base.transaction(t => lockUsers({...frameOptions, transacting: t}));
