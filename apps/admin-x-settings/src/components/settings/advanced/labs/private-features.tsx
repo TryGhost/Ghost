@@ -72,8 +72,8 @@ const features: Feature[] = [{
     description: 'Allow staff to pin top-level comments in Comments-UI and Admin',
     flag: 'commentsPinning'
 }, {
-    title: 'Danger Zone — Reset all authentication',
-    description: 'Adds a button to Settings → Advanced → Danger Zone that rotates every API key, locks every user, and destroys every session in one action',
+    title: 'Danger Zone: Reset all authentication',
+    description: 'Adds a button to Settings → Advanced → Danger Zone that rotates every API key, locks every staff user, and destroys every active staff session in one action',
     flag: 'dangerZoneResetAuth'
 }];
 

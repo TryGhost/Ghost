@@ -2,6 +2,7 @@
 // models/index.js is the Bookshelf model registry — a JS module without
 // TypeScript declarations. The contracts we need from it are narrow, so
 // we accept `any` rather than introduce a sweeping shim here.
+import logging from '@tryghost/logging';
 import type {InternalApiKey, InternalIntegrationSlug} from '../internal-keys';
 
 interface ResetAuthenticationDeps {
@@ -30,13 +31,16 @@ interface ResetAuthenticationResult {
 
 /**
  * Build the "reset all authentication" action: rotate every API key, refresh
- * the in-process key cache, re-issue every queued scheduler callback under
- * the new key, lock every user, and destroy every session.
+ * the in-process key cache, lock every staff user, destroy every session, and
+ * re-issue every queued scheduler callback under the new key.
  *
  * Rotation, user lock, and the audit row are written in a single transaction
  * so app crashes mid-flight can't leave the system in a half-rotated state or
- * lose the audit trail. Rescheduling and session-wipe sit outside the
- * transaction — they're in-memory and out-of-band respectively.
+ * lose the audit trail. After the commit, session deletion runs as a critical
+ * step (errors propagate) so a partial response can't leave stale sessions
+ * for an attacker. The three reschedule calls run last as best-effort under
+ * Promise.allSettled — a failure in one doesn't block the others or roll back
+ * the rotation, and the daily cron/event paths re-issue on the next trigger.
  */
 export default function createResetAuthentication({
     models,
@@ -77,18 +81,34 @@ export default function createResetAuthentication({
             return {apiKeysRotated: rotated, usersLocked: locked};
         });
 
-        // Cache clear + reschedule happen AFTER commit so the in-process cache
-        // refills from the newly-committed rows, not from rows that might still
-        // roll back. Session wipe also goes here — express-session isn't part
-        // of this transaction.
+        // After the commit, the in-process key cache is invalidated so the
+        // next reader pulls the newly-committed rows.
         internalKeys.clear();
 
-        const rescheduleOptions = {previousKey: previousSchedulerKey};
-        await postScheduling.rescheduleAll(rescheduleOptions);
-        await automations.rescheduleAll(rescheduleOptions);
-        await giftService.rescheduleAll(rescheduleOptions);
-
+        // Session deletion is part of the security guarantee — it must run
+        // before anything that could throw, so a failed reschedule can't
+        // leave stale sessions live for an attacker.
         await deleteAllSessions();
+
+        // Reschedules are operational continuity, not security. Run them as
+        // best-effort: one failing doesn't block the others, and none can
+        // unwind the rotation. The daily cron and event paths catch up.
+        const rescheduleOptions = {previousKey: previousSchedulerKey};
+        const results = await Promise.allSettled([
+            postScheduling.rescheduleAll(rescheduleOptions),
+            automations.rescheduleAll(rescheduleOptions),
+            giftService.rescheduleAll(rescheduleOptions)
+        ]);
+        const steps = ['post-scheduling', 'automations', 'gift-service'];
+        results.forEach((r, i) => {
+            if (r.status === 'rejected') {
+                logging.error({
+                    event: {name: 'reset_authentication.reschedule_failed'},
+                    err: r.reason,
+                    step: steps[i]
+                }, 'Post-rotation reschedule failed');
+            }
+        });
 
         return {apiKeysRotated, usersLocked};
     };
