@@ -246,7 +246,17 @@ async function unpinComment({state, data: comment, dispatchAction}: {state: Edit
     return null;
 }
 
-async function updateCommentLikeState({state, data: comment}: {state: EditableAppContext, data: {id: string, liked: boolean, wasDisliked?: boolean}}) {
+async function updateCommentLikeState({state, data: comment}: {state: EditableAppContext, data: {id: string, liked: boolean, wasDisliked?: boolean, restoreDisliked?: boolean}}) {
+    const updateDislikeCount = (count: number) => {
+        if (comment.liked && comment.wasDisliked) {
+            return count - 1;
+        }
+        if (comment.restoreDisliked) {
+            return count + 1;
+        }
+        return count;
+    };
+
     return {
         comments: state.comments.map((c) => {
             const replies = c.replies.map((r) => {
@@ -254,11 +264,11 @@ async function updateCommentLikeState({state, data: comment}: {state: EditableAp
                     return {
                         ...r,
                         liked: comment.liked,
-                        disliked: comment.liked ? false : r.disliked,
+                        disliked: comment.restoreDisliked ?? (comment.liked ? false : r.disliked),
                         count: {
                             ...r.count,
                             likes: comment.liked ? r.count.likes + 1 : r.count.likes - 1,
-                            dislikes: comment.liked && comment.wasDisliked ? r.count.dislikes - 1 : r.count.dislikes
+                            dislikes: updateDislikeCount(r.count.dislikes)
                         }
                     };
                 }
@@ -270,12 +280,12 @@ async function updateCommentLikeState({state, data: comment}: {state: EditableAp
                 return {
                     ...c,
                     liked: comment.liked,
-                    disliked: comment.liked ? false : c.disliked,
+                    disliked: comment.restoreDisliked ?? (comment.liked ? false : c.disliked),
                     replies,
                     count: {
                         ...c.count,
                         likes: comment.liked ? c.count.likes + 1 : c.count.likes - 1,
-                        dislikes: comment.liked && comment.wasDisliked ? c.count.dislikes - 1 : c.count.dislikes
+                        dislikes: updateDislikeCount(c.count.dislikes)
                     }
                 };
             }
@@ -288,7 +298,17 @@ async function updateCommentLikeState({state, data: comment}: {state: EditableAp
     };
 }
 
-async function updateCommentDislikeState({state, data: comment}: {state: EditableAppContext, data: {id: string, disliked: boolean, wasLiked?: boolean}}) {
+async function updateCommentDislikeState({state, data: comment}: {state: EditableAppContext, data: {id: string, disliked: boolean, wasLiked?: boolean, restoreLiked?: boolean}}) {
+    const updateLikeCount = (count: number) => {
+        if (comment.disliked && comment.wasLiked) {
+            return count - 1;
+        }
+        if (comment.restoreLiked) {
+            return count + 1;
+        }
+        return count;
+    };
+
     return {
         comments: state.comments.map((c) => {
             const replies = c.replies.map((r) => {
@@ -296,11 +316,11 @@ async function updateCommentDislikeState({state, data: comment}: {state: Editabl
                     return {
                         ...r,
                         disliked: comment.disliked,
-                        liked: comment.disliked ? false : r.liked,
+                        liked: comment.restoreLiked ?? (comment.disliked ? false : r.liked),
                         count: {
                             ...r.count,
                             dislikes: comment.disliked ? r.count.dislikes + 1 : r.count.dislikes - 1,
-                            likes: comment.disliked && comment.wasLiked ? r.count.likes - 1 : r.count.likes
+                            likes: updateLikeCount(r.count.likes)
                         }
                     };
                 }
@@ -312,12 +332,12 @@ async function updateCommentDislikeState({state, data: comment}: {state: Editabl
                 return {
                     ...c,
                     disliked: comment.disliked,
-                    liked: comment.disliked ? false : c.liked,
+                    liked: comment.restoreLiked ?? (comment.disliked ? false : c.liked),
                     replies,
                     count: {
                         ...c.count,
                         dislikes: comment.disliked ? c.count.dislikes + 1 : c.count.dislikes - 1,
-                        likes: comment.disliked && comment.wasLiked ? c.count.likes - 1 : c.count.likes
+                        likes: updateLikeCount(c.count.likes)
                     }
                 };
             }
@@ -337,7 +357,7 @@ async function likeComment({state, api, data: comment, dispatchAction}: {state: 
         await api.comments.like({comment});
         return {};
     } catch {
-        dispatchAction('updateCommentLikeState', {id: comment.id, liked: false, wasDisliked});
+        dispatchAction('updateCommentLikeState', {id: comment.id, liked: false, restoreDisliked: wasDisliked});
     }
 }
 
@@ -359,7 +379,7 @@ async function dislikeComment({state, api, data: comment, dispatchAction}: {stat
         await api.comments.dislike({comment});
         return {};
     } catch {
-        dispatchAction('updateCommentDislikeState', {id: comment.id, disliked: false, wasLiked});
+        dispatchAction('updateCommentDislikeState', {id: comment.id, disliked: false, restoreLiked: wasLiked});
     }
 }
 
