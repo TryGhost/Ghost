@@ -46,6 +46,7 @@ const Replies: React.FC<RepliesProps> = ({comment, useThreading = false}) => {
                     isLastSibling={idx === visibleReplies.length - 1}
                     layoutVariant={useThreading ? 'reply' : 'root'}
                     parent={comment}
+                    useThreading={useThreading}
                 />
             ))}
             {totalHiddenCount > 0 && <RepliesPagination count={totalHiddenCount} loadMore={loadMore}/>}
