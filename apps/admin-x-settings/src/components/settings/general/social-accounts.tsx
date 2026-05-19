@@ -51,33 +51,25 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
     }, [handles.map(value => value ?? '').join('|')]);
 
     const handleSocialChange = (key: SocialPlatformKey, value: string) => {
-        // Keep the display value in sync with the input (don't clear on validate error)
         setUrls(current => ({...current, [key]: value}));
-
-        // Validate the input value
-        const error = getSocialValidationError(key, value);
-        
-        if (!error && value.trim()) {
-            // Valid input: extract the stored value and update the setting
-            try {
-                const {storedValue} = normalizeSocialInput(key, value);
-                updateSetting(key, storedValue);
-                setErrors(current => ({...current, [key]: ''}));
-            } catch {
-                // If normalizeSocialInput still throws after our check, show error
-                setErrors(current => ({...current, [key]: getSocialValidationError(key, value)}));
-            }
-        } else if (!value.trim()) {
-            // Empty input: clear the setting and error
-            updateSetting(key, null);
-            setErrors(current => ({...current, [key]: ''}));
-        } else {
-            // Invalid but not empty: show error but keep the input visible
-            setErrors(current => ({...current, [key]: error}));
-        }
 
         if (!isEditing) {
             handleEditingChange(true);
+        }
+
+        try {
+            const {storedValue} = normalizeSocialInput(key, value);
+            updateSetting(key, storedValue);
+
+            if (errors[key]) {
+                setErrors(current => ({...current, [key]: ''}));
+            }
+        } catch {
+            // Leave the stored value alone on invalid input so the
+            // localSettings → urls sync effect doesn't wipe the field
+            // mid-typing. Save is gated by handleSaveClick, which
+            // validates the displayed value.
+            setErrors(current => ({...current, [key]: getSocialValidationError(key, value)}));
         }
     };
 
