@@ -272,8 +272,6 @@
     "Sent to {email}": "Magic link email footer",
     "Share": "Title of Portal share modal for sharing a post, and label for the newsletter email footer Share button text passed as buttonText to the feedbackButton partial",
     "Share a full membership to {siteTitle} with a friend or colleague": "Subtitle on the Portal gift purchase page. {siteTitle} is the publication name (e.g. 'The Daily').",
-    "Share the link below to give someone access to {tierName} membership for {cadenceLabel}.": "Body copy in the gift purchase confirmation email. {tierName} is the name of the gifted tier and {cadenceLabel} is the duration of the gift (e.g. 1 month). Both are wrapped in <strong> tags in the HTML version",
-    "Show": "Context menu action for a comment, for administrators - smaller devices",
     "Show 1 more reply": "Button text to load the last remaining reply for a comment",
     "Show all": "Show all recommendations",
     "Show comment": "Context menu action for a comment, for administrators",
