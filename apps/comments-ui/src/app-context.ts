@@ -21,6 +21,7 @@ export type Comment = {
     in_reply_to_snippet: string,
     replies: Comment[],
     status: string,
+    pinned: boolean,
     liked: boolean,
     count: {
         replies: number,
