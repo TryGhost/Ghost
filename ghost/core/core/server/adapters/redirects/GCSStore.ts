@@ -35,8 +35,6 @@ export interface GCSStoreOptions {
     secretAccessKey?: string;
     sessionToken?: string;
     tenantPrefix?: string;
-    s3Client?: S3Client;
-    getBackupKey?: (key: string) => string;
 }
 
 /**
@@ -49,7 +47,6 @@ export default class GCSStore extends RedirectsStoreBase implements RedirectsSto
     private readonly client: S3Client;
     private readonly bucket: string;
     private readonly tenantPrefix: string;
-    private readonly getBackupKey: (key: string) => string;
 
     constructor(options: GCSStoreOptions) {
         super();
@@ -71,25 +68,20 @@ export default class GCSStore extends RedirectsStoreBase implements RedirectsSto
 
         this.bucket = options.bucket;
         this.tenantPrefix = stripLeadingAndTrailingSlashes(options.tenantPrefix);
-        this.getBackupKey = options.getBackupKey || getBackupRedirectsFilePath;
 
-        if (options.s3Client) {
-            this.client = options.s3Client;
-        } else {
-            const clientConfig: S3ClientConfig = {
-                region: options.region,
-                endpoint: options.endpoint,
-                forcePathStyle: options.forcePathStyle
+        const clientConfig: S3ClientConfig = {
+            region: options.region,
+            endpoint: options.endpoint,
+            forcePathStyle: options.forcePathStyle
+        };
+        if (hasCredentialPair) {
+            clientConfig.credentials = {
+                accessKeyId: options.accessKeyId!,
+                secretAccessKey: options.secretAccessKey!,
+                sessionToken: options.sessionToken
             };
-            if (hasCredentialPair) {
-                clientConfig.credentials = {
-                    accessKeyId: options.accessKeyId!,
-                    secretAccessKey: options.secretAccessKey!,
-                    sessionToken: options.sessionToken
-                };
-            }
-            this.client = new S3Client(clientConfig);
         }
+        this.client = new S3Client(clientConfig);
     }
 
     async getAll(): Promise<RedirectConfig[]> {
@@ -121,7 +113,7 @@ export default class GCSStore extends RedirectsStoreBase implements RedirectsSto
         if (await this._canonicalExists()) {
             await this.client.send(new CopyObjectCommand({
                 Bucket: this.bucket,
-                Key: this.getBackupKey(key),
+                Key: getBackupRedirectsFilePath(key),
                 CopySource: `${this.bucket}/${key}`
             }));
         }

@@ -8,6 +8,7 @@ import {
     createTestBucket,
     emptyTestBucket,
     deleteTestBucket,
+    getMinioConfig,
     getObject,
     putObject
 } from '../../../utils/minio';
@@ -18,32 +19,41 @@ const listObjectKeys = async (s3Client: S3Client, bucketName: string): Promise<s
     return (response.Contents ?? []).map(o => o.Key ?? '').filter(Boolean);
 };
 
+const sleep = (ms: number): Promise<void> => new Promise((resolve) => {
+    setTimeout(resolve, ms);
+});
+
+const backupKeyPattern = (prefix = '') => new RegExp(
+    `^${prefix ? `${prefix}/` : ''}redirects-\\d{4}-\\d{2}-\\d{2}-\\d{2}-\\d{2}-\\d{2}\\.json$`
+);
+
 describe('Integration: GCSStore', function () {
-    let client: S3Client;
+    let adminClient: S3Client;
     let bucket: string;
+    const minioConfig = getMinioConfig();
 
     before(async function () {
-        client = createTestS3Client();
-        bucket = await createTestBucket(client);
+        adminClient = createTestS3Client();
+        bucket = await createTestBucket(adminClient);
     });
 
     afterEach(async function () {
-        await emptyTestBucket(client, bucket);
+        await emptyTestBucket(adminClient, bucket);
     });
 
     after(async function () {
-        await deleteTestBucket(client, bucket);
+        await deleteTestBucket(adminClient, bucket);
     });
 
     runStoreContract({
-        createStore: () => new GCSStore({s3Client: client, bucket})
+        createStore: () => new GCSStore({...minioConfig, bucket})
     });
 
     describe('getAll: error handling', function () {
         it('throws when redirects.json is corrupt', async function () {
-            await putObject(client, bucket, 'redirects.json', '{not valid');
+            await putObject(adminClient, bucket, 'redirects.json', '{not valid');
 
-            const store = new GCSStore({s3Client: client, bucket});
+            const store = new GCSStore({...minioConfig, bucket});
 
             await assert.rejects(
                 () => store.getAll(),
@@ -54,78 +64,62 @@ describe('Integration: GCSStore', function () {
 
     describe('replaceAll: timestamped backups', function () {
         it('writes the canonical key without a backup when the bucket is empty', async function () {
-            const store = new GCSStore({s3Client: client, bucket});
+            const store = new GCSStore({...minioConfig, bucket});
 
             await store.replaceAll([{from: '/a', to: '/b', permanent: true}]);
 
-            assert.deepEqual(await listObjectKeys(client, bucket), ['redirects.json']);
+            assert.deepEqual(await listObjectKeys(adminClient, bucket), ['redirects.json']);
         });
 
         it('backs up the prior contents before overwriting', async function () {
-            // Inject a stable backup key — the default per-second
-            // timestamp would otherwise make this test depend on
-            // wall-clock granularity.
-            const backupKey = 'redirects-backup.json';
-            const store = new GCSStore({
-                s3Client: client,
-                bucket,
-                getBackupKey: () => backupKey
-            });
+            const store = new GCSStore({...minioConfig, bucket});
             const initial = [{from: '/old', to: '/old-target', permanent: true}];
 
             await store.replaceAll(initial);
             await store.replaceAll([{from: '/new', to: '/new-target', permanent: false}]);
 
-            const backupBody = await getObject(client, bucket, backupKey);
+            const keys = await listObjectKeys(adminClient, bucket);
+            const backupKey = keys.find(k => backupKeyPattern().test(k));
+            assert.ok(backupKey, `expected a timestamped backup key, got: ${keys.join(', ')}`);
+
+            const backupBody = await getObject(adminClient, bucket, backupKey!);
             assert.equal(backupBody?.toString('utf-8'), JSON.stringify(initial));
         });
 
         it('creates a new backup on every overwrite', async function () {
-            // Counter-based generator gives each overwrite a distinct
-            // backup key, so the test can assert accumulation without
-            // depending on wall-clock granularity.
-            let backupCounter = 0;
-            const store = new GCSStore({
-                s3Client: client,
-                bucket,
-                getBackupKey: () => {
-                    backupCounter += 1;
-                    return `redirects-backup-${backupCounter}.json`;
-                }
-            });
+            // The backup key generator uses a per-second timestamp, so
+            // real waits between writes are needed to guarantee distinct
+            // backup keys.
+            this.timeout(15000);
+            const store = new GCSStore({...minioConfig, bucket});
 
             await store.replaceAll([{from: '/a', to: '/a', permanent: true}]);
+            await sleep(1100);
             await store.replaceAll([{from: '/b', to: '/b', permanent: true}]);
+            await sleep(1100);
             await store.replaceAll([{from: '/c', to: '/c', permanent: true}]);
 
-            const keys = (await listObjectKeys(client, bucket)).sort();
-            assert.deepEqual(keys, [
-                'redirects-backup-1.json',
-                'redirects-backup-2.json',
-                'redirects.json'
-            ]);
+            const keys = await listObjectKeys(adminClient, bucket);
+            const backupKeys = keys.filter(k => backupKeyPattern().test(k));
+            assert.equal(backupKeys.length, 2, `expected 2 timestamped backups, got: ${keys.join(', ')}`);
+            assert.ok(keys.includes('redirects.json'), `expected canonical redirects.json, got: ${keys.join(', ')}`);
         });
     });
 
     describe('tenantPrefix scoping', function () {
         it('writes the canonical key under the tenant prefix', async function () {
-            const store = new GCSStore({
-                s3Client: client,
-                bucket,
-                tenantPrefix: 'tenant-abc'
-            });
+            const store = new GCSStore({...minioConfig, bucket, tenantPrefix: 'tenant-abc'});
 
             await store.replaceAll([{from: '/a', to: '/b', permanent: true}]);
 
-            assert.deepEqual(await listObjectKeys(client, bucket), ['tenant-abc/redirects.json']);
+            assert.deepEqual(
+                await listObjectKeys(adminClient, bucket),
+                ['tenant-abc/redirects.json']
+            );
         });
 
         it('reads back redirects from the prefixed key', async function () {
-            const store = new GCSStore({
-                s3Client: client,
-                bucket,
-                tenantPrefix: 'tenant-abc'
-            });
+            const store = new GCSStore({...minioConfig, bucket, tenantPrefix: 'tenant-abc'});
             const redirects = [{from: '/old', to: '/new', permanent: true}];
 
             await store.replaceAll(redirects);
@@ -134,25 +128,23 @@ describe('Integration: GCSStore', function () {
         });
 
         it('writes backups under the tenant prefix on overwrite', async function () {
-            const backupKey = 'tenant-abc/redirects-backup.json';
-            const store = new GCSStore({
-                s3Client: client,
-                bucket,
-                tenantPrefix: 'tenant-abc',
-                getBackupKey: () => backupKey
-            });
+            const store = new GCSStore({...minioConfig, bucket, tenantPrefix: 'tenant-abc'});
             const initial = [{from: '/old', to: '/old-target', permanent: true}];
 
             await store.replaceAll(initial);
             await store.replaceAll([{from: '/new', to: '/new-target', permanent: false}]);
 
-            const backupBody = await getObject(client, bucket, backupKey);
+            const keys = await listObjectKeys(adminClient, bucket);
+            const backupKey = keys.find(k => backupKeyPattern('tenant-abc').test(k));
+            assert.ok(backupKey, `expected a tenant-scoped backup key, got: ${keys.join(', ')}`);
+
+            const backupBody = await getObject(adminClient, bucket, backupKey!);
             assert.equal(backupBody?.toString('utf-8'), JSON.stringify(initial));
         });
 
         it('isolates tenants sharing the same bucket', async function () {
-            const storeA = new GCSStore({s3Client: client, bucket, tenantPrefix: 'tenant-a'});
-            const storeB = new GCSStore({s3Client: client, bucket, tenantPrefix: 'tenant-b'});
+            const storeA = new GCSStore({...minioConfig, bucket, tenantPrefix: 'tenant-a'});
+            const storeB = new GCSStore({...minioConfig, bucket, tenantPrefix: 'tenant-b'});
 
             await storeA.replaceAll([{from: '/a', to: '/a-target', permanent: true}]);
             await storeB.replaceAll([{from: '/b', to: '/b-target', permanent: false}]);
@@ -160,21 +152,20 @@ describe('Integration: GCSStore', function () {
             assert.deepEqual(await storeA.getAll(), [{from: '/a', to: '/a-target', permanent: true}]);
             assert.deepEqual(await storeB.getAll(), [{from: '/b', to: '/b-target', permanent: false}]);
             assert.deepEqual(
-                (await listObjectKeys(client, bucket)).sort(),
+                (await listObjectKeys(adminClient, bucket)).sort(),
                 ['tenant-a/redirects.json', 'tenant-b/redirects.json']
             );
         });
 
         it('strips leading and trailing slashes from the tenant prefix', async function () {
-            const store = new GCSStore({
-                s3Client: client,
-                bucket,
-                tenantPrefix: '/tenant-abc/'
-            });
+            const store = new GCSStore({...minioConfig, bucket, tenantPrefix: '/tenant-abc/'});
 
             await store.replaceAll([{from: '/a', to: '/b', permanent: true}]);
 
-            assert.deepEqual(await listObjectKeys(client, bucket), ['tenant-abc/redirects.json']);
+            assert.deepEqual(
+                await listObjectKeys(adminClient, bucket),
+                ['tenant-abc/redirects.json']
+            );
         });
     });
 });
