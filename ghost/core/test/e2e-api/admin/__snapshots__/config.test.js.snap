@@ -12,6 +12,7 @@ Object {
       "additionalPaymentMethods": true,
       "adminUIRefresh": true,
       "automations": true,
+      "commentDislikes": true,
       "commentModeration": true,
       "commentsPinning": true,
       "commentsThreads": true,

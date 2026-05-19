@@ -1,5 +1,6 @@
 const express = require('../../../shared/express');
 const config = require('../../../shared/config');
+const labs = require('../../../shared/labs');
 const api = require('../../api').endpoints;
 const {http} = require('@tryghost/api-framework');
 const shared = require('../shared');
@@ -57,8 +58,8 @@ module.exports = function apiRoutes() {
     router.delete('/:id', checkMemberCommenting, http(api.commentsMembers.destroy));
     router.post('/:id/like', checkMemberCommenting, http(api.commentsMembers.like));
     router.delete('/:id/like', checkMemberCommenting, http(api.commentsMembers.unlike));
-    router.post('/:id/dislike', checkMemberCommenting, http(api.commentsMembers.dislike));
-    router.delete('/:id/dislike', checkMemberCommenting, http(api.commentsMembers.undislike));
+    router.post('/:id/dislike', labs.enabledMiddleware('commentDislikes'), checkMemberCommenting, http(api.commentsMembers.dislike));
+    router.delete('/:id/dislike', labs.enabledMiddleware('commentDislikes'), checkMemberCommenting, http(api.commentsMembers.undislike));
 
     // Report is allowed even for members with commenting disabled (moderation action)
     router.post('/:id/report', http(api.commentsMembers.report));

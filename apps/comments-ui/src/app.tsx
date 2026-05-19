@@ -19,6 +19,12 @@ type AppProps = {
 };
 
 const ALLOWED_MODERATORS = ['Owner', 'Administrator', 'Super Editor'];
+const LIKES_ORDER = 'count__likes desc, created_at desc';
+const NET_SCORE_ORDER = 'count__net_score desc, created_at desc';
+
+function getDefaultOrder(labs: Record<string, boolean | undefined>) {
+    return labs.commentDislikes ? NET_SCORE_ORDER : LIKES_ORDER;
+}
 
 /**
  * Check if a comment ID exists in the comments array (either as a top-level comment or reply)
@@ -39,7 +45,7 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
         openCommentForms: [],
         popup: null,
         labs: {},
-        order: 'count__net_score desc, created_at desc',
+        order: LIKES_ORDER,
         adminApi: null,
         commentsIsLoading: false,
         commentIdToHighlight: null,
@@ -179,8 +185,8 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
     };
 
     /** Fetch first few comments  */
-    const fetchComments = async () => {
-        const dataPromise = api.comments.browse({page: 1, postId: options.postId, order: state.order});
+    const fetchComments = async (order = state.order) => {
+        const dataPromise = api.comments.browse({page: 1, postId: options.postId, order});
         const countPromise = api.comments.count({postId: options.postId});
 
         const [data, count] = await Promise.all([dataPromise, countPromise]);
@@ -213,7 +219,8 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
         targetId: string,
         parentId: string | undefined,
         initialComments: Comment[],
-        initialPagination: {page: number; pages: number}
+        initialPagination: {page: number; pages: number},
+        order = state.order
     ): Promise<{comments: Comment[]; pagination: typeof initialPagination}> => {
         let comments = initialComments;
         let pagination = initialPagination;
@@ -226,7 +233,7 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
             const nextPage = await api.comments.browse({
                 page: pagination.page + 1,
                 postId: options.postId,
-                order: state.order
+                order
             });
             comments = [...comments, ...nextPage.comments];
             pagination = nextPage.meta.pagination;
@@ -245,11 +252,12 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
         targetId: string,
         targetComment: Comment,
         initialComments: Comment[],
-        initialPagination: {page: number; pages: number}
+        initialPagination: {page: number; pages: number},
+        order = state.order
     ): Promise<{comments: Comment[]; pagination: typeof initialPagination; found: boolean}> => {
         const parentId = targetComment.parent_id;
 
-        const {comments: paginatedComments, pagination} = await paginateToComment(targetId, parentId, initialComments, initialPagination);
+        const {comments: paginatedComments, pagination} = await paginateToComment(targetId, parentId, initialComments, initialPagination, order);
         let comments = paginatedComments;
 
         if (parentId && !isCommentLoaded(comments, targetId)) {
@@ -264,7 +272,8 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
     const initSetup = async () => {
         try {
             const {member, labs, supportEmail} = await api.init();
-            const {count, comments: initialComments, pagination: initialPagination} = await fetchComments();
+            const defaultOrder = getDefaultOrder(labs);
+            const {count, comments: initialComments, pagination: initialPagination} = await fetchComments(defaultOrder);
 
             let comments = initialComments;
             let pagination = initialPagination;
@@ -274,7 +283,7 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
             if (shouldFindScrollTarget) {
                 const targetComment = await fetchScrollTarget(initialCommentId);
                 if (targetComment) {
-                    const result = await loadScrollTarget(initialCommentId, targetComment, comments, pagination);
+                    const result = await loadScrollTarget(initialCommentId, targetComment, comments, pagination, defaultOrder);
                     comments = result.comments;
                     pagination = result.pagination;
                     scrollTargetFound = result.found;
@@ -293,7 +302,7 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
                 comments,
                 pagination,
                 commentCount: count,
-                order: 'count__net_score desc, created_at desc',
+                order: defaultOrder,
                 labs: labs,
                 commentsIsLoading: false,
                 commentIdToHighlight: null,

@@ -1,25 +1,26 @@
 import {Avatar, Button, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, LoadingIndicator, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {Comment, useBrowseCommentDislikes, useBrowseCommentLikes} from '@tryghost/admin-x-framework/api/comments';
-import {LucideIcon, formatTimestamp} from '@tryghost/shade/utils';
+import {LucideIcon, formatNumber, formatTimestamp} from '@tryghost/shade/utils';
 import {formatMemberName} from '@tryghost/shade/app';
 
 type DefaultTab = 'likes' | 'dislikes';
 
 interface CommentLikesModalProps {
     comment: Comment;
+    commentDislikesEnabled: boolean;
     open: boolean;
     defaultTab?: DefaultTab;
     onOpenChange: (open: boolean) => void;
 }
 
-function CommentLikesModal({comment, open, defaultTab = 'likes', onOpenChange}: CommentLikesModalProps) {
+function CommentLikesModal({comment, commentDislikesEnabled, open, defaultTab = 'likes', onOpenChange}: CommentLikesModalProps) {
     const {data: likesData, isLoading: likesLoading} = useBrowseCommentLikes(comment.id, {enabled: open});
-    const {data: dislikesData, isLoading: dislikesLoading} = useBrowseCommentDislikes(comment.id, {enabled: open});
+    const {data: dislikesData, isLoading: dislikesLoading} = useBrowseCommentDislikes(comment.id, {enabled: open && commentDislikesEnabled});
 
     const likes = likesData?.comment_likes ?? [];
-    const dislikes = dislikesData?.comment_dislikes ?? [];
+    const dislikes = commentDislikesEnabled ? (dislikesData?.comment_dislikes ?? []) : [];
     const likeCount = comment.count?.likes ?? 0;
-    const dislikeCount = comment.count?.dislikes ?? 0;
+    const dislikeCount = commentDislikesEnabled ? (comment.count?.dislikes ?? 0) : 0;
     const likesRemaining = likeCount - likes.length;
     const dislikesRemaining = dislikeCount - dislikes.length;
 
@@ -28,7 +29,15 @@ function CommentLikesModal({comment, open, defaultTab = 'likes', onOpenChange}: 
             <DialogContent aria-describedby={undefined}>
                 <DialogHeader>
                     <DialogTitle>
-                        {likeCount} {likeCount === 1 ? 'like' : 'likes'} and {dislikeCount} {dislikeCount === 1 ? 'dislike' : 'dislikes'}
+                        {commentDislikesEnabled ? (
+                            <>
+                                {formatNumber(likeCount)} {likeCount === 1 ? 'like' : 'likes'} and {formatNumber(dislikeCount)} {dislikeCount === 1 ? 'dislike' : 'dislikes'}
+                            </>
+                        ) : (
+                            <>
+                                {formatNumber(likeCount)} {likeCount === 1 ? 'like' : 'likes'}
+                            </>
+                        )}
                     </DialogTitle>
                 </DialogHeader>
 
@@ -62,7 +71,7 @@ function CommentLikesModal({comment, open, defaultTab = 'likes', onOpenChange}: 
                     </div>
                 </div>
 
-                <Tabs defaultValue={defaultTab} variant="segmented">
+                {commentDislikesEnabled ? <Tabs defaultValue={defaultTab} variant="segmented">
                     <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="likes">Likes</TabsTrigger>
                         <TabsTrigger value="dislikes">Dislikes</TabsTrigger>
@@ -104,7 +113,7 @@ function CommentLikesModal({comment, open, defaultTab = 'likes', onOpenChange}: 
                                     ))}
                                     {likesRemaining > 0 && (
                                         <div className="pt-1 text-center text-sm text-muted-foreground">
-                                            and {likesRemaining} more
+                                            and {formatNumber(likesRemaining)} more
                                         </div>
                                     )}
                                 </div>
@@ -148,14 +157,52 @@ function CommentLikesModal({comment, open, defaultTab = 'likes', onOpenChange}: 
                                     ))}
                                     {dislikesRemaining > 0 && (
                                         <div className="pt-1 text-center text-sm text-muted-foreground">
-                                            and {dislikesRemaining} more
+                                            and {formatNumber(dislikesRemaining)} more
                                         </div>
                                     )}
                                 </div>
                             )}
                         </div>
                     </TabsContent>
-                </Tabs>
+                </Tabs> : (
+                    <div className="-mx-1 max-h-64 overflow-y-auto px-1">
+                        {likesLoading ? (
+                            <div className="flex justify-center py-4">
+                                <LoadingIndicator size="md" />
+                            </div>
+                        ) : (
+                            <div className="flex flex-col gap-3 pb-1">
+                                {likes.map(like => (
+                                    <div key={like.id} className="flex items-center justify-between gap-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="relative shrink-0">
+                                                <Avatar
+                                                    email={like.member?.email}
+                                                    name={like.member?.name}
+                                                    src={like.member?.avatar_image}
+                                                />
+                                                <div className="absolute -right-0.5 -bottom-0.5 flex size-4 items-center justify-center rounded-full bg-pink-500 text-white">
+                                                    <LucideIcon.Heart className="size-2.5" fill="currentColor" />
+                                                </div>
+                                            </div>
+                                            <span className="font-medium">
+                                                {like.member ? formatMemberName(like.member) : 'Deleted member'}
+                                            </span>
+                                        </div>
+                                        <span className="shrink-0 text-sm text-muted-foreground">
+                                            {formatTimestamp(like.created_at)}
+                                        </span>
+                                    </div>
+                                ))}
+                                {likesRemaining > 0 && (
+                                    <div className="pt-1 text-center text-sm text-muted-foreground">
+                                        and {formatNumber(likesRemaining)} more
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 <DialogFooter>
                     <Button onClick={() => onOpenChange(false)}>

@@ -6,11 +6,12 @@ import {Button, EmptyIndicator, LoadingIndicator} from '@tryghost/shade/componen
 import {FilterBar, PageHeader, createFilter} from '@tryghost/shade/patterns';
 import {ListPage} from '@tryghost/shade/page-templates';
 import {LucideIcon} from '@tryghost/shade/utils';
+import {adminCommentIncludes, useBrowseComments} from '@tryghost/admin-x-framework/api/comments';
 import {escapeNqlString} from '../filters/filter-normalization';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
 import {serializeCommentFilters} from './comment-filter-query';
 import {shouldDelayCommentDateFilterHydration, useFilterState} from './hooks/use-filter-state';
-import {useBrowseComments} from '@tryghost/admin-x-framework/api/comments';
+import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useSearchParams} from 'react-router';
 
@@ -27,6 +28,8 @@ const CommentsPage: React.FC<{timezone: string; singleCommentId?: string}> = ({
 }) => {
     const [searchParams, setSearchParams] = useSearchParams();
     const {filters, nql, setFilters} = useFilterState(timezone);
+    const {data: configData} = useBrowseConfig();
+    const commentDislikesEnabled = configData?.config?.labs?.commentDislikes === true;
     const handleAddFilter = useCallback((field: string, value: string, operator: string = 'is') => {
         const nextFilters = [
             ...filters.filter(filter => filter.field !== field),
@@ -72,6 +75,7 @@ const CommentsPage: React.FC<{timezone: string; singleCommentId?: string}> = ({
         hasNextPage
     } = useBrowseComments({
         searchParams: {
+            include: adminCommentIncludes(commentDislikesEnabled),
             ...(effectiveFilter ? {filter: effectiveFilter} : {})
         },
         keepPreviousData: true
@@ -147,6 +151,7 @@ const CommentsPage: React.FC<{timezone: string; singleCommentId?: string}> = ({
                     ) : (
                         <>
                             <CommentsList
+                                commentDislikesEnabled={commentDislikesEnabled}
                                 fetchNextPage={fetchNextPage}
                                 hasNextPage={hasNextPage}
                                 isFetchingNextPage={isFetchingNextPage}

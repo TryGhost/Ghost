@@ -41,6 +41,9 @@ class CommentsService {
         this.models = models;
 
         /** @private */
+        this.labs = labs;
+
+        /** @private */
         this.settingsCache = settingsCache;
 
         /** @private */
@@ -104,6 +107,22 @@ class CommentsService {
     }
 
     /** @private */
+    normalizeDislikeFlaggedOptions(options) {
+        if (this.labs.isSet('commentDislikes')) {
+            return options;
+        }
+
+        if (options?.order?.includes('count__net_score')) {
+            return {
+                ...options,
+                order: options.order.replaceAll('count__net_score', 'count__likes')
+            };
+        }
+
+        return options;
+    }
+
+    /** @private */
     async sendNewCommentNotifications(comment) {
         await this.emails.notifyPostAuthors(comment);
 
@@ -141,7 +160,9 @@ class CommentsService {
             });
         }
 
-        // Remove any existing dislike (mutual exclusivity)
+        // Remove any existing dislike (mutual exclusivity). This must always
+        // run so disabling and re-enabling the feature flag cannot leave a
+        // member with both reactions.
         const existingDislike = await this.models.CommentDislike.findOne(data, options);
         if (existingDislike) {
             await this.models.CommentDislike.destroy({
@@ -181,6 +202,9 @@ class CommentsService {
 
     async dislikeComment(commentId, member, options = {}) {
         this.checkEnabled();
+        if (!this.labs.isSet('commentDislikes')) {
+            throw new errors.NotFoundError();
+        }
 
         const memberModel = await this.models.Member.findOne({
             id: member.id
@@ -222,6 +246,9 @@ class CommentsService {
 
     async undislikeComment(commentId, member, options = {}) {
         this.checkEnabled();
+        if (!this.labs.isSet('commentDislikes')) {
+            throw new errors.NotFoundError();
+        }
 
         try {
             await this.models.CommentDislike.destroy({
@@ -272,6 +299,7 @@ class CommentsService {
      */
     async getComments(options) {
         this.checkEnabled();
+        options = this.normalizeDislikeFlaggedOptions(options);
         const pinnedFirst = this.labs?.isSet('commentsPinning');
         const page = await this.models.Comment.findPage(withPinnedSelect({...options, parentId: null, pinnedFirst}));
 
@@ -300,8 +328,14 @@ class CommentsService {
      * @param {AdminBrowseAllOptions} options
      */
     async getAdminAllComments({includeNested, filter, mongoTransformer, reportCount, order, page, limit}) {
+        ({order} = this.normalizeDislikeFlaggedOptions({order}));
+        const withRelated = ['member', 'post', 'post.tags', 'post.authors', 'count.replies', 'count.direct_replies', 'count.likes', 'count.reports', 'in_reply_to', 'parent'];
+        if (this.labs.isSet('commentDislikes')) {
+            withRelated.push('count.dislikes', 'count.net_score');
+        }
+
         return await this.models.Comment.findPage({
-            withRelated: ['member', 'post', 'post.tags', 'post.authors', 'count.replies', 'count.direct_replies', 'count.likes', 'count.dislikes', 'count.net_score', 'count.reports', 'in_reply_to', 'parent'],
+            withRelated,
             filter,
             mongoTransformer,
             reportCount,
@@ -316,6 +350,7 @@ class CommentsService {
 
     async getAdminComments(options) {
         this.checkEnabled();
+        options = this.normalizeDislikeFlaggedOptions(options);
         const pinnedFirst = this.labs?.isSet('commentsPinning');
         const page = await this.models.Comment.findPage(withPinnedSelect({...options, parentId: null, isAdmin: true, pinnedFirst}));
 
@@ -379,6 +414,7 @@ class CommentsService {
      */
     async getReplies(id, options) {
         this.checkEnabled();
+        options = this.normalizeDislikeFlaggedOptions(options);
         const page = await this.models.Comment.findPage(withPinnedSelect({...options, parentId: id}));
 
         return page;
@@ -440,6 +476,10 @@ class CommentsService {
      * @param {any} options - Query options (page, limit)
      */
     async getCommentDislikes(commentId, options = {}) {
+        if (!this.labs.isSet('commentDislikes')) {
+            throw new errors.NotFoundError();
+        }
+
         const comment = await this.models.Comment.findOne({id: commentId});
         if (!comment) {
             throw new errors.NotFoundError({
@@ -465,6 +505,7 @@ class CommentsService {
      */
     async getCommentByID(id, options) {
         this.checkEnabled();
+        options = this.normalizeDislikeFlaggedOptions(options);
         const model = await this.models.Comment.findOne({id}, withPinnedSelect(options));
 
         if (!model) {

@@ -75,6 +75,10 @@ const features: Feature[] = [{
     title: 'Comments Pinning',
     description: 'Allow staff to pin top-level comments in Comments-UI and Admin',
     flag: 'commentsPinning'
+}, {
+    title: 'Comment Dislikes',
+    description: 'Enable dislikes and net score ranking for comments in Comments-UI and Admin',
+    flag: 'commentDislikes'
 }];
 
 const AlphaFeatures: React.FC = () => {

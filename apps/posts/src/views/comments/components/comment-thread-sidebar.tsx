@@ -6,12 +6,14 @@ import {useReadComment, useThreadComments} from '@tryghost/admin-x-framework/api
 
 interface CommentThreadSidebarProps {
     commentId: string | null;
+    commentDislikesEnabled: boolean;
     open: boolean;
     onOpenChange: (open: boolean) => void;
 }
 
 const CommentThreadSidebar: React.FC<CommentThreadSidebarProps> = ({
     commentId,
+    commentDislikesEnabled,
     open,
     onOpenChange
 }) => {
@@ -23,11 +25,13 @@ const CommentThreadSidebar: React.FC<CommentThreadSidebarProps> = ({
         hasNextPage,
         isFetchingNextPage
     } = useThreadComments(commentId ?? '', {
+        commentDislikesEnabled,
         enabled: open && !!commentId
     });
 
     // Fetch the selected comment separately using the read endpoint
     const {data: selectedData, isLoading: isLoadingSelected, isError: isSelectedError} = useReadComment(commentId ?? '', {
+        commentDislikesEnabled,
         enabled: open && !!commentId
     });
 
@@ -93,6 +97,7 @@ const CommentThreadSidebar: React.FC<CommentThreadSidebarProps> = ({
                         </div>
                     ) : (
                         <CommentThreadList
+                            commentDislikesEnabled={commentDislikesEnabled}
                             fetchNextPage={fetchNextPage}
                             hasNextPage={hasNextPage}
                             isFetchingNextPage={isFetchingNextPage}

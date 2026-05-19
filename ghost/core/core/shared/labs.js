@@ -52,7 +52,8 @@ const PRIVATE_FEATURES = [
     'smarterCounts',
     'giftSubscriptions',
     'commentsThreads',
-    'commentsPinning'
+    'commentsPinning',
+    'commentDislikes'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

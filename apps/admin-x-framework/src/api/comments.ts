@@ -72,6 +72,42 @@ export interface CommentsResponseType {
 }
 
 const dataType = 'CommentsResponseType';
+const commentDislikeIncludes = 'count.dislikes';
+const commentDislikeMemberIncludes = 'count.dislikes,disliked';
+
+export const adminCommentIncludes = (commentDislikesEnabled: boolean) => [
+    'member',
+    'post',
+    'count.replies',
+    'count.direct_replies',
+    'count.likes',
+    ...(commentDislikesEnabled ? [commentDislikeIncludes] : []),
+    'count.reports',
+    'parent',
+    'in_reply_to'
+].join(',');
+
+export const memberCommentIncludes = (commentDislikesEnabled: boolean) => [
+    'member',
+    'post',
+    'count.replies',
+    'count.direct_replies',
+    'count.likes',
+    ...(commentDislikesEnabled ? [commentDislikeMemberIncludes] : []),
+    'parent',
+    'in_reply_to'
+].join(',');
+
+export const memberThreadCommentIncludes = (commentDislikesEnabled: boolean) => [
+    'member',
+    'post',
+    'count.direct_replies',
+    'count.likes',
+    ...(commentDislikesEnabled ? [commentDislikeIncludes] : []),
+    'count.reports',
+    'parent',
+    'in_reply_to'
+].join(',');
 
 const useBrowseCommentsQuery = createInfiniteQuery<CommentsResponseType>({
     dataType,
@@ -181,18 +217,29 @@ export const useCommentReplies = createQueryWithId<CommentsResponseType>({
     dataType,
     path: (id: string) => `/comments/${id}/replies/`,
     defaultSearchParams: {
-        include: 'member,post,count.replies,count.likes,count.dislikes,count.reports,parent',
+        include: 'member,post,count.replies,count.likes,count.reports,parent',
         limit: '100' // Max limit allowed by API
     }
 });
 
-export const useReadComment = createQueryWithId<CommentsResponseType>({
+const useReadCommentQuery = createQueryWithId<CommentsResponseType>({
     dataType,
     path: (id: string) => `/comments/${id}/`,
     defaultSearchParams: {
-        include: 'member,post,count.replies,count.direct_replies,count.likes,count.dislikes,count.reports,parent,in_reply_to'
+        include: adminCommentIncludes(false)
     }
 });
+
+export const useReadComment = (commentId: string, options?: Parameters<typeof useReadCommentQuery>[1] & {commentDislikesEnabled?: boolean}) => {
+    const {commentDislikesEnabled = false, searchParams, ...queryOptions} = options || {};
+    return useReadCommentQuery(commentId, {
+        ...queryOptions,
+        searchParams: {
+            include: adminCommentIncludes(commentDislikesEnabled),
+            ...searchParams
+        }
+    });
+};
 
 export interface CommentReportsResponseType {
     meta?: Meta;
@@ -251,13 +298,15 @@ export const useBrowseCommentDislikes = (commentId: string, options?: {enabled?:
  * - For top-level comments: returns comments where parent_id matches AND in_reply_to_id is null
  * - For nested comments: returns comments where in_reply_to_id matches
  */
-export const useThreadComments = (commentId: string, options?: {enabled?: boolean}) => {
+export const useThreadComments = (commentId: string, options?: {enabled?: boolean; commentDislikesEnabled?: boolean}) => {
+    const {commentDislikesEnabled = false, ...queryOptions} = options || {};
+
     return useBrowseComments({
-        ...options,
+        ...queryOptions,
         searchParams: {
             filter: `(parent_id:${commentId}+in_reply_to_id:null),in_reply_to_id:${commentId}`,
             order: 'created_at asc',
-            include: 'member,post,count.direct_replies,count.likes,count.dislikes,count.reports,parent,in_reply_to',
+            include: memberThreadCommentIncludes(commentDislikesEnabled),
             limit: '100'
         }
     });

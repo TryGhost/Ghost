@@ -2,6 +2,7 @@ const _ = require('lodash');
 const utils = require('../../..');
 const url = require('../utils/url');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
+const labs = require('../../../../../../../shared/labs');
 
 const commentFields = [
     'id',
@@ -70,6 +71,7 @@ const commentMapper = (model, frame) => {
     const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
 
     const isPublicRequest = utils.isMembersAPI(frame);
+    const commentDislikesEnabled = labs.isSet('commentDislikes');
 
     // For admin requests, we want to show a snippet for ALL replies
     // Use in_reply_to if available, otherwise fall back to parent for first-level replies only
@@ -136,12 +138,13 @@ const commentMapper = (model, frame) => {
         response.liked = jsonModel.count.liked > 0;
     }
 
-    if (jsonModel.count && jsonModel.count.disliked !== undefined) {
+    if (commentDislikesEnabled && jsonModel.count && jsonModel.count.disliked !== undefined) {
         response.disliked = jsonModel.count.disliked > 0;
     }
 
     if (jsonModel.count) {
-        response.count = _.pick(jsonModel.count, isPublicRequest ? countFields : countFieldsAdmin);
+        const fields = isPublicRequest ? countFields : countFieldsAdmin;
+        response.count = _.pick(jsonModel.count, commentDislikesEnabled ? fields : fields.filter(field => field !== 'dislikes'));
     }
 
     if (includesHtml && isPublicRequest && jsonModel.status !== 'published') {

@@ -1,4 +1,5 @@
 const express = require('../../../../../shared/express');
+const labs = require('../../../../../shared/labs');
 const api = require('../../../../api').endpoints;
 const {http} = require('@tryghost/api-framework');
 const auth = require('../../../../services/auth');
@@ -46,7 +47,7 @@ module.exports = function apiRoutes() {
     router.get('/comments/:id/replies', mw.authAdminApi, http(api.commentReplies.browse));
     router.get('/comments/:id/reports', mw.authAdminApi, http(api.commentReports.browse));
     router.get('/comments/:id/likes', mw.authAdminApi, http(api.commentLikes.browse));
-    router.get('/comments/:id/dislikes', mw.authAdminApi, http(api.commentDislikes.browse));
+    router.get('/comments/:id/dislikes', mw.authAdminApi, labs.enabledMiddleware('commentDislikes'), http(api.commentDislikes.browse));
     router.get('/comments/post/:post_id', mw.authAdminApi, http(api.comments.browse));
     router.post('/comments', mw.authAdminApi, http(api.comments.add));
     router.put('/comments/:id', mw.authAdminApi, http(api.comments.edit));
