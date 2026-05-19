@@ -5,26 +5,34 @@ import {
     NoSuchKey,
     NotFound,
     PutObjectCommand,
-    S3Client
+    S3Client,
+    S3ClientConfig
 } from '@aws-sdk/client-s3';
 import tpl from '@tryghost/tpl';
 import * as errors from '@tryghost/errors';
 
-import {parseJson} from './redirect-config-parser';
-import {getBackupRedirectsFilePath} from './utils';
-import type {RedirectConfig, RedirectsStore} from './types';
+import RedirectsStoreBase from './RedirectsStoreBase';
+import {parseJson} from '../../services/custom-redirects/redirect-config-parser';
+import {getBackupRedirectsFilePath} from '../../services/custom-redirects/utils';
+import type {RedirectConfig, RedirectsStore} from '../../services/custom-redirects/types';
 
 const DEFAULT_KEY = 'redirects.json';
 
 const messages = {
     missingBucket: 'GCSStore requires a bucket name',
-    missingClient: 'GCSStore requires an S3 client',
+    partialCredentials: 'GCSStore requires both accessKeyId and secretAccessKey when either is provided',
     missingResponseBody: 'S3 GetObject returned no body'
 };
 
 export interface GCSStoreOptions {
     bucket: string;
-    s3Client: S3Client;
+    region?: string;
+    endpoint?: string;
+    forcePathStyle?: boolean;
+    accessKeyId?: string;
+    secretAccessKey?: string;
+    sessionToken?: string;
+    s3Client?: S3Client;
     getBackupKey?: (key: string) => string;
 }
 
@@ -34,26 +42,49 @@ export interface GCSStoreOptions {
  * timestamped server-side copy of the previous contents on each
  * overwrite.
  */
-export class GCSStore implements RedirectsStore {
+export default class GCSStore extends RedirectsStoreBase implements RedirectsStore {
     private readonly client: S3Client;
     private readonly bucket: string;
     private readonly getBackupKey: (key: string) => string;
 
     constructor(options: GCSStoreOptions) {
+        super();
         if (!options.bucket) {
             throw new errors.IncorrectUsageError({
                 message: tpl(messages.missingBucket)
             });
         }
-        if (!options.s3Client) {
+
+        const hasAccessKey = Boolean(options.accessKeyId);
+        const hasSecretKey = Boolean(options.secretAccessKey);
+        const hasSessionToken = Boolean(options.sessionToken);
+        const hasCredentialPair = hasAccessKey && hasSecretKey;
+        if ((hasAccessKey || hasSecretKey || hasSessionToken) && !hasCredentialPair) {
             throw new errors.IncorrectUsageError({
-                message: tpl(messages.missingClient)
+                message: tpl(messages.partialCredentials)
             });
         }
 
         this.bucket = options.bucket;
-        this.client = options.s3Client;
         this.getBackupKey = options.getBackupKey || getBackupRedirectsFilePath;
+
+        if (options.s3Client) {
+            this.client = options.s3Client;
+        } else {
+            const clientConfig: S3ClientConfig = {
+                region: options.region,
+                endpoint: options.endpoint,
+                forcePathStyle: options.forcePathStyle
+            };
+            if (hasCredentialPair) {
+                clientConfig.credentials = {
+                    accessKeyId: options.accessKeyId!,
+                    secretAccessKey: options.secretAccessKey!,
+                    sessionToken: options.sessionToken
+                };
+            }
+            this.client = new S3Client(clientConfig);
+        }
     }
 
     async getAll(): Promise<RedirectConfig[]> {
