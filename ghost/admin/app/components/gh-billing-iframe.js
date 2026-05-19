@@ -26,7 +26,7 @@ export default class GhBillingIframe extends Component {
 
     @action
     setup() {
-        this.billing.getBillingIframe().src = this.billing.getIframeURL();
+        this.billing.setBillingIframeSrc();
         this.billing.startBillingAppLoadMonitor();
         window.addEventListener('message', this.handleIframeMessage);
     }

@@ -23,7 +23,8 @@ describe('automations poll', function () {
     beforeEach(async function () {
         await cleanupTables();
 
-        sinon.useFakeTimers(new Date('2026-04-12T12:00:00.000Z'));
+        // TODO: shouldAdvanceTime is a fake-timer + async-await workaround; see docs/dep-consolidation.md
+        sinon.useFakeTimers({now: new Date('2026-04-12T12:00:00.000Z'), shouldAdvanceTime: true});
 
         options = {
             memberWelcomeEmailService: {
@@ -47,7 +48,7 @@ describe('automations poll', function () {
         await testUtils.knex('automated_email_recipients').del();
         await testUtils.knex('welcome_email_automation_runs').del();
         await testUtils.knex('welcome_email_automated_emails').del();
-        await testUtils.knex('welcome_email_automations').del();
+        await testUtils.knex('automations').del();
         await testUtils.knex('members').del();
         await testUtils.knex('email_design_settings')
             .where('slug', 'like', 'default-automated-email-%')
@@ -105,7 +106,7 @@ describe('automations poll', function () {
 
     async function createAutomation(attrs = {}) {
         const currentTime = new Date();
-        return insert('welcome_email_automations', {
+        return insert('automations', {
             id: ObjectId().toHexString(),
             status: 'active',
             name: `Automation ${ObjectId().toHexString()}`,
@@ -179,12 +180,15 @@ describe('automations poll', function () {
         });
         const member = await createMember();
 
-        // Not ready yet
+        // Not ready yet. Floor to seconds because MySQL DATETIME has no ms precision,
+        // and capture the value so the assertion is stable under shouldAdvanceTime.
+        const futureReadyAt = new Date(Date.now() + 60 * 1000);
+        futureReadyAt.setMilliseconds(0);
         await createRun({
             welcome_email_automation_id: automation.id,
             member_id: member.id,
             next_welcome_email_automated_email_id: automatedEmail.id,
-            ready_at: new Date(Date.now() + 60 * 1000)
+            ready_at: futureReadyAt
         });
 
         // No next email
@@ -210,7 +214,7 @@ describe('automations poll', function () {
         sinon.assert.notCalled(options.memberWelcomeEmailService.api.loadMemberWelcomeEmails);
         sinon.assert.notCalled(options.memberWelcomeEmailService.api.send);
         sinon.assert.notCalled(options.enqueueAnotherPollNow);
-        sinon.assert.calledWith(options.enqueueAnotherPollAt, new Date(Date.now() + 60 * 1000));
+        sinon.assert.calledWith(options.enqueueAnotherPollAt, futureReadyAt);
         assert.deepEqual(await readTrackedRecipients(), []);
     });
 
@@ -315,6 +319,10 @@ describe('automations poll', function () {
         const sendError = new Error('send failed');
         options.memberWelcomeEmailService.api.send.rejects(sendError);
 
+        // poll() computes retryAt = Date.now() + RETRY_DELAY_MS internally; under
+        // shouldAdvanceTime the wall clock moves through awaits, so we compare
+        // against a bracket rather than a fresh `Date.now()` post-poll.
+        const pollStart = Date.now();
         await poll(options);
 
         sinon.assert.calledOnce(options.memberWelcomeEmailService.init);
@@ -322,7 +330,9 @@ describe('automations poll', function () {
         sinon.assert.calledOnce(options.memberWelcomeEmailService.api.send);
         sinon.assert.notCalled(options.enqueueAnotherPollNow);
 
-        sinon.assert.calledWith(options.enqueueAnotherPollAt, new Date(Date.now() + RETRY_DELAY_MS));
+        const enqueuedAt = options.enqueueAnotherPollAt.firstCall.args[0];
+        const enqueuedDrift = Math.abs(enqueuedAt.getTime() - (pollStart + RETRY_DELAY_MS));
+        assert.ok(enqueuedDrift < 2000, `enqueueAnotherPollAt should be ~RETRY_DELAY_MS after pollStart (drift: ${enqueuedDrift}ms)`);
 
         const updatedRun = await readRun(run.id);
         assert.equal(updatedRun.exit_reason, null);
@@ -333,7 +343,8 @@ describe('automations poll', function () {
         const readyAt = updatedRun.ready_at instanceof Date ?
             updatedRun.ready_at.getTime() :
             Date.parse(updatedRun.ready_at.replace(' ', 'T') + 'Z');
-        assert.equal(readyAt, Date.now() + RETRY_DELAY_MS);
+        const readyAtDrift = Math.abs(readyAt - (pollStart + RETRY_DELAY_MS));
+        assert.ok(readyAtDrift < 2000, `ready_at should be ~RETRY_DELAY_MS after pollStart (drift: ${readyAtDrift}ms)`);
     });
 
     it('rolls back tracked recipient if marking run finished fails', async function () {
@@ -357,10 +368,13 @@ describe('automations poll', function () {
             return originalEdit.apply(this, arguments);
         });
 
+        const pollStart = Date.now();
         await poll(options);
 
         sinon.assert.calledOnce(options.memberWelcomeEmailService.api.send);
-        sinon.assert.calledWith(options.enqueueAnotherPollAt, new Date(Date.now() + RETRY_DELAY_MS));
+        const enqueuedAt = options.enqueueAnotherPollAt.firstCall.args[0];
+        const enqueuedDrift = Math.abs(enqueuedAt.getTime() - (pollStart + RETRY_DELAY_MS));
+        assert.ok(enqueuedDrift < 2000, `enqueueAnotherPollAt should be ~RETRY_DELAY_MS after pollStart (drift: ${enqueuedDrift}ms)`);
 
         const updatedRun = await readRun(run.id);
         assert.equal(updatedRun.exit_reason, null);

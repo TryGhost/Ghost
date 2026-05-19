@@ -1086,7 +1086,8 @@ class EmailRenderer {
             const {data} = await this.#models.Post.findPage({
                 filter: `status:published+id:-'${post.id}'`,
                 order: 'published_at DESC',
-                limit: 3
+                limit: 3,
+                withRelated: ['tags', 'authors']
             });
 
             for (const latestPost of data) {

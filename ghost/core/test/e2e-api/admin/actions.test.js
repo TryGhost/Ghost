@@ -22,7 +22,8 @@ describe('Actions API', function () {
     it('Can request actions for resource', async function () {
         let postUpdatedAt;
 
-        const clock = sinon.useFakeTimers(Date.now());
+        // TODO: shouldAdvanceTime is a fake-timer + HTTP-await workaround; see docs/dep-consolidation.md
+        const clock = sinon.useFakeTimers({now: Date.now(), shouldAdvanceTime: true});
 
         const res = await request
             .post(localUtils.API.getApiQuery('posts/'))

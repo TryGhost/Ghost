@@ -3,21 +3,21 @@ const sinon = require('sinon');
 const models = require('../../../../core/server/models');
 const logging = require('@tryghost/logging');
 
-describe('Unit: models/welcome-email-automation', function () {
+describe('Unit: models/automation', function () {
     afterEach(function () {
         sinon.restore();
     });
 
     describe('defaults', function () {
         it('sets default status to inactive', function () {
-            const model = new models.WelcomeEmailAutomation();
+            const model = new models.Automation();
             const defaults = model.defaults();
 
             assert.equal(defaults.status, 'inactive');
         });
 
         it('returns expected default values', function () {
-            const model = new models.WelcomeEmailAutomation();
+            const model = new models.Automation();
             const defaults = model.defaults();
 
             assert.ok(defaults);
@@ -29,7 +29,7 @@ describe('Unit: models/welcome-email-automation', function () {
     describe('onSaved', function () {
         it('logs when a welcome email is enabled', function () {
             const infoStub = sinon.stub(logging, 'info');
-            const model = models.WelcomeEmailAutomation.forge({
+            const model = models.Automation.forge({
                 id: 'test-id',
                 slug: 'member-welcome-email-free',
                 status: 'active'
@@ -46,7 +46,7 @@ describe('Unit: models/welcome-email-automation', function () {
 
         it('logs when a welcome email is disabled', function () {
             const infoStub = sinon.stub(logging, 'info');
-            const model = models.WelcomeEmailAutomation.forge({
+            const model = models.Automation.forge({
                 id: 'test-id',
                 slug: 'member-welcome-email-paid',
                 status: 'inactive'
@@ -63,7 +63,7 @@ describe('Unit: models/welcome-email-automation', function () {
 
         it('does not log for non-welcome-email slugs', function () {
             const infoStub = sinon.stub(logging, 'info');
-            const model = models.WelcomeEmailAutomation.forge({
+            const model = models.Automation.forge({
                 id: 'test-id',
                 slug: 'some-other-slug',
                 status: 'active'
@@ -77,7 +77,7 @@ describe('Unit: models/welcome-email-automation', function () {
 
         it('does not log when status has not changed', function () {
             const infoStub = sinon.stub(logging, 'info');
-            const model = models.WelcomeEmailAutomation.forge({
+            const model = models.Automation.forge({
                 id: 'test-id',
                 slug: 'member-welcome-email-free',
                 status: 'active'

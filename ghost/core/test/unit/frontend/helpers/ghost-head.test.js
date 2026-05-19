@@ -16,6 +16,7 @@ const logging = require('@tryghost/logging');
 const ghost_head = require('../../../../core/frontend/helpers/ghost_head');
 const proxy = require('../../../../core/frontend/services/proxy');
 const assetHash = require('../../../../core/frontend/services/asset-hash');
+const internalKeys = require('../../../../core/server/services/internal-keys').default;
 const {settingsCache, settingsHelpers} = proxy;
 
 /**
@@ -45,7 +46,6 @@ describe('{{ghost_head}} helper', function () {
     let authors = [];
     let users = [];
 
-    let keyStub;
     let getStub;
     let routingRegistryGetRssUrlStub;
 
@@ -360,14 +360,13 @@ describe('{{ghost_head}} helper', function () {
         }));
     };
 
-    before(function () {
-        // @TODO: remove when visibility is refactored out of models
+    beforeEach(function () {
+        internalKeys.clear();
+        internalKeys.set('ghost-internal-frontend', Promise.resolve({id: 'k', secret: 'xyz'}));
+    });
 
-        keyStub = sinon.stub().resolves('xyz');
-        const dataService = {
-            getFrontendKey: keyStub
-        };
-        proxy.init({dataService});
+    afterEach(function () {
+        internalKeys.clear();
     });
 
     beforeEach(function () {

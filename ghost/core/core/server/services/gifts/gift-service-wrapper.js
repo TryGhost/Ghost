@@ -4,15 +4,10 @@
  */
 
 /**
- * @typedef {object} SchedulerIntegration
- * @prop {Array<{id: string; secret: string}>} api_keys
- */
-
-/**
  * @typedef {object} InitOptions
  * @prop {string} [apiUrl]
  * @prop {SchedulerAdapter} [schedulerAdapter]
- * @prop {SchedulerIntegration} [schedulerIntegration]
+ * @prop {ReadonlyMap<string, Promise<{id: string, secret: string}>>} [internalKeys]
  */
 
 class GiftServiceWrapper {
@@ -77,7 +72,7 @@ class GiftServiceWrapper {
                 return staffService.api.emails;
             },
             schedulerAdapter: options.schedulerAdapter ?? null,
-            schedulerIntegration: options.schedulerIntegration ?? null,
+            getSchedulerKey: options.internalKeys ? () => options.internalKeys.get('ghost-scheduler') : null,
             getSignedAdminToken,
             urlJoin: urlUtils.urlJoin.bind(urlUtils),
             apiUrl: options.apiUrl ?? null
