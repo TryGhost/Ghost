@@ -106,4 +106,75 @@ describe('Integration: GCSStore', function () {
             ]);
         });
     });
+
+    describe('tenantPrefix scoping', function () {
+        it('writes the canonical key under the tenant prefix', async function () {
+            const store = new GCSStore({
+                s3Client: client,
+                bucket,
+                tenantPrefix: 'tenant-abc'
+            });
+
+            await store.replaceAll([{from: '/a', to: '/b', permanent: true}]);
+
+            assert.deepEqual(await listObjectKeys(client, bucket), ['tenant-abc/redirects.json']);
+        });
+
+        it('reads back redirects from the prefixed key', async function () {
+            const store = new GCSStore({
+                s3Client: client,
+                bucket,
+                tenantPrefix: 'tenant-abc'
+            });
+            const redirects = [{from: '/old', to: '/new', permanent: true}];
+
+            await store.replaceAll(redirects);
+
+            assert.deepEqual(await store.getAll(), redirects);
+        });
+
+        it('writes backups under the tenant prefix on overwrite', async function () {
+            const backupKey = 'tenant-abc/redirects-backup.json';
+            const store = new GCSStore({
+                s3Client: client,
+                bucket,
+                tenantPrefix: 'tenant-abc',
+                getBackupKey: () => backupKey
+            });
+            const initial = [{from: '/old', to: '/old-target', permanent: true}];
+
+            await store.replaceAll(initial);
+            await store.replaceAll([{from: '/new', to: '/new-target', permanent: false}]);
+
+            const backupBody = await getObject(client, bucket, backupKey);
+            assert.equal(backupBody?.toString('utf-8'), JSON.stringify(initial));
+        });
+
+        it('isolates tenants sharing the same bucket', async function () {
+            const storeA = new GCSStore({s3Client: client, bucket, tenantPrefix: 'tenant-a'});
+            const storeB = new GCSStore({s3Client: client, bucket, tenantPrefix: 'tenant-b'});
+
+            await storeA.replaceAll([{from: '/a', to: '/a-target', permanent: true}]);
+            await storeB.replaceAll([{from: '/b', to: '/b-target', permanent: false}]);
+
+            assert.deepEqual(await storeA.getAll(), [{from: '/a', to: '/a-target', permanent: true}]);
+            assert.deepEqual(await storeB.getAll(), [{from: '/b', to: '/b-target', permanent: false}]);
+            assert.deepEqual(
+                (await listObjectKeys(client, bucket)).sort(),
+                ['tenant-a/redirects.json', 'tenant-b/redirects.json']
+            );
+        });
+
+        it('strips leading and trailing slashes from the tenant prefix', async function () {
+            const store = new GCSStore({
+                s3Client: client,
+                bucket,
+                tenantPrefix: '/tenant-abc/'
+            });
+
+            await store.replaceAll([{from: '/a', to: '/b', permanent: true}]);
+
+            assert.deepEqual(await listObjectKeys(client, bucket), ['tenant-abc/redirects.json']);
+        });
+    });
 });

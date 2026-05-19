@@ -31,5 +31,9 @@ describe('UNIT: GCSStore', function () {
                 {errorType: 'IncorrectUsageError', message: /accessKeyId.*secretAccessKey/}
             );
         });
+
+        it('accepts a tenantPrefix without throwing', function () {
+            assert.doesNotThrow(() => new GCSStore({bucket: 'x', tenantPrefix: 'tenant-abc'}));
+        });
     });
 });
