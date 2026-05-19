@@ -77,7 +77,7 @@ class Users {
      */
     async lockAll(frameOptions, {roles} = {}) {
         const lockUsers = async (txOptions) => {
-            const findOptions = Object.assign({}, txOptions);
+            const findOptions = {...txOptions};
             if (roles && roles.length) {
                 findOptions.filter = `roles.name:[${roles.join(',')}]`;
             }
@@ -93,7 +93,7 @@ class Users {
         // open our own.
         const users = frameOptions.transacting
             ? await lockUsers(frameOptions)
-            : await this.models.Base.transaction(t => lockUsers(Object.assign({}, frameOptions, {transacting: t})));
+            : await this.models.Base.transaction(t => lockUsers({...frameOptions, transacting: t}));
 
         return {count: users.length};
     }

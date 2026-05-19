@@ -184,7 +184,7 @@ User = ghostBookshelf.Model.extend({
             status: 'locked',
             // secretlint-disable-next-line @secretlint/secretlint-rule-pattern
             password: security.identifier.uid(50)
-        }, Object.assign({}, options, {patch: true}));
+        }, {...options, patch: true});
     },
 
     isInactive: function isInactive() {
