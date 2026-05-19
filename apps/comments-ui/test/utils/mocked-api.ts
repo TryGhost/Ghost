@@ -150,6 +150,19 @@ export class MockedApi {
             });
         }
 
+        if (setOrder === 'count__likes desc, created_at desc') {
+            this.comments.sort((a, b) => {
+                const likesDiff = b.count.likes - a.count.likes;
+                if (likesDiff !== 0) {
+                    return likesDiff;
+                }
+
+                const aDate = new Date(a.created_at).getTime();
+                const bDate = new Date(b.created_at).getTime();
+                return bDate - aDate;
+            });
+        }
+
         if (setOrder === 'created_at desc') {
             // Sort by created_at (newest first)
             this.comments.sort((a, b) => {

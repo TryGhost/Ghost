@@ -42,6 +42,7 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -100,6 +101,7 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -139,6 +141,7 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -197,6 +200,7 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -255,6 +259,7 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -313,6 +318,7 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -354,6 +360,7 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -412,6 +419,7 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -470,6 +478,7 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
         "reports": Any<Number>,
@@ -540,6 +549,7 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -598,6 +608,7 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -639,6 +650,7 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -697,6 +709,7 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
         "reports": Any<Number>,
@@ -750,6 +763,7 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -808,6 +822,7 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -866,6 +881,7 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -907,6 +923,7 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -1203,10 +1220,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1234,7 +1253,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "461",
+  "content-length": "476",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -1248,10 +1267,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1279,7 +1300,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "436",
+  "content-length": "451",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -1293,10 +1314,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a reply</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1324,7 +1347,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "477",
+  "content-length": "492",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -1338,10 +1361,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1369,7 +1394,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "454",
+  "content-length": "469",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -1419,11 +1444,13 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 3,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 3,
         "reports": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1450,10 +1477,12 @@ Object {
         Object {
           "count": Object {
             "direct_replies": 0,
+            "dislikes": 0,
             "likes": Any<Number>,
             "reports": 0,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "disliked": false,
           "edited_at": null,
           "html": Any<String>,
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1481,10 +1510,12 @@ Object {
         Object {
           "count": Object {
             "direct_replies": 0,
+            "dislikes": 0,
             "likes": Any<Number>,
             "reports": 0,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "disliked": false,
           "edited_at": null,
           "html": Any<String>,
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1512,10 +1543,12 @@ Object {
         Object {
           "count": Object {
             "direct_replies": 0,
+            "dislikes": 0,
             "likes": Any<Number>,
             "reports": 0,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "disliked": false,
           "edited_at": null,
           "html": Any<String>,
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1569,11 +1602,13 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 2,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 2,
         "reports": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "Comment 1",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1600,10 +1635,12 @@ Object {
         Object {
           "count": Object {
             "direct_replies": 0,
+            "dislikes": 0,
             "likes": 0,
             "reports": 0,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "disliked": false,
           "edited_at": null,
           "html": "Reply 2",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1631,10 +1668,12 @@ Object {
         Object {
           "count": Object {
             "direct_replies": 0,
+            "dislikes": 0,
             "likes": 0,
             "reports": 0,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "disliked": false,
           "edited_at": null,
           "html": "Reply 3",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1698,11 +1737,13 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 2,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 2,
         "reports": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "Comment 1",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1729,10 +1770,12 @@ Object {
         Object {
           "count": Object {
             "direct_replies": 0,
+            "dislikes": 0,
             "likes": 0,
             "reports": 0,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "disliked": false,
           "edited_at": null,
           "html": "Reply 1",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1760,10 +1803,12 @@ Object {
         Object {
           "count": Object {
             "direct_replies": 0,
+            "dislikes": 0,
             "likes": 0,
             "reports": 0,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "disliked": false,
           "edited_at": null,
           "html": "Reply 3",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1811,11 +1856,13 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 1,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 1,
         "reports": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1842,10 +1889,12 @@ Object {
         Object {
           "count": Object {
             "direct_replies": 0,
+            "dislikes": 0,
             "likes": 0,
             "reports": 0,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "disliked": false,
           "edited_at": null,
           "html": "Reply 1",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1893,11 +1942,13 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
         "reports": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
