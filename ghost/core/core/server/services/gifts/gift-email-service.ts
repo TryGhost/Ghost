@@ -1,6 +1,5 @@
 import {GiftEmailRenderer, Translate} from './gift-email-renderer';
 
-const DEFAULT_CURRENCY_LOCALE = 'en';
 const DEFAULT_DATE_LOCALE = 'en-gb';
 
 interface Mailer {
@@ -37,10 +36,8 @@ interface PurchaseConfirmationData {
 
 interface ReminderData {
     memberEmail: string;
+    memberName: string | null;
     tierName: string;
-    tierPrice: number;
-    tierCurrency: string;
-    cadence: 'month' | 'year';
     consumesAt: Date;
 }
 
@@ -73,6 +70,9 @@ export class GiftEmailService {
     }
 
     private getCadenceLabel(cadence: 'month' | 'year', duration: number): string {
+        if (duration === 1) {
+            return cadence === 'year' ? this.t('one-year') : this.t('one-month');
+        }
         if (cadence === 'year') {
             return this.t('{count} year', {count: duration});
         }
@@ -122,19 +122,13 @@ export class GiftEmailService {
         });
     }
 
-    async sendReminder({memberEmail, tierName, tierPrice, tierCurrency, cadence, consumesAt}: ReminderData): Promise<void> {
+    async sendReminder({memberEmail, memberName, tierName, consumesAt}: ReminderData): Promise<void> {
         const siteDomain = this.siteDomain;
         const siteUrl = this.urlUtils.getSiteUrl();
         const siteTitle = this.settingsCache.get('title') ?? siteDomain;
 
-        const formattedPrice = this.formatAmount({currency: tierCurrency, amount: tierPrice / 100});
-
-        // Possible values for cadence, for the i18n parser:
-        // t('month')
-        // t('year')
-        const priceAfter = `${formattedPrice}/${this.t(cadence)}`;
-
         const manageSubscriptionUrl = new URL('#/portal/account', siteUrl).href;
+        const firstName = memberName?.trim().split(/\s+/)[0] || null;
 
         const {html, text} = await this.renderer.renderReminder({
             siteTitle,
@@ -143,40 +137,21 @@ export class GiftEmailService {
             siteDomain,
             accentColor: this.settingsCache.get('accent_color'),
             memberEmail,
+            firstName,
             gift: {
                 tierName,
                 consumesAt: this.formatDate(consumesAt),
-                priceAfter,
                 manageSubscriptionUrl
             }
         });
 
         await this.mailer.send({
             to: memberEmail,
-            subject: this.t('Your gift subscription to {siteTitle} is ending soon', {
-                siteTitle,
-                interpolation: {escapeValue: false}
-            }),
+            subject: this.t('Your gift subscription ends in seven days'),
             html,
             text,
             from: this.getFromAddress(),
             forceTextContent: true
         });
-    }
-
-    private formatAmount({amount = 0, currency}: {amount?: number; currency?: string}): string {
-        const locale = this.settingsCache.get('locale') || DEFAULT_CURRENCY_LOCALE;
-
-        if (!currency) {
-            return Intl.NumberFormat(locale, {maximumFractionDigits: 2}).format(amount);
-        }
-
-        return Intl.NumberFormat(locale, {
-            style: 'currency',
-            currency,
-            currencyDisplay: 'symbol',
-            maximumFractionDigits: 2,
-            minimumFractionDigits: 2
-        }).format(amount);
     }
 }
