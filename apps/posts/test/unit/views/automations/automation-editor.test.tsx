@@ -285,6 +285,24 @@ describe('AutomationEditor', () => {
         expect(trigger).toHaveAttribute('aria-pressed', 'false');
     });
 
+    it('closes the sidebar with Escape', () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        const waitStep = screen.getByRole('button', {name: 'Wait: 1 day'});
+        fireEvent.click(waitStep);
+
+        fireEvent.keyDown(document, {key: 'Escape'});
+
+        expect(screen.queryByRole('complementary', {name: 'Step details'})).not.toBeInTheDocument();
+        expect(waitStep).toHaveAttribute('aria-pressed', 'false');
+    });
+
     it('disables the publish button when the read query fails', () => {
         mockUseReadAutomation.mockReturnValue({
             data: undefined,

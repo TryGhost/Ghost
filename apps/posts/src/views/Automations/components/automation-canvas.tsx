@@ -1,6 +1,6 @@
 import '@xyflow/react/dist/style.css';
 import AddStepEdge, {type AddStepEdgeData} from './add-step-edge';
-import React, {useCallback, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import StepPicker, {type StepPickerType} from './step-picker';
 import {AutomationAction, AutomationDetail, AutomationSendEmailAction, AutomationWaitAction, InsertActionAnchor, MAX_AUTOMATION_ACTIONS, insertSendEmailAction, insertWaitAction} from '@tryghost/admin-x-framework/api/automations';
 import {Background, Edge, Handle, Node, NodeProps, Position, ReactFlow} from '@xyflow/react';
@@ -549,20 +549,39 @@ const StepSidebarContent: React.FC<{detail: StepSidebarDetail}> = ({detail}) => 
     );
 };
 
-const StepSidebar: React.FC<{detail: StepSidebarDetail | null}> = ({detail}) => (
-    <aside
-        aria-hidden={!detail}
-        aria-label='Step details'
-        className={cn(
-            'absolute inset-y-0 right-0 z-[1] flex w-[calc(100%-6rem)] max-w-none translate-x-full flex-col gap-6 overflow-y-auto border-l border-border-default bg-background p-6 shadow-lg transition-transform duration-200 ease-out sm:w-[36rem]',
-            detail ? 'translate-x-0' : 'pointer-events-none'
-        )}
-        data-state={detail ? 'open' : 'closed'}
-        data-testid='automation-step-sidebar'
-    >
-        {detail && <StepSidebarContent detail={detail} />}
-    </aside>
-);
+const StepSidebar: React.FC<{detail: StepSidebarDetail | null; onClose: () => void}> = ({detail, onClose}) => {
+    useEffect(() => {
+        if (!detail) {
+            return;
+        }
+
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                onClose();
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [detail, onClose]);
+
+    return (
+        <aside
+            aria-hidden={!detail}
+            aria-label='Step details'
+            className={cn(
+                'absolute inset-y-0 right-0 z-[1] flex w-[calc(100%-6rem)] max-w-none translate-x-full flex-col gap-6 overflow-y-auto border-l border-border-default bg-background p-6 shadow-lg transition-transform duration-200 ease-out sm:w-[36rem]',
+                detail ? 'translate-x-0' : 'pointer-events-none'
+            )}
+            data-state={detail ? 'open' : 'closed'}
+            data-testid='automation-step-sidebar'
+        >
+            {detail && <StepSidebarContent detail={detail} />}
+        </aside>
+    );
+};
 
 type AutomationCanvasProps = {
     automation?: AutomationDetail;
@@ -608,6 +627,9 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
     }, [automation, handlePick, selectedStepId]);
 
     const sidebarDetail = automation ? getStepSidebarDetail(automation, selectedStepId) : null;
+    const clearDetail = useCallback(() => {
+        setSelectedStepId(null);
+    }, []);
 
     if (isLoading) {
         return (
@@ -654,11 +676,11 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
                         setSelectedStepId(node.id);
                     }
                 }}
-                onPaneClick={() => setSelectedStepId(null)}
+                onPaneClick={clearDetail}
             >
                 <Background />
             </ReactFlow>
-            <StepSidebar detail={sidebarDetail} />
+            <StepSidebar detail={sidebarDetail} onClose={clearDetail} />
         </div>
     );
 };
