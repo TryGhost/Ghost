@@ -34,6 +34,11 @@
             "settings": {},
             "imageSizes": {},
             "gscan": {}
+        },
+        "redirects": {
+            "active": "FileStore",
+            "FileStore": {},
+            "GCSStore": {}
         }
     },
     "storage": {

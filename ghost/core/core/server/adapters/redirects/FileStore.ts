@@ -20,7 +20,7 @@ interface FileStoreOptions {
  * `.json`. The previous canonical file becomes a timestamped backup on
  * every successive `replaceAll`.
  */
-export class FileStore extends RedirectsStoreBase implements RedirectsStore {
+export default class FileStore extends RedirectsStoreBase implements RedirectsStore {
     private readonly basePath: string;
     private readonly getBackupFilePath: (filePath: string) => string;
 
