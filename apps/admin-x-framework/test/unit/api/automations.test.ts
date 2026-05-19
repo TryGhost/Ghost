@@ -1,6 +1,8 @@
 import ObjectId from 'bson-objectid';
 import {
+    AutomationAction,
     AutomationDetail,
+    AutomationSendEmailAction,
     insertSendEmailAction,
     insertWaitAction
 } from '../../../src/api/automations';
@@ -15,6 +17,10 @@ const baseDetail = (actions: AutomationDetail['actions'], edges: AutomationDetai
     actions,
     edges
 });
+
+function expectSendEmailAction(action: AutomationAction): asserts action is AutomationSendEmailAction {
+    expect(action.type).toBe('send_email');
+}
 
 describe('automations api helpers', () => {
     describe('insertWaitAction', () => {
@@ -106,13 +112,11 @@ describe('automations api helpers', () => {
 
             expect(next.actions).toHaveLength(1);
             const newAction = next.actions[0];
-            expect(newAction.type).toBe('send_email');
-            if (newAction.type === 'send_email') {
-                expect(newAction.data.email_subject).toBe('Untitled email');
-                expect(() => JSON.parse(newAction.data.email_lexical)).not.toThrow();
-                expect(JSON.parse(newAction.data.email_lexical).root.children.length).toBeGreaterThan(0);
-                expect(newAction.data.email_design_setting_id).toBe('placeholder');
-            }
+            expectSendEmailAction(newAction);
+            expect(newAction.data.email_subject).toBe('Untitled email');
+            expect(() => JSON.parse(newAction.data.email_lexical)).not.toThrow();
+            expect(JSON.parse(newAction.data.email_lexical).root.children.length).toBeGreaterThan(0);
+            expect(newAction.data.email_design_setting_id).toBe('placeholder');
         });
 
         it('returns an action id that the backend schema treats as a valid ObjectId', () => {

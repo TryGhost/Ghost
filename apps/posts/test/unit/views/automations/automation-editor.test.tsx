@@ -190,6 +190,18 @@ describe('AutomationEditor', () => {
         expect(screen.getByRole('button', {name: 'Publish'})).toBeDisabled();
     });
 
+    it('disables the publish button when the automation has no actions', () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [{...automationDetail, status: 'inactive', actions: [], edges: []}]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        expect(screen.getByRole('button', {name: 'Publish'})).toBeDisabled();
+    });
+
     it('publishes an inactive automation when clicking Publish', () => {
         mockUseReadAutomation.mockReturnValue({
             data: {automations: [{...automationDetail, status: 'inactive'}]},

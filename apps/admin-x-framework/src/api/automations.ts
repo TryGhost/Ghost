@@ -165,11 +165,7 @@ const spliceAction = ({detail, action, anchor}: SpliceActionArgs): AutomationDet
         assertActionExists(detail, nextActionId);
     }
     const actions = [...detail.actions, action];
-    const removed = (previousActionId && nextActionId)
-        ? detail.edges.find(edge => edge.source_action_id === previousActionId && edge.target_action_id === nextActionId)
-        : undefined;
-    const remaining = removed ? detail.edges.filter(edge => edge !== removed) : detail.edges;
-    const newEdges = [...remaining];
+    const newEdges = detail.edges.filter(edge => !(edge.source_action_id === previousActionId && edge.target_action_id === nextActionId));
     if (previousActionId !== undefined) {
         newEdges.push({source_action_id: previousActionId, target_action_id: action.id});
     }

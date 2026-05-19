@@ -314,6 +314,11 @@ type AutomationCanvasProps = {
     onChange: (next: AutomationDetail) => void;
 }
 
+const insertActionByType = {
+    wait: insertWaitAction,
+    send_email: insertSendEmailAction
+};
+
 const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoading, isError, onChange}) => {
     const handlePick = useCallback((type: StepPickerType, anchor: CanvasAnchor) => {
         if (!automation) {
@@ -323,9 +328,8 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
             return;
         }
         const apiAnchor = toApiAnchor(anchor);
-        const next = type === 'wait'
-            ? insertWaitAction({detail: automation, anchor: apiAnchor})
-            : insertSendEmailAction({detail: automation, anchor: apiAnchor});
+        const insertAction = insertActionByType[type];
+        const next = insertAction({detail: automation, anchor: apiAnchor});
         onChange(next);
     }, [automation, onChange]);
 

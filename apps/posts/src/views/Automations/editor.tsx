@@ -30,7 +30,9 @@ const AutomationEditor: React.FC = () => {
     const [draft, setDraft] = React.useState<AutomationDetail | undefined>(undefined);
     React.useEffect(() => {
         if (automation) {
-            setDraft(oldDraft => oldDraft || automation);
+            setDraft((oldDraft) => {
+                return oldDraft?.id === automation.id ? oldDraft : automation;
+            });
         }
     }, [automation]);
 
@@ -88,7 +90,7 @@ const AutomationEditor: React.FC = () => {
 
     let isConfirmUnpublishAlertOpen = false;
     let isEditRequestActive = false;
-    let isPublishButtonEnabled = draft?.status === 'inactive' || hasUnsavedChanges;
+    let isPublishButtonEnabled = !!draft && draft.actions.length > 0 && (draft.status === 'inactive' || hasUnsavedChanges);
     let publishButtonVariant: ButtonProps['variant'] = 'default';
     let publishButtonChildren: React.ReactNode = draft?.status === 'active'
         ? (hasUnsavedChanges ? 'Publish changes' : 'Published')
