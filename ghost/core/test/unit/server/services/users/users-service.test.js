@@ -6,14 +6,14 @@ const Users = require('../../../../../core/server/services/users');
 
 describe('Users service', function () {
     describe('lockAll', function () {
-        function makeUser({email} = {}) {
+        function makeUser({email = 'test_email@example.com'} = {}) {
             const user = {
                 locked: false,
                 lock() {
                     this.locked = true;
                     return Promise.resolve();
                 },
-                get: sinon.stub().withArgs('email').returns(email ?? 'test_email@example.com')
+                get: sinon.stub().withArgs('email').returns(email)
             };
             return user;
         }
