@@ -55,8 +55,6 @@ export default class PostScheduling {
         this.#adapter = adapter;
         this.#internalKeys = internalKeys;
 
-        adapter.run();
-
         SCHEDULED_RESOURCES.forEach((resource) => {
             events.on(`${resource}.scheduled`, async (model: any) => {
                 try {

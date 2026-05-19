@@ -354,6 +354,7 @@ async function initServices() {
     emailAddressService.init();
     const apiUrl = urlUtils.urlFor('api', {type: 'admin'}, true);
     const schedulerAdapter = createSchedulerAdapter();
+    schedulerAdapter.run();
     await stripe.init();
 
     await Promise.all([
