@@ -65,7 +65,7 @@ describe('GiftEmailService', function () {
         sinon.assert.calledOnce(mailer.send);
         sinon.assert.calledWith(mailer.send, sinon.match({
             to: 'buyer@example.com',
-            subject: 'Your gift is ready to share',
+            subject: 'Your gift is ready',
             from: 'Test Site <noreply@example.com>'
         }));
     });
@@ -78,14 +78,14 @@ describe('GiftEmailService', function () {
         for (const field of ['html', 'text']) {
             sinon.assert.match(msg[field], sinon.match('https://example.com/gift/abc-123'));
             sinon.assert.match(msg[field], sinon.match('Gold'));
-            sinon.assert.match(msg[field], sinon.match('1 year'));
+            sinon.assert.match(msg[field], sinon.match('one-year'));
         }
     });
 
     it('formats month cadence correctly', async function () {
         await service.sendPurchaseConfirmation({...defaultData, cadence: 'month'});
 
-        sinon.assert.calledWith(mailer.send, sinon.match.has('html', sinon.match('1 month')));
+        sinon.assert.calledWith(mailer.send, sinon.match.has('html', sinon.match('one-month')));
     });
 
     it('formats the expiry date with the active locale', async function () {
@@ -136,7 +136,7 @@ describe('GiftEmailService', function () {
         const noTitleService = new GiftEmailService({mailer, settingsCache: noTitleSettingsCache, urlUtils, getFromAddress, blogIcon, t: translate()});
         await noTitleService.sendPurchaseConfirmation(defaultData);
 
-        sinon.assert.calledWith(mailer.send, sinon.match.has('text', sinon.match('Thank you for supporting example.com')));
+        sinon.assert.calledWith(mailer.send, sinon.match.has('text', sinon.match('membership to example.com')));
     });
 
     it('escapes user-controlled values containing HTML in the purchase confirmation HTML', async function () {
@@ -174,25 +174,28 @@ describe('GiftEmailService', function () {
     describe('sendReminder', function () {
         const reminderData = {
             memberEmail: 'member@example.com',
+            memberName: 'Jamie Rivera',
             tierName: 'Gold',
-            tierPrice: 10000,
-            tierCurrency: 'usd',
-            cadence: 'year',
             consumesAt: new Date('2026-04-23T00:00:00.000Z')
         };
 
-        it('sends to the redeemer with a site-scoped subject and from address', async function () {
+        beforeEach(function () {
+            // Pin "now" 5 days before consumesAt so the dynamic day count is deterministic.
+            sinon.useFakeTimers({now: new Date('2026-04-18T00:00:00.000Z'), toFake: ['Date']});
+        });
+
+        it('sends to the redeemer with the correct subject and from address', async function () {
             await service.sendReminder(reminderData);
 
             sinon.assert.calledOnce(mailer.send);
             sinon.assert.calledWith(mailer.send, sinon.match({
                 to: 'member@example.com',
-                subject: 'Your gift subscription to Test Site is ending soon',
+                subject: 'Your gift subscription ends in 5 days',
                 from: 'Test Site <noreply@example.com>'
             }));
         });
 
-        it('includes consumesAt, post-gift price and manage subscription url in both HTML and text', async function () {
+        it('includes consumesAt and manage subscription url in both HTML and text', async function () {
             await service.sendReminder(reminderData);
 
             const msg = mailer.send.getCall(0).args[0];
@@ -204,33 +207,40 @@ describe('GiftEmailService', function () {
 
             for (const field of ['html', 'text']) {
                 sinon.assert.match(msg[field], sinon.match(expectedDate));
-                sinon.assert.match(msg[field], sinon.match('$100.00/year'));
                 sinon.assert.match(msg[field], sinon.match('https://example.com/#/portal/account'));
             }
         });
 
-        it('renders a "Continue membership" CTA', async function () {
+        it('renders a "Continue subscription" CTA', async function () {
             await service.sendReminder(reminderData);
 
             const msg = mailer.send.getCall(0).args[0];
 
-            sinon.assert.match(msg.html, sinon.match('Continue membership'));
-            sinon.assert.match(msg.text, sinon.match('Continue membership'));
+            sinon.assert.match(msg.html, sinon.match('Continue subscription'));
+            sinon.assert.match(msg.text, sinon.match('Continue subscription'));
         });
 
-        it('formats month cadence in the post-gift price', async function () {
-            await service.sendReminder({...reminderData, cadence: 'month', tierPrice: 1000});
+        it('greets the redeemer by first name when a name is available', async function () {
+            await service.sendReminder(reminderData);
 
-            sinon.assert.calledWith(mailer.send, sinon.match.has('html', sinon.match('$10.00/month')));
+            const msg = mailer.send.getCall(0).args[0];
+
+            for (const field of ['html', 'text']) {
+                sinon.assert.match(msg[field], sinon.match('Hi Jamie,'));
+            }
         });
 
-        it('formats non-USD currency correctly in the post-gift price', async function () {
-            await service.sendReminder({...reminderData, tierCurrency: 'eur', tierPrice: 1500});
+        it('falls back to a generic greeting when no name is available', async function () {
+            await service.sendReminder({...reminderData, memberName: null});
 
-            sinon.assert.calledWith(mailer.send, sinon.match.has('html', sinon.match('€15.00/year')));
+            const msg = mailer.send.getCall(0).args[0];
+
+            for (const field of ['html', 'text']) {
+                sinon.assert.match(msg[field], sinon.match('Hey there,'));
+            }
         });
 
-        it('formats the post-gift price, cadence, and expiry date with the active locale', async function () {
+        it('formats the expiry date with the active locale', async function () {
             const localizedSettingsCache = {
                 get: (key) => {
                     if (key === 'title') {
@@ -252,19 +262,12 @@ describe('GiftEmailService', function () {
                 urlUtils,
                 getFromAddress,
                 blogIcon,
-                t: translate({year: 'an'})
+                t: translate()
             });
 
             await localizedService.sendReminder(reminderData);
 
             const msg = mailer.send.getCall(0).args[0];
-            const expectedPrice = new Intl.NumberFormat('fr', {
-                style: 'currency',
-                currency: reminderData.tierCurrency,
-                currencyDisplay: 'symbol',
-                maximumFractionDigits: 2,
-                minimumFractionDigits: 2
-            }).format(reminderData.tierPrice / 100);
             const expectedDate = new Intl.DateTimeFormat('fr', {
                 day: 'numeric',
                 month: 'short',
@@ -272,7 +275,6 @@ describe('GiftEmailService', function () {
             }).format(reminderData.consumesAt);
 
             for (const field of ['html', 'text']) {
-                sinon.assert.match(msg[field], sinon.match(`${expectedPrice}/an`));
                 sinon.assert.match(msg[field], sinon.match(expectedDate));
             }
         });
