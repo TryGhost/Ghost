@@ -138,7 +138,12 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
 
             setIsCheckingEditorLimit(true);
 
-            const error = await checkThemeLimitError(editingThemeName.toLowerCase());
+            // The editor's save uploads through POST /themes/upload/, which
+            // runs the limit check with a '.' sentinel — so any save by a
+            // limited customer is blocked regardless of allowlist. Use the
+            // same sentinel here so deep-linking to /theme/edit/:name blocks
+            // at launch rather than at first save.
+            const error = await checkThemeLimitError('.');
 
             if (isCancelled) {
                 return;
