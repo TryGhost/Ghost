@@ -22,7 +22,7 @@ export function renderText(data: GiftReminderData, t: Translate): string {
 
     return `${greeting}
 
-${t('Your gift subscription to {siteTitle} ends in one week on {consumesAt}.', {
+${t('Your gift subscription to {siteTitle} ends on {consumesAt}.', {
         siteTitle: data.siteTitle,
         consumesAt: data.gift.consumesAt,
         interpolation: {escapeValue: false}
