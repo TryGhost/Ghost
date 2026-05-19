@@ -179,18 +179,13 @@ describe('GiftEmailService', function () {
             consumesAt: new Date('2026-04-23T00:00:00.000Z')
         };
 
-        beforeEach(function () {
-            // Pin "now" 5 days before consumesAt so the dynamic day count is deterministic.
-            sinon.useFakeTimers({now: new Date('2026-04-18T00:00:00.000Z'), toFake: ['Date']});
-        });
-
         it('sends to the redeemer with the correct subject and from address', async function () {
             await service.sendReminder(reminderData);
 
             sinon.assert.calledOnce(mailer.send);
             sinon.assert.calledWith(mailer.send, sinon.match({
                 to: 'member@example.com',
-                subject: 'Your gift subscription ends in 5 days',
+                subject: 'Your gift subscription is ending soon',
                 from: 'Test Site <noreply@example.com>'
             }));
         });
