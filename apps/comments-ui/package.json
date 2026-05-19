@@ -78,7 +78,7 @@
     "moment": "2.30.1",
     "postcss": "catalog:",
     "postcss-import": "16.1.1",
-    "sinon": "21.1.1",
+    "sinon": "catalog:",
     "tailwindcss": "3.4.18",
     "vite": "catalog:",
     "vite-plugin-svgr": "catalog:",
