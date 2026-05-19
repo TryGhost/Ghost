@@ -32,8 +32,7 @@ export function createCSVTransform(): Transform {
                 // Subsequent rows reuse the locked-in field list and skip the header.
                 const csv = papaparse.unparse({fields, data: [post]}, {
                     header: false,
-                    escapeFormulae: true,
-                    newline: '\r\n'
+                    escapeFormulae: true
                 });
 
                 // papaparse never prepends or appends a newline around its output,
