@@ -1,9 +1,9 @@
-export {ReactComponent as FacebookLogo} from './assets/images/facebook-logo.svg';
-export {ReactComponent as GhostLogo} from './assets/images/ghost-logo.svg';
-export {ReactComponent as GhostOrb} from './assets/images/ghost-orb.svg';
-export {ReactComponent as GoogleLogo} from './assets/images/google-logo.svg';
-export {ReactComponent as TwitterLogo} from './assets/images/twitter-logo.svg';
-export {ReactComponent as XLogo} from './assets/images/x-logo.svg';
+export {default as FacebookLogo} from './assets/images/facebook-logo.svg?react';
+export {default as GhostLogo} from './assets/images/ghost-logo.svg?react';
+export {default as GhostOrb} from './assets/images/ghost-orb.svg?react';
+export {default as GoogleLogo} from './assets/images/google-logo.svg?react';
+export {default as TwitterLogo} from './assets/images/twitter-logo.svg?react';
+export {default as XLogo} from './assets/images/x-logo.svg?react';
 
 export {default as DesktopChrome} from './global/chrome/desktop-chrome';
 export type {DesktopChromeProps} from './global/chrome/desktop-chrome';
@@ -34,7 +34,7 @@ export {default as HtmlEditor} from './global/form/html-editor';
 export type {HtmlEditorProps} from './global/form/html-editor';
 export {default as HtmlField} from './global/form/html-field';
 export type {HtmlFieldProps} from './global/form/html-field';
-export {default as KoenigEditorBase} from './global/form/koenig-editor-base';
+export {default as KoenigEditorBase, loadKoenig} from './global/form/koenig-editor-base';
 export type {KoenigEditorBaseProps, KoenigInstance, NodeType} from './global/form/koenig-editor-base';
 export {default as ImageUpload} from './global/form/image-upload';
 export type {ImageUploadProps} from './global/form/image-upload';

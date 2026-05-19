@@ -59,7 +59,7 @@ describe('LinkRedirectsService', function () {
                 }
             });
             await instance.addRedirect(new URL('https://localhost:2368/a'), new URL('https://localhost:2368/b'));
-            assert.equal(linkRedirectRepository.save.callCount, 1);
+            sinon.assert.calledOnce(linkRedirectRepository.save);
             assert.equal(linkRedirectRepository.save.getCall(0).args[0].from.href, 'https://localhost:2368/a');
             assert.equal(linkRedirectRepository.save.getCall(0).args[0].to.href, 'https://localhost:2368/b');
         });
@@ -113,9 +113,9 @@ describe('LinkRedirectsService', function () {
                 setHeader: sinon.fake()
             };
             await instance.handleRequest(req, res);
-            assert.equal(res.redirect.callCount, 1);
+            sinon.assert.calledOnce(res.redirect);
             assert.equal(res.redirect.getCall(0).args[0], 'https://localhost:2368/b');
-            assert(res.setHeader.calledWith('X-Robots-Tag', 'noindex, nofollow'));
+            sinon.assert.calledWith(res.setHeader, 'X-Robots-Tag', 'noindex, nofollow');
         });
 
         it('does not redirect if not found', async function () {
@@ -134,7 +134,7 @@ describe('LinkRedirectsService', function () {
             const res = {};
             const next = sinon.fake();
             await instance.handleRequest(req, res, next);
-            assert.equal(next.callCount, 1);
+            sinon.assert.calledOnce(next);
         });
 
         it('does not redirect if url does not contain a redirect prefix on site with no subdir', async function () {
@@ -154,7 +154,7 @@ describe('LinkRedirectsService', function () {
 
             await instance.handleRequest(req, res, next);
 
-            assert.equal(next.callCount, 1);
+            sinon.assert.calledOnce(next);
         });
 
         it('does not redirect if url does not contain a redirect prefix on site with subdir', async function () {
@@ -174,7 +174,7 @@ describe('LinkRedirectsService', function () {
 
             await instance.handleRequest(req, res, next);
 
-            assert.equal(next.callCount, 1);
+            sinon.assert.calledOnce(next);
         });
 
         it('substitutes %%{uuid}%% placeholder with member UUID from query param', async function () {

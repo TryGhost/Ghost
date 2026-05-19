@@ -9,22 +9,21 @@ Shade is consumed internally across Ghost apps. The package is currently private
 Example:
 
 ```tsx
-import {Button} from '@tryghost/shade';
+import {Button} from '@tryghost/shade/components';
 
 export function Example() {
     return <Button>Continue</Button>;
 }
 ```
 
-Tailwind preset:
+CSS-first styling contract:
 
-```js
-// tailwind.config.cjs
-module.exports = {
-    presets: [require('@tryghost/shade/tailwind')],
-    // your overrides...
-};
+```css
+/* app entry CSS */
+@import "@tryghost/shade/styles.css";
 ```
+
+No Tailwind preset/config import is required for Shade runtime styling.
 
 Scoping and dark mode:
 
@@ -34,7 +33,7 @@ Scoping and dark mode:
 Wrap your surface with `ShadeApp` (includes provider and scoping):
 
 ```tsx
-import ShadeApp from '@tryghost/shade';
+import {ShadeApp} from '@tryghost/shade/app';
 
 <ShadeApp darkMode={false}>
     {/* your UI */}
@@ -47,19 +46,19 @@ This is a monorepo package.
 
 Follow the instructions for the top-level repo.
 1. `git clone` this repo & `cd` into it as usual
-2. Run `yarn` to install top-level dependencies.
+2. Run `pnpm` to install top-level dependencies.
 
 Local docs with Storybook:
 
-- `yarn storybook` — run Storybook and view docs under `src/docs/`
-- `yarn build-storybook` — build a static export
+- `pnpm storybook` — run Storybook and view docs under `src/docs/`
+- `pnpm build-storybook` — build a static export
 
 ## Test
 
-- `yarn test` — type-checks and runs Vitest with coverage
-- `yarn test:unit` — type-checks and runs Vitest
-- `yarn test:types` — TypeScript only
-- `yarn lint` — ESLint for `src/` and `test/`
+- `pnpm test` — type-checks and runs Vitest with coverage
+- `pnpm test:unit` — type-checks and runs Vitest
+- `pnpm test:types` — TypeScript only
+- `pnpm lint` — ESLint for `src/` and `test/`
 
 ## Notes
 

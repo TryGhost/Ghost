@@ -11,7 +11,7 @@ jobs:
     if: github.repository_owner == 'TryGhost'
     name: Add migration review requirements
     steps:
-      - uses: actions/github-script@v7
+      - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           script: |
             github.rest.issues.addLabels({
@@ -21,7 +21,7 @@ jobs:
               labels: ["migration"]
             })
 
-      - uses: peter-evans/create-or-update-comment@ac8e6509d7545ebc2e5e7c35eaa12195c2f77adc
+      - uses: peter-evans/create-or-update-comment@57232238742e38b2ccc27136ce596ccae7ca28b4
         with:
           issue-number: ${{ github.event.pull_request.number }}
           body: |

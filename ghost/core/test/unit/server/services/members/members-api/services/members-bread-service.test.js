@@ -45,6 +45,7 @@ describe('MemberBreadService', function () {
 
             const linkStripeCustomerStub = sinon.stub().resolves();
             const createStub = sinon.stub().resolves(mockMemberModel);
+            const getSuppressionDataStub = sinon.stub().resolves({suppressed: false, info: null});
 
             const memberRepository = {
                 create: createStub,
@@ -60,7 +61,7 @@ describe('MemberBreadService', function () {
                 labsService: {isSet: sinon.stub().returns(false)},
                 newslettersService: {browse: sinon.stub().resolves([])},
                 settingsCache: {get: sinon.stub()},
-                emailSuppressionList: {getSuppressionData: sinon.stub().resolves({suppressed: false, info: null})},
+                emailSuppressionList: {getSuppressionData: getSuppressionDataStub},
                 settingsHelpers: {createUnsubscribeUrl: sinon.stub().returns('http://example.com/unsubscribe')}
             });
 
@@ -72,7 +73,7 @@ describe('MemberBreadService', function () {
                 status: 'free'
             });
 
-            return {service, memberRepository, linkStripeCustomerStub, createStub};
+            return {service, memberRepository, linkStripeCustomerStub, createStub, getSuppressionDataStub};
         }
 
         it('passes context to linkStripeCustomer when stripe_customer_id is provided', async function () {
@@ -149,6 +150,123 @@ describe('MemberBreadService', function () {
             assert.ok(linkStripeCustomerOptions.context, 'context should be passed to linkStripeCustomer');
             assert.equal(linkStripeCustomerOptions.context.import, true, 'context.import should be true');
         });
+
+        it('sets email_disabled to true when the email is on the suppression list', async function () {
+            // Prevents ONC-1640: a previous member with this email bounced/complained,
+            // was deleted, and the suppression record remains. A new signup with that
+            // same address must inherit the disabled state instead of starting clean.
+            const {service, createStub, getSuppressionDataStub} = createService();
+            getSuppressionDataStub.resolves({suppressed: true, info: {reason: 'spam'}});
+
+            await service.add({
+                email: 'suppressed@example.com',
+                name: 'New Signup'
+            }, {});
+
+            assert.equal(createStub.calledOnce, true);
+            const createdData = createStub.firstCall.args[0];
+            assert.equal(createdData.email_disabled, true);
+        });
+
+        it('sets email_disabled to false when the email is not on the suppression list', async function () {
+            const {service, createStub} = createService();
+
+            await service.add({
+                email: 'clean@example.com',
+                name: 'Clean Signup'
+            }, {});
+
+            assert.equal(createStub.calledOnce, true);
+            const createdData = createStub.firstCall.args[0];
+            assert.equal(createdData.email_disabled, false);
+        });
+
+        it('preserves explicit email_disabled when the email is on the suppression list', async function () {
+            const {service, createStub, getSuppressionDataStub} = createService();
+            getSuppressionDataStub.resolves({suppressed: true, info: {reason: 'spam'}});
+
+            await service.add({
+                email: 'suppressed@example.com',
+                name: 'New Signup',
+                email_disabled: false
+            }, {});
+
+            assert.equal(getSuppressionDataStub.called, false);
+            assert.equal(createStub.calledOnce, true);
+            const createdData = createStub.firstCall.args[0];
+            assert.equal(createdData.email_disabled, false);
+        });
+    });
+
+    describe('edit', function () {
+        function createMockMemberModel() {
+            return {
+                id: 'member_123',
+                get: sinon.stub().returns(false),
+                related: sinon.stub().returns({find: () => null, toJSON: () => [], models: []}),
+                toJSON: sinon.stub().returns({
+                    id: 'member_123',
+                    email: 'test@example.com'
+                })
+            };
+        }
+
+        function createService() {
+            const mockMemberModel = createMockMemberModel();
+            const updateStub = sinon.stub().resolves(mockMemberModel);
+            const getSuppressionDataStub = sinon.stub().resolves({suppressed: false, info: null});
+
+            const service = new MemberBreadService({
+                memberRepository: {
+                    update: updateStub
+                },
+                stripeService: {configured: false},
+                memberAttributionService: {getAttributionFromContext: sinon.stub().resolves(null)},
+                emailService: {},
+                labsService: {isSet: sinon.stub().returns(false)},
+                newslettersService: {browse: sinon.stub().resolves([])},
+                settingsCache: {get: sinon.stub()},
+                emailSuppressionList: {getSuppressionData: getSuppressionDataStub},
+                settingsHelpers: {createUnsubscribeUrl: sinon.stub().returns('http://example.com/unsubscribe')}
+            });
+
+            sinon.stub(service, 'read').resolves({id: 'member_123'});
+
+            return {service, updateStub, getSuppressionDataStub};
+        }
+
+        it('sets email_disabled to true when the new email is on the suppression list', async function () {
+            const {service, updateStub, getSuppressionDataStub} = createService();
+            getSuppressionDataStub.resolves({suppressed: true, info: {reason: 'spam'}});
+
+            await service.edit({
+                email: 'suppressed@example.com'
+            }, {id: 'member_123'});
+
+            const updatedData = updateStub.firstCall.args[0];
+            assert.equal(updatedData.email_disabled, true);
+        });
+
+        it('sets email_disabled to false when the new email is not on the suppression list', async function () {
+            const {service, updateStub} = createService();
+
+            await service.edit({
+                email: 'clean@example.com'
+            }, {id: 'member_123'});
+
+            const updatedData = updateStub.firstCall.args[0];
+            assert.equal(updatedData.email_disabled, false);
+        });
+
+        it('does not check the suppression list when email is not being changed', async function () {
+            const {service, getSuppressionDataStub} = createService();
+
+            await service.edit({
+                name: 'New Name'
+            }, {id: 'member_123'});
+
+            assert.equal(getSuppressionDataStub.called, false);
+        });
     });
 
     describe('read', function () {
@@ -178,6 +296,12 @@ describe('MemberBreadService', function () {
             getRedeemedOfferIdsForSubscriptions: sinon.stub().resolves([])
         };
 
+        const defaultGiftService = {
+            service: {
+                getActiveByMembers: sinon.stub().resolves(new Map())
+            }
+        };
+
         const getService = (options = {}) => {
             return new MemberBreadService({
                 settingsHelpers: {
@@ -187,7 +311,8 @@ describe('MemberBreadService', function () {
                 memberAttributionService: memberAttributionServiceStub,
                 emailSuppressionList: emailSuppressionListStub,
                 nextPaymentCalculator: options.nextPaymentCalculator || nextPaymentCalculator,
-                offersAPI: options.offersAPI || defaultOffersAPI
+                offersAPI: options.offersAPI || defaultOffersAPI,
+                giftService: options.giftService || defaultGiftService
             });
         };
 
@@ -269,6 +394,24 @@ describe('MemberBreadService', function () {
             assert.deepEqual(member.subscriptions, subscriptionsJSON);
         });
 
+        it('does not eager-load the embedded email when email_recipients is included', async function () {
+            // Including ?include=email_recipients should fetch the recipient
+            // metadata only — not bolt on the joined email row, which used
+            // to ship multi-MB LONGTEXT bodies and crash JSON.stringify on
+            // high-volume sites. Clients that want the email itself should
+            // call /emails/:id.
+            memberRepositoryStub.get.resolves(memberModelStub);
+
+            const memberBreadService = getService();
+            await memberBreadService.read({id: MEMBER_ID}, {withRelated: ['email_recipients']});
+
+            const passedWithRelated = memberRepositoryStub.get.lastCall.args[1].withRelated;
+
+            assert.ok(passedWithRelated.includes('email_recipients'), 'email_recipients itself should still be eager-loaded');
+            assert.ok(!passedWithRelated.includes('email_recipients.email'), 'email_recipients.email must not be eager-loaded');
+            assert.ok(!passedWithRelated.some(item => typeof item === 'object' && item !== null && 'email_recipients.email' in item), 'email_recipients.email must not be eager-loaded via object form either');
+        });
+
         it('returns a member with subscriptions that only have a price', async function () {
             const subscriptionsJSON = [
                 {
@@ -312,10 +455,12 @@ describe('MemberBreadService', function () {
             const productsJSON = [
                 {
                     id: 'prod_123',
+                    currency: 'usd',
                     expiry_at: new Date('2023-10-13T15:15:00')
                 },
                 {
                     id: 'prod_456',
+                    currency: 'cad',
                     expiry_at: new Date('2023-10-13T15:15:00')
                 }
             ];
@@ -334,6 +479,11 @@ describe('MemberBreadService', function () {
             const subscriptionsJSON = [
                 {
                     subscription_id: 'sub_123',
+                    plan: {
+                        amount: 1200,
+                        interval: 'year',
+                        currency: 'usd'
+                    },
                     price: {
                         product: {
                             product_id: productsJSON[0].id
@@ -367,6 +517,7 @@ describe('MemberBreadService', function () {
 
             memberModelStub.toJSON.returns({
                 ...memberModelJSON,
+                status: 'comped',
                 subscriptions: subscriptionsJSON,
                 products: productsJSON,
                 productEvents: productEventsJSON
@@ -420,6 +571,174 @@ describe('MemberBreadService', function () {
             });
         });
 
+        it('does not synthesize complimentary subscriptions for paid members with extra products', async function () {
+            const productsJSON = [
+                {
+                    id: 'prod_123',
+                    currency: 'usd',
+                    expiry_at: new Date('2023-10-13T15:15:00')
+                },
+                {
+                    id: 'prod_456',
+                    currency: 'cad',
+                    expiry_at: new Date('2023-10-13T15:15:00')
+                }
+            ];
+            const subscriptionsJSON = [
+                {
+                    subscription_id: 'sub_123',
+                    plan: {
+                        amount: 1200,
+                        interval: 'year',
+                        currency: 'usd'
+                    },
+                    price: {
+                        product: {
+                            product_id: productsJSON[0].id
+                        }
+                    },
+                    status: 'active',
+                    product_id: productsJSON[0].id
+                }
+            ];
+            const subscriptionModels = subscriptionsJSON.map((subscription, index) => {
+                const model = {
+                    id: `${index + 1}`,
+                    get: sinon.stub()
+                };
+
+                model.get.withArgs('subscription_id').returns(subscription.subscription_id);
+                model.get.withArgs('offer_id').returns(undefined);
+
+                return model;
+            });
+
+            memberModelStub.related
+                .withArgs('stripeSubscriptions')
+                .returns(subscriptionModels);
+
+            memberModelStub.toJSON.returns({
+                ...memberModelJSON,
+                status: 'paid',
+                subscriptions: subscriptionsJSON,
+                products: productsJSON,
+                productEvents: []
+            });
+
+            memberRepositoryStub.isActiveSubscriptionStatus = sinon.stub().returns(true);
+
+            const memberBreadService = getService();
+            const member = await memberBreadService.read({id: MEMBER_ID});
+
+            assert.equal(member.subscriptions.length, 1);
+            assert.equal(member.subscriptions[0].subscription_id, subscriptionsJSON[0].subscription_id);
+        });
+
+        it('returns a member with a gift subscription', async function () {
+            const productsJSON = [
+                {
+                    id: 'prod_789',
+                    currency: 'aud',
+                    expiry_at: new Date('2023-10-13T15:15:00')
+                }
+            ];
+            const productEventsJSON = [
+                {
+                    product_id: productsJSON[0].id,
+                    created_at: new Date('2023-09-13T15:15:00'),
+                    action: 'added'
+                }
+            ];
+
+            memberModelStub.related
+                .withArgs('stripeSubscriptions')
+                .returns([]);
+
+            memberModelStub.toJSON.returns({
+                ...memberModelJSON,
+                status: 'gift',
+                subscriptions: [],
+                products: productsJSON,
+                productEvents: productEventsJSON
+            });
+
+            memberModelStub.status = 'gift';
+
+            memberRepositoryStub.isActiveSubscriptionStatus = sinon.stub().returns(true);
+
+            const giftServiceStub = {
+                service: {
+                    getActiveByMembers: sinon.stub().resolves(new Map([
+                        [MEMBER_ID, {cadence: 'month', currency: 'eur', amount: 1500}]
+                    ]))
+                }
+            };
+
+            const memberBreadService = getService({giftService: giftServiceStub});
+            const member = await memberBreadService.read({id: MEMBER_ID});
+
+            assert.equal(member.subscriptions.length, 1);
+
+            sinon.assert.calledOnceWithExactly(giftServiceStub.service.getActiveByMembers, [MEMBER_ID]);
+
+            sinon.assert.match(member.subscriptions[0], {
+                id: '',
+                tier: productsJSON[0],
+                customer: {
+                    id: '',
+                    name: memberModelJSON.name,
+                    email: memberModelJSON.email
+                },
+                plan: {
+                    id: '',
+                    nickname: 'Gift subscription',
+                    interval: 'month',
+                    currency: 'eur',
+                    amount: 1500
+                },
+                status: 'active',
+                start_date: moment(productEventsJSON[0].created_at),
+                default_payment_card_last4: '****',
+                cancel_at_period_end: false,
+                cancellation_reason: null,
+                current_period_end: moment(productsJSON[0].expiry_at),
+                price: {
+                    id: '',
+                    price_id: '',
+                    nickname: 'Gift subscription',
+                    amount: 1500,
+                    interval: 'month',
+                    type: 'recurring',
+                    currency: 'eur',
+                    product: {
+                        id: '',
+                        product_id: productsJSON[0].id
+                    }
+                }
+            });
+        });
+
+        it('does not call giftService for non-gift members', async function () {
+            memberModelStub.toJSON.returns({
+                ...memberModelJSON,
+                status: 'free',
+                subscriptions: [],
+                products: [],
+                productEvents: []
+            });
+
+            const giftServiceStub = {
+                service: {
+                    getActiveByMembers: sinon.stub().resolves(new Map())
+                }
+            };
+
+            const memberBreadService = getService({giftService: giftServiceStub});
+            await memberBreadService.read({id: MEMBER_ID});
+
+            sinon.assert.notCalled(giftServiceStub.service.getActiveByMembers);
+        });
+
         it('returns a member with attribution data', async function () {
             const attributionData = {
                 url: 'https://example.com'
@@ -465,6 +784,10 @@ describe('MemberBreadService', function () {
                     id: 'sub_123',
                     subscription_id: 'sub_123',
                     status: 'active',
+                    discount_start: null,
+                    discount_end: null,
+                    start_date: new Date('2025-01-01T00:00:00.000Z'),
+                    current_period_end: new Date('2025-06-15T00:00:00.000Z'),
                     plan: {
                         amount: 500,
                         interval: 'month',
@@ -514,6 +837,7 @@ describe('MemberBreadService', function () {
             const offerId = 'offer_abc123';
             const discountStart = new Date('2020-01-01T00:00:00.000Z');
             const discountEnd = new Date('2099-12-31T00:00:00.000Z');
+            const lastDiscountedBillingDate = new Date('2099-12-15T00:00:00.000Z');
 
             const subscriptionsJSON = [
                 {
@@ -532,6 +856,7 @@ describe('MemberBreadService', function () {
                     },
                     discount_start: discountStart,
                     discount_end: discountEnd,
+                    start_date: new Date('2020-01-01T00:00:00.000Z'),
                     current_period_end: new Date('2099-06-15T00:00:00.000Z')
                 }
             ];
@@ -590,6 +915,9 @@ describe('MemberBreadService', function () {
             assert.equal(nextPayment.discount.type, 'percent');
             assert.equal(nextPayment.discount.amount, 20);
             assert.equal(nextPayment.discount.duration, 'repeating');
+            assert.equal(nextPayment.discount.duration_in_months, 12);
+            assert.equal(nextPayment.discount.start, discountStart.toISOString());
+            assert.equal(nextPayment.discount.end, lastDiscountedBillingDate.toISOString());
         });
 
         it('attaches offer_redemptions to subscriptions', async function () {
@@ -601,6 +929,10 @@ describe('MemberBreadService', function () {
                     id: 'sub_123',
                     subscription_id: 'sub_123',
                     status: 'active',
+                    discount_start: null,
+                    discount_end: null,
+                    start_date: new Date('2025-01-01T00:00:00.000Z'),
+                    current_period_end: new Date('2025-06-15T00:00:00.000Z'),
                     plan: {
                         amount: 500,
                         interval: 'month',
@@ -639,7 +971,8 @@ describe('MemberBreadService', function () {
                 name: 'Signup Offer',
                 type: 'percent',
                 amount: 10,
-                duration: 'once'
+                duration: 'once',
+                redemption_type: 'signup'
             };
             const offerDTO2 = {
                 id: offerId2,
@@ -647,7 +980,8 @@ describe('MemberBreadService', function () {
                 type: 'percent',
                 amount: 20,
                 duration: 'repeating',
-                duration_in_months: 3
+                duration_in_months: 3,
+                redemption_type: 'retention'
             };
 
             const offersAPIStub = {

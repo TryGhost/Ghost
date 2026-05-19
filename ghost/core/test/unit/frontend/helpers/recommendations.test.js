@@ -1,12 +1,12 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const models = require('../../../../core/server/models');
 const api = require('../../../../core/server/api').endpoints;
 const hbs = require('../../../../core/frontend/services/theme-engine/engine');
 const configUtils = require('../../../utils/config-utils');
 const {html} = require('common-tags');
 const loggingLib = require('@tryghost/logging');
 const proxy = require('../../../../core/frontend/services/proxy');
+const {promisify} = require('node:util');
 
 const recommendations = require('../../../../core/frontend/helpers/recommendations');
 const foreach = require('../../../../core/frontend/helpers/foreach');
@@ -20,14 +20,13 @@ function trimSpaces(string) {
 describe('{{#recommendations}} helper', function () {
     let logging;
 
-    before(function () {
-        models.init();
-
+    before(async function () {
         hbs.express4({
             partialsDir: [configUtils.config.get('paths').helperTemplates]
         });
 
-        hbs.cachePartials();
+        const cachePartials = promisify(hbs.cachePartials.bind(hbs));
+        await cachePartials();
 
         // The recommendation template expects this helper
         hbs.registerHelper('foreach', foreach);
@@ -146,6 +145,8 @@ describe('{{#recommendations}} helper', function () {
     });
 
     describe('when timeout is exceeded', function () {
+        let clock;
+
         before(function () {
             sinon.stub(api, 'recommendationsPublic').get(() => {
                 return {
@@ -159,6 +160,15 @@ describe('{{#recommendations}} helper', function () {
                 };
             });
         });
+
+        beforeEach(function () {
+            clock = sinon.useFakeTimers({toFake: ['setTimeout', 'clearTimeout']});
+        });
+
+        afterEach(function () {
+            clock.restore();
+        });
+
         after(async function () {
             await configUtils.restore();
         });
@@ -166,12 +176,15 @@ describe('{{#recommendations}} helper', function () {
         it('should log an error and return safely if it hits the timeout threshold', async function () {
             configUtils.set('optimization:getHelper:timeout:threshold', 1);
 
-            const response = await recommendations.call(
+            const responsePromise = recommendations.call(
                 'recommendations'
             );
+            // 2 > threshold (1), < stub's 5 — fires only the helper's timer.
+            await clock.tickAsync(2);
+            const response = await responsePromise;
 
             // An error message is logged
-            assert.equal(logging.error.calledOnce, true);
+            sinon.assert.calledOnce(logging.error);
 
             // No HTML is rendered
             assert(response !== null && typeof response === 'object');

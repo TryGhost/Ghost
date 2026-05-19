@@ -9,6 +9,7 @@ const events = require('../../../../core/server/lib/common/events');
 const settingsCache = require('../../../../core/shared/settings-cache');
 const labs = require('../../../../core/shared/labs');
 const logging = require('@tryghost/logging');
+const urlService = require('../../../../core/server/services/url');
 
 describe('IndexNow', function () {
     let eventStub;
@@ -35,9 +36,9 @@ describe('IndexNow', function () {
     describe('listen()', function () {
         it('should initialise events correctly', function () {
             indexnow.listen();
-            assert.equal(eventStub.calledTwice, true);
-            assert.equal(eventStub.calledWith('post.published'), true);
-            assert.equal(eventStub.calledWith('post.published.edited'), true);
+            sinon.assert.calledTwice(eventStub);
+            sinon.assert.calledWith(eventStub, 'post.published');
+            sinon.assert.calledWith(eventStub, 'post.published.edited');
         });
     });
 
@@ -73,8 +74,8 @@ describe('IndexNow', function () {
 
             listener(testModel);
 
-            assert.equal(pingStub.calledOnce, true);
-            assert.equal(pingStub.calledWith(testPost), true);
+            sinon.assert.calledOnce(pingStub);
+            sinon.assert.calledWith(pingStub, testPost);
 
             resetIndexNow();
         });
@@ -100,7 +101,7 @@ describe('IndexNow', function () {
 
             listener(testModel, {importing: true});
 
-            assert.equal(pingStub.calledOnce, false);
+            sinon.assert.notCalled(pingStub);
 
             resetIndexNow();
         });
@@ -146,7 +147,7 @@ describe('IndexNow', function () {
 
             listener(testModel);
 
-            assert.equal(pingStub.calledOnce, false);
+            sinon.assert.notCalled(pingStub);
 
             resetIndexNow();
         });
@@ -178,7 +179,7 @@ describe('IndexNow', function () {
 
             listener(testModel);
 
-            assert.equal(pingStub.calledOnce, true);
+            sinon.assert.calledOnce(pingStub);
 
             resetIndexNow();
         });
@@ -210,7 +211,7 @@ describe('IndexNow', function () {
 
             listener(testModel);
 
-            assert.equal(pingStub.calledOnce, true);
+            sinon.assert.calledOnce(pingStub);
 
             resetIndexNow();
         });
@@ -242,7 +243,7 @@ describe('IndexNow', function () {
 
             listener(testModel);
 
-            assert.equal(pingStub.calledOnce, true);
+            sinon.assert.calledOnce(pingStub);
 
             resetIndexNow();
         });
@@ -260,7 +261,7 @@ describe('IndexNow', function () {
 
             await ping(testPost);
 
-            assert.equal(loggingStub.calledOnce, true);
+            sinon.assert.calledOnce(loggingStub);
         });
 
         it('with default post should not execute ping', async function () {
@@ -327,7 +328,7 @@ describe('IndexNow', function () {
             // Should NOT have made the ping request
             assert.equal(pingRequest.isDone(), false);
             // Should have logged a warning
-            assert.equal(loggingStub.calledOnce, true);
+            sinon.assert.calledOnce(loggingStub);
             assert(loggingStub.args[0][0].includes('API key not available'));
         });
 
@@ -341,7 +342,7 @@ describe('IndexNow', function () {
             await ping(testPost);
 
             assert.equal(pingRequest.isDone(), true);
-            assert.equal(loggingStub.calledOnce, true);
+            sinon.assert.calledOnce(loggingStub);
         });
 
         it('captures && logs errors from 400 requests', async function () {
@@ -354,7 +355,7 @@ describe('IndexNow', function () {
             await ping(testPost);
 
             assert.equal(pingRequest.isDone(), true);
-            assert.equal(loggingStub.calledOnce, true);
+            sinon.assert.calledOnce(loggingStub);
         });
 
         it('captures && logs validation errors from 422 requests', async function () {
@@ -367,7 +368,7 @@ describe('IndexNow', function () {
             await ping(testPost);
 
             assert.equal(pingRequest.isDone(), true);
-            assert.equal(loggingStub.calledOnce, true);
+            sinon.assert.calledOnce(loggingStub);
             assert(loggingStub.args[0][0].message.includes('key validation failed'));
         });
 
@@ -381,7 +382,7 @@ describe('IndexNow', function () {
             await ping(testPost);
 
             assert.equal(pingRequest.isDone(), true);
-            assert.equal(loggingStub.calledOnce, true);
+            sinon.assert.calledOnce(loggingStub);
         });
     });
 
@@ -399,6 +400,50 @@ describe('IndexNow', function () {
 
             const key = indexnow.getApiKey();
             assert.equal((key === null), true);
+        });
+    });
+
+    // Pin which URL ping() actually sends. The earlier `ping()` block above
+    // uses nock to intercept the HTTP request but never inspects the
+    // `?url=...` query parameter; that's the exact value a future change to
+    // the url-service call shape (e.g. swapping the legacy id-based method
+    // for a resource-based facade method) could regress without anyone
+    // noticing.
+    describe('ping() URL output', function () {
+        const ping = indexnow.__get__('ping');
+        const POST_URL = 'https://my-blog.example/some-post/';
+        let getUrlForResourceStub;
+        let requestStub;
+        let resetIndexNow;
+
+        beforeEach(function () {
+            // Bind the stub to the exact resource shape production passes
+            // (`{...post, type: 'posts'}`) so a regression that drops the
+            // type override or the spread surfaces here.
+            getUrlForResourceStub = sinon.stub(urlService.facade, 'getUrlForResource');
+            getUrlForResourceStub
+                .withArgs(sinon.match({id: 'abc', type: 'posts'}), {absolute: true})
+                .returns(POST_URL);
+
+            requestStub = sinon.stub().resolves({statusCode: 200});
+            resetIndexNow = indexnow.__set__('request', requestStub);
+
+            settingsCacheStub.withArgs('indexnow_api_key').returns('a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4');
+        });
+
+        afterEach(function () {
+            resetIndexNow();
+        });
+
+        it('passes the post URL into the IndexNow request', async function () {
+            const post = {id: 'abc', slug: 'some-post', type: 'post'};
+
+            await ping(post);
+
+            sinon.assert.calledOnce(getUrlForResourceStub);
+            sinon.assert.calledOnce(requestStub);
+            const indexNowUrl = new URL(requestStub.firstCall.args[0]);
+            assert.equal(indexNowUrl.searchParams.get('url'), POST_URL);
         });
     });
 });

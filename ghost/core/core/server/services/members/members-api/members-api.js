@@ -65,8 +65,10 @@ module.exports = function MembersAPI({
         Comment,
         MemberFeedback,
         Outbox,
-        AutomatedEmail,
-        AutomatedEmailRecipient
+        Automation,
+        WelcomeEmailAutomationRun,
+        AutomatedEmailRecipient,
+        Gift
     },
     tiersService,
     stripeAPIService,
@@ -80,7 +82,8 @@ module.exports = function MembersAPI({
     settingsHelpers,
     urlUtils,
     commentsService,
-    emailAddressService
+    emailAddressService,
+    giftService
 }) {
     const tokenService = new TokenService({
         privateKey,
@@ -100,9 +103,9 @@ module.exports = function MembersAPI({
         stripeAPIService,
         tokenService,
         newslettersService,
-        labsService,
         productRepository,
-        AutomatedEmail,
+        Automation,
+        WelcomeEmailAutomationRun,
         Member,
         MemberNewsletter,
         MemberCancelEvent,
@@ -135,7 +138,8 @@ module.exports = function MembersAPI({
         labsService,
         memberAttributionService,
         MemberEmailChangeEvent,
-        AutomatedEmailRecipient
+        AutomatedEmailRecipient,
+        Gift
     });
 
     const nextPaymentCalculator = new NextPaymentCalculator();
@@ -160,7 +164,8 @@ module.exports = function MembersAPI({
         emailSuppressionList,
         settingsHelpers,
         nextPaymentCalculator,
-        commentsService
+        commentsService,
+        giftService
     });
 
     const geolocationService = new GeolocationService();
@@ -183,7 +188,8 @@ module.exports = function MembersAPI({
         Offer,
         offersAPI,
         stripeAPIService,
-        settingsCache
+        settingsCache,
+        giftService
     });
 
     const memberController = new MemberController({
@@ -215,7 +221,8 @@ module.exports = function MembersAPI({
         settingsHelpers,
         sentry,
         urlUtils,
-        emailAddressService
+        emailAddressService,
+        giftService
     });
 
     const wellKnownController = new WellKnownController({
@@ -256,21 +263,29 @@ module.exports = function MembersAPI({
     }
 
     async function getMemberDataFromMagicLinkToken(token, otcVerification) {
-        const {email, labels = [], name = '', oldEmail, newsletters, attribution, reqIp, type} = await getTokenDataFromMagicLinkToken(token, otcVerification);
+        const {email, labels = [], name = '', oldEmail, newsletters, attribution, reqIp, type, giftToken} = await getTokenDataFromMagicLinkToken(token, otcVerification);
         if (!email) {
             return null;
         }
 
-        const member = oldEmail ? await getMemberIdentityData(oldEmail) : await getMemberIdentityData(email);
+        const giftSubscriptionsEnabled = labsService.isSet('giftSubscriptions');
+
+        let member = oldEmail ? await getMemberIdentityData(oldEmail) : await getMemberIdentityData(email);
 
         if (member) {
-            await MemberLoginEvent.add({member_id: member.id});
             if (oldEmail && (!type || type === 'updateEmail')) {
                 // user exists but wants to change their email address
                 await users.update({email}, {id: member.id});
+                await MemberLoginEvent.add({member_id: member.id});
                 return getMemberIdentityData(email);
             }
-            return member;
+
+            if (giftToken && giftSubscriptionsEnabled) {
+                await giftService.service.redeem(giftToken, member.id);
+            }
+
+            await MemberLoginEvent.add({member_id: member.id});
+            return getMemberIdentityData(member.email);
         }
 
         // Note: old tokens can still have a missing type (we can remove this after a couple of weeks)
@@ -291,7 +306,20 @@ module.exports = function MembersAPI({
             }
         }
 
-        const newMember = await users.create({name, email, labels, newsletters, attribution, geolocation});
+        let newMember;
+
+        if (giftToken && giftSubscriptionsEnabled) {
+            newMember = await Member.transaction(async (transacting) => {
+                const created = await users.create(
+                    {name, email, labels, newsletters, attribution, geolocation, status: 'gift'},
+                    {transacting}
+                );
+                await giftService.service.redeem(giftToken, created.id, {transacting, newMember: true});
+                return created;
+            });
+        } else {
+            newMember = await users.create({name, email, labels, newsletters, attribution, geolocation});
+        }
 
         await MemberLoginEvent.add({member_id: newMember.id});
         return getMemberIdentityData(email);
@@ -315,6 +343,25 @@ module.exports = function MembersAPI({
             return null;
         }
         return tokenService.encodeIdentityToken({sub: member.email});
+    }
+
+    async function getMemberEntitlementToken(transientId) {
+        const member = await getMemberIdentityDataFromTransientId(transientId);
+        if (!member) {
+            return null;
+        }
+
+        const activeTierIds = [...new Set((member.subscriptions || [])
+            .filter(sub => users.isActiveSubscriptionStatus(sub.status))
+            .map(sub => sub?.tier?.id)
+            .filter(Boolean))];
+
+        return tokenService.encodeEntitlementToken({
+            sub: member.email,
+            memberUuid: member.uuid,
+            paid: member.status !== 'free',
+            activeTierIds
+        });
     }
 
     async function setMemberGeolocationFromIp(email, ip) {
@@ -417,6 +464,7 @@ module.exports = function MembersAPI({
         middleware,
         getMemberDataFromMagicLinkToken,
         getMemberIdentityToken,
+        getMemberEntitlementToken,
         getMemberIdentityDataFromTransientId,
         getMemberIdentityData,
         cycleTransientId,

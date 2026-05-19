@@ -17,21 +17,17 @@ class RouterManager {
         this.registry = registry;
         this.siteRouter = null;
         /**
-         * @type {URLService}
+         * @type {URLServiceFacade}
          */
         this.urlService = null;
     }
 
-    owns(routerId, id) {
-        return this.urlService.owns(routerId, id);
+    ownsResource(routerId, resource) {
+        return this.urlService.ownsResource(routerId, resource);
     }
 
-    getUrlByResourceId(id, options) {
-        return this.urlService.getUrlByResourceId(id, options);
-    }
-
-    getResourceById(resourceId) {
-        return this.urlService.getResourceById(resourceId);
+    getUrlForResource(resource, options) {
+        return this.urlService.getUrlForResource(resource, options);
     }
 
     routerCreated(router) {
@@ -190,7 +186,7 @@ module.exports = RouterManager;
 /**
  * @typedef {Object} RouterConfig
  * @property {RouteSettings} [routeSettings] - JSON config representing routes
- * @property {URLService} urlService - service providing resource URL utility functions such as owns, getUrlByResourceId, and getResourceById
+ * @property {URLServiceFacade} urlService - resource-based URL service facade
  */
 
 /**
@@ -201,10 +197,10 @@ module.exports = RouterManager;
  */
 
 /**
- * @typedef {Object} URLService
- * @property {Function} owns
- * @property {Function} getUrlByResourceId
- * @property {Function} getResourceById
+ * @typedef {Object} URLServiceFacade
+ * @property {Function} getUrlForResource
+ * @property {Function} ownsResource
+ * @property {Function} resolveUrl
  * @property {Function} onRouterAddedType
  * @property {Function} onRouterUpdated
  */

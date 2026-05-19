@@ -8,12 +8,12 @@
  * Generates and clears analytics events directly in the Tinybird local instance.
  *
  * Usage:
- *   yarn data:analytics:generate [count]  - Generate analytics events
- *   yarn data:analytics:clear             - Clear all analytics events for the site
+ *   pnpm data:analytics:generate [count]  - Generate analytics events
+ *   pnpm data:analytics:clear             - Clear all analytics events for the site
  *
  * Prerequisites:
- *   - Docker environment running: yarn dev:analytics
- *   - Ghost database populated with posts/members: yarn reset:data
+ *   - Docker environment running: pnpm dev:analytics
+ *   - Ghost database populated with posts/members: pnpm reset:data
  */
 
 const DockerDatabaseUtils = require('./docker-database-utils');
@@ -96,9 +96,11 @@ class DockerAnalyticsManager {
         this.locales = ['en-US', 'en-GB', 'es-ES', 'fr-FR', 'de-DE', 'it-IT', 'pt-BR', 'ja-JP'];
 
         this.memberStatusWeights = [
-            {value: 'undefined', weight: 83},
-            {value: 'paid', weight: 9},
-            {value: 'free', weight: 8}
+            {value: 'undefined', weight: 82},
+            {value: 'paid', weight: 8},
+            {value: 'free', weight: 8},
+            {value: 'comped', weight: 1},
+            {value: 'gift', weight: 1}
         ];
 
         this.locationWeights = [
@@ -202,13 +204,13 @@ class DockerAnalyticsManager {
         } catch (error) {
             if (error.message.includes('No such file') || error.message.includes('No token found')) {
                 console.error('Tinybird config not found in Docker volume.');
-                console.error('Make sure Tinybird is running: yarn dev:analytics');
+                console.error('Make sure Tinybird is running: pnpm dev:analytics');
             } else if (error.message.includes('Cannot connect to the Docker daemon')) {
                 console.error('Docker is not running. Please start Docker first.');
             } else {
                 console.error('Failed to fetch Tinybird token:', error.message);
             }
-            throw new Error('Could not retrieve Tinybird token. Ensure yarn dev:analytics is running.');
+            throw new Error('Could not retrieve Tinybird token. Ensure pnpm dev:analytics is running.');
         }
     }
 
@@ -241,7 +243,7 @@ class DockerAnalyticsManager {
         this.assignPostPopularity();
 
         if (this.posts.length === 0) {
-            console.warn('No posts found. Run "yarn reset:data" to generate Ghost data first.');
+            console.warn('No posts found. Run "pnpm reset:data" to generate Ghost data first.');
         }
 
         return true;
@@ -796,13 +798,13 @@ Options:
   count  - Number of events to generate (default: ${DEFAULT_EVENT_COUNT})
 
 Prerequisites:
-  - Docker environment running: yarn dev:analytics
-  - Ghost database populated: yarn reset:data
+  - Docker environment running: pnpm dev:analytics
+  - Ghost database populated: pnpm reset:data
 
 Examples:
-  yarn data:analytics:generate          # Generate 10,000 events
-  yarn data:analytics:generate 10000    # Generate 10,000 events
-  yarn data:analytics:clear             # Clear all events
+  pnpm data:analytics:generate          # Generate 10,000 events
+  pnpm data:analytics:generate 10000    # Generate 10,000 events
+  pnpm data:analytics:clear             # Clear all events
 `);
 }
 

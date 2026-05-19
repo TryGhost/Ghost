@@ -4,15 +4,10 @@ const themeEngine = require('../../services/theme-engine');
 const express = require('../../../shared/express');
 const AASA_PATH = '/.well-known/apple-app-site-association';
 
-function isDeniedFile(file) {
-    const deniedFileTypes = ['.hbs', '.md', '.json', '.lock', '.log'];
-    const deniedFiles = ['gulpfile.js', 'gruntfile.js'];
-
-    const ext = path.extname(file);
-    const base = path.basename(file);
-
-    return deniedFiles.includes(base) || deniedFileTypes.includes(ext);
-}
+const DENIED_FILE_TYPES = ['.hbs', '.md', '.json', '.lock', '.log'];
+const DENIED_FILES = ['gulpfile.js', 'gruntfile.js'];
+const ALLOWED_FILES = ['manifest.json', 'assetlinks.json'];
+const ALLOWED_PATH = '/assets/';
 
 /**
  * Copy from:
@@ -33,26 +28,26 @@ function decode(filePath) {
 }
 
 /**
- *
- * @param {string} file path to a requested file
+ * @param {string} normalizedPath - already decoded and normalized
  * @returns {boolean}
  */
-function isAllowedFile(file) {
-    const decodedFilePath = decode(file);
-    if (decodedFilePath === -1) {
-        return false;
-    }
+function isDeniedFile(normalizedPath) {
+    const ext = path.extname(normalizedPath);
+    const base = path.basename(normalizedPath);
 
-    const normalizedFilePath = path.normalize(decodedFilePath);
+    return DENIED_FILES.includes(base) || DENIED_FILE_TYPES.includes(ext);
+}
 
-    const allowedFiles = ['manifest.json', 'assetlinks.json'];
-    const allowedPath = '/assets/';
-    const alwaysDeny = ['.hbs'];
+/**
+ * @param {string} normalizedPath - already decoded and normalized
+ * @returns {boolean}
+ */
+function isAllowedFile(normalizedPath) {
+    const ext = path.extname(normalizedPath);
+    const base = path.basename(normalizedPath);
 
-    const ext = path.extname(normalizedFilePath);
-    const base = path.basename(normalizedFilePath);
-
-    return allowedFiles.includes(base) || (normalizedFilePath.startsWith(allowedPath) && !alwaysDeny.includes(ext));
+    // .hbs files are never allowed, even in /assets/
+    return ALLOWED_FILES.includes(base) || (normalizedPath.startsWith(ALLOWED_PATH) && ext !== '.hbs');
 }
 
 /**
@@ -108,11 +103,22 @@ function staticTheme() {
             });
         }
 
-        if (!path.extname(req.path)) {
+        const decodedPath = decode(req.path.toLowerCase());
+        if (decodedPath === -1) {
             return next();
         }
 
-        if (!isAllowedFile(req.path.toLowerCase()) && isDeniedFile(req.path.toLowerCase())) {
+        const normalizedPath = path.normalize(decodedPath);
+
+        if (!path.extname(normalizedPath)) {
+            return next();
+        }
+
+        if (isAllowedFile(normalizedPath)) {
+            return forwardToExpressStatic(req, res, next);
+        }
+
+        if (isDeniedFile(normalizedPath)) {
             return next();
         }
 

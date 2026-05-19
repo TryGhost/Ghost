@@ -1,268 +1,114 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-<Meta title="Contributing" />
+<Meta title="Overview / Contributing" />
 
 <div className="sb-doc">
 
-# Contributing to Shade
+# Contributing
 
-<p className="excerpt">This guide explains how to contribute to the Shade design system, including adding or modifying components and documentation.</p>
+<p className="excerpt">Conventions for adding to Shade. The decision tree for *which layer* something belongs in is on the [Layers](?path=/docs/overview-layers--docs) page. The agent-facing rule source is `apps/shade/AGENTS.md`.</p>
 
-## Repository Layout
-
-```
-/apps/shade/
-  .storybook/                 # Storybook config
-  src/
-    components/
-      ui/                     # Base ShadCN/UI primitives
-      layout/                 # Composed, reusable layout components
-      features/               # Feature-specific, higher-level components
-    docs/                     # System docs rendered in Storybook
-```
-
-## Naming Conventions
-
-- **File names:** kebab-case, e.g. `dropdown-menu.tsx` (ShadCN-generated files keep kebab-case)
-  ```
-  dropdown-menu.tsx
-  dropdown-menu.stories.tsx
-  # optional extras below
-  dropdown-menu.mdx
-  dropdown-menu.meta.json
-  fixtures/dropdown-menu.fixtures.ts
-  ```
-- **Storybook titles:**
-  - UI primitives: `Components / <Name>` (e.g., `Components / Button`)
-  - Layout: `Layout / <Name>` (e.g., `Layout / Page`)
-  - Features: `Features / <Name>` (e.g., `Features / Post Share Modal`)
-- **Component folders:**
-  - ShadCN primitives under `/apps/shade/src/components/ui/`
-  - Composed layout components under `/apps/shade/src/components/layout/`
-  - Feature components under `/apps/shade/src/components/features/`
-
-## File Set Per Component
-
-Each documented component requires:
+## File layout
 
 ```
-/apps/shade/src/components/ui/button.tsx          # Component (source)
-/apps/shade/src/components/ui/button.stories.tsx  # Stories (CSF)
-/apps/shade/src/components/ui/button.mdx          # (optional) component docs (MDX)
-
-# Optional metadata & fixtures
-/apps/shade/src/components/ui/button.meta.json    # Machine-readable metadata
-/apps/shade/src/components/ui/fixtures/button.fixtures.ts
+apps/shade/src/
+├── components/
+│   ├── ui/              Generic controls + recipes
+│   ├── primitives/      Layout primitives (Stack, Inline, …)
+│   ├── patterns/        Product compositions (PageHeader, ListPage, …)
+│   └── posts-stats/     Interim shared between Posts and Stats
+├── docs/                MDX + showcase stories rendered in Storybook
+├── hooks/               Generic React hooks
+├── lib/                 Utilities (cn, formatters, chart helpers)
+└── providers/           Context providers
 ```
 
-## Component Documentation in Storybook
+Each entrypoint barrel (`components.ts`, `primitives.ts`, `patterns.ts`) re-exports from its folder.
 
-We document components through concise stories that show real use cases. Each story should have a one‑line description explaining when to use that variant/state. Prefer multiple focused stories over long prose.
+## Naming
 
-Required for every component:
-- A colocated `*.stories.tsx` using CSF with:
-  - `title` under the right section (Components / Layout / Features)
-  - `tags: ['autodocs']`
-  - An overview via `parameters.docs.description.component`
-  - Stories covering key variants and states with `parameters.docs.description.story`
+| What | Convention | Example |
+|---|---|---|
+| File names | kebab-case | `dropdown-menu.tsx` |
+| Component identifiers | PascalCase | `DropdownMenu` |
+| Hooks, functions, variables | camelCase | `useFocusTrap`, `formatNumber` |
+| Storybook titles | layer prefix | `Components / Button`, `Patterns / PageHeader`, `Recipes / inputSurface` |
 
-Example:
+Always forward and merge `className` with `cn(...)`. Use `cva()` for variants.
 
-```tsx
-import type {Meta, StoryObj} from '@storybook/react-vite';
-import {Button} from './button';
+## Imports
 
-const meta: Meta<typeof Button> = {
-  title: 'Components / Button',
-  component: Button,
-  tags: ['autodocs'],
-  parameters: {
-    docs: {
-      description: {
-        component: 'Reusable button for actions. Choose variant/size by context.'
-      }
-    }
-  }
-};
-export default meta;
-type Story = StoryObj<typeof Button>;
+Always use the layer-specific subpath:
 
-export const Default: Story = {
-  args: {children: 'Continue'},
-  parameters: {
-    docs: {description: {story: 'Primary call‑to‑action with default styling.'}}
-  }
-};
-
-export const Destructive: Story = {
-  args: {variant: 'destructive', children: 'Delete'},
-  parameters: {
-    docs: {description: {story: 'Use for dangerous or irreversible actions.'}}
-  }
-};
+```ts
+import {Button} from '@tryghost/shade/components';
+import {Stack} from '@tryghost/shade/primitives';
+import {PageHeader} from '@tryghost/shade/patterns';
+import {cn} from '@tryghost/shade/utils';
 ```
 
-## Component Implementation
+Inside Shade itself, use the `@/` alias for cross-file imports.
 
-### Using ShadCN/UI
+## Stories
 
-1. **Install Component**
-   ```bash
-   npx shadcn@latest add button
-   ```
+Every component ships with `<name>.stories.tsx` next to it:
 
-2. **Customize Implementation**
+- `title` follows the layer convention (table above).
+- `tags: ['autodocs']` so docs render.
+- A short `parameters.docs.description.component`.
+- One story per important variant/state, each with a one-line `parameters.docs.description.story` explaining when to use it.
 
-   > ⚠️ Always use the `cn` utility to combine classNames and `cva` for component variants. This ensures consistent class merging and variant handling across the design system.
+Stories are the gallery. Many small focused stories beat one prose-heavy story.
 
-   ```tsx
-   import { cn } from "@/lib/utils"
-   import { cva, type VariantProps } from "class-variance-authority"
+## ShadCN
 
-   // Define variants using cva
-   const buttonVariants = cva(
-       // Base styles applied to all variants
-       "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors",
-       {
-           variants: {
-               variant: {
-                   solid: "bg-primary text-primary-foreground hover:bg-primary/90",
-                   outline: "border border-input bg-background hover:bg-accent",
-                   ghost: "hover:bg-accent hover:text-accent-foreground"
-               },
-               size: {
-                   sm: "h-9 px-3",
-                   md: "h-10 px-4",
-                   lg: "h-11 px-8"
-               }
-           },
-           defaultVariants: {
-               variant: "solid",
-               size: "md"
-           }
-       }
-   );
+Most new components start from a ShadCN install:
 
-   // Extract variant props type
-   interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-       VariantProps<typeof buttonVariants> {}
-
-   // Use cn to combine variants with custom classes
-   export function Button({ className, variant, size, ...props }: ButtonProps) {
-       return (
-           <button
-               className={cn(buttonVariants({ variant, size }), className)}
-               {...props}
-           />
-       );
-   }
-   ```
-
-   **Key Points:**
-   - Use `cn` to merge component variants with custom className props
-   - Define variants with `cva` for type-safe variant combinations
-   - Extract variant props using `VariantProps` type
-   - Always provide sensible default variants
-   - Include hover/focus states in variant definitions
-
-### Prefer Compound Subcomponents
-
-When a component has multiple meaningful regions (title, meta, actions, etc.), prefer a compound subcomponents API over many props. This keeps the API composable and flexible.
-
-Example (Header):
-
-```tsx
-function Header(props) { /* ... */ }
-function HeaderTitle(props) { /* ... */ }
-function HeaderMeta(props) { /* ... */ }
-function HeaderActions(props) { /* ... */ }
-
-Header.Title = HeaderTitle;
-Header.Meta = HeaderMeta;
-Header.Actions = HeaderActions;
-
-export {Header};
-
-// Usage
-<Header>
-  <Header.Title>Members</Header.Title>
-  <Header.Meta>42,102 total</Header.Meta>
-  <Header.Actions><Button>New member</Button></Header.Actions>
-  {/* ... */}
-</Header>
+```bash
+pnpm dlx shadcn@latest add <component-name>
 ```
 
-Tips:
-- Attach parts as static properties and export them as named exports for convenience.
-- Keep parts small and focused; forward and merge `className`.
-- Demonstrate parts usage in stories (e.g., “With actions”, “With meta”).
+Guardrails:
 
-### Creating Custom Components
+- **Never overwrite an existing Shade component** when the CLI prompts. Choose "No".
+- Run on a fresh branch so the CLI's diff is clean.
+- If the component already exists, generate into a scratch repo and port the parts you actually want.
+- After integrating: replace any raw colour/spacing with semantic tokens; ensure default / hover / focus-visible / disabled all work; trim props that hint at a specific surface.
 
-1. **File Structure**
-   ```
-   # Layout component
-   src/components/layout/
-   ├── custom-component.tsx
-   ├── custom-component.stories.tsx
-   └── custom-component.mdx
+## Tokens & dark mode
 
-   # Feature component
-   src/components/features/
-   ├── custom-component.tsx
-   ├── custom-component.stories.tsx
-   └── custom-component.mdx
-   ```
+- Reference semantic tokens (`bg-background`, `text-foreground`, `border-border-default`, `--surface-elevated`). Never hard-code hex values.
+- Don't write `dark:` variants for colour — semantic tokens flip automatically. Exceptions: assets like logos and illustrations.
+- New tokens go in `apps/shade/theme-variables.css` (semantic) or `apps/shade/tailwind.theme.css` (raw `@theme`). Don't introduce ad-hoc CSS variables in component files.
 
-2. **Implementation Pattern**
-   ```tsx
-   import { cn } from "@/lib/utils"
+## Acceptance checklist
 
-   interface CustomComponentProps {
-       className?: string;
-   }
+Before merging a component:
 
-   export function CustomComponent({ className }: CustomComponentProps) {
-       return (
-           <div className={cn("base-styles", className)}>
-               {/* Component content */}
-           </div>
-       );
-   }
-   ```
+- [ ] Lives in the right layer (see [Layers](?path=/docs/overview-layers--docs))
+- [ ] `className` forwarded and merged with `cn()`
+- [ ] All states work: default, hover, focus-visible, disabled
+- [ ] Semantic tokens only; no hex values, no `bg-gray-200`-style raw utilities for UI chrome
+- [ ] Story covers variants + states with one-line "when to use" descriptions
+- [ ] No product-specific props on a generic control
+- [ ] `pnpm lint`, `pnpm test`, and Storybook all clean
 
-## Acceptance Checklist
+## Commits & PRs
 
-For each component:
+Commit message format (full rules in `apps/shade/AGENTS.md`):
 
-- [ ] Component follows design system principles
-- [ ] Prefer compound subcomponents for multi‑region components
-- [ ] `*.stories.tsx` includes: overview + key variants and states
-- [ ] Each story has a short “when to use” description
-- [ ] Accessibility is considered (labels, focus, disabled) and reflected in stories/args
-- [ ] Slots are listed in Anatomy and demonstrated
-- [ ] Accessibility items include keyboard, ARIA, and contrast
-- [ ] (Optional) `*.meta.json` present and valid
+```
+Added Avatar component
 
-## ShadCN Installation Guardrails
+ref https://linear.app/ghost/issue/DES-1234/avatar
 
-- Never overwrite existing Shade components during `npx shadcn@latest add <name>` prompts — choose “No”.
-- Work on a fresh branch before running the installer: `git checkout -b chore/shadcn-add-<name>`.
-- If a component already exists, generate into a scratch repo and manually diff; port only the desired changes.
-- After integrating, run `yarn lint`, `yarn test`, and verify in Storybook.
+Builds on Radix Avatar with a size variant scale and a fallback initials slot.
+```
 
-## Utilities
+- 1st line: ≤ 80 chars, past tense, starts with one of: Fixed / Changed / Updated / Improved / Added / Removed / Reverted / Moved / Released / Bumped / Cleaned.
+- 3rd line: magic word (`ref`, `closes`, `fixes`) + full Linear URL.
+- 4th+: the **why**, not the what.
 
-- Import utilities from `@/lib/utils`.
-- Always forward and merge `className` with `cn(...)` and prefer CVA for variants when useful.
-
-## Agents & Repo Conventions
-
-Refer to `AGENTS.md` at the repository root for additional, repo-specific guidance used by both humans and agents. It covers:
-- Project structure and module organization
-- Build, test, and development commands
-- Coding style, naming conventions, and Tailwind scoping
-- Adding new components and ShadCN guardrails
-- Testing expectations and commit/PR guidelines
+PRs: screenshots or GIFs for any UI change; link the Linear issue; update or add stories.
 
 </div>

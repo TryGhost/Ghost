@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`Create Stripe Checkout Session for Donations Can create a checkout session with a personal note included 1: [body] 1`] = `
 Object {

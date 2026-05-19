@@ -30,6 +30,7 @@ class MembersStripeCustomersSubscriptionsImporter extends TableImporter {
             this.members = await this.transaction.select('id', 'status', 'created_at').from('members').whereIn('id', membersStripeCustomers.map(m => m.member_id));
 
             if (this.members.length === 0) {
+                offset += limit;
                 continue;
             }
 
@@ -95,6 +96,7 @@ class MembersStripeCustomersSubscriptionsImporter extends TableImporter {
                 (isMonthly ? price.interval === 'month' : price.interval === 'year');
         });
         const mrr = createValid ? (isMonthly ? stripePrice.amount : Math.floor(stripePrice.amount / 12)) : 0;
+        const memberCreatedAt = dateToDatabaseString.parse(member.created_at);
 
         const referenceEndDate = this.lastSubscriptionStart ?? new Date();
 
@@ -106,7 +108,7 @@ class MembersStripeCustomersSubscriptionsImporter extends TableImporter {
             }
         }
 
-        if (referenceEndDate < member.created_at) {
+        if (referenceEndDate < memberCreatedAt) {
             // Not possible to create an invalid subscription here
             return;
         }
@@ -114,7 +116,7 @@ class MembersStripeCustomersSubscriptionsImporter extends TableImporter {
         const [startDate] = generateEvents({
             total: 1,
             trend: 'negative',
-            startTime: new Date(member.created_at),
+            startTime: memberCreatedAt,
             endTime: referenceEndDate,
             shape: 'ease-out'
         });

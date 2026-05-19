@@ -23,6 +23,6 @@ describe('getRssUrl', function () {
     it('forwards absolute flags', function () {
         getRssUrl({}, true);
 
-        assert.equal(routing.registry.getRssUrl.calledWith({absolute: true}), true);
+        sinon.assert.calledWith(routing.registry.getRssUrl, {absolute: true});
     });
 });

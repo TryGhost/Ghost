@@ -30,7 +30,7 @@ test.describe('Ghost Admin - Post Analytics - Growth', () => {
         await postAnalyticsPageGrowthPage.viewMemberButton.click();
 
         const membersPage = new MembersPage(page);
-        await expect(membersPage.body).toContainText('No members match');
+        await expect(membersPage.body).toContainText('No matching members found.');
     });
 
     test('empty top sources card', async ({page}) => {
@@ -39,4 +39,3 @@ test.describe('Ghost Admin - Post Analytics - Growth', () => {
         await expect(postAnalyticsPageGrowthPage.topSourcesCard).toContainText('No sources data available');
     });
 });
-

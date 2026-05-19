@@ -6,7 +6,7 @@ const configUtils = require('../../../utils/config-utils');
 const sinon = require('sinon');
 const localUtils = require('../../../../core/shared/config/utils');
 describe('Config Loader', function () {
-    before(async function () {
+    beforeAll(async function () {
         await configUtils.restore();
     });
 
@@ -29,6 +29,9 @@ describe('Config Loader', function () {
             // we manually call `loadConf` in the tests and we need to ensure that the minimum
             // required config properties are available
             process.env.paths__contentPath = 'content/';
+            // Remove any nconf-style env vars that could interfere with
+            // config hierarchy assertions (e.g. logging__level set by CI)
+            delete process.env.logging__level;
         });
 
         afterEach(function () {

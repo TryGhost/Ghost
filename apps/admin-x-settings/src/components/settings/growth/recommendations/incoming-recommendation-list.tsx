@@ -63,7 +63,7 @@ const IncomingRecommendationItem: React.FC<{incomingRecommendation: IncomingReco
                     </div>
                 </div>
             </TableCell>
-            <TableCell className='hidden w-auto whitespace-nowrap text-left align-middle md:!visible md:!table-cell' padding={false} onClick={showDetails}>
+            <TableCell className='hidden w-auto text-left whitespace-nowrap md:visible! md:table-cell!' padding={false} valign="middle" onClick={showDetails}>
                 {(signups === 0) ? (
                     <span className="text-grey-500 dark:text-grey-900">-</span>
                 ) : (
@@ -72,14 +72,14 @@ const IncomingRecommendationItem: React.FC<{incomingRecommendation: IncomingReco
                     </div>
                 )}
             </TableCell>
-            <TableCell className='hidden w-[1%] whitespace-nowrap align-middle md:!visible md:!table-cell' onClick={showDetails}>
+            <TableCell className='hidden w-[1%] whitespace-nowrap md:visible! md:table-cell!' valign="middle" onClick={showDetails}>
                 {(signups === 0) ? (null) : (
                     <div className='-mt-px text-left'>
-                        <span className='-mb-px inline-block min-w-[60px] whitespace-nowrap text-left text-sm lowercase text-grey-700'>{freeMembersLabel}</span>
+                        <span className='-mb-px inline-block min-w-[60px] text-left text-sm whitespace-nowrap text-grey-700 lowercase'>{freeMembersLabel}</span>
                     </div>
                 )}
             </TableCell>
-            {incomingRecommendation.recommending_back && <TableCell className='w-[1%] whitespace-nowrap group-hover/table-row:visible md:invisible'><div className='mt-1 whitespace-nowrap text-right text-sm text-grey-700'>Recommending</div></TableCell>}
+            {incomingRecommendation.recommending_back && <TableCell className='w-[1%] whitespace-nowrap group-hover/table-row:visible md:invisible'><div className='mt-1 text-right text-sm whitespace-nowrap text-grey-700'>Recommending</div></TableCell>}
         </TableRow>
     );
 };

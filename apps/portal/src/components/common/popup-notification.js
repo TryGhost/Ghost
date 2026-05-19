@@ -1,8 +1,8 @@
 import React from 'react';
 import AppContext from '../../app-context';
-import {ReactComponent as CloseIcon} from '../../images/icons/close.svg';
-import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark-fill.svg';
-import {ReactComponent as WarningIcon} from '../../images/icons/warning-fill.svg';
+import CloseIcon from '../../images/icons/close.svg?react';
+import CheckmarkIcon from '../../images/icons/checkmark-fill.svg?react';
+import WarningIcon from '../../images/icons/warning-fill.svg?react';
 import {getSupportAddress} from '../../utils/helpers';
 import {clearURLParams} from '../../utils/notifications';
 import Interpolate from '@doist/react-interpolate';
@@ -125,7 +125,7 @@ export default class PopupNotification extends React.Component {
         const slideClass = className ? ` ${className}` : '';
 
         return (
-            <div className={`gh-portal-notification gh-portal-popupnotification ${statusClass}${slideClass}`} onAnimationEnd={e => this.onAnimationEnd(e)}>
+            <div className={`gh-portal-notification gh-portal-popupnotification ${statusClass}${slideClass}`} data-testid={status ? `popup-notification-${status}` : 'popup-notification'} onAnimationEnd={e => this.onAnimationEnd(e)}>
                 {(status === 'error' ? <WarningIcon className='gh-portal-notification-icon error' alt=''/> : <CheckmarkIcon className='gh-portal-notification-icon success' alt=''/>)}
                 <NotificationText type={type} status={status} message={message} site={site} />
                 <CloseButton hide={!closeable} onClose={e => this.closeNotification(e)}/>

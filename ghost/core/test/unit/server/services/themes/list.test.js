@@ -65,9 +65,9 @@ describe('Themes', function () {
             const setSpy = sinon.spy(themeList, 'set');
 
             themeList.init({test: {a: 'b'}, casper: {c: 'd'}});
-            assert.equal(setSpy.calledTwice, true);
-            assert.equal(setSpy.firstCall.calledWith('test', {a: 'b'}), true);
-            assert.equal(setSpy.secondCall.calledWith('casper', {c: 'd'}), true);
+            sinon.assert.calledTwice(setSpy);
+            sinon.assert.calledWith(setSpy.firstCall, 'test', {a: 'b'});
+            sinon.assert.calledWith(setSpy.secondCall, 'casper', {c: 'd'});
         });
 
         it('init() with empty object resets the list', function () {

@@ -8,10 +8,13 @@ import StatsLayout from '../layout/stats-layout';
 import StatsView from '../layout/stats-view';
 import TopContent from './components/top-content';
 import WebKPIs, {KpiDataItem} from './components/web-kpis';
-import {Card, CardContent, NavbarActions, createFilter, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {Card, CardContent, NavbarActions} from '@tryghost/shade/components';
 import {KpiMetric} from '@src/types/kpi';
 import {Navigate, useAppContext, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
+import {createFilter} from '@tryghost/shade/patterns';
+import {formatDuration, formatNumber, formatPercentage} from '@tryghost/shade/utils';
+import {formatQueryDate, getRangeDates} from '@tryghost/shade/app';
 import {getAudienceFromFilterValues, getAudienceQueryParam} from '@src/utils/audience';
 import {useFilterParams} from '@hooks/use-filter-params';
 import {useGlobalData} from '@src/providers/global-data-provider';
@@ -27,25 +30,25 @@ export const KPI_METRICS: Record<string, KpiMetric> = {
     visits: {
         dataKey: 'visits',
         label: 'Visitors',
-        chartColor: 'hsl(var(--chart-blue))',
+        chartColor: 'var(--chart-blue)',
         formatter: formatNumber
     },
     views: {
         dataKey: 'pageviews',
         label: 'Pageviews',
-        chartColor: 'hsl(var(--chart-teal))',
+        chartColor: 'var(--chart-teal)',
         formatter: formatNumber
     },
     'bounce-rate': {
         dataKey: 'bounce_rate',
         label: 'Bounce rate',
-        chartColor: 'hsl(var(--chart-teal))',
+        chartColor: 'var(--chart-teal)',
         formatter: formatPercentage
     },
     'visit-duration': {
         dataKey: 'avg_session_sec',
         label: 'Visit duration',
-        chartColor: 'hsl(var(--chart-teal))',
+        chartColor: 'var(--chart-teal)',
         formatter: formatDuration
     }
 };
@@ -190,7 +193,7 @@ const Web: React.FC = () => {
                     <DateRangeSelect />
                 </NavbarActions>
                 }
-                <NavbarActions className={`${hasFilters ? '!mt-0 [grid-area:subactions] lg:!mt-[25px]' : '[grid-area:actions]'}`}>
+                <NavbarActions className={`${hasFilters ? 'mt-0! [grid-area:subactions] lg:mt-[25px]!' : '[grid-area:actions]'}`}>
                     <StatsFilter
                         filters={analyticsFilters}
                         onChange={setAnalyticsFilters}

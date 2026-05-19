@@ -8,6 +8,10 @@ const localUtils = require('./utils');
 /* eslint-disable max-lines */
 
 module.exports = {
+    get automations() {
+        return apiFramework.pipeline(require('./automations'), localUtils);
+    },
+
     get authentication() {
         return apiFramework.pipeline(require('./authentication'), localUtils);
     },
@@ -83,6 +87,10 @@ module.exports = {
 
     get automatedEmails() {
         return apiFramework.pipeline(require('./automated-emails'), localUtils);
+    },
+
+    get automatedEmailDesign() {
+        return apiFramework.pipeline(require('./automated-email-design'), localUtils);
     },
 
     get membersStripeConnect() {
@@ -283,6 +291,14 @@ module.exports = {
 
     get feedbackMembers() {
         return apiFramework.pipeline(require('./feedback-members'), localUtils, 'members');
+    },
+
+    get giftsMembers() {
+        return apiFramework.pipeline(require('./gifts-members'), localUtils, 'members');
+    },
+
+    get giftReminders() {
+        return apiFramework.pipeline(require('./gift-reminders'), localUtils);
     },
 
     get recommendationsPublic() {

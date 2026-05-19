@@ -44,6 +44,7 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
         commentsIsLoading: false,
         commentIdToHighlight: null,
         commentIdToScrollTo: initialCommentId,
+        commentIdFromHash: initialCommentId,
         showMissingCommentNotice: false,
         pageUrl,
         supportEmail: null,
@@ -235,47 +236,10 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
     };
 
     /**
-     * Load all replies for a parent comment if the target reply isn't already loaded.
-     */
-    const loadRepliesForComment = async (
-        parentId: string,
-        comments: Comment[]
-    ): Promise<Comment[]> => {
-        const parent = comments.find(c => c.id === parentId);
-        const hasMoreReplies = parent && parent.count.replies > parent.replies.length;
-
-        if (!hasMoreReplies) {
-            return comments;
-        }
-
-        let allReplies: Comment[] = [];
-        let hasMore = true;
-        let afterReplyId: string | undefined;
-
-        while (hasMore) {
-            const response = await api.comments.replies({
-                commentId: parentId,
-                afterReplyId,
-                limit: 100
-            });
-            allReplies = [...allReplies, ...response.comments];
-            hasMore = !!response.meta?.pagination?.next;
-
-            if (response.comments.length > 0) {
-                afterReplyId = response.comments[response.comments.length - 1]?.id;
-            } else {
-                hasMore = false;
-            }
-        }
-
-        return comments.map(c => (c.id === parentId
-            ? {...c, replies: allReplies}
-            : c
-        ));
-    };
-
-    /**
-     * Load additional comment pages and/or replies until the scroll target is found.
+     * Load additional comment pages and/or replies until the scroll
+     * target is found. After paginating to the parent comment, if the
+     * target reply isn't in the inline replies (partial API response),
+     * fetch all replies from the server.
      */
     const loadScrollTarget = async (
         targetId: string,
@@ -289,7 +253,8 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
         let comments = paginatedComments;
 
         if (parentId && !isCommentLoaded(comments, targetId)) {
-            comments = await loadRepliesForComment(parentId, comments);
+            const {comments: allReplies} = await api.comments.replies({commentId: parentId, limit: 'all'});
+            comments = comments.map(c => (c.id === parentId ? {...c, replies: allReplies} : c));
         }
 
         return {comments, pagination, found: isCommentLoaded(comments, targetId)};
@@ -333,6 +298,7 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
                 commentsIsLoading: false,
                 commentIdToHighlight: null,
                 commentIdToScrollTo: scrollTargetFound ? initialCommentId : null,
+                commentIdFromHash: scrollTargetFound ? initialCommentId : null,
                 showMissingCommentNotice: !!initialCommentId && !scrollTargetFound,
                 supportEmail,
                 isMember,

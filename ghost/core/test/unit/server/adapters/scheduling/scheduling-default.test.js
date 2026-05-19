@@ -13,7 +13,8 @@ describe('Scheduling Default Adapter', function () {
     let clock;
 
     beforeEach(function () {
-        clock = sinon.useFakeTimers();
+        // TODO: shouldAdvanceTime is a fake-timer + async-await workaround; see docs/dep-consolidation.md
+        clock = sinon.useFakeTimers({shouldAdvanceTime: true});
         scope.adapter = new SchedulingDefault();
     });
 
@@ -49,7 +50,7 @@ describe('Scheduling Default Adapter', function () {
             // 2 jobs get immediately executed
             assert.equal(scope.adapter.allJobs[moment(dates[1]).valueOf()], undefined);
             assert.equal(scope.adapter.allJobs[moment(dates[7]).valueOf()], undefined);
-            assert.equal(scope.adapter._execute.calledTwice, true);
+            sinon.assert.calledTwice(scope.adapter._execute);
 
             assert.equal(Object.keys(scope.adapter.allJobs).length, dates.length - 2);
             assert.deepEqual(Object.keys(scope.adapter.allJobs), [
@@ -96,7 +97,7 @@ describe('Scheduling Default Adapter', function () {
 
             clock.tick(50);
 
-            assert.equal(scope.adapter._pingUrl.calledOnce, true);
+            sinon.assert.calledOnce(scope.adapter._pingUrl);
             done();
         });
 
@@ -124,7 +125,7 @@ describe('Scheduling Default Adapter', function () {
             });
 
             clock.tick(50);
-            assert.equal(scope.adapter._pingUrl.calledOnce, true);
+            sinon.assert.calledOnce(scope.adapter._pingUrl);
             done();
         });
 

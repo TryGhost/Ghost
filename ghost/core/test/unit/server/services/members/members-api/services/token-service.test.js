@@ -30,6 +30,29 @@ describe('TokenService', function () {
         });
     });
 
+    describe('encodeEntitlementToken', function () {
+        it('can encode an entitlement token and decode it afterwards', async function () {
+            const token = await tokenService.encodeEntitlementToken({
+                sub: 'member@example.com',
+                memberUuid: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',
+                paid: true,
+                activeTierIds: ['tier_1', 'tier_2']
+            });
+            const decodedToken = await tokenService.decodeToken(token);
+
+            assert.deepEqual(Object.keys(decodedToken), ['sub', 'kid', 'scope', 'member_uuid', 'paid', 'active_tier_ids', 'jti', 'iat', 'exp', 'aud', 'iss']);
+            assert.equal(decodedToken.aud, 'http://127.0.0.1:2369/members/api');
+            assert.equal(decodedToken.iss, 'http://127.0.0.1:2369/members/api');
+            assert.equal(decodedToken.sub, 'member@example.com');
+            assert.equal(decodedToken.scope, 'members:entitlements:read');
+            assert.equal(decodedToken.member_uuid, 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee');
+            assert.equal(decodedToken.paid, true);
+            assert.deepEqual(decodedToken.active_tier_ids, ['tier_1', 'tier_2']);
+            assert.equal(typeof decodedToken.jti, 'string');
+            assert.equal(decodedToken.exp - decodedToken.iat, 300);
+        });
+    });
+
     describe('getPublicKeys', function () {
         it('can verify the token using public keys', async function () {
             const token = await tokenService.encodeIdentityToken({sub: 'member@example.com'});

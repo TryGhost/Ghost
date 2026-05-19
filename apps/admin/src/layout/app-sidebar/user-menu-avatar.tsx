@@ -1,10 +1,6 @@
 import type React from "react";
-import {
-    Avatar,
-    AvatarFallback,
-    AvatarImage,
-    LucideIcon
-} from "@tryghost/shade"
+import {Avatar, AvatarFallback, AvatarImage} from "@tryghost/shade/components"
+import {LucideIcon} from "@tryghost/shade/utils"
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 
 type UserMenuAvatarProps = React.ComponentProps<typeof Avatar>;

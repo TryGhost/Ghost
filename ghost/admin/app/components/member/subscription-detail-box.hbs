@@ -14,9 +14,15 @@
                 Source&nbsp;&mdash;&nbsp;<span>{{@sub.attribution.referrerSource}}</span>
             </p>
             {{/if}}
-            {{#if (and @sub.attribution @sub.attribution.url @sub.attribution.title)}}
+            {{#if (and @sub.attribution @sub.attribution.title)}}
             <p>
+                {{#if (and @sub.attribution.id (eq @sub.attribution.type "post"))}}
+                Page&nbsp;&mdash;&nbsp;<a href="/ghost/#/posts/analytics/{{@sub.attribution.id}}">{{ @sub.attribution.title }}</a>
+                {{else if @sub.attribution.url}}
                 Page&nbsp;&mdash;&nbsp;<a href="{{@sub.attribution.url}}" target="_blank" rel="noopener noreferrer">{{ @sub.attribution.title }}</a>
+                {{else}}
+                Page&nbsp;&mdash;&nbsp;{{ @sub.attribution.title }}
+                {{/if}}
             </p>
             {{/if}}
         </div>

@@ -117,8 +117,14 @@ const controller = {
         async query() {
             const isSetup = await auth.setup.checkIsSetup();
 
+            if (isSetup) {
+                return {
+                    status: true
+                };
+            }
+
             return {
-                status: isSetup,
+                status: false,
                 title: config.title,
                 name: config.user_name,
                 email: config.user_email
@@ -161,13 +167,28 @@ const controller = {
         ],
         async query(frame) {
             await auth.setup.assertSetupCompleted(true)();
-            const params = await auth.passwordreset.extractTokenParts(frame);
-            const {options, tokenParts} = await auth.passwordreset.protectBruteForce(params);
+            const {options, tokenParts} = await auth.passwordreset.extractTokenParts(frame);
             const internalOptions = Object.assign(options, {context: {internal: true}});
 
             const doResetParams = await auth.passwordreset.doReset(internalOptions, tokenParts, api.settings);
+
+            if (!frame.original.session) {
+                throw new errors.InternalServerError({
+                    message: 'Could not initialize an admin session during password reset.'
+                });
+            }
+
+            // Rotate the session_id and mint a fresh verified session so that
+            // any stolen or cloned copy of the pre-reset cookie is rejected
+            // on its next request.
+            await auth.session.sessionService.rotateAndAssignVerifiedUserToSession({
+                req: frame.original.session.req,
+                user: doResetParams.user,
+                ip: frame.options.ip
+            });
+
             web.shared.middleware.api.spamPrevention.userLogin().reset(frame.options.ip, `${tokenParts.email}login`);
-            return doResetParams;
+            return {};
         }
     },
 

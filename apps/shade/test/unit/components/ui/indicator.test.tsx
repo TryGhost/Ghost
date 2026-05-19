@@ -12,7 +12,7 @@ describe('Indicator Component', () => {
 
         assert.ok(container, 'Indicator container should be rendered');
         assert.ok(indicator, 'Indicator dot should be rendered');
-        assert.ok(indicator?.className.includes('bg-green-500'), 'Should have success variant class by default');
+        assert.ok(indicator?.className.includes('bg-state-success'), 'Should have success variant class by default');
         assert.ok(indicator?.className.includes('size-2'), 'Should have small size by default');
         assert.ok(!indicator?.className.includes('animate-pulse'), 'Should not be pulsing in idle state');
         assert.ok(!indicator?.className.includes('border'), 'Should not have border in idle state');
@@ -31,7 +31,7 @@ describe('Indicator Component', () => {
         const container = screen.getByTestId('indicator');
         const indicator = container.querySelector('[aria-hidden="true"]');
 
-        assert.ok(indicator?.className.includes('bg-blue-500'), 'Should have info variant class');
+        assert.ok(indicator?.className.includes('bg-state-info'), 'Should have info variant class');
     });
 
     it('applies success variant correctly', () => {
@@ -39,42 +39,42 @@ describe('Indicator Component', () => {
         const container = screen.getByTestId('indicator');
         const indicator = container.querySelector('[aria-hidden="true"]');
 
-        assert.ok(indicator?.className.includes('bg-green-500'), 'Should have success variant class');
+        assert.ok(indicator?.className.includes('bg-state-success'), 'Should have success variant class');
     });
 
     it('applies error variant correctly', () => {
-        render(<Indicator variant="error" data-testid="indicator" />);
+        render(<Indicator data-testid="indicator" variant="error" />);
         const container = screen.getByTestId('indicator');
         const indicator = container.querySelector('[aria-hidden="true"]');
 
-        assert.ok(indicator?.className.includes('bg-red-500'), 'Should have error variant class');
+        assert.ok(indicator?.className.includes('bg-state-danger'), 'Should have error variant class');
     });
 
     it('applies warning variant correctly', () => {
-        render(<Indicator variant="warning" data-testid="indicator" />);
+        render(<Indicator data-testid="indicator" variant="warning" />);
         const container = screen.getByTestId('indicator');
         const indicator = container.querySelector('[aria-hidden="true"]');
 
-        assert.ok(indicator?.className.includes('bg-yellow-500'), 'Should have warning variant class');
+        assert.ok(indicator?.className.includes('bg-state-warning'), 'Should have warning variant class');
     });
 
     it('applies idle state correctly', () => {
-        render(<Indicator variant="success" state="idle" data-testid="indicator" />);
+        render(<Indicator data-testid="indicator" state="idle" variant="success" />);
         const container = screen.getByTestId('indicator');
         const indicator = container.querySelector('[aria-hidden="true"]');
 
-        assert.ok(indicator?.className.includes('bg-green-500'), 'Should have solid background');
+        assert.ok(indicator?.className.includes('bg-state-success'), 'Should have solid background');
         assert.ok(!indicator?.className.includes('animate-pulse'), 'Should not be pulsing in idle state');
         assert.ok(!indicator?.className.includes('border'), 'Should not have border');
     });
 
     it('applies active state correctly', () => {
-        render(<Indicator variant="success" state="active" data-testid="indicator" />);
+        render(<Indicator data-testid="indicator" state="active" variant="success" />);
         const container = screen.getByTestId('indicator');
         const indicator = container.querySelector('[aria-hidden="true"]');
 
         assert.ok(indicator?.className.includes('animate-pulse'), 'Should have pulsing animation class');
-        assert.ok(indicator?.className.includes('bg-green-500'), 'Should maintain variant color');
+        assert.ok(indicator?.className.includes('bg-state-success'), 'Should maintain variant color');
     });
 
     it('applies inactive state with neutral variant correctly', () => {
@@ -94,7 +94,7 @@ describe('Indicator Component', () => {
 
         assert.ok(indicator?.className.includes('border'), 'Should have border class');
         assert.ok(indicator?.className.includes('bg-transparent'), 'Should have transparent background class');
-        assert.ok(indicator?.className.includes('border-blue-500'), 'Should have blue border for info variant');
+        assert.ok(indicator?.className.includes('border-state-info'), 'Should have info border variant');
     });
 
     it('applies inactive state with success variant correctly', () => {
@@ -104,52 +104,52 @@ describe('Indicator Component', () => {
 
         assert.ok(indicator?.className.includes('border'), 'Should have border class');
         assert.ok(indicator?.className.includes('bg-transparent'), 'Should have transparent background class');
-        assert.ok(indicator?.className.includes('border-green-500'), 'Should have green border for success variant');
+        assert.ok(indicator?.className.includes('border-state-success'), 'Should have success border variant');
     });
 
     it('applies inactive state with error variant correctly', () => {
-        render(<Indicator variant="error" state="inactive" data-testid="indicator" />);
+        render(<Indicator data-testid="indicator" state="inactive" variant="error" />);
         const container = screen.getByTestId('indicator');
         const indicator = container.querySelector('[aria-hidden="true"]');
 
         assert.ok(indicator?.className.includes('border'), 'Should have border class');
         assert.ok(indicator?.className.includes('bg-transparent'), 'Should have transparent background class');
-        assert.ok(indicator?.className.includes('border-red-500'), 'Should have red border for error variant');
+        assert.ok(indicator?.className.includes('border-state-danger'), 'Should have error border variant');
     });
 
     it('applies inactive state with warning variant correctly', () => {
-        render(<Indicator variant="warning" state="inactive" data-testid="indicator" />);
+        render(<Indicator data-testid="indicator" state="inactive" variant="warning" />);
         const container = screen.getByTestId('indicator');
         const indicator = container.querySelector('[aria-hidden="true"]');
 
         assert.ok(indicator?.className.includes('border'), 'Should have border class');
         assert.ok(indicator?.className.includes('bg-transparent'), 'Should have transparent background class');
-        assert.ok(indicator?.className.includes('border-yellow-500'), 'Should have yellow border for warning variant');
+        assert.ok(indicator?.className.includes('border-state-warning'), 'Should have warning border variant');
     });
 
     it('applies different sizes correctly', () => {
-        const {rerender} = render(<Indicator size="sm" data-testid="indicator" />);
+        const {rerender} = render(<Indicator data-testid="indicator" size="sm" />);
         let container = screen.getByTestId('indicator');
         let indicator = container.querySelector('[aria-hidden="true"]');
         assert.ok(indicator?.className.includes('size-2'), 'Should have small size class');
 
-        rerender(<Indicator size="md" data-testid="indicator" />);
+        rerender(<Indicator data-testid="indicator" size="md" />);
         container = screen.getByTestId('indicator');
         indicator = container.querySelector('[aria-hidden="true"]');
         assert.ok(indicator?.className.includes('size-3'), 'Should have medium size class');
 
-        rerender(<Indicator size="lg" data-testid="indicator" />);
+        rerender(<Indicator data-testid="indicator" size="lg" />);
         container = screen.getByTestId('indicator');
         indicator = container.querySelector('[aria-hidden="true"]');
         assert.ok(indicator?.className.includes('size-4'), 'Should have large size class');
     });
 
     it('combines variant and state correctly', () => {
-        render(<Indicator variant="error" state="active" data-testid="indicator" />);
+        render(<Indicator data-testid="indicator" state="active" variant="error" />);
         const container = screen.getByTestId('indicator');
         const indicator = container.querySelector('[aria-hidden="true"]');
 
-        assert.ok(indicator?.className.includes('bg-red-500'), 'Should have error variant color');
+        assert.ok(indicator?.className.includes('bg-state-danger'), 'Should have error variant color');
         assert.ok(indicator?.className.includes('animate-pulse'), 'Should have active animation');
     });
 
@@ -186,7 +186,7 @@ describe('Indicator Component', () => {
     });
 
     it('passes additional props to the container span element', () => {
-        render(<Indicator data-testid="indicator-test" data-custom="value" />);
+        render(<Indicator data-custom="value" data-testid="indicator-test" />);
         const container = screen.getByTestId('indicator-test');
 
         assert.equal(container.getAttribute('data-custom'), 'value', 'Should pass additional props to container');

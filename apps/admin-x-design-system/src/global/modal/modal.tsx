@@ -177,6 +177,7 @@ const Modal = forwardRef<HTMLElement, ModalProps>(({
                 key: 'cancel-modal',
                 label: cancelLabel,
                 color: 'outline',
+                testId: 'cancel-modal',
                 onClick: (onCancel ? onCancel : () => {
                     removeModal();
                 }),
@@ -190,6 +191,7 @@ const Modal = forwardRef<HTMLElement, ModalProps>(({
                 label: okLabel,
                 color: okColor,
                 className: 'min-w-[80px]',
+                testId: 'ok-modal',
                 onClick: onOk,
                 disabled: buttonsDisabled || okDisabled,
                 loading: okLoading
@@ -223,7 +225,7 @@ const Modal = forwardRef<HTMLElement, ModalProps>(({
     if (stickyHeader) {
         headerClasses = clsx(
             headerClasses,
-            'sticky top-0 z-[300] -mb-4 bg-white !pb-4 dark:bg-black'
+            'sticky top-0 z-[300] -mb-4 bg-white pb-4! dark:bg-black'
         );
     }
 
@@ -443,8 +445,8 @@ const Modal = forwardRef<HTMLElement, ModalProps>(({
                 {header === false ? '' : (!topRightContent || topRightContent === 'close' ?
                     (<header className={headerClasses}>
                         {title && <Heading level={3}>{title}</Heading>}
-                        <div className={`${topRightContent !== 'close' && 'md:!invisible md:!hidden'} ${hideXOnMobile && 'hidden'} absolute right-6 top-6`}>
-                            <Button className='-m-2 cursor-pointer p-2 opacity-50 hover:opacity-100' icon='close' iconColorClass='text-black dark:text-white' size='sm' testId='close-modal' unstyled onClick={removeModal} />
+                        <div className={`${topRightContent !== 'close' && 'md:!invisible md:!hidden'} ${hideXOnMobile && 'hidden'} absolute top-6 right-6`}>
+                            <Button aria-label='Close modal' className='-m-2 cursor-pointer p-2 opacity-50 hover:opacity-100' icon='close' iconColorClass='text-black dark:text-white' size='sm' testId='close-modal' unstyled onClick={removeModal} />
                         </div>
                     </header>)
                     :

@@ -900,6 +900,28 @@ describe('Portal Data attributes:', () => {
         });
     });
 
+    describe('data-portal=share', () => {
+        test('opens Portal share page', async () => {
+            document.body.innerHTML = `
+                <div data-portal="share"> </div>
+            `;
+            let {
+                popupFrame, triggerButtonFrame, ...utils
+            } = await setup({
+                site: FixturesSite.singleTier.basic,
+                showPopup: false
+            });
+            expect(popupFrame).not.toBeInTheDocument();
+            expect(triggerButtonFrame).toBeInTheDocument();
+            const portalElement = document.querySelector('[data-portal]');
+            fireEvent.click(portalElement);
+            popupFrame = await utils.findByTitle(/portal-popup/i);
+            expect(popupFrame).toBeInTheDocument();
+            const shareTitle = within(popupFrame.contentDocument).queryByText(/^Share$/i);
+            expect(shareTitle).toBeInTheDocument();
+        });
+    });
+
     describe('data-portal=account', () => {
         test('opens Portal account home page', async () => {
             document.body.innerHTML = `
@@ -1007,7 +1029,7 @@ describe('Portal Data attributes:', () => {
                 })
                 .mockResolvedValueOnce({
                     ok: false,
-                    json: async () => ({errors: [{message: 'No member exists with this e-mail address. Please sign up first.'}]}),
+                    json: async () => ({errors: [{message: 'Failed to send magic link email'}]}),
                     status: 400
                 });
 
@@ -1015,7 +1037,7 @@ describe('Portal Data attributes:', () => {
 
             expect(window.fetch).toHaveBeenCalledTimes(2);
             expect(form.classList.add).toHaveBeenCalledWith('error');
-            expect(errorEl.innerText).toBe('No member exists with this e-mail address. Please sign up first.');
+            expect(errorEl.innerText).toBe('Failed to send magic link email');
         });
     });
 });

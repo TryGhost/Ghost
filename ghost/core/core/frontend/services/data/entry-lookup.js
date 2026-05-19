@@ -5,7 +5,7 @@ const routeMatch = require('path-match')();
 
 /**
  * Query API for a single entry/resource.
- * @param {String} postUrl
+ * @param {string} postUrl
  * @param {Object} routerOptions
  * @param {Object} locals
  * @returns {*}

@@ -1,0 +1,40 @@
+<ul role="listbox" {{did-insert this.addHandlers}} {{will-destroy this.removeHandlers}} ...attributes>
+  {{! template-lint-disable no-unnecessary-concat }}
+  {{#if (and @select.loading (eq @options.length 0))}}
+    {{#if @loadingMessage}}
+      <li class="ember-power-select-option ember-power-select-option--loading-message" role="option" aria-selected="false">{{@loadingMessage}}</li>
+    {{/if}}
+  {{/if}}
+  {{#let
+    (component (ensure-safe-component @groupComponent))
+    (component (ensure-safe-component @optionsComponent))
+  as |Group Options|}}
+    {{#each @options as |opt index|}}
+      {{#if (ember-power-select-is-group opt)}}
+        <Group @group={{opt}} @select={{@select}} @extra={{@extra}}>
+          <Options
+            @options={{opt.options}}
+            @select={{@select}}
+            @groupIndex="{{@groupIndex}}{{index}}."
+            @optionsComponent={{@optionsComponent}}
+            @groupComponent={{@groupComponent}}
+            @extra={{@extra}}
+            role="group"
+            class="ember-power-select-options" as |option|>
+            {{yield option @select}}
+          </Options>
+        </Group>
+      {{else}}
+        <li class="ember-power-select-option"
+          id="{{@select.uniqueId}}-{{@groupIndex}}{{index}}"
+          aria-selected="{{ember-power-select-is-selected opt @select.selected}}"
+          aria-disabled={{if opt.disabled "true"}}
+          aria-current="{{eq opt @select.highlighted}}"
+          data-option-index="{{@groupIndex}}{{index}}"
+          role="option">
+          {{yield opt @select}}
+        </li>
+      {{/if}}
+    {{/each}}
+  {{/let}}
+</ul>

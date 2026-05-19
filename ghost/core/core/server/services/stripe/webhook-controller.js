@@ -7,19 +7,61 @@ module.exports = class WebhookController {
      * @param {import('./services/webhook/checkout-session-event-service')} deps.checkoutSessionEventService
      * @param {import('./services/webhook/subscription-event-service')} deps.subscriptionEventService
      * @param {import('./services/webhook/invoice-event-service')} deps.invoiceEventService
+     * @param {import('./services/webhook/charge-refunded-event-service')} deps.chargeRefundedEventService
      */
     constructor(deps) {
         this.checkoutSessionEventService = deps.checkoutSessionEventService;
         this.subscriptionEventService = deps.subscriptionEventService;
         this.invoiceEventService = deps.invoiceEventService;
+        this.chargeRefundedEventService = deps.chargeRefundedEventService;
         this.webhookManager = deps.webhookManager;
         this.handlers = {
             'customer.subscription.deleted': this.subscriptionEvent,
             'customer.subscription.updated': this.subscriptionEvent,
             'customer.subscription.created': this.subscriptionEvent,
             'invoice.payment_succeeded': this.invoiceEvent,
-            'checkout.session.completed': this.checkoutSessionEvent
+            'checkout.session.completed': this.checkoutSessionEvent,
+            'charge.refunded': this.chargeRefundedEvent
         };
+    }
+
+    /**
+     * @param {object} config
+     * @param {string[]} config.webhookCustomerIgnoreList
+     */
+    configure({webhookCustomerIgnoreList = []}) {
+        this.webhookCustomerIgnoreSet = new Set(
+            webhookCustomerIgnoreList.filter(Boolean)
+        );
+    }
+
+    /**
+     * @param {import('stripe').Stripe.Event} event
+     * @returns {string | null}
+     */
+    getEventCustomerId(event) {
+        const customer = event?.data?.object?.customer;
+        if (typeof customer === 'string') {
+            return customer;
+        }
+
+        if (customer && typeof customer.id === 'string') {
+            return customer.id;
+        }
+
+        return null;
+    }
+
+    /**
+     * @param {import('stripe').Stripe.Event} event
+     * @returns {boolean}
+     */
+    shouldIgnoreEvent(event, customerId) {
+        if (event.type !== 'customer.subscription.updated') {
+            return false;
+        }
+
+        return typeof customerId === 'string' && this.webhookCustomerIgnoreSet?.has(customerId) === true;
     }
 
     /**
@@ -45,7 +87,16 @@ module.exports = class WebhookController {
             return res.end();
         }
 
+        const customerId = this.getEventCustomerId(event);
+        if (this.shouldIgnoreEvent(event, customerId)) {
+            logging.info(`Ignoring webhook ${event.type} for customer ${customerId} based on stripeWebhookCustomerIgnoreList config.`);
+
+            res.writeHead(200);
+            return res.end();
+        }
+
         logging.info(`Handling webhook ${event.type}`);
+
         try {
             await this.handleEvent(event);
             res.writeHead(200);
@@ -96,5 +147,14 @@ module.exports = class WebhookController {
      */
     async checkoutSessionEvent(session) {
         await this.checkoutSessionEventService.handleEvent(session);
+    }
+
+    /**
+     * Delegates `charge.refunded` events to the `chargeRefundedEventService`
+     * @param {import('stripe').Stripe.Charge} charge
+     * @private
+     */
+    async chargeRefundedEvent(charge) {
+        await this.chargeRefundedEventService.handleEvent(charge);
     }
 };

@@ -127,19 +127,34 @@ class LinkClickTrackingService {
     }
 
     #getRedirectLinkWithAttribution({newLink, oldLink, postId}) {
-        const newUrl = new URL(newLink);
+        let newUrl = new URL(newLink);
         const oldUrl = new URL(oldLink);
-        // append newsletter ref query param from oldUrl to newUrl
-        if (oldUrl.searchParams.has('ref')) {
-            newUrl.searchParams.set('ref', oldUrl.searchParams.get('ref'));
+
+        // Append query params via string concatenation instead of searchParams.set()
+        // to avoid re-serializing the entire query string through the
+        // application/x-www-form-urlencoded encoder, which encodes characters
+        // like / and [ that some services (e.g. Google Ad Manager) need unescaped
+        const params = [];
+
+        // Preserve newsletter ref query param from oldUrl
+        if (oldUrl.searchParams.has('ref') && !newUrl.searchParams.has('ref')) {
+            params.push('ref=' + encodeURIComponent(oldUrl.searchParams.get('ref')));
         }
 
-        // append post attribution to site urls
+        // Append post attribution to site urls
         const isSite = this.#urlUtils.isSiteUrl(newUrl);
         if (isSite) {
-            newUrl.searchParams.set('attribution_type', 'post');
-            newUrl.searchParams.set('attribution_id', postId);
+            params.push('attribution_type=post');
+            params.push('attribution_id=' + encodeURIComponent(postId));
         }
+
+        if (params.length > 0) {
+            const urlWithoutHash = new URL(newUrl);
+            urlWithoutHash.hash = '';
+            const separator = newUrl.search ? '&' : '?';
+            newUrl = new URL(urlWithoutHash.href + separator + params.join('&') + newUrl.hash);
+        }
+
         return newUrl;
     }
 

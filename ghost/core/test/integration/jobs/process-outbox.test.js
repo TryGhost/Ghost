@@ -14,16 +14,21 @@ const processOutbox = require('../../../core/server/services/outbox/jobs/lib/pro
 
 describe('Process Outbox Job', function () {
     let jobService;
+    let defaultEmailDesignSettingId;
 
     before(async function () {
         await testUtils.startGhost();
         jobService = require('../../../core/server/services/jobs/job-service');
+        defaultEmailDesignSettingId = await db.knex('email_design_settings')
+            .where('slug', 'default-automated-email')
+            .first('id')
+            .then(row => row.id);
     });
 
     afterEach(async function () {
         sinon.restore();
         await db.knex('outbox').del();
-        await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
+        await db.knex('automations').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
         try {
             await jobService.removeJob(JOB_NAME);
         } catch (err) {
@@ -59,13 +64,21 @@ describe('Process Outbox Job', function () {
                 }
             });
 
-            await db.knex('automated_emails').insert({
-                id: ObjectId().toHexString(),
+            const automationId = ObjectId().toHexString();
+            await db.knex('automations').insert({
+                id: automationId,
                 status: 'active',
                 name: 'Free Member Welcome Email',
                 slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
+                created_at: new Date()
+            });
+            await db.knex('welcome_email_automated_emails').insert({
+                id: ObjectId().toHexString(),
+                welcome_email_automation_id: automationId,
+                delay_days: 0,
                 subject: 'Welcome to {site_title}',
                 lexical,
+                email_design_setting_id: defaultEmailDesignSettingId,
                 created_at: new Date()
             });
         });
@@ -90,7 +103,7 @@ describe('Process Outbox Job', function () {
 
             const entriesAfterJob = await models.Outbox.findAll();
             assert.equal(entriesAfterJob.length, 0);
-            assert.equal(mailService.GhostMailer.prototype.send.callCount, 1);
+            sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
         });
 
         it('does nothing when there are no pending entries', async function () {
@@ -101,7 +114,7 @@ describe('Process Outbox Job', function () {
 
             const entriesAfterJob = await models.Outbox.findAll();
             assert.equal(entriesAfterJob.length, 0);
-            assert.equal(mailService.GhostMailer.prototype.send.callCount, 0);
+            sinon.assert.notCalled(mailService.GhostMailer.prototype.send);
         });
 
         it('processes multiple entries in a batch', async function () {
@@ -145,7 +158,7 @@ describe('Process Outbox Job', function () {
 
             const entriesAfterJob = await models.Outbox.findAll();
             assert.equal(entriesAfterJob.length, 0);
-            assert.equal(mailService.GhostMailer.prototype.send.callCount, 3);
+            sinon.assert.calledThrice(mailService.GhostMailer.prototype.send);
         });
 
         it('ignores entries that are not pending', async function () {
@@ -178,7 +191,7 @@ describe('Process Outbox Job', function () {
 
             const entriesAfterJob = await models.Outbox.findAll();
             assert.equal(entriesAfterJob.length, 2);
-            assert.equal(mailService.GhostMailer.prototype.send.callCount, 0);
+            sinon.assert.notCalled(mailService.GhostMailer.prototype.send);
         });
 
         it('increments retry_count and keeps entry pending when handler fails', async function () {

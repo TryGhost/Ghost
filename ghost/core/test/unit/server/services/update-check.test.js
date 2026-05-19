@@ -100,7 +100,7 @@ describe('Update Check', function () {
 
             await updateCheckService.check();
 
-            assert.equal(requestStub.called, false);
+            sinon.assert.notCalled(requestStub);
         });
 
         it('update check will happen if it\'s time to check', async function () {
@@ -280,7 +280,7 @@ describe('Update Check', function () {
 
             await updateCheckService.check();
 
-            assert.equal(notificationsAPIAddStub.calledOnce, true);
+            sinon.assert.calledOnce(notificationsAPIAddStub);
             assert.equal(notificationsAPIAddStub.args[0][0].notifications.length, 1);
 
             const targetNotification = notificationsAPIAddStub.args[0][0].notifications[0];
@@ -290,7 +290,7 @@ describe('Update Check', function () {
             assert.equal(targetNotification.type, 'info');
             assert.equal(targetNotification.message, notification.messages[0].content);
 
-            assert.equal(usersBrowseStub.calledTwice, true);
+            sinon.assert.calledTwice(usersBrowseStub);
 
             // Second (non statistical) call should be looking for admin users with an 'active' status only
             assert.deepEqual(usersBrowseStub.args[1][0], {
@@ -301,6 +301,46 @@ describe('Update Check', function () {
                     internal: true
                 }
             });
+        });
+
+        it('preserves custom flag value from update check response', async function () {
+            const notificationsAPIAddStub = sinon.stub().resolves();
+            const usersBrowseStub = sinon.stub().resolves({
+                users: [{
+                    roles: [{
+                        name: 'Owner'
+                    }]
+                }]
+            });
+
+            const updateCheckService = new UpdateCheckService({
+                api: {
+                    users: {
+                        browse: usersBrowseStub
+                    },
+                    notifications: {
+                        add: notificationsAPIAddStub
+                    }
+                },
+                config: {
+                    siteUrl: 'https://localhost:2368/test'
+                },
+                request: requestStub
+            });
+
+            await updateCheckService.createCustomNotification({
+                custom: 0,
+                messages: [{
+                    id: crypto.randomUUID(),
+                    content: '<p>hello</p>',
+                    dismissible: true,
+                    top: true
+                }]
+            });
+
+            assert.equal(notificationsAPIAddStub.callCount, 1);
+            const targetNotification = notificationsAPIAddStub.args[0][0].notifications[0];
+            assert.equal(targetNotification.custom, 0);
         });
 
         it('should send an email for critical notification', async function () {
@@ -361,13 +401,13 @@ describe('Update Check', function () {
 
             await updateCheckService.check();
 
-            assert.equal(sendEmailStub.called, true);
+            sinon.assert.called(sendEmailStub);
             assert.equal(sendEmailStub.args[0][0].to, 'jbloggs@example.com');
             assert.equal(sendEmailStub.args[0][0].subject, 'Action required: Critical alert from Ghost instance http://127.0.0.1:2369');
             assert.equal(sendEmailStub.args[0][0].html, '<p>Critical message. Upgrade your site!</p>');
             assert.equal(sendEmailStub.args[0][0].forceTextContent, true);
 
-            assert.equal(notificationsAPIAddStub.calledOnce, true);
+            sinon.assert.calledOnce(notificationsAPIAddStub);
             assert.equal(notificationsAPIAddStub.args[0][0].notifications.length, 1);
         });
 
@@ -416,7 +456,7 @@ describe('Update Check', function () {
 
             await updateCheckService.check();
 
-            assert.equal(notificationsAPIAddStub.calledOnce, false);
+            sinon.assert.notCalled(notificationsAPIAddStub);
         });
     });
 
@@ -433,8 +473,8 @@ describe('Update Check', function () {
 
             updateCheckService.updateCheckError({});
 
-            assert.equal(settingsStub.called, true);
-            assert.equal(logging.error.called, true);
+            sinon.assert.called(settingsStub);
+            sinon.assert.called(logging.error);
             assert.equal(logging.error.args[0][0].context, 'Checking for updates failed, your site will continue to function.');
             assert.equal(logging.error.args[0][0].help, 'If you get this error repeatedly, please seek help from https://ghost.org/docs/');
         });
@@ -455,8 +495,8 @@ describe('Update Check', function () {
                 updateCheckService.updateCheckError({});
                 assert.fail('should have thrown');
             } catch (e) {
-                assert.equal(settingsStub.called, true);
-                assert.equal(logging.error.called, true);
+                sinon.assert.called(settingsStub);
+                sinon.assert.called(logging.error);
                 assert.equal(logging.error.args[0][0].context, 'Checking for updates failed, your site will continue to function.');
                 assert.equal(logging.error.args[0][0].help, 'If you get this error repeatedly, please seek help from https://ghost.org/docs/');
 

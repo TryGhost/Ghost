@@ -9,7 +9,8 @@ import ShowRepliesButton from '@src/components/global/show-replies-button';
 import getUsername from '@src/utils/get-username';
 import {Activity} from '@tryghost/admin-x-framework/api/activitypub';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/empty-view-indicator';
-import {LoadingIndicator, LucideIcon, Skeleton} from '@tryghost/shade';
+import {LoadingIndicator, Skeleton} from '@tryghost/shade/components';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {handleProfileClick} from '@src/utils/handle-profile-click';
 import {isPendingActivity} from '@src/utils/pending-activity';
 import {renderTimestamp} from '@src/utils/render-timestamp';
@@ -191,7 +192,7 @@ const Note = () => {
             <div className='mx-auto flex h-full max-w-[620px] flex-col'>
                 <div className='relative flex-1'>
                     <div className='grow overflow-y-auto'>
-                        <div className={`mx-auto px-8 pb-10 pt-5 max-lg:px-0`}>
+                        <div className={`mx-auto px-8 pt-5 pb-10 max-lg:px-0`}>
                             {!threadParents.length &&
                             <ProfilePreviewHoverCard actor={currentPost.actor} isCurrentUser={currentPost.object.authored}>
                                 <div className={`col-[2/3] mx-auto flex w-full cursor-pointer items-center gap-3 ${canGoBack ? 'pt-10 max-md:pt-5' : 'pt-5'}`}>
@@ -202,7 +203,7 @@ const Note = () => {
                                         handleProfileClick(currentPost.actor, navigate, e);
                                     }}>
                                         <div className='flex w-full'>
-                                            <span className='min-w-0 truncate whitespace-nowrap font-semibold hover:underline'>{currentPost.actor.name}</span>
+                                            <span className='min-w-0 truncate font-semibold whitespace-nowrap hover:underline'>{currentPost.actor.name}</span>
                                         </div>
                                         <div className='flex w-full'>
                                             <span className='truncate text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(currentPost.actor)}</span>

@@ -255,7 +255,7 @@ describe('Notifications Service', function () {
             assertExists(notifications);
             assert.equal(notifications.length, 0);
 
-            assert.equal(settingsModelStub.called, true);
+            sinon.assert.called(settingsModelStub);
             assert.deepEqual(settingsModelStub.args[0][0], [{
                 key: 'notifications',
                 value: '[]'
@@ -283,7 +283,7 @@ describe('Notifications Service', function () {
             assertExists(notifications);
             assert.equal(notifications.length, 1);
 
-            assert.equal(settingsModelStub.called, false);
+            sinon.assert.notCalled(settingsModelStub);
         });
     });
 });

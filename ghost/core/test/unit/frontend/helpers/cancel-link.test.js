@@ -6,15 +6,15 @@ const cancel_link = require('../../../../core/frontend/helpers/cancel_link');
 const labs = require('../../../../core/shared/labs');
 const configUtils = require('../../../utils/config-utils');
 const logging = require('@tryghost/logging');
+const {promisify} = require('node:util');
 
 describe('{{cancel_link}} helper', function () {
     let labsStub;
-    before(function (done) {
+    before(async function () {
         hbs.express4({partialsDir: [configUtils.config.get('paths').helperTemplates]});
 
-        hbs.cachePartials(function () {
-            done();
-        });
+        const cachePartials = promisify(hbs.cachePartials.bind(hbs));
+        await cachePartials();
     });
 
     beforeEach(function () {
@@ -28,7 +28,7 @@ describe('{{cancel_link}} helper', function () {
     const defaultLinkClass = /class="gh-subscription-cancel"/;
     const defaultErrorElementClass = /class="gh-error gh-error-subscription-cancel"/;
     const defaultCancelLinkText = /Cancel subscription/;
-    const defaultContinueLinkText = /Continue subscription/;
+    const defaultContinueLinkText = /Resume subscription/;
 
     it('should throw if subscription data is incorrect', function () {
         const runHelper = function (data) {

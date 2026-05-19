@@ -2,7 +2,8 @@ import React, {useMemo, useState} from 'react';
 import World from '@svg-maps/world';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, EmptyIndicator, Flag, Icon, LucideIcon, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPages, SimplePaginationPreviousButton, SkeletonTable, cn, formatNumber, formatPercentage, useSimplePagination} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, EmptyIndicator, Flag, Icon, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPages, SimplePaginationPreviousButton, SkeletonTable} from '@tryghost/shade/components';
+import {LucideIcon, cn, formatNumber, formatPercentage, useSimplePagination} from '@tryghost/shade/utils';
 import {STATS_LABEL_MAPPINGS, UNKNOWN_LOCATION_VALUES} from '@src/utils/constants';
 import {SVGMap} from 'react-svg-map';
 import {getPeriodText} from '@src/utils/chart-helpers';
@@ -128,7 +129,7 @@ const LocationsCard: React.FC<LocationsCardProps> = ({data, isLoading, range, on
 
         if (currentData) {
             const opacity = opacityByValue[currentData.relativeValue] || '';
-            return cn('fill-[hsl(var(--chart-blue))]', opacity);
+            return cn('fill-[var(--chart-blue)]', opacity);
         }
 
         return 'fill-gray-300 dark:fill-gray-900/75';

@@ -1,4 +1,3 @@
-const assert = require('node:assert/strict');
 const sinon = require('sinon');
 // Thing we are testing
 const redirectAdminUrls = require('../../../../../core/server/web/admin/middleware/redirect-admin-urls');
@@ -27,8 +26,8 @@ describe('Admin App', function () {
 
                 redirectAdminUrls(req, res, next);
 
-                assert.equal(next.called, false);
-                assert.equal(res.redirect.called, true);
+                sinon.assert.notCalled(next);
+                sinon.assert.called(res.redirect);
                 sinon.assert.calledWith(res.redirect, '/ghost/#/x');
             });
 
@@ -37,8 +36,8 @@ describe('Admin App', function () {
 
                 redirectAdminUrls(req, res, next);
 
-                assert.equal(next.called, true);
-                assert.equal(res.redirect.called, false);
+                sinon.assert.called(next);
+                sinon.assert.notCalled(res.redirect);
             });
 
             it('should not redirect url that has no slash', function () {
@@ -46,8 +45,8 @@ describe('Admin App', function () {
 
                 redirectAdminUrls(req, res, next);
 
-                assert.equal(next.called, true);
-                assert.equal(res.redirect.called, false);
+                sinon.assert.called(next);
+                sinon.assert.notCalled(res.redirect);
             });
 
             it('should not redirect url that starts with something other than /ghost/', function () {
@@ -55,8 +54,32 @@ describe('Admin App', function () {
 
                 redirectAdminUrls(req, res, next);
 
-                assert.equal(next.called, true);
-                assert.equal(res.redirect.called, false);
+                sinon.assert.called(next);
+                sinon.assert.notCalled(res.redirect);
+            });
+
+            it('should strip a trailing slash before building the hash url', function () {
+                req.originalUrl = '/ghost/members/import/';
+
+                redirectAdminUrls(req, res, next);
+
+                sinon.assert.calledWith(res.redirect, '/ghost/#/members/import');
+            });
+
+            it('should strip a trailing slash before the query string', function () {
+                req.originalUrl = '/ghost/members/import/?source=link';
+
+                redirectAdminUrls(req, res, next);
+
+                sinon.assert.calledWith(res.redirect, '/ghost/#/members/import?source=link');
+            });
+
+            it('should preserve trailing slashes inside query values', function () {
+                req.originalUrl = '/ghost/members/import?next=/settings/';
+
+                redirectAdminUrls(req, res, next);
+
+                sinon.assert.calledWith(res.redirect, '/ghost/#/members/import?next=/settings/');
             });
         });
     });

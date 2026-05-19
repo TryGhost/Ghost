@@ -71,7 +71,7 @@ Core member accounts.
 - `id` (string, 24 chars) - Primary key
 - `uuid` (string, 36 chars) - UUID for Tinybird correlation  
 - `email` - Member email address
-- `status` - 'free', 'paid', 'comped'
+- `status` - 'free', 'paid', 'comped', 'gift'
 - `created_at` - Signup timestamp
 
 #### `newsletters`
@@ -214,7 +214,7 @@ Fields with specific data in the schema:
 {
   "site_uuid": "string",
   "member_uuid": "string|undefined",  // member.uuid in MySQL
-  "member_status": "free|paid|comped|undefined", // member.status in MySQL
+  "member_status": "free|paid|comped|gift|undefined", // member.status in MySQL. Note: when filtering Tinybird endpoints by `paid`, `comped` and `gift` are bucketed in alongside `paid`.
   "post_uuid": "string|undefined", // post.uuid in MySQL
   "post_type": "post|page|empty", //post.type in MySQL
   "user-agent": "string",

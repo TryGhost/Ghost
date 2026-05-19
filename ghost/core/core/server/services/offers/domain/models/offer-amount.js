@@ -76,23 +76,7 @@ class OfferTrialAmount extends OfferAmount {
     static InvalidOfferAmount = InvalidOfferAmount;
 }
 
-class OfferFreeMonthsAmount extends OfferAmount {
-    /** @param {unknown} amount */
-    static create(amount) {
-        if (typeof amount !== 'number' || !Number.isInteger(amount) || amount < 1) {
-            throw new InvalidOfferAmount({
-                message: 'Offer `amount` must be an integer greater than 0.'
-            });
-        }
-
-        return new OfferFreeMonthsAmount(amount);
-    }
-
-    static InvalidOfferAmount = InvalidOfferAmount;
-}
-
 module.exports = OfferAmount;
 module.exports.OfferPercentageAmount = OfferPercentageAmount;
 module.exports.OfferFixedAmount = OfferFixedAmount;
 module.exports.OfferTrialAmount = OfferTrialAmount;
-module.exports.OfferFreeMonthsAmount = OfferFreeMonthsAmount;

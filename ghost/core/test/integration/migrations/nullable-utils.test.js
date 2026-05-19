@@ -158,7 +158,7 @@ describe('Migrations - schema utils', function () {
             await migration.up({transacting});
             await transacting.commit();
 
-            assert(logSpy.calledWith(sinon.match('skipping as column is already nullable')), 'Should log skip message');
+            sinon.assert.calledWith(logSpy, sinon.match('skipping as column is already nullable'));
 
             // Column should still be nullable
             const isNullableAfter = await isColumnNullable(tableName, 'nullable_col');
@@ -234,7 +234,7 @@ describe('Migrations - schema utils', function () {
             await migration.up({transacting});
             await transacting.commit();
 
-            assert(logSpy.calledWith(sinon.match('skipping as column is already not nullable')), 'Should log skip message');
+            sinon.assert.calledWith(logSpy, sinon.match('skipping as column is already not nullable'));
 
             // Column should still be not nullable
             const isNotNullableAfter = await isColumnNotNullable(tableName, 'not_nullable_col');
@@ -320,7 +320,7 @@ describe('Migrations - schema utils', function () {
             
             if (dbUtils.isMySQL()) {
                 // MySQL should log a warning when checking nullable status fails
-                assert(logWarnSpy.calledWith(sinon.match('Could not check nullable status')), 'MySQL should log warning about checking nullable status');
+                sinon.assert.calledWith(logWarnSpy, sinon.match('Could not check nullable status'));
             }
             
             // Both databases should eventually fail when trying to ALTER the non-existent table

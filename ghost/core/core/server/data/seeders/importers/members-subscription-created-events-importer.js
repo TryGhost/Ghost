@@ -1,6 +1,7 @@
 const TableImporter = require('./table-importer');
 const {faker} = require('@faker-js/faker');
 const {luck} = require('../utils/random');
+const dateToDatabaseString = require('../utils/database-date');
 
 class MembersSubscriptionCreatedEventsImporter extends TableImporter {
     static table = 'members_subscription_created_events';
@@ -48,7 +49,8 @@ class MembersSubscriptionCreatedEventsImporter extends TableImporter {
         };
 
         if (luck(30)) {
-            const post = this.posts.find(p => p.visibility === 'public' && new Date(p.published_at) < new Date(this.model.created_at));
+            const createdAt = dateToDatabaseString.parse(this.model.created_at);
+            const post = this.posts.find(p => p.visibility === 'public' && dateToDatabaseString.parse(p.published_at) < createdAt);
             if (post) {
                 attribution = {
                     attribution_id: post.id,

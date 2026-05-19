@@ -24,6 +24,7 @@ class CommentsImporter extends TableImporter {
 
     setReferencedModel(model) {
         this.model = model;
+        const publishedAt = dateToDatabaseString.parse(model.published_at);
 
         this.commentIds = []; // Store [id, parent_id, timestamp] tuples for reply-to-reply
 
@@ -32,11 +33,11 @@ class CommentsImporter extends TableImporter {
             trend: 'negative',
             // Use commentsPerPost as a baseline with some variance (+/- 20%)
             total: Math.round(this.commentsPerPost * faker.datatype.float({min: 0.8, max: 1.2})),
-            startTime: new Date(model.published_at),
+            startTime: publishedAt,
             endTime: new Date()
         }).sort((a, b) => a.getTime() - b.getTime()); // Sort chronologically so replies always come after their targets
 
-        this.possibleMembers = this.members.filter(member => new Date(member.created_at) < new Date(model.published_at));
+        this.possibleMembers = this.members.filter(member => dateToDatabaseString.parse(member.created_at) < publishedAt);
     }
 
     generate() {

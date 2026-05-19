@@ -190,9 +190,11 @@ test.describe('Custom integrations', async () => {
 
         await modal.getByLabel('Description').fill('Test description');
         await modal.getByRole('button', {name: 'Save'}).click();
-        await modal.getByRole('button', {name: 'Close'}).click();
 
         await expect(integrationsSection).toHaveText(/Test description/);
+
+        await page.keyboard.press('Escape');
+        await expect(modal).toBeHidden();
 
         // Delete integration
 

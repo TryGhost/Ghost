@@ -83,15 +83,15 @@ const OfferSuccess: React.FC<{id: string}> = ({id}) => {
         width={1140}
     >
         <div className='-mt-6 flex h-full flex-col items-center justify-center text-center'>
-            <div className='absolute left-6 top-5'>
+            <div className='absolute top-5 left-6'>
                 <Breadcrumbs
-                    activeItemClassName='hidden md:!block md:!visible'
+                    activeItemClassName='hidden md:block! md:visible!'
                     containerClassName='whitespace-nowrap'
-                    itemClassName='hidden md:!block md:!visible'
+                    itemClassName='hidden md:block! md:visible!'
                     items={[{label: 'Offers', onClick: () => {
                         updateRoute('offers/edit');
                     }}, {label: offer?.name || ''}]}
-                    separatorClassName='hidden md:!block md:!visible'
+                    separatorClassName='hidden md:block! md:visible!'
                     backIcon
                     onBack={() => {
                         updateRoute('offers/edit');

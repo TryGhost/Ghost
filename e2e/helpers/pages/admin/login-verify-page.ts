@@ -14,5 +14,5 @@ export class LoginVerifyPage extends AdminPage{
         this.twoFactorVerifyButton = page.getByRole('button', {name: 'Verify'});
         this.resendTwoFactorCodeButton = page.getByRole('button', {name: 'Resend'});
         this.sentTwoFactorCodeButton = page.getByRole('button', {name: 'Sent'});
-    };
+    }
 }

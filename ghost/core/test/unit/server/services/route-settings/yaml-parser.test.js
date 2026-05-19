@@ -27,7 +27,7 @@ describe('UNIT > Settings Service yaml parser:', function () {
             assert('routes' in result);
             assert('collections' in result);
             assert('taxonomies' in result);
-            assert.equal(yamlSpy.calledOnce, true);
+            sinon.assert.calledOnce(yamlSpy);
         });
 
         it('rejects with clear error when parsing fails', function () {
@@ -41,7 +41,7 @@ describe('UNIT > Settings Service yaml parser:', function () {
                 assert.equal(error.message, 'Could not parse provided YAML file: bad indentation of a mapping entry.');
                 assert(error.context.includes('bad indentation of a mapping entry (5:14)'));
                 assert.equal(error.help, 'Check provided file for typos and fix the named issues.');
-                assert.equal(yamlSpy.calledOnce, true);
+                sinon.assert.calledOnce(yamlSpy);
             }
         });
     });

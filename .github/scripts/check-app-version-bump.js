@@ -173,14 +173,21 @@ function getChangedFiles(baseSha, compareSha) {
         .filter(Boolean);
 }
 
+function getChangedAppFiles(app, changedFiles) {
+    return changedFiles.filter((file) => {
+        return file === app.path || file.startsWith(`${app.path}/`);
+    });
+}
+
 function getChangedApps(changedFiles) {
     return MONITORED_APP_ENTRIES
-        .filter(([, app]) => {
-            return changedFiles.some((file) => {
-                return file === app.path || file.startsWith(`${app.path}/`);
-            });
-        })
+        .filter(([, app]) => getChangedAppFiles(app, changedFiles).length > 0)
         .map(([key, app]) => ({key, ...app}));
+}
+
+function isDependencyOnlyChange(app, changedFiles) {
+    const filesInApp = getChangedAppFiles(app, changedFiles);
+    return filesInApp.length > 0 && filesInApp.every(file => file === `${app.path}/package.json`);
 }
 
 function getPrVersion(app) {
@@ -228,12 +235,17 @@ function main() {
     const failedApps = [];
 
     for (const app of changedApps) {
+        if (isDependencyOnlyChange(app, changedFiles)) {
+            console.log(`${app.key} only has dependency changes in package.json; skipping version bump check.`);
+            continue;
+        }
+
         const prVersion = getPrVersion(app);
         const mainVersion = getMainVersion(app);
 
         if (compareSemver(prVersion, mainVersion) <= 0) {
             failedApps.push(
-                `${app.key} (${app.packageName}) was changed but version was not bumped above main (${prVersion} <= ${mainVersion}). Please run "yarn ship" in ${app.path} to bump the package version.`
+                `${app.key} (${app.packageName}) was changed but version was not bumped above main (${prVersion} <= ${mainVersion}). Please run "pnpm ship" in ${app.path} to bump the package version.`
             );
             continue;
         }

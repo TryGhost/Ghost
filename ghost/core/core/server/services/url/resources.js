@@ -39,7 +39,7 @@ class Resources {
      * @description Little helper to register on Ghost events and remember the listener functions to be able
      * to unsubscribe.
      *
-     * @param {String} eventName
+     * @param {string} eventName
      * @param {Function} listener
      * @private
      */
@@ -156,7 +156,7 @@ class Resources {
      * See https://github.com/TryGhost/Ghost/issues/10124.
      *
      * @param {Object} resourceConfig
-     * @param {String} id
+     * @param {string} id
      * @returns {Promise}
      * @private
      */

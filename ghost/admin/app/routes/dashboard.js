@@ -6,6 +6,6 @@ export default class DashboardRoute extends AdminRoute {
     @service router;
 
     async beforeModel() {
-        this.router.replaceWith('stats-x');
+        this.router.replaceWith('/analytics');
     }
 }

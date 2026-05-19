@@ -49,7 +49,7 @@ React.ComponentProps<'div'> & {
             <div
                 ref={ref}
                 className={cn(
-                    'flex aspect-video justify-center text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line[stroke=\'#ccc\']]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-dot[stroke=\'#fff\']]:stroke-transparent [&_.recharts-layer]:outline-none [&_.recharts-polar-grid_[stroke=\'#ccc\']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted  [&_.recharts-reference-line_[stroke=\'#ccc\']]:stroke-border [&_.recharts-sector[stroke=\'#fff\']]:stroke-transparent [&_.recharts-sector]:outline-none [&_.recharts-surface]:outline-none',
+                    'flex aspect-video justify-center text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line[stroke=\'#ccc\']]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-dot[stroke=\'#fff\']]:stroke-transparent [&_.recharts-layer]:outline-hidden [&_.recharts-polar-grid_[stroke=\'#ccc\']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted  [&_.recharts-reference-line_[stroke=\'#ccc\']]:stroke-border [&_.recharts-sector[stroke=\'#fff\']]:stroke-transparent [&_.recharts-sector]:outline-hidden [&_.recharts-surface]:outline-hidden',
                     className
                 )}
                 data-chart={chartId}
@@ -206,7 +206,7 @@ React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
                                             !hideIndicator && (
                                                 <div
                                                     className={cn(
-                                                        'shrink-0 rounded-[2px] border-[--color-border] bg-[--color-bg]',
+                                                        'shrink-0 rounded-[2px] border-(--color-border) bg-(--color-bg)',
                                                         {
                                                             'h-2.5 w-2.5': indicator === 'dot',
                                                             'w-1': indicator === 'line',
@@ -237,7 +237,7 @@ React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
                                                 </span>
                                             </div>
                                             {item.value && (
-                                                <span className="font-mono font-medium tabular-nums text-foreground">
+                                                <span className="font-mono font-medium text-foreground tabular-nums">
                                                     {item.value.toLocaleString()}
                                                 </span>
                                             )}
@@ -369,7 +369,7 @@ const AlignedAxisTick: React.FC<AlignedAxisTickProps> = ({x, y, payload, index, 
         <g transform={`translate(${x},${y})`}>
             <text
                 dy={16}
-                fill="hsl(var(--gray-500))"
+                fill="var(--muted-foreground)"
                 textAnchor={textAnchor}
                 x={0}
                 y={-12}
@@ -408,7 +408,7 @@ const DateTooltipContent = ({color, active, payload, range}: DateTooltipProps) =
         <div className="min-w-[120px] rounded-lg border bg-background px-3 py-2 shadow-lg">
             {date && <div className="text-sm text-foreground">{range ? formatDisplayDateWithRange(date, range) : formatDisplayDate(date)}</div>}
             <div className='flex items-center gap-2'>
-                <span className='inline-block size-[9px] rounded-[2px] opacity-50' style={{backgroundColor: color || 'hsl(var(--chart-blue))'}}></span>
+                <span className='inline-block size-[9px] rounded-[2px] opacity-50' style={{backgroundColor: color || 'var(--chart-blue)'}}></span>
                 <div className='flex grow items-center justify-between gap-3'>
                     {label && <div className="text-sm text-muted-foreground">{label}</div>}
                     <div className="font-mono font-medium">{displayValue}</div>

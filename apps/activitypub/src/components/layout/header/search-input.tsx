@@ -1,5 +1,5 @@
 import React from 'react';
-import {LucideIcon} from '@tryghost/shade';
+import {LucideIcon} from '@tryghost/shade/utils';
 
 const SearchInput: React.FC = () => {
     return (

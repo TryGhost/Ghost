@@ -6,6 +6,7 @@ const sinon = require('sinon');
 const localUtils = require('./utils');
 const config = require('../../../core/shared/config');
 const logging = require('@tryghost/logging');
+const storage = require('../../../core/server/adapters/storage');
 
 describe('Media API', function () {
     // NOTE: holds paths to media that need to be cleaned up after the tests are run
@@ -116,6 +117,45 @@ describe('Media API', function () {
             assert.equal(res.body.media[0].ref, 'audio_file_x_m4a');
 
             media.push(new URL(res.body.media[0].url).pathname);
+        });
+
+        it('Passes the content type to the storage adapter when uploading an MP4', async function () {
+            const store = storage.getStorage('media');
+            const saveSpy = sinon.spy(store, 'save');
+
+            const res = await request.post(localUtils.API.getApiQuery('media/upload'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .attach('file', path.join(__dirname, '/../../utils/fixtures/media/sample_640x360.mp4'))
+                .attach('thumbnail', path.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png'))
+                .expect(201);
+
+            media.push(new URL(res.body.media[0].url).pathname);
+            media.push(new URL(res.body.media[0].thumbnail_url).pathname);
+
+            // save() is called twice: first for the thumbnail, then for the media file
+            assert.equal(saveSpy.callCount, 2, 'save() should have been called twice (thumbnail + media)');
+            const thumbnailArg = saveSpy.firstCall.args[0];
+            assert.equal(thumbnailArg.type, 'image/png', 'save() should receive the correct content type for the thumbnail');
+            const mediaArg = saveSpy.secondCall.args[0];
+            assert.equal(mediaArg.type, 'video/mp4', 'save() should receive the correct content type for the media file');
+        });
+
+        it('Passes the content type to the storage adapter when uploading an MP3', async function () {
+            const store = storage.getStorage('media');
+            const saveSpy = sinon.spy(store, 'save');
+
+            const res = await request.post(localUtils.API.getApiQuery('media/upload'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .attach('file', path.join(__dirname, '/../../utils/fixtures/media/sample.mp3'))
+                .expect(201);
+
+            media.push(new URL(res.body.media[0].url).pathname);
+
+            assert.ok(saveSpy.calledOnce, 'save() should have been called once');
+            const fileArg = saveSpy.firstCall.args[0];
+            assert.equal(fileArg.type, 'audio/mpeg', 'save() should receive the correct content type for audio files');
         });
 
         it('Rejects non-media file type', async function () {

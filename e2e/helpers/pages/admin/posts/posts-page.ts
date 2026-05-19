@@ -25,7 +25,7 @@ export class PostsPage extends AdminPage {
 
         this.postsList = page.getByTestId('posts-list');
         this.postsListItem = this.postsList.getByTestId('posts-list-item');
-        this.newPostButton = page.getByRole('link', {name: 'New post'});
+        this.newPostButton = page.getByRole('link', {name: 'New post', exact: true});
 
         this.postsFilters = page.getByTestId('posts-filters');
         this.typeFilter = this.postsFilters.getByRole('button', {name: 'Type filter'});
@@ -42,6 +42,11 @@ export class PostsPage extends AdminPage {
 
     getPostByTitle(title: string): Locator {
         return this.postsListItem.filter({has: this.page.getByRole('heading', {name: title, exact: true, level: 3})});
+    }
+
+    async waitForPageToFullyLoad() {
+        await this.page.waitForURL(this.pageUrl);
+        await this.postsList.waitFor({state: 'visible'});
     }
 
     async refreshData() {

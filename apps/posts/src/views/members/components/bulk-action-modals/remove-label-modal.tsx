@@ -1,87 +1,112 @@
-import {
-    Button,
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue
-} from '@tryghost/shade';
-import {Label} from '@tryghost/admin-x-framework/api/labels';
-import {useState} from 'react';
+import {Button, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from '@tryghost/shade/components';
+import {LabelPicker} from '@src/components/label-picker';
+import {formatNumber} from '@tryghost/shade/utils';
+import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
+import {useCallback, useMemo, useState} from 'react';
+import {useLabelPicker} from '@src/hooks/use-label-picker';
 
 interface RemoveLabelModalProps {
     open: boolean;
-    labels: Label[];
     memberCount: number;
+    nql?: string;
+    search?: string;
     onOpenChange: (open: boolean) => void;
-    onConfirm: (labelId: string) => void;
+    onConfirm: (labelIds: string[]) => void;
     isLoading?: boolean;
 }
 
 export function RemoveLabelModal({
     open,
-    labels,
     memberCount,
+    nql,
+    search,
     onOpenChange,
     onConfirm,
     isLoading = false
 }: RemoveLabelModalProps) {
-    const [selectedLabelId, setSelectedLabelId] = useState<string>('');
+    const [selectedSlugs, setSelectedSlugs] = useState<string[]>([]);
 
-    const handleOpenChange = (isOpen: boolean) => {
-        if (!isOpen) {
-            setSelectedLabelId('');
+    // Fetch members matching the current filter to find which labels they have
+    const {data: membersData, isLoading: isMembersLoading} = useBrowseMembers({
+        searchParams: {
+            ...(nql ? {filter: nql} : {}),
+            ...(search ? {search} : {}),
+            include: 'labels',
+            limit: 'all',
+            fields: 'id'
+        },
+        enabled: open
+    });
+
+    // Extract unique label slugs from the filtered members
+    const memberLabelSlugs = useMemo(() => {
+        const slugs = new Set<string>();
+        for (const member of membersData?.members || []) {
+            for (const label of member.labels || []) {
+                slugs.add(label.slug);
+            }
         }
-        onOpenChange(isOpen);
+        return slugs;
+    }, [membersData]);
+
+    const picker = useLabelPicker({
+        selectedSlugs,
+        onSelectionChange: setSelectedSlugs
+    });
+
+    const availableOptionSource = {
+        ...picker.optionSource,
+        options: picker.optionSource.options.filter(option => memberLabelSlugs.has(String(option.value)))
     };
 
+    const handleOpenChange = useCallback((isOpen: boolean) => {
+        if (!isOpen) {
+            setSelectedSlugs([]);
+        }
+        onOpenChange(isOpen);
+    }, [onOpenChange]);
+
     const handleConfirm = () => {
-        if (selectedLabelId) {
-            onConfirm(selectedLabelId);
+        const labelIds = picker.labels
+            .filter(l => selectedSlugs.includes(l.slug))
+            .map(l => l.id);
+        if (labelIds.length > 0) {
+            onConfirm(labelIds);
         }
     };
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent className="gap-5">
+            <DialogContent className="gap-5" onOpenAutoFocus={e => e.preventDefault()}>
                 <DialogHeader>
-                    <DialogTitle>Remove label from members</DialogTitle>
-                    <DialogDescription>
-                        Remove a label from {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}.
-                    </DialogDescription>
+                    <DialogTitle>
+                        Remove label from {formatNumber(memberCount)} {memberCount === 1 ? 'member' : 'members'}
+                    </DialogTitle>
                 </DialogHeader>
 
-                <div className="space-y-2">
-                    <label className="text-sm font-medium">Select label</label>
-                    <Select value={selectedLabelId} onValueChange={setSelectedLabelId}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select a label..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {labels.map(label => (
-                                <SelectItem key={label.id} value={label.id}>
-                                    {label.name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
+                <LabelPicker
+                    isDuplicateName={picker.isDuplicateName}
+                    labels={picker.labels.filter(label => memberLabelSlugs.has(label.slug))}
+                    optionSource={{
+                        ...availableOptionSource,
+                        isInitialLoad: availableOptionSource.isInitialLoad || isMembersLoading
+                    }}
+                    resolvedSelectedLabels={picker.resolvedSelectedLabels.filter(label => memberLabelSlugs.has(label.slug))}
+                    selectedSlugs={selectedSlugs}
+                    onDelete={picker.deleteLabel}
+                    onEdit={picker.editLabel}
+                    onToggle={picker.toggleLabel}
+                />
 
                 <DialogFooter>
                     <Button variant="outline" onClick={() => handleOpenChange(false)}>
                         Cancel
                     </Button>
                     <Button
-                        disabled={!selectedLabelId || isLoading}
+                        disabled={selectedSlugs.length === 0 || isLoading}
                         onClick={handleConfirm}
                     >
-                        {isLoading ? 'Removing...' : 'Remove label'}
+                        {isLoading ? 'Removing...' : selectedSlugs.length > 1 ? `Remove ${formatNumber(selectedSlugs.length)} labels` : 'Remove label'}
                     </Button>
                 </DialogFooter>
             </DialogContent>

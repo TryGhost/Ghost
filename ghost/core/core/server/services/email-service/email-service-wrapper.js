@@ -91,7 +91,8 @@ class EmailServiceWrapper {
             emailAddressService: emailAddressService.service,
             labs,
             models: {Post},
-            t: i18n.t
+            t: i18n.t,
+            dir: i18n.dir.bind(i18n)
         });
 
         const sendingService = new SendingService({
@@ -141,7 +142,8 @@ class EmailServiceWrapper {
             membersRepository,
             verificationTrigger: membersService.verificationTrigger,
             emailAnalyticsJobs,
-            domainWarmingService
+            domainWarmingService,
+            config: configService
         });
 
         this.controller = new EmailController(this.service, {

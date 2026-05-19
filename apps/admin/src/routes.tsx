@@ -1,20 +1,75 @@
 import {type RouteObject, Outlet, lazyComponent, redirect} from "@tryghost/admin-x-framework";
 
 // ActivityPub
-import { FeatureFlagsProvider, routes as activityPubRoutes } from "@tryghost/activitypub/src/index";
+import { FeatureFlagsProvider, routes as activityPubRoutes } from "@tryghost/activitypub/api";
 
 // Posts (aka tags and post analytics)
-import PostsAppContextProvider from "@tryghost/posts/src/providers/posts-app-context";
-import { routes as postRoutes } from "@tryghost/posts/src/routes";
+import { PostsAppContextProvider, routes as postRoutes } from "@tryghost/posts/api";
 
 // Stats (aka analytics)
-import GlobalDataProvider from "@tryghost/stats/src/providers/global-data-provider";
-import { routes as statsRoutes } from "@tryghost/stats/src/routes";
+import { GlobalDataProvider, routes as statsRoutes } from "@tryghost/stats/api";
+import MyProfileRedirect from "./my-profile-redirect";
 
 // Ember
 import { EmberFallback, ForceUpgradeGuard } from "./ember-bridge";
 import type { RouteHandle } from "./ember-bridge";
+import { MembersRoute } from "./members-route";
+import { OnboardingRedirect } from "./onboarding/onboarding-redirect";
 
+import { NotFound } from "./not-found";
+
+// Routes handled by the Ember admin app. React delegates these to Ember via
+// EmberFallback. When migrating a route to React, remove its entry from here.
+const EMBER_ROUTES: string[] = [
+    "/",
+    "/dashboard",
+    "/site",
+    "/launch",
+    "/setup/*",
+    "/signin/*",
+    "/signout",
+    "/signup/*",
+    "/reset/*",
+    "/pro/*",
+    "/posts",
+    "/posts/analytics/:postId/mentions",
+    "/posts/analytics/:postId/debug",
+    "/restore",
+    "/pages",
+    "/editor/*",
+    "/tags/new",
+    "/explore/*",
+    "/migrate/*",
+    "/members/new",
+    "/members/:member_id",
+    "/members-activity",
+    "/designsandbox",
+    "/mentions",
+];
+
+const emberFallbackHandle = { allowInForceUpgrade: true } satisfies RouteHandle;
+
+const emberFallbackRoutes: RouteObject[] = EMBER_ROUTES.map(path => ({
+    path,
+    Component: EmberFallback,
+    handle: emberFallbackHandle,
+}));
+
+const membersRoute: RouteObject = {
+    path: "/members",
+    element: <MembersRoute />,
+    handle: emberFallbackHandle,
+    children: [
+        {
+            index: true,
+            lazy: lazyComponent(() => import("@tryghost/posts/members"))
+        },
+        {
+            path: "import",
+            lazy: lazyComponent(() => import("@tryghost/posts/members"))
+        }
+    ]
+};
 
 export const routes: RouteObject[] = [
     {
@@ -30,8 +85,9 @@ export const routes: RouteObject[] = [
                 // list to a tag detail page.
                 path: "/tags/:tagSlug",
                 Component: EmberFallback,
-                handle: { allowInForceUpgrade: true } satisfies RouteHandle,
+                handle: emberFallbackHandle,
             },
+            membersRoute,
             {
                 element: (
                     <PostsAppContextProvider value={{ fromAnalytics: true }}>
@@ -43,15 +99,26 @@ export const routes: RouteObject[] = [
             },
             {
                 element: (
-                    <GlobalDataProvider>
-                        <Outlet />
-                    </GlobalDataProvider>
+                    <OnboardingRedirect>
+                        <GlobalDataProvider>
+                            <Outlet />
+                        </GlobalDataProvider>
+                    </OnboardingRedirect>
                 ),
                 children: statsRoutes,
             },
             {
+                path: "setup/onboarding",
+                lazy: lazyComponent(() => import("./onboarding/onboarding-route")),
+            },
+            {
                 path: `network`,
                 loader: () => redirect("/activitypub"),
+            },
+            {
+                path: "my-profile",
+                Component: MyProfileRedirect,
+                handle: { allowInForceUpgrade: true } satisfies RouteHandle,
             },
             {
                 path: "",
@@ -67,12 +134,12 @@ export const routes: RouteObject[] = [
                 lazy: lazyComponent(() => import("./settings/settings")),
                 handle: { allowInForceUpgrade: true } satisfies RouteHandle,
             },
+            // Ember-handled routes
+            ...emberFallbackRoutes,
             {
-                // Catch-all route for Ember-handled routes (including /pro, /signout, etc.)
-                // These must be allowed in force upgrade mode since Ember handles the actual protection
+                // 404 catch-all for routes not handled by React or Ember
                 path: "*",
-                Component: EmberFallback,
-                handle: { allowInForceUpgrade: true } satisfies RouteHandle,
+                Component: NotFound,
             },
         ],
     },

@@ -16,7 +16,8 @@ const messages = {
     invalidName: `Name must be one of: ${ALLOWED_NAMES.join(', ')}`,
     invalidEmailReceived: 'The server did not receive a valid email',
     subjectRequired: 'Subject is required',
-    lexicalRequired: 'Email content is required'
+    lexicalRequired: 'Email content is required',
+    tokenRequired: 'Token is required'
 };
 
 const validateAutomatedEmail = async function (frame) {
@@ -61,6 +62,42 @@ const validateAutomatedEmail = async function (frame) {
     return Promise.resolve();
 };
 
+const validateOptionalStringField = (value, errorMessage) => {
+    if (value !== undefined && value !== null && typeof value !== 'string') {
+        throw new ValidationError({
+            message: errorMessage
+        });
+    }
+};
+
+const validatePreviewData = (frame) => {
+    const subject = frame.data.subject;
+    const lexical = frame.data.lexical;
+
+    if (typeof subject !== 'string' || !subject.trim()) {
+        throw new ValidationError({
+            message: tpl(messages.subjectRequired),
+            property: 'subject'
+        });
+    }
+
+    if (typeof lexical !== 'string' || !lexical.trim()) {
+        throw new ValidationError({
+            message: tpl(messages.lexicalRequired),
+            property: 'lexical'
+        });
+    }
+
+    try {
+        JSON.parse(lexical);
+    } catch (e) {
+        throw new ValidationError({
+            message: tpl(messages.invalidLexical),
+            property: 'lexical'
+        });
+    }
+};
+
 module.exports = {
     async add(apiConfig, frame) {
         await validateAutomatedEmail(frame);
@@ -68,10 +105,27 @@ module.exports = {
     async edit(apiConfig, frame) {
         await validateAutomatedEmail(frame);
     },
+    editSenders(apiConfig, frame) {
+        const senderName = frame.data.sender_name;
+        const senderEmail = frame.data.sender_email;
+        const senderReplyTo = frame.data.sender_reply_to;
+
+        validateOptionalStringField(senderName, 'Sender name must be a string');
+        validateOptionalStringField(senderEmail, 'Sender email must be a string');
+        validateOptionalStringField(senderReplyTo, 'Reply-to email must be a string');
+    },
+    verifySenderUpdate(apiConfig, frame) {
+        if (typeof frame.data.token !== 'string' || !frame.data.token.trim()) {
+            throw new ValidationError({
+                message: tpl(messages.tokenRequired)
+            });
+        }
+    },
+    preview(apiConfig, frame) {
+        validatePreviewData(frame);
+    },
     sendTestEmail(apiConfig, frame) {
         const email = frame.data.email;
-        const subject = frame.data.subject;
-        const lexical = frame.data.lexical;
 
         if (typeof email !== 'string' || !validator.isEmail(email)) {
             throw new ValidationError({
@@ -79,24 +133,6 @@ module.exports = {
             });
         }
 
-        if (typeof subject !== 'string' || !subject.trim()) {
-            throw new ValidationError({
-                message: tpl(messages.subjectRequired)
-            });
-        }
-
-        if (typeof lexical !== 'string' || !lexical.trim()) {
-            throw new ValidationError({
-                message: tpl(messages.lexicalRequired)
-            });
-        }
-
-        try {
-            JSON.parse(lexical);
-        } catch (e) {
-            throw new ValidationError({
-                message: tpl(messages.invalidLexical)
-            });
-        }
+        validatePreviewData(frame);
     }
 };

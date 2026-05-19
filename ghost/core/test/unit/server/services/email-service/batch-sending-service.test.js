@@ -491,7 +491,7 @@ describe('Batch Sending Service', function () {
                 newsletter
             });
 
-            assert(captureMessage.calledOnce);
+            sinon.assert.calledOnce(captureMessage);
         });
 
         it('works with multiple batches', async function () {

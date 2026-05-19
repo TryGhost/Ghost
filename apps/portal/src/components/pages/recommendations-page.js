@@ -3,9 +3,9 @@ import {useContext, useState, useEffect, useCallback, useMemo} from 'react';
 import CloseButton from '../common/close-button';
 import {clearURLParams} from '../../utils/notifications';
 import LoadingPage from './loading-page';
-import {ReactComponent as ArrowIcon} from '../../images/icons/arrow-top-right.svg';
-import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
-import {ReactComponent as CheckmarkIcon} from '../../images/icons/check-circle.svg';
+import ArrowIcon from '../../images/icons/arrow-top-right.svg?react';
+import LoaderIcon from '../../images/icons/loader.svg?react';
+import CheckmarkIcon from '../../images/icons/check-circle.svg?react';
 
 import {getRefDomain} from '../../utils/helpers';
 import {t} from '../../utils/i18n';
@@ -71,7 +71,7 @@ export const RecommendationsPageStyles = `
     transition: 0.2s ease-in-out opacity;
     }
 
-    .gh-portal-list-detail:hover {
+    .gh-portal-recommendation-item .gh-portal-list-detail:hover {
     cursor: pointer;
     opacity: 0.8;
     }
@@ -323,7 +323,7 @@ const RecommendationsPage = () => {
         return <LoadingPage/>;
     }
 
-    const heading = pageData && pageData.signup ? t('Welcome to {siteTitle}', {siteTitle: title, interpolation: {escapeValue: false}}) : t('Recommendations');
+    const heading = pageData && pageData.signup ? t('Welcome to {siteTitle}', {siteTitle: title}) : t('Recommendations');
 
     /* Possible cases:
     - no recommendations found - subhead says no recommendations are available.

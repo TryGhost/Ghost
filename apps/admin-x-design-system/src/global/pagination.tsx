@@ -16,9 +16,9 @@ const Pagination: React.FC<PaginationProps> = ({page, limit, total, prevPage, ne
     if (total && limit < total) {
         return (
             <div className={`mt-1 flex items-center gap-2 text-xs text-grey-700`}>Showing {startIndex}-{endIndex} of {total}
-                <button type='button' onClick={prevPage}><Icon className={`size-[10px] [&>path]:stroke-[3px] ${!hasPrev ? 'cursor-default opacity-50' : 'hover:text-green-700 cursor-pointer'}`} colorClass="text-green" name='chevron-left' />
+                <button type='button' onClick={prevPage}><Icon className={`size-[10px] [&>path]:stroke-[3px] ${!hasPrev ? 'cursor-default opacity-50' : 'cursor-pointer hover:text-green-700'}`} colorClass="text-green" name='chevron-left' />
                 </button>
-                <button type="button" onClick={nextPage}><Icon className={`size-[10px] [&>path]:stroke-[3px] ${!hasNext ? 'cursor-default opacity-50' : 'hover:text-green-700 cursor-pointer'}`} colorClass="text-green" name='chevron-right' /></button>
+                <button type="button" onClick={nextPage}><Icon className={`size-[10px] [&>path]:stroke-[3px] ${!hasNext ? 'cursor-default opacity-50' : 'cursor-pointer hover:text-green-700'}`} colorClass="text-green" name='chevron-right' /></button>
             </div>
         );
 

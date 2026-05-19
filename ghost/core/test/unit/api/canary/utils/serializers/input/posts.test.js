@@ -1,9 +1,10 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
+const configUtils = require('../../../../../../utils/config-utils');
 const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
 const postsSchema = require('../../../../../../../core/server/data/schema').tables.posts;
 
-const mobiledocLib = require('@tryghost/html-to-mobiledoc');
+const mobiledocLib = require('../../../../../../../core/server/lib/mobiledoc');
 
 describe('Unit: endpoints/utils/serializers/input/posts', function () {
     afterEach(function () {
@@ -127,6 +128,56 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
 
             serializers.input.posts.browse(apiConfig, frame);
             assert.equal(frame.options.order, 'updated_at desc');
+        });
+
+        // Regression for the bypass CodeRabbit caught in #27908: when the
+        // caller passes both ?fields=url and ?include=relation, the
+        // defaultRelations early-return on a non-empty withRelated must
+        // not skip the lazyRouting force-load — otherwise the URL still
+        // 404s for tag/author-filtered routes.
+        it('lazyRouting: merges tags+authors into withRelated when caller passes both ?fields=url and ?include=email', async function () {
+            configUtils.set('lazyRouting', true);
+            try {
+                const frame = {
+                    apiType: 'admin',
+                    options: {
+                        context: {user: 1},
+                        columns: ['id', 'url', 'title'],
+                        withRelated: ['email']
+                    }
+                };
+
+                serializers.input.posts.browse({}, frame);
+
+                assert.ok(frame.options.withRelated.includes('email'), 'caller-requested email must be preserved');
+                assert.ok(frame.options.withRelated.includes('tags'), 'tags must be force-loaded for URL');
+                assert.ok(frame.options.withRelated.includes('authors'), 'authors must be force-loaded for URL');
+            } finally {
+                await configUtils.restore();
+            }
+        });
+
+        it('lazyRouting: forces tags+authors on the Content API path', async function () {
+            // Content API uses mapWithRelated rather than defaultRelations;
+            // both branches must invoke the helper.
+            configUtils.set('lazyRouting', true);
+            try {
+                const frame = {
+                    apiType: 'content',
+                    options: {
+                        context: {api_key: {id: 1, type: 'content'}},
+                        columns: ['id', 'url']
+                    }
+                };
+
+                serializers.input.posts.browse({}, frame);
+
+                assert.ok(frame.options.withRelated);
+                assert.ok(frame.options.withRelated.includes('tags'));
+                assert.ok(frame.options.withRelated.includes('authors'));
+            } finally {
+                await configUtils.restore();
+            }
         });
 
         describe('Content API', function () {
@@ -328,7 +379,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
 
             it('transforms html when html is present in data and source options', function () {
                 // JSDOM require is sometimes very slow on CI causing random timeouts
-                this.timeout(4000);
+                this.timeout(10000);
 
                 const apiConfig = {};
                 const lexical = '{"root":{"children":[{"children":[],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}';
@@ -360,7 +411,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
 
             it('preserves html cards in transformed html', function () {
                 // JSDOM require is sometimes very slow on CI causing random timeouts
-                this.timeout(4000);
+                this.timeout(10000);
 
                 const apiConfig = {};
                 const frame = {
@@ -385,7 +436,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
 
             it('throws error when HTML conversion fails', function () {
                 // JSDOM require is sometimes very slow on CI causing random timeouts
-                this.timeout(4000);
+                this.timeout(10000);
 
                 const frame = {
                     options: {
@@ -401,7 +452,9 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
                     }
                 };
 
-                sinon.stub(mobiledocLib, 'toMobiledoc').throws(new Error('Some error'));
+                sinon.stub(mobiledocLib, 'htmlToMobiledocConverter').get(() => () => {
+                    throw new Error('Some error');
+                });
 
                 assert.throws(() => {
                     serializers.input.posts.edit({}, frame);

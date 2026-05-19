@@ -17,7 +17,7 @@ export class LoginPage extends AdminPage {
         this.signInButton = page.getByRole('button', {name: 'Sign in →'});
         this.forgotButton = page.getByRole('button', {name: 'Forgot?'});
         this.passwordResetSuccessMessage = page.getByRole('status');
-    };
+    }
 
     async signIn(email: string, password: string) {
         await this.emailAddressField.fill(email);
@@ -33,6 +33,7 @@ export class LoginPage extends AdminPage {
 
     async logout() {
         await this.page.goto('/ghost/#/signout');
+        await this.signInButton.waitFor({state: 'visible'});
     }
 
     async waitForLoginPageAfterUserCreated(): Promise<void> {

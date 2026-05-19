@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "6.19.2",
+  "version": "6.40.0-rc.0",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -18,12 +18,12 @@
   "scripts": {
     "dev": "ember serve",
     "build": "ember build --environment=production --silent",
-    "build:dev": "yarn build --environment=development",
+    "build:dev": "pnpm build --environment=development",
     "test:unit": "true",
     "test": "ember exam --split 2 --parallel",
     "lint:js": "eslint . --cache",
     "lint:hbs": "ember-template-lint .",
-    "lint": "yarn lint:js && yarn lint:hbs"
+    "lint": "pnpm lint:js && pnpm lint:hbs"
   },
   "engines": {
     "node": "^22.13.1"
@@ -44,30 +44,29 @@
     "@sentry/ember": "7.120.3",
     "@sentry/integrations": "7.114.0",
     "@sentry/replay": "7.116.0",
-    "@tryghost/color-utils": "0.2.10",
+    "@tryghost/admin-x-framework": "workspace:*",
+    "@tryghost/color-utils": "catalog:",
     "@tryghost/ember-promise-modals": "2.0.1",
-    "@tryghost/helpers": "1.1.97",
-    "@tryghost/kg-clean-basic-html": "4.2.13",
-    "@tryghost/kg-converters": "1.1.13",
-    "@tryghost/koenig-lexical": "1.7.13",
-    "@tryghost/limit-service": "1.4.1",
-    "@tryghost/members-csv": "2.0.3",
-    "@tryghost/nql": "0.12.10",
-    "@tryghost/nql-lang": "0.6.4",
-    "@tryghost/string": "0.2.17",
-    "@tryghost/timezone-data": "0.4.12",
+    "@tryghost/helpers": "catalog:",
+    "@tryghost/kg-clean-basic-html": "catalog:",
+    "@tryghost/kg-converters": "catalog:",
+    "@tryghost/koenig-lexical": "catalog:",
+    "@tryghost/limit-service": "catalog:",
+    "@tryghost/nql": "catalog:",
+    "@tryghost/string": "catalog:",
+    "@tryghost/timezone-data": "catalog:",
     "animejs": "3.2.2",
     "autoprefixer": "9.8.6",
     "babel-plugin-transform-class-properties": "6.24.1",
     "babel-plugin-transform-react-jsx": "6.24.1",
     "broccoli-asset-rev": "3.0.0",
-    "broccoli-concat": "4.2.5",
+    "broccoli-concat": "4.2.7",
     "broccoli-funnel": "3.0.8",
     "broccoli-merge-trees": "4.2.0",
     "broccoli-terser-sourcemap": "4.1.1",
-    "chai": "4.5.0",
+    "chai": "catalog:",
     "chai-dom": "1.12.1",
-    "codemirror": "5.48.2",
+    "codemirror": "5.65.21",
     "cssnano": "4.1.10",
     "element-resize-detector": "1.2.4",
     "ember-ajax": "5.1.2",
@@ -97,7 +96,6 @@
     "ember-data": "3.24.0",
     "ember-decorators": "6.1.1",
     "ember-drag-drop": "0.4.8",
-    "ember-ella-sparse": "0.16.0",
     "ember-exam": "6.0.1",
     "ember-export-application-global": "2.0.1",
     "ember-fetch": "8.1.2",
@@ -110,21 +108,22 @@
     "ember-modifier": "4.2.0",
     "ember-moment": "10.0.1",
     "ember-one-way-select": "4.0.1",
-    "ember-power-datepicker": "cibernox/ember-power-datepicker",
+    "ember-power-datepicker": "0.8.1",
     "ember-power-select": "6.0.1",
     "ember-resolver": "8.1.0",
     "ember-simple-auth": "5.0.0",
     "ember-sinon": "5.0.0",
     "ember-source": "3.24.0",
-    "ember-svg-jar": "2.4.9",
+    "ember-svg-jar": "2.7.1",
     "ember-template-lint": "5.13.0",
     "ember-test-selectors": "6.0.0",
     "ember-tooltips": "3.6.0",
     "ember-truth-helpers": "3.1.1",
+    "eslint": "catalog:",
     "eslint-plugin-babel": "5.3.1",
     "flexsearch": "0.7.43",
-    "fs-extra": "11.3.0",
-    "glob": "8.1.0",
+    "fs-extra": "catalog:",
+    "ghost": "workspace:*",
     "google-caja-bower": "https://github.com/acburdine/google-caja-bower#ghost",
     "keymaster": "https://github.com/madrobby/keymaster.git",
     "liquid-fire": "0.34.0",
@@ -134,7 +133,6 @@
     "miragejs": "0.1.48",
     "moment-timezone": "0.5.45",
     "normalize.css": "3.0.3",
-    "papaparse": "5.3.2",
     "postcss-color-mod-function": "3.0.3",
     "postcss-custom-media": "7.0.8",
     "postcss-custom-properties": "10.0.0",
@@ -144,13 +142,13 @@
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "reframe.js": "4.0.2",
-    "semver": "7.7.3",
+    "semver": "7.7.4",
     "sentry-testkit": "5.0.10",
     "sinon-chai": "4.0.1",
-    "testem": "3.16.0",
+    "testem": "3.19.1",
     "tracked-built-ins": "3.4.0",
     "util": "0.12.5",
-    "validator": "13.12.0",
+    "validator": "catalog:",
     "walk-sync": "3.0.0"
   },
   "ember-addon": {
@@ -160,12 +158,6 @@
       "lib/ember-power-calendar-utils"
     ]
   },
-  "resolutions": {
-    "ember-basic-dropdown": "6.0.2",
-    "ember-in-viewport": "4.1.0",
-    "moment": "2.24.0",
-    "moment-timezone": "0.5.45"
-  },
   "ember": {
     "edition": "octane"
   },
@@ -174,18 +166,21 @@
     "*.js": "eslint"
   },
   "dependencies": {
-    "i18n-iso-countries": "7.14.0",
-    "lru-cache": "6.0.0",
+    "lodash": "catalog:",
     "path-browserify": "1.0.1",
-    "webpack": "5.102.1"
+    "webpack": "5.105.4"
   },
   "nx": {
+    "implicitDependencies": [
+      "!ghost"
+    ],
     "targets": {
       "build:dev": {
         "dependsOn": [
           "build:dev",
           {
             "projects": [
+              "@tryghost/admin-x-framework",
               "@tryghost/admin-x-settings",
               "@tryghost/activitypub",
               "@tryghost/posts",
@@ -204,10 +199,21 @@
           "build",
           {
             "projects": [
+              "@tryghost/admin-x-framework",
               "@tryghost/admin-x-settings",
               "@tryghost/activitypub",
               "@tryghost/posts",
               "@tryghost/stats"
+            ],
+            "target": "build"
+          }
+        ]
+      },
+      "test": {
+        "dependsOn": [
+          {
+            "projects": [
+              "@tryghost/admin-x-framework"
             ],
             "target": "build"
           }

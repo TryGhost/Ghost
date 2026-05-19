@@ -49,7 +49,7 @@ describe('Invites API', function () {
             assert.equal(jsonResponse.invites[1].email, 'test2@ghost.org');
             assert.equal(jsonResponse.invites[1].role_id, testUtils.roles.ids.author);
 
-            assert.equal(mailService.GhostMailer.prototype.send.called, false);
+            sinon.assert.notCalled(mailService.GhostMailer.prototype.send);
         });
 
         it('Can read an invitation by id', async function () {
@@ -67,7 +67,7 @@ describe('Invites API', function () {
 
             localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
 
-            assert.equal(mailService.GhostMailer.prototype.send.called, false);
+            sinon.assert.notCalled(mailService.GhostMailer.prototype.send);
         });
 
         it('Can add a new invite', async function () {
@@ -90,7 +90,7 @@ describe('Invites API', function () {
             localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
             assert.equal(jsonResponse.invites[0].role_id, testUtils.getExistingData().roles[1].id);
 
-            assert.equal(mailService.GhostMailer.prototype.send.called, true);
+            sinon.assert.called(mailService.GhostMailer.prototype.send);
 
             assertExists(res.headers.location);
             assert.equal(new URL(res.headers.location).pathname, `/ghost/api/admin/invites/${res.body.invites[0].id}/`);
@@ -102,7 +102,7 @@ describe('Invites API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .expect(204);
 
-            assert.equal(mailService.GhostMailer.prototype.send.called, false);
+            sinon.assert.notCalled(mailService.GhostMailer.prototype.send);
         });
 
         it('Cannot destroy an non-existent invite', async function () {
@@ -114,7 +114,7 @@ describe('Invites API', function () {
                     assert.equal(res.body.errors[0].message, 'Resource not found error, cannot delete invite.');
                 });
 
-            assert.equal(mailService.GhostMailer.prototype.send.called, false);
+            sinon.assert.notCalled(mailService.GhostMailer.prototype.send);
         });
     });
     
@@ -154,7 +154,7 @@ describe('Invites API', function () {
             localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
             assert.equal(jsonResponse.invites[0].role_id, roleId);
 
-            assert.equal(mailService.GhostMailer.prototype.send.called, true);
+            sinon.assert.called(mailService.GhostMailer.prototype.send);
 
             assertExists(res.headers.location);
             assert.equal(new URL(res.headers.location).pathname, `/ghost/api/admin/invites/${res.body.invites[0].id}/`);
@@ -181,7 +181,7 @@ describe('Invites API', function () {
             localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
             assert.equal(jsonResponse.invites[0].role_id, roleId);
 
-            assert.equal(mailService.GhostMailer.prototype.send.called, true);
+            sinon.assert.called(mailService.GhostMailer.prototype.send);
 
             assertExists(res.headers.location);
             assert.equal(new URL(res.headers.location).pathname, `/ghost/api/admin/invites/${res.body.invites[0].id}/`);
@@ -208,7 +208,7 @@ describe('Invites API', function () {
             localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
             assert.equal(jsonResponse.invites[0].role_id, roleId);
 
-            assert.equal(mailService.GhostMailer.prototype.send.called, true);
+            sinon.assert.called(mailService.GhostMailer.prototype.send);
 
             assertExists(res.headers.location);
             assert.equal(new URL(res.headers.location).pathname, `/ghost/api/admin/invites/${res.body.invites[0].id}/`);
@@ -235,7 +235,7 @@ describe('Invites API', function () {
             localUtils.API.checkResponse(jsonResponse.invites[0], 'invite');
             assert.equal(jsonResponse.invites[0].role_id, roleId);
 
-            assert.equal(mailService.GhostMailer.prototype.send.called, true);
+            sinon.assert.called(mailService.GhostMailer.prototype.send);
 
             assertExists(res.headers.location);
             assert.equal(new URL(res.headers.location).pathname, `/ghost/api/admin/invites/${res.body.invites[0].id}/`);

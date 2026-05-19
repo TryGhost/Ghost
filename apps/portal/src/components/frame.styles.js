@@ -21,8 +21,12 @@ import EmailSuppressedPage from './pages/email-suppressed-page.css?inline';
 import EmailSuppressionFAQ from './pages/email-suppression-faq.css?inline';
 import EmailReceivingFAQ from './pages/email-receiving-faq.css?inline';
 import {TipsAndDonationsSuccessStyle} from './pages/support-success';
+import {GiftRedemptionStyles} from './pages/gift-redemption-page';
+import {GiftPageStyles} from './pages/gift-page';
+import {GiftSuccessStyle} from './pages/gift-success-page';
 import {TipsAndDonationsErrorStyle} from './pages/support-error';
 import {RecommendationsPageStyles} from './pages/recommendations-page';
+import {ShareModalStyles} from './pages/share/share-modal.styles';
 import {TransistorPodcastsActionStyles} from './pages/AccountHomePage/components/transistor-podcasts-action';
 import NotificationStyle from './notification.styles';
 
@@ -387,18 +391,21 @@ html[dir="rtl"] .gh-portal-btn-site-title-back span {
     animation: none !important;
 }
 
-.gh-portal-popup-wrapper.preview.offer {
+.gh-portal-popup-wrapper.preview.offer,
+.gh-portal-popup-wrapper.preview.account-plan {
     padding-top: 0;
 }
 
-.gh-portal-popup-container.preview.offer {
+.gh-portal-popup-container.preview.offer,
+.gh-portal-popup-container.preview.account-plan {
     max-width: 420px;
     transform: scale(0.9);
-    margin-top: 3.2vw;
+    margin: 3.2vw auto 0;
 }
 
 @media (max-width: 480px) {
-    .gh-portal-popup-container.preview.offer {
+    .gh-portal-popup-container.preview.offer,
+    .gh-portal-popup-container.preview.account-plan {
         transform-origin: top;
         margin-top: 0;
     }
@@ -593,6 +600,7 @@ html[dir="rtl"] .gh-portal-logout-container {
     align-items: center;
     justify-content: center;
     margin: -2px 0 40px;
+    padding-inline: 60px;
 }
 
 .gh-portal-detail-footer .gh-portal-btn {
@@ -940,6 +948,15 @@ const MobileStyles = `
         overflow: auto;
         justify-content: flex-start;
     }
+
+    .gh-portal-popup-wrapper.full-size .gh-portal-popup-container.preview.account-plan {
+        max-width: 420px;
+        width: auto;
+        height: auto;
+        margin: 3.2vw auto 0;
+        padding-bottom: 24px;
+        transform: scale(0.9);
+    }
 }
 
 @media (max-width: 480px) {
@@ -998,7 +1015,8 @@ const MobileStyles = `
         margin-bottom: 0;
     }
 
-    .gh-portal-popup-container.preview:not(.full-size).offer {
+    .gh-portal-popup-container.preview:not(.full-size).offer,
+    .gh-portal-popup-container.preview:not(.full-size).account-plan {
         max-height: 860px;
         padding-bottom: 0 !important;
     }
@@ -1032,7 +1050,6 @@ const MobileStyles = `
     .gh-portal-popup-container:not(.account-plan) .gh-portal-detail-header .gh-portal-main-title {
         font-size: 2.1rem;
         margin-top: 1px;
-        padding: 0 74px;
         text-align: center;
     }
 
@@ -1299,8 +1316,12 @@ export function getFrameStyles({site}) {
         EmailSuppressionFAQ +
         EmailReceivingFAQ +
         TipsAndDonationsSuccessStyle +
+        GiftRedemptionStyles +
+        GiftPageStyles +
         TipsAndDonationsErrorStyle +
+        GiftSuccessStyle +
         RecommendationsPageStyles +
+        ShareModalStyles +
         TransistorPodcastsActionStyles;
     return FrameStyle;
 }

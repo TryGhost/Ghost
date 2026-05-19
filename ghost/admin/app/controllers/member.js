@@ -1,4 +1,4 @@
-import Controller, {inject as controller} from '@ember/controller';
+import Controller from '@ember/controller';
 import DeleteMemberModal from '../components/members/modals/delete-member';
 import DisableCommentingModal from '../components/members/modals/disable-commenting';
 import EmberObject, {action, defineProperty} from '@ember/object';
@@ -12,7 +12,6 @@ import {tracked} from '@glimmer/tracking';
 const SCRATCH_PROPS = ['name', 'email', 'note'];
 
 export default class MemberController extends Controller {
-    @controller members;
     @service ajax;
     @service session;
     @service dropdown;
@@ -23,10 +22,13 @@ export default class MemberController extends Controller {
     @service modals;
     @service notifications;
     @service router;
+    @service labelsManager;
+    @service stateBridge;
     @service store;
 
     queryParams = [
-        {postAnalytics: 'post'}
+        {postAnalytics: 'post'},
+        {backPath: 'back'}
     ];
 
     @tracked isLoading = false;
@@ -39,12 +41,29 @@ export default class MemberController extends Controller {
 
     @tracked directlyFromAnalytics = false;
     @tracked postAnalytics = null;
+    @tracked backPath = null;
 
     get fromAnalytics() {
         if (!this.postAnalytics) {
             return null;
         }
         return [this.postAnalytics];
+    }
+
+    get membersListPath() {
+        if (this.backPath?.startsWith('/members')) {
+            return this.backPath;
+        }
+
+        if (this.postAnalytics) {
+            return `/members?post=${encodeURIComponent(this.postAnalytics)}`;
+        }
+
+        return '/members';
+    }
+
+    get membersListUrl() {
+        return `#${this.membersListPath}`;
     }
 
     constructor() {
@@ -108,6 +127,15 @@ export default class MemberController extends Controller {
         return `${createdDate} (${memberSince})`;
     }
 
+    invalidateMembersCache() {
+        this.stateBridge.triggerEmberDataChange('update', 'member', this.member.id, null);
+    }
+
+    invalidateMemberCommenting() {
+        this.invalidateMembersCache();
+        this.stateBridge.triggerEmberDataChange('update', 'comment', this.member.id, null);
+    }
+
     // Actions -----------------------------------------------------------------
 
     @action
@@ -143,9 +171,9 @@ export default class MemberController extends Controller {
             member: this.member,
             afterDelete: () => {
                 this.membersStats.invalidate();
-                this.members.refreshData();
+                this.invalidateMembersCache();
                 this.membersCountCache.clear();
-                this.transitionToRoute('members');
+                this.router.transitionTo(this.membersListPath);
             }
         });
     }
@@ -155,7 +183,7 @@ export default class MemberController extends Controller {
         this.modals.open(LogoutMemberModal, {
             member: this.member,
             afterLogout: () => {
-                this.members.refreshData();
+                this.invalidateMembersCache();
             }
         });
     }
@@ -165,6 +193,7 @@ export default class MemberController extends Controller {
         this.modals.open(DisableCommentingModal, {
             member: this.member,
             afterDisable: () => {
+                this.invalidateMemberCommenting();
                 this.fetchMemberTask.perform(this.member.id);
             }
         });
@@ -177,11 +206,7 @@ export default class MemberController extends Controller {
             const url = this.ghostPaths.url.api('members', this.member.id, 'commenting', 'enable');
             await this.ajax.post(url);
 
-            // Invalidate React Query cache so comments list reflects changes
-            if (window.adminXQueryClient) {
-                window.adminXQueryClient.invalidateQueries({queryKey: ['CommentsResponseType']});
-                window.adminXQueryClient.invalidateQueries({queryKey: ['MembersResponseType']});
-            }
+            this.invalidateMemberCommenting();
 
             await this.fetchMemberTask.perform(this.member.id);
             this.notifications.showNotification(`Commenting has been enabled for ${this.member.name || this.member.email}.`, {type: 'success'});
@@ -221,7 +246,8 @@ export default class MemberController extends Controller {
 
             yield member.save();
             member.updateLabels();
-            this.members.refreshData();
+            member.labels.forEach(label => this.labelsManager.addLabel(label));
+            this.invalidateMembersCache();
 
             this.setInitialRelationshipValues();
 

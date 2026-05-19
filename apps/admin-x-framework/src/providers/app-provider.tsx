@@ -1,4 +1,4 @@
-import {ShadeAppProps} from '@tryghost/shade';
+import {ShadeAppProps} from '@tryghost/shade/app';
 import {ReactNode, createContext, useContext} from 'react';
 import {TopLevelFrameworkProps} from './framework-provider';
 

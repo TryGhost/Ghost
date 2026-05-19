@@ -101,7 +101,7 @@ describe('Account Plan Page', () => {
         expect(confirmCancelButton).toBeInTheDocument();
     });
 
-    test('shows retention offer when opened with cancel pageData and retention offers exist', async () => {
+    test('shows retention offer during cancellation flow', async () => {
         const paidProduct = getProductData({
             name: 'Basic',
             monthlyPrice: getPriceData({interval: 'month', amount: 1000, currency: 'usd'}),
@@ -144,6 +144,66 @@ describe('Account Plan Page', () => {
         // Should show retention offer section instead of cancellation confirmation
         const acceptOfferButton = await findByRole('button', {name: 'Continue subscription'});
         expect(acceptOfferButton).toBeInTheDocument();
+    });
+
+    test('shows retention offer during cancellation flow for members on an archived tier', async () => {
+        const paidTier = getProductData({
+            name: 'Basic',
+            monthlyPrice: getPriceData({interval: 'month', amount: 1000, currency: 'usd'}),
+            yearlyPrice: getPriceData({interval: 'year', amount: 10000, currency: 'usd'})
+        });
+
+        const archivedTier = getProductData({
+            name: 'Archived',
+            monthlyPrice: getPriceData({interval: 'month', amount: 1000, currency: 'usd'}),
+            yearlyPrice: getPriceData({interval: 'year', amount: 10000, currency: 'usd'})
+        });
+
+        // As archived products are not returned by the /tiers endpoint, omit archivedTier
+        const site = getSiteData({
+            products: [paidTier, getProductData({type: 'free'})],
+            portalProducts: [paidTier.id]
+        });
+
+        // Subscription is linked to archivedTier
+        const subscription = getSubscriptionData({
+            status: 'active',
+            interval: 'month',
+            amount: 1200,
+            currency: 'USD',
+            priceId: archivedTier.monthlyPrice.id,
+            tier: {
+                id: archivedTier.id,
+                name: archivedTier.name
+            }
+        });
+        subscription.price.product.product_id = subscription.tier.id;
+
+        const member = getMemberData({
+            paid: true,
+            subscriptions: [subscription]
+        });
+
+        const retentionOffer = {
+            ...getOfferData({
+                redemptionType: 'retention',
+                type: 'percent',
+                amount: 20,
+                cadence: 'month'
+            }),
+            tier: null
+        };
+
+        const {findByRole, queryByText} = customSetup({
+            site,
+            member,
+            offers: [retentionOffer],
+            pageData: {action: 'cancel', subscriptionId: subscription.id}
+        });
+
+        const acceptOfferButton = await findByRole('button', {name: 'Continue subscription'});
+        expect(acceptOfferButton).toBeInTheDocument();
+        expect(queryByText(`${archivedTier.name} - Monthly`)).toBeInTheDocument();
     });
 
     test('refreshes retention preview details when offer context changes', () => {
@@ -300,6 +360,51 @@ describe('Account Plan Page', () => {
         expect(queryByText('Save 20% on your next billing cycle. Then $10/month.')).toBeInTheDocument();
     });
 
+    test('renders yearly retention offers', async () => {
+        const paidProduct = getProductData({
+            name: 'Basic',
+            monthlyPrice: getPriceData({interval: 'month', amount: 1000, currency: 'usd'}),
+            yearlyPrice: getPriceData({interval: 'year', amount: 10000, currency: 'usd'})
+        });
+        const products = [paidProduct, getProductData({type: 'free'})];
+        const site = getSiteData({
+            products,
+            portalProducts: [paidProduct.id]
+        });
+        const member = getMemberData({
+            paid: true,
+            subscriptions: [
+                getSubscriptionData({
+                    status: 'active',
+                    interval: 'year',
+                    amount: paidProduct.yearlyPrice.amount,
+                    currency: 'USD',
+                    priceId: paidProduct.yearlyPrice.id
+                })
+            ]
+        });
+
+        const retentionOffer = {
+            ...getOfferData({
+                type: 'percent',
+                amount: 20,
+                cadence: 'year',
+                duration: 'once',
+                tierId: paidProduct.id,
+                tierName: paidProduct.name
+            }),
+            redemption_type: 'retention'
+        };
+
+        const {queryByRole, queryByText} = customSetup({site, member, offers: [retentionOffer]});
+        const cancelButton = queryByRole('button', {name: 'Cancel subscription'});
+
+        fireEvent.click(cancelButton);
+
+        expect(queryByText('20% off')).toBeInTheDocument();
+        expect(queryByText('Save 20% on your next billing cycle. Then $100/year.')).toBeInTheDocument();
+    });
+
     test('renders rounded cents for percent retention offers', async () => {
         const paidProduct = getProductData({
             name: 'Basic',
@@ -345,6 +450,53 @@ describe('Account Plan Page', () => {
         expect(discountedAmount).not.toBeNull();
         expect(discountedAmount).toHaveTextContent('4.79');
         expect(queryByText('Save 20% on your next billing cycle. Then $5.99/month.')).toBeInTheDocument();
+    });
+
+    test('renders grouped and padded prices for larger fractional retention offers', async () => {
+        const paidProduct = getProductData({
+            name: 'Basic',
+            monthlyPrice: getPriceData({interval: 'month', amount: 123450, currency: 'usd'}),
+            yearlyPrice: getPriceData({interval: 'year', amount: 10000, currency: 'usd'})
+        });
+        const products = [paidProduct, getProductData({type: 'free'})];
+        const site = getSiteData({
+            products,
+            portalProducts: [paidProduct.id]
+        });
+        const member = getMemberData({
+            paid: true,
+            subscriptions: [
+                getSubscriptionData({
+                    status: 'active',
+                    interval: 'month',
+                    amount: paidProduct.monthlyPrice.amount,
+                    currency: 'USD',
+                    priceId: paidProduct.monthlyPrice.id
+                })
+            ]
+        });
+
+        const retentionOffer = {
+            ...getOfferData({
+                type: 'percent',
+                amount: 20,
+                cadence: 'month',
+                duration: 'once',
+                tierId: paidProduct.id,
+                tierName: paidProduct.name
+            }),
+            redemption_type: 'retention'
+        };
+
+        const {container, queryByRole, queryByText} = customSetup({site, member, offers: [retentionOffer]});
+        const cancelButton = queryByRole('button', {name: 'Cancel subscription'});
+
+        fireEvent.click(cancelButton);
+
+        const discountedAmount = container.querySelector('.gh-portal-product-price .amount');
+        expect(discountedAmount).not.toBeNull();
+        expect(discountedAmount).toHaveTextContent('987.60');
+        expect(queryByText('Save 20% on your next billing cycle. Then $1,234.50/month.')).toBeInTheDocument();
     });
 
     test('renders fixed retention offers', async () => {
@@ -419,10 +571,11 @@ describe('Account Plan Page', () => {
 
         const retentionOffer = {
             ...getOfferData({
-                type: 'free_months',
-                amount: 1,
+                type: 'percent',
+                amount: 100,
                 cadence: 'month',
-                duration: 'free_months',
+                duration: 'repeating',
+                durationInMonths: 1,
                 tierId: paidProduct.id,
                 tierName: paidProduct.name
             }),
@@ -435,7 +588,53 @@ describe('Account Plan Page', () => {
         fireEvent.click(cancelButton);
 
         expect(queryByText('1 month free')).toBeInTheDocument();
-        expect(queryByText('Enjoy 1 month on us. Your next billing date will be pushed back by 30 days.')).toBeInTheDocument();
+        expect(queryByText('Enjoy a free month on us. You won\'t be charged until 5 Nov 2022.')).toBeInTheDocument();
+    });
+
+    test('renders multi-month free months retention offers', async () => {
+        const paidProduct = getProductData({
+            name: 'Basic',
+            monthlyPrice: getPriceData({interval: 'month', amount: 1000, currency: 'usd'}),
+            yearlyPrice: getPriceData({interval: 'year', amount: 10000, currency: 'usd'})
+        });
+        const products = [paidProduct, getProductData({type: 'free'})];
+        const site = getSiteData({
+            products,
+            portalProducts: [paidProduct.id]
+        });
+        const member = getMemberData({
+            paid: true,
+            subscriptions: [
+                getSubscriptionData({
+                    status: 'active',
+                    interval: 'month',
+                    amount: paidProduct.monthlyPrice.amount,
+                    currency: 'USD',
+                    priceId: paidProduct.monthlyPrice.id
+                })
+            ]
+        });
+
+        const retentionOffer = {
+            ...getOfferData({
+                type: 'percent',
+                amount: 100,
+                cadence: 'month',
+                duration: 'repeating',
+                durationInMonths: 3,
+                tierId: paidProduct.id,
+                tierName: paidProduct.name
+            }),
+            redemption_type: 'retention'
+        };
+
+        const {queryByRole, queryByText} = customSetup({site, member, offers: [retentionOffer]});
+        const cancelButton = queryByRole('button', {name: 'Cancel subscription'});
+
+        fireEvent.click(cancelButton);
+
+        expect(queryByText('3 months free')).toBeInTheDocument();
+        expect(queryByText('Enjoy 3 free months on us. You won\'t be charged until 5 Jan 2023.')).toBeInTheDocument();
     });
 
     test('renders forever percent retention offers', async () => {
@@ -527,5 +726,108 @@ describe('Account Plan Page', () => {
 
         expect(queryByText('20% off')).toBeInTheDocument();
         expect(queryByText('Save 20% on your next 3 billing cycles. Then $10/month.')).toBeInTheDocument();
+    });
+
+    describe('gift members', () => {
+        const buildGiftMember = ({tier}) => {
+            const subscription = getSubscriptionData({
+                status: 'active',
+                interval: 'month',
+                amount: 1200,
+                currency: 'USD',
+                priceId: '',
+                tier: {
+                    id: tier.id,
+                    name: tier.name,
+                    expiry_at: '2027-01-11T00:00:00.000Z'
+                }
+            });
+            subscription.id = '';
+            subscription.price.id = '';
+            subscription.price.product.product_id = tier.id;
+
+            return getMemberData({
+                status: 'gift',
+                paid: true,
+                subscriptions: [subscription]
+            });
+        };
+
+        describe('on an archived tier', () => {
+            test('hides the Cancel subscription button and allows to upgrade to a new plan', async () => {
+                const premiumTier = getProductData({
+                    name: 'Premium',
+                    monthlyPrice: getPriceData({interval: 'month', amount: 1500, currency: 'usd'}),
+                    yearlyPrice: getPriceData({interval: 'year', amount: 15000, currency: 'usd'})
+                });
+                const ultraTier = getProductData({
+                    name: 'Ultra',
+                    monthlyPrice: getPriceData({interval: 'month', amount: 2500, currency: 'usd'}),
+                    yearlyPrice: getPriceData({interval: 'year', amount: 25000, currency: 'usd'})
+                });
+
+                const archivedTier = getProductData({
+                    name: 'Archived Tier',
+                    monthlyPrice: getPriceData({interval: 'month', amount: 1200, currency: 'usd'}),
+                    yearlyPrice: getPriceData({interval: 'year', amount: 12000, currency: 'usd'})
+                });
+
+                // Archived tiers are filtered out of site.products by the backend
+                const site = getSiteData({
+                    products: [premiumTier, ultraTier, getProductData({type: 'free'})],
+                    portalProducts: [premiumTier.id, ultraTier.id]
+                });
+
+                const member = buildGiftMember({tier: archivedTier});
+
+                const {queryByRole, queryAllByRole, mockDoActionFn} = customSetup({site, member});
+
+                expect(queryByRole('button', {name: 'Cancel subscription'})).not.toBeInTheDocument();
+                expect(queryByRole('button', {name: 'Confirm cancellation'})).not.toBeInTheDocument();
+
+                const chooseButtons = queryAllByRole('button', {name: 'Choose'});
+                expect(chooseButtons.length).toBeGreaterThan(0);
+
+                fireEvent.click(chooseButtons[0]);
+
+                expect(mockDoActionFn).toHaveBeenCalledWith('checkoutPlan', expect.objectContaining({plan: expect.any(String)}));
+                expect(mockDoActionFn).not.toHaveBeenCalledWith('updateSubscription', expect.anything());
+                expect(mockDoActionFn).not.toHaveBeenCalledWith('cancelSubscription', expect.anything());
+            });
+        });
+
+        describe('on an active tier', () => {
+            test('hides the cancellations button and allows to continue on the same tier', () => {
+                const activeTier = getProductData({
+                    name: 'Basic',
+                    monthlyPrice: getPriceData({interval: 'month', amount: 1200, currency: 'usd'}),
+                    yearlyPrice: getPriceData({interval: 'year', amount: 12000, currency: 'usd'})
+                });
+                const otherTier = getProductData({
+                    name: 'Premium',
+                    monthlyPrice: getPriceData({interval: 'month', amount: 2000, currency: 'usd'}),
+                    yearlyPrice: getPriceData({interval: 'year', amount: 20000, currency: 'usd'})
+                });
+
+                const site = getSiteData({
+                    products: [activeTier, otherTier, getProductData({type: 'free'})],
+                    portalProducts: [activeTier.id, otherTier.id]
+                });
+
+                const member = buildGiftMember({tier: activeTier});
+
+                const {mockDoActionFn, queryByRole} = customSetup({site, member});
+
+                // No "Cancel subscription" — gift subs cannot be cancelled.
+                expect(queryByRole('button', {name: 'Cancel subscription'})).not.toBeInTheDocument();
+
+                // Active-tier gift members are bounced back to AccountHomePage where their only
+                // option is to "Continue" on the same tier (via continueGiftSubscription). The
+                // change-plan UI is not available to them.
+                expect(mockDoActionFn).toHaveBeenCalledWith('switchPage', {page: 'accountHome'});
+                expect(mockDoActionFn).not.toHaveBeenCalledWith('checkoutPlan', expect.anything());
+                expect(mockDoActionFn).not.toHaveBeenCalledWith('updateSubscription', expect.anything());
+            });
+        });
     });
 });

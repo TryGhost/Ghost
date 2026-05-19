@@ -485,7 +485,7 @@ describe('RecommendationController', function () {
                     },
                     user: {}
                 });
-                assert(listSpy.calledOnce);
+                sinon.assert.calledOnce(listSpy);
                 const args = listSpy.getCall(0).args[0];
                 assert.deepEqual(args.order, [
                     {
@@ -503,7 +503,7 @@ describe('RecommendationController', function () {
                     },
                     user: {}
                 });
-                assert(listSpy.calledOnce);
+                sinon.assert.calledOnce(listSpy);
                 const args = listSpy.getCall(0).args[0];
                 assert.deepEqual(args.order, [
                     {
@@ -521,7 +521,7 @@ describe('RecommendationController', function () {
                     },
                     user: {}
                 });
-                assert(listSpy.calledOnce);
+                sinon.assert.calledOnce(listSpy);
                 const args = listSpy.getCall(0).args[0];
                 assert.deepEqual(args.order, [
                     {
@@ -543,7 +543,7 @@ describe('RecommendationController', function () {
                     },
                     user: {}
                 });
-                assert(listSpy.calledOnce);
+                sinon.assert.calledOnce(listSpy);
                 const args = listSpy.getCall(0).args[0];
                 assert.deepEqual(args.order, [
                     {
@@ -622,7 +622,7 @@ describe('RecommendationController', function () {
                     },
                     user: {}
                 });
-                assert(listSpy.calledOnce);
+                sinon.assert.calledOnce(listSpy);
                 const args = listSpy.getCall(0).args[0];
                 assert.deepEqual(args.include, ['clickCount', 'subscriberCount']);
             });

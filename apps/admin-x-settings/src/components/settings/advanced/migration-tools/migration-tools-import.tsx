@@ -47,6 +47,13 @@ const MigrationToolsImport: React.FC = () => {
             />
             <ImportButton
                 icon={
+                    <Icon className='w-auto' name='beehiiv' size={18} />
+                }
+                title='beehiiv'
+                onClick={() => updateRoute({isExternal: true, route: '/migrate/beehiiv'})}
+            />
+            <ImportButton
+                icon={
                     <Icon className='w-auto' name='wordpress' size={18} />
                 }
                 title='WordPress'

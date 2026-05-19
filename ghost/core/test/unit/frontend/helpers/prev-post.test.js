@@ -1,4 +1,3 @@
-const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
 const sinon = require('sinon');
 const markdownToMobiledoc = require('../../../utils/fixtures/data-generator').markdownToMobiledoc;
@@ -69,7 +68,10 @@ describe('{{prev_post}} helper', function () {
 
             sinon.assert.calledOnceWithExactly(
                 browsePostsStub,
-                sinon.match({include: 'author,authors,tags,tiers'})
+                sinon.match({
+                    include: 'author,authors,tags,tiers',
+                    skipPagination: true
+                })
             );
         });
     });
@@ -129,9 +131,9 @@ describe('{{prev_post}} helper', function () {
             await prev_post
                 .call({}, optionsData);
 
-            assert.equal(fn.called, false);
-            assert.equal(inverse.called, true);
-            assert.equal(browsePostsStub.called, false);
+            sinon.assert.notCalled(fn);
+            sinon.assert.called(inverse);
+            sinon.assert.notCalled(browsePostsStub);
         });
     });
 
@@ -168,8 +170,8 @@ describe('{{prev_post}} helper', function () {
                     page: true
                 }, optionsData);
 
-            assert.equal(fn.called, false);
-            assert.equal(inverse.called, true);
+            sinon.assert.notCalled(fn);
+            sinon.assert.called(inverse);
         });
     });
 
@@ -205,8 +207,8 @@ describe('{{prev_post}} helper', function () {
                     url: '/current/'
                 }, optionsData);
 
-            assert.equal(fn.called, false);
-            assert.equal(inverse.called, true);
+            sinon.assert.notCalled(fn);
+            sinon.assert.called(inverse);
         });
     });
 
@@ -456,8 +458,8 @@ describe('{{prev_post}} helper', function () {
                     optionsData
                 );
 
-            assert.equal(fn.called, false);
-            assert.equal(inverse.called, false);
+            sinon.assert.notCalled(fn);
+            sinon.assert.notCalled(inverse);
         });
     });
 

@@ -3,6 +3,7 @@ const {assertExists} = require('../../../utils/assertions');
 const hbs = require('../../../../core/frontend/services/theme-engine/engine');
 const configUtils = require('../../../utils/config-utils');
 const path = require('path');
+const {promisify} = require('node:util');
 
 const concat = require('../../../../core/frontend/helpers/concat');
 const foreach = require('../../../../core/frontend/helpers/foreach');
@@ -18,14 +19,13 @@ const runHelperThunk = data => () => runHelper(data);
 describe('{{navigation}} helper', function () {
     let optionsData;
 
-    before(function (done) {
+    before(async function () {
         hbs.express4({
             partialsDir: [configUtils.config.get('paths').helperTemplates]
         });
 
-        hbs.cachePartials(function () {
-            done();
-        });
+        const cachePartials = promisify(hbs.cachePartials.bind(hbs));
+        await cachePartials();
 
         // The navigation partial expects this helper
         // @TODO: change to register with Ghost's own registration tools
@@ -226,12 +226,11 @@ describe('{{navigation}} helper', function () {
 describe('{{navigation}} helper with custom template', function () {
     let optionsData;
 
-    before(function (done) {
+    before(async function () {
         hbs.express4({partialsDir: [path.resolve(__dirname, './test_tpl')]});
 
-        hbs.cachePartials(function () {
-            done();
-        });
+        const cachePartials = promisify(hbs.cachePartials.bind(hbs));
+        await cachePartials();
     });
 
     beforeEach(function () {

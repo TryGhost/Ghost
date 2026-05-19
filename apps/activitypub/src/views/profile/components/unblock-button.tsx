@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import UnblockDialog from './unblock-dialog';
 import {Account} from '@src/api/activitypub';
-import {Button} from '@tryghost/shade';
+import {Button} from '@tryghost/shade/components';
 
 interface UnblockButtonProps {
     account: Account,

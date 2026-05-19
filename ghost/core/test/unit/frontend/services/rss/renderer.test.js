@@ -24,77 +24,64 @@ describe('RSS: Renderer', function () {
         sinon.restore();
     });
 
-    it('calls the cache and attempts to render, even without data', function (done) {
+    it('calls the cache and attempts to render, even without data', async function () {
         rssCacheStub.returns(Promise.resolve('dummyxml'));
 
-        renderer.render(res, baseUrl).then(function () {
-            assert.equal(rssCacheStub.calledOnce, true);
-            assert.deepEqual(rssCacheStub.firstCall.args, ['/rss/', {}]);
+        await renderer.render(res, baseUrl);
+        sinon.assert.calledOnce(rssCacheStub);
+        assert.deepEqual(rssCacheStub.firstCall.args, ['/rss/', {}]);
 
-            assert.equal(res.set.calledOnce, true);
-            assert.equal(res.set.calledWith('Content-Type', 'application/rss+xml; charset=UTF-8'), true);
+        sinon.assert.calledOnce(res.set);
+        sinon.assert.calledWith(res.set, 'Content-Type', 'application/rss+xml; charset=UTF-8');
 
-            assert.equal(res.send.calledOnce, true);
-            assert.equal(res.send.calledWith('dummyxml'), true);
-
-            done();
-        }).catch(done);
+        sinon.assert.calledOnce(res.send);
+        sinon.assert.calledWith(res.send, 'dummyxml');
     });
 
-    it('correctly merges locals into empty data before rendering', function (done) {
+    it('correctly merges locals into empty data before rendering', async function () {
         rssCacheStub.returns(Promise.resolve('dummyxml'));
 
         res.locals = {foo: 'bar'};
 
-        renderer.render(res, baseUrl).then(function () {
-            assert.equal(rssCacheStub.calledOnce, true);
-            assert.deepEqual(rssCacheStub.firstCall.args, ['/rss/', {foo: 'bar'}]);
+        await renderer.render(res, baseUrl);
+        sinon.assert.calledOnce(rssCacheStub);
+        assert.deepEqual(rssCacheStub.firstCall.args, ['/rss/', {foo: 'bar'}]);
 
-            assert.equal(res.set.calledOnce, true);
-            assert.equal(res.set.calledWith('Content-Type', 'application/rss+xml; charset=UTF-8'), true);
+        sinon.assert.calledOnce(res.set);
+        sinon.assert.calledWith(res.set, 'Content-Type', 'application/rss+xml; charset=UTF-8');
 
-            assert.equal(res.send.calledOnce, true);
-            assert.equal(res.send.calledWith('dummyxml'), true);
-
-            done();
-        }).catch(done);
+        sinon.assert.calledOnce(res.send);
+        sinon.assert.calledWith(res.send, 'dummyxml');
     });
 
-    it('correctly merges locals into non-empty data before rendering', function (done) {
+    it('correctly merges locals into non-empty data before rendering', async function () {
         rssCacheStub.returns(Promise.resolve('dummyxml'));
 
         res.locals = {foo: 'bar'};
         const data = {foo: 'baz', fizz: 'buzz'};
 
-        renderer.render(res, baseUrl, data).then(function () {
-            assert.equal(rssCacheStub.calledOnce, true);
-            assert.deepEqual(rssCacheStub.firstCall.args, ['/rss/', {foo: 'baz', fizz: 'buzz'}]);
+        await renderer.render(res, baseUrl, data);
+        sinon.assert.calledOnce(rssCacheStub);
+        assert.deepEqual(rssCacheStub.firstCall.args, ['/rss/', {foo: 'baz', fizz: 'buzz'}]);
 
-            assert.equal(res.set.calledOnce, true);
-            assert.equal(res.set.calledWith('Content-Type', 'application/rss+xml; charset=UTF-8'), true);
+        sinon.assert.calledOnce(res.set);
+        sinon.assert.calledWith(res.set, 'Content-Type', 'application/rss+xml; charset=UTF-8');
 
-            assert.equal(res.send.calledOnce, true);
-            assert.equal(res.send.calledWith('dummyxml'), true);
-
-            done();
-        }).catch(done);
+        sinon.assert.calledOnce(res.send);
+        sinon.assert.calledWith(res.send, 'dummyxml');
     });
 
-    it('does nothing if it gets an error', function (done) {
+    it('does nothing if it gets an error', async function () {
         rssCacheStub.returns(Promise.reject(new Error('Fake Error')));
 
-        renderer.render(res, baseUrl).then(function () {
-            done('This should have errored');
-        }).catch(function (err) {
-            assert.equal(err.message, 'Fake Error');
-
-            assert.equal(rssCacheStub.calledOnce, true);
-            assert.deepEqual(rssCacheStub.firstCall.args, ['/rss/', {}]);
-
-            assert.equal(res.set.called, false);
-            assert.equal(res.send.called, false);
-
-            done();
+        await assert.rejects(() => renderer.render(res, baseUrl), {
+            message: 'Fake Error'
         });
+
+        sinon.assert.calledOnce(rssCacheStub);
+        assert.deepEqual(rssCacheStub.firstCall.args, ['/rss/', {}]);
+
+        sinon.assert.notCalled(res.set);
+        sinon.assert.notCalled(res.send);
     });
 });

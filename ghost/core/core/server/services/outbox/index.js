@@ -24,7 +24,11 @@ class OutboxServiceWrapper {
 
     async startProcessing() {
         if (this.processing) {
-            logging.info(`${OUTBOX_LOG_KEY}: Outbox job already running, skipping`);
+            logging.info({
+                system: {
+                    event: 'outbox.processing.skipped_already_running'
+                }
+            }, `${OUTBOX_LOG_KEY}: Outbox job already running, skipping`);
             return;
         }
         this.processing = true;
@@ -32,8 +36,13 @@ class OutboxServiceWrapper {
         try {
             const statusMessage = await processOutbox();
             logging.info(statusMessage);
-        } catch (e) {
-            logging.error(e, `${OUTBOX_LOG_KEY}: Error while processing outbox`);
+        } catch (err) {
+            logging.error({
+                system: {
+                    event: 'outbox.processing.error'
+                },
+                err
+            }, `${OUTBOX_LOG_KEY}: Error while processing outbox`);
         } finally {
             this.processing = false;
         }

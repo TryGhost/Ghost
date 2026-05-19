@@ -16,7 +16,7 @@ describe('MemberRepository', function () {
                 withRelated: ['stripePrices']
             });
 
-            assert.ok(listStub.called);
+            sinon.assert.called(listStub);
 
             assert.equal(listStub.args[0][0].filter, 'type:paid+active:true', 'should only take into account paid and active records');
             assert.equal(listStub.args[0][0].limit, 1, 'should only fetch a single record');

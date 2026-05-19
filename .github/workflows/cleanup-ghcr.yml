@@ -1,0 +1,158 @@
+name: Cleanup GHCR Images
+
+on:
+  schedule:
+    - cron: "30 4 * * *" # Daily at 04:30 UTC
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Log what would be deleted without making changes"
+        required: false
+        default: true
+        type: boolean
+      retention_days:
+        description: "Delete versions older than this many days"
+        required: false
+        default: 14
+        type: number
+      min_keep:
+        description: "Always keep at least this many versions per package"
+        required: false
+        default: 10
+        type: number
+
+permissions:
+  packages: write
+
+env:
+  ORG: TryGhost
+  RETENTION_DAYS: ${{ inputs.retention_days || 14 }}
+  MIN_KEEP: ${{ inputs.min_keep || 10 }}
+
+jobs:
+  cleanup:
+    name: Cleanup
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package: [ghost, ghost-core, ghost-development]
+    steps:
+      - name: Delete old non-release versions
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN: ${{ github.event_name == 'schedule' && 'false' || inputs.dry_run }}
+          PACKAGE: ${{ matrix.package }}
+        run: |
+          set -euo pipefail
+
+          cutoff=$(date -u -d "-${RETENTION_DAYS} days" +%Y-%m-%dT%H:%M:%SZ 2>/dev/null \
+            || date -u -v-${RETENTION_DAYS}d +%Y-%m-%dT%H:%M:%SZ)
+
+          echo "Package: ${ORG}/${PACKAGE}"
+          echo "Cutoff:  ${cutoff} (${RETENTION_DAYS} days ago)"
+          echo "Dry run: ${DRY_RUN}"
+          echo ""
+
+          # Pagination — collect all versions
+          page=1
+          all_versions="[]"
+          while true; do
+            if ! batch=$(gh api \
+              "/orgs/${ORG}/packages/container/${PACKAGE}/versions?per_page=100&page=${page}" \
+              --jq '.' 2>&1); then
+              if [ "$page" = "1" ]; then
+                echo "::error::API request failed: ${batch}"
+                exit 1
+              fi
+              echo "::warning::API request failed (page ${page}): ${batch}"
+              break
+            fi
+
+            count=$(echo "$batch" | jq 'length')
+            if [ "$count" = "0" ]; then
+              break
+            fi
+
+            all_versions=$(echo "$all_versions $batch" | jq -s 'add')
+            page=$((page + 1))
+          done
+
+          total=$(echo "$all_versions" | jq 'length')
+          echo "Total versions: ${total}"
+
+          # Classify versions
+          keep=0
+          delete=0
+          delete_ids=""
+
+          for row in $(echo "$all_versions" | jq -r '.[] | @base64'); do
+            _jq() { echo "$row" | base64 -d | jq -r "$1"; }
+
+            id=$(_jq '.id')
+            updated=$(_jq '.updated_at')
+            tags=$(_jq '[.metadata.container.tags[]] | join(",")')
+
+            # Keep versions with semver tags (v1.2.3, 1.2.3, 1.2)
+            if echo "$tags" | grep -qE '(^|,)v?[0-9]+\.[0-9]+\.[0-9]+(,|$)' || \
+               echo "$tags" | grep -qE '(^|,)[0-9]+\.[0-9]+(,|$)'; then
+              keep=$((keep + 1))
+              continue
+            fi
+
+            # Keep versions with 'latest' or 'main' or cache-main tags
+            if echo "$tags" | grep -qE '(^|,)(latest|main|cache-main)(,|$)'; then
+              keep=$((keep + 1))
+              continue
+            fi
+
+            # Keep versions newer than cutoff
+            if [[ "$updated" > "$cutoff" ]]; then
+              keep=$((keep + 1))
+              continue
+            fi
+
+            # This version is eligible for deletion
+            delete=$((delete + 1))
+            delete_ids="${delete_ids} ${id}"
+
+            tag_display="${tags:-<untagged>}"
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "[dry-run] Would delete version ${id} (tags: ${tag_display}, updated: ${updated})"
+            fi
+          done
+
+          echo ""
+          echo "Summary: ${keep} kept, ${delete} to delete (of ${total} total)"
+
+          if [ "$delete" = "0" ]; then
+            echo "Nothing to delete."
+            exit 0
+          fi
+
+          # Safety check — run before dry-run exit so users see the warning
+          if [ "$keep" -lt "$MIN_KEEP" ]; then
+            echo "::error::Safety check failed — only ${keep} versions would remain (minimum: ${MIN_KEEP}). Aborting."
+            exit 1
+          fi
+
+          if [ "$DRY_RUN" = "true" ]; then
+            echo ""
+            echo "Dry run — no versions deleted."
+            exit 0
+          fi
+
+          # Delete eligible versions
+          deleted=0
+          failed=0
+          for id in $delete_ids; do
+            if gh api --method DELETE \
+              "/orgs/${ORG}/packages/container/${PACKAGE}/versions/${id}" 2>/dev/null; then
+              deleted=$((deleted + 1))
+            else
+              echo "::warning::Failed to delete version ${id}"
+              failed=$((failed + 1))
+            fi
+          done
+
+          echo ""
+          echo "Deleted ${deleted} versions (${failed} failed)"

@@ -56,7 +56,7 @@ function ping(post) {
 
     // If this is a post, we want to send the link of the post
     if (hasPostProperties(post)) {
-        message = urlService.getUrlByResourceId(post.id, {absolute: true});
+        message = urlService.facade.getUrlForResource({...post, type: 'posts'}, {absolute: true});
         title = post.title ? post.title : null;
         author = post.authors ? post.authors[0] : null;
 
@@ -97,8 +97,8 @@ function ping(post) {
         }
 
         // Don't ping for the default posts.
-        // This also handles the case where during ghost's first run
-        // models.init() inserts this post but permissions.init() hasn't
+        // This also handles the case where during Ghost's first run
+        // model loading inserts this post but permissions.init() hasn't
         // (can't) run yet.
         if (defaultPostSlugs.indexOf(post.slug) > -1) {
             return;
@@ -136,7 +136,7 @@ function ping(post) {
                         fields: [
                             {
                                 title: 'Author',
-                                value: author ? `<${urlService.getUrlByResourceId(author.id, {absolute: true})} | ${author.name}>` : null,
+                                value: author ? `<${urlService.facade.getUrlForResource({...author, type: 'authors'}, {absolute: true})} | ${author.name}>` : null,
                                 short: true
                             }
                         ],

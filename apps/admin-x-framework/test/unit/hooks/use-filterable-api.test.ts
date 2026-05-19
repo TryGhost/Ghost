@@ -99,6 +99,36 @@ describe('useFilterableApi', () => {
         });
     });
 
+    it('filters unfiltered API responses for non-empty search input', async () => {
+        const mockData: TestData[] = [
+            {id: '1', name: 'John Doe', email: 'john@example.com'},
+            {id: '2', name: 'Jane Smith', email: 'jane@example.com'},
+            {id: '3', name: 'johnny Appleseed', email: 'johnny@example.com'}
+        ];
+
+        mockFetchApi.mockResolvedValueOnce({
+            users: mockData,
+            meta: {pagination: {next: null}}
+        });
+
+        const {result} = renderHook(() => useFilterableApi<TestData, 'users', 'name'>({
+            path: '/users',
+            filterKey: 'name',
+            responseKey: 'users'
+        }));
+
+        const data = await result.current.loadData('john');
+
+        expect(data).toEqual([
+            {id: '1', name: 'John Doe', email: 'john@example.com'},
+            {id: '3', name: 'johnny Appleseed', email: 'johnny@example.com'}
+        ]);
+        expect(mockApiUrl).toHaveBeenCalledWith('/users', {
+            filter: 'name:~\'john\'',
+            limit: '20'
+        });
+    });
+
     it('escapes single quotes in filter values', async () => {
         const mockData: TestData[] = [];
 
@@ -314,7 +344,7 @@ describe('useFilterableApi', () => {
         const firstResult = await result.current.loadData('');
         expect(firstResult).toEqual(mockData);
 
-        const secondResult = await result.current.loadData('test');
+        const secondResult = await result.current.loadData('john');
         expect(secondResult).toEqual(mockData);
     });
 
@@ -358,8 +388,8 @@ describe('useFilterableApi', () => {
 
             const data = await result.current.loadData('');
 
-            // The hook returns undefined when responseKey is not found
-            expect(data).toBeUndefined();
+            // The hook returns an empty array when responseKey is not found
+            expect(data).toEqual([]);
         });
 
         it('handles null response data', async () => {
@@ -425,7 +455,9 @@ describe('useFilterableApi', () => {
 
         it('handles rapid filter changes correctly', async () => {
             const mockData: TestData[] = [
-                {id: '1', name: 'Test Result'}
+                {id: '1', name: 'test1'},
+                {id: '2', name: 'test2'},
+                {id: '3', name: 'test3'}
             ];
 
             mockFetchApi.mockResolvedValue({
@@ -444,12 +476,10 @@ describe('useFilterableApi', () => {
             const promise2 = result.current.loadData('test2');
             const promise3 = result.current.loadData('test3');
 
-            const results = await Promise.all([promise1, promise2, promise3]);
-
             // All calls should return data
-            results.forEach((resultItem) => {
-                expect(resultItem).toEqual(mockData);
-            });
+            await expect(promise1).resolves.toEqual([{id: '1', name: 'test1'}]);
+            await expect(promise2).resolves.toEqual([{id: '2', name: 'test2'}]);
+            await expect(promise3).resolves.toEqual([{id: '3', name: 'test3'}]);
         });
     });
 

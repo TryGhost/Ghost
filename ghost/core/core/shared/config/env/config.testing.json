@@ -14,8 +14,15 @@
     "logging": {
         "level": "error"
     },
+    "adapters": {
+        "Redis": {
+            "host": "127.0.0.1",
+            "port": 6379
+        }
+    },
     "security": {
-        "staffDeviceVerification": false
+        "staffDeviceVerification": false,
+        "allowWebhookInternalIPs": true
     },
     "spam": {
         "user_login": {
@@ -93,6 +100,5 @@
         "fixtures": "test/utils/fixtures/fixtures",
         "defaultSettings": "test/utils/fixtures/default-settings.json",
         "urlCache": "test/utils/fixtures/urls"
-    },
-    "memberWelcomeEmailTestInbox": "test-inbox@example.com"
+    }
 }

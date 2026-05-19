@@ -4,7 +4,6 @@ const sinon = require('sinon');
 const testUtils = require('../../../../../utils');
 const configUtils = require('../../../../../utils/config-utils');
 const urlUtils = require('../../../../../../core/shared/url-utils');
-const routerManager = require('../../../../../../core/frontend/services/routing/').routerManager;
 const controllers = require('../../../../../../core/frontend/services/routing/controllers');
 const renderer = require('../../../../../../core/frontend/services/rendering');
 const dataService = require('../../../../../../core/frontend/services/data');
@@ -16,7 +15,6 @@ describe('Unit - services/routing/controllers/entry', function () {
     let entryLookUpStub;
     let renderStub;
     let urlUtilsRedirect301Stub;
-    let routerManagerGetResourceByIdStub;
     let urlUtilsRedirectToAdminStub;
     let post;
 
@@ -37,7 +35,6 @@ describe('Unit - services/routing/controllers/entry', function () {
 
         urlUtilsRedirectToAdminStub = sinon.stub(urlUtils, 'redirectToAdmin');
         urlUtilsRedirect301Stub = sinon.stub(urlUtils, 'redirect301');
-        routerManagerGetResourceByIdStub = sinon.stub(routerManager, 'getResourceById');
 
         req = {
             path: '/',
@@ -76,12 +73,6 @@ describe('Unit - services/routing/controllers/entry', function () {
         req.originalUrl = req.path;
 
         res.routerOptions.resourceType = 'posts';
-
-        routerManagerGetResourceByIdStub.withArgs(post.id).returns({
-            config: {
-                type: 'posts'
-            }
-        });
 
         entryLookUpStub.withArgs(req.path, res.routerOptions)
             .resolves({
@@ -147,30 +138,9 @@ describe('Unit - services/routing/controllers/entry', function () {
 
             controllers.entry(req, res, async (err) => {
                 await configUtils.restore();
-                assert.equal(urlUtilsRedirectToAdminStub.called, false);
+                sinon.assert.notCalled(urlUtilsRedirectToAdminStub);
                 assert.equal(err, undefined);
                 done(err);
-            });
-        });
-
-        it('type of router !== type of resource', function (done) {
-            req.path = post.url;
-            res.routerOptions.resourceType = 'posts';
-
-            routerManagerGetResourceByIdStub.withArgs(post.id).returns({
-                config: {
-                    type: 'pages'
-                }
-            });
-
-            entryLookUpStub.withArgs(req.path, res.routerOptions)
-                .resolves({
-                    entry: post
-                });
-
-            controllers.entry(req, res, function (err) {
-                assert.equal(err, undefined);
-                done();
             });
         });
 
@@ -180,12 +150,6 @@ describe('Unit - services/routing/controllers/entry', function () {
             req.originalUrl = req.path;
 
             res.routerOptions.resourceType = 'posts';
-
-            routerManagerGetResourceByIdStub.withArgs(post.id).returns({
-                config: {
-                    type: 'posts'
-                }
-            });
 
             entryLookUpStub.withArgs(req.path, res.routerOptions)
                 .resolves({
@@ -209,12 +173,6 @@ describe('Unit - services/routing/controllers/entry', function () {
             req.originalUrl = req.path + '?query=true';
 
             res.routerOptions.resourceType = 'posts';
-
-            routerManagerGetResourceByIdStub.withArgs(post.id).returns({
-                config: {
-                    type: 'posts'
-                }
-            });
 
             entryLookUpStub.withArgs(req.path, res.routerOptions)
                 .resolves({

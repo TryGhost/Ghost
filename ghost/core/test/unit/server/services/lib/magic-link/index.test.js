@@ -71,19 +71,19 @@ describe('MagicLink', function () {
             };
             const {token} = await service.sendMagicLink(args);
 
-            assert(options.getSigninURL.calledOnce);
-            assert(options.getSigninURL.firstCall.calledWithExactly(token, 'blazeit', 'https://whatever.com'));
+            sinon.assert.calledOnce(options.getSigninURL);
+            sinon.assert.calledWithExactly(options.getSigninURL.firstCall, token, 'blazeit', 'https://whatever.com');
 
-            assert(options.getText.calledOnce);
-            assert(options.getText.firstCall.calledWithExactly('FAKEURL', 'blazeit', 'test@example.com', null));
+            sinon.assert.calledOnce(options.getText);
+            sinon.assert.calledWithExactly(options.getText.firstCall, 'FAKEURL', 'blazeit', 'test@example.com', null);
 
-            assert(options.getHTML.calledOnce);
-            assert(options.getHTML.firstCall.calledWithExactly('FAKEURL', 'blazeit', 'test@example.com', null));
+            sinon.assert.calledOnce(options.getHTML);
+            sinon.assert.calledWithExactly(options.getHTML.firstCall, 'FAKEURL', 'blazeit', 'test@example.com', null);
 
-            assert(options.getSubject.calledOnce);
-            assert(options.getSubject.firstCall.calledWithExactly('blazeit', null));
+            sinon.assert.calledOnce(options.getSubject);
+            sinon.assert.calledWithExactly(options.getSubject.firstCall, 'blazeit', null);
 
-            assert(options.transporter.sendMail.calledOnce);
+            sinon.assert.calledOnce(options.transporter.sendMail);
             assert.equal(options.transporter.sendMail.firstCall.args[0].to, args.email);
             assert.equal(options.transporter.sendMail.firstCall.args[0].subject, options.getSubject.firstCall.returnValue);
             assert.equal(options.transporter.sendMail.firstCall.args[0].text, options.getText.firstCall.returnValue);
@@ -115,7 +115,7 @@ describe('MagicLink', function () {
             const result = await service.sendMagicLink(args);
 
             assert.equal(result.otcRef, null);
-            assert(mockSingleUseTokenProvider.getRefByToken.notCalled);
+            sinon.assert.notCalled(mockSingleUseTokenProvider.getRefByToken);
         });
 
         it('should work when tokenProvider does not have getRefByToken method', async function () {
@@ -136,7 +136,7 @@ describe('MagicLink', function () {
             const result = await service.sendMagicLink(args);
 
             assert.equal(result.otcRef, null);
-            assert(options.transporter.sendMail.calledOnce);
+            sinon.assert.calledOnce(options.transporter.sendMail);
         });
 
         it('should return otcRef as null when getRefByToken resolves to null', async function () {
@@ -156,8 +156,8 @@ describe('MagicLink', function () {
 
             assert.equal(result.otcRef, null);
             // deriveOTC is only possible with a token so it's skipped if getRefByToken returns null
-            assert(mockSingleUseTokenProvider.deriveOTC.notCalled);
-            assert(mockSingleUseTokenProvider.getRefByToken.calledOnce);
+            sinon.assert.notCalled(mockSingleUseTokenProvider.deriveOTC);
+            sinon.assert.calledOnce(mockSingleUseTokenProvider.getRefByToken);
         });
 
         it('should include OTC when includeOTC is true', async function () {
@@ -174,15 +174,15 @@ describe('MagicLink', function () {
 
             const result = await service.sendMagicLink(args);
 
-            assert(mockSingleUseTokenProvider.getRefByToken.calledTwice);
-            assert(mockSingleUseTokenProvider.deriveOTC.calledOnce);
-            assert(mockSingleUseTokenProvider.deriveOTC.calledWith('test-token-ref-123', 'mock-token'));
+            sinon.assert.calledTwice(mockSingleUseTokenProvider.getRefByToken);
+            sinon.assert.calledOnce(mockSingleUseTokenProvider.deriveOTC);
+            sinon.assert.calledWith(mockSingleUseTokenProvider.deriveOTC, 'test-token-ref-123', 'mock-token');
             assert.equal(result.otcRef, 'test-token-ref-123');
 
             // Verify OTC is passed to email content functions
-            assert(options.getText.firstCall.calledWithExactly('FAKEURL', 'signin', 'test@example.com', '654321'));
-            assert(options.getHTML.firstCall.calledWithExactly('FAKEURL', 'signin', 'test@example.com', '654321'));
-            assert(options.getSubject.firstCall.calledWithExactly('signin', '654321'));
+            sinon.assert.calledWithExactly(options.getText.firstCall, 'FAKEURL', 'signin', 'test@example.com', '654321');
+            sinon.assert.calledWithExactly(options.getHTML.firstCall, 'FAKEURL', 'signin', 'test@example.com', '654321');
+            sinon.assert.calledWithExactly(options.getSubject.firstCall, 'signin', '654321');
         });
 
         it('should not include OTC when includeOTC is false', async function () {
@@ -199,14 +199,14 @@ describe('MagicLink', function () {
 
             const result = await service.sendMagicLink(args);
 
-            assert(mockSingleUseTokenProvider.getRefByToken.notCalled);
-            assert(mockSingleUseTokenProvider.deriveOTC.notCalled);
+            sinon.assert.notCalled(mockSingleUseTokenProvider.getRefByToken);
+            sinon.assert.notCalled(mockSingleUseTokenProvider.deriveOTC);
             assert.equal(result.otcRef, null);
 
             // Verify OTC is not passed to email content functions
-            assert(options.getText.firstCall.calledWithExactly('FAKEURL', 'signin', 'test@example.com', null));
-            assert(options.getHTML.firstCall.calledWithExactly('FAKEURL', 'signin', 'test@example.com', null));
-            assert(options.getSubject.firstCall.calledWithExactly('signin', null));
+            sinon.assert.calledWithExactly(options.getText.firstCall, 'FAKEURL', 'signin', 'test@example.com', null);
+            sinon.assert.calledWithExactly(options.getHTML.firstCall, 'FAKEURL', 'signin', 'test@example.com', null);
+            sinon.assert.calledWithExactly(options.getSubject.firstCall, 'signin', null);
         });
 
         it('should pass OTC to email content functions when OTC is enabled', async function () {
@@ -223,14 +223,14 @@ describe('MagicLink', function () {
 
             await service.sendMagicLink(args);
 
-            assert(options.getText.calledOnce);
-            assert(options.getText.firstCall.calledWithExactly('FAKEURL', 'signin', 'test@example.com', '654321'));
+            sinon.assert.calledOnce(options.getText);
+            sinon.assert.calledWithExactly(options.getText.firstCall, 'FAKEURL', 'signin', 'test@example.com', '654321');
 
-            assert(options.getHTML.calledOnce);
-            assert(options.getHTML.firstCall.calledWithExactly('FAKEURL', 'signin', 'test@example.com', '654321'));
+            sinon.assert.calledOnce(options.getHTML);
+            sinon.assert.calledWithExactly(options.getHTML.firstCall, 'FAKEURL', 'signin', 'test@example.com', '654321');
 
-            assert(options.getSubject.calledOnce);
-            assert(options.getSubject.firstCall.calledWithExactly('signin', '654321'));
+            sinon.assert.calledOnce(options.getSubject);
+            sinon.assert.calledWithExactly(options.getSubject.firstCall, 'signin', '654321');
         });
 
         it('should not include OTC when tokenProvider lacks deriveOTC method', async function () {
@@ -249,14 +249,14 @@ describe('MagicLink', function () {
 
             await service.sendMagicLink(args);
 
-            assert(options.getText.calledOnce);
-            assert(options.getText.firstCall.calledWithExactly('FAKEURL', 'signin', 'test@example.com', null));
+            sinon.assert.calledOnce(options.getText);
+            sinon.assert.calledWithExactly(options.getText.firstCall, 'FAKEURL', 'signin', 'test@example.com', null);
 
-            assert(options.getHTML.calledOnce);
-            assert(options.getHTML.firstCall.calledWithExactly('FAKEURL', 'signin', 'test@example.com', null));
+            sinon.assert.calledOnce(options.getHTML);
+            sinon.assert.calledWithExactly(options.getHTML.firstCall, 'FAKEURL', 'signin', 'test@example.com', null);
 
-            assert(options.getSubject.calledOnce);
-            assert(options.getSubject.firstCall.calledWithExactly('signin', null));
+            sinon.assert.calledOnce(options.getSubject);
+            sinon.assert.calledWithExactly(options.getSubject.firstCall, 'signin', null);
         });
     });
 
@@ -266,8 +266,8 @@ describe('MagicLink', function () {
             const tokenId = await service.getRefFromToken('mock-token');
 
             assert.equal(tokenId, 'test-token-ref-123');
-            assert(mockSingleUseTokenProvider.getRefByToken.calledOnce);
-            assert(mockSingleUseTokenProvider.getRefByToken.calledWith('mock-token'));
+            sinon.assert.calledOnce(mockSingleUseTokenProvider.getRefByToken);
+            sinon.assert.calledWith(mockSingleUseTokenProvider.getRefByToken, 'mock-token');
         });
 
         it('should return null when tokenProvider lacks getRefByToken method', async function () {
@@ -285,9 +285,9 @@ describe('MagicLink', function () {
             const otc = await service.getOTCFromToken('mock-token');
 
             assert.equal(otc, '654321');
-            assert(mockSingleUseTokenProvider.getRefByToken.calledOnce);
-            assert(mockSingleUseTokenProvider.deriveOTC.calledOnce);
-            assert(mockSingleUseTokenProvider.deriveOTC.calledWith('test-token-ref-123', 'mock-token'));
+            sinon.assert.calledOnce(mockSingleUseTokenProvider.getRefByToken);
+            sinon.assert.calledOnce(mockSingleUseTokenProvider.deriveOTC);
+            sinon.assert.calledWith(mockSingleUseTokenProvider.deriveOTC, 'test-token-ref-123', 'mock-token');
         });
 
         it('should return null when tokenProvider lacks getRefByToken method', async function () {
@@ -296,7 +296,7 @@ describe('MagicLink', function () {
             const otc = await service.getOTCFromToken('mock-token');
 
             assert.equal(otc, null);
-            assert(mockSingleUseTokenProvider.deriveOTC.notCalled);
+            sinon.assert.notCalled(mockSingleUseTokenProvider.deriveOTC);
         });
 
         it('should return null when tokenProvider lacks deriveOTC method', async function () {
@@ -305,7 +305,7 @@ describe('MagicLink', function () {
             const otc = await service.getOTCFromToken('mock-token');
 
             assert.equal(otc, null);
-            assert(mockSingleUseTokenProvider.getRefByToken.calledOnce);
+            sinon.assert.calledOnce(mockSingleUseTokenProvider.getRefByToken);
         });
 
         it('should return null when getRefByToken returns null', async function () {
@@ -314,8 +314,8 @@ describe('MagicLink', function () {
             const otc = await service.getOTCFromToken('mock-token');
 
             assert.equal(otc, null);
-            assert(mockSingleUseTokenProvider.getRefByToken.calledOnce);
-            assert(mockSingleUseTokenProvider.deriveOTC.notCalled);
+            sinon.assert.calledOnce(mockSingleUseTokenProvider.getRefByToken);
+            sinon.assert.notCalled(mockSingleUseTokenProvider.deriveOTC);
         });
     });
 });

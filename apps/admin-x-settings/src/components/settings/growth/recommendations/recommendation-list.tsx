@@ -43,7 +43,7 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
                 </div>
             </TableCell>
             <TableCell
-                className='hidden w-auto whitespace-nowrap text-left align-middle md:!visible md:!table-cell'
+                className='hidden w-auto text-left align-middle whitespace-nowrap md:visible! md:table-cell!'
             >
                 {count === 0 ? (
                     <span className="text-grey-500 dark:text-grey-900">-</span>
@@ -53,7 +53,7 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
                             <div className='mr-2'>
                                 <span>{numberWithCommas(count)}</span>
                             </div>
-                            <div className='text-sm lowercase text-grey-700'>
+                            <div className='text-sm text-grey-700 lowercase'>
                                 <span>{showSubscribers ? newMembers : clicks}</span>
                                 <span className='invisible group-hover:visible'> from you</span>
                             </div>

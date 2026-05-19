@@ -180,6 +180,61 @@ describe('getAssetUrl', function () {
         });
     });
 
+    describe('with asset CDN url configured', function () {
+        beforeEach(function () {
+            configUtils.set({assetHash: 'abc'});
+            configUtils.set({'urls:assets': 'https://assets.example.com/my-site'});
+        });
+
+        it('should return absolute CDN url for theme assets', function () {
+            const testUrl = getAssetUrl('css/screen.css');
+            assert.equal(testUrl, 'https://assets.example.com/my-site/assets/css/screen.css?v=abc');
+        });
+
+        it('should return absolute CDN url for public assets', function () {
+            const testUrl = getAssetUrl('public/cards.min.js');
+            assert.equal(testUrl, 'https://assets.example.com/my-site/public/cards.min.js?v=abc');
+        });
+
+        it('should handle trailing slash in assetCdnUrl', function () {
+            configUtils.set({'urls:assets': 'https://assets.example.com/my-site/'});
+            const testUrl = getAssetUrl('css/screen.css');
+            assert.equal(testUrl, 'https://assets.example.com/my-site/assets/css/screen.css?v=abc');
+        });
+
+        it('should not apply CDN url to favicon', function () {
+            const testUrl = getAssetUrl('favicon.ico');
+            assert.equal(testUrl, '/favicon.ico');
+        });
+
+        it('should still append hash to CDN url', function () {
+            configUtils.set({assetHash: 'xyz123'});
+            const testUrl = getAssetUrl('js/app.js');
+            assert.equal(testUrl, 'https://assets.example.com/my-site/assets/js/app.js?v=xyz123');
+        });
+
+        it('should still handle # anchor in CDN url', function () {
+            const testUrl = getAssetUrl('img/icons.svg#arrow-up');
+            assert.equal(testUrl, 'https://assets.example.com/my-site/assets/img/icons.svg?v=abc#arrow-up');
+        });
+
+        describe('with /blog subdirectory', function () {
+            beforeEach(function () {
+                configUtils.set({url: 'http://localhost:65535/blog'});
+            });
+
+            it('should use CDN url as-is and drop the subdirectory', function () {
+                const testUrl = getAssetUrl('css/screen.css');
+                assert.equal(testUrl, 'https://assets.example.com/my-site/assets/css/screen.css?v=abc');
+            });
+
+            it('should use CDN url as-is for public assets and drop the subdirectory', function () {
+                const testUrl = getAssetUrl('public/cards.min.js');
+                assert.equal(testUrl, 'https://assets.example.com/my-site/public/cards.min.js?v=abc');
+            });
+        });
+    });
+
     describe('file-based hash', function () {
         const fixturesPath = path.join(__dirname, '../../../utils/fixtures/themes/casper');
 

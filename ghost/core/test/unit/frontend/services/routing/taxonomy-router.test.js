@@ -41,14 +41,14 @@ describe('UNIT - services/routing/TaxonomyRouter', function () {
         assert.equal(taxonomyRouter.taxonomyKey, 'tag');
         assert.equal(taxonomyRouter.getPermalinks().getValue(), '/tag/:slug/');
 
-        assert.equal(routerCreatedSpy.calledOnce, true);
-        assert.equal(routerCreatedSpy.calledWith(taxonomyRouter), true);
+        sinon.assert.calledOnce(routerCreatedSpy);
+        sinon.assert.calledWith(routerCreatedSpy, taxonomyRouter);
 
-        assert.equal(taxonomyRouter.mountRouter.callCount, 1);
+        sinon.assert.calledOnce(taxonomyRouter.mountRouter);
         assert.equal(taxonomyRouter.mountRouter.args[0][0], '/tag/:slug/');
         assert.equal(taxonomyRouter.mountRouter.args[0][1], taxonomyRouter.rssRouter.router());
 
-        assert.equal(taxonomyRouter.mountRoute.callCount, 3);
+        sinon.assert.calledThrice(taxonomyRouter.mountRoute);
 
         // permalink route
         assert.equal(taxonomyRouter.mountRoute.args[0][0], '/tag/:slug/');
@@ -68,7 +68,7 @@ describe('UNIT - services/routing/TaxonomyRouter', function () {
     it('_prepareContext behaves as expected', function () {
         const taxonomyRouter = new TaxonomyRouter('tag', '/tag/:slug/', RESOURCE_CONFIG, routerCreatedSpy);
         taxonomyRouter._prepareContext(req, res, next);
-        assert.equal(next.calledOnce, true);
+        sinon.assert.calledOnce(next);
 
         assert.deepEqual(res.routerOptions, {
             type: 'channel',
