@@ -115,7 +115,7 @@ export class GiftEmailService {
 
         await this.mailer.send({
             to: buyerEmail,
-            subject: this.t('Your gift is ready to share'),
+            subject: this.t('Your gift is ready'),
             html,
             text,
             from: this.getFromAddress(),
