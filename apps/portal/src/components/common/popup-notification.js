@@ -30,7 +30,14 @@ const CloseButton = ({hide = false, onClose}) => {
         return null;
     }
     return (
-        <CloseIcon className='gh-portal-notification-closeicon' alt='Close' onClick={onClose} />
+        <button
+            type='button'
+            className='gh-portal-notification-closebutton'
+            aria-label='Close notification'
+            onClick={onClose}
+        >
+            <CloseIcon className='gh-portal-notification-closeicon' aria-hidden='true' />
+        </button>
     );
 };
 
