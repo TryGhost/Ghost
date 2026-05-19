@@ -221,13 +221,13 @@ const getInitialActionOrder = (automation: AutomationDetail): AutomationAction[]
     return ordered;
 };
 
-type BuildGraphArgs = {
+type BuildGraphParams = {
     automation: AutomationDetail;
     disabled: boolean;
     onPick: (type: StepPickerType, anchor: CanvasAnchor) => void;
 }
 
-const buildGraph = ({automation, disabled, onPick}: BuildGraphArgs): {nodes: AutomationFlowNode[]; edges: Edge[]} => {
+const buildGraph = ({automation, disabled, onPick}: BuildGraphParams): {nodes: AutomationFlowNode[]; edges: Edge[]} => {
     const ordered = getInitialActionOrder(automation);
     const baseNodeProps = {
         draggable: false,
