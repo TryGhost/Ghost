@@ -66,7 +66,7 @@
     "broccoli-terser-sourcemap": "4.1.1",
     "chai": "catalog:",
     "chai-dom": "1.12.1",
-    "codemirror": "5.48.2",
+    "codemirror": "5.65.21",
     "cssnano": "4.1.10",
     "element-resize-detector": "1.2.4",
     "ember-ajax": "5.1.2",
@@ -166,6 +166,7 @@
     "*.js": "eslint"
   },
   "dependencies": {
+    "lodash": "catalog:",
     "path-browserify": "1.0.1",
     "webpack": "5.105.4"
   },

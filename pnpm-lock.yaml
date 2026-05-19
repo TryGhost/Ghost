@@ -132,6 +132,9 @@ catalogs:
     jsonc-parser:
       specifier: 3.3.1
       version: 3.3.1
+    lodash:
+      specifier: 4.18.1
+      version: 4.18.1
     mocha:
       specifier: 11.7.5
       version: 11.7.5
@@ -233,7 +236,7 @@ overrides:
   underscore@>=1.3.2 <1.12.1: ^1.12.1
   '@xmldom/xmldom@<0.8.13': ^0.8.13
 
-packageExtensionsChecksum: sha256-gFsvptlcVXY90ntXWh9ANUP1/LYyeqXjWoDGw6BCfOY=
+packageExtensionsChecksum: sha256-VoukEtG/3ZKlZLtw2HjOKS0hPvjiZTwZtAPotZw7zcw=
 
 importers:
 
@@ -1737,6 +1740,9 @@ importers:
 
   ghost/admin:
     dependencies:
+      lodash:
+        specifier: 'catalog:'
+        version: 4.18.1
       path-browserify:
         specifier: 1.0.1
         version: 1.0.1
@@ -1856,7 +1862,7 @@ importers:
         specifier: 1.12.1
         version: 1.12.1(chai@4.5.0)
       codemirror:
-        specifier: ^5.58.2
+        specifier: 5.65.21
         version: 5.65.21
       cssnano:
         specifier: 4.1.10
@@ -2453,7 +2459,7 @@ importers:
         specifier: 2.2.0
         version: 2.2.0
       lodash:
-        specifier: 4.18.1
+        specifier: 'catalog:'
         version: 4.18.1
       luxon:
         specifier: 3.7.2
@@ -29257,6 +29263,7 @@ snapshots:
       '@tryghost/mongo-knex': 0.9.4
       '@tryghost/mongo-utils': 0.6.3
       '@tryghost/nql-lang': 0.6.4
+      lodash: 4.18.1
       mingo: 2.5.3
     transitivePeerDependencies:
       - supports-color
