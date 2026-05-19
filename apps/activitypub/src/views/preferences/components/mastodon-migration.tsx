@@ -1,6 +1,6 @@
 import Layout from '@src/components/layout';
 import React, {useState} from 'react';
-import {Button, Field, FieldDescription, FieldLabel, Input, LoadingIndicator, Skeleton} from '@tryghost/shade/components';
+import {Button, Field, FieldDescription, FieldError, FieldLabel, Input, LoadingIndicator, Skeleton} from '@tryghost/shade/components';
 import {H2} from '@tryghost/shade/primitives';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {useAccountAliasesForUser, useAddAccountAliasMutationForUser, useRemoveAccountAliasMutationForUser} from '@hooks/use-activity-pub-queries';
@@ -113,11 +113,11 @@ const MastodonMigration: React.FC = () => {
                 </div>
 
                 <form className='mt-10' onSubmit={handleSubmit}>
-                    <Field>
+                    <Field data-invalid={handleError ? true : undefined}>
                         <FieldLabel htmlFor='account-migration-source-handle'>
                             Old account handle
                         </FieldLabel>
-                        <FieldDescription id='account-migration-source-handle-description'>
+                        <FieldDescription className='-mt-1' id='account-migration-source-handle-description'>
                             Specify the username@domain of the account you want to move from
                         </FieldDescription>
                         <div className='flex flex-col gap-3 sm:flex-row'>
@@ -143,14 +143,14 @@ const MastodonMigration: React.FC = () => {
                             </Button>
                         </div>
                         {handleError && (
-                            <p className='text-sm text-red' id='account-migration-source-handle-error'>
+                            <FieldError id='account-migration-source-handle-error'>
                                 {handleError}
-                            </p>
+                            </FieldError>
                         )}
                         {aliasActionError && (
-                            <p className='text-sm text-red' id='account-migration-alias-error'>
+                            <FieldError id='account-migration-alias-error'>
                                 {aliasActionError}
-                            </p>
+                            </FieldError>
                         )}
                     </Field>
                 </form>
