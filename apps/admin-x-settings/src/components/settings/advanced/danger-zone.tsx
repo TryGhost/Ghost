@@ -59,8 +59,10 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 try {
                     const response = await resetAuth(null);
                     const result = response?.security_action?.[0];
+                    const keys = result?.api_keys_rotated ?? 0;
+                    const users = result?.users_locked ?? 0;
                     showToast({
-                        title: `Rotated ${result?.api_keys_rotated ?? 0} API keys and locked ${result?.users_locked ?? 0} users. You will be signed out shortly.`,
+                        title: `Rotated ${keys} API ${keys === 1 ? 'key' : 'keys'} and locked ${users} ${users === 1 ? 'user' : 'users'}. You will be signed out shortly.`,
                         type: 'success'
                     });
                     modal?.remove();
