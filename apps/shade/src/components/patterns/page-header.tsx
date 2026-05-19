@@ -101,7 +101,7 @@ function PageHeaderTitle({className, children}: PropsWithChildrenAndClassName) {
     const heading = (
         <H1
             className={cn(
-                'text-2xl leading-[1.2em] sidebar:text-[2.5rem] whitespace-nowrap',
+                'text-lg tracking-normal font-semibold whitespace-nowrap',
                 className
             )}
             data-page-header='title'

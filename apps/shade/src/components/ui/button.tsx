@@ -6,7 +6,7 @@ import {ChevronDown} from 'lucide-react';
 import {cn} from '@/lib/utils';
 
 const buttonVariants = cva(
-    'inline-flex items-center justify-center gap-2 rounded-md text-sm whitespace-nowrap transition-colors focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:stroke-[1.5px]',
+    'inline-flex items-center justify-center gap-2 rounded-md text-control whitespace-nowrap transition-colors focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:stroke-[1.5px]',
     {
         variants: {
             variant: {
@@ -20,7 +20,7 @@ const buttonVariants = cva(
             },
             size: {
                 default: 'h-(--control-height) px-3 py-2',
-                sm: 'h-7 rounded-md px-3 text-xs [&_svg]:size-3',
+                sm: 'h-7 rounded-md px-3 text-sm [&_svg]:size-3',
                 lg: 'h-11 rounded-md px-8 text-md font-semibold',
                 icon: 'size-9'
             }

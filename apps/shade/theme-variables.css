@@ -44,7 +44,7 @@
     --state-warning-foreground: hsl(216 11% 9%);
     --state-danger: var(--destructive);
     --state-danger-foreground: hsl(216 11% 5%);
-    --control-height: 34px;
+    --control-height: 32px;
     --input-group-radius: 9px;
     --chart-1: hsl(201 100% 50%);
     --chart-2: hsl(201 88% 70%);

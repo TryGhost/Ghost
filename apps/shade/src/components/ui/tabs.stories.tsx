@@ -27,7 +27,7 @@ type Story = StoryObj<typeof Tabs>;
 export const Default: Story = {
     args: {
         defaultValue: 'account',
-        variant: 'button-sm',
+        variant: 'button',
         children: [
             <TabsList key="list" className="grid w-full grid-cols-2">
                 <TabsTrigger value="account">Account</TabsTrigger>
@@ -46,7 +46,7 @@ export const Default: Story = {
     parameters: {
         docs: {
             description: {
-                story: 'Basic tabs with button-sm variant for simple content switching.'
+                story: 'Basic tabs for simple content switching.'
             }
         }
     }
