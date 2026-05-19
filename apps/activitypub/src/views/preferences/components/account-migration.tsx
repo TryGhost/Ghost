@@ -47,7 +47,7 @@ function getAliasErrorMessage(error: unknown) {
     return 'Something went wrong, please try again.';
 }
 
-const MastodonMigration: React.FC = () => {
+const AccountMigration: React.FC = () => {
     const {
         data: aliasData,
         isError: hasAliasLoadError,
@@ -198,4 +198,4 @@ const MastodonMigration: React.FC = () => {
     );
 };
 
-export default MastodonMigration;
+export default AccountMigration;

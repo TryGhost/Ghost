@@ -109,7 +109,7 @@ export const routes: CustomRouteObject[] = [
             },
             {
                 path: accountMigrationPath,
-                lazy: lazyComponent(() => import('./views/preferences/components/mastodon-migration')),
+                lazy: lazyComponent(() => import('./views/preferences/components/account-migration')),
                 pageTitle: 'Account migration',
                 showBackButton: true
             },
