@@ -13,7 +13,8 @@ describe('Scheduling Default Adapter', function () {
     let clock;
 
     beforeEach(function () {
-        clock = sinon.useFakeTimers();
+        // TODO: shouldAdvanceTime is a fake-timer + async-await workaround; see docs/dep-consolidation.md
+        clock = sinon.useFakeTimers({shouldAdvanceTime: true});
         scope.adapter = new SchedulingDefault();
     });
 

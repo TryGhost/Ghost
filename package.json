@@ -123,6 +123,11 @@
         "dependencies": {
           "@babel/runtime": "^7.26.10"
         }
+      },
+      "@tryghost/nql@0.12.10": {
+        "dependencies": {
+          "lodash": "^4.18.0"
+        }
       }
     },
     "onlyBuiltDependencies": [

@@ -108,6 +108,9 @@ catalogs:
     cross-fetch:
       specifier: 4.1.0
       version: 4.1.0
+    dequal:
+      specifier: 2.0.3
+      version: 2.0.3
     dompurify:
       specifier: 3.4.1
       version: 3.4.1
@@ -132,6 +135,9 @@ catalogs:
     jsonc-parser:
       specifier: 3.3.1
       version: 3.3.1
+    lodash:
+      specifier: 4.18.1
+      version: 4.18.1
     mocha:
       specifier: 11.7.5
       version: 11.7.5
@@ -144,12 +150,18 @@ catalogs:
     react-router:
       specifier: 7.14.0
       version: 7.14.0
+    sinon:
+      specifier: 21.1.1
+      version: 21.1.1
     sonner:
       specifier: 2.0.7
       version: 2.0.7
     storybook:
       specifier: 10.3.5
       version: 10.3.5
+    type-fest:
+      specifier: 4.41.0
+      version: 4.41.0
     typescript:
       specifier: 5.9.3
       version: 5.9.3
@@ -230,7 +242,7 @@ overrides:
   underscore@>=1.3.2 <1.12.1: ^1.12.1
   '@xmldom/xmldom@<0.8.13': ^0.8.13
 
-packageExtensionsChecksum: sha256-gFsvptlcVXY90ntXWh9ANUP1/LYyeqXjWoDGw6BCfOY=
+packageExtensionsChecksum: sha256-VoukEtG/3ZKlZLtw2HjOKS0hPvjiZTwZtAPotZw7zcw=
 
 importers:
 
@@ -636,8 +648,8 @@ importers:
         specifier: 18.3.1
         version: 18.3.1(react@18.3.1)
       sinon:
-        specifier: 18.0.1
-        version: 18.0.1
+        specifier: 'catalog:'
+        version: 21.1.1
       storybook:
         specifier: 'catalog:'
         version: 10.3.5(@testing-library/dom@10.4.0)(prettier@2.8.8)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -680,6 +692,9 @@ importers:
       '@tryghost/shade':
         specifier: workspace:*
         version: link:../shade
+      bson-objectid:
+        specifier: 'catalog:'
+        version: 2.0.4
       react:
         specifier: 18.3.1
         version: 18.3.1
@@ -741,6 +756,9 @@ importers:
       msw:
         specifier: 'catalog:'
         version: 2.12.14(@types/node@25.6.0)(typescript@5.9.3)
+      type-fest:
+        specifier: 'catalog:'
+        version: 4.41.0
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -1048,7 +1066,7 @@ importers:
         specifier: 16.1.1
         version: 16.1.1(postcss@8.5.6)
       sinon:
-        specifier: 21.1.1
+        specifier: 'catalog:'
         version: 21.1.1
       tailwindcss:
         specifier: 3.4.18
@@ -1150,6 +1168,9 @@ importers:
       '@xyflow/react':
         specifier: 12.8.6
         version: 12.8.6(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      dequal:
+        specifier: 'catalog:'
+        version: 2.0.3
       i18n-iso-countries:
         specifier: 7.14.0
         version: 7.14.0
@@ -1734,6 +1755,9 @@ importers:
 
   ghost/admin:
     dependencies:
+      lodash:
+        specifier: 'catalog:'
+        version: 4.18.1
       path-browserify:
         specifier: 1.0.1
         version: 1.0.1
@@ -1853,7 +1877,7 @@ importers:
         specifier: 1.12.1
         version: 1.12.1(chai@4.5.0)
       codemirror:
-        specifier: ^5.58.2
+        specifier: 5.65.21
         version: 5.65.21
       cssnano:
         specifier: 4.1.10
@@ -2450,7 +2474,7 @@ importers:
         specifier: 2.2.0
         version: 2.2.0
       lodash:
-        specifier: 4.18.1
+        specifier: 'catalog:'
         version: 4.18.1
       luxon:
         specifier: 3.7.2
@@ -2721,8 +2745,8 @@ importers:
         specifier: 9.0.1
         version: 9.0.1(jiti@2.6.1)
       sinon:
-        specifier: 18.0.1
-        version: 18.0.1
+        specifier: 'catalog:'
+        version: 21.1.1
       supertest:
         specifier: 6.3.4
         version: 6.3.4
@@ -6845,9 +6869,6 @@ packages:
   '@sinonjs/fake-timers@10.3.0':
     resolution: {integrity: sha512-V4BG07kuYSUkTCSBHG8G8TNhM+F19jXFWnQtzj+we8DrkpSBCee9Z3Ms8yiGer/dlmhe35/Xdgyo3/0rQKg7YA==}
 
-  '@sinonjs/fake-timers@11.2.2':
-    resolution: {integrity: sha512-G2piCSxQ7oWOxwGSAyFHfPIsyeJGXYtc6mFbnFA+kRXkiEnTl8c/8jul2S329iFBnDI9HGoeWWAZvuvOkZccgw==}
-
   '@sinonjs/fake-timers@15.3.1':
     resolution: {integrity: sha512-oDDGPn/4jD3viZLphixgu1jwT0bqIqP25FNXC5OkWrUqHZOF4wATtSyVzluOt4DqcMqSoKMClyhUllKSxpQCng==}
 
@@ -6859,9 +6880,6 @@ packages:
 
   '@sinonjs/samsam@5.3.1':
     resolution: {integrity: sha512-1Hc0b1TtyfBu8ixF/tpfSHTVWKwCBLY4QJbkgnE7HcwyvT2xArDxb4K7dMgqRm3szI+LJbzmW/s4xxEhv6hwDg==}
-
-  '@sinonjs/samsam@8.0.3':
-    resolution: {integrity: sha512-hw6HbX+GyVZzmaYNh82Ecj1vdGZrqVIn/keDTg63IgAwiQPO+xCz99uG6Woqgb4tM0mUiFENKZ4cqd7IX94AXQ==}
 
   '@sinonjs/text-encoding@0.7.3':
     resolution: {integrity: sha512-DE427ROAphMQzU4ENbliGYrBSYPXF+TtLg9S8vzeA+OF4ZKzoDdzfL8sxuMUGS/lgRhM6j1URSk9ghf7Xo1tyA==}
@@ -12471,10 +12489,6 @@ packages:
     resolution: {integrity: sha512-X07nttJQkwkfKfvTPG/KSnE2OMdcUCao6+eXF3wmnIQRn2aPAHH3VxDbDOdegkd6JbPsXqShpvEOHfAT+nCNwQ==}
     engines: {node: '>=0.3.1'}
 
-  diff@5.2.2:
-    resolution: {integrity: sha512-vtcDfH3TOjP8UekytvnHH1o1P4FcUdt4eQ1Y+Abap1tk/OB2MWQvcwS2ClCd1zuIhc3JKOx6p3kod8Vfys3E+A==}
-    engines: {node: '>=0.3.1'}
-
   diff@8.0.4:
     resolution: {integrity: sha512-DPi0FmjiSU5EvQV0++GFDOJ9ASQUVFh5kD+OzOnYdi7n3Wpm9hWWGfB/O2blfHcMVTL5WkQXSnRiK9makhrcnw==}
     engines: {node: '>=0.3.1'}
@@ -15827,9 +15841,6 @@ packages:
   just-extend@4.2.1:
     resolution: {integrity: sha512-g3UB796vUFIY90VIv/WX3L2c8CS2MdWUww3CNrYmqza1Fg0DURc2K/O4YrnklBdQarSJ/y8JnJYDGc+1iumQjg==}
 
-  just-extend@6.2.0:
-    resolution: {integrity: sha512-cYofQu2Xpom82S6qD778jBDpwvvy39s1l/hrYij2u9AMdQcGRpaBu6kY4mVhuno5kJVi1DAz4aiphA2WI1/OAw==}
-
   jwa@1.4.2:
     resolution: {integrity: sha512-eeH5JO+21J78qMvTIDdBXidBd6nG2kZjg5Ohz/1fpa28Z4CcsWUzJ1ZZyFq/3z3N17aZy+ZuBoHljASbL1WfOw==}
 
@@ -17253,9 +17264,6 @@ packages:
 
   nise@4.1.0:
     resolution: {integrity: sha512-eQMEmGN/8arp0xsvGoQ+B1qvSkR73B1nWSCh7nOt5neMCtwcQVYQGdzQMhcNscktTsWB54xnlSQFzOAPJD8nXA==}
-
-  nise@6.1.4:
-    resolution: {integrity: sha512-vSA4IpRHRWZkmotu61SvF45Jirq4CTLT3KKOWJPsPMtxtOBOlxcAlXfv/OrWxkzAJiCBrvdfWvGQjHT7r7+Qqg==}
 
   no-case@2.3.2:
     resolution: {integrity: sha512-rmTZ9kz+f3rCvK2TD1Ue/oZlns7OGoIWP4fc3llxxRXlOkHKoWPPWJOfFYpITabSow43QJbRIoHQXtt10VldyQ==}
@@ -19874,9 +19882,6 @@ packages:
     peerDependencies:
       chai: ^5.0.0 || ^6.0.0
       sinon: '>=4.0.0'
-
-  sinon@18.0.1:
-    resolution: {integrity: sha512-a2N2TDY1uGviajJ6r4D1CyRAkzE9NNVlYOV1wX5xQDuAk0ONgzgRl0EjCQuRCPxOwp13ghsMwt9Gdldujs39qw==}
 
   sinon@21.1.1:
     resolution: {integrity: sha512-Tn8sLJZay8gRFQycxVwgL86PSUt9SnS9N2wCg12XyR75BssSS1c2fBPFUzwDj7XTNZlaM8+qkETTBYWnkKWXwg==}
@@ -26927,10 +26932,6 @@ snapshots:
     dependencies:
       '@sinonjs/commons': 3.0.1
 
-  '@sinonjs/fake-timers@11.2.2':
-    dependencies:
-      '@sinonjs/commons': 3.0.1
-
   '@sinonjs/fake-timers@15.3.1':
     dependencies:
       '@sinonjs/commons': 3.0.1
@@ -26948,11 +26949,6 @@ snapshots:
     dependencies:
       '@sinonjs/commons': 1.8.6
       lodash.get: 4.4.2
-      type-detect: 4.1.0
-
-  '@sinonjs/samsam@8.0.3':
-    dependencies:
-      '@sinonjs/commons': 3.0.1
       type-detect: 4.1.0
 
   '@sinonjs/text-encoding@0.7.3': {}
@@ -29282,6 +29278,7 @@ snapshots:
       '@tryghost/mongo-knex': 0.9.4
       '@tryghost/mongo-utils': 0.6.3
       '@tryghost/nql-lang': 0.6.4
+      lodash: 4.18.1
       mingo: 2.5.3
     transitivePeerDependencies:
       - supports-color
@@ -34230,8 +34227,6 @@ snapshots:
   diff@3.5.1: {}
 
   diff@4.0.4: {}
-
-  diff@5.2.2: {}
 
   diff@8.0.4: {}
 
@@ -39617,8 +39612,6 @@ snapshots:
 
   just-extend@4.2.1: {}
 
-  just-extend@6.2.0: {}
-
   jwa@1.4.2:
     dependencies:
       buffer-equal-constant-time: 1.0.1
@@ -41471,13 +41464,6 @@ snapshots:
       '@sinonjs/text-encoding': 0.7.3
       just-extend: 4.2.1
       path-to-regexp: 1.9.0
-
-  nise@6.1.4:
-    dependencies:
-      '@sinonjs/commons': 3.0.1
-      '@sinonjs/fake-timers': 15.3.1
-      just-extend: 6.2.0
-      path-to-regexp: 8.4.0
 
   no-case@2.3.2:
     dependencies:
@@ -44700,15 +44686,6 @@ snapshots:
     dependencies:
       chai: 4.5.0
       sinon: 21.1.1
-
-  sinon@18.0.1:
-    dependencies:
-      '@sinonjs/commons': 3.0.1
-      '@sinonjs/fake-timers': 11.2.2
-      '@sinonjs/samsam': 8.0.3
-      diff: 5.2.2
-      nise: 6.1.4
-      supports-color: 7.2.0
 
   sinon@21.1.1:
     dependencies:

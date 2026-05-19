@@ -260,7 +260,8 @@ describe('Members Feedback', function () {
     });
 
     it('Can change existing feedback', async function () {
-        clock = sinon.useFakeTimers(new Date());
+        // TODO: shouldAdvanceTime is a fake-timer + HTTP-await workaround; see docs/dep-consolidation.md
+        clock = sinon.useFakeTimers({now: new Date(), shouldAdvanceTime: true});
         const postId = fixtureManager.get('posts', 1).id;
 
         const {body} = await membersAgent

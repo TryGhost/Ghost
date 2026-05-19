@@ -7,30 +7,39 @@ export interface GiftReminderData {
     siteDomain: string;
     accentColor: string | undefined;
     memberEmail: string;
+    firstName: string | null;
     gift: {
         tierName: string;
         consumesAt: string;
-        priceAfter: string;
         manageSubscriptionUrl: string;
     };
 }
 
 export function renderText(data: GiftReminderData, t: Translate): string {
-    return `${t('Hey there,')}
+    const greeting = data.firstName
+        ? t('Hi {firstName},', {firstName: data.firstName, interpolation: {escapeValue: false}})
+        : t('Hey there,');
 
-${t('Your gift subscription expires on {consumesAt}.', {
+    return `${greeting}
+
+${t('Your gift subscription to {siteTitle} ends on {consumesAt}.', {
+        siteTitle: data.siteTitle,
         consumesAt: data.gift.consumesAt,
         interpolation: {escapeValue: false}
     })}
 
-${t('If you\'ve been enjoying {siteTitle}, continue your membership for {priceAfter} to keep full access to every post and newsletter.', {
-        siteTitle: data.siteTitle,
-        priceAfter: data.gift.priceAfter,
+${t('To keep your {tierName} membership, continue with a paid subscription today and we\'ll automatically add the rest of your gift period as a free trial.', {
+        tierName: data.gift.tierName,
         interpolation: {escapeValue: false}
     })}
 
-${t('Continue membership')}:
+${t('Continue subscription')}:
 ${data.gift.manageSubscriptionUrl}
+
+${t('Thanks for reading {siteTitle}.', {
+        siteTitle: data.siteTitle,
+        interpolation: {escapeValue: false}
+    })}
 
 ---
 ${t('This message was sent from {siteDomain} to {email}.', {
