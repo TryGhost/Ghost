@@ -1,7 +1,9 @@
 import GhostLogo from '../assets/images/orb-pink.png';
 import React, {useEffect, useRef} from 'react';
 import clsx from 'clsx';
+import {Badge} from '@tryghost/shade/components';
 import {Button, Icon, SettingNavItem, type SettingNavItemProps, SettingNavSection, TextField, useFocusContext} from '@tryghost/admin-x-design-system';
+import {LucideIcon} from '@tryghost/shade/utils';
 
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 
@@ -37,6 +39,13 @@ const NavItem: React.FC<Omit<SettingNavItemProps, 'isVisible' | 'isCurrent' | 'n
         {...props}
     />;
 };
+
+const PrivateBadge: React.FC = () => (
+    <Badge className="gap-1 border-transparent bg-orange-100 px-1.5 py-0 text-[11px] leading-5 font-semibold text-orange-700 shadow-[0_0_0_1px_rgba(255,255,255,0.55)] dark:bg-orange-500/20 dark:text-orange-300 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.12)]" variant="secondary">
+        <LucideIcon.Lock className="size-3" strokeWidth={2.25} />
+        Private
+    </Badge>
+);
 
 const Sidebar: React.FC = () => {
     const {filter, setFilter, checkVisible, noResult, setNoResult} = useSearch();
@@ -108,7 +117,7 @@ const Sidebar: React.FC = () => {
     }, [filter]);
 
     const {settings, config} = useGlobalData();
-    const [hasTipsAndDonations] = getSettingValues(settings, ['donations_enabled']) as [string];
+    const [hasTipsAndDonations, isPrivate] = getSettingValues(settings, ['donations_enabled', 'is_private']) as [string, boolean];
     const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
 
     const handleSectionClick = (e?: React.MouseEvent<HTMLAnchorElement>) => {
@@ -187,7 +196,18 @@ const Sidebar: React.FC = () => {
 
                 {/* Membership settings */}
                 <SettingNavSection isVisible={checkVisible([...Object.values(membershipSearchKeywords).flat(), ...emailSearchKeywords.newslettersNavMenu])} title="Membership">
-                    <NavItem icon='key' keywords={membershipSearchKeywords.access} navid={['members', 'spam-filters']} title="Access" onClick={handleSectionClick} />
+                    <NavItem
+                        icon='key'
+                        keywords={membershipSearchKeywords.access}
+                        navid={['members', 'spam-filters']}
+                        title={(
+                            <span className='flex min-w-0 flex-1 items-center justify-between gap-2'>
+                                <span className='min-w-0 truncate'>Access</span>
+                                {isPrivate && <PrivateBadge />}
+                            </span>
+                        )}
+                        onClick={handleSectionClick}
+                    />
                     <NavItem icon='bills' keywords={membershipSearchKeywords.tiers} navid='tiers' title="Tiers" onClick={handleSectionClick} />
                     <NavItem icon='portal' keywords={membershipSearchKeywords.portal} navid='portal' title="Signup portal" onClick={handleSectionClick} />
                     <NavItem icon='mailplus' keywords={membershipSearchKeywords.memberEmails} navid='memberemails' title="Welcome emails" onClick={handleSectionClick} />
