@@ -317,7 +317,7 @@ const getInitialViewport = (canvasWidth: number): {x: number; y: number; zoom: n
     zoom: 1
 });
 
-interface AutomationCanvasProps {
+type AutomationCanvasProps = {
     automation?: AutomationDetail;
     isLoading: boolean;
     isError: boolean;
