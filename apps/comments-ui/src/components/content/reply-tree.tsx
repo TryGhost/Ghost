@@ -17,6 +17,7 @@ const ReplyTreeNode: React.FC<{
     const {maxThreadDepth} = useThreadingContext();
     const hasNestedReplies = reply.nestedReplies.length > 0;
     const atMaxDepth = depth >= maxThreadDepth;
+    const isLastSibling = reply.siblingIndex === reply.siblingCount - 1;
     const nextReply = reply.nestedReplies[0];
     let nestedReplies: React.ReactNode = null;
 
@@ -33,19 +34,23 @@ const ReplyTreeNode: React.FC<{
     } else if (hasNestedReplies && atMaxDepth) {
         nestedReplies = (
             <a
-                className="mb-4 flex items-center gap-1.5 px-0 font-sans text-[1.3rem] font-semibold text-neutral-900/55 transition-colors hover:text-neutral-900/80 dark:text-white/45 dark:hover:text-white/70"
+                className="relative mb-4 flex min-h-10 items-center gap-1.5 px-0 pl-1 font-sans text-[1.3rem] font-semibold text-neutral-900/55 transition-colors hover:text-neutral-900/80 dark:text-white/45 dark:hover:text-white/70"
                 data-testid="continue-thread-button"
                 href={buildCommentPermalink(pageUrl, nextReply.id)}
                 target="_parent"
                 onClick={() => requestFocusedThreadView(nextReply.id)}
             >
+                <span
+                    className="pointer-events-none absolute -left-4 top-0 h-5 w-3 border-b border-l border-neutral-300 [border-bottom-left-radius:12px_16px] sm:-left-5 sm:w-4 sm:[border-bottom-left-radius:16px_16px] dark:border-neutral-700"
+                    aria-hidden
+                />
                 <span>{t('Read more replies')} &rsaquo;</span>
             </a>
         );
     }
 
     return (
-        <CommentComponent comment={reply} parent={threadParentComment} useThreading={useThreading}>
+        <CommentComponent comment={reply} isLastSibling={isLastSibling} layoutVariant="reply" parent={threadParentComment} useThreading={useThreading}>
             {nestedReplies}
         </CommentComponent>
     );

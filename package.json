@@ -30,6 +30,8 @@
     "dev:storage": "DEV_COMPOSE_FILES='-f compose.dev.storage.yaml' pnpm nx run ghost-monorepo:docker:dev",
     "dev:stripe": "./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:docker:dev",
     "dev:all": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml -f compose.dev.storage.yaml' ./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:docker:dev",
+    "dev:supervisor": "node scripts/dev-supervisor.js",
+    "dev:status": "node scripts/dev-supervisor.js status",
     "fix": "pnpm store prune && rimraf -g '**/node_modules' && pnpm install && pnpm nx reset",
     "knex-migrator": "pnpm --filter ghost run knex-migrator",
     "setup": "pnpm install && git submodule update --init --recursive",
@@ -120,6 +122,11 @@
       "@doist/react-interpolate@2.2.1": {
         "dependencies": {
           "@babel/runtime": "^7.26.10"
+        }
+      },
+      "@tryghost/nql@0.12.10": {
+        "dependencies": {
+          "lodash": "^4.18.0"
         }
       }
     },

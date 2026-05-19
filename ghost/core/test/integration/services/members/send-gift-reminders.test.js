@@ -107,7 +107,7 @@ describe('Gift reminder processing', function () {
         const sent = emailMockReceiver.getSentEmail(0);
 
         assert.equal(sent.to, redeemerMember.get('email'));
-        assert.match(sent.subject, /ending soon/);
+        assert.match(sent.subject, /ends in \d+ days/);
 
         const reloaded = await models.Gift.findOne({token: gift.get('token')}, {require: true});
 

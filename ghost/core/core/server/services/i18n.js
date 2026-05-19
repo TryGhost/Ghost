@@ -1,6 +1,5 @@
 const debug = require('@tryghost/debug')('i18n');
 
-/** @type {import('i18next').i18n} */
 let i18nInstance;
 
 module.exports.init = function () {

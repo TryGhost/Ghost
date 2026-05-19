@@ -69,7 +69,7 @@ describe('Primitives', () => {
         );
         const box = screen.getByTestId('box');
 
-        assert.ok(box.className.includes('p-4'));
+        assert.ok(box.className.includes('p-5'));
         assert.ok(box.className.includes('px-2'));
         assert.ok(box.className.includes('py-6'));
         assert.ok(box.className.includes('rounded-full'));

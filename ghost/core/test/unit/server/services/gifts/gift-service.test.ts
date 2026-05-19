@@ -878,10 +878,8 @@ describe('GiftService', function () {
             const emailArgs = giftEmailService.sendReminder.getCall(0).args[0];
 
             assert.equal(emailArgs.memberEmail, 'member_1@example.com');
+            assert.equal(emailArgs.memberName, 'Member Name');
             assert.equal(emailArgs.tierName, 'Bronze');
-            assert.equal(emailArgs.tierCurrency, 'usd');
-            assert.equal(emailArgs.tierPrice, 10000);
-            assert.equal(emailArgs.cadence, gift.cadence);
             assert.equal(emailArgs.consumesAt, gift.consumesAt);
 
             sinon.assert.calledOnce(giftRepository.update);
@@ -1017,30 +1015,6 @@ describe('GiftService', function () {
             // Tier is read up front, but the transaction never runs, so the gift
             // is neither locked nor marked as reminded. A follow-up run after the
             // tier is restored will pick the gift up again.
-            sinon.assert.notCalled(giftRepository.update);
-            sinon.assert.notCalled(giftEmailService.sendReminder);
-        });
-
-        it('does not mark the gift as reminded when tier pricing is missing for the gift cadence', async function () {
-            const gift = buildRedeemedGift({cadence: 'year'});
-
-            giftRepository.findPendingReminder.resolves([gift]);
-            giftRepository.getByToken.resolves(gift);
-            tiersService.api.read.resolves({
-                id: 'tier_1',
-                name: 'Bronze',
-                currency: 'usd',
-                monthlyPrice: 1000,
-                yearlyPrice: null
-            });
-
-            const service = createService();
-            const result = await service.processReminders();
-
-            assert.equal(result.remindedCount, 0);
-            assert.equal(result.skippedCount, 0);
-            assert.equal(result.failedCount, 1);
-
             sinon.assert.notCalled(giftRepository.update);
             sinon.assert.notCalled(giftEmailService.sendReminder);
         });

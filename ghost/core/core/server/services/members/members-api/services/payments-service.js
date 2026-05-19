@@ -562,7 +562,7 @@ class PaymentsService {
     }
 
     /**
-     * @param {import('@tryghost/members-offers/lib/application/OfferMapper').OfferDTO} offer
+     * @param {import('../../../offers/application/offer-mapper').OfferDTO} offer
      */
     async createCouponForOffer(offer) {
         /** @type {import('stripe').Stripe.CouponCreateParams} */
