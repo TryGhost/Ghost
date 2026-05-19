@@ -8,6 +8,7 @@ import {RefreshCw} from 'lucide-react';
 import {getSettingValues, isSettingReadOnly, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useGlobalData} from '../../providers/global-data-provider';
+import {useLimiter} from '../../../hooks/use-limiter';
 
 const SITE_VISIBILITY_OPTIONS = [
     {
@@ -88,6 +89,8 @@ const COMMENTS_ENABLED_OPTIONS = [
 
 const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {settings} = useGlobalData();
+    const limiter = useLimiter();
+    const isTrialMode = limiter?.isDisabled('publicSiteAccess');
     const isPrivateLocked = isSettingReadOnly(settings, 'is_private') || isSettingReadOnly(settings, 'password');
     const {mutateAsync: editSettings} = useEditSettings();
     const [isRegenerating, setIsRegenerating] = React.useState(false);
@@ -158,7 +161,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const form = (
         <SettingGroupContent className='gap-y-4' columns={1}>
-            {isPrivateLocked && (
+            {isTrialMode && (
                 <Banner className='mb-2 flex w-full cursor-default flex-col gap-4 border-0 p-6 pt-5 transition-none hover:translate-y-0 hover:scale-100 hover:shadow-[-7px_-6px_42px_8px_rgb(75_225_226_/_28%),7px_6px_42px_8px_rgb(202_103_255_/_32%)] md:flex-row md:items-center md:justify-between dark:hover:shadow-[-7px_-6px_42px_8px_rgb(75_225_226_/_36%),7px_6px_42px_8px_rgb(202_103_255_/_38%)]' size='lg' variant='gradient'>
                     <div>
                         <div className='text-base font-semibold'>Pre-launch mode</div>
@@ -300,7 +303,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
             keywords={keywords}
             navid='members'
             saveState={saveState}
-            styles={isPrivateLocked ? 'overflow-hidden' : undefined}
+            styles={isTrialMode ? 'overflow-hidden' : undefined}
             testId='access'
             title='Access'
             hideEditButton
