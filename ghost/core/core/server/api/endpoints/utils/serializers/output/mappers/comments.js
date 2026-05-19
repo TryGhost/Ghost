@@ -143,8 +143,8 @@ const commentMapper = (model, frame) => {
     }
 
     if (jsonModel.count) {
-        const fields = isPublicRequest ? countFields : countFieldsAdmin;
-        response.count = _.pick(jsonModel.count, commentDislikesEnabled ? fields : fields.filter(field => field !== 'dislikes'));
+        const countFieldsForRequest = isPublicRequest ? countFields : countFieldsAdmin;
+        response.count = _.pick(jsonModel.count, commentDislikesEnabled ? countFieldsForRequest : countFieldsForRequest.filter(field => field !== 'dislikes'));
     }
 
     if (includesHtml && isPublicRequest && jsonModel.status !== 'published') {

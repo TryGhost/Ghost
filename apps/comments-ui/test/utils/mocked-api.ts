@@ -151,6 +151,7 @@ export class MockedApi {
         }
 
         if (setOrder === 'count__likes desc, created_at desc') {
+            // Sort by likes (desc) first, then by created_at (asc)
             this.comments.sort((a, b) => {
                 const likesDiff = b.count.likes - a.count.likes;
                 if (likesDiff !== 0) {
@@ -159,7 +160,7 @@ export class MockedApi {
 
                 const aDate = new Date(a.created_at).getTime();
                 const bDate = new Date(b.created_at).getTime();
-                return bDate - aDate;
+                return aDate - bDate;
             });
         }
 
