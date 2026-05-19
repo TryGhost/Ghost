@@ -65,10 +65,6 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 setErrors(current => ({...current, [key]: ''}));
             }
         } catch {
-            // Leave the stored value alone on invalid input so the
-            // localSettings → urls sync effect doesn't wipe the field
-            // mid-typing. Save is gated by handleSaveClick, which
-            // validates the displayed value.
             setErrors(current => ({...current, [key]: getSocialValidationError(key, value)}));
         }
     };

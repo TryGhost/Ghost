@@ -285,9 +285,6 @@ test.describe('Social account settings', async () => {
     });
 
     test('Does not clear the field when invalid input follows a valid value', async ({page}) => {
-        // Regression for #27930: typing a "." after a valid handle previously
-        // wiped the input because the catch path called updateSetting(key, null),
-        // which triggered the localSettings → urls sync to reset the display.
         await mockApi({page, requests: {
             ...globalDataRequests
         }});
