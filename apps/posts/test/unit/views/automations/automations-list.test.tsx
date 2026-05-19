@@ -28,8 +28,8 @@ describe('AutomationsList', () => {
         expect(screen.getByText('Onboard new free members with a short welcome email.')).toBeInTheDocument();
         expect(screen.getByText('Welcome Email (Paid)')).toBeInTheDocument();
         expect(screen.getByText('Greet new paid members and point them at member-only content.')).toBeInTheDocument();
-        expect(screen.getByText('LIVE')).toBeInTheDocument();
-        expect(screen.getByText('OFF')).toBeInTheDocument();
+        expect(screen.getByText('Live')).toBeInTheDocument();
+        expect(screen.getByText('Off')).toBeInTheDocument();
     });
 
     it('links each row to the automation sequence by id', () => {
