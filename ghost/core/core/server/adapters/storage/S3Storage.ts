@@ -149,6 +149,20 @@ export default class S3Storage extends StorageBase {
         this.client = options.s3Client || new S3Client(clientConfig);
     }
 
+    getUniqueFileName(file: {name: string; path?: string}, targetDir: string): Promise<string> {
+        const sanitize = (s: string) => s.replace(/[^\w@.]/gi, '-');
+        const ext = path.extname(file.name);
+        let name: string;
+
+        if (!ext.match(/\.\d+$/)) {
+            name = sanitize(path.basename(file.name, ext));
+            return Promise.resolve(path.join(targetDir, name + ext));
+        } else {
+            name = sanitize(path.basename(file.name));
+            return Promise.resolve(path.join(targetDir, name));
+        }
+    }
+
     async save(file: UploadFile, targetDir?: string): Promise<string> {
         const dir = targetDir || this.getTargetDir();
         const relativePath = await this.getUniqueFileName(file, dir);
