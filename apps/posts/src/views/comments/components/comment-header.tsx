@@ -1,5 +1,6 @@
 import {Badge, Button, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import {LucideIcon, cn, formatTimestamp} from '@tryghost/shade/utils';
+import type {MouseEvent} from 'react';
 
 function formatDate(dateString: string): string {
     const date = new Date(dateString);
@@ -19,11 +20,19 @@ interface CommentHeaderProps {
     createdAt?: string;
     isHidden?: boolean;
     canComment?: boolean | null;
+    isPinned?: boolean;
     onAuthorClick?: () => void;
     postTitle?: string | null;
     onPostClick?: () => void;
+    onUnpinClick?: () => void;
     className?: string;
 }
+
+const pinnedBadgeClassName = 'inline-flex items-center gap-1 rounded-full border border-amber-300/70 bg-amber-50 px-2 py-0.5 font-sans text-xs font-medium leading-none text-amber-800 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-100';
+const pinnedButtonClassName = cn(
+    pinnedBadgeClassName,
+    'hover:border-amber-400 hover:bg-amber-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500 dark:hover:border-amber-400/50 dark:hover:bg-amber-400/20'
+);
 
 export function CommentHeader({
     memberName,
@@ -31,11 +40,18 @@ export function CommentHeader({
     createdAt,
     isHidden,
     canComment,
+    isPinned,
     onAuthorClick,
     postTitle,
     onPostClick,
+    onUnpinClick,
     className
 }: CommentHeaderProps) {
+    const handleUnpinClick = (event: MouseEvent<HTMLButtonElement>) => {
+        event.stopPropagation();
+        onUnpinClick?.();
+    };
+
     return (
         <div className={cn('flex items-baseline gap-4', className)}>
             <div className={cn(
@@ -111,6 +127,30 @@ export function CommentHeader({
             </div>
             {isHidden && (
                 <Badge variant='secondary'>Hidden</Badge>
+            )}
+            {isPinned && (
+                onUnpinClick ? (
+                    <button
+                        aria-label="Unpin comment"
+                        className={cn('group', pinnedButtonClassName)}
+                        type="button"
+                        onClick={handleUnpinClick}
+                    >
+                        <span className="grid size-3 shrink-0">
+                            <LucideIcon.Pin className="col-start-1 row-start-1 size-3 group-hover:opacity-0 group-focus-visible:opacity-0" />
+                            <LucideIcon.PinOff className="col-start-1 row-start-1 size-3 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100" />
+                        </span>
+                        <span className="grid justify-items-start text-left">
+                            <span className="col-start-1 row-start-1 group-hover:opacity-0 group-focus-visible:opacity-0">Pinned</span>
+                            <span className="col-start-1 row-start-1 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100">Unpin</span>
+                        </span>
+                    </button>
+                ) : (
+                    <Badge className={pinnedBadgeClassName} variant='outline'>
+                        <LucideIcon.Pin className="size-3" />
+                        Pinned
+                    </Badge>
+                )
             )}
         </div>
     );

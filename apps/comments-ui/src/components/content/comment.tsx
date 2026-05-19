@@ -2,6 +2,7 @@ import EditForm from './forms/edit-form';
 import LikeButton from './buttons/like-button';
 import LikeCount from './buttons/like-count';
 import MoreButton from './buttons/more-button';
+import PinnedLabel from './pinned-label';
 import React, {useCallback} from 'react';
 import Replies, {RepliesProps} from './replies';
 import ReplyButton from './buttons/reply-button';
@@ -161,6 +162,7 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({children, comment, p
             className={hiddenClass}
             hasReplies={hasReplies}
             isLastSibling={isLastSibling}
+            isPinned={comment.pinned}
             layoutVariant={layoutVariant}
             memberUuid={comment.member?.uuid}
             replies={<RepliesContainer comment={comment} parent={parent} useThreading={useThreading}>{children}</RepliesContainer>}
@@ -225,6 +227,7 @@ const UnpublishedComment: React.FC<React.PropsWithChildren<UnpublishedCommentPro
             avatar={avatar}
             hasReplies={hasReplies}
             isLastSibling={isLastSibling}
+            isPinned={comment.pinned}
             layoutVariant={layoutVariant}
             replies={<RepliesContainer comment={comment} parent={parent} useThreading={useThreading}>{children}</RepliesContainer>}
             replyForm={displayReplyForm ? <ReplyFormBox continueLine={hasChildReplies} openForm={openForm} parent={replyFormParent} useThreading={useThreading} /> : null}
@@ -232,6 +235,7 @@ const UnpublishedComment: React.FC<React.PropsWithChildren<UnpublishedCommentPro
         >
             <div className="mt-[-3px] flex items-start" id={comment.id}>
                 <div className="flex h-10 flex-row items-center gap-4 pb-[8px] pr-4">
+                    <PinnedLabel comment={comment} />
                     <p className="text-md mt-[4px] font-sans leading-normal text-neutral-900/40 sm:text-lg dark:text-white/60">
                         {notPublishedMessage}
                     </p>
@@ -272,6 +276,7 @@ const EditedInfo: React.FC<{comment: Comment}> = ({comment}) => {
         </span>
     );
 };
+
 const RepliesContainer: React.FC<React.PropsWithChildren<RepliesProps & {className?: string; parent?: Comment; useThreading?: boolean}>> = ({children, comment, className = '', parent, useThreading = false}) => {
     const hasNestedReplies = React.Children.count(children) > 0;
     const hasReplies = hasNestedReplies || (comment.replies && comment.replies.length > 0);
@@ -393,6 +398,11 @@ const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = '', u
                     <span>
                         <MemberExpertise comment={comment}/>
                         {timestampElement}
+                        {comment.pinned && (
+                            <span className="ml-2 inline-flex align-middle">
+                                <PinnedLabel comment={comment} />
+                            </span>
+                        )}
                         <EditedInfo comment={comment} />
                     </span>
                 </div>
@@ -509,17 +519,24 @@ type CommentLayoutProps = {
     className?: string;
     memberUuid?: string;
     isLastSibling?: boolean;
+    isPinned?: boolean;
     layoutVariant?: CommentLayoutVariant;
     replies?: React.ReactNode;
     replyForm?: React.ReactNode;
     useThreading: boolean;
 }
-const CommentLayout: React.FC<CommentLayoutProps> = ({children, avatar, hasReplies, className = '', memberUuid = '', isLastSibling = false, layoutVariant = 'root', replies, replyForm, useThreading}) => {
+
+const COMMENT_GAP_CLASS_NAME = 'mb-7';
+const PINNED_COMMENT_GAP_CLASS_NAME = 'mb-4';
+const PINNED_COMMENT_BOX_CLASS_NAME = 'bg-amber-50/70 px-3 py-3 dark:bg-amber-400/10';
+
+const CommentLayout: React.FC<CommentLayoutProps> = ({children, avatar, hasReplies, className = '', memberUuid = '', isLastSibling = false, isPinned = false, layoutVariant = 'root', replies, replyForm, useThreading}) => {
     const isReplyLayout = layoutVariant === 'reply';
 
     if (!useThreading) {
+        const bottomMarginClassName = isPinned ? PINNED_COMMENT_GAP_CLASS_NAME : hasReplies ? 'mb-0' : COMMENT_GAP_CLASS_NAME;
         return (
-            <div className={`flex w-full flex-row ${hasReplies === true ? 'mb-0' : 'mb-7'}`} data-member-uuid={memberUuid} data-testid="comment-component">
+            <div className={`flex w-full flex-row rounded-lg ${isPinned ? PINNED_COMMENT_BOX_CLASS_NAME : ''} ${bottomMarginClassName}`} data-member-uuid={memberUuid} data-pinned={isPinned ? 'true' : undefined} data-testid="comment-component">
                 <div className="mr-2 flex flex-col items-center justify-start sm:mr-3">
                     <div className={`flex-0 mb-3 sm:mb-4 ${className}`}>
                         {avatar}

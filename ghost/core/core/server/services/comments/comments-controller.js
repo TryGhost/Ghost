@@ -169,6 +169,47 @@ module.exports = class CommentsController {
         });
     }
 
+    async adminEdit(frame) {
+        const data = frame.data.comments[0];
+        const updates = {};
+        if (Object.prototype.hasOwnProperty.call(data, 'status')) {
+            updates.status = data.status;
+        }
+        if (Object.prototype.hasOwnProperty.call(data, 'pinned')) {
+            updates.pinned = data.pinned;
+        }
+
+        const result = await this.service.moderateComment(
+            frame.options.id,
+            updates,
+            frame.options
+        );
+
+        this.setCacheInvalidationHeaders(result, frame);
+
+        return result;
+    }
+
+    /**
+     * Sets the X-Cache-Invalidate response header so the public/member-facing
+     * comments endpoints get evicted when an admin mutates a comment. Shared
+     * with the comments endpoint module so both sites stay in sync.
+     */
+    setCacheInvalidationHeaders(model, frame) {
+        if (!model) {
+            return;
+        }
+
+        const postId = model.get('post_id');
+        const parentId = model.get('parent_id');
+        const pathsToInvalidate = [
+            postId ? `/api/members/comments/post/${postId}/` : null,
+            parentId ? `/api/members/comments/${parentId}/replies/` : null
+        ].filter(path => path !== null);
+
+        frame.setHeader('X-Cache-Invalidate', pathsToInvalidate.join(', '));
+    }
+
     /**
      * @param {Frame} frame
      */

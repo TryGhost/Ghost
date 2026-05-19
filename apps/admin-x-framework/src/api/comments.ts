@@ -11,6 +11,7 @@ export type Comment = {
     id: string;
     html: string | null;
     status: 'published' | 'hidden' | 'deleted';
+    pinned: boolean;
     created_at: string;
     updated_at: string;
     post_id: string;
@@ -131,6 +132,34 @@ export const useDeleteComment = createMutation<CommentsResponseType, {id: string
         comments: [{
             id,
             status: 'deleted'
+        }]
+    }),
+    invalidateQueries: {
+        dataType
+    }
+});
+
+export const usePinComment = createMutation<CommentsResponseType, {id: string}>({
+    method: 'PUT',
+    path: ({id}) => `/comments/${id}/`,
+    body: ({id}) => ({
+        comments: [{
+            id,
+            pinned: true
+        }]
+    }),
+    invalidateQueries: {
+        dataType
+    }
+});
+
+export const useUnpinComment = createMutation<CommentsResponseType, {id: string}>({
+    method: 'PUT',
+    path: ({id}) => `/comments/${id}/`,
+    body: ({id}) => ({
+        comments: [{
+            id,
+            pinned: false
         }]
     }),
     invalidateQueries: {

@@ -14,11 +14,11 @@ test.describe('Admin moderation', async () => {
 
     type InitializeTestOptions = {
         isAdmin?: boolean;
-        labs?: boolean;
+        labs?: Record<string, boolean>;
         member?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
     };
     async function initializeTest(page, options: InitializeTestOptions = {}) {
-        options = {isAdmin: true, labs: false, member: {id: '1', uuid: '12345'}, ...options};
+        options = {isAdmin: true, labs: {}, member: {id: '1', uuid: '12345'}, ...options};
         if (options.isAdmin) {
             await mockAdminAuthFrame({page, admin});
         } else {
@@ -27,10 +27,6 @@ test.describe('Admin moderation', async () => {
 
         mockedApi.setMember(options.member);
 
-        if (options.labs) {
-            // enable specific labs flags here
-        }
-
         return await initialize({
             mockedApi,
             page,
@@ -38,9 +34,7 @@ test.describe('Admin moderation', async () => {
             title: 'Member discussion',
             count: true,
             admin,
-            labs: {
-                // enable specific labs flags here
-            }
+            labs: options.labs
         });
     }
 
@@ -99,6 +93,32 @@ test.describe('Admin moderation', async () => {
         // Admin buttons should be visible
         await moreButtons.nth(0).click();
         await expect(frame.getByTestId('hide-button')).toBeVisible();
+    });
+
+    test('has pin option when signed in to Ghost admin and viewing own comment', async ({page}) => {
+        mockedApi.addComment({
+            html: `<p>This is comment 1</p>`,
+            member: {id: '1', uuid: '12345'}
+        });
+        const {frame} = await initializeTest(page, {labs: {commentsPinning: true}});
+
+        const moreButtons = frame.getByTestId('more-button');
+        await expect(moreButtons).toHaveCount(1);
+
+        await moreButtons.nth(0).click();
+        await expect(frame.getByTestId('pin-button')).toBeVisible();
+        await expect(frame.getByTestId('edit')).toBeVisible();
+    });
+
+    test('has pin option when signed in to Ghost admin and viewing another member comment', async ({page}) => {
+        mockedApi.addComment({html: `<p>This is comment 1</p>`});
+        const {frame} = await initializeTest(page, {labs: {commentsPinning: true}});
+
+        const moreButtons = frame.getByTestId('more-button');
+        await expect(moreButtons).toHaveCount(1);
+
+        await moreButtons.nth(0).click();
+        await expect(frame.getByTestId('pin-button')).toBeVisible();
     });
 
     test('member uuid are passed to admin browse api params', async ({page}) => {
