@@ -18,30 +18,10 @@ describe('Users service', function () {
             return user;
         }
 
-        /**
-         * Stand up a Users service against an in-memory pretend-DB. The pretend-DB
-         * honours `filter: roles.name:[…]` so the test asserts on which users
-         * actually got locked, not on what arguments we passed around.
-         */
         function makeService({users} = {users: [makeUser()]}) {
-            const userRoles = new Map(); // user → string[]
+            const findAll = () => Promise.resolve({models: users});
 
-            const findAll = (options = {}) => {
-                let matching = users;
-                if (options.filter) {
-                    const rolesMatch = options.filter.match(/^roles\.name:\[(.+)\]$/);
-                    if (rolesMatch) {
-                        const filterRoles = rolesMatch[1].split(',');
-                        matching = users.filter((u) => {
-                            const roles = userRoles.get(u) || [];
-                            return roles.some(r => filterRoles.includes(r));
-                        });
-                    }
-                }
-                return Promise.resolve({models: matching});
-            };
-
-            const service = new Users({
+            return new Users({
                 dbBackup: {backup: sinon.stub().resolves()},
                 models: {
                     Base: {transaction: cb => cb('fake_transaction')},
@@ -56,15 +36,9 @@ describe('Users service', function () {
                 apiMail: 'fake_api_mail',
                 apiSettings: 'fake_api_settings'
             });
-
-            // Helper for tests that exercise role filtering — attach roles to users
-            // in our pretend-DB lookup table.
-            service._assignRoles = (user, roles) => userRoles.set(user, roles);
-
-            return service;
         }
 
-        it('locks every user when no role filter is given', async function () {
+        it('locks every user', async function () {
             const a = makeUser({email: 'a@example.com'});
             const b = makeUser({email: 'b@example.com'});
             const usersService = makeService({users: [a, b]});
@@ -99,8 +73,6 @@ describe('Users service', function () {
             const a = makeUser({email: 'a@example.com'});
             const usersService = makeService({users: [a]});
 
-            // Record whether models.Base.transaction was invoked (it shouldn't be
-            // when an outer transaction is supplied).
             let openedOwnTx = false;
             usersService.models.Base.transaction = (cb) => {
                 openedOwnTx = true;
@@ -112,23 +84,6 @@ describe('Users service', function () {
             assert.equal(result.count, 1);
             assert.equal(a.locked, true);
             assert.equal(openedOwnTx, false, 'no inner transaction is opened when one is passed in');
-        });
-
-        it('only locks users with one of the named roles', async function () {
-            const owner = makeUser({email: 'owner@example.com'});
-            const editor = makeUser({email: 'editor@example.com'});
-            const contributor = makeUser({email: 'contributor@example.com'});
-            const usersService = makeService({users: [owner, editor, contributor]});
-            usersService._assignRoles(owner, ['Owner']);
-            usersService._assignRoles(editor, ['Editor']);
-            usersService._assignRoles(contributor, ['Contributor']);
-
-            const result = await usersService.lockAll({context: {}}, {roles: ['Owner', 'Editor']});
-
-            assert.equal(result.count, 2);
-            assert.equal(owner.locked, true);
-            assert.equal(editor.locked, true);
-            assert.equal(contributor.locked, false);
         });
     });
 

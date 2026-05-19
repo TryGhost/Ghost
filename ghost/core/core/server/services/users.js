@@ -57,7 +57,7 @@ class Users {
     }
 
     /**
-     * Lock every (or every matching) user and invalidate their password.
+     * Lock every user and invalidate their password.
      *
      * Locked users hit `PasswordResetRequiredError` on their next signin
      * attempt; the session endpoint catches that, generates a reset token,
@@ -66,23 +66,12 @@ class Users {
      * who are not actively signing in, while still funnelling everyone
      * through a fresh password before they regain access.
      *
-     * Optional `roles` restricts the action to users with one of the named
-     * roles, leaving the door open for staff-only variants. When unspecified
-     * the action applies to every user.
-     *
      * @param {Object} frameOptions
-     * @param {Object} [opts]
-     * @param {string[]} [opts.roles] - optional role-name filter
      * @returns {Promise<{count: number}>}
      */
-    async lockAll(frameOptions, {roles} = {}) {
+    async lockAll(frameOptions) {
         const lockUsers = async (txOptions) => {
-            const findOptions = {...txOptions};
-            if (roles && roles.length) {
-                findOptions.filter = `roles.name:[${roles.join(',')}]`;
-            }
-
-            const users = await this.models.User.findAll(findOptions);
+            const users = await this.models.User.findAll(txOptions);
             for (const user of users.models) {
                 await user.lock(txOptions);
             }
