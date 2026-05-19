@@ -6,10 +6,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a message</p><p></p><p>New line</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -37,7 +39,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "479",
+  "content-length": "509",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -53,10 +55,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "This is a reply",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -84,7 +88,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "470",
+  "content-length": "500",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -162,10 +166,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -187,10 +193,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -210,9 +218,11 @@ Object {
         Object {
           "count": Object {
             "direct_replies": 0,
+            "dislikes": 0,
             "likes": Any<Number>,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "disliked": false,
           "edited_at": null,
           "html": "<p>This is a reply</p>",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -252,7 +262,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1440",
+  "content-length": "1530",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -266,10 +276,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -289,9 +301,11 @@ Object {
         Object {
           "count": Object {
             "direct_replies": 0,
+            "dislikes": 0,
             "likes": Any<Number>,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "disliked": false,
           "edited_at": null,
           "html": "<p>This is a reply</p>",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -315,10 +329,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -356,7 +372,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1440",
+  "content-length": "1530",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -370,10 +386,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -393,9 +411,11 @@ Object {
         Object {
           "count": Object {
             "direct_replies": 0,
+            "dislikes": 0,
             "likes": Any<Number>,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "disliked": false,
           "edited_at": null,
           "html": "<p>This is a reply</p>",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -419,10 +439,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -460,7 +482,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1440",
+  "content-length": "1530",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -474,10 +496,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -499,10 +523,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -522,9 +548,11 @@ Object {
         Object {
           "count": Object {
             "direct_replies": 0,
+            "dislikes": 0,
             "likes": Any<Number>,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "disliked": false,
           "edited_at": null,
           "html": "<p>This is a reply</p>",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -564,7 +592,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1440",
+  "content-length": "1530",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -578,10 +606,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a message</p><p></p><p>New line</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -609,7 +639,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "479",
+  "content-length": "509",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -625,10 +655,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "html": "Updated comment",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -656,7 +688,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "470",
+  "content-length": "500",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -704,10 +736,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -735,7 +769,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "467",
+  "content-length": "497",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -761,10 +795,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -792,7 +828,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "478",
+  "content-length": "508",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -837,10 +873,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "html": "Illegal comment update",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -868,7 +906,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "477",
+  "content-length": "507",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -956,10 +994,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -987,7 +1027,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "457",
+  "content-length": "487",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -1001,10 +1041,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "This is a reply",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1032,7 +1074,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "470",
+  "content-length": "500",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -1048,10 +1090,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "This is a reply",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1079,7 +1123,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "470",
+  "content-length": "500",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -1095,10 +1139,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "This is a reply",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1126,7 +1172,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "470",
+  "content-length": "500",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -1142,10 +1188,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "This is a reply",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1173,7 +1221,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "470",
+  "content-length": "500",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -1200,9 +1248,11 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a reply</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1239,7 +1289,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "536",
+  "content-length": "566",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -1253,9 +1303,11 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a reply</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1276,9 +1328,11 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a reply</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1299,9 +1353,11 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a reply</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1322,9 +1378,11 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a reply</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1345,9 +1403,11 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a reply</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1368,9 +1428,11 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a reply</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1391,9 +1453,11 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a reply</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1430,7 +1494,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "3167",
+  "content-length": "3377",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -1517,10 +1581,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1540,9 +1606,11 @@ Object {
         Object {
           "count": Object {
             "direct_replies": 0,
+            "dislikes": 0,
             "likes": Any<Number>,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "disliked": false,
           "edited_at": null,
           "html": "<p>This is a reply</p>",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1563,9 +1631,11 @@ Object {
         Object {
           "count": Object {
             "direct_replies": 0,
+            "dislikes": 0,
             "likes": Any<Number>,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "disliked": false,
           "edited_at": null,
           "html": "<p>This is a reply</p>",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1586,9 +1656,11 @@ Object {
         Object {
           "count": Object {
             "direct_replies": 0,
+            "dislikes": 0,
             "likes": Any<Number>,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "disliked": false,
           "edited_at": null,
           "html": "<p>This is a reply</p>",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1609,9 +1681,11 @@ Object {
         Object {
           "count": Object {
             "direct_replies": 0,
+            "dislikes": 0,
             "likes": Any<Number>,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "disliked": false,
           "edited_at": null,
           "html": "<p>This is a reply</p>",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1632,9 +1706,11 @@ Object {
         Object {
           "count": Object {
             "direct_replies": 0,
+            "dislikes": 0,
             "likes": Any<Number>,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "disliked": false,
           "edited_at": null,
           "html": "<p>This is a reply</p>",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1664,7 +1740,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "2650",
+  "content-length": "2830",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -1678,10 +1754,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1701,9 +1779,11 @@ Object {
         Object {
           "count": Object {
             "direct_replies": 0,
+            "dislikes": 0,
             "likes": Any<Number>,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "disliked": false,
           "edited_at": null,
           "html": "<p>This is a reply</p>",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1743,7 +1823,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "962",
+  "content-length": "1022",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -1815,10 +1895,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1856,7 +1938,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "549",
+  "content-length": "579",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -1928,10 +2010,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1969,7 +2053,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "549",
+  "content-length": "579",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -1983,10 +2067,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -2006,9 +2092,11 @@ Object {
         Object {
           "count": Object {
             "direct_replies": 0,
+            "dislikes": 0,
             "likes": Any<Number>,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "disliked": false,
           "edited_at": null,
           "html": "<p>This is a reply</p>",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -2048,7 +2136,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "962",
+  "content-length": "1022",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -2062,10 +2150,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -2085,9 +2175,11 @@ Object {
         Object {
           "count": Object {
             "direct_replies": 0,
+            "dislikes": 0,
             "likes": Any<Number>,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "disliked": false,
           "edited_at": null,
           "html": "<p>This is a reply</p>",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -2127,7 +2219,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "961",
+  "content-length": "1021",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -2141,10 +2233,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -2164,9 +2258,11 @@ Object {
         Object {
           "count": Object {
             "direct_replies": 1,
+            "dislikes": 0,
             "likes": Any<Number>,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "disliked": false,
           "edited_at": null,
           "html": "<p>This is what was replied to</p>",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -2187,9 +2283,11 @@ Object {
         Object {
           "count": Object {
             "direct_replies": 0,
+            "dislikes": 0,
             "likes": Any<Number>,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "disliked": false,
           "edited_at": null,
           "html": "<p>This is a reply to a reply</p>",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -2229,7 +2327,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1501",
+  "content-length": "1591",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -2243,10 +2341,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a reply to a reply</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -2274,7 +2374,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "523",
+  "content-length": "553",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -2290,10 +2390,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a reply to a reply</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -2321,7 +2423,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "488",
+  "content-length": "518",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -2337,10 +2439,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a reply to a reply</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -2368,7 +2472,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "488",
+  "content-length": "518",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -2384,10 +2488,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -2415,7 +2521,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "508",
+  "content-length": "538",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -2429,10 +2535,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -2460,7 +2568,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "508",
+  "content-length": "538",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -2474,10 +2582,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a reply to a reply</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -2505,7 +2615,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "488",
+  "content-length": "518",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -2521,10 +2631,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a reply to a reply</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -2552,7 +2664,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "466",
+  "content-length": "496",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -2568,10 +2680,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a reply to a reply</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -2599,7 +2713,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "535",
+  "content-length": "565",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -2615,10 +2729,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a reply to a reply</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -2646,7 +2762,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "535",
+  "content-length": "565",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -2660,10 +2776,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -2683,9 +2801,11 @@ Object {
         Object {
           "count": Object {
             "direct_replies": 0,
+            "dislikes": 0,
             "likes": Any<Number>,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "disliked": false,
           "edited_at": null,
           "html": "<p>This is a reply</p>",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -2725,7 +2845,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "986",
+  "content-length": "1046",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -2739,10 +2859,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -2762,9 +2884,11 @@ Object {
         Object {
           "count": Object {
             "direct_replies": 0,
+            "dislikes": 0,
             "likes": Any<Number>,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "disliked": false,
           "edited_at": null,
           "html": "<p>This is a reply</p>",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -2804,7 +2928,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "986",
+  "content-length": "1046",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -2973,10 +3097,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a message</p><p></p><p>New line</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -3004,7 +3130,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "479",
+  "content-length": "509",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
@@ -3020,10 +3146,12 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "This is a reply",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -3051,7 +3179,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "470",
+  "content-length": "500",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "location": StringMatching /https\\?:\\\\/\\\\/\\.\\*\\?\\\\/comments\\\\/\\[a-f0-9\\]\\{24\\}\\\\//,
