@@ -13,7 +13,7 @@ export type AddStepEdgeData = {
 };
 
 const INSERT_BUTTON_CLASSES = 'border-transparent bg-blue-500 text-white shadow-sm hover:bg-blue-600';
-const DEFAULT_EDGE_STROKE = 'var(--color-grey-500)';
+const DEFAULT_EDGE_STROKE = 'var(--xy-edge-stroke)';
 const HOVERED_EDGE_STROKE = 'var(--color-blue-500)';
 
 const AddStepEdge: React.FC<EdgeProps> = ({

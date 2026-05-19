@@ -1,6 +1,6 @@
 import '@xyflow/react/dist/style.css';
 import AddStepEdge, {type AddStepEdgeData} from './add-step-edge';
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import StepPicker, {type StepPickerType} from './step-picker';
 import {AutomationAction, AutomationDetail, InsertActionAnchor, MAX_AUTOMATION_ACTIONS, insertSendEmailAction, insertWaitAction} from '@tryghost/admin-x-framework/api/automations';
 import {Background, Edge, Handle, Node, NodeProps, Position, ReactFlow} from '@xyflow/react';
@@ -8,8 +8,12 @@ import {Banner, LoadingIndicator, Popover, PopoverContent, PopoverTrigger, Toolt
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 
 const NODE_X = 0;
+const NODE_WIDTH = 256;
+const NODE_COLUMN_CENTER_X = NODE_X + (NODE_WIDTH / 2);
 const NODE_GAP_Y = 180;
+const INITIAL_VIEWPORT_Y = 40;
 const DISABLED_REASON = `Limit of ${MAX_AUTOMATION_ACTIONS} steps reached`;
+const DEFAULT_EDGE_STROKE = 'var(--xy-edge-stroke)';
 
 // React Flow node IDs for the trigger and tail nodes. The canvas builds the visual graph using
 // these; they are not action IDs and never reach the API.
@@ -55,7 +59,7 @@ const HiddenHandle: React.FC<{type: 'source' | 'target'; position: Position}> = 
 
 const NodeShell: React.FC<React.PropsWithChildren<{className?: string}>> = ({children, className}) => (
     <div
-        className={cn('flex w-64 items-center gap-3 rounded-lg bg-white px-4 py-3 text-left text-sm shadow-sm', className)}
+        className={cn('flex w-64 items-center gap-3 rounded-lg border border-border-default bg-surface-elevated px-4 py-3 text-left text-sm text-foreground shadow-sm', className)}
     >
         {children}
     </div>
@@ -65,11 +69,11 @@ const StepNodeContent: React.FC<{data: StepNodeData}> = ({data}) => {
     const Icon = data.icon;
     return (
         <>
-            <div className='flex size-8 shrink-0 items-center justify-center rounded-md bg-grey-100 text-grey-700'>
+            <div className='flex size-8 shrink-0 items-center justify-center rounded-md bg-muted text-text-secondary'>
                 <Icon className='size-4' />
             </div>
             <div className='flex min-w-0 flex-col text-left'>
-                <span className='text-xs text-grey-600'>{data.label}</span>
+                <span className='text-xs text-text-secondary'>{data.label}</span>
                 {data.value && <span className='truncate font-medium'>{data.value}</span>}
             </div>
         </>
@@ -101,7 +105,7 @@ const TailNode: React.FC<NodeProps<TailFlowNode>> = ({data}) => {
         data.onPick(type, data.anchor);
     };
 
-    const triggerClassName = 'flex h-12 w-64 items-center justify-center rounded-lg border border-dashed border-grey-300 bg-white transition-colors hover:border-grey-400 focus-visible:border-grey-500 focus-visible:outline-none dark:border-grey-800 dark:bg-grey-950 dark:hover:border-grey-700';
+    const triggerClassName = 'flex h-12 w-64 items-center justify-center rounded-lg border border-dashed border-border-default bg-surface-page transition-colors hover:border-border-strong focus-visible:border-border-strong focus-visible:outline-none';
 
     if (data.disabled) {
         const content = (
@@ -111,7 +115,7 @@ const TailNode: React.FC<NodeProps<TailFlowNode>> = ({data}) => {
                 data-testid='add-step-tail-button'
             >
                 <HiddenHandle position={Position.Top} type='target' />
-                <LucideIcon.Plus className='size-5 text-grey-500' strokeWidth={1.5} />
+                <LucideIcon.Plus className='size-5 text-text-secondary' strokeWidth={1.5} />
             </div>
         );
         if (!data.disabledReason) {
@@ -137,7 +141,7 @@ const TailNode: React.FC<NodeProps<TailFlowNode>> = ({data}) => {
                 data-testid='add-step-tail-button'
             >
                 <HiddenHandle position={Position.Top} type='target' />
-                <LucideIcon.Plus className='size-5 text-grey-500' strokeWidth={1.5} />
+                <LucideIcon.Plus className='size-5 text-text-secondary' strokeWidth={1.5} />
             </PopoverTrigger>
             <PopoverContent align='center' className='p-0' side='top'>
                 <StepPicker onPick={handlePick} />
@@ -301,13 +305,19 @@ const buildGraph = ({automation, disabled, onPick}: BuildGraphParams): {nodes: A
         target: TAIL_CANVAS_ID,
         type: 'smoothstep',
         focusable: false,
-        style: {stroke: 'var(--color-grey-500)'}
+        style: {stroke: DEFAULT_EDGE_STROKE}
     });
 
     return {nodes, edges};
 };
 
-type AutomationCanvasProps = {
+const getInitialViewport = (canvasWidth: number): {x: number; y: number; zoom: number} => ({
+    x: Math.round((canvasWidth / 2) - NODE_COLUMN_CENTER_X),
+    y: INITIAL_VIEWPORT_Y,
+    zoom: 1
+});
+
+interface AutomationCanvasProps {
     automation?: AutomationDetail;
     isLoading: boolean;
     isError: boolean;
@@ -333,7 +343,9 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
         onChange(next);
     }, [automation, onChange]);
 
-    const graph = React.useMemo(() => {
+    const initialViewport = useMemo(() => getInitialViewport(window.innerWidth), []);
+
+    const graph = useMemo(() => {
         if (!automation) {
             return null;
         }
@@ -344,15 +356,9 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
         });
     }, [automation, handlePick]);
 
-    // Fit only the trigger + first two action nodes on initial render so a deep chain doesn't zoom
-    // out to a postage stamp. Below that, the user pans/scrolls to see the rest.
-    const initialFitNodes = React.useMemo(() => (
-        graph?.nodes.slice(0, 3).map(node => ({id: node.id})) ?? []
-    ), [graph]);
-
     if (isLoading) {
         return (
-            <div className='flex flex-1 items-center justify-center bg-grey-75' data-testid='automation-canvas-loading'>
+            <div className='flex flex-1 items-center justify-center bg-surface-page' data-testid='automation-canvas-loading'>
                 <LoadingIndicator size='lg' />
             </div>
         );
@@ -360,7 +366,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
 
     if (isError || !automation || !graph) {
         return (
-            <div className='flex flex-1 items-start justify-center bg-grey-75 px-4 py-8'>
+            <div className='flex flex-1 items-start justify-center bg-surface-page px-4 py-8'>
                 <Banner className='max-w-md' role='alert' variant='destructive'>
                     <div className='flex items-start gap-3'>
                         <LucideIcon.CircleAlert className='mt-0.5 size-5 text-red' />
@@ -375,12 +381,13 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
     }
 
     return (
-        <div className='flex-1 bg-grey-75' data-testid='automation-canvas'>
+        <div className='flex-1 bg-surface-page' data-testid='automation-canvas'>
             <ReactFlow
+                className='[--xy-background-color:var(--surface-page)] [--xy-background-pattern-color:var(--border-subtle)] [--xy-edge-stroke:var(--border-subtle)] dark:[--xy-background-pattern-color:var(--color-grey-900)] dark:[--xy-edge-stroke:var(--color-grey-800)]'
+                defaultViewport={initialViewport}
                 edges={graph.edges}
                 edgesFocusable={false}
                 edgeTypes={edgeTypes}
-                fitViewOptions={{maxZoom: 1, minZoom: 1, padding: 0.2, nodes: initialFitNodes}}
                 nodes={graph.nodes}
                 nodesConnectable={false}
                 nodesDraggable={false}
@@ -388,10 +395,9 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
                 nodeTypes={nodeTypes}
                 proOptions={{hideAttribution: true}}
                 zoomOnScroll={false}
-                fitView
                 panOnScroll
             >
-                <Background color='var(--color-grey-400)' />
+                <Background />
             </ReactFlow>
         </div>
     );

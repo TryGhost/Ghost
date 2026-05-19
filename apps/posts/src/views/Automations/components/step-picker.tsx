@@ -16,16 +16,16 @@ interface PickerOptionProps {
 
 const PickerOption: React.FC<PickerOptionProps> = ({icon: Icon, label, description, onClick}) => (
     <button
-        className='flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm hover:bg-grey-100 focus-visible:bg-grey-100 focus-visible:outline-none dark:hover:bg-grey-925 dark:focus-visible:bg-grey-925'
+        className='flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm hover:bg-accent focus-visible:bg-accent focus-visible:outline-none'
         type='button'
         onClick={onClick}
     >
-        <div className='flex size-8 shrink-0 items-center justify-center rounded-md bg-grey-100 text-grey-700 dark:bg-grey-900 dark:text-grey-300'>
+        <div className='flex size-8 shrink-0 items-center justify-center rounded-md bg-muted text-text-secondary'>
             <Icon className='size-4' />
         </div>
         <div className='flex min-w-0 flex-col'>
             <span className='font-medium'>{label}</span>
-            <span className='text-xs text-grey-600 dark:text-grey-500'>{description}</span>
+            <span className='text-xs text-text-secondary'>{description}</span>
         </div>
     </button>
 );
