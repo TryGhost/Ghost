@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import {ListObjectsV2Command, S3Client} from '@aws-sdk/client-s3';
 
-import {GCSStore} from '../../../../core/server/services/custom-redirects/gcs-store';
+import GCSStore from '../../../../core/server/adapters/redirects/GCSStore';
 import {
     createTestS3Client,
     createTestBucket,
