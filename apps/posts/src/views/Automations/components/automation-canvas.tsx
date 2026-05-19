@@ -1,18 +1,18 @@
 import '@xyflow/react/dist/style.css';
 import AddStepEdge, {type AddStepEdgeData} from './add-step-edge';
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useMemo, useRef, useState} from 'react';
 import StepPicker, {type StepPickerType} from './step-picker';
 import {AutomationAction, AutomationDetail, InsertActionAnchor, MAX_AUTOMATION_ACTIONS, insertSendEmailAction, insertWaitAction} from '@tryghost/admin-x-framework/api/automations';
 import {Background, Edge, Handle, Node, NodeProps, Position, ReactFlow} from '@xyflow/react';
 import {Banner, LoadingIndicator, Popover, PopoverContent, PopoverTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
-import {LucideIcon, cn} from '@tryghost/shade/utils';
+import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 
 const NODE_X = 0;
 const NODE_WIDTH = 256;
 const NODE_COLUMN_CENTER_X = NODE_X + (NODE_WIDTH / 2);
 const NODE_GAP_Y = 180;
 const INITIAL_VIEWPORT_Y = 40;
-const DISABLED_REASON = `Limit of ${MAX_AUTOMATION_ACTIONS} steps reached`;
+const DISABLED_REASON = `Limit of ${formatNumber(MAX_AUTOMATION_ACTIONS)} steps reached`;
 const DEFAULT_EDGE_STROKE = 'var(--xy-edge-stroke)';
 
 // React Flow node IDs for the trigger and tail nodes. The canvas builds the visual graph using
@@ -343,7 +343,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
         onChange(next);
     }, [automation, onChange]);
 
-    const initialViewport = useMemo(() => getInitialViewport(window.innerWidth), []);
+    const initialViewport = useRef(getInitialViewport(window.innerWidth));
 
     const graph = useMemo(() => {
         if (!automation) {
@@ -384,7 +384,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
         <div className='flex-1 bg-surface-page' data-testid='automation-canvas'>
             <ReactFlow
                 className='[--xy-background-color:var(--surface-page)] [--xy-background-pattern-color:var(--border-subtle)] [--xy-edge-stroke:var(--border-subtle)] dark:[--xy-background-pattern-color:var(--color-grey-900)] dark:[--xy-edge-stroke:var(--color-grey-800)]'
-                defaultViewport={initialViewport}
+                defaultViewport={initialViewport.current}
                 edges={graph.edges}
                 edgesFocusable={false}
                 edgeTypes={edgeTypes}
