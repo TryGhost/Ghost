@@ -18,7 +18,7 @@ export const TAIL_CANVAS_ID = '__tail__';
 
 // Canvas-local anchor: React Flow node IDs of the two nodes between which a step is being inserted.
 // Translated to the API's `InsertActionAnchor` by `toApiAnchor` before reaching the data helpers.
-export type CanvasAnchor = {sourceId: string; targetId: string};
+type CanvasAnchor = {sourceId: string; targetId: string};
 
 const toApiAnchor = ({sourceId, targetId}: CanvasAnchor): InsertActionAnchor => ({
     previousActionId: sourceId === TRIGGER_CANVAS_ID ? undefined : sourceId,
@@ -221,7 +221,7 @@ const getInitialActionOrder = (automation: AutomationDetail): AutomationAction[]
     return ordered;
 };
 
-interface BuildGraphArgs {
+type BuildGraphArgs = {
     automation: AutomationDetail;
     disabled: boolean;
     onPick: (type: StepPickerType, anchor: CanvasAnchor) => void;
@@ -268,8 +268,6 @@ const buildGraph = ({automation, disabled, onPick}: BuildGraphArgs): {nodes: Aut
         type: 'tail',
         position: {x: NODE_X, y: NODE_GAP_Y * (ordered.length + 1)},
         data: {disabled, disabledReason, onPick, anchor: tailAnchor},
-        // Match the prototype's tail config: only `draggable` and `connectable` overrides.
-        // Leaving `selectable` / `focusable` at their defaults keeps clicks flowing through.
         draggable: false,
         connectable: false
     });
@@ -292,7 +290,7 @@ const buildGraph = ({automation, disabled, onPick}: BuildGraphArgs): {nodes: Aut
             target: action.id,
             type: 'add-step-edge',
             focusable: false,
-            data: edgeData as unknown as Record<string, unknown>
+            data: edgeData
         });
         previousCanvasId = action.id;
     });
@@ -309,7 +307,7 @@ const buildGraph = ({automation, disabled, onPick}: BuildGraphArgs): {nodes: Aut
     return {nodes, edges};
 };
 
-interface AutomationCanvasProps {
+type AutomationCanvasProps = {
     automation?: AutomationDetail;
     isLoading: boolean;
     isError: boolean;

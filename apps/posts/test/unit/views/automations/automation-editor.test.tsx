@@ -172,7 +172,7 @@ describe('AutomationEditor', () => {
             li.getAttribute('data-target')
         ]);
         expect(edgePairs).toEqual([
-            ['trigger', 'action-wait'],
+            ['__trigger__', 'action-wait'],
             ['action-wait', 'action-email'],
             ['action-email', '__tail__']
         ]);

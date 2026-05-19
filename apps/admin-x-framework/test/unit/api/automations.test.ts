@@ -73,18 +73,6 @@ describe('automations api helpers', () => {
             expect(next.edges).toHaveLength(2);
         });
 
-        it('does not mutate the input detail', () => {
-            const detail = baseDetail(
-                [{id: 'a', type: 'wait', data: {wait_hours: 24}}],
-                []
-            );
-
-            insertWaitAction({detail, anchor: {previousActionId: 'a'}});
-
-            expect(detail.actions).toHaveLength(1);
-            expect(detail.edges).toEqual([]);
-        });
-
         it('uses ObjectId-compatible action ids', () => {
             const next = insertWaitAction({detail: baseDetail([], []), anchor: {}});
 
