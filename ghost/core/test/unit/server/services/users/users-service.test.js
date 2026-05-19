@@ -95,6 +95,25 @@ describe('Users service', function () {
             assert.equal(result.count, 0);
         });
 
+        it('reuses an outer transaction when one is provided', async function () {
+            const a = makeUser({email: 'a@example.com'});
+            const usersService = makeService({users: [a]});
+
+            // Record whether models.Base.transaction was invoked (it shouldn't be
+            // when an outer transaction is supplied).
+            let openedOwnTx = false;
+            usersService.models.Base.transaction = (cb) => {
+                openedOwnTx = true;
+                return cb('fake_transaction');
+            };
+
+            const result = await usersService.lockAll({context: {}, transacting: 'outer-tx'});
+
+            assert.equal(result.count, 1);
+            assert.equal(a.locked, true);
+            assert.equal(openedOwnTx, false, 'no inner transaction is opened when one is passed in');
+        });
+
         it('only locks users with one of the named roles', async function () {
             const owner = makeUser({email: 'owner@example.com'});
             const editor = makeUser({email: 'editor@example.com'});
