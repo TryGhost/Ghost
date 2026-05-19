@@ -1,32 +1,7 @@
-import CommentComponent from './comment';
 import React, {useEffect, useMemo, useRef} from 'react';
+import ReplyTree from './reply-tree';
 import {Comment, useAppContext} from '../../app-context';
-import {ThreadedReply, buildThreadedReplies} from '../../utils/helpers';
-
-const NestedReply: React.FC<{
-    reply: ThreadedReply;
-    threadParentComment: Comment;
-    useThreading: boolean;
-}> = ({reply, threadParentComment, useThreading}) => {
-    const nestedReplies = reply.nestedReplies.map(childReply => (
-        <NestedReply
-            key={childReply.id}
-            reply={childReply}
-            threadParentComment={threadParentComment}
-            useThreading={useThreading}
-        />
-    ));
-
-    return (
-        <CommentComponent
-            comment={reply}
-            parent={threadParentComment}
-            useThreading={useThreading}
-        >
-            {nestedReplies}
-        </CommentComponent>
-    );
-};
+import {buildThreadedReplies} from '../../utils/thread-graph';
 
 export type ThreadedRepliesProps = {
     comment: Comment;
@@ -65,14 +40,7 @@ const ThreadedReplies: React.FC<ThreadedRepliesProps> = ({comment, useThreading}
 
     return (
         <div>
-            {threadedReplies.map(reply => (
-                <NestedReply
-                    key={reply.id}
-                    reply={reply}
-                    threadParentComment={comment}
-                    useThreading={useThreading}
-                />
-            ))}
+            <ReplyTree replies={threadedReplies} threadParentComment={comment} useThreading={useThreading} />
         </div>
     );
 };

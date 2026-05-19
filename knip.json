@@ -3,8 +3,7 @@
     "ignoreWorkspaces": [
         "ghost/admin"
     ],
-    "ignoreDependencies": [
-        "secretlint",
-        "@secretlint/.*"
+    "ignore": [
+        "ghost/core/test/utils/fixtures/themes/**/assets/built/**"
     ]
 }

@@ -10,6 +10,7 @@ const config = require('../../../shared/config');
 const adapterManager = require('../adapter-manager');
 const SettingsCache = require('../../../shared/settings-cache');
 const SettingsBREADService = require('./settings-bread-service');
+const {generatePrivateSiteAccessCode} = require('./private-site-access-code');
 const {obfuscatedSetting, isSecretSetting, hideValueIfSecret} = require('./settings-utils');
 const mail = require('../mail');
 const SingleUseTokenProvider = require('../members/single-use-token-provider');
@@ -85,12 +86,48 @@ module.exports = {
      */
     async init() {
         const cacheStore = adapterManager.getAdapter('cache:settings');
-        const settingsCollection = await models.Settings.populateDefaults();
+        await models.Settings.populateDefaults();
+        await this.enforcePublicSiteAccessLimit();
+        const settingsCollection = await models.Settings.findAll({context: {internal: true}});
         const settingsOverrides = getSettingsOverrides();
         SettingsCache.init(events, settingsCollection, this.getCalculatedFields(), cacheStore, settingsOverrides);
 
         // Validate site_uuid matches config
         this.validateSiteUuid();
+    },
+
+    /**
+     * When the `publicSiteAccess` flag limit is disabled, ensure the site
+     * is private and has an access code before the cache is built.
+     *
+     * @private
+     */
+    async enforcePublicSiteAccessLimit() {
+        if (!limits.isDisabled('publicSiteAccess')) {
+            return;
+        }
+
+        const isPrivateSetting = await models.Settings.findOne({key: 'is_private'}, {context: {internal: true}});
+        // Note: the `password` setting is the storage key for what we call the
+        // access code; the underlying setting is staying named for compatibility
+        // and will be renamed in a separate follow-up.
+        const accessCodeSetting = await models.Settings.findOne({key: 'password'}, {context: {internal: true}});
+        const writes = [];
+
+        if (!isPrivateSetting || isPrivateSetting.get('value') !== true) {
+            writes.push({key: 'is_private', value: true});
+        }
+
+        const currentAccessCode = accessCodeSetting && accessCodeSetting.get('value');
+        if (typeof currentAccessCode !== 'string' || currentAccessCode.trim() === '') {
+            writes.push({key: 'password', value: generatePrivateSiteAccessCode()});
+        }
+
+        if (writes.length === 0) {
+            return;
+        }
+
+        await models.Settings.edit(writes, {context: {internal: true}});
     },
 
     /**

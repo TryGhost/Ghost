@@ -14,8 +14,8 @@ const WelcomeEmailAutomatedEmail = ghostBookshelf.Model.extend({
         return this.belongsTo('EmailDesignSetting', 'email_design_setting_id', 'id');
     },
 
-    welcomeEmailAutomation() {
-        return this.belongsTo('WelcomeEmailAutomation', 'welcome_email_automation_id', 'id');
+    automation() {
+        return this.belongsTo('Automation', 'welcome_email_automation_id', 'id');
     },
 
     nextWelcomeEmailAutomatedEmail() {

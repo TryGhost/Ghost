@@ -26,6 +26,7 @@ describe('Exporter', function () {
             'actions',
             'api_keys',
             'automated_email_recipients',
+            'automations',
             'benefits',
             'brute',
             'collections',
@@ -102,8 +103,7 @@ describe('Exporter', function () {
             'users',
             'webhooks',
             'welcome_email_automated_emails',
-            'welcome_email_automation_runs',
-            'welcome_email_automations'
+            'welcome_email_automation_runs'
         ];
 
         assertExists(exportData);

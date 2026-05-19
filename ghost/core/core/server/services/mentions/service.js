@@ -17,7 +17,7 @@ const DomainEvents = require('@tryghost/domain-events');
 const jobsService = require('../mentions-jobs');
 
 function getPostUrl(post) {
-    const jsonModel = {};
+    const jsonModel = post.toJSON();
     outputSerializerUrlUtil.forPost(post.id, jsonModel, {options: {}});
     return jsonModel.url;
 }
