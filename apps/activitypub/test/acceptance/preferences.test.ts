@@ -27,7 +27,7 @@ test.describe('Preferences', async () => {
             },
             getAliases: {
                 method: 'GET',
-                path: '/v1/account/aliases',
+                path: '/v1/aliases',
                 response: {
                     destination: {
                         handle: '@alice@fake.host',
@@ -38,7 +38,7 @@ test.describe('Preferences', async () => {
             },
             addAlias: {
                 method: 'POST',
-                path: '/v1/account/aliases',
+                path: '/v1/aliases',
                 response: {
                     destination: {
                         handle: '@alice@fake.host',
@@ -78,7 +78,7 @@ test.describe('Preferences', async () => {
             },
             getAliases: {
                 method: 'GET',
-                path: '/v1/account/aliases',
+                path: '/v1/aliases',
                 response: {
                     destination: {
                         handle: '@alice@fake.host',
@@ -116,7 +116,7 @@ test.describe('Preferences', async () => {
             },
             getAliases: {
                 method: 'GET',
-                path: '/v1/account/aliases',
+                path: '/v1/aliases',
                 response: {
                     destination: {
                         handle: '@alice@fake.host',
@@ -127,7 +127,7 @@ test.describe('Preferences', async () => {
             },
             removeAlias: {
                 method: 'DELETE',
-                path: '/v1/account/aliases',
+                path: '/v1/aliases',
                 response: {},
                 responseStatus: 500
             }
@@ -149,7 +149,7 @@ test.describe('Preferences', async () => {
             },
             getAliases: {
                 method: 'GET',
-                path: '/v1/account/aliases',
+                path: '/v1/aliases',
                 response: {},
                 responseStatus: 500
             }

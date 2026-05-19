@@ -518,21 +518,21 @@ export class ActivityPubAPI {
     }
 
     async getAccountAliases(): Promise<AccountAliasesResponse> {
-        const url = new URL('.ghost/activitypub/v1/account/aliases', this.apiUrl);
+        const url = new URL('.ghost/activitypub/v1/aliases', this.apiUrl);
         const json = await this.fetchJSON(url);
 
         return parseAccountAliasesResponse(json);
     }
 
     async addAccountAlias(sourceHandle: string): Promise<AccountAliasesResponse> {
-        const url = new URL('.ghost/activitypub/v1/account/aliases', this.apiUrl);
+        const url = new URL('.ghost/activitypub/v1/aliases', this.apiUrl);
         const json = await this.fetchJSON(url, 'POST', {sourceHandle});
 
         return parseAccountAliasesResponse(json);
     }
 
     async removeAccountAlias(actorUri: string): Promise<AccountAliasesResponse> {
-        const url = new URL('.ghost/activitypub/v1/account/aliases', this.apiUrl);
+        const url = new URL('.ghost/activitypub/v1/aliases', this.apiUrl);
         const json = await this.fetchJSON(url, 'DELETE', {actorUri});
 
         return parseAccountAliasesResponse(json);

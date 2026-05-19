@@ -1607,7 +1607,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/v1/account/aliases`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/aliases`]: {
                     response: JSONResponse({
                         destination: {
                             handle: '@index@example.com',
@@ -1649,7 +1649,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/v1/account/aliases`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/aliases`]: {
                     async assert(_resource, init) {
                         expect(init?.method).toEqual('POST');
                         expect(init?.body).toEqual('{"sourceHandle":"@old@mastodon.social"}');
@@ -1689,7 +1689,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/v1/account/aliases`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/aliases`]: {
                     response: new Response(null, {status: 204})
                 }
             });
@@ -1721,7 +1721,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/v1/account/aliases`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/aliases`]: {
                     async assert(_resource, init) {
                         expect(init?.method).toEqual('DELETE');
                         expect(init?.body).toEqual('{"actorUri":"https://mastodon.social/users/old"}');
@@ -1757,7 +1757,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/v1/account/aliases`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/aliases`]: {
                     response: new Response(null, {status: 204})
                 }
             });
