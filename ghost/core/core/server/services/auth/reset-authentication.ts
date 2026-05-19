@@ -3,18 +3,15 @@
 // TypeScript declarations. The contracts we need from it are narrow, so
 // we accept `any` rather than introduce a sweeping shim here.
 import logging from '@tryghost/logging';
+import type {Knex} from 'knex';
 import type {InternalApiKey, InternalIntegrationSlug} from '../internal-keys';
 
 interface ResetAuthenticationDeps {
     models: any;
     internalKeys: Map<InternalIntegrationSlug, Promise<InternalApiKey>>;
-    // eslint-disable-next-line no-unused-vars
     postScheduling: {rescheduleAll(opts: {previousKey?: InternalApiKey}): Promise<void>};
-    // eslint-disable-next-line no-unused-vars
     automations: {rescheduleAll(opts: {previousKey?: InternalApiKey}): Promise<void> | void};
-    // eslint-disable-next-line no-unused-vars
     giftService: {rescheduleAll(opts: {previousKey?: InternalApiKey}): Promise<void>};
-    // eslint-disable-next-line no-unused-vars
     userService: {lockAll(options: any): Promise<{count: number}>};
     deleteAllSessions: () => Promise<void>;
 }
@@ -57,7 +54,7 @@ export default function createResetAuthentication({
         const previousSchedulerKey = await internalKeys.get('ghost-scheduler');
         const actorId = options?.context?.user ?? null;
 
-        const {apiKeysRotated, usersLocked} = await models.Base.transaction(async (tx: any) => {
+        const {apiKeysRotated, usersLocked} = await models.Base.transaction(async (tx: Knex.Transaction) => {
             const txOptions = Object.assign({}, options, {transacting: tx});
 
             const {count: rotated} = await models.ApiKey.refreshAllSecrets(txOptions);
