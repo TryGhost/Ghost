@@ -470,7 +470,7 @@ const CommentMenu: React.FC<CommentMenuProps> = ({comment, openReplyForm, highli
 
     // Visibility decisions
     const showLikeButton = !isCommentingDisabled;
-    const showDislikeButton = showLikeButton && labs.commentDislikes === true;
+    const showDislikeButton = showLikeButton && labs?.commentDislikes === true;
     const showReplyButton = !isCommentingDisabled;
     const shouldShowMoreButton = isAdmin || (isMember && isPublished);
     const shouldHideMoreButton = isCommentingDisabled && isOwnComment;

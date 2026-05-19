@@ -14,7 +14,7 @@ const LikeButton: React.FC<Props> = ({comment}) => {
 
     const canInteract = isMember && hasRequiredTier;
     const likesCount = comment.count.likes;
-    const commentDislikesEnabled = labs.commentDislikes === true;
+    const commentDislikesEnabled = labs?.commentDislikes === true;
 
     const openCta = () => {
         dispatchAction('openPopup', {

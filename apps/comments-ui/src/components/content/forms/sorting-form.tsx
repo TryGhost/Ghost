@@ -8,7 +8,7 @@ export const SortingForm: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedOption, setSelectedOption] = useState(order);
     const dropdownRef = useRef<HTMLDivElement>(null);
-    const bestOrder = labs.commentDislikes ? 'count__net_score desc, created_at desc' : 'count__likes desc, created_at desc';
+    const bestOrder = labs?.commentDislikes ? 'count__net_score desc, created_at desc' : 'count__likes desc, created_at desc';
 
     const options = [
         {value: bestOrder, label: t('Best')},
