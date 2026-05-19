@@ -1,13 +1,29 @@
 import '@xyflow/react/dist/style.css';
-import React from 'react';
-import {AutomationAction, AutomationDetail} from '@tryghost/admin-x-framework/api/automations';
+import AddStepEdge, {type AddStepEdgeData} from './add-step-edge';
+import React, {useCallback, useState} from 'react';
+import StepPicker, {type StepPickerType} from './step-picker';
+import {AutomationAction, AutomationDetail, InsertActionAnchor, MAX_AUTOMATION_ACTIONS, insertSendEmailAction, insertWaitAction} from '@tryghost/admin-x-framework/api/automations';
 import {Background, Edge, Handle, Node, NodeProps, Position, ReactFlow} from '@xyflow/react';
-import {Banner, LoadingIndicator} from '@tryghost/shade/components';
-import {LucideIcon} from '@tryghost/shade/utils';
+import {Banner, LoadingIndicator, Popover, PopoverContent, PopoverTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
+import {LucideIcon, cn} from '@tryghost/shade/utils';
 
-const TAIL_NODE_ID = '__tail__';
 const NODE_X = 0;
 const NODE_GAP_Y = 180;
+const DISABLED_REASON = `Limit of ${MAX_AUTOMATION_ACTIONS} steps reached`;
+
+// React Flow node IDs for the trigger and tail nodes. The canvas builds the visual graph using
+// these; they are not action IDs and never reach the API.
+export const TRIGGER_CANVAS_ID = '__trigger__';
+export const TAIL_CANVAS_ID = '__tail__';
+
+// Canvas-local anchor: React Flow node IDs of the two nodes between which a step is being inserted.
+// Translated to the API's `InsertActionAnchor` by `toApiAnchor` before reaching the data helpers.
+type CanvasAnchor = {sourceId: string; targetId: string};
+
+const toApiAnchor = ({sourceId, targetId}: CanvasAnchor): InsertActionAnchor => ({
+    previousActionId: sourceId === TRIGGER_CANVAS_ID ? undefined : sourceId,
+    nextActionId: targetId === TAIL_CANVAS_ID ? undefined : targetId
+});
 
 type StepNodeData = {
     icon: React.ElementType;
@@ -15,8 +31,15 @@ type StepNodeData = {
     value?: string;
 };
 
+type TailNodeData = {
+    disabled: boolean;
+    disabledReason?: string;
+    onPick: (type: StepPickerType, anchor: CanvasAnchor) => void;
+    anchor: CanvasAnchor;
+};
+
 type StepFlowNode = Node<StepNodeData, 'trigger' | 'step'>;
-type TailFlowNode = Node<Record<string, never>, 'tail'>;
+type TailFlowNode = Node<TailNodeData, 'tail'>;
 type AutomationFlowNode = StepFlowNode | TailFlowNode;
 
 const HIDDEN_HANDLE_STYLE: React.CSSProperties = {
@@ -26,15 +49,13 @@ const HIDDEN_HANDLE_STYLE: React.CSSProperties = {
     border: 'none'
 };
 
-const EDGE_STYLE: React.CSSProperties = {stroke: 'var(--color-grey-500)'};
-
 const HiddenHandle: React.FC<{type: 'source' | 'target'; position: Position}> = ({type, position}) => (
     <Handle isConnectable={false} position={position} style={HIDDEN_HANDLE_STYLE} type={type} />
 );
 
 const NodeShell: React.FC<React.PropsWithChildren<{className?: string}>> = ({children, className}) => (
     <div
-        className={`flex w-64 items-center gap-3 rounded-lg bg-white px-4 py-3 text-left text-sm shadow-sm ${className ?? ''}`}
+        className={cn('flex w-64 items-center gap-3 rounded-lg bg-white px-4 py-3 text-left text-sm shadow-sm', className)}
     >
         {children}
     </div>
@@ -72,19 +93,67 @@ const StepNode = React.memo<NodeProps<StepFlowNode>>(({data}) => (
 ));
 StepNode.displayName = 'StepNode';
 
-// TODO: convert to a <button> once "add step" is wired up. Currently decorative.
-const TailNode = React.memo<NodeProps<TailFlowNode>>(() => (
-    <div aria-hidden='true' className='flex h-12 w-64 items-center justify-center rounded-lg border border-dashed border-grey-300 bg-white'>
-        <HiddenHandle position={Position.Top} type='target' />
-        <LucideIcon.Plus className='size-5 text-grey-500' strokeWidth={1.5} />
-    </div>
-));
-TailNode.displayName = 'TailNode';
+const TailNode: React.FC<NodeProps<TailFlowNode>> = ({data}) => {
+    const [open, setOpen] = useState(false);
+
+    const handlePick = (type: StepPickerType) => {
+        setOpen(false);
+        data.onPick(type, data.anchor);
+    };
+
+    const triggerClassName = 'flex h-12 w-64 items-center justify-center rounded-lg border border-dashed border-grey-300 bg-white transition-colors hover:border-grey-400 focus-visible:border-grey-500 focus-visible:outline-none dark:border-grey-800 dark:bg-grey-950 dark:hover:border-grey-700';
+
+    if (data.disabled) {
+        const content = (
+            <div
+                aria-disabled='true'
+                className={cn(triggerClassName, 'cursor-not-allowed opacity-60')}
+                data-testid='add-step-tail-button'
+            >
+                <HiddenHandle position={Position.Top} type='target' />
+                <LucideIcon.Plus className='size-5 text-grey-500' strokeWidth={1.5} />
+            </div>
+        );
+        if (!data.disabledReason) {
+            return content;
+        }
+        return (
+            <TooltipProvider delayDuration={150}>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <span tabIndex={0}>{content}</span>
+                    </TooltipTrigger>
+                    <TooltipContent>{data.disabledReason}</TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+        );
+    }
+
+    return (
+        <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger
+                aria-label='Add step'
+                className={cn(triggerClassName, 'cursor-pointer')}
+                data-testid='add-step-tail-button'
+            >
+                <HiddenHandle position={Position.Top} type='target' />
+                <LucideIcon.Plus className='size-5 text-grey-500' strokeWidth={1.5} />
+            </PopoverTrigger>
+            <PopoverContent align='center' className='p-0' side='top'>
+                <StepPicker onPick={handlePick} />
+            </PopoverContent>
+        </Popover>
+    );
+};
 
 const nodeTypes = {
     trigger: TriggerNode,
     step: StepNode,
     tail: TailNode
+};
+
+const edgeTypes = {
+    'add-step-edge': AddStepEdge
 };
 
 export const formatWait = (hours: number): string => {
@@ -111,6 +180,9 @@ const buildActionData = (action: AutomationAction): StepNodeData => {
     }
 };
 
+// Returns the actions of `automation` ordered along the chain from the head. Throws on malformed
+// data (cycle, branch, or disconnected nodes). The canvas wraps its render tree in an Error
+// Boundary that catches these and renders the same "Couldn't load automation" banner.
 const getInitialActionOrder = (automation: AutomationDetail): AutomationAction[] => {
     if (automation.actions.length === 0) {
         return [];
@@ -149,7 +221,13 @@ const getInitialActionOrder = (automation: AutomationDetail): AutomationAction[]
     return ordered;
 };
 
-const buildGraph = (automation: AutomationDetail): {nodes: AutomationFlowNode[]; edges: Edge[]} => {
+type BuildGraphParams = {
+    automation: AutomationDetail;
+    disabled: boolean;
+    onPick: (type: StepPickerType, anchor: CanvasAnchor) => void;
+}
+
+const buildGraph = ({automation, disabled, onPick}: BuildGraphParams): {nodes: AutomationFlowNode[]; edges: Edge[]} => {
     const ordered = getInitialActionOrder(automation);
     const baseNodeProps = {
         draggable: false,
@@ -157,10 +235,17 @@ const buildGraph = (automation: AutomationDetail): {nodes: AutomationFlowNode[];
         connectable: false,
         focusable: false
     };
+    const disabledReason = disabled ? DISABLED_REASON : undefined;
+
+    const lastActionId = ordered[ordered.length - 1]?.id;
+    const tailAnchor: CanvasAnchor = {
+        sourceId: lastActionId ?? TRIGGER_CANVAS_ID,
+        targetId: TAIL_CANVAS_ID
+    };
 
     const nodes: AutomationFlowNode[] = [
         {
-            id: 'trigger',
+            id: TRIGGER_CANVAS_ID,
             type: 'trigger',
             position: {x: NODE_X, y: 0},
             data: {icon: LucideIcon.Zap, label: 'Trigger', value: 'Member signs up'},
@@ -179,45 +264,91 @@ const buildGraph = (automation: AutomationDetail): {nodes: AutomationFlowNode[];
     });
 
     nodes.push({
-        id: TAIL_NODE_ID,
+        id: TAIL_CANVAS_ID,
         type: 'tail',
         position: {x: NODE_X, y: NODE_GAP_Y * (ordered.length + 1)},
-        data: {},
-        ...baseNodeProps
+        data: {disabled, disabledReason, onPick, anchor: tailAnchor},
+        draggable: false,
+        connectable: false
     });
 
+    // Every connecting line between existing nodes gets a circular + on hover. The trailing edge into the
+    // tail node intentionally has none — the rectangular tail button already covers that slot.
     const edges: Edge[] = [];
-    let previousId = 'trigger';
-    const pushEdge = (source: string, target: string) => {
-        edges.push({
-            id: `e-${source}-${target}`,
-            source,
-            target,
-            type: 'smoothstep',
-            focusable: false,
-            style: EDGE_STYLE
-        });
-    };
+    let previousCanvasId: string = TRIGGER_CANVAS_ID;
     ordered.forEach((action) => {
-        pushEdge(previousId, action.id);
-        previousId = action.id;
+        const edgeData: AddStepEdgeData = {
+            sourceId: previousCanvasId,
+            targetId: action.id,
+            disabled,
+            disabledReason,
+            onPick
+        };
+        edges.push({
+            id: `e-${previousCanvasId}-${action.id}`,
+            source: previousCanvasId,
+            target: action.id,
+            type: 'add-step-edge',
+            focusable: false,
+            data: edgeData
+        });
+        previousCanvasId = action.id;
     });
-    pushEdge(previousId, TAIL_NODE_ID);
+
+    edges.push({
+        id: `e-${previousCanvasId}-${TAIL_CANVAS_ID}`,
+        source: previousCanvasId,
+        target: TAIL_CANVAS_ID,
+        type: 'smoothstep',
+        focusable: false,
+        style: {stroke: 'var(--color-grey-500)'}
+    });
 
     return {nodes, edges};
 };
 
-interface AutomationCanvasProps {
+type AutomationCanvasProps = {
     automation?: AutomationDetail;
     isLoading: boolean;
     isError: boolean;
+    onChange: (next: AutomationDetail) => void;
 }
 
-const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoading, isError}) => {
-    const graph = React.useMemo(
-        () => (automation ? buildGraph(automation) : null),
-        [automation]
-    );
+const insertActionByType = {
+    wait: insertWaitAction,
+    send_email: insertSendEmailAction
+};
+
+const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoading, isError, onChange}) => {
+    const handlePick = useCallback((type: StepPickerType, anchor: CanvasAnchor) => {
+        if (!automation) {
+            return;
+        }
+        if (automation.actions.length >= MAX_AUTOMATION_ACTIONS) {
+            return;
+        }
+        const apiAnchor = toApiAnchor(anchor);
+        const insertAction = insertActionByType[type];
+        const next = insertAction({detail: automation, anchor: apiAnchor});
+        onChange(next);
+    }, [automation, onChange]);
+
+    const graph = React.useMemo(() => {
+        if (!automation) {
+            return null;
+        }
+        return buildGraph({
+            automation,
+            disabled: automation.actions.length >= MAX_AUTOMATION_ACTIONS,
+            onPick: handlePick
+        });
+    }, [automation, handlePick]);
+
+    // Fit only the trigger + first two action nodes on initial render so a deep chain doesn't zoom
+    // out to a postage stamp. Below that, the user pans/scrolls to see the rest.
+    const initialFitNodes = React.useMemo(() => (
+        graph?.nodes.slice(0, 3).map(node => ({id: node.id})) ?? []
+    ), [graph]);
 
     if (isLoading) {
         return (
@@ -248,7 +379,8 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
             <ReactFlow
                 edges={graph.edges}
                 edgesFocusable={false}
-                fitViewOptions={{maxZoom: 1, padding: 0.4}}
+                edgeTypes={edgeTypes}
+                fitViewOptions={{maxZoom: 1, minZoom: 1, padding: 0.2, nodes: initialFitNodes}}
                 nodes={graph.nodes}
                 nodesConnectable={false}
                 nodesDraggable={false}
