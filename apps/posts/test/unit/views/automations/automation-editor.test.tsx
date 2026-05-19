@@ -29,8 +29,11 @@ type StubEdge = {id: string; source: string; target: string; type?: string; data
 type StubReactFlowProps = {
     nodes: StubNode[];
     edges?: StubEdge[];
+    className?: string;
     nodeTypes?: Record<string, React.ComponentType<NodeRenderProps>>;
     edgeTypes?: Record<string, React.ComponentType<EdgeRenderProps>>;
+    onNodeClick?: (event: React.MouseEvent<HTMLDivElement>, node: StubNode) => void;
+    onPaneClick?: (event: React.MouseEvent<HTMLDivElement>) => void;
 };
 type NodeRenderProps = {id: string; data: Record<string, unknown>; type: string};
 type EdgeRenderProps = {id: string; data: Record<string, unknown>; sourceX: number; sourceY: number; targetX: number; targetY: number; sourcePosition: string; targetPosition: string};
@@ -39,13 +42,21 @@ vi.mock('@xyflow/react', async () => {
     const actual = await vi.importActual<typeof import('@xyflow/react')>('@xyflow/react');
     return {
         ...actual,
-        ReactFlow: ({nodes, edges, nodeTypes, edgeTypes}: StubReactFlowProps) => (
-            <div data-testid='react-flow-mock'>
+        ReactFlow: ({nodes, edges, className, nodeTypes, edgeTypes, onNodeClick, onPaneClick}: StubReactFlowProps) => (
+            <div className={className} data-testid='react-flow-mock' onClick={onPaneClick}>
                 {nodes.map((node) => {
                     const nodeType = node.type ?? 'default';
                     const Custom = nodeTypes?.[nodeType];
                     return (
-                        <div key={node.id} data-node-id={node.id} data-node-type={nodeType}>
+                        <div
+                            key={node.id}
+                            data-node-id={node.id}
+                            data-node-type={nodeType}
+                            onClick={(event) => {
+                                event.stopPropagation();
+                                onNodeClick?.(event, node);
+                            }}
+                        >
                             {Custom ? <Custom data={node.data ?? {}} id={node.id} type={nodeType} /> : null}
                         </div>
                     );
@@ -176,6 +187,120 @@ describe('AutomationEditor', () => {
             ['action-wait', 'action-email'],
             ['action-email', '__tail__']
         ]);
+    });
+
+    it('opens a read-only sidebar for the trigger step', () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        const trigger = screen.getByRole('button', {name: 'Trigger: Member signs up'});
+        fireEvent.click(trigger);
+
+        expect(trigger).toHaveAttribute('aria-pressed', 'true');
+        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        expect(within(sidebar).getByRole('heading', {name: 'Member signs up'})).toBeInTheDocument();
+        expect(within(sidebar).getByText('New member sign up')).toBeInTheDocument();
+        expect(within(sidebar).getByRole('checkbox', {name: 'Free'})).toBeChecked();
+        expect(within(sidebar).getByRole('checkbox', {name: 'Paid'})).not.toBeChecked();
+        expect(within(sidebar).queryByRole('button', {name: /Delete/})).not.toBeInTheDocument();
+        expect(within(sidebar).queryByRole('button', {name: /Edit/})).not.toBeInTheDocument();
+    });
+
+    it('shows paid member eligibility for the paid welcome automation trigger', () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {
+                automations: [{
+                    ...automationDetail,
+                    slug: 'member-welcome-email-paid',
+                    name: 'Welcome Email (Paid)'
+                }]
+            },
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        fireEvent.click(screen.getByRole('button', {name: 'Trigger: Member signs up'}));
+
+        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        expect(within(sidebar).getByRole('checkbox', {name: 'Free'})).not.toBeChecked();
+        expect(within(sidebar).getByRole('checkbox', {name: 'Paid'})).toBeChecked();
+    });
+
+    it('switches the read-only sidebar content when another step is clicked', () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        const waitStep = screen.getByRole('button', {name: 'Wait: 1 day'});
+        fireEvent.click(waitStep);
+
+        let sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        expect(waitStep).toHaveAttribute('aria-pressed', 'true');
+        expect(within(sidebar).getByRole('heading', {name: '1 day'})).toBeInTheDocument();
+        expect(within(sidebar).getByText('Wait')).toBeInTheDocument();
+        expect(within(sidebar).getByText('Wait for')).toBeInTheDocument();
+        expect(within(sidebar).getByRole('button', {name: 'Delete step'})).toBeDisabled();
+
+        const emailStep = screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'});
+        fireEvent.click(emailStep);
+
+        sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        expect(waitStep).toHaveAttribute('aria-pressed', 'false');
+        expect(emailStep).toHaveAttribute('aria-pressed', 'true');
+        expect(within(sidebar).getByRole('heading', {name: 'Welcome to The Blueprint'})).toBeInTheDocument();
+        expect(within(sidebar).getByDisplayValue('Welcome to The Blueprint')).toBeInTheDocument();
+        expect(within(sidebar).queryByText('Sender')).not.toBeInTheDocument();
+        expect(within(sidebar).queryByText('Reply-to')).not.toBeInTheDocument();
+        expect(within(sidebar).getByRole('button', {name: 'Edit email'})).toBeDisabled();
+        expect(within(sidebar).getByRole('button', {name: 'Delete step'})).toBeDisabled();
+    });
+
+    it('closes the sidebar from a blank canvas click', () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        const trigger = screen.getByRole('button', {name: 'Trigger: Member signs up'});
+        fireEvent.click(trigger);
+        expect(screen.getByRole('complementary', {name: 'Step details'})).toBeInTheDocument();
+        expect(screen.queryByRole('button', {name: 'Close step sidebar'})).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByTestId('react-flow-mock'));
+        expect(screen.queryByRole('complementary', {name: 'Step details'})).not.toBeInTheDocument();
+        expect(trigger).toHaveAttribute('aria-pressed', 'false');
+    });
+
+    it('closes the sidebar with Escape', () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        const waitStep = screen.getByRole('button', {name: 'Wait: 1 day'});
+        fireEvent.click(waitStep);
+
+        fireEvent.keyDown(document, {key: 'Escape'});
+
+        expect(screen.queryByRole('complementary', {name: 'Step details'})).not.toBeInTheDocument();
+        expect(waitStep).toHaveAttribute('aria-pressed', 'false');
     });
 
     it('disables the publish button when the read query fails', () => {
