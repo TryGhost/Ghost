@@ -62,11 +62,8 @@ describe('Users service', function () {
             dispatchStub.restore();
         });
 
-        it('does not reinsert posts that already have the user tag', async function () {
-            const insertedRows = [];
-            const addActions = sinon.stub().resolves();
-
-            const mockOptions = {
+        function createMockOptions({userPostIds, alreadyTaggedPostIds, insertedRows, addActions}) {
+            return {
                 dbBackup: {
                     backup: sinon.mock().resolves('backup/path/file.json')
                 },
@@ -82,10 +79,9 @@ describe('Users service', function () {
                                         return this;
                                     },
                                     select() {
-                                        return Promise.resolve([
-                                            {post_id: 'post-1'},
-                                            {post_id: 'post-2'}
-                                        ]);
+                                        return Promise.resolve(
+                                            userPostIds.map(post_id => ({post_id}))
+                                        );
                                     }
                                 };
                             }
@@ -99,9 +95,9 @@ describe('Users service', function () {
                                         return this;
                                     },
                                     select() {
-                                        return Promise.resolve([
-                                            {post_id: 'post-2'}
-                                        ]);
+                                        return Promise.resolve(
+                                            alreadyTaggedPostIds.map(post_id => ({post_id}))
+                                        );
                                     },
                                     insert(rows) {
                                         insertedRows.push(...rows);
@@ -132,8 +128,17 @@ describe('Users service', function () {
                 apiMail: 'fake_api_mail',
                 apiSettings: 'fake_api_settings'
             };
+        }
 
-            const usersService = new Users(mockOptions);
+        it('does not reinsert posts that already have the user tag', async function () {
+            const insertedRows = [];
+            const addActions = sinon.stub().resolves();
+            const usersService = new Users(createMockOptions({
+                userPostIds: ['post-1', 'post-2'],
+                alreadyTaggedPostIds: ['post-2'],
+                insertedRows,
+                addActions
+            }));
 
             await usersService.assignTagToUserPosts({
                 id: 'user-id',
@@ -147,6 +152,27 @@ describe('Users service', function () {
             assert.deepEqual(addActions.args[0][1], ['post-1']);
             assert.equal(dispatchStub.calledOnce, true);
             assert.deepEqual(dispatchStub.args[0][0].data, ['post-1']);
+        });
+
+        it('skips insert, addActions, and dispatch when every post is already tagged', async function () {
+            const insertedRows = [];
+            const addActions = sinon.stub().resolves();
+            const usersService = new Users(createMockOptions({
+                userPostIds: ['post-1', 'post-2'],
+                alreadyTaggedPostIds: ['post-1', 'post-2'],
+                insertedRows,
+                addActions
+            }));
+
+            await usersService.assignTagToUserPosts({
+                id: 'user-id',
+                context: {},
+                transacting: {}
+            });
+
+            assert.equal(insertedRows.length, 0);
+            assert.equal(addActions.called, false);
+            assert.equal(dispatchStub.called, false);
         });
     });
 });
