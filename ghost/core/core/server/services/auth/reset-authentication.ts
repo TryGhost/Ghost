@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type {Knex} from 'knex';
-import type {InternalApiKey, InternalIntegrationSlug} from '../internal-keys';
+import type {InternalApiKey, WritableInternalKeys} from '../internal-keys';
 import internalKeysDefault from '../internal-keys';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const modelsDefault = require('../../models');
@@ -12,7 +12,7 @@ interface ResetAuthenticationArgs {
     userService: {lockAll(options: any): Promise<{count: number}>};
     options: {context?: {user?: string}; [key: string]: unknown};
     models?: any;
-    internalKeys?: Map<InternalIntegrationSlug, Promise<InternalApiKey>>;
+    internalKeys?: WritableInternalKeys;
     deleteAllSessions?: () => Promise<void>;
 }
 

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import resetAuthentication from '../../../../../core/server/services/auth/reset-authentication';
-import type {InternalApiKey, InternalIntegrationSlug} from '../../../../../core/server/services/internal-keys';
+import type {WritableInternalKeys} from '../../../../../core/server/services/internal-keys';
 
 interface ActionRow {
     event: string;
@@ -44,7 +44,7 @@ function buildAuthDomain({apiKeysToRotate, usersToLock, currentKey}: {apiKeysToR
         }
     };
 
-    const internalKeys: Map<InternalIntegrationSlug, Promise<InternalApiKey>> = new Map([
+    const internalKeys: WritableInternalKeys = new Map([
         ['ghost-scheduler', Promise.resolve(currentKey)]
     ]);
     const originalClear = internalKeys.clear.bind(internalKeys);

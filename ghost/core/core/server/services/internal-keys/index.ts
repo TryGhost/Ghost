@@ -20,6 +20,19 @@ const SLUG_KEY_TYPE = {
 
 export type ApiKeyType = typeof SLUG_KEY_TYPE[InternalIntegrationSlug];
 
+/**
+ * The read-only view of the internal-keys cache that most consumers receive.
+ * Rotation orchestration uses the full Map surface (`.clear()`, `.delete()`)
+ * via the writable export below.
+ */
+export type InternalKeys = ReadonlyMap<InternalIntegrationSlug, Promise<InternalApiKey>>;
+
+/**
+ * The writable view of the internal-keys cache. Only rotation orchestration
+ * needs this — readers should accept `InternalKeys` instead.
+ */
+export type WritableInternalKeys = Map<InternalIntegrationSlug, Promise<InternalApiKey>>;
+
 // models/index.js is the Bookshelf model registry — a JS module without
 // TypeScript declarations. Use a typed require so we can call the model
 // method without polluting the file with `any`. The generic constrains

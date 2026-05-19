@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import moment from 'moment';
 import logging from '@tryghost/logging';
-import type {InternalApiKey, InternalIntegrationSlug} from '../internal-keys';
+import type {InternalApiKey, InternalKeys} from '../internal-keys';
 
 // CJS-only modules — typed loosely below. models is the Bookshelf registry
 // without TS declarations; the rest are JS modules without types.
@@ -39,7 +39,7 @@ interface SchedulingAdapter {
 interface PostSchedulingDeps {
     apiUrl: string;
     adapter: SchedulingAdapter;
-    internalKeys: ReadonlyMap<InternalIntegrationSlug, Promise<InternalApiKey>>;
+    internalKeys: InternalKeys;
 }
 
 // Pages live in the posts table with type:'page', so both types are
@@ -50,7 +50,7 @@ type ScheduledResource = typeof SCHEDULED_RESOURCES[number];
 export default class PostScheduling {
     readonly #apiUrl: string;
     readonly #adapter: SchedulingAdapter;
-    readonly #internalKeys: ReadonlyMap<InternalIntegrationSlug, Promise<InternalApiKey>>;
+    readonly #internalKeys: InternalKeys;
 
     constructor({apiUrl, adapter, internalKeys}: PostSchedulingDeps) {
         this.#apiUrl = apiUrl;
