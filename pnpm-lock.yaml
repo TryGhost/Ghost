@@ -108,6 +108,9 @@ catalogs:
     cross-fetch:
       specifier: 4.1.0
       version: 4.1.0
+    dequal:
+      specifier: 2.0.3
+      version: 2.0.3
     dompurify:
       specifier: 3.4.1
       version: 3.4.1
@@ -156,6 +159,9 @@ catalogs:
     storybook:
       specifier: 10.3.5
       version: 10.3.5
+    type-fest:
+      specifier: 4.41.0
+      version: 4.41.0
     typescript:
       specifier: 5.9.3
       version: 5.9.3
@@ -686,6 +692,9 @@ importers:
       '@tryghost/shade':
         specifier: workspace:*
         version: link:../shade
+      bson-objectid:
+        specifier: 'catalog:'
+        version: 2.0.4
       react:
         specifier: 18.3.1
         version: 18.3.1
@@ -747,6 +756,9 @@ importers:
       msw:
         specifier: 'catalog:'
         version: 2.12.14(@types/node@25.6.0)(typescript@5.9.3)
+      type-fest:
+        specifier: 'catalog:'
+        version: 4.41.0
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -1156,6 +1168,9 @@ importers:
       '@xyflow/react':
         specifier: 12.8.6
         version: 12.8.6(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      dequal:
+        specifier: 'catalog:'
+        version: 2.0.3
       i18n-iso-countries:
         specifier: 7.14.0
         version: 7.14.0
