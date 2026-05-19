@@ -12,16 +12,36 @@ import {
 
 const DEFAULT_TEST_BUCKET_PREFIX = 'test-redirects';
 
-export function createTestS3Client(): S3Client {
-    return new S3Client({
+export interface MinioTestConfig {
+    endpoint: string;
+    region: string;
+    forcePathStyle: boolean;
+    accessKeyId: string;
+    secretAccessKey: string;
+}
+
+// MinIO serves buckets via URL path (http://host/bucket/key) rather than
+// AWS's virtual-host style (https://bucket.s3.amazonaws.com/key), so
+// forcePathStyle stays true.
+export function getMinioConfig(): MinioTestConfig {
+    return {
         endpoint: process.env.MINIO_TEST_ENDPOINT || 'http://127.0.0.1:9000',
         region: process.env.MINIO_TEST_REGION || 'us-east-1',
-        // MinIO serves buckets via URL path (http://host/bucket/key) rather than
-        // AWS's virtual-host style (https://bucket.s3.amazonaws.com/key).
         forcePathStyle: true,
+        accessKeyId: process.env.MINIO_TEST_ACCESS_KEY || 'minio-user',
+        secretAccessKey: process.env.MINIO_TEST_SECRET_KEY || 'minio-pass'
+    };
+}
+
+export function createTestS3Client(): S3Client {
+    const cfg = getMinioConfig();
+    return new S3Client({
+        endpoint: cfg.endpoint,
+        region: cfg.region,
+        forcePathStyle: cfg.forcePathStyle,
         credentials: {
-            accessKeyId: process.env.MINIO_TEST_ACCESS_KEY || 'minio-user',
-            secretAccessKey: process.env.MINIO_TEST_SECRET_KEY || 'minio-pass'
+            accessKeyId: cfg.accessKeyId,
+            secretAccessKey: cfg.secretAccessKey
         }
     });
 }

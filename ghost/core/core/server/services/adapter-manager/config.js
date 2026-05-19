@@ -26,14 +26,9 @@ module.exports = function getAdapterServiceConfig(config) {
     }
 
     // FileStore needs Ghost's resolved content path, which isn't
-    // representable as a static value in defaults.json. Only inject when
-    // `paths.contentPath` is configured so this runs in normal Ghost
-    // boot but stays out of the way of tests that manipulate `paths`.
-    if (adapterServiceConfig.redirects
-        && adapterServiceConfig.redirects.FileStore
-        && !adapterServiceConfig.redirects.FileStore.basePath
-        && config.get('paths:contentPath')) {
-        adapterServiceConfig.redirects.FileStore.basePath = config.getContentPath('data');
+    // representable as a static value in defaults.json.
+    if (adapterServiceConfig.redirects?.FileStore) {
+        adapterServiceConfig.redirects.FileStore.basePath ||= config.getContentPath('data');
     }
 
     return adapterServiceConfig;
