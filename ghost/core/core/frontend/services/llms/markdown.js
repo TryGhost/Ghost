@@ -45,8 +45,13 @@ function getResourcePathFromMarkdownPath(pathname) {
         return null;
     }
 
-    const resourcePath = pathname.slice(0, -3) || '/';
-    return resourcePath.endsWith('/') ? resourcePath : `${resourcePath}/`;
+    const stripped = pathname.slice(0, -3);
+
+    if (!stripped || stripped === '/index') {
+        return '/';
+    }
+
+    return stripped.endsWith('/') ? stripped : `${stripped}/`;
 }
 
 function getAcceptedMarkdownContentType(req) {
