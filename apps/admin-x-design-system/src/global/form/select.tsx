@@ -151,7 +151,7 @@ const Select: React.FC<SelectProps> = ({
         containerClasses = clsx(
             'dark:text-white',
             fullWidth && 'w-full',
-            disabled && 'cursor-not-allowed opacity-40'
+            disabled && 'cursor-not-allowed text-grey-600 dark:text-grey-800'
         );
     }
     containerClasses = clsx(
@@ -162,11 +162,13 @@ const Select: React.FC<SelectProps> = ({
     const customClasses = {
         control: clsx(
             controlClasses?.control,
-            'h-9 min-h-[36px] w-full appearance-none rounded-lg border outline-hidden md:h-[38px] md:min-h-[38px] dark:text-white',
+            'h-9 min-h-[36px] w-full appearance-none rounded-lg border outline-hidden md:h-[38px] md:min-h-[38px]',
             size === 'xs' ? 'py-0 pr-2 text-xs' : 'py-1 pr-4',
             clearBg ? '' : 'bg-grey-150 px-3 dark:bg-grey-900',
-            error ? 'border-red' : `border-transparent ${!clearBg && 'hover:bg-grey-100 dark:hover:bg-grey-925'}`,
+            disabled && !clearBg && 'bg-grey-50 shadow-[0_0_0_1px_rgba(255,255,255,0.45)] hover:bg-grey-50 dark:bg-grey-950 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.18)] dark:hover:bg-grey-950',
+            error ? 'border-red' : `border-transparent ${!clearBg && !disabled && 'hover:bg-grey-100 dark:hover:bg-grey-925'}`,
             !disabled && 'cursor-pointer',
+            disabled ? 'dark:text-grey-800' : 'dark:text-white',
             (title && !clearBg) && 'mt-1.5'
         ),
         valueContainer: clsx('mr-1.5 gap-1', controlClasses?.valueContainer),

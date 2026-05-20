@@ -29,14 +29,14 @@ describe('Unit | Utility | event-type-utils', function () {
         expect(newExcludedEvents).to.equal('');
     });
 
-    it('should toggle subscription_event together with gift_redemption_event', function () {
+    it('should toggle subscription_event together with gift_redemption_event and gift_ended_event', function () {
         const newExcludedEvents = toggleEventType('subscription_event', []);
 
-        expect(newExcludedEvents).to.equal('subscription_event,gift_redemption_event');
+        expect(newExcludedEvents).to.equal('subscription_event,gift_redemption_event,gift_ended_event');
     });
 
     it('should toggle subscription_event group off when toggling subscription_event off', function () {
-        const newExcludedEvents = toggleEventType('subscription_event', ['subscription_event', 'gift_redemption_event']);
+        const newExcludedEvents = toggleEventType('subscription_event', ['subscription_event', 'gift_redemption_event', 'gift_ended_event']);
 
         expect(newExcludedEvents).to.equal('');
     });
@@ -44,19 +44,19 @@ describe('Unit | Utility | event-type-utils', function () {
     it('should preserve previously-excluded payment group when toggling subscription_event', function () {
         const newExcludedEvents = toggleEventType('subscription_event', ['payment_event', 'donation_event', 'gift_purchase_event']);
 
-        expect(newExcludedEvents).to.equal('payment_event,donation_event,gift_purchase_event,subscription_event,gift_redemption_event');
+        expect(newExcludedEvents).to.equal('payment_event,donation_event,gift_purchase_event,subscription_event,gift_redemption_event,gift_ended_event');
     });
 
     it('should preserve previously-excluded subscription group when toggling payment_event', function () {
-        const newExcludedEvents = toggleEventType('payment_event', ['subscription_event', 'gift_redemption_event']);
+        const newExcludedEvents = toggleEventType('payment_event', ['subscription_event', 'gift_redemption_event', 'gift_ended_event']);
 
-        expect(newExcludedEvents).to.equal('subscription_event,gift_redemption_event,payment_event,donation_event,gift_purchase_event');
+        expect(newExcludedEvents).to.equal('subscription_event,gift_redemption_event,gift_ended_event,payment_event,donation_event,gift_purchase_event');
     });
 
     it('should accept a comma-separated string for currentExcludedEvents', function () {
         const newExcludedEvents = toggleEventType('subscription_event', 'payment_event,donation_event,gift_purchase_event');
 
-        expect(newExcludedEvents).to.equal('payment_event,donation_event,gift_purchase_event,subscription_event,gift_redemption_event');
+        expect(newExcludedEvents).to.equal('payment_event,donation_event,gift_purchase_event,subscription_event,gift_redemption_event,gift_ended_event');
     });
 
     it('should return correct divider need based on event groups', function () {

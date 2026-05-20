@@ -130,7 +130,7 @@ describe('MembersAPI', function () {
                 Comment: {},
                 MemberFeedback: {},
                 Outbox: {},
-                WelcomeEmailAutomation: {},
+                Automation: {},
                 AutomatedEmailRecipient: {},
                 Gift: {}
             },

@@ -177,7 +177,7 @@ describe('redeemGift action', () => {
 
         expect(result).toMatchObject({
             page: 'magiclink',
-            lastPage: 'giftRedemption',
+            lastPage: 'gift',
             otcRef: 'otc-ref-123',
             pageData: {
                 token: 'gift-token-123',
@@ -557,6 +557,28 @@ describe('checkoutGift action', () => {
         expect(mockApi.member.checkoutGift).toHaveBeenCalledWith({
             tierId: 'tier_123',
             cadence: 'month'
+        });
+        expect(result.action).toBe('checkoutGift:success');
+    });
+
+    test('passes customer email through to api.member.checkoutGift', async () => {
+        const mockApi = {
+            member: {
+                checkoutGift: vi.fn(() => Promise.resolve())
+            }
+        };
+
+        const result = await ActionHandler({
+            action: 'checkoutGift',
+            data: {tierId: 'tier_123', cadence: 'month', email: 'jamie@example.com'},
+            state: {},
+            api: mockApi
+        });
+
+        expect(mockApi.member.checkoutGift).toHaveBeenCalledWith({
+            tierId: 'tier_123',
+            cadence: 'month',
+            email: 'jamie@example.com'
         });
         expect(result.action).toBe('checkoutGift:success');
     });

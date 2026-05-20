@@ -146,7 +146,7 @@ jobs:
 
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
       - name: Set up Node
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         env:
           FORCE_COLOR: 0
         with:
@@ -251,7 +251,7 @@ jobs:
         with:
           fetch-depth: 1000
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         env:
           FORCE_COLOR: 0
         with:
@@ -272,7 +272,7 @@ jobs:
           NX_BASE: ${{ needs.job_setup.outputs.nx_base }}
           NX_HEAD: ${{ env.HEAD_COMMIT }}
 
-      - uses: tryghost/actions/actions/slack-build@20b5ae5f266e86f7b5f0815d92731d6388b8ce46 # main
+      - uses: tryghost/actions/actions/slack-build@bf96db0e7f57eb048ead40594f6c222b4a7e3e93 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -289,7 +289,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -315,7 +315,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -336,7 +336,7 @@ jobs:
           name: admin-coverage
           path: ghost/*/coverage/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@20b5ae5f266e86f7b5f0815d92731d6388b8ce46 # main
+      - uses: tryghost/actions/actions/slack-build@bf96db0e7f57eb048ead40594f6c222b4a7e3e93 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -356,7 +356,7 @@ jobs:
         with:
           fetch-depth: 1000
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         env:
           FORCE_COLOR: 0
         with:
@@ -383,6 +383,17 @@ jobs:
           NX_SKIP_LOG_GROUPING: true
           logging__level: fatal
 
+      - name: Run vitest unit tests
+        # ghost/core is mid-migration from mocha to vitest. The vitest
+        # target covers a scoped subset (see ghost/core/vitest.config.ts)
+        # and runs additively alongside mocha — both runners run the same
+        # files during the migration as a divergence safety net.
+        run: pnpm nx run-many -t test:vitest -p "${{ needs.job_setup.outputs.affected_projects_str }}"
+        env:
+          FORCE_COLOR: 0
+          NX_SKIP_LOG_GROUPING: true
+          logging__level: fatal
+
       - name: Check for unexpected file changes
         run: |
           if [ -n "$(git status --porcelain)" ]; then
@@ -398,7 +409,7 @@ jobs:
           name: unit-coverage
           path: ghost/*/coverage/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@20b5ae5f266e86f7b5f0815d92731d6388b8ce46 # main
+      - uses: tryghost/actions/actions/slack-build@bf96db0e7f57eb048ead40594f6c222b4a7e3e93 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -424,7 +435,7 @@ jobs:
           --health-timeout=5s
           --health-retries=12
       redis:
-        image: redis:7.0
+        image: redis:7.0@sha256:352c1fdadc91926edda08f45aeb3f27f37194c2f14101229c0523a11195c96e3
         ports:
           - 6379:6379
         options: >-
@@ -450,7 +461,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         env:
           FORCE_COLOR: 0
         with:
@@ -487,6 +498,25 @@ jobs:
       - name: E2E tests
         run: pnpm nx run ghost:test:ci:e2e
 
+      - name: Start MinIO for integration tests
+        run: |
+          docker run -d --rm --name minio \
+            -p 9000:9000 \
+            -e MINIO_ROOT_USER=minio-user \
+            -e MINIO_ROOT_PASSWORD=minio-pass \
+            minio/minio:RELEASE.2024-12-13T22-19-12Z@sha256:149fdd73108553247ceee85fc65466f51034bd6e145d6e0c0e415167f5f1274f \
+            server /data
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:9000/minio/health/ready; then
+              echo "MinIO ready after ${i}s"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "MinIO did not become ready in time" >&2
+          docker logs minio
+          exit 1
+
       - name: Integration tests
         run: pnpm nx run ghost:test:ci:integration
 
@@ -507,7 +537,7 @@ jobs:
             ghost/*/coverage-e2e/cobertura-coverage.xml
             ghost/*/coverage-integration/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@20b5ae5f266e86f7b5f0815d92731d6388b8ce46 # main
+      - uses: tryghost/actions/actions/slack-build@bf96db0e7f57eb048ead40594f6c222b4a7e3e93 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -552,7 +582,7 @@ jobs:
         with:
           submodules: true
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         env:
           FORCE_COLOR: 0
         with:
@@ -593,7 +623,7 @@ jobs:
             exit 1
           fi
 
-      - uses: tryghost/actions/actions/slack-build@20b5ae5f266e86f7b5f0815d92731d6388b8ce46 # main
+      - uses: tryghost/actions/actions/slack-build@bf96db0e7f57eb048ead40594f6c222b4a7e3e93 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -610,7 +640,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         env:
           FORCE_COLOR: 0
         with:
@@ -633,7 +663,7 @@ jobs:
           path: apps/admin-x-settings/playwright-report
           retention-days: 30
 
-      - uses: tryghost/actions/actions/slack-build@20b5ae5f266e86f7b5f0815d92731d6388b8ce46 # main
+      - uses: tryghost/actions/actions/slack-build@bf96db0e7f57eb048ead40594f6c222b4a7e3e93 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -650,7 +680,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         env:
           FORCE_COLOR: 0
         with:
@@ -673,7 +703,7 @@ jobs:
           path: apps/activitypub/playwright-report
           retention-days: 30
 
-      - uses: tryghost/actions/actions/slack-build@20b5ae5f266e86f7b5f0815d92731d6388b8ce46 # main
+      - uses: tryghost/actions/actions/slack-build@bf96db0e7f57eb048ead40594f6c222b4a7e3e93 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -690,7 +720,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         env:
           FORCE_COLOR: 0
         with:
@@ -713,7 +743,7 @@ jobs:
           path: apps/comments-ui/playwright-report
           retention-days: 30
 
-      - uses: tryghost/actions/actions/slack-build@20b5ae5f266e86f7b5f0815d92731d6388b8ce46 # main
+      - uses: tryghost/actions/actions/slack-build@bf96db0e7f57eb048ead40594f6c222b4a7e3e93 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -730,7 +760,7 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         env:
           FORCE_COLOR: 0
         with:
@@ -753,7 +783,7 @@ jobs:
           path: apps/signup-form/playwright-report
           retention-days: 30
 
-      - uses: tryghost/actions/actions/slack-build@20b5ae5f266e86f7b5f0815d92731d6388b8ce46 # main
+      - uses: tryghost/actions/actions/slack-build@bf96db0e7f57eb048ead40594f6c222b4a7e3e93 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -770,7 +800,7 @@ jobs:
           working-directory: ghost/core/core/server/data/tinybird
     services:
       tinybird:
-        image: tinybirdco/tinybird-local:latest@sha256:52ea15fc337547b13d06069c23479c293e23074d4e4a6be21253e4bd57ad12be
+        image: tinybirdco/tinybird-local:latest@sha256:39209d37844d613b57d499052341fc457da62cc1770fe0c5efaee94a88e5399a
         ports:
           - 7181:7181
     steps:
@@ -803,7 +833,7 @@ jobs:
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_core == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         env:
           FORCE_COLOR: 0
         with:
@@ -852,7 +882,7 @@ jobs:
         run: |
           [ -f ~/.ghost/logs/*.log ] && cat ~/.ghost/logs/*.log
 
-      - uses: tryghost/actions/actions/slack-build@20b5ae5f266e86f7b5f0815d92731d6388b8ce46 # main
+      - uses: tryghost/actions/actions/slack-build@bf96db0e7f57eb048ead40594f6c222b4a7e3e93 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -873,7 +903,7 @@ jobs:
           submodules: true
 
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         env:
           FORCE_COLOR: 0
         with:
@@ -967,6 +997,9 @@ jobs:
           path: apps/admin/dist
           retention-days: 7
           if-no-files-found: error
+
+      - name: Setup Docker Registry Mirrors
+        uses: ./.github/actions/setup-docker-registry-mirrors
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4
@@ -1126,7 +1159,7 @@ jobs:
 
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
 
-      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         env:
           FORCE_COLOR: 0
         with:
@@ -1174,6 +1207,9 @@ jobs:
 
       - name: Extract public app artifacts
         run: tar -xzf e2e-public-apps.tar.gz
+
+      - name: Setup Docker Registry Mirrors
+        uses: ./.github/actions/setup-docker-registry-mirrors
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4
@@ -1275,6 +1311,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
+      - name: Setup Docker Registry Mirrors
+        uses: ./.github/actions/setup-docker-registry-mirrors
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4
 
@@ -1298,11 +1337,8 @@ jobs:
           image-tags: ${{ needs.job_build_e2e_image.outputs.image-tags }}
           artifact-name: docker-image-e2e
 
-      - name: Setup Docker Registry Mirrors
-        uses: ./.github/actions/setup-docker-registry-mirrors
-
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -1350,7 +1386,7 @@ jobs:
           path: e2e/test-results
           retention-days: 7
 
-      - uses: tryghost/actions/actions/slack-build@20b5ae5f266e86f7b5f0815d92731d6388b8ce46 # main
+      - uses: tryghost/actions/actions/slack-build@bf96db0e7f57eb048ead40594f6c222b4a7e3e93 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1369,7 +1405,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -1557,7 +1593,7 @@ jobs:
 
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
       - name: Set up Node.js
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -1619,7 +1655,7 @@ jobs:
 
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
       - name: Set up Node.js
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
@@ -1669,7 +1705,7 @@ jobs:
         if: steps.version_check.outputs.version_changed == 'true'
         working-directory: ${{ matrix.package_path }}
         run: |
-          npm publish --access public
+          pnpm publish --access public --no-git-checks
 
       - name: Replace version placeholders in cdn-paths
         id: cdn_paths
@@ -1798,7 +1834,7 @@ jobs:
           name: ghost-npm-tarball
 
       - name: Set up Node.js
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           package-manager-cache: false
@@ -1813,7 +1849,7 @@ jobs:
       - name: Publish to npm
         run: npm publish ghost-*.tgz --access public
 
-      - uses: tryghost/actions/actions/slack-build@20b5ae5f266e86f7b5f0815d92731d6388b8ce46 # main
+      - uses: tryghost/actions/actions/slack-build@bf96db0e7f57eb048ead40594f6c222b4a7e3e93 # main
         if: failure()
         with:
           status: ${{ job.status }}

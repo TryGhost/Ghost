@@ -266,7 +266,7 @@ async function redeemGift({data, state, api}) {
 
         return {
             page: 'magiclink',
-            lastPage: 'giftRedemption',
+            lastPage: 'gift',
             ...(otcRef ? {otcRef} : {}),
             inboxLinks,
             pageData: {
@@ -340,8 +340,12 @@ async function continueGiftSubscription({state, api}) {
 
 async function checkoutGift({data, state, api}) {
     try {
-        const {tierId, cadence} = data;
-        await api.member.checkoutGift({tierId, cadence});
+        const {tierId, cadence, email} = data;
+        await api.member.checkoutGift({
+            tierId,
+            cadence,
+            ...(email ? {email} : {})
+        });
         return {
             action: 'checkoutGift:success'
         };

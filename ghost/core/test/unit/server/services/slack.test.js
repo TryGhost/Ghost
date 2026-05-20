@@ -113,11 +113,11 @@ describe('Slack', function () {
         let settingsCacheStub;
         let slackReset;
         let makeRequestStub;
-        let urlServiceGetUrlByResourceIdStub;
+        let urlServiceGetUrlForResourceStub;
         const ping = slack.__get__('ping');
 
         beforeEach(function () {
-            urlServiceGetUrlByResourceIdStub = sinon.stub(urlService, 'getUrlByResourceId');
+            urlServiceGetUrlForResourceStub = sinon.stub(urlService.facade, 'getUrlForResource');
 
             settingsCacheStub = sinon.stub(settingsCache, 'get');
 
@@ -142,7 +142,9 @@ describe('Slack', function () {
                 slug: 'webhook-test',
                 html: `<p>Hello World!</p><p>This is a test post.</p><!--members-only--><p>This is members only content.</p>`
             });
-            urlServiceGetUrlByResourceIdStub.withArgs(post.id, {absolute: true}).returns('http://myblog.com/' + post.slug + '/');
+            urlServiceGetUrlForResourceStub
+                .withArgs(sinon.match({id: post.id, type: 'posts'}), {absolute: true})
+                .returns('http://myblog.com/' + post.slug + '/');
 
             settingsCacheStub.withArgs('slack_url').returns(slackURL);
 
@@ -151,7 +153,7 @@ describe('Slack', function () {
 
             // assertions
             sinon.assert.calledOnce(makeRequestStub);
-            sinon.assert.calledOnce(urlServiceGetUrlByResourceIdStub);
+            sinon.assert.calledOnce(urlServiceGetUrlForResourceStub);
             sinon.assert.calledWith(settingsCacheStub, 'slack_url');
 
             requestUrl = makeRequestStub.firstCall.args[0];
@@ -179,7 +181,7 @@ describe('Slack', function () {
 
             // assertions
             sinon.assert.calledOnce(makeRequestStub);
-            sinon.assert.notCalled(urlServiceGetUrlByResourceIdStub);
+            sinon.assert.notCalled(urlServiceGetUrlForResourceStub);
             sinon.assert.calledWith(settingsCacheStub, 'slack_url');
 
             requestUrl = makeRequestStub.firstCall.args[0];
@@ -220,7 +222,7 @@ describe('Slack', function () {
 
             // assertions
             sinon.assert.notCalled(makeRequestStub);
-            sinon.assert.calledOnce(urlServiceGetUrlByResourceIdStub);
+            sinon.assert.calledOnce(urlServiceGetUrlForResourceStub);
             sinon.assert.calledWith(settingsCacheStub, 'slack_url');
         });
 
@@ -233,7 +235,7 @@ describe('Slack', function () {
 
             // assertions
             sinon.assert.notCalled(makeRequestStub);
-            sinon.assert.calledOnce(urlServiceGetUrlByResourceIdStub);
+            sinon.assert.calledOnce(urlServiceGetUrlForResourceStub);
             sinon.assert.calledWith(settingsCacheStub, 'slack_url');
         });
 
@@ -246,7 +248,7 @@ describe('Slack', function () {
 
             // assertions
             sinon.assert.notCalled(makeRequestStub);
-            sinon.assert.called(urlServiceGetUrlByResourceIdStub);
+            sinon.assert.called(urlServiceGetUrlForResourceStub);
             sinon.assert.calledWith(settingsCacheStub, 'slack_url');
         });
     });

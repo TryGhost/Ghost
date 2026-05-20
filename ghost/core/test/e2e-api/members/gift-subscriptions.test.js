@@ -636,7 +636,7 @@ describe('Gift Subscriptions', function () {
 
                 // Verify staff notification email was sent
                 mockManager.assert.sentEmail({
-                    subject: /paid subscription started/i,
+                    subject: /gift subscription redeemed/i,
                     to: 'jbloggs@example.com'
                 });
             });
@@ -750,26 +750,41 @@ describe('Gift Subscriptions', function () {
                     const existingMember = await models.Member.findOne({email}, {require: false});
                     assert.equal(existingMember, null, 'Member should not exist before magic link confirmation');
 
-                    // Set up an active free welcome email automation so the test would catch
-                    // any regression that re-introduces the spurious automation run for gift members
-                    const emailDesignSetting = await models.EmailDesignSetting.findOne(
-                        {slug: 'default-automated-email'},
-                        {require: true}
-                    );
-                    const welcomeEmailAutomation = await models.WelcomeEmailAutomation.add({
-                        name: 'Free welcome email',
-                        slug: 'member-welcome-email-free',
-                        status: 'active'
-                    });
-                    await models.WelcomeEmailAutomatedEmail.add({
-                        welcome_email_automation_id: welcomeEmailAutomation.id,
-                        delay_days: 0,
-                        subject: 'Welcome to the site!',
-                        lexical: JSON.stringify({root: {children: [{type: 'paragraph', children: [{text: 'Welcome'}]}]}}),
-                        email_design_setting_id: emailDesignSetting.id
-                    });
+                    let freeWelcomeAutomation;
+                    let paidWelcomeAutomation;
 
                     try {
+                        // Set up both free and paid welcome email automations to verify gift
+                        // redemption picks the paid welcome email (not the free one).
+                        const emailDesignSetting = await models.EmailDesignSetting.findOne(
+                            {slug: 'default-automated-email'},
+                            {require: true}
+                        );
+                        freeWelcomeAutomation = await models.Automation.add({
+                            name: 'Free welcome email',
+                            slug: 'member-welcome-email-free',
+                            status: 'active'
+                        });
+                        await models.WelcomeEmailAutomatedEmail.add({
+                            welcome_email_automation_id: freeWelcomeAutomation.id,
+                            delay_days: 0,
+                            subject: 'Welcome to the site!',
+                            lexical: JSON.stringify({root: {children: [{type: 'paragraph', children: [{text: 'Welcome'}]}]}}),
+                            email_design_setting_id: emailDesignSetting.id
+                        });
+                        paidWelcomeAutomation = await models.Automation.add({
+                            name: 'Paid welcome email',
+                            slug: 'member-welcome-email-paid',
+                            status: 'active'
+                        });
+                        await models.WelcomeEmailAutomatedEmail.add({
+                            welcome_email_automation_id: paidWelcomeAutomation.id,
+                            delay_days: 0,
+                            subject: 'Welcome to the paid tier!',
+                            lexical: JSON.stringify({root: {children: [{type: 'paragraph', children: [{text: 'Welcome paid'}]}]}}),
+                            email_design_setting_id: emailDesignSetting.id
+                        });
+
                         await models.Product.edit({
                             welcome_page_url: ''
                         }, {
@@ -805,16 +820,22 @@ describe('Gift Subscriptions', function () {
                         assert.ok(gift.get('redeemed_at'));
                         assert.ok(gift.get('consumes_at'));
 
-                        // Verify the free welcome automation did NOT enqueue a run for this gift member
+                        // Verify the paid welcome automation enqueued a run for this gift member
+                        // (and the free welcome automation did NOT — gift redemption is a paid-tier experience)
                         const welcomeRuns = await models.WelcomeEmailAutomationRun.findAll({
                             filter: `member_id:'${member.id}'`
                         });
-                        assert.equal(welcomeRuns.length, 0, 'Should not enqueue free welcome email automation for gift member');
+                        assert.equal(welcomeRuns.length, 1, 'Should enqueue exactly one welcome email automation run for gift member');
+                        assert.equal(
+                            welcomeRuns.models[0].get('welcome_email_automation_id'),
+                            paidWelcomeAutomation.id,
+                            'Should enqueue the paid welcome email automation, not the free one'
+                        );
 
-                        // Verify gift subscription started staff notification was sent,
+                        // Verify gift subscription redeemed staff notification was sent,
                         // and that no other unwanted staff notifications were sent (i.e. no "Free member signup" email)
                         mockManager.assert.sentEmail({
-                            subject: /paid subscription started/i,
+                            subject: /gift subscription redeemed/i,
                             to: 'jbloggs@example.com'
                         });
                         mockManager.assert.sentEmailCount(1);
@@ -830,7 +851,19 @@ describe('Gift Subscriptions', function () {
                         }, {
                             id: paidProduct.id
                         });
-                        await models.WelcomeEmailAutomation.destroy({id: welcomeEmailAutomation.id});
+
+                        for (const automation of [freeWelcomeAutomation, paidWelcomeAutomation]) {
+                            if (!automation) {
+                                continue;
+                            }
+                            const runs = await models.WelcomeEmailAutomationRun.findAll({
+                                filter: `welcome_email_automation_id:'${automation.id}'`
+                            });
+                            for (const run of runs.models) {
+                                await models.WelcomeEmailAutomationRun.destroy({id: run.id});
+                            }
+                            await models.Automation.destroy({id: automation.id});
+                        }
                     }
                 });
             });
@@ -840,7 +873,7 @@ describe('Gift Subscriptions', function () {
                     const email = 'gift-existing-member@test.com';
 
                     // Create member first
-                    await models.Member.add({email, name: 'Existing Member', email_disabled: false});
+                    const existingMember = await models.Member.add({email, name: 'Existing Member', email_disabled: false});
                     await DomainEvents.allSettled();
 
                     const gift = await createGift();
@@ -848,12 +881,53 @@ describe('Gift Subscriptions', function () {
                     const redirectUrl = new URL(urlUtils.getSiteUrl());
                     redirectUrl.hash = '#/portal/account?giftRedemption=true';
 
+                    let freeWelcomeAutomation;
+                    let paidWelcomeAutomation;
+
                     try {
+                        // Set up both free and paid welcome email automations to verify gift
+                        // redemption picks the paid welcome email (not the free one) — same as
+                        // the new-member case above.
+                        const emailDesignSetting = await models.EmailDesignSetting.findOne(
+                            {slug: 'default-automated-email'},
+                            {require: true}
+                        );
+                        freeWelcomeAutomation = await models.Automation.add({
+                            name: 'Free welcome email',
+                            slug: 'member-welcome-email-free',
+                            status: 'active'
+                        });
+                        await models.WelcomeEmailAutomatedEmail.add({
+                            welcome_email_automation_id: freeWelcomeAutomation.id,
+                            delay_days: 0,
+                            subject: 'Welcome to the site!',
+                            lexical: JSON.stringify({root: {children: [{type: 'paragraph', children: [{text: 'Welcome'}]}]}}),
+                            email_design_setting_id: emailDesignSetting.id
+                        });
+                        paidWelcomeAutomation = await models.Automation.add({
+                            name: 'Paid welcome email',
+                            slug: 'member-welcome-email-paid',
+                            status: 'active'
+                        });
+                        await models.WelcomeEmailAutomatedEmail.add({
+                            welcome_email_automation_id: paidWelcomeAutomation.id,
+                            delay_days: 0,
+                            subject: 'Welcome to the paid tier!',
+                            lexical: JSON.stringify({root: {children: [{type: 'paragraph', children: [{text: 'Welcome paid'}]}]}}),
+                            email_design_setting_id: emailDesignSetting.id
+                        });
+
                         await models.Product.edit({
                             welcome_page_url: ''
                         }, {
                             id: paidProduct.id
                         });
+
+                        // The existing free member shouldn't have any welcome runs yet
+                        const runsBefore = await models.WelcomeEmailAutomationRun.findAll({
+                            filter: `member_id:'${existingMember.id}'`
+                        });
+                        assert.equal(runsBefore.length, 0, 'Existing free member should have no welcome email runs before redemption');
 
                         const magicLink = await membersService.api.getMagicLink(email, 'subscribe', {
                             giftToken: gift.get('token')
@@ -883,9 +957,22 @@ describe('Gift Subscriptions', function () {
                         assert.ok(gift.get('redeemed_at'));
                         assert.ok(gift.get('consumes_at'));
 
-                        // Verify gift subscription started staff notification was sent
+                        // Verify the paid welcome automation enqueued a run for this member,
+                        // and that the free welcome automation did NOT (gift redemption
+                        // delivers the paid welcome email regardless of pre-redemption status).
+                        const welcomeRuns = await models.WelcomeEmailAutomationRun.findAll({
+                            filter: `member_id:'${member.id}'`
+                        });
+                        assert.equal(welcomeRuns.length, 1, 'Should enqueue exactly one welcome email automation run for an existing free member redeeming a gift');
+                        assert.equal(
+                            welcomeRuns.models[0].get('welcome_email_automation_id'),
+                            paidWelcomeAutomation.id,
+                            'Should enqueue the paid welcome email automation, not the free one'
+                        );
+
+                        // Verify gift subscription redeemed staff notification was sent
                         mockManager.assert.sentEmail({
-                            subject: /paid subscription started/i,
+                            subject: /gift subscription redeemed/i,
                             to: 'jbloggs@example.com'
                         });
 
@@ -900,6 +987,19 @@ describe('Gift Subscriptions', function () {
                         }, {
                             id: paidProduct.id
                         });
+
+                        for (const automation of [freeWelcomeAutomation, paidWelcomeAutomation]) {
+                            if (!automation) {
+                                continue;
+                            }
+                            const runs = await models.WelcomeEmailAutomationRun.findAll({
+                                filter: `welcome_email_automation_id:'${automation.id}'`
+                            });
+                            for (const run of runs.models) {
+                                await models.WelcomeEmailAutomationRun.destroy({id: run.id});
+                            }
+                            await models.Automation.destroy({id: automation.id});
+                        }
                     }
                 });
             });
@@ -1066,6 +1166,69 @@ describe('Gift Subscriptions', function () {
             const giftAfterActivation = await models.Gift.findOne({token: gift.get('token')}, {require: true});
             assert.equal(giftAfterActivation.get('status'), 'consumed');
             assert.ok(giftAfterActivation.get('consumed_at'), 'Gift should have consumed_at set');
+        });
+
+        it('does not enqueue a second paid welcome email when a gift member upgrades to paid', async function () {
+            const {member, gift} = await setupGiftMember({cadence: 'month', consumesInDays: 30});
+
+            let paidWelcomeAutomation;
+
+            try {
+                const emailDesignSetting = await models.EmailDesignSetting.findOne(
+                    {slug: 'default-automated-email'},
+                    {require: true}
+                );
+                paidWelcomeAutomation = await models.Automation.add({
+                    name: 'Paid welcome email',
+                    slug: 'member-welcome-email-paid',
+                    status: 'active'
+                });
+                await models.WelcomeEmailAutomatedEmail.add({
+                    welcome_email_automation_id: paidWelcomeAutomation.id,
+                    delay_days: 0,
+                    subject: 'Welcome to the paid tier!',
+                    lexical: JSON.stringify({root: {children: [{type: 'paragraph', children: [{text: 'Welcome paid'}]}]}}),
+                    email_design_setting_id: emailDesignSetting.id
+                });
+
+                const runsBefore = await models.WelcomeEmailAutomationRun.findAll({
+                    filter: `member_id:'${member.id}'`
+                });
+
+                const customer = stripeMocker.createCustomer({email: member.get('email')});
+                const price = await stripeMocker.getPriceForTier('default-product', 'month');
+
+                await stripeMocker.createSubscription({customer, price});
+                await DomainEvents.allSettled();
+
+                // Gift consumed, member upgraded to paid
+                const giftAfterActivation = await models.Gift.findOne({token: gift.get('token')}, {require: true});
+                assert.equal(giftAfterActivation.get('status'), 'consumed');
+
+                const memberAfterActivation = await models.Member.findOne({id: member.id}, {require: true});
+                assert.equal(memberAfterActivation.get('status'), 'paid');
+
+                // No new paid welcome run should have been enqueued — the gift redemption
+                // already onboarded this member with the paid welcome email.
+                const runsAfter = await models.WelcomeEmailAutomationRun.findAll({
+                    filter: `member_id:'${member.id}'`
+                });
+                assert.equal(
+                    runsAfter.length,
+                    runsBefore.length,
+                    'Should not enqueue a second paid welcome email on gift → paid transition'
+                );
+            } finally {
+                if (paidWelcomeAutomation) {
+                    const runs = await models.WelcomeEmailAutomationRun.findAll({
+                        filter: `welcome_email_automation_id:'${paidWelcomeAutomation.id}'`
+                    });
+                    for (const run of runs.models) {
+                        await models.WelcomeEmailAutomationRun.destroy({id: run.id});
+                    }
+                    await models.Automation.destroy({id: paidWelcomeAutomation.id});
+                }
+            }
         });
 
         it('Returns 401 for unauthenticated members', async function () {

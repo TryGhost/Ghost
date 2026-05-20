@@ -394,6 +394,24 @@ describe('MemberBreadService', function () {
             assert.deepEqual(member.subscriptions, subscriptionsJSON);
         });
 
+        it('does not eager-load the embedded email when email_recipients is included', async function () {
+            // Including ?include=email_recipients should fetch the recipient
+            // metadata only — not bolt on the joined email row, which used
+            // to ship multi-MB LONGTEXT bodies and crash JSON.stringify on
+            // high-volume sites. Clients that want the email itself should
+            // call /emails/:id.
+            memberRepositoryStub.get.resolves(memberModelStub);
+
+            const memberBreadService = getService();
+            await memberBreadService.read({id: MEMBER_ID}, {withRelated: ['email_recipients']});
+
+            const passedWithRelated = memberRepositoryStub.get.lastCall.args[1].withRelated;
+
+            assert.ok(passedWithRelated.includes('email_recipients'), 'email_recipients itself should still be eager-loaded');
+            assert.ok(!passedWithRelated.includes('email_recipients.email'), 'email_recipients.email must not be eager-loaded');
+            assert.ok(!passedWithRelated.some(item => typeof item === 'object' && item !== null && 'email_recipients.email' in item), 'email_recipients.email must not be eager-loaded via object form either');
+        });
+
         it('returns a member with subscriptions that only have a price', async function () {
             const subscriptionsJSON = [
                 {

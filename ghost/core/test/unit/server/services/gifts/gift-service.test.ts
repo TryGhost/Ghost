@@ -47,9 +47,10 @@ describe('GiftService', function () {
     let memberRepository: {
         get: sinon.SinonStub;
         update: sinon.SinonStub;
+        enqueueWelcomeEmailRun: sinon.SinonStub;
     };
     let staffServiceEmails: {
-        notifyGiftReceived: sinon.SinonStub;
+        notifyGiftPurchased: sinon.SinonStub;
         notifyGiftSubscriptionStarted: sinon.SinonStub;
     };
     let giftEmailService: {
@@ -97,10 +98,11 @@ describe('GiftService', function () {
                 memberGet.withArgs('status').returns('free');
                 return Promise.resolve({id: 'member_1', get: memberGet});
             }),
-            update: sinon.stub().resolves(undefined)
+            update: sinon.stub().resolves(undefined),
+            enqueueWelcomeEmailRun: sinon.stub().resolves(undefined)
         };
         staffServiceEmails = {
-            notifyGiftReceived: sinon.stub(),
+            notifyGiftPurchased: sinon.stub(),
             notifyGiftSubscriptionStarted: sinon.stub()
         };
         giftEmailService = {
@@ -128,7 +130,7 @@ describe('GiftService', function () {
 
     function createService(overrides: {
         schedulerAdapter?: {schedule: sinon.SinonStub} | null;
-        schedulerIntegration?: {api_keys: Array<{id: string; secret: string}>} | null;
+        getSchedulerKey?: (() => Promise<{id: string; secret: string}>) | null;
         getSignedAdminToken?: sinon.SinonStub | null;
         urlJoin?: sinon.SinonStub | null;
         apiUrl?: string | null;
@@ -140,7 +142,7 @@ describe('GiftService', function () {
             giftEmailService,
             staffServiceEmails,
             schedulerAdapter: overrides.schedulerAdapter ?? null,
-            schedulerIntegration: overrides.schedulerIntegration ?? null,
+            getSchedulerKey: overrides.getSchedulerKey ?? null,
             getSignedAdminToken: overrides.getSignedAdminToken ?? null,
             urlJoin: overrides.urlJoin ?? null,
             apiUrl: overrides.apiUrl ?? null
@@ -278,9 +280,9 @@ describe('GiftService', function () {
 
             await service.recordPurchase(purchaseData);
 
-            sinon.assert.calledOnce(staffServiceEmails.notifyGiftReceived);
+            sinon.assert.calledOnce(staffServiceEmails.notifyGiftPurchased);
 
-            const emailData = staffServiceEmails.notifyGiftReceived.getCall(0).args[0];
+            const emailData = staffServiceEmails.notifyGiftPurchased.getCall(0).args[0];
 
             assert.equal(emailData.name, 'Member Name');
             assert.equal(emailData.email, 'member@example.com');
@@ -302,7 +304,7 @@ describe('GiftService', function () {
                 {message: 'Tier not found: tier_1'}
             );
 
-            sinon.assert.notCalled(staffServiceEmails.notifyGiftReceived);
+            sinon.assert.notCalled(staffServiceEmails.notifyGiftPurchased);
             sinon.assert.notCalled(giftEmailService.sendPurchaseConfirmation);
         });
 
@@ -311,9 +313,9 @@ describe('GiftService', function () {
 
             await service.recordPurchase({...purchaseData, stripeCustomerId: null});
 
-            sinon.assert.calledOnce(staffServiceEmails.notifyGiftReceived);
+            sinon.assert.calledOnce(staffServiceEmails.notifyGiftPurchased);
 
-            const emailData = staffServiceEmails.notifyGiftReceived.getCall(0).args[0];
+            const emailData = staffServiceEmails.notifyGiftPurchased.getCall(0).args[0];
 
             assert.equal(emailData.name, null);
             assert.equal(emailData.email, 'buyer@example.com');
@@ -876,10 +878,8 @@ describe('GiftService', function () {
             const emailArgs = giftEmailService.sendReminder.getCall(0).args[0];
 
             assert.equal(emailArgs.memberEmail, 'member_1@example.com');
+            assert.equal(emailArgs.memberName, 'Member Name');
             assert.equal(emailArgs.tierName, 'Bronze');
-            assert.equal(emailArgs.tierCurrency, 'usd');
-            assert.equal(emailArgs.tierPrice, 10000);
-            assert.equal(emailArgs.cadence, gift.cadence);
             assert.equal(emailArgs.consumesAt, gift.consumesAt);
 
             sinon.assert.calledOnce(giftRepository.update);
@@ -1015,30 +1015,6 @@ describe('GiftService', function () {
             // Tier is read up front, but the transaction never runs, so the gift
             // is neither locked nor marked as reminded. A follow-up run after the
             // tier is restored will pick the gift up again.
-            sinon.assert.notCalled(giftRepository.update);
-            sinon.assert.notCalled(giftEmailService.sendReminder);
-        });
-
-        it('does not mark the gift as reminded when tier pricing is missing for the gift cadence', async function () {
-            const gift = buildRedeemedGift({cadence: 'year'});
-
-            giftRepository.findPendingReminder.resolves([gift]);
-            giftRepository.getByToken.resolves(gift);
-            tiersService.api.read.resolves({
-                id: 'tier_1',
-                name: 'Bronze',
-                currency: 'usd',
-                monthlyPrice: 1000,
-                yearlyPrice: null
-            });
-
-            const service = createService();
-            const result = await service.processReminders();
-
-            assert.equal(result.remindedCount, 0);
-            assert.equal(result.skippedCount, 0);
-            assert.equal(result.failedCount, 1);
-
             sinon.assert.notCalled(giftRepository.update);
             sinon.assert.notCalled(giftEmailService.sendReminder);
         });
@@ -1289,6 +1265,70 @@ describe('GiftService', function () {
             sinon.assert.notCalled(giftRepository.update);
             sinon.assert.notCalled(staffServiceEmails.notifyGiftSubscriptionStarted);
         });
+
+        it('enqueues the paid welcome email run for a new gift signup', async function () {
+            const gift = buildGift();
+            const memberGet = sinon.stub();
+            memberGet.withArgs('status').returns('gift');
+            memberGet.withArgs('name').returns('Member Name');
+            memberGet.withArgs('email').returns('member@example.com');
+
+            giftRepository.getByToken.resolves(gift);
+            memberRepository.get.resolves({id: 'member_1', get: memberGet});
+
+            const service = createService();
+            await service.redeem('gift-token', 'member_1', {newMember: true});
+
+            sinon.assert.calledOnceWithExactly(
+                memberRepository.enqueueWelcomeEmailRun,
+                'member_1',
+                'member-welcome-email-paid',
+                {transacting: 'trx'}
+            );
+        });
+
+        it('enqueues the paid welcome email run when an existing free member redeems a gift', async function () {
+            const gift = buildGift();
+            const memberGet = sinon.stub();
+            memberGet.withArgs('status').returns('free');
+            memberGet.withArgs('name').returns('Member Name');
+            memberGet.withArgs('email').returns('member@example.com');
+
+            giftRepository.getByToken.resolves(gift);
+            memberRepository.get.resolves({id: 'member_1', get: memberGet});
+
+            const service = createService();
+            await service.redeem('gift-token', 'member_1');
+
+            sinon.assert.calledOnceWithExactly(
+                memberRepository.enqueueWelcomeEmailRun,
+                'member_1',
+                'member-welcome-email-paid',
+                {transacting: 'trx'}
+            );
+        });
+
+        it('passes the external transaction through to the welcome email enqueue', async function () {
+            const gift = buildGift();
+            const memberGet = sinon.stub();
+            memberGet.withArgs('status').returns('free');
+            memberGet.withArgs('name').returns('Member Name');
+            memberGet.withArgs('email').returns('member@example.com');
+
+            giftRepository.getByToken.resolves(gift);
+            memberRepository.get.resolves({id: 'member_1', get: memberGet});
+
+            const service = createService();
+            const externalTrx = {executionPromise: Promise.resolve()};
+            await service.redeem('gift-token', 'member_1', {transacting: externalTrx});
+
+            sinon.assert.calledOnceWithExactly(
+                memberRepository.enqueueWelcomeEmailRun,
+                'member_1',
+                'member-welcome-email-paid',
+                {transacting: externalTrx}
+            );
+        });
     });
 
     describe('scheduleReminder (via redeem)', function () {
@@ -1298,10 +1338,13 @@ describe('GiftService', function () {
             const schedule = sinon.stub();
             const getSignedAdminToken = sinon.stub().returns('signed-token');
             const urlJoin = sinon.stub().callsFake((...parts: string[]) => parts.join('/'));
+            const key = {id: 'key-id', secret: '00'.repeat(32)};
+            const getSchedulerKey = sinon.stub().resolves(key);
 
             return {
                 schedulerAdapter: {schedule},
-                schedulerIntegration: {api_keys: [{id: 'key-id', secret: '00'.repeat(32)}]},
+                key,
+                getSchedulerKey,
                 getSignedAdminToken,
                 urlJoin,
                 apiUrl
@@ -1341,7 +1384,7 @@ describe('GiftService', function () {
             sinon.assert.calledOnceWithExactly(deps.getSignedAdminToken, {
                 publishedAt: new Date(expectedTime).toISOString(),
                 apiUrl,
-                integration: deps.schedulerIntegration
+                key: deps.key
             });
         });
 
@@ -1370,7 +1413,7 @@ describe('GiftService', function () {
             // schedulerAdapter provided but apiUrl missing
             const service = createService({
                 schedulerAdapter: {schedule},
-                schedulerIntegration: null,
+                getSchedulerKey: null,
                 getSignedAdminToken: sinon.stub(),
                 urlJoin: sinon.stub(),
                 apiUrl: null

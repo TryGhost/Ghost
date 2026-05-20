@@ -146,7 +146,7 @@ class PopupContent extends React.Component {
     }
 
     render() {
-        const {page, pageQuery, site, customSiteUrl} = this.context;
+        const {page, pageQuery, site, customSiteUrl, lastPage} = this.context;
         const products = getSiteProducts({site, pageQuery});
         const noOfProducts = products.length;
 
@@ -189,8 +189,17 @@ class PopupContent extends React.Component {
             }
         }
 
-        if (page === 'gift') {
+        if (page === 'gift' || page === 'giftSuccess' || page === 'giftRedemption') {
             pageClass += ' full-size';
+            popupSize = 'full';
+        }
+
+        // Magic link page reached via gift redemption: render in the same
+        // 50/50 layout (gift card stays visible on the right) instead of as
+        // a small centered modal. Reuses the giftRedemption class so the
+        // existing full-size CSS rules apply.
+        if (page === 'magiclink' && lastPage === 'gift') {
+            pageClass += ' full-size giftRedemption';
             popupSize = 'full';
         }
 
@@ -221,6 +230,7 @@ class PopupContent extends React.Component {
         }
 
         const containerClassName = `${className} ${popupWidthStyle} ${pageClass}`;
+        const isGiftLayout = page === 'gift' || page === 'giftSuccess' || page === 'giftRedemption' || (page === 'magiclink' && lastPage === 'gift');
         this.sendPortalPreviewReadyEvent();
         return (
             <>
@@ -229,14 +239,14 @@ class PopupContent extends React.Component {
                     <div className={containerClassName} style={pageStyle} ref={node => (this.node = node)} tabIndex={-1}>
                         <CookieDisabledBanner message={cookieBannerText} />
                         {this.renderActivePage()}
-                        {(popupSize === 'full' ?
+                        {(popupSize === 'full' && !isGiftLayout ?
                             <div className={'gh-portal-powered inside ' + (hasMode(['preview']) ? 'hidden ' : '') + pageClass}>
                                 <PoweredBy />
                             </div>
                             : '')}
                     </div>
                 </div>
-                {page !== 'share' && (
+                {page !== 'share' && !isGiftLayout && (
                     <div className={'gh-portal-powered outside ' + (hasMode(['preview']) ? 'hidden ' : '') + pageClass}>
                         <PoweredBy />
                     </div>

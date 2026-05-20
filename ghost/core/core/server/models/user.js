@@ -61,6 +61,7 @@ User = ghostBookshelf.Model.extend({
 
     defaults: function defaults() {
         return {
+            // secretlint-disable-next-line @secretlint/secretlint-rule-pattern
             password: security.identifier.uid(50),
             visibility: 'public',
             status: 'active',
@@ -72,7 +73,7 @@ User = ghostBookshelf.Model.extend({
             recommendation_notifications: true,
             milestone_notifications: true,
             donation_notifications: true,
-            gift_subscription_purchase_notification: true
+            gift_subscription_notifications: true
         };
     },
 
@@ -513,8 +514,8 @@ User = ghostBookshelf.Model.extend({
             filter += '+donation_notifications:true';
         } else if (type === 'recommendation-received') {
             filter += '+recommendation_notifications:true';
-        } else if (type === 'gift-subscription-purchased') {
-            filter += '+gift_subscription_purchase_notification:true';
+        } else if (type === 'gift-subscriptions') {
+            filter += '+gift_subscription_notifications:true';
         }
         const updatedOptions = Object.assign({}, options, {filter, withRelated: ['roles']});
         return this.findAll(updatedOptions).then((users) => {

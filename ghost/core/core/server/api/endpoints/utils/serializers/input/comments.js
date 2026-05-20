@@ -14,6 +14,19 @@ module.exports = {
             }
             return relation;
         });
+
+        // If the caller asked for `post`, also load post.tags / post.authors
+        // — the comments output mapper calls url.forPost on the embedded
+        // post, which needs the relations to resolve tag/author-filtered
+        // routes under lazyRouting.
+        if (frame.options.withRelated.includes('post')) {
+            if (!frame.options.withRelated.includes('post.tags')) {
+                frame.options.withRelated.push('post.tags');
+            }
+            if (!frame.options.withRelated.includes('post.authors')) {
+                frame.options.withRelated.push('post.authors');
+            }
+        }
     },
 
     browse(apiConfig, frame) {

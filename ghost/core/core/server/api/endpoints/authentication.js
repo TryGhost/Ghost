@@ -167,8 +167,7 @@ const controller = {
         ],
         async query(frame) {
             await auth.setup.assertSetupCompleted(true)();
-            const params = await auth.passwordreset.extractTokenParts(frame);
-            const {options, tokenParts} = await auth.passwordreset.protectBruteForce(params);
+            const {options, tokenParts} = await auth.passwordreset.extractTokenParts(frame);
             const internalOptions = Object.assign(options, {context: {internal: true}});
 
             const doResetParams = await auth.passwordreset.doReset(internalOptions, tokenParts, api.settings);

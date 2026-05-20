@@ -275,31 +275,6 @@ export default function mockMembers(server) {
         members.find(id).destroy();
     }));
 
-    server.get('/members/upload/', withPermissionsCheck(ALLOWED_ROLES, function () {
-        return new Response(200, {
-            'Content-Disposition': 'attachment',
-            filename: `members.${moment().format('YYYY-MM-DD')}.csv`,
-            'Content-Type': 'text/csv'
-        }, '');
-    }));
-
-    server.post('/members/upload/', withPermissionsCheck(ALLOWED_ROLES, function ({labels}, request) {
-        const label = labels.create();
-
-        // TODO: parse CSV and create member records
-        for (const kvPair of request.requestBody.entries()) {
-            const [key, value] = kvPair;
-            console.log({key, value}); // eslint-disable-line
-        }
-
-        return new Response(201, {}, {
-            meta: {
-                import_label: label,
-                stats: {imported: 1, invalid: []}
-            }
-        });
-    }));
-
     server.get('/members/events/', withPermissionsCheck(ALLOWED_ROLES, function ({memberActivityEvents}, {queryParams}) {
         let {limit, filter, page} = queryParams;
 

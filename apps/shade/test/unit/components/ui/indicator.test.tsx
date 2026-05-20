@@ -43,7 +43,7 @@ describe('Indicator Component', () => {
     });
 
     it('applies error variant correctly', () => {
-        render(<Indicator variant="error" data-testid="indicator" />);
+        render(<Indicator data-testid="indicator" variant="error" />);
         const container = screen.getByTestId('indicator');
         const indicator = container.querySelector('[aria-hidden="true"]');
 
@@ -51,7 +51,7 @@ describe('Indicator Component', () => {
     });
 
     it('applies warning variant correctly', () => {
-        render(<Indicator variant="warning" data-testid="indicator" />);
+        render(<Indicator data-testid="indicator" variant="warning" />);
         const container = screen.getByTestId('indicator');
         const indicator = container.querySelector('[aria-hidden="true"]');
 
@@ -59,7 +59,7 @@ describe('Indicator Component', () => {
     });
 
     it('applies idle state correctly', () => {
-        render(<Indicator variant="success" state="idle" data-testid="indicator" />);
+        render(<Indicator data-testid="indicator" state="idle" variant="success" />);
         const container = screen.getByTestId('indicator');
         const indicator = container.querySelector('[aria-hidden="true"]');
 
@@ -69,7 +69,7 @@ describe('Indicator Component', () => {
     });
 
     it('applies active state correctly', () => {
-        render(<Indicator variant="success" state="active" data-testid="indicator" />);
+        render(<Indicator data-testid="indicator" state="active" variant="success" />);
         const container = screen.getByTestId('indicator');
         const indicator = container.querySelector('[aria-hidden="true"]');
 
@@ -108,7 +108,7 @@ describe('Indicator Component', () => {
     });
 
     it('applies inactive state with error variant correctly', () => {
-        render(<Indicator variant="error" state="inactive" data-testid="indicator" />);
+        render(<Indicator data-testid="indicator" state="inactive" variant="error" />);
         const container = screen.getByTestId('indicator');
         const indicator = container.querySelector('[aria-hidden="true"]');
 
@@ -118,7 +118,7 @@ describe('Indicator Component', () => {
     });
 
     it('applies inactive state with warning variant correctly', () => {
-        render(<Indicator variant="warning" state="inactive" data-testid="indicator" />);
+        render(<Indicator data-testid="indicator" state="inactive" variant="warning" />);
         const container = screen.getByTestId('indicator');
         const indicator = container.querySelector('[aria-hidden="true"]');
 
@@ -128,24 +128,24 @@ describe('Indicator Component', () => {
     });
 
     it('applies different sizes correctly', () => {
-        const {rerender} = render(<Indicator size="sm" data-testid="indicator" />);
+        const {rerender} = render(<Indicator data-testid="indicator" size="sm" />);
         let container = screen.getByTestId('indicator');
         let indicator = container.querySelector('[aria-hidden="true"]');
         assert.ok(indicator?.className.includes('size-2'), 'Should have small size class');
 
-        rerender(<Indicator size="md" data-testid="indicator" />);
+        rerender(<Indicator data-testid="indicator" size="md" />);
         container = screen.getByTestId('indicator');
         indicator = container.querySelector('[aria-hidden="true"]');
         assert.ok(indicator?.className.includes('size-3'), 'Should have medium size class');
 
-        rerender(<Indicator size="lg" data-testid="indicator" />);
+        rerender(<Indicator data-testid="indicator" size="lg" />);
         container = screen.getByTestId('indicator');
         indicator = container.querySelector('[aria-hidden="true"]');
         assert.ok(indicator?.className.includes('size-4'), 'Should have large size class');
     });
 
     it('combines variant and state correctly', () => {
-        render(<Indicator variant="error" state="active" data-testid="indicator" />);
+        render(<Indicator data-testid="indicator" state="active" variant="error" />);
         const container = screen.getByTestId('indicator');
         const indicator = container.querySelector('[aria-hidden="true"]');
 
@@ -186,7 +186,7 @@ describe('Indicator Component', () => {
     });
 
     it('passes additional props to the container span element', () => {
-        render(<Indicator data-testid="indicator-test" data-custom="value" />);
+        render(<Indicator data-custom="value" data-testid="indicator-test" />);
         const container = screen.getByTestId('indicator-test');
 
         assert.equal(container.getAttribute('data-custom'), 'value', 'Should pass additional props to container');

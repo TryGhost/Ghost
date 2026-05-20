@@ -4,15 +4,10 @@
  */
 
 /**
- * @typedef {object} SchedulerIntegration
- * @prop {Array<{id: string; secret: string}>} api_keys
- */
-
-/**
  * @typedef {object} InitOptions
  * @prop {string} [apiUrl]
  * @prop {SchedulerAdapter} [schedulerAdapter]
- * @prop {SchedulerIntegration} [schedulerIntegration]
+ * @prop {ReadonlyMap<string, Promise<{id: string, secret: string}>>} [internalKeys]
  */
 
 class GiftServiceWrapper {
@@ -51,6 +46,7 @@ class GiftServiceWrapper {
         const EmailAddressParser = require('../email-address/email-address-parser');
         const {blogIcon} = require('../../../server/lib/image');
         const {getSignedAdminToken} = require('../../adapters/scheduling/utils');
+        const {t} = require('../i18n');
 
         const repository = new GiftBookshelfRepository({
             GiftModel
@@ -61,7 +57,8 @@ class GiftServiceWrapper {
             settingsCache,
             urlUtils,
             getFromAddress: () => EmailAddressParser.stringify(settingsHelpers.getDefaultEmail()),
-            blogIcon
+            blogIcon,
+            t
         });
 
         this.service = new GiftService({
@@ -75,7 +72,7 @@ class GiftServiceWrapper {
                 return staffService.api.emails;
             },
             schedulerAdapter: options.schedulerAdapter ?? null,
-            schedulerIntegration: options.schedulerIntegration ?? null,
+            getSchedulerKey: options.internalKeys ? () => options.internalKeys.get('ghost-scheduler') : null,
             getSignedAdminToken,
             urlJoin: urlUtils.urlJoin.bind(urlUtils),
             apiUrl: options.apiUrl ?? null
