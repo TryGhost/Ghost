@@ -86,10 +86,10 @@ describe('Media API', function () {
                 .attach('thumbnail', path.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png'))
                 .expect(201);
 
-            res.body.media[0].url.should.match(new RegExp(`${config.get('url')}/content/media/\\d+/\\d+/sample.ogg`));
-            res.body.media[0].ref.should.equal('https://ghost.org/sample.ogg');
+            assert.match(new URL(res.body.media[0].url).pathname, /\/content\/media\/\d+\/\d+\/sample\.ogg/);
+            assert.equal(res.body.media[0].ref, 'https://ghost.org/sample.ogg');
 
-            media.push(res.body.media[0].url.replace(config.get('url'), ''));
+            media.push(new URL(res.body.media[0].url).pathname);
         });
 
         it('Can upload an mp3', async function () {
