@@ -35,7 +35,7 @@ function PageHeaderCount({className, children}: PropsWithChildrenAndClassName) {
     return (
         <Text
             as='span'
-            className={cn('ml-2 lg:ml-3 text-[1.9rem] sidebar:text-[2.2rem] tabular-nums', className)}
+            className={cn('ml-2 lg:ml-3 text-base tabular-nums', className)}
             data-page-header='count'
             tone='secondary'
             weight='regular'
