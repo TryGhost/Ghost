@@ -27,8 +27,9 @@ const tokenPermissionCheck = function tokenPermissionCheck(req, res, next) {
         // Match both with and without trailing slash since Express routes accept both
         const isDeleteAllContent = req.method === 'DELETE' && (req.path === '/db/' || req.path === '/db');
         const isTransferOwnership = req.method === 'PUT' && (req.path === '/users/owner/' || req.path === '/users/owner');
+        const isResetAuthentication = req.method === 'POST' && (req.path === '/authentication/reset/' || req.path === '/authentication/reset');
 
-        if (isDeleteAllContent || isTransferOwnership) {
+        if (isDeleteAllContent || isTransferOwnership || isResetAuthentication) {
             return next(new errors.NoPermissionError({
                 message: tpl(messages.staffTokenBlocked)
             }));

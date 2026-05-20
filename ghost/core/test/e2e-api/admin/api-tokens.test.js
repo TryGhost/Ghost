@@ -267,6 +267,51 @@ describe('Admin API', function () {
             });
         });
 
+        describe('POST /authentication/reset endpoint (reset all authentication)', function () {
+            it('Owner staff token should be blocked', async function () {
+                await agent.useStaffTokenForOwner();
+                await agent
+                    .post('authentication/reset')
+                    .expectStatus(403)
+                    .expect(({body}) => {
+                        assert.equal(body.errors[0].type, 'NoPermissionError');
+                        assert.equal(body.errors[0].message, 'Staff tokens are not allowed to access this endpoint');
+                    });
+            });
+
+            it('Admin staff token should be blocked', async function () {
+                await agent.useStaffTokenForAdmin();
+                await agent
+                    .post('authentication/reset')
+                    .expectStatus(403)
+                    .expect(({body}) => {
+                        assert.equal(body.errors[0].type, 'NoPermissionError');
+                        assert.equal(body.errors[0].message, 'Staff tokens are not allowed to access this endpoint');
+                    });
+            });
+
+            it('Editor staff token should be blocked', async function () {
+                await agent.useStaffTokenForEditor();
+                await agent
+                    .post('authentication/reset')
+                    .expectStatus(403);
+            });
+        });
+
+        describe('POST /authentication/reset endpoint - trailing slash handling', function () {
+            it('Staff token should be blocked WITH trailing slash', async function () {
+                await agent.useStaffTokenForOwner();
+                const res = await rawRequest('POST', '/ghost/api/admin/authentication/reset/');
+                assert.equal(res.status, 403, 'Request with trailing slash should be blocked');
+            });
+
+            it('Staff token should be blocked WITHOUT trailing slash', async function () {
+                await agent.useStaffTokenForOwner();
+                const res = await rawRequest('POST', '/ghost/api/admin/authentication/reset');
+                assert.equal(res.status, 403, 'Request without trailing slash should also be blocked');
+            });
+        });
+
         describe('Everything else should get access according to their permissions', function () {
             it('Owner staff tokens can access GET /db', async function () {
                 await agent.useStaffTokenForOwner();
