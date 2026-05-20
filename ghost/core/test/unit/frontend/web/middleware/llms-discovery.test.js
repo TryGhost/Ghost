@@ -12,7 +12,13 @@ describe('Unit: frontend/web/middleware/llms-discovery', function () {
     });
 
     it('adds llms discovery headers and preserves existing Link headers', async function () {
-        sinon.stub(settingsCache, 'get').returns(false);
+        sinon.stub(settingsCache, 'get').callsFake((key) => {
+            if (key === 'is_private') {
+                return false;
+            }
+
+            return null;
+        });
 
         const app = express('test');
         app.use(llmsDiscovery);
