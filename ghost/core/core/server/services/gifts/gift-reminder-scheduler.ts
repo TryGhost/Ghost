@@ -1,0 +1,97 @@
+import logging from '@tryghost/logging';
+import {Gift} from './gift';
+import type {InternalApiKey, InternalKeys} from '../internal-keys';
+import type {SchedulerAdapter, SchedulerJob} from '../../adapters/scheduling/types';
+import {GIFT_REMINDER_LEAD_DAYS} from './constants';
+// Same-domain (scheduling) primitives, used unconditionally.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const urlUtils = require('../../../shared/url-utils');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const {getSignedAdminToken} = require('../../adapters/scheduling/utils');
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+const GIFT_REMINDER_LEAD_MS = GIFT_REMINDER_LEAD_DAYS * MS_PER_DAY;
+
+interface GiftReminderSchedulerDeps {
+    apiUrl: string;
+    adapter: SchedulerAdapter;
+    internalKeys: InternalKeys;
+    findUnsentReminders(): Promise<Gift[]>;
+}
+
+export class GiftReminderScheduler {
+    readonly #apiUrl: string;
+    readonly #adapter: SchedulerAdapter;
+    readonly #internalKeys: InternalKeys;
+    readonly #findUnsentReminders: () => Promise<Gift[]>;
+
+    constructor({apiUrl, adapter, internalKeys, findUnsentReminders}: GiftReminderSchedulerDeps) {
+        this.#apiUrl = apiUrl;
+        this.#adapter = adapter;
+        this.#internalKeys = internalKeys;
+        this.#findUnsentReminders = findUnsentReminders;
+        adapter.register(this);
+    }
+
+    /**
+     * Queue a single reminder callback for a freshly-redeemed gift. The
+     * callback fires at consumesAt - GIFT_REMINDER_LEAD_DAYS. Already-due
+     * reminders are skipped — the daily cron picks them up.
+     */
+    async scheduleFor(gift: Gift): Promise<void> {
+        if (!gift.consumesAt) {
+            return;
+        }
+        const time = gift.consumesAt.getTime() - GIFT_REMINDER_LEAD_MS;
+        if (time <= Date.now()) {
+            return;
+        }
+
+        try {
+            const key = await this.#internalKeys.get('ghost-scheduler');
+            this.#adapter.schedule(this.#buildJob(time, key));
+        } catch (err) {
+            logging.error({
+                event: {name: 'gift_reminder_scheduler.schedule.failed'},
+                err,
+                giftToken: gift.token
+            }, 'Failed to schedule gift reminder');
+        }
+    }
+
+    /**
+     * Re-issue every queued reminder under the current scheduler key. Pass
+     * the pre-rotation secret as `previousKey` so each adapter-queued URL
+     * can be reconstructed for unschedule before resigning with the new
+     * key. Reminders whose fire time has already passed are skipped — the
+     * daily cron picks them up.
+     */
+    async rescheduleAll({previousKey}: {previousKey?: InternalApiKey} = {}): Promise<void> {
+        const currentKey = await this.#internalKeys.get('ghost-scheduler');
+        const unscheduleKey = previousKey ?? currentKey;
+        const pending = await this.#findUnsentReminders();
+
+        for (const gift of pending) {
+            if (!gift.consumesAt) {
+                continue;
+            }
+            const time = gift.consumesAt.getTime() - GIFT_REMINDER_LEAD_MS;
+            if (time <= Date.now()) {
+                continue;
+            }
+            this.#adapter.unschedule(this.#buildJob(time, unscheduleKey));
+            this.#adapter.schedule(this.#buildJob(time, currentKey));
+        }
+    }
+
+    #buildJob(time: number, key: InternalApiKey): SchedulerJob {
+        const signedAdminToken = getSignedAdminToken({
+            publishedAt: new Date(time).toISOString(),
+            apiUrl: this.#apiUrl,
+            key
+        });
+        const url = new URL(urlUtils.urlJoin(this.#apiUrl, 'gifts', 'flush_reminders'));
+        url.searchParams.set('token', signedAdminToken);
+        return {time, url: url.toString(), extra: {httpMethod: 'PUT'}};
+    }
+}

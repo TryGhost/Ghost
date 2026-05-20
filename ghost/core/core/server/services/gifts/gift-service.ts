@@ -3,7 +3,7 @@ import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import {Gift} from './gift';
 import type {GiftRepository} from './gift-repository';
-import type {InternalApiKey} from '../internal-keys';
+import type {GiftReminderScheduler} from './gift-reminder-scheduler';
 import tpl from '@tryghost/tpl';
 import {GIFT_REMINDER_FLOOR_DAYS, GIFT_REMINDER_LEAD_DAYS} from './constants';
 import {MEMBER_WELCOME_EMAIL_SLUGS} from '../member-welcome-emails/constants';
@@ -113,33 +113,13 @@ export interface GiftPurchaseData {
     stripePaymentIntentId: string;
 }
 
-interface SchedulerAdapter {
-    schedule(job: {time: number; url: string; extra: {httpMethod: string}}): void;
-    unschedule(job: {time: number; url: string; extra: {httpMethod: string}}): void;
-    register?(rescheduler: {rescheduleAll(opts?: {previousKey?: InternalApiKey}): Promise<void>}): void;
-}
-
-type GetSchedulerKey = () => Promise<InternalApiKey>;
-
-type GetSignedAdminToken = (options: {
-    publishedAt: string;
-    apiUrl: string;
-    key: InternalApiKey;
-}) => string;
-
-type UrlJoin = (...parts: string[]) => string;
-
 interface GiftServiceDeps {
     giftRepository: GiftRepository;
     memberRepository: MemberRepository;
     tiersService: TiersService;
     giftEmailService: GiftEmailService;
     staffServiceEmails: StaffServiceEmails;
-    schedulerAdapter: SchedulerAdapter | null;
-    getSchedulerKey: GetSchedulerKey | null;
-    getSignedAdminToken: GetSignedAdminToken | null;
-    urlJoin: UrlJoin | null;
-    apiUrl: string | null;
+    giftReminderScheduler: Pick<GiftReminderScheduler, 'scheduleFor'>;
 }
 
 interface ReminderSend {
@@ -153,7 +133,6 @@ export class GiftService {
 
     constructor(deps: GiftServiceDeps) {
         this.deps = deps;
-        deps.schedulerAdapter?.register?.(this);
     }
 
     generateToken(): string {
@@ -358,7 +337,7 @@ export class GiftService {
                 logging.error('Failed to notify staff of gift redemption', err);
             }
 
-            await this.scheduleReminder(redeemed);
+            await this.deps.giftReminderScheduler.scheduleFor(redeemed);
         };
 
         if (options.transacting) {
@@ -596,86 +575,6 @@ export class GiftService {
         }
 
         return {expiredCount};
-    }
-
-    private async scheduleReminder(gift: Gift): Promise<void> {
-        const {schedulerAdapter, getSchedulerKey, getSignedAdminToken, urlJoin, apiUrl} = this.deps;
-
-        if (!schedulerAdapter || !getSchedulerKey || !getSignedAdminToken || !urlJoin || !apiUrl) {
-            return;
-        }
-
-        if (!gift.consumesAt) {
-            return;
-        }
-
-        const time = gift.consumesAt.getTime() - GIFT_REMINDER_LEAD_MS;
-
-        if (time <= Date.now()) {
-            return;
-        }
-
-        try {
-            const key = await getSchedulerKey();
-            const signedAdminToken = getSignedAdminToken({
-                publishedAt: new Date(time).toISOString(),
-                apiUrl,
-                key
-            });
-
-            const url = new URL(urlJoin(apiUrl, 'gifts', 'flush_reminders'));
-            url.searchParams.set('token', signedAdminToken);
-
-            schedulerAdapter.schedule({
-                time,
-                url: url.toString(),
-                extra: {httpMethod: 'PUT'}
-            });
-        } catch (err) {
-            logging.error('Failed to schedule gift reminder', err);
-        }
-    }
-
-    /**
-     * Re-issue every queued reminder under the current scheduler key. Pass
-     * the pre-rotation secret as `previousKey` so each adapter-queued URL
-     * can be reconstructed for unschedule before resigning with the new
-     * key. Reminders whose fire time has already passed are skipped — the
-     * daily cron will pick them up.
-     */
-    async rescheduleAll({previousKey}: {previousKey?: InternalApiKey} = {}): Promise<void> {
-        const {schedulerAdapter, getSchedulerKey, getSignedAdminToken, urlJoin, apiUrl, giftRepository} = this.deps;
-        if (!schedulerAdapter || !getSchedulerKey || !getSignedAdminToken || !urlJoin || !apiUrl) {
-            return;
-        }
-
-        const currentKey = await getSchedulerKey();
-        const unscheduleKey = previousKey ?? currentKey;
-        const pending = await giftRepository.findUnsentReminders();
-
-        for (const gift of pending) {
-            if (!gift.consumesAt) {
-                continue;
-            }
-            const time = gift.consumesAt.getTime() - GIFT_REMINDER_LEAD_MS;
-            if (time <= Date.now()) {
-                continue;
-            }
-
-            const buildJob = (key: InternalApiKey) => {
-                const signedAdminToken = getSignedAdminToken({
-                    publishedAt: new Date(time).toISOString(),
-                    apiUrl,
-                    key
-                });
-                const url = new URL(urlJoin(apiUrl, 'gifts', 'flush_reminders'));
-                url.searchParams.set('token', signedAdminToken);
-                return {time, url: url.toString(), extra: {httpMethod: 'PUT'}};
-            };
-
-            schedulerAdapter.unschedule(buildJob(unscheduleKey));
-            schedulerAdapter.schedule(buildJob(currentKey));
-        }
     }
 
     async processReminders(): Promise<{remindedCount: number; skippedCount: number; failedCount: number}> {
