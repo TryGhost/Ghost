@@ -215,7 +215,7 @@ describe('Unit - services/routing/controllers/entry', function () {
             return promise;
         });
 
-        it('serves markdown when text/markdown is preferred for a public post', function (done) {
+        it('serves markdown when text/markdown is preferred for a public post', async function () {
             req.path = post.url;
             req.originalUrl = req.path;
             req.get.withArgs('Accept').returns('text/markdown');
@@ -238,20 +238,19 @@ describe('Unit - services/routing/controllers/entry', function () {
                 plaintext: 'Hello world'
             });
 
-            controllers.entry(req, res, function (err) {
-                done(err || new Error('next should not be called'));
-            }).then(() => {
-                sinon.assert.calledOnceWithExactly(fetchPublicEntryStub, 'posts', post.id);
-                sinon.assert.calledOnceWithExactly(res.type, 'text/markdown');
-                sinon.assert.match(res.send.firstCall.args[0], /^> ## Content Index/m);
-                sinon.assert.match(res.send.firstCall.args[0], /Fetch the complete content index at: http:\/\/127\.0\.0\.1:\d+\/llms\.txt/);
-                sinon.assert.match(res.send.firstCall.args[0], /^# Hello world/m);
-                sinon.assert.match(res.send.firstCall.args[0], /- Published: 2026-04-14T12:00:00.000Z/);
-                assert.equal(res.send.firstCall.args[0].includes('- Visibility:'), false);
-                sinon.assert.match(res.send.firstCall.args[0], /Hello \*\*world\*\*/);
-                sinon.assert.notCalled(renderStub);
-                done();
-            }).catch(done);
+            const nextSpy = sinon.spy();
+            await controllers.entry(req, res, nextSpy);
+
+            sinon.assert.notCalled(nextSpy);
+            sinon.assert.calledOnceWithExactly(fetchPublicEntryStub, 'posts', post.id);
+            sinon.assert.calledOnceWithExactly(res.type, 'text/markdown');
+            sinon.assert.match(res.send.firstCall.args[0], /^> ## Content Index/m);
+            sinon.assert.match(res.send.firstCall.args[0], /Fetch the complete content index at: http:\/\/127\.0\.0\.1:\d+\/llms\.txt/);
+            sinon.assert.match(res.send.firstCall.args[0], /^# Hello world/m);
+            sinon.assert.match(res.send.firstCall.args[0], /- Published: 2026-04-14T12:00:00.000Z/);
+            assert.equal(res.send.firstCall.args[0].includes('- Visibility:'), false);
+            sinon.assert.match(res.send.firstCall.args[0], /Hello \*\*world\*\*/);
+            sinon.assert.notCalled(renderStub);
         });
     });
 });
