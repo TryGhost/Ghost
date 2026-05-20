@@ -10,16 +10,14 @@ const t = (key, options) => {
     return i18n.t(key, options);
 };
 
-// Build a minimal handlebars-like object that exposes the bits our `t` helper
-// uses (`SafeString`, `escapeExpression`) and records registered helpers as
-// direct properties so the tests can invoke them.
+// Handlebars stand-in that records registered helpers as direct properties
+// so tests can invoke them, plus the real SafeString the `t` helper needs.
 function makeHandlebarsMock() {
     return {
         registerHelper(name, fn) {
             this[name] = fn;
         },
-        SafeString: Handlebars.SafeString,
-        escapeExpression: Handlebars.escapeExpression
+        SafeString: Handlebars.SafeString
     };
 }
 
@@ -256,9 +254,6 @@ describe('registerHelpers', function () {
     });
 
     // Refs https://github.com/TryGhost/Ghost/issues/26905
-    // i18next HTML-escapes interpolated values (e.g. `/` → `&#x2F;`). Without
-    // a SafeString wrapper Handlebars re-escapes the leading `&` so `{{t}}`
-    // emits `&amp;#x2F;`, which then renders as literal text in inboxes.
     it('t helper returns a SafeString so double-brace does not re-escape', function () {
         const labs = {isSet: () => false};
         const handlebars = makeHandlebarsMock();

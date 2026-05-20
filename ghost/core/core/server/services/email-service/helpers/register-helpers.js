@@ -64,11 +64,9 @@ module.exports = {
         });
 
         handlebars.registerHelper('t', function (key, options) {
-            // i18next already HTML-escapes interpolated values. Returning a
-            // SafeString tells Handlebars not to escape the result a second
-            // time — without this, `{{t}}` (double-brace) would turn i18next's
-            // `&#x2F;` into `&amp;#x2F;`, which then leaks into inboxes.
-            // Refs https://github.com/TryGhost/Ghost/issues/26905
+            // i18next already HTML-escapes interpolated values; wrap in SafeString
+            // so Handlebars doesn't escape them again (double-escaping leaks
+            // entities into inboxes). Refs https://github.com/TryGhost/Ghost/issues/26905
             const hash = options?.hash;
             return new handlebars.SafeString(thist(key, hash || options || {}));
         });
