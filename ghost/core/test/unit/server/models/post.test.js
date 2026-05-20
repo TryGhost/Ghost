@@ -13,7 +13,7 @@ describe('Unit: models/post', function () {
     const mockDb = require('mock-knex');
     let tracker;
 
-    before(function () {
+    beforeAll(function () {
         mockDb.mock(knex);
         tracker = mockDb.getTracker();
     });
@@ -22,7 +22,7 @@ describe('Unit: models/post', function () {
         sinon.restore();
     });
 
-    after(function () {
+    afterAll(function () {
         mockDb.unmock(knex);
     });
 
@@ -419,7 +419,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
         sinon.restore();
     });
 
-    after(function () {
+    afterAll(function () {
         sinon.restore();
     });
 

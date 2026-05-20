@@ -8,7 +8,11 @@ export default defineConfig({
     test: {
         globals: true,
         environment: 'node',
-        pool: 'forks',
+        // The `forks` pool deadlocks at teardown once the run is large enough
+        // (main process + a final idle worker, both parked in the event loop,
+        // no summary printed). `threads` tears workers down with
+        // worker.terminate() and is unaffected; it's also faster here.
+        pool: 'threads',
         env: {
             NODE_ENV: 'testing',
             WEBHOOK_SECRET: 'TEST_STRIPE_WEBHOOK_SECRET'
@@ -22,6 +26,7 @@ export default defineConfig({
             'test/unit/server/api/**/*.test.{js,ts}',
             'test/unit/server/data/**/*.test.{js,ts}',
             'test/unit/server/lib/**/*.test.{js,ts}',
+            'test/unit/server/models/**/*.test.{js,ts}',
             'test/unit/server/web/**/*.test.{js,ts}'
         ],
         // Fake-timer + nock + retry-loop interactions in this file don't

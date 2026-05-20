@@ -5,7 +5,7 @@ import {Banner, Button as ShadeButton} from '@tryghost/shade/components';
 import {type GroupBase, type MultiValue} from 'react-select';
 import {Hint, MultiSelect, type MultiSelectOption, Select, Separator, SettingGroupContent, TextField, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {RefreshCw} from 'lucide-react';
-import {getSettingValues, isSettingReadOnly, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {getSettingValues, isSettingReadOnly, useRegenerateAccessCode} from '@tryghost/admin-x-framework/api/settings';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useLimiter} from '../../../hooks/use-limiter';
@@ -92,7 +92,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const limiter = useLimiter();
     const isTrialMode = limiter?.isDisabled('publicSiteAccess');
     const isPrivateLocked = isSettingReadOnly(settings, 'is_private') || isSettingReadOnly(settings, 'password');
-    const {mutateAsync: editSettings} = useEditSettings();
+    const {mutateAsync: regenerateAccessCode} = useRegenerateAccessCode();
     const [isRegenerating, setIsRegenerating] = React.useState(false);
     const {
         localSettings,
@@ -148,7 +148,13 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const handleRegenerateAccessCode = async () => {
         setIsRegenerating(true);
         try {
-            await editSettings([{key: 'password', value: null}]);
+            const response = await regenerateAccessCode(null);
+            const regeneratedAccessCode = response.settings.find(setting => setting.key === 'password')?.value;
+
+            if (typeof regeneratedAccessCode === 'string') {
+                updateSetting('password', regeneratedAccessCode);
+                clearError('password');
+            }
         } catch {
             showToast({
                 type: 'error',
@@ -204,6 +210,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                                     <button
                                         aria-label='Regenerate access code'
                                         className='mr-[5px] flex size-5 cursor-pointer items-center justify-center p-0 text-grey-900 disabled:cursor-not-allowed disabled:opacity-40 dark:text-grey-400'
+                                        data-testid='regenerate-access-code'
                                         disabled={isRegenerating}
                                         title='Regenerate access code'
                                         type='button'

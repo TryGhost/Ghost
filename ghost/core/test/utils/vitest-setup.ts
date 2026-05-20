@@ -18,8 +18,8 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'testing';
 process.env.WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_SECRET';
 
 // Generate unique session values for database and port BEFORE loading
-// Ghost. With pool=forks each test file is its own process, so each
-// fork gets its own session — but values already set externally
+// Ghost. This setup file runs once per test file (isolated environment),
+// so each file gets its own session — but values already set externally
 // (CI, user shell) are respected.
 const sessionId = crypto.randomBytes(4).toString('hex');
 const sqliteGenerated = !process.env.database__connection__filename;
