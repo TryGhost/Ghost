@@ -9,8 +9,7 @@ interface ActionRow {
     context: {action_name: string; api_keys_rotated: number; users_locked: number};
 }
 
-// eslint-disable-next-line no-unused-vars
-type TxCallback = (tx: object) => Promise<unknown>;
+type TxCallback = (_tx: object) => Promise<unknown>;
 
 /**
  * In-memory pretend of the auth-domain modules. We pass it as overrides so
