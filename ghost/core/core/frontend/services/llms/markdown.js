@@ -107,7 +107,7 @@ function getPrimaryTagName(entry) {
     return null;
 }
 
-function getLlmsIndexUrl(entry) {
+function getLlmsIndexUrl() {
     return urlUtils.urlFor({relativeUrl: '/llms.txt'}, true);
 }
 
@@ -138,7 +138,7 @@ function renderEntryMarkdown(entry) {
     const body = renderEntryMarkdownBody(entry) || '_No content available._';
     const lines = [
         '> ## Content Index',
-        `> Fetch the complete content index at: ${getLlmsIndexUrl(entry)}`,
+        `> Fetch the complete content index at: ${getLlmsIndexUrl()}`,
         '> Use this file to discover other available public pages before exploring further.',
         '',
         `# ${entry.title || 'Untitled'}`
