@@ -160,7 +160,7 @@ const AutomationEditor: React.FC = () => {
     };
 
     return (
-        <div className='flex h-full w-full flex-col' data-testid='automation-editor'>
+        <div className='fixed inset-0 z-50 flex flex-col bg-background' data-testid='automation-editor'>
             <AutomationHeader
                 automation={draft}
                 isLoadingAutomation={isLoadingAutomation}

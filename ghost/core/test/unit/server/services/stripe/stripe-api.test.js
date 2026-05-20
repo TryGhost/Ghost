@@ -785,6 +785,45 @@ describe('StripeAPI', function () {
             assert.equal(args.customer, mockCustomerId);
         });
 
+        it('passes customer email when no customer is provided', async function () {
+            await api.createGiftCheckoutSession({
+                amount: 5000,
+                currency: 'usd',
+                tierName: 'Pro',
+                cadence: 'year',
+                duration: 1,
+                successUrl: '/gift-success',
+                cancelUrl: '/gift-cancel',
+                metadata: {},
+                customerEmail: mockCustomerEmail
+            });
+
+            const args = mockStripe.checkout.sessions.create.firstCall.firstArg;
+
+            assert.equal(args.customer, undefined);
+            assert.equal(args.customer_email, mockCustomerEmail);
+        });
+
+        it('uses only customer when both customer and customer email are provided', async function () {
+            await api.createGiftCheckoutSession({
+                amount: 5000,
+                currency: 'usd',
+                tierName: 'Pro',
+                cadence: 'year',
+                duration: 1,
+                successUrl: '/gift-success',
+                cancelUrl: '/gift-cancel',
+                metadata: {},
+                customer: {id: mockCustomerId},
+                customerEmail: mockCustomerEmail
+            });
+
+            const args = mockStripe.checkout.sessions.create.firstCall.firstArg;
+
+            assert.equal(args.customer, mockCustomerId);
+            assert.equal(args.customer_email, undefined);
+        });
+
         it('does not include invoice_creation or custom_fields', async function () {
             await api.createGiftCheckoutSession({
                 amount: 5000,

@@ -561,6 +561,28 @@ describe('checkoutGift action', () => {
         expect(result.action).toBe('checkoutGift:success');
     });
 
+    test('passes customer email through to api.member.checkoutGift', async () => {
+        const mockApi = {
+            member: {
+                checkoutGift: vi.fn(() => Promise.resolve())
+            }
+        };
+
+        const result = await ActionHandler({
+            action: 'checkoutGift',
+            data: {tierId: 'tier_123', cadence: 'month', email: 'jamie@example.com'},
+            state: {},
+            api: mockApi
+        });
+
+        expect(mockApi.member.checkoutGift).toHaveBeenCalledWith({
+            tierId: 'tier_123',
+            cadence: 'month',
+            email: 'jamie@example.com'
+        });
+        expect(result.action).toBe('checkoutGift:success');
+    });
+
     test('returns failed action with notification on error', async () => {
         const mockApi = {
             member: {
