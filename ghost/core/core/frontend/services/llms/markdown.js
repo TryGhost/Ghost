@@ -71,13 +71,13 @@ function getAcceptedMarkdownContentType(req) {
 }
 
 function markdownFromHtml(html) {
-    const markdown = collapseWhitespace(nhm.translate(html || ''));
+    const markdown = nhm.translate(html || '').trim();
 
     if (!markdown) {
         return null;
     }
 
-    return markdown.replace(/\n{3,}/g, '\n\n').trim();
+    return markdown.replace(/\n{3,}/g, '\n\n');
 }
 
 function formatIsoDate(value) {
