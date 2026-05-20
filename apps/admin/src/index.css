@@ -146,7 +146,9 @@ body.react-admin .gh-canvas-breadcrumb+.gh-canvas-title {
 
 body.react-admin .gh-canvas-title,
 body.react-admin [data-header="header-title"] {
-    font-size: 25px;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0;
 }
 
 body.react-admin [data-header="header"] {

@@ -51,7 +51,7 @@
     background: var(--white);
     font-size: 1.3rem;
     font-weight: 500;
-    height: 34px;
+    height: 32px;
     padding: 6px 12px 6px;
     outline: none;
     border: 1px solid transparent;
@@ -934,7 +934,7 @@
 
 .gh-content-entry-title {
     margin: 0 0 2px;
-    font-size: 1.55rem;
+    font-size: 1.4rem;
     font-weight: 600;
 }
 
@@ -1346,7 +1346,8 @@ span.dropdown .gh-post-list-cta > span {
 }
 
 .gh-list .gh-post-list-analytics .gh-content-entry-title {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
+    font-weight: 600;
 }
 
 .gh-post-list-analytics .gh-content-email-stats-value {
