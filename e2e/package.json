@@ -40,7 +40,7 @@
     "dotenv": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-no-relative-import-paths": "1.6.1",
-    "eslint-plugin-playwright": "2.10.1",
+    "eslint-plugin-playwright": "2.10.2",
     "express": "4.21.2",
     "knex": "3.1.0",
     "mysql2": "3.18.1",
