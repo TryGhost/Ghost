@@ -6,13 +6,14 @@ function appendHeaderValue(existingValue, newValue) {
         return newValue;
     }
 
-    const values = Array.isArray(existingValue) ? existingValue : [existingValue];
+    const raw = Array.isArray(existingValue) ? existingValue : [existingValue];
+    const values = raw.flatMap(v => v.split(',').map(s => s.trim()));
 
     if (values.includes(newValue)) {
-        return existingValue;
+        return raw.join(', ');
     }
 
-    return values.concat(newValue).join(', ');
+    return raw.concat(newValue).join(', ');
 }
 
 module.exports = function llmsDiscovery(req, res, next) {
