@@ -83,11 +83,19 @@ export default class PostScheduling {
         const currentKey = await this.#internalKeys.get('ghost-scheduler');
         const unscheduleKey = previousKey ?? currentKey;
 
+        // Same-key rebuild (no previousKey, boot path) → URL signature is
+        // identical to the about-to-be-scheduled job. The default adapter
+        // implements unschedule via tombstones keyed by URL+time, so a same-URL
+        // unschedule poisons the scheduled job. Bootstrap mode skips the
+        // tombstone write. Rotation (previousKey provided) → URLs differ, so
+        // the tombstone correctly targets the old queued entry.
+        const bootstrap = !previousKey;
+
         for (const resourceType of Object.keys(scheduledResources) as ScheduledResource[]) {
             for (const model of scheduledResources[resourceType]) {
                 this.#adapter.unschedule(
                     this.#normalize({model, key: unscheduleKey, resourceType}),
-                    {bootstrap: true}
+                    {bootstrap}
                 );
                 this.#adapter.schedule(
                     this.#normalize({model, key: currentKey, resourceType})

@@ -129,6 +129,21 @@ describe('GiftReminderScheduler', function () {
             }
         });
 
+        it('rotation tells the adapter to actually delete the stale queued job', async function () {
+            // Outcome: rotation requests a real (non-bootstrap) unschedule so
+            // the adapter writes a tombstone and the stale callback is
+            // suppressed at execution time. SchedulingDefault's own tests
+            // cover the tombstone semantics; here we verify GiftReminderScheduler
+            // honours the contract.
+            const deps = buildDeps({pending: [futureGift(30)]});
+            const scheduler = new GiftReminderScheduler(deps);
+
+            await scheduler.rescheduleAll({previousKey: {id: 'k', secret: HEX_OLD}});
+
+            sinon.assert.calledOnce(deps.adapter.unschedule);
+            assert.equal(deps.adapter.unschedule.getCall(0).args[1].bootstrap, false);
+        });
+
         it('uses the current key for unschedule when previousKey is omitted', async function () {
             const pending = [futureGift(30)];
             const deps = buildDeps({pending});
@@ -142,6 +157,20 @@ describe('GiftReminderScheduler', function () {
             const scheduleUrl = deps.adapter.schedule.getCall(0).args[0].url;
             assert.equal(unscheduleUrl, scheduleUrl,
                 'with no previousKey, both URLs are signed under the same (current) key');
+        });
+
+        it('same-key rebuild marks unschedule as bootstrap so the new job survives', async function () {
+            // Outcome: when no previousKey is supplied (boot), unschedule and
+            // schedule use the same URL. GiftReminderScheduler must mark the
+            // unschedule as bootstrap so the adapter skips the tombstone and
+            // the about-to-be-scheduled job stays pingable.
+            const deps = buildDeps({pending: [futureGift(30)]});
+            const scheduler = new GiftReminderScheduler(deps);
+
+            await scheduler.rescheduleAll();
+
+            sinon.assert.calledOnce(deps.adapter.unschedule);
+            assert.equal(deps.adapter.unschedule.getCall(0).args[1].bootstrap, true);
         });
 
         it('skips reminders whose fire time has already passed', async function () {
