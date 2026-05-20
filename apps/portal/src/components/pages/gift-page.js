@@ -110,6 +110,10 @@ export const GiftPageStyles = `
     margin-top: 24px;
 }
 
+.gh-portal-gift-checkout-email + .gh-portal-gift-checkout-section {
+    margin-top: 36px;
+}
+
 .gh-portal-gift-checkout-label {
     font-size: 1.2rem;
     font-weight: 500;
@@ -826,13 +830,6 @@ const GiftPage = () => {
                                 </p>
                             </header>
 
-                            <div className='gh-portal-gift-checkout-section'>
-                                <GiftPriceSwitch
-                                    selectedInterval={activeInterval}
-                                    setSelectedInterval={setSelectedInterval}
-                                />
-                            </div>
-
                             {!isLoggedIn && (
                                 <div className='gh-portal-gift-checkout-section gh-portal-gift-checkout-email'>
                                     <InputField
@@ -842,6 +839,13 @@ const GiftPage = () => {
                                     />
                                 </div>
                             )}
+
+                            <div className='gh-portal-gift-checkout-section'>
+                                <GiftPriceSwitch
+                                    selectedInterval={activeInterval}
+                                    setSelectedInterval={setSelectedInterval}
+                                />
+                            </div>
 
                             <div className='gh-portal-gift-checkout-section'>
                                 <div className='gh-portal-gift-checkout-label'>{isSingleTier ? t('Membership details') : t('Tier')}</div>
