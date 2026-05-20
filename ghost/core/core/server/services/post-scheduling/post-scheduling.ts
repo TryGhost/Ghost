@@ -2,6 +2,7 @@
 import moment from 'moment';
 import logging from '@tryghost/logging';
 import type {InternalApiKey, InternalKeys} from '../internal-keys';
+import type {SchedulerAdapter, SchedulerJob} from '../../adapters/scheduling/types';
 
 // CJS-only modules — typed loosely below. models is the Bookshelf registry
 // without TS declarations; the rest are JS modules without types.
@@ -14,31 +15,9 @@ const {getSignedAdminToken} = require('../../adapters/scheduling/utils');
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const events = require('../../lib/common/events');
 
-interface SchedulerJob {
-    time: number;
-    url: string;
-    extra: {
-        httpMethod: string;
-        oldTime?: number | null;
-    };
-}
-
-// Adapters implement scheduling-base; the contract we rely on here is the
-// three callable methods plus the rescheduleOnBoot property that boot reads
-// elsewhere.
-interface SchedulingAdapter {
-    run(): void;
-    // eslint-disable-next-line no-unused-vars
-    schedule(job: SchedulerJob): void;
-    // eslint-disable-next-line no-unused-vars
-    unschedule(job: SchedulerJob, opts?: {bootstrap?: boolean}): void;
-    // eslint-disable-next-line no-unused-vars
-    register(rescheduler: {rescheduleAll(opts?: {previousKey?: InternalApiKey}): Promise<void>}): void;
-}
-
 interface PostSchedulingDeps {
     apiUrl: string;
-    adapter: SchedulingAdapter;
+    adapter: SchedulerAdapter;
     internalKeys: InternalKeys;
 }
 
@@ -49,7 +28,7 @@ type ScheduledResource = typeof SCHEDULED_RESOURCES[number];
 
 export default class PostScheduling {
     readonly #apiUrl: string;
-    readonly #adapter: SchedulingAdapter;
+    readonly #adapter: SchedulerAdapter;
     readonly #internalKeys: InternalKeys;
 
     constructor({apiUrl, adapter, internalKeys}: PostSchedulingDeps) {
