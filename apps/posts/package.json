@@ -61,6 +61,7 @@
         "@tryghost/nql-lang": "catalog:",
         "@tryghost/shade": "workspace:*",
         "@xyflow/react": "12.8.6",
+        "dequal": "catalog:",
         "i18n-iso-countries": "7.14.0",
         "moment-timezone": "0.5.45",
         "papaparse": "5.5.3",

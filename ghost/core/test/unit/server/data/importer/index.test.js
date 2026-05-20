@@ -280,7 +280,7 @@ describe('Importer', function () {
             describe('Process Zip', function () {
                 const testZip = {name: 'myFile.zip', path: '/my/path/myFile.zip'};
 
-                this.beforeEach(() => {
+                beforeEach(function () {
                     sinon.stub(JSONHandler, 'loadFile').returns(Promise.resolve({posts: []}));
                     sinon.stub(ImageHandler, 'loadFile');
                     sinon.stub(RevueHandler, 'loadFile');

@@ -1,22 +1,54 @@
 import '@xyflow/react/dist/style.css';
-import React from 'react';
-import {AutomationAction, AutomationDetail} from '@tryghost/admin-x-framework/api/automations';
+import AddStepEdge, {type AddStepEdgeData} from './add-step-edge';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import StepPicker, {type StepPickerType} from './step-picker';
+import {AutomationAction, AutomationDetail, AutomationSendEmailAction, AutomationWaitAction, InsertActionAnchor, MAX_AUTOMATION_ACTIONS, insertSendEmailAction, insertWaitAction} from '@tryghost/admin-x-framework/api/automations';
 import {Background, Edge, Handle, Node, NodeProps, Position, ReactFlow} from '@xyflow/react';
-import {Banner, LoadingIndicator} from '@tryghost/shade/components';
-import {LucideIcon} from '@tryghost/shade/utils';
+import {Banner, Button, Checkbox, Input, Label, LoadingIndicator, Popover, PopoverContent, PopoverTrigger, Select, SelectTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
+import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 
-const TAIL_NODE_ID = '__tail__';
 const NODE_X = 0;
+const NODE_WIDTH = 256;
+const NODE_COLUMN_CENTER_X = NODE_X + (NODE_WIDTH / 2);
 const NODE_GAP_Y = 180;
+const INITIAL_VIEWPORT_Y = 40;
+const DISABLED_REASON = `Limit of ${formatNumber(MAX_AUTOMATION_ACTIONS)} steps reached`;
+const DEFAULT_EDGE_STROKE = 'var(--xy-edge-stroke)';
 
-type StepNodeData = {
+// React Flow node IDs for the trigger and tail nodes. The canvas builds the visual graph using
+// these; they are not action IDs and never reach the API.
+export const TRIGGER_CANVAS_ID = '__trigger__';
+export const TAIL_CANVAS_ID = '__tail__';
+
+// Canvas-local anchor: React Flow node IDs of the two nodes between which a step is being inserted.
+// Translated to the API's `InsertActionAnchor` by `toApiAnchor` before reaching the data helpers.
+type CanvasAnchor = {sourceId: string; targetId: string};
+
+const toApiAnchor = ({sourceId, targetId}: CanvasAnchor): InsertActionAnchor => ({
+    previousActionId: sourceId === TRIGGER_CANVAS_ID ? undefined : sourceId,
+    nextActionId: targetId === TAIL_CANVAS_ID ? undefined : targetId
+});
+
+type StepNodeDisplayData = {
     icon: React.ElementType;
     label: string;
     value?: string;
 };
 
+type StepNodeData = StepNodeDisplayData & {
+    selected: boolean;
+    onSelect: () => void;
+};
+
+type TailNodeData = {
+    disabled: boolean;
+    disabledReason?: string;
+    onPick: (type: StepPickerType, anchor: CanvasAnchor) => void;
+    anchor: CanvasAnchor;
+};
+
 type StepFlowNode = Node<StepNodeData, 'trigger' | 'step'>;
-type TailFlowNode = Node<Record<string, never>, 'tail'>;
+type TailFlowNode = Node<TailNodeData, 'tail'>;
 type AutomationFlowNode = StepFlowNode | TailFlowNode;
 
 const HIDDEN_HANDLE_STYLE: React.CSSProperties = {
@@ -26,29 +58,35 @@ const HIDDEN_HANDLE_STYLE: React.CSSProperties = {
     border: 'none'
 };
 
-const EDGE_STYLE: React.CSSProperties = {stroke: 'var(--color-grey-500)'};
-
 const HiddenHandle: React.FC<{type: 'source' | 'target'; position: Position}> = ({type, position}) => (
     <Handle isConnectable={false} position={position} style={HIDDEN_HANDLE_STYLE} type={type} />
 );
 
-const NodeShell: React.FC<React.PropsWithChildren<{className?: string}>> = ({children, className}) => (
-    <div
-        className={`flex w-64 items-center gap-3 rounded-lg bg-white px-4 py-3 text-left text-sm shadow-sm ${className ?? ''}`}
+const NodeShell: React.FC<React.PropsWithChildren<{className?: string; data: StepNodeData}>> = ({children, className, data}) => (
+    <button
+        aria-label={data.value ? `${data.label}: ${data.value}` : data.label}
+        aria-pressed={data.selected}
+        className={cn(
+            'flex w-64 items-center gap-3 rounded-lg border border-border-default bg-surface-elevated px-4 py-3 text-left text-sm text-foreground shadow-sm transition-colors hover:border-border-strong focus-visible:border-border-strong focus-visible:outline-none',
+            data.selected && 'border-blue-500 shadow-[inset_0_0_0_1px_var(--color-blue-500),0_1px_2px_0_rgb(0_0_0_/_0.05)]',
+            className
+        )}
+        type='button'
+        onClick={data.onSelect}
     >
         {children}
-    </div>
+    </button>
 );
 
 const StepNodeContent: React.FC<{data: StepNodeData}> = ({data}) => {
     const Icon = data.icon;
     return (
         <>
-            <div className='flex size-8 shrink-0 items-center justify-center rounded-md bg-grey-100 text-grey-700'>
+            <div className='flex size-8 shrink-0 items-center justify-center rounded-md bg-muted text-text-secondary'>
                 <Icon className='size-4' />
             </div>
             <div className='flex min-w-0 flex-col text-left'>
-                <span className='text-xs text-grey-600'>{data.label}</span>
+                <span className='text-xs text-text-secondary'>{data.label}</span>
                 {data.value && <span className='truncate font-medium'>{data.value}</span>}
             </div>
         </>
@@ -56,7 +94,7 @@ const StepNodeContent: React.FC<{data: StepNodeData}> = ({data}) => {
 };
 
 const TriggerNode = React.memo<NodeProps<StepFlowNode>>(({data}) => (
-    <NodeShell>
+    <NodeShell data={data}>
         <StepNodeContent data={data} />
         <HiddenHandle position={Position.Bottom} type='source' />
     </NodeShell>
@@ -64,7 +102,7 @@ const TriggerNode = React.memo<NodeProps<StepFlowNode>>(({data}) => (
 TriggerNode.displayName = 'TriggerNode';
 
 const StepNode = React.memo<NodeProps<StepFlowNode>>(({data}) => (
-    <NodeShell>
+    <NodeShell data={data}>
         <HiddenHandle position={Position.Top} type='target' />
         <StepNodeContent data={data} />
         <HiddenHandle position={Position.Bottom} type='source' />
@@ -72,19 +110,67 @@ const StepNode = React.memo<NodeProps<StepFlowNode>>(({data}) => (
 ));
 StepNode.displayName = 'StepNode';
 
-// TODO: convert to a <button> once "add step" is wired up. Currently decorative.
-const TailNode = React.memo<NodeProps<TailFlowNode>>(() => (
-    <div aria-hidden='true' className='flex h-12 w-64 items-center justify-center rounded-lg border border-dashed border-grey-300 bg-white'>
-        <HiddenHandle position={Position.Top} type='target' />
-        <LucideIcon.Plus className='size-5 text-grey-500' strokeWidth={1.5} />
-    </div>
-));
-TailNode.displayName = 'TailNode';
+const TailNode: React.FC<NodeProps<TailFlowNode>> = ({data}) => {
+    const [open, setOpen] = useState(false);
+
+    const handlePick = (type: StepPickerType) => {
+        setOpen(false);
+        data.onPick(type, data.anchor);
+    };
+
+    const triggerClassName = 'flex h-12 w-64 items-center justify-center rounded-lg border border-dashed border-border-default bg-surface-page transition-colors hover:border-border-strong focus-visible:border-border-strong focus-visible:outline-none';
+
+    if (data.disabled) {
+        const content = (
+            <div
+                aria-disabled='true'
+                className={cn(triggerClassName, 'cursor-not-allowed opacity-60')}
+                data-testid='add-step-tail-button'
+            >
+                <HiddenHandle position={Position.Top} type='target' />
+                <LucideIcon.Plus className='size-5 text-text-secondary' strokeWidth={1.5} />
+            </div>
+        );
+        if (!data.disabledReason) {
+            return content;
+        }
+        return (
+            <TooltipProvider delayDuration={150}>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <span tabIndex={0}>{content}</span>
+                    </TooltipTrigger>
+                    <TooltipContent>{data.disabledReason}</TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+        );
+    }
+
+    return (
+        <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger
+                aria-label='Add step'
+                className={cn(triggerClassName, 'cursor-pointer')}
+                data-testid='add-step-tail-button'
+            >
+                <HiddenHandle position={Position.Top} type='target' />
+                <LucideIcon.Plus className='size-5 text-text-secondary' strokeWidth={1.5} />
+            </PopoverTrigger>
+            <PopoverContent align='center' className='p-0' side='top'>
+                <StepPicker onPick={handlePick} />
+            </PopoverContent>
+        </Popover>
+    );
+};
 
 const nodeTypes = {
     trigger: TriggerNode,
     step: StepNode,
     tail: TailNode
+};
+
+const edgeTypes = {
+    'add-step-edge': AddStepEdge
 };
 
 export const formatWait = (hours: number): string => {
@@ -98,7 +184,7 @@ export const formatWait = (hours: number): string => {
     return hours === 1 ? '1 hour' : `${hours} hours`;
 };
 
-const buildActionData = (action: AutomationAction): StepNodeData => {
+const buildActionData = (action: AutomationAction): StepNodeDisplayData => {
     switch (action.type) {
     case 'wait':
         return {icon: LucideIcon.Clock, label: 'Wait', value: formatWait(action.data.wait_hours)};
@@ -111,6 +197,9 @@ const buildActionData = (action: AutomationAction): StepNodeData => {
     }
 };
 
+// Returns the actions of `automation` ordered along the chain from the head. Throws on malformed
+// data (cycle, branch, or disconnected nodes). The canvas wraps its render tree in an Error
+// Boundary that catches these and renders the same "Couldn't load automation" banner.
 const getInitialActionOrder = (automation: AutomationDetail): AutomationAction[] => {
     if (automation.actions.length === 0) {
         return [];
@@ -149,7 +238,15 @@ const getInitialActionOrder = (automation: AutomationDetail): AutomationAction[]
     return ordered;
 };
 
-const buildGraph = (automation: AutomationDetail): {nodes: AutomationFlowNode[]; edges: Edge[]} => {
+type BuildGraphParams = {
+    automation: AutomationDetail;
+    disabled: boolean;
+    onPick: (type: StepPickerType, anchor: CanvasAnchor) => void;
+    onSelectStep: (stepId: string) => void;
+    selectedStepId: string | null;
+}
+
+const buildGraph = ({automation, disabled, onPick, onSelectStep, selectedStepId}: BuildGraphParams): {nodes: AutomationFlowNode[]; edges: Edge[]} => {
     const ordered = getInitialActionOrder(automation);
     const baseNodeProps = {
         draggable: false,
@@ -157,13 +254,26 @@ const buildGraph = (automation: AutomationDetail): {nodes: AutomationFlowNode[];
         connectable: false,
         focusable: false
     };
+    const disabledReason = disabled ? DISABLED_REASON : undefined;
+
+    const lastActionId = ordered[ordered.length - 1]?.id;
+    const tailAnchor: CanvasAnchor = {
+        sourceId: lastActionId ?? TRIGGER_CANVAS_ID,
+        targetId: TAIL_CANVAS_ID
+    };
 
     const nodes: AutomationFlowNode[] = [
         {
-            id: 'trigger',
+            id: TRIGGER_CANVAS_ID,
             type: 'trigger',
             position: {x: NODE_X, y: 0},
-            data: {icon: LucideIcon.Zap, label: 'Trigger', value: 'Member signs up'},
+            data: {
+                icon: LucideIcon.Zap,
+                label: 'Trigger',
+                value: 'Member signs up',
+                selected: selectedStepId === TRIGGER_CANVAS_ID,
+                onSelect: () => onSelectStep(TRIGGER_CANVAS_ID)
+            },
             ...baseNodeProps
         }
     ];
@@ -173,55 +283,357 @@ const buildGraph = (automation: AutomationDetail): {nodes: AutomationFlowNode[];
             id: action.id,
             type: 'step',
             position: {x: NODE_X, y: NODE_GAP_Y * (index + 1)},
-            data: buildActionData(action),
+            data: {
+                ...buildActionData(action),
+                selected: selectedStepId === action.id,
+                onSelect: () => onSelectStep(action.id)
+            },
             ...baseNodeProps
         });
     });
 
     nodes.push({
-        id: TAIL_NODE_ID,
+        id: TAIL_CANVAS_ID,
         type: 'tail',
         position: {x: NODE_X, y: NODE_GAP_Y * (ordered.length + 1)},
-        data: {},
-        ...baseNodeProps
+        data: {disabled, disabledReason, onPick, anchor: tailAnchor},
+        draggable: false,
+        connectable: false
     });
 
+    // Every connecting line between existing nodes gets a circular + on hover. The trailing edge into the
+    // tail node intentionally has none — the rectangular tail button already covers that slot.
     const edges: Edge[] = [];
-    let previousId = 'trigger';
-    const pushEdge = (source: string, target: string) => {
-        edges.push({
-            id: `e-${source}-${target}`,
-            source,
-            target,
-            type: 'smoothstep',
-            focusable: false,
-            style: EDGE_STYLE
-        });
-    };
+    let previousCanvasId: string = TRIGGER_CANVAS_ID;
     ordered.forEach((action) => {
-        pushEdge(previousId, action.id);
-        previousId = action.id;
+        const edgeData: AddStepEdgeData = {
+            sourceId: previousCanvasId,
+            targetId: action.id,
+            disabled,
+            disabledReason,
+            onPick
+        };
+        edges.push({
+            id: `e-${previousCanvasId}-${action.id}`,
+            source: previousCanvasId,
+            target: action.id,
+            type: 'add-step-edge',
+            focusable: false,
+            data: edgeData
+        });
+        previousCanvasId = action.id;
     });
-    pushEdge(previousId, TAIL_NODE_ID);
+
+    edges.push({
+        id: `e-${previousCanvasId}-${TAIL_CANVAS_ID}`,
+        source: previousCanvasId,
+        target: TAIL_CANVAS_ID,
+        type: 'smoothstep',
+        focusable: false,
+        style: {stroke: DEFAULT_EDGE_STROKE}
+    });
 
     return {nodes, edges};
 };
 
-interface AutomationCanvasProps {
+const getInitialViewport = (canvasWidth: number): {x: number; y: number; zoom: number} => ({
+    x: Math.round((canvasWidth / 2) - NODE_COLUMN_CENTER_X),
+    y: INITIAL_VIEWPORT_Y,
+    zoom: 1
+});
+
+type TriggerStepSidebarDetail = {
+    icon: React.ElementType;
+    label: 'Trigger';
+    title: string;
+    memberTiers: MemberTier[];
+    type: 'trigger';
+};
+
+type WaitStepSidebarDetail = {
+    action: AutomationWaitAction;
+    icon: React.ElementType;
+    label: 'Wait';
+    title: string;
+    type: 'wait';
+};
+
+type SendEmailStepSidebarDetail = {
+    action: AutomationSendEmailAction;
+    icon: React.ElementType;
+    label: 'Send email';
+    title: string;
+    type: 'send_email';
+};
+
+type StepSidebarDetail = TriggerStepSidebarDetail | WaitStepSidebarDetail | SendEmailStepSidebarDetail;
+
+type MemberTier = 'free' | 'paid';
+
+const automationSlugMemberTiers: Record<string, MemberTier[]> = {
+    'member-welcome-email-free': ['free'],
+    'member-welcome-email-paid': ['paid']
+};
+
+const getStepSidebarDetail = (automation: AutomationDetail, stepId: string | null): StepSidebarDetail | null => {
+    if (!stepId) {
+        return null;
+    }
+
+    if (stepId === TRIGGER_CANVAS_ID) {
+        return {
+            icon: LucideIcon.Zap,
+            label: 'Trigger',
+            title: 'Member signs up',
+            memberTiers: automationSlugMemberTiers[automation.slug] ?? [],
+            type: 'trigger'
+        };
+    }
+
+    const action = automation.actions.find(item => item.id === stepId);
+    if (!action) {
+        return null;
+    }
+
+    switch (action.type) {
+    case 'wait': {
+        const waitValue = formatWait(action.data.wait_hours);
+        return {
+            icon: LucideIcon.Clock,
+            label: 'Wait',
+            title: waitValue,
+            action,
+            type: 'wait'
+        };
+    }
+    case 'send_email':
+        return {
+            icon: LucideIcon.Mail,
+            label: 'Send email',
+            title: action.data.email_subject || 'No subject',
+            action,
+            type: 'send_email'
+        };
+    default: {
+        const _exhaustive: never = action;
+        throw new Error(`Unknown automation action type: ${_exhaustive}`);
+    }
+    }
+};
+
+const getWaitParts = (hours: number): {amount: string; unit: string} => {
+    if (hours % 24 === 0) {
+        return {amount: formatNumber(hours / 24), unit: hours === 24 ? 'Day' : 'Days'};
+    }
+    return {amount: formatNumber(hours), unit: hours === 1 ? 'Hour' : 'Hours'};
+};
+
+const SidebarField: React.FC<{label: string; children: React.ReactNode}> = ({label, children}) => (
+    <label className='flex flex-col gap-2'>
+        <span className='text-xs font-medium text-text-secondary'>{label}</span>
+        {children}
+    </label>
+);
+
+const ReadOnlySelect: React.FC<{value: string}> = ({value}) => (
+    <Select value={value}>
+        <SelectTrigger disabled>
+            <span>{value}</span>
+        </SelectTrigger>
+    </Select>
+);
+
+const DisabledPanelButton: React.FC<React.PropsWithChildren<{variant?: 'default' | 'destructive'}>> = ({children, variant = 'default'}) => (
+    <Button
+        className={cn('w-full', variant === 'destructive' && 'border-red text-red')}
+        type='button'
+        variant='outline'
+        disabled
+    >
+        {children}
+    </Button>
+);
+
+const TriggerSidebarBody: React.FC<{memberTiers: MemberTier[]}> = ({memberTiers}) => (
+    <div className='flex flex-col gap-5'>
+        <SidebarField label='Trigger'>
+            <ReadOnlySelect value='New member sign up' />
+        </SidebarField>
+        <div className='flex flex-col gap-2'>
+            <span className='text-xs font-medium text-text-secondary'>Members</span>
+            <Label className='flex items-center gap-2 text-sm font-normal text-foreground'>
+                <Checkbox checked={memberTiers.includes('free')} disabled />
+                Free
+            </Label>
+            <Label className='flex items-center gap-2 text-sm font-normal text-foreground'>
+                <Checkbox checked={memberTiers.includes('paid')} disabled />
+                Paid
+            </Label>
+        </div>
+    </div>
+);
+
+const WaitSidebarBody: React.FC<{action: AutomationWaitAction}> = ({action}) => {
+    const wait = getWaitParts(action.data.wait_hours);
+
+    return (
+        <div className='flex flex-1 flex-col gap-5'>
+            <SidebarField label='Wait for'>
+                <div className='grid grid-cols-[6rem_1fr] gap-2'>
+                    <Input value={wait.amount} readOnly />
+                    <ReadOnlySelect value={wait.unit} />
+                </div>
+            </SidebarField>
+            <div className='mt-auto pt-6'>
+                <DisabledPanelButton variant='destructive'>
+                    <LucideIcon.Trash2 className='size-4' />
+                    Delete step
+                </DisabledPanelButton>
+            </div>
+        </div>
+    );
+};
+
+const SendEmailSidebarBody: React.FC<{action: AutomationSendEmailAction}> = ({action}) => (
+    <div className='flex flex-1 flex-col gap-5'>
+        <SidebarField label='Subject line'>
+            <Input value={action.data.email_subject || 'No subject'} readOnly />
+        </SidebarField>
+        <DisabledPanelButton>
+            <LucideIcon.Pencil className='size-4' />
+            Edit email
+        </DisabledPanelButton>
+        <div className='mt-auto pt-6'>
+            <DisabledPanelButton variant='destructive'>
+                <LucideIcon.Trash2 className='size-4' />
+                Delete step
+            </DisabledPanelButton>
+        </div>
+    </div>
+);
+
+const StepSidebarBody: React.FC<{detail: StepSidebarDetail}> = ({detail}) => {
+    switch (detail.type) {
+    case 'trigger':
+        return <TriggerSidebarBody memberTiers={detail.memberTiers} />;
+    case 'wait':
+        return <WaitSidebarBody action={detail.action} />;
+    case 'send_email':
+        return <SendEmailSidebarBody action={detail.action} />;
+    default: {
+        const _exhaustive: never = detail;
+        throw new Error(`Unknown sidebar type: ${_exhaustive}`);
+    }
+    }
+};
+
+const StepSidebarContent: React.FC<{detail: StepSidebarDetail}> = ({detail}) => {
+    const Icon = detail.icon;
+
+    return (
+        <div className='flex min-h-full flex-col gap-6'>
+            <div className='flex items-start gap-4'>
+                <div className='flex min-w-0 items-center gap-3'>
+                    <div className='flex size-8 shrink-0 items-center justify-center rounded-md bg-muted text-text-secondary'>
+                        <Icon className='size-4' />
+                    </div>
+                    <div className='min-w-0'>
+                        <span className='block text-xs text-text-secondary'>{detail.label}</span>
+                        <h2 className='truncate text-base leading-tight font-semibold text-foreground'>{detail.title}</h2>
+                    </div>
+                </div>
+            </div>
+
+            <StepSidebarBody detail={detail} />
+        </div>
+    );
+};
+
+const StepSidebar: React.FC<{detail: StepSidebarDetail | null; onClose: () => void}> = ({detail, onClose}) => {
+    useEffect(() => {
+        if (!detail) {
+            return;
+        }
+
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                onClose();
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [detail, onClose]);
+
+    return (
+        <aside
+            aria-hidden={!detail}
+            aria-label='Step details'
+            className={cn(
+                'absolute inset-y-0 right-0 z-[1] flex w-[calc(100%-6rem)] max-w-none translate-x-full flex-col gap-6 overflow-y-auto border-l border-border-default bg-background p-6 shadow-lg transition-transform duration-200 ease-out sm:w-[36rem]',
+                detail ? 'translate-x-0' : 'pointer-events-none'
+            )}
+            data-state={detail ? 'open' : 'closed'}
+            data-testid='automation-step-sidebar'
+        >
+            {detail && <StepSidebarContent detail={detail} />}
+        </aside>
+    );
+};
+
+type AutomationCanvasProps = {
     automation?: AutomationDetail;
     isLoading: boolean;
     isError: boolean;
-}
+    onChange: (next: AutomationDetail) => void;
+};
 
-const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoading, isError}) => {
-    const graph = React.useMemo(
-        () => (automation ? buildGraph(automation) : null),
-        [automation]
-    );
+const insertActionByType = {
+    wait: insertWaitAction,
+    send_email: insertSendEmailAction
+};
+
+const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoading, isError, onChange}) => {
+    const [selectedStepId, setSelectedStepId] = useState<string | null>(null);
+
+    const handlePick = useCallback((type: StepPickerType, anchor: CanvasAnchor) => {
+        if (!automation) {
+            return;
+        }
+        if (automation.actions.length >= MAX_AUTOMATION_ACTIONS) {
+            return;
+        }
+        const apiAnchor = toApiAnchor(anchor);
+        const insertAction = insertActionByType[type];
+        const next = insertAction({detail: automation, anchor: apiAnchor});
+        onChange(next);
+    }, [automation, onChange]);
+
+    const initialViewport = useRef(getInitialViewport(window.innerWidth));
+
+    const graph = useMemo(() => {
+        if (!automation) {
+            return null;
+        }
+        return buildGraph({
+            automation,
+            disabled: automation.actions.length >= MAX_AUTOMATION_ACTIONS,
+            onPick: handlePick,
+            onSelectStep: setSelectedStepId,
+            selectedStepId
+        });
+    }, [automation, handlePick, selectedStepId]);
+
+    const sidebarDetail = automation ? getStepSidebarDetail(automation, selectedStepId) : null;
+    const clearDetail = useCallback(() => {
+        setSelectedStepId(null);
+    }, []);
 
     if (isLoading) {
         return (
-            <div className='flex flex-1 items-center justify-center bg-grey-75' data-testid='automation-canvas-loading'>
+            <div className='flex flex-1 items-center justify-center bg-surface-page' data-testid='automation-canvas-loading'>
                 <LoadingIndicator size='lg' />
             </div>
         );
@@ -229,7 +641,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
 
     if (isError || !automation || !graph) {
         return (
-            <div className='flex flex-1 items-start justify-center bg-grey-75 px-4 py-8'>
+            <div className='flex flex-1 items-start justify-center bg-surface-page px-4 py-8'>
                 <Banner className='max-w-md' role='alert' variant='destructive'>
                     <div className='flex items-start gap-3'>
                         <LucideIcon.CircleAlert className='mt-0.5 size-5 text-red' />
@@ -244,11 +656,13 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
     }
 
     return (
-        <div className='flex-1 bg-grey-75' data-testid='automation-canvas'>
+        <div className='relative flex-1 overflow-hidden bg-surface-page' data-testid='automation-canvas'>
             <ReactFlow
+                className='[--xy-background-color:var(--surface-page)] [--xy-background-pattern-color:var(--border-subtle)] [--xy-edge-stroke:var(--border-subtle)] dark:[--xy-background-pattern-color:var(--color-grey-900)] dark:[--xy-edge-stroke:var(--color-grey-800)]'
+                defaultViewport={initialViewport.current}
                 edges={graph.edges}
                 edgesFocusable={false}
-                fitViewOptions={{maxZoom: 1, padding: 0.4}}
+                edgeTypes={edgeTypes}
                 nodes={graph.nodes}
                 nodesConnectable={false}
                 nodesDraggable={false}
@@ -256,11 +670,17 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
                 nodeTypes={nodeTypes}
                 proOptions={{hideAttribution: true}}
                 zoomOnScroll={false}
-                fitView
                 panOnScroll
+                onNodeClick={(_, node) => {
+                    if (node.id !== TAIL_CANVAS_ID) {
+                        setSelectedStepId(node.id);
+                    }
+                }}
+                onPaneClick={clearDetail}
             >
-                <Background color='var(--color-grey-400)' />
+                <Background />
             </ReactFlow>
+            <StepSidebar detail={sidebarDetail} onClose={clearDetail} />
         </div>
     );
 };

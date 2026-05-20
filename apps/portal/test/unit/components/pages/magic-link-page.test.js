@@ -1,4 +1,4 @@
-import {render, fireEvent} from '../../../utils/test-utils';
+import {render, fireEvent, within} from '../../../utils/test-utils';
 import MagicLinkPage from '../../../../src/components/pages/magic-link-page';
 
 const OTC_LABEL_REGEX = /Code/i;
@@ -274,7 +274,8 @@ describe('MagicLinkPage', () => {
 
         test('shows loading state and disables interaction', () => {
             const utils = setupOTCTest({action: 'verifyOTC:running'});
-            const loadingButton = utils.getByRole('button');
+            const otcInput = utils.getByLabelText(OTC_LABEL_REGEX);
+            const loadingButton = within(otcInput.closest('form')).getByRole('button');
 
             expect(loadingButton).toBeDisabled();
             expect(loadingButton.querySelector('.gh-portal-loadingicon')).toBeInTheDocument();
@@ -290,8 +291,8 @@ describe('MagicLinkPage', () => {
 
         test('button click is blocked during loading state', () => {
             const {mockDoActionFn, ...testUtils} = setupOTCTest({action: 'verifyOTC:running'});
-            const loadingButton = testUtils.getByRole('button');
             const otcInput = testUtils.getByLabelText(OTC_LABEL_REGEX);
+            const loadingButton = within(otcInput.closest('form')).getByRole('button');
 
             // Enter less than 6 digits to avoid auto-submit
             fireEvent.change(otcInput, {target: {value: '12345'}});

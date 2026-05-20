@@ -546,7 +546,7 @@ function ProductBenefits({product}) {
         const key = benefit?.id || `benefit-${idx}`;
         return (
             <div className="gh-portal-product-benefit" key={key}>
-                <CheckmarkIcon className='gh-portal-benefit-checkmark' alt=''/>
+                <CheckmarkIcon className='gh-portal-benefit-checkmark' aria-hidden='true' />
                 <div className="gh-portal-benefit-title">{benefit.name}</div>
             </div>
         );

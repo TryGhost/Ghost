@@ -1,7 +1,6 @@
 import {GiftEmailRenderer, Translate} from './gift-email-renderer';
 
 const DEFAULT_DATE_LOCALE = 'en-gb';
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 interface Mailer {
     send(message: {
@@ -131,10 +130,6 @@ export class GiftEmailService {
         const manageSubscriptionUrl = new URL('#/portal/account', siteUrl).href;
         const firstName = memberName?.trim().split(/\s+/)[0] || null;
 
-        // Inactive sites can sleep through the intended -7d send, so the reminder
-        // may go out anywhere from 7 to 3 days before expiry. Report the real count.
-        const daysUntilExpiry = Math.round((consumesAt.getTime() - Date.now()) / MS_PER_DAY);
-
         const {html, text} = await this.renderer.renderReminder({
             siteTitle,
             siteUrl,
@@ -152,7 +147,7 @@ export class GiftEmailService {
 
         await this.mailer.send({
             to: memberEmail,
-            subject: this.t('Your gift subscription ends in {days} days', {days: daysUntilExpiry}),
+            subject: this.t('Your gift subscription is ending soon'),
             html,
             text,
             from: this.getFromAddress(),
