@@ -21,15 +21,10 @@ export default defineConfig({
             'test/unit/server/lib/**/*.test.{js,ts}',
             'test/unit/server/web/**/*.test.{js,ts}'
         ],
-        // Files using the mocha `done()` callback — vitest 4.x removed
-        // support. Pending follow-up PR that converts these to promises.
+        // Fake-timer + nock + retry-loop interactions in this file don't
+        // translate cleanly to vitest's hook ordering; deferred to a follow-up.
         exclude: [
             'test/unit/server/adapters/scheduling/scheduling-default.test.js',
-            'test/unit/server/adapters/storage/local-images-storage.test.js',
-            'test/unit/server/lib/image/blog-icon.test.js',
-            'test/unit/server/lib/image/gravatar.test.js',
-            'test/unit/server/lib/package-json/parse.test.js',
-            'test/unit/server/web/api/middleware/cors.test.js',
             '**/node_modules/**'
         ],
         setupFiles: ['./test/utils/vitest-setup.ts'],
