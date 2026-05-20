@@ -795,7 +795,7 @@ describe('Settings API', function () {
             const passwordSetting = await models.Settings.findOne({key: 'password'}, {context: {internal: true}});
 
             try {
-                const response = await agent.post('settings/regenerate_access_code/')
+                const response = await agent.post('settings/access_code/regenerate/')
                     .body({password: 'caller-chosen-code'})
                     .expectStatus(200);
 

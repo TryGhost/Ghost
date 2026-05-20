@@ -62,7 +62,7 @@ export const useEditSettings = createMutation<SettingsResponseType, Setting[]>({
 
 export const useRegenerateAccessCode = createMutation<SettingsResponseType, null>({
     method: 'POST',
-    path: () => '/settings/regenerate_access_code/',
+    path: () => '/settings/access_code/regenerate/',
     updateQueries: {
         dataType,
         emberUpdateType: 'createOrUpdate',

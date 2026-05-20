@@ -133,7 +133,7 @@ test.describe('Access settings', async () => {
             },
             regenerateAccessCode: {
                 method: 'POST',
-                path: '/settings/regenerate_access_code/',
+                path: '/settings/access_code/regenerate/',
                 response: updatedSettingsResponse([
                     {key: 'is_private', value: true, is_read_only: true},
                     {key: 'password', value: 'fake-456', is_read_only: true}
