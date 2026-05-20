@@ -5,6 +5,7 @@ import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger}
 import {H4} from '@tryghost/shade/primitives';
 import {Link} from '@tryghost/admin-x-framework';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
+import {useAppBasePath} from '@src/hooks/use-app-base-path';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 
 interface SettingsProps {
@@ -21,14 +22,14 @@ const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
             <SettingSeparator />
             <SettingItem>
                 <SettingHeader>
-                    <SettingTitle>Account</SettingTitle>
+                    <SettingTitle>Profile</SettingTitle>
                     <SettingDescription>
                         Edit your profile information and account details
                     </SettingDescription>
                 </SettingHeader>
                 <Dialog open={isEditingProfile} onOpenChange={setIsEditingProfile}>
                     <DialogTrigger>
-                        <SettingAction><Button variant='secondary'>Edit profile</Button></SettingAction>
+                        <SettingAction><Button variant='secondary'>Edit</Button></SettingAction>
                     </DialogTrigger>
                     <DialogContent onOpenAutoFocus={e => e.preventDefault()}>
                         <DialogHeader>
@@ -54,6 +55,15 @@ const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
                 </SettingHeader>
                 <SettingAction className='flex items-center gap-2'>
                     {account?.blueskyEnabled ? <span className='font-medium text-black'>On</span> : <span>Off</span>}
+                    <LucideIcon.ChevronRight size={20} />
+                </SettingAction>
+            </SettingItem>
+            <SettingItem to='/preferences/move' withHover>
+                <SettingHeader>
+                    <SettingTitle>Account migration</SettingTitle>
+                    <SettingDescription>Move another social web account to this one</SettingDescription>
+                </SettingHeader>
+                <SettingAction className='flex items-center gap-2'>
                     <LucideIcon.ChevronRight size={20} />
                 </SettingAction>
             </SettingItem>
@@ -120,15 +130,17 @@ interface SettingItemProps {
 }
 
 const SettingItem: React.FC<SettingItemProps> = ({children, className = '', withHover = false, to, href, onClick}) => {
+    const basePath = useAppBasePath();
     const baseClasses = 'flex items-center justify-between py-3 gap-4';
     const hoverClasses = withHover ? 'relative cursor-pointer before:absolute before:inset-x-[-16px] before:inset-y-[-1px] before:rounded-md before:bg-gray-50 before:opacity-0 before:transition-opacity before:will-change-[opacity] hover:z-10 hover:cursor-pointer hover:border-b-transparent hover:before:opacity-100 dark:before:bg-gray-950' : '';
     const itemClasses = cn(baseClasses, hoverClasses, className);
+    const fullPath = to && to.startsWith('/') ? `${basePath}${to}` : to;
 
-    if (to) {
+    if (fullPath) {
         return (
             <Link
                 className={itemClasses}
-                to={to}
+                to={fullPath}
             >
                 {children}
             </Link>

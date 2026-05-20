@@ -770,6 +770,26 @@ describe('RouterController', function () {
                 }));
             });
 
+            it('passes customerEmail through for logged-out gift checkout', async function () {
+                const controller = createGiftController({tiersService: paidTierService()});
+
+                await controller.createCheckoutSession({
+                    body: {
+                        type: 'gift',
+                        tierId: 'tier_123',
+                        cadence: 'month',
+                        customerEmail: 'jamie@example.com',
+                        metadata: {}
+                    }
+                }, mockRes);
+
+                sinon.assert.calledOnce(getGiftLinkSpy);
+                sinon.assert.calledWith(getGiftLinkSpy, sinon.match({
+                    email: 'jamie@example.com',
+                    isAuthenticated: false
+                }));
+            });
+
             it('rejects when giftSubscriptions labs flag is disabled', async function () {
                 labsService.isSet = sinon.stub().returns(false);
                 const controller = createGiftController();
