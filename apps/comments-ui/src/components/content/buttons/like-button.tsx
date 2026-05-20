@@ -8,7 +8,7 @@ type Props = {
     comment: Comment;
 };
 const LikeButton: React.FC<Props> = ({comment}) => {
-    const {dispatchAction, isMember, hasRequiredTier, labs} = useAppContext();
+    const {dispatchAction, isMember, hasRequiredTier, labs, t} = useAppContext();
     const [likeAnimation, setLikeAnimation] = useState('');
     const [disabled, setDisabled] = useState(false);
 
@@ -44,6 +44,7 @@ const LikeButton: React.FC<Props> = ({comment}) => {
     if (!commentDislikesEnabled) {
         return (
             <button
+                aria-label={comment.liked ? t('Remove like') : t('Like')}
                 className={`duration-50 group flex cursor-pointer items-center font-sans text-base outline-0 transition-all ease-linear sm:text-sm ${
                     comment.liked ? 'text-black/90 dark:text-white/90' : 'text-black/50 hover:text-black/75 dark:text-white/60 dark:hover:text-white/75'
                 }`}
@@ -64,6 +65,7 @@ const LikeButton: React.FC<Props> = ({comment}) => {
 
     return (
         <button
+            aria-label={comment.liked ? t('Remove like') : t('Like')}
             className={`duration-50 group flex cursor-pointer items-center gap-1.5 font-sans text-base outline-0 transition-all ease-linear sm:text-sm ${
                 comment.liked ? 'text-black/90 dark:text-white/90' : 'text-black/50 hover:text-black/75 dark:text-white/60 dark:hover:text-white/75'
             }`}
@@ -85,7 +87,7 @@ const LikeButton: React.FC<Props> = ({comment}) => {
 };
 
 export const DislikeButton: React.FC<Props> = ({comment}) => {
-    const {dispatchAction, isMember, hasRequiredTier} = useAppContext();
+    const {dispatchAction, isMember, hasRequiredTier, t} = useAppContext();
     const [dislikeAnimation, setDislikeAnimation] = useState('');
     const [disabled, setDisabled] = useState(false);
 
@@ -118,6 +120,7 @@ export const DislikeButton: React.FC<Props> = ({comment}) => {
 
     return (
         <button
+            aria-label={comment.disliked ? t('Remove dislike') : t('Dislike')}
             className={`duration-50 group flex cursor-pointer items-center font-sans text-base outline-0 transition-all ease-linear sm:text-sm ${
                 comment.disliked ? 'text-black/90 dark:text-white/90' : 'text-black/50 hover:text-black/75 dark:text-white/60 dark:hover:text-white/75'
             }`}

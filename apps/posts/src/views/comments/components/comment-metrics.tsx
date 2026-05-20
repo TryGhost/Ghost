@@ -122,6 +122,7 @@ export function CommentMetrics({
                                 <TooltipTrigger asChild>
                                     {hasLikes ? (
                                         <button
+                                            aria-label="View likes"
                                             className="flex cursor-pointer items-center hover:opacity-70"
                                             data-testid="likes-metric"
                                             type="button"
@@ -162,6 +163,7 @@ export function CommentMetrics({
                                 <TooltipTrigger asChild>
                                     {hasDislikes ? (
                                         <button
+                                            aria-label="View dislikes"
                                             className="flex cursor-pointer items-center hover:opacity-70"
                                             data-testid="dislikes-metric"
                                             type="button"
