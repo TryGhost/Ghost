@@ -105,6 +105,10 @@ Object {
       "value": null,
     },
     Object {
+      "key": "llms_enabled",
+      "value": true,
+    },
+    Object {
       "key": "og_image",
       "value": null,
     },
