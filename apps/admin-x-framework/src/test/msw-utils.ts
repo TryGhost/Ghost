@@ -29,7 +29,10 @@ export const fixtures = {
         codeinjection_head: null,
         codeinjection_foot: null,
         navigation: [],
-        secondary_navigation: []
+        secondary_navigation: [],
+        llms_enabled: true,
+        meta_title: null,
+        meta_description: null
     },
 
     site: {
