@@ -34,7 +34,7 @@ function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeade
         <SidebarHeader {...props}>
             <div className="flex flex-col items-stretch gap-6">
                 <div className="flex items-center justify-between">
-                    <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex w-full min-w-0 items-center gap-3">
                         <div className="h-8 w-8 flex-shrink-0 rounded-md border-0 bg-transparent">
                             <img
                                 src={siteIcon}
@@ -42,7 +42,7 @@ function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeade
                                 className="h-full w-full rounded-md object-cover"
                                 />
                         </div>
-                        <div className="flex min-w-0 flex-1 items-center gap-2">
+                        <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
                             <div className="min-w-0 overflow-hidden text-[15px] font-semibold text-ellipsis whitespace-nowrap text-foreground">
                                 {title}
                             </div>
@@ -60,7 +60,7 @@ function AppSidebarHeader({ ...props }: React.ComponentProps<typeof SidebarHeade
                 {showSearch && (
                     <Button
                         variant="outline"
-                        className="flex h-(--control-height) items-center justify-between rounded-full pr-2 text-base text-muted-foreground shadow-xs hover:border-gray-200 hover:bg-background hover:text-gray-700 hover:shadow-sm dark:bg-gray-950 dark:hover:border-gray-800 [&_svg]:stroke-2"
+                        className="flex h-(--control-height) items-center justify-between rounded-full border-transparent pr-2 text-base text-muted-foreground shadow-xs hover:bg-background hover:text-gray-700 hover:shadow-sm dark:bg-gray-950 [&_svg]:stroke-2"
                         onClick={openSearchModal}
                     >
                         <div className="flex items-center gap-2">
