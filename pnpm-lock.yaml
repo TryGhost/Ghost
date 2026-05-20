@@ -1729,8 +1729,8 @@ importers:
         specifier: 1.6.1
         version: 1.6.1
       eslint-plugin-playwright:
-        specifier: 2.10.1
-        version: 2.10.1(eslint@8.57.1)
+        specifier: 2.10.2
+        version: 2.10.2(eslint@8.57.1)
       express:
         specifier: 4.21.2
         version: 4.21.2
@@ -13440,8 +13440,8 @@ packages:
   eslint-plugin-no-relative-import-paths@1.6.1:
     resolution: {integrity: sha512-YZNeOnsOrJcwhFw0X29MXjIzu2P/f5X2BZDPWw1R3VUYBRFxNIh77lyoL/XrMU9ewZNQPcEvAgL/cBOT1P330A==}
 
-  eslint-plugin-playwright@2.10.1:
-    resolution: {integrity: sha512-qea3UxBOb8fTwJ77FMApZKvRye5DOluDHcev0LDJwID3RELeun0JlqzrNIXAB/SXCyB/AesCW/6sZfcT9q3Edg==}
+  eslint-plugin-playwright@2.10.2:
+    resolution: {integrity: sha512-0N+2OWc3NZbOZ0gK8mp2TK6Qu3UWcJTQ9rqU0UM2yRJXgT758pvpY0lsOLIySfbyFrLqn3TcXjixbmcK90VnuQ==}
     engines: {node: '>=16.9.0'}
     peerDependencies:
       eslint: '>=8.40.0'
@@ -36262,7 +36262,7 @@ snapshots:
 
   eslint-plugin-no-relative-import-paths@1.6.1: {}
 
-  eslint-plugin-playwright@2.10.1(eslint@8.57.1):
+  eslint-plugin-playwright@2.10.2(eslint@8.57.1):
     dependencies:
       eslint: 8.57.1
       globals: 17.4.0
