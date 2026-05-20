@@ -695,7 +695,7 @@ module.exports = class StripeAPI {
      * @param {string} options.successUrl
      * @param {string} options.cancelUrl
      * @param {ICustomer|null} options.customer
-     * @param {string|null} options.customerEmail
+     * @param {string} [options.customerEmail]
      *
      * @returns {Promise<ICheckoutSession>}
      */

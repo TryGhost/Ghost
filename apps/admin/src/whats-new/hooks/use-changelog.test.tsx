@@ -144,6 +144,41 @@ describe("useChangelog", () => {
         });
     });
 
+    describe("nullable fields", () => {
+        test("accepts null for custom_excerpt, feature_image, and html", async ({ server, wrapper }) => {
+            server.use(
+                http.get(CHANGELOG_API_URL, () => {
+                    return HttpResponse.json({
+                        posts: [
+                            {
+                                slug: "post-without-excerpt",
+                                title: "Post Without Excerpt",
+                                custom_excerpt: null,
+                                feature_image: null,
+                                html: null,
+                                url: "https://ghost.org/changelog/post-without-excerpt",
+                                published_at: "2026-04-29T10:00:00.000+00:00",
+                                featured: "true",
+                            },
+                        ],
+                        changelogUrl: "https://ghost.org/changelog",
+                    });
+                })
+            );
+
+            const { result } = renderHook(() => useChangelog(), { wrapper });
+            await waitForQuerySettled(result);
+
+            expect(result.current.isSuccess).toBe(true);
+            expect(result.current.data?.entries[0]).toMatchObject({
+                slug: "post-without-excerpt",
+                customExcerpt: null,
+                featureImage: null,
+                html: null,
+            });
+        });
+    });
+
     describe("network errors", () => {
         [
             {

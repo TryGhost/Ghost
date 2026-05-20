@@ -3,7 +3,6 @@ import React, {useEffect, useRef} from 'react';
 import TopLevelGroup from '../../top-level-group';
 import WelcomeEmailCustomizeModal from './member-emails/welcome-email-customize-modal';
 import WelcomeEmailModal from './member-emails/welcome-email-modal';
-import useFeatureFlag from '../../../hooks/use-feature-flag';
 import useQueryParams from '../../../hooks/use-query-params';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {Button, ConfirmationModal, Icon, Table, TableRow, Toggle, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
@@ -133,7 +132,6 @@ const MemberEmailsTable: React.FC<{
 };
 
 const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
-    const hasDesignCustomization = useFeatureFlag('welcomeEmailsDesignCustomization');
     const {settings, config} = useGlobalData();
     const [siteTitle] = getSettingValues<string>(settings, ['title']);
     const verifyEmailToken = useQueryParams().getParam('verifyEmail');
@@ -274,19 +272,18 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
     // Get email to display (existing or default for preview)
     const freeEmailForDisplay = freeWelcomeEmail || getDefaultWelcomeEmailRecord('free', siteTitle);
     const paidEmailForDisplay = paidWelcomeEmail || getDefaultWelcomeEmailRecord('paid', siteTitle);
-    const customizeButton = hasDesignCustomization ? (
-        <Button
-            className='mt-[-5px]'
-            color='clear'
-            label='Customize'
-            size='sm'
-            onClick={() => NiceModal.show(WelcomeEmailCustomizeModal)}
-        />
-    ) : null;
 
     return (
         <TopLevelGroup
-            customButtons={customizeButton}
+            customButtons={(
+                <Button
+                    className='mt-[-5px]'
+                    color='clear'
+                    label='Customize'
+                    size='sm'
+                    onClick={() => NiceModal.show(WelcomeEmailCustomizeModal)}
+                />
+            )}
             description="Create and manage automated emails for your members"
             keywords={keywords}
             navid='memberemails'

@@ -20,7 +20,9 @@ export function getSubscriptionData(sub) {
             nonDecimalAmount: getNonDecimal(sub.price.amount)
         },
         isComplimentary: isComplimentary(sub),
+        isGift: isGift(sub),
         compExpiry: compExpiry(sub),
+        giftExpiry: giftExpiry(sub),
         trialUntil: trialUntil(sub)
     };
 
@@ -57,7 +59,15 @@ export function isActive(sub) {
 }
 
 export function isComplimentary(sub) {
-    return !sub.id;
+    const compedNickname = sub.plan?.nickname?.toLowerCase() === 'complimentary';
+
+    return !sub.id && compedNickname;
+}
+
+export function isGift(sub) {
+    const giftNickname = sub.plan?.nickname?.toLowerCase() === 'gift subscription';
+
+    return !sub.id && giftNickname;
 }
 
 export function isCanceled(sub) {
@@ -69,7 +79,23 @@ export function isSetToCancel(sub) {
 }
 
 export function compExpiry(sub) {
-    if (!sub.id && sub.tier && sub.tier.expiry_at) {
+    if (!isComplimentary(sub)) {
+        return undefined;
+    }
+
+    if (sub.tier && sub.tier.expiry_at) {
+        return moment(sub.tier.expiry_at).utc().format('D MMM YYYY');
+    }
+
+    return undefined;
+}
+
+export function giftExpiry(sub) {
+    if (!isGift(sub)) {
+        return undefined;
+    }
+
+    if (sub.tier && sub.tier.expiry_at) {
         return moment(sub.tier.expiry_at).utc().format('D MMM YYYY');
     }
 
@@ -95,6 +121,14 @@ export function validityDetails(data, separatorNeeded = false) {
     if (data.isComplimentary) {
         if (data.compExpiry) {
             return `${separator}Expires ${data.compExpiry}`;
+        } else {
+            return '';
+        }
+    }
+
+    if (data.isGift) {
+        if (data.giftExpiry) {
+            return `${separator}Expires ${data.giftExpiry}`;
         } else {
             return '';
         }

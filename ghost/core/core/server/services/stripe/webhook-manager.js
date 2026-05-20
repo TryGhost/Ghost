@@ -46,7 +46,8 @@ module.exports = class WebhookManager {
         'customer.subscription.deleted',
         'customer.subscription.updated',
         'customer.subscription.created',
-        'invoice.payment_succeeded'
+        'invoice.payment_succeeded',
+        'charge.refunded'
     ];
 
     /**

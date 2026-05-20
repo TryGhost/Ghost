@@ -1,5 +1,6 @@
 import setupGhostApi from './utils/api';
 import {chooseBestErrorMessage} from './utils/errors';
+import {getGiftRedemptionErrorMessage, getGiftRedemptionSuccessMessage} from './utils/gift-redemption-notification';
 import {createNotification, createPopupNotification, getMemberEmail, getMemberName, getProductCadenceFromPrice, removePortalLinkFromUrl, getRefDomain} from './utils/helpers';
 import {t} from './utils/i18n';
 
@@ -216,6 +217,87 @@ async function signup({data, state, api}) {
     }
 }
 
+async function redeemGift({data, state, api}) {
+    try {
+        let {email, name, giftToken} = data;
+        name = name?.trim();
+
+        if (state.member) {
+            await api.gift.redeem({token: giftToken});
+            const member = await api.member.sessionData();
+            const notification = createNotification({
+                type: 'giftRedeem',
+                status: 'success',
+                autoHide: true,
+                closeable: true,
+                state,
+                message: getGiftRedemptionSuccessMessage({member})
+            });
+            removePortalLinkFromUrl();
+
+            return {
+                action: 'redeemGift:success',
+                member,
+                showPopup: false,
+                lastPage: null,
+                pageQuery: '',
+                popupNotification: null,
+                notification,
+                notificationSequence: notification.count
+            };
+        }
+
+        const integrityToken = await api.member.getIntegrityToken();
+        const redirectUrl = new URL(state?.site?.url || window.location.href);
+        redirectUrl.search = new URLSearchParams({
+            giftRedemption: 'true'
+        }).toString();
+        redirectUrl.hash = '';
+
+        const {otc_ref: otcRef, inboxLinks} = await api.member.sendMagicLink({
+            email: (email || '').trim(),
+            emailType: 'subscribe',
+            integrityToken,
+            includeOTC: true,
+            redirect: redirectUrl.href,
+            giftToken,
+            ...(name ? {name} : {})
+        });
+
+        return {
+            page: 'magiclink',
+            lastPage: 'gift',
+            ...(otcRef ? {otcRef} : {}),
+            inboxLinks,
+            pageData: {
+                ...(state.pageData || {}),
+                email: (email || '').trim(),
+                redirect: redirectUrl.href
+            }
+        };
+    } catch (e) {
+        const notification = createNotification({
+            type: 'giftRedeem',
+            status: 'error',
+            autoHide: false,
+            closeable: true,
+            state,
+            message: getGiftRedemptionErrorMessage(e)
+        });
+        removePortalLinkFromUrl();
+
+        return {
+            action: 'redeemGift:failed',
+            showPopup: false,
+            lastPage: null,
+            pageQuery: '',
+            popupNotification: null,
+            notification,
+            notificationSequence: notification.count
+        };
+    }
+}
+
 async function checkoutPlan({data, state, api}) {
     try {
         let {plan, offerId, tierId, cadence} = data;
@@ -242,10 +324,28 @@ async function checkoutPlan({data, state, api}) {
     }
 }
 
+async function continueGiftSubscription({state, api}) {
+    try {
+        await api.member.continueGiftCheckout();
+    } catch (e) {
+        return {
+            action: 'continueGiftSubscription:failed',
+            popupNotification: createPopupNotification({
+                type: 'continueGiftSubscription:failed', autoHide: false, closeable: true, state, status: 'error',
+                message: t('Failed to process checkout, please try again')
+            })
+        };
+    }
+}
+
 async function checkoutGift({data, state, api}) {
     try {
         const {tierId, cadence, email} = data;
-        await api.member.checkoutGift({tierId, cadence, email});
+        await api.member.checkoutGift({
+            tierId,
+            cadence,
+            ...(email ? {email} : {})
+        });
         return {
             action: 'checkoutGift:success'
         };
@@ -704,6 +804,7 @@ const Actions = {
     startSigninOTCFromCustomForm,
     verifyOTC,
     signup,
+    redeemGift,
     updateSubscription,
     cancelSubscription,
     continueSubscription,
@@ -715,6 +816,7 @@ const Actions = {
     editBilling,
     manageBilling,
     checkoutPlan,
+    continueGiftSubscription,
     checkoutGift,
     updateNewsletterPreference,
     showPopupNotification,

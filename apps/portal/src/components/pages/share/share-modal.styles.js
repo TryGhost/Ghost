@@ -86,6 +86,7 @@ export const ShareModalStyles = `
     .gh-portal-share-preview-meta {
         display: flex;
         align-items: center;
+        gap: 4px;
         min-width: 0;
         color: var(--grey3);
         font-size: 1.35rem;
@@ -97,8 +98,13 @@ export const ShareModalStyles = `
 
     .gh-portal-share-preview-site,
     .gh-portal-share-preview-author {
+        min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+
+    .gh-portal-share-preview-separator {
+        flex: 0 0 auto;
     }
 
     .gh-portal-share-preview-site {
@@ -257,6 +263,13 @@ export const ShareModalStyles = `
         top: 20px;
     }
 
+    @media (max-width: 480px) {
+        .gh-portal-popup-container.share {
+            flex: 1 0 auto;
+            margin-bottom: 0;
+        }
+    }
+
     @media (max-width: 420px) {
         .gh-portal-share-actions {
             flex-direction: column;
@@ -286,11 +299,8 @@ export const ShareModalStyles = `
             order: 4;
         }
 
-        .gh-portal-share-action.more {
-            order: 5;
-        }
-
         .gh-portal-share-more {
+            order: 5;
             width: 100%;
         }
 

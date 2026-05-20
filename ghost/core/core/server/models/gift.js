@@ -3,6 +3,7 @@ const ghostBookshelf = require('./base');
 
 const Gift = ghostBookshelf.Model.extend({
     tableName: 'gifts',
+    hasTimestamps: false,
 
     buyer() {
         return this.belongsTo('Member', 'buyer_member_id', 'id');

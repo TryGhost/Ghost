@@ -4,8 +4,9 @@ import {t} from './i18n';
 export function removePortalLinkFromUrl() {
     const [path] = window.location.hash.substr(1).split('?');
     const portalLinkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)*))?\/?$/;
+    const giftRedemptionLinkRegex = /^\/portal\/gift\/redeem\/([^/?#]+)\/?$/;
     const shareLinkRegex = /^\/share\/?$/;
-    if (path && (portalLinkRegex.test(path) || shareLinkRegex.test(path))) {
+    if (path && (portalLinkRegex.test(path) || giftRedemptionLinkRegex.test(path) || shareLinkRegex.test(path))) {
         window.history.pushState('', document.title, window.location.pathname + window.location.search);
     }
 }
@@ -70,6 +71,10 @@ export function isPaidMember({member = {}}) {
     return (member && member.paid);
 }
 
+export function isGiftMember({member = {}}) {
+    return member?.status === 'gift';
+}
+
 export function getProductCurrency({product}) {
     if (!product?.monthlyPrice) {
         return null;
@@ -92,12 +97,24 @@ export function hasNewsletterSendingEnabled({site}) {
     return site?.editor_default_email_recipients !== 'disabled';
 }
 
-export function getCompExpiry({member}) {
+export function getSubscriptionExpiry({member}) {
     const subscription = getMemberSubscription({member});
     if (subscription?.tier?.expiry_at) {
         return getDateString(subscription.tier.expiry_at);
     }
     return '';
+}
+
+export function isArchivedTier({member, site}) {
+    const subscription = getMemberSubscription({member});
+    const tierId = subscription?.tier?.id;
+
+    if (!tierId) {
+        return false;
+    }
+
+    // Archived tiers are filtered out of site.products
+    return !getProductFromId({site, productId: tierId});
 }
 
 export function getUpgradeProducts({site, member}) {
@@ -255,6 +272,14 @@ export function hasRecommendations({site}) {
 
 export function hasGiftSubscriptions({site}) {
     return site?.labs?.giftSubscriptions === true;
+}
+
+export function isStripeConfigured({site}) {
+    return site?.is_stripe_configured === true;
+}
+
+export function canPurchaseGift({site}) {
+    return hasGiftSubscriptions({site}) && isStripeConfigured({site});
 }
 
 export function isSigninAllowed({site}) {
@@ -587,11 +612,10 @@ export function getProductCadenceFromPrice({site, priceId}) {
 
 export function getAvailablePrices({site, products = null}) {
     const {
-        portal_plans: portalPlans = [],
-        is_stripe_configured: isStripeConfigured
+        portal_plans: portalPlans = []
     } = site || {};
 
-    if (!isStripeConfigured) {
+    if (!isStripeConfigured({site})) {
         return [];
     }
 

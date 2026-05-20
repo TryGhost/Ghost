@@ -15,6 +15,18 @@ describe('Acceptance: Member details', function () {
     let clock;
     let tier;
 
+    function subscriptionSummaryText(tierId) {
+        const priceLabel = find(`[data-test-tier="${tierId}"] .gh-cp-membertier-pricelabel`)?.textContent?.trim() || '';
+        const renewal = find(`[data-test-tier="${tierId}"] .gh-cp-membertier-renewal`)?.textContent?.trim() || '';
+
+        return [priceLabel, renewal]
+            .filter(Boolean)
+            .join(' ')
+            .replace(/–/g, '-')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
     beforeEach(async function () {
         this.server.loadFixtures('configs');
         this.server.loadFixtures('settings');
@@ -303,6 +315,202 @@ describe('Acceptance: Member details', function () {
             .to.equal(2);
         expect(findAll('[data-test-button="add-complimentary"]').length, '# of add complimentary buttons - after add comped')
             .to.equal(0);
+    });
+
+    it('displays gift subscriptions with expiry text and without an action menu', async function () {
+        const giftTier = this.server.create('tier', {
+            id: 'gift-tier-1',
+            name: 'Gift tier',
+            slug: 'gift-tier',
+            created_at: '2022-02-21T16:47:02.000Z',
+            updated_at: '2022-03-03T15:37:02.000Z',
+            description: null,
+            monthly_price_id: 'gift-monthly-price',
+            yearly_price_id: 'gift-yearly-price',
+            type: 'paid',
+            active: true,
+            welcome_page_url: '/',
+            expiry_at: '2022-04-03T00:00:00.000Z'
+        });
+
+        const member = this.server.create('member', {
+            id: 1,
+            status: 'gift',
+            tiers: [giftTier],
+            subscriptions: [
+                this.server.create('subscription', {
+                    id: '',
+                    tier: giftTier,
+                    customer: {
+                        id: '',
+                        name: 'Gift Receiver',
+                        email: 'gift@example.com'
+                    },
+                    plan: {
+                        id: '',
+                        nickname: 'Gift subscription',
+                        amount: 0,
+                        interval: 'year',
+                        currency: 'USD'
+                    },
+                    status: 'active',
+                    start_date: '2022-03-03T15:36:58.000Z',
+                    default_payment_card_last4: '****',
+                    cancel_at_period_end: false,
+                    cancellation_reason: null,
+                    current_period_end: '2022-04-03T15:36:58.000Z',
+                    price: {
+                        id: '',
+                        price_id: '',
+                        nickname: 'Gift subscription',
+                        amount: 0,
+                        interval: 'year',
+                        type: 'recurring',
+                        currency: 'USD',
+                        tier: {
+                            id: '',
+                            tier_id: giftTier.id
+                        }
+                    },
+                    offer: null
+                })
+            ]
+        });
+
+        await visit(`/members/${member.id}`);
+
+        expect(currentURL()).to.equal(`/members/${member.id}`);
+
+        const tierCard = find(`[data-test-tier="${giftTier.id}"]`);
+
+        expect(subscriptionSummaryText(giftTier.id)).to.equal('Gift subscription - Expires 3 Apr 2022');
+        expect(tierCard).to.contain.text('Gift subscription');
+        expect(find(`[data-test-tier="${giftTier.id}"] [data-test-button="subscription-actions"]`)).to.not.exist;
+    });
+
+    it('displays comped subscriptions with expiry text and a complimentary action menu', async function () {
+        const compedTier = this.server.create('tier', {
+            id: 'comped-tier-1',
+            name: 'Comped tier',
+            slug: 'comped-tier',
+            created_at: '2022-02-21T16:47:02.000Z',
+            updated_at: '2022-03-03T15:37:02.000Z',
+            description: null,
+            monthly_price_id: 'comped-monthly-price',
+            yearly_price_id: 'comped-yearly-price',
+            type: 'paid',
+            active: true,
+            welcome_page_url: '/',
+            expiry_at: '2022-04-03T00:00:00.000Z'
+        });
+
+        const member = this.server.create('member', {
+            id: 1,
+            status: 'comped',
+            tiers: [compedTier],
+            subscriptions: [
+                this.server.create('subscription', {
+                    id: '',
+                    tier: compedTier,
+                    customer: {
+                        id: '',
+                        name: 'Comped Receiver',
+                        email: 'comped@example.com'
+                    },
+                    plan: {
+                        id: '',
+                        nickname: 'Complimentary',
+                        amount: 0,
+                        interval: 'year',
+                        currency: 'USD'
+                    },
+                    status: 'active',
+                    start_date: '2022-03-03T15:36:58.000Z',
+                    default_payment_card_last4: '****',
+                    cancel_at_period_end: false,
+                    cancellation_reason: null,
+                    current_period_end: '2022-04-03T15:36:58.000Z',
+                    price: {
+                        id: '',
+                        price_id: '',
+                        nickname: 'Complimentary',
+                        amount: 0,
+                        interval: 'year',
+                        type: 'recurring',
+                        currency: 'USD',
+                        tier: {
+                            id: '',
+                            tier_id: compedTier.id
+                        }
+                    },
+                    offer: null
+                })
+            ]
+        });
+
+        await visit(`/members/${member.id}`);
+
+        expect(currentURL()).to.equal(`/members/${member.id}`);
+        expect(subscriptionSummaryText(compedTier.id)).to.equal('Complimentary - Expires 3 Apr 2022');
+        expect(find(`[data-test-tier="${compedTier.id}"] [data-test-button="subscription-actions"]`)).to.exist;
+
+        await click(`[data-test-tier="${compedTier.id}"] [data-test-button="subscription-actions"]`);
+        expect(find('.tier-actions-menu')).to.contain.text('Remove complimentary subscription');
+    });
+
+    it('displays paid subscriptions with Stripe actions', async function () {
+        const member = this.server.create('member', {
+            id: 1,
+            subscriptions: [
+                this.server.create('subscription', {
+                    id: 'sub_paid_1',
+                    tier,
+                    customer: {
+                        id: 'cus_paid_1',
+                        name: 'Paid Member',
+                        email: 'paid@example.com'
+                    },
+                    plan: {
+                        id: 'price_paid_1',
+                        nickname: 'Monthly',
+                        amount: 500,
+                        interval: 'month',
+                        currency: 'USD'
+                    },
+                    status: 'active',
+                    start_date: '2022-03-03T15:36:58.000Z',
+                    default_payment_card_last4: '4242',
+                    cancel_at_period_end: false,
+                    cancellation_reason: null,
+                    current_period_end: '2022-04-03T15:36:58.000Z',
+                    price: {
+                        id: 'price_paid_1',
+                        price_id: '6220df272fee0571b5dd0a0a',
+                        nickname: 'Monthly',
+                        amount: 500,
+                        interval: 'month',
+                        type: 'recurring',
+                        currency: 'USD',
+                        tier: {
+                            id: 'prod_paid_1',
+                            tier_id: tier.id
+                        }
+                    },
+                    offer: null
+                })
+            ],
+            tiers: [tier]
+        });
+
+        await visit(`/members/${member.id}`);
+
+        expect(currentURL()).to.equal(`/members/${member.id}`);
+        expect(subscriptionSummaryText(tier.id)).to.equal('Renews 3 Apr 2022');
+        expect(find(`[data-test-tier="${tier.id}"] [data-test-button="subscription-actions"]`)).to.exist;
+
+        await click(`[data-test-tier="${tier.id}"] [data-test-button="subscription-actions"]`);
+        expect(find('.tier-actions-menu')).to.contain.text('View Stripe customer');
+        expect(find('.tier-actions-menu')).to.contain.text('View Stripe subscription');
     });
 
     it('handles multiple tiers', async function () {

@@ -3,6 +3,8 @@ const metrics = require('@tryghost/metrics');
 const config = require('../../../shared/config');
 
 class EmailAnalyticsServiceWrapper {
+    #restoredSchedule = false;
+
     init() {
         if (this.service) {
             return;
@@ -75,7 +77,7 @@ class EmailAnalyticsServiceWrapper {
      * @param {number} totalDurationMs - Total duration in milliseconds
      */
     _logJobCompletion(jobType, fetchResult, totalDurationMs) {
-        const {eventCount, apiPollingTimeMs, processingTimeMs, aggregationTimeMs, result} = fetchResult;
+        const {eventCount, apiPollingTimeMs, processingTimeMs, aggregationTimeMs, emailAggregationTimeMs, memberAggregationTimeMs, result} = fetchResult;
 
         if (eventCount === 0) {
             return;
@@ -91,7 +93,7 @@ class EmailAnalyticsServiceWrapper {
             `[EmailAnalytics] Job complete: ${jobType}`,
             `${eventCount} events in ${(totalDurationMs / 1000).toFixed(1)}s (${throughput.toFixed(2)} events/s)`,
             `Mode: ${batchMode}`,
-            `Timings: API ${(apiPollingTimeMs / 1000).toFixed(1)}s (${apiPercent}%) / Processing ${(processingTimeMs / 1000).toFixed(1)}s (${processingPercent}%) / Aggregation ${(aggregationTimeMs / 1000).toFixed(1)}s (${aggregationPercent}%)`,
+            `Timings: API ${(apiPollingTimeMs / 1000).toFixed(1)}s (${apiPercent}%) / Processing ${(processingTimeMs / 1000).toFixed(1)}s (${processingPercent}%) / Aggregation ${(aggregationTimeMs / 1000).toFixed(1)}s (${aggregationPercent}%) [Email ${(emailAggregationTimeMs / 1000).toFixed(1)}s / Member ${(memberAggregationTimeMs / 1000).toFixed(1)}s]`,
             `Events: opened=${result.opened} delivered=${result.delivered} failed=${result.permanentFailed + result.temporaryFailed} unprocessable=${result.unprocessable}`
         ].join(' | ');
 
@@ -167,6 +169,11 @@ class EmailAnalyticsServiceWrapper {
     }
 
     async startFetch() {
+        if (!this.#restoredSchedule) {
+            this.#restoredSchedule = true;
+            await this.service.restoreScheduled();
+        }
+
         if (this.fetching) {
             logging.info('Email analytics fetch already running, skipping');
             return;

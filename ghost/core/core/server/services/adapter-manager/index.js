@@ -20,7 +20,7 @@ adapterManager.registerAdapter('cache', require('@tryghost/adapter-base-cache'))
 module.exports = {
     /**
      *
-     * @param {String} name - one of 'storage', 'scheduling', 'sso', 'cache' etc. Or can contain a "resource" extension like "storage:image"
+     * @param {string} name - one of 'storage', 'scheduling', 'sso', 'cache' etc. Or can contain a "resource" extension like "storage:image"
      * @returns {Object} instance of an adapter
      */
     getAdapter(name) {

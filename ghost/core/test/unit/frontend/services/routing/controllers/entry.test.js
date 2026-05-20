@@ -3,8 +3,8 @@ const {assertExists} = require('../../../../../utils/assertions');
 const sinon = require('sinon');
 const testUtils = require('../../../../../utils');
 const configUtils = require('../../../../../utils/config-utils');
+const deferred = require('../../../../../utils/deferred');
 const urlUtils = require('../../../../../../core/shared/url-utils');
-const routerManager = require('../../../../../../core/frontend/services/routing/').routerManager;
 const controllers = require('../../../../../../core/frontend/services/routing/controllers');
 const renderer = require('../../../../../../core/frontend/services/rendering');
 const dataService = require('../../../../../../core/frontend/services/data');
@@ -16,7 +16,6 @@ describe('Unit - services/routing/controllers/entry', function () {
     let entryLookUpStub;
     let renderStub;
     let urlUtilsRedirect301Stub;
-    let routerManagerGetResourceByIdStub;
     let urlUtilsRedirectToAdminStub;
     let post;
 
@@ -37,7 +36,6 @@ describe('Unit - services/routing/controllers/entry', function () {
 
         urlUtilsRedirectToAdminStub = sinon.stub(urlUtils, 'redirectToAdmin');
         urlUtilsRedirect301Stub = sinon.stub(urlUtils, 'redirect301');
-        routerManagerGetResourceByIdStub = sinon.stub(routerManager, 'getResourceById');
 
         req = {
             path: '/',
@@ -59,7 +57,8 @@ describe('Unit - services/routing/controllers/entry', function () {
         sinon.restore();
     });
 
-    it('resource not found', function (done) {
+    it('resource not found', function () {
+        const {promise, done} = deferred();
         req.path = '/does-not-exist/';
 
         entryLookUpStub.withArgs(req.path, res.routerOptions)
@@ -69,19 +68,15 @@ describe('Unit - services/routing/controllers/entry', function () {
             assert.equal(err, undefined);
             done();
         });
+        return promise;
     });
 
-    it('resource found', function (done) {
+    it('resource found', function () {
+        const {promise, done} = deferred();
         req.path = post.url;
         req.originalUrl = req.path;
 
         res.routerOptions.resourceType = 'posts';
-
-        routerManagerGetResourceByIdStub.withArgs(post.id).returns({
-            config: {
-                type: 'posts'
-            }
-        });
 
         entryLookUpStub.withArgs(req.path, res.routerOptions)
             .resolves({
@@ -91,10 +86,12 @@ describe('Unit - services/routing/controllers/entry', function () {
         controllers.entry(req, res, function () {
             done();
         }).catch(done);
+        return promise;
     });
 
     describe('[edge cases] resource found', function () {
-        it('isUnknownOption: true', function (done) {
+        it('isUnknownOption: true', function () {
+            const {promise, done} = deferred();
             req.path = post.url;
 
             entryLookUpStub.withArgs(req.path, res.routerOptions)
@@ -107,9 +104,11 @@ describe('Unit - services/routing/controllers/entry', function () {
                 assert.equal(err, undefined);
                 done();
             });
+            return promise;
         });
 
-        it('isEditURL: true', function (done) {
+        it('isEditURL: true', function () {
+            const {promise, done} = deferred();
             req.path = post.url;
 
             entryLookUpStub.withArgs(req.path, res.routerOptions)
@@ -127,9 +126,11 @@ describe('Unit - services/routing/controllers/entry', function () {
             controllers.entry(req, res, (err) => {
                 done(err);
             });
+            return promise;
         });
 
-        it('isEditURL: true with admin redirects disabled', function (done) {
+        it('isEditURL: true with admin redirects disabled', function () {
+            const {promise, done} = deferred();
             configUtils.set('admin:redirects', false);
 
             req.path = post.url;
@@ -151,41 +152,16 @@ describe('Unit - services/routing/controllers/entry', function () {
                 assert.equal(err, undefined);
                 done(err);
             });
+            return promise;
         });
 
-        it('type of router !== type of resource', function (done) {
-            req.path = post.url;
-            res.routerOptions.resourceType = 'posts';
-
-            routerManagerGetResourceByIdStub.withArgs(post.id).returns({
-                config: {
-                    type: 'pages'
-                }
-            });
-
-            entryLookUpStub.withArgs(req.path, res.routerOptions)
-                .resolves({
-                    entry: post
-                });
-
-            controllers.entry(req, res, function (err) {
-                assert.equal(err, undefined);
-                done();
-            });
-        });
-
-        it('requested url !== resource url', function (done) {
+        it('requested url !== resource url', function () {
+            const {promise, done} = deferred();
             post.url = '/2017/08' + post.url;
             req.path = '/2017/07' + post.url;
             req.originalUrl = req.path;
 
             res.routerOptions.resourceType = 'posts';
-
-            routerManagerGetResourceByIdStub.withArgs(post.id).returns({
-                config: {
-                    type: 'posts'
-                }
-            });
 
             entryLookUpStub.withArgs(req.path, res.routerOptions)
                 .resolves({
@@ -201,20 +177,16 @@ describe('Unit - services/routing/controllers/entry', function () {
                 assertExists(err);
                 done(err);
             });
+            return promise;
         });
 
-        it('requested url !== resource url: with query params', function (done) {
+        it('requested url !== resource url: with query params', function () {
+            const {promise, done} = deferred();
             post.url = '/2017/08' + post.url;
             req.path = '/2017/07' + post.url;
             req.originalUrl = req.path + '?query=true';
 
             res.routerOptions.resourceType = 'posts';
-
-            routerManagerGetResourceByIdStub.withArgs(post.id).returns({
-                config: {
-                    type: 'posts'
-                }
-            });
 
             entryLookUpStub.withArgs(req.path, res.routerOptions)
                 .resolves({
@@ -229,6 +201,7 @@ describe('Unit - services/routing/controllers/entry', function () {
             controllers.entry(req, res, function (err) {
                 done(err);
             });
+            return promise;
         });
     });
 });

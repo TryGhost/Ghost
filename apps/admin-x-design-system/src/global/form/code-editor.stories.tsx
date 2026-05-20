@@ -1,6 +1,6 @@
 import {html} from '@codemirror/lang-html';
-import {useArgs} from '@storybook/preview-api';
-import type {Meta, StoryObj} from '@storybook/react';
+import {useArgs} from 'storybook/preview-api';
+import type {Meta, StoryObj} from '@storybook/react-vite';
 
 import CodeEditor from './code-editor';
 

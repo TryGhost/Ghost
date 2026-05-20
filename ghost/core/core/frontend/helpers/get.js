@@ -150,8 +150,8 @@ function isBrowse(options) {
  * Find and resolve path strings
  *
  * @param {Object} data
- * @param {String} value
- * @returns {String}
+ * @param {string} value
+ * @returns {string}
  */
 function resolvePaths(globals, data, value) {
     const regex = /\{\{(.*?)\}\}/g;
@@ -285,9 +285,9 @@ function optimiseFilterCacheability(resource, options) {
 
 /**
  *
- * @param {String} resource
- * @param {String} controllerName
- * @param {String} action
+ * @param {string} resource
+ * @param {string} controllerName
+ * @param {string} action
  * @param {GetHelperAPIOptions} apiOptions
  * @returns {Promise<Object>}
  */
@@ -381,7 +381,7 @@ function renderResponse(response, resource, options, data) {
 
 /**
  * ## Get
- * @param {String} resource
+ * @param {string} resource
  * @param {Object} options
  * @returns {Promise<any>}
  */

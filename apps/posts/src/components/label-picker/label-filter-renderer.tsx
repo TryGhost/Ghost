@@ -42,19 +42,12 @@ const LabelFilterRenderer: React.FC<CustomRendererProps<string>> = ({field, valu
         triggerText = `${picker.resolvedSelectedLabels.length} labels`;
     }
 
-    // Convert labels to FilterOption format for MultiSelectCombobox
-    const options = picker.labels.map(label => ({
-        value: label.slug,
-        label: label.name,
-        metadata: {id: label.id}
-    }));
-
     const [editingLabelId, setEditingLabelId] = useState<string | null>(null);
 
     const renderItem = useCallback(({option, isSelected, onSelect}: RenderItemProps<string>) => {
         const labelId = String(option.metadata?.id ?? '');
 
-        if (editingLabelId === labelId) {
+        if (editingLabelId === labelId && !isSelected) {
             const label: Label = {
                 id: labelId,
                 name: option.label,
@@ -88,21 +81,22 @@ const LabelFilterRenderer: React.FC<CustomRendererProps<string>> = ({field, valu
                 onSelect={onSelect}
             >
                 <span className="flex-1 truncate">{option.label}</span>
-                <button
-                    aria-label={`Edit label ${option.label}`}
-                    className="relative ml-1 flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground hover:text-foreground"
-                    type="button"
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        setEditingLabelId(labelId);
-                    }}
-                >
-                    {isSelected && (
-                        <LucideIcon.Check className="absolute size-3 text-primary transition-opacity duration-150 group-hover:opacity-0" />
-                    )}
-                    <LucideIcon.Pencil className="absolute size-3 translate-x-2 opacity-0 transition-all duration-150 ease-out group-hover:translate-x-0 group-hover:opacity-100" />
-                </button>
+                {isSelected ? (
+                    <LucideIcon.Check className="size-3 shrink-0 text-primary" />
+                ) : (
+                    <button
+                        aria-label={`Edit label ${option.label}`}
+                        className="relative ml-1 flex size-5 shrink-0 items-center justify-center rounded text-muted-foreground hover:text-foreground"
+                        type="button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            setEditingLabelId(labelId);
+                        }}
+                    >
+                        <LucideIcon.Pencil className="absolute size-3 translate-x-2 opacity-0 transition-all duration-150 ease-out group-hover:translate-x-0 group-hover:opacity-100" />
+                    </button>
+                )}
             </CommandItem>
         );
     }, [editingLabelId, picker]);
@@ -138,6 +132,10 @@ const LabelFilterRenderer: React.FC<CustomRendererProps<string>> = ({field, valu
             onOpenChange={(open) => {
                 if (open) {
                     updateAlignOffset();
+                } else {
+                    // MultiSelectCombobox remounts with an empty input, so clear the picker query
+                    // too or the hidden search state keeps filtering labels after reopen.
+                    picker.optionSource.onSearchChange?.('');
                 }
             }}
         >
@@ -151,7 +149,7 @@ const LabelFilterRenderer: React.FC<CustomRendererProps<string>> = ({field, valu
                 </button>
             </PopoverTrigger>
             <PopoverContent align="start" alignOffset={alignOffset} className="w-64 p-0">
-                {picker.isLoading ? (
+                {picker.optionSource.isInitialLoad ? (
                     <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
                         Loading labels...
                     </div>
@@ -162,12 +160,10 @@ const LabelFilterRenderer: React.FC<CustomRendererProps<string>> = ({field, valu
                             searchPlaceholder: 'Search labels...',
                             noResultsFound: 'No labels found'
                         }}
-                        options={options}
+                        optionSource={picker.optionSource}
                         renderItem={renderItem}
-                        shouldFilter={false}
                         values={values}
                         onChange={onChange}
-                        onSearchChange={picker.onSearchChange}
                     />
                 )}
             </PopoverContent>

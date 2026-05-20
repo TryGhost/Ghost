@@ -141,7 +141,15 @@ export default class ParseMemberEventHelper extends Helper {
         }
 
         if (event.type === 'gift_purchase_event') {
-            icon = 'subscriptions';
+            icon = 'gift';
+        }
+
+        if (event.type === 'gift_redemption_event') {
+            icon = 'gift';
+        }
+
+        if (event.type === 'gift_ended_event') {
+            icon = 'gift';
         }
 
         if (event.type === 'email_change_event') {
@@ -266,7 +274,15 @@ export default class ParseMemberEventHelper extends Helper {
             const duration = event.data.duration;
             const cadenceLabel = duration === 1 ? event.data.cadence : event.data.cadence + 's';
 
-            return `Purchased a gift subscription for ${formattedAmount} (${tierName}, ${duration} ${cadenceLabel})`;
+            return `Purchased gift subscription for ${formattedAmount} (${tierName}, ${duration} ${cadenceLabel})`;
+        }
+
+        if (event.type === 'gift_redemption_event') {
+            return 'started gift subscription';
+        }
+
+        if (event.type === 'gift_ended_event') {
+            return 'gift subscription expired';
         }
     }
 
@@ -340,6 +356,9 @@ export default class ParseMemberEventHelper extends Helper {
         }
 
         if (event.type === 'signup_event' && this.membersUtils.paidMembersEnabled) {
+            if (event.data.created_with_status && event.data.created_with_status !== 'free') {
+                return null;
+            }
             return 'Free';
         }
 
@@ -347,6 +366,10 @@ export default class ParseMemberEventHelper extends Helper {
             const symbol = getSymbol(event.data.currency);
             const formattedAmount = symbol + getNonDecimal(event.data.amount, event.data.currency);
             return formattedAmount;
+        }
+
+        if (event.type === 'gift_redemption_event') {
+            return event.data.tier_name;
         }
 
         return;

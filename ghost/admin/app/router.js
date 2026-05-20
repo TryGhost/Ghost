@@ -58,9 +58,6 @@ Router.map(function () {
         this.route('migrate', {path: '/*platform'});
     });
 
-    this.route('members', function () {
-        this.route('import');
-    });
     this.route('member.new', {path: '/members/new'});
     this.route('member', {path: '/members/:member_id'});
     this.route('members-activity');

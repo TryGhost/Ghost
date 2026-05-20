@@ -14,6 +14,7 @@ const testUtils = require('../../utils');
 const Papa = require('papaparse');
 
 const models = require('../../../core/server/models');
+const {knex} = require('../../../core/server/data/db');
 const membersService = require('../../../core/server/services/members');
 const memberAttributionService = require('../../../core/server/services/member-attribution');
 const urlService = require('../../../core/server/services/url');
@@ -61,6 +62,19 @@ async function createMember(data) {
         ...data
     });
 
+    return member;
+}
+
+async function createGiftMember(data) {
+    const member = await createMember({
+        ...data,
+        status: 'gift'
+    });
+    await models.MemberStatusEvent.add({
+        member_id: member.id,
+        from_status: null,
+        to_status: 'gift'
+    });
     return member;
 }
 
@@ -893,6 +907,85 @@ describe('Members API', function () {
             });
     });
 
+    it('Can read a member with an active gift subscription', async function () {
+        const member = await createGiftMember({email: 'gift-member-api-shape@test.com'});
+        const paidProduct = await getPaidProduct();
+        let gift;
+
+        try {
+            await models.Member.edit({
+                products: [{id: paidProduct.id}]
+            }, {id: member.id});
+
+            const giftAmount = 1500;
+            const giftCurrency = 'eur';
+            const giftCadence = 'month';
+
+            gift = await models.Gift.add({
+                token: `gift-admin-shape-${member.id}`,
+                buyer_email: 'gift-buyer@test.com',
+                buyer_member_id: null,
+                redeemer_member_id: member.id,
+                tier_id: paidProduct.id,
+                cadence: giftCadence,
+                duration: 1,
+                currency: giftCurrency,
+                amount: giftAmount,
+                stripe_checkout_session_id: `cs_admin_shape_${member.id}`,
+                stripe_payment_intent_id: `pi_admin_shape_${member.id}`,
+                consumes_at: new Date('2099-01-01T00:00:00.000Z'),
+                expires_at: new Date('2099-01-01T00:00:00.000Z'),
+                status: 'redeemed',
+                purchased_at: new Date(),
+                redeemed_at: new Date(),
+                consumed_at: null,
+                expired_at: null,
+                refunded_at: null
+            });
+
+            const {body: readBody} = await agent
+                .get(`/members/${member.id}/`)
+                .expectStatus(200);
+
+            assert.equal(readBody.members[0].status, 'gift');
+            assert.equal(readBody.members[0].subscriptions.length, 1, 'Gift member should expose a single synthetic subscription');
+
+            const readSub = readBody.members[0].subscriptions[0];
+            assert.equal(readSub.plan.nickname, 'Gift subscription');
+            assert.equal(readSub.price.nickname, 'Gift subscription');
+            assert.equal(readSub.plan.amount, giftAmount);
+            assert.equal(readSub.plan.currency, giftCurrency);
+            assert.equal(readSub.plan.interval, giftCadence);
+            assert.equal(readSub.price.amount, giftAmount);
+            assert.equal(readSub.price.currency, giftCurrency);
+            assert.equal(readSub.price.interval, giftCadence);
+
+            const {body: browseBody} = await agent
+                .get(`/members/?filter=${encodeURIComponent(`id:${member.id}`)}`)
+                .expectStatus(200);
+
+            const browsedMember = browseBody.members.find(m => m.id === member.id);
+            assert.ok(browsedMember, 'Gift member should appear in the browse response');
+
+            const browseSub = browsedMember.subscriptions[0];
+            assert.equal(browseSub.plan.nickname, 'Gift subscription');
+            assert.equal(browseSub.price.nickname, 'Gift subscription');
+            assert.equal(browseSub.plan.amount, giftAmount);
+            assert.equal(browseSub.plan.currency, giftCurrency);
+            assert.equal(browseSub.plan.interval, giftCadence);
+            assert.equal(browseSub.price.amount, giftAmount);
+            assert.equal(browseSub.price.currency, giftCurrency);
+            assert.equal(browseSub.price.interval, giftCadence);
+        } finally {
+            // Avoid leaking this fixture into later tests that count members.
+            // Gift.destroy is blocked by the model — fall back to a raw delete.
+            if (gift) {
+                await knex('gifts').where({id: gift.id}).del();
+            }
+            await models.Member.destroy({id: member.id});
+        }
+    });
+
     // Create a member
 
     it('Can add', async function () {
@@ -1415,6 +1508,26 @@ describe('Members API', function () {
         const updatedMember = body2.members[0];
         assert.equal(updatedMember.status, 'comped', 'A comped member should have the comped status');
         assert.equal(updatedMember.tiers.length, 1, 'The member should have one product');
+        assert.equal(
+            updatedMember.subscriptions.length,
+            1,
+            'The member should have one synthetic complimentary subscription'
+        );
+        assert.equal(
+            updatedMember.subscriptions[0].tier.id,
+            product.id,
+            'The subscription should point at the assigned tier'
+        );
+        assert.equal(
+            updatedMember.subscriptions[0].plan.nickname,
+            'Complimentary',
+            'The subscription plan should be marked as complimentary'
+        );
+        assert.equal(
+            updatedMember.subscriptions[0].price.nickname,
+            'Complimentary',
+            'The subscription price should be marked as complimentary'
+        );
 
         await assertMemberEvents({
             eventType: 'MemberStatusEvent',
@@ -1961,6 +2074,16 @@ describe('Members API', function () {
 
         const beforeMember = body2.members[0];
         assert.equal(beforeMember.tiers.length, 2, 'The member should have two tiers now');
+        assert.equal(
+            beforeMember.subscriptions.length,
+            1,
+            'Only the Stripe-backed paid subscription should be returned while the member status is paid'
+        );
+        assert.equal(
+            beforeMember.subscriptions[0].tier.id,
+            memberWithPaidSubscription.tiers[0].id,
+            'The returned subscription should stay attached to the paid tier'
+        );
 
         // Now try to remove only the complimentary one
         const compedPayload = {
@@ -2124,7 +2247,8 @@ describe('Members API', function () {
     });
 
     it('Can subscribe to a newsletter', async function () {
-        const clock = sinon.useFakeTimers(Date.now());
+        // TODO: shouldAdvanceTime is a fake-timer + HTTP-await workaround; see docs/dep-consolidation.md
+        const clock = sinon.useFakeTimers({now: Date.now(), shouldAdvanceTime: true});
         const memberToChange = {
             name: 'change me',
             email: 'member3change@test.com',
@@ -2145,8 +2269,6 @@ describe('Members API', function () {
             tiersCount: 0,
             newsletterCount: 1
         });
-        const before = new Date();
-        before.setMilliseconds(0);
 
         await assertMemberEvents({
             eventType: 'MemberSubscribeEvent',
@@ -2154,16 +2276,12 @@ describe('Members API', function () {
             asserts: [{
                 subscribed: true,
                 source: 'admin',
-                newsletter_id: newsletters[0].id,
-                created_at: before
+                newsletter_id: newsletters[0].id
             }]
         });
 
-        // Wait 5 seconds to guarantee event ordering
+        // Wait 5 seconds to guarantee event ordering in the DB
         clock.tick(5000);
-
-        const after = new Date();
-        after.setMilliseconds(0);
 
         await agent
             .put(`/members/${newMember.id}/`)
@@ -2184,18 +2302,15 @@ describe('Members API', function () {
                 {
                     subscribed: true,
                     source: 'admin',
-                    newsletter_id: newsletters[0].id,
-                    created_at: before
+                    newsletter_id: newsletters[0].id
                 }, {
                     subscribed: true,
                     source: 'admin',
-                    newsletter_id: newsletters[1].id,
-                    created_at: after
+                    newsletter_id: newsletters[1].id
                 }, {
                     subscribed: false,
                     source: 'admin',
-                    newsletter_id: newsletters[0].id,
-                    created_at: after
+                    newsletter_id: newsletters[0].id
                 }
             ]
         });
@@ -2628,7 +2743,7 @@ describe('Members API', function () {
                 'content-disposition': anyString
             });
 
-        assert.match(res.text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers/);
+        assert.match(res.text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/);
 
         const csv = Papa.parse(res.text, {header: true});
         assertExists(csv.data.find(row => row.name === 'Mr Egg'));
@@ -2649,7 +2764,7 @@ describe('Members API', function () {
                 'content-disposition': anyString
             });
 
-        assert.match(res.text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers/);
+        assert.match(res.text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/);
 
         const csv = Papa.parse(res.text, {header: true});
         assertExists(csv.data.find(row => row.name === 'Mr Egg'));
@@ -2737,6 +2852,8 @@ describe('Members API', function () {
     // Get stats
 
     it('Can fetch member counts stats', async function () {
+        await createGiftMember({email: 'gift-member@test.com'});
+
         await agent
             .get(`/members/stats/count/`)
             .expectStatus(200)

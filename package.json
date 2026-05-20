@@ -30,6 +30,8 @@
     "dev:storage": "DEV_COMPOSE_FILES='-f compose.dev.storage.yaml' pnpm nx run ghost-monorepo:docker:dev",
     "dev:stripe": "./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:docker:dev",
     "dev:all": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml -f compose.dev.storage.yaml' ./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:docker:dev",
+    "dev:supervisor": "node scripts/dev-supervisor.js",
+    "dev:status": "node scripts/dev-supervisor.js status",
     "fix": "pnpm store prune && rimraf -g '**/node_modules' && pnpm install && pnpm nx reset",
     "knex-migrator": "pnpm --filter ghost run knex-migrator",
     "setup": "pnpm install && git submodule update --init --recursive",
@@ -39,8 +41,11 @@
     "docker:build": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} build",
     "docker:clean": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile all down -v --remove-orphans --rmi local",
     "docker:down": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} down",
+    "docker:rebase": "git fetch ${GHOST_UPSTREAM:-origin} main && git rebase ${GHOST_UPSTREAM:-origin}/main && pnpm install && pnpm nx run-many -t build --projects=@tryghost/shade,@tryghost/admin-x-design-system,@tryghost/admin-x-framework && docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} up -d --build --force-recreate ghost-dev",
+    "knip": "knip",
+    "knip:fix": "knip --fix --allow-remove-files=false",
     "lint": "pnpm nx run-many -t lint",
-    "test": "pnpm nx run-many -t test",
+    "test": "pnpm nx run-many -t test --exclude @tryghost/e2e --exclude ghost-admin",
     "test:unit": "pnpm nx run-many -t test:unit",
     "test:e2e": "pnpm --filter @tryghost/e2e test",
     "test:e2e:analytics": "pnpm --filter @tryghost/e2e test:analytics",
@@ -50,7 +55,7 @@
     "main:monorepo": "git checkout main && git pull ${GHOST_UPSTREAM:-origin} main && pnpm install",
     "main:submodules": "git submodule sync && git submodule update && git submodule foreach \"git checkout main && git pull ${GHOST_UPSTREAM:-origin} main\"",
     "preinstall": "node ./.github/scripts/enforce-package-manager.js",
-    "prepare": "husky install .github/hooks",
+    "prepare": "husky .github/hooks",
     "tb": "tb local start && cd ghost/core/core/server/data/tinybird && tb dev",
     "tb:install": "curl https://tinybird.co | sh",
     "data:analytics:generate": "node ghost/core/core/server/data/tinybird/scripts/docker-analytics-manager.js generate",
@@ -61,9 +66,9 @@
   "pnpm": {
     "overrides": {
       "@tryghost/errors": "^1.3.7",
-      "@tryghost/logging": "2.5.5",
+      "@tryghost/logging": "catalog:",
       "jackspeak": "2.3.6",
-      "moment": "2.24.0",
+      "moment": "2.30.1",
       "moment-timezone": "0.5.45",
       "nwsapi": "2.2.23",
       "broccoli-persistent-filter": "^2.3.1",
@@ -74,7 +79,56 @@
       "eslint-plugin-ghost>@typescript-eslint/utils": "8.49.0",
       "ember-svg-jar>cheerio": "1.0.0-rc.12",
       "juice>cheerio": "0.22.0",
-      "lodash.template": "4.5.0"
+      "lodash.template": "4.5.0",
+      "@babel/runtime@<7.26.10": "^7.26.10",
+      "@tootallnate/once@<3.0.1": "^3.0.1",
+      "ansi-html@<0.0.8": "^0.0.9",
+      "axios@<1.15.2": "^1.15.2",
+      "braces@<3.0.3": "^3.0.3",
+      "clean-css@<4.1.11": "^4.1.11",
+      "codemirror@<5.58.2": "^5.58.2",
+      "debug@>=4.0.0 <4.3.1": "^4.3.1",
+      "debug@<2.6.9": "^2.6.9",
+      "diff@<3.5.1": "^3.5.1",
+      "diff@>=6.0.0 <8.0.3": "^8.0.3",
+      "fast-xml-parser@<5.7.0": "^5.7.0",
+      "follow-redirects@<1.16.0": "^1.16.0",
+      "form-data@<2.5.4": "^2.5.4",
+      "growl@<1.10.0": "^1.10.0",
+      "handlebars@>=4.0.0 <=4.7.8": "^4.7.9",
+      "ip-address@<=10.1.0": "^10.2.0",
+      "js-yaml@>=4.0.0 <4.1.1": "^4.1.1",
+      "json5@<1.0.2": "^1.0.2",
+      "lodash@<4.18.0": "^4.18.0",
+      "lodash-es@<4.18.0": "^4.18.0",
+      "merge@<2.1.1": "^2.1.1",
+      "micromatch@<4.0.8": "^4.0.8",
+      "minimatch@<3.1.4": "^3.1.4",
+      "minimatch@>=9.0.0 <9.0.7": "^9.0.7",
+      "minimist@<0.2.4": "^0.2.4",
+      "nth-check@<2.0.1": "^2.0.1",
+      "path-to-regexp@<0.1.13": "^0.1.13",
+      "protobufjs@<7.5.5": "^7.5.5",
+      "qs@<6.14.1": "^6.14.2",
+      "tar@<7.5.11": "^7.5.11",
+      "tmp@<=0.2.3": "^0.2.4",
+      "tough-cookie@<4.1.3": "^4.1.3",
+      "trim@<0.0.3": "^0.0.3",
+      "undici@<6.24.0": "^6.24.0",
+      "underscore@>=1.3.2 <1.12.1": "^1.12.1",
+      "@xmldom/xmldom@<0.8.13": "^0.8.13"
+    },
+    "packageExtensions": {
+      "@doist/react-interpolate@2.2.1": {
+        "dependencies": {
+          "@babel/runtime": "^7.26.10"
+        }
+      },
+      "@tryghost/nql@0.12.10": {
+        "dependencies": {
+          "lodash": "^4.18.0"
+        }
+      }
     },
     "onlyBuiltDependencies": [
       "@swc/core",
@@ -93,22 +147,21 @@
     ]
   },
   "devDependencies": {
-    "@actions/core": "3.0.0",
-    "@playwright/test": "1.59.1",
-    "chalk": "4.1.2",
-    "chokidar": "3.6.0",
-    "concurrently": "8.2.2",
+    "@playwright/test": "catalog:",
+    "@secretlint/secretlint-rule-pattern": "12.3.1",
+    "@secretlint/secretlint-rule-preset-recommend": "12.3.1",
     "eslint": "catalog:",
     "eslint-plugin-ghost": "3.5.0",
     "eslint-plugin-react": "7.37.5",
     "husky": "9.1.7",
-    "inquirer": "8.2.7",
-    "jsonc-parser": "3.3.1",
+    "jsonc-parser": "catalog:",
+    "knip": "6.12.0",
     "lint-staged": "16.4.0",
     "nx": "22.0.4",
     "rimraf": "6.1.3",
+    "secretlint": "12.3.1",
     "semver": "7.7.4",
-    "typescript": "5.9.3"
+    "typescript": "catalog:"
   },
   "nx": {
     "includedScripts": [],

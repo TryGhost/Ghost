@@ -1,10 +1,12 @@
+import * as i18nLibModule from '@tryghost/i18n';
 import React, {useState} from 'react';
-import i18nLib from '@tryghost/i18n';
 import pages, {Page, PageName} from './pages';
 import {AppContextProvider, SignupFormOptions} from './app-context';
 import {ContentBox} from './components/content-box';
-import {userEvent, within} from '@storybook/testing-library';
-import type {Meta, StoryObj} from '@storybook/react';
+import {userEvent, within} from 'storybook/test';
+import type {Meta, StoryObj} from '@storybook/react-vite';
+
+const i18nLib = 'default' in i18nLibModule ? Reflect.get(i18nLibModule, 'default') : i18nLibModule;
 
 type PreviewProps = SignupFormOptions & {
     pageBackgroundColor: string;
@@ -80,7 +82,7 @@ const meta = {
         });
 
         const submitButton = canvas.getByTestId('button');
-        userEvent.click(submitButton);
+        await userEvent.click(submitButton);
     }
 } satisfies Meta<typeof Preview>;
 

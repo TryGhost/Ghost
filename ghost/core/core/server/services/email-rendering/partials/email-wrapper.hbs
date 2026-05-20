@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html lang="{{site.locale}}" dir="{{site.direction}}">
     <head>
         <meta name="viewport" content="width=device-width" />
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -10,7 +10,7 @@
     <body data-testid="email-preview-body">
         <span class="preheader">{{preheader}}</span>
         <!-- SPACING TO AVOID BODY TEXT BEING DUPLICATED IN PREVIEW TEXT -->
-        <div style="display:none; max-height:0; overflow:hidden; mso-hide: all;" aria-hidden="true" role="presentation">
+        <div class="preheader-spacing" style="display:none; max-height:0; overflow:hidden; mso-hide: all;" aria-hidden="true" role="presentation">
             {{{preheaderSpacing}}}
         </div>
 
@@ -176,7 +176,7 @@
                 <td class="{{classes.container}}">
                     <div class="content">
                         <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="main" width="100%">
-                            {{> @partial-block}}
+{{~> @partial-block~}}
                         </table>
                         <!-- END CENTERED WHITE CONTAINER -->
                     </div>

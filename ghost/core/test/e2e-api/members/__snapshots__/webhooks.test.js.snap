@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`Members API Member attribution Creates a SubscriptionCreatedEvent with UTM parameters 1: [body] 1`] = `
 Object {

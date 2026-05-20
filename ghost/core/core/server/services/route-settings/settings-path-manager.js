@@ -12,7 +12,7 @@ class SettingsPathManager {
      *
      * @param {Object} options
      * @param {String[]} options.paths - file location paths ordered in priority by where to locate them first
-     * @param {String} options.type setting file type, e.g: 'routes' or 'redirects'
+     * @param {string} options.type setting file type, e.g: 'routes' or 'redirects'
      * @param {String[]} [options.extensions] the supported file extensions with 'yaml' and 'json' defaults. Note 'yml' extension is ignored on purpose
     */
     constructor({type, paths, extensions = ['yaml', 'json']}) {

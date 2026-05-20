@@ -7,15 +7,7 @@ export interface ExportedFile {
     content: string;
 }
 
-export interface MembersListSurface {
-    goto(): Promise<unknown>;
-    openActionsMenu(): Promise<void>;
-    applyLabelFilter(labelName: string): Promise<void>;
-    getVisibleMemberCount(): Promise<number>;
-    exportMembers(): Promise<ExportedFile>;
-}
-
-export class MembersListPage extends AdminPage implements MembersListSurface {
+export class MembersListPage extends AdminPage {
     readonly memberRows: Locator;
     readonly searchInput: Locator;
     readonly actionsButton: Locator;
@@ -23,6 +15,7 @@ export class MembersListPage extends AdminPage implements MembersListSurface {
     readonly filterButton: Locator;
     readonly clearFiltersButton: Locator;
     readonly emptyState: Locator;
+    readonly addYourselfButton: Locator;
     readonly noResults: Locator;
     readonly showAllButton: Locator;
 
@@ -36,7 +29,8 @@ export class MembersListPage extends AdminPage implements MembersListSurface {
         this.newMemberButton = page.getByRole('link', {name: 'New member'});
         this.filterButton = page.getByRole('button', {name: /^(Filter|Add filter)$/});
         this.clearFiltersButton = page.getByRole('button', {name: 'Clear'});
-        this.emptyState = page.getByText('No members yet');
+        this.emptyState = page.getByText('Start building your audience');
+        this.addYourselfButton = page.getByRole('button', {name: 'Add yourself as a member to test'});
         this.noResults = page.getByText('No matching members found.');
         this.showAllButton = page.getByRole('button', {name: 'Show all members'});
     }

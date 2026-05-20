@@ -1,8 +1,8 @@
 import moment from 'moment-timezone';
 
+import {Avatar, TableCell, TableRow} from '@tryghost/shade/components';
 import {Member} from '@tryghost/admin-x-framework/api/members';
-import {MemberAvatar} from '@components/member-avatar';
-import {TableCell, TableRow} from '@tryghost/shade/components';
+import {buildMemberDetailPath} from '../member-detail-hash';
 import {cn} from '@tryghost/shade/utils';
 import {getActiveColumnValue} from '../member-query-params';
 import type {ActiveColumn} from '../member-query-params';
@@ -51,6 +51,8 @@ function getStatusLabel(status: Member['status']): string {
         return 'Paid';
     case 'comped':
         return 'Complimentary';
+    case 'gift':
+        return 'Gift';
     default:
         return 'Free';
     }
@@ -60,26 +62,25 @@ function isModifiedClick(event: Pick<React.MouseEvent<HTMLElement>, 'button' | '
     return event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
 }
 
-function openMemberInNewTab(memberId: string) {
-    window.open(`#/members/${memberId}`, '_blank', 'noopener');
+function openMemberInNewTab(memberId: string, backPath?: string) {
+    window.open(`#${buildMemberDetailPath(memberId, backPath)}`, '_blank', 'noopener');
 }
 
 // --- Sub-components ---
 
-function MembersListItemName({item, onClick}: { item: Member; onClick?: (memberId: string) => void }) {
+function MembersListItemName({item, backPath, onClick}: { item: Member; backPath?: string; onClick?: (memberId: string) => void }) {
     return (
         <div className="flex min-w-0 items-center gap-3">
-            <MemberAvatar
-                avatarImage={item.avatar_image}
-                className="size-10 min-w-10 md:size-10 md:min-w-10"
-                memberEmail={item.email}
-                memberId={item.id}
-                memberName={item.name}
+            <Avatar
+                className="size-10 min-w-10"
+                email={item.email}
+                name={item.name}
+                src={item.avatar_image}
             />
             <div className="min-w-0">
                 <a
                     className="block min-w-0 cursor-pointer"
-                    href={`#/members/${item.id}`}
+                    href={`#${buildMemberDetailPath(item.id, backPath)}`}
                     onClick={onClick ? (e) => {
                         if (isModifiedClick(e)) {
                             e.stopPropagation();
@@ -207,6 +208,7 @@ function MembersListItemDynamicColumn({
 interface MembersListItemProps {
     item: Member;
     activeColumns: ActiveColumn[];
+    backPath?: string;
     columnStyles: MemberTableColumnStyles;
     showPinnedEdge: boolean;
     showEmailOpenRate: boolean;
@@ -217,6 +219,7 @@ interface MembersListItemProps {
 function MembersListItem({
     item,
     activeColumns,
+    backPath,
     columnStyles,
     showPinnedEdge,
     showEmailOpenRate,
@@ -230,7 +233,7 @@ function MembersListItem({
     } as CSSProperties;
     const handleRowClick = (event: React.MouseEvent<HTMLTableRowElement>) => {
         if (isModifiedClick(event)) {
-            openMemberInNewTab(item.id);
+            openMemberInNewTab(item.id, backPath);
             return;
         }
 
@@ -242,7 +245,7 @@ function MembersListItem({
         }
 
         event.preventDefault();
-        openMemberInNewTab(item.id);
+        openMemberInNewTab(item.id, backPath);
     };
 
     return (
@@ -256,7 +259,7 @@ function MembersListItem({
             <TableCell className={cn(
                 'min-w-0 bg-background px-4 py-3 group-hover:bg-[var(--members-sticky-hover-bg)] max-sm:!w-full max-sm:!min-w-0 lg:sticky lg:left-0 lg:z-20'
             )} style={memberCellStyle}>
-                <MembersListItemName item={item} onClick={onClick} />
+                <MembersListItemName backPath={backPath} item={item} onClick={onClick} />
                 {showPinnedEdge && (
                     <>
                         <div

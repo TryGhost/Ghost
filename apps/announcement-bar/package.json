@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/announcement-bar",
-  "version": "1.1.17",
+  "version": "1.1.21",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -14,12 +14,11 @@
     "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
-    "@tryghost/content-api": "1.12.6",
     "react": "17.0.2",
     "react-dom": "17.0.2"
   },
   "scripts": {
-    "dev": "concurrently \"vite preview -l silent\" \"pnpm build:watch\"",
+    "dev": "concurrently --kill-others --names preview,build \"vite preview -l silent\" \"pnpm build:watch\"",
     "build": "vite build",
     "build:watch": "vite build --watch",
     "test": "vitest run",
@@ -80,12 +79,14 @@
     ]
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "4.7.0",
-    "@vitest/coverage-v8": "~3.2.4",
-    "cross-fetch": "4.1.0",
-    "jsdom": "28.1.0",
-    "vite": "5.4.21",
-    "vite-plugin-svgr": "3.3.0",
-    "vitest": "3.2.4"
+    "@vitejs/plugin-react": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "concurrently": "catalog:",
+    "cross-fetch": "catalog:",
+    "eslint": "catalog:",
+    "jsdom": "catalog:",
+    "vite": "catalog:",
+    "vite-plugin-svgr": "catalog:",
+    "vitest": "catalog:"
   }
 }

@@ -28,10 +28,21 @@ describe('GiftEmailService', function () {
         getIconUrl: () => 'https://example.com/icon.png'
     };
 
+    const translate = (translations = {}) => (key, options = {}) => {
+        const translatedKey = translations[key] || key;
+        const params = {...options};
+        delete params.interpolation;
+
+        return translatedKey.replace(/\{(\w+)\}/g, (_, name) => {
+            if (params[name] === undefined) {
+                return `{${name}}`;
+            }
+            return String(params[name]);
+        });
+    };
+
     const defaultData = {
         buyerEmail: 'buyer@example.com',
-        amount: 5000,
-        currency: 'usd',
         token: 'abc-123',
         tierName: 'Gold',
         cadence: 'year',
@@ -41,7 +52,7 @@ describe('GiftEmailService', function () {
 
     beforeEach(function () {
         mailer = {send: sinon.stub().resolves()};
-        service = new GiftEmailService({mailer, settingsCache, urlUtils, getFromAddress, blogIcon});
+        service = new GiftEmailService({mailer, settingsCache, urlUtils, getFromAddress, blogIcon, t: translate()});
     });
 
     afterEach(function () {
@@ -54,7 +65,7 @@ describe('GiftEmailService', function () {
         sinon.assert.calledOnce(mailer.send);
         sinon.assert.calledWith(mailer.send, sinon.match({
             to: 'buyer@example.com',
-            subject: 'Gift subscription purchase confirmation',
+            subject: 'Your gift is ready',
             from: 'Test Site <noreply@example.com>'
         }));
     });
@@ -67,48 +78,45 @@ describe('GiftEmailService', function () {
         for (const field of ['html', 'text']) {
             sinon.assert.match(msg[field], sinon.match('https://example.com/gift/abc-123'));
             sinon.assert.match(msg[field], sinon.match('Gold'));
-            sinon.assert.match(msg[field], sinon.match('1 year'));
+            sinon.assert.match(msg[field], sinon.match('one-year'));
         }
-    });
-
-    it('includes formatted amount in both HTML and text', async function () {
-        await service.sendPurchaseConfirmation(defaultData);
-
-        const msg = mailer.send.getCall(0).args[0];
-
-        for (const field of ['html', 'text']) {
-            sinon.assert.match(msg[field], sinon.match('$50.00'));
-        }
-    });
-
-    it('formats non-USD currency correctly', async function () {
-        await service.sendPurchaseConfirmation({...defaultData, amount: 1500, currency: 'eur'});
-
-        sinon.assert.calledWith(mailer.send, sinon.match.has('html', sinon.match('€15.00')));
     });
 
     it('formats month cadence correctly', async function () {
         await service.sendPurchaseConfirmation({...defaultData, cadence: 'month'});
 
-        sinon.assert.calledWith(mailer.send, sinon.match.has('html', sinon.match('1 month')));
+        sinon.assert.calledWith(mailer.send, sinon.match.has('html', sinon.match('one-month')));
     });
 
-    it('includes a mailto link with prefilled subject and body in the HTML', async function () {
-        await service.sendPurchaseConfirmation(defaultData);
+    it('formats the expiry date with the active locale', async function () {
+        const localizedSettingsCache = {
+            get: (key) => {
+                if (key === 'title') {
+                    return 'Test Site';
+                }
+                if (key === 'accent_color') {
+                    return '#ff5500';
+                }
+                if (key === 'locale') {
+                    return 'fr';
+                }
+
+                return '';
+            }
+        };
+        const localizedService = new GiftEmailService({mailer, settingsCache: localizedSettingsCache, urlUtils, getFromAddress, blogIcon, t: translate()});
+
+        await localizedService.sendPurchaseConfirmation(defaultData);
 
         const msg = mailer.send.getCall(0).args[0];
+        const expectedDate = new Intl.DateTimeFormat('fr', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+        }).format(defaultData.expiresAt);
 
-        // Handlebars HTML-escapes some characters (including `=` → `&#x3D;`) when
-        // interpolating into an attribute. The browser decodes these back when the
-        // user clicks the link, so we don't care about the encoding here — we just
-        // verify the link is a mailto and that the encoded subject and body are
-        // present in the rendered output.
-        const expectedSubject = encodeURIComponent('I got you a gift subscription to Test Site');
-        const expectedBody = encodeURIComponent('Hi,\n\nI bought you a subscription to Test Site. You can redeem it here:\n\nhttps://example.com/gift/abc-123');
-
-        sinon.assert.match(msg.html, sinon.match('mailto:'));
-        sinon.assert.match(msg.html, sinon.match(expectedSubject));
-        sinon.assert.match(msg.html, sinon.match(expectedBody));
+        sinon.assert.match(msg.html, sinon.match(expectedDate));
+        sinon.assert.match(msg.text, sinon.match(expectedDate));
     });
 
     it('falls back to site domain when site title is undefined', async function () {
@@ -125,9 +133,145 @@ describe('GiftEmailService', function () {
             }
         };
 
-        const noTitleService = new GiftEmailService({mailer, settingsCache: noTitleSettingsCache, urlUtils, getFromAddress, blogIcon});
+        const noTitleService = new GiftEmailService({mailer, settingsCache: noTitleSettingsCache, urlUtils, getFromAddress, blogIcon, t: translate()});
         await noTitleService.sendPurchaseConfirmation(defaultData);
 
-        sinon.assert.calledWith(mailer.send, sinon.match.has('text', sinon.match('gift subscription on example.com')));
+        sinon.assert.calledWith(mailer.send, sinon.match.has('text', sinon.match('membership to example.com')));
+    });
+
+    it('escapes user-controlled values containing HTML in the purchase confirmation HTML', async function () {
+        const hostileSettingsCache = {
+            get: (key) => {
+                if (key === 'title') {
+                    return 'Evil <script>alert(1)</script> Site';
+                }
+                if (key === 'accent_color') {
+                    return '#ff5500';
+                }
+                return '';
+            }
+        };
+
+        const hostileService = new GiftEmailService({mailer, settingsCache: hostileSettingsCache, urlUtils, getFromAddress, blogIcon, t: translate()});
+        await hostileService.sendPurchaseConfirmation({
+            ...defaultData,
+            buyerEmail: 'buyer">@example.com',
+            tierName: 'Gold <img src=x onerror=alert(1)>'
+        });
+
+        const msg = mailer.send.getCall(0).args[0];
+
+        // raw markup from injected fields must not appear in the HTML body
+        sinon.assert.match(msg.html, sinon.match(value => !value.includes('<script>alert(1)</script>')));
+        sinon.assert.match(msg.html, sinon.match(value => !value.includes('<img src=x onerror=alert(1)>')));
+        sinon.assert.match(msg.html, sinon.match(value => !value.includes('buyer">@example.com')));
+
+        // but the structural <strong> + <a> tags from the template must still render
+        sinon.assert.match(msg.html, sinon.match(/<strong>Gold &lt;img/));
+        sinon.assert.match(msg.html, sinon.match(/<a class="small" href="mailto:buyer/));
+    });
+
+    describe('sendReminder', function () {
+        const reminderData = {
+            memberEmail: 'member@example.com',
+            memberName: 'Jamie Rivera',
+            tierName: 'Gold',
+            consumesAt: new Date('2026-04-23T00:00:00.000Z')
+        };
+
+        it('sends to the redeemer with the correct subject and from address', async function () {
+            await service.sendReminder(reminderData);
+
+            sinon.assert.calledOnce(mailer.send);
+            sinon.assert.calledWith(mailer.send, sinon.match({
+                to: 'member@example.com',
+                subject: 'Your gift subscription is ending soon',
+                from: 'Test Site <noreply@example.com>'
+            }));
+        });
+
+        it('includes consumesAt and manage subscription url in both HTML and text', async function () {
+            await service.sendReminder(reminderData);
+
+            const msg = mailer.send.getCall(0).args[0];
+            const expectedDate = new Intl.DateTimeFormat('en-gb', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+            }).format(reminderData.consumesAt);
+
+            for (const field of ['html', 'text']) {
+                sinon.assert.match(msg[field], sinon.match(expectedDate));
+                sinon.assert.match(msg[field], sinon.match('https://example.com/#/portal/account'));
+            }
+        });
+
+        it('renders a "Continue subscription" CTA', async function () {
+            await service.sendReminder(reminderData);
+
+            const msg = mailer.send.getCall(0).args[0];
+
+            sinon.assert.match(msg.html, sinon.match('Continue subscription'));
+            sinon.assert.match(msg.text, sinon.match('Continue subscription'));
+        });
+
+        it('greets the redeemer by first name when a name is available', async function () {
+            await service.sendReminder(reminderData);
+
+            const msg = mailer.send.getCall(0).args[0];
+
+            for (const field of ['html', 'text']) {
+                sinon.assert.match(msg[field], sinon.match('Hi Jamie,'));
+            }
+        });
+
+        it('falls back to a generic greeting when no name is available', async function () {
+            await service.sendReminder({...reminderData, memberName: null});
+
+            const msg = mailer.send.getCall(0).args[0];
+
+            for (const field of ['html', 'text']) {
+                sinon.assert.match(msg[field], sinon.match('Hey there,'));
+            }
+        });
+
+        it('formats the expiry date with the active locale', async function () {
+            const localizedSettingsCache = {
+                get: (key) => {
+                    if (key === 'title') {
+                        return 'Test Site';
+                    }
+                    if (key === 'accent_color') {
+                        return '#ff5500';
+                    }
+                    if (key === 'locale') {
+                        return 'fr';
+                    }
+
+                    return '';
+                }
+            };
+            const localizedService = new GiftEmailService({
+                mailer,
+                settingsCache: localizedSettingsCache,
+                urlUtils,
+                getFromAddress,
+                blogIcon,
+                t: translate()
+            });
+
+            await localizedService.sendReminder(reminderData);
+
+            const msg = mailer.send.getCall(0).args[0];
+            const expectedDate = new Intl.DateTimeFormat('fr', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+            }).format(reminderData.consumesAt);
+
+            for (const field of ['html', 'text']) {
+                sinon.assert.match(msg[field], sinon.match(expectedDate));
+            }
+        });
     });
 });

@@ -1,5 +1,5 @@
 const models = require('../../models');
-const postSchedulingService = require('../../services/posts/post-scheduling-service')();
+const postScheduling = require('../../services/posts/post-scheduling');
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -39,8 +39,8 @@ const controller = {
                 }
             };
 
-            const {scheduledResource, preScheduledResource} = await postSchedulingService.publish(resourceType, frame.options.id, frame.data.force, options);
-            const cacheInvalidation = postSchedulingService.handleCacheInvalidation(scheduledResource, preScheduledResource);
+            const {scheduledResource, preScheduledResource} = await postScheduling.publish(resourceType, frame.options.id, frame.data.force, options);
+            const cacheInvalidation = postScheduling.handleCacheInvalidation(scheduledResource, preScheduledResource);
 
             if (cacheInvalidation === true) {
                 frame.setHeader('X-Cache-Invalidate', '/*');

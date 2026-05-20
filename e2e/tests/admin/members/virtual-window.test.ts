@@ -43,8 +43,6 @@ async function mockLargeMembersList(page: Page, members: Array<{id: string}>) {
 }
 
 test.describe('Ghost Admin - Members Virtual Window', () => {
-    test.use({labs: {membersForward: true}});
-
     let memberFactory: MemberFactory;
 
     test.beforeEach(async ({page}) => {

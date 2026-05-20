@@ -64,8 +64,6 @@ async function createOfferAndRedeem(page: Page, request: APIRequestContext, stri
 }
 
 test.describe('Ghost Admin - Members Label Multiselect Filter', () => {
-    test.use({labs: {membersForward: true}});
-
     let memberFactory: MemberFactory;
 
     test.beforeEach(async ({page}) => {
@@ -137,11 +135,12 @@ test.describe('Ghost Admin - Members Label Multiselect Filter', () => {
 
     test('edits a label name inline from the filter combobox', async ({page}) => {
         const membersPage = await seedMembersAndNavigate(memberFactory, page, [
-            {name: 'Labelled Member', email: 'labelled@example.com', labels: ['Old-Name']},
+            {name: 'Editable Label Member', email: 'editable@example.com', labels: ['Old-Name']},
+            {name: 'Selected Label Member', email: 'selected@example.com', labels: ['Selected-Label']},
             {name: 'Other Member', email: 'other@example.com'}
         ]);
 
-        await membersPage.addMultiselectFilter('Label', ['Old-Name']);
+        await membersPage.addMultiselectFilter('Label', ['Selected-Label']);
         await membersPage.openFilterValue('Label');
 
         await page.getByRole('button', {name: 'Edit label Old-Name'}).click();
@@ -154,14 +153,15 @@ test.describe('Ghost Admin - Members Label Multiselect Filter', () => {
 
     test('deletes a label inline from the filter combobox with confirmation', async ({page}) => {
         await memberFactory.createMany([
-            {name: 'Labelled Member', email: 'labelled@example.com', labels: ['Delete-Me']},
+            {name: 'Deletable Label Member', email: 'deletable@example.com', labels: ['Delete-Me']},
+            {name: 'Selected Label Member', email: 'selected@example.com', labels: ['Selected-Label']},
             {name: 'Other Member', email: 'other@example.com'}
         ]);
 
         const membersPage = new MembersListPage(page);
         await membersPage.goto();
 
-        await membersPage.addMultiselectFilter('Label', ['Delete-Me']);
+        await membersPage.addMultiselectFilter('Label', ['Selected-Label']);
         await membersPage.openFilterValue('Label');
 
         await page.getByRole('button', {name: 'Edit label Delete-Me'}).click();
@@ -174,7 +174,7 @@ test.describe('Ghost Admin - Members Label Multiselect Filter', () => {
 });
 
 test.describe('Ghost Admin - Members Offer Multiselect Filter', () => {
-    test.use({labs: {membersForward: true}, stripeEnabled: true});
+    test.use({stripeEnabled: true});
 
     test('opens offer filter and selects an offer to filter members', async ({page, stripe}) => {
         const {suffix} = await createOfferAndRedeem(page, page.request, stripe!, {

@@ -2,6 +2,7 @@ import {Locator, Page} from '@playwright/test';
 
 export class MembersImportModal {
     private readonly page: Page;
+    private readonly dialog: Locator;
 
     readonly fileInput: Locator;
     readonly importButton: Locator;
@@ -10,10 +11,11 @@ export class MembersImportModal {
 
     constructor(page: Page) {
         this.page = page;
-        this.fileInput = page.locator('[data-test-fileinput="members-csv"] input[type="file"]').first();
-        this.importButton = page.locator('[data-test-button="perform-import"]');
-        this.importHeading = page.locator('[data-test-modal="import-members"]').getByRole('heading', {name: /import (in progress|complete)/i});
-        this.closeButton = page.locator('[data-test-button="close-import-members"]');
+        this.dialog = page.getByRole('dialog');
+        this.fileInput = this.dialog.locator('input[type="file"]').first();
+        this.importButton = this.dialog.getByRole('button', {name: /^Import(?: \d[\d,]* members?)?$/});
+        this.importHeading = this.dialog.getByRole('heading', {name: /import (in progress|complete)/i});
+        this.closeButton = this.dialog.getByRole('button', {name: /^(View members|Got it)$/});
     }
 
     getMappingRow(fieldName: string): Locator {

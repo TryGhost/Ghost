@@ -8,11 +8,11 @@ const AssetsMinificationBase = require('../../../../../core/frontend/services/as
 describe('AssetsMinificationBase', function () {
     let testDir;
 
-    before(async function () {
+    beforeAll(async function () {
         testDir = await fs.mkdtemp(path.join(os.tmpdir(), 'asset-base-tests-'));
     });
 
-    after(async function () {
+    afterAll(async function () {
         await fs.rm(testDir, {recursive: true});
     });
 

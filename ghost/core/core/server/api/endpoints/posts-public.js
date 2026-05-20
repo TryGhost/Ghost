@@ -70,6 +70,7 @@ const controller = {
                     'absolute_urls',
                     'collection'
                 ]),
+                skipPagination: frame.options?.skipPagination === true,
                 auth: generateAuthData(frame),
                 method: 'browse'
             };
@@ -84,7 +85,8 @@ const controller = {
             'page',
             'debug',
             'absolute_urls',
-            'collection'
+            'collection',
+            'skipPagination'
         ],
         validation: {
             options: {

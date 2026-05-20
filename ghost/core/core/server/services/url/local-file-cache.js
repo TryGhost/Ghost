@@ -4,8 +4,8 @@ const path = require('path');
 class LocalFileCache {
     /**
      * @param {Object} options
-     * @param {String} options.storagePath - cached storage path
-     * @param {Boolean} options.writeDisabled - controls if cache can write
+     * @param {string} options.storagePath - cached storage path
+     * @param {boolean} options.writeDisabled - controls if cache can write
      */
     constructor({storagePath, writeDisabled}) {
         const urlsStoragePath = path.join(storagePath, 'urls.json');
@@ -21,7 +21,7 @@ class LocalFileCache {
     /**
      * Handles reading and parsing JSON from the filesystem.
      * In case the file is corrupted or does not exist, returns null.
-     * @param {String} filePath path to read from
+     * @param {string} filePath path to read from
      * @returns {Promise<Object>}
      * @private
      */

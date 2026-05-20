@@ -1,4 +1,4 @@
-import type {Meta, StoryObj} from '@storybook/react';
+import type {Meta, StoryObj} from '@storybook/react-vite';
 
 import * as CheckboxGroupStories from './checkbox-group.stories';
 import * as TextFieldStories from './text-field.stories';

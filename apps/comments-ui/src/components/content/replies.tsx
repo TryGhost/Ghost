@@ -6,9 +6,10 @@ import {useRef, useState} from 'react';
 const INITIAL_REPLIES_SHOWN = 3;
 
 export type RepliesProps = {
-    comment: Comment
+    comment: Comment;
+    useThreading?: boolean;
 };
-const Replies: React.FC<RepliesProps> = ({comment}) => {
+const Replies: React.FC<RepliesProps> = ({comment, useThreading = false}) => {
     const {dispatchAction, commentIdToScrollTo} = useAppContext();
     const initialReplyIds = useRef(new Set(comment.replies.map(reply => reply.id)));
 
@@ -38,7 +39,16 @@ const Replies: React.FC<RepliesProps> = ({comment}) => {
 
     return (
         <div>
-            {visibleReplies.map((reply => <CommentComponent key={reply.id} comment={reply} parent={comment} />))}
+            {visibleReplies.map((reply, idx) => (
+                <CommentComponent
+                    key={reply.id}
+                    comment={reply}
+                    isLastSibling={idx === visibleReplies.length - 1}
+                    layoutVariant={useThreading ? 'reply' : 'root'}
+                    parent={comment}
+                    useThreading={useThreading}
+                />
+            ))}
             {totalHiddenCount > 0 && <RepliesPagination count={totalHiddenCount} loadMore={loadMore}/>}
         </div>
     );

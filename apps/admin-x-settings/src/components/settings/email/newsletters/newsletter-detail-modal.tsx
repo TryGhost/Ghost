@@ -373,6 +373,12 @@ const Sidebar: React.FC<{
                             onChange={e => updateNewsletter({show_comment_cta: e.target.checked})}
                         />}
                         <Toggle
+                            checked={newsletter.show_share_button}
+                            direction="rtl"
+                            label='Show share button'
+                            onChange={e => updateNewsletter({show_share_button: e.target.checked})}
+                        />
+                        <Toggle
                             checked={newsletter.show_latest_posts}
                             direction="rtl"
                             label='Share your latest posts'

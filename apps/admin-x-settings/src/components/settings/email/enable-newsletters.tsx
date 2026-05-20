@@ -35,8 +35,9 @@ const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const enableToggle = (
         <>
             <Toggle
-                checked={newslettersEnabled !== 'disabled'}
+                checked={newslettersEnabled !== 'disabled' && !isDisabled}
                 direction='rtl'
+                disabled={isDisabled}
                 onChange={handleToggleChange}
             />
         </>
@@ -55,22 +56,24 @@ const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
             values={[
                 {
                     key: 'private',
-                    value: (newslettersEnabled !== 'disabled') ? (<div className='w-full'>
+                    value: (newslettersEnabled !== 'disabled' && !isDisabled) ? (<div className='w-full'>
                         <div className='flex items-center gap-2'>
                             <Icon colorClass='text-green' name='check' size='sm' />
                             <span>Enabled</span>
                         </div>
-                        {isDisabled &&
-                        <Banner className='mt-6 text-sm' color='grey'>
-                            Your <button className='underline!' type="button" onClick={() => {
-                                updateRoute('members');
-                            }}>Subscription access</button> is set to &lsquo;Nobody&rsquo;, only existing members will receive newsletters.
-                        </Banner>
-                        }
                     </div>) :
-                        <div className='flex items-center gap-2 text-grey-900'>
-                            <Icon colorClass='text-grey-600' name='mail-block' size='sm' />
-                            <span>Disabled</span>
+                        <div className='w-full'>
+                            <div className='flex items-center gap-2 text-grey-900'>
+                                <Icon colorClass='text-grey-600' name='mail-block' size='sm' />
+                                <span>Disabled</span>
+                            </div>
+                            {isDisabled &&
+                            <Banner className='mt-6 text-sm' color='grey'>
+                                Your <button className='underline!' type="button" onClick={() => {
+                                    updateRoute('members');
+                                }}>Subscription access</button> is set to &lsquo;Nobody&rsquo;, which disables all newsletter sending. Change to &lsquo;Invite-only&rsquo; to send newsletters to existing members without allowing new signups.
+                            </Banner>
+                            }
                         </div>
                 }
             ]}

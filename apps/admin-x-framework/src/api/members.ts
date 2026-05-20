@@ -65,7 +65,7 @@ export type Member = {
     name?: string;
     email?: string;
     avatar_image?: string;
-    status: 'free' | 'paid' | 'comped';
+    status: 'free' | 'paid' | 'comped' | 'gift';
     note?: string;
     subscribed: boolean;
     labels?: MemberLabel[];
@@ -107,6 +107,20 @@ const dataType = 'MembersResponseType';
 export const useBrowseMembers = createQuery<MembersResponseType>({
     dataType,
     path: '/members/'
+});
+
+export type NewMember = {
+    email: string;
+    name?: string | null;
+};
+
+export const useAddMember = createMutation<MembersResponseType, NewMember>({
+    method: 'POST',
+    path: () => '/members/',
+    body: member => ({
+        members: [member]
+    }),
+    invalidateQueries: {dataType}
 });
 
 export const getMember = createQueryWithId<MembersResponseType>({

@@ -30,20 +30,18 @@ describe('Welcome email design payload helpers', function () {
         assert.equal('footer_content' in result, false);
     });
 
-    it('preserves unexpected persisted design fields when mapping api data', function () {
+    it('keeps only known welcome email design fields when mapping api data', function () {
         const apiData = {
             ...DEFAULT_EMAIL_DESIGN,
-            post_title_color: undefined,
-            title_alignment: undefined,
             custom_future_field: '#123456'
         };
 
         const result = mapApiToDesignSettings(apiData as never) as unknown as typeof apiData;
 
-        assert.equal(result.custom_future_field, '#123456');
+        assert.equal('custom_future_field' in result, false);
     });
 
-    it('preserves unexpected persisted design fields in the save payload while excluding preview-only fields', function () {
+    it('keeps only known welcome email design fields in the save payload while excluding non-design metadata fields', function () {
         const state = {
             designSettings: {
                 ...DEFAULT_EMAIL_DESIGN,
@@ -79,13 +77,11 @@ describe('Welcome email design payload helpers', function () {
             footer_content: string | null;
         };
 
-        assert.equal(payload.custom_future_field, '#abcdef');
+        assert.equal('custom_future_field' in payload, false);
         assert.equal('id' in payload, false);
         assert.equal('slug' in payload, false);
         assert.equal('created_at' in payload, false);
         assert.equal('updated_at' in payload, false);
-        assert.equal('post_title_color' in payload, false);
-        assert.equal('title_alignment' in payload, false);
         assert.equal(payload.show_header_icon, true);
     });
 });

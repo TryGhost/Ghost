@@ -1,13 +1,11 @@
+import {MemberDetailsPage, MembersListPage} from '@/admin-pages';
 import {MemberFactory, createMemberFactory} from '@/data-factory';
-import {MembersListPage} from '@/admin-pages';
 import {expect, test} from '@/helpers/playwright';
 import {usePerTestIsolation} from '@/helpers/playwright/isolation';
 
 usePerTestIsolation();
 
 test.describe('Ghost Admin - Members List', () => {
-    test.use({labs: {membersForward: true}});
-
     let memberFactory: MemberFactory;
 
     test.beforeEach(async ({page}) => {
@@ -40,18 +38,16 @@ test.describe('Ghost Admin - Members List', () => {
         await expect(membersPage.memberRows).toHaveCount(0);
     });
 
-    test('preserves filters when redirecting from members-forward', async ({page}) => {
-        await memberFactory.createMany([
-            {name: 'VIP Member', email: 'vip@example.com', labels: ['VIP']},
-            {name: 'Regular Member', email: 'regular@example.com'}
-        ]);
-
+    test('add yourself from empty state - creates a member for the current user', async ({page, ghostAccountOwner}) => {
         const membersPage = new MembersListPage(page);
-        await page.goto('/ghost/#/members-forward?filter=label:VIP');
+        await membersPage.goto();
 
-        await expect(page).toHaveURL(/\/members\?filter=label%3A%5BVIP%5D$/);
+        await expect(membersPage.emptyState).toBeVisible();
+        await membersPage.addYourselfButton.click();
+
         await expect(membersPage.memberRows).toHaveCount(1);
-        await expect(membersPage.getMemberByName('VIP Member')).toBeVisible();
+        await expect(membersPage.getMemberByName(ghostAccountOwner.name)).toBeVisible();
+        await expect(membersPage.getMemberByName(ghostAccountOwner.name)).toContainText(ghostAccountOwner.email);
     });
 
     test('navigates to member detail when clicking a row', async ({page}) => {
@@ -66,5 +62,26 @@ test.describe('Ghost Admin - Members List', () => {
         await membersPage.openMemberByName('Detail Test Member');
 
         await expect(page).toHaveURL(new RegExp(`/members/${member.id}`));
+    });
+
+    test('preserves filters when returning from member detail', async ({page}) => {
+        const member = await memberFactory.create({
+            name: 'VIP Detail Member',
+            email: 'vip-detail@example.com',
+            labels: ['VIP']
+        });
+
+        const membersPage = new MembersListPage(page);
+        const memberDetailsPage = new MemberDetailsPage(page);
+        await page.goto('/ghost/#/members?filter=label:VIP');
+
+        await membersPage.openMemberByName('VIP Detail Member');
+        await expect(page).toHaveURL(new RegExp(`/members/${member.id}\\?back=`));
+
+        await memberDetailsPage.membersBackLink.click();
+
+        await expect(page).toHaveURL(/\/members\?filter=label%3A%5BVIP%5D$/);
+        await expect(membersPage.memberRows).toHaveCount(1);
+        await expect(membersPage.getMemberByName('VIP Detail Member')).toBeVisible();
     });
 });

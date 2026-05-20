@@ -1,4 +1,4 @@
-import {MembersFieldMapping, detectFieldTypes, formatImportError, sampleData} from '@src/views/members/components/bulk-action-modals/import-members/mapping';
+import {MembersFieldMapping, detectFieldTypes, formatImportError, getFieldMappings, sampleData} from '@src/views/members/components/bulk-action-modals/import-members/mapping';
 import {describe, expect, it} from 'vitest';
 
 describe('mapping helpers', () => {
@@ -47,6 +47,20 @@ describe('mapping helpers', () => {
         expect(mapping.labels).toBe('labels');
     });
 
+    it('detects import tier mapping when enabled', () => {
+        const mapping = detectFieldTypes([
+            {email: 'member@example.com', import_tier: 'Gold'}
+        ], {importMemberTier: true});
+
+        expect(mapping.import_tier).toBe('import_tier');
+    });
+
+    it('adds tier as an available field mapping when enabled', () => {
+        const fieldMappings = getFieldMappings({importMemberTier: true});
+
+        expect(fieldMappings).toContainEqual({label: 'Tier', value: 'import_tier'});
+    });
+
     it('updates mapping while preventing duplicate targets', () => {
         const mapping = new MembersFieldMapping({email: 'Email', name: 'Name'});
         const updated = mapping.updateMapping('Name', 'email');
@@ -59,5 +73,34 @@ describe('mapping helpers', () => {
         const formatted = formatImportError('Value in [members.note] exceeds maximum length of 2000 characters.');
 
         expect(formatted).toContain('Note is too long');
+    });
+
+    it('omits Gift ID from field mappings when giftSubscriptions is disabled', () => {
+        const mappings = getFieldMappings({giftSubscriptionsEnabled: false});
+
+        expect(mappings.find(m => m.value === 'gift_id')).toBeUndefined();
+    });
+
+    it('includes Gift ID in field mappings when giftSubscriptions is enabled', () => {
+        const mappings = getFieldMappings({giftSubscriptionsEnabled: true});
+
+        expect(mappings.find(m => m.value === 'gift_id')).toEqual({label: 'Gift ID', value: 'gift_id'});
+    });
+
+    it('does not auto-detect gift_id when giftSubscriptions is disabled', () => {
+        const mapping = detectFieldTypes([
+            {email: 'user@example.com', gift_id: 'some-gift-uuid'}
+        ]);
+
+        expect(mapping.gift_id).toBeUndefined();
+    });
+
+    it('auto-detects gift_id when giftSubscriptions is enabled', () => {
+        const mapping = detectFieldTypes(
+            [{email: 'user@example.com', gift_id: 'some-gift-uuid'}],
+            {giftSubscriptionsEnabled: true}
+        );
+
+        expect(mapping.gift_id).toBe('gift_id');
     });
 });

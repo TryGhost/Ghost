@@ -64,7 +64,8 @@ export function mockMembersStats(server) {
                     date: key,
                     free: arr[key],
                     paid: 0,
-                    comped: 0
+                    comped: 0,
+                    gift: 0
                 };
             })
         };
@@ -272,31 +273,6 @@ export default function mockMembers(server) {
     server.del('/members/:id/', withPermissionsCheck(ALLOWED_ROLES, function ({members}, request) {
         const id = request.params.id;
         members.find(id).destroy();
-    }));
-
-    server.get('/members/upload/', withPermissionsCheck(ALLOWED_ROLES, function () {
-        return new Response(200, {
-            'Content-Disposition': 'attachment',
-            filename: `members.${moment().format('YYYY-MM-DD')}.csv`,
-            'Content-Type': 'text/csv'
-        }, '');
-    }));
-
-    server.post('/members/upload/', withPermissionsCheck(ALLOWED_ROLES, function ({labels}, request) {
-        const label = labels.create();
-
-        // TODO: parse CSV and create member records
-        for (const kvPair of request.requestBody.entries()) {
-            const [key, value] = kvPair;
-            console.log({key, value}); // eslint-disable-line
-        }
-
-        return new Response(201, {}, {
-            meta: {
-                import_label: label,
-                stats: {imported: 1, invalid: []}
-            }
-        });
     }));
 
     server.get('/members/events/', withPermissionsCheck(ALLOWED_ROLES, function ({memberActivityEvents}, {queryParams}) {

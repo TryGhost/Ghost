@@ -1,6 +1,5 @@
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const labs = require('../../../shared/labs');
 const urlUtils = require('../../../shared/url-utils');
 const settingsCache = require('../../../shared/settings-cache');
 const verifyEmailTemplate = require('../newsletters/emails/verify-email');
@@ -10,8 +9,7 @@ const emailAddressService = require('../email-address');
 const settingsHelpers = require('../settings-helpers');
 const EmailAddressParser = require('../email-address/email-address-parser');
 const mail = require('../mail');
-// @ts-expect-error type checker has trouble with the dynamic exporting in models
-const {WelcomeEmailAutomation, WelcomeEmailAutomatedEmail, Newsletter} = require('../../models');
+const {Automation, WelcomeEmailAutomatedEmail, Newsletter} = require('../../models');
 const MemberWelcomeEmailRenderer = require('./member-welcome-email-renderer');
 const {MEMBER_WELCOME_EMAIL_LOG_KEY, MEMBER_WELCOME_EMAIL_TAG, MEMBER_WELCOME_EMAIL_SLUGS, MESSAGES} = require('./constants');
 
@@ -32,10 +30,10 @@ class MemberWelcomeEmailService {
     #memberWelcomeEmails = {free: null, paid: null};
     #defaultNewsletterSenderOptions = null;
 
-    constructor({t, singleUseTokenProvider}) {
+    constructor({t, dir, singleUseTokenProvider}) {
         emailAddressService.init();
         this.#mailer = new mail.GhostMailer();
-        this.#renderer = new MemberWelcomeEmailRenderer({t});
+        this.#renderer = new MemberWelcomeEmailRenderer({t, dir});
 
         const getSigninURL = (token) => {
             const adminUrl = urlUtils.urlFor('admin', true);
@@ -87,7 +85,8 @@ class MemberWelcomeEmailService {
             accentColor: settingsCache.get('accent_color') || '#15212A',
             iconUrl: icon ? urlUtils.urlFor('image', {
                 image: icon
-            }, true) : null
+            }, true) : null,
+            locale: settingsCache.get('locale') || 'en'
         };
     }
 
@@ -153,10 +152,6 @@ class MemberWelcomeEmailService {
         return this.#defaultNewsletterSenderOptions;
     }
 
-    #useDesignCustomization() {
-        return labs.isSet('welcomeEmailsDesignCustomization');
-    }
-
     async #getEffectiveSenderOptions(automatedSender = {}) {
         const defaultOptions = await this.#getSenderOptions();
         const defaultFrom = EmailAddressParser.parse(defaultOptions.from || '') || emailAddressService.service.defaultFromEmail;
@@ -183,7 +178,7 @@ class MemberWelcomeEmailService {
     }
 
     async #loadWelcomeEmailsCollection() {
-        return WelcomeEmailAutomation.findAll({
+        return Automation.findAll({
             filter: WELCOME_EMAIL_FILTER,
             withRelated: ['welcomeEmailAutomatedEmail']
         });
@@ -341,10 +336,8 @@ class MemberWelcomeEmailService {
         this.#defaultNewsletterSenderOptions = await this.#getDefaultNewsletterSenderOptions();
 
         for (const [memberStatus, slug] of Object.entries(MEMBER_WELCOME_EMAIL_SLUGS)) {
-            const row = await WelcomeEmailAutomation.findOne({slug}, {
-                withRelated: this.#useDesignCustomization()
-                    ? ['welcomeEmailAutomatedEmail', 'welcomeEmailAutomatedEmail.emailDesignSetting']
-                    : ['welcomeEmailAutomatedEmail']
+            const row = await Automation.findOne({slug}, {
+                withRelated: ['welcomeEmailAutomatedEmail', 'welcomeEmailAutomatedEmail.emailDesignSetting']
             });
 
             if (!row) {
@@ -359,7 +352,7 @@ class MemberWelcomeEmailService {
                 continue;
             }
 
-            const designSettings = this.#useDesignCustomization() ? email.related('emailDesignSetting') : null;
+            const designSettings = email.related('emailDesignSetting');
 
             this.#memberWelcomeEmails[memberStatus] = {
                 lexical: email.get('lexical'),
@@ -434,7 +427,7 @@ class MemberWelcomeEmailService {
             return false;
         }
 
-        const row = await WelcomeEmailAutomation.findOne({slug}, {withRelated: ['welcomeEmailAutomatedEmail']});
+        const row = await Automation.findOne({slug}, {withRelated: ['welcomeEmailAutomatedEmail']});
         if (!row) {
             return false;
         }
@@ -442,12 +435,10 @@ class MemberWelcomeEmailService {
         return Boolean(email && email.get('lexical') && row.get('status') === 'active');
     }
 
-    async sendTestEmail({email, subject, lexical, automatedEmailId}) {
+    async #renderWelcomeEmailPreview({automatedEmailId, subject, lexical, memberEmail = 'jamie@example.com'}) {
         // Still validate the automated email exists (for permission purposes)
-        const automation = await WelcomeEmailAutomation.findOne({id: automatedEmailId}, {
-            withRelated: this.#useDesignCustomization()
-                ? ['welcomeEmailAutomatedEmail', 'welcomeEmailAutomatedEmail.emailDesignSetting']
-                : ['welcomeEmailAutomatedEmail']
+        const automation = await Automation.findOne({id: automatedEmailId}, {
+            withRelated: ['welcomeEmailAutomatedEmail', 'welcomeEmailAutomatedEmail.emailDesignSetting']
         });
         const automatedEmail = automation?.related('welcomeEmailAutomatedEmail');
 
@@ -457,13 +448,13 @@ class MemberWelcomeEmailService {
             });
         }
 
-        if (!lexical) {
+        if (typeof lexical !== 'string' || !lexical.trim()) {
             throw new errors.ValidationError({
                 message: MESSAGES.MISSING_EMAIL_CONTENT
             });
         }
 
-        if (!subject) {
+        if (typeof subject !== 'string' || !subject.trim()) {
             throw new errors.ValidationError({
                 message: MESSAGES.MISSING_EMAIL_SUBJECT
             });
@@ -471,18 +462,46 @@ class MemberWelcomeEmailService {
 
         const testMember = {
             name: 'Jamie Larson',
-            email: email,
+            email: memberEmail,
             uuid: '00000000-0000-4000-8000-000000000000'
         };
 
-        const designSettings = this.#useDesignCustomization() ? automatedEmail.related('emailDesignSetting') : null;
+        const designSettings = automatedEmail.related('emailDesignSetting');
 
-        const {html, text, subject: renderedSubject} = await this.#renderer.render({
+        const preview = await this.#renderer.render({
             lexical,
             subject,
             designSettings: designSettings?.id ? designSettings.toJSON() : null,
             member: testMember,
             siteSettings: this.#getSiteSettings()
+        });
+
+        return {
+            ...preview,
+            automatedEmail
+        };
+    }
+
+    async previewEmail({subject, lexical, automatedEmailId}) {
+        const {html, text, subject: renderedSubject} = await this.#renderWelcomeEmailPreview({
+            automatedEmailId,
+            subject,
+            lexical
+        });
+
+        return {
+            html,
+            plaintext: text,
+            subject: renderedSubject
+        };
+    }
+
+    async sendTestEmail({email, subject, lexical, automatedEmailId}) {
+        const {html, text, subject: renderedSubject, automatedEmail} = await this.#renderWelcomeEmailPreview({
+            automatedEmailId,
+            subject,
+            lexical,
+            memberEmail: email
         });
 
         // Test sends should always reflect latest newsletter fallback values.
@@ -552,9 +571,7 @@ class MemberWelcomeEmailService {
 
 class MemberWelcomeEmailServiceWrapper {
     init() {
-        const useDesignCustomization = labs.isSet('welcomeEmailsDesignCustomization');
-
-        if (this.api && this.useDesignCustomization === useDesignCustomization) {
+        if (this.api) {
             return;
         }
 
@@ -572,9 +589,9 @@ class MemberWelcomeEmailServiceWrapper {
         const SingleUseTokenProvider = require('../members/single-use-token-provider');
         const models = require('../../models');
 
-        this.useDesignCustomization = useDesignCustomization;
         this.api = new MemberWelcomeEmailService({
             t: this.i18n.t,
+            dir: this.i18n.dir.bind(this.i18n),
             singleUseTokenProvider: new SingleUseTokenProvider({
                 SingleUseTokenModel: models.SingleUseToken,
                 validityPeriod: 24 * 60 * 60 * 1000,

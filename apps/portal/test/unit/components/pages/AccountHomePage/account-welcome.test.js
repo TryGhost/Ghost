@@ -14,6 +14,31 @@ const setup = (overrides) => {
 };
 
 describe('AccountWelcome', () => {
+    test('shows gift expiry message for gift members', () => {
+        const products = getProductsData({numOfProducts: 1});
+        const site = getSiteData({products, portalProducts: products.map(p => p.id)});
+
+        const member = getMemberData({
+            paid: true,
+            status: 'gift',
+            subscriptions: [
+                getSubscriptionData({
+                    status: 'active',
+                    amount: 0,
+                    currency: 'USD',
+                    interval: 'year',
+                    tier: {
+                        expiry_at: new Date('2099-04-12T12:00:00.000Z')
+                    }
+                })
+            ]
+        });
+
+        const {queryByText} = setup({site, member});
+
+        expect(queryByText('Your gift subscription will expire on 12 Apr 2099')).toBeInTheDocument();
+    });
+
     test('uses current period end for renewal date on free months offers', () => {
         const products = getProductsData({numOfProducts: 1});
         const site = getSiteData({products, portalProducts: products.map(p => p.id)});

@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
-import {Card, CardContent, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, KpiDropdownButton, KpiTabTrigger, KpiTabValue, Tabs, TabsList} from '@tryghost/shade/components';
+import {Card, CardContent, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Tabs, TabsList} from '@tryghost/shade/components';
+import {GhAreaChart, KpiDropdownButton, KpiTabTrigger, KpiTabValue} from '@tryghost/shade/patterns';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
 import {formatDuration, formatNumber, formatPercentage} from '@tryghost/shade/utils';
 import {sanitizeChartData} from '@tryghost/shade/app';

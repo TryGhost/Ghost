@@ -1,5 +1,6 @@
 {
     "url": "http://localhost:2368",
+    "lazyRouting": false,
     "server": {
         "host": "127.0.0.1",
         "port": 2368,
@@ -210,6 +211,13 @@
         },
         "themes": {
             "skipBootChecks": false
+        }
+    },
+    "theme": {
+        "uploadLimits": {
+            "compressedBytes": 1073741824,
+            "entryUncompressedBytes": 536870912,
+            "totalUncompressedBytes": 4294967296
         }
     },
     "imageOptimization": {

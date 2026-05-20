@@ -4,18 +4,18 @@ const sinon = require('sinon');
 const hbs = require('../../../../core/frontend/services/theme-engine/engine');
 const configUtils = require('../../../utils/config-utils');
 const path = require('path');
+const {promisify} = require('node:util');
 const page_url = require('../../../../core/frontend/helpers/page_url');
 const t = require('../../../../core/frontend/helpers/t');
 const {setupI18nTest, initLocale} = require('../../../utils/i18n-test-utils');
 const pagination = require('../../../../core/frontend/helpers/pagination');
 
 describe('{{pagination}} helper', function () {
-    before(function (done) {
+    beforeAll(async function () {
         hbs.express4({partialsDir: [configUtils.config.get('paths').helperTemplates]});
 
-        hbs.cachePartials(function () {
-            done();
-        });
+        const cachePartials = promisify(hbs.cachePartials.bind(hbs));
+        await cachePartials();
 
         // The pagination partial expects these helpers
         // @TODO: change to register with Ghost's own registration tools
@@ -53,7 +53,7 @@ describe('{{pagination}} helper', function () {
         describe(`rendering with ${name}`, function () {
             let i18nSetup;
 
-            before(function () {
+            beforeAll(function () {
                 i18nSetup = setupI18nTest({useNewTranslation, locale: 'en'});
             });
 
@@ -62,7 +62,7 @@ describe('{{pagination}} helper', function () {
                 initLocale({useNewTranslation, locale: 'en'});
             });
 
-            after(function () {
+            afterAll(function () {
                 i18nSetup.teardown();
                 sinon.restore();
             });
@@ -165,12 +165,11 @@ describe('{{pagination}} helper', function () {
 });
 
 describe('{{pagination}} helper with custom template', function () {
-    before(function (done) {
+    beforeAll(async function () {
         hbs.express4({partialsDir: [path.resolve(__dirname, './test_tpl')]});
 
-        hbs.cachePartials(function () {
-            done();
-        });
+        const cachePartials = promisify(hbs.cachePartials.bind(hbs));
+        await cachePartials();
     });
 
     it('can render single page with @site.title', function () {

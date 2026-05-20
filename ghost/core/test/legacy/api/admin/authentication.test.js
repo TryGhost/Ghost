@@ -1,7 +1,7 @@
 const nock = require('nock');
 const assert = require('node:assert/strict');
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../../utils/e2e-framework');
-const {anyContentVersion, anyEtag, anyISODateTime, anyErrorId} = matchers;
+const {anyContentVersion, anyEtag, anyISODateTime, anyErrorId, stringMatching} = matchers;
 
 const {tokens} = require('@tryghost/security');
 const models = require('../../../../core/server/models');
@@ -427,7 +427,10 @@ describe('Authentication API', function () {
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
-                    etag: anyEtag
+                    etag: anyEtag,
+                    'set-cookie': [
+                        stringMatching(/^ghost-admin-api-session=/)
+                    ]
                 });
         });
 

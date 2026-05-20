@@ -8,6 +8,10 @@ const localUtils = require('./utils');
 /* eslint-disable max-lines */
 
 module.exports = {
+    get automations() {
+        return apiFramework.pipeline(require('./automations'), localUtils);
+    },
+
     get authentication() {
         return apiFramework.pipeline(require('./authentication'), localUtils);
     },
@@ -291,6 +295,10 @@ module.exports = {
 
     get giftsMembers() {
         return apiFramework.pipeline(require('./gifts-members'), localUtils, 'members');
+    },
+
+    get giftReminders() {
+        return apiFramework.pipeline(require('./gift-reminders'), localUtils);
     },
 
     get recommendationsPublic() {

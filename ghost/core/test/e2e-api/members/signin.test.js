@@ -4,7 +4,6 @@ const models = require('../../../core/server/models');
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const members = require('../../../core/server/services/members');
-
 let membersAgent, membersService;
 
 async function assertMemberEvents({eventType, memberId, asserts}) {
@@ -39,7 +38,7 @@ describe('Members Signin', function () {
     it('Will not set a cookie if the token is invalid', async function () {
         await membersAgent.get('/?token=blah')
             .expectStatus(302)
-            .expectHeader('Location', /\?\w*success=false/);
+            .expectHeader('Location', /\?[^#]*success=false/);
     });
 
     it('Will set a cookie if the token is valid', async function () {
@@ -231,7 +230,8 @@ describe('Members Signin', function () {
             // Remove ms precision (not supported by MySQL)
             startDate.setMilliseconds(0);
 
-            clock = sinon.useFakeTimers(startDate);
+            // TODO: shouldAdvanceTime is a fake-timer + HTTP-await workaround; see docs/dep-consolidation.md
+            clock = sinon.useFakeTimers({now: startDate, shouldAdvanceTime: true});
         });
 
         afterEach(function () {
@@ -272,16 +272,20 @@ describe('Members Signin', function () {
             // Not changed
             assert.equal(model.get('first_used_at').getTime(), startDate.getTime(), 'first_used_at should not be changed on second usage');
 
-            // Updated at should be changed
-            assert.equal(model.get('updated_at').getTime(), new Date().getTime(), 'updated_at should be set on changes');
-            const lastChangedAt = new Date();
+            // Updated at should be changed. We compare against the expected tick target
+            // rather than new Date() because shouldAdvanceTime lets real time elapse during
+            // HTTP awaits, so a strict equality with `new Date()` is fragile.
+            const expectedSecondUseTime = startDate.getTime() + 5 * 60 * 1000;
+            const updatedAtDrift = Math.abs(model.get('updated_at').getTime() - expectedSecondUseTime);
+            assert.ok(updatedAtDrift < 60 * 1000, `updated_at should be ~5min after start (drift: ${updatedAtDrift}ms)`);
+            const lastChangedAt = model.get('updated_at');
 
             // Wait another 6 minutes, and the usage of the token should be blocked now
             clock.tick(6 * 60 * 1000);
 
             await membersAgent.get('/?token=blah')
                 .expectStatus(302)
-                .expectHeader('Location', /\?\w*success=false/);
+                .expectHeader('Location', /\?[^#]*success=false/);
 
             // No changes expected
             await model.refresh();
@@ -323,7 +327,7 @@ describe('Members Signin', function () {
             // Failed 4th usage
             await membersAgent.get('/?token=blah')
                 .expectStatus(302)
-                .expectHeader('Location', /\?\w*success=false/);
+                .expectHeader('Location', /\?[^#]*success=false/);
 
             // No changes expected
             await model.refresh();
@@ -343,7 +347,7 @@ describe('Members Signin', function () {
 
             await membersAgent.get('/?token=blah')
                 .expectStatus(302)
-                .expectHeader('Location', /\?\w*success=false/);
+                .expectHeader('Location', /\?[^#]*success=false/);
 
             // No changes expected
             const model = await models.SingleUseToken.findOne({token});

@@ -1,15 +1,55 @@
-// TODO: Add translation strings once copy has been finalise
+import {getMemberTierName, getSubscriptionExpiry} from './helpers';
+import {t} from './i18n';
 
-const GIFT_REDEMPTION_ERROR_TITLE = 'Gift could not be redeemed';
-const INVALID_GIFT_LINK_MESSAGE = 'Gift link is not valid';
+export function getGiftDurationLabel({cadence, duration} = {}) {
+    if (cadence === 'year') {
+        return duration === 1
+            ? t('1 year')
+            : t('{years} years', {years: duration});
+    }
+
+    return duration === 1
+        ? t('1 month')
+        : t('{months} months', {months: duration});
+}
+
+export function getGiftRedemptionSuccessMessage({member} = {}) {
+    const tierName = getMemberTierName({member});
+    const expiryDate = getSubscriptionExpiry({member});
+    if (!tierName || !expiryDate) {
+        return null;
+    }
+    return t('You now have access to {tierName} until {expiryDate}. Enjoy!', {tierName, expiryDate});
+}
 
 export function getGiftRedemptionErrorMessage(error) {
-    const subtitle = error?.message && error.message !== 'Failed to load gift data'
-        ? error.message
-        : INVALID_GIFT_LINK_MESSAGE;
+    let subtitle = t('Something went wrong, please try again later.');
+
+    if (error?.code) {
+        switch (error.code) {
+        case 'GIFT_REDEEMED':
+            subtitle = t('This gift has already been redeemed.');
+            break;
+        case 'GIFT_CONSUMED':
+            subtitle = t('This gift has already been consumed.');
+            break;
+        case 'GIFT_EXPIRED':
+            subtitle = t('This gift has expired.');
+            break;
+        case 'GIFT_REFUNDED':
+            subtitle = t('This gift has been refunded.');
+            break;
+        case 'GIFT_PAID_MEMBER':
+            subtitle = t('You already have an active subscription.');
+            break;
+        case 'TOKEN_EXPIRED':
+            subtitle = t('Email confirmation link expired.');
+            break;
+        }
+    }
 
     return {
-        title: GIFT_REDEMPTION_ERROR_TITLE,
+        title: t('Gift could not be redeemed'),
         subtitle
     };
 }

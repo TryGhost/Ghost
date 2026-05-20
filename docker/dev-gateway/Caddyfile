@@ -148,10 +148,11 @@
             }
         }
 
-        # Everything else under /ghost/assets/* goes to admin dev server
+        # Everything else under /ghost/assets/* goes to admin dev server.
+        # Vite serves admin/Ember assets under its dev base (/__admin-dev__/assets/),
+        # so we rewrite the request before proxying.
         handle {
-            # Re-add the prefix we stripped for admin dev server
-            rewrite * /ghost/assets{path}
+            rewrite * /__admin-dev__/assets{path}
             reverse_proxy {env.ADMIN_DEV_SERVER} {
                 header_up Host {http.reverse_proxy.upstream.hostport}
                 header_up X-Forwarded-Host {host}
@@ -179,12 +180,36 @@
         }
     }
 
-    # Admin interface - served from admin dev server
-    # This includes /ghost/, etc. (but /ghost/assets/* is handled above)
-    # Also handles WebSocket upgrade requests for HMR
-    handle /ghost* {
+    # Vite dev server lives under its own prefix so its internals
+    # (HMR client, module graph, refresh runtime) don't collide with the
+    # /ghost/* paths Ghost serves in production. Handles HMR WebSocket upgrade.
+    handle /__admin-dev__* {
         reverse_proxy {env.ADMIN_DEV_SERVER} {
             header_up X-Forwarded-Host {host}
+            header_up Connection {>Connection}
+            header_up Upgrade {>Upgrade}
+        }
+    }
+
+    # Admin HTML entry — proxy to Vite, which serves the dev index.html.
+    # Matches `/ghost` and `/ghost/` exactly (deep links fall through to Ghost
+    # below so its redirect middleware turns them into hash URLs).
+    @admin_html path /ghost /ghost/
+    handle @admin_html {
+        rewrite * /__admin-dev__/
+        reverse_proxy {env.ADMIN_DEV_SERVER} {
+            header_up X-Forwarded-Host {host}
+        }
+    }
+
+    # Everything else under /ghost/* (deep links, redirects, etc.) goes to
+    # Ghost so the same Express middleware runs in dev as in production.
+    handle /ghost/* {
+        reverse_proxy {env.GHOST_BACKEND} {
+            header_up Host {host}
+            header_up X-Real-IP {remote_host}
+            header_up X-Forwarded-For {remote_host}
+            header_up X-Forwarded-Proto https
         }
     }
 

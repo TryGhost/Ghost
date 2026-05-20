@@ -774,6 +774,31 @@
                     "name": "Delete recommendations",
                     "action_type": "destroy",
                     "object_type": "recommendation"
+                },
+                {
+                    "name": "Browse automations",
+                    "action_type": "browse",
+                    "object_type": "automation"
+                },
+                {
+                    "name": "Read automations",
+                    "action_type": "read",
+                    "object_type": "automation"
+                },
+                {
+                    "name": "Edit automations",
+                    "action_type": "edit",
+                    "object_type": "automation"
+                },
+                {
+                    "name": "Poll automations",
+                    "action_type": "poll",
+                    "object_type": "automation"
+                },
+                {
+                    "name": "Flush gift reminders",
+                    "action_type": "flushReminders",
+                    "object_type": "gift"
                 }
             ]
         },
@@ -1095,6 +1120,7 @@
                     "mention": "browse",
                     "collection": "all",
                     "recommendation": "all",
+                    "automation": ["browse", "read", "edit"],
                     "identity": "read"
                 },
                 "DB Backup Integration": {
@@ -1102,7 +1128,9 @@
                     "member": "browse"
                 },
                 "Scheduler Integration": {
-                    "post": "publish"
+                    "post": "publish",
+                    "automation": "poll",
+                    "gift": "flushReminders"
                 },
                 "Ghost Explore Integration": {
                     "explore": "read"
@@ -1142,7 +1170,8 @@
                     "link": "all",
                     "mention": "browse",
                     "collection": "all",
-                    "recommendation": "all"
+                    "recommendation": "all",
+                    "automation": ["browse", "read", "edit"]
                 },
                 "Editor": {
                     "notification": "all",

@@ -8,6 +8,7 @@ const _ = require('lodash');
 const charset = require('charset');
 const iconv = require('iconv-lite');
 const path = require('path');
+const crypto = require('crypto');
 
 // Some sites block non-standard user agents so we need to mimic a typical browser
 // Note: the Ghost/5.0 string _may_ be in use by 3rd parties so use caution when updating across majors
@@ -134,7 +135,7 @@ class OEmbedService {
 
     /**
      * Fetches the image buffer from a URL using this.externalRequest
-     * @param {String} imageUrl - URL of the image to fetch
+     * @param {string} imageUrl - URL of the image to fetch
      * @returns {Promise<Buffer>} - Promise resolving to the image buffer
      */
     async fetchImageBuffer(imageUrl) {
@@ -144,8 +145,8 @@ class OEmbedService {
 
     /**
      * Process and store image from a URL
-     * @param {String} imageUrl - URL of the image to process
-     * @param {String} imageType - What is the image used for. Example - icon, thumbnail
+     * @param {string} imageUrl - URL of the image to process
+     * @param {string} imageType - What is the image used for. Example - icon, thumbnail
      * @returns {Promise<String>} - URL where the image is stored
      */
     async processImageFromUrl(imageUrl, imageType) {
@@ -155,22 +156,15 @@ class OEmbedService {
 
         // Extract file name from URL
         const fileName = path.basename(new URL(imageUrl).pathname);
-        let ext = path.extname(fileName);
-        let name;
+        const ext = path.extname(fileName);
+        const baseName = ext ? path.basename(fileName, ext) : fileName;
+        const name = store.getSanitizedFileName(baseName);
 
-        if (ext) {
-            name = store.getSanitizedFileName(path.basename(fileName, ext));
-        } else {
-            name = store.getSanitizedFileName(path.basename(fileName));
-        }
+        const hash = crypto.createHash('sha256').update(imageBuffer).digest('hex');
+        const hashedFileName = `${name}-${hash}${ext}`;
+        const targetPath = path.join(imageType, hashedFileName);
 
-        let targetDir = path.join(this.config.getContentPath('images'), imageType);
-        const uniqueFilePath = await store.generateUnique(targetDir, name, ext, 0);
-        const targetPath = path.join(imageType, path.basename(uniqueFilePath));
-
-        const imageStoredUrl = await store.saveRaw(imageBuffer, targetPath);
-
-        return imageStoredUrl;
+        return store.saveRaw(imageBuffer, targetPath);
     }
 
     /**
@@ -441,6 +435,18 @@ class OEmbedService {
                     return;
                 }
                 if ((oembed.type === 'video' || oembed.type === 'rich') && (!oembed.html || !oembed.width)) {
+                    return;
+                }
+
+                // `rich` and `video` responses ship provider-supplied HTML that gets
+                // stored in the post's Lexical payload and rendered into the admin
+                // editor preview (via srcdoc) and into public themes (via innerHTML).
+                // Known providers (YouTube, Twitter, etc.) go through `knownProvider`
+                // with @extractus/oembed-extractor's allowlist — anything reaching
+                // here is an arbitrary site's self-declared oEmbed endpoint, which we
+                // must not trust. Drop the response and let the caller fall back to
+                // a bookmark card.
+                if (oembed.type === 'video' || oembed.type === 'rich') {
                     return;
                 }
 

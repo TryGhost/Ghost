@@ -214,6 +214,24 @@ async function showComment({state, api, data: comment}: {state: EditableAppConte
     };
 }
 
+async function pinComment({state, data: comment, dispatchAction}: {state: EditableAppContext, data: {id: string}, dispatchAction: DispatchActionType}) {
+    if (state.adminApi) {
+        await state.adminApi.pinComment({id: comment.id});
+        dispatchAction('setOrder', {order: state.order});
+    }
+
+    return null;
+}
+
+async function unpinComment({state, data: comment, dispatchAction}: {state: EditableAppContext, data: {id: string}, dispatchAction: DispatchActionType}) {
+    if (state.adminApi) {
+        await state.adminApi.unpinComment({id: comment.id});
+        dispatchAction('setOrder', {order: state.order});
+    }
+
+    return null;
+}
+
 async function updateCommentLikeState({state, data: comment}: {state: EditableAppContext, data: {id: string, liked: boolean}}) {
     return {
         comments: state.comments.map((c) => {
@@ -486,13 +504,18 @@ function setScrollTarget({data: commentId}: {data: string | null}) {
     return {commentIdToScrollTo: commentId};
 }
 
+function setHashCommentId({data: commentId}: {data: string | null}) {
+    return {commentIdFromHash: commentId};
+}
+
 // Sync actions make use of setState((currentState) => newState), to avoid 'race' conditions
 export const SyncActions = {
     openPopup,
     closePopup,
     closeCommentForm,
     setCommentFormHasUnsavedChanges,
-    setScrollTarget
+    setScrollTarget,
+    setHashCommentId
 };
 
 export type SyncActionType = keyof typeof SyncActions;
@@ -501,6 +524,8 @@ export const Actions = {
     addComment,
     editComment,
     hideComment,
+    pinComment,
+    unpinComment,
     deleteComment,
     showComment,
     likeComment,

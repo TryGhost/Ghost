@@ -43,12 +43,25 @@ const setup = async ({site, member = null, showPopup = true, giftResponse = defa
         return Promise.resolve();
     });
 
+    ghostApi.member.sessionData = vi.fn(() => {
+        return Promise.resolve(member);
+    });
+
     ghostApi.gift.fetchRedemptionData = vi.fn(() => {
         if (giftError) {
             return Promise.reject(giftError);
         }
 
         return Promise.resolve(giftResponse);
+    });
+
+    ghostApi.gift.redeem = vi.fn(() => {
+        return Promise.resolve({
+            gifts: [{
+                token: giftResponse.gifts[0].token,
+                status: 'redeemed'
+            }]
+        });
     });
 
     const utils = appRender(
@@ -405,7 +418,7 @@ describe('Portal Data links:', () => {
             popupFrame = await utils.findByTitle(/portal-popup/i);
             expect(popupFrame).toBeInTheDocument();
 
-            const giftSubtitle = within(popupFrame.contentDocument).queryByText(/give the gift of a membership/i);
+            const giftSubtitle = within(popupFrame.contentDocument).queryByText(/share a full membership.*with a friend or colleague/i);
             expect(giftSubtitle).toBeInTheDocument();
         });
 
@@ -416,6 +429,20 @@ describe('Portal Data links:', () => {
                 popupFrame, triggerButtonFrame
             } = await setup({
                 site: {...FixtureSite.singleTier.basic, labs: {}},
+                showPopup: false
+            });
+
+            expect(triggerButtonFrame).toBeInTheDocument();
+            expect(popupFrame).not.toBeInTheDocument();
+        });
+
+        test('does not open when Stripe is disconnected', async () => {
+            window.location.hash = '#/portal/gift';
+
+            let {
+                popupFrame, triggerButtonFrame
+            } = await setup({
+                site: {...FixtureSite.singleTier.withoutStripe, labs: {giftSubscriptions: true}},
                 showPopup: false
             });
 
@@ -453,7 +480,7 @@ describe('Portal Data links:', () => {
             let {
                 ghostApi, triggerButtonFrame, ...utils
             } = await setupGiftRedemption({
-                giftError: new Error('This gift has expired.')
+                giftError: Object.assign(new Error('This gift has expired.'), {code: 'GIFT_EXPIRED'})
             });
 
             expect(triggerButtonFrame).toBeInTheDocument();
@@ -469,7 +496,7 @@ describe('Portal Data links:', () => {
             let {
                 ghostApi, triggerButtonFrame, ...utils
             } = await setupGiftRedemption({
-                giftError: new Error('This gift has already been redeemed.')
+                giftError: Object.assign(new Error('This gift has already been redeemed.'), {code: 'GIFT_REDEEMED'})
             });
 
             expect(triggerButtonFrame).toBeInTheDocument();
@@ -485,7 +512,7 @@ describe('Portal Data links:', () => {
             let {
                 ghostApi, triggerButtonFrame, ...utils
             } = await setupGiftRedemption({
-                giftError: new Error('You already have an active subscription.')
+                giftError: Object.assign(new Error('You already have an active subscription.'), {code: 'GIFT_PAID_MEMBER'})
             });
 
             expect(triggerButtonFrame).toBeInTheDocument();
@@ -501,7 +528,7 @@ describe('Portal Data links:', () => {
             let {
                 ghostApi, triggerButtonFrame, ...utils
             } = await setupGiftRedemption({
-                giftError: new Error('Failed to load gift data')
+                giftError: new Error('Gift not found')
             });
 
             expect(triggerButtonFrame).toBeInTheDocument();
@@ -509,11 +536,11 @@ describe('Portal Data links:', () => {
 
             await expectGiftRedemptionErrorToast({
                 utils,
-                subtitle: /Gift link is not valid/i
+                subtitle: /Something went wrong, please try again later\./i
             });
         });
 
-        test('renders gift redemption popup when gift is valid', async () => {
+        test('renders gift redemption popup without name/email inputs for a logged-in free member', async () => {
             let {
                 ghostApi, popupFrame, triggerButtonFrame, ...utils
             } = await setupGiftRedemption();
@@ -528,12 +555,31 @@ describe('Portal Data links:', () => {
             expect(within(popupIframeDocument).queryByText(/Bronze/i)).toBeInTheDocument();
             expect(within(popupIframeDocument).queryByText(/1 year/i)).toBeInTheDocument();
             expect(within(popupIframeDocument).queryByText(/Five great stories to read every day/i)).toBeInTheDocument();
+            expect(within(popupIframeDocument).queryByLabelText(/your name/i)).not.toBeInTheDocument();
+            expect(within(popupIframeDocument).queryByLabelText(/your email/i)).not.toBeInTheDocument();
+            expect(popupIframeDocument.querySelector('.gh-gift-redemption-form')).not.toBeInTheDocument();
+            expect(ghostApi.gift.fetchRedemptionData).toHaveBeenCalledWith({token: 'gift-token-123'});
+        });
 
-            const nameInput = within(popupIframeDocument).getByLabelText(/your name/i);
-            const emailInput = within(popupIframeDocument).getByLabelText(/your email/i);
+        test('renders name/email inputs for an anonymous visitor', async () => {
+            window.location.hash = giftRedemptionHash;
 
-            expect(nameInput).toHaveValue('Jamie Larson');
-            expect(emailInput).toHaveValue('jamie@example.com');
+            let {
+                ghostApi, popupFrame, triggerButtonFrame, ...utils
+            } = await setup({
+                site: {...FixtureSite.singleTier.basic, labs: {giftSubscriptions: true}},
+                member: null,
+                showPopup: false
+            });
+
+            expect(triggerButtonFrame).toBeInTheDocument();
+
+            popupFrame = await utils.findByTitle(/portal-popup/i);
+            expect(popupFrame).toBeInTheDocument();
+
+            const popupIframeDocument = popupFrame.contentDocument;
+            expect(within(popupIframeDocument).getByLabelText(/your name/i)).toBeInTheDocument();
+            expect(within(popupIframeDocument).getByLabelText(/your email/i)).toBeInTheDocument();
             expect(ghostApi.gift.fetchRedemptionData).toHaveBeenCalledWith({token: 'gift-token-123'});
         });
 
@@ -573,10 +619,10 @@ describe('Portal Data links:', () => {
             popupFrame = await utils.findByTitle(/portal-popup/i);
             expect(popupFrame).toBeInTheDocument();
 
-            const giftTitle = within(popupFrame.contentDocument).queryByText(/gift ready to share/i);
+            const giftTitle = within(popupFrame.contentDocument).queryByText(/your gift is ready/i);
             expect(giftTitle).toBeInTheDocument();
 
-            const redeemUrl = within(popupFrame.contentDocument).queryByText(/#\/portal\/gift\/redeem\/abc123/);
+            const redeemUrl = within(popupFrame.contentDocument).queryByText(/\/gift\/abc123$/);
             expect(redeemUrl).toBeInTheDocument();
         });
 

@@ -14,8 +14,8 @@ class AdapterCacheMemoryTTL extends Base {
     /**
      *
      * @param {Object} [deps]
-     * @param {Number} [deps.max] - The max number of items to keep in the cache.
-     * @param {Number} [deps.ttl] - The max time in ms to store items
+     * @param {number} [deps.max] - The max number of items to keep in the cache.
+     * @param {number} [deps.ttl] - The max time in ms to store items
      */
     constructor({max = Infinity, ttl = Infinity} = {}) {
         super();
@@ -29,10 +29,10 @@ class AdapterCacheMemoryTTL extends Base {
 
     /**
      *
-     * @param {String} key
+     * @param {string} key
      * @param {*} value
      * @param {Object} [options]
-     * @param {Number} [options.ttl]
+     * @param {number} [options.ttl]
     */
     set(key, value, {ttl} = {}) {
         this.#cache.set(key, value, {ttl});

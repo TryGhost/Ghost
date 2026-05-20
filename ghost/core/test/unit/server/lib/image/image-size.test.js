@@ -86,7 +86,7 @@ describe('lib/image: image size', function () {
     });
 
     describe('getImageSizeFromUrl', function () {
-        it('[success] should return image dimensions from probe request for probe-supported extension', function (done) {
+        it('[success] should return image dimensions from probe request for probe-supported extension', async function () {
             const url = 'http://img.stockfresh.com/files/f/feedough/x/11/1540353_20925115.jpg';
             const expectedImageObject = {
                 height: 1,
@@ -100,17 +100,15 @@ describe('lib/image: image size', function () {
 
             const imageSize = createImageSize();
 
-            imageSize.getImageSizeFromUrl(url).then(function (res) {
-                assert.equal(requestMock.isDone(), true);
-                assertExists(res);
-                assert.equal(res.width, expectedImageObject.width);
-                assert.equal(res.height, expectedImageObject.height);
-                assert.equal(res.url, expectedImageObject.url);
-                done();
-            }).catch(done);
+            const res = await imageSize.getImageSizeFromUrl(url);
+            assert.equal(requestMock.isDone(), true);
+            assertExists(res);
+            assert.equal(res.width, expectedImageObject.width);
+            assert.equal(res.height, expectedImageObject.height);
+            assert.equal(res.url, expectedImageObject.url);
         });
 
-        it('[success] should return image dimensions from fetch request for non-probe-supported extension', function (done) {
+        it('[success] should return image dimensions from fetch request for non-probe-supported extension', async function () {
             const url = 'https://static.wixstatic.com/media/355241_d31358572a2542c5a44738ddcb59e7ea.cur';
             const expectedImageObject = {
                 height: 1,
@@ -129,17 +127,15 @@ describe('lib/image: image size', function () {
                 }
             });
 
-            imageSize.getImageSizeFromUrl(url).then(function (res) {
-                assert.equal(requestMock.isDone(), false);
-                assertExists(res);
-                assert.equal(res.width, expectedImageObject.width);
-                assert.equal(res.height, expectedImageObject.height);
-                assert.equal(res.url, expectedImageObject.url);
-                done();
-            }).catch(done);
+            const res = await imageSize.getImageSizeFromUrl(url);
+            assert.equal(requestMock.isDone(), false);
+            assertExists(res);
+            assert.equal(res.width, expectedImageObject.width);
+            assert.equal(res.height, expectedImageObject.height);
+            assert.equal(res.url, expectedImageObject.url);
         });
 
-        it('[success] should return image dimensions when no image extension given', function (done) {
+        it('[success] should return image dimensions when no image extension given', async function () {
             const url = 'https://www.zomato.com/logo/18163505/minilogo';
             const expectedImageObject = {
                 height: 1,
@@ -153,17 +149,15 @@ describe('lib/image: image size', function () {
 
             const imageSize = createImageSize();
 
-            imageSize.getImageSizeFromUrl(url).then(function (res) {
-                assert.equal(requestMock.isDone(), true);
-                assertExists(res);
-                assert.equal(res.width, expectedImageObject.width);
-                assert.equal(res.height, expectedImageObject.height);
-                assert.equal(res.url, expectedImageObject.url);
-                done();
-            }).catch(done);
+            const res = await imageSize.getImageSizeFromUrl(url);
+            assert.equal(requestMock.isDone(), true);
+            assertExists(res);
+            assert.equal(res.width, expectedImageObject.width);
+            assert.equal(res.height, expectedImageObject.height);
+            assert.equal(res.url, expectedImageObject.url);
         });
 
-        it('[success] should returns largest image value for .ico files', function (done) {
+        it('[success] should returns largest image value for .ico files', async function () {
             const url = 'https://super-website.com/media/icon.ico';
             const expectedImageObject = {
                 height: 64,
@@ -178,18 +172,16 @@ describe('lib/image: image size', function () {
 
             const imageSize = createImageSize();
 
-            imageSize.getImageSizeFromUrl(url).then(function (res) {
-                assert.equal(requestMockNotFound.isDone(), false);
-                assert.equal(requestMock.isDone(), true);
-                assertExists(res);
-                assert.equal(res.width, expectedImageObject.width);
-                assert.equal(res.height, expectedImageObject.height);
-                assert.equal(res.url, expectedImageObject.url);
-                done();
-            }).catch(done);
+            const res = await imageSize.getImageSizeFromUrl(url);
+            assert.equal(requestMockNotFound.isDone(), false);
+            assert.equal(requestMock.isDone(), true);
+            assertExists(res);
+            assert.equal(res.width, expectedImageObject.width);
+            assert.equal(res.height, expectedImageObject.height);
+            assert.equal(res.url, expectedImageObject.url);
         });
 
-        it('[success] should return image dimensions asset path images', function (done) {
+        it('[success] should return image dimensions asset path images', async function () {
             const url = '/assets/img/logo.png?v=d30c3d1e41';
             const expectedImageObject = {
                 height: 1,
@@ -223,17 +215,15 @@ describe('lib/image: image size', function () {
                 }
             });
 
-            imageSize.getImageSizeFromUrl(url).then(function (res) {
-                assert.equal(requestMock.isDone(), true);
-                assertExists(res);
-                assert.equal(res.width, expectedImageObject.width);
-                assert.equal(res.height, expectedImageObject.height);
-                assert.equal(res.url, expectedImageObject.url);
-                done();
-            }).catch(done);
+            const res = await imageSize.getImageSizeFromUrl(url);
+            assert.equal(requestMock.isDone(), true);
+            assertExists(res);
+            assert.equal(res.width, expectedImageObject.width);
+            assert.equal(res.height, expectedImageObject.height);
+            assert.equal(res.url, expectedImageObject.url);
         });
 
-        it('[success] should return image dimensions for gravatar images request', function (done) {
+        it('[success] should return image dimensions for gravatar images request', async function () {
             const url = '//www.gravatar.com/avatar/ef6dcde5c99bb8f685dd451ccc3e050a?s=250&d=mm&r=x';
             const expectedImageObject = {
                 height: 1,
@@ -247,17 +237,15 @@ describe('lib/image: image size', function () {
 
             const imageSize = createImageSize();
 
-            imageSize.getImageSizeFromUrl(url).then(function (res) {
-                assert.equal(requestMock.isDone(), true);
-                assertExists(res);
-                assert.equal(res.width, expectedImageObject.width);
-                assert.equal(res.height, expectedImageObject.height);
-                assert.equal(res.url, expectedImageObject.url);
-                done();
-            }).catch(done);
+            const res = await imageSize.getImageSizeFromUrl(url);
+            assert.equal(requestMock.isDone(), true);
+            assertExists(res);
+            assert.equal(res.width, expectedImageObject.width);
+            assert.equal(res.height, expectedImageObject.height);
+            assert.equal(res.url, expectedImageObject.url);
         });
 
-        it('[success] can handle redirect (probe-image-size)', function (done) {
+        it('[success] can handle redirect (probe-image-size)', async function () {
             const url = 'http://noimagehere.com/files/f/feedough/x/11/1540353_20925115.jpg';
             const expectedImageObject = {
                 height: 1,
@@ -277,18 +265,16 @@ describe('lib/image: image size', function () {
 
             const imageSize = createImageSize();
 
-            imageSize.getImageSizeFromUrl(url).then(function (res) {
-                assert.equal(requestMock.isDone(), true);
-                assert.equal(secondRequestMock.isDone(), true);
-                assertExists(res);
-                assert.equal(res.width, expectedImageObject.width);
-                assert.equal(res.height, expectedImageObject.height);
-                assert.equal(res.url, expectedImageObject.url);
-                done();
-            }).catch(done);
+            const res = await imageSize.getImageSizeFromUrl(url);
+            assert.equal(requestMock.isDone(), true);
+            assert.equal(secondRequestMock.isDone(), true);
+            assertExists(res);
+            assert.equal(res.width, expectedImageObject.width);
+            assert.equal(res.height, expectedImageObject.height);
+            assert.equal(res.url, expectedImageObject.url);
         });
 
-        it('[success] should switch to local file storage if available', function (done) {
+        it('[success] should switch to local file storage if available', async function () {
             const url = '/content/images/favicon.png';
             const expectedImageObject = {
                 height: 100,
@@ -325,17 +311,15 @@ describe('lib/image: image size', function () {
                 }
             });
 
-            imageSize.getImageSizeFromUrl(url).then(function (res) {
-                assert.equal(requestMock.isDone(), false);
-                assertExists(res);
-                assertExists(res.width);
-                assert.equal(res.width, expectedImageObject.width);
-                assertExists(res.height);
-                assert.equal(res.height, expectedImageObject.height);
-                assertExists(res.url);
-                assert.equal(res.url, expectedImageObject.url);
-                done();
-            }).catch(done);
+            const res = await imageSize.getImageSizeFromUrl(url);
+            assert.equal(requestMock.isDone(), false);
+            assertExists(res);
+            assertExists(res.width);
+            assert.equal(res.width, expectedImageObject.width);
+            assertExists(res.height);
+            assert.equal(res.height, expectedImageObject.height);
+            assertExists(res.url);
+            assert.equal(res.url, expectedImageObject.url);
         });
 
         it('should use storage for local URL and HTTP for CDN URL', async function () {
@@ -380,7 +364,7 @@ describe('lib/image: image size', function () {
             sinon.assert.calledOnce(storageReadSpy);
         });
 
-        it('[failure] can handle an error with statuscode not 200 (probe-image-size)', function (done) {
+        it('[failure] can handle an error with statuscode not 200 (probe-image-size)', async function () {
             const url = 'http://noimagehere.com/files/f/feedough/x/11/1540353_20925115.jpg';
 
             const requestMock = nock('http://noimagehere.com')
@@ -389,17 +373,16 @@ describe('lib/image: image size', function () {
 
             const imageSize = createImageSize();
 
-            imageSize.getImageSizeFromUrl(url)
-                .catch(function (err) {
-                    assert.equal(requestMock.isDone(), true);
-                    assertExists(err);
-                    assert.equal(err.errorType, 'NotFoundError');
-                    assert.equal(err.message, 'Image not found.');
-                    done();
-                }).catch(done);
+            await assert.rejects(async () => {
+                await imageSize.getImageSizeFromUrl(url);
+            }, {
+                errorType: 'NotFoundError',
+                message: 'Image not found.'
+            });
+            assert.equal(requestMock.isDone(), true);
         });
 
-        it('[failure] can handle an error with statuscode not 200 (image-size)', function (done) {
+        it('[failure] can handle an error with statuscode not 200 (image-size)', async function () {
             const url = 'http://noimagehere.com/files/f/feedough/x/11/1540353_20925115.cur';
 
             const requestMock = nock('http://noimagehere.com')
@@ -423,33 +406,31 @@ describe('lib/image: image size', function () {
                 }
             });
 
-            imageSize.getImageSizeFromUrl(url)
-                .catch(function (err) {
-                    assert.equal(requestMock.isDone(), false);
-                    assertExists(err);
-                    assert.equal(err.errorType, 'NotFoundError');
-                    assert.equal(err.message, 'Image not found.');
-                    done();
-                }).catch(done);
+            await assert.rejects(async () => {
+                await imageSize.getImageSizeFromUrl(url);
+            }, {
+                errorType: 'NotFoundError',
+                message: 'Image not found.'
+            });
+            assert.equal(requestMock.isDone(), false);
         });
 
-        it('[failure] handles invalid URL', function (done) {
+        it('[failure] handles invalid URL', async function () {
             const url = 'Not-a-valid-url';
 
             const imageSize = createImageSize({
                 validator: {isURL: () => false}
             });
 
-            imageSize.getImageSizeFromUrl(url)
-                .catch(function (err) {
-                    assertExists(err);
-                    assert.equal(err.errorType, 'InternalServerError');
-                    assert.equal(err.message, 'URL empty or invalid.');
-                    done();
-                }).catch(done);
+            await assert.rejects(async () => {
+                await imageSize.getImageSizeFromUrl(url);
+            }, {
+                errorType: 'InternalServerError',
+                message: 'URL empty or invalid.'
+            });
         });
 
-        it('[failure] will handle responses timing out', function (done) {
+        it('[failure] will handle responses timing out', async function () {
             const url = 'https://static.wixstatic.com/media/355241_d31358572a2542c5a44738ddcb59e7ea.jpg_256';
 
             const requestMock = nock('https://static.wixstatic.com')
@@ -471,17 +452,16 @@ describe('lib/image: image size', function () {
                 }
             });
 
-            imageSize.getImageSizeFromUrl(url)
-                .catch(function (err) {
-                    assert.equal(requestMock.isDone(), true);
-                    assertExists(err);
-                    assert.equal(err.errorType, 'InternalServerError');
-                    assert.equal(err.message, 'Request timed out.');
-                    done();
-                }).catch(done);
+            await assert.rejects(async () => {
+                await imageSize.getImageSizeFromUrl(url);
+            }, {
+                errorType: 'InternalServerError',
+                message: 'Request timed out.'
+            });
+            assert.equal(requestMock.isDone(), true);
         });
 
-        it('[failure] returns error if \`probe-image-size`\ module throws error', function (done) {
+        it('[failure] returns error if `probe-image-size` module throws error', async function () {
             const url = 'https://static.wixstatic.com/media/355241_d31358572a2542c5a44738ddcb59e7ea.jpg';
 
             const requestMock = nock('https://static.wixstatic.com')
@@ -490,19 +470,15 @@ describe('lib/image: image size', function () {
 
             const imageSize = createImageSize();
 
-            imageSize.getImageSizeFromUrl(url)
-                .then(() => {
-                    assert.equal(true, false, 'succeeded when expecting failure');
-                })
-                .catch(function (err) {
-                    assert.equal(requestMock.isDone(), true);
-                    assertExists(err);
-                    assert.equal(err.errorType, 'InternalServerError');
-                    done();
-                }).catch(done);
+            await assert.rejects(async () => {
+                await imageSize.getImageSizeFromUrl(url);
+            }, {
+                errorType: 'InternalServerError'
+            });
+            assert.equal(requestMock.isDone(), true);
         });
 
-        it('[failure] returns error if \`image-size`\ module throws error', function (done) {
+        it('[failure] returns error if `image-size` module throws error', async function () {
             const url = 'https://static.wixstatic.com/media/355241_d31358572a2542c5a44738ddcb59e7ea.cur';
 
             const requestMock = nock('https://static.wixstatic.com')
@@ -520,35 +496,30 @@ describe('lib/image: image size', function () {
                 }
             });
 
-            imageSize.getImageSizeFromUrl(url)
-                .then(() => {
-                    assert.equal(true, false, 'succeeded when expecting failure');
-                })
-                .catch(function (err) {
-                    assert.equal(requestMock.isDone(), false);
-                    assertExists(err);
-                    assert.equal(err.errorType, 'InternalServerError');
-                    done();
-                }).catch(done);
+            await assert.rejects(async () => {
+                await imageSize.getImageSizeFromUrl(url);
+            }, {
+                errorType: 'InternalServerError'
+            });
+            assert.equal(requestMock.isDone(), false);
         });
 
-        it('[failure] returns error if request errors', function (done) {
+        it('[failure] returns error if request errors', async function () {
             const url = 'https://notarealwebsite.com/images/notapicture.dds';
 
             const imageSize = createImageSize({
                 request: () => Promise.reject({})
             });
 
-            imageSize.getImageSizeFromUrl(url)
-                .catch(function (err) {
-                    assertExists(err);
-                    assert.equal(err.errorType, 'InternalServerError');
-                    assert.equal(err.message, 'Unknown Request error.');
-                    done();
-                }).catch(done);
+            await assert.rejects(async () => {
+                await imageSize.getImageSizeFromUrl(url);
+            }, {
+                errorType: 'InternalServerError',
+                message: 'Unknown Request error.'
+            });
         });
 
-        it('[failure] handles probe being unresponsive', function (done) {
+        it('[failure] handles probe being unresponsive', async function () {
             const url = 'http://img.stockfresh.com/files/f/feedough/x/11/1540353_20925115.jpg';
             const requestMock = nock('http://img.stockfresh.com')
                 .get('/files/f/feedough/x/11/1540353_20925115.jpg')
@@ -568,19 +539,18 @@ describe('lib/image: image size', function () {
                 }
             });
 
-            imageSize.getImageSizeFromUrl(url)
-                .catch(function (err) {
-                    assert.equal(requestMock.isDone(), true);
-                    assertExists(err);
-                    assert.equal(err.errorType, 'InternalServerError');
-                    assert.equal(err.message, 'Probe unresponsive.');
-                    done();
-                }).catch(done);
+            await assert.rejects(async () => {
+                await imageSize.getImageSizeFromUrl(url);
+            }, {
+                errorType: 'InternalServerError',
+                message: 'Probe unresponsive.'
+            });
+            assert.equal(requestMock.isDone(), true);
         });
     });
 
     describe('getImageSizeFromStoragePath', function () {
-        it('[success] should return image dimensions for locally stored images', function (done) {
+        it('[success] should return image dimensions for locally stored images', async function () {
             const url = '/content/images/ghost-logo.png';
             const expectedImageObject = {
                 height: 257,
@@ -595,13 +565,11 @@ describe('lib/image: image size', function () {
                 request: () => Promise.reject(new Error('request should not be used'))
             });
 
-            imageSize.getImageSizeFromStoragePath(url).then(function (res) {
-                assertImageObject(res, expectedImageObject);
-                done();
-            }).catch(done);
+            const res = await imageSize.getImageSizeFromStoragePath(url);
+            assertImageObject(res, expectedImageObject);
         });
 
-        it('[success] should return image dimensions for locally stored images with subdirectory', function (done) {
+        it('[success] should return image dimensions for locally stored images with subdirectory', async function () {
             const url = '/content/images/favicon_too_large.png';
             const expectedImageObject = {
                 height: 1010,
@@ -616,13 +584,11 @@ describe('lib/image: image size', function () {
                 request: () => Promise.reject(new Error('request should not be used'))
             });
 
-            imageSize.getImageSizeFromStoragePath(url).then(function (res) {
-                assertImageObject(res, expectedImageObject);
-                done();
-            }).catch(done);
+            const res = await imageSize.getImageSizeFromStoragePath(url);
+            assertImageObject(res, expectedImageObject);
         });
 
-        it('[success] should return largest image dimensions for locally stored .ico image', function (done) {
+        it('[success] should return largest image dimensions for locally stored .ico image', async function () {
             const url = 'http://myblog.com/content/images/favicon_multi_sizes.ico';
             const expectedImageObject = {
                 height: 64,
@@ -637,13 +603,11 @@ describe('lib/image: image size', function () {
                 request: () => Promise.reject(new Error('request should not be used'))
             });
 
-            imageSize.getImageSizeFromStoragePath(url).then(function (res) {
-                assertImageObject(res, expectedImageObject);
-                done();
-            }).catch(done);
+            const res = await imageSize.getImageSizeFromStoragePath(url);
+            assertImageObject(res, expectedImageObject);
         });
 
-        it('[success] should return image dimensions for locally stored .webp image', function (done) {
+        it('[success] should return image dimensions for locally stored .webp image', async function () {
             const url = 'http://myblog.com/content/images/ghosticon.webp';
             const expectedImageObject = {
                 height: 249,
@@ -658,13 +622,11 @@ describe('lib/image: image size', function () {
                 request: () => Promise.reject(new Error('request should not be used'))
             });
 
-            imageSize.getImageSizeFromStoragePath(url).then(function (res) {
-                assertImageObject(res, expectedImageObject);
-                done();
-            }).catch(done);
+            const res = await imageSize.getImageSizeFromStoragePath(url);
+            assertImageObject(res, expectedImageObject);
         });
 
-        it('[failure] returns error if storage adapter errors', function (done) {
+        it('[failure] returns error if storage adapter errors', async function () {
             const url = '/content/images/not-existing-image.png';
 
             const imageSize = createImageSize({storage: {
@@ -675,12 +637,9 @@ describe('lib/image: image size', function () {
                 })
             }, storageUtils: createFixtureStorageUtils(), urlUtils: createLocalUrlUtils('http://myblog.com/content/images/not-existing-image.png'), request: () => Promise.reject(new Error('request should not be used'))});
 
-            imageSize.getImageSizeFromStoragePath(url)
-                .catch(function (err) {
-                    assertExists(err);
-                    assert.equal((err instanceof errors.NotFoundError), true);
-                    done();
-                }).catch(done);
+            await assert.rejects(async () => {
+                await imageSize.getImageSizeFromStoragePath(url);
+            }, errors.NotFoundError);
         });
 
         it('[failure] rejects traversal outside the image storage root', async function () {
@@ -709,7 +668,7 @@ describe('lib/image: image size', function () {
             );
         });
 
-        it('[failure] returns error if \`image-size`\ module throws error', function (done) {
+        it('[failure] returns error if `image-size` module throws error', async function () {
             const url = '/content/images/malformed.svg';
 
             const imageSize = createImageSize({storage: {
@@ -727,11 +686,9 @@ describe('lib/image: image size', function () {
                 return Promise.reject({});
             }});
 
-            imageSize.getImageSizeFromStoragePath(url)
-                .catch(function (err) {
-                    assertExists(err);
-                    done();
-                }).catch(done);
+            await assert.rejects(async () => {
+                await imageSize.getImageSizeFromStoragePath(url);
+            });
         });
     });
 });
