@@ -680,43 +680,65 @@ const GiftPage = () => {
     const {cardRef, containerProps: cardTiltProps} = useCardTilt();
     const leftRef = useRef(null);
     const innerRef = useRef(null);
-    const centeringDoneRef = useRef(false);
 
-    // On first paint, vertically center the inner content within the left
-    // column by computing the available space and pushing the inner down by
-    // half. After this single measurement we never recompute — so when the
-    // benefits change height on tier switch, only the bottom of the column
-    // (the CTA) shifts, leaving the title and tier picker anchored.
+    // Vertically center the inner content within the left column by computing
+    // the available space and pushing the inner down by half. We recompute on
+    // window resize (otherwise the stale offset leaves the right panel
+    // overlapping the text), but not on every render — so when benefits change
+    // height on tier switch, only the bottom of the column (the CTA) shifts,
+    // leaving the title and tier picker anchored.
     // Skipped on mobile (single-column stack) where natural top-aligned flow
     // is what we want; centering would push content under the sticky CTA.
     useLayoutEffect(() => {
-        if (centeringDoneRef.current) {
-            return;
-        }
         const inner = innerRef.current;
         const left = leftRef.current;
         if (!inner || !left) {
             return;
         }
-        if (typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 880px)').matches) {
+
+        const recenter = () => {
+            if (typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 880px)').matches) {
+                inner.style.marginTop = '';
+                return;
+            }
+            // Reset first so the measurement reflects the natural inner height,
+            // not the previously-applied offset.
             inner.style.marginTop = '';
-            centeringDoneRef.current = true;
-            return;
-        }
-        const leftRect = left.getBoundingClientRect();
-        if (leftRect.height === 0) {
-            return;
-        }
-        const leftStyle = window.getComputedStyle(left);
-        const pTop = parseFloat(leftStyle.paddingTop);
-        const pBottom = parseFloat(leftStyle.paddingBottom);
-        const available = leftRect.height - pTop - pBottom;
-        const space = available - inner.getBoundingClientRect().height;
-        if (space > 0) {
-            inner.style.marginTop = `${space / 2}px`;
-        }
-        centeringDoneRef.current = true;
-    });
+            const leftRect = left.getBoundingClientRect();
+            if (leftRect.height === 0) {
+                return;
+            }
+            const leftStyle = window.getComputedStyle(left);
+            const pTop = parseFloat(leftStyle.paddingTop);
+            const pBottom = parseFloat(leftStyle.paddingBottom);
+            const available = leftRect.height - pTop - pBottom;
+            const space = available - inner.getBoundingClientRect().height;
+            if (space > 0) {
+                inner.style.marginTop = `${space / 2}px`;
+            }
+        };
+
+        recenter();
+
+        let rafId = null;
+        const onResize = () => {
+            if (rafId !== null) {
+                return;
+            }
+            rafId = window.requestAnimationFrame(() => {
+                rafId = null;
+                recenter();
+            });
+        };
+
+        window.addEventListener('resize', onResize, {passive: true});
+        return () => {
+            window.removeEventListener('resize', onResize);
+            if (rafId !== null) {
+                window.cancelAnimationFrame(rafId);
+            }
+        };
+    }, []);
 
     if (!site) {
         return <LoadingPage />;
