@@ -222,12 +222,6 @@ describe('Unit - services/routing/controllers/entry', function () {
             req.accepts.returns('text/markdown');
             post.visibility = 'public';
 
-            routerManagerGetResourceByIdStub.withArgs(post.id).returns({
-                config: {
-                    type: 'posts'
-                }
-            });
-
             entryLookUpStub.withArgs(req.path, res.routerOptions)
                 .resolves({
                     entry: post
