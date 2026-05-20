@@ -72,7 +72,7 @@ module.exports = function entryController(req, res, next) {
                 return llmsService.fetchPublicEntry(res.routerOptions.resourceType, entry.id)
                     .then((markdownEntry) => {
                         if (!markdownEntry) {
-                            return next();
+                            return renderer.renderEntry(req, res)(entry);
                         }
 
                         res.type(markdownContentType);
