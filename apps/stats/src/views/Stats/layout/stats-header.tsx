@@ -36,13 +36,13 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                         Analytics
                     </H1>
                     {appSettings?.analytics.webAnalytics && (
-                        <div className='flex items-center gap-2 text-sm'>
+                        <div className='flex items-center gap-2'>
                             {site?.url && (
                                 <div className='hidden items-center gap-1.5 sm:visible! sm:flex!'>
                                     {/* No need for favicon as it's already shown in the left sidebar + globe icon represents "web" better */}
                                     <LucideIcon.Globe className='text-muted-foreground' size={16} strokeWidth={1.5} />
                                     <a
-                                        className='text-sm font-medium transition-all hover:opacity-75 dark:text-gray-100'
+                                        className='font-medium transition-all hover:opacity-75 dark:text-gray-100'
                                         href={site.url}
                                         rel="noopener noreferrer"
                                         target="_blank"
@@ -54,10 +54,10 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                                 </div>
                             )}
                             <div
-                                className='flex items-center gap-2 text-sm text-muted-foreground'
+                                className='flex items-center gap-2 text-muted-foreground'
                                 title='Active visitors in the last 5 minutes · Updates every 60 seconds'
                             >
-                                <span className='text-sm'>
+                                <span>
                                     {isActiveVisitorsLoading ? '' : formatNumber(activeVisitors)} online
                                 </span>
                                 <div className={`size-2 rounded-full ${isActiveVisitorsLoading ? 'animate-pulse bg-muted' : activeVisitors ? 'bg-green-500' : 'border border-muted-foreground'}`}></div>
@@ -72,7 +72,6 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                         <PageMenuItem value="/analytics/" onClick={() => {
                             navigate('/analytics/');
                         }}>
-                            <LucideIcon.Gauge />
                         Overview
                         </PageMenuItem>
 
@@ -80,7 +79,6 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                         <PageMenuItem value="/analytics/web/" onClick={() => {
                             navigate('/analytics/web/');
                         }}>
-                            <LucideIcon.Globe />
                             Web traffic
                         </PageMenuItem>
                         }
@@ -89,7 +87,6 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                         <PageMenuItem value="/analytics/newsletters/" onClick={() => {
                             navigate('/analytics/newsletters/');
                         }}>
-                            <LucideIcon.Mail />
                             Newsletters
                         </PageMenuItem>
                         }
@@ -97,7 +94,6 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                         <PageMenuItem value="/analytics/growth/" onClick={() => {
                             navigate('/analytics/growth/');
                         }}>
-                            <LucideIcon.Sprout />
                         Growth
                         </PageMenuItem>
                     </PageMenu>
