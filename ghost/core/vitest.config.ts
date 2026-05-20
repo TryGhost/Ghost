@@ -1,3 +1,4 @@
+import path from 'node:path';
 import {defineConfig} from 'vitest/config';
 
 // Vitest is being introduced incrementally alongside mocha. Each PR
@@ -15,6 +16,7 @@ export default defineConfig({
         include: [
             'test/unit/api/**/*.test.{js,ts}',
             'test/unit/bin/**/*.test.{js,ts}',
+            'test/unit/frontend/**/*.test.{js,ts}',
             'test/unit/shared/**/*.test.{js,ts}',
             'test/unit/server/adapters/**/*.test.{js,ts}',
             'test/unit/server/api/**/*.test.{js,ts}',
@@ -29,6 +31,15 @@ export default defineConfig({
             '**/node_modules/**'
         ],
         setupFiles: ['./test/utils/vitest-setup.ts'],
+        // Ghost's snapshot tests use @tryghost/jest-snapshot, which manages
+        // its own `__snapshots__/*.snap` files. Point vitest's native
+        // snapshot system at a separate (never-written) path so it doesn't
+        // adopt those files and report their entries as obsolete.
+        resolveSnapshotPath: (testPath: string, snapExtension: string) => path.join(
+            path.dirname(testPath),
+            '__vitest_snapshots__',
+            path.basename(testPath) + snapExtension
+        ),
         testTimeout: 2000,
         hookTimeout: 60000,
         reporters: ['dot'],

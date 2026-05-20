@@ -29,7 +29,7 @@ function compile(templateString) {
 }
 
 describe('{{social_url}} helper', function () {
-    before(function () {
+    beforeAll(function () {
         // Register the helper using an object structure
         helpers.registerHelper('social_url', social_url);
         helpers.registerAlias('facebook_url', 'social_url');

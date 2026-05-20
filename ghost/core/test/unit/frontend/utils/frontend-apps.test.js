@@ -4,13 +4,13 @@ const configUtils = require('../../../utils/config-utils');
 
 describe('Frontend apps:', function () {
     describe('getFrontendAppConfig', function () {
-        before(function () {
+        beforeAll(function () {
             configUtils.set({'portal:url': 'https://cdn.example.com/~{version}/portal.min.js'});
             configUtils.set({'portal:version': '1.0'});
             configUtils.set({'portal:styles': 'https://cdn.example.com/~{version}/main.css'});
         });
 
-        after(async function () {
+        afterAll(async function () {
             await configUtils.restore();
         });
 
