@@ -7,14 +7,20 @@ import {type SiteData, useBrowseSite} from '@tryghost/admin-x-framework/api/site
 import {type User} from '@tryghost/admin-x-framework/api/users';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
 
-interface GlobalData {
+export interface GlobalData {
     settings: Setting[]
     siteData: SiteData
     config: Config
     currentUser: User
 }
 
-const GlobalDataContext = createContext<GlobalData | undefined>(undefined);
+export const GlobalDataContext = createContext<GlobalData | undefined>(undefined);
+
+export const GlobalDataStaticProvider = ({children, value}: { children: ReactNode, value: GlobalData }) => (
+    <GlobalDataContext.Provider value={value}>
+        {children}
+    </GlobalDataContext.Provider>
+);
 
 const GlobalDataProvider = ({children}: { children: ReactNode }) => {
     const settings = useBrowseSettings();

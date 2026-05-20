@@ -364,6 +364,18 @@ describe('AutomationEditor', () => {
         expect(screen.getByRole('button', {name: 'Published'})).toBeDisabled();
     });
 
+    it('does not show the Email design button on the detail page', () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        expect(screen.queryByRole('button', {name: 'Email design'})).not.toBeInTheDocument();
+    });
+
     it('hides the dropdown for inactive automations', () => {
         mockUseReadAutomation.mockReturnValue({
             data: {automations: [{...automationDetail, status: 'inactive'}]},

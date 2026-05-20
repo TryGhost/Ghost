@@ -49,6 +49,10 @@ interface WelcomeEmailCustomizeFormState {
     generalSettings: GeneralSettings;
 }
 
+interface WelcomeEmailCustomizeModalProps {
+    title?: string;
+}
+
 const SAVE_ERROR_TOAST_ID = 'welcome-email-design-save-error';
 const WELCOME_EMAIL_DESIGN_FIELDS = new Set(Object.keys(DEFAULT_EMAIL_DESIGN));
 
@@ -332,7 +336,7 @@ const normalizeSenderValue = (value: string | null | undefined) => {
     return trimmed || null;
 };
 
-const WelcomeEmailCustomizeModal = NiceModal.create(() => {
+const WelcomeEmailCustomizeModal = NiceModal.create<WelcomeEmailCustomizeModalProps>(({title = 'Welcome emails'}) => {
     const modal = useModal();
     const {siteData, settings: globalSettings} = useGlobalData();
     const [siteTitle, defaultEmailAddress, icon] = getSettingValues<string>(globalSettings, ['title', 'default_email_address', 'icon']);
@@ -558,7 +562,7 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
                     />
                 }
                 testId="welcome-email-customize-modal"
-                title="Welcome emails"
+                title={title}
                 onClose={handleClose}
                 onSave={() => handleSave({fakeWhenUnchanged: true})}
             />

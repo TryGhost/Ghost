@@ -1,5 +1,6 @@
 import AutomationsList from './components/automations-list';
-import MainLayout from '@components/layout/main-layout';
+import CustomizeWelcomeEmailsButton from './components/customize-welcome-emails-button';
+import MainLayout from '@src/components/layout/main-layout';
 import React from 'react';
 import {ListPage} from '@tryghost/shade/page-templates';
 import {PageHeader} from '@tryghost/shade/patterns';
@@ -22,6 +23,9 @@ const Automations: React.FC = () => {
                         <PageHeader.Left>
                             <PageHeader.Title>Automations</PageHeader.Title>
                         </PageHeader.Left>
+                        <PageHeader.Actions>
+                            <CustomizeWelcomeEmailsButton />
+                        </PageHeader.Actions>
                     </PageHeader>
                 </ListPage.Header>
                 <ListPage.Body>

@@ -57,7 +57,9 @@
         "vitest": "catalog:"
     },
     "dependencies": {
+        "@ebay/nice-modal-react": "1.2.13",
         "@tryghost/admin-x-framework": "workspace:*",
+        "@tryghost/admin-x-settings": "workspace:*",
         "@tryghost/nql-lang": "catalog:",
         "@tryghost/shade": "workspace:*",
         "@xyflow/react": "12.8.6",
