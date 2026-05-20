@@ -30,7 +30,7 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                     data-header='header'
                 >
                     <H1
-                        className='-ml-px min-h-[35px] max-w-[920px] indent-0 leading-[1.2em]'
+                        className='-ml-px flex min-h-[32px] max-w-[920px] items-center indent-0 leading-[1.2em]'
                         data-header='header-title'
                     >
                         Analytics
