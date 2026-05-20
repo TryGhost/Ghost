@@ -790,6 +790,29 @@ describe('Settings API', function () {
                 });
         });
 
+        it('regenerates the access code server-side when settings edits are locked', async function () {
+            stubPublicSiteAccessDisabled(true);
+            const passwordSetting = await models.Settings.findOne({key: 'password'}, {context: {internal: true}});
+
+            try {
+                const response = await agent.post('settings/regenerate_access_code/')
+                    .body({password: 'caller-chosen-code'})
+                    .expectStatus(200);
+
+                const byKey = Object.fromEntries(response.body.settings.map(s => [s.key, s]));
+                assert.equal(typeof byKey.password.value, 'string');
+                assert.match(byKey.password.value, /^fake-\d{3}$/);
+                assert.notEqual(byKey.password.value, 'caller-chosen-code');
+                assert.equal(byKey.password.is_read_only, true);
+
+                emailMockReceiver.assertSentEmailCount(0);
+            } finally {
+                const originalPasswordSetting = passwordSetting.toJSON();
+                await models.Base.knex('settings').where({key: 'password'}).update({value: originalPasswordSetting.value});
+                settingsCache.set('password', originalPasswordSetting);
+            }
+        });
+
         it('does not mark is_private or password as is_read_only when the limit is not disabled', async function () {
             stubPublicSiteAccessDisabled(false);
 

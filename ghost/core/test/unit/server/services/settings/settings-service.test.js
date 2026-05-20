@@ -218,4 +218,18 @@ describe('UNIT: Settings Service', function () {
             assert.equal(writes[0].key, 'password');
         });
     });
+
+    describe('regeneratePrivateSiteAccessCode', function () {
+        it('generates a new access code server-side and writes with internal context', async function () {
+            const editStub = sinon.stub(models.Settings, 'edit').resolves();
+
+            await settingsService.regeneratePrivateSiteAccessCode();
+
+            sinon.assert.calledOnce(editStub);
+            assert.equal(editStub.firstCall.args[0].length, 1);
+            assert.equal(editStub.firstCall.args[0][0].key, 'password');
+            assert.match(editStub.firstCall.args[0][0].value, /^fake-\d{3}$/);
+            assert.deepEqual(editStub.firstCall.args[1], {context: {internal: true}});
+        });
+    });
 });

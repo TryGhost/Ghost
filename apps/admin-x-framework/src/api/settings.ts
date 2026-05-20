@@ -60,6 +60,26 @@ export const useEditSettings = createMutation<SettingsResponseType, Setting[]>({
     }
 });
 
+export const useRegenerateAccessCode = createMutation<SettingsResponseType, null>({
+    method: 'POST',
+    path: () => '/settings/regenerate_access_code/',
+    updateQueries: {
+        dataType,
+        emberUpdateType: 'createOrUpdate',
+        update: newData => ({
+            ...newData,
+            settings: newData.settings
+        })
+    },
+    invalidateQueries: {
+        filters: {
+            predicate(query) {
+                return query.queryKey[0] !== dataType;
+            }
+        }
+    }
+});
+
 export const useDeleteStripeSettings = createMutation<unknown, null>({
     method: 'DELETE',
     path: () => '/settings/stripe/connect/',

@@ -147,6 +147,22 @@ const controller = {
         }
     },
 
+    regenerateAccessCode: {
+        headers: {
+            cacheInvalidate: false
+        },
+        permissions: {
+            method: 'edit'
+        },
+        async query(frame) {
+            await settingsService.regeneratePrivateSiteAccessCode();
+            frame.setHeader('X-Cache-Invalidate', '/*');
+
+            // We need to return all settings here, because we have calculated settings that might change
+            return await settingsBREADService.browse(frame.options.context);
+        }
+    },
+
     upload: {
         headers: {
             cacheInvalidate: true
