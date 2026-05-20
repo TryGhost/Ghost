@@ -7,7 +7,7 @@ test.describe('Search', async () => {
 
         await page.goto('/');
 
-        const searchBar = page.getByLabel('Search');
+        const searchBar = page.getByPlaceholder('Search settings');
 
         await searchBar.fill('design');
 
