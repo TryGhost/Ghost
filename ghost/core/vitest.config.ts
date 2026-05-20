@@ -13,6 +13,7 @@ export default defineConfig({
             WEBHOOK_SECRET: 'TEST_STRIPE_WEBHOOK_SECRET'
         },
         include: [
+            'test/unit/api/**/*.test.{js,ts}',
             'test/unit/bin/**/*.test.{js,ts}',
             'test/unit/shared/**/*.test.{js,ts}',
             'test/unit/server/adapters/**/*.test.{js,ts}',
