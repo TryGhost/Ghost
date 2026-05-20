@@ -10,7 +10,7 @@ const {promisify} = require('node:util');
 
 describe('{{cancel_link}} helper', function () {
     let labsStub;
-    before(async function () {
+    beforeAll(async function () {
         hbs.express4({partialsDir: [configUtils.config.get('paths').helperTemplates]});
 
         const cachePartials = promisify(hbs.cachePartials.bind(hbs));

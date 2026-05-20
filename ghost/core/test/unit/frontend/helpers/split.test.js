@@ -2,7 +2,7 @@ const {registerHelper, shouldCompileToExpected} = require('./utils/handlebars');
 const {SafeString} = require('../../../../core/frontend/services/handlebars');
 
 describe('{{split}} helper in block mode', function () {
-    before(function () {
+    beforeAll(function () {
         registerHelper('split');
         registerHelper('foreach');
         registerHelper('match');
@@ -79,7 +79,7 @@ describe('{{split}} helper in block mode', function () {
 });
 
 describe('{{split}} helper in inline mode', function () {
-    before(function () {
+    beforeAll(function () {
         registerHelper('split');
         registerHelper('foreach');
         registerHelper('match');

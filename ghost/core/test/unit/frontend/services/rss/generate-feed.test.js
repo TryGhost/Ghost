@@ -15,7 +15,7 @@ describe('RSS: Generate Feed', function () {
     // Static set of posts
     let posts;
 
-    before(function () {
+    beforeAll(function () {
         posts = _.cloneDeep(testUtils.DataGenerator.forKnex.posts);
 
         posts = _.filter(posts, function filter(post) {

@@ -13,6 +13,7 @@ const color_to_rgba = require('../../../../../core/frontend/helpers/color_to_rgb
 const contrast_text_color = require('../../../../../core/frontend/helpers/contrast_text_color');
 const json = require('../../../../../core/frontend/helpers/json');
 const {setupI18nTest, initLocale} = require('../../../../utils/i18n-test-utils');
+const deferred = require('../../../../utils/deferred');
 
 describe('Private Controller', function () {
     let res;
@@ -62,7 +63,8 @@ describe('Private Controller', function () {
         await configUtils.restore();
     });
 
-    it('Should render default password page when theme has no password template', function (done) {
+    it('Should render default password page when theme has no password template', function () {
+        const {promise, done} = deferred();
         res.render = function (view, context) {
             assert.equal(view, defaultPath);
             assertExists(context);
@@ -70,9 +72,11 @@ describe('Private Controller', function () {
         };
 
         privateController.renderer(req, res, failTest(done));
+        return promise;
     });
 
-    it('Should render theme password page when it exists', function (done) {
+    it('Should render theme password page when it exists', function () {
+        const {promise, done} = deferred();
         hasTemplateStub.withArgs('private').returns(true);
 
         res.render = function (view, context) {
@@ -82,9 +86,11 @@ describe('Private Controller', function () {
         };
 
         privateController.renderer(req, res, failTest(done));
+        return promise;
     });
 
-    it('Should render with error when error is passed in', function (done) {
+    it('Should render with error when error is passed in', function () {
+        const {promise, done} = deferred();
         res.error = 'Test Error';
 
         res.render = function (view, context) {
@@ -94,6 +100,7 @@ describe('Private Controller', function () {
         };
 
         privateController.renderer(req, res, failTest(done));
+        return promise;
     });
 });
 
@@ -101,7 +108,7 @@ describe('private.hbs template translation', function () {
     const privateViewPath = path.join(__dirname, '../../../../../core/frontend/apps/private-blogging/lib/views/private.hbs');
     let compiledTemplate;
 
-    before(function () {
+    beforeAll(function () {
         const templateStr = fs.readFileSync(privateViewPath, 'utf8');
         compiledTemplate = hbs.handlebars.compile(templateStr);
 
@@ -118,7 +125,7 @@ describe('private.hbs template translation', function () {
         });
     });
 
-    after(function () {
+    afterAll(function () {
         hbs.handlebars.unregisterHelper('input_password');
         hbs.handlebars.unregisterHelper('color_to_rgba');
         hbs.handlebars.unregisterHelper('contrast_text_color');
@@ -142,7 +149,7 @@ describe('private.hbs template translation', function () {
         describe(`with ${name}`, function () {
             let i18nSetup;
 
-            before(function () {
+            beforeAll(function () {
                 i18nSetup = setupI18nTest({useNewTranslation, locale: 'en'});
             });
 
@@ -151,7 +158,7 @@ describe('private.hbs template translation', function () {
                 initLocale({useNewTranslation, locale: 'en'});
             });
 
-            after(function () {
+            afterAll(function () {
                 i18nSetup.teardown();
                 sinon.restore();
             });
