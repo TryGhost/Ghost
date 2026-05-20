@@ -40,7 +40,7 @@ export default class PostScheduling {
             events.on(`${resource}.scheduled`, async (model: any) => {
                 try {
                     const key = await internalKeys.get('ghost-scheduler');
-                    adapter.schedule(this.#normalize({model, key: key!, resourceType: resource}));
+                    adapter.schedule(this.#normalize({model, key, resourceType: resource}));
                 } catch (err) {
                     logging.error({event: {name: 'post-scheduling.schedule.error'}, err, resource, id: model.get('id')}, 'Failed to schedule resource');
                 }
@@ -51,8 +51,8 @@ export default class PostScheduling {
             events.on(`${resource}.rescheduled`, async (model: any) => {
                 try {
                     const key = await internalKeys.get('ghost-scheduler');
-                    adapter.unschedule(this.#normalize({model, key: key!, resourceType: resource}, 'unscheduled'));
-                    adapter.schedule(this.#normalize({model, key: key!, resourceType: resource}));
+                    adapter.unschedule(this.#normalize({model, key, resourceType: resource}, 'unscheduled'));
+                    adapter.schedule(this.#normalize({model, key, resourceType: resource}));
                 } catch (err) {
                     logging.error({event: {name: 'post-scheduling.reschedule.error'}, err, resource, id: model.get('id')}, 'Failed to reschedule resource');
                 }
@@ -61,7 +61,7 @@ export default class PostScheduling {
             events.on(`${resource}.unscheduled`, async (model: any) => {
                 try {
                     const key = await internalKeys.get('ghost-scheduler');
-                    adapter.unschedule(this.#normalize({model, key: key!, resourceType: resource}, 'unscheduled'));
+                    adapter.unschedule(this.#normalize({model, key, resourceType: resource}, 'unscheduled'));
                 } catch (err) {
                     logging.error({event: {name: 'post-scheduling.unschedule.error'}, err, resource, id: model.get('id')}, 'Failed to unschedule resource');
                 }
@@ -81,7 +81,7 @@ export default class PostScheduling {
     async rescheduleAll({previousKey}: {previousKey?: InternalApiKey} = {}): Promise<void> {
         const scheduledResources = await this.#loadScheduledResources();
         const currentKey = await this.#internalKeys.get('ghost-scheduler');
-        const unscheduleKey = previousKey ?? currentKey!;
+        const unscheduleKey = previousKey ?? currentKey;
 
         for (const resourceType of Object.keys(scheduledResources) as ScheduledResource[]) {
             for (const model of scheduledResources[resourceType]) {
@@ -90,7 +90,7 @@ export default class PostScheduling {
                     {bootstrap: true}
                 );
                 this.#adapter.schedule(
-                    this.#normalize({model, key: currentKey!, resourceType})
+                    this.#normalize({model, key: currentKey, resourceType})
                 );
             }
         }

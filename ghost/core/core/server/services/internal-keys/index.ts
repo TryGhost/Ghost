@@ -21,17 +21,14 @@ const SLUG_KEY_TYPE = {
 export type ApiKeyType = typeof SLUG_KEY_TYPE[InternalIntegrationSlug];
 
 /**
- * The read-only view of the internal-keys cache that most consumers receive.
- * Rotation orchestration uses the full Map surface (`.clear()`, `.delete()`)
- * via the writable export below.
+ * The shape consumers receive when they import the singleton: an
+ * `AutoFillingMap` whose `get` returns `Promise<InternalApiKey>` directly
+ * (the override drops the `| undefined` from the structural `Map.get`
+ * signature). Rotation orchestration uses the inherited `Map` surface
+ * (`.clear()`, `.delete()`) to invalidate after rotating the underlying
+ * api_keys row.
  */
-export type InternalKeys = ReadonlyMap<InternalIntegrationSlug, Promise<InternalApiKey>>;
-
-/**
- * The writable view of the internal-keys cache. Only rotation orchestration
- * needs this — readers should accept `InternalKeys` instead.
- */
-export type WritableInternalKeys = Map<InternalIntegrationSlug, Promise<InternalApiKey>>;
+export type InternalKeys = AutoFillingMap<InternalIntegrationSlug, Promise<InternalApiKey>>;
 
 // models/index.js is the Bookshelf model registry — a JS module without
 // TypeScript declarations. Use a typed require so we can call the model
@@ -48,9 +45,7 @@ const models = require('../../models') as {
 
 /**
  * Process-lifetime cache of internal-integration API keys, keyed by slug.
- * Exposed to consumers as a `ReadonlyMap<InternalIntegrationSlug, Promise<InternalApiKey>>`
- * so they only see `.get(slug)`; rotation orchestration uses the full Map
- * surface (`.delete(slug)`, `.clear()`) to invalidate after rotating the
+ * Rotation orchestration calls `.clear()` to invalidate after rotating the
  * underlying api_keys row.
  */
 const internalKeys = new AutoFillingMap<InternalIntegrationSlug, Promise<InternalApiKey>>(

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import resetAuthentication from '../../../../../core/server/services/auth/reset-authentication';
-import type {WritableInternalKeys} from '../../../../../core/server/services/internal-keys';
+import {AutoFillingMap} from '../../../../../core/server/lib/auto-filling-map';
+import type {InternalApiKey, InternalIntegrationSlug} from '../../../../../core/server/services/internal-keys';
 
 interface ActionRow {
     event: string;
@@ -43,9 +44,12 @@ function buildAuthDomain({apiKeysToRotate, usersToLock, currentKey}: {apiKeysToR
         }
     };
 
-    const internalKeys: WritableInternalKeys = new Map([
-        ['ghost-scheduler', Promise.resolve(currentKey)]
-    ]);
+    const internalKeys = new AutoFillingMap<InternalIntegrationSlug, Promise<InternalApiKey>>(
+        (slug) => {
+            throw new Error(`Test internalKeys not seeded for slug ${slug}`);
+        }
+    );
+    internalKeys.set('ghost-scheduler', Promise.resolve(currentKey));
     const originalClear = internalKeys.clear.bind(internalKeys);
     internalKeys.clear = () => {
         recorded.cacheCleared = true;
