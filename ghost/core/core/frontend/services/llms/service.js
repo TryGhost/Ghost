@@ -13,6 +13,8 @@ const {
 } = require('./markdown');
 
 const FIVE_MIB = 5 * 1024 * 1024;
+const TRUNCATION_FOOTER = '\n_Truncated after 5 MiB. Use `/llms.txt` for the complete index of older public content._\n';
+const BUDGET = FIVE_MIB - Buffer.byteLength(TRUNCATION_FOOTER, 'utf8');
 
 class LlmsService {
     constructor({events: eventBus = events, apiService = api} = {}) {
@@ -133,7 +135,7 @@ class LlmsService {
         }
 
         if (wasTruncated) {
-            output += '\n_Truncated after 5 MiB. Use `/llms.txt` for the complete index of older public content._\n';
+            output += TRUNCATION_FOOTER;
         }
 
         return output.trimEnd() + '\n';
@@ -142,7 +144,7 @@ class LlmsService {
     #appendBoundedSection(prefix, heading, entries, formatter) {
         const headingBlock = `${prefix}## ${heading}\n`;
 
-        if (Buffer.byteLength(headingBlock, 'utf8') > FIVE_MIB) {
+        if (Buffer.byteLength(headingBlock, 'utf8') > BUDGET) {
             return {output: prefix, wasTruncated: true};
         }
 
@@ -152,7 +154,7 @@ class LlmsService {
         if (!entries.length) {
             const emptySection = `${output}_No public content available._\n`;
 
-            if (Buffer.byteLength(emptySection, 'utf8') <= FIVE_MIB) {
+            if (Buffer.byteLength(emptySection, 'utf8') <= BUDGET) {
                 output = emptySection;
             } else {
                 wasTruncated = true;
@@ -165,7 +167,7 @@ class LlmsService {
             const formattedEntry = formatter(entry);
             const candidate = `${output}${formattedEntry}\n`;
 
-            if (Buffer.byteLength(candidate, 'utf8') > FIVE_MIB) {
+            if (Buffer.byteLength(candidate, 'utf8') > BUDGET) {
                 wasTruncated = true;
                 break;
             }
