@@ -172,10 +172,11 @@ class PaymentsService {
      * @param {object} params.metadata
      * @param {object} [params.member]
      * @param {boolean} params.isAuthenticated
+     * @param {string} [params.email]
      *
      * @returns {Promise<string>}
      */
-    async getGiftPaymentLink({tier, cadence, duration, metadata, successUrl, cancelUrl, member, isAuthenticated}) {
+    async getGiftPaymentLink({tier, cadence, duration, metadata, successUrl, cancelUrl, member, isAuthenticated, email}) {
         let customer = null;
         if (member && isAuthenticated) {
             customer = await this.getCustomerForMember(member);
@@ -208,7 +209,8 @@ class PaymentsService {
             },
             successUrl: successUrlObj.toString(),
             cancelUrl,
-            customer
+            customer,
+            customerEmail: !customer && email ? email : null
         };
 
         const session = await this.stripeAPIService.createGiftCheckoutSession(data);
