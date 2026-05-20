@@ -334,8 +334,11 @@ const normalizeSenderValue = (value: string | null | undefined) => {
 
 const WelcomeEmailCustomizeModal = NiceModal.create(() => {
     const modal = useModal();
-    const {siteData, settings: globalSettings} = useGlobalData();
-    const [siteTitle, defaultEmailAddress, icon] = getSettingValues<string>(globalSettings, ['title', 'default_email_address', 'icon']);
+    const {siteData, settings: globalSettings, config} = useGlobalData();
+    const [siteTitle, defaultEmailAddress, icon, supportEmailAddress] = getSettingValues<string>(
+        globalSettings,
+        ['title', 'default_email_address', 'icon', 'support_email_address']
+    );
 
     const handleError = useHandleError();
     const {data: designData, isLoading, isError} = useReadAutomatedEmailDesign();
@@ -356,7 +359,12 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
         replyToEmailPlaceholder,
         showSenderEmailInput,
         senderEmailDomain
-    } = useWelcomeEmailSenderDetails(automatedEmails);
+    } = useWelcomeEmailSenderDetails(automatedEmails, {
+        config,
+        defaultEmailAddress,
+        siteTitle,
+        supportEmailAddress
+    });
 
     const defaultGeneralSettings = useMemo<GeneralSettings>(() => ({
         senderName: senderNameInput,
@@ -524,9 +532,11 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
                     <ErrorState message={fetchErrorMessage} />
                 ) : (
                     <EmailPreview
+                        accentColor={siteData.accent_color}
                         emailFooter={generalSettings.emailFooter}
                         footerLinkText="Manage your preferences"
                         headerImage={generalSettings.headerImage}
+                        publicationIcon={icon}
                         replyToEmail={generalSettings.replyToEmail || replyToEmailPlaceholder || ''}
                         senderEmail={generalSettings.senderEmail || senderEmailPlaceholder || defaultEmailAddress || ''}
                         senderName={generalSettings.senderName || senderNamePlaceholder || siteTitle || 'Your site'}
@@ -536,6 +546,7 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
                         showPublicationTitle={generalSettings.showPublicationTitle}
                         showRecipientLine={false}
                         showSubjectLine={false}
+                        siteTitle={siteTitle}
                         subject={`Welcome to ${generalSettings.senderName || senderNamePlaceholder || siteTitle || 'our publication'}`}
                     >
                         <WelcomeEmailPreviewContent />
