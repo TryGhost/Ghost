@@ -33,8 +33,8 @@ describe('staticTheme', function () {
     });
 
     function callStaticTheme() {
-        return new Promise((resolve) => {
-            staticTheme()(req, res, resolve);
+        return new Promise((resolve, reject) => {
+            staticTheme()(req, res, err => (err ? reject(err) : resolve()));
         });
     }
 
