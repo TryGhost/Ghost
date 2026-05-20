@@ -12,12 +12,12 @@ describe('frontendCaching', function () {
     let freeTier;
     let premiumTier;
 
-    this.beforeEach(async function () {
+    beforeEach(async function () {
         freeTier = {id: 'freeTierId'};
         premiumTier = {id: 'premiumTierId'};
     });
 
-    this.afterEach(async function () {
+    afterEach(async function () {
         await configUtils.restore();
     });
 

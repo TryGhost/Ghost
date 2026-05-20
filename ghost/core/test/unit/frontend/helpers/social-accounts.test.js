@@ -28,7 +28,7 @@ function compile(templateString) {
 }
 
 describe('{{#social_accounts}} helper', function () {
-    before(function () {
+    beforeAll(function () {
         helpers.registerHelper('social_accounts', social_accounts);
 
         defaultGlobals = {
