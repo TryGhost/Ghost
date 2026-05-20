@@ -175,16 +175,21 @@ User = ghostBookshelf.Model.extend({
     },
 
     /**
-     * Mark this user as locked and replace their password with an opaque
-     * random value. The old password no longer authenticates; the user will
-     * set a real one via the reset-on-signin flow.
+     * Replace this user's password with an opaque random value, and mark
+     * them as locked unless they are already inactive (suspended). Suspended
+     * users must not be transitioned out of `inactive` — they retain the
+     * suspended-signin path — but their password is still rotated so a
+     * compromised credential cannot survive a future unsuspend.
      */
     lock: function lock(options) {
-        return this.save({
-            status: 'locked',
+        const update = {
             // secretlint-disable-next-line @secretlint/secretlint-rule-pattern
             password: security.identifier.uid(50)
-        }, {...options, patch: true});
+        };
+        if (this.get('status') !== 'inactive') {
+            update.status = 'locked';
+        }
+        return this.save(update, {...options, patch: true});
     },
 
     isInactive: function isInactive() {

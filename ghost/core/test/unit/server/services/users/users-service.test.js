@@ -7,30 +7,35 @@ const Users = require('../../../../../core/server/services/users');
 describe('Users service', function () {
     describe('lockAll', function () {
         function makeUser({email = 'test_email@example.com', status = 'active'} = {}) {
-            const get = sinon.stub();
-            get.withArgs('email').returns(email);
-            get.withArgs('status').returns(status);
-            return {
+            const user = {
+                status,
                 locked: false,
+                passwordRotated: false,
                 lock() {
+                    // Mirror the model: rotate the password on every user,
+                    // transition to `locked` unless already inactive.
+                    this.passwordRotated = true;
+                    if (this.status !== 'inactive') {
+                        this.status = 'locked';
+                    }
                     this.locked = true;
                     return Promise.resolve();
                 },
-                get
+                get(key) {
+                    if (key === 'email') {
+                        return email;
+                    }
+                    if (key === 'status') {
+                        return this.status;
+                    }
+                    return undefined;
+                }
             };
+            return user;
         }
 
         function makeService({users} = {users: [makeUser()]}) {
-            // Stand in for the Bookshelf findAll. Honors the `filter` option
-            // so tests assert on which rows the SQL query returns, not on
-            // what the in-memory loop filters out.
-            const findAll = (options = {}) => {
-                let matching = users;
-                if (options.filter === 'status:-inactive') {
-                    matching = users.filter(u => u.get('status') !== 'inactive');
-                }
-                return Promise.resolve({models: matching});
-            };
+            const findAll = () => Promise.resolve({models: users});
 
             return new Users({
                 dbBackup: {backup: sinon.stub().resolves()},
@@ -80,16 +85,18 @@ describe('Users service', function () {
             assert.equal(result.count, 0);
         });
 
-        it('skips suspended (inactive) users so they remain suspended', async function () {
+        it('rotates passwords on suspended users while preserving suspension', async function () {
             const active = makeUser({email: 'active@example.com', status: 'active'});
             const suspended = makeUser({email: 'suspended@example.com', status: 'inactive'});
             const usersService = makeService({users: [active, suspended]});
 
             const result = await usersService.lockAll({context: {}});
 
-            assert.equal(result.count, 1);
-            assert.equal(active.locked, true);
-            assert.equal(suspended.locked, false, 'suspended users must not be re-locked');
+            assert.equal(result.count, 2);
+            assert.equal(active.status, 'locked', 'active users transition to locked');
+            assert.equal(active.passwordRotated, true);
+            assert.equal(suspended.status, 'inactive', 'suspended users stay suspended');
+            assert.equal(suspended.passwordRotated, true, 'suspended users still get their password rotated so a compromised credential cannot survive a future unsuspend');
         });
 
         it('reuses an outer transaction when one is provided', async function () {

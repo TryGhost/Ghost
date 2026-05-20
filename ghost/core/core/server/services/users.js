@@ -71,10 +71,11 @@ class Users {
      */
     async lockAll(frameOptions) {
         const lockUsers = async (txOptions) => {
-            // Skip suspended users — locking would overwrite their 'inactive'
-            // status with 'locked' and offer them a password-reset path that
-            // suspended users are not supposed to have.
-            const users = await this.models.User.findAll({...txOptions, filter: 'status:-inactive'});
+            // Every staff user has their password rotated. user.lock()
+            // preserves `inactive` status for suspended users so they remain
+            // on the suspended-signin path; everyone else transitions to
+            // `locked` and hits the reset-on-signin flow.
+            const users = await this.models.User.findAll(txOptions);
             for (const user of users.models) {
                 await user.lock(txOptions);
             }
