@@ -21,7 +21,7 @@ describe('Unit: models/invite', function () {
             let roleModel;
             let loadedPermissions;
 
-            before(function () {
+            beforeAll(function () {
                 inviteModel = {};
                 context = {};
                 unsafeAttrs = {role_id: 'role_id'};
