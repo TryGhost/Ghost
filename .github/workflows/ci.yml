@@ -1372,6 +1372,7 @@ jobs:
           TEST_WORKERS_COUNT: 1
           GHOST_E2E_MODE: build
           GHOST_E2E_IMAGE: ${{ steps.load.outputs.image-tag }}
+          GHOST_E2E_ANALYTICS: ${{ matrix.analytics }}
           E2E_PLAYWRIGHT_PROJECTS: ${{ matrix.projects }}
           E2E_SHARD_INDEX: ${{ matrix.shardIndex }}
           E2E_SHARD_TOTAL: ${{ matrix.shardTotal }}
@@ -1384,8 +1385,6 @@ jobs:
 
       - name: Stop E2E infra
         if: always()
-        env:
-          GHOST_E2E_ANALYTICS: ${{ matrix.analytics }}
         run: pnpm --filter @tryghost/e2e infra:down
 
       - name: Upload blob report to GitHub Actions Artifacts
