@@ -1,6 +1,6 @@
 import React from 'react';
 import {Button, SidebarMenuButton, SidebarMenuItem, useSidebar} from '@tryghost/shade/components';
-import {LucideIcon} from '@tryghost/shade/utils';
+import {cn, LucideIcon} from '@tryghost/shade/utils';
 import { useIsActiveLink } from './use-is-active-link';
 
 function NavMenuItem({ children, ...props }: React.ComponentProps<typeof SidebarMenuItem>) {
@@ -153,6 +153,24 @@ function NavMenuLabel({children, ...props}: NavMenuLabelProps) {
     );
 }
 
+type NavSubmenuItemProps = NavMenuLinkProps;
+function NavSubmenuItem({
+    children,
+    className,
+    ...props
+}: NavSubmenuItemProps) {
+    return (
+        <NavMenuItem className="before:absolute before:inset-y-0 before:left-5 before:z-10 before:w-px before:bg-sidebar-accent">
+            <NavMenuItem.Link
+                className={cn('ml-7 w-auto pl-2', className)}
+                {...props}
+            >
+                {children}
+            </NavMenuItem.Link>
+        </NavMenuItem>
+    );
+}
+
 type NavMenuButtonProps = React.ComponentProps<typeof SidebarMenuButton> & {
     onClick?: () => void
 };
@@ -182,9 +200,10 @@ function NavMenuButton({
 
 NavMenuItem.Link = NavMenuLink;
 NavMenuItem.Label = NavMenuLabel;
+NavMenuItem.SubmenuItem = NavSubmenuItem;
 NavMenuItem.Button = NavMenuButton;
 NavMenuItem.Collapsible = NavMenuCollapsible;
 NavMenuItem.CollapsibleItem = NavMenuCollapsibleItem;
 NavMenuItem.CollapsibleMenu = NavMenuCollapsibleMenu;
 
-export { NavMenuItem, NavMenuLink, NavMenuLabel, NavMenuButton }
+export { NavMenuItem, NavMenuLink, NavMenuLabel, NavSubmenuItem, NavMenuButton }

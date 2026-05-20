@@ -116,35 +116,26 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                         </NavMenuItem.CollapsibleItem>
 
                         <NavMenuItem.CollapsibleMenu>
-                            <NavMenuItem>
-                                <NavMenuItem.Link
-                                    className="pl-9"
-                                    to="posts?type=draft"
-                                    isActive={isDraftPostsRouteActive}
-                                >
-                                    <NavMenuItem.Label>Drafts</NavMenuItem.Label>
-                                </NavMenuItem.Link>
-                            </NavMenuItem>
+                            <NavMenuItem.SubmenuItem
+                                to="posts?type=draft"
+                                isActive={isDraftPostsRouteActive}
+                            >
+                                <NavMenuItem.Label>Drafts</NavMenuItem.Label>
+                            </NavMenuItem.SubmenuItem>
 
-                            <NavMenuItem>
-                                <NavMenuItem.Link
-                                    className="pl-9"
-                                    to="posts?type=scheduled"
-                                    isActive={isScheduledPostsRouteActive}
-                                >
-                                    <NavMenuItem.Label>Scheduled</NavMenuItem.Label>
-                                </NavMenuItem.Link>
-                            </NavMenuItem>
+                            <NavMenuItem.SubmenuItem
+                                to="posts?type=scheduled"
+                                isActive={isScheduledPostsRouteActive}
+                            >
+                                <NavMenuItem.Label>Scheduled</NavMenuItem.Label>
+                            </NavMenuItem.SubmenuItem>
 
-                            <NavMenuItem>
-                                <NavMenuItem.Link
-                                    className="pl-9"
-                                    to="posts?type=published"
-                                    isActive={isPublishedPostsRouteActive}
-                                >
-                                    <NavMenuItem.Label>Published</NavMenuItem.Label>
-                                </NavMenuItem.Link>
-                            </NavMenuItem>
+                            <NavMenuItem.SubmenuItem
+                                to="posts?type=published"
+                                isActive={isPublishedPostsRouteActive}
+                            >
+                                <NavMenuItem.Label>Published</NavMenuItem.Label>
+                            </NavMenuItem.SubmenuItem>
 
                             <NavCustomViews />
                         </NavMenuItem.CollapsibleMenu>
