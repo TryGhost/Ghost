@@ -2382,14 +2382,20 @@ describe('Email renderer', function () {
             });
         });
 
-        it('does not encode forward slashes as hex entities in HTML or plaintext', async function () {
+        it('does not entity-encode interpolated values in the t helper', async function () {
             // Refs https://github.com/TryGhost/Ghost/issues/26905
-            // i18next with escapeValue:true encodes / as &#x2F; in interpolated
-            // values, which appear as literal text in plaintext email parts.
+            // The reported symptom is `&#x2F;` appearing in the publication date.
+            // Reproduction: locales like pt-PT format Luxon `month: 'short'` as
+            // `19/03/2026` (numeric, slash-separated). That string flows through
+            // `{{t '{date}' date=...}}` (double-brace). i18next escapes the `/`
+            // to `&#x2F;`; Handlebars then re-escapes the leading `&` to `&amp;`,
+            // leaving `&amp;#x2F;` in the HTML, which renders as visible
+            // `&#x2F;` text in inboxes.
+            customSettings.locale = 'pt-PT';
             const post = createModel(Object.assign({}, basePost, {
                 published_at: new Date(2026, 2, 19),
                 authors: [
-                    createModel({name: 'Author/Name'})
+                    createModel({name: 'Author/Name O\'Brien & Co.'})
                 ]
             }));
             const newsletter = createModel({
@@ -2400,34 +2406,49 @@ describe('Email renderer', function () {
                 show_share_button: true,
                 show_post_title_section: true
             });
-            const segment = null;
-            const options = {};
 
-            const response = await emailRenderer.renderBody(
-                post,
-                newsletter,
-                segment,
-                options
-            );
+            const response = await emailRenderer.renderBody(post, newsletter, null, {});
 
-            // Author name and published date must appear with raw characters
-            // and free of slash-related HTML entities.
-            // Compute the expected date the same way the email renderer does.
-            const {DateTime} = require('luxon');
-            const expectedDate = DateTime.fromJSDate(new Date(2026, 2, 19)).setZone('Etc/UTC').setLocale('en-gb').toLocaleString({
-                year: 'numeric', month: 'short', day: 'numeric'
-            });
-
-            const slashEntities = ['&#x2F;', '&#X2F;', '&#x2f;', '&#47;'];
-            for (const entity of slashEntities) {
+            // Slashes must not be entity-encoded at all (raw `/` is fine in
+            // text). Apostrophes and ampersands must not be double-encoded —
+            // single-encoded forms like `&#39;` and `&amp;` are the normal,
+            // intentional output of the renderer's existing Outlook-compat pass.
+            const forbiddenInHtml = [
+                '&#x2F;', '&#X2F;', '&#x2f;', '&#47;',
+                '&amp;#x2F;', '&amp;#47;',
+                '&amp;#39;', '&amp;#x27;',
+                '&amp;amp;'
+            ];
+            for (const entity of forbiddenInHtml) {
                 assert.equal(response.html.includes(entity), false, `HTML should not contain ${entity}`);
+            }
+
+            // Plaintext should have all entities decoded back to their original
+            // characters, including the slash, apostrophe, and ampersand.
+            const forbiddenInPlaintext = [
+                '&#x2F;', '&#X2F;', '&#x2f;', '&#47;',
+                '&#39;', '&#x27;', '&amp;',
+                '&amp;#x2F;', '&amp;#47;', '&amp;#39;', '&amp;#x27;', '&amp;amp;'
+            ];
+            for (const entity of forbiddenInPlaintext) {
                 assert.equal(response.plaintext.includes(entity), false, `Plaintext should not contain ${entity}`);
             }
 
-            assert.equal(response.html.includes('Author/Name'), true, 'HTML should contain author name with raw slash');
-            assert.equal(response.html.includes(expectedDate), true, 'HTML should contain formatted date');
-            assert.equal(response.plaintext.includes('Author/Name'), true, 'Plaintext should contain author name with raw slash');
-            assert.equal(response.plaintext.includes(expectedDate), true, 'Plaintext should contain formatted date');
+            // Author name is rendered via {{{t 'By {authors}'}}} (triple-brace).
+            // The slash must survive raw in HTML; apostrophe is HTML-encoded as
+            // `&#39;`; ampersand is HTML-encoded as `&amp;`.
+            assert.ok(response.html.includes('Author/Name'), 'HTML should contain raw slash');
+            assert.ok(response.html.includes('O&#39;Brien'), 'HTML should contain single-encoded apostrophe');
+            assert.ok(response.html.includes('&amp; Co.'), 'HTML should contain single-encoded ampersand');
+
+            // Publication date is rendered via {{t '{date}' ...}} (double-brace),
+            // which is the actual symptom path in the issue. With pt-PT locale
+            // Luxon produces `19/03/2026`; the rendered output must show that
+            // verbatim, not `&#x2F;` or `&amp;#x2F;`.
+            assert.ok(response.html.includes('19/03/2026'), 'HTML should contain the literal slash-separated date');
+            assert.ok(response.plaintext.includes('19/03/2026'), 'Plaintext should contain the literal slash-separated date');
+
+            assert.ok(response.plaintext.includes('Author/Name O\'Brien & Co.'), 'Plaintext should fully decode to raw characters');
         });
     });
 
