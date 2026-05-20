@@ -4,7 +4,9 @@ const CommentLike = ghostBookshelf.Model.extend({
     tableName: 'comment_likes',
 
     defaults: function defaults() {
-        return {};
+        return {
+            score: 1
+        };
     },
 
     comment() {

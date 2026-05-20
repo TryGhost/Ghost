@@ -52,6 +52,7 @@ export type CommentLike = {
     id: string;
     comment_id: string;
     member_id: string;
+    score: number;
     created_at: string;
     updated_at: string;
     member?: Member;
@@ -61,6 +62,7 @@ export type CommentDislike = {
     id: string;
     comment_id: string;
     member_id: string;
+    score: number;
     created_at: string;
     updated_at: string;
     member?: Member;

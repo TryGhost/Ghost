@@ -4,23 +4,35 @@ const errors = require('@tryghost/errors');
 const CommentsService = require('../../../../../core/server/services/comments/comments-service');
 
 describe('Comments Service: CommentsService', function () {
+    function voteModel({id, score}) {
+        return {
+            id,
+            get: sinon.stub().withArgs('score').returns(score),
+            destroy: sinon.stub().resolves()
+        };
+    }
+
     function createClassInstance({labs = {commentDislikes: true}, commentsEnabled = 'all'} = {}) {
         const memberModel = {
             id: 'member-id',
             get: sinon.stub().withArgs('status').returns('paid')
         };
         const models = {
+            Base: {
+                transaction: sinon.stub().callsFake(async (callback) => {
+                    return await callback('transaction');
+                })
+            },
             Member: {
                 findOne: sinon.stub().resolves(memberModel)
             },
-            CommentLike: {
-                findOne: sinon.stub().resolves(null),
-                add: sinon.stub().resolves({id: 'like-id'}),
-                destroy: sinon.stub().resolves()
+            Comment: {
+                findPage: sinon.stub().resolves({data: [], meta: {}})
             },
-            CommentDislike: {
-                findOne: sinon.stub().resolves(null),
-                add: sinon.stub().resolves({id: 'dislike-id'}),
+            CommentLike: {
+                findAll: sinon.stub().resolves({models: []}),
+                add: sinon.stub().resolves({id: 'like-id'}),
+                edit: sinon.stub().resolves({id: 'like-id'}),
                 destroy: sinon.stub().resolves()
             }
         };
@@ -48,49 +60,73 @@ describe('Comments Service: CommentsService', function () {
     }
 
     describe('likeComment', function () {
-        it('removes an existing dislike before adding a like', async function () {
+        it('adds a like score when there is no existing vote', async function () {
             const {instance, models} = createClassInstance();
-            models.CommentDislike.findOne.resolves({id: 'dislike-id'});
 
             await instance.likeComment('comment-id', {id: 'member-id'}, {context: {member: {id: 'member-id'}}});
 
-            sinon.assert.calledWith(models.CommentDislike.findOne, {
-                member_id: 'member-id',
-                comment_id: 'comment-id'
-            });
-            sinon.assert.calledWith(models.CommentDislike.destroy, sinon.match({
-                destroyBy: {
-                    member_id: 'member-id',
-                    comment_id: 'comment-id'
-                }
+            sinon.assert.calledWith(models.CommentLike.findAll, sinon.match({
+                filter: 'comment_id:\'comment-id\'+member_id:\'member-id\''
             }));
             sinon.assert.calledWith(models.CommentLike.add, {
                 member_id: 'member-id',
-                comment_id: 'comment-id'
+                comment_id: 'comment-id',
+                score: 1
             });
+        });
+
+        it('replaces duplicate existing votes with one like score', async function () {
+            const {instance, models} = createClassInstance();
+            const votes = [
+                voteModel({id: 'vote-1', score: -1}),
+                voteModel({id: 'vote-2', score: -1}),
+                voteModel({id: 'vote-3', score: 1})
+            ];
+            models.CommentLike.findAll.resolves({models: votes});
+
+            await instance.likeComment('comment-id', {id: 'member-id'}, {context: {member: {id: 'member-id'}}});
+
+            votes.forEach((vote) => {
+                sinon.assert.calledOnce(vote.destroy);
+                sinon.assert.calledWith(vote.destroy, sinon.match({
+                    transacting: 'transaction'
+                }));
+            });
+            sinon.assert.calledWith(models.CommentLike.add, {
+                member_id: 'member-id',
+                comment_id: 'comment-id',
+                score: 1
+            });
+        });
+
+        it('rejects one existing like without rewriting the row', async function () {
+            const {instance, models} = createClassInstance();
+            const vote = voteModel({id: 'vote-1', score: 1});
+            models.CommentLike.findAll.resolves({models: [vote]});
+
+            await assert.rejects(
+                () => instance.likeComment('comment-id', {id: 'member-id'}, {context: {member: {id: 'member-id'}}}),
+                errors.BadRequestError
+            );
+
+            sinon.assert.notCalled(vote.destroy);
+            sinon.assert.notCalled(models.CommentLike.add);
         });
     });
 
     describe('dislikeComment', function () {
-        it('removes an existing like before adding a dislike', async function () {
+        it('replaces an existing like score with a dislike score', async function () {
             const {instance, models} = createClassInstance();
-            models.CommentLike.findOne.resolves({id: 'like-id'});
+            const vote = voteModel({id: 'vote-id', score: 1});
+            models.CommentLike.findAll.resolves({models: [vote]});
 
             await instance.dislikeComment('comment-id', {id: 'member-id'}, {context: {member: {id: 'member-id'}}});
 
-            sinon.assert.calledWith(models.CommentLike.findOne, {
+            sinon.assert.calledOnce(vote.destroy);
+            sinon.assert.calledWith(models.CommentLike.add, {
                 member_id: 'member-id',
-                comment_id: 'comment-id'
-            });
-            sinon.assert.calledWith(models.CommentLike.destroy, sinon.match({
-                destroyBy: {
-                    member_id: 'member-id',
-                    comment_id: 'comment-id'
-                }
-            }));
-            sinon.assert.calledWith(models.CommentDislike.add, {
-                member_id: 'member-id',
-                comment_id: 'comment-id'
+                comment_id: 'comment-id',
+                score: -1
             });
         });
 
@@ -103,7 +139,45 @@ describe('Comments Service: CommentsService', function () {
             );
 
             sinon.assert.notCalled(models.Member.findOne);
-            sinon.assert.notCalled(models.CommentDislike.add);
+            sinon.assert.notCalled(models.CommentLike.add);
+        });
+    });
+
+    describe('unlikeComment', function () {
+        it('removes every positive duplicate vote', async function () {
+            const {instance, models} = createClassInstance();
+            const positiveVotes = [
+                voteModel({id: 'vote-1', score: 1}),
+                voteModel({id: 'vote-2', score: 1})
+            ];
+            const negativeVote = voteModel({id: 'vote-3', score: -1});
+            models.CommentLike.findAll.resolves({models: [...positiveVotes, negativeVote]});
+
+            await instance.unlikeComment('comment-id', {id: 'member-id'});
+
+            positiveVotes.forEach((vote) => {
+                sinon.assert.calledOnce(vote.destroy);
+            });
+            sinon.assert.notCalled(negativeVote.destroy);
+        });
+    });
+
+    describe('undislikeComment', function () {
+        it('removes every negative duplicate vote', async function () {
+            const {instance, models} = createClassInstance();
+            const positiveVote = voteModel({id: 'vote-1', score: 1});
+            const negativeVotes = [
+                voteModel({id: 'vote-2', score: -1}),
+                voteModel({id: 'vote-3', score: -1})
+            ];
+            models.CommentLike.findAll.resolves({models: [positiveVote, ...negativeVotes]});
+
+            await instance.undislikeComment('comment-id', {id: 'member-id'});
+
+            sinon.assert.notCalled(positiveVote.destroy);
+            negativeVotes.forEach((vote) => {
+                sinon.assert.calledOnce(vote.destroy);
+            });
         });
     });
 
@@ -113,7 +187,16 @@ describe('Comments Service: CommentsService', function () {
 
             assert.deepEqual(
                 instance.normalizeDislikeFlaggedOptions({order: 'count__net_score desc, created_at desc'}),
-                {order: 'count__likes desc, created_at desc'}
+                {order: 'count__likes desc, created_at desc', commentDislikesEnabled: false}
+            );
+        });
+
+        it('rewrites dislike count ordering to likes ordering when the flag is off', function () {
+            const {instance} = createClassInstance({labs: {commentDislikes: false}});
+
+            assert.deepEqual(
+                instance.normalizeDislikeFlaggedOptions({order: 'count__dislikes desc, created_at desc'}),
+                {order: 'count__likes desc, created_at desc', commentDislikesEnabled: false}
             );
         });
 
@@ -121,7 +204,23 @@ describe('Comments Service: CommentsService', function () {
             const {instance} = createClassInstance();
             const options = {order: 'count__net_score desc, created_at desc'};
 
-            assert.equal(instance.normalizeDislikeFlaggedOptions(options), options);
+            assert.deepEqual(instance.normalizeDislikeFlaggedOptions(options), {
+                order: 'count__net_score desc, created_at desc',
+                commentDislikesEnabled: true
+            });
+        });
+    });
+
+    describe('getComments', function () {
+        it('marks comment dislike relations as disabled when the flag is off', async function () {
+            const {instance, models} = createClassInstance({labs: {commentDislikes: false}});
+
+            await instance.getComments({order: 'count__net_score desc, created_at desc'});
+
+            sinon.assert.calledWith(models.Comment.findPage, sinon.match({
+                order: 'count__likes desc, created_at desc',
+                commentDislikesEnabled: false
+            }));
         });
     });
 });

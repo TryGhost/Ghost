@@ -50,10 +50,6 @@ const Comment = ghostBookshelf.Model.extend({
         return this.hasMany('CommentLike', 'comment_id');
     },
 
-    dislikes() {
-        return this.hasMany('CommentDislike', 'comment_id');
-    },
-
     replies() {
         return this.hasMany('Comment', 'parent_id', 'id')
             .query('orderBy', 'created_at', 'ASC');
@@ -136,7 +132,6 @@ const Comment = ghostBookshelf.Model.extend({
     orderAttributes: function orderAttributes() {
         let keys = ghostBookshelf.Model.prototype.orderAttributes.call(this, arguments);
         keys.push('count__likes');
-        keys.push('count__dislikes');
         keys.push('count__net_score');
         keys.push('count__reports');
         return keys;
@@ -207,11 +202,19 @@ const Comment = ghostBookshelf.Model.extend({
         // our bookshelf eager-load plugin doesn't use the `withRelated` options
         if (['findAll', 'findPage', 'edit', 'findOne', 'destroy'].indexOf(methodName) !== -1) {
             if (!options.withRelated || options.withRelated.length === 0) {
+                const reactionRelations = ['count.likes', 'count.liked'];
+                const replyReactionRelations = ['replies.count.likes', 'replies.count.liked'];
+
+                if (options.commentDislikesEnabled === true) {
+                    reactionRelations.push('count.dislikes', 'count.disliked', 'count.net_score');
+                    replyReactionRelations.push('replies.count.dislikes', 'replies.count.disliked');
+                }
+
                 if (options.parentId) {
                     // Do not include replies for replies
                     options.withRelated = [
                         // Relations
-                        'in_reply_to', 'member', 'count.direct_replies', 'count.likes', 'count.dislikes', 'count.liked', 'count.disliked', 'count.net_score'
+                        'in_reply_to', 'member', 'count.direct_replies', ...reactionRelations
                     ];
 
                     // Add count.reports for admin requests only
@@ -221,9 +224,9 @@ const Comment = ghostBookshelf.Model.extend({
                 } else {
                     options.withRelated = [
                         // Relations
-                        'member', 'in_reply_to', 'count.replies', 'count.direct_replies', 'count.likes', 'count.dislikes', 'count.liked', 'count.disliked', 'count.net_score',
+                        'member', 'in_reply_to', 'count.replies', 'count.direct_replies', ...reactionRelations,
                         'replies', 'replies.member', 'replies.in_reply_to',
-                        'replies.count.direct_replies', 'replies.count.likes', 'replies.count.dislikes', 'replies.count.liked', 'replies.count.disliked'
+                        'replies.count.direct_replies', ...replyReactionRelations
                     ];
 
                     // Add count.reports for admin requests only
@@ -319,6 +322,7 @@ const Comment = ghostBookshelf.Model.extend({
                     qb.count('comment_likes.id')
                         .from('comment_likes')
                         .whereRaw('comment_likes.comment_id = comments.id')
+                        .where('comment_likes.score', 1)
                         .as('count__likes');
                 });
             },
@@ -329,6 +333,7 @@ const Comment = ghostBookshelf.Model.extend({
                             .from('comment_likes')
                             .whereRaw('comment_likes.comment_id = comments.id')
                             .where('comment_likes.member_id', options.context.member.id)
+                            .where('comment_likes.score', 1)
                             .as('count__liked');
                         return;
                     }
@@ -339,19 +344,21 @@ const Comment = ghostBookshelf.Model.extend({
             },
             dislikes(modelOrCollection) {
                 modelOrCollection.query('columns', 'comments.*', (qb) => {
-                    qb.count('comment_dislikes.id')
-                        .from('comment_dislikes')
-                        .whereRaw('comment_dislikes.comment_id = comments.id')
+                    qb.count('comment_likes.id')
+                        .from('comment_likes')
+                        .whereRaw('comment_likes.comment_id = comments.id')
+                        .where('comment_likes.score', -1)
                         .as('count__dislikes');
                 });
             },
             disliked(modelOrCollection, options) {
                 modelOrCollection.query('columns', 'comments.*', (qb) => {
                     if (options.context && options.context.member && options.context.member.id) {
-                        qb.count('comment_dislikes.id')
-                            .from('comment_dislikes')
-                            .whereRaw('comment_dislikes.comment_id = comments.id')
-                            .where('comment_dislikes.member_id', options.context.member.id)
+                        qb.count('comment_likes.id')
+                            .from('comment_likes')
+                            .whereRaw('comment_likes.comment_id = comments.id')
+                            .where('comment_likes.member_id', options.context.member.id)
+                            .where('comment_likes.score', -1)
                             .as('count__disliked');
                         return;
                     }
@@ -362,9 +369,9 @@ const Comment = ghostBookshelf.Model.extend({
             },
             net_score(modelOrCollection) {
                 modelOrCollection.query('columns', 'comments.*', ghostBookshelf.knex.raw(`(
-                    (SELECT COUNT(*) FROM comment_likes WHERE comment_likes.comment_id = comments.id)
-                    -
-                    (SELECT COUNT(*) FROM comment_dislikes WHERE comment_dislikes.comment_id = comments.id)
+                    SELECT COALESCE(SUM(comment_likes.score), 0)
+                    FROM comment_likes
+                    WHERE comment_likes.comment_id = comments.id
                 ) as count__net_score`));
             },
             reports(modelOrCollection) {

@@ -2044,6 +2044,7 @@ describe(`Admin Comments API`, function () {
             id: anyObjectId,
             comment_id: anyObjectId,
             member_id: anyObjectId,
+            score: 1,
             created_at: anyISODateTime,
             updated_at: anyISODateTime,
             member: {
@@ -2073,6 +2074,12 @@ describe(`Admin Comments API`, function () {
                 comment_id: comment.id,
                 member_id: fixtureManager.get('members', 2).id,
                 created_at: new Date('2023-01-01')
+            });
+            await models.CommentLike.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 3).id,
+                score: -1,
+                created_at: new Date('2023-12-01')
             });
 
             await adminApi.get(`/comments/${comment.id}/likes/`)
@@ -2246,6 +2253,58 @@ describe(`Admin Comments API`, function () {
                     errors: [{
                         id: anyUuid
                     }]
+                });
+        });
+    });
+
+    describe('Comment Dislikes', function () {
+        const dislikeMatcher = {
+            id: anyObjectId,
+            comment_id: anyObjectId,
+            member_id: anyObjectId,
+            score: -1,
+            created_at: anyISODateTime,
+            updated_at: anyISODateTime,
+            member: {
+                id: anyObjectId,
+                uuid: anyUuid,
+                created_at: anyISODateTime,
+                updated_at: anyISODateTime,
+                transient_id: anyString,
+                last_seen_at: nullable(anyISODateTime),
+                last_commented_at: nullable(anyISODateTime)
+            }
+        };
+
+        it('Can browse comment dislikes', async function () {
+            const comment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Disliked comment</p>'
+            });
+
+            await models.CommentLike.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 1).id,
+                score: -1,
+                created_at: new Date('2023-06-01')
+            });
+            await models.CommentLike.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 2).id,
+                score: -1,
+                created_at: new Date('2023-01-01')
+            });
+            await models.CommentLike.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 3).id,
+                score: 1,
+                created_at: new Date('2023-12-01')
+            });
+
+            await adminApi.get(`/comments/${comment.id}/dislikes/`)
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    comment_dislikes: [dislikeMatcher, dislikeMatcher]
                 });
         });
     });

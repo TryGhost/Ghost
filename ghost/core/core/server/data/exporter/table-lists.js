@@ -42,7 +42,6 @@ const BACKUP_TABLES = [
     'members_newsletters',
     'mentions',
     'comments',
-    'comment_dislikes',
     'comment_likes',
     'comment_reports',
     'jobs',
