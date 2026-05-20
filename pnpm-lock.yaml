@@ -2429,8 +2429,8 @@ importers:
         specifier: 2.0.2
         version: 2.0.2
       human-number:
-        specifier: 2.0.10
-        version: 2.0.10
+        specifier: 2.0.12
+        version: 2.0.12
       iconv-lite:
         specifier: 0.7.2
         version: 0.7.2
@@ -14781,8 +14781,8 @@ packages:
   human-interval@2.0.1:
     resolution: {integrity: sha512-r4Aotzf+OtKIGQCB3odUowy4GfUDTy3aTWTfLd7ZF2gBCy3XW3v/dJLRefZnOFFnjqs5B1TypvS8WarpBkYUNQ==}
 
-  human-number@2.0.10:
-    resolution: {integrity: sha512-RHuagJOf+jR/6FkLzz8ZugPUR4KGbqJOWdsYUOqa7j/M542M0gVe4a+TJNVQgqaAMTKX9wyvv/xuiAII0Kq6Iw==}
+  human-number@2.0.12:
+    resolution: {integrity: sha512-uL2Ahzke1TGVXsFcIu1olVplLvFHQJg7cUvGOBbt37ZF3qOfv/Mt9ewI1FHNbHMyEe45yW2m0Q3WL9e1rjlp2Q==}
     engines: {node: '>= 8'}
 
   human-signals@1.1.1:
@@ -38143,7 +38143,7 @@ snapshots:
     dependencies:
       numbered: 1.1.0
 
-  human-number@2.0.10: {}
+  human-number@2.0.12: {}
 
   human-signals@1.1.1: {}
 
