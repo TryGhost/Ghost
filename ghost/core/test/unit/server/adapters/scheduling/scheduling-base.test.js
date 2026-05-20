@@ -1,4 +1,6 @@
 const assert = require('node:assert/strict');
+const sinon = require('sinon');
+const logging = require('@tryghost/logging');
 const SchedulingBase = require('../../../../../core/server/adapters/scheduling/scheduling-base');
 
 describe('SchedulingBase', function () {
@@ -35,13 +37,49 @@ describe('SchedulingBase', function () {
             base.register({rescheduleAll: async () => calls.push('b')});
             base.register({rescheduleAll: async () => calls.push('c')});
 
-            const results = await base.rescheduleAll({});
+            const errorStub = sinon.stub(logging, 'error');
+            try {
+                const results = await base.rescheduleAll({});
 
-            assert.equal(results.length, 3);
-            assert.equal(results[0].status, 'rejected');
-            assert.equal(results[1].status, 'fulfilled');
-            assert.equal(results[2].status, 'fulfilled');
-            assert.deepEqual(calls, ['b', 'c']);
+                assert.equal(results.length, 3);
+                assert.equal(results[0].status, 'rejected');
+                assert.equal(results[1].status, 'fulfilled');
+                assert.equal(results[2].status, 'fulfilled');
+                assert.deepEqual(calls, ['b', 'c']);
+            } finally {
+                errorStub.restore();
+            }
+        });
+
+        it('logs each rejection with the rescheduler class name', async function () {
+            const base = new SchedulingBase();
+
+            // Named classes so constructor.name reflects them in the log payload.
+            class PostScheduling {
+                async rescheduleAll() {
+                    throw new Error('post failed');
+                }
+            }
+            class AutomationsService {
+                async rescheduleAll() {}
+            }
+
+            base.register(new PostScheduling());
+            base.register(new AutomationsService());
+
+            const errorStub = sinon.stub(logging, 'error');
+            try {
+                await base.rescheduleAll({});
+
+                assert.equal(errorStub.callCount, 1, 'only the failing rescheduler is logged');
+                const [meta, message] = errorStub.firstCall.args;
+                assert.equal(meta.event.name, 'scheduler.reschedule_all.failed');
+                assert.equal(meta.rescheduler, 'PostScheduling');
+                assert.equal(meta.err.message, 'post failed');
+                assert.equal(message, 'Rescheduler failed');
+            } finally {
+                errorStub.restore();
+            }
         });
 
         it('is a no-op when nothing has registered', async function () {

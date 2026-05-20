@@ -1,3 +1,5 @@
+const logging = require('@tryghost/logging');
+
 function SchedulingBase() {
     Object.defineProperty(this, 'requiredFns', {
         value: ['schedule', 'unschedule', 'run'],
@@ -27,10 +29,21 @@ SchedulingBase.prototype.register = function (rescheduler) {
  * @param {{previousKey?: {id: string; secret: string}}} [opts]
  * @returns {Promise<PromiseSettledResult<void>[]>}
  */
-SchedulingBase.prototype.rescheduleAll = function (opts = {}) {
-    return Promise.allSettled(
-        Array.from(this._reschedulers, r => r.rescheduleAll(opts))
+SchedulingBase.prototype.rescheduleAll = async function (opts = {}) {
+    const reschedulers = Array.from(this._reschedulers);
+    const results = await Promise.allSettled(
+        reschedulers.map(r => r.rescheduleAll(opts))
     );
+    results.forEach((result, i) => {
+        if (result.status === 'rejected') {
+            logging.error({
+                event: {name: 'scheduler.reschedule_all.failed'},
+                err: result.reason,
+                rescheduler: reschedulers[i].constructor?.name ?? 'unknown'
+            }, 'Rescheduler failed');
+        }
+    });
+    return results;
 };
 
 module.exports = SchedulingBase;
