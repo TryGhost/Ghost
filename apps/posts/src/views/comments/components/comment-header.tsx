@@ -55,7 +55,7 @@ export function CommentHeader({
     return (
         <div className={cn('flex items-baseline gap-4', className)}>
             <div className={cn(
-                'mb-1 flex min-w-0 items-center gap-x-1 text-sm',
+                'flex min-w-0 items-center gap-x-1',
                 isHidden && 'opacity-50'
             )}>
                 <div className='whitespace-nowrap'>

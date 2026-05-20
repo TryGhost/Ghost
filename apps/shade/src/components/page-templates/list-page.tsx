@@ -26,7 +26,7 @@ function ListPageHeader({className, children, ...rest}: ListPageProps) {
                 className
             )}
             data-list-page='header'
-            gap='lg'
+            gap='xl'
             {...rest}
         >
             {children}

@@ -114,7 +114,7 @@ function CommentsList({
     });
 
     return (
-        <div ref={parentRef} className="overflow-hidden">
+        <div ref={parentRef} className="overflow-hidden border-t">
             <div
                 className="flex flex-col"
                 data-testid="comments-list"
@@ -144,45 +144,47 @@ function CommentsList({
                             >
                                 <div className='flex items-start gap-3'>
                                     <Avatar
-                                        className={cn('size-6 md:size-8', item.status === 'hidden' && 'opacity-50')}
+                                        className={cn('mt-0.5 size-6 md:size-8', item.status === 'hidden' && 'opacity-50')}
                                         email={item.member?.email}
                                         name={item.member?.name}
                                         src={item.member?.avatar_image}
                                     />
 
-                                    <div className='flex min-w-0 flex-col'>
-                                        <CommentHeader
-                                            canComment={item.member?.can_comment}
-                                            createdAt={item.created_at}
-                                            isHidden={item.status === 'hidden'}
-                                            isPinned={commentsPinningEnabled && item.pinned}
-                                            memberId={item.member?.id}
-                                            memberName={item.member?.name}
-                                            postTitle={item.post?.title}
-                                            onAuthorClick={item.member?.id ? () => onAddFilter('author', item.member!.id) : undefined}
-                                            onPostClick={item.post?.id ? () => onAddFilter('post', item.post!.id) : undefined}
-                                            onUnpinClick={commentsPinningEnabled ? () => unpinComment({id: item.id}) : undefined}
-                                        />
+                                    <div className='flex min-w-0 flex-col gap-3'>
+                                        <div>
+                                            <CommentHeader
+                                                canComment={item.member?.can_comment}
+                                                createdAt={item.created_at}
+                                                isHidden={item.status === 'hidden'}
+                                                isPinned={commentsPinningEnabled && item.pinned}
+                                                memberId={item.member?.id}
+                                                memberName={item.member?.name}
+                                                postTitle={item.post?.title}
+                                                onAuthorClick={item.member?.id ? () => onAddFilter('author', item.member!.id) : undefined}
+                                                onPostClick={item.post?.id ? () => onAddFilter('post', item.post!.id) : undefined}
+                                                onUnpinClick={commentsPinningEnabled ? () => unpinComment({id: item.id}) : undefined}
+                                            />
 
-                                        {item.in_reply_to_snippet && (
-                                            <div className={`mb-1 line-clamp-1 max-w-3xl text-sm ${item.status === 'hidden' && 'opacity-50'}`}>
-                                                <span className="text-muted-foreground">Replied to:</span>&nbsp;
-                                                <Link
-                                                    className="text-sm font-normal text-muted-foreground hover:text-foreground"
-                                                    data-testid="replied-to-link"
-                                                    to={buildThreadLink(searchParams, item.in_reply_to_id || item.parent_id) || ''}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                    }}
-                                                >
-                                                    {item.in_reply_to_snippet}
-                                                </Link>
-                                            </div>
-                                        )}
+                                            {item.in_reply_to_snippet && (
+                                                <div className={`mb-1 line-clamp-1 max-w-3xl ${item.status === 'hidden' && 'opacity-50'}`}>
+                                                    <span className="text-muted-foreground">Replied to:</span>&nbsp;
+                                                    <Link
+                                                        className="text-sm font-normal text-muted-foreground hover:text-foreground"
+                                                        data-testid="replied-to-link"
+                                                        to={buildThreadLink(searchParams, item.in_reply_to_id || item.parent_id) || ''}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                        }}
+                                                    >
+                                                        {item.in_reply_to_snippet}
+                                                    </Link>
+                                                </div>
+                                            )}
+                                        </div>
 
                                         <CommentContent item={item} />
 
-                                        <div className="mt-4 flex flex-row flex-nowrap items-center gap-3">
+                                        <div className="flex flex-row flex-nowrap items-center gap-3">
                                             {item.status === 'published' && (
                                                 <Button className='text-foreground' size="sm" variant="outline" onClick={() => hideComment({id: item.id})}>
                                                     <LucideIcon.EyeOff/>
