@@ -193,6 +193,11 @@
             "defaultValue": "[{\"label\":\"Sign up\",\"url\":\"#/portal/\"}]",
             "type": "array"
         },
+        "llms_enabled": {
+            "defaultValue": "true",
+            "validations": {},
+            "type": "boolean"
+        },
         "meta_title": {
             "defaultValue": null,
             "validations": {
