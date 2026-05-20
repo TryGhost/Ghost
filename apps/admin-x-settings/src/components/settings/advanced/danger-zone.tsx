@@ -2,6 +2,7 @@ import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import {Button, ConfirmationModal, ListItem, SettingGroupHeader, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useDeleteAllContent} from '@tryghost/admin-x-framework/api/db';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -66,7 +67,7 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         type: 'success'
                     });
                     modal?.remove();
-                    window.location.assign('/ghost/signin/');
+                    window.location.href = getGhostPaths().adminRoot;
                 } catch (e) {
                     handleError(e);
                 }

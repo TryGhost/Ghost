@@ -42,7 +42,6 @@ test.describe('Ghost Admin - Danger Zone security actions', () => {
         await settingsPage.dangerZoneSection.openResetAuthModal();
         await settingsPage.dangerZoneSection.resetAuthOkButton.click();
 
-        // The handler redirects to /ghost/signin/ on success.
         await page.waitForURL(/\/ghost\/(#\/)?signin\/?/, {timeout: 15000});
 
         // Old credentials must now be rejected — the owner is locked.
