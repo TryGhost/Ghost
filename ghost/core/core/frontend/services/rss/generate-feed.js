@@ -70,6 +70,7 @@ const generateItem = function generateItem(post) {
  *
  * @param {string} baseUrl
  * @param {{title, description, safeVersion, posts}} data
+ * @returns {string}
  */
 const generateFeed = function generateFeed(baseUrl, data) {
     const feed = new RSS({
@@ -86,14 +87,12 @@ const generateFeed = function generateFeed(baseUrl, data) {
         }
     });
 
-    return data.posts.reduce((feedPromise, post) => {
-        return feedPromise.then(() => {
-            const item = generateItem(post);
-            return feed.item(item);
-        });
-    }, Promise.resolve()).then(() => {
-        return feed.xml();
-    });
+    for (const post of data.posts) {
+        const item = generateItem(post);
+        feed.item(item);
+    }
+
+    return feed.xml();
 };
 
 module.exports = generateFeed;
