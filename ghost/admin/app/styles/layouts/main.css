@@ -223,12 +223,11 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     display: flex;
     align-items: center;
     flex-shrink: 0;
-    height: 34px;
-    color: var(--midgrey-l2);
-    font-size: 1.3rem;
-    font-weight: 500;
-    line-height: 34px;
-    letter-spacing: .2px;
+    height: 32px;
+    color: var(--darkgrey);
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 32px;
     background: none;
     white-space: nowrap;
 }
@@ -238,8 +237,12 @@ body:not(.gh-body-fullscreen) .gh-viewport {
 }
 
 .gh-canvas-header .gh-canvas-breadcrumb a {
-    color: var(--darkgrey);
+    color: var(--midgrey-l2);
     line-height: 24px;
+}
+
+.gh-canvas-header .gh-canvas-breadcrumb a:hover {
+    color: var(--darkgrey);
 }
 
 .gh-canvas-header .gh-canvas-breadcrumb svg {
@@ -567,8 +570,7 @@ body:not(.gh-body-fullscreen) .gh-viewport {
 
 /* Canvas */
 .gh-canvas-title-container {
-    display: flex;
-    flex-direction: column;
+    display: block;
 }
 
 .gh-canvas-title {
@@ -584,7 +586,7 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     font-weight: 700;
     letter-spacing: -0.02em;
     /* match button height to avoid jump on navigation between screens*/
-    min-height: 35px;
+    min-height: 32px;
     color: var(--black);
 }
 
