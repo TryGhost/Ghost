@@ -1,6 +1,7 @@
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
+import useStaffUsers from '../../../hooks/use-staff-users';
 import {Button, ConfirmationModal, ListItem, SettingGroupHeader, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useDeleteAllContent} from '@tryghost/admin-x-framework/api/db';
@@ -15,8 +16,15 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const client = useQueryClient();
     const handleError = useHandleError();
     const {config} = useGlobalData();
+    const {totalUsers} = useStaffUsers();
 
     const resetAuthEnabled = Boolean(config?.labs?.dangerZoneResetAuth);
+
+    const resetAuthStaffSentence = totalUsers === 1
+        ? 'You will be signed out and must reset your password before signing back in.'
+        : totalUsers > 1
+            ? `All ${totalUsers} staff users, including you, will be signed out and must reset their password before signing back in.`
+            : 'All staff users, including you, will be signed out and must reset their password before signing back in.';
 
     const handleDeleteAllContent = () => {
         NiceModal.show(ConfirmationModal, {
@@ -49,7 +57,7 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         This rotates every API key on your site. Any integration using one will stop working until you reconfigure it with the new key from <strong>Settings → Advanced → Integrations</strong>.
                     </p>
                     <p>
-                        Every staff user gets signed out, including you. You&apos;ll all need to reset your passwords before signing back in. Members aren&apos;t affected.
+                        {resetAuthStaffSentence} Your members aren&apos;t affected.
                     </p>
                 </>
             ),
@@ -88,7 +96,7 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 <ListItem
                     action={<Button aria-label='Delete all content' color='red' label='Delete' onClick={handleDeleteAllContent} />}
                     bgOnHover={false}
-                    detail='Permanently delete all posts and tags from the database — a hard reset of your content.'
+                    detail='Permanently delete all posts and tags from the database.'
                     testId='delete-all-content'
                     title='Delete all content'
                 />
