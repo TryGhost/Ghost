@@ -116,6 +116,7 @@ fieldset[disabled] .gh-btn {
     color: #fff;
     fill: #fff;
     background: var(--green);
+    border-color: transparent;
 }
 
 .gh-btn-green:hover {
