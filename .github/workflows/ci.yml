@@ -1563,6 +1563,32 @@ jobs:
       - name: Build the package
         run: pnpm nx build ${{ matrix.package_name }}
 
+      - name: Verify no unresolved catalog refs in the package
+        working-directory: ${{ matrix.package_path }}
+        run: |
+          # The public @tryghost/* apps carry catalog:/workspace: refs that
+          # must resolve to real versions before publishing. pnpm pack rewrites
+          # them exactly as pnpm publish does, so packing and inspecting the
+          # manifest here catches an unresolved ref on the PR, before
+          # publish_packages (which needs this job) can ship it to npm.
+          pack_dir="$RUNNER_TEMP/catalog-check"
+          mkdir -p "$pack_dir"
+          pnpm pack --pack-destination "$pack_dir"
+          tarball=$(ls "$pack_dir"/*.tgz)
+          leaked=$(tar -xzOf "$tarball" package/package.json | jq -r '
+            [.dependencies, .devDependencies, .peerDependencies, .optionalDependencies]
+            | map(. // {} | to_entries) | add
+            | .[]
+            | select(.value | test("^(catalog:|workspace:|link:)"))
+            | "  \(.key): \(.value)"
+          ')
+          if [ -n "$leaked" ]; then
+            echo "::error::${{ matrix.package_name }} would publish unresolved protocol references:"
+            echo "$leaked"
+            exit 1
+          fi
+          echo "✓ No catalog:/workspace:/link: references in the packed manifest"
+
   # Publishes @tryghost/* public apps to npm via OIDC trusted publishing.
   # Runs only on push-to-main — never on pull_request — so the `id-token: write`
   # permission is never exposed to PR-controlled code (ref: ONC-1677).
