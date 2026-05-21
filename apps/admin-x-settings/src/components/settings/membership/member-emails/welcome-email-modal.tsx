@@ -37,11 +37,11 @@ const EmailPreviewModalContent = React.forwardRef<
         className={cn(
             'flex h-full w-full flex-col gap-0 overflow-hidden rounded-xl p-0',
             isEditMode ? 'bg-white' : 'bg-gray-100',
-            'dark:bg-gray-975',
+            'dark:bg-gray-950',
             className
         )}
     >
-        <div className="sticky top-0 grid shrink-0 grid-cols-[1fr_auto_1fr] items-center border-b border-gray-200 bg-white px-5 py-3 dark:border-gray-900 dark:bg-gray-975">
+        <div className="sticky top-0 grid shrink-0 grid-cols-[1fr_auto_1fr] items-center border-b border-gray-200 bg-white px-5 py-3 dark:border-gray-900 dark:bg-gray-950">
             <h3 className="justify-self-start text-xl font-semibold">
                 {title}
             </h3>
@@ -66,7 +66,7 @@ interface EmailPreviewEmailHeaderProps {
 
 const EmailPreviewEmailHeader: React.FC<EmailPreviewEmailHeaderProps> = ({children, className}) => (
     <div className={cn(
-        'relative z-20 isolate mx-auto w-full max-w-[780px] rounded-t-lg border border-b-0 border-gray-200 bg-white px-6 py-4 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none dark:border-grey-900 dark:bg-grey-975',
+        'relative z-20 isolate mx-auto w-full max-w-[780px] rounded-t-lg border border-b-0 border-gray-200 bg-white px-6 py-4 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none dark:border-grey-900 dark:bg-grey-950',
         className
     )}>
         {children}
@@ -306,7 +306,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                         </EmailPreviewEmailHeader>
                     )}
                     <EmailPreviewBody className={cn(
-                        mode === 'preview' && 'shadow-sm bg-white dark:bg-grey-975',
+                        mode === 'preview' && 'shadow-sm bg-white dark:bg-grey-950',
                         mode === 'edit' && 'px-6',
                         mode === 'edit' && 'rounded-lg',
                         mode === 'edit' && errors.lexical && 'border border-red-500'

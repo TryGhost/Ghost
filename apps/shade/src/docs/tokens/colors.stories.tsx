@@ -1,6 +1,24 @@
 import type {Meta, StoryObj} from '@storybook/react-vite';
 import {ColorPalette, ColorRow} from '../showcase/color-swatch';
 
+const rawPalette = (cssVars: string[]) => cssVars.map(cssVar => ({
+    name: cssVar.replace(/^--color-[a-z]+-/, ''),
+    cssVar
+}));
+
+const rawPalettes = {
+    gray: rawPalette(['--color-gray-50', '--color-gray-100', '--color-gray-200', '--color-gray-300', '--color-gray-400', '--color-gray-500', '--color-gray-600', '--color-gray-700', '--color-gray-800', '--color-gray-900', '--color-gray-950']),
+    grey: rawPalette(['--color-grey-50', '--color-grey-100', '--color-grey-200', '--color-grey-300', '--color-grey-400', '--color-grey-500', '--color-grey-600', '--color-grey-700', '--color-grey-800', '--color-grey-900', '--color-grey-950']),
+    green: rawPalette(['--color-green-50', '--color-green-100', '--color-green-200', '--color-green-300', '--color-green-400', '--color-green-500', '--color-green-600', '--color-green-700', '--color-green-800', '--color-green-900', '--color-green-950']),
+    blue: rawPalette(['--color-blue-50', '--color-blue-100', '--color-blue-200', '--color-blue-300', '--color-blue-400', '--color-blue-500', '--color-blue-600', '--color-blue-700', '--color-blue-800', '--color-blue-900', '--color-blue-950']),
+    purple: rawPalette(['--color-purple-50', '--color-purple-100', '--color-purple-200', '--color-purple-300', '--color-purple-400', '--color-purple-500', '--color-purple-600', '--color-purple-700', '--color-purple-800', '--color-purple-900', '--color-purple-950']),
+    pink: rawPalette(['--color-pink-50', '--color-pink-100', '--color-pink-200', '--color-pink-300', '--color-pink-400', '--color-pink-500', '--color-pink-600', '--color-pink-700', '--color-pink-800', '--color-pink-900', '--color-pink-950']),
+    red: rawPalette(['--color-red-50', '--color-red-100', '--color-red-200', '--color-red-300', '--color-red-400', '--color-red-500', '--color-red-600', '--color-red-700', '--color-red-800', '--color-red-900', '--color-red-950']),
+    orange: rawPalette(['--color-orange-50', '--color-orange-100', '--color-orange-200', '--color-orange-300', '--color-orange-400', '--color-orange-500', '--color-orange-600', '--color-orange-700', '--color-orange-800', '--color-orange-900', '--color-orange-950']),
+    yellow: rawPalette(['--color-yellow-50', '--color-yellow-100', '--color-yellow-200', '--color-yellow-300', '--color-yellow-400', '--color-yellow-500', '--color-yellow-600', '--color-yellow-700', '--color-yellow-800', '--color-yellow-900', '--color-yellow-950']),
+    lime: rawPalette(['--color-lime-50', '--color-lime-100', '--color-lime-200', '--color-lime-300', '--color-lime-400', '--color-lime-500', '--color-lime-600', '--color-lime-700', '--color-lime-800', '--color-lime-900', '--color-lime-950'])
+};
+
 const meta = {
     title: 'Tokens / Colors',
     tags: ['autodocs'],
@@ -129,98 +147,72 @@ export const Chart: Story = {
 
 export const RawGray: Story = {
     render: () => (
-        <ColorRow
-            swatches={[
-                {name: '50', cssVar: '--color-gray-50'},
-                {name: '75', cssVar: '--color-gray-75'},
-                {name: '100', cssVar: '--color-gray-100'},
-                {name: '150', cssVar: '--color-gray-150'},
-                {name: '200', cssVar: '--color-gray-200'},
-                {name: '250', cssVar: '--color-gray-250'},
-                {name: '300', cssVar: '--color-gray-300'},
-                {name: '400', cssVar: '--color-gray-400'},
-                {name: '500', cssVar: '--color-gray-500'},
-                {name: '600', cssVar: '--color-gray-600'},
-                {name: '700', cssVar: '--color-gray-700'},
-                {name: '800', cssVar: '--color-gray-800'},
-                {name: '900', cssVar: '--color-gray-900'},
-                {name: '925', cssVar: '--color-gray-925'},
-                {name: '950', cssVar: '--color-gray-950'},
-                {name: '975', cssVar: '--color-gray-975'}
-            ]}
-            title="Gray (raw)"
-        />
+        <div className="flex flex-col gap-8">
+            <ColorRow
+                swatches={rawPalettes.gray}
+                title="Gray (raw)"
+            />
+            <ColorRow
+                swatches={rawPalettes.grey}
+                title="Grey (raw duplicate)"
+            />
+        </div>
     ),
-    parameters: {docs: {description: {story: 'Raw palette. Reach for these only when a semantic token doesn\'t fit — they don\'t flip in dark mode.'}}}
+    parameters: {docs: {description: {story: 'Raw palette. Both gray and grey are kept as duplicate 11-step scales for this sweep; naming consolidation is handled separately.'}}}
 };
 
 export const RawBrand: Story = {
     render: () => (
         <div className="flex flex-col gap-8">
             <ColorRow
-                swatches={[
-                    {name: 'green-100', cssVar: '--color-green-100'},
-                    {name: 'green-400', cssVar: '--color-green-400'},
-                    {name: 'green-500', cssVar: '--color-green-500'},
-                    {name: 'green-600', cssVar: '--color-green-600'}
-                ]}
+                swatches={rawPalettes.green}
                 title="Green"
             />
             <ColorRow
-                swatches={[
-                    {name: 'blue-100', cssVar: '--color-blue-100'},
-                    {name: 'blue-400', cssVar: '--color-blue-400'},
-                    {name: 'blue-500', cssVar: '--color-blue-500'},
-                    {name: 'blue-600', cssVar: '--color-blue-600'},
-                    {name: 'blue-700', cssVar: '--color-blue-700'}
-                ]}
+                swatches={rawPalettes.blue}
                 title="Blue"
             />
             <ColorRow
-                swatches={[
-                    {name: 'purple-100', cssVar: '--color-purple-100'},
-                    {name: 'purple-400', cssVar: '--color-purple-400'},
-                    {name: 'purple-500', cssVar: '--color-purple-500'},
-                    {name: 'purple-600', cssVar: '--color-purple-600'}
-                ]}
+                swatches={rawPalettes.purple}
                 title="Purple"
             />
             <ColorRow
-                swatches={[
-                    {name: 'pink-100', cssVar: '--color-pink-100'},
-                    {name: 'pink-400', cssVar: '--color-pink-400'},
-                    {name: 'pink-500', cssVar: '--color-pink-500'},
-                    {name: 'pink-600', cssVar: '--color-pink-600'}
-                ]}
+                swatches={rawPalettes.pink}
                 title="Pink"
             />
             <ColorRow
-                swatches={[
-                    {name: 'red-100', cssVar: '--color-red-100'},
-                    {name: 'red-400', cssVar: '--color-red-400'},
-                    {name: 'red-500', cssVar: '--color-red-500'},
-                    {name: 'red-600', cssVar: '--color-red-600'}
-                ]}
+                swatches={rawPalettes.red}
                 title="Red"
             />
             <ColorRow
-                swatches={[
-                    {name: 'orange-100', cssVar: '--color-orange-100'},
-                    {name: 'orange-400', cssVar: '--color-orange-400'},
-                    {name: 'orange-500', cssVar: '--color-orange-500'},
-                    {name: 'orange-600', cssVar: '--color-orange-600'}
-                ]}
+                swatches={rawPalettes.orange}
                 title="Orange"
             />
             <ColorRow
-                swatches={[
-                    {name: 'yellow-100', cssVar: '--color-yellow-100'},
-                    {name: 'yellow-400', cssVar: '--color-yellow-400'},
-                    {name: 'yellow-500', cssVar: '--color-yellow-500'},
-                    {name: 'yellow-600', cssVar: '--color-yellow-600'}
-                ]}
+                swatches={rawPalettes.yellow}
                 title="Yellow"
             />
+            <ColorRow
+                swatches={rawPalettes.lime}
+                title="Lime"
+            />
         </div>
+    ),
+    parameters: {docs: {description: {story: 'Raw brand palettes use the Tailwind-style 11-step scale: 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950.'}}}
+};
+
+export const RawSpecial: Story = {
+    render: () => (
+        <ColorPalette
+            description="Special raw color tokens that are not part of the stepped palettes."
+            swatches={[
+                {name: 'white', cssVar: '--color-white'},
+                {name: 'black', cssVar: '--color-black'},
+                {name: 'transparent', cssVar: '--color-transparent'},
+                {name: 'current', cssVar: '--color-current'},
+                {name: 'ghostaccent', cssVar: '--color-ghostaccent'}
+            ]}
+            title="Special"
+        />
     )
 };
