@@ -4,16 +4,27 @@ import {LucideIcon} from "@tryghost/shade/utils";
 import {useNavigationItemVisibility, useToggleNavigationItemVisibility} from "./hooks/use-navigation-preferences";
 import {SidebarCustomizationContext, type SidebarCustomizationItem, useSidebarCustomizationContext} from "./sidebar-customization-context";
 
+const MENU_SEPARATOR_AFTER_ITEM_IDS = new Set(['view-site']);
+
 function SidebarCustomizationProvider({children}: {children: React.ReactNode}) {
     const [items, setItems] = React.useState<SidebarCustomizationItem[]>([]);
     const [contextMenuPosition, setContextMenuPosition] = React.useState<{x: number; y: number} | null>(null);
+    const itemOrder = React.useRef(new Map<string, number>());
+    const nextItemOrder = React.useRef(0);
 
     const registerItem = React.useCallback((item: SidebarCustomizationItem) => {
+        if (!itemOrder.current.has(item.id)) {
+            itemOrder.current.set(item.id, nextItemOrder.current);
+            nextItemOrder.current += 1;
+        }
+
         setItems(currentItems => {
             const existingItem = currentItems.find(currentItem => currentItem.id === item.id);
 
             if (!existingItem) {
-                return [...currentItems, item];
+                return [...currentItems, item].sort((firstItem, secondItem) => {
+                    return (itemOrder.current.get(firstItem.id) ?? 0) - (itemOrder.current.get(secondItem.id) ?? 0);
+                });
             }
 
             if (existingItem.label === item.label) {
@@ -73,10 +84,12 @@ function SidebarCustomizationProvider({children}: {children: React.ReactNode}) {
                         Customize sidebar
                     </div>
                     {items.map(item => (
-                        <SidebarCustomizationMenuItem
-                            key={item.id}
-                            item={item}
-                        />
+                        <React.Fragment key={item.id}>
+                            <SidebarCustomizationMenuItem item={item} />
+                            {MENU_SEPARATOR_AFTER_ITEM_IDS.has(item.id) && (
+                                <div className="-mx-1 my-1 h-px bg-border" />
+                            )}
+                        </React.Fragment>
                     ))}
                 </div>
             )}
@@ -90,7 +103,7 @@ function SidebarCustomizationMenuItem({item}: {item: SidebarCustomizationItem}) 
 
     return (
         <button
-            className="flex w-full cursor-pointer items-center justify-between gap-4 rounded-xs px-2 py-1.5 text-left text-sm outline-hidden transition-colors hover:bg-accent focus:bg-accent"
+            className={`flex w-full cursor-pointer items-center justify-between gap-4 rounded-xs px-2 py-1.5 text-left text-sm outline-hidden transition-colors hover:bg-accent focus:bg-accent ${visible ? '' : 'text-muted-foreground'}`}
             type="button"
             role="menuitemcheckbox"
             aria-checked={visible}
@@ -104,22 +117,33 @@ function SidebarCustomizationMenuItem({item}: {item: SidebarCustomizationItem}) 
     );
 }
 
-function HideableSidebarItem({children, id, label}: SidebarCustomizationItem & {children: React.ReactNode}) {
-    const visible = useNavigationItemVisibility(id);
+function RegisterHideableSidebarItem({id, label}: SidebarCustomizationItem) {
     const {registerItem} = useSidebarCustomizationContext();
 
     React.useEffect(() => {
         return registerItem({id, label});
     }, [id, label, registerItem]);
 
+    return null;
+}
+
+function HideableSidebarItem({children, id, label}: SidebarCustomizationItem & {children: React.ReactNode}) {
+    const visible = useNavigationItemVisibility(id);
+
     if (!visible) {
-        return null;
+        return <RegisterHideableSidebarItem id={id} label={label} />;
     }
 
-    return <>{children}</>;
+    return (
+        <>
+            <RegisterHideableSidebarItem id={id} label={label} />
+            {children}
+        </>
+    );
 }
 
 export {
     HideableSidebarItem,
+    RegisterHideableSidebarItem,
     SidebarCustomizationProvider
 };

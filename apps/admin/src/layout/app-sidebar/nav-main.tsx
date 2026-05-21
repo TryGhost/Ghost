@@ -11,7 +11,8 @@ import { useNotificationsCountForUser } from "@tryghost/activitypub/api";
 import NetworkIcon from "./icons/network-icon";
 import { NavMenuItem } from "./nav-menu-item";
 import { useIsActiveLink } from "./use-is-active-link";
-import {HideableSidebarItem} from "./sidebar-customization";
+import {HideableSidebarItem, RegisterHideableSidebarItem} from "./sidebar-customization";
+import {useNavigationItemVisibility} from "./hooks/use-navigation-preferences";
 
 function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const { data: currentUser } = useCurrentUser();
@@ -27,11 +28,29 @@ function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const isNetworkRouteActive = useIsActiveLink({ path: 'network', activeOnSubpath: true })
     const isActivitypubRouteActive = useIsActiveLink({ path: 'activitypub', activeOnSubpath: true });
     const showNetworkBadge = networkNotificationCount > 0 && !isNetworkRouteActive && !isActivitypubRouteActive;
+    const showAnalyticsItem = useNavigationItemVisibility('analytics');
+    const networkItemVisible = useNavigationItemVisibility('network');
+    const showNetworkItem = networkEnabled && networkItemVisible;
+    const showViewSiteItem = useNavigationItemVisibility('view-site');
+    const showGroup = showAnalyticsItem || showNetworkItem || showViewSiteItem;
 
     // Only show NavMain for admin users
     if (!currentUser || !hasAdminAccess(currentUser)) {
         return null;
     }
+
+    if (!showGroup) {
+        return (
+            <>
+                <RegisterHideableSidebarItem id="analytics" label="Analytics" />
+                {networkEnabled && (
+                    <RegisterHideableSidebarItem id="network" label="Network" />
+                )}
+                <RegisterHideableSidebarItem id="view-site" label="View site" />
+            </>
+        );
+    }
+
     return (
         <SidebarGroup {...props}>
             <SidebarGroupContent>

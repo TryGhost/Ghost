@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 
+import React from 'react';
 import {fireEvent, render, screen, waitFor} from '@testing-library/react';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {HideableSidebarItem, SidebarCustomizationProvider} from './sidebar-customization';
@@ -33,6 +34,28 @@ function renderSidebar() {
         <SidebarCustomizationProvider>
             <TestSidebar />
         </SidebarCustomizationProvider>
+    );
+}
+
+function ReorderingSidebar() {
+    const [showFirstItem, setShowFirstItem] = React.useState(true);
+    const {openContextMenu} = useSidebarCustomizationContext();
+
+    return (
+        <div data-testid="sidebar" onContextMenu={openContextMenu}>
+            {showFirstItem ? (
+                <HideableSidebarItem id="analytics" label="Analytics">
+                    <span>Analytics nav item</span>
+                </HideableSidebarItem>
+            ) : (
+                <span>Analytics hidden</span>
+            )}
+            <HideableSidebarItem id="network" label="Network">
+                <span>Network nav item</span>
+            </HideableSidebarItem>
+            <button type="button" onClick={() => setShowFirstItem(false)}>Hide first item</button>
+            <button type="button" onClick={() => setShowFirstItem(true)}>Show first item</button>
+        </div>
     );
 }
 
@@ -74,5 +97,21 @@ describe('SidebarCustomizationProvider', () => {
 
         expect(toggleVisibility).toHaveBeenCalledWith('posts', true);
         expect(screen.getByText('Customize sidebar')).toBeInTheDocument();
+    });
+
+    it('keeps menu item order stable when an item unregisters and registers again', async () => {
+        render(
+            <SidebarCustomizationProvider>
+                <ReorderingSidebar />
+            </SidebarCustomizationProvider>
+        );
+
+        fireEvent.click(screen.getByRole('button', {name: 'Hide first item'}));
+        fireEvent.click(screen.getByRole('button', {name: 'Show first item'}));
+        fireEvent.contextMenu(screen.getByTestId('sidebar'));
+
+        const menuItems = await screen.findAllByRole('menuitemcheckbox');
+
+        expect(menuItems.map(menuItem => menuItem.textContent)).toEqual(['Analytics', 'Network']);
     });
 });

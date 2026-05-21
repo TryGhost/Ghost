@@ -7,13 +7,15 @@ import { isContributorUser, isOwnerUser } from "@tryghost/admin-x-framework/api/
 import { NavMenuItem } from "./nav-menu-item";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
 import { useFeaturebase } from "./hooks/use-featurebase";
-import {HideableSidebarItem} from "./sidebar-customization";
+import {HideableSidebarItem, RegisterHideableSidebarItem} from "./sidebar-customization";
+import {useNavigationItemVisibility} from "./hooks/use-navigation-preferences";
 
 function NavGhostPro({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const { data: currentUser } = useCurrentUser();
     const { data: config } = useBrowseConfig();
     const featurebaseFeedbackFlag = useFeatureFlag('featurebaseFeedback');
     const { openFeedbackWidget, preloadFeedbackWidget } = useFeaturebase();
+    const showFeedbackItem = useNavigationItemVisibility('feedback');
 
     if (!currentUser) {
         return null;
@@ -25,6 +27,10 @@ function NavGhostPro({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
 
     if (!showGhostPro && !showFeedback) {
         return null;
+    }
+
+    if (!showGhostPro && showFeedback && !showFeedbackItem) {
+        return <RegisterHideableSidebarItem id="feedback" label="Feedback" />;
     }
 
     return (

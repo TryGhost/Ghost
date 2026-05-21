@@ -13,7 +13,8 @@ import { NavMemberViews } from "./nav-member-views";
 import { useMemberSidebarViews } from "./member-sidebar-views";
 import { useCustomSidebarViews } from "./use-custom-sidebar-views";
 import { useIsActiveLink } from "./use-is-active-link";
-import {HideableSidebarItem} from "./sidebar-customization";
+import {HideableSidebarItem, RegisterHideableSidebarItem} from "./sidebar-customization";
+import {useNavigationItemVisibility} from "./hooks/use-navigation-preferences";
 import { useEmberRouting } from "@/ember-bridge";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
 
@@ -87,6 +88,18 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const showMembers = currentUser && canManageMembers(currentUser);
     const commentsEnabled = getSettingValue<string>(settingsData?.settings, 'comments_enabled');
     const showComments = !!showMembers && commentModerationEnabled && commentsEnabled !== 'off';
+    const showPostsItem = useNavigationItemVisibility('posts');
+    const showPagesItem = useNavigationItemVisibility('pages');
+    const showTagsItem = useNavigationItemVisibility('tags');
+    const showMembersItem = useNavigationItemVisibility('members');
+    const showCommentsItem = useNavigationItemVisibility('comments');
+    const showAutomationsItem = useNavigationItemVisibility('automations');
+    const showGroup = showPostsItem ||
+        showPagesItem ||
+        (!!showTags && showTagsItem) ||
+        (!!showMembers && showMembersItem) ||
+        (showComments && showCommentsItem) ||
+        (showMembers && automationsEnabled && showAutomationsItem);
     const isDraftPostsRouteActive = routing.isRouteActive('posts', {type: 'draft'});
     const isScheduledPostsRouteActive = routing.isRouteActive('posts', {type: 'scheduled'});
     const isPublishedPostsRouteActive = routing.isRouteActive('posts', {type: 'published'});
@@ -100,6 +113,28 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const postsRoute = routing.getRouteUrl('posts');
     const isPostsRouteActive = routing.isRouteActive('posts');
     const postsNavActive = isPostsRouteActive || (!postsExpanded && hasActivePostChild);
+
+    if (!showGroup) {
+        return (
+            <>
+                <RegisterHideableSidebarItem id="posts" label="Posts" />
+                <RegisterHideableSidebarItem id="pages" label="Pages" />
+                {showTags && (
+                    <RegisterHideableSidebarItem id="tags" label="Tags" />
+                )}
+                {showMembers && (
+                    <RegisterHideableSidebarItem id="members" label="Members" />
+                )}
+                {showComments && (
+                    <RegisterHideableSidebarItem id="comments" label="Comments" />
+                )}
+                {showMembers && automationsEnabled && (
+                    <RegisterHideableSidebarItem id="automations" label="Automations" />
+                )}
+            </>
+        );
+    }
+
     return (
         <SidebarGroup {...props}>
             <SidebarGroupContent>
