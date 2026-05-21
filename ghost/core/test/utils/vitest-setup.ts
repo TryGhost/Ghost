@@ -14,6 +14,13 @@ import crypto from 'node:crypto';
 import chalk from 'chalk';
 import {beforeAll, beforeEach, afterEach, afterAll} from 'vitest';
 
+// Register tsx's CommonJS hook so test files (and the Ghost server code they
+// pull in) can require() .ts sources. Scoping it here — rather than a global
+// NODE_OPTIONS='--import tsx' — keeps the loader out of the sibling app
+// projects under the unified `pnpm test:watch`, where it breaks their module
+// resolution. Must run before any Ghost source is required below.
+require('tsx/cjs');
+
 process.env.NODE_ENV = process.env.NODE_ENV || 'testing';
 process.env.WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_SECRET';
 
