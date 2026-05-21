@@ -215,8 +215,13 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
                 onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                         e.preventDefault();
-                        updateForm(state => ({...state, url: doFormatUrl(formState.url)}));
-                        setEnterPressed(true);
+                        const formattedUrl = doFormatUrl(formState.url);
+                        if (formState.url !== formattedUrl) {
+                            updateForm(state => ({...state, url: formattedUrl}));
+                            setEnterPressed(true);
+                        } else {
+                            onOk();
+                        }
                     }
                 }}
             />
