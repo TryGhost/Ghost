@@ -6,7 +6,7 @@ const PostLinkRepository = require('../../../../../core/server/services/link-tra
 describe('UNIT: PostLinkRepository class', function () {
     let postLinkRepository;
 
-    before(function () {
+    beforeAll(function () {
         postLinkRepository = new PostLinkRepository({
             LinkRedirect: {
                 getFilteredCollectionQuery: sinon.stub().returns({
