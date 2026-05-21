@@ -57,10 +57,12 @@ pnpm build:clean               # Clean build artifacts and rebuild
 ```bash
 # Unit tests (from root)
 pnpm test:unit                 # Run all unit tests in all packages
+pnpm test:watch                # Watch mode — unified Vitest watcher (ghost/core + all apps)
 
 # Ghost core tests (from ghost/core/)
 cd ghost/core
-pnpm test:unit                 # Unit tests only
+pnpm test:unit                 # Unit tests only (Vitest, run once)
+pnpm test:watch                # Watch mode — ghost/core unit tests only
 pnpm test:integration          # Integration tests
 pnpm test:e2e                  # E2E API tests (not browser)
 pnpm test:all                  # All test types
