@@ -154,7 +154,7 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Determine Affected Projects
         id: affected
@@ -302,10 +302,10 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --filter @tryghost/i18n... --ignore-scripts
 
       - name: Run i18n tests
-        run: pnpm nx run @tryghost/i18n:test
+        run: pnpm --filter @tryghost/i18n test
 
   job_admin-tests:
     runs-on: ubuntu-latest
