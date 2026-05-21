@@ -39,7 +39,8 @@ module.exports = {
         'no-unused-vars': [
             'error',
             {
-                varsIgnorePattern: '^should$'
+                varsIgnorePattern: '^should$',
+                argsIgnorePattern: '^_'
             }
         ],
         'no-useless-escape': 'off',
