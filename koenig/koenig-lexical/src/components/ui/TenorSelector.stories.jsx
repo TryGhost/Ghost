@@ -1,6 +1,6 @@
 import TenorSelector from './TenorSelector';
+import {getGifProviderConfig, useTenor} from '../../utils/services/tenor.js';
 import {tenorConfig} from '../../../demo/utils/tenorConfig';
-import {useTenor} from '../../utils/services/tenor.js';
 
 const story = {
     title: 'File Selectors/Tenor',
@@ -14,7 +14,7 @@ const story = {
 export default story;
 
 const Template = (args) => {
-    const tenorHook = useTenor({config: tenorConfig});
+    const tenorHook = useTenor({config: getGifProviderConfig({tenor: tenorConfig})});
 
     return (
         <TenorSelector {...tenorHook} {...args} />

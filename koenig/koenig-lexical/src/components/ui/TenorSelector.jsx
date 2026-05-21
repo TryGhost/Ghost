@@ -8,7 +8,7 @@ import {Loader} from './file-selectors/Tenor/Loader';
 const TWO_COLUMN_WIDTH = 540;
 const THREE_COLUMN_WIDTH = 940;
 
-const TenorSelector = ({onGifInsert, onClickOutside, updateSearch, columns, isLoading, isLazyLoading, error, changeColumnCount, loadNextPage, gifs}) => {
+const TenorSelector = ({onGifInsert, onClickOutside, updateSearch, columns, isLoading, isLazyLoading, error, changeColumnCount, loadNextPage, gifs, provider}) => {
     const selectorRef = useRef(null);
     const searchRef = useRef(null);
     const [highlightedGif, setHighlightedGif] = useState(undefined);
@@ -294,7 +294,7 @@ const TenorSelector = ({onGifInsert, onClickOutside, updateSearch, columns, isLo
         <div
             ref={selectorRef}
             className="flex h-[540px] flex-col rounded border border-grey-200 bg-grey-50 dark:border-none dark:bg-grey-900"
-            data-testid="tenor-selector"
+            data-testid="gif-selector"
             // prevent click handle in the editor while selector is active
             onClick={e => e.stopPropagation()}
         >
@@ -304,7 +304,7 @@ const TenorSelector = ({onGifInsert, onClickOutside, updateSearch, columns, isLo
                     <input
                         ref={searchRef}
                         className="h-10 w-full rounded-full border border-grey-300 pl-10 pr-8 font-sans text-md font-normal text-black focus:border-green focus:shadow-insetgreen dark:border-grey-800 dark:bg-grey-950 dark:text-white dark:placeholder:text-grey-800 dark:focus:border-green"
-                        placeholder="Search Tenor for GIFs"
+                        placeholder={provider === 'klipy' ? 'Search KLIPY' : 'Search Tenor for GIFs'}
                         autoFocus
                         onChange={handleSearch}
                     />
@@ -330,7 +330,7 @@ const TenorSelector = ({onGifInsert, onClickOutside, updateSearch, columns, isLo
 
                     {!!isLoading && !error && <Loader isLazyLoading={isLazyLoading} />}
 
-                    {!!error && <div data-testid="tenor-selector-error"><Error error={error} /></div>}
+                    {!!error && <div data-testid="gif-selector-error"><Error error={error} /></div>}
                 </div>
             </div>
         </div>

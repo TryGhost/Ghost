@@ -1,14 +1,51 @@
 import debounce from 'lodash/debounce';
 import {useRef, useState} from 'react';
 
-const API_URL = 'https://tenor.googleapis.com';
 const API_VERSION = 'v2';
 const DEBOUNCE_MS = 600;
+
+// Both Tenor and Klipy expose a Tenor-compatible v2 API; only the base URL and
+// API key differ, so one client serves either provider.
+const PROVIDER_API_URLS = {
+    klipy: 'https://api.klipy.com',
+    tenor: 'https://tenor.googleapis.com'
+};
 
 export const ERROR_TYPE = {
     COMMON: 'common',
     INVALID_API_KEY: 'invalid_key'
 };
+
+// Resolve which GIF provider to use from the editor's cardConfig. Klipy takes
+// precedence when both are configured; returns null when neither is set.
+export function getGifProviderConfig(cardConfig) {
+    if (cardConfig?.klipy?.apiKey) {
+        return {
+            provider: 'klipy',
+            apiUrl: PROVIDER_API_URLS.klipy,
+            apiKey: cardConfig.klipy.apiKey,
+            contentFilter: cardConfig.klipy.contentFilter || 'off'
+        };
+    }
+    if (cardConfig?.tenor?.googleApiKey) {
+        return {
+            provider: 'tenor',
+            apiUrl: PROVIDER_API_URLS.tenor,
+            apiKey: cardConfig.tenor.googleApiKey,
+            contentFilter: cardConfig.tenor.contentFilter || 'off'
+        };
+    }
+    return null;
+}
+
+// Tenor returns {error: {message}}; Klipy returns {result: false, errors: {message: [...]}}.
+export function extractErrorMessage(json) {
+    const klipyMessage = json?.errors?.message;
+    return json?.error?.message
+        || json?.error
+        || (Array.isArray(klipyMessage) ? klipyMessage[0] : klipyMessage)
+        || 'Unknown error';
+}
 
 export function useTenor({config}) {
     const [columns, setColumns] = useState([]);
@@ -47,7 +84,7 @@ export function useTenor({config}) {
 
         await makeRequest(loadedType.current, {params: {
             q: term,
-            media_filter: 'minimal'
+            media_filter: 'tinygif,gif'
         }});
     }
 
@@ -56,7 +93,7 @@ export function useTenor({config}) {
 
         await makeRequest(loadedType.current, {params: {
             q: 'excited',
-            media_filter: 'minimal'
+            media_filter: 'tinygif,gif'
         }});
     }
 
@@ -120,10 +157,10 @@ export function useTenor({config}) {
 
     async function makeRequest(path, options) {
         const versionedPath = `${API_VERSION}/${path}`.replace(/\/+/, '/');
-        const url = new URL(versionedPath, API_URL);
+        const url = new URL(versionedPath, config.apiUrl);
 
         const params = new URLSearchParams(options.params);
-        params.set('key', config.googleApiKey);
+        params.set('key', config.apiKey);
         params.set('client_key', 'ghost-editor');
         params.set('contentfilter', getContentFilter());
 
@@ -145,13 +182,13 @@ export function useTenor({config}) {
                 setGifs(internalStateGifs.current);
             })
             .catch((e) => {
-                // if the error text isn't already set then we've get a connection error from `fetch`
-                if (!options.ignoreErrors && !error) {
-                    setError(ERROR_TYPE.COMMON);
-                }
-
-                if (error && error.startsWith('API key not valid')) {
-                    setError(ERROR_TYPE.INVALID_API_KEY);
+                // e.message is the API error text (from checkStatus) or a fetch
+                // connection error. Tenor and Klipy word invalid-key errors
+                // differently, so match either phrasing.
+                if (!options.ignoreErrors) {
+                    const message = e?.message || '';
+                    const isInvalidKey = /api key/i.test(message) && /(invalid|not valid)/i.test(message);
+                    setError(isInvalidKey ? ERROR_TYPE.INVALID_API_KEY : ERROR_TYPE.COMMON);
                 }
                 console.error(e);
             })
@@ -170,7 +207,7 @@ export function useTenor({config}) {
         let responseText;
 
         if (response.headers.map['content-type'].startsWith('application/json')) {
-            responseText = await response.json().then(json => json.error.message || json.error);
+            responseText = await response.json().then(json => extractErrorMessage(json));
         } else if (response.headers.map['content-type'] === 'text/xml') {
             responseText = await response.text();
         }
@@ -207,7 +244,7 @@ export function useTenor({config}) {
         if (nextPos.current !== null) {
             const params = {
                 pos: nextPos.current,
-                media_filter: 'minimal'
+                media_filter: 'tinygif,gif'
             };
 
             if (loadedType.current === 'search') {

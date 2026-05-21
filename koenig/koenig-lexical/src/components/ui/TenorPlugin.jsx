@@ -3,12 +3,13 @@ import React from 'react';
 import TenorSelector from './TenorSelector';
 import {DELETE_CARD_COMMAND} from '../../plugins/KoenigBehaviourPlugin.jsx';
 import {INSERT_FROM_TENOR_COMMAND} from '../../plugins/KoenigSelectorPlugin.jsx';
+import {getGifProviderConfig, useTenor} from '../../utils/services/tenor.js';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
-import {useTenor} from '../../utils/services/tenor.js';
 
 const TenorPlugin = ({nodeKey}) => {
     const {cardConfig} = React.useContext(KoenigComposerContext);
-    const tenorHook = useTenor({config: cardConfig.tenor});
+    const providerConfig = getGifProviderConfig(cardConfig);
+    const tenorHook = useTenor({config: providerConfig});
     const [editor] = useLexicalComposerContext();
 
     React.useEffect(() => {
@@ -38,6 +39,7 @@ const TenorPlugin = ({nodeKey}) => {
 
     return (
         <TenorSelector
+            provider={providerConfig?.provider}
             onClickOutside={onClickOutside}
             onGifInsert={insertImageToNode}
             {...tenorHook}

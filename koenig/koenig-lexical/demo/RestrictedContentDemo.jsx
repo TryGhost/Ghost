@@ -6,14 +6,15 @@ import {$getRoot, $isDecoratorNode} from 'lexical';
 import {KoenigComposableEditor, KoenigComposer, RestrictContentPlugin} from '../src';
 import {defaultHeaders as defaultUnsplashHeaders} from './utils/unsplashConfig';
 import {fileTypes, useFileUpload} from './utils/useFileUpload';
-import {tenorConfig} from './utils/tenorConfig';
+import {klipyConfig, tenorConfig} from './utils/tenorConfig';
 import {useLocation} from 'react-router-dom';
 import {useSnippets} from './utils/useSnippets';
 import {useState} from 'react';
 
 const cardConfig = {
     unsplash: {defaultHeaders: defaultUnsplashHeaders},
-    tenor: tenorConfig
+    tenor: tenorConfig,
+    klipy: klipyConfig
 };
 
 function useQuery() {

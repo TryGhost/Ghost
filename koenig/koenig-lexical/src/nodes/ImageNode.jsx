@@ -55,10 +55,10 @@ export class ImageNode extends BaseImageNode {
         insertParams: {
             triggerFileDialog: false
         },
-        matches: ['gif', 'giphy', 'tenor'],
+        matches: ['gif', 'giphy', 'tenor', 'klipy'],
         priority: 17,
         queryParams: ['src'],
-        isHidden: ({config}) => !config?.tenor,
+        isHidden: ({config}) => !config?.tenor && !config?.klipy,
         shortcut: '/gif'
     }];
 

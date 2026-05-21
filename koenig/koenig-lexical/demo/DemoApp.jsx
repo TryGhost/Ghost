@@ -22,7 +22,7 @@ import {
 import {defaultHeaders as defaultUnsplashHeaders} from './utils/unsplashConfig';
 import {fetchEmbed} from './utils/fetchEmbed';
 import {fileTypes, useFileUpload} from './utils/useFileUpload';
-import {tenorConfig} from './utils/tenorConfig';
+import {klipyConfig, tenorConfig} from './utils/tenorConfig';
 import {useLocation, useSearchParams} from 'react-router-dom';
 import {useSnippets} from './utils/useSnippets';
 
@@ -47,6 +47,7 @@ const defaultCardConfig = {
     unsplash: defaultUnsplashHeaders,
     fetchEmbed: fetchEmbed,
     tenor: tenorConfig,
+    klipy: klipyConfig,
     fetchAutocompleteLinks: () => Promise.resolve([
         {label: 'Homepage', value: window.location.origin + '/'},
         {label: 'Free signup', value: window.location.origin + '/#/portal/signup/free'}

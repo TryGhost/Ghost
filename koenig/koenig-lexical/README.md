@@ -32,12 +32,14 @@ Now, if you navigate to Ghost Admin at http://localhost:2368/ghost and open a po
 
 #### Gif card
 
-To see this card locally, you need to create `.env.local` file in `koenig-lexical` root package with the next data:
+To see this card locally, create a `.env.local` file in the `koenig-lexical` root package with a GIF provider key:
 ```
+VITE_KLIPY_API_KEY=xxx
+# or, for the legacy Tenor provider:
 VITE_TENOR_API_KEY=xxx
 ```
 
-How to get the tenor key is described here https://ghost.org/docs/config/#tenor
+The card resolves to Klipy when `VITE_KLIPY_API_KEY` is set, otherwise Tenor. Get a Klipy key at https://partner.klipy.com; the Tenor key is described at https://ghost.org/docs/config/#tenor
 
 #### Bookmark & Embed cards
 

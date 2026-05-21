@@ -815,7 +815,7 @@ test.describe('Image card', async () => {
         `, {ignoreCardToolbarContents: true});
     });
 
-    test('can insert tenor image with key Tab', async () => {
+    test('can insert a gif with the keyboard', async () => {
         await mockTenorApi(page);
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
@@ -861,26 +861,26 @@ test.describe('Image card', async () => {
         `, {ignoreCardToolbarContents: true});
     });
 
-    test('can close tenor selector on Esc', async () => {
+    test('can close the gif selector on Esc', async () => {
         await mockTenorApi(page);
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
 
         await page.click('button[data-kg-card-menu-item="GIF"]');
 
-        await expect(await page.getByTestId('tenor-selector')).toBeVisible();
+        await expect(await page.getByTestId('gif-selector')).toBeVisible();
         await page.keyboard.press('Escape');
-        await expect(await page.getByTestId('tenor-selector')).toBeHidden();
+        await expect(await page.getByTestId('gif-selector')).toBeHidden();
     });
 
-    test('can show tenor error', async () => {
+    test('can show a gif selector error', async () => {
         await mockTenorApi(page, {status: 400});
         await focusEditor(page);
         await page.click('[data-kg-plus-button]');
 
         await page.click('button[data-kg-card-menu-item="GIF"]');
 
-        await expect(await page.getByTestId('tenor-selector-error')).toBeVisible();
+        await expect(await page.getByTestId('gif-selector-error')).toBeVisible();
     });
 
     test('can add snippet', async function () {
@@ -1447,10 +1447,111 @@ function tenorTestData() {
     );
 }
 
-const tenorUrl = 'https://tenor.googleapis.com/v2/featured?q=excited&media_filter=minimal&key=xxx&client_key=ghost-editor&contentfilter=off';
+const tenorUrl = /https:\/\/tenor\.googleapis\.com\/v2\//;
 async function mockTenorApi(page, {status} = {status: 200}) {
     await page.route(tenorUrl, route => route.fulfill({
         status,
         body: JSON.stringify(tenorTestData())
     }));
 }
+
+function klipyTestData() {
+    return {
+        results: [
+            {
+                id: '2484942301552561',
+                title: 'Klipy Cat',
+                media_formats: {
+                    tinygif: {
+                        url: 'https://static.klipy.com/gif/klipy-cat-tiny.gif',
+                        duration: 0,
+                        preview: '',
+                        dims: [220, 220],
+                        size: 271080
+                    },
+                    gif: {
+                        url: 'https://static.klipy.com/gif/klipy-cat.gif',
+                        duration: 0,
+                        preview: '',
+                        dims: [498, 498],
+                        size: 273268
+                    }
+                },
+                created: 1765483200,
+                content_description: 'Klipy Cat GIF',
+                itemurl: 'https://klipy.com/gifs/klipy-cat',
+                url: 'https://static.klipy.com/gif/klipy-cat.gif',
+                tags: ['cat'],
+                flags: [],
+                hasaudio: false
+            }
+        ],
+        next: ''
+    };
+}
+
+const klipyUrl = /https:\/\/api\.klipy\.com\/v2\//;
+async function mockKlipyApi(page, {status} = {status: 200}) {
+    await page.route(klipyUrl, route => route.fulfill({
+        status,
+        body: JSON.stringify(klipyTestData())
+    }));
+}
+
+test.describe('Image card - Klipy GIF provider', async () => {
+    let page;
+
+    test.beforeAll(async ({browser}) => {
+        page = await browser.newPage();
+    });
+
+    test.afterAll(async () => {
+        await page.close();
+    });
+
+    test('can insert klipy image', async () => {
+        await mockKlipyApi(page);
+        // ?gifProvider=klipy makes the demo resolve the GIF card to Klipy
+        await initialize({page, uri: '/?gifProvider=klipy#/?content=false'});
+        await focusEditor(page);
+        await page.click('[data-kg-plus-button]');
+
+        await page.click('button[data-kg-card-menu-item="GIF"]');
+
+        await expect(await page.locator('[data-tenor-index="0"]')).toBeVisible();
+        await page.click('[data-tenor-index="0"]');
+
+        // toBeAttached rather than toBeVisible: the fixture GIF URL is not
+        // network-loaded in tests, so visibility would depend on an external fetch
+        await expect(await page.getByTestId('image-card-populated')).toBeAttached();
+
+        await assertHTML(page, html`
+            <div data-lexical-decorator="true" contenteditable="false">
+                <div data-kg-card-editing="false" data-kg-card-selected="true" data-kg-card="image">
+                    <figure data-kg-card-width="regular">
+                        <div>
+                            <img
+                                alt=""
+                                src="https://static.klipy.com/gif/klipy-cat.gif" />
+                        </div>
+                        <figcaption>
+                            <div data-testid="image-caption-editor" data-kg-allow-clickthrough="true">
+                                <div>
+                                    <div data-kg="editor">
+                                        <div contenteditable="true" role="textbox" spellcheck="true" data-lexical-editor="true" data-koenig-dnd-container="true">
+                                            <p><br /></p>
+                                        </div>
+                                    </div>
+                                    <div>Type caption for image (optional)</div>
+                                </div>
+                            </div>
+                            <button name="alt-toggle-button" type="button">Alt</button>
+                        </figcaption>
+                    </figure>
+                    <div data-kg-card-toolbar="image"></div>
+                </div>
+            </div>
+            <p><br /></p>
+        `, {ignoreCardToolbarContents: true});
+    });
+});
