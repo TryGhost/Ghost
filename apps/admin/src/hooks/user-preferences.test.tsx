@@ -249,6 +249,47 @@ describe("useUserPreferences", () => {
             });
         });
 
+        queryTest("defaults missing navigation hiddenItems to an empty array", async ({ setup }) => {
+            const result = await setup({
+                accessibility: JSON.stringify({
+                    navigation: {
+                        expanded: { posts: false, members: true },
+                        menu: { visible: true },
+                    },
+                }),
+            });
+
+            expect(result.current.data?.navigation.hiddenItems).toEqual([]);
+        });
+
+        queryTest("gracefully handles invalid navigation hiddenItems", async ({ setup }) => {
+            const result = await setup({
+                accessibility: JSON.stringify({
+                    navigation: {
+                        expanded: { posts: true, members: true },
+                        menu: { visible: true },
+                        hiddenItems: "posts",
+                    },
+                }),
+            });
+
+            expect(result.current.data?.navigation.hiddenItems).toEqual([]);
+        });
+
+        queryTest("keeps unknown hidden navigation item ids", async ({ setup }) => {
+            const result = await setup({
+                accessibility: JSON.stringify({
+                    navigation: {
+                        expanded: { posts: true, members: true },
+                        menu: { visible: true },
+                        hiddenItems: ["unknown-item"],
+                    },
+                }),
+            });
+
+            expect(result.current.data?.navigation.hiddenItems).toEqual(["unknown-item"]);
+        });
+
         queryTest("returns undefined when user is not loaded", async ({ server, wrapper }) => {
             server.use(
                 http.get(USERS_API_URL, () => {
@@ -296,6 +337,7 @@ describe("useUserPreferences", () => {
             expect(result.current.data).toEqual({
                 expanded: { posts: false, members: true },
                 menu: { visible: true },
+                hiddenItems: [],
             });
         });
 
@@ -469,12 +511,46 @@ describe("useEditUserPreferences", () => {
                     navigation: {
                         expanded: { posts: true, members: false },
                         menu: { visible: true }, // Preserved
+                        hiddenItems: [],
                     },
                     onboarding: {
                         completedSteps: ["customize-design", "first-post"],
                         checklistState: "started",
                     },
                     nightShift: true, // Preserved
+                });
+            });
+        });
+
+        editTest("updates hiddenItems without changing other navigation preferences", async ({ setup }) => {
+            const { query, mutation } = await setup({
+                accessibility: JSON.stringify({
+                    navigation: {
+                        expanded: { posts: false, members: false },
+                        menu: { visible: false },
+                        hiddenItems: ["analytics"],
+                    },
+                    nightShift: true,
+                }),
+            });
+
+            await act(async () => {
+                await mutation.current.mutateAsync({
+                    navigation: {
+                        hiddenItems: ["analytics", "automations"],
+                    },
+                });
+            });
+
+            await waitFor(() => {
+                expect(query.current.data).toEqual({
+                    navigation: {
+                        expanded: { posts: false, members: false },
+                        menu: { visible: false },
+                        hiddenItems: ["analytics", "automations"],
+                    },
+                    onboarding: DEFAULT_ONBOARDING_PREFERENCES,
+                    nightShift: true,
                 });
             });
         });

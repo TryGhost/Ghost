@@ -7,6 +7,7 @@ import { isContributorUser, isOwnerUser } from "@tryghost/admin-x-framework/api/
 import { NavMenuItem } from "./nav-menu-item";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
 import { useFeaturebase } from "./hooks/use-featurebase";
+import {HideableSidebarItem} from "./sidebar-customization";
 
 function NavGhostPro({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const { data: currentUser } = useCurrentUser();
@@ -39,12 +40,14 @@ function NavGhostPro({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                         </NavMenuItem>
                     )}
                     {showFeedback && (
-                        <NavMenuItem>
-                            <NavMenuItem.Button onClick={openFeedbackWidget} onMouseEnter={preloadFeedbackWidget} onFocus={preloadFeedbackWidget}>
-                                <LucideIcon.MessageCircle />
-                                <NavMenuItem.Label>Feedback</NavMenuItem.Label>
-                            </NavMenuItem.Button>
-                        </NavMenuItem>
+                        <HideableSidebarItem id="feedback" label="Feedback">
+                            <NavMenuItem>
+                                <NavMenuItem.Button onClick={openFeedbackWidget} onMouseEnter={preloadFeedbackWidget} onFocus={preloadFeedbackWidget}>
+                                    <LucideIcon.MessageCircle />
+                                    <NavMenuItem.Label>Feedback</NavMenuItem.Label>
+                                </NavMenuItem.Button>
+                            </NavMenuItem>
+                        </HideableSidebarItem>
                     )}
                 </SidebarMenu>
             </SidebarGroupContent>

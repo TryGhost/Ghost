@@ -1,7 +1,7 @@
 import React from "react"
 
 import {SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuBadge} from "@tryghost/shade/components"
-import {LucideIcon} from "@tryghost/shade/utils"
+import {formatNumber, LucideIcon} from "@tryghost/shade/utils"
 import { useBrowseSite } from "@tryghost/admin-x-framework/api/site";
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { useBrowseSettings } from "@tryghost/admin-x-framework/api/settings";
@@ -11,6 +11,7 @@ import { useNotificationsCountForUser } from "@tryghost/activitypub/api";
 import NetworkIcon from "./icons/network-icon";
 import { NavMenuItem } from "./nav-menu-item";
 import { useIsActiveLink } from "./use-is-active-link";
+import {HideableSidebarItem} from "./sidebar-customization";
 
 function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const { data: currentUser } = useCurrentUser();
@@ -35,37 +36,43 @@ function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
         <SidebarGroup {...props}>
             <SidebarGroupContent>
                 <SidebarMenu>
-                    <NavMenuItem>
-                        <NavMenuItem.Link to="analytics" activeOnSubpath>
-                            <LucideIcon.TrendingUp />
-                            <NavMenuItem.Label>Analytics</NavMenuItem.Label>
-                        </NavMenuItem.Link>
-                    </NavMenuItem>
-                    {networkEnabled && (
+                    <HideableSidebarItem id="analytics" label="Analytics">
                         <NavMenuItem>
-                            <NavMenuItem.Link to="network" isActive={isNetworkRouteActive || isActivitypubRouteActive}>
-                                <NetworkIcon />
-                                <NavMenuItem.Label>Network</NavMenuItem.Label>
+                            <NavMenuItem.Link to="analytics" activeOnSubpath>
+                                <LucideIcon.TrendingUp />
+                                <NavMenuItem.Label>Analytics</NavMenuItem.Label>
                             </NavMenuItem.Link>
-                            {showNetworkBadge && (
-                                <SidebarMenuBadge>{networkNotificationCount}</SidebarMenuBadge>
-                            )}
                         </NavMenuItem>
+                    </HideableSidebarItem>
+                    {networkEnabled && (
+                        <HideableSidebarItem id="network" label="Network">
+                            <NavMenuItem>
+                                <NavMenuItem.Link to="network" isActive={isNetworkRouteActive || isActivitypubRouteActive}>
+                                    <NetworkIcon />
+                                    <NavMenuItem.Label>Network</NavMenuItem.Label>
+                                </NavMenuItem.Link>
+                                {showNetworkBadge && (
+                                    <SidebarMenuBadge>{formatNumber(networkNotificationCount)}</SidebarMenuBadge>
+                                )}
+                            </NavMenuItem>
+                        </HideableSidebarItem>
                     )}
-                    <NavMenuItem className="group/viewsite relative">
-                        <NavMenuItem.Link to="site">
-                            <LucideIcon.AppWindow />
-                            <NavMenuItem.Label>View site</NavMenuItem.Label>
-                        </NavMenuItem.Link>
-                        <a
-                            href={url}
-                            target="_blank"
-                            aria-label="View site in new tab"
-                            rel="noopener noreferrer"
-                            className="absolute top-0 right-0 flex size-8 items-center justify-center rounded-full text-gray-700 opacity-0 transition-all group-hover/viewsite:opacity-100 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
-                                <LucideIcon.ExternalLink size={16} />
-                        </a>
-                    </NavMenuItem>
+                    <HideableSidebarItem id="view-site" label="View site">
+                        <NavMenuItem className="group/viewsite relative">
+                            <NavMenuItem.Link to="site">
+                                <LucideIcon.AppWindow />
+                                <NavMenuItem.Label>View site</NavMenuItem.Label>
+                            </NavMenuItem.Link>
+                            <a
+                                href={url}
+                                target="_blank"
+                                aria-label="View site in new tab"
+                                rel="noopener noreferrer"
+                                className="absolute top-0 right-0 flex size-8 items-center justify-center rounded-full text-gray-700 opacity-0 transition-all group-hover/viewsite:opacity-100 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+                                    <LucideIcon.ExternalLink size={16} />
+                            </a>
+                        </NavMenuItem>
+                    </HideableSidebarItem>
                 </SidebarMenu>
             </SidebarGroupContent>
         </SidebarGroup>
