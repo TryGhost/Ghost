@@ -342,8 +342,6 @@ const getInitialViewport = (canvasWidth: number): {x: number; y: number; zoom: n
     zoom: 1
 });
 
-type MemberTier = 'free' | 'paid';
-
 type BaseStepSidebarDetail<Type extends string, LabelText extends string> = {
     icon: React.ElementType;
     title: string;
@@ -365,6 +363,8 @@ type WaitStepSidebarDetail = ActionStepSidebarDetail<AutomationWaitAction, 'Wait
 type SendEmailStepSidebarDetail = ActionStepSidebarDetail<AutomationSendEmailAction, 'Send email'>;
 
 type StepSidebarDetail = TriggerStepSidebarDetail | WaitStepSidebarDetail | SendEmailStepSidebarDetail;
+
+type MemberTier = 'free' | 'paid';
 
 const automationSlugMemberTiers: Record<string, MemberTier[]> = {
     'member-welcome-email-free': ['free'],
