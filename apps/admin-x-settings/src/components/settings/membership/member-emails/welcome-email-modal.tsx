@@ -9,6 +9,7 @@ import {confirmIfDirty} from '@tryghost/admin-x-design-system';
 import {getWelcomeEmailValidationErrors} from './welcome-email-validation';
 import {useBrowseAutomatedEmails, useEditAutomatedEmail, usePreviewWelcomeEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useGlobalData} from '../../../providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {useWelcomeEmailPreview} from './use-welcome-email-preview';
 import {useWelcomeEmailSenderDetails} from '../../../../hooks/use-welcome-email-sender-details';
@@ -97,6 +98,7 @@ type PreviewMode = 'edit' | 'preview';
 const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType = 'free', automatedEmail}) => {
     const modal = useModal();
     const {updateRoute} = useRouting();
+    const {settings, config} = useGlobalData();
     const {mutateAsync: editAutomatedEmail} = useEditAutomatedEmail();
     const {mutateAsync: previewWelcomeEmail} = usePreviewWelcomeEmail();
     const {data: automatedEmailsData} = useBrowseAutomatedEmails();
@@ -108,7 +110,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
     const hasEditorBeenFocused = useRef(false);
     const handleError = useHandleError();
     const automatedEmails = automatedEmailsData?.automated_emails || [];
-    const {resolvedSenderName, resolvedSenderEmail, resolvedReplyToEmail, hasDistinctReplyTo} = useWelcomeEmailSenderDetails(automatedEmails);
+    const {resolvedSenderName, resolvedSenderEmail, resolvedReplyToEmail, hasDistinctReplyTo} = useWelcomeEmailSenderDetails(automatedEmails, {settings, config});
     const emailTypeLabel = emailType === 'paid' ? 'Paid' : 'Free';
     const modalTitle = `${emailTypeLabel} members welcome email`;
 

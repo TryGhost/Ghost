@@ -132,7 +132,7 @@ const MemberEmailsTable: React.FC<{
 };
 
 const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
-    const {settings, config} = useGlobalData();
+    const {settings, siteData, config} = useGlobalData();
     const [siteTitle] = getSettingValues<string>(settings, ['title']);
     const verifyEmailToken = useQueryParams().getParam('verifyEmail');
 
@@ -281,7 +281,11 @@ const MemberEmails: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     color='clear'
                     label='Customize'
                     size='sm'
-                    onClick={() => NiceModal.show(WelcomeEmailCustomizeModal)}
+                    onClick={() => NiceModal.show(WelcomeEmailCustomizeModal, {
+                        config,
+                        settings,
+                        siteData
+                    })}
                 />
             )}
             description="Create and manage automated emails for your members"

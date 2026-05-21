@@ -21,16 +21,17 @@ import {
     LinkStyleField,
     SectionTitleColorField
 } from '../../email-design/design-fields';
+import {type Config} from '@tryghost/admin-x-framework/api/config';
 import {DEFAULT_EMAIL_DESIGN, type EmailDesignSettings} from '../../email-design/types';
 import {EmailDesignProvider} from '../../email-design/email-design-context';
 import {Input, LoadingIndicator, Separator, Switch, Tabs, TabsContent, TabsList, TabsTrigger, Textarea} from '@tryghost/shade/components';
+import {type Setting, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {type SiteData} from '@tryghost/admin-x-framework/api/site';
 import {WELCOME_EMAIL_SLUGS, type WelcomeEmailType, getDefaultWelcomeEmailValues} from './default-welcome-email-values';
-import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
 import {useAddAutomatedEmail, useBrowseAutomatedEmails, useEditAutomatedEmailSenders} from '@tryghost/admin-x-framework/api/automated-emails';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useGlobalData} from '../../../providers/global-data-provider';
 import {useWelcomeEmailSenderDetails} from '../../../../hooks/use-welcome-email-sender-details';
 
 interface GeneralSettings {
@@ -47,6 +48,19 @@ interface GeneralSettings {
 interface WelcomeEmailCustomizeFormState {
     designSettings: EmailDesignSettings;
     generalSettings: GeneralSettings;
+}
+
+export interface WelcomeEmailCustomizeModalProps {
+    title?: string;
+    settings: Setting[];
+    siteData: SiteData;
+    config: Config;
+}
+
+export interface WelcomeEmailCustomizeModalContentProps extends WelcomeEmailCustomizeModalProps {
+    open: boolean;
+    onClose: () => void;
+    afterClose?: () => void;
 }
 
 const SAVE_ERROR_TOAST_ID = 'welcome-email-design-save-error';
@@ -332,9 +346,15 @@ const normalizeSenderValue = (value: string | null | undefined) => {
     return trimmed || null;
 };
 
-const WelcomeEmailCustomizeModal = NiceModal.create(() => {
-    const modal = useModal();
-    const {siteData, settings: globalSettings} = useGlobalData();
+export const WelcomeEmailCustomizeModalContent: React.FC<WelcomeEmailCustomizeModalContentProps> = ({
+    afterClose,
+    onClose,
+    open,
+    title = 'Welcome emails',
+    settings: globalSettings,
+    siteData,
+    config
+}) => {
     const [siteTitle, defaultEmailAddress, icon] = getSettingValues<string>(globalSettings, ['title', 'default_email_address', 'icon']);
 
     const handleError = useHandleError();
@@ -356,7 +376,7 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
         replyToEmailPlaceholder,
         showSenderEmailInput,
         senderEmailDomain
-    } = useWelcomeEmailSenderDetails(automatedEmails);
+    } = useWelcomeEmailSenderDetails(automatedEmails, {settings: globalSettings, config});
 
     const defaultGeneralSettings = useMemo<GeneralSettings>(() => ({
         senderName: senderNameInput,
@@ -498,10 +518,6 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
         }));
     }, [updateForm]);
 
-    const handleClose = useCallback(() => {
-        modal.hide();
-    }, [modal]);
-
     const fetchErrorMessage = 'Unable to load email design settings. Please try again.';
     const modalOkProps = hasSaveError ? {
         ...okProps,
@@ -512,21 +528,20 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
     return (
         <EmailDesignProvider accentColor={siteData.accent_color} settings={designSettings} onSettingsChange={handleDesignChange}>
             <EmailDesignModal
-                afterClose={() => {
-                    modal.resolveHide();
-                    modal.remove();
-                }}
+                afterClose={afterClose}
                 dirty={saveState === 'unsaved'}
                 isLoading={isLoading || isError}
                 okProps={modalOkProps}
-                open={modal.visible}
+                open={open}
                 preview={isError ? (
                     <ErrorState message={fetchErrorMessage} />
                 ) : (
                     <EmailPreview
+                        accentColor={siteData.accent_color}
                         emailFooter={generalSettings.emailFooter}
                         footerLinkText="Manage your preferences"
                         headerImage={generalSettings.headerImage}
+                        icon={icon}
                         replyToEmail={generalSettings.replyToEmail || replyToEmailPlaceholder || ''}
                         senderEmail={generalSettings.senderEmail || senderEmailPlaceholder || defaultEmailAddress || ''}
                         senderName={generalSettings.senderName || senderNamePlaceholder || siteTitle || 'Your site'}
@@ -536,6 +551,7 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
                         showPublicationTitle={generalSettings.showPublicationTitle}
                         showRecipientLine={false}
                         showSubjectLine={false}
+                        siteTitle={siteTitle}
                         subject={`Welcome to ${generalSettings.senderName || senderNamePlaceholder || siteTitle || 'our publication'}`}
                     >
                         <WelcomeEmailPreviewContent />
@@ -558,11 +574,27 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
                     />
                 }
                 testId="welcome-email-customize-modal"
-                title="Welcome emails"
-                onClose={handleClose}
+                title={title}
+                onClose={onClose}
                 onSave={() => handleSave({fakeWhenUnchanged: true})}
             />
         </EmailDesignProvider>
+    );
+};
+
+const WelcomeEmailCustomizeModal = NiceModal.create<WelcomeEmailCustomizeModalProps>((props) => {
+    const modal = useModal();
+
+    return (
+        <WelcomeEmailCustomizeModalContent
+            {...props}
+            afterClose={() => {
+                modal.resolveHide();
+                modal.remove();
+            }}
+            open={modal.visible}
+            onClose={() => modal.hide()}
+        />
     );
 });
 

@@ -1,13 +1,14 @@
 import React from 'react';
 import {GhostOrb} from '@tryghost/shade/components';
 import {cn} from '@tryghost/shade/utils';
-import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {resolveAllColors, resolveImageCorners} from './design-utils';
-import {useGlobalData} from '../../providers/global-data-provider';
 import type {EmailDesignSettings} from './types';
 
 interface EmailPreviewProps {
     settings: EmailDesignSettings;
+    accentColor: string;
+    siteTitle?: string;
+    icon?: string | null;
     senderName?: string;
     senderEmail?: string;
     replyToEmail?: string;
@@ -127,11 +128,7 @@ const Footer: React.FC<{siteTitle?: string; footerLinkText?: string; emailFooter
 
 // --- Main component ---
 
-const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, senderEmail, replyToEmail, subject, showRecipientLine = true, showSubjectLine = true, headerImage, showPublicationIcon = false, showPublicationTitle = true, showBadge = true, emailFooter, footerLinkText, children}) => {
-    const {settings: globalSettings, siteData} = useGlobalData();
-    const [siteTitle, icon] = getSettingValues<string>(globalSettings, ['title', 'icon']);
-    const accentColor = siteData.accent_color;
-
+const EmailPreview: React.FC<EmailPreviewProps> = ({settings, accentColor, siteTitle, icon, senderName, senderEmail, replyToEmail, subject, showRecipientLine = true, showSubjectLine = true, headerImage, showPublicationIcon = false, showPublicationTitle = true, showBadge = true, emailFooter, footerLinkText, children}) => {
     const colors = resolveAllColors(settings, accentColor);
     const imageCornerClass = resolveImageCorners(settings.image_corners);
 
