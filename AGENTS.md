@@ -6,6 +6,8 @@ This file provides guidance to AI Agents when working with code in this reposito
 
 **Always use `pnpm` for all commands.** This repository uses pnpm workspaces, not npm.
 
+Shared dependency versions are pinned in `pnpm-workspace.yaml` under `catalog:` and referenced as `"pkg": "catalog:"` (or `catalog:<name>` for named catalogs). `catalogMode` is `strict`, so `pnpm add` routes new deps into the catalog automatically — don't inline the version.
+
 ## Monorepo Structure
 
 Ghost is a pnpm + Nx monorepo with three workspace groups:
