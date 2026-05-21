@@ -196,9 +196,9 @@ const RetentionOfferRow: React.FC<{
             <td className='p-0 whitespace-nowrap'>
                 <button className='block w-full cursor-pointer p-5 text-left' type="button" onClick={onClick}>
                     {offer.status === 'active' ? (
-                        <span className='inline-flex items-center rounded-full bg-[rgba(48,207,67,0.15)] px-2 py-0.5 text-2xs font-semibold tracking-wide text-green uppercase'>Active</span>
+                        <span className='inline-flex items-center rounded-full bg-[rgba(48,207,67,0.15)] px-2 py-0.5 text-xs font-semibold tracking-wide text-green uppercase'>Active</span>
                     ) : (
-                        <span className='inline-flex items-center rounded-full bg-grey-200 px-2 py-0.5 text-2xs font-semibold tracking-wide text-grey-700 uppercase dark:bg-grey-900 dark:text-grey-500'>Inactive</span>
+                        <span className='inline-flex items-center rounded-full bg-grey-200 px-2 py-0.5 text-xs font-semibold tracking-wide text-grey-700 uppercase dark:bg-grey-900 dark:text-grey-500'>Inactive</span>
                     )}
                 </button>
             </td>
@@ -368,9 +368,9 @@ export const OffersIndexModal: React.FC = () => {
                             <td className='p-0 whitespace-nowrap'>
                                 <a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer.id)}>
                                     {archived ? (
-                                        <span className='inline-flex items-center rounded-full bg-grey-200 px-2 py-0.5 text-2xs font-semibold tracking-wide text-grey-700 uppercase dark:bg-grey-900 dark:text-grey-500'>Archived</span>
+                                        <span className='inline-flex items-center rounded-full bg-grey-200 px-2 py-0.5 text-xs font-semibold tracking-wide text-grey-700 uppercase dark:bg-grey-900 dark:text-grey-500'>Archived</span>
                                     ) : (
-                                        <span className='inline-flex items-center rounded-full bg-[rgba(48,207,67,0.15)] px-2 py-0.5 text-2xs font-semibold tracking-wide text-green uppercase'>Active</span>
+                                        <span className='inline-flex items-center rounded-full bg-[rgba(48,207,67,0.15)] px-2 py-0.5 text-xs font-semibold tracking-wide text-green uppercase'>Active</span>
                                     )}
                                 </a>
                             </td>
