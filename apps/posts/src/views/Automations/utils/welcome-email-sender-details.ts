@@ -1,6 +1,6 @@
 // NOTE: this has been copy-pasted into apps/posts/src/views/Automations/utils/welcome-email-sender-details.ts because we need to support the email design modal in both the settings app and the posts app until Automations GAs
 import {type Config, hasSendingDomain, isManagedEmail, sendingDomain} from '@tryghost/admin-x-framework/api/config';
-import {WELCOME_EMAIL_SLUGS} from '../components/settings/membership/member-emails/default-welcome-email-values';
+import {WELCOME_EMAIL_SLUGS} from './default-welcome-email-values';
 import {renderReplyToEmailPlaceholder, renderSenderEmail} from './newsletter-emails';
 import type {AutomatedEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 import type {Newsletter} from '@tryghost/admin-x-framework/api/newsletters';

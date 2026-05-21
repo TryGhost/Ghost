@@ -1,10 +1,10 @@
 // NOTE: this has been copy-pasted into apps/posts/src/views/Automations/components/automation-email-design-modal.tsx because we need to support the email design modal in both the settings app and the posts app until Automations GAs
-import EmailDesignModal from '../../email-design/email-design-modal';
-import EmailPreview from '../../email-design/email-preview';
-import HeaderImageField from '../../email-design/header-image-field';
+import EmailDesignModal from './email-design/email-design-modal';
+import EmailPreview from './email-design/email-preview';
+import HeaderImageField from './email-design/header-image-field';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import ShowBadgeField from '../../email-design/show-badge-field';
-import WelcomeEmailPreviewContent from '../../email-design/welcome-email-preview-content';
+import ShowBadgeField from './email-design/show-badge-field';
+import WelcomeEmailPreviewContent from './email-design/welcome-email-preview-content';
 import validator from 'validator';
 import {type AutomatedEmailDesign, type EditAutomatedEmailDesign, useEditAutomatedEmailDesign, useReadAutomatedEmailDesign} from '@tryghost/admin-x-framework/api/automated-email-design';
 import {
@@ -21,18 +21,25 @@ import {
     LinkColorField,
     LinkStyleField,
     SectionTitleColorField
-} from '../../email-design/design-fields';
-import {DEFAULT_EMAIL_DESIGN, type EmailDesignSettings} from '../../email-design/types';
-import {EmailDesignProvider} from '../../email-design/email-design-context';
+} from './email-design/design-fields';
+import {type Config} from '@tryghost/admin-x-framework/api/config';
+import {DEFAULT_EMAIL_DESIGN, type EmailDesignSettings} from './email-design/types';
+import {EmailDesignProvider} from './email-design/email-design-context';
 import {Input, LoadingIndicator, Separator, Switch, Tabs, TabsContent, TabsList, TabsTrigger, Textarea} from '@tryghost/shade/components';
-import {WELCOME_EMAIL_SLUGS, type WelcomeEmailType, getDefaultWelcomeEmailValues} from './default-welcome-email-values';
-import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {type Setting, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {type SiteData} from '@tryghost/admin-x-framework/api/site';
+import {WELCOME_EMAIL_SLUGS, type WelcomeEmailType, getDefaultWelcomeEmailValues} from '../utils/default-welcome-email-values';
 import {toast} from 'sonner';
 import {useAddAutomatedEmail, useBrowseAutomatedEmails, useEditAutomatedEmailSenders} from '@tryghost/admin-x-framework/api/automated-emails';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useGlobalData} from '../../../providers/global-data-provider';
-import {useWelcomeEmailSenderDetails} from '../../../../hooks/use-welcome-email-sender-details';
+import {useWelcomeEmailSenderDetails} from '../hooks/use-welcome-email-sender-details';
+
+type AutomationEmailDesignModalProps = {
+    config: Config;
+    settings: Setting[];
+    siteData: SiteData;
+};
 
 interface GeneralSettings {
     senderName: string;
@@ -50,7 +57,7 @@ interface WelcomeEmailCustomizeFormState {
     generalSettings: GeneralSettings;
 }
 
-const SAVE_ERROR_TOAST_ID = 'welcome-email-design-save-error';
+const SAVE_ERROR_TOAST_ID = 'automation-email-design-save-error';
 const WELCOME_EMAIL_DESIGN_FIELDS = new Set(Object.keys(DEFAULT_EMAIL_DESIGN));
 
 const isWelcomeEmailDesignField = (key: string) => WELCOME_EMAIL_DESIGN_FIELDS.has(key);
@@ -333,9 +340,8 @@ const normalizeSenderValue = (value: string | null | undefined) => {
     return trimmed || null;
 };
 
-const WelcomeEmailCustomizeModal = NiceModal.create(() => {
+const AutomationEmailDesignModal = NiceModal.create<AutomationEmailDesignModalProps>(({config, settings: globalSettings, siteData}) => {
     const modal = useModal();
-    const {siteData, settings: globalSettings, config} = useGlobalData();
     const [siteTitle, defaultEmailAddress, icon, supportEmailAddress] = getSettingValues<string>(
         globalSettings,
         ['title', 'default_email_address', 'icon', 'support_email_address']
@@ -569,8 +575,8 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
                         onGeneralChange={handleGeneralChange}
                     />
                 }
-                testId="welcome-email-customize-modal"
-                title="Welcome emails"
+                testId="automation-email-design-modal"
+                title="Email design"
                 onClose={handleClose}
                 onSave={() => handleSave({fakeWhenUnchanged: true})}
             />
@@ -578,4 +584,4 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
     );
 });
 
-export default WelcomeEmailCustomizeModal;
+export default AutomationEmailDesignModal;
