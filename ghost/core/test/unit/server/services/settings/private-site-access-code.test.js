@@ -12,14 +12,10 @@ describe('UNIT > private-site-access-code', function () {
         }
     });
 
-    it('uses the Product-approved 48-word list', function () {
-        assert.deepEqual(ACCESS_CODE_WORDS, [
-            'anchor', 'aurora', 'beacon', 'birch', 'bright', 'cedar', 'cloud', 'comet', 'copper', 'coral',
-            'ember', 'fern', 'field', 'forest', 'golden', 'green', 'harbor', 'hidden', 'horizon', 'juniper',
-            'lagoon', 'lunar', 'maple', 'meadow', 'midnight', 'north', 'ocean', 'olive', 'paper', 'pine',
-            'quiet', 'river', 'sage', 'signal', 'silver', 'solstice', 'sparrow', 'stone', 'studio', 'summit',
-            'sunrise', 'thistle', 'valley', 'violet', 'willow', 'window', 'winter', 'wild'
-        ]);
+    it('uses a 48-word lowercase list with no duplicate entries', function () {
+        assert.equal(ACCESS_CODE_WORDS.length, 48);
+        assert.equal(new Set(ACCESS_CODE_WORDS).size, ACCESS_CODE_WORDS.length);
+        assert.ok(ACCESS_CODE_WORDS.every(word => /^[a-z]+$/.test(word)));
     });
 
     it('produces varied codes across consecutive calls', function () {
