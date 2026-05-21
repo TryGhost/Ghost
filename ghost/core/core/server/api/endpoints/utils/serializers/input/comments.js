@@ -4,13 +4,19 @@ module.exports = {
             return;
         }
 
-        // Map the 'liked' relation to 'count.liked'
+        // Map reaction shortcut relations to count relations
         frame.options.withRelated = frame.options.withRelated.map((relation) => {
             if (relation === 'liked') {
                 return 'count.liked';
             }
             if (relation === 'replies.liked') {
                 return 'replies.count.liked';
+            }
+            if (relation === 'disliked') {
+                return 'count.disliked';
+            }
+            if (relation === 'replies.disliked') {
+                return 'replies.count.disliked';
             }
             return relation;
         });

@@ -1,6 +1,16 @@
 const commentsService = require('../../services/comments');
 const errors = require('@tryghost/errors');
 
+function withDislikesCapability(response) {
+    response.meta = response.meta || {};
+    response.meta.capabilities = {
+        ...response.meta.capabilities,
+        dislikes: true
+    };
+
+    return response;
+}
+
 function validateCommentData(data) {
     if (!data.post_id && !data.parent_id) {
         throw new errors.ValidationError({
@@ -76,7 +86,7 @@ const controller = {
         permissions: true,
         async query(frame) {
             const result = await commentsService.controller.adminBrowse(frame);
-            return result;
+            return withDislikesCapability(result);
         }
     },
     browseAll: {
@@ -96,7 +106,7 @@ const controller = {
         },
         async query(frame) {
             const result = await commentsService.controller.adminBrowseAll(frame);
-            return result;
+            return withDislikesCapability(result);
         }
     },
     add: {
