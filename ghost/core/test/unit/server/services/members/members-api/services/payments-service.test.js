@@ -10,7 +10,7 @@ describe('PaymentsService', function () {
     let Bookshelf;
     let db;
 
-    before(async function () {
+    beforeAll(async function () {
         db = knex({
             client: 'sqlite3',
             useNullAsDefault: true,
@@ -57,7 +57,7 @@ describe('PaymentsService', function () {
         await db('stripe_customers').truncate();
     });
 
-    after(async function () {
+    afterAll(async function () {
         await db.destroy();
     });
 

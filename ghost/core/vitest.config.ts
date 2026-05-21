@@ -27,6 +27,7 @@ export default defineConfig({
             'test/unit/server/data/**/*.test.{js,ts}',
             'test/unit/server/lib/**/*.test.{js,ts}',
             'test/unit/server/models/**/*.test.{js,ts}',
+            'test/unit/server/services/**/*.test.{js,ts}',
             'test/unit/server/web/**/*.test.{js,ts}'
         ],
         // Fake-timer + nock + retry-loop interactions in this file don't
