@@ -989,6 +989,41 @@ describe('EmailAnalyticsService', function () {
     });
 
     describe('aggregateStats', function () {
+        describe('with incremental aggregation enabled', function () {
+            let service;
+
+            beforeEach(function () {
+                configUtils.set('emailAnalytics:incrementalAggregation', true);
+                service = new EmailAnalyticsService({
+                    config: createMockConfig(),
+                    queries: {
+                        aggregateEmailStats: sinon.spy(),
+                        aggregateMemberStats: sinon.spy(),
+                        aggregateMemberStatsBatch: sinon.spy()
+                    }
+                });
+            });
+
+            afterEach(function () {
+                configUtils.restore();
+            });
+
+            it('skips full aggregation queries', async function () {
+                const result = await service.aggregateStats({
+                    emailIds: ['e-1', 'e-2'],
+                    memberIds: ['m-1', 'm-2']
+                });
+
+                assert.deepEqual(result, {
+                    emailAggregationTimeMs: 0,
+                    memberAggregationTimeMs: 0
+                });
+                sinon.assert.notCalled(service.queries.aggregateEmailStats);
+                sinon.assert.notCalled(service.queries.aggregateMemberStats);
+                sinon.assert.notCalled(service.queries.aggregateMemberStatsBatch);
+            });
+        });
+
         describe('with batching enabled', function () {
             let service;
 

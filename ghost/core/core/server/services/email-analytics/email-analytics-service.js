@@ -675,6 +675,14 @@ module.exports = class EmailAnalyticsService {
      * @returns {Promise<{emailAggregationTimeMs: number, memberAggregationTimeMs: number}>}
      */
     async aggregateStats({emailIds = [], memberIds = []}, includeOpenedEvents = true) {
+        if (this.config.get('emailAnalytics:incrementalAggregation') === true) {
+            logging.info(`[EmailAnalytics] Skipping full aggregation for ${emailIds.length} emails and ${memberIds.length} members because incremental aggregation is enabled`);
+            return {
+                emailAggregationTimeMs: 0,
+                memberAggregationTimeMs: 0
+            };
+        }
+
         const useBatchProcessing = this.config.get('emailAnalytics:batchProcessing');
 
         const emailAggregationStart = Date.now();

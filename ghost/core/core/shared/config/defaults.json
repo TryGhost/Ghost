@@ -234,6 +234,7 @@
     "emailAnalytics": {
         "enabled": true,
         "batchProcessing": false,
+        "incrementalAggregation": false,
         "metrics": {
             "openThroughput": {
                 "enabled": false,

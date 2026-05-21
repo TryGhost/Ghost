@@ -19,9 +19,9 @@ class EmailEventStorage {
 
         // Initialize pending updates for batched processing
         this.#pendingUpdates = {
-            delivered: new Map(), // recipientId -> timestamp
-            opened: new Map(), // recipientId -> timestamp
-            failed: new Map() // recipientId -> timestamp
+            delivered: new Map(), // recipientId -> {timestamp, event, recipient}
+            opened: new Map(), // recipientId -> {timestamp, event, recipient}
+            failed: new Map() // recipientId -> {timestamp, event, recipient}
         };
 
         if (this.#prometheusClient) {
@@ -33,7 +33,54 @@ class EmailEventStorage {
         }
     }
 
-    async handleDelivered(event) {
+    #useIncrementalAggregation() {
+        return config.get('emailAnalytics:incrementalAggregation') === true;
+    }
+
+    #isFirstAnalyticsEvent(recipient) {
+        return !recipient?.deliveredAt && !recipient?.openedAt && !recipient?.failedAt;
+    }
+
+    async #incrementEmailAggregate(emailId, field) {
+        if (!this.#useIncrementalAggregation()) {
+            return;
+        }
+
+        await this.#db.knex('emails')
+            .where('id', '=', emailId)
+            .increment(field, 1);
+    }
+
+    async #incrementMemberAggregate(memberId, {emailCountDelta = 0, openedDelta = 0} = {}) {
+        if (!this.#useIncrementalAggregation() || (!emailCountDelta && !openedDelta)) {
+            return;
+        }
+
+        await this.#db.knex('members')
+            .where('id', '=', memberId)
+            .update({
+                email_count: this.#db.knex.raw('email_count + ?', [emailCountDelta]),
+                email_opened_count: this.#db.knex.raw('email_opened_count + ?', [openedDelta]),
+                email_open_rate: this.#db.knex.raw(
+                    'CASE WHEN email_count + ? >= 5 THEN ROUND((email_opened_count + ?) * 100.0 / (email_count + ?)) ELSE email_open_rate END',
+                    [emailCountDelta, openedDelta, emailCountDelta]
+                )
+            });
+    }
+
+    async #incrementAggregatesForTimestamp(event, {emailField, incrementsMemberOpened = false, recipientBefore}) {
+        if (!this.#useIncrementalAggregation()) {
+            return;
+        }
+
+        await this.#incrementEmailAggregate(event.emailId, emailField);
+        await this.#incrementMemberAggregate(event.memberId, {
+            emailCountDelta: recipientBefore && this.#isFirstAnalyticsEvent(recipientBefore) ? 1 : 0,
+            openedDelta: incrementsMemberOpened ? 1 : 0
+        });
+    }
+
+    async handleDelivered(event, recipient) {
         const useBatchProcessing = config.get('emailAnalytics:batchProcessing');
 
         if (useBatchProcessing) {
@@ -42,8 +89,8 @@ class EmailEventStorage {
             const existing = this.#pendingUpdates.delivered.get(event.emailRecipientId);
 
             // Keep the earliest timestamp (out-of-order protection)
-            if (!existing || timestamp < existing) {
-                this.#pendingUpdates.delivered.set(event.emailRecipientId, timestamp);
+            if (!existing || timestamp < existing.timestamp) {
+                this.#pendingUpdates.delivered.set(event.emailRecipientId, {timestamp, event, recipient});
             }
         } else {
             // Sequential mode: immediate update
@@ -56,10 +103,16 @@ class EmailEventStorage {
                     delivered_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')
                 });
             this.recordEventStored('delivered', rowCount);
+            if (rowCount > 0) {
+                await this.#incrementAggregatesForTimestamp(event, {
+                    emailField: 'delivered_count',
+                    recipientBefore: recipient
+                });
+            }
         }
     }
 
-    async handleOpened(event) {
+    async handleOpened(event, recipient) {
         const useBatchProcessing = config.get('emailAnalytics:batchProcessing');
 
         if (useBatchProcessing) {
@@ -68,8 +121,8 @@ class EmailEventStorage {
             const existing = this.#pendingUpdates.opened.get(event.emailRecipientId);
 
             // Keep the earliest timestamp (out-of-order protection)
-            if (!existing || timestamp < existing) {
-                this.#pendingUpdates.opened.set(event.emailRecipientId, timestamp);
+            if (!existing || timestamp < existing.timestamp) {
+                this.#pendingUpdates.opened.set(event.emailRecipientId, {timestamp, event, recipient});
             }
         } else {
             // Sequential mode: immediate update
@@ -82,10 +135,17 @@ class EmailEventStorage {
                     opened_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')
                 });
             this.recordEventStored('opened', rowCount);
+            if (rowCount > 0) {
+                await this.#incrementAggregatesForTimestamp(event, {
+                    emailField: 'opened_count',
+                    incrementsMemberOpened: true,
+                    recipientBefore: recipient
+                });
+            }
         }
     }
 
-    async handlePermanentFailed(event) {
+    async handlePermanentFailed(event, recipient) {
         const useBatchProcessing = config.get('emailAnalytics:batchProcessing');
 
         if (useBatchProcessing) {
@@ -94,19 +154,25 @@ class EmailEventStorage {
             const existing = this.#pendingUpdates.failed.get(event.emailRecipientId);
 
             // Keep the earliest timestamp (out-of-order protection)
-            if (!existing || timestamp < existing) {
-                this.#pendingUpdates.failed.set(event.emailRecipientId, timestamp);
+            if (!existing || timestamp < existing.timestamp) {
+                this.#pendingUpdates.failed.set(event.emailRecipientId, {timestamp, event, recipient});
             }
         } else {
             // Sequential mode: immediate update
             // To properly handle events that are received out of order (this happens because of polling)
             // only set if failed_at is null
-            await this.#db.knex('email_recipients')
+            const rowCount = await this.#db.knex('email_recipients')
                 .where('id', '=', event.emailRecipientId)
                 .whereNull('failed_at')
                 .update({
                     failed_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')
                 });
+            if (rowCount > 0) {
+                await this.#incrementAggregatesForTimestamp(event, {
+                    emailField: 'failed_count',
+                    recipientBefore: recipient
+                });
+            }
         }
         await this.saveFailure('permanent', event);
     }
@@ -280,9 +346,9 @@ class EmailEventStorage {
             return;
         }
 
-        // Build CASE statement for batched update
         const recipientIds = updates.map(([id]) => id);
-        const caseClauses = updates.map(([id, timestamp]) => {
+        // Build CASE statement for batched update
+        const caseClauses = updates.map(([id, {timestamp}]) => {
             return `WHEN '${id}' THEN '${timestamp}'`;
         }).join(' ');
 
@@ -295,6 +361,19 @@ class EmailEventStorage {
 
         const rowCount = await this.#db.knex.raw(sql, recipientIds);
         this.recordEventStored('delivered', updates.length);
+        await Promise.all(updates.map(async ([, {event, recipient}]) => {
+            const recipientBefore = recipient;
+            if (!recipientBefore) {
+                return;
+            }
+            if (recipientBefore?.deliveredAt) {
+                return;
+            }
+            await this.#incrementAggregatesForTimestamp(event, {
+                emailField: 'delivered_count',
+                recipientBefore
+            });
+        }));
         return rowCount;
     }
 
@@ -307,9 +386,9 @@ class EmailEventStorage {
             return;
         }
 
-        // Build CASE statement for batched update
         const recipientIds = updates.map(([id]) => id);
-        const caseClauses = updates.map(([id, timestamp]) => {
+        // Build CASE statement for batched update
+        const caseClauses = updates.map(([id, {timestamp}]) => {
             return `WHEN '${id}' THEN '${timestamp}'`;
         }).join(' ');
 
@@ -322,6 +401,20 @@ class EmailEventStorage {
 
         const rowCount = await this.#db.knex.raw(sql, recipientIds);
         this.recordEventStored('opened', updates.length);
+        await Promise.all(updates.map(async ([, {event, recipient}]) => {
+            const recipientBefore = recipient;
+            if (!recipientBefore) {
+                return;
+            }
+            if (recipientBefore?.openedAt) {
+                return;
+            }
+            await this.#incrementAggregatesForTimestamp(event, {
+                emailField: 'opened_count',
+                incrementsMemberOpened: true,
+                recipientBefore
+            });
+        }));
         return rowCount;
     }
 
@@ -334,9 +427,9 @@ class EmailEventStorage {
             return;
         }
 
-        // Build CASE statement for batched update
         const recipientIds = updates.map(([id]) => id);
-        const caseClauses = updates.map(([id, timestamp]) => {
+        // Build CASE statement for batched update
+        const caseClauses = updates.map(([id, {timestamp}]) => {
             return `WHEN '${id}' THEN '${timestamp}'`;
         }).join(' ');
 
@@ -348,6 +441,19 @@ class EmailEventStorage {
         `;
 
         const rowCount = await this.#db.knex.raw(sql, recipientIds);
+        await Promise.all(updates.map(async ([, {event, recipient}]) => {
+            const recipientBefore = recipient;
+            if (!recipientBefore) {
+                return;
+            }
+            if (recipientBefore?.failedAt) {
+                return;
+            }
+            await this.#incrementAggregatesForTimestamp(event, {
+                emailField: 'failed_count',
+                recipientBefore
+            });
+        }));
         return rowCount;
     }
 }

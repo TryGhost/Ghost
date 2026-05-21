@@ -7,6 +7,20 @@ const EmailTemporaryBouncedEvent = require('./events/email-temporary-bounced-eve
 const EmailUnsubscribedEvent = require('./events/email-unsubscribed-event');
 const SpamComplaintEvent = require('./events/spam-complaint-event');
 
+function withRecipientTimestamps(recipientInfo, row) {
+    if (Object.prototype.hasOwnProperty.call(row, 'delivered_at')) {
+        recipientInfo.deliveredAt = row.delivered_at;
+    }
+    if (Object.prototype.hasOwnProperty.call(row, 'opened_at')) {
+        recipientInfo.openedAt = row.opened_at;
+    }
+    if (Object.prototype.hasOwnProperty.call(row, 'failed_at')) {
+        recipientInfo.failedAt = row.failed_at;
+    }
+
+    return recipientInfo;
+}
+
 async function waitForEvent() {
     return new Promise((resolve) => {
         setTimeout(resolve, 70);
@@ -25,16 +39,19 @@ async function waitForEvent() {
  * @property {string} emailRecipientId
  * @property {string} memberId
  * @property {string} emailId
+ * @property {Date|null} deliveredAt
+ * @property {Date|null} openedAt
+ * @property {Date|null} failedAt
  */
 
 /**
  * @typedef EmailEventStorage
- * @property {(event: EmailDeliveredEvent) => Promise<void>} handleDelivered
- * @property {(event: EmailOpenedEvent) => Promise<void>} handleOpened
- * @property {(event: EmailBouncedEvent) => Promise<void>} handlePermanentFailed
- * @property {(event: EmailTemporaryBouncedEvent) => Promise<void>} handleTemporaryFailed
- * @property {(event: EmailUnsubscribedEvent) => Promise<void>} handleUnsubscribed
- * @property {(event: SpamComplaintEvent) => Promise<void>} handleComplained
+ * @property {(event: EmailDeliveredEvent, recipient?: EmailRecipientInformation) => Promise<void>} handleDelivered
+ * @property {(event: EmailOpenedEvent, recipient?: EmailRecipientInformation) => Promise<void>} handleOpened
+ * @property {(event: EmailBouncedEvent, recipient?: EmailRecipientInformation) => Promise<void>} handlePermanentFailed
+ * @property {(event: EmailTemporaryBouncedEvent, recipient?: EmailRecipientInformation) => Promise<void>} handleTemporaryFailed
+ * @property {(event: EmailUnsubscribedEvent, recipient?: EmailRecipientInformation) => Promise<void>} handleUnsubscribed
+ * @property {(event: SpamComplaintEvent, recipient?: EmailRecipientInformation) => Promise<void>} handleComplained
  */
 
 /**
@@ -77,7 +94,7 @@ class EmailEventProcessor {
                 emailId: recipient.emailId,
                 timestamp
             });
-            await this.#eventStorage.handleDelivered(event);
+            await this.#eventStorage.handleDelivered(event, recipient);
 
             this.#domainEvents.dispatch(event);
             this.recordEventProcessed('delivered');
@@ -101,7 +118,7 @@ class EmailEventProcessor {
                 timestamp
             });
             this.#domainEvents.dispatch(event);
-            await this.#eventStorage.handleOpened(event);
+            await this.#eventStorage.handleOpened(event, recipient);
             this.recordEventProcessed('opened');
         }
         return recipient;
@@ -124,7 +141,7 @@ class EmailEventProcessor {
                 emailRecipientId: recipient.emailRecipientId,
                 timestamp
             });
-            await this.#eventStorage.handleTemporaryFailed(event);
+            await this.#eventStorage.handleTemporaryFailed(event, recipient);
 
             this.#domainEvents.dispatch(event);
         }
@@ -148,7 +165,7 @@ class EmailEventProcessor {
                 emailRecipientId: recipient.emailRecipientId,
                 timestamp
             });
-            await this.#eventStorage.handlePermanentFailed(event);
+            await this.#eventStorage.handlePermanentFailed(event, recipient);
 
             this.#domainEvents.dispatch(event);
             await waitForEvent(); // Avoids knex connection pool to run dry
@@ -170,7 +187,7 @@ class EmailEventProcessor {
                 emailId: recipient.emailId,
                 timestamp
             });
-            await this.#eventStorage.handleUnsubscribed(event);
+            await this.#eventStorage.handleUnsubscribed(event, recipient);
 
             this.#domainEvents.dispatch(event);
         }
@@ -191,7 +208,7 @@ class EmailEventProcessor {
                 emailId: recipient.emailId,
                 timestamp
             });
-            await this.#eventStorage.handleComplained(event);
+            await this.#eventStorage.handleComplained(event, recipient);
 
             this.#domainEvents.dispatch(event);
             await waitForEvent(); // Avoids knex connection pool to run dry
@@ -228,18 +245,20 @@ class EmailEventProcessor {
         }
 
         // Fall back to individual query for backwards compatibility
-        const {id: emailRecipientId, member_id: memberId} = await this.#db.knex('email_recipients')
-            .select('id', 'member_id')
+        const recipient = await this.#db.knex('email_recipients')
+            .select('id', 'member_id', 'delivered_at', 'opened_at', 'failed_at')
             .where('member_email', emailIdentification.email)
             .where('email_id', emailId)
-            .first() || {};
+            .first();
+
+        const {id: emailRecipientId, member_id: memberId} = recipient || {};
 
         if (emailRecipientId && memberId) {
-            return {
+            return withRecipientTimestamps({
                 emailRecipientId,
                 memberId,
                 emailId
-            };
+            }, recipient);
         }
     }
 
@@ -328,7 +347,7 @@ class EmailEventProcessor {
         // Step 3: Batch query all recipients with OR conditions
         // Build the WHERE clause with OR conditions
         const recipientQuery = this.#db.knex('email_recipients')
-            .select('id', 'member_id', 'email_id', 'member_email');
+            .select('id', 'member_id', 'email_id', 'member_email', 'delivered_at', 'opened_at', 'failed_at');
 
         // Add WHERE conditions - need to build complex OR query
         recipientQuery.where(function () {
@@ -345,11 +364,11 @@ class EmailEventProcessor {
         // Step 4: Build cache map keyed by "email:emailId"
         for (const recipient of recipients) {
             const key = `${recipient.member_email}:${recipient.email_id}`;
-            recipientCache.set(key, {
+            recipientCache.set(key, withRecipientTimestamps({
                 emailRecipientId: recipient.id,
                 memberId: recipient.member_id,
                 emailId: recipient.email_id
-            });
+            }, recipient));
         }
 
         return recipientCache;
