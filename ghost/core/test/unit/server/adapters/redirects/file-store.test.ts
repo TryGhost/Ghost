@@ -5,8 +5,8 @@ import path from 'path';
 import os from 'os';
 import crypto from 'crypto';
 
-import {FileStore} from '../../../../../core/server/services/custom-redirects/file-store';
-import {runStoreContract} from './helpers/store-contract';
+import FileStore from '../../../../../core/server/adapters/redirects/FileStore';
+import {runStoreContract} from '../../services/custom-redirects/helpers/store-contract';
 
 const writeJson = (filePath: string, data: unknown): Promise<void> => fs.writeFile(filePath, JSON.stringify(data), 'utf-8');
 
