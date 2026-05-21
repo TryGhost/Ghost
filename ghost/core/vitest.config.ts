@@ -47,7 +47,11 @@ export default defineConfig({
         ),
         testTimeout: 2000,
         hookTimeout: 60000,
-        reporters: ['dot'],
+        // `dot` keeps local/CI output compact. `github-actions` adds inline
+        // `::error::` annotations for failed tests — without it, CI logs only
+        // show vitest's dot stream, whose failure summary GitHub truncates,
+        // making it impossible to tell which test failed from the logs.
+        reporters: process.env.GITHUB_ACTIONS ? ['dot', 'github-actions'] : ['dot'],
         coverage: {
             provider: 'v8',
             reporter: ['text-summary', 'html', 'cobertura'],
