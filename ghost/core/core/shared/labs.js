@@ -25,7 +25,8 @@ const GA_FEATURES = [
     'explore',
     'commentModeration',
     'featurebaseFeedback',
-    'giftSubscriptions'
+    'giftSubscriptions',
+    'dangerZoneResetAuth'
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
@@ -52,8 +53,7 @@ const PRIVATE_FEATURES = [
     'pictureImageFormats',
     'smarterCounts',
     'commentsThreads',
-    'commentsPinning',
-    'dangerZoneResetAuth'
+    'commentsPinning'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
