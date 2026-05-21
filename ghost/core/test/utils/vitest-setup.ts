@@ -21,6 +21,27 @@ import {beforeAll, beforeEach, afterEach, afterAll} from 'vitest';
 // resolution. Must run before any Ghost source is required below.
 require('tsx/cjs');
 
+// bree runs "offloaded" jobs in worker threads, which can't see the
+// require('tsx/cjs') hook above (it's registered only in this thread) and so
+// can't require()/import Ghost's .ts server source. A new Worker inherits the
+// process.execArgv snapshot from process *startup* — mutating the live array
+// does not propagate — so we (1) add tsx's loader to execArgv and (2) patch
+// Worker to pass the live execArgv explicitly to every spawned worker.
+if (!process.execArgv.some(arg => arg.includes('tsx'))) {
+    const {pathToFileURL} = require('node:url');
+    process.execArgv.push('--import', pathToFileURL(require.resolve('tsx')).href);
+}
+const workerThreads = require('node:worker_threads');
+if (!workerThreads.Worker.__tsxPatched) {
+    const OriginalWorker = workerThreads.Worker;
+    workerThreads.Worker = class extends OriginalWorker {
+        constructor(filename: string, options: {execArgv?: string[]} = {}) {
+            super(filename, {...options, execArgv: options.execArgv ?? process.execArgv});
+        }
+    };
+    workerThreads.Worker.__tsxPatched = true;
+}
+
 process.env.NODE_ENV = process.env.NODE_ENV || 'testing';
 process.env.WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_SECRET';
 
