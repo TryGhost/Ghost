@@ -62,8 +62,7 @@ class CommentsService {
             settingsCache,
             settingsHelpers,
             urlService,
-            urlUtils,
-            labs
+            urlUtils
         });
     }
 
