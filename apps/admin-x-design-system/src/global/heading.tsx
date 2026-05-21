@@ -41,7 +41,7 @@ type HeadingLabelProps = {
 export const Heading6Styles = clsx('font-semibold tracking-normal');
 export const Heading6StylesGrey = clsx(
     Heading6Styles,
-    'text-grey-900 dark:text-grey-500'
+    'font-semibold text-grey-900 dark:text-grey-500'
 );
 
 export type HeadingProps = Heading1to5Props | Heading6Props | HeadingLabelProps
