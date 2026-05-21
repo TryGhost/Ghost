@@ -6,11 +6,17 @@ const messages = {
     noPermissionToDismissNotif: 'You do not have permission to dismiss this notification.'
 };
 
+export const NotificationTypes = ['info', 'alert', 'warn'] as const;
+export type NotificationType = (typeof NotificationTypes)[number];
+
 export const Notification = z.object({
     id: z.string().min(1),
-    custom: z.boolean().default(false),
+    // Defaults to `true` so a caller that forgets to set `custom` does not
+    // accidentally mark a notification as a release-channel one — that flag
+    // triggers existing-release replacement at the service layer.
+    custom: z.boolean().default(true),
     message: z.string(),
-    type: z.enum(['info', 'alert', 'warn']).default('info'),
+    type: z.enum(NotificationTypes).default('info'),
     dismissible: z.boolean().default(true),
     top: z.boolean().optional(),
     createdAtVersion: z.string(),

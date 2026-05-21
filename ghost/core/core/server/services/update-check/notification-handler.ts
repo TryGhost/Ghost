@@ -1,4 +1,6 @@
 import {z} from 'zod';
+import logging from '@tryghost/logging';
+import {NotificationTypes, type NotificationType} from '../notifications/notification';
 import type {NotificationInput} from '../notifications/service';
 
 const UpdateCheckMessage = z.object({
@@ -21,13 +23,31 @@ export interface UpdateCheckHandlerOptions {
     notificationGroups?: string[];
 }
 
-const NOTIFICATION_TYPES = ['info', 'alert', 'warn'] as const;
-type NotificationType = (typeof NOTIFICATION_TYPES)[number];
+// Map upstream's documented `info|error|warning` severity scale onto Ghost's
+// internal `info|alert|warn` enum. Unknown values default to `info` but get
+// logged so we notice upstream introducing a new severity rather than silently
+// downgrading it.
+const TYPE_ALIASES: Record<string, NotificationType> = {
+    error: 'alert',
+    warning: 'warn'
+};
 
-function safeType(value: string): NotificationType {
-    return NOTIFICATION_TYPES.includes(value as NotificationType)
-        ? (value as NotificationType)
-        : 'info';
+function mapType(value: string): NotificationType {
+    if (NotificationTypes.includes(value as NotificationType)) {
+        return value as NotificationType;
+    }
+    const aliased = TYPE_ALIASES[value];
+    if (aliased) {
+        return aliased;
+    }
+    logging.warn(
+        {
+            event: {name: 'updatecheck.handler.unknown-type'},
+            receivedType: value
+        },
+        'UpdateCheck delivered an unrecognised notification type; defaulting to info'
+    );
+    return 'info';
 }
 
 export function toNotificationInputs(
@@ -59,7 +79,7 @@ export function toNotificationInputs(
     return notification.messages.map((m): NotificationInput => ({
         id: m.id,
         message: m.content,
-        type: safeType(m.type),
+        type: mapType(m.type),
         custom: isCustom,
         dismissible: m.dismissible,
         top: m.top

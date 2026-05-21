@@ -222,6 +222,35 @@ describe('Notification domain (integration)', function () {
             assert.deepEqual(ids, ['current']);
         });
 
+        it('returns notifications stamped at a newer Ghost version', async function () {
+            await setStoredNotifications([{
+                id: 'future',
+                custom: true,
+                type: 'info',
+                message: 'newer than current',
+                createdAtVersion: '999.0.0',
+                addedAt: new Date().toISOString()
+            }]);
+
+            const {body} = await agent.get('notifications').expectStatus(200);
+            const ids = body.notifications.map((n: any) => n.id);
+            assert.deepEqual(ids, ['future']);
+        });
+
+        it('drops notifications with an unparseable createdAtVersion', async function () {
+            await setStoredNotifications([{
+                id: 'gibberish',
+                custom: true,
+                type: 'info',
+                message: 'invalid version',
+                createdAtVersion: 'not-a-version',
+                addedAt: new Date().toISOString()
+            }]);
+
+            const {body} = await agent.get('notifications').expectStatus(200);
+            assert.equal(body.notifications.length, 0);
+        });
+
         it('does not return notifications the calling user has already dismissed', async function () {
             const ownerUser = await models.User.findOne({slug: 'joe-bloggs'});
             const ownerId = ownerUser.id;
@@ -430,6 +459,79 @@ describe('Notification domain (integration)', function () {
             mockManager.assert.sentEmailCount(0);
         });
 
+        it('maps upstream type "warning" onto Ghost\'s "warn"', async function () {
+            const messageId = '55555555-5555-4555-8555-555555555555';
+            mockEndpoint({
+                id: 5,
+                custom: true,
+                version: 'all',
+                next_check: moment().add(1, 'day').unix(),
+                messages: [{
+                    id: messageId,
+                    version: 'custom4',
+                    content: '<p>warning copy</p>',
+                    type: 'warning'
+                }]
+            });
+
+            await buildService().check();
+
+            const stored = await readStoredNotifications();
+            const match = stored.find(n => n.id === messageId);
+            assert.ok(match, 'notification stored');
+            assert.equal(match!.type, 'warn');
+        });
+
+        it('maps upstream type "error" onto Ghost\'s "alert"', async function () {
+            const messageId = '66666666-6666-4666-8666-666666666666';
+            mockEndpoint({
+                id: 6,
+                custom: true,
+                version: 'all',
+                next_check: moment().add(1, 'day').unix(),
+                messages: [{
+                    id: messageId,
+                    version: 'custom5',
+                    content: '<p>error copy</p>',
+                    type: 'error'
+                }]
+            });
+
+            await buildService().check();
+
+            const stored = await readStoredNotifications();
+            const match = stored.find(n => n.id === messageId);
+            assert.ok(match, 'notification stored');
+            assert.equal(match!.type, 'alert');
+        });
+
+        it('defaults to "info" and logs when upstream sends an unrecognised type', async function () {
+            const messageId = '77777777-7777-4777-8777-777777777777';
+            const warnSpy = sinon.spy();
+            sinon.stub(require('@tryghost/logging'), 'warn').callsFake(warnSpy);
+            mockEndpoint({
+                id: 7,
+                custom: true,
+                version: 'all',
+                next_check: moment().add(1, 'day').unix(),
+                messages: [{
+                    id: messageId,
+                    version: 'custom6',
+                    content: '<p>weird</p>',
+                    type: 'mystery'
+                }]
+            });
+
+            await buildService().check();
+
+            const stored = await readStoredNotifications();
+            const match = stored.find(n => n.id === messageId);
+            assert.ok(match, 'notification stored');
+            assert.equal(match!.type, 'info');
+            const logged = warnSpy.getCalls().some(call => call.args[0]?.event?.name === 'updatecheck.handler.unknown-type');
+            assert.ok(logged, 'a structured warning is logged for the unknown type');
+        });
+
         it('stores the same update-check message only once across consecutive poll cycles', async function () {
             const messageId = '44444444-4444-4444-8444-444444444444';
             const payload = {
@@ -451,6 +553,142 @@ describe('Notification domain (integration)', function () {
 
             const stored = await readStoredNotifications();
             assert.equal(stored.filter(n => n.id === messageId).length, 1);
+        });
+    });
+
+    // ─────────────────────────────────────────────────────────────────
+    // Alert email reactor: failure modes
+    // ─────────────────────────────────────────────────────────────────
+
+    describe('Alert email reactor: failure modes', function () {
+        async function postAlert(message: string): Promise<void> {
+            await agent
+                .post('notifications')
+                .body({notifications: [{custom: true, type: 'alert', message}]})
+                .expectStatus(201);
+        }
+
+        it('logs and continues when admin-recipient lookup throws', async function () {
+            const errorSpy = sinon.spy();
+            sinon.stub(require('@tryghost/logging'), 'error').callsFake(errorSpy);
+            sinon.stub(models.User, 'findActiveAdministrators').rejects(new Error('lookup boom'));
+
+            await postAlert('alert with broken recipient lookup');
+
+            mockManager.assert.sentEmailCount(0);
+            const logged = errorSpy.getCalls().some(call => call.args[0]?.event?.name === 'notifications.resolve-recipients.error');
+            assert.ok(logged, 'recipient-lookup failure is logged');
+        });
+
+        // The sibling failure mode (sendEmail throwing for a single recipient)
+        // is covered by the reactor's source guard but is awkward to exercise
+        // through the integration harness because mockMail stubs the mailer
+        // before the reactor captures a bound reference. A focused unit test
+        // against the reactor factory is the right home for it.
+    });
+
+    // ─────────────────────────────────────────────────────────────────
+    // Maintenance: pruneStale
+    // ─────────────────────────────────────────────────────────────────
+
+    describe('Maintenance: pruneStale', function () {
+        function getService() {
+            return require('../../../../core/server/services/notifications').notifications;
+        }
+
+        function olderThanThreshold(): string {
+            return new Date(Date.now() - 1000 * 60 * 60 * 24 * 90).toISOString();
+        }
+
+        function youngerThanThreshold(): string {
+            return new Date(Date.now() - 1000 * 60 * 60).toISOString();
+        }
+
+        function thresholdDate(): Date {
+            return new Date(Date.now() - 1000 * 60 * 60 * 24 * 60);
+        }
+
+        async function ownerSeenBy(): Promise<string[]> {
+            const owner = await models.User.findOne({slug: 'joe-bloggs'});
+            return [owner.id];
+        }
+
+        it('removes custom notifications that are old AND have been seen', async function () {
+            const seenBy = await ownerSeenBy();
+            await setStoredNotifications([{
+                id: 'stale',
+                custom: true,
+                type: 'info',
+                message: 'old + seen',
+                dismissible: true,
+                addedAt: olderThanThreshold(),
+                createdAtVersion: ghostVersion.full,
+                seenBy
+            }]);
+
+            await getService().pruneStale(thresholdDate());
+
+            const stored = await readStoredNotifications();
+            assert.equal(stored.length, 0);
+        });
+
+        it('preserves unread notifications regardless of age', async function () {
+            await setStoredNotifications([{
+                id: 'unread-old',
+                custom: true,
+                type: 'info',
+                message: 'old but unread',
+                dismissible: true,
+                addedAt: olderThanThreshold(),
+                createdAtVersion: ghostVersion.full,
+                seenBy: []
+            }]);
+
+            await getService().pruneStale(thresholdDate());
+
+            const stored = await readStoredNotifications();
+            assert.equal(stored.length, 1);
+            assert.equal(stored[0].id, 'unread-old');
+        });
+
+        it('preserves release notifications regardless of age', async function () {
+            const seenBy = await ownerSeenBy();
+            await setStoredNotifications([{
+                id: 'old-release',
+                custom: false,
+                type: 'info',
+                message: 'old release',
+                dismissible: true,
+                addedAt: olderThanThreshold(),
+                createdAtVersion: ghostVersion.full,
+                seenBy
+            }]);
+
+            await getService().pruneStale(thresholdDate());
+
+            const stored = await readStoredNotifications();
+            assert.equal(stored.length, 1);
+            assert.equal(stored[0].id, 'old-release');
+        });
+
+        it('preserves recent custom notifications even when seen', async function () {
+            const seenBy = await ownerSeenBy();
+            await setStoredNotifications([{
+                id: 'recent',
+                custom: true,
+                type: 'info',
+                message: 'recent seen',
+                dismissible: true,
+                addedAt: youngerThanThreshold(),
+                createdAtVersion: ghostVersion.full,
+                seenBy
+            }]);
+
+            await getService().pruneStale(thresholdDate());
+
+            const stored = await readStoredNotifications();
+            assert.equal(stored.length, 1);
+            assert.equal(stored[0].id, 'recent');
         });
     });
 });

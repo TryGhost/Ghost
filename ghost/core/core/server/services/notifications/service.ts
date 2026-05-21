@@ -9,16 +9,14 @@ const messages = {
     notificationDoesNotExist: 'Notification does not exist.'
 };
 
-const TWO_MONTHS_MS = 1000 * 60 * 60 * 24 * 60;
-
 interface GhostVersion {
     full: string;
 }
 
 export interface NotificationInput {
     message: string;
-    type?: 'info' | 'alert' | 'warn';
-    custom?: boolean;
+    custom: boolean;
+    type?: domain.NotificationType;
     dismissible?: boolean;
     top?: boolean;
     id?: string;
@@ -56,47 +54,60 @@ export class NotificationService {
     async add(inputs: NotificationInput[]): Promise<domain.Notification[]> {
         const built = inputs.map(input => this.build(input));
 
-        const incomingRelease = built.find(n => n.custom === false);
-        if (incomingRelease) {
-            await this.repository.deleteReleaseNotifications();
+        if (built.some(n => !n.custom)) {
+            const releaseIds = this.repository.findAll()
+                .filter(n => !n.custom)
+                .map(n => n.id);
+            await this.repository.delete(releaseIds);
         }
 
-        const added = await this.repository.saveAll(built);
+        const added: domain.Notification[] = [];
+        for (const notification of built) {
+            if (this.repository.findById(notification.id)) {
+                continue;
+            }
+            await this.repository.save(notification);
+            added.push(notification);
+        }
+
         if (this.afterAdd) {
             for (const notification of added) {
                 await this.afterAdd(notification);
             }
         }
-        await this.repository.pruneOlderThan(new Date(Date.now() - TWO_MONTHS_MS));
         return added;
     }
 
     async dismiss(id: string, userId: string): Promise<void> {
-        const all = this.repository.findAll();
-        const target = all.find(n => n.id === id);
-        if (!target) {
+        if (!this.repository.findById(id)) {
             throw new errors.NotFoundError({
                 message: tpl(messages.notificationDoesNotExist)
             });
         }
-        const dismissed = domain.dismiss(target, userId);
-        const updated = all.map((n) => {
-            if (n.id === id) {
-                return dismissed;
-            }
-            return n;
-        });
-        await this.repository.replaceAll(updated);
+        await this.repository.update(id, n => domain.dismiss(n, userId));
     }
 
     async dismissAll(userId: string): Promise<void> {
-        const updated = this.repository.findAll().map((n) => {
-            if (!n.dismissible) {
-                return n;
+        for (const notification of this.repository.findAll()) {
+            try {
+                await this.repository.update(
+                    notification.id,
+                    n => domain.dismiss(n, userId)
+                );
+            } catch (err) {
+                if (err instanceof errors.NoPermissionError) {
+                    continue;
+                }
+                throw err;
             }
-            return domain.dismiss(n, userId);
-        });
-        await this.repository.replaceAll(updated);
+        }
+    }
+
+    async pruneStale(threshold: Date): Promise<void> {
+        const stale = this.repository.findAll()
+            .filter(n => n.custom && n.seenBy.length > 0 && n.addedAt < threshold)
+            .map(n => n.id);
+        await this.repository.delete(stale);
     }
 
     private build(input: NotificationInput): domain.Notification {

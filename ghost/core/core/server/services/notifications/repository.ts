@@ -1,3 +1,4 @@
+import logging from '@tryghost/logging';
 import {Notification} from './notification';
 
 interface SettingsCacheLike {
@@ -36,54 +37,57 @@ export class NotificationRepository {
             const parsed = Notification.safeParse(entry);
             if (parsed.success) {
                 notifications.push(parsed.data);
+                continue;
             }
+            const id = typeof entry === 'object' && entry !== null
+                ? (entry as Record<string, unknown>).id
+                : null;
+            logging.warn({
+                event: {name: 'notifications.repository.validation-failed'},
+                notificationId: id,
+                issues: parsed.error.issues
+            }, 'Dropping stored notification that fails validation');
         }
         return notifications;
     }
 
-    async saveAll(notifications: Notification[]): Promise<Notification[]> {
-        const existing = this.findAll();
-        const ids = new Set(existing.map(n => n.id));
-        const added: Notification[] = [];
-        for (const notification of notifications) {
-            if (ids.has(notification.id)) {
-                continue;
-            }
-            ids.add(notification.id);
-            added.push(notification);
-        }
-        if (added.length === 0) {
-            return [];
-        }
-        await this.persist([...existing, ...added]);
-        return added;
+    findById(id: string): Notification | null {
+        return this.findAll().find(n => n.id === id) ?? null;
     }
 
-    async replaceAll(notifications: Notification[]): Promise<void> {
-        await this.persist(notifications);
-    }
-
-    async deleteReleaseNotifications(): Promise<void> {
-        const survivors = this.findAll().filter(n => n.custom !== false);
-        await this.persist(survivors);
-    }
-
-    async pruneOlderThan(threshold: Date): Promise<void> {
+    async save(notification: Notification): Promise<void> {
         const all = this.findAll();
-        const kept = all.filter((n) => {
-            // Release notifications are preserved regardless of age.
-            if (n.custom === false) {
-                return true;
-            }
-            if (n.seenBy.length === 0) {
-                return true;
-            }
-            return n.addedAt >= threshold;
-        });
-        if (kept.length === all.length) {
+        if (all.some(n => n.id === notification.id)) {
             return;
         }
-        await this.persist(kept);
+        await this.persist([...all, notification]);
+    }
+
+    async update(
+        id: string,
+        mutator: (notification: Notification) => Notification
+    ): Promise<void> {
+        const all = this.findAll();
+        const index = all.findIndex(n => n.id === id);
+        if (index === -1) {
+            return;
+        }
+        const next = mutator(all[index]);
+        if (next === all[index]) {
+            return;
+        }
+        const updated = [...all];
+        updated[index] = next;
+        await this.persist(updated);
+    }
+
+    async delete(ids: string[]): Promise<void> {
+        if (ids.length === 0) {
+            return;
+        }
+        const drop = new Set(ids);
+        const survivors = this.findAll().filter(n => !drop.has(n.id));
+        await this.persist(survivors);
     }
 
     private async persist(notifications: Notification[]): Promise<void> {
