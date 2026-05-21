@@ -53,6 +53,41 @@ describe('lib/lexical', function () {
             assert(rendered.includes('<div class="kg-card kg-audio-card">'));
         });
 
+        it('renders blockquote nodes created with the legacy type alias', async function () {
+            const legacyBlockquote = JSON.stringify({
+                root: {
+                    children: [
+                        {
+                            children: [
+                                {
+                                    detail: 0,
+                                    format: 0,
+                                    mode: 'normal',
+                                    style: '',
+                                    text: 'Legacy blockquote',
+                                    type: 'extended-text',
+                                    version: 1
+                                }
+                            ],
+                            direction: 'ltr',
+                            format: '',
+                            indent: 0,
+                            type: 'blockquote',
+                            version: 1
+                        }
+                    ],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            });
+
+            const renderedHtml = await lexicalLib.render(legacyBlockquote);
+            assert.equal(renderedHtml, '<blockquote>Legacy blockquote</blockquote>');
+        });
+
         it(`calls custom renderers`, async function () {
             const {JSDOM} = jsdom;
             const dom = new JSDOM();

@@ -18,6 +18,34 @@ function populateNodes() {
     nodes = DEFAULT_NODES;
 }
 
+function normalizeLegacyLexicalNodeTypes(lexicalState) {
+    if (!lexicalState || typeof lexicalState !== 'object') {
+        return lexicalState;
+    }
+
+    const visitNode = (node) => {
+        if (!node || typeof node !== 'object') {
+            return;
+        }
+
+        if (node.type === 'blockquote') {
+            node.type = 'extended-quote';
+        }
+
+        if (Array.isArray(node.children)) {
+            node.children.forEach(visitNode);
+        }
+    };
+
+    if (lexicalState.root) {
+        visitNode(lexicalState.root);
+    } else {
+        visitNode(lexicalState);
+    }
+
+    return lexicalState;
+}
+
 module.exports = {
     get blankDocument() {
         return {
@@ -80,6 +108,8 @@ module.exports = {
             serializePosts = require('../api/endpoints/utils/serializers/output/posts').all;
         }
 
+        const lexicalState = normalizeLegacyLexicalNodeTypes(typeof lexical === 'string' ? JSON.parse(lexical) : lexical);
+
         const options = Object.assign({
             siteUuid: settingsCache.get('site_uuid'),
             siteUrl: config.get('url'),
@@ -103,7 +133,7 @@ module.exports = {
             nodeRenderers: this.customNodeRenderers
         }, userOptions);
 
-        return await this.lexicalHtmlRenderer.render(lexical, options);
+        return await this.lexicalHtmlRenderer.render(JSON.stringify(lexicalState), options);
     },
 
     get nodes() {
