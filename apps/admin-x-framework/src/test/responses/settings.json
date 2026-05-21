@@ -85,6 +85,10 @@
             "value": "[{\"label\":\"Sign up\",\"url\":\"#/portal/\"}]"
         },
         {
+            "key": "llms_enabled",
+            "value": true
+        },
+        {
             "key": "meta_title",
             "value": null
         },

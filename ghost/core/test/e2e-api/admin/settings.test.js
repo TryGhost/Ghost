@@ -12,7 +12,7 @@ const limits = require('../../../core/server/services/limits');
 const {anyErrorId} = matchers;
 
 // Updated to reflect current total based on test output
-const CURRENT_SETTINGS_COUNT = 106;
+const CURRENT_SETTINGS_COUNT = 107;
 
 const settingsMatcher = {};
 
@@ -29,16 +29,16 @@ const labsSettingMatcher = {
 const matchSettingsArray = (length) => {
     const settingsArray = new Array(length).fill(settingsMatcher);
 
-    if (length > 33) {
+    if (length > 34) {
         // Added a setting that is alphabetically before 'public_hash'? then you need to increment this counter.
         // Item at index x is the public hash, which is always different
-        settingsArray[33] = publicHashSettingMatcher;
+        settingsArray[34] = publicHashSettingMatcher;
     }
 
-    if (length > 67) {
+    if (length > 68) {
         // Added a setting that is alphabetically before 'labs'? then you need to increment this counter.
         // Item at index x is the lab settings, which changes as we add and remove features
-        settingsArray[67] = labsSettingMatcher;
+        settingsArray[68] = labsSettingMatcher;
     }
 
     return settingsArray;
@@ -788,6 +788,29 @@ describe('Settings API', function () {
                         id: anyErrorId
                     }]
                 });
+        });
+
+        it('regenerates the access code server-side when settings edits are locked', async function () {
+            stubPublicSiteAccessDisabled(true);
+            const passwordSetting = await models.Settings.findOne({key: 'password'}, {context: {internal: true}});
+
+            try {
+                const response = await agent.post('settings/access_code/regenerate/')
+                    .body({password: 'caller-chosen-code'})
+                    .expectStatus(200);
+
+                const byKey = Object.fromEntries(response.body.settings.map(s => [s.key, s]));
+                assert.equal(typeof byKey.password.value, 'string');
+                assert.match(byKey.password.value, /^fake-\d{3}$/);
+                assert.notEqual(byKey.password.value, 'caller-chosen-code');
+                assert.equal(byKey.password.is_read_only, true);
+
+                emailMockReceiver.assertSentEmailCount(0);
+            } finally {
+                const originalPasswordSetting = passwordSetting.toJSON();
+                await models.Base.knex('settings').where({key: 'password'}).update({value: originalPasswordSetting.value});
+                settingsCache.set('password', originalPasswordSetting);
+            }
         });
 
         it('does not mark is_private or password as is_read_only when the limit is not disabled', async function () {

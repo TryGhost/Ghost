@@ -16,7 +16,7 @@ function compile(templateString) {
 }
 
 describe('{{raw}} helper', function () {
-    before(function () {
+    beforeAll(function () {
         handlebars.registerHelper('raw', raw);
     });
 

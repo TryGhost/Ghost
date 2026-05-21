@@ -1638,9 +1638,6 @@ importers:
       '@faker-js/faker':
         specifier: 9.9.0
         version: 9.9.0
-      '@playwright/test':
-        specifier: 'catalog:'
-        version: 1.59.1
       '@testing-library/jest-dom':
         specifier: 6.9.1
         version: 6.9.1
@@ -1732,8 +1729,8 @@ importers:
         specifier: 1.6.1
         version: 1.6.1
       eslint-plugin-playwright:
-        specifier: 2.10.1
-        version: 2.10.1(eslint@8.57.1)
+        specifier: 2.10.2
+        version: 2.10.2(eslint@8.57.1)
       express:
         specifier: 4.21.2
         version: 4.21.2
@@ -2432,8 +2429,8 @@ importers:
         specifier: 2.0.2
         version: 2.0.2
       human-number:
-        specifier: 2.0.10
-        version: 2.0.10
+        specifier: 2.0.12
+        version: 2.0.12
       iconv-lite:
         specifier: 0.7.2
         version: 0.7.2
@@ -13443,8 +13440,8 @@ packages:
   eslint-plugin-no-relative-import-paths@1.6.1:
     resolution: {integrity: sha512-YZNeOnsOrJcwhFw0X29MXjIzu2P/f5X2BZDPWw1R3VUYBRFxNIh77lyoL/XrMU9ewZNQPcEvAgL/cBOT1P330A==}
 
-  eslint-plugin-playwright@2.10.1:
-    resolution: {integrity: sha512-qea3UxBOb8fTwJ77FMApZKvRye5DOluDHcev0LDJwID3RELeun0JlqzrNIXAB/SXCyB/AesCW/6sZfcT9q3Edg==}
+  eslint-plugin-playwright@2.10.2:
+    resolution: {integrity: sha512-0N+2OWc3NZbOZ0gK8mp2TK6Qu3UWcJTQ9rqU0UM2yRJXgT758pvpY0lsOLIySfbyFrLqn3TcXjixbmcK90VnuQ==}
     engines: {node: '>=16.9.0'}
     peerDependencies:
       eslint: '>=8.40.0'
@@ -14784,8 +14781,8 @@ packages:
   human-interval@2.0.1:
     resolution: {integrity: sha512-r4Aotzf+OtKIGQCB3odUowy4GfUDTy3aTWTfLd7ZF2gBCy3XW3v/dJLRefZnOFFnjqs5B1TypvS8WarpBkYUNQ==}
 
-  human-number@2.0.10:
-    resolution: {integrity: sha512-RHuagJOf+jR/6FkLzz8ZugPUR4KGbqJOWdsYUOqa7j/M542M0gVe4a+TJNVQgqaAMTKX9wyvv/xuiAII0Kq6Iw==}
+  human-number@2.0.12:
+    resolution: {integrity: sha512-uL2Ahzke1TGVXsFcIu1olVplLvFHQJg7cUvGOBbt37ZF3qOfv/Mt9ewI1FHNbHMyEe45yW2m0Q3WL9e1rjlp2Q==}
     engines: {node: '>= 8'}
 
   human-signals@1.1.1:
@@ -36265,7 +36262,7 @@ snapshots:
 
   eslint-plugin-no-relative-import-paths@1.6.1: {}
 
-  eslint-plugin-playwright@2.10.1(eslint@8.57.1):
+  eslint-plugin-playwright@2.10.2(eslint@8.57.1):
     dependencies:
       eslint: 8.57.1
       globals: 17.4.0
@@ -38146,7 +38143,7 @@ snapshots:
     dependencies:
       numbered: 1.1.0
 
-  human-number@2.0.10: {}
+  human-number@2.0.12: {}
 
   human-signals@1.1.1: {}
 

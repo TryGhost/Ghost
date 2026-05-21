@@ -7,7 +7,7 @@ const settingsCache = require('../../../../core/shared/settings-cache');
 
 describe('{{meta_title}} helper', function () {
     describe('no meta_title', function () {
-        before(function () {
+        beforeAll(function () {
             sinon.stub(settingsCache, 'get').callsFake(function (key) {
                 return {
                     title: 'Ghost'
@@ -15,7 +15,7 @@ describe('{{meta_title}} helper', function () {
             });
         });
 
-        after(async function () {
+        afterAll(async function () {
             await configUtils.restore();
             sinon.restore();
         });

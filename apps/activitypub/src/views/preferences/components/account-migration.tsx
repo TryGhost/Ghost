@@ -117,7 +117,7 @@ const AccountMigration: React.FC = () => {
                         <FieldLabel htmlFor='account-migration-source-handle'>
                             Old account handle
                         </FieldLabel>
-                        <FieldDescription className='-mt-1' id='account-migration-source-handle-description'>
+                        <FieldDescription id='account-migration-source-handle-description'>
                             Specify the username@domain of the account you want to move from
                         </FieldDescription>
                         <div className='flex flex-col gap-3 sm:flex-row'>

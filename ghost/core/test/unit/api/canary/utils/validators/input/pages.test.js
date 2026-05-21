@@ -6,8 +6,8 @@ const models = require('../../../../../../../core/server/models');
 
 describe('Unit: endpoints/utils/validators/input/pages', function () {
     beforeEach(function () {
-        const memberFindPageStub = sinon.stub(models.Member, 'findPage').returns(Promise.reject());
-        memberFindPageStub.withArgs({filter: 'label:vip', limit: 1}).returns(Promise.resolve());
+        const memberFindPageStub = sinon.stub(models.Member, 'findPage').rejects();
+        memberFindPageStub.withArgs({filter: 'label:vip', limit: 1}).resolves();
     });
 
     afterEach(function () {

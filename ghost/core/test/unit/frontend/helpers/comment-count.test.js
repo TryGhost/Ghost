@@ -10,7 +10,7 @@ const {settingsCache} = proxy;
 const {registerHelper, shouldCompileToExpected} = require('./utils/handlebars');
 
 describe('{{comment_count}} helper', function () {
-    before(function () {
+    beforeAll(function () {
         registerHelper('comment_count');
     });
 
