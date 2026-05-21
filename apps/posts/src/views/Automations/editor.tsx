@@ -4,7 +4,7 @@ import React from 'react';
 import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, type ButtonProps, LoadingIndicator} from '@tryghost/shade/components';
 import {AutomationDetail, AutomationStatus, useEditAutomation, useReadAutomation} from '@tryghost/admin-x-framework/api/automations';
 import {dequal} from 'dequal';
-import {useParams} from '@tryghost/admin-x-framework';
+import {useConfirmUnload, useParams} from '@tryghost/admin-x-framework';
 import type {AutomationEditState} from './types';
 
 const editableSlice = (automation: AutomationDetail) => ({
@@ -158,6 +158,8 @@ const AutomationEditor: React.FC = () => {
             }
         });
     };
+
+    useConfirmUnload(isEditRequestActive || hasUnsavedChanges);
 
     return (
         <div className='fixed inset-0 z-50 flex flex-col bg-background' data-testid='automation-editor'>
