@@ -216,10 +216,6 @@
             },
             "type": "string"
         },
-        "llms_enabled": {
-            "defaultValue": true,
-            "type": "boolean"
-        },
         "og_image": {
             "defaultValue": null,
             "validations": {
