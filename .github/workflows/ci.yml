@@ -383,19 +383,9 @@ jobs:
           timezoneLinux: "America/New_York"
 
       - name: Run unit tests
+        # ghost/core's unit tests run on vitest (see ghost/core/vitest.config.ts);
+        # other packages run their own test:unit target.
         run: pnpm nx run-many -t test:unit -p "${{ needs.job_setup.outputs.affected_projects_str }}"
-        env:
-          FORCE_COLOR: 0
-          GHOST_UNIT_TEST_VARIANT: ci
-          NX_SKIP_LOG_GROUPING: true
-          logging__level: fatal
-
-      - name: Run vitest unit tests
-        # ghost/core is mid-migration from mocha to vitest. The vitest
-        # target covers a scoped subset (see ghost/core/vitest.config.ts)
-        # and runs additively alongside mocha — both runners run the same
-        # files during the migration as a divergence safety net.
-        run: pnpm nx run-many -t test:vitest -p "${{ needs.job_setup.outputs.affected_projects_str }}"
         env:
           FORCE_COLOR: 0
           NX_SKIP_LOG_GROUPING: true
@@ -409,12 +399,6 @@ jobs:
             git diff
             exit 1
           fi
-
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        if: matrix.node == env.NODE_VERSION
-        with:
-          name: unit-coverage
-          path: ghost/*/coverage/cobertura-coverage.xml
 
       - uses: tryghost/actions/actions/slack-build@598d6328d89dbd796aa02ae2ea66308f9d942224 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
