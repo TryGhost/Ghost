@@ -265,6 +265,9 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
 
+      - name: Check for pnpm patched dependencies
+        run: node .github/scripts/check-no-patched-dependencies.js
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
