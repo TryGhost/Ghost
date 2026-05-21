@@ -20,7 +20,7 @@ import articleBodyStyles from '@src/components/article-body-styles';
 import getReadingTime from '../../../utils/get-reading-time';
 import {Activity} from '@src/api/activitypub';
 import {cardsCSS, cardsJS} from '@src/utils/cards-assets';
-import {escapeHtml, isSafeUrl, openLinksInNewTab} from '@src/utils/content-formatters';
+import {disableVideoCardAutoplay, escapeHtml, isSafeUrl, openLinksInNewTab} from '@src/utils/content-formatters';
 import {handleProfileClick} from '@src/utils/handle-profile-click';
 import {isPendingActivity} from '../../../utils/pending-activity';
 import {useDebounce} from 'use-debounce';
@@ -68,6 +68,8 @@ const ArticleBody: React.FC<{
     const darkMode = (document.documentElement.classList.contains('dark') && backgroundColor === 'SYSTEM') || backgroundColor === 'DARK';
 
     const cssContent = articleBodyStyles();
+    const shouldDisableVideoCardAutoplay = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+    const articleHtml = openLinksInNewTab(shouldDisableVideoCardAutoplay ? disableVideoCardAutoplay(html) : html);
 
     const htmlContent = `
         <html class="has-${!darkMode ? 'dark' : 'light'}-text has-${fontStyle}-body ${backgroundColor === 'SEPIA' && 'has-sepia-bg'}">
@@ -194,7 +196,7 @@ const ArticleBody: React.FC<{
                 ` : ''}
             </header>
             <div class='gh-content gh-canvas is-body'>
-                ${openLinksInNewTab(html)}
+                ${articleHtml}
             </div>
             <script>
                 (function () {
