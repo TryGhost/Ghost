@@ -27,7 +27,7 @@ const SearchEnginePreview: React.FC<SearchEnginePreviewProps> = ({
     return (
         <div>
             <div className='-mx-5 -mb-5 overflow-hidden rounded-b-xl bg-grey-50 px-5 pt-2 md:-mx-7 md:-mb-7 md:px-7 md:pt-7 dark:bg-grey-950'>
-                <div className='-mt-4 mb-2 text-xs text-grey-500 uppercase dark:text-grey-800'>Preview</div>
+                <div className='-mt-4 mb-2 text-sm text-grey-500 uppercase dark:text-grey-800'>Preview</div>
                 <div className='rounded-t-sm bg-white px-5 py-3 shadow-lg dark:bg-grey-975'>
                     <div className='mt-3 flex items-center'>
                         <div>
@@ -47,7 +47,7 @@ const SearchEnginePreview: React.FC<SearchEnginePreviewProps> = ({
                         </div>
                         <div className='flex flex-col'>
                             <span>{siteDomain}</span>
-                            <span className='-mt-0.5 inline-block text-xs text-grey-600'>{siteUrl}</span>
+                            <span className='-mt-0.5 inline-block text-sm text-grey-600'>{siteUrl}</span>
                         </div>
                     </div>
                     <div className='mt-1 flex flex-col'>

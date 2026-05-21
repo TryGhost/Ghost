@@ -185,7 +185,7 @@ const TestimonialsModal = NiceModal.create(() => {
                                     <Avatar bgColor={generateAvatarColor((staffUserName ? staffUserName : staffUserEmail))} image={staffUserProfileImage ?? undefined} label={getInitials(staffUserName)} labelColor='white' size='md' />
                                     <div className='flex flex-col'>
                                         <span className='font-medium'>By {staffUserName ? staffUserName : staffUserEmail}</span>
-                                        <span className='text-xs text-grey-700'>{staffUserRole} — {siteTitle}</span>
+                                        <span className='text-sm text-grey-700'>{staffUserRole} — {siteTitle}</span>
                                     </div>
                                 </div>
                             </div>

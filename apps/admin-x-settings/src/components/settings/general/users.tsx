@@ -47,7 +47,7 @@ const Owner: React.FC<OwnerProps> = ({user}) => {
             <Avatar bgColor={generateAvatarColor((user.name ? user.name : user.email))} image={user.profile_image ?? undefined} label={getInitials(user.name)} labelColor='white' size='lg' />
             <div className='flex flex-col'>
                 <span>{user.name} &mdash; <strong>Owner</strong> {hasAdminAccess(currentUser) && <button className='ml-2 inline-block font-semibold text-green group-hover:visible md:invisible' type='button'>View profile</button>}</span>
-                <span className='text-xs text-grey-700'>{user.email}</span>
+                <span className='text-sm text-grey-700'>{user.email}</span>
             </div>
         </div>
     );

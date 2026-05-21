@@ -16,7 +16,7 @@ export const TrialDaysLabel: React.FC<{size?: 'sm' | 'md'; trialDays: number;}> 
     }
 
     const containerClassName = clsx(
-        size === 'sm' ? 'px-1.5 py-0.5 text-xs' : 'px-2.5 py-1.5',
+        size === 'sm' ? 'px-1.5 py-0.5 text-sm' : 'px-2.5 py-1.5',
         'relative -mt-1 -mr-1 rounded-full leading-none font-semibold tracking-wide whitespace-nowrap text-grey-900'
     );
 

@@ -26,7 +26,7 @@ const HeaderImageField: React.FC<HeaderImageFieldProps> = ({value, onChange}) =>
                         src={value}
                     />
                     <button
-                        className="absolute top-2 right-2 rounded bg-black/50 px-2 py-1 text-xs text-white hover:bg-black/70"
+                        className="absolute top-2 right-2 rounded bg-black/50 px-2 py-1 text-sm text-white hover:bg-black/70"
                         type="button"
                         onClick={() => onChange('')}
                     >
@@ -43,7 +43,7 @@ const HeaderImageField: React.FC<HeaderImageFieldProps> = ({value, onChange}) =>
                     >
                         <span className="text-gray-700">Upload header image</span>
                     </Dropzone>
-                    <span className="text-xs text-muted-foreground">1200x600 recommended. Use a transparent PNG for best results on any background.</span>
+                    <span className="text-sm text-muted-foreground">1200x600 recommended. Use a transparent PNG for best results on any background.</span>
                 </>
             )}
         </div>

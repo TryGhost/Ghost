@@ -85,7 +85,7 @@ const OffersFilterPopover: React.FC<{
             }
         >
             <div className='flex min-w-[200px] flex-col p-1 normal-case'>
-                <div className='cursor-default pt-2 pl-3 text-xs font-medium tracking-wide text-grey-700 uppercase select-none'>Sort by</div>
+                <div className='cursor-default pt-2 pl-3 text-sm font-medium tracking-wide text-grey-700 uppercase select-none'>Sort by</div>
                 <div className='flex flex-col py-1'>
                     {[
                         {id: 'date-added', label: 'Date added'},
@@ -321,11 +321,11 @@ export const OffersIndexModal: React.FC = () => {
             </colgroup>
             <thead>
                 <tr className='border-b border-b-grey-200 dark:border-grey-800'>
-                    <th className='sticky left-0 z-10 bg-white p-0 pb-2.5 text-left text-xs font-medium tracking-wide text-grey-700 uppercase dark:bg-black'>Name</th>
-                    <th className='p-0 pb-2.5 pl-5 text-left text-xs font-medium tracking-wide text-grey-700 uppercase'>Terms</th>
-                    <th className='p-0 pb-2.5 pl-5 text-left text-xs font-medium tracking-wide text-grey-700 uppercase'>Price</th>
-                    <th className='p-0 pb-2.5 pl-5 text-left text-xs font-medium tracking-wide text-grey-700 uppercase'>Redemptions</th>
-                    <th className='p-0 pb-2.5 pl-5 text-left text-xs font-medium tracking-wide text-grey-700 uppercase'>
+                    <th className='sticky left-0 z-10 bg-white p-0 pb-2.5 text-left text-sm font-medium tracking-wide text-grey-700 uppercase dark:bg-black'>Name</th>
+                    <th className='p-0 pb-2.5 pl-5 text-left text-sm font-medium tracking-wide text-grey-700 uppercase'>Terms</th>
+                    <th className='p-0 pb-2.5 pl-5 text-left text-sm font-medium tracking-wide text-grey-700 uppercase'>Price</th>
+                    <th className='p-0 pb-2.5 pl-5 text-left text-sm font-medium tracking-wide text-grey-700 uppercase'>Redemptions</th>
+                    <th className='p-0 pb-2.5 pl-5 text-left text-sm font-medium tracking-wide text-grey-700 uppercase'>
                         <span className='flex items-center justify-between'>
                             Status
                             <OffersFilterPopover
@@ -363,7 +363,7 @@ export const OffersIndexModal: React.FC = () => {
                         <tr key={offer.id} className={`group relative border-b border-b-grey-200 dark:border-grey-800 ${archived ? 'opacity-60' : ''}`} data-testid="offer-item">
                             <td className='sticky left-0 z-10 bg-white p-0 dark:bg-black'><a className='block cursor-pointer p-5 pl-0' onClick={() => handleOfferEdit(offer.id)}><span className='font-semibold'>{offer?.name}</span><br /><span className='text-grey-700'>{offerTier.name} {getOfferCadence(offer.cadence)}</span></a></td>
                             <td className='p-0 whitespace-nowrap'><a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer.id)}><span className='text-[1.3rem] font-medium uppercase'>{discountOffer}</span><br /><span className='text-grey-700'>{offer.type !== 'trial' ? getOfferDuration(offer.duration) : 'Trial period'}</span></a></td>
-                            <td className='p-0 whitespace-nowrap'><a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer.id)}><span className='font-medium'>{updatedPriceWithCurrency}</span> {offer.type !== 'trial' ? <span className='relative text-xs text-grey-700 before:absolute before:-inset-x-0.5 before:top-1/2 before:rotate-[-20deg] before:border-t before:content-[""]'>{originalPriceWithCurrency}</span> : null}</a></td>
+                            <td className='p-0 whitespace-nowrap'><a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer.id)}><span className='font-medium'>{updatedPriceWithCurrency}</span> {offer.type !== 'trial' ? <span className='relative text-sm text-grey-700 before:absolute before:-inset-x-0.5 before:top-1/2 before:rotate-[-20deg] before:border-t before:content-[""]'>{originalPriceWithCurrency}</span> : null}</a></td>
                             <td className='p-0 whitespace-nowrap'><a className={`block cursor-pointer p-5 ${offer.redemption_count === 0 ? '' : 'hover:underline'}`} href={offer.redemption_count > 0 && offer.id ? createOfferRedemptionFilterUrl(offer.id) : undefined} onClick={offer.redemption_count === 0 && offer.id ? () => handleOfferEdit(offer.id) : undefined}>{offer.redemption_count}</a></td>
                             <td className='p-0 whitespace-nowrap'>
                                 <a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer.id)}>

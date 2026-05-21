@@ -87,7 +87,7 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 />
                 <div className='-mx-5 -mb-5 flex flex-col items-center bg-grey-75 px-7 py-10 md:-mx-7 md:-mb-7' data-testid='explore-preview'>
                     <div className='relative w-full max-w-[320px] rounded-lg bg-white p-6 text-black shadow-lg'>
-                        <div className='absolute top-2.5 right-3 text-xs text-grey-300 uppercase'>Preview</div>
+                        <div className='absolute top-2.5 right-3 text-sm text-grey-300 uppercase'>Preview</div>
                         {icon ?
                             <div className='size-9 rounded-sm bg-cover bg-center' style={{
                                 backgroundImage: `url(${icon})`
@@ -106,7 +106,7 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         <a className='group mt-8 flex h-6 w-full items-center justify-between gap-5 hover:cursor-pointer' href={url} rel="noopener noreferrer" target="_blank">
                             <span className='font-semibold'>{siteDomain}</span>
                             {shareGrowthData ?
-                                <span className='rounded-sm bg-black px-2 py-0.5 text-xs font-semibold text-white' data-testid='explore-members-count'>
+                                <span className='rounded-sm bg-black px-2 py-0.5 text-sm font-semibold text-white' data-testid='explore-members-count'>
                                     {abbreviateNumber(membersCount)}&nbsp;{membersCount === 1 ? 'member' : 'members'}
                                 </span>
                                 :

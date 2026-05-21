@@ -90,7 +90,7 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
                         value={generalSettings.senderName}
                         onChange={e => onGeneralChange({senderName: e.target.value})}
                     />
-                    {senderNameError ? <p className='text-xs text-red'>{senderNameError}</p> : null}
+                    {senderNameError ? <p className='text-sm text-red'>{senderNameError}</p> : null}
                 </div>
                 {showSenderEmailInput ? (
                     <div className="flex flex-col gap-1.5">
@@ -101,7 +101,7 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
                             value={generalSettings.senderEmail}
                             onChange={e => onGeneralChange({senderEmail: e.target.value})}
                         />
-                        {senderEmailError ? <p className='text-xs text-red'>{senderEmailError}</p> : null}
+                        {senderEmailError ? <p className='text-sm text-red'>{senderEmailError}</p> : null}
                     </div>
                 ) : null}
                 <div className="flex flex-col gap-1.5">
@@ -112,7 +112,7 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
                         value={generalSettings.replyToEmail}
                         onChange={e => onGeneralChange({replyToEmail: e.target.value})}
                     />
-                    {replyToEmailError ? <p className='text-xs text-red'>{replyToEmailError}</p> : null}
+                    {replyToEmailError ? <p className='text-sm text-red'>{replyToEmailError}</p> : null}
                 </div>
             </div>
         </section>

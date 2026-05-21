@@ -412,7 +412,7 @@ const Sidebar: React.FC<{
                             label={
                                 <div className='flex flex-col gap-0.5'>
                                     <span className='md:text-base'>Promote independent publishing</span>
-                                    <span className='text-[11px] leading-tight text-grey-700 md:text-xs md:leading-tight'>Show you&apos;re a part of the indie publishing movement with a small badge in the footer</span>
+                                    <span className='text-[11px] leading-tight text-grey-700 md:text-sm md:leading-tight'>Show you&apos;re a part of the indie publishing movement with a small badge in the footer</span>
                                 </div>
                             }
                             labelStyle='value'

@@ -98,7 +98,7 @@ const RecommendationList: React.FC<RecommendationListProps> = ({recommendations,
             <Button color='grey' label='Add first recommendation' size='sm' onClick={() => {
                 openAddNewRecommendationModal();
             }}></Button>
-            <span className='mt-2 max-w-[40ch] text-center text-xs'>Need inspiration? <Link href="https://ghost.org/explore" target='_blank'>Explore thousands of sites</Link></span>
+            <span className='mt-2 max-w-[40ch] text-center text-sm'>Need inspiration? <Link href="https://ghost.org/explore" target='_blank'>Explore thousands of sites</Link></span>
         </NoValueLabel>;
     }
 };
