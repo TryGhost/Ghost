@@ -1,9 +1,9 @@
 import path from 'node:path';
 import {defineConfig} from 'vitest/config';
 
-// Vitest is being introduced incrementally alongside mocha. Each PR
-// expands `test.include` to cover a new bucket. Files outside the
-// include glob continue to run under mocha via `pnpm test:base`.
+// Vitest runs all of ghost/core's unit tests (test/unit). The DB-backed
+// integration, e2e-api, and legacy suites still run under mocha via
+// `pnpm test:base` — see ghost/core/package.json.
 export default defineConfig({
     test: {
         globals: true,
@@ -18,22 +18,9 @@ export default defineConfig({
             WEBHOOK_SECRET: 'TEST_STRIPE_WEBHOOK_SECRET'
         },
         include: [
-            'test/unit/api/**/*.test.{js,ts}',
-            'test/unit/bin/**/*.test.{js,ts}',
-            'test/unit/frontend/**/*.test.{js,ts}',
-            'test/unit/shared/**/*.test.{js,ts}',
-            'test/unit/server/adapters/**/*.test.{js,ts}',
-            'test/unit/server/api/**/*.test.{js,ts}',
-            'test/unit/server/data/**/*.test.{js,ts}',
-            'test/unit/server/lib/**/*.test.{js,ts}',
-            'test/unit/server/models/**/*.test.{js,ts}',
-            'test/unit/server/services/**/*.test.{js,ts}',
-            'test/unit/server/web/**/*.test.{js,ts}'
+            'test/unit/**/*.test.{js,ts}'
         ],
-        // Fake-timer + nock + retry-loop interactions in this file don't
-        // translate cleanly to vitest's hook ordering; deferred to a follow-up.
         exclude: [
-            'test/unit/server/adapters/scheduling/scheduling-default.test.js',
             '**/node_modules/**'
         ],
         setupFiles: ['./test/utils/vitest-setup.ts'],
