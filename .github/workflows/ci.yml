@@ -109,6 +109,11 @@ jobs:
               - 'ghost/**'
               - '!ghost/admin/**'
               - '!ghost/core/core/server/data/tinybird/**'
+              # Unit tests + vitest config are exercised only by job_unit-tests;
+              # they never affect the acceptance / legacy / ghost-cli jobs.
+              - '!ghost/core/test/unit/**'
+              - '!ghost/core/vitest.config.ts'
+              - '!ghost/core/test/utils/vitest-setup.ts'
             tinybird:
               - '.github/workflows/ci.yml'
               - 'compose.dev.analytics.yaml'
@@ -121,6 +126,18 @@ jobs:
               - '!**/*.md'
               - '!.devcontainer/**'
               - '!.vscode/**'
+            # Drives the run_e2e output: matches any changed file that could
+            # affect a running Ghost instance. Test files, test config and
+            # docs are excluded — a change confined to them cannot alter
+            # product behaviour, so the build + E2E lane is skipped.
+            # ghost/core test paths are listed today; app test paths can be
+            # added here as their conventions are confirmed.
+            e2e:
+              - '!**/*.md'
+              - '!.devcontainer/**'
+              - '!.vscode/**'
+              - '!ghost/core/test/**'
+              - '!ghost/core/vitest.config.ts'
 
       - name: Define Node test matrix
         id: node_matrix
@@ -175,6 +192,10 @@ jobs:
       changed_tinybird: ${{ steps.changed.outputs.tinybird }}
       changed_tinybird_datafiles: ${{ steps.changed.outputs.tinybird-datafiles }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
+      # Single gate for the build + browser-E2E lane. True for tags, or when a
+      # changed file could affect a running Ghost instance (see the `e2e` path
+      # filter above). A test-only / docs-only change keeps this false.
+      run_e2e: ${{ env.IS_TAG == 'true' || steps.changed.outputs.e2e == 'true' }}
       is_main: ${{ env.IS_MAIN }}
       is_tag: ${{ env.IS_TAG }}
       is_development: ${{ env.IS_DEVELOPMENT }}
@@ -771,6 +792,8 @@ jobs:
   job_build_artifacts:
     name: Build & Publish Artifacts
     needs: [job_setup]
+    # Root of the build + browser-E2E lane (see run_e2e in job_setup).
+    if: needs.job_setup.outputs.run_e2e == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -1031,6 +1054,8 @@ jobs:
   job_build_e2e_public_apps:
     name: Build E2E Public App Assets
     needs: [job_setup]
+    # Root of the build + browser-E2E lane (see run_e2e in job_setup).
+    if: needs.job_setup.outputs.run_e2e == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -1071,6 +1096,9 @@ jobs:
   job_build_e2e_image:
     name: Build E2E Docker Image
     needs: [job_setup, job_build_e2e_public_apps, job_build_artifacts]
+    # Inherits the run_e2e gate transitively — runs only when both upstream
+    # builds ran and succeeded (they are skipped when run_e2e is false).
+    if: needs.job_build_artifacts.result == 'success' && needs.job_build_e2e_public_apps.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -1181,6 +1209,8 @@ jobs:
     name: E2E Tests (${{ matrix.projectName }} ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
     runs-on: ubuntu-latest
     needs: [job_build_e2e_image, job_setup]
+    # Inherits the run_e2e gate transitively via job_build_e2e_image.
+    if: needs.job_build_e2e_image.result == 'success'
     strategy:
       fail-fast: true
       matrix:
@@ -1498,7 +1528,7 @@ jobs:
     ]
     name: Build ${{ matrix.package_name }}
     runs-on: ubuntu-latest
-    if: always() && github.repository == 'TryGhost/Ghost' && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success'
+    if: always() && github.repository == 'TryGhost/Ghost' && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && needs.job_setup.outputs.run_e2e == 'true'
     permissions:
       contents: read
     strategy:
