@@ -11,7 +11,7 @@ jobs:
     if: >-
       github.event.action == 'labeled'
       && github.event.label.name == 'preview'
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     permissions:
       contents: read
       actions: read
@@ -149,7 +149,7 @@ jobs:
     if: >-
       (github.event.action == 'unlabeled' && github.event.label.name == 'preview')
       || (github.event.action == 'closed' && contains(github.event.pull_request.labels.*.name, 'preview'))
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     permissions:
       contents: read
     steps:

@@ -32,7 +32,7 @@ concurrency:
 jobs:
   job_setup:
     name: Setup
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     timeout-minutes: 15
     env:
       IS_MAIN: ${{ github.ref == 'refs/heads/main' }}
@@ -208,7 +208,7 @@ jobs:
 
   job_app_version_bump_check:
     name: Check app version bump
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     needs: [job_setup]
     if: github.event_name == 'pull_request'
     steps:
@@ -229,7 +229,7 @@ jobs:
 
   job_migration_integrity_check:
     name: Check migration integrity
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     needs: [job_setup]
     if: github.event_name == 'pull_request'
     steps:
@@ -249,7 +249,7 @@ jobs:
         run: node .github/scripts/check-migration-integrity.js
 
   job_lint:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     needs: [job_setup]
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.affected_projects_str != ''
     name: Lint
@@ -287,7 +287,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_i18n:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     needs: [job_setup]
     name: i18n
     if: |
@@ -308,7 +308,7 @@ jobs:
         run: pnpm --filter @tryghost/i18n test
 
   job_admin-tests:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     needs: [job_setup]
     if: |
       needs.job_setup.outputs.is_tag == 'true'
@@ -351,7 +351,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_unit-tests:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     needs: [job_setup]
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.affected_projects_str != ''
     strategy:
@@ -408,7 +408,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_acceptance-tests:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     needs: [job_setup]
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_core == 'true'
     services:
@@ -536,7 +536,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_legacy-tests:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     needs: [job_setup]
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_core == 'true'
     services:
@@ -622,7 +622,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_apps_acceptance-tests:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     needs: [job_setup]
     if: needs.job_setup.outputs.affected_playwright_projects != '[]'
     name: App Playwright Acceptance Tests
@@ -676,7 +676,7 @@ jobs:
 
   job_tinybird-tests:
     name: Tinybird Tests
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     needs: [job_setup]
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_tinybird == 'true'
     defaults:
@@ -715,7 +715,7 @@ jobs:
     name: Ghost-CLI tests
     needs: [job_setup, job_build_artifacts]
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_core == 'true'
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     steps:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         env:
@@ -778,7 +778,7 @@ jobs:
     needs: [job_setup]
     # Root of the build + browser-E2E lane (see run_e2e in job_setup).
     if: needs.job_setup.outputs.run_e2e == 'true'
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     permissions:
       contents: read
       packages: write
@@ -887,8 +887,8 @@ jobs:
       - name: Setup Docker Registry Mirrors
         uses: ./.github/actions/setup-docker-registry-mirrors
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4
+      - name: Setup Blacksmith Builder
+        uses: useblacksmith/setup-docker-builder@v1
 
       - name: Log in to GitHub Container Registry
         if: steps.strategy.outputs.should-push == 'true'
@@ -935,7 +935,7 @@ jobs:
             org.opencontainers.image.vendor=TryGhost
 
       - name: Build & push core image
-        uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7
+        uses: useblacksmith/build-push-action@v2
         with:
           context: /tmp/ghost-production
           file: Dockerfile.production
@@ -947,11 +947,9 @@ jobs:
           load: ${{ steps.strategy.outputs.should-push == 'false' }}
           tags: ${{ steps.meta-core.outputs.tags }}
           labels: ${{ steps.meta-core.outputs.labels }}
-          cache-from: type=registry,ref=${{ steps.strategy.outputs.image-core-name }}:cache-main
-          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', steps.strategy.outputs.image-core-name, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
 
       - name: Build & push full image
-        uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7
+        uses: useblacksmith/build-push-action@v2
         with:
           context: /tmp/ghost-production
           file: Dockerfile.production
@@ -963,8 +961,6 @@ jobs:
           load: true
           tags: ${{ steps.meta-full.outputs.tags }}
           labels: ${{ steps.meta-full.outputs.labels }}
-          cache-from: type=registry,ref=${{ steps.strategy.outputs.image-full-name }}:cache-main
-          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', steps.strategy.outputs.image-full-name, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
 
       - name: Save full image as artifact
         run: |
@@ -1040,7 +1036,7 @@ jobs:
     needs: [job_setup]
     # Root of the build + browser-E2E lane (see run_e2e in job_setup).
     if: needs.job_setup.outputs.run_e2e == 'true'
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     steps:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -1083,7 +1079,7 @@ jobs:
     # Inherits the run_e2e gate transitively — runs only when both upstream
     # builds ran and succeeded (they are skipped when run_e2e is false).
     if: needs.job_build_artifacts.result == 'success' && needs.job_build_e2e_public_apps.result == 'success'
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     permissions:
       contents: read
       packages: write
@@ -1102,14 +1098,8 @@ jobs:
       - name: Setup Docker Registry Mirrors
         uses: ./.github/actions/setup-docker-registry-mirrors
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4
-        with:
-          # Fork/cross-repo PRs use artifact transfer (no GHCR push). The default
-          # docker-container driver runs in an isolated BuildKit container that
-          # cannot see locally loaded images, so we fall back to the docker driver
-          # which shares the host daemon's image store.
-          driver: ${{ needs.job_build_artifacts.outputs.use-artifact == 'true' && 'docker' || '' }}
+      - name: Setup Blacksmith Builder
+        uses: useblacksmith/setup-docker-builder@v1
 
       - name: Load base Ghost image
         uses: ./.github/actions/load-docker-image
@@ -1155,7 +1145,7 @@ jobs:
             org.opencontainers.image.vendor=TryGhost
 
       - name: Build & push E2E image
-        uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7
+        uses: useblacksmith/build-push-action@v2
         with:
           context: .
           file: e2e/Dockerfile.e2e
@@ -1165,8 +1155,6 @@ jobs:
           load: ${{ steps.strategy.outputs.use-artifact == 'true' }}
           tags: ${{ steps.meta-e2e.outputs.tags }}
           labels: ${{ steps.meta-e2e.outputs.labels }}
-          cache-from: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-main', needs.job_build_artifacts.outputs.image-e2e-name) || '' }}
-          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', needs.job_build_artifacts.outputs.image-e2e-name, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
 
       - name: Save E2E image as artifact
         if: steps.strategy.outputs.use-artifact == 'true'
@@ -1191,7 +1179,7 @@ jobs:
 
   job_e2e_tests:
     name: E2E Tests (${{ matrix.projectName }} ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     needs: [job_build_e2e_image, job_setup]
     # Inherits the run_e2e gate transitively via job_build_e2e_image.
     if: needs.job_build_e2e_image.result == 'success'
@@ -1256,8 +1244,8 @@ jobs:
       - name: Setup Docker Registry Mirrors
         uses: ./.github/actions/setup-docker-registry-mirrors
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4
+      - name: Setup Blacksmith Builder
+        uses: useblacksmith/setup-docker-builder@v1
 
       - name: Pull or build Tinybird CLI Image
         if: matrix.analytics == 'true'
@@ -1343,7 +1331,7 @@ jobs:
     name: Merge Reports
     if: always()
     needs: [job_e2e_tests, job_setup]
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     strategy:
       fail-fast: false
     steps:
@@ -1430,7 +1418,7 @@ jobs:
       job_acceptance-tests,
       job_unit-tests
     ]
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
@@ -1490,7 +1478,7 @@ jobs:
         publish_packages
       ]
     if: always()
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     steps:
       - name: Output needs
         run: echo "${{ toJson(needs) }}"
@@ -1511,7 +1499,7 @@ jobs:
       job_unit-tests
     ]
     name: Build ${{ matrix.package_name }}
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     if: always() && github.repository == 'TryGhost/Ghost' && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && needs.job_setup.outputs.run_e2e == 'true'
     permissions:
       contents: read
@@ -1558,7 +1546,7 @@ jobs:
       build_packages
     ]
     name: Publish ${{ matrix.package_name }}
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     if: |
       github.event_name != 'pull_request'
       && github.repository == 'TryGhost/Ghost'
@@ -1677,7 +1665,7 @@ jobs:
 
   deploy_tinybird:
     name: Deploy Tinybird
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     needs: [
       job_setup,
       job_tinybird-tests
@@ -1709,7 +1697,7 @@ jobs:
   trigger_cd:
     needs: [job_setup, job_build_artifacts]
     name: Trigger Pro CD
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     if: |
       always()
       && github.repository == 'TryGhost/Ghost'
@@ -1763,7 +1751,7 @@ jobs:
   publish_ghost:
     needs: [job_ghost-cli]
     name: Publish Ghost to npm
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     if: |
       startsWith(github.ref, 'refs/tags/v')
       && github.repository == 'TryGhost/Ghost'
@@ -1805,7 +1793,7 @@ jobs:
   create_github_release:
     needs: [publish_ghost]
     name: Create GitHub Release
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-2vcpu-ubuntu-2404
     if: startsWith(github.ref, 'refs/tags/v')
     permissions:
       contents: write

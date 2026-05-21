@@ -32,7 +32,7 @@ env:
 jobs:
   cleanup:
     name: Cleanup
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     strategy:
       matrix:
         package: [ghost, ghost-core, ghost-development]
