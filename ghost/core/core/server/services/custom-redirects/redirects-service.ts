@@ -71,6 +71,7 @@ export class RedirectsService {
      */
     async replace(redirects: RedirectConfig[]): Promise<void> {
         logging.info(`[redirects] replace: requested ${redirects.length} redirect(s)`);
+        logging.info(`[redirects] replace: contents=${JSON.stringify(redirects)}`);
         this.validate(redirects);
         this._verifyAllLoadable(redirects);
         await this.store.replaceAll(redirects);

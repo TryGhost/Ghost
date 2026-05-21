@@ -46,11 +46,13 @@ export default class FileStore extends RedirectsStoreBase implements RedirectsSt
             ? parseYaml(content)
             : parseJson(content);
         logging.info(`[redirects] FileStore.getAll: parsed ${parsed.length} redirect(s)`);
+        logging.info(`[redirects] FileStore.getAll: contents=${JSON.stringify(parsed)}`);
         return parsed;
     }
 
     async replaceAll(redirects: RedirectConfig[]): Promise<void> {
         logging.info(`[redirects] FileStore.replaceAll: writing ${redirects.length} redirect(s)`);
+        logging.info(`[redirects] FileStore.replaceAll: contents=${JSON.stringify(redirects)}`);
         const existingPath = await this._findExistingFile();
         const targetPath = path.join(this.basePath, JSON_FILENAME);
 

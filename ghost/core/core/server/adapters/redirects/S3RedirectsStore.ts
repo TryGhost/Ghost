@@ -112,12 +112,14 @@ export default class S3RedirectsStore extends RedirectsStoreBase implements Redi
 
         const parsed = parseJson(body);
         logging.info(`[redirects] S3RedirectsStore.getAll: parsed ${parsed.length} redirect(s)`);
+        logging.info(`[redirects] S3RedirectsStore.getAll: contents=${JSON.stringify(parsed)}`);
         return parsed;
     }
 
     async replaceAll(redirects: RedirectConfig[]): Promise<void> {
         const key = this.buildKey();
         logging.info(`[redirects] S3RedirectsStore.replaceAll: writing ${redirects.length} redirect(s) to bucket=${this.bucket} key=${key}`);
+        logging.info(`[redirects] S3RedirectsStore.replaceAll: contents=${JSON.stringify(redirects)}`);
 
         if (await this._canonicalExists()) {
             const backupKey = getBackupRedirectsFilePath(key);
