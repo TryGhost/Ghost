@@ -780,8 +780,8 @@ test.describe('Image card', async () => {
         await page.click('button[data-kg-card-menu-item="GIF"]');
 
         // chose second gif from list
-        await expect(await page.locator('[data-tenor-index="1"]')).toBeVisible();
-        await page.click('[data-tenor-index="1"]');
+        await expect(await page.locator('[data-gif-index="1"]')).toBeVisible();
+        await page.click('[data-gif-index="1"]');
 
         await expect(await page.getByTestId('image-card-populated')).toBeVisible();
 
@@ -823,7 +823,7 @@ test.describe('Image card', async () => {
         await page.click('button[data-kg-card-menu-item="GIF"]');
 
         // chose third gif from list
-        await expect(await page.locator('[data-tenor-index="2"]')).toBeVisible();
+        await expect(await page.locator('[data-gif-index="2"]')).toBeVisible();
         await page.keyboard.press('Tab');
         await page.keyboard.press('Tab');
         await page.keyboard.press('Tab');
@@ -1518,8 +1518,8 @@ test.describe('Image card - Klipy GIF provider', async () => {
 
         await page.click('button[data-kg-card-menu-item="GIF"]');
 
-        await expect(await page.locator('[data-tenor-index="0"]')).toBeVisible();
-        await page.click('[data-tenor-index="0"]');
+        await expect(await page.locator('[data-gif-index="0"]')).toBeVisible();
+        await page.click('[data-gif-index="0"]');
 
         // toBeAttached rather than toBeVisible: the fixture GIF URL is not
         // network-loaded in tests, so visibility would depend on an external fetch

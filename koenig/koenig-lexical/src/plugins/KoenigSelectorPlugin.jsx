@@ -1,5 +1,5 @@
+import GifPlugin from '../components/ui/GifPlugin';
 import React from 'react';
-import TenorPlugin from '../components/ui/TenorPlugin';
 import UnsplashPlugin from '../components/ui/UnsplashPlugin';
 import {$createImageNode, ImageNode} from '../nodes/ImageNode';
 import {$getSelection, COMMAND_PRIORITY_LOW, createCommand} from 'lexical';
@@ -7,8 +7,8 @@ import {INSERT_CARD_COMMAND} from './KoenigBehaviourPlugin';
 import {mergeRegister} from '@lexical/utils';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
-export const OPEN_TENOR_SELECTOR_COMMAND = createCommand('OPEN_TENOR_SELECTOR_COMMAND');
-export const INSERT_FROM_TENOR_COMMAND = createCommand('INSERT_FROM_TENOR_COMMAND');
+export const OPEN_GIF_SELECTOR_COMMAND = createCommand('OPEN_GIF_SELECTOR_COMMAND');
+export const INSERT_FROM_GIF_COMMAND = createCommand('INSERT_FROM_GIF_COMMAND');
 export const OPEN_UNSPLASH_SELECTOR_COMMAND = createCommand('OPEN_UNSPLASH_SELECTOR_COMMAND');
 
 export const KoenigSelectorPlugin = () => {
@@ -21,9 +21,9 @@ export const KoenigSelectorPlugin = () => {
         }
         return mergeRegister(
             editor.registerCommand(
-                OPEN_TENOR_SELECTOR_COMMAND,
+                OPEN_GIF_SELECTOR_COMMAND,
                 async (dataset) => {
-                    const cardNode = $createImageNode({...dataset, selector: TenorPlugin, isImageHidden: true});
+                    const cardNode = $createImageNode({...dataset, selector: GifPlugin, isImageHidden: true});
 
                     editor.dispatchCommand(INSERT_CARD_COMMAND, {cardNode});
 
@@ -32,7 +32,7 @@ export const KoenigSelectorPlugin = () => {
                 COMMAND_PRIORITY_LOW
             ),
             editor.registerCommand(
-                INSERT_FROM_TENOR_COMMAND,
+                INSERT_FROM_GIF_COMMAND,
                 async (dataset) => {
                     const imageNode = $createImageNode(dataset);
 

@@ -9,7 +9,7 @@ export function buildCardMenu(nodes, {query, config} = {}) {
     let maxItemIndex = -1;
 
     function addMenuItem(item) {
-        // items hidden based on missing config (e.g. Tenor API key for gif card)
+        // items hidden based on missing config (e.g. GIF provider API key)
         if (!!item.isHidden && item.isHidden?.({config})) {
             return;
         }

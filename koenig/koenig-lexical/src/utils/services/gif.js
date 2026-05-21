@@ -47,7 +47,7 @@ export function extractErrorMessage(json) {
         || 'Unknown error';
 }
 
-export function useTenor({config}) {
+export function useGif({config}) {
     const [columns, setColumns] = useState([]);
     const [error, setError] = useState(null);
     const [isLoading, setLoading] = useState(false);

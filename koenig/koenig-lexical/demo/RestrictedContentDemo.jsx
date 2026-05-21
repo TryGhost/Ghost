@@ -6,7 +6,7 @@ import {$getRoot, $isDecoratorNode} from 'lexical';
 import {KoenigComposableEditor, KoenigComposer, RestrictContentPlugin} from '../src';
 import {defaultHeaders as defaultUnsplashHeaders} from './utils/unsplashConfig';
 import {fileTypes, useFileUpload} from './utils/useFileUpload';
-import {klipyConfig, tenorConfig} from './utils/tenorConfig';
+import {klipyConfig, tenorConfig} from './utils/gifConfig';
 import {useLocation} from 'react-router-dom';
 import {useSnippets} from './utils/useSnippets';
 import {useState} from 'react';

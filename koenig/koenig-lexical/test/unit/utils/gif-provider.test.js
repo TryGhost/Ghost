@@ -1,5 +1,5 @@
 import {describe, expect, test} from 'vitest';
-import {extractErrorMessage, getGifProviderConfig} from '../../../src/utils/services/tenor.js';
+import {extractErrorMessage, getGifProviderConfig} from '../../../src/utils/services/gif.js';
 
 describe('Utils: getGifProviderConfig', () => {
     test('returns null when neither provider is configured', () => {

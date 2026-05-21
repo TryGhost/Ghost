@@ -1,15 +1,15 @@
+import GifSelector from './GifSelector';
 import KoenigComposerContext from '../../context/KoenigComposerContext.jsx';
 import React from 'react';
-import TenorSelector from './TenorSelector';
 import {DELETE_CARD_COMMAND} from '../../plugins/KoenigBehaviourPlugin.jsx';
-import {INSERT_FROM_TENOR_COMMAND} from '../../plugins/KoenigSelectorPlugin.jsx';
-import {getGifProviderConfig, useTenor} from '../../utils/services/tenor.js';
+import {INSERT_FROM_GIF_COMMAND} from '../../plugins/KoenigSelectorPlugin.jsx';
+import {getGifProviderConfig, useGif} from '../../utils/services/gif.js';
 import {useLexicalComposerContext} from '@lexical/react/LexicalComposerContext';
 
-const TenorPlugin = ({nodeKey}) => {
+const GifPlugin = ({nodeKey}) => {
     const {cardConfig} = React.useContext(KoenigComposerContext);
     const providerConfig = getGifProviderConfig(cardConfig);
-    const tenorHook = useTenor({config: providerConfig});
+    const gifHook = useGif({config: providerConfig});
     const [editor] = useLexicalComposerContext();
 
     React.useEffect(() => {
@@ -34,17 +34,17 @@ const TenorPlugin = ({nodeKey}) => {
     };
 
     const insertImageToNode = async (image) => {
-        editor.dispatchCommand(INSERT_FROM_TENOR_COMMAND, image);
+        editor.dispatchCommand(INSERT_FROM_GIF_COMMAND, image);
     };
 
     return (
-        <TenorSelector
+        <GifSelector
             provider={providerConfig?.provider}
             onClickOutside={onClickOutside}
             onGifInsert={insertImageToNode}
-            {...tenorHook}
+            {...gifHook}
         />
     );
 };
 
-export default TenorPlugin;
+export default GifPlugin;

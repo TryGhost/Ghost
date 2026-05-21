@@ -22,7 +22,7 @@ import {
 import {defaultHeaders as defaultUnsplashHeaders} from './utils/unsplashConfig';
 import {fetchEmbed} from './utils/fetchEmbed';
 import {fileTypes, useFileUpload} from './utils/useFileUpload';
-import {klipyConfig, tenorConfig} from './utils/tenorConfig';
+import {klipyConfig, tenorConfig} from './utils/gifConfig';
 import {useLocation, useSearchParams} from 'react-router-dom';
 import {useSnippets} from './utils/useSnippets';
 

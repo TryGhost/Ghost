@@ -37,7 +37,7 @@ export const AllDefaultPlugins = () => {
             {/* Koenig Plugins */}
             <CardMenuPlugin />
             <KoenigSnippetPlugin />
-            <KoenigSelectorPlugin /> {/* Tenor/Unsplash selectors */}
+            <KoenigSelectorPlugin /> {/* Gif/Unsplash selectors */}
             <EmojiPickerPlugin />
             <AtLinkPlugin />
 

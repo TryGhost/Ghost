@@ -1,14 +1,14 @@
 import React, {useEffect, useRef, useState} from 'react';
 import SearchIcon from '../../assets/icons/kg-search.svg?react';
-import {Error} from './file-selectors/Tenor/Error';
-import {Gif} from './file-selectors/Tenor/Gif';
-import {Loader} from './file-selectors/Tenor/Loader';
+import {Error} from './file-selectors/Gif/Error';
+import {Gif} from './file-selectors/Gif/Gif';
+import {Loader} from './file-selectors/Gif/Loader';
 
 // number of columns based on selector container width
 const TWO_COLUMN_WIDTH = 540;
 const THREE_COLUMN_WIDTH = 940;
 
-const TenorSelector = ({onGifInsert, onClickOutside, updateSearch, columns, isLoading, isLazyLoading, error, changeColumnCount, loadNextPage, gifs, provider}) => {
+const GifSelector = ({onGifInsert, onClickOutside, updateSearch, columns, isLoading, isLazyLoading, error, changeColumnCount, loadNextPage, gifs, provider}) => {
     const selectorRef = useRef(null);
     const searchRef = useRef(null);
     const [highlightedGif, setHighlightedGif] = useState(undefined);
@@ -138,7 +138,7 @@ const TenorSelector = ({onGifInsert, onClickOutside, updateSearch, columns, isLo
     }
 
     function moveToNextHorizontalGif(direction) {
-        const highlightedElem = document.querySelector(`[data-tenor-index="${highlightedGif.index}"]`);
+        const highlightedElem = document.querySelector(`[data-gif-index="${highlightedGif.index}"]`);
         const highlightedElemRect = highlightedElem.getBoundingClientRect();
 
         let x;
@@ -155,9 +155,9 @@ const TenorSelector = ({onGifInsert, onClickOutside, updateSearch, columns, isLo
 
         // we might hit spacing between gifs, keep moving up 5 px until we get a match
         while (!foundGifElem) {
-            let possibleMatch = document.elementFromPoint(x, y)?.closest('[data-tenor-index]');
+            let possibleMatch = document.elementFromPoint(x, y)?.closest('[data-gif-index]');
 
-            if (possibleMatch?.dataset.tenorIndex !== undefined) {
+            if (possibleMatch?.dataset.gifIndex !== undefined) {
                 foundGifElem = possibleMatch;
                 break;
             }
@@ -172,7 +172,7 @@ const TenorSelector = ({onGifInsert, onClickOutside, updateSearch, columns, isLo
         }
 
         if (foundGifElem) {
-            setHighlightedGif(gifs[foundGifElem.dataset.tenorIndex]);
+            setHighlightedGif(gifs[foundGifElem.dataset.gifIndex]);
         }
     }
 
@@ -337,4 +337,4 @@ const TenorSelector = ({onGifInsert, onClickOutside, updateSearch, columns, isLo
     );
 };
 
-export default TenorSelector;
+export default GifSelector;

@@ -1,4 +1,4 @@
-import {ERROR_TYPE} from '../../../../utils/services/tenor.js';
+import {ERROR_TYPE} from '../../../../utils/services/gif.js';
 
 export function Error({error}) {
     if (error === ERROR_TYPE.COMMON) {
