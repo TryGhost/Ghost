@@ -58,8 +58,21 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
         }
 
         try {
-            const {storedValue} = normalizeSocialInput(key, value);
+            normalizeSocialInput(key, value);
+
+            if (errors[key]) {
+                setErrors(current => ({...current, [key]: ''}));
+            }
+        } catch {
+            setErrors(current => ({...current, [key]: getSocialValidationError(key, value)}));
+        }
+    };
+
+    const handleSocialBlur = (key: SocialPlatformKey, value: string) => {
+        try {
+            const {displayValue, storedValue} = normalizeSocialInput(key, value);
             updateSetting(key, storedValue);
+            setUrls(current => ({...current, [key]: displayValue}));
 
             if (errors[key]) {
                 setErrors(current => ({...current, [key]: ''}));
@@ -81,6 +94,14 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
         setErrors(formErrors);
 
         if (Object.keys(formErrors).length === 0) {
+            visiblePlatforms.forEach((config) => {
+                try {
+                    const {storedValue} = normalizeSocialInput(config.key, urls[config.key]);
+                    updateSetting(config.key, storedValue);
+                } catch {
+                    // Ignored since we verified errors above
+                }
+            });
             handleSave();
         }
     };
@@ -109,6 +130,7 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         placeholder={config.placeholder}
                         title={config.publicationTitle}
                         value={urls[config.key]}
+                        onBlur={event => handleSocialBlur(config.key, event.target.value)}
                         onChange={event => handleSocialChange(config.key, event.target.value)}
                     />
                 ))}
