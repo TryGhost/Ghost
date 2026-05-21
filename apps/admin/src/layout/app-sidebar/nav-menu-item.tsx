@@ -14,6 +14,7 @@ function NavMenuItem({ children, ...props }: React.ComponentProps<typeof Sidebar
 interface NavMenuCollapsibleContextValue {
     expanded: boolean;
     id: string;
+    onContextMenu?: React.MouseEventHandler;
     onExpandedChange: (expanded: boolean) => void | Promise<void>;
 }
 
@@ -33,13 +34,15 @@ interface NavMenuCollapsibleProps {
     children: React.ReactNode;
     expanded: boolean;
     id: string;
+    onContextMenu?: React.MouseEventHandler;
     onExpandedChange: (expanded: boolean) => void | Promise<void>;
 }
 
-function NavMenuCollapsible({children, expanded, id, onExpandedChange}: NavMenuCollapsibleProps) {
+function NavMenuCollapsible({children, expanded, id, onContextMenu, onExpandedChange}: NavMenuCollapsibleProps) {
     const value = {
         expanded,
         id,
+        onContextMenu,
         onExpandedChange
     };
 
@@ -56,10 +59,10 @@ interface NavMenuCollapsibleItemProps {
 }
 
 function NavMenuCollapsibleItem({ariaLabel, children}: NavMenuCollapsibleItemProps) {
-    const {expanded, id, onExpandedChange} = useNavMenuCollapsibleContext();
+    const {expanded, id, onContextMenu, onExpandedChange} = useNavMenuCollapsibleContext();
 
     return (
-        <NavMenuItem>
+        <NavMenuItem onContextMenu={onContextMenu}>
             <Button
                 aria-controls={id}
                 aria-expanded={expanded}

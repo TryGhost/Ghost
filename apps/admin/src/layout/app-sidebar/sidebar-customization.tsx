@@ -9,8 +9,14 @@ const MENU_SEPARATOR_AFTER_ITEM_IDS = new Set(['view-site']);
 function SidebarCustomizationProvider({children}: {children: React.ReactNode}) {
     const [items, setItems] = React.useState<SidebarCustomizationItem[]>([]);
     const [contextMenuPosition, setContextMenuPosition] = React.useState<{x: number; y: number} | null>(null);
+    const [itemContextMenu, setItemContextMenu] = React.useState<({x: number; y: number} & SidebarCustomizationItem) | null>(null);
     const itemOrder = React.useRef(new Map<string, number>());
     const nextItemOrder = React.useRef(0);
+
+    const closeContextMenus = React.useCallback(() => {
+        setContextMenuPosition(null);
+        setItemContextMenu(null);
+    }, []);
 
     const registerItem = React.useCallback((item: SidebarCustomizationItem) => {
         if (!itemOrder.current.has(item.id)) {
@@ -41,35 +47,44 @@ function SidebarCustomizationProvider({children}: {children: React.ReactNode}) {
 
     const openContextMenu = React.useCallback((event: React.MouseEvent) => {
         event.preventDefault();
+        setItemContextMenu(null);
         setContextMenuPosition({x: event.clientX, y: event.clientY});
     }, []);
 
+    const openItemContextMenu = React.useCallback((event: React.MouseEvent, item: SidebarCustomizationItem) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setContextMenuPosition(null);
+        setItemContextMenu({x: event.clientX, y: event.clientY, ...item});
+    }, []);
+
     React.useEffect(() => {
-        if (!contextMenuPosition) {
+        if (!contextMenuPosition && !itemContextMenu) {
             return;
         }
 
-        const closeContextMenu = () => setContextMenuPosition(null);
         const closeContextMenuOnEscape = (event: KeyboardEvent) => {
             if (event.key === "Escape") {
-                closeContextMenu();
+                closeContextMenus();
             }
         };
 
-        document.addEventListener("click", closeContextMenu);
+        document.addEventListener("click", closeContextMenus);
         document.addEventListener("keydown", closeContextMenuOnEscape);
 
         return () => {
-            document.removeEventListener("click", closeContextMenu);
+            document.removeEventListener("click", closeContextMenus);
             document.removeEventListener("keydown", closeContextMenuOnEscape);
         };
-    }, [contextMenuPosition]);
+    }, [closeContextMenus, contextMenuPosition, itemContextMenu]);
 
     const value = React.useMemo(() => ({
+        closeContextMenus,
         items,
         openContextMenu,
+        openItemContextMenu,
         registerItem,
-    }), [items, openContextMenu, registerItem]);
+    }), [closeContextMenus, items, openContextMenu, openItemContextMenu, registerItem]);
 
     return (
         <SidebarCustomizationContext.Provider value={value}>
@@ -93,6 +108,9 @@ function SidebarCustomizationProvider({children}: {children: React.ReactNode}) {
                     ))}
                 </div>
             )}
+            {itemContextMenu && (
+                <SidebarItemContextMenu item={itemContextMenu} />
+            )}
         </SidebarCustomizationContext.Provider>
     );
 }
@@ -103,7 +121,7 @@ function SidebarCustomizationMenuItem({item}: {item: SidebarCustomizationItem}) 
 
     return (
         <button
-            className={`flex w-full cursor-pointer items-center justify-between gap-4 rounded-xs px-2 py-1.5 text-left text-sm outline-hidden transition-colors hover:bg-accent focus:bg-accent ${visible ? '' : 'text-muted-foreground'}`}
+            className="flex w-full cursor-pointer items-center justify-between gap-4 rounded-xs px-2 py-1.5 text-left text-sm outline-hidden transition-colors hover:bg-accent focus:bg-accent"
             type="button"
             role="menuitemcheckbox"
             aria-checked={visible}
@@ -114,6 +132,30 @@ function SidebarCustomizationMenuItem({item}: {item: SidebarCustomizationItem}) 
                 <LucideIcon.Check size={16} />
             )}
         </button>
+    );
+}
+
+function SidebarItemContextMenu({item}: {item: {x: number; y: number} & SidebarCustomizationItem}) {
+    const setItemVisible = useToggleNavigationItemVisibility();
+    const {closeContextMenus} = useSidebarCustomizationContext();
+
+    return (
+        <div
+            className="fixed z-50 min-w-44 rounded-md border bg-popover p-1 text-popover-foreground shadow-md"
+            style={{left: item.x, top: item.y}}
+            onClick={event => event.stopPropagation()}
+        >
+            <button
+                className="flex w-full cursor-pointer items-center gap-2 rounded-xs px-2 py-1.5 text-left text-sm outline-hidden transition-colors hover:bg-accent focus:bg-accent"
+                type="button"
+                onClick={() => {
+                    void setItemVisible(item.id, false);
+                    closeContextMenus();
+                }}
+            >
+                Hide from sidebar
+            </button>
+        </div>
     );
 }
 
@@ -129,15 +171,35 @@ function RegisterHideableSidebarItem({id, label}: SidebarCustomizationItem) {
 
 function HideableSidebarItem({children, id, label}: SidebarCustomizationItem & {children: React.ReactNode}) {
     const visible = useNavigationItemVisibility(id);
+    const {openItemContextMenu} = useSidebarCustomizationContext();
 
     if (!visible) {
         return <RegisterHideableSidebarItem id={id} label={label} />;
     }
 
+    const child = React.Children.only(children);
+
+    if (!React.isValidElement<React.HTMLAttributes<HTMLElement>>(child)) {
+        return (
+            <>
+                <RegisterHideableSidebarItem id={id} label={label} />
+                {children}
+            </>
+        );
+    }
+
     return (
         <>
             <RegisterHideableSidebarItem id={id} label={label} />
-            {children}
+            {React.cloneElement(child, {
+                onContextMenu: (event: React.MouseEvent) => {
+                    child.props.onContextMenu?.(event);
+
+                    if (!event.defaultPrevented) {
+                        openItemContextMenu(event, {id, label});
+                    }
+                },
+            })}
         </>
     );
 }

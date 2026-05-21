@@ -6,8 +6,10 @@ export type SidebarCustomizationItem = {
 };
 
 export type SidebarCustomizationContextValue = {
+    closeContextMenus: () => void;
     items: SidebarCustomizationItem[];
     openContextMenu: (event: React.MouseEvent) => void;
+    openItemContextMenu: (event: React.MouseEvent, item: SidebarCustomizationItem) => void;
     registerItem: (item: SidebarCustomizationItem) => () => void;
 };
 

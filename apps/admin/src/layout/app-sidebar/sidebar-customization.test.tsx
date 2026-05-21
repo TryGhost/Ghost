@@ -4,6 +4,7 @@ import React from 'react';
 import {fireEvent, render, screen, waitFor} from '@testing-library/react';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {HideableSidebarItem, SidebarCustomizationProvider} from './sidebar-customization';
+import {NavMenuItem} from './nav-menu-item';
 import {useSidebarCustomizationContext} from './sidebar-customization-context';
 
 const {mockUseNavigationItemVisibility, mockUseToggleNavigationItemVisibility} = vi.hoisted(() => ({
@@ -59,6 +60,29 @@ function ReorderingSidebar() {
     );
 }
 
+function CollapsibleSidebar() {
+    const {openContextMenu} = useSidebarCustomizationContext();
+
+    return (
+        <div data-testid="sidebar" onContextMenu={openContextMenu}>
+            <HideableSidebarItem id="posts" label="Posts">
+                <NavMenuItem.Collapsible
+                    expanded={true}
+                    id="posts-submenu"
+                    onExpandedChange={vi.fn()}
+                >
+                    <NavMenuItem.CollapsibleItem ariaLabel="Toggle post views">
+                        <span>Posts nav item</span>
+                    </NavMenuItem.CollapsibleItem>
+                    <NavMenuItem.CollapsibleMenu>
+                        <span>Drafts</span>
+                    </NavMenuItem.CollapsibleMenu>
+                </NavMenuItem.Collapsible>
+            </HideableSidebarItem>
+        </div>
+    );
+}
+
 describe('SidebarCustomizationProvider', () => {
     const toggleVisibility = vi.fn<(itemId: string, visible: boolean) => Promise<void>>();
 
@@ -97,6 +121,37 @@ describe('SidebarCustomizationProvider', () => {
 
         expect(toggleVisibility).toHaveBeenCalledWith('posts', true);
         expect(screen.getByText('Customize sidebar')).toBeInTheDocument();
+    });
+
+    it('opens an item context menu for hiding a visible sidebar item', async () => {
+        renderSidebar();
+
+        fireEvent.contextMenu(screen.getByText('Posts nav item'));
+
+        const menuItem = await screen.findByRole('button', {name: 'Hide from sidebar'});
+        expect(screen.queryByText('Customize sidebar')).not.toBeInTheDocument();
+
+        fireEvent.click(menuItem);
+
+        expect(toggleVisibility).toHaveBeenCalledWith('posts', false);
+        expect(screen.queryByRole('button', {name: 'Hide from sidebar'})).not.toBeInTheDocument();
+    });
+
+    it('opens an item context menu for hiding a collapsible sidebar item', async () => {
+        render(
+            <SidebarCustomizationProvider>
+                <CollapsibleSidebar />
+            </SidebarCustomizationProvider>
+        );
+
+        fireEvent.contextMenu(screen.getByText('Posts nav item'));
+
+        const menuItem = await screen.findByRole('button', {name: 'Hide from sidebar'});
+        expect(screen.queryByText('Customize sidebar')).not.toBeInTheDocument();
+
+        fireEvent.click(menuItem);
+
+        expect(toggleVisibility).toHaveBeenCalledWith('posts', false);
     });
 
     it('keeps menu item order stable when an item unregisters and registers again', async () => {
