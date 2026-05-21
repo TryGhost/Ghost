@@ -19,14 +19,14 @@ import type {RedirectConfig, RedirectsStore} from '../../services/custom-redirec
 const DEFAULT_FILENAME = 'redirects.json';
 
 const messages = {
-    missingBucket: 'GCSStore requires a bucket name',
-    partialCredentials: 'GCSStore requires both accessKeyId and secretAccessKey when either is provided',
+    missingBucket: 'S3RedirectsStore requires a bucket name',
+    partialCredentials: 'S3RedirectsStore requires both accessKeyId and secretAccessKey when either is provided',
     missingResponseBody: 'S3 GetObject returned no body'
 };
 
 const stripLeadingAndTrailingSlashes = (value = '') => value.replace(/^\/+|\/+$/g, '');
 
-export interface GCSStoreOptions {
+export interface S3RedirectsStoreOptions {
     bucket: string;
     region?: string;
     endpoint?: string;
@@ -43,12 +43,12 @@ export interface GCSStoreOptions {
  * timestamped server-side copy of the previous contents on each
  * overwrite.
  */
-export default class GCSStore extends RedirectsStoreBase implements RedirectsStore {
+export default class S3RedirectsStore extends RedirectsStoreBase implements RedirectsStore {
     private readonly client: S3Client;
     private readonly bucket: string;
     private readonly tenantPrefix: string;
 
-    constructor(options: GCSStoreOptions) {
+    constructor(options: S3RedirectsStoreOptions) {
         super();
         if (!options.bucket) {
             throw new errors.IncorrectUsageError({

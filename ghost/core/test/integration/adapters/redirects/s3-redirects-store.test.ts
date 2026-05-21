@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import {ListObjectsV2Command, S3Client} from '@aws-sdk/client-s3';
 
-import GCSStore from '../../../../core/server/adapters/redirects/GCSStore';
+import S3RedirectsStore from '../../../../core/server/adapters/redirects/S3RedirectsStore';
 import {
     createTestS3Client,
     createTestBucket,
@@ -27,7 +27,7 @@ const backupKeyPattern = (prefix = '') => new RegExp(
     `^${prefix ? `${prefix}/` : ''}redirects-\\d{4}-\\d{2}-\\d{2}-\\d{2}-\\d{2}-\\d{2}\\.json$`
 );
 
-describe('Integration: GCSStore', function () {
+describe('Integration: S3RedirectsStore', function () {
     let adminClient: S3Client;
     let bucket: string;
     const minioConfig = getMinioConfig();
@@ -46,14 +46,14 @@ describe('Integration: GCSStore', function () {
     });
 
     runStoreContract({
-        createStore: () => new GCSStore({...minioConfig, bucket})
+        createStore: () => new S3RedirectsStore({...minioConfig, bucket})
     });
 
     describe('getAll: error handling', function () {
         it('throws when redirects.json is corrupt', async function () {
             await putObject(adminClient, bucket, 'redirects.json', '{not valid');
 
-            const store = new GCSStore({...minioConfig, bucket});
+            const store = new S3RedirectsStore({...minioConfig, bucket});
 
             await assert.rejects(
                 () => store.getAll(),
@@ -64,7 +64,7 @@ describe('Integration: GCSStore', function () {
 
     describe('replaceAll: timestamped backups', function () {
         it('writes the canonical key without a backup when the bucket is empty', async function () {
-            const store = new GCSStore({...minioConfig, bucket});
+            const store = new S3RedirectsStore({...minioConfig, bucket});
 
             await store.replaceAll([{from: '/a', to: '/b', permanent: true}]);
 
@@ -72,7 +72,7 @@ describe('Integration: GCSStore', function () {
         });
 
         it('backs up the prior contents before overwriting', async function () {
-            const store = new GCSStore({...minioConfig, bucket});
+            const store = new S3RedirectsStore({...minioConfig, bucket});
             const initial = [{from: '/old', to: '/old-target', permanent: true}];
 
             await store.replaceAll(initial);
@@ -91,7 +91,7 @@ describe('Integration: GCSStore', function () {
             // real waits between writes are needed to guarantee distinct
             // backup keys.
             this.timeout(15000);
-            const store = new GCSStore({...minioConfig, bucket});
+            const store = new S3RedirectsStore({...minioConfig, bucket});
 
             await store.replaceAll([{from: '/a', to: '/a', permanent: true}]);
             await sleep(1100);
@@ -108,7 +108,7 @@ describe('Integration: GCSStore', function () {
 
     describe('tenantPrefix scoping', function () {
         it('writes the canonical key under the tenant prefix', async function () {
-            const store = new GCSStore({...minioConfig, bucket, tenantPrefix: 'tenant-abc'});
+            const store = new S3RedirectsStore({...minioConfig, bucket, tenantPrefix: 'tenant-abc'});
 
             await store.replaceAll([{from: '/a', to: '/b', permanent: true}]);
 
@@ -119,7 +119,7 @@ describe('Integration: GCSStore', function () {
         });
 
         it('reads back redirects from the prefixed key', async function () {
-            const store = new GCSStore({...minioConfig, bucket, tenantPrefix: 'tenant-abc'});
+            const store = new S3RedirectsStore({...minioConfig, bucket, tenantPrefix: 'tenant-abc'});
             const redirects = [{from: '/old', to: '/new', permanent: true}];
 
             await store.replaceAll(redirects);
@@ -128,7 +128,7 @@ describe('Integration: GCSStore', function () {
         });
 
         it('writes backups under the tenant prefix on overwrite', async function () {
-            const store = new GCSStore({...minioConfig, bucket, tenantPrefix: 'tenant-abc'});
+            const store = new S3RedirectsStore({...minioConfig, bucket, tenantPrefix: 'tenant-abc'});
             const initial = [{from: '/old', to: '/old-target', permanent: true}];
 
             await store.replaceAll(initial);
@@ -143,8 +143,8 @@ describe('Integration: GCSStore', function () {
         });
 
         it('isolates tenants sharing the same bucket', async function () {
-            const storeA = new GCSStore({...minioConfig, bucket, tenantPrefix: 'tenant-a'});
-            const storeB = new GCSStore({...minioConfig, bucket, tenantPrefix: 'tenant-b'});
+            const storeA = new S3RedirectsStore({...minioConfig, bucket, tenantPrefix: 'tenant-a'});
+            const storeB = new S3RedirectsStore({...minioConfig, bucket, tenantPrefix: 'tenant-b'});
 
             await storeA.replaceAll([{from: '/a', to: '/a-target', permanent: true}]);
             await storeB.replaceAll([{from: '/b', to: '/b-target', permanent: false}]);
@@ -158,7 +158,7 @@ describe('Integration: GCSStore', function () {
         });
 
         it('strips leading and trailing slashes from the tenant prefix', async function () {
-            const store = new GCSStore({...minioConfig, bucket, tenantPrefix: '/tenant-abc/'});
+            const store = new S3RedirectsStore({...minioConfig, bucket, tenantPrefix: '/tenant-abc/'});
 
             await store.replaceAll([{from: '/a', to: '/b', permanent: true}]);
 

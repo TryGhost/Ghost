@@ -86,7 +86,7 @@ export async function putObject(
 
 /**
  * Returns null when the key is missing instead of throwing. Matches the
- * planned GCSStore.getAll() behaviour from HKG-1700 ("Returns [] on 404")
+ * planned S3RedirectsStore.getAll() behaviour from HKG-1700 ("Returns [] on 404")
  * so tests asserting absence don't need try/catch wrappers.
  */
 export async function getObject(
