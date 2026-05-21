@@ -88,7 +88,7 @@
     "eslint-plugin-react-refresh": "catalog:",
     "eslint-plugin-tailwindcss": "4.0.0-beta.0",
     "jsdom": "catalog:",
-    "tailwindcss": "4.2.2",
+    "tailwindcss": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"
   },
