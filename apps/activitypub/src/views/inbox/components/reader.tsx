@@ -1,5 +1,5 @@
 import Customizer, {COLOR_OPTIONS, type ColorOption, type FontSize, useCustomizerSettings} from './customizer';
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import ShowRepliesButton from '@src/components/global/show-replies-button';
 import getUsername from '../../../utils/get-username';
 import {LoadingIndicator, Skeleton} from '@tryghost/shade/components';
@@ -69,7 +69,10 @@ const ArticleBody: React.FC<{
 
     const cssContent = articleBodyStyles();
     const shouldDisableVideoCardAutoplay = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-    const articleHtml = openLinksInNewTab(shouldDisableVideoCardAutoplay ? disableVideoCardAutoplay(html) : html);
+    const articleHtml = useMemo(() => {
+        const transformedHtml = shouldDisableVideoCardAutoplay ? disableVideoCardAutoplay(html) : html;
+        return openLinksInNewTab(transformedHtml);
+    }, [html, shouldDisableVideoCardAutoplay]);
 
     const htmlContent = `
         <html class="has-${!darkMode ? 'dark' : 'light'}-text has-${fontStyle}-body ${backgroundColor === 'SEPIA' && 'has-sepia-bg'}">
