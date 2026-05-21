@@ -98,8 +98,8 @@ function CommentLikesModal({comment, dislikesEnabled, open, defaultTab = 'likes'
                                                         name={like.member?.name}
                                                         src={like.member?.avatar_image}
                                                     />
-                                                    <div className="absolute -right-0.5 -bottom-0.5 flex size-4 items-center justify-center rounded-full bg-pink-500 text-white">
-                                                        <LucideIcon.Heart className="size-2.5" fill="currentColor" />
+                                                    <div className="absolute -right-0.5 -bottom-0.5 flex size-4 items-center justify-center rounded-full bg-gray-500 text-white">
+                                                        <LucideIcon.ThumbsUp className="size-2.5" fill="currentColor" />
                                                     </div>
                                                 </div>
                                                 <span className="font-medium">
