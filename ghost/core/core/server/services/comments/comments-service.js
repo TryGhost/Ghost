@@ -9,6 +9,8 @@ const messages = {
     memberNotFound: 'Unable to find member',
     likeNotFound: 'Unable to find like',
     alreadyLiked: 'This comment was liked already',
+    dislikeNotFound: 'Unable to find dislike',
+    alreadyDisliked: 'This comment was disliked already',
     replyToReply: 'Can not reply to a reply',
     commentsNotEnabled: 'Comments are not enabled for this site.',
     cannotCommentOnPost: 'You do not have permission to comment on this post.',
@@ -18,6 +20,9 @@ const messages = {
     invalidPinnedValue: 'Pinned must be a boolean value',
     commentsPinningNotEnabled: 'Comment pinning is not enabled for this site.'
 };
+
+const COMMENT_LIKE_SCORE = 1;
+const COMMENT_DISLIKE_SCORE = -1;
 
 function withPinnedSelect(options = {}) {
     if (!options.columns?.includes('pinned')) {
@@ -39,13 +44,13 @@ class CommentsService {
         this.models = models;
 
         /** @private */
+        this.labs = labs;
+
+        /** @private */
         this.settingsCache = settingsCache;
 
         /** @private */
         this.contentGating = contentGating;
-
-        /** @private */
-        this.labs = labs;
 
         const Emails = require('./comments-service-emails');
         /** @private */
@@ -102,6 +107,84 @@ class CommentsService {
     }
 
     /** @private */
+    async #withTransaction(options, operation) {
+        if (options.transacting) {
+            return await operation(options);
+        }
+
+        return await this.models.Base.transaction(async (transacting) => {
+            return await operation({
+                ...options,
+                transacting
+            });
+        });
+    }
+
+    /** @private */
+    async #getMemberCommentVotes(commentId, memberId, options) {
+        const votes = await this.models.CommentLike.findAll({
+            ...options,
+            filter: `comment_id:'${commentId}'+member_id:'${memberId}'`,
+            order: 'created_at asc'
+        });
+
+        return votes.models || [];
+    }
+
+    /** @private */
+    async #destroyCommentVotes(votes, options) {
+        await Promise.all(votes.map(vote => vote.destroy(options)));
+    }
+
+    /** @private */
+    async #setCommentVote(commentId, member, targetScore, alreadyMessage, options = {}) {
+        const memberModel = await this.models.Member.findOne({
+            id: member.id
+        }, {
+            require: true,
+            ...options,
+            withRelated: ['products']
+        });
+
+        this.checkCommentAccess(memberModel);
+
+        return await this.#withTransaction(options, async (transactionOptions) => {
+            const votes = await this.#getMemberCommentVotes(commentId, memberModel.id, transactionOptions);
+            const alreadyHasSingleTargetVote = votes.length === 1 && Number(votes[0].get('score')) === targetScore;
+
+            if (alreadyHasSingleTargetVote) {
+                throw new errors.BadRequestError({
+                    message: tpl(alreadyMessage)
+                });
+            }
+
+            await this.#destroyCommentVotes(votes, transactionOptions);
+
+            return await this.models.CommentLike.add({
+                member_id: memberModel.id,
+                comment_id: commentId,
+                score: targetScore
+            }, transactionOptions);
+        });
+    }
+
+    /** @private */
+    async #clearCommentVote(commentId, member, targetScore, notFoundMessage, options = {}) {
+        await this.#withTransaction(options, async (transactionOptions) => {
+            const votes = await this.#getMemberCommentVotes(commentId, member.id, transactionOptions);
+            const votesToRemove = votes.filter(vote => Number(vote.get('score')) === targetScore);
+
+            if (votesToRemove.length === 0) {
+                throw new errors.NotFoundError({
+                    message: tpl(notFoundMessage)
+                });
+            }
+
+            await this.#destroyCommentVotes(votesToRemove, transactionOptions);
+        });
+    }
+
+    /** @private */
     async sendNewCommentNotifications(comment) {
         await this.emails.notifyPostAuthors(comment);
 
@@ -116,53 +199,25 @@ class CommentsService {
     async likeComment(commentId, member, options = {}) {
         this.checkEnabled();
 
-        const memberModel = await this.models.Member.findOne({
-            id: member.id
-        }, {
-            require: true,
-            ...options,
-            withRelated: ['products']
-        });
-
-        this.checkCommentAccess(memberModel);
-
-        const data = {
-            member_id: memberModel.id,
-            comment_id: commentId
-        };
-
-        const existing = await this.models.CommentLike.findOne(data, options);
-
-        if (existing) {
-            throw new errors.BadRequestError({
-                message: tpl(messages.alreadyLiked)
-            });
-        }
-
-        return await this.models.CommentLike.add(data, options);
+        return await this.#setCommentVote(commentId, member, COMMENT_LIKE_SCORE, messages.alreadyLiked, options);
     }
 
     async unlikeComment(commentId, member, options = {}) {
         this.checkEnabled();
 
-        try {
-            await this.models.CommentLike.destroy({
-                ...options,
-                destroyBy: {
-                    member_id: member.id,
-                    comment_id: commentId
-                },
-                require: true
-            });
-        } catch (err) {
-            if (err instanceof this.models.CommentLike.NotFoundError) {
-                return Promise.reject(new errors.NotFoundError({
-                    message: tpl(messages.likeNotFound)
-                }));
-            }
+        await this.#clearCommentVote(commentId, member, COMMENT_LIKE_SCORE, messages.likeNotFound, options);
+    }
 
-            throw err;
-        }
+    async dislikeComment(commentId, member, options = {}) {
+        this.checkEnabled();
+
+        return await this.#setCommentVote(commentId, member, COMMENT_DISLIKE_SCORE, messages.alreadyDisliked, options);
+    }
+
+    async undislikeComment(commentId, member, options = {}) {
+        this.checkEnabled();
+
+        await this.#clearCommentVote(commentId, member, COMMENT_DISLIKE_SCORE, messages.dislikeNotFound, options);
     }
 
     async reportComment(commentId, reporter) {
@@ -222,8 +277,10 @@ class CommentsService {
      * @param {AdminBrowseAllOptions} options
      */
     async getAdminAllComments({includeNested, filter, mongoTransformer, reportCount, order, page, limit}) {
+        const withRelated = ['member', 'post', 'post.tags', 'post.authors', 'count.replies', 'count.direct_replies', 'count.likes', 'count.dislikes', 'count.net_score', 'count.reports', 'in_reply_to', 'parent'];
+
         return await this.models.Comment.findPage({
-            withRelated: ['member', 'post', 'post.tags', 'post.authors', 'count.replies', 'count.direct_replies', 'count.likes', 'count.reports', 'in_reply_to', 'parent'],
+            withRelated,
             filter,
             mongoTransformer,
             reportCount,
@@ -346,7 +403,32 @@ class CommentsService {
 
         const {page, limit} = options;
         const result = await this.models.CommentLike.findPage({
-            filter: `comment_id:'${commentId}'`,
+            filter: `comment_id:'${commentId}'+score:${COMMENT_LIKE_SCORE}`,
+            withRelated: ['member'],
+            order: 'created_at desc',
+            page,
+            limit
+        });
+
+        return result;
+    }
+
+    /**
+     * Get dislikes for a comment (admin only)
+     * @param {string} commentId - The ID of the Comment to get dislikes for
+     * @param {any} options - Query options (page, limit)
+     */
+    async getCommentDislikes(commentId, options = {}) {
+        const comment = await this.models.Comment.findOne({id: commentId});
+        if (!comment) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.commentNotFound)
+            });
+        }
+
+        const {page, limit} = options;
+        const result = await this.models.CommentLike.findPage({
+            filter: `comment_id:'${commentId}'+score:${COMMENT_DISLIKE_SCORE}`,
             withRelated: ['member'],
             order: 'created_at desc',
             page,
