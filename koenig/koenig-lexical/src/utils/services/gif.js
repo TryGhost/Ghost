@@ -248,7 +248,7 @@ export function useGif({config}) {
             };
 
             if (loadedType.current === 'search') {
-                params.q = searchTerm;
+                params.q = searchTerm.current;
             }
 
             setLazyLoading(true);
