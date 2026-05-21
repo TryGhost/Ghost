@@ -114,4 +114,17 @@ describe('Integration: Component: gh-billing-iframe', function () {
         expect(markBillingAppLoaded.called).to.be.false;
         expect(billing.billingAppLoaded).to.be.false;
     });
+
+    it('ignores messages when the billing iframe window is unavailable', async function () {
+        const markBillingAppLoaded = sinon.spy(billing, 'markBillingAppLoaded');
+
+        await render(hbs`<GhBillingIframe />`);
+
+        sinon.stub(billing, 'getBillingIframe').returns(null);
+
+        await postBillingMessage({request: 'billingAppReady'}, {source: window});
+
+        expect(markBillingAppLoaded.called).to.be.false;
+        expect(billing.billingAppLoaded).to.be.false;
+    });
 });

@@ -73,7 +73,14 @@ export default class GhBillingIframe extends Component {
     }
 
     _postMessageToBillingIframe(message) {
-        this.billing.getBillingIframe().contentWindow.postMessage(message, this.billing.getBillingAppOrigin() || '*');
+        const billingIframeWindow = this.billing.getBillingIframe()?.contentWindow;
+        const billingAppOrigin = this.billing.getBillingAppOrigin();
+
+        if (!billingIframeWindow || !billingAppOrigin) {
+            return;
+        }
+
+        billingIframeWindow.postMessage(message, billingAppOrigin);
     }
 
     _handleTokenRequest() {

@@ -209,7 +209,11 @@ export default class BillingService extends Service {
 
         const billingIframeWindow = this.getBillingIframe()?.contentWindow;
 
-        if (billingIframeWindow && event.source !== billingIframeWindow) {
+        if (!billingIframeWindow) {
+            return false;
+        }
+
+        if (event.source !== billingIframeWindow) {
             return false;
         }
 
