@@ -13,8 +13,7 @@ import { NavMemberViews } from "./nav-member-views";
 import { useMemberSidebarViews } from "./member-sidebar-views";
 import { useCustomSidebarViews } from "./use-custom-sidebar-views";
 import { useIsActiveLink } from "./use-is-active-link";
-import {HideableSidebarItem, RegisterHideableSidebarItem} from "./sidebar-customization";
-import {useNavigationItemVisibility} from "./hooks/use-navigation-preferences";
+import {HideableSidebarItem} from "./sidebar-customization";
 import { useEmberRouting } from "@/ember-bridge";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
 
@@ -88,18 +87,6 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const showMembers = currentUser && canManageMembers(currentUser);
     const commentsEnabled = getSettingValue<string>(settingsData?.settings, 'comments_enabled');
     const showComments = !!showMembers && commentModerationEnabled && commentsEnabled !== 'off';
-    const showPostsItem = useNavigationItemVisibility('posts');
-    const showPagesItem = useNavigationItemVisibility('pages');
-    const showTagsItem = useNavigationItemVisibility('tags');
-    const showMembersItem = useNavigationItemVisibility('members');
-    const showCommentsItem = useNavigationItemVisibility('comments');
-    const showAutomationsItem = useNavigationItemVisibility('automations');
-    const showGroup = showPostsItem ||
-        showPagesItem ||
-        (!!showTags && showTagsItem) ||
-        (!!showMembers && showMembersItem) ||
-        (showComments && showCommentsItem) ||
-        (showMembers && automationsEnabled && showAutomationsItem);
     const isDraftPostsRouteActive = routing.isRouteActive('posts', {type: 'draft'});
     const isScheduledPostsRouteActive = routing.isRouteActive('posts', {type: 'scheduled'});
     const isPublishedPostsRouteActive = routing.isRouteActive('posts', {type: 'published'});
@@ -114,79 +101,56 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const isPostsRouteActive = routing.isRouteActive('posts');
     const postsNavActive = isPostsRouteActive || (!postsExpanded && hasActivePostChild);
 
-    if (!showGroup) {
-        return (
-            <>
-                <RegisterHideableSidebarItem id="posts" label="Posts" />
-                <RegisterHideableSidebarItem id="pages" label="Pages" />
-                {showTags && (
-                    <RegisterHideableSidebarItem id="tags" label="Tags" />
-                )}
-                {showMembers && (
-                    <RegisterHideableSidebarItem id="members" label="Members" />
-                )}
-                {showComments && (
-                    <RegisterHideableSidebarItem id="comments" label="Comments" />
-                )}
-                {showMembers && automationsEnabled && (
-                    <RegisterHideableSidebarItem id="automations" label="Automations" />
-                )}
-            </>
-        );
-    }
-
     return (
         <SidebarGroup {...props}>
             <SidebarGroupContent>
                 <SidebarMenu>
-                    <HideableSidebarItem id="posts" label="Posts">
-                        <NavMenuItem.Collapsible
-                            expanded={postsExpanded}
-                            id="posts-submenu"
-                            onExpandedChange={setPostsExpanded}
-                        >
-                            <NavMenuItem.CollapsibleItem ariaLabel="Toggle post views">
-                                <PostsNavItemContent
-                                    isActive={postsNavActive}
-                                    to={postsRoute}
-                                />
-                            </NavMenuItem.CollapsibleItem>
+                    <NavMenuItem.Collapsible
+                        expanded={postsExpanded}
+                        id="posts-submenu"
+                        onExpandedChange={setPostsExpanded}
+                    >
+                        <NavMenuItem.CollapsibleItem ariaLabel="Toggle post views">
+                            <PostsNavItemContent
+                                isActive={postsNavActive}
+                                to={postsRoute}
+                            />
+                        </NavMenuItem.CollapsibleItem>
 
-                            <NavMenuItem.CollapsibleMenu>
-                                <NavMenuItem>
-                                    <NavMenuItem.Link
-                                        className="pl-9"
-                                        to="posts?type=draft"
-                                        isActive={isDraftPostsRouteActive}
-                                    >
-                                        <NavMenuItem.Label>Drafts</NavMenuItem.Label>
-                                    </NavMenuItem.Link>
-                                </NavMenuItem>
+                        <NavMenuItem.CollapsibleMenu>
+                            <NavMenuItem>
+                                <NavMenuItem.Link
+                                    className="pl-9"
+                                    to="posts?type=draft"
+                                    isActive={isDraftPostsRouteActive}
+                                >
+                                    <NavMenuItem.Label>Drafts</NavMenuItem.Label>
+                                </NavMenuItem.Link>
+                            </NavMenuItem>
 
-                                <NavMenuItem>
-                                    <NavMenuItem.Link
-                                        className="pl-9"
-                                        to="posts?type=scheduled"
-                                        isActive={isScheduledPostsRouteActive}
-                                    >
-                                        <NavMenuItem.Label>Scheduled</NavMenuItem.Label>
-                                    </NavMenuItem.Link>
-                                </NavMenuItem>
+                            <NavMenuItem>
+                                <NavMenuItem.Link
+                                    className="pl-9"
+                                    to="posts?type=scheduled"
+                                    isActive={isScheduledPostsRouteActive}
+                                >
+                                    <NavMenuItem.Label>Scheduled</NavMenuItem.Label>
+                                </NavMenuItem.Link>
+                            </NavMenuItem>
 
-                                <NavMenuItem>
-                                    <NavMenuItem.Link
-                                        className="pl-9"
-                                        to="posts?type=published"
-                                        isActive={isPublishedPostsRouteActive}
-                                    >
-                                        <NavMenuItem.Label>Published</NavMenuItem.Label>
-                                    </NavMenuItem.Link>
-                                </NavMenuItem>
+                            <NavMenuItem>
+                                <NavMenuItem.Link
+                                    className="pl-9"
+                                    to="posts?type=published"
+                                    isActive={isPublishedPostsRouteActive}
+                                >
+                                    <NavMenuItem.Label>Published</NavMenuItem.Label>
+                                </NavMenuItem.Link>
+                            </NavMenuItem>
 
-                                <NavCustomViews />
-                            </NavMenuItem.CollapsibleMenu>
-                        </NavMenuItem.Collapsible>
-                    </HideableSidebarItem>
+                            <NavCustomViews />
+                        </NavMenuItem.CollapsibleMenu>
+                    </NavMenuItem.Collapsible>
 
                     <HideableSidebarItem id="pages" label="Pages">
                         <NavMenuItem>

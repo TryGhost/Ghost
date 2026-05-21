@@ -22,8 +22,9 @@ function TestSidebar() {
 
     return (
         <div data-testid="sidebar" onContextMenu={openContextMenu}>
-            <HideableSidebarItem id="posts" label="Posts">
-                <span>Posts nav item</span>
+            <span>Posts nav item</span>
+            <HideableSidebarItem id="pages" label="Pages">
+                <span>Pages nav item</span>
             </HideableSidebarItem>
             <span>Help</span>
         </div>
@@ -65,17 +66,17 @@ function CollapsibleSidebar() {
 
     return (
         <div data-testid="sidebar" onContextMenu={openContextMenu}>
-            <HideableSidebarItem id="posts" label="Posts">
+            <HideableSidebarItem id="members" label="Members">
                 <NavMenuItem.Collapsible
                     expanded={true}
-                    id="posts-submenu"
+                    id="members-submenu"
                     onExpandedChange={vi.fn()}
                 >
-                    <NavMenuItem.CollapsibleItem ariaLabel="Toggle post views">
-                        <span>Posts nav item</span>
+                    <NavMenuItem.CollapsibleItem ariaLabel="Toggle member views">
+                        <span>Members nav item</span>
                     </NavMenuItem.CollapsibleItem>
                     <NavMenuItem.CollapsibleMenu>
-                        <span>Drafts</span>
+                        <span>All members</span>
                     </NavMenuItem.CollapsibleMenu>
                 </NavMenuItem.Collapsible>
             </HideableSidebarItem>
@@ -101,39 +102,41 @@ describe('SidebarCustomizationProvider', () => {
         await waitFor(() => {
             expect(screen.getByText('Customize sidebar')).toBeInTheDocument();
         });
-        expect(screen.getByRole('menuitemcheckbox', {name: 'Posts'})).toBeInTheDocument();
+        expect(screen.getByRole('menuitemcheckbox', {name: 'Pages'})).toBeInTheDocument();
+        expect(screen.queryByRole('menuitemcheckbox', {name: 'Posts'})).not.toBeInTheDocument();
         expect(screen.queryByRole('menuitemcheckbox', {name: 'Help'})).not.toBeInTheDocument();
     });
 
     it('hides registered sidebar items but keeps them customizable', async () => {
-        mockUseNavigationItemVisibility.mockImplementation(itemId => itemId !== 'posts');
+        mockUseNavigationItemVisibility.mockImplementation(itemId => itemId !== 'pages');
 
         renderSidebar();
 
-        expect(screen.queryByText('Posts nav item')).not.toBeInTheDocument();
+        expect(screen.getByText('Posts nav item')).toBeInTheDocument();
+        expect(screen.queryByText('Pages nav item')).not.toBeInTheDocument();
 
         fireEvent.contextMenu(screen.getByTestId('sidebar'));
 
-        const menuItem = await screen.findByRole('menuitemcheckbox', {name: 'Posts'});
+        const menuItem = await screen.findByRole('menuitemcheckbox', {name: 'Pages'});
         expect(menuItem).toHaveAttribute('aria-checked', 'false');
 
         fireEvent.click(menuItem);
 
-        expect(toggleVisibility).toHaveBeenCalledWith('posts', true);
+        expect(toggleVisibility).toHaveBeenCalledWith('pages', true);
         expect(screen.getByText('Customize sidebar')).toBeInTheDocument();
     });
 
     it('opens an item context menu for hiding a visible sidebar item', async () => {
         renderSidebar();
 
-        fireEvent.contextMenu(screen.getByText('Posts nav item'));
+        fireEvent.contextMenu(screen.getByText('Pages nav item'));
 
         const menuItem = await screen.findByRole('button', {name: 'Hide from sidebar'});
         expect(screen.queryByText('Customize sidebar')).not.toBeInTheDocument();
 
         fireEvent.click(menuItem);
 
-        expect(toggleVisibility).toHaveBeenCalledWith('posts', false);
+        expect(toggleVisibility).toHaveBeenCalledWith('pages', false);
         expect(screen.queryByRole('button', {name: 'Hide from sidebar'})).not.toBeInTheDocument();
     });
 
@@ -144,14 +147,14 @@ describe('SidebarCustomizationProvider', () => {
             </SidebarCustomizationProvider>
         );
 
-        fireEvent.contextMenu(screen.getByText('Posts nav item'));
+        fireEvent.contextMenu(screen.getByText('Members nav item'));
 
         const menuItem = await screen.findByRole('button', {name: 'Hide from sidebar'});
         expect(screen.queryByText('Customize sidebar')).not.toBeInTheDocument();
 
         fireEvent.click(menuItem);
 
-        expect(toggleVisibility).toHaveBeenCalledWith('posts', false);
+        expect(toggleVisibility).toHaveBeenCalledWith('members', false);
     });
 
     it('keeps menu item order stable when an item unregisters and registers again', async () => {
