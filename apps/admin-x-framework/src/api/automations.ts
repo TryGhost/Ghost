@@ -198,3 +198,29 @@ export const insertWaitAction = ({detail, anchor}: InsertActionArgs): Automation
 export const insertSendEmailAction = ({detail, anchor}: InsertActionArgs): AutomationDetail => (
     spliceAction({detail, action: buildSendEmailAction(), anchor})
 );
+
+type RemoveActionArgs = ReadonlyDeep<{
+    detail: AutomationDetail;
+    actionId: string;
+}>;
+
+export const removeAction = ({detail, actionId}: RemoveActionArgs): AutomationDetail => {
+    if (!detail.actions.some(action => action.id === actionId)) {
+        throw new Error(`removeAction: unknown action id "${actionId}"`);
+    }
+
+    const incoming = detail.edges.find(edge => edge.target_action_id === actionId);
+    const outgoing = detail.edges.find(edge => edge.source_action_id === actionId);
+
+    const actions = detail.actions.filter(action => action.id !== actionId);
+    const remainingEdges = detail.edges.filter(
+        edge => edge.source_action_id !== actionId && edge.target_action_id !== actionId
+    );
+    if (incoming && outgoing) {
+        remainingEdges.push({
+            source_action_id: incoming.source_action_id,
+            target_action_id: outgoing.target_action_id
+        });
+    }
+    return {...detail, actions, edges: remainingEdges};
+};

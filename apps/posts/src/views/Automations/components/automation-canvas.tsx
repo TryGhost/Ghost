@@ -2,7 +2,7 @@ import '@xyflow/react/dist/style.css';
 import AddStepEdge, {type AddStepEdgeData} from './add-step-edge';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import StepPicker, {type StepPickerType} from './step-picker';
-import {AutomationAction, AutomationDetail, AutomationSendEmailAction, AutomationWaitAction, InsertActionAnchor, MAX_AUTOMATION_ACTIONS, insertSendEmailAction, insertWaitAction} from '@tryghost/admin-x-framework/api/automations';
+import {AutomationAction, AutomationDetail, AutomationSendEmailAction, AutomationWaitAction, InsertActionAnchor, MAX_AUTOMATION_ACTIONS, insertSendEmailAction, insertWaitAction, removeAction} from '@tryghost/admin-x-framework/api/automations';
 import {Background, Edge, Handle, Node, NodeProps, Position, ReactFlow} from '@xyflow/react';
 import {Banner, Button, Checkbox, Input, Label, LoadingIndicator, Popover, PopoverContent, PopoverTrigger, Select, SelectTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
@@ -342,40 +342,42 @@ const getInitialViewport = (canvasWidth: number): {x: number; y: number; zoom: n
     zoom: 1
 });
 
-type TriggerStepSidebarDetail = {
+type MemberTier = 'free' | 'paid';
+
+type BaseStepSidebarDetail<Type extends string, LabelText extends string> = {
     icon: React.ElementType;
-    label: 'Trigger';
     title: string;
+    label: LabelText;
+    type: Type;
+};
+
+type ActionStepSidebarDetail<Action extends AutomationAction, LabelText extends string> = BaseStepSidebarDetail<Action['type'], LabelText> & {
+    action: Action;
+    onDelete: () => void;
+};
+
+type TriggerStepSidebarDetail = BaseStepSidebarDetail<'trigger', 'Trigger'> & {
     memberTiers: MemberTier[];
-    type: 'trigger';
 };
 
-type WaitStepSidebarDetail = {
-    action: AutomationWaitAction;
-    icon: React.ElementType;
-    label: 'Wait';
-    title: string;
-    type: 'wait';
-};
+type WaitStepSidebarDetail = ActionStepSidebarDetail<AutomationWaitAction, 'Wait'>;
 
-type SendEmailStepSidebarDetail = {
-    action: AutomationSendEmailAction;
-    icon: React.ElementType;
-    label: 'Send email';
-    title: string;
-    type: 'send_email';
-};
+type SendEmailStepSidebarDetail = ActionStepSidebarDetail<AutomationSendEmailAction, 'Send email'>;
 
 type StepSidebarDetail = TriggerStepSidebarDetail | WaitStepSidebarDetail | SendEmailStepSidebarDetail;
-
-type MemberTier = 'free' | 'paid';
 
 const automationSlugMemberTiers: Record<string, MemberTier[]> = {
     'member-welcome-email-free': ['free'],
     'member-welcome-email-paid': ['paid']
 };
 
-const getStepSidebarDetail = (automation: AutomationDetail, stepId: string | null): StepSidebarDetail | null => {
+type StepSidebarDetailOptions = {
+    automation: AutomationDetail;
+    onDelete: (actionId: string) => void;
+    stepId: string | null;
+};
+
+const getStepSidebarDetail = ({automation, stepId, onDelete}: StepSidebarDetailOptions): StepSidebarDetail | null => {
     if (!stepId) {
         return null;
     }
@@ -403,6 +405,7 @@ const getStepSidebarDetail = (automation: AutomationDetail, stepId: string | nul
             label: 'Wait',
             title: waitValue,
             action,
+            onDelete: () => onDelete(action.id),
             type: 'wait'
         };
     }
@@ -412,6 +415,7 @@ const getStepSidebarDetail = (automation: AutomationDetail, stepId: string | nul
             label: 'Send email',
             title: action.data.email_subject || 'No subject',
             action,
+            onDelete: () => onDelete(action.id),
             type: 'send_email'
         };
     default: {
@@ -473,7 +477,19 @@ const TriggerSidebarBody: React.FC<{memberTiers: MemberTier[]}> = ({memberTiers}
     </div>
 );
 
-const WaitSidebarBody: React.FC<{action: AutomationWaitAction}> = ({action}) => {
+const DeleteStepButton: React.FC<{onClick: () => void}> = ({onClick}) => (
+    <Button
+        className='w-full border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground'
+        type='button'
+        variant='outline'
+        onClick={onClick}
+    >
+        <LucideIcon.Trash2 className='size-4' />
+        Delete step
+    </Button>
+);
+
+const WaitSidebarBody: React.FC<{action: AutomationWaitAction; onDelete: () => void}> = ({action, onDelete}) => {
     const wait = getWaitParts(action.data.wait_hours);
 
     return (
@@ -485,16 +501,13 @@ const WaitSidebarBody: React.FC<{action: AutomationWaitAction}> = ({action}) => 
                 </div>
             </SidebarField>
             <div className='mt-auto pt-6'>
-                <DisabledPanelButton variant='destructive'>
-                    <LucideIcon.Trash2 className='size-4' />
-                    Delete step
-                </DisabledPanelButton>
+                <DeleteStepButton onClick={onDelete} />
             </div>
         </div>
     );
 };
 
-const SendEmailSidebarBody: React.FC<{action: AutomationSendEmailAction}> = ({action}) => (
+const SendEmailSidebarBody: React.FC<{action: AutomationSendEmailAction; onDelete: () => void}> = ({action, onDelete}) => (
     <div className='flex flex-1 flex-col gap-5'>
         <SidebarField label='Subject line'>
             <Input value={action.data.email_subject || 'No subject'} readOnly />
@@ -504,10 +517,7 @@ const SendEmailSidebarBody: React.FC<{action: AutomationSendEmailAction}> = ({ac
             Edit email
         </DisabledPanelButton>
         <div className='mt-auto pt-6'>
-            <DisabledPanelButton variant='destructive'>
-                <LucideIcon.Trash2 className='size-4' />
-                Delete step
-            </DisabledPanelButton>
+            <DeleteStepButton onClick={onDelete} />
         </div>
     </div>
 );
@@ -517,9 +527,9 @@ const StepSidebarBody: React.FC<{detail: StepSidebarDetail}> = ({detail}) => {
     case 'trigger':
         return <TriggerSidebarBody memberTiers={detail.memberTiers} />;
     case 'wait':
-        return <WaitSidebarBody action={detail.action} />;
+        return <WaitSidebarBody action={detail.action} onDelete={detail.onDelete} />;
     case 'send_email':
-        return <SendEmailSidebarBody action={detail.action} />;
+        return <SendEmailSidebarBody action={detail.action} onDelete={detail.onDelete} />;
     default: {
         const _exhaustive: never = detail;
         throw new Error(`Unknown sidebar type: ${_exhaustive}`);
@@ -611,6 +621,15 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
         onChange(next);
     }, [automation, onChange]);
 
+    const handleDelete = useCallback((actionId: string) => {
+        if (!automation) {
+            return;
+        }
+        const next = removeAction({detail: automation, actionId});
+        setSelectedStepId(null);
+        onChange(next);
+    }, [automation, onChange]);
+
     const initialViewport = useRef(getInitialViewport(window.innerWidth));
 
     const graph = useMemo(() => {
@@ -626,7 +645,11 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
         });
     }, [automation, handlePick, selectedStepId]);
 
-    const sidebarDetail = automation ? getStepSidebarDetail(automation, selectedStepId) : null;
+    const sidebarDetail = automation ? getStepSidebarDetail({
+        automation,
+        onDelete: handleDelete,
+        stepId: selectedStepId
+    }) : null;
     const clearDetail = useCallback(() => {
         setSelectedStepId(null);
     }, []);
