@@ -94,7 +94,7 @@ const MainContent: React.FC = () => {
                     <Sidebar />
                 </div>
             </div>
-            <div className="relative h-full flex-1 overflow-y-scroll bg-white pt-14 tablet:basis-[800px] dark:bg-grey-975 dark:tablet:bg-black" id="admin-x-settings-scroller">
+            <div className="relative h-full flex-1 overflow-y-scroll bg-white pt-13 tablet:basis-[800px] dark:bg-grey-975 dark:tablet:bg-black" id="admin-x-settings-scroller">
                 <Settings />
             </div>
         </Page>

@@ -122,7 +122,7 @@ const Table: React.FC<TableProps> = ({
     }, [tableHeight]);
 
     const headerClasses = clsx(
-        'h-9 border-b border-grey-200 dark:border-grey-600'
+        'h-8 border-b border-grey-200 dark:border-grey-600'
     );
 
     /**

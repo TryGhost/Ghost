@@ -101,7 +101,7 @@ const TextArea: React.FC<TextAreaProps> = ({
                     </FormPrimitive.Control>
                 </FormPrimitive.Field>
                 {title && <Heading className={'order-1'} htmlFor={id} useLabelTag={true}>{title}</Heading>}
-                {hint && <Hint className='order-3' color={error ? 'red' : ''}>{hint}</Hint>}
+                {hint && <Hint className='order-3 mt-1' color={error ? 'red' : ''}>{hint}</Hint>}
             </div>
         </FormPrimitive.Root>
     );

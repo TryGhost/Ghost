@@ -162,7 +162,7 @@ const Select: React.FC<SelectProps> = ({
     const customClasses = {
         control: clsx(
             controlClasses?.control,
-            'h-9 min-h-[36px] w-full appearance-none rounded-lg border outline-hidden md:h-[38px] md:min-h-[38px]',
+            'h-[var(--control-height)] !min-h-[var(--control-height)] w-full appearance-none rounded-lg border outline-hidden',
             size === 'xs' ? 'py-0 pr-2 text-sm' : 'py-1 pr-4',
             clearBg ? '' : 'bg-grey-150 px-3 dark:bg-grey-900',
             disabled && !clearBg && 'bg-grey-50 shadow-[0_0_0_1px_rgba(255,255,255,0.45)] hover:bg-grey-50 dark:bg-grey-950 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.18)] dark:hover:bg-grey-950',
