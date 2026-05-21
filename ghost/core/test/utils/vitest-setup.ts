@@ -173,12 +173,17 @@ afterAll(async () => {
     // the threads pool, or a stuck event loop under forks.
     try {
         const db = require('../../core/server/data/db');
-        if (process.env.NODE_ENV === 'testing-mysql' && mysqlGenerated) {
-            await db.knex.raw(
-                `DROP DATABASE IF EXISTS \`${process.env.database__connection__database}\``
-            );
+        try {
+            if (process.env.NODE_ENV === 'testing-mysql' && mysqlGenerated) {
+                await db.knex.raw(
+                    `DROP DATABASE IF EXISTS \`${process.env.database__connection__database}\``
+                );
+            }
+        } finally {
+            // Destroy the pool even if the DROP above threw — a leaked pool
+            // is exactly what causes the FATAL crash / hang described above.
+            await db.knex.destroy();
         }
-        await db.knex.destroy();
     } catch (err) {
         // eslint-disable-next-line no-console
         console.warn('Failed to clean up test database:', (err as Error).message);
