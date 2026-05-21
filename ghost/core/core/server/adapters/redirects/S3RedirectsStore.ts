@@ -20,6 +20,7 @@ const DEFAULT_FILENAME = 'redirects.json';
 
 const messages = {
     missingBucket: 'S3RedirectsStore requires a bucket name',
+    missingStaticFileURLPrefix: 'S3RedirectsStore requires a staticFileURLPrefix',
     partialCredentials: 'S3RedirectsStore requires both accessKeyId and secretAccessKey when either is provided',
     missingResponseBody: 'S3 GetObject returned no body'
 };
@@ -28,6 +29,7 @@ const stripLeadingAndTrailingSlashes = (value = '') => value.replace(/^\/+|\/+$/
 
 export interface S3RedirectsStoreOptions {
     bucket: string;
+    staticFileURLPrefix: string;
     region?: string;
     endpoint?: string;
     forcePathStyle?: boolean;
@@ -46,6 +48,7 @@ export interface S3RedirectsStoreOptions {
 export default class S3RedirectsStore extends RedirectsStoreBase implements RedirectsStore {
     private readonly client: S3Client;
     private readonly bucket: string;
+    private readonly staticFileURLPrefix: string;
     private readonly tenantPrefix: string;
 
     constructor(options: S3RedirectsStoreOptions) {
@@ -53,6 +56,13 @@ export default class S3RedirectsStore extends RedirectsStoreBase implements Redi
         if (!options.bucket) {
             throw new errors.IncorrectUsageError({
                 message: tpl(messages.missingBucket)
+            });
+        }
+
+        const staticFileURLPrefix = stripLeadingAndTrailingSlashes(options.staticFileURLPrefix);
+        if (!staticFileURLPrefix) {
+            throw new errors.IncorrectUsageError({
+                message: tpl(messages.missingStaticFileURLPrefix)
             });
         }
 
@@ -67,6 +77,7 @@ export default class S3RedirectsStore extends RedirectsStoreBase implements Redi
         }
 
         this.bucket = options.bucket;
+        this.staticFileURLPrefix = staticFileURLPrefix;
         this.tenantPrefix = stripLeadingAndTrailingSlashes(options.tenantPrefix);
 
         const clientConfig: S3ClientConfig = {
@@ -127,11 +138,8 @@ export default class S3RedirectsStore extends RedirectsStoreBase implements Redi
     }
 
     private buildKey(): string {
-        if (!this.tenantPrefix) {
-            return DEFAULT_FILENAME;
-        }
-
-        return `${this.tenantPrefix}/${DEFAULT_FILENAME}`;
+        const parts = [this.tenantPrefix, this.staticFileURLPrefix, DEFAULT_FILENAME].filter(Boolean);
+        return parts.join('/');
     }
 
     private async _canonicalExists(): Promise<boolean> {

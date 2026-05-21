@@ -11,29 +11,36 @@ describe('UNIT: S3RedirectsStore', function () {
             );
         });
 
+        it('throws when no staticFileURLPrefix is provided', function () {
+            assert.throws(
+                () => new S3RedirectsStore({bucket: 'x'} as never),
+                {errorType: 'IncorrectUsageError', message: /staticFileURLPrefix/}
+            );
+        });
+
         it('throws when only accessKeyId is provided', function () {
             assert.throws(
-                () => new S3RedirectsStore({bucket: 'x', accessKeyId: 'AKIA'}),
+                () => new S3RedirectsStore({bucket: 'x', staticFileURLPrefix: 'content/data', accessKeyId: 'AKIA'}),
                 {errorType: 'IncorrectUsageError', message: /accessKeyId.*secretAccessKey/}
             );
         });
 
         it('throws when only secretAccessKey is provided', function () {
             assert.throws(
-                () => new S3RedirectsStore({bucket: 'x', secretAccessKey: 'shh'}),
+                () => new S3RedirectsStore({bucket: 'x', staticFileURLPrefix: 'content/data', secretAccessKey: 'shh'}),
                 {errorType: 'IncorrectUsageError', message: /accessKeyId.*secretAccessKey/}
             );
         });
 
         it('throws when sessionToken is provided without the credential pair', function () {
             assert.throws(
-                () => new S3RedirectsStore({bucket: 'x', sessionToken: 'session'}),
+                () => new S3RedirectsStore({bucket: 'x', staticFileURLPrefix: 'content/data', sessionToken: 'session'}),
                 {errorType: 'IncorrectUsageError', message: /accessKeyId.*secretAccessKey/}
             );
         });
 
         it('accepts a tenantPrefix without throwing', function () {
-            assert.doesNotThrow(() => new S3RedirectsStore({bucket: 'x', tenantPrefix: 'tenant-abc'}));
+            assert.doesNotThrow(() => new S3RedirectsStore({bucket: 'x', staticFileURLPrefix: 'content/data', tenantPrefix: 'tenant-abc'}));
         });
     });
 });
