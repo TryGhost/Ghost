@@ -108,6 +108,9 @@ catalogs:
     cross-fetch:
       specifier: 4.1.0
       version: 4.1.0
+    dequal:
+      specifier: 2.0.3
+      version: 2.0.3
     dompurify:
       specifier: 3.4.1
       version: 3.4.1
@@ -156,6 +159,9 @@ catalogs:
     storybook:
       specifier: 10.3.5
       version: 10.3.5
+    type-fest:
+      specifier: 4.41.0
+      version: 4.41.0
     typescript:
       specifier: 5.9.3
       version: 5.9.3
@@ -200,7 +206,7 @@ overrides:
   lodash.template: 4.5.0
   '@babel/runtime@<7.26.10': ^7.26.10
   '@tootallnate/once@<3.0.1': ^3.0.1
-  ansi-html@<0.0.8: ^0.0.8
+  ansi-html@<0.0.8: ^0.0.9
   axios@<1.15.2: ^1.15.2
   braces@<3.0.3: ^3.0.3
   clean-css@<4.1.11: ^4.1.11
@@ -686,6 +692,9 @@ importers:
       '@tryghost/shade':
         specifier: workspace:*
         version: link:../shade
+      bson-objectid:
+        specifier: 'catalog:'
+        version: 2.0.4
       react:
         specifier: 18.3.1
         version: 18.3.1
@@ -747,6 +756,9 @@ importers:
       msw:
         specifier: 'catalog:'
         version: 2.12.14(@types/node@25.6.0)(typescript@5.9.3)
+      type-fest:
+        specifier: 'catalog:'
+        version: 4.41.0
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -1156,6 +1168,9 @@ importers:
       '@xyflow/react':
         specifier: 12.8.6
         version: 12.8.6(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      dequal:
+        specifier: 'catalog:'
+        version: 2.0.3
       i18n-iso-countries:
         specifier: 7.14.0
         version: 7.14.0
@@ -1623,9 +1638,6 @@ importers:
       '@faker-js/faker':
         specifier: 9.9.0
         version: 9.9.0
-      '@playwright/test':
-        specifier: 'catalog:'
-        version: 1.59.1
       '@testing-library/jest-dom':
         specifier: 6.9.1
         version: 6.9.1
@@ -1717,8 +1729,8 @@ importers:
         specifier: 1.6.1
         version: 1.6.1
       eslint-plugin-playwright:
-        specifier: 2.10.1
-        version: 2.10.1(eslint@8.57.1)
+        specifier: 2.10.2
+        version: 2.10.2(eslint@8.57.1)
       express:
         specifier: 4.21.2
         version: 4.21.2
@@ -2417,8 +2429,8 @@ importers:
         specifier: 2.0.2
         version: 2.0.2
       human-number:
-        specifier: 2.0.10
-        version: 2.0.10
+        specifier: 2.0.12
+        version: 2.0.12
       iconv-lite:
         specifier: 0.7.2
         version: 0.7.2
@@ -9657,8 +9669,8 @@ packages:
     resolution: {integrity: sha512-BvU8nYgGQBxcmMuEeUEmNTvrMVjJNSH7RgW24vXexN4Ven6qCvy4TntnvlnwnMLTVlcRQQdbRY8NKnaIoeWDNg==}
     engines: {node: '>=18'}
 
-  ansi-html@0.0.8:
-    resolution: {integrity: sha512-QROYz1I1Kj+8bTYgx0IlMBpRSCIU+7GjbE0oH+KF7QKc+qSF8YAlIutN59Db17tXN70Ono9upT9Ht0iG93W7ug==}
+  ansi-html@0.0.9:
+    resolution: {integrity: sha512-ozbS3LuenHVxNRh/wdnN16QapUHzauqSomAl1jwwJRRsGwFwtj644lIhxfWu0Fy0acCij2+AEgHvjscq3dlVXg==}
     engines: {'0': node >= 0.8.0}
     hasBin: true
 
@@ -13428,8 +13440,8 @@ packages:
   eslint-plugin-no-relative-import-paths@1.6.1:
     resolution: {integrity: sha512-YZNeOnsOrJcwhFw0X29MXjIzu2P/f5X2BZDPWw1R3VUYBRFxNIh77lyoL/XrMU9ewZNQPcEvAgL/cBOT1P330A==}
 
-  eslint-plugin-playwright@2.10.1:
-    resolution: {integrity: sha512-qea3UxBOb8fTwJ77FMApZKvRye5DOluDHcev0LDJwID3RELeun0JlqzrNIXAB/SXCyB/AesCW/6sZfcT9q3Edg==}
+  eslint-plugin-playwright@2.10.2:
+    resolution: {integrity: sha512-0N+2OWc3NZbOZ0gK8mp2TK6Qu3UWcJTQ9rqU0UM2yRJXgT758pvpY0lsOLIySfbyFrLqn3TcXjixbmcK90VnuQ==}
     engines: {node: '>=16.9.0'}
     peerDependencies:
       eslint: '>=8.40.0'
@@ -14769,8 +14781,8 @@ packages:
   human-interval@2.0.1:
     resolution: {integrity: sha512-r4Aotzf+OtKIGQCB3odUowy4GfUDTy3aTWTfLd7ZF2gBCy3XW3v/dJLRefZnOFFnjqs5B1TypvS8WarpBkYUNQ==}
 
-  human-number@2.0.10:
-    resolution: {integrity: sha512-RHuagJOf+jR/6FkLzz8ZugPUR4KGbqJOWdsYUOqa7j/M542M0gVe4a+TJNVQgqaAMTKX9wyvv/xuiAII0Kq6Iw==}
+  human-number@2.0.12:
+    resolution: {integrity: sha512-uL2Ahzke1TGVXsFcIu1olVplLvFHQJg7cUvGOBbt37ZF3qOfv/Mt9ewI1FHNbHMyEe45yW2m0Q3WL9e1rjlp2Q==}
     engines: {node: '>= 8'}
 
   human-signals@1.1.1:
@@ -30757,7 +30769,7 @@ snapshots:
     dependencies:
       environment: 1.1.0
 
-  ansi-html@0.0.8: {}
+  ansi-html@0.0.9: {}
 
   ansi-regex@2.1.1: {}
 
@@ -32254,7 +32266,7 @@ snapshots:
 
   broccoli-middleware@2.1.1:
     dependencies:
-      ansi-html: 0.0.8
+      ansi-html: 0.0.9
       handlebars: 4.7.9
       has-ansi: 3.0.0
       mime-types: 2.1.35
@@ -32500,7 +32512,7 @@ snapshots:
       '@types/chai': 4.3.20
       '@types/chai-as-promised': 7.1.8
       '@types/express': 4.17.25
-      ansi-html: 0.0.8
+      ansi-html: 0.0.9
       broccoli-node-info: 2.2.0
       broccoli-slow-trees: 3.1.0
       broccoli-source: 3.0.1
@@ -36250,7 +36262,7 @@ snapshots:
 
   eslint-plugin-no-relative-import-paths@1.6.1: {}
 
-  eslint-plugin-playwright@2.10.1(eslint@8.57.1):
+  eslint-plugin-playwright@2.10.2(eslint@8.57.1):
     dependencies:
       eslint: 8.57.1
       globals: 17.4.0
@@ -38131,7 +38143,7 @@ snapshots:
     dependencies:
       numbered: 1.1.0
 
-  human-number@2.0.10: {}
+  human-number@2.0.12: {}
 
   human-signals@1.1.1: {}
 

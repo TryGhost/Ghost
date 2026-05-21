@@ -6,11 +6,11 @@ const themeI18n = require('../../../../core/frontend/services/theme-engine/i18n'
 describe('{{t}} helper', function () {
     let ogBasePath = themeI18n.basePath;
 
-    before(function () {
+    beforeAll(function () {
         themeI18n.basePath = path.join(__dirname, '../../../utils/fixtures/themes/');
     });
 
-    after(function () {
+    afterAll(function () {
         themeI18n.basePath = ogBasePath;
     });
 

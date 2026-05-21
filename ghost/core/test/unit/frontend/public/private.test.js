@@ -80,7 +80,7 @@ describe('private.js', function () {
         });
     }
 
-    before(function () {
+    beforeAll(function () {
         scriptContent = fs.readFileSync(path.join(__dirname, '../../../../core/frontend/public/private.js'), 'utf8');
     });
 

@@ -3,12 +3,14 @@ import AppContext from '../../app-context';
 import CloseButton from '../common/close-button';
 import ActionButton from '../common/action-button';
 import GiftCard from '../common/gift-card';
+import InputField from '../common/input-field';
 import LoadingPage from './loading-page';
 import CheckmarkIcon from '../../images/icons/checkmark.svg?react';
 import giftCardNoiseUrl from '../../images/gift-card-noise.webp';
 import giftCardOrbUrl from '../../images/gift-card-orb.webp';
 import {getAvailableProducts, getCurrencySymbol, formatNumber, getStripeAmount, isCookiesDisabled, getActiveInterval} from '../../utils/helpers';
 import {getGiftDurationLabel} from '../../utils/gift-redemption-notification';
+import {ValidateInputForm} from '../../utils/form';
 import {t} from '../../utils/i18n';
 import useCardTilt from '../../utils/use-card-tilt';
 
@@ -119,6 +121,24 @@ export const GiftPageStyles = `
 
 .gh-portal-gift-checkout .gh-portal-products-pricetoggle {
     margin: 0;
+}
+
+.gh-portal-gift-checkout-email .gh-portal-input-labelcontainer {
+    margin-bottom: 12px;
+}
+
+.gh-portal-gift-checkout-email .gh-portal-input-label {
+    font-size: 1.2rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--grey6);
+    margin-bottom: 0;
+}
+
+.gh-portal-gift-checkout-email .gh-portal-input {
+    height: 48px;
+    margin-bottom: 0;
 }
 
 .gh-portal-gift-checkout-tiers {
@@ -652,49 +672,73 @@ function getTierPriceLabel(product, selectedInterval) {
 }
 
 const GiftPage = () => {
-    const {site, brandColor, action, doAction} = useContext(AppContext);
+    const {site, member, brandColor, action, doAction} = useContext(AppContext);
     const [selectedInterval, setSelectedInterval] = useState(null);
     const [selectedProductId, setSelectedProductId] = useState(null);
+    const [email, setEmail] = useState('');
+    const [errors, setErrors] = useState({});
     const {cardRef, containerProps: cardTiltProps} = useCardTilt();
     const leftRef = useRef(null);
     const innerRef = useRef(null);
-    const centeringDoneRef = useRef(false);
 
-    // On first paint, vertically center the inner content within the left
-    // column by computing the available space and pushing the inner down by
-    // half. After this single measurement we never recompute — so when the
-    // benefits change height on tier switch, only the bottom of the column
-    // (the CTA) shifts, leaving the title and tier picker anchored.
+    // Vertically center the inner content within the left column by computing
+    // the available space and pushing the inner down by half. We recompute on
+    // window resize (otherwise the stale offset leaves the right panel
+    // overlapping the text), but not on every render — so when benefits change
+    // height on tier switch, only the bottom of the column (the CTA) shifts,
+    // leaving the title and tier picker anchored.
     // Skipped on mobile (single-column stack) where natural top-aligned flow
     // is what we want; centering would push content under the sticky CTA.
     useLayoutEffect(() => {
-        if (centeringDoneRef.current) {
-            return;
-        }
         const inner = innerRef.current;
         const left = leftRef.current;
         if (!inner || !left) {
             return;
         }
-        if (typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 880px)').matches) {
+
+        const recenter = () => {
+            if (typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 880px)').matches) {
+                inner.style.marginTop = '';
+                return;
+            }
+            // Reset first so the measurement reflects the natural inner height,
+            // not the previously-applied offset.
             inner.style.marginTop = '';
-            centeringDoneRef.current = true;
-            return;
-        }
-        const leftRect = left.getBoundingClientRect();
-        if (leftRect.height === 0) {
-            return;
-        }
-        const leftStyle = window.getComputedStyle(left);
-        const pTop = parseFloat(leftStyle.paddingTop);
-        const pBottom = parseFloat(leftStyle.paddingBottom);
-        const available = leftRect.height - pTop - pBottom;
-        const space = available - inner.getBoundingClientRect().height;
-        if (space > 0) {
-            inner.style.marginTop = `${space / 2}px`;
-        }
-        centeringDoneRef.current = true;
-    });
+            const leftRect = left.getBoundingClientRect();
+            if (leftRect.height === 0) {
+                return;
+            }
+            const leftStyle = window.getComputedStyle(left);
+            const pTop = parseFloat(leftStyle.paddingTop);
+            const pBottom = parseFloat(leftStyle.paddingBottom);
+            const available = leftRect.height - pTop - pBottom;
+            const space = available - inner.getBoundingClientRect().height;
+            if (space > 0) {
+                inner.style.marginTop = `${space / 2}px`;
+            }
+        };
+
+        recenter();
+
+        let rafId = null;
+        const onResize = () => {
+            if (rafId !== null) {
+                return;
+            }
+            rafId = window.requestAnimationFrame(() => {
+                rafId = null;
+                recenter();
+            });
+        };
+
+        window.addEventListener('resize', onResize, {passive: true});
+        return () => {
+            window.removeEventListener('resize', onResize);
+            if (rafId !== null) {
+                window.cancelAnimationFrame(rafId);
+            }
+        };
+    }, []);
 
     if (!site) {
         return <LoadingPage />;
@@ -734,14 +778,58 @@ const GiftPage = () => {
     const activeProduct = products.find(p => p.id === selectedProductId) || products[0];
     const isSingleTier = products.length === 1;
     const isPurchasing = action === 'checkoutGift:running';
-    const isDisabled = isCookiesDisabled() || isPurchasing;
+    const hasErrors = Object.values(errors).some(errorMessage => !!errorMessage);
+    const isDisabled = isCookiesDisabled() || isPurchasing || hasErrors;
+    const isLoggedIn = !!member;
+
+    const emailField = {
+        type: 'email',
+        value: email,
+        placeholder: t('jamie@example.com'),
+        label: t('Your email'),
+        name: 'email',
+        required: true,
+        errorMessage: errors.email || ''
+    };
+
+    const handleEmailChange = (event) => {
+        setErrors(currentErrors => ({
+            ...currentErrors,
+            email: ''
+        }));
+        setEmail(event.target.value);
+    };
+
+    const handleEmailKeyDown = (event) => {
+        if (event.keyCode === 13 && !isPurchasing) {
+            handlePurchase(event);
+        }
+    };
 
     const handlePurchase = (e) => {
         e.preventDefault();
 
+        if (isPurchasing) {
+            return;
+        }
+
+        const customerEmail = email.trim();
+
+        if (!isLoggedIn) {
+            const formErrors = ValidateInputForm({fields: [{...emailField, value: customerEmail}]});
+            const formHasErrors = Object.values(formErrors).some(errorMessage => !!errorMessage);
+
+            setErrors(formErrors);
+
+            if (formHasErrors) {
+                return;
+            }
+        }
+
         doAction('checkoutGift', {
             tierId: activeProduct.id,
-            cadence: activeInterval
+            cadence: activeInterval,
+            ...(!isLoggedIn ? {email: customerEmail} : {})
         });
     };
 
@@ -760,7 +848,18 @@ const GiftPage = () => {
                                 </p>
                             </header>
 
+                            {!isLoggedIn && (
+                                <div className='gh-portal-gift-checkout-section gh-portal-gift-checkout-email'>
+                                    <InputField
+                                        {...emailField}
+                                        onChange={handleEmailChange}
+                                        onKeyDown={handleEmailKeyDown}
+                                    />
+                                </div>
+                            )}
+
                             <div className='gh-portal-gift-checkout-section'>
+                                <div className='gh-portal-gift-checkout-label'>{isSingleTier ? t('Membership details') : t('Tier')}</div>
                                 <GiftPriceSwitch
                                     selectedInterval={activeInterval}
                                     setSelectedInterval={setSelectedInterval}
@@ -768,7 +867,6 @@ const GiftPage = () => {
                             </div>
 
                             <div className='gh-portal-gift-checkout-section'>
-                                <div className='gh-portal-gift-checkout-label'>{isSingleTier ? t('Membership details') : t('Tier')}</div>
                                 <div
                                     className={'gh-portal-gift-checkout-tiers' + (isSingleTier ? ' single' : '')}
                                     role={isSingleTier ? undefined : 'radiogroup'}

@@ -160,7 +160,7 @@ describe('Themes', function () {
             path: '/path/to/theme'
         };
 
-        before(function () {
+        beforeAll(function () {
             list.init();
             list.set(testTheme.name, testTheme);
             validate.init();

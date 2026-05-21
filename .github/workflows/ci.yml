@@ -109,23 +109,11 @@ jobs:
               - 'ghost/**'
               - '!ghost/admin/**'
               - '!ghost/core/core/server/data/tinybird/**'
-            admin-x-settings:
-              - *shared
-              - 'apps/admin-x-settings/**'
-              - 'apps/admin-x-design-system/**'
-              - 'apps/admin-x-framework/**'
-              - 'apps/shade/**'
-            activitypub:
-              - *shared
-              - 'apps/shade/**'
-              - 'apps/admin-x-framework/**'
-              - 'apps/activitypub/**'
-            comments-ui:
-              - *shared
-              - 'apps/comments-ui/**'
-            signup-form:
-              - *shared
-              - 'apps/signup-form/**'
+              # Unit tests + vitest config are exercised only by job_unit-tests;
+              # they never affect the acceptance / legacy / ghost-cli jobs.
+              - '!ghost/core/test/unit/**'
+              - '!ghost/core/vitest.config.ts'
+              - '!ghost/core/test/utils/vitest-setup.ts'
             tinybird:
               - '.github/workflows/ci.yml'
               - 'compose.dev.analytics.yaml'
@@ -138,6 +126,18 @@ jobs:
               - '!**/*.md'
               - '!.devcontainer/**'
               - '!.vscode/**'
+            # Drives the run_e2e output: matches any changed file that could
+            # affect a running Ghost instance. Test files, test config and
+            # docs are excluded — a change confined to them cannot alter
+            # product behaviour, so the build + E2E lane is skipped.
+            # ghost/core test paths are listed today; app test paths can be
+            # added here as their conventions are confirmed.
+            e2e:
+              - '!**/*.md'
+              - '!.devcontainer/**'
+              - '!.vscode/**'
+              - '!ghost/core/test/**'
+              - '!ghost/core/vitest.config.ts'
 
       - name: Define Node test matrix
         id: node_matrix
@@ -166,7 +166,7 @@ jobs:
             AFFECTED_ARG=""
           fi
 
-          AFFECTED_PROJECTS=$(pnpm -s nx show projects ${AFFECTED_ARG} --json | tr -d '\n')
+          AFFECTED_PROJECTS=$(pnpm -s nx show projects ${AFFECTED_ARG} --json)
           echo "affected_projects=$AFFECTED_PROJECTS" >> "$GITHUB_OUTPUT"
           # string list for use in run-many commands
           AFFECTED_PROJECTS_STR=$(pnpm -s nx show projects ${AFFECTED_ARG} --sep=, | tr -d '\n')
@@ -177,18 +177,25 @@ jobs:
           I18N_PROJECTS=$(pnpm -s nx show projects ${AFFECTED_ARG} --projects 'tag:i18n' --sep=, | tr -d '\n')
           echo "affected_i18n_projects=${I18N_PROJECTS}" >> "$GITHUB_OUTPUT"
 
+          PLAYWRIGHT_PROJECTS=$(pnpm -s nx show projects ${AFFECTED_ARG} \
+            --withTarget test:acceptance \
+            --projects 'apps/*' \
+            --json)
+          echo "affected_playwright_projects=$PLAYWRIGHT_PROJECTS" >> "$GITHUB_OUTPUT"
+
     outputs:
       affected_projects: ${{ steps.affected.outputs.affected_projects }}
       affected_projects_str: ${{ steps.affected.outputs.affected_projects_str }}
+      affected_playwright_projects: ${{ steps.affected.outputs.affected_playwright_projects }}
       changed_i18n_apps: ${{ steps.affected.outputs.affected_i18n_projects != '' }}
       changed_core: ${{ steps.changed.outputs.core }}
-      changed_admin_x_settings: ${{ steps.changed.outputs.admin-x-settings }}
-      changed_activitypub: ${{ steps.changed.outputs.activitypub }}
-      changed_comments_ui: ${{ steps.changed.outputs.comments-ui }}
-      changed_signup_form: ${{ steps.changed.outputs.signup-form }}
       changed_tinybird: ${{ steps.changed.outputs.tinybird }}
       changed_tinybird_datafiles: ${{ steps.changed.outputs.tinybird-datafiles }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
+      # Single gate for the build + browser-E2E lane. True for tags, or when a
+      # changed file could affect a running Ghost instance (see the `e2e` path
+      # filter above). A test-only / docs-only change keeps this false.
+      run_e2e: ${{ env.IS_TAG == 'true' || steps.changed.outputs.e2e == 'true' }}
       is_main: ${{ env.IS_MAIN }}
       is_tag: ${{ env.IS_TAG }}
       is_development: ${{ env.IS_DEVELOPMENT }}
@@ -272,7 +279,7 @@ jobs:
           NX_BASE: ${{ needs.job_setup.outputs.nx_base }}
           NX_HEAD: ${{ env.HEAD_COMMIT }}
 
-      - uses: tryghost/actions/actions/slack-build@bf96db0e7f57eb048ead40594f6c222b4a7e3e93 # main
+      - uses: tryghost/actions/actions/slack-build@598d6328d89dbd796aa02ae2ea66308f9d942224 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -336,7 +343,7 @@ jobs:
           name: admin-coverage
           path: ghost/*/coverage/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@bf96db0e7f57eb048ead40594f6c222b4a7e3e93 # main
+      - uses: tryghost/actions/actions/slack-build@598d6328d89dbd796aa02ae2ea66308f9d942224 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -409,7 +416,7 @@ jobs:
           name: unit-coverage
           path: ghost/*/coverage/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@bf96db0e7f57eb048ead40594f6c222b4a7e3e93 # main
+      - uses: tryghost/actions/actions/slack-build@598d6328d89dbd796aa02ae2ea66308f9d942224 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -537,7 +544,7 @@ jobs:
             ghost/*/coverage-e2e/cobertura-coverage.xml
             ghost/*/coverage-integration/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@bf96db0e7f57eb048ead40594f6c222b4a7e3e93 # main
+      - uses: tryghost/actions/actions/slack-build@598d6328d89dbd796aa02ae2ea66308f9d942224 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -623,18 +630,22 @@ jobs:
             exit 1
           fi
 
-      - uses: tryghost/actions/actions/slack-build@bf96db0e7f57eb048ead40594f6c222b4a7e3e93 # main
+      - uses: tryghost/actions/actions/slack-build@598d6328d89dbd796aa02ae2ea66308f9d942224 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-  job_admin_x_settings:
+  job_apps_acceptance-tests:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_admin_x_settings == 'true'
-    name: Admin-X Settings tests
+    if: needs.job_setup.outputs.affected_playwright_projects != '[]'
+    name: App Playwright Acceptance Tests
+    strategy:
+      fail-fast: false
+      matrix:
+        app: ${{ fromJSON(needs.job_setup.outputs.affected_playwright_projects) }}
     env:
       CI: true
     steps:
@@ -653,137 +664,26 @@ jobs:
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
 
-      - run: pnpm nx run @tryghost/admin-x-settings:test:acceptance
+      - name: Run Playwright tests
+        run: pnpm nx run ${{ matrix.app }}:test:acceptance
+
+      - name: Get App Name
+        if: always()
+        id: app_name
+        # trim '@tryghost/' prefix for better readability in test report artifact names
+        run: |
+          APP_NAME="${{ matrix.app }}"
+          echo "name=${APP_NAME#@tryghost/}" >> $GITHUB_OUTPUT
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: admin-x-settings-playwright-report
-          path: apps/admin-x-settings/playwright-report
+          name: ${{ steps.app_name.outputs.name }}-playwright-report
+          path: apps/${{ steps.app_name.outputs.name }}/playwright-report
           retention-days: 30
 
-      - uses: tryghost/actions/actions/slack-build@bf96db0e7f57eb048ead40594f6c222b4a7e3e93 # main
-        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
-        with:
-          status: ${{ job.status }}
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
-  job_activitypub:
-    runs-on: ubuntu-latest
-    needs: [job_setup]
-    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_activitypub == 'true'
-    name: ActivityPub tests
-    env:
-      CI: true
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
-        env:
-          FORCE_COLOR: 0
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Setup Playwright
-        uses: ./.github/actions/setup-playwright
-
-      - run: pnpm nx run @tryghost/activitypub:test:acceptance
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: activitypub-playwright-report
-          path: apps/activitypub/playwright-report
-          retention-days: 30
-
-      - uses: tryghost/actions/actions/slack-build@bf96db0e7f57eb048ead40594f6c222b4a7e3e93 # main
-        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
-        with:
-          status: ${{ job.status }}
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
-  job_comments_ui:
-    runs-on: ubuntu-latest
-    needs: [job_setup]
-    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_comments_ui == 'true'
-    name: Comments-UI tests
-    env:
-      CI: true
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
-        env:
-          FORCE_COLOR: 0
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Setup Playwright
-        uses: ./.github/actions/setup-playwright
-
-      - run: pnpm nx run @tryghost/comments-ui:test
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: comments-ui-playwright-report
-          path: apps/comments-ui/playwright-report
-          retention-days: 30
-
-      - uses: tryghost/actions/actions/slack-build@bf96db0e7f57eb048ead40594f6c222b4a7e3e93 # main
-        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
-        with:
-          status: ${{ job.status }}
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
-  job_signup_form:
-    runs-on: ubuntu-latest
-    needs: [job_setup]
-    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_signup_form == 'true'
-    name: Signup-form tests
-    env:
-      CI: true
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
-        env:
-          FORCE_COLOR: 0
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Setup Playwright
-        uses: ./.github/actions/setup-playwright
-
-      - run: pnpm nx run @tryghost/signup-form:test:e2e
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: signup-form-playwright-report
-          path: apps/signup-form/playwright-report
-          retention-days: 30
-
-      - uses: tryghost/actions/actions/slack-build@bf96db0e7f57eb048ead40594f6c222b4a7e3e93 # main
+      - uses: tryghost/actions/actions/slack-build@598d6328d89dbd796aa02ae2ea66308f9d942224 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -800,7 +700,7 @@ jobs:
           working-directory: ghost/core/core/server/data/tinybird
     services:
       tinybird:
-        image: tinybirdco/tinybird-local:latest@sha256:76e94abb3eabd1583a0c1b13b0aa8f8f746427237b0e30c3e557944117f7cf61
+        image: tinybirdco/tinybird-local:latest@sha256:9d9c77fe276920acb56f0405ef36393a4831c3c193b221313157203901cab586
         ports:
           - 7181:7181
     steps:
@@ -882,7 +782,7 @@ jobs:
         run: |
           [ -f ~/.ghost/logs/*.log ] && cat ~/.ghost/logs/*.log
 
-      - uses: tryghost/actions/actions/slack-build@bf96db0e7f57eb048ead40594f6c222b4a7e3e93 # main
+      - uses: tryghost/actions/actions/slack-build@598d6328d89dbd796aa02ae2ea66308f9d942224 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -892,6 +792,8 @@ jobs:
   job_build_artifacts:
     name: Build & Publish Artifacts
     needs: [job_setup]
+    # Root of the build + browser-E2E lane (see run_e2e in job_setup).
+    if: needs.job_setup.outputs.run_e2e == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -1152,6 +1054,8 @@ jobs:
   job_build_e2e_public_apps:
     name: Build E2E Public App Assets
     needs: [job_setup]
+    # Root of the build + browser-E2E lane (see run_e2e in job_setup).
+    if: needs.job_setup.outputs.run_e2e == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -1192,6 +1096,9 @@ jobs:
   job_build_e2e_image:
     name: Build E2E Docker Image
     needs: [job_setup, job_build_e2e_public_apps, job_build_artifacts]
+    # Inherits the run_e2e gate transitively — runs only when both upstream
+    # builds ran and succeeded (they are skipped when run_e2e is false).
+    if: needs.job_build_artifacts.result == 'success' && needs.job_build_e2e_public_apps.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -1299,14 +1206,65 @@ jobs:
       use-artifact: ${{ steps.strategy.outputs.use-artifact }}
 
   job_e2e_tests:
-    name: E2E Tests (${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
+    name: E2E Tests (${{ matrix.projectName }} ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
     runs-on: ubuntu-latest
     needs: [job_build_e2e_image, job_setup]
+    # Inherits the run_e2e gate transitively via job_build_e2e_image.
+    if: needs.job_build_e2e_image.result == 'success'
     strategy:
       fail-fast: true
       matrix:
-        shardIndex: [1, 2, 3, 4, 5, 6, 7, 8]
-        shardTotal: [8]
+        include:
+          - projectName: Main
+            projects: main
+            analytics: 'false'
+            shardIndex: 1
+            shardTotal: 8
+          - projectName: Main
+            projects: main
+            analytics: 'false'
+            shardIndex: 2
+            shardTotal: 8
+          - projectName: Main
+            projects: main
+            analytics: 'false'
+            shardIndex: 3
+            shardTotal: 8
+          - projectName: Main
+            projects: main
+            analytics: 'false'
+            shardIndex: 4
+            shardTotal: 8
+          - projectName: Main
+            projects: main
+            analytics: 'false'
+            shardIndex: 5
+            shardTotal: 8
+          - projectName: Main
+            projects: main
+            analytics: 'false'
+            shardIndex: 6
+            shardTotal: 8
+          - projectName: Main
+            projects: main
+            analytics: 'false'
+            shardIndex: 7
+            shardTotal: 8
+          - projectName: Main
+            projects: main
+            analytics: 'false'
+            shardIndex: 8
+            shardTotal: 8
+          - projectName: Analytics
+            projects: analytics
+            analytics: 'true'
+            shardIndex: 1
+            shardTotal: 2
+          - projectName: Analytics
+            projects: analytics
+            analytics: 'true'
+            shardIndex: 2
+            shardTotal: 2
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -1318,6 +1276,7 @@ jobs:
         uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4
 
       - name: Pull or build Tinybird CLI Image
+        if: matrix.analytics == 'true'
         run: |
           COMPOSE_IMAGE="${COMPOSE_PROJECT_NAME:-ghost-dev}-tb-cli"
           # Try pulling pre-built image from GHCR first (fast path)
@@ -1350,6 +1309,7 @@ jobs:
         env:
           GHOST_E2E_IMAGE: ${{ steps.load.outputs.image-tag }}
           GHOST_E2E_SKIP_IMAGE_BUILD: 'true'
+          GHOST_E2E_ANALYTICS: ${{ matrix.analytics }}
         run: bash ./e2e/scripts/prepare-ci-e2e-job.sh
 
       - name: Run e2e tests in Playwright container
@@ -1357,6 +1317,8 @@ jobs:
           TEST_WORKERS_COUNT: 1
           GHOST_E2E_MODE: build
           GHOST_E2E_IMAGE: ${{ steps.load.outputs.image-tag }}
+          GHOST_E2E_ANALYTICS: ${{ matrix.analytics }}
+          E2E_PLAYWRIGHT_PROJECTS: ${{ matrix.projects }}
           E2E_SHARD_INDEX: ${{ matrix.shardIndex }}
           E2E_SHARD_TOTAL: ${{ matrix.shardTotal }}
           E2E_RETRIES: 2
@@ -1374,7 +1336,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: blob-report-${{ matrix.shardIndex }}
+          name: blob-report-${{ matrix.projectName }}-${{ matrix.shardIndex }}
           path: e2e/blob-report
           retention-days: 1
 
@@ -1382,11 +1344,11 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: test-results-${{ matrix.shardIndex }}
+          name: test-results-${{ matrix.projectName }}-${{ matrix.shardIndex }}
           path: e2e/test-results
           retention-days: 7
 
-      - uses: tryghost/actions/actions/slack-build@bf96db0e7f57eb048ead40594f6c222b4a7e3e93 # main
+      - uses: tryghost/actions/actions/slack-build@598d6328d89dbd796aa02ae2ea66308f9d942224 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1535,10 +1497,7 @@ jobs:
         job_unit-tests,
         job_acceptance-tests,
         job_legacy-tests,
-        job_admin_x_settings,
-        job_activitypub,
-        job_comments_ui,
-        job_signup_form,
+        job_apps_acceptance-tests,
         job_tinybird-tests,
         job_build_e2e_public_apps,
         job_build_e2e_image,
@@ -1569,7 +1528,7 @@ jobs:
     ]
     name: Build ${{ matrix.package_name }}
     runs-on: ubuntu-latest
-    if: always() && github.repository == 'TryGhost/Ghost' && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success'
+    if: always() && github.repository == 'TryGhost/Ghost' && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && needs.job_setup.outputs.run_e2e == 'true'
     permissions:
       contents: read
     strategy:
@@ -1849,7 +1808,7 @@ jobs:
       - name: Publish to npm
         run: npm publish ghost-*.tgz --access public
 
-      - uses: tryghost/actions/actions/slack-build@bf96db0e7f57eb048ead40594f6c222b4a7e3e93 # main
+      - uses: tryghost/actions/actions/slack-build@598d6328d89dbd796aa02ae2ea66308f9d942224 # main
         if: failure()
         with:
           status: ${{ job.status }}

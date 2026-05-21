@@ -70,7 +70,7 @@ describe('Importer', function () {
 
         it('gets the correct types', function () {
             assert(Array.isArray(ImportManager.getContentTypes()));
-            assert.equal(ImportManager.getContentTypes().length, 23);
+            assert.equal(ImportManager.getContentTypes().length, 24);
             assert(ImportManager.getContentTypes().includes('image/jpeg'));
             assert(ImportManager.getContentTypes().includes('image/png'));
             assert(ImportManager.getContentTypes().includes('image/gif'));
@@ -89,6 +89,7 @@ describe('Importer', function () {
             assert(ImportManager.getContentTypes().includes('audio/wav'));
             assert(ImportManager.getContentTypes().includes('audio/x-wav'));
             assert(ImportManager.getContentTypes().includes('audio/ogg'));
+            assert(ImportManager.getContentTypes().includes('application/ogg'));
             assert(ImportManager.getContentTypes().includes('audio/x-m4a'));
 
             assert(ImportManager.getContentTypes().includes('application/octet-stream'));
@@ -280,7 +281,7 @@ describe('Importer', function () {
             describe('Process Zip', function () {
                 const testZip = {name: 'myFile.zip', path: '/my/path/myFile.zip'};
 
-                this.beforeEach(() => {
+                beforeEach(function () {
                     sinon.stub(JSONHandler, 'loadFile').returns(Promise.resolve({posts: []}));
                     sinon.stub(ImageHandler, 'loadFile');
                     sinon.stub(RevueHandler, 'loadFile');

@@ -1,5 +1,6 @@
 const {assertExists} = require('../../../../../utils/assertions');
 const sinon = require('sinon');
+const deferred = require('../../../../../utils/deferred');
 
 const api = require('../../../../../../core/frontend/services/proxy').api;
 const themeEngine = require('../../../../../../core/frontend/services/theme-engine');
@@ -75,7 +76,8 @@ describe('Unit - services/routing/controllers/static', function () {
         sinon.restore();
     });
 
-    it('no extra data to fetch', function (done) {
+    it('no extra data to fetch', function () {
+        const {promise, done} = deferred();
         renderer.renderer.callsFake(function () {
             sinon.assert.calledOnce(renderer.formatResponse.entries);
             sinon.assert.notCalled(tagsReadStub);
@@ -83,9 +85,11 @@ describe('Unit - services/routing/controllers/static', function () {
         });
 
         controllers.static(req, res, failTest(done));
+        return promise;
     });
 
-    it('extra data to fetch', function (done) {
+    it('extra data to fetch', function () {
+        const {promise, done} = deferred();
         res.routerOptions.data = {
             tag: {
                 controller: 'tagsPublic',
@@ -106,5 +110,6 @@ describe('Unit - services/routing/controllers/static', function () {
         });
 
         controllers.static(req, res, failTest(done));
+        return promise;
     });
 });
