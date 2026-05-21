@@ -14,6 +14,11 @@ import {
 } from '../../../utils/minio';
 import {runStoreContract} from '../../../unit/server/services/custom-redirects/helpers/store-contract';
 
+const STATIC_PREFIX = 'content/data';
+const CANONICAL_FILENAME = 'redirects.json';
+
+const canonicalKey = (tenantPrefix = '') => [tenantPrefix, STATIC_PREFIX, CANONICAL_FILENAME].filter(Boolean).join('/');
+
 const listObjectKeys = async (s3Client: S3Client, bucketName: string): Promise<string[]> => {
     const response = await s3Client.send(new ListObjectsV2Command({Bucket: bucketName}));
     return (response.Contents ?? []).map(o => o.Key ?? '').filter(Boolean);
@@ -23,8 +28,8 @@ const sleep = (ms: number): Promise<void> => new Promise((resolve) => {
     setTimeout(resolve, ms);
 });
 
-const backupKeyPattern = (prefix = '') => new RegExp(
-    `^${prefix ? `${prefix}/` : ''}redirects-\\d{4}-\\d{2}-\\d{2}-\\d{2}-\\d{2}-\\d{2}\\.json$`
+const backupKeyPattern = (tenantPrefix = '') => new RegExp(
+    `^${tenantPrefix ? `${tenantPrefix}/` : ''}${STATIC_PREFIX}/redirects-\\d{4}-\\d{2}-\\d{2}-\\d{2}-\\d{2}-\\d{2}\\.json$`
 );
 
 describe('Integration: S3RedirectsStore', function () {
@@ -46,14 +51,14 @@ describe('Integration: S3RedirectsStore', function () {
     });
 
     runStoreContract({
-        createStore: () => new S3RedirectsStore({...minioConfig, bucket})
+        createStore: () => new S3RedirectsStore({...minioConfig, bucket, staticFileURLPrefix: STATIC_PREFIX})
     });
 
     describe('getAll: error handling', function () {
         it('throws when redirects.json is corrupt', async function () {
-            await putObject(adminClient, bucket, 'redirects.json', '{not valid');
+            await putObject(adminClient, bucket, canonicalKey(), '{not valid');
 
-            const store = new S3RedirectsStore({...minioConfig, bucket});
+            const store = new S3RedirectsStore({...minioConfig, bucket, staticFileURLPrefix: STATIC_PREFIX});
 
             await assert.rejects(
                 () => store.getAll(),
@@ -64,15 +69,15 @@ describe('Integration: S3RedirectsStore', function () {
 
     describe('replaceAll: timestamped backups', function () {
         it('writes the canonical key without a backup when the bucket is empty', async function () {
-            const store = new S3RedirectsStore({...minioConfig, bucket});
+            const store = new S3RedirectsStore({...minioConfig, bucket, staticFileURLPrefix: STATIC_PREFIX});
 
             await store.replaceAll([{from: '/a', to: '/b', permanent: true}]);
 
-            assert.deepEqual(await listObjectKeys(adminClient, bucket), ['redirects.json']);
+            assert.deepEqual(await listObjectKeys(adminClient, bucket), [canonicalKey()]);
         });
 
         it('backs up the prior contents before overwriting', async function () {
-            const store = new S3RedirectsStore({...minioConfig, bucket});
+            const store = new S3RedirectsStore({...minioConfig, bucket, staticFileURLPrefix: STATIC_PREFIX});
             const initial = [{from: '/old', to: '/old-target', permanent: true}];
 
             await store.replaceAll(initial);
@@ -91,7 +96,7 @@ describe('Integration: S3RedirectsStore', function () {
             // real waits between writes are needed to guarantee distinct
             // backup keys.
             this.timeout(15000);
-            const store = new S3RedirectsStore({...minioConfig, bucket});
+            const store = new S3RedirectsStore({...minioConfig, bucket, staticFileURLPrefix: STATIC_PREFIX});
 
             await store.replaceAll([{from: '/a', to: '/a', permanent: true}]);
             await sleep(1100);
@@ -102,24 +107,24 @@ describe('Integration: S3RedirectsStore', function () {
             const keys = await listObjectKeys(adminClient, bucket);
             const backupKeys = keys.filter(k => backupKeyPattern().test(k));
             assert.equal(backupKeys.length, 2, `expected 2 timestamped backups, got: ${keys.join(', ')}`);
-            assert.ok(keys.includes('redirects.json'), `expected canonical redirects.json, got: ${keys.join(', ')}`);
+            assert.ok(keys.includes(canonicalKey()), `expected canonical ${canonicalKey()}, got: ${keys.join(', ')}`);
         });
     });
 
     describe('tenantPrefix scoping', function () {
         it('writes the canonical key under the tenant prefix', async function () {
-            const store = new S3RedirectsStore({...minioConfig, bucket, tenantPrefix: 'tenant-abc'});
+            const store = new S3RedirectsStore({...minioConfig, bucket, staticFileURLPrefix: STATIC_PREFIX, tenantPrefix: 'tenant-abc'});
 
             await store.replaceAll([{from: '/a', to: '/b', permanent: true}]);
 
             assert.deepEqual(
                 await listObjectKeys(adminClient, bucket),
-                ['tenant-abc/redirects.json']
+                [canonicalKey('tenant-abc')]
             );
         });
 
         it('reads back redirects from the prefixed key', async function () {
-            const store = new S3RedirectsStore({...minioConfig, bucket, tenantPrefix: 'tenant-abc'});
+            const store = new S3RedirectsStore({...minioConfig, bucket, staticFileURLPrefix: STATIC_PREFIX, tenantPrefix: 'tenant-abc'});
             const redirects = [{from: '/old', to: '/new', permanent: true}];
 
             await store.replaceAll(redirects);
@@ -128,7 +133,7 @@ describe('Integration: S3RedirectsStore', function () {
         });
 
         it('writes backups under the tenant prefix on overwrite', async function () {
-            const store = new S3RedirectsStore({...minioConfig, bucket, tenantPrefix: 'tenant-abc'});
+            const store = new S3RedirectsStore({...minioConfig, bucket, staticFileURLPrefix: STATIC_PREFIX, tenantPrefix: 'tenant-abc'});
             const initial = [{from: '/old', to: '/old-target', permanent: true}];
 
             await store.replaceAll(initial);
@@ -143,8 +148,8 @@ describe('Integration: S3RedirectsStore', function () {
         });
 
         it('isolates tenants sharing the same bucket', async function () {
-            const storeA = new S3RedirectsStore({...minioConfig, bucket, tenantPrefix: 'tenant-a'});
-            const storeB = new S3RedirectsStore({...minioConfig, bucket, tenantPrefix: 'tenant-b'});
+            const storeA = new S3RedirectsStore({...minioConfig, bucket, staticFileURLPrefix: STATIC_PREFIX, tenantPrefix: 'tenant-a'});
+            const storeB = new S3RedirectsStore({...minioConfig, bucket, staticFileURLPrefix: STATIC_PREFIX, tenantPrefix: 'tenant-b'});
 
             await storeA.replaceAll([{from: '/a', to: '/a-target', permanent: true}]);
             await storeB.replaceAll([{from: '/b', to: '/b-target', permanent: false}]);
@@ -153,18 +158,18 @@ describe('Integration: S3RedirectsStore', function () {
             assert.deepEqual(await storeB.getAll(), [{from: '/b', to: '/b-target', permanent: false}]);
             assert.deepEqual(
                 (await listObjectKeys(adminClient, bucket)).sort(),
-                ['tenant-a/redirects.json', 'tenant-b/redirects.json']
+                [canonicalKey('tenant-a'), canonicalKey('tenant-b')]
             );
         });
 
         it('strips leading and trailing slashes from the tenant prefix', async function () {
-            const store = new S3RedirectsStore({...minioConfig, bucket, tenantPrefix: '/tenant-abc/'});
+            const store = new S3RedirectsStore({...minioConfig, bucket, staticFileURLPrefix: STATIC_PREFIX, tenantPrefix: '/tenant-abc/'});
 
             await store.replaceAll([{from: '/a', to: '/b', permanent: true}]);
 
             assert.deepEqual(
                 await listObjectKeys(adminClient, bucket),
-                ['tenant-abc/redirects.json']
+                [canonicalKey('tenant-abc')]
             );
         });
     });
