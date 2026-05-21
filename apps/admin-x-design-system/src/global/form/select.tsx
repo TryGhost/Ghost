@@ -180,7 +180,7 @@ const Select: React.FC<SelectProps> = ({
         ),
         option: clsx('group px-3 py-[7px] hover:cursor-pointer hover:bg-grey-100 dark:text-white dark:hover:bg-grey-900', controlClasses?.option),
         noOptionsMessage: clsx('nowrap p-3 text-grey-600', controlClasses?.noOptionsMessage),
-        groupHeading: clsx('px-3 py-[7px] text-2xs font-semibold tracking-wide text-grey-700 uppercase', controlClasses?.groupHeading),
+        groupHeading: clsx('px-3 py-[7px] text-xs font-semibold tracking-wide text-grey-700 uppercase', controlClasses?.groupHeading),
         clearIndicator: clsx('', controlClasses?.clearIndicator)
     };
 

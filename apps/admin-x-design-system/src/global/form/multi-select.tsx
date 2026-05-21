@@ -124,7 +124,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
         option: optionClasses,
         multiValue: (optionColor?: MultiSelectColor) => `rounded-sm items-center text-[14px] py-px pl-2 pr-1 gap-1.5 ${multiValueColor(optionColor || color)}`,
         noOptionsMessage: 'p-3 text-grey-600',
-        groupHeading: 'py-[6px] px-3 text-2xs font-semibold uppercase tracking-wide text-grey-700'
+        groupHeading: 'py-[6px] px-3 text-xs font-semibold uppercase tracking-wide text-grey-700'
     };
 
     const dropdownIndicatorComponent = useMemo(() => {
