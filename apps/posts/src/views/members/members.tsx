@@ -1,29 +1,34 @@
+import MainLayout from '@components/layout/main-layout';
 import MembersActions from './components/members-actions';
-import MembersContent from './components/members-content';
+import MembersEmptyState from './components/members-empty-state';
 import MembersFilters from './components/members-filters';
-import MembersHeader from './components/members-header';
 import MembersHeaderSearch from './components/members-header-search';
-import MembersLayout from './components/members-layout';
+import MembersHelpCards from './components/members-help-cards';
 import MembersList from './components/members-list';
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Button, EmptyIndicator, LoadingIndicator} from '@tryghost/shade/components';
-import {ListHeader} from '@tryghost/shade/primitives';
-import {LucideIcon, cn} from '@tryghost/shade/utils';
+import {FilterBar, PageHeader} from '@tryghost/shade/patterns';
+import {ListPage} from '@tryghost/shade/page-templates';
+import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 import {buildMemberListSearchParams, getMemberActiveColumns} from './member-query-params';
 import {canBulkDeleteMembers, shouldShowMembersLoading} from './members-view-state';
+import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
 import {shouldDelayMembersDateFilterHydration, useMembersFilterState} from './hooks/use-members-filter-state';
 import {useActiveMemberView, useMemberViews} from './hooks/use-member-views';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useBrowseMembersInfinite} from '@tryghost/admin-x-framework/api/members';
-import {useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useDebounce} from 'use-debounce';
 import {useLocation, useSearchParams} from 'react-router';
 
 const SEARCH_DEBOUNCE_MS = 250;
+const MEMBERS_HELP_CARDS_LIMIT = 6;
 
-const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
-    const headerRef = useRef<HTMLDivElement>(null);
+const MembersPage: React.FC<{timezone: string; membershipsEnabled: boolean}> = ({timezone, membershipsEnabled}) => {
+    const headerRef = useRef<HTMLDivElement | null>(null);
+    const setHeaderContentRef = useCallback((node: HTMLDivElement | null) => {
+        headerRef.current = node?.closest('[data-list-page="header"]') as HTMLDivElement | null;
+    }, []);
     const {filters, nql, search, setFilters, setSearch, hasFilterOrSearch, clearAll} = useMembersFilterState(timezone);
     const location = useLocation();
     const {data: configData} = useBrowseConfig();
@@ -74,6 +79,7 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
     const hasFilters = filters.length > 0;
     const shouldShowMobileSearchRow = showMobileSearch;
     const shouldShowFiltersRow = hasFilters;
+    const shouldShowMembersHelpCards = !hasFilterOrSearch && !shouldShowLoading && !isError && totalMembers < MEMBERS_HELP_CARDS_LIMIT;
 
     useEffect(() => {
         setSearchInput(search);
@@ -96,134 +102,150 @@ const MembersPage: React.FC<{timezone: string}> = ({timezone}) => {
         setShowMobileSearch(true);
     };
 
-    const filtersClassName = 'flex flex-col gap-4 px-4 lg:flex-row lg:items-center sidebar:gap-6 lg:px-8 lg:gap-6';
+    const filtersClassName = 'flex-col gap-4 lg:flex-row lg:items-center sidebar:gap-6 lg:gap-6';
 
     return (
-        <MembersLayout>
-            <div ref={headerRef} className='sticky top-0 z-50 flex flex-col gap-4 bg-gradient-to-b from-background via-background/70 to-background/70 py-4 backdrop-blur-md sidebar:gap-6 sidebar:py-6 dark:bg-black'>
-                <MembersHeader
-                    isLoading={shouldShowLoading}
-                    totalMembers={totalMembers}
-                >
-                    <ListHeader.Actions>
-                        <ListHeader.ActionGroup className="ml-auto flex-wrap justify-end sm:ml-0 sm:flex-nowrap">
-                            <div className="hidden lg:flex">
-                                <MembersHeaderSearch
-                                    search={searchInput}
-                                    onSearchChange={setSearchInput}
-                                />
-                            </div>
-                            <Button
-                                aria-label={showMobileSearch ? 'Hide member search' : 'Show member search'}
-                                className={cn('lg:hidden', showMobileSearch && 'bg-secondary hover:bg-secondary')}
-                                variant="outline"
-                                onClick={handleMobileSearchToggle}
-                            >
-                                <LucideIcon.Search className="size-4" />
-                            </Button>
-                            {!hasFilters && (
-                                <MembersFilters
-                                    activeView={activeView}
-                                    filters={filters}
-                                    iconOnly={true}
-                                    nql={nql}
-                                    savedViews={savedViews}
-                                    onFiltersChange={setFilters}
-                                />
-                            )}
-                            <MembersActions
-                                canBulkDelete={canBulkDelete}
-                                hasFilterOrSearch={hasFilterOrSearch}
-                                memberCount={totalMembers}
-                                nql={nql}
-                                search={search}
-                                onImportComplete={() => {
-                                    void refetch();
-                                }}
-                            />
-                        </ListHeader.ActionGroup>
-                    </ListHeader.Actions>
-                </MembersHeader>
+        <MainLayout>
+            <ListPage data-testid="members-page">
+                <ListPage.Header className="py-4 sidebar:py-6">
+                    <div ref={setHeaderContentRef} className="flex flex-col gap-4 sidebar:gap-6">
+                        <PageHeader
+                            blurredBackground={false}
+                            sticky={false}
+                        >
+                            <PageHeader.Left>
+                                <PageHeader.Title>
+                                    Members{' '}
+                                    {!shouldShowLoading && (
+                                        <PageHeader.Count className="hidden sm:inline">
+                                            {formatNumber(totalMembers)}
+                                        </PageHeader.Count>
+                                    )}
+                                </PageHeader.Title>
+                            </PageHeader.Left>
+                            <PageHeader.Actions>
+                                <PageHeader.ActionGroup className="ml-auto flex-wrap justify-end sm:ml-0 sm:flex-nowrap">
+                                    <div className="hidden lg:flex">
+                                        <MembersHeaderSearch
+                                            search={searchInput}
+                                            onSearchChange={setSearchInput}
+                                        />
+                                    </div>
+                                    <Button
+                                        aria-label={showMobileSearch ? 'Hide member search' : 'Show member search'}
+                                        className={cn('lg:hidden', showMobileSearch && 'bg-secondary hover:bg-secondary')}
+                                        variant="outline"
+                                        onClick={handleMobileSearchToggle}
+                                    >
+                                        <LucideIcon.Search className="size-4" />
+                                    </Button>
+                                    {!hasFilters && (
+                                        <MembersFilters
+                                            activeView={activeView}
+                                            filters={filters}
+                                            iconOnly={true}
+                                            nql={nql}
+                                            savedViews={savedViews}
+                                            onFiltersChange={setFilters}
+                                        />
+                                    )}
+                                    <MembersActions
+                                        canBulkDelete={canBulkDelete}
+                                        hasFilterOrSearch={hasFilterOrSearch}
+                                        memberCount={totalMembers}
+                                        nql={nql}
+                                        search={search}
+                                        onImportComplete={() => {
+                                            void refetch();
+                                        }}
+                                    />
+                                </PageHeader.ActionGroup>
+                            </PageHeader.Actions>
+                        </PageHeader>
 
-                {(shouldShowFiltersRow || shouldShowMobileSearchRow) && (
-                    <div className={cn(filtersClassName, !shouldShowFiltersRow && 'lg:hidden')}>
-                        {shouldShowMobileSearchRow && (
-                            <div className="lg:hidden">
-                                <MembersHeaderSearch
-                                    ariaLabel="Search members mobile"
-                                    autoFocus={mobileSearchOpenedByUser}
-                                    search={searchInput}
-                                    onSearchChange={setSearchInput}
-                                />
-                            </div>
+                        {(shouldShowFiltersRow || shouldShowMobileSearchRow) && (
+                            <FilterBar className={cn(filtersClassName, !shouldShowFiltersRow && 'lg:hidden')}>
+                                {shouldShowMobileSearchRow && (
+                                    <div className="w-full lg:hidden">
+                                        <MembersHeaderSearch
+                                            ariaLabel="Search members mobile"
+                                            autoFocus={mobileSearchOpenedByUser}
+                                            search={searchInput}
+                                            onSearchChange={setSearchInput}
+                                        />
+                                    </div>
+                                )}
+                                {shouldShowFiltersRow && (
+                                    <MembersFilters
+                                        activeView={activeView}
+                                        filters={filters}
+                                        nql={nql}
+                                        savedViews={savedViews}
+                                        onFiltersChange={setFilters}
+                                    />
+                                )}
+                            </FilterBar>
                         )}
-                        {shouldShowFiltersRow && (
-                            <MembersFilters
-                                activeView={activeView}
-                                filters={filters}
-                                nql={nql}
-                                savedViews={savedViews}
-                                onFiltersChange={setFilters}
-                            />
-                        )}
                     </div>
-                )}
-            </div>
-            <MembersContent>
-                {shouldShowLoading ? (
-                    <div className="flex h-full items-center justify-center">
-                        <LoadingIndicator size="lg" />
-                    </div>
-                ) : isError ? (
-                    <div className="mb-16 flex h-full flex-col items-center justify-center">
-                        <h2 className="mb-2 text-xl font-medium">
-                            Error loading members
-                        </h2>
-                        <p className="mb-4 text-muted-foreground">
-                            Please reload the page to try again
-                        </p>
-                        <Button onClick={() => window.location.reload()}>
-                            Reload page
-                        </Button>
-                    </div>
-                ) : !data?.members.length ? (
-                    <div className="flex h-full flex-col items-center justify-center">
-                        {hasFilterOrSearch ? (
-                            <>
-                                <EmptyIndicator title="No matching members found.">
+                </ListPage.Header>
+                <ListPage.Body>
+                    {shouldShowLoading ? (
+                        <div className="flex flex-1 items-center justify-center">
+                            <LoadingIndicator size="lg" />
+                        </div>
+                    ) : isError ? (
+                        <div className="mb-16 flex flex-1 flex-col items-center justify-center">
+                            <h2 className="mb-2 text-xl font-medium">
+                                Error loading members
+                            </h2>
+                            <p className="mb-4 text-muted-foreground">
+                                Please reload the page to try again
+                            </p>
+                            <Button onClick={() => window.location.reload()}>
+                                Reload page
+                            </Button>
+                        </div>
+                    ) : !data?.members.length ? (
+                        hasFilterOrSearch ? (
+                            <div className="flex flex-1 flex-col items-center justify-center">
+                                <EmptyIndicator
+                                    actions={
+                                        <Button
+                                            variant="outline"
+                                            onClick={() => clearAll({replace: false})}
+                                        >
+                                            Show all members
+                                        </Button>
+                                    }
+                                    title="No matching members found."
+                                >
                                     <LucideIcon.Users />
                                 </EmptyIndicator>
-                                <Button
-                                    className="mt-4"
-                                    variant="outline"
-                                    onClick={() => clearAll({replace: false})}
-                                >
-                                    Show all members
-                                </Button>
-                            </>
+                            </div>
                         ) : (
-                            <EmptyIndicator title="No members yet">
-                                <LucideIcon.Users />
-                            </EmptyIndicator>
-                        )}
-                    </div>
-                ) : (
-                    <MembersList
-                        activeColumns={activeColumns}
-                        backPath={`${location.pathname}${location.search}`}
-                        fetchNextPage={fetchNextPage}
-                        hasNextPage={hasNextPage}
-                        isFetchingNextPage={isFetchingNextPage}
-                        isLoading={isFetching && !isFetchingNextPage}
-                        items={data.members}
-                        pageHeaderRef={headerRef}
-                        showEmailOpenRate={emailAnalyticsEnabled}
-                        timezone={timezone}
-                        totalItems={totalMembers}
-                    />
-                )}
-            </MembersContent>
-        </MembersLayout>
+                            <MembersEmptyState membershipsEnabled={membershipsEnabled} onMemberCreated={async () => {
+                                await refetch();
+                            }} />
+                        )
+                    ) : (
+                        <MembersList
+                            activeColumns={activeColumns}
+                            backPath={`${location.pathname}${location.search}`}
+                            fetchNextPage={fetchNextPage}
+                            hasNextPage={hasNextPage}
+                            isFetchingNextPage={isFetchingNextPage}
+                            isLoading={isFetching && !isFetchingNextPage}
+                            items={data.members}
+                            pageHeaderRef={headerRef}
+                            showEmailOpenRate={emailAnalyticsEnabled}
+                            timezone={timezone}
+                            totalItems={totalMembers}
+                        />
+                    )}
+                    {shouldShowMembersHelpCards && <MembersHelpCards />}
+                </ListPage.Body>
+            </ListPage>
+        </MainLayout>
     );
 };
 
@@ -231,29 +253,38 @@ const Members: React.FC = () => {
     const [searchParams] = useSearchParams();
     const {data: settingsData, isLoading: isSettingsLoading} = useBrowseSettings({});
     const filterParam = searchParams.get('filter') ?? undefined;
-    const shouldDelayHydration = shouldDelayMembersDateFilterHydration(filterParam, Boolean(settingsData), isSettingsLoading);
+    const hasResolvedSettings = Boolean(settingsData?.settings);
+    const shouldDelayHydration = shouldDelayMembersDateFilterHydration(filterParam, hasResolvedSettings, isSettingsLoading);
 
-    if (shouldDelayHydration) {
+    if (isSettingsLoading || !settingsData?.settings || shouldDelayHydration) {
         return (
-            <MembersLayout>
-                <div className='sticky top-0 z-50 bg-gradient-to-b from-background via-background/70 to-background/70 backdrop-blur-md dark:bg-black'>
-                    <MembersHeader
-                        isLoading={true}
-                        totalMembers={0}
-                    />
-                </div>
-                <MembersContent>
-                    <div className="flex h-full items-center justify-center">
-                        <LoadingIndicator size="lg" />
-                    </div>
-                </MembersContent>
-            </MembersLayout>
+            <MainLayout>
+                <ListPage>
+                    <ListPage.Header className="py-4 sidebar:py-6">
+                        <PageHeader
+                            blurredBackground={false}
+                            sticky={false}
+                        >
+                            <PageHeader.Left>
+                                <PageHeader.Title>Members</PageHeader.Title>
+                            </PageHeader.Left>
+                        </PageHeader>
+                    </ListPage.Header>
+                    <ListPage.Body>
+                        <div className="flex flex-1 items-center justify-center">
+                            <LoadingIndicator size="lg" />
+                        </div>
+                    </ListPage.Body>
+                </ListPage>
+            </MainLayout>
         );
     }
 
-    const timezone = getSiteTimezone(settingsData?.settings ?? []);
+    const timezone = getSiteTimezone(settingsData.settings);
+    const membersSignupAccess = getSettingValue<string>(settingsData.settings, 'members_signup_access');
+    const membershipsEnabled = membersSignupAccess !== 'none';
 
-    return <MembersPage timezone={timezone} />;
+    return <MembersPage membershipsEnabled={membershipsEnabled} timezone={timezone} />;
 };
 
 export default Members;

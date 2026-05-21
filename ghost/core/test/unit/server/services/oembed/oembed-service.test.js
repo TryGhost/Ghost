@@ -9,7 +9,7 @@ describe('oembed-service', function () {
     /** @type {OembedService} */
     let oembedService;
 
-    before(function () {
+    beforeAll(function () {
         oembedService = new OembedService({
             config: {get() {
                 return true;
@@ -104,35 +104,69 @@ describe('oembed-service', function () {
         });
     });
 
-    describe('fetchOembedDataFromUrl', function () {
-        it('allows rich embeds to skip height field', async function () {
-            nock('https://www.example.com')
-                .get('/')
-                .query(true)
-                .reply(200, `<html><head><link type="application/json+oembed" href="https://www.example.com/oembed"></head></html>`);
+    describe('fetchOembedData', function () {
+        const pageHtml = `<html><head><link type="application/json+oembed" href="https://www.example.com/oembed"></head></html>`;
 
+        it('drops rich-type responses from non-allowlisted providers (ONC-1648)', async function () {
+            // Self-declared oEmbed endpoints for arbitrary sites cannot be trusted
+            // to return safe HTML — known providers (Twitter, YouTube, …) go through
+            // `knownProvider` which uses an allowlist. Rich/video responses reaching
+            // this fallback path must not propagate their html into post content.
             nock('https://www.example.com')
                 .get('/oembed')
-                .query(true)
                 .reply(200, {
                     type: 'rich',
                     version: '1.0',
                     title: 'Test Title',
-                    author_name: 'Test Author',
-                    author_url: 'https://example.com/user/testauthor',
-                    html: '<iframe src="https://www.example.com/embed"></iframe>',
+                    html: '<img src=x onerror="alert(1)">',
                     width: 640,
-                    height: null
+                    height: 480
                 });
 
-            const response = await oembedService.fetchOembedDataFromUrl('https://www.example.com');
+            const response = await oembedService.fetchOembedData('https://www.example.com', pageHtml);
 
-            assert.equal(response.title, 'Test Title');
-            assert.equal(response.author_name, 'Test Author');
-            assert.equal(response.author_url, 'https://example.com/user/testauthor');
-            assert.equal(response.html, '<iframe src="https://www.example.com/embed"></iframe>');
+            // Returning undefined signals the caller to fall back to a bookmark
+            // card instead of storing the attacker-controlled html.
+            assert.equal(response, undefined);
         });
 
+        it('drops video-type responses from non-allowlisted providers (ONC-1648)', async function () {
+            nock('https://www.example.com')
+                .get('/oembed')
+                .reply(200, {
+                    type: 'video',
+                    version: '1.0',
+                    title: 'Test Title',
+                    html: '<iframe src="javascript:alert(1)"></iframe>',
+                    width: 640,
+                    height: 480
+                });
+
+            const response = await oembedService.fetchOembedData('https://www.example.com', pageHtml);
+
+            assert.equal(response, undefined);
+        });
+
+        it('still returns photo-type responses from non-allowlisted providers', async function () {
+            nock('https://www.example.com')
+                .get('/oembed')
+                .reply(200, {
+                    type: 'photo',
+                    version: '1.0',
+                    title: 'Test Title',
+                    url: 'https://www.example.com/photo.jpg',
+                    width: 640,
+                    height: 480
+                });
+
+            const response = await oembedService.fetchOembedData('https://www.example.com', pageHtml);
+
+            assert.equal(response.type, 'photo');
+            assert.equal(response.url, 'https://www.example.com/photo.jpg');
+        });
+    });
+
+    describe('fetchOembedDataFromUrl', function () {
         it('uses a known user-agent for bookmark requests', async function () {
             nock('https://www.example.com')
                 .get('/')
@@ -228,9 +262,12 @@ describe('oembed-service', function () {
     });
 
     describe('processImageFromUrl', function () {
+        const crypto = require('crypto');
+        const hashFor = buffer => crypto.createHash('sha256').update(buffer).digest('hex');
+
         it('stores downloaded bookmark assets via image storage and returns stored URL', async function () {
+            const imageBytes = Buffer.from('img-bytes');
             const saveRaw = sinon.stub().resolves('https://storage.ghost.is/c/6f/a3/site/content/images/thumbnail/sample.png');
-            const generateUnique = sinon.stub().resolves('/tmp/content/images/thumbnail/sample.png');
             const getSanitizedFileName = sinon.stub().returns('sample');
 
             const service = new OembedService({
@@ -243,14 +280,13 @@ describe('oembed-service', function () {
                     getStorage() {
                         return {
                             getSanitizedFileName,
-                            generateUnique,
                             saveRaw
                         };
                     }
                 },
                 externalRequest() {
                     return {
-                        buffer: async () => Buffer.from('img-bytes')
+                        buffer: async () => imageBytes
                     };
                 }
             });
@@ -259,14 +295,83 @@ describe('oembed-service', function () {
 
             assert.equal(storedUrl, 'https://storage.ghost.is/c/6f/a3/site/content/images/thumbnail/sample.png');
             sinon.assert.calledOnce(getSanitizedFileName);
-            sinon.assert.calledOnce(generateUnique);
             sinon.assert.calledOnce(saveRaw);
-            assert.equal(saveRaw.firstCall.args[1], 'thumbnail/sample.png');
+            assert.equal(saveRaw.firstCall.args[1], `thumbnail/sample-${hashFor(imageBytes)}.png`);
         });
 
-        it('works when saveRaw returns a relative path (local storage)', async function () {
+        it('writes the same path for identical bytes (idempotent across re-bookmarks)', async function () {
+            const imageBytes = Buffer.from('ico-bytes');
             const saveRaw = sinon.stub().resolves('/content/images/icon/favicon.ico');
-            const generateUnique = sinon.stub().resolves('/tmp/content/images/icon/favicon.ico');
+            const getSanitizedFileName = sinon.stub().returns('favicon');
+
+            const service = new OembedService({
+                config: {
+                    getContentPath() {
+                        return '/tmp/content/images';
+                    }
+                },
+                storage: {
+                    getStorage() {
+                        return {
+                            getSanitizedFileName,
+                            saveRaw
+                        };
+                    }
+                },
+                externalRequest() {
+                    return {
+                        buffer: async () => imageBytes
+                    };
+                }
+            });
+
+            await service.processImageFromUrl('https://a.example.com/favicon.ico', 'icon');
+            await service.processImageFromUrl('https://b.example.com/favicon.ico', 'icon');
+
+            const expectedPath = `icon/favicon-${hashFor(imageBytes)}.ico`;
+            assert.equal(saveRaw.firstCall.args[1], expectedPath);
+            assert.equal(saveRaw.secondCall.args[1], expectedPath);
+        });
+
+        it('writes different paths for different bytes (CAS discriminates)', async function () {
+            const aBytes = Buffer.from('icon-a');
+            const bBytes = Buffer.from('icon-b');
+            const saveRaw = sinon.stub().resolves('/stored');
+            const getSanitizedFileName = sinon.stub().returns('favicon');
+
+            const buffers = [aBytes, bBytes];
+            const service = new OembedService({
+                config: {
+                    getContentPath() {
+                        return '/tmp/content/images';
+                    }
+                },
+                storage: {
+                    getStorage() {
+                        return {
+                            getSanitizedFileName,
+                            saveRaw
+                        };
+                    }
+                },
+                externalRequest() {
+                    return {
+                        buffer: async () => buffers.shift()
+                    };
+                }
+            });
+
+            await service.processImageFromUrl('https://a.example.com/favicon.png', 'icon');
+            await service.processImageFromUrl('https://b.example.com/favicon.png', 'icon');
+
+            assert.equal(saveRaw.firstCall.args[1], `icon/favicon-${hashFor(aBytes)}.png`);
+            assert.equal(saveRaw.secondCall.args[1], `icon/favicon-${hashFor(bBytes)}.png`);
+            assert.notEqual(saveRaw.firstCall.args[1], saveRaw.secondCall.args[1]);
+        });
+
+        it('does not call generateUnique (no per-write S3 HEAD walk)', async function () {
+            const generateUnique = sinon.stub().resolves('/should/not/be/called.png');
+            const saveRaw = sinon.stub().resolves('/stored');
             const getSanitizedFileName = sinon.stub().returns('favicon');
 
             const service = new OembedService({
@@ -286,15 +391,14 @@ describe('oembed-service', function () {
                 },
                 externalRequest() {
                     return {
-                        buffer: async () => Buffer.from('ico-bytes')
+                        buffer: async () => Buffer.from('bytes')
                     };
                 }
             });
 
-            const storedUrl = await service.processImageFromUrl('https://example.com/favicon.ico', 'icon');
+            await service.processImageFromUrl('https://example.com/favicon.png', 'icon');
 
-            assert.equal(storedUrl, '/content/images/icon/favicon.ico');
-            assert.equal(saveRaw.firstCall.args[1], 'icon/favicon.ico');
+            sinon.assert.notCalled(generateUnique);
         });
 
         it('throws when storage lacks saveRaw', async function () {
@@ -307,8 +411,7 @@ describe('oembed-service', function () {
                 storage: {
                     getStorage() {
                         return {
-                            getSanitizedFileName: sinon.stub().returns('sample'),
-                            generateUnique: sinon.stub().resolves('/tmp/sample.png')
+                            getSanitizedFileName: sinon.stub().returns('sample')
                         };
                     }
                 },
@@ -336,7 +439,6 @@ describe('oembed-service', function () {
                     getStorage() {
                         return {
                             getSanitizedFileName: sinon.stub().returns('sample'),
-                            generateUnique: sinon.stub().resolves('/tmp/sample.png'),
                             saveRaw: sinon.stub().resolves('/stored')
                         };
                     }

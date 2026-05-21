@@ -46,7 +46,7 @@ describe('GiftRedemptionPage', () => {
         expect(queryByLabelText(/your name/i)).not.toBeInTheDocument();
         expect(queryByLabelText(/your email/i)).not.toBeInTheDocument();
 
-        fireEvent.click(getByRole('button', {name: 'Redeem gift membership'}));
+        fireEvent.click(getByRole('button', {name: 'Redeem your membership'}));
 
         expect(mockDoActionFn).toHaveBeenCalledWith('redeemGift', {
             giftToken: 'gift-token-123'
@@ -56,7 +56,7 @@ describe('GiftRedemptionPage', () => {
     test('shows validation errors for anonymous visitors and only submits once valid', async () => {
         const {getByLabelText, getByRole, mockDoActionFn, getByText} = renderGiftRedemptionPage();
         const emailInput = getByLabelText(/your email/i);
-        const submitButton = getByRole('button', {name: 'Redeem gift membership'});
+        const submitButton = getByRole('button', {name: 'Redeem your membership'});
 
         fireEvent.click(submitButton);
         expect(getByText('Enter your email address')).toBeInTheDocument();
@@ -112,7 +112,7 @@ describe('GiftRedemptionPage', () => {
                 closeable: true,
                 message: {
                     title: 'Gift could not be redeemed',
-                    subtitle: 'Gift link is not valid'
+                    subtitle: 'Something went wrong, please try again later.'
                 }
             });
         });

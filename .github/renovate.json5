@@ -17,6 +17,14 @@
     "toolSettings": {
         "nodeMaxMemory": 1024
     },
+    // Run `pnpm dedupe` after every lockfile update. The shared preset still
+    // passes `yarnDedupeHighest`, which is a no-op for pnpm — Renovate's array
+    // merge concats both, so this entry is what actually consolidates duplicate
+    // transitive versions in `pnpm-lock.yaml`. Local override pending an upstream
+    // swap in tryghost/renovate-config.
+    "postUpdateOptions": [
+        "pnpmDedupe"
+    ],
     // We have to disable platform based automerge (forcing renovate to do it manually)
     // as otherwise renovate wont follow our schedule
     "platformAutomerge": false,
@@ -152,9 +160,19 @@
             "matchPackageNames": [
                 "@tryghost/color-utils",
                 "@tryghost/custom-fonts",
-                "@tryghost/limit-service",
                 "@tryghost/members-csv",
                 "@tryghost/timezone-data"
+            ]
+        },
+
+        // Bump @tryghost/limit-service on its own. Limit changes are feature-tied
+        // (each new flag is consumed by specific BREAD/limit-helper code) and we
+        // want the version bump landing as an isolated, reviewable PR rather than
+        // riding in with unrelated admin-support package updates.
+        {
+            "groupName": "@tryghost/limit-service",
+            "matchPackageNames": [
+                "@tryghost/limit-service"
             ]
         },
         {

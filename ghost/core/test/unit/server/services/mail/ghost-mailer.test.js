@@ -1,4 +1,5 @@
 const sinon = require('sinon');
+const deferred = require('../../../../utils/deferred');
 const mail = require('../../../../../core/server/services/mail');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const configUtils = require('../../../../utils/config-utils');
@@ -42,7 +43,7 @@ const mailDataIncomplete = {
 const sandbox = sinon.createSandbox();
 
 describe('Mail: Ghostmailer', function () {
-    before(function () {
+    beforeAll(function () {
         emailAddress.init();
         sinon.restore();
     });
@@ -75,10 +76,12 @@ describe('Mail: Ghostmailer', function () {
         mailer = new mail.GhostMailer();
 
         assert('transport' in mailer);
-        assert.equal(mailer.transport.transporter.name, 'SMTP (direct)');
+        assert.equal(mailer.transport.transporter.name, 'SMTP');
+        assert.equal(mailer.transport.transporter.options.direct, true);
     });
 
-    it('sends valid message successfully ', function (done) {
+    it('sends valid message successfully ', function () {
+        const {promise, done} = deferred();
         configUtils.set({mail: {transport: 'stub'}});
 
         mailer = new mail.GhostMailer();
@@ -92,9 +95,11 @@ describe('Mail: Ghostmailer', function () {
 
             done();
         }).catch(done);
+        return promise;
     });
 
-    it('handles failure', function (done) {
+    it('handles failure', function () {
+        const {promise, done} = deferred();
         configUtils.set({mail: {transport: 'stub', options: {error: 'Stub made a boo boo :('}}});
 
         mailer = new mail.GhostMailer();
@@ -107,6 +112,7 @@ describe('Mail: Ghostmailer', function () {
             assert(error.message.includes('Stub made a boo boo :('));
             done();
         }).catch(done);
+        return promise;
     });
 
     it('should fail to send messages when given insufficient data', async function () {
@@ -130,17 +136,20 @@ describe('Mail: Ghostmailer', function () {
         });
 
         it('return correct failure message for domain doesn\'t exist', async function () {
-            assert.equal(mailer.transport.transporter.name, 'SMTP (direct)');
+            assert.equal(mailer.transport.transporter.name, 'SMTP');
+            assert.equal(mailer.transport.transporter.options.direct, true);
             await assert.rejects(mailer.send(mailDataNoDomain), /Failed to send email/);
         });
 
         it('return correct failure message for no mail server at this address', async function () {
-            assert.equal(mailer.transport.transporter.name, 'SMTP (direct)');
+            assert.equal(mailer.transport.transporter.name, 'SMTP');
+            assert.equal(mailer.transport.transporter.options.direct, true);
             await assert.rejects(mailer.send(mailDataNoServer), /Failed to send email/);
         });
 
         it('return correct failure message for incomplete data', async function () {
-            assert.equal(mailer.transport.transporter.name, 'SMTP (direct)');
+            assert.equal(mailer.transport.transporter.name, 'SMTP');
+            assert.equal(mailer.transport.transporter.options.direct, true);
             await assert.rejects(mailer.send(mailDataIncomplete), /Incomplete message data/);
         });
     });

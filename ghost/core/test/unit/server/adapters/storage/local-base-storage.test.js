@@ -8,7 +8,7 @@ const LocalStorageBase = require('../../../../../core/server/adapters/storage/Lo
 
 describe('Local Storage Base', function () {
     describe('serve', function () {
-        it('returns a 416 RangeNotSatisfiableError if given an invalid range', function (done) {
+        it('returns a 416 RangeNotSatisfiableError if given an invalid range', async function () {
             const localStorageBase = new LocalStorageBase({
                 storagePath: path.resolve(__dirname, 'media-storage'),
                 staticFileURLPrefix: 'content/media',
@@ -27,10 +27,11 @@ describe('Local Storage Base', function () {
                 range: 'bytes=1000-999'
             };
 
-            localStorageBase.serve()(req, res, (err) => {
-                assert.equal(err.errorType, 'RangeNotSatisfiableError');
-                done();
+            const err = await new Promise((resolve) => {
+                localStorageBase.serve()(req, res, resolve);
             });
+
+            assert.equal(err.errorType, 'RangeNotSatisfiableError');
         });
     });
 

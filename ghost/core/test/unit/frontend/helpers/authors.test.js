@@ -3,18 +3,13 @@ const {assertExists} = require('../../../utils/assertions');
 const sinon = require('sinon');
 const urlService = require('../../../../core/server/services/url');
 const authorsHelper = require('../../../../core/frontend/helpers/authors');
-const models = require('../../../../core/server/models');
 const testUtils = require('../../../utils');
 
 describe('{{authors}} helper', function () {
-    let urlServiceGetUrlByResourceIdStub;
-
-    before(function () {
-        models.init();
-    });
+    let urlServiceGetUrlForResourceStub;
 
     beforeEach(function () {
-        urlServiceGetUrlByResourceIdStub = sinon.stub(urlService, 'getUrlByResourceId');
+        urlServiceGetUrlForResourceStub = sinon.stub(urlService.facade, 'getUrlForResource');
     });
 
     afterEach(function () {
@@ -118,8 +113,8 @@ describe('{{authors}} helper', function () {
             testUtils.DataGenerator.forKnex.createUser({name: 'bar', slug: 'bar'})
         ];
 
-        urlServiceGetUrlByResourceIdStub.withArgs(authors[0].id).returns('author url 1');
-        urlServiceGetUrlByResourceIdStub.withArgs(authors[1].id).returns('author url 2');
+        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: authors[0].id})).returns('author url 1');
+        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: authors[1].id})).returns('author url 2');
 
         const rendered = authorsHelper.call({authors: authors});
         assertExists(rendered);
@@ -133,7 +128,7 @@ describe('{{authors}} helper', function () {
             testUtils.DataGenerator.forKnex.createUser({name: 'bar', slug: 'bar'})
         ];
 
-        urlServiceGetUrlByResourceIdStub.withArgs(authors[0].id).returns('author url 1');
+        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: authors[0].id})).returns('author url 1');
 
         const rendered = authorsHelper.call({authors: authors}, {hash: {limit: '1'}});
         assertExists(rendered);
@@ -147,7 +142,7 @@ describe('{{authors}} helper', function () {
             testUtils.DataGenerator.forKnex.createUser({name: 'bar', slug: 'bar'})
         ];
 
-        urlServiceGetUrlByResourceIdStub.withArgs(authors[1].id).returns('author url 2');
+        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: authors[1].id})).returns('author url 2');
 
         const rendered = authorsHelper.call({authors: authors}, {hash: {from: '2'}});
         assertExists(rendered);
@@ -161,7 +156,7 @@ describe('{{authors}} helper', function () {
             testUtils.DataGenerator.forKnex.createUser({name: 'bar', slug: 'bar'})
         ];
 
-        urlServiceGetUrlByResourceIdStub.withArgs(authors[0].id).returns('author url');
+        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: authors[0].id})).returns('author url');
 
         const rendered = authorsHelper.call({authors: authors}, {hash: {to: '1'}});
         assertExists(rendered);
@@ -176,8 +171,8 @@ describe('{{authors}} helper', function () {
             testUtils.DataGenerator.forKnex.createUser({name: 'baz', slug: 'baz'})
         ];
 
-        urlServiceGetUrlByResourceIdStub.withArgs(authors[1].id).returns('author url 2');
-        urlServiceGetUrlByResourceIdStub.withArgs(authors[2].id).returns('author url 3');
+        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: authors[1].id})).returns('author url 2');
+        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: authors[2].id})).returns('author url 3');
 
         const rendered = authorsHelper.call({authors: authors}, {hash: {from: '2', to: '3'}});
         assertExists(rendered);
@@ -192,7 +187,7 @@ describe('{{authors}} helper', function () {
             testUtils.DataGenerator.forKnex.createUser({name: 'baz', slug: 'baz'})
         ];
 
-        urlServiceGetUrlByResourceIdStub.withArgs(authors[1].id).returns('author url x');
+        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: authors[1].id})).returns('author url x');
 
         const rendered = authorsHelper.call({authors: authors}, {hash: {from: '2', limit: '1'}});
         assertExists(rendered);
@@ -207,9 +202,9 @@ describe('{{authors}} helper', function () {
             testUtils.DataGenerator.forKnex.createUser({name: 'baz', slug: 'baz'})
         ];
 
-        urlServiceGetUrlByResourceIdStub.withArgs(authors[0].id).returns('author url a');
-        urlServiceGetUrlByResourceIdStub.withArgs(authors[1].id).returns('author url b');
-        urlServiceGetUrlByResourceIdStub.withArgs(authors[2].id).returns('author url c');
+        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: authors[0].id})).returns('author url a');
+        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: authors[1].id})).returns('author url b');
+        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: authors[2].id})).returns('author url c');
 
         const rendered = authorsHelper.call({authors: authors}, {hash: {from: '1', to: '3', limit: '2'}});
         assertExists(rendered);

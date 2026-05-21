@@ -182,7 +182,7 @@ module.exports = {
         recommendation_notifications: {type: 'boolean', nullable: false, defaultTo: true},
         milestone_notifications: {type: 'boolean', nullable: false, defaultTo: true},
         donation_notifications: {type: 'boolean', nullable: false, defaultTo: true},
-        gift_subscription_purchase_notification: {type: 'boolean', nullable: false, defaultTo: true},
+        gift_subscription_notifications: {type: 'boolean', nullable: false, defaultTo: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
     },
@@ -441,7 +441,8 @@ module.exports = {
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         '@@INDEXES@@': [
-            ['email_disabled']
+            ['email_disabled'],
+            ['created_at', 'id']
         ]
     },
     // NOTE: this is the tiers table
@@ -595,7 +596,8 @@ module.exports = {
                 isIn: [['free', 'paid', 'comped', 'gift']]
             }
         },
-        created_at: {type: 'dateTime', nullable: false}
+        created_at: {type: 'dateTime', nullable: false},
+        batch_id: {type: 'string', maxlength: 24, nullable: true}
     },
     members_product_events: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
@@ -981,8 +983,12 @@ module.exports = {
         status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'published', validations: {isIn: [['published', 'hidden', 'deleted']]}},
         html: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         edited_at: {type: 'dateTime', nullable: true},
+        pinned_at: {type: 'dateTime', nullable: true},
         created_at: {type: 'dateTime', nullable: false},
-        updated_at: {type: 'dateTime', nullable: false}
+        updated_at: {type: 'dateTime', nullable: false},
+        '@@INDEXES@@': [
+            ['post_id', 'parent_id', 'pinned_at']
+        ]
     },
     comment_likes: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
@@ -1169,7 +1175,7 @@ module.exports = {
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
     },
-    welcome_email_automations: {
+    automations: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'inactive', validations: {isIn: [['active', 'inactive']]}},
         name: {type: 'string', maxlength: 191, nullable: false, unique: true},
@@ -1179,7 +1185,7 @@ module.exports = {
     },
     welcome_email_automated_emails: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        welcome_email_automation_id: {type: 'string', maxlength: 24, nullable: false, references: 'welcome_email_automations.id', constraintName: 'weae_automation_id_foreign', cascadeDelete: true},
+        welcome_email_automation_id: {type: 'string', maxlength: 24, nullable: false, references: 'automations.id', constraintName: 'weae_automation_id_foreign', cascadeDelete: true},
         next_welcome_email_automated_email_id: {type: 'string', maxlength: 24, nullable: true, references: 'welcome_email_automated_emails.id', constraintName: 'weae_next_email_id_foreign', cascadeDelete: false},
         delay_days: {type: 'integer', nullable: false, unsigned: true},
         subject: {type: 'string', maxlength: 300, nullable: false},
@@ -1193,13 +1199,13 @@ module.exports = {
     },
     welcome_email_automation_runs: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        welcome_email_automation_id: {type: 'string', maxlength: 24, nullable: false, references: 'welcome_email_automations.id', constraintName: 'wear_automation_id_foreign', cascadeDelete: true},
+        welcome_email_automation_id: {type: 'string', maxlength: 24, nullable: false, references: 'automations.id', constraintName: 'wear_automation_id_foreign', cascadeDelete: true},
         member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', constraintName: 'wear_member_id_foreign', cascadeDelete: true},
         next_welcome_email_automated_email_id: {type: 'string', maxlength: 24, nullable: true, references: 'welcome_email_automated_emails.id', constraintName: 'wear_next_email_id_foreign', cascadeDelete: false},
         ready_at: {type: 'dateTime', nullable: true},
         step_started_at: {type: 'dateTime', nullable: true},
         step_attempts: {type: 'integer', unsigned: true, nullable: false, defaultTo: 0},
-        exit_reason: {type: 'string', maxlength: 50, nullable: true, validations: {isIn: [['email send failed', 'member unsubscribed', 'member changed status', 'finished']]}},
+        exit_reason: {type: 'string', maxlength: 50, nullable: true, validations: {isIn: [['email send failed', 'member unsubscribed', 'member changed status', 'finished', 'automation disabled']]}},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         '@@INDEXES@@': [

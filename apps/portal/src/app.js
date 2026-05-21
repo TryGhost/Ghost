@@ -15,7 +15,7 @@ import {getActivePage, isAccountPage, isOfferPage} from './pages';
 import ActionHandler from './actions';
 import {getGiftRedemptionErrorMessage} from './utils/gift-redemption-notification';
 import './app.css';
-import {hasRecommendations, hasGiftSubscriptions, createNotification, createPopupNotification, hasAvailablePrices, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isRetentionOffer, isComplimentaryMember, isInviteOnly, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
+import {hasRecommendations, hasGiftSubscriptions, canPurchaseGift, createNotification, createPopupNotification, hasAvailablePrices, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isRetentionOffer, isComplimentaryMember, isInviteOnly, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
 import {validateHexColor} from './utils/sanitize-html';
 import {handleDataAttributes} from './data-attributes';
 
@@ -189,7 +189,7 @@ export default class App extends React.Component {
             }
             const {page, pageQuery, pageData} = linkData;
             if (this.state.initStatus === 'success') {
-                if (page === 'gift' && !hasGiftSubscriptions({site: this.state.site})) {
+                if (page === 'gift' && !canPurchaseGift({site: this.state.site})) {
                     this.invalidateGiftRedemptionRequest();
                     removePortalLinkFromUrl();
 
@@ -600,13 +600,17 @@ export default class App extends React.Component {
 
         if (qParams.get('stripe') === 'gift-purchase-success') {
             const token = qParams.get('gift_token');
-            clearURLParams(['stripe', 'gift_token']);
+            const tierId = qParams.get('gift_tier');
+            const cadence = qParams.get('gift_cadence');
+            clearURLParams(['stripe', 'gift_token', 'gift_tier', 'gift_cadence']);
             if (token) {
                 return {
                     showPopup: true,
                     page: 'giftSuccess',
                     pageData: {
-                        token
+                        token,
+                        tierId,
+                        cadence
                     }
                 };
             }
@@ -729,7 +733,7 @@ export default class App extends React.Component {
                 };
             }
 
-            if (page === 'gift' && !hasGiftSubscriptions({site})) {
+            if (page === 'gift' && !canPurchaseGift({site})) {
                 removePortalLinkFromUrl();
 
                 return {};

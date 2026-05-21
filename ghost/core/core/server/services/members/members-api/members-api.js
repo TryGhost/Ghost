@@ -65,7 +65,7 @@ module.exports = function MembersAPI({
         Comment,
         MemberFeedback,
         Outbox,
-        WelcomeEmailAutomation,
+        Automation,
         WelcomeEmailAutomationRun,
         AutomatedEmailRecipient,
         Gift
@@ -104,7 +104,7 @@ module.exports = function MembersAPI({
         tokenService,
         newslettersService,
         productRepository,
-        WelcomeEmailAutomation,
+        Automation,
         WelcomeEmailAutomationRun,
         Member,
         MemberNewsletter,
@@ -164,7 +164,8 @@ module.exports = function MembersAPI({
         emailSuppressionList,
         settingsHelpers,
         nextPaymentCalculator,
-        commentsService
+        commentsService,
+        giftService
     });
 
     const geolocationService = new GeolocationService();

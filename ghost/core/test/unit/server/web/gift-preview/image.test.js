@@ -1,6 +1,10 @@
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
 const sinon = require('sinon');
 const imageModule = require('../../../../../core/server/web/gift-preview/image');
+
+const giftPreviewPath = path.dirname(require.resolve('../../../../../core/server/web/gift-preview/image'));
 
 describe('Gift Preview Image', function () {
     afterEach(function () {
@@ -8,10 +12,16 @@ describe('Gift Preview Image', function () {
     });
 
     describe('generateGiftPreviewImage', function () {
+        it('bundles the Inter font for gift preview text rendering', function () {
+            assert.ok(fs.existsSync(path.join(giftPreviewPath, 'Inter.ttf')));
+        });
+
+        it('bundles the card noise texture for gift preview image rendering', function () {
+            assert.ok(fs.existsSync(path.join(giftPreviewPath, 'gift-card-noise.png')));
+        });
+
         it('generates a PNG buffer', async function () {
             const result = await imageModule.generateGiftPreviewImage({
-                tierName: 'Gold',
-                cadenceLabel: '1 year',
                 accentColor: '#FF5733'
             });
 
@@ -27,8 +37,6 @@ describe('Gift Preview Image', function () {
 
         it('returns cached result on second call with same params', async function () {
             const params = {
-                tierName: 'CacheTest',
-                cadenceLabel: '1 year',
                 accentColor: '#000000'
             };
 
@@ -38,16 +46,30 @@ describe('Gift Preview Image', function () {
             assert.equal(first, second, 'Should return the exact same buffer reference from cache');
         });
 
-        it('returns different results for different params', async function () {
+        it('returns different results for different gift details with the same accent color', async function () {
             const result1 = await imageModule.generateGiftPreviewImage({
-                tierName: 'Gold',
+                tierLabel: 'Gold membership',
                 cadenceLabel: '1 year',
+                siteTitle: 'Test Blog',
                 accentColor: '#FF5733'
             });
 
             const result2 = await imageModule.generateGiftPreviewImage({
-                tierName: 'Silver',
+                tierLabel: 'Silver membership',
                 cadenceLabel: '3 months',
+                siteTitle: 'Test Blog',
+                accentColor: '#FF5733'
+            });
+
+            assert.notEqual(result1, result2);
+        });
+
+        it('returns different results for different accent colors', async function () {
+            const result1 = await imageModule.generateGiftPreviewImage({
+                accentColor: '#FF5733'
+            });
+
+            const result2 = await imageModule.generateGiftPreviewImage({
                 accentColor: '#333333'
             });
 

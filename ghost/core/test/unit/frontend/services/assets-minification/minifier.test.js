@@ -10,7 +10,7 @@ describe('Minifier', function () {
     let minifier;
     let testDir;
 
-    before(async function () {
+    beforeAll(async function () {
         testDir = await fs.mkdtemp(path.join(os.tmpdir(), 'minifier-tests-'));
 
         minifier = new Minifier({
@@ -19,7 +19,7 @@ describe('Minifier', function () {
         });
     });
 
-    after(async function () {
+    afterAll(async function () {
         await fs.rmdir(testDir, {recursive: true});
     });
 

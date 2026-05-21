@@ -1,50 +1,36 @@
 const assert = require('node:assert/strict');
-const {assertExists} = require('../../../../../utils/assertions');
-const sinon = require('sinon');
+const express = require('express');
+const request = require('supertest');
 const validator = require('@tryghost/validator');
 
 const requestId = require('../../../../../../core/server/web/parent/middleware/request-id');
 
 describe('Request ID middleware', function () {
-    let res;
-    let req;
-    let next;
-
-    beforeEach(function () {
-        req = {
-            get: sinon.stub()
-        };
-        res = {
-            redirect: sinon.spy(),
-            set: sinon.spy()
-        };
-
-        next = sinon.spy();
+    const app = express();
+    app.use(requestId);
+    app.get('/', (req, res) => {
+        res.json({requestId: req.requestId});
     });
 
-    afterEach(function () {
-        sinon.restore();
+    it('generates a new request ID if X-Request-ID not present', async function () {
+        const {headers, body} = await request(app).get('/');
+        assert(!('x-request-id' in headers));
+        assert(validator.isUUID(body.requestId));
     });
 
-    it('generates a new request ID if X-Request-ID not present', function () {
-        assert.equal(req.requestId, undefined);
-
-        requestId(req, res, next);
-
-        assertExists(req.requestId);
-        assert.equal(validator.isUUID(req.requestId), true);
-        sinon.assert.notCalled(res.set);
+    it('generates a new request ID if X-Request-ID is an empty string', async function () {
+        const {headers, body} = await request(app)
+            .get('/')
+            .set('X-Request-ID', '');
+        assert(!('x-request-id' in headers));
+        assert(validator.isUUID(body.requestId));
     });
 
-    it('keeps the request ID if X-Request-ID is present', function () {
-        assert.equal(req.requestId, undefined);
-        req.get.withArgs('X-Request-ID').returns('abcd');
-
-        requestId(req, res, next);
-
-        assertExists(req.requestId);
-        assert.equal(req.requestId, 'abcd');
-        sinon.assert.calledOnce(res.set);
-        sinon.assert.calledWith(res.set, 'X-Request-ID', 'abcd');
+    it('keeps the request ID if X-Request-ID is present', async function () {
+        await request(app)
+            .get('/')
+            .set('X-Request-ID', 'abcd')
+            .expect('X-Request-ID', 'abcd')
+            .expect({requestId: 'abcd'});
     });
 });

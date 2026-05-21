@@ -33,7 +33,7 @@ class MailgunEmailProvider {
 
     /**
      * @param {object} dependencies
-     * @param {import('@tryghost/mailgun-client/lib/MailgunClient')} dependencies.mailgunClient - mailgun client to send emails
+     * @param {import('../lib/mailgun-client')} dependencies.mailgunClient - mailgun client to send emails
      * @param {Function} [dependencies.errorHandler] - custom error handler for logging exceptions
      */
     constructor({

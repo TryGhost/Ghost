@@ -126,11 +126,11 @@ describe('getPaginatedUrl', function () {
     });
 
     describe('with /blog subdirectory', function () {
-        before(function () {
+        beforeAll(function () {
             configUtils.set({url: 'http://localhost:65535/blog'});
         });
 
-        after(async function () {
+        afterAll(async function () {
             await configUtils.restore();
         });
 

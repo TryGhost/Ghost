@@ -1,8 +1,8 @@
 import React from 'react';
 import AppContext from '../../app-context';
-import {ReactComponent as CloseIcon} from '../../images/icons/close.svg';
-import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark-fill.svg';
-import {ReactComponent as WarningIcon} from '../../images/icons/warning-fill.svg';
+import CloseIcon from '../../images/icons/close.svg?react';
+import CheckmarkIcon from '../../images/icons/checkmark-fill.svg?react';
+import WarningIcon from '../../images/icons/warning-fill.svg?react';
 import {getSupportAddress} from '../../utils/helpers';
 import {clearURLParams} from '../../utils/notifications';
 import Interpolate from '@doist/react-interpolate';
@@ -30,7 +30,14 @@ const CloseButton = ({hide = false, onClose}) => {
         return null;
     }
     return (
-        <CloseIcon className='gh-portal-notification-closeicon' alt='Close' onClick={onClose} />
+        <button
+            type='button'
+            className='gh-portal-notification-closebutton'
+            aria-label='Close notification'
+            onClick={onClose}
+        >
+            <CloseIcon className='gh-portal-notification-closeicon' aria-hidden='true' />
+        </button>
     );
 };
 

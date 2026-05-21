@@ -1,225 +1,41 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-<Meta title="Tokens" />
+<Meta title="Tokens / Tokens Guide" />
 
 <div className="sb-doc">
 
-# Design Tokens
+# Tokens
 
-<p className="excerpt">Shade's design tokens are implemented through CSS-first Tailwind v4 tokens (`@theme` + CSS variables). This document outlines our token system and how to use it effectively.</p>
+<p className="excerpt">Tokens are Shade's visual atoms — colours, type sizes, spacing, radii, shadows, motion. Every primitive, component, and pattern resolves down to these. Browse the live galleries in the sidebar; the rules for using them are short.</p>
 
-## Color System
+## The galleries
 
-### Base Colors
+- [**Colors**](?path=/docs/tokens-colors--docs) — surface, text, border, state, chart, and the raw palette.
+- [**Typography**](?path=/docs/tokens-typography--docs) — font families, size ramp, line-heights.
+- [**Spacing**](?path=/docs/tokens-spacing--docs) — the 0.4rem base unit and the semantic gap scale primitives use.
+- [**Radius**](?path=/docs/tokens-radius--docs) — numeric and semantic radii (`radius-control`, `radius-surface`, `radius-pill`).
+- [**Shadows**](?path=/docs/tokens-shadows--docs) — elevation tokens for cards, popovers, and modals.
+- [**Motion**](?path=/docs/tokens-motion--docs) — durations, easings, and named animations.
+- [**Breakpoints**](?path=/docs/tokens-breakpoints--docs) — responsive cut-offs backing Tailwind's `md:` / `lg:` variants.
 
-Our color system includes semantic colors and a comprehensive neutral palette:
+Toggle light/dark from the Storybook toolbar to see semantic tokens flip.
 
-```css
-@theme {
-    // Base colors
-    --color-transparent: transparent;
-    --color-current: currentColor;
-    --color-ghostaccent: var(--accent-color, #ff0095);
-    --color-white: #FFF;
-    --color-black: #15171A;
+## Two flavours
 
-    // Gray scale (note: we use 'gray', not 'grey')
-    --color-gray-50: #FAFAFB;
-    --color-gray-100: #F4F5F6;
-    // ... more shades
-    --color-gray-900: #394047;
-    --color-gray: #ABB4BE;
+**Semantic tokens** are named by purpose — `--background`, `--text-primary`, `--border-default`, `--surface-elevated`. They flip between light and dark mode automatically. Reach for these by default.
 
-    // Brand colors
-    --color-green-100: #E1F9E4;
-    --color-green-400: #58DA67;
-    --color-green-500: #30CF43;
-    --color-green-600: #2AB23A;
-    --color-green: #30CF43;
-    // ... more colors
-}
-```
+**Raw tokens** are concrete values — `--color-gray-500`, `--text-base`, `--spacing`. They never change between modes. Use only when no semantic token fits (chart series, brand assets, illustrations).
 
-> ⚠️ Note: While both `grey` and `gray` token aliases exist for legacy compatibility, use `gray` for new components following TailwindCSS conventions.
+## Source files
 
-### Semantic Tokens
+- `apps/shade/theme-variables.css` — semantic tokens + dark-mode overrides.
+- `apps/shade/tailwind.theme.css` — Tailwind `@theme` block: raw catalogue and bindings.
 
-Theme-aware colors using CSS variables:
+## Rules of consumption
 
-```css
-@theme {
-    --color-background: var(--background);
-    --color-foreground: var(--foreground);
-    --color-primary: var(--primary);
-    --color-primary-foreground: var(--primary-foreground);
-    // ... more semantic colors
-}
-```
-
-### Semantic Contract
-
-The semantic visual rules and guarantees are defined in:
-
-- `theme-variables.css` (runtime values + dark mode overrides)
-- `tailwind.theme.css` (Tailwind aliases)
-
-Current semantic families:
-
-- Surface: `surface-page`, `surface-panel`, `surface-elevated`, `surface-overlay`, `surface-inverse`
-- Text: `text-primary`, `text-secondary`, `text-tertiary`, `text-inverse`
-- Border/focus: `border-subtle`, `border-default`, `border-strong`, `focus-ring`
-- State: `state-info`, `state-success`, `state-warning`, `state-danger`
-
-Semantic typography/radius/motion families:
-
-- Typography: `font-body`, `font-heading`, `font-code`, `text-body-{sm|md|lg}`, `leading-{body|heading}`
-- Sizing: `--control-height` (shared medium control height, currently `34px`)
-- Radius: `radius-control`, `radius-surface`, `radius-badge`, `radius-pill`
-- Motion: `duration-{fast|base|slow}`, `ease-{standard|emphasized}`
-
-## Typography
-
-### Font Families
-
-```css
-@theme {
-    --font-sans: Inter, -apple-system, ...;  /* Default UI font */
-    --font-serif: Georgia, serif;            /* Editorial content */
-    --font-mono: Consolas, ...;              /* Code */
-    // Additional web fonts available
-}
-```
-
-### Font Sizes
-
-A comprehensive scale from 2xs to 9xl:
-
-```css
-@theme {
-    --text-2xs: 1.0rem;
-    --text-base: 1.4rem;
-    --text-xs: 1.2rem;
-    // ... more sizes
-    --text-9xl: 12.8rem;
-    --text-9xl--line-height: 1;
-}
-```
-
-### Line Heights
-
-```css
-@theme {
-    --leading-base: 1.5em;
-    --leading-tight: 1.35em;
-    --leading-tighter: 1.25em;
-    --leading-supertight: 1.1em;
-}
-```
-
-## Spacing
-
-Our spacing system uses a 0.4rem (4px) base unit:
-
-```css
-@theme {
-    --spacing: 0.4rem; /* Base unit */
-    // Utilities are derived as calc(var(--spacing) * n)
-}
-```
-
-## Breakpoints
-
-```css
-@theme {
-    --breakpoint-sm: 480px;
-    --breakpoint-md: 640px;
-    --breakpoint-sidebar: 800px;
-    --breakpoint-lg: 1024px;
-    --breakpoint-sidebarlg: 1240px;
-    --breakpoint-xl: 1320px;
-    --breakpoint-xxl: 1440px;
-    --breakpoint-xxxl: 1600px;
-    --breakpoint-tablet: 860px;
-}
-```
-
-## Shadows
-
-```css
-@theme {
-    --shadow: 0 0 1px rgba(0,0,0,.05), 0 5px 18px rgba(0,0,0,.08);
-    --shadow-xs: 0 0 1px rgba(0,0,0,0.04), ...;
-    // ... more shadow values
-}
-```
-
-## Border Radius
-
-```css
-@theme {
-    --radius: 0.4rem;
-    --radius-sm: 0.4rem;
-    --radius-md: 0.6rem;
-    --radius-lg: 0.8rem;
-    // ... more radius values
-}
-```
-
-## Animations
-
-Pre-defined animations for common interactions:
-
-```css
-@theme {
-    --animate-toaster-in: toasterIn 0.8s cubic-bezier(...);
-    --animate-fade-in: fadeIn 0.15s ease forwards;
-    // ... more animations
-}
-```
-
-## Usage Guidelines
-
-### Best Practices
-
-1. **Use Semantic Tokens**
-   ```js
-   // ✅ Good
-   className="bg-background text-foreground"
-
-   // ❌ Avoid
-   className="bg-white text-black"
-   ```
-
-2. **Spacing Consistency**
-   ```js
-   // ✅ Good
-   className="p-4 gap-2"
-
-   // ❌ Avoid
-   style={{padding: '16px', gap: '8px'}}
-   ```
-
-3. **Typography Scale**
-   ```js
-   // ✅ Good
-   className="text-2xl font-sans"
-
-   // ❌ Avoid
-   style={{fontSize: '22px'}}
-   ```
-
-### Dark Mode
-
-Dark mode uses a CSS custom variant:
-```css
-@custom-variant dark (&:is(.dark *):not(.light *));
-```
-
-### CSS Reset
-
-Shade uses a scoped CSS reset:
-```css
-@import "./preflight.css"; /* Custom scoped reset provided */
-```
+- Prefer Tailwind utilities — `bg-background`, `text-foreground`, `rounded-md` — over inline styles.
+- Never hard-code hex or `hsl()` values. They don't theme and don't dark-mode.
+- Inside stylesheets, use `var(--token)` directly. Don't wrap in `hsl()` — the variables already contain `hsl(…)`.
+- Don't write `dark:` variants for colour. The tokens do that. (Exceptions: assets like logos and illustrations.)
 
 </div>

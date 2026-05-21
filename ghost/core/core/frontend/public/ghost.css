@@ -736,7 +736,8 @@ h2 {
     text-wrap: balance;
 }
 
-.gh-private-signup-form {
+.gh-private-signup-form,
+.gh-flow-content.private > .gh-private-access-form {
     width: min(100%, 550px);
     margin: 40px auto 0;
 }
@@ -758,7 +759,8 @@ h2 {
     margin: 0;
 }
 
-.gh-private-signup-form .gh-private-signup-btn {
+.gh-private-signup-form .gh-private-signup-btn,
+.gh-private-access-form .gh-private-signup-btn {
     width: auto;
     margin-top: 0;
 }
@@ -922,6 +924,12 @@ h2 {
 .gh-private-signin .gh-btn {
     width: 100%;
     max-width: none;
+}
+
+.gh-private-access-form .form-group {
+    flex: 1;
+    min-width: 0;
+    margin-bottom: 0;
 }
 
 .gh-private-signin .main-error {
@@ -1212,7 +1220,8 @@ h2 {
 }
 
 #access .gh-private-signin .gh-input:focus,
-.gh-flow-content-wrap .gh-private-signup-form.gh-signin .gh-input:focus {
+.gh-flow-content-wrap .gh-private-signup-form.gh-signin .gh-input:focus,
+.gh-flow-content-wrap .gh-private-access-form.gh-signin .gh-input:focus {
     border: 1px solid var(--gh-private-accent-color, #30cf43);
     box-shadow: 0 0 0 3px var(--gh-private-accent-color-rgba, rgba(48,207,67,.25));
 }
@@ -1234,7 +1243,8 @@ h2 {
     -webkit-font-smoothing: subpixel-antialiased;
 }
 
-.gh-private-signup-form.gh-signin .gh-private-signup-btn {
+.gh-private-signup-form.gh-signin .gh-private-signup-btn,
+.gh-private-access-form.gh-signin .gh-private-signup-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1246,7 +1256,8 @@ h2 {
     fill: var(--gh-private-accent-contrast-color, #FFFFFF);
 }
 
-.gh-private-signup-form.gh-signin .gh-private-signup-btn span {
+.gh-private-signup-form.gh-signin .gh-private-signup-btn span,
+.gh-private-access-form.gh-signin .gh-private-signup-btn span {
     color: var(--gh-private-accent-contrast-color, #FFFFFF);
 }
 

@@ -301,9 +301,12 @@ async function main() {
     }
 
     // 10. Advance to next RC
+    // Default to the next patch RC. If a migration lands during the cycle,
+    // ghost/core/bin/create-migration.js promotes this to the next minor RC.
+    // detectBumpType resolves the actual bump (patch vs minor) at the next release.
     logStep('Advancing to next RC');
-    const nextMinor = semver.inc(newVersion, 'minor');
-    const nextRc = `${nextMinor}-rc.0`;
+    const nextPatch = semver.inc(newVersion, 'patch');
+    const nextRc = `${nextPatch}-rc.0`;
     log(`Next RC: ${nextRc}`);
     writePkgVersion(GHOST_CORE_PKG, nextRc);
     writePkgVersion(GHOST_ADMIN_PKG, nextRc);

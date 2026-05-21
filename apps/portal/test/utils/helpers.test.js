@@ -1,6 +1,8 @@
 import {
     getActiveInterval,
     hasGiftSubscriptions,
+    isStripeConfigured,
+    canPurchaseGift,
     hasAvailablePrices,
     getAllProductsForSite,
     getAvailableProducts,
@@ -18,6 +20,7 @@ import {
     isActiveOffer,
     isRetentionOffer,
     isInviteOnly,
+    isArchivedTier,
     isGiftMember,
     isPaidMember,
     isPaidMembersOnly,
@@ -760,6 +763,37 @@ describe('Helpers - ', () => {
         });
     });
 
+    describe('isArchivedTier', () => {
+        const site = FixturesSite.singleTier.basic;
+        const activeTierId = site.products.find(p => p.type === 'paid').id;
+
+        const buildMemberWithTierId = tierId => ({
+            paid: true,
+            status: 'gift',
+            subscriptions: [
+                {
+                    status: 'active',
+                    price: {amount: 0},
+                    tier: tierId === undefined ? {} : {id: tierId}
+                }
+            ]
+        });
+
+        test('returns false when the member has no subscription', () => {
+            expect(isArchivedTier({member: FixtureMember.free, site})).toBe(false);
+        });
+
+        test('returns false when the subscription tier id is in site.products', () => {
+            const member = buildMemberWithTierId(activeTierId);
+            expect(isArchivedTier({member, site})).toBe(false);
+        });
+
+        test('returns true when the subscription tier id is not in site.products', () => {
+            const member = buildMemberWithTierId('archived_tier_id');
+            expect(isArchivedTier({member, site})).toBe(true);
+        });
+    });
+
     describe('isInThePast', () => {
         it('returns a boolean indicating if the provided date is in the past', () => {
             const pastDate = new Date();
@@ -901,6 +935,42 @@ describe('Helpers - ', () => {
 
         test('returns false when labs is undefined', () => {
             expect(hasGiftSubscriptions({site: {}})).toBe(false);
+        });
+    });
+
+    describe('isStripeConfigured', () => {
+        test('returns true when is_stripe_configured is true', () => {
+            expect(isStripeConfigured({site: {is_stripe_configured: true}})).toBe(true);
+        });
+
+        test('returns false when is_stripe_configured is false', () => {
+            expect(isStripeConfigured({site: {is_stripe_configured: false}})).toBe(false);
+        });
+
+        test('returns false when is_stripe_configured is missing', () => {
+            expect(isStripeConfigured({site: {}})).toBe(false);
+        });
+
+        test('returns false when site is undefined', () => {
+            expect(isStripeConfigured({})).toBe(false);
+        });
+    });
+
+    describe('canPurchaseGift', () => {
+        test('returns true when gift subscriptions enabled and Stripe configured', () => {
+            expect(canPurchaseGift({site: {labs: {giftSubscriptions: true}, is_stripe_configured: true}})).toBe(true);
+        });
+
+        test('returns false when gift subscriptions disabled', () => {
+            expect(canPurchaseGift({site: {labs: {giftSubscriptions: false}, is_stripe_configured: true}})).toBe(false);
+        });
+
+        test('returns false when Stripe is not configured', () => {
+            expect(canPurchaseGift({site: {labs: {giftSubscriptions: true}, is_stripe_configured: false}})).toBe(false);
+        });
+
+        test('returns false when both are missing', () => {
+            expect(canPurchaseGift({site: {}})).toBe(false);
         });
     });
 

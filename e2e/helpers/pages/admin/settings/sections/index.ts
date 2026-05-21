@@ -1,5 +1,5 @@
 export {AnnouncementBarSection} from './announcement-bar-section';
-export {PrivateSiteSection} from './private-site-section';
+export {AccessSection} from './access-section';
 export {PublicationSection} from './publications-section';
 export {LabsSection} from './labs-section';
 export {IntegrationsSection} from './integrations-section';

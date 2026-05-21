@@ -8,7 +8,7 @@ const schedulingPath = configUtils.config.getContentPath('adapters') + 'scheduli
 describe('Scheduling: utils', function () {
     const scope = {adapter: null};
 
-    before(function () {
+    beforeAll(function () {
         if (!fs.existsSync(schedulingPath)) {
             fs.mkdirSync(schedulingPath);
         }

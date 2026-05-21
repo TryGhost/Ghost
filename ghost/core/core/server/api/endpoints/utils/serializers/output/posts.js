@@ -1,7 +1,8 @@
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output:posts');
 const mappers = require('./mappers');
-const papaparse = require('papaparse');
 const tiersService = require('../../../../../services/tiers');
+const {pipeline} = require('stream');
+const {createCSVTransform} = require('./posts-csv-transform');
 
 module.exports = {
     async all(models, apiConfig, frame) {
@@ -54,7 +55,27 @@ module.exports = {
     },
 
     exportCSV(models, apiConfig, frame) {
-        frame.response = papaparse.unparse(models.data);
+        frame.response = function streamResponse(req, res, next) {
+            const csvTransform = createCSVTransform();
+
+            const todayIsoDate = (new Date()).toJSON().substring(0, 10);
+            res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+            res.setHeader('Content-Disposition', `Attachment; filename="post-analytics.${todayIsoDate}.csv"`);
+            const cacheControl = res.getHeader('Cache-Control');
+            const cacheControlDirectives = cacheControl ? String(cacheControl).split(',').map(value => value.trim().toLowerCase()) : [];
+            if (!cacheControlDirectives.includes('no-transform')) {
+                res.setHeader('Cache-Control', cacheControl ? `${cacheControl}, no-transform` : 'no-transform');
+            }
+
+            pipeline(models.data, csvTransform, res, (err) => {
+                // On success, pipeline has already ended the response and there's no
+                // downstream middleware waiting. Only forward errors so the framework's
+                // error handler can log them and (if possible) send a status to the client.
+                if (err) {
+                    next(err);
+                }
+            });
+        };
     },
 
     bulkEdit(bulkActionResult, _apiConfig, frame) {

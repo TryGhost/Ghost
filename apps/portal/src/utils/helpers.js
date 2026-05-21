@@ -105,6 +105,18 @@ export function getSubscriptionExpiry({member}) {
     return '';
 }
 
+export function isArchivedTier({member, site}) {
+    const subscription = getMemberSubscription({member});
+    const tierId = subscription?.tier?.id;
+
+    if (!tierId) {
+        return false;
+    }
+
+    // Archived tiers are filtered out of site.products
+    return !getProductFromId({site, productId: tierId});
+}
+
 export function getUpgradeProducts({site, member}) {
     const activePrice = getMemberActivePrice({member});
     const activePriceCurrency = activePrice?.currency;
@@ -260,6 +272,14 @@ export function hasRecommendations({site}) {
 
 export function hasGiftSubscriptions({site}) {
     return site?.labs?.giftSubscriptions === true;
+}
+
+export function isStripeConfigured({site}) {
+    return site?.is_stripe_configured === true;
+}
+
+export function canPurchaseGift({site}) {
+    return hasGiftSubscriptions({site}) && isStripeConfigured({site});
 }
 
 export function isSigninAllowed({site}) {
@@ -592,11 +612,10 @@ export function getProductCadenceFromPrice({site, priceId}) {
 
 export function getAvailablePrices({site, products = null}) {
     const {
-        portal_plans: portalPlans = [],
-        is_stripe_configured: isStripeConfigured
+        portal_plans: portalPlans = []
     } = site || {};
 
-    if (!isStripeConfigured) {
+    if (!isStripeConfigured({site})) {
         return [];
     }
 

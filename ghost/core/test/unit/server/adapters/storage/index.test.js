@@ -10,7 +10,7 @@ const storagePath = configUtils.config.getContentPath('adapters') + 'storage/';
 describe('storage: index_spec', function () {
     const scope = {adapter: null};
 
-    before(function () {
+    beforeAll(function () {
         if (!fs.existsSync(storagePath)) {
             fs.mkdirSync(storagePath);
         }

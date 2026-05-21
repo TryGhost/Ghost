@@ -22,6 +22,7 @@ export type MemberStatusItem = {
     paid: number;
     free: number;
     comped: number;
+    gift?: number;
     paid_subscribed: number;
     paid_canceled: number;
 }

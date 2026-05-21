@@ -109,6 +109,20 @@ export const useBrowseMembers = createQuery<MembersResponseType>({
     path: '/members/'
 });
 
+export type NewMember = {
+    email: string;
+    name?: string | null;
+};
+
+export const useAddMember = createMutation<MembersResponseType, NewMember>({
+    method: 'POST',
+    path: () => '/members/',
+    body: member => ({
+        members: [member]
+    }),
+    invalidateQueries: {dataType}
+});
+
 export const getMember = createQueryWithId<MembersResponseType>({
     dataType,
     path: id => `/members/${id}/`

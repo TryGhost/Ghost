@@ -4,7 +4,8 @@ import {
     mockApi,
     mockSitePreview,
     responseFixtures,
-    updatedSettingsResponse
+    updatedSettingsResponse,
+    waitForApiRequest
 } from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';
 
@@ -140,7 +141,8 @@ test.describe('Design settings', async () => {
         await expect(modal.getByTestId('toggle-unsplash-button')).toBeVisible();
         await modal.getByRole('button', {name: 'Save'}).click();
 
-        expect(lastApiRequests.editSettings?.body).toEqual({
+        const editSettings = await waitForApiRequest(lastApiRequests, 'editSettings');
+        expect(editSettings.body).toEqual({
             settings: [
                 {key: 'accent_color', value: '#cd5786'}
             ]
@@ -186,12 +188,14 @@ test.describe('Design settings', async () => {
         const expectedSettings = {navigation_layout: 'Logo in the middle'};
         const expectedEncoded = new URLSearchParams([['custom', JSON.stringify(expectedSettings)]]).toString();
 
+        await expect.poll(() => previewRequests.find(header => new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`).test(header))).toBeTruthy();
         const matchingHeader = previewRequests.find(header => new RegExp(`&${expectedEncoded.replace(/\+/g, '\\+')}`).test(header));
 
         expect(matchingHeader).toBeDefined();
 
         await modal.getByRole('button', {name: 'Save'}).click();
-        expect(lastApiRequests.editCustomThemeSettings?.body).toMatchObject({
+        const editCustomThemeSettings = await waitForApiRequest(lastApiRequests, 'editCustomThemeSettings');
+        expect(editCustomThemeSettings.body).toMatchObject({
             custom_theme_settings: [
                 {key: 'navigation_layout', value: 'Logo in the middle'}
             ]
@@ -289,6 +293,7 @@ test.describe('Design settings', async () => {
         const expectedSettings = {navigation_layout: 'Logo in the middle', show_featured_posts: null};
         const expectedEncoded = new URLSearchParams([['custom', JSON.stringify(expectedSettings)]]).toString();
 
+        await expect.poll(() => previewRequests.find(header => header.includes(expectedEncoded))).toBeTruthy();
         const matchingHeader = previewRequests.find(header => header.includes(expectedEncoded));
 
         expect(matchingHeader).toBeDefined();
@@ -296,7 +301,8 @@ test.describe('Design settings', async () => {
 
         await modal.getByRole('button', {name: 'Save'}).click();
 
-        expect(lastApiRequests.editCustomThemeSettings?.body).toMatchObject({
+        const editCustomThemeSettings = await waitForApiRequest(lastApiRequests, 'editCustomThemeSettings');
+        expect(editCustomThemeSettings.body).toMatchObject({
             custom_theme_settings: [
                 {key: 'navigation_layout', value: 'Logo in the middle'},
                 {key: 'show_featured_posts', value: 'false'}

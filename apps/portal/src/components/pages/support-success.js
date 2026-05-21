@@ -1,6 +1,6 @@
 import {useContext} from 'react';
 import AppContext from '../../app-context';
-import {ReactComponent as ConfettiIcon} from '../../images/icons/confetti.svg';
+import ConfettiIcon from '../../images/icons/confetti.svg?react';
 import CloseButton from '../common/close-button';
 import ActionButton from '../common/action-button';
 import {t} from '../../utils/i18n';
