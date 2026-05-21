@@ -2,6 +2,32 @@ import {expect, test} from '@playwright/test';
 import {globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('SEO Meta settings', async () => {
+    test('Supports toggling LLM structured data in Search tab', async ({page}) => {
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            editSettings: {method: 'PUT', path: '/settings/', response: updatedSettingsResponse([
+                {key: 'llms_enabled', value: false}
+            ])}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('seometa');
+        const toggle = section.getByLabel('Enable structured data for LLMs and AI search engines');
+
+        await expect(toggle).toBeVisible();
+        await expect(toggle).toBeChecked();
+
+        await toggle.uncheck();
+        await section.getByRole('button', {name: 'Save'}).click();
+
+        expect(lastApiRequests.editSettings?.body).toEqual({
+            settings: [
+                {key: 'llms_enabled', value: false}
+            ]
+        });
+    });
+
     test('Supports editing metadata in Search tab', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
