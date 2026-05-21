@@ -8,6 +8,10 @@ export interface IGhostPaths {
 
 export function getGhostPaths(): IGhostPaths {
     const path = window.location.pathname;
+    // This is the one place /ghost/ may appear as a literal: getGhostPaths
+    // derives the subdirectory prefix by searching the current pathname for
+    // it, then every other admin URL is built relative to that prefix.
+    // eslint-disable-next-line no-restricted-syntax
     const subdir = path.substr(0, path.search('/ghost/'));
     const adminRoot = `${subdir}/ghost/`;
     const assetRoot = `${subdir}/ghost/assets/`;

@@ -1,3 +1,5 @@
+import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
+
 const MAX_RETENTION_OFFER_NAME_LENGTH = 40;
 
 export const formatOfferTimestamp = (timestamp: string): string => {
@@ -10,7 +12,7 @@ export const formatOfferTimestamp = (timestamp: string): string => {
 };
 
 export const createOfferRedemptionsFilterUrl = (offerIds: string[]): string => {
-    const baseHref = '/ghost/#/members';
+    const baseHref = `${getGhostPaths().adminRoot}#/members`;
     const filterValue = `offer_redemptions:[${offerIds.join(',')}]`;
     return `${baseHref}?filter=${encodeURIComponent(filterValue)}`;
 };

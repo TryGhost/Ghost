@@ -24,6 +24,10 @@ export class APIError extends Error {
         message?: string,
         errorOptions?: ErrorOptions
     ) {
+        // Substring check + regex split, not URL construction. Subdir
+        // installs include /ghost/api/admin/ in their path too, so this
+        // works in both cases.
+        // eslint-disable-next-line no-restricted-syntax
         if (!message && response && response.url.includes('/ghost/api/admin/')) {
             message = `Something went wrong while loading ${response.url.replace(/.+\/ghost\/api\/admin\//, '').replace(/\W.*/, '').replace('_', ' ')}, please try again.`;
         }

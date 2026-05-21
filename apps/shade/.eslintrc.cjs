@@ -6,7 +6,8 @@ module.exports = {
         'plugin:ghost/ts',
         'plugin:react/recommended',
         'plugin:react-hooks/recommended',
-        'plugin:storybook/recommended'
+        'plugin:storybook/recommended',
+        '../.eslintrc-no-hardcoded-ghost-paths.cjs'
     ],
     plugins: [
         'ghost',

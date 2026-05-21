@@ -23,6 +23,7 @@ import {
     useQueryClient
 } from '@tanstack/react-query';
 import {formatPendingActivityContent, generatePendingActivity, generatePendingActivityId} from '../utils/pending-activity';
+import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {mapPostToActivity} from '../utils/posts';
 import {toast} from 'sonner';
 import {useCallback, useEffect, useState} from 'react';
@@ -34,7 +35,7 @@ let SITE_URL: string;
 
 async function getSiteUrl() {
     if (!SITE_URL) {
-        const response = await fetch('/ghost/api/admin/site/');
+        const response = await fetch(`${getGhostPaths().apiRoot}/site/`);
         const json = await response.json();
         SITE_URL = json.site.url;
     }
@@ -45,7 +46,7 @@ async function getSiteUrl() {
 function createActivityPubAPI(handle: string, siteUrl: string) {
     return new ActivityPubAPI(
         new URL(siteUrl),
-        new URL('/ghost/api/admin/identities/', window.location.origin),
+        new URL(`${getGhostPaths().apiRoot}/identities/`, window.location.origin),
         handle
     );
 }

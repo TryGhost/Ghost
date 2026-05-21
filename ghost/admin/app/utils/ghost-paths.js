@@ -15,6 +15,10 @@ let makeRoute = function (root, args) {
 
 export default function () {
     let path = window.location.pathname;
+    // This is the one place /ghost/ may appear as a literal: ghost-paths
+    // derives the subdirectory prefix by searching the current pathname for
+    // it, then every other admin URL is built relative to that prefix.
+    // eslint-disable-next-line no-restricted-syntax
     let subdir = path.substr(0, path.search('/ghost/'));
     let adminRoot = `${subdir}/ghost/`;
     let assetRoot = `${subdir}/ghost/assets/`;

@@ -4,7 +4,8 @@ module.exports = {
     extends: [
         'plugin:ghost/ts',
         'plugin:react/recommended',
-        'plugin:react-hooks/recommended'
+        'plugin:react-hooks/recommended',
+        '../.eslintrc-no-hardcoded-ghost-paths.cjs'
     ],
     plugins: [
         'ghost',

@@ -169,6 +169,10 @@ export const useFetchApi = () => {
                 totalSeconds: retryingMs / 1000,
                 endpoint: endpoint.toString()
             };
+            // Substring check, not URL construction. Subdir installs include
+            // /ghost/api/ in their path too, so the literal works in both
+            // cases.
+            // eslint-disable-next-line no-restricted-syntax
             if (endpoint.toString().includes('/ghost/api/')) {
                 data.server = response?.headers.get('server');
             }

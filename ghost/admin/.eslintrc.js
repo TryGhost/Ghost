@@ -24,7 +24,8 @@ module.exports = {
         'react'
     ],
     extends: [
-        'plugin:ghost/ember'
+        'plugin:ghost/ember',
+        '../../apps/.eslintrc-no-hardcoded-ghost-paths.cjs'
     ],
     rules: {
         'ghost/filenames/match-exported-class': ['off'],
