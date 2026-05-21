@@ -1156,9 +1156,15 @@ importers:
 
   apps/posts:
     dependencies:
+      '@ebay/nice-modal-react':
+        specifier: 1.2.13
+        version: 1.2.13(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tryghost/admin-x-framework':
         specifier: workspace:*
         version: link:../admin-x-framework
+      '@tryghost/admin-x-settings':
+        specifier: workspace:*
+        version: link:../admin-x-settings
       '@tryghost/nql-lang':
         specifier: 'catalog:'
         version: 0.6.4

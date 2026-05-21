@@ -20,6 +20,10 @@
       "require": "./dist/admin-x-settings.umd.cjs",
       "types": "./src/index.tsx"
     },
+    "./welcome-email-customize-modal": {
+      "types": "./src/components/settings/membership/member-emails/welcome-email-customize-modal.tsx",
+      "import": "./src/components/settings/membership/member-emails/welcome-email-customize-modal.tsx"
+    },
     "./src/*": {
       "import": "./src/*.tsx",
       "require": "./src/*.tsx"

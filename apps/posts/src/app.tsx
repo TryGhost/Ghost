@@ -1,3 +1,4 @@
+import NiceModal from '@ebay/nice-modal-react';
 import PostsAppContextProvider, {PostsAppContextType} from './providers/posts-app-context';
 import PostsErrorBoundary from '@components/errors/posts-error-boundary';
 import React from 'react';
@@ -30,9 +31,11 @@ const App: React.FC<AppProps> = ({framework, designSystem, fromAnalytics = false
             <PostsAppContextProvider value={appContextValue}>
                 <RouterProvider prefix={APP_ROUTE_PREFIX} routes={routes}>
                     <PostsErrorBoundary>
-                        <ShadeApp className="shade-posts app-container" darkMode={designSystem.darkMode} fetchKoenigLexical={null}>
-                            <Outlet />
-                        </ShadeApp>
+                        <NiceModal.Provider>
+                            <ShadeApp className="shade-posts app-container" darkMode={designSystem.darkMode} fetchKoenigLexical={null}>
+                                <Outlet />
+                            </ShadeApp>
+                        </NiceModal.Provider>
                     </PostsErrorBoundary>
                 </RouterProvider>
             </PostsAppContextProvider>
