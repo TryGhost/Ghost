@@ -127,6 +127,7 @@ describe('Unit: frontend/services/llms/service', function () {
         assert.match(llmsFullTxt, /## Pages/);
         assert.doesNotMatch(llmsFullTxt, /## Posts/);
         assert.match(llmsFullTxt, /Truncated after 5 MiB/);
+        assert.ok(Buffer.byteLength(llmsFullTxt, 'utf8') <= (5 * 1024 * 1024));
     });
 
     it('invalidates cached output when the site URL setting is edited', async function () {
