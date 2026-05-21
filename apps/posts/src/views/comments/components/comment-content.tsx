@@ -42,7 +42,7 @@ function CommentContent({item}: {item: Comment}) {
     }, [item.html, isExpanded]);
 
     return (
-        <div className={`mt-1 flex flex-col gap-2`}>
+        <div className={`mt-2 flex flex-col gap-2`}>
             <div className={`flex max-w-full flex-col items-start ${item.status === 'hidden' && 'opacity-50'}`}>
                 <div
                     dangerouslySetInnerHTML={{__html: item.html || ''}}

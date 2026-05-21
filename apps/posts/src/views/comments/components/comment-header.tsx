@@ -1,4 +1,4 @@
-import {Badge, Button, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
+import {Badge, Button, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, badgeVariants} from '@tryghost/shade/components';
 import {LucideIcon, cn, formatTimestamp} from '@tryghost/shade/utils';
 import type {MouseEvent} from 'react';
 
@@ -28,10 +28,9 @@ interface CommentHeaderProps {
     className?: string;
 }
 
-const pinnedBadgeClassName = 'inline-flex items-center gap-1 rounded-full border border-amber-300/70 bg-amber-50 px-2 py-0.5 font-sans text-xs font-medium leading-none text-amber-800 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-100';
 const pinnedButtonClassName = cn(
-    pinnedBadgeClassName,
-    'hover:border-amber-400 hover:bg-amber-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-500 dark:hover:border-amber-400/50 dark:hover:bg-amber-400/20'
+    badgeVariants({variant: 'warning'}),
+    'gap-1 hover:bg-state-warning/30'
 );
 
 export function CommentHeader({
@@ -53,9 +52,9 @@ export function CommentHeader({
     };
 
     return (
-        <div className={cn('flex items-baseline gap-4', className)}>
+        <div className={cn('flex items-center gap-2', className)}>
             <div className={cn(
-                'mb-1 flex min-w-0 items-center gap-x-1 text-sm',
+                'flex min-w-0 items-center gap-x-1 text-sm',
                 isHidden && 'opacity-50'
             )}>
                 <div className='whitespace-nowrap'>
@@ -146,7 +145,7 @@ export function CommentHeader({
                         </span>
                     </button>
                 ) : (
-                    <Badge className={pinnedBadgeClassName} variant='outline'>
+                    <Badge className='gap-1' variant='warning'>
                         <LucideIcon.Pin className="size-3" />
                         Pinned
                     </Badge>
