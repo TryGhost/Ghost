@@ -129,8 +129,14 @@ describe('Unit: Service: billing', function () {
             attempts: 2,
             has_billing_url: true,
             is_force_upgrade: false,
+            iframe_src: null,
+            configured_billing_origin: 'https://billing.example.test',
             iframe_load_fired: true,
             billing_window_open: true,
+            non_ready_message_count: 0,
+            non_ready_message_types: '',
+            last_non_ready_message_type: null,
+            ready_received: false,
             navigator_online: navigator.onLine,
             document_visibility_state: document.visibilityState,
             bma_boot_accessible: false,
@@ -138,6 +144,70 @@ describe('Unit: Service: billing', function () {
             bma_boot_threw: false
         });
         expect(billingMonitor.ms_since_src_set).to.be.a('number').and.to.be.at.least(1234);
+    });
+
+    it('reports pre-ready message diagnostics to Sentry', async function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        sinon.stub(service, 'getBillingIframe').returns(null);
+        service.billingAppLoadAttempts = 2;
+        service.billingAppLoadTimeout = setTimeout(() => {}, 10000);
+        service.billingAppIframeSrcSetAt = Date.now() - 100;
+
+        service.recordBillingAppPreReadyMessage({request: 'token'});
+        service.recordBillingAppPreReadyMessage({route: '/plans'});
+        service.recordBillingAppPreReadyMessage({
+            subscription: {
+                status: 'active'
+            }
+        });
+        service.reportBillingAppLoadFailure();
+
+        await waitUntil(() => testkit.reports().length > 0);
+
+        const billingMonitor = testkit.reports()[0].originalReport.contexts.ghost.billing_monitor;
+        expect(billingMonitor).to.deep.include({
+            non_ready_message_count: 3,
+            non_ready_message_types: 'token,route,subscription',
+            last_non_ready_message_type: 'subscription',
+            ready_received: false
+        });
+    });
+
+    it('resets billing app load diagnostics when a fresh iframe load starts', function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        const iframe = {src: '', addEventListener: sinon.stub()};
+        sinon.stub(service, 'getBillingIframe').returns(iframe);
+
+        service.billingAppLoadTimeout = setTimeout(() => {}, 10000);
+        service.recordBillingAppPreReadyMessage({request: 'token'});
+        service.markBillingAppLoaded({request: 'billingAppReady'});
+
+        service.setBillingIframeSrc();
+
+        expect(service.billingAppPreReadyMessageCount).to.equal(0);
+        expect(service.billingAppPreReadyMessageTypes).to.deep.equal([]);
+        expect(service.billingAppLastPreReadyMessageType).to.be.null;
+        expect(service.billingAppReadyReceivedAt).to.be.null;
+        expect(service.billingAppReadyPayload).to.be.null;
+    });
+
+    it('treats late billingAppReady as recovery after a reported load failure', function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        const readyPayload = {
+            request: 'billingAppReady',
+            state: 'content'
+        };
+        service.billingAppLoadFailureReported = true;
+
+        service.markBillingAppLoaded(readyPayload);
+
+        expect(service.billingAppLoaded).to.be.true;
+        expect(service.billingAppLoadFailureReported).to.be.false;
+        expect(service.billingAppReadyReceivedAt).to.be.a('number');
+        expect(service.billingAppReadyPayload).to.equal(readyPayload);
     });
 
     it('does not report when the billing app becomes ready before the timeout', function () {
