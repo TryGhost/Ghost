@@ -62,6 +62,44 @@ module.exports = function entryController(req, res, next) {
                 }));
             }
 
+            if (config.get('llms') && entry.visibility === 'public') {
+                const {getAcceptedMarkdownContentType, renderEntryMarkdown} = require('../../llms/markdown');
+                const markdownContentType = getAcceptedMarkdownContentType(req);
+
+                if (markdownContentType) {
+                    const {createLlmsService} = require('../../llms/service');
+                    const settingsCache = require('../../../../shared/settings-cache');
+                    const urlService = require('../../../../server/services/url');
+                    const models = require('../../../../server/models');
+                    const routing = require('../../routing');
+                    const {api} = require('../../proxy');
+
+                    const llmsService = createLlmsService({
+                        settingsCache,
+                        config,
+                        urlServiceFacade: urlService.facade,
+                        urlUtils,
+                        models,
+                        routing,
+                        api
+                    });
+
+                    if (llmsService.isEnabled()) {
+                        return llmsService.fetchPublicEntry(res.routerOptions.resourceType, entry.id)
+                            .then((markdownEntry) => {
+                                if (!markdownEntry) {
+                                    return renderer.renderEntry(req, res)(entry);
+                                }
+
+                                const llmsIndexUrl = urlUtils.urlFor({relativeUrl: '/llms.txt'}, true);
+                                res.set('Cache-Control', `public, max-age=${config.get('caching:llms:maxAge')}`);
+                                res.type(markdownContentType);
+                                return res.send(renderEntryMarkdown(markdownEntry, {llmsIndexUrl}));
+                            });
+                    }
+                }
+            }
+
             return renderer.renderEntry(req, res)(entry);
         })
         .catch(renderer.handleError(next));
