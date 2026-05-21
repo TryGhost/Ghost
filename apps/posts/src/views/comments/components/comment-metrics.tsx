@@ -80,23 +80,29 @@ export function buildThreadLink(searchParams: URLSearchParams, commentId: string
 
 interface CommentMetricsProps {
     comment: Comment;
+    dislikesEnabled: boolean;
     className?: string;
 }
 
 export function CommentMetrics({
     comment,
+    dislikesEnabled,
     className
 }: CommentMetricsProps) {
     const [searchParams] = useSearchParams();
     const [likesModalOpen, setLikesModalOpen] = useState(false);
+    const [likesModalDefaultTab, setLikesModalDefaultTab] = useState<'likes' | 'dislikes'>('likes');
     const [reportsModalOpen, setReportsModalOpen] = useState(false);
     const repliesLink = buildThreadLink(searchParams, comment.id);
 
     const repliesCount = comment.count?.direct_replies ?? comment.count?.replies ?? comment.replies?.length ?? 0; // TODO: remove replies fallback once backend is fully rolled out
     const likesCount = comment.count?.likes ?? 0;
+    const dislikesCount = dislikesEnabled ? (comment.count?.dislikes ?? 0) : 0;
+    const netScore = dislikesEnabled ? likesCount - dislikesCount : likesCount;
     const reportsCount = comment.count?.reports ?? 0;
     const hasReplies = repliesCount > 0;
     const hasLikes = likesCount > 0;
+    const hasDislikes = dislikesCount > 0;
     const hasReports = reportsCount > 0;
 
     return (
@@ -109,12 +115,84 @@ export function CommentMetrics({
                     testId="replies-metric"
                     to={hasReplies ? repliesLink : undefined}
                 />
-                <Metric
-                    count={likesCount}
-                    icon={<LucideIcon.Heart size={16} strokeWidth={1.5} />}
-                    label="Likes"
-                    onClick={hasLikes ? () => setLikesModalOpen(true) : undefined}
-                />
+                {dislikesEnabled ? (
+                    <div className="flex items-center gap-2 text-xs text-gray-800">
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    {hasLikes ? (
+                                        <button
+                                            aria-label="View likes"
+                                            className="flex cursor-pointer items-center hover:opacity-70"
+                                            data-testid="likes-metric"
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setLikesModalDefaultTab('likes');
+                                                setLikesModalOpen(true);
+                                            }}
+                                        >
+                                            <LucideIcon.ThumbsUp size={16} strokeWidth={1.5} />
+                                        </button>
+                                    ) : (
+                                        <div className="flex items-center" data-testid="likes-metric">
+                                            <LucideIcon.ThumbsUp size={16} strokeWidth={1.5} />
+                                        </div>
+                                    )}
+                                </TooltipTrigger>
+                                <TooltipContent>{hasLikes ? 'View likes' : 'Likes'}</TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                        {hasLikes || hasDislikes ? (
+                            <button
+                                className="cursor-pointer hover:opacity-70"
+                                type="button"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setLikesModalDefaultTab(hasLikes ? 'likes' : 'dislikes');
+                                    setLikesModalOpen(true);
+                                }}
+                            >
+                                <span>{formatNumber(netScore)}</span>
+                            </button>
+                        ) : (
+                            <span>{formatNumber(netScore)}</span>
+                        )}
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    {hasDislikes ? (
+                                        <button
+                                            aria-label="View dislikes"
+                                            className="flex cursor-pointer items-center hover:opacity-70"
+                                            data-testid="dislikes-metric"
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setLikesModalDefaultTab('dislikes');
+                                                setLikesModalOpen(true);
+                                            }}
+                                        >
+                                            <LucideIcon.ThumbsDown size={16} strokeWidth={1.5} />
+                                        </button>
+                                    ) : (
+                                        <div className="flex items-center" data-testid="dislikes-metric">
+                                            <LucideIcon.ThumbsDown size={16} strokeWidth={1.5} />
+                                        </div>
+                                    )}
+                                </TooltipTrigger>
+                                <TooltipContent>{hasDislikes ? 'View dislikes' : 'Dislikes'}</TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    </div>
+                ) : (
+                    <Metric
+                        count={likesCount}
+                        icon={<LucideIcon.Heart size={16} strokeWidth={1.5} />}
+                        label="Likes"
+                        onClick={hasLikes ? () => setLikesModalOpen(true) : undefined}
+                    />
+                )}
                 <Metric
                     className={hasReports ? 'font-semibold text-red' : undefined}
                     count={reportsCount}
@@ -125,6 +203,8 @@ export function CommentMetrics({
             </div>
             <CommentLikesModal
                 comment={comment}
+                defaultTab={likesModalDefaultTab}
+                dislikesEnabled={dislikesEnabled}
                 open={likesModalOpen}
                 onOpenChange={setLikesModalOpen}
             />

@@ -1,5 +1,5 @@
 import EditForm from './forms/edit-form';
-import LikeButton from './buttons/like-button';
+import LikeButton, {DislikeButton} from './buttons/like-button';
 import LikeCount from './buttons/like-count';
 import MoreButton from './buttons/more-button';
 import PinnedLabel from './pinned-label';
@@ -463,13 +463,14 @@ type CommentMenuProps = {
     className?: string;
 };
 const CommentMenu: React.FC<CommentMenuProps> = ({comment, openReplyForm, highlightReplyButton, openEditMode, className = ''}) => {
-    const {member, t, isMember, isAdmin, isCommentingDisabled} = useAppContext();
+    const {member, t, isMember, isAdmin, isCommentingDisabled, capabilities} = useAppContext();
 
     const isPublished = comment.status === 'published';
     const isOwnComment = member && comment.member?.uuid === member?.uuid;
 
     // Visibility decisions
     const showLikeButton = !isCommentingDisabled;
+    const showDislikeButton = showLikeButton && capabilities?.dislikes === true;
     const showReplyButton = !isCommentingDisabled;
     const shouldShowMoreButton = isAdmin || (isMember && isPublished);
     const shouldHideMoreButton = isCommentingDisabled && isOwnComment;
@@ -490,6 +491,7 @@ const CommentMenu: React.FC<CommentMenuProps> = ({comment, openReplyForm, highli
                 ? <LikeButton comment={comment} />
                 : <LikeCount count={comment.count.likes} liked={comment.liked} />
             }
+            {showDislikeButton && <DislikeButton comment={comment} />}
             {showReplyButton && <ReplyButton isReplying={highlightReplyButton} openReplyForm={openReplyForm} />}
             {showMoreButton && <MoreButton comment={comment} toggleEdit={openEditMode} />}
         </div>

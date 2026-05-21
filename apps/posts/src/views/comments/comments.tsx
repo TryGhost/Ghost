@@ -1,16 +1,16 @@
 import CommentsFilters from './components/comments-filters';
 import CommentsList from './components/comments-list';
 import MainLayout from '@components/layout/main-layout';
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {Button, EmptyIndicator, LoadingIndicator} from '@tryghost/shade/components';
 import {FilterBar, PageHeader, createFilter} from '@tryghost/shade/patterns';
 import {ListPage} from '@tryghost/shade/page-templates';
 import {LucideIcon} from '@tryghost/shade/utils';
+import {adminCommentIncludes, useBrowseComments} from '@tryghost/admin-x-framework/api/comments';
 import {escapeNqlString} from '../filters/filter-normalization';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
 import {serializeCommentFilters} from './comment-filter-query';
 import {shouldDelayCommentDateFilterHydration, useFilterState} from './hooks/use-filter-state';
-import {useBrowseComments} from '@tryghost/admin-x-framework/api/comments';
 import {useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useSearchParams} from 'react-router';
 
@@ -27,6 +27,7 @@ const CommentsPage: React.FC<{timezone: string; singleCommentId?: string}> = ({
 }) => {
     const [searchParams, setSearchParams] = useSearchParams();
     const {filters, nql, setFilters} = useFilterState(timezone);
+    const [dislikesEnabled, setDislikesEnabled] = useState(false);
     const handleAddFilter = useCallback((field: string, value: string, operator: string = 'is') => {
         const nextFilters = [
             ...filters.filter(filter => filter.field !== field),
@@ -72,10 +73,17 @@ const CommentsPage: React.FC<{timezone: string; singleCommentId?: string}> = ({
         hasNextPage
     } = useBrowseComments({
         searchParams: {
+            include: adminCommentIncludes(dislikesEnabled),
             ...(effectiveFilter ? {filter: effectiveFilter} : {})
         },
         keepPreviousData: true
     });
+    useEffect(() => {
+        if (!dislikesEnabled && data?.meta?.capabilities?.dislikes === true) {
+            setDislikesEnabled(true);
+        }
+    }, [dislikesEnabled, data?.meta?.capabilities?.dislikes]);
+
     const shouldShowLoading = isFetching && !isFetchingNextPage && !isRefetching;
     const resetKey = effectiveFilter ?? '';
     const hasFilters = filters.length > 0;
@@ -147,6 +155,7 @@ const CommentsPage: React.FC<{timezone: string; singleCommentId?: string}> = ({
                     ) : (
                         <>
                             <CommentsList
+                                dislikesEnabled={dislikesEnabled}
                                 fetchNextPage={fetchNextPage}
                                 hasNextPage={hasNextPage}
                                 isFetchingNextPage={isFetchingNextPage}
