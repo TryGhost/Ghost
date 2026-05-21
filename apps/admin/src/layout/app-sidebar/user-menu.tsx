@@ -45,7 +45,6 @@ function UserMenuDarkMode() {
             <LucideIcon.Moon />
             <UserMenuItem.Label className="flex-1">Dark mode</UserMenuItem.Label>
             <Switch
-                size='sm'
                 checked={preferences?.nightShift ?? false}
                 disabled={isEditingPreferences}
                 onCheckedChange={setNightShift}

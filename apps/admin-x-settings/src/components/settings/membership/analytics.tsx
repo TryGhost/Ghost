@@ -69,7 +69,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
             />
             {(
                 isWebAnalyticsLimited ? (
-                    <div className='mb-5 rounded-md border border-grey-200 bg-grey-50 px-4 py-2.5 text-sm dark:border-grey-900 dark:bg-grey-925'>
+                    <div className='mb-5 rounded-md border border-grey-200 bg-grey-50 px-4 py-2.5 dark:border-grey-900 dark:bg-grey-925'>
                         <span className='flex items-start gap-2'>
                             <span>
                             Web analytics is available on the Publisher plan and above. <span className='cursor-pointer text-green' onClick={() => updateRoute({route: '/pro', isExternal: true})}>Upgrade now &rarr;</span>
@@ -77,10 +77,10 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         </span>
                     </div>
                 ) : !isWebAnalyticsConfigured ? (
-                    <div className='mb-5 rounded-md border border-grey-200 bg-grey-50 px-4 py-2.5 text-sm dark:border-grey-900 dark:bg-grey-925'>
+                    <div className='mb-5 rounded-md border border-grey-200 bg-grey-50 px-4 py-2.5 dark:border-grey-900 dark:bg-grey-925'>
                         <span className='flex items-start gap-2'>
                             <span>
-                                Web analytics in Ghost is powered by <a className='text-green' href="https://tbrd.co/ghost" rel="noopener noreferrer" target='_blank'>Tinybird</a> and requires configuration to start collecting data. <a className='text-green' href="https://docs.ghost.org/install/docker#tinybird-integration" rel="noopener noreferrer" target='_blank'>Get started &rarr;</a>
+                                Web analytics in Ghost is powered by <a className='font-medium text-green' href="https://tbrd.co/ghost" rel="noopener noreferrer" target='_blank'>Tinybird</a> and requires configuration to start collecting data. <a className='font-medium text-green' href="https://docs.ghost.org/install/docker#tinybird-integration" rel="noopener noreferrer" target='_blank'>Get started &rarr;</a>
                             </span>
                         </span>
                     </div>
@@ -159,7 +159,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
         >
             {inputs}
             <div className='items-center-mt-1 flex justify-between'>
-                <a className='text-sm text-green' href="https://ghost.org/help/post-analytics/" rel="noopener noreferrer" target="_blank">Learn about analytics</a>
+                <a className='font-medium text-green' href="https://ghost.org/help/post-analytics/" rel="noopener noreferrer" target="_blank">Learn about analytics</a>
             </div>
         </TopLevelGroup>
     );

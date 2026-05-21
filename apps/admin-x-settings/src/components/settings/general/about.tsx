@@ -58,7 +58,7 @@ const AboutModal = NiceModal.create<RoutingModalProps>(({}) => {
             topRightContent='close'
             width={540}
         >
-            <div className='flex flex-col gap-4 pb-7 text-sm'>
+            <div className='flex flex-col gap-4 pb-7'>
                 <GhostLogo className="h-auto w-[120px] dark:invert"/>
                 <div className='mt-3 flex flex-col gap-1.5'>
                     {

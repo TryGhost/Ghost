@@ -42,8 +42,8 @@ export const ButtonSelect: React.FC<{type: OfferType, checked: boolean, onClick:
                     {checked ? <Icon className='w-[7px] stroke-[4]' name='check' size='custom' /> : null}
                 </div>
                 <div className='-mt-px flex flex-col'>
-                    <span>{type.title}</span>
-                    <span className='text-sm'>{type.description}</span>
+                    <span className='font-medium'>{type.title}</span>
+                    <span className='text-gray-700'>{type.description}</span>
                 </div>
             </div>
         </button>

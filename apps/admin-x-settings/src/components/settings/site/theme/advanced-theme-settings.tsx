@@ -27,14 +27,14 @@ function getThemeLabel(theme: Theme): React.ReactNode {
         label += ' (legacy)';
     } else if (theme.package?.name !== theme.name) {
         label =
-            <span className='text-sm md:text-base'>
+            <span className='md:text-base'>
                 {label} <span className='text-grey-600'>({theme.name})</span>
             </span>;
     }
 
     if (isActiveTheme(theme)) {
         label =
-            <span className="text-sm font-bold md:text-base">
+            <span className="font-bold md:text-base">
                 {label} &mdash; <span className='text-green'> Active</span>
             </span>;
     }

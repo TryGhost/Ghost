@@ -261,7 +261,7 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const buttons = (
         <Button
-            className='mt-[-5px] inline-flex h-7 cursor-pointer items-center justify-center rounded px-3 text-sm font-semibold whitespace-nowrap text-grey-900 transition hover:bg-grey-200 dark:text-white dark:hover:bg-grey-900 [&:hover]:text-black'
+            className='mt-[-5px] inline-flex h-7 cursor-pointer items-center justify-center rounded px-3 font-semibold whitespace-nowrap text-grey-900 transition hover:bg-grey-200 dark:text-white dark:hover:bg-grey-900 [&:hover]:text-black'
             color='clear'
             label='Add custom integration'
             link
@@ -281,9 +281,9 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         <img className='size-full' src={IntegrationsSettingsImg} />
                     </div>
                     <div className=' z-10 mt-6 flex items-start justify-between'>
-                        <SettingGroupHeader description='Make Ghost work with apps and tools.' title='Integrations' />
+                        <SettingGroupHeader description='Make Ghost wowith apps and tools.' title='Integrations' />
                         {
-                            <Button className='mt-[-5px] inline-flex h-7 cursor-pointer items-center justify-center rounded px-3 text-sm font-semibold whitespace-nowrap text-grey-900 transition hover:bg-grey-200 dark:text-white dark:hover:bg-grey-900 [&:hover]:text-black' color='clear' label='Add custom integration' link onClick={() => {
+                            <Button className='mt-[-5px] inline-flex h-7 cursor-pointer items-center justify-center rounded px-3 font-semibold whitespace-nowrap text-grey-900 transition hover:bg-grey-200 dark:text-white dark:hover:bg-grey-900 [&:hover]:text-black' color='clear' label='Add custom integration' link onClick={() => {
                                 updateRoute('integrations/new');
                                 setSelectedTab('custom');
                             }} />

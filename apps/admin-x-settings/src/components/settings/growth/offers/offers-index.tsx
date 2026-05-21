@@ -97,7 +97,7 @@ const OffersFilterPopover: React.FC<{
                             className='group relative mx-1 flex items-center rounded-[2.5px] hover:bg-grey-100 dark:hover:bg-grey-800'
                         >
                             <button
-                                className='flex w-full cursor-pointer items-center px-8 py-1.5 pr-12 text-left text-sm text-black dark:text-white'
+                                className='flex w-full cursor-pointer items-center px-8 py-1.5 pr-12 text-left text-black dark:text-white'
                                 type='button'
                                 onClick={() => onSortChange(item.id)}
                             >
@@ -119,14 +119,14 @@ const OffersFilterPopover: React.FC<{
                 </div>
                 <div className='-mx-1 mt-1 border-t border-t-grey-200 dark:border-t-grey-800'>
                     <div className='group relative mx-2 mt-1 flex items-center rounded-[2.5px] py-1'>
-                        <div className='flex w-full items-center px-8 py-1.5 pr-2 text-sm text-black dark:text-white'>
+                        <div className='flex w-full items-center px-8 py-1.5 pr-2 text-black dark:text-white'>
                             <LucideIcon.Archive className='absolute left-2 -mt-0.5 text-black dark:text-white' size={14} strokeWidth={1.5} />
                             <div className='grow [&>div]:w-full'>
                                 <Toggle
                                     checked={showArchived}
                                     direction='rtl'
                                     label='Show archived'
-                                    labelClasses='text-sm text-black dark:text-white'
+                                    labelClasses='text-black dark:text-white'
                                     onChange={(e) => {
                                         setShowArchived(e.target.checked);
                                     }}
@@ -153,10 +153,10 @@ const RetentionOfferRow: React.FC<{
             <td className='sticky left-0 z-10 bg-white p-0 dark:bg-black'>
                 <button className='block w-full cursor-pointer p-5 pl-0 text-left' type="button" onClick={onClick}>
                     <span className='font-semibold'>{offer.name}</span><br />
-                    <span className='text-sm text-grey-700'>{offer.description}</span>
+                    <span className='text-grey-700'>{offer.description}</span>
                 </button>
             </td>
-            <td className='p-0 text-sm whitespace-nowrap'>
+            <td className='p-0 whitespace-nowrap'>
                 <button className='block w-full cursor-pointer p-5 text-left' type="button" onClick={onClick}>
                     {offer.terms ? (
                         <>
@@ -168,12 +168,12 @@ const RetentionOfferRow: React.FC<{
                     )}
                 </button>
             </td>
-            <td className='p-0 text-sm whitespace-nowrap'>
+            <td className='p-0 whitespace-nowrap'>
                 <button className='block w-full cursor-pointer p-5 text-left' type="button" onClick={onClick}>
                     <span className='text-grey-700'>&ndash;</span>
                 </button>
             </td>
-            <td className='p-0 text-sm whitespace-nowrap'>
+            <td className='p-0 whitespace-nowrap'>
                 {redemptionFilterUrl ? (
                     <a
                         className='block cursor-pointer p-5 hover:underline'
@@ -193,7 +193,7 @@ const RetentionOfferRow: React.FC<{
                     </button>
                 )}
             </td>
-            <td className='p-0 text-sm whitespace-nowrap'>
+            <td className='p-0 whitespace-nowrap'>
                 <button className='block w-full cursor-pointer p-5 text-left' type="button" onClick={onClick}>
                     {offer.status === 'active' ? (
                         <span className='inline-flex items-center rounded-full bg-[rgba(48,207,67,0.15)] px-2 py-0.5 text-2xs font-semibold tracking-wide text-green uppercase'>Active</span>
@@ -361,11 +361,11 @@ export const OffersIndexModal: React.FC = () => {
 
                     return (
                         <tr key={offer.id} className={`group relative border-b border-b-grey-200 dark:border-grey-800 ${archived ? 'opacity-60' : ''}`} data-testid="offer-item">
-                            <td className='sticky left-0 z-10 bg-white p-0 dark:bg-black'><a className='block cursor-pointer p-5 pl-0' onClick={() => handleOfferEdit(offer.id)}><span className='font-semibold'>{offer?.name}</span><br /><span className='text-sm text-grey-700'>{offerTier.name} {getOfferCadence(offer.cadence)}</span></a></td>
-                            <td className='p-0 text-sm whitespace-nowrap'><a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer.id)}><span className='text-[1.3rem] font-medium uppercase'>{discountOffer}</span><br /><span className='text-grey-700'>{offer.type !== 'trial' ? getOfferDuration(offer.duration) : 'Trial period'}</span></a></td>
-                            <td className='p-0 text-sm whitespace-nowrap'><a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer.id)}><span className='font-medium'>{updatedPriceWithCurrency}</span> {offer.type !== 'trial' ? <span className='relative text-xs text-grey-700 before:absolute before:-inset-x-0.5 before:top-1/2 before:rotate-[-20deg] before:border-t before:content-[""]'>{originalPriceWithCurrency}</span> : null}</a></td>
-                            <td className='p-0 text-sm whitespace-nowrap'><a className={`block cursor-pointer p-5 ${offer.redemption_count === 0 ? '' : 'hover:underline'}`} href={offer.redemption_count > 0 && offer.id ? createOfferRedemptionFilterUrl(offer.id) : undefined} onClick={offer.redemption_count === 0 && offer.id ? () => handleOfferEdit(offer.id) : undefined}>{offer.redemption_count}</a></td>
-                            <td className='p-0 text-sm whitespace-nowrap'>
+                            <td className='sticky left-0 z-10 bg-white p-0 dark:bg-black'><a className='block cursor-pointer p-5 pl-0' onClick={() => handleOfferEdit(offer.id)}><span className='font-semibold'>{offer?.name}</span><br /><span className='text-grey-700'>{offerTier.name} {getOfferCadence(offer.cadence)}</span></a></td>
+                            <td className='p-0 whitespace-nowrap'><a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer.id)}><span className='text-[1.3rem] font-medium uppercase'>{discountOffer}</span><br /><span className='text-grey-700'>{offer.type !== 'trial' ? getOfferDuration(offer.duration) : 'Trial period'}</span></a></td>
+                            <td className='p-0 whitespace-nowrap'><a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer.id)}><span className='font-medium'>{updatedPriceWithCurrency}</span> {offer.type !== 'trial' ? <span className='relative text-xs text-grey-700 before:absolute before:-inset-x-0.5 before:top-1/2 before:rotate-[-20deg] before:border-t before:content-[""]'>{originalPriceWithCurrency}</span> : null}</a></td>
+                            <td className='p-0 whitespace-nowrap'><a className={`block cursor-pointer p-5 ${offer.redemption_count === 0 ? '' : 'hover:underline'}`} href={offer.redemption_count > 0 && offer.id ? createOfferRedemptionFilterUrl(offer.id) : undefined} onClick={offer.redemption_count === 0 && offer.id ? () => handleOfferEdit(offer.id) : undefined}>{offer.redemption_count}</a></td>
+                            <td className='p-0 whitespace-nowrap'>
                                 <a className='block cursor-pointer p-5' onClick={() => handleOfferEdit(offer.id)}>
                                     {archived ? (
                                         <span className='inline-flex items-center rounded-full bg-grey-200 px-2 py-0.5 text-2xs font-semibold tracking-wide text-grey-700 uppercase dark:bg-grey-900 dark:text-grey-500'>Archived</span>

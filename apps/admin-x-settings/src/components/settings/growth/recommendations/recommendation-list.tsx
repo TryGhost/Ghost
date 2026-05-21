@@ -53,7 +53,7 @@ const RecommendationItem: React.FC<{recommendation: Recommendation}> = ({recomme
                             <div className='mr-2'>
                                 <span>{numberWithCommas(count)}</span>
                             </div>
-                            <div className='text-sm text-grey-700 lowercase'>
+                            <div className='text-grey-700 lowercase'>
                                 <span>{showSubscribers ? newMembers : clicks}</span>
                                 <span className='invisible group-hover:visible'> from you</span>
                             </div>

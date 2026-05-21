@@ -97,7 +97,7 @@ const TestEmailDropdown: React.FC<TestEmailDropdownProps> = ({
     return (
         <div className='absolute top-full right-0 z-10 mt-2 w-[260px] rounded border border-grey-250 bg-white p-4 shadow-lg dark:border-grey-925 dark:bg-grey-975' data-testid='test-email-dropdown'>
             <div className='mb-3'>
-                <label className='mb-2 block text-sm font-semibold' htmlFor='test-email-input'>Send test email</label>
+                <label className='mb-2 block font-semibold' htmlFor='test-email-input'>Send test email</label>
                 <TextField
                     className='h-[36px]!'
                     id='test-email-input'
