@@ -166,20 +166,25 @@ afterAll(async () => {
         await mochaHooks.afterAll();
     }
 
-    if (process.env.NODE_ENV === 'testing-mysql') {
-        try {
-            const db = require('../../core/server/data/db');
-            if (mysqlGenerated) {
-                await db.knex.raw(
-                    `DROP DATABASE IF EXISTS \`${process.env.database__connection__database}\``
-                );
-            }
-            await db.knex.destroy();
-        } catch (err) {
-            // eslint-disable-next-line no-console
-            console.warn('Failed to clean up test database:', (err as Error).message);
+    // Always destroy the knex pool before the worker is torn down.
+    // knex.destroy() drains in-flight queries first; without it, a
+    // fire-and-forget query left running by a test can have its sqlite3
+    // callback fire after the worker is gone — a FATAL napi crash under
+    // the threads pool, or a stuck event loop under forks.
+    try {
+        const db = require('../../core/server/data/db');
+        if (process.env.NODE_ENV === 'testing-mysql' && mysqlGenerated) {
+            await db.knex.raw(
+                `DROP DATABASE IF EXISTS \`${process.env.database__connection__database}\``
+            );
         }
-    } else {
+        await db.knex.destroy();
+    } catch (err) {
+        // eslint-disable-next-line no-console
+        console.warn('Failed to clean up test database:', (err as Error).message);
+    }
+
+    if (process.env.NODE_ENV !== 'testing-mysql') {
         try {
             const fs = require('fs-extra');
             if (sqliteGenerated) {

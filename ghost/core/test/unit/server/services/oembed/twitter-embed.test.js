@@ -8,7 +8,7 @@ const {mockManager} = require('../../../../utils/e2e-framework');
 const {HTTPError} = require('got');
 
 describe('TwitterOEmbedProvider', function () {
-    before(async function () {
+    beforeAll(async function () {
         nock.disableNetConnect();
     });
 
