@@ -38,7 +38,7 @@
         "redirects": {
             "active": "FileStore",
             "FileStore": {},
-            "GCSStore": {}
+            "S3RedirectsStore": {}
         }
     },
     "storage": {
