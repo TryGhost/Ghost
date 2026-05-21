@@ -1,5 +1,6 @@
 import fs from 'fs-extra';
 import path from 'path';
+import logging from '@tryghost/logging';
 
 import RedirectsStoreBase from './RedirectsStoreBase';
 import {parseJson, parseYaml} from '../../services/custom-redirects/redirect-config-parser';
@@ -28,22 +29,28 @@ export default class FileStore extends RedirectsStoreBase implements RedirectsSt
         super();
         this.basePath = basePath;
         this.getBackupFilePath = getBackupFilePath;
+        logging.info(`[redirects] FileStore initialised: basePath=${this.basePath}`);
     }
 
     async getAll(): Promise<RedirectConfig[]> {
         const existingPath = await this._findExistingFile();
         if (!existingPath) {
+            logging.info(`[redirects] FileStore.getAll: no redirects file found at basePath=${this.basePath}`);
             return [];
         }
 
+        logging.info(`[redirects] FileStore.getAll: reading ${path.basename(existingPath)}`);
         const content = await fs.readFile(existingPath, 'utf-8');
 
-        return path.extname(existingPath) === '.yaml'
+        const parsed = path.extname(existingPath) === '.yaml'
             ? parseYaml(content)
             : parseJson(content);
+        logging.info(`[redirects] FileStore.getAll: parsed ${parsed.length} redirect(s)`);
+        return parsed;
     }
 
     async replaceAll(redirects: RedirectConfig[]): Promise<void> {
+        logging.info(`[redirects] FileStore.replaceAll: writing ${redirects.length} redirect(s)`);
         const existingPath = await this._findExistingFile();
         const targetPath = path.join(this.basePath, JSON_FILENAME);
 
@@ -59,6 +66,7 @@ export default class FileStore extends RedirectsStoreBase implements RedirectsSt
             const backupPath = this.getBackupFilePath(existingPath);
             const content = await fs.readFile(existingPath, 'utf-8');
             await this._writeAtomic(backupPath, content);
+            logging.info(`[redirects] FileStore.replaceAll: backed up previous file to ${path.basename(backupPath)}`);
         }
 
         await this._writeAtomic(targetPath, JSON.stringify(redirects));
@@ -71,11 +79,15 @@ export default class FileStore extends RedirectsStoreBase implements RedirectsSt
         if (existingPath && existingPath !== targetPath) {
             try {
                 await this._backup(existingPath);
+                logging.info(`[redirects] FileStore.replaceAll: migrated legacy ${path.basename(existingPath)} to ${JSON_FILENAME}`);
             } catch (err) {
                 await fs.remove(targetPath).catch(() => {});
+                logging.warn(`[redirects] FileStore.replaceAll: backup of legacy ${path.basename(existingPath)} failed, rolled back new ${JSON_FILENAME}`);
                 throw err;
             }
         }
+
+        logging.info(`[redirects] FileStore.replaceAll: complete`);
     }
 
     private async _findExistingFile(): Promise<string | null> {

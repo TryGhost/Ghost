@@ -1,3 +1,4 @@
+const logging = require('@tryghost/logging');
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');
 const adapterManager = require('../adapter-manager');
@@ -19,6 +20,7 @@ module.exports = {
         redirectManager = makeRedirectManager();
 
         const store = adapterManager.getAdapter('redirects');
+        logging.info(`[redirects] store selected: ${store.constructor.name}`);
 
         redirectsService = new RedirectsService({
             store,

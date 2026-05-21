@@ -10,6 +10,7 @@ import {
 } from '@aws-sdk/client-s3';
 import tpl from '@tryghost/tpl';
 import * as errors from '@tryghost/errors';
+import logging from '@tryghost/logging';
 
 import RedirectsStoreBase from './RedirectsStoreBase';
 import {parseJson} from '../../services/custom-redirects/redirect-config-parser';
@@ -82,14 +83,17 @@ export default class S3RedirectsStore extends RedirectsStoreBase implements Redi
             };
         }
         this.client = new S3Client(clientConfig);
+        logging.info(`[redirects] S3RedirectsStore initialised: bucket=${this.bucket}, region=${options.region ?? '<sdk-default>'}, tenantPrefix=${this.tenantPrefix || '<none>'}`);
     }
 
     async getAll(): Promise<RedirectConfig[]> {
+        const key = this.buildKey();
+        logging.info(`[redirects] S3RedirectsStore.getAll: fetching bucket=${this.bucket} key=${key}`);
         let body: string;
         try {
             const response = await this.client.send(new GetObjectCommand({
                 Bucket: this.bucket,
-                Key: this.buildKey()
+                Key: key
             }));
             if (!response.Body) {
                 throw new errors.InternalServerError({
@@ -99,23 +103,32 @@ export default class S3RedirectsStore extends RedirectsStoreBase implements Redi
             body = await response.Body.transformToString('utf-8');
         } catch (err) {
             if (this._isNotFound(err)) {
+                logging.info(`[redirects] S3RedirectsStore.getAll: no object at key=${key}`);
                 return [];
             }
+            logging.warn(`[redirects] S3RedirectsStore.getAll: fetch failed for key=${key}`);
             throw err;
         }
 
-        return parseJson(body);
+        const parsed = parseJson(body);
+        logging.info(`[redirects] S3RedirectsStore.getAll: parsed ${parsed.length} redirect(s)`);
+        return parsed;
     }
 
     async replaceAll(redirects: RedirectConfig[]): Promise<void> {
         const key = this.buildKey();
+        logging.info(`[redirects] S3RedirectsStore.replaceAll: writing ${redirects.length} redirect(s) to bucket=${this.bucket} key=${key}`);
 
         if (await this._canonicalExists()) {
+            const backupKey = getBackupRedirectsFilePath(key);
             await this.client.send(new CopyObjectCommand({
                 Bucket: this.bucket,
-                Key: getBackupRedirectsFilePath(key),
+                Key: backupKey,
                 CopySource: `${this.bucket}/${key}`
             }));
+            logging.info(`[redirects] S3RedirectsStore.replaceAll: backed up previous object to key=${backupKey}`);
+        } else {
+            logging.info(`[redirects] S3RedirectsStore.replaceAll: no previous object at key=${key}, skipping backup`);
         }
 
         await this.client.send(new PutObjectCommand({
@@ -124,6 +137,7 @@ export default class S3RedirectsStore extends RedirectsStoreBase implements Redi
             Body: JSON.stringify(redirects),
             ContentType: 'application/json'
         }));
+        logging.info(`[redirects] S3RedirectsStore.replaceAll: complete`);
     }
 
     private buildKey(): string {

@@ -57,6 +57,7 @@ export class RedirectsService {
      * active redirects are left in place rather than wiped to empty.
      */
     async activate(): Promise<void> {
+        logging.info('[redirects] activate: loading from store');
         const redirects = await this.store.getAll();
         this._loadIntoManager(redirects, {validatePerItem: true, failFast: false});
     }
@@ -69,6 +70,7 @@ export class RedirectsService {
      * would leave disk and memory partially synchronised.
      */
     async replace(redirects: RedirectConfig[]): Promise<void> {
+        logging.info(`[redirects] replace: requested ${redirects.length} redirect(s)`);
         this.validate(redirects);
         this._verifyAllLoadable(redirects);
         await this.store.replaceAll(redirects);
@@ -138,6 +140,8 @@ export class RedirectsService {
                 help: tpl(messages.redirectsHelp)
             }));
         }
+
+        logging.info(`[redirects] applied ${loaded}/${redirects.length} redirect(s) to router`);
     }
 
     private _buildRejectedError(redirect: RedirectConfig, cause?: unknown): Error {
