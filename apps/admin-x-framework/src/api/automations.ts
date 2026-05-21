@@ -205,14 +205,16 @@ type RemoveActionArgs = ReadonlyDeep<{
 }>;
 
 export const removeAction = ({detail, actionId}: RemoveActionArgs): AutomationDetail => {
-    if (!detail.actions.some(action => action.id === actionId)) {
+    const remainingActions = detail.actions.filter(action => action.id !== actionId);
+
+    const wasActionFound = remainingActions.length < detail.actions.length;
+    if (!wasActionFound) {
         throw new Error(`removeAction: unknown action id "${actionId}"`);
     }
 
     const incoming = detail.edges.find(edge => edge.target_action_id === actionId);
     const outgoing = detail.edges.find(edge => edge.source_action_id === actionId);
 
-    const actions = detail.actions.filter(action => action.id !== actionId);
     const remainingEdges = detail.edges.filter(
         edge => edge.source_action_id !== actionId && edge.target_action_id !== actionId
     );
@@ -222,5 +224,6 @@ export const removeAction = ({detail, actionId}: RemoveActionArgs): AutomationDe
             target_action_id: outgoing.target_action_id
         });
     }
-    return {...detail, actions, edges: remainingEdges};
+
+    return {...detail, actions: remainingActions, edges: remainingEdges};
 };
