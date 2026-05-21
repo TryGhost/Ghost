@@ -266,6 +266,38 @@ describe('AutomationEditor', () => {
         expect(within(sidebar).getByRole('button', {name: 'Delete step'})).toBeEnabled();
     });
 
+    it('resets the wait editor value when switching between wait steps', () => {
+        const fixture: AutomationDetail = {
+            ...automationDetail,
+            actions: [
+                {id: 'action-wait-one-day', type: 'wait', data: {wait_hours: 24}},
+                {id: 'action-wait-three-days', type: 'wait', data: {wait_hours: 72}},
+                automationDetail.actions[1]
+            ],
+            edges: [
+                {source_action_id: 'action-wait-one-day', target_action_id: 'action-wait-three-days'},
+                {source_action_id: 'action-wait-three-days', target_action_id: 'action-email'}
+            ]
+        };
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [fixture]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        fireEvent.click(screen.getByRole('button', {name: 'Wait: 1 day'}));
+        let sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        expect(within(sidebar).getByRole('heading', {name: '1 day'})).toBeInTheDocument();
+        expect(within(sidebar).getByDisplayValue('1')).toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', {name: 'Wait: 3 days'}));
+        sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        expect(within(sidebar).getByRole('heading', {name: '3 days'})).toBeInTheDocument();
+        expect(within(sidebar).getByDisplayValue('3')).toBeInTheDocument();
+    });
+
     it('closes the sidebar from a blank canvas click', () => {
         mockUseReadAutomation.mockReturnValue({
             data: {automations: [automationDetail]},

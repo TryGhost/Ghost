@@ -6,7 +6,8 @@ import {
     InsertActionAnchor,
     insertSendEmailAction,
     insertWaitAction,
-    removeAction
+    removeAction,
+    updateWaitAction
 } from '../../../src/api/automations';
 
 const baseDetail = (actions: AutomationDetail['actions'], edges: AutomationDetail['edges']): AutomationDetail => ({
@@ -262,6 +263,102 @@ describe('automations api helpers', () => {
             );
 
             expect(() => removeAction({detail, actionId: 'does-not-exist'})).toThrow(/unknown action id "does-not-exist"/);
+        });
+    });
+
+    describe('updateWaitAction', () => {
+        it('updates wait_hours on the targeted wait action', () => {
+            const detail = baseDetail(
+                [
+                    {id: 'a', type: 'wait', data: {wait_hours: 24}},
+                    {id: 'b', type: 'wait', data: {wait_hours: 48}}
+                ],
+                [{source_action_id: 'a', target_action_id: 'b'}]
+            );
+
+            const next = updateWaitAction({detail, actionId: 'a', waitHours: 5});
+
+            expect(next.actions[0]).toEqual({id: 'a', type: 'wait', data: {wait_hours: 5}});
+        });
+
+        it('leaves other actions, edges, and top-level fields untouched', () => {
+            const detail = baseDetail(
+                [
+                    {id: 'a', type: 'wait', data: {wait_hours: 24}},
+                    {id: 'b', type: 'wait', data: {wait_hours: 48}}
+                ],
+                [{source_action_id: 'a', target_action_id: 'b'}]
+            );
+
+            const next = updateWaitAction({detail, actionId: 'a', waitHours: 72});
+
+            expect(next.actions[1]).toBe(detail.actions[1]);
+            expect(next.edges).toEqual(detail.edges);
+            expect(next.id).toBe(detail.id);
+            expect(next.slug).toBe(detail.slug);
+            expect(next.status).toBe(detail.status);
+        });
+
+        it('throws when actionId references a non-existent action', () => {
+            const detail = baseDetail(
+                [{id: 'a', type: 'wait', data: {wait_hours: 24}}],
+                []
+            );
+
+            expect(() => updateWaitAction({detail, actionId: 'does-not-exist', waitHours: 1})).toThrow(/unknown action id "does-not-exist"/);
+        });
+
+        it('throws when the targeted action is not a wait action', () => {
+            const detail = baseDetail(
+                [
+                    {
+                        id: 'a',
+                        type: 'send_email',
+                        data: {
+                            email_subject: 'Hi',
+                            email_lexical: '{}',
+                            email_sender_name: null,
+                            email_sender_email: null,
+                            email_sender_reply_to: null,
+                            email_design_setting_id: 'placeholder'
+                        }
+                    }
+                ],
+                []
+            );
+
+            expect(() => updateWaitAction({detail, actionId: 'a', waitHours: 1})).toThrow(/is not a wait action/);
+        });
+
+        const expectInvalidWaitHoursRejected = (waitHours: number): void => {
+            const detail = baseDetail(
+                [{id: 'a', type: 'wait', data: {wait_hours: 24}}],
+                []
+            );
+
+            expect(() => updateWaitAction({detail, actionId: 'a', waitHours})).toThrow(/waitHours must be a finite positive integer/);
+            expect(detail.actions).toEqual([{id: 'a', type: 'wait', data: {wait_hours: 24}}]);
+            expect(detail.edges).toEqual([]);
+        };
+
+        it('throws when waitHours is zero', () => {
+            expectInvalidWaitHoursRejected(0);
+        });
+
+        it('throws when waitHours is negative', () => {
+            expectInvalidWaitHoursRejected(-1);
+        });
+
+        it('throws when waitHours is fractional', () => {
+            expectInvalidWaitHoursRejected(1.5);
+        });
+
+        it('throws when waitHours is Infinity', () => {
+            expectInvalidWaitHoursRejected(Number.POSITIVE_INFINITY);
+        });
+
+        it('throws when waitHours is NaN', () => {
+            expectInvalidWaitHoursRejected(Number.NaN);
         });
     });
 });

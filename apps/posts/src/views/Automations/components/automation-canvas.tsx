@@ -2,10 +2,12 @@ import '@xyflow/react/dist/style.css';
 import AddStepEdge, {type AddStepEdgeData} from './add-step-edge';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import StepPicker, {type StepPickerType} from './step-picker';
-import {AutomationAction, AutomationDetail, AutomationSendEmailAction, AutomationWaitAction, InsertActionAnchor, MAX_AUTOMATION_ACTIONS, insertSendEmailAction, insertWaitAction, removeAction} from '@tryghost/admin-x-framework/api/automations';
+import {AutomationAction, AutomationDetail, AutomationSendEmailAction, AutomationWaitAction, InsertActionAnchor, MAX_AUTOMATION_ACTIONS, insertSendEmailAction, insertWaitAction, removeAction, updateWaitAction} from '@tryghost/admin-x-framework/api/automations';
 import {Background, Edge, Handle, Node, NodeProps, Position, ReactFlow} from '@xyflow/react';
 import {Banner, Button, Checkbox, Input, Label, LoadingIndicator, Popover, PopoverContent, PopoverTrigger, Select, SelectTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
+
+const MAX_WAIT_DAYS = 90;
 
 const NODE_X = 0;
 const NODE_WIDTH = 256;
@@ -358,7 +360,9 @@ type TriggerStepSidebarDetail = BaseStepSidebarDetail<'trigger', 'Trigger'> & {
     memberTiers: MemberTier[];
 };
 
-type WaitStepSidebarDetail = ActionStepSidebarDetail<AutomationWaitAction, 'Wait'>;
+type WaitStepSidebarDetail = ActionStepSidebarDetail<AutomationWaitAction, 'Wait'> & {
+    onUpdate: (waitHours: number) => void;
+};
 
 type SendEmailStepSidebarDetail = ActionStepSidebarDetail<AutomationSendEmailAction, 'Send email'>;
 
@@ -374,10 +378,11 @@ const automationSlugMemberTiers: Record<string, MemberTier[]> = {
 type StepSidebarDetailOptions = {
     automation: AutomationDetail;
     onDelete: (actionId: string) => void;
+    onUpdateWait: (actionId: string, waitHours: number) => void;
     stepId: string | null;
 };
 
-const getStepSidebarDetail = ({automation, stepId, onDelete}: StepSidebarDetailOptions): StepSidebarDetail | null => {
+const getStepSidebarDetail = ({automation, stepId, onDelete, onUpdateWait}: StepSidebarDetailOptions): StepSidebarDetail | null => {
     if (!stepId) {
         return null;
     }
@@ -406,6 +411,7 @@ const getStepSidebarDetail = ({automation, stepId, onDelete}: StepSidebarDetailO
             title: waitValue,
             action,
             onDelete: () => onDelete(action.id),
+            onUpdate: (waitHours: number) => onUpdateWait(action.id, waitHours),
             type: 'wait'
         };
     }
@@ -423,13 +429,6 @@ const getStepSidebarDetail = ({automation, stepId, onDelete}: StepSidebarDetailO
         throw new Error(`Unknown automation action type: ${_exhaustive}`);
     }
     }
-};
-
-const getWaitParts = (hours: number): {amount: string; unit: string} => {
-    if (hours % 24 === 0) {
-        return {amount: formatNumber(hours / 24), unit: hours === 24 ? 'Day' : 'Days'};
-    }
-    return {amount: formatNumber(hours), unit: hours === 1 ? 'Hour' : 'Hours'};
 };
 
 const SidebarField: React.FC<{label: string; children: React.ReactNode}> = ({label, children}) => (
@@ -489,16 +488,49 @@ const DeleteStepButton: React.FC<{onClick: () => void}> = ({onClick}) => (
     </Button>
 );
 
-const WaitSidebarBody: React.FC<{action: AutomationWaitAction; onDelete: () => void}> = ({action, onDelete}) => {
-    const wait = getWaitParts(action.data.wait_hours);
+const WaitSidebarBody: React.FC<{
+    action: AutomationWaitAction;
+    onUpdate: (waitHours: number) => void;
+    onDelete: () => void;
+}> = ({action, onUpdate, onDelete}) => {
+    if (action.data.wait_hours % 24 !== 0) {
+        throw new Error(`WaitSidebarBody: wait_hours must be a multiple of 24, received ${action.data.wait_hours}`);
+    }
+    const initialDays = action.data.wait_hours / 24;
+    const [daysText, setDaysText] = useState<string>(String(initialDays));
+
+    const days = Number(daysText);
+    const isValid = daysText.trim() !== '' && Number.isInteger(days) && days >= 1 && days <= MAX_WAIT_DAYS;
+    const unitLabel = days === 1 ? 'Day' : 'Days';
+
+    const handleBlur = () => {
+        if (!isValid) {
+            return;
+        }
+        const nextHours = days * 24;
+        if (nextHours !== action.data.wait_hours) {
+            onUpdate(nextHours);
+        }
+    };
 
     return (
         <div className='flex flex-1 flex-col gap-5'>
             <SidebarField label='Wait for'>
                 <div className='grid grid-cols-[6rem_1fr] gap-2'>
-                    <Input value={wait.amount} readOnly />
-                    <ReadOnlySelect value={wait.unit} />
+                    <Input
+                        aria-invalid={!isValid}
+                        inputMode='numeric'
+                        value={daysText}
+                        onBlur={handleBlur}
+                        onChange={e => setDaysText(e.target.value)}
+                    />
+                    <ReadOnlySelect value={unitLabel} />
                 </div>
+                {!isValid && (
+                    <span className='text-xs text-red'>
+                        Enter a whole number between 1 and {formatNumber(MAX_WAIT_DAYS)} days.
+                    </span>
+                )}
             </SidebarField>
             <div className='mt-auto pt-6'>
                 <DeleteStepButton onClick={onDelete} />
@@ -527,7 +559,7 @@ const StepSidebarBody: React.FC<{detail: StepSidebarDetail}> = ({detail}) => {
     case 'trigger':
         return <TriggerSidebarBody memberTiers={detail.memberTiers} />;
     case 'wait':
-        return <WaitSidebarBody action={detail.action} onDelete={detail.onDelete} />;
+        return <WaitSidebarBody key={detail.action.id} action={detail.action} onDelete={detail.onDelete} onUpdate={detail.onUpdate} />;
     case 'send_email':
         return <SendEmailSidebarBody action={detail.action} onDelete={detail.onDelete} />;
     default: {
@@ -630,6 +662,13 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
         onChange(next);
     }, [automation, onChange]);
 
+    const handleUpdateWait = useCallback((actionId: string, waitHours: number) => {
+        if (!automation) {
+            return;
+        }
+        onChange(updateWaitAction({detail: automation, actionId, waitHours}));
+    }, [automation, onChange]);
+
     const initialViewport = useRef(getInitialViewport(window.innerWidth));
 
     const graph = useMemo(() => {
@@ -648,6 +687,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
     const sidebarDetail = automation ? getStepSidebarDetail({
         automation,
         onDelete: handleDelete,
+        onUpdateWait: handleUpdateWait,
         stepId: selectedStepId
     }) : null;
     const clearDetail = useCallback(() => {
