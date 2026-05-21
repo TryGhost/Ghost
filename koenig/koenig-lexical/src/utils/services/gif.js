@@ -47,6 +47,14 @@ export function extractErrorMessage(json) {
         || 'Unknown error';
 }
 
+// Detect an invalid-API-key error from the provider's message. Tenor and Klipy
+// word these differently (Tenor: "API key not valid"; Klipy: "The provided API
+// key is invalid"), so match the phrasing they share.
+export function isInvalidKeyError(message) {
+    const text = message || '';
+    return /api key/i.test(text) && /(invalid|not valid)/i.test(text);
+}
+
 export function useGif({config}) {
     const [columns, setColumns] = useState([]);
     const [error, setError] = useState(null);
@@ -182,13 +190,10 @@ export function useGif({config}) {
                 setGifs(internalStateGifs.current);
             })
             .catch((e) => {
-                // e.message is the API error text (from checkStatus) or a fetch
-                // connection error. Tenor and Klipy word invalid-key errors
-                // differently, so match either phrasing.
+                // e.message is the provider's error text (from checkStatus) or a
+                // fetch connection error.
                 if (!options.ignoreErrors) {
-                    const message = e?.message || '';
-                    const isInvalidKey = /api key/i.test(message) && /(invalid|not valid)/i.test(message);
-                    setError(isInvalidKey ? ERROR_TYPE.INVALID_API_KEY : ERROR_TYPE.COMMON);
+                    setError(isInvalidKeyError(e?.message) ? ERROR_TYPE.INVALID_API_KEY : ERROR_TYPE.COMMON);
                 }
                 console.error(e);
             })
