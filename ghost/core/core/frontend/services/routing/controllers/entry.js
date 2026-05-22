@@ -4,6 +4,19 @@ const config = require('../../../../shared/config');
 const urlUtils = require('../../../../shared/url-utils');
 const dataService = require('../../data');
 const renderer = require('../../rendering');
+const {getAcceptedMarkdownContentType, getMarkdownPath, renderEntryMarkdown} = require('../../llms/markdown');
+
+function getLlmsService(req) {
+    return req.app.get('llmsService') || null;
+}
+
+function serveMarkdown(res, entry) {
+    const llmsIndexUrl = urlUtils.urlFor({relativeUrl: '/llms.txt'}, true);
+    res.set('Cache-Control', `public, max-age=${config.get('caching:llms:maxAge')}`);
+    res.set('Content-Location', getMarkdownPath(new URL(entry.url).pathname));
+    res.type('text/markdown');
+    return res.send(renderEntryMarkdown(entry, {llmsIndexUrl}));
+}
 
 /**
  * @description Entry controller.
@@ -44,6 +57,23 @@ module.exports = function entryController(req, res, next) {
                 return urlUtils.redirectToAdmin(302, res, `/#/editor/${resourceType}/${entry.id}`);
             }
 
+            // CASE: .md URL — serve entry as markdown for LLM consumption
+            if (res.routerOptions.isMarkdownRequest) {
+                if (entry.visibility !== 'public') {
+                    return next();
+                }
+
+                const llmsService = getLlmsService(req);
+                if (!llmsService || !llmsService.isEnabled()) {
+                    return res.redirect(302, url.format({
+                        pathname: url.parse(entry.url).pathname,
+                        search: url.parse(req.originalUrl).search
+                    }));
+                }
+
+                return serveMarkdown(res, entry);
+            }
+
             /**
              * CASE: Permalink is not valid anymore, we redirect him permanently to the correct one
              *       This should only happen if you have date permalinks enabled and you change
@@ -62,43 +92,16 @@ module.exports = function entryController(req, res, next) {
                 }));
             }
 
+            // CASE: Accept: text/markdown content negotiation
             if (entry.visibility === 'public') {
-                const {getAcceptedMarkdownContentType, renderEntryMarkdown} = require('../../llms/markdown');
                 const markdownContentType = getAcceptedMarkdownContentType(req);
 
                 if (markdownContentType) {
-                    const {createLlmsService} = require('../../llms/service');
-                    const labs = require('../../../../shared/labs');
-                    const settingsCache = require('../../../../shared/settings-cache');
-                    const urlService = require('../../../../server/services/url');
-                    const models = require('../../../../server/models');
-                    const routing = require('../../routing');
-                    const {api} = require('../../proxy');
+                    const llmsService = getLlmsService(req);
 
-                    const llmsService = createLlmsService({
-                        settingsCache,
-                        labs,
-                        config,
-                        urlServiceFacade: urlService.facade,
-                        urlUtils,
-                        models,
-                        routing,
-                        api
-                    });
-
-                    if (llmsService.isEnabled()) {
-                        return llmsService.fetchPublicEntry(res.routerOptions.resourceType, entry.id)
-                            .then((markdownEntry) => {
-                                if (!markdownEntry) {
-                                    return renderer.renderEntry(req, res)(entry);
-                                }
-
-                                const llmsIndexUrl = urlUtils.urlFor({relativeUrl: '/llms.txt'}, true);
-                                res.set('Cache-Control', `public, max-age=${config.get('caching:llms:maxAge')}`);
-                                res.vary('Accept');
-                                res.type(markdownContentType);
-                                return res.send(renderEntryMarkdown(markdownEntry, {llmsIndexUrl}));
-                            });
+                    if (llmsService && llmsService.isEnabled()) {
+                        res.vary('Accept');
+                        return serveMarkdown(res, entry);
                     }
                 }
             }

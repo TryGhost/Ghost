@@ -1,33 +1,12 @@
 const urlUtils = require('../../../shared/url-utils');
-const {
-    getMarkdownPath,
-    getResourcePathFromMarkdownPath,
-    renderEntryMarkdown
-} = require('./markdown');
 
-function getRequestSearch(req) {
-    const searchIndex = req.originalUrl?.indexOf('?') ?? -1;
-
-    if (searchIndex === -1) {
-        return '';
-    }
-
-    return req.originalUrl.slice(searchIndex);
-}
-
-function redirectToWebRoute(res, pathname, search = '') {
-    return res.redirect(302, `${urlUtils.urlFor({relativeUrl: pathname})}${search}`);
-}
-
-function createLlmsHandler({llmsService, config, urlServiceFacade, settingsCache}) {
-    const llmsIndexUrl = urlUtils.urlFor({relativeUrl: '/llms.txt'}, true);
-
-    function handleDisabledLlmsRequest(req, res, next, pathname) {
+function createLlmsHandler({llmsService, config, settingsCache}) {
+    function handleDisabledLlmsRequest(req, res, next) {
         if (settingsCache.get('is_private')) {
             return next();
         }
 
-        return redirectToWebRoute(res, pathname, getRequestSearch(req));
+        return res.redirect(302, urlUtils.urlFor({relativeUrl: '/'}));
     }
 
     function setLlmsHeaders(res) {
@@ -37,16 +16,9 @@ function createLlmsHandler({llmsService, config, urlServiceFacade, settingsCache
         });
     }
 
-    function setMarkdownHeaders(res, contentType) {
-        res.set({
-            'Cache-Control': `public, max-age=${config.get('caching:llms:maxAge')}`,
-            'Content-Type': `${contentType}; charset=utf-8`
-        });
-    }
-
     async function serveLlms(req, res, next, format) {
         if (!llmsService.isEnabled()) {
-            return handleDisabledLlmsRequest(req, res, next, '/');
+            return handleDisabledLlmsRequest(req, res, next);
         }
 
         const content = format === 'full'
@@ -95,46 +67,7 @@ function createLlmsHandler({llmsService, config, urlServiceFacade, settingsCache
         });
     }
 
-    function mountMarkdownRoutes(siteApp) {
-        siteApp.get(/.+\.md$/, async function serveMarkdownEntry(req, res, next) {
-            const resourcePath = getResourcePathFromMarkdownPath(req.path);
-
-            if (!resourcePath) {
-                return next();
-            }
-
-            if (!llmsService.isEnabled()) {
-                return handleDisabledLlmsRequest(req, res, next, resourcePath);
-            }
-
-            let resource;
-            try {
-                resource = await urlServiceFacade.resolveUrl(resourcePath);
-            } catch (err) {
-                return next(err);
-            }
-
-            if (!resource || !['posts', 'pages'].includes(resource.type) || resource.visibility !== 'public') {
-                return next();
-            }
-
-            try {
-                const entry = await llmsService.fetchPublicEntry(resource.type, resource.id, req.member || null);
-
-                if (!entry) {
-                    return next();
-                }
-
-                setMarkdownHeaders(res, 'text/markdown');
-                res.set('Content-Location', getMarkdownPath(new URL(entry.url).pathname));
-                return res.send(renderEntryMarkdown(entry, {llmsIndexUrl}));
-            } catch (err) {
-                return next(err);
-            }
-        });
-    }
-
-    return {mountLlmsRoutes, mountMarkdownRoutes};
+    return {mountLlmsRoutes};
 }
 
 module.exports = {createLlmsHandler};
