@@ -809,7 +809,7 @@ jobs:
     needs: [job_setup]
     # Root of the build + browser-E2E lane (see run_e2e in job_setup).
     if: needs.job_setup.outputs.run_e2e == 'true'
-    runs-on: blacksmith-2vcpu-ubuntu-2404
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     permissions:
       contents: read
       packages: write
@@ -1213,7 +1213,7 @@ jobs:
 
   job_e2e_tests:
     name: E2E Tests (${{ matrix.projectName }} ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
-    runs-on: blacksmith-2vcpu-ubuntu-2404
+    runs-on: ubuntu-latest
     needs: [job_build_e2e_image, job_setup]
     # Inherits the run_e2e gate transitively via job_build_e2e_image.
     if: needs.job_build_e2e_image.result == 'success'
@@ -1288,8 +1288,8 @@ jobs:
       - name: Setup Docker Registry Mirrors
         uses: ./.github/actions/setup-docker-registry-mirrors
 
-      - name: Setup Blacksmith Builder
-        uses: useblacksmith/setup-docker-builder@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4
 
       - name: Pull or build Tinybird CLI Image
         if: matrix.analytics == 'true'
