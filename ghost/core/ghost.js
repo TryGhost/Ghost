@@ -5,6 +5,7 @@
  * Important: This file should not contain any requires, unless we decide to add pretty-cli/commander type tools
  *
  **/
+// Test test test
 
 // Don't allow NODE_ENV to be null
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
