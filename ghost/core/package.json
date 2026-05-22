@@ -293,7 +293,7 @@
     "nodemon": "3.1.14",
     "postcss": "catalog:",
     "postcss-cli": "11.0.1",
-    "qs": "6.14.2",
+    "qs": "6.15.2",
     "rewire": "9.0.1",
     "sinon": "catalog:",
     "supertest": "6.3.4",
