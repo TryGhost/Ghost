@@ -385,7 +385,22 @@ jobs:
       - name: Run unit tests
         # ghost/core's unit tests run on vitest (see ghost/core/vitest.config.ts);
         # other packages run their own test:unit target.
-        run: pnpm nx run-many -t test:unit -p "${{ needs.job_setup.outputs.affected_projects_str }}"
+        #
+        # Retried up to 3 attempts: ghost/core's vitest run intermittently
+        # crashes a worker on loaded CI runners — an abnormal process exit,
+        # not a reported test failure. nx caches the projects that already
+        # passed, so a retry only re-runs the crashed one. Interim stopgap
+        # until the vitest worker/teardown issue is fixed.
+        run: |
+          for attempt in 1 2 3; do
+            pnpm nx run-many -t test:unit -p "${{ needs.job_setup.outputs.affected_projects_str }}" && exit 0
+            if [ "${attempt}" -lt 3 ]; then
+              echo "::warning::Unit tests attempt ${attempt} failed — retrying"
+            else
+              echo "::error::Unit tests failed after ${attempt} attempts — no more retries"
+            fi
+          done
+          exit 1
         env:
           FORCE_COLOR: 0
           NX_SKIP_LOG_GROUPING: true
