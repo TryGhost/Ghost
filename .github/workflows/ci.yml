@@ -394,7 +394,11 @@ jobs:
         run: |
           for attempt in 1 2 3; do
             pnpm nx run-many -t test:unit -p "${{ needs.job_setup.outputs.affected_projects_str }}" && exit 0
-            echo "::warning::Unit tests attempt ${attempt} failed — retrying"
+            if [ "${attempt}" -lt 3 ]; then
+              echo "::warning::Unit tests attempt ${attempt} failed — retrying"
+            else
+              echo "::error::Unit tests failed after ${attempt} attempts — no more retries"
+            fi
           done
           exit 1
         env:
