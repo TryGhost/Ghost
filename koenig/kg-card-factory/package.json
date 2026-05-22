@@ -43,7 +43,7 @@
     "should": "13.2.3",
     "simple-dom": "1.4.0",
     "sinon": "22.0.0",
-    "tsx": "4.22.2",
+    "tsx": "4.22.3",
     "typescript": "5.9.3",
     "typescript-eslint": "8.59.4"
   }
