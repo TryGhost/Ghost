@@ -12,8 +12,6 @@ const navigationSteps: Array<[string, RegExp]> = [
     ['build-audience', /\/ghost\/(?:\?[^#]*)?#\/members/]
 ];
 
-test.use({isolation: 'per-test'});
-
 async function getCurrentUser(page: Page) {
     const response = await page.request.get('/ghost/api/admin/users/me/?include=roles');
     expect(response.ok()).toBe(true);
