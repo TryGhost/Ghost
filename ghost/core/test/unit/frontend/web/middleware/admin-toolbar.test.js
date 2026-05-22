@@ -119,6 +119,26 @@ describe('admin toolbar middleware', function () {
         assert.equal(res.headers['Cache-Control'], 'no-store');
     });
 
+    it('does not set a frontend marker cookie if no signing secret is configured', function () {
+        settingsCache.get.withArgs('admin_session_secret').returns(null);
+        settingsCache.get.withArgs('theme_session_secret').returns(null);
+
+        const req = {
+            headers: {},
+            originalUrl: '/welcome/?admin=1',
+            query: {
+                admin: '1'
+            },
+            url: '/welcome/?admin=1'
+        };
+        const res = createResponse();
+
+        adminToolbar(req, res, sinon.spy());
+
+        assert.equal(res.headers['Set-Cookie'], undefined);
+        assert.equal(res.redirectUrl, '/welcome/');
+    });
+
     it('removes toolbar hide query param from clean admin redirects', function () {
         const req = {
             originalUrl: '/welcome/?admin=0&admin_toolbar=0&ref=test',
@@ -177,5 +197,51 @@ describe('admin toolbar middleware', function () {
 
         assert.equal(next.calledOnce, true);
         assert.equal(res.locals.staffFrontendToolsEnabled, false);
+    });
+
+    it('ignores malformed and unrelated cookies', function () {
+        assert.equal(adminToolbar._private.getCookieValue({headers: {}}), null);
+        assert.equal(adminToolbar._private.getCookieValue({
+            headers: {
+                cookie: 'bad-cookie; other=value'
+            }
+        }), null);
+    });
+
+    it('falls back to the raw cookie value when decoding fails', function () {
+        assert.equal(adminToolbar._private.getCookieValue({
+            headers: {
+                cookie: 'other=value; ghost-admin-toolbar=%E0%A4%A'
+            }
+        }), '%E0%A4%A');
+    });
+
+    it('rejects expired frontend marker cookies', function () {
+        const now = Date.now();
+        const token = adminToolbar._private.createToken(now);
+
+        assert.equal(adminToolbar._private.hasValidToken(token, now + 60 * 60 * 1000 + 1), false);
+    });
+
+    it('rejects missing frontend marker cookies', function () {
+        assert.equal(adminToolbar._private.hasValidToken(null), false);
+    });
+
+    it('rejects frontend marker cookies when no signing secret is configured', function () {
+        const token = adminToolbar._private.createToken();
+
+        settingsCache.get.withArgs('admin_session_secret').returns(null);
+        settingsCache.get.withArgs('theme_session_secret').returns(null);
+
+        assert.equal(adminToolbar._private.hasValidToken(token), false);
+    });
+
+    it('rejects frontend marker cookies with mismatched signature lengths', function () {
+        const token = adminToolbar._private.createToken();
+        const parts = token.split(':');
+
+        parts[2] = 'bad';
+
+        assert.equal(adminToolbar._private.hasValidToken(parts.join(':')), false);
     });
 });

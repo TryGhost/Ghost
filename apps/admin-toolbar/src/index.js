@@ -9,6 +9,38 @@ import {ROOT_ID} from './constants';
 import {Toolbar} from './components';
 import {getToolbarStyle} from './styles';
 
+const AUTH_FRAME_LOAD_TIMEOUT = 5000;
+
+function waitForFrameLoad(frame) {
+    return new Promise((resolve, reject) => {
+        let timeout;
+
+        function cleanup() {
+            window.clearTimeout(timeout);
+            frame.removeEventListener('load', handleLoad);
+            frame.removeEventListener('error', handleError);
+        }
+
+        function handleLoad() {
+            cleanup();
+            resolve();
+        }
+
+        function handleError() {
+            cleanup();
+            reject(new Error('auth_frame_load_error'));
+        }
+
+        timeout = window.setTimeout(() => {
+            cleanup();
+            reject(new Error('auth_frame_load_timeout'));
+        }, AUTH_FRAME_LOAD_TIMEOUT);
+
+        frame.addEventListener('load', handleLoad);
+        frame.addEventListener('error', handleError);
+    });
+}
+
 function renderToolbar({config, user, frame}) {
     if (document.getElementById(ROOT_ID)) {
         return;
@@ -48,9 +80,7 @@ async function init() {
     const api = createAdminApi(config.adminUrl, frame);
 
     try {
-        await new Promise((resolve) => {
-            frame.addEventListener('load', resolve, {once: true});
-        });
+        await waitForFrameLoad(frame);
         const user = await api.getUser();
         if (!user || !canShowToolbar(user)) {
             frame.remove();

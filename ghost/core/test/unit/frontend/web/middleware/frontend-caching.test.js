@@ -1,9 +1,11 @@
 const assert = require('node:assert').strict;
 const express = require('express');
 const request = require('supertest');
+const sinon = require('sinon');
 const testUtils = require('../../../../utils');
 const configUtils = require('../../../../utils/config-utils');
 
+const {api} = require('../../../../../core/frontend/services/proxy');
 const frontendCaching = require('../../../../../core/frontend/web/middleware/frontend-caching');
 
 const cacheMembersContentConfigKey = 'cacheMembersContent:enabled';
@@ -18,6 +20,7 @@ describe('frontendCaching', function () {
     });
 
     afterEach(async function () {
+        sinon.restore();
         await configUtils.restore();
     });
 
@@ -62,6 +65,19 @@ describe('frontendCaching', function () {
     it('should set cache control to public if the site is public and the request is not made by a member', async function () {
         const {headers} = await requestWithFrontendCaching();
         assert.equal(headers['cache-control'], testUtils.cacheRules.public);
+    });
+
+    it('should load the free tier when no free tier loader is passed', async function () {
+        const browse = sinon.stub(api.tiers, 'browse').resolves({
+            tiers: [
+                {id: 'paidTierId', type: 'paid'},
+                {id: 'freeTierId', type: 'free'}
+            ]
+        });
+        const middleware = await frontendCaching.getMiddleware();
+
+        assert.equal(browse.calledOnce, true);
+        assert.equal(typeof middleware, 'function');
     });
 
     it('should set cache control to private if the admin toolbar is enabled', async function () {

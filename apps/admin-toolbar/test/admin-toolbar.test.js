@@ -109,6 +109,32 @@ describe('admin-toolbar', function () {
         dom.window.close();
     });
 
+    it('removes the auth frame when iframe load times out', async function () {
+        const dom = createDom();
+        const originalSetTimeout = dom.window.setTimeout.bind(dom.window);
+
+        dom.window.setTimeout = (callback, delay) => {
+            if (delay === 5000) {
+                callback();
+                return 1;
+            }
+
+            return originalSetTimeout(callback, delay);
+        };
+        dom.window.clearTimeout = () => {};
+
+        dom.window.eval(source);
+        dom.window.document.dispatchEvent(new dom.window.Event('DOMContentLoaded'));
+
+        await new Promise((resolve) => {
+            originalSetTimeout(resolve, 0);
+        });
+
+        assert.equal(dom.window.document.querySelector('iframe[data-frame="admin-auth"]'), null);
+        assert.equal(dom.window.document.getElementById('ghost-admin-toolbar-root'), null);
+        dom.window.close();
+    });
+
     it('renders for an authenticated editor', async function () {
         const dom = createDom();
         const {root} = await runToolbar(dom, {result: {users: [editorUser({
