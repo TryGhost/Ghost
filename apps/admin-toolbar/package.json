@@ -18,9 +18,9 @@
     "preact": "catalog:"
   },
   "scripts": {
-    "build": "vite build",
-    "lint": "eslint src --ext .js --cache",
-    "test": "pnpm build && mocha --exit --trace-warnings --timeout=60000 \"test/**/*.test.js\""
+    "build": "pnpm exec vite build",
+    "lint": "pnpm exec eslint src --ext .js --cache",
+    "test": "pnpm run build && pnpm exec mocha --exit --trace-warnings --timeout=60000 \"test/**/*.test.js\""
   },
   "devDependencies": {
     "eslint": "catalog:",
