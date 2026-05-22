@@ -324,7 +324,7 @@ jobs:
         run: pnpm --filter @tryghost/i18n test
 
   job_admin-tests:
-    runs-on: blacksmith-2vcpu-ubuntu-2404
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [job_setup]
     if: |
       needs.job_setup.outputs.is_tag == 'true'
@@ -653,7 +653,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   job_apps_acceptance-tests:
-    runs-on: blacksmith-2vcpu-ubuntu-2404
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [job_setup]
     if: needs.job_setup.outputs.affected_playwright_projects != '[]'
     name: App Playwright Acceptance Tests
@@ -1213,7 +1213,7 @@ jobs:
 
   job_e2e_tests:
     name: E2E Tests (${{ matrix.projectName }} ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
-    runs-on: blacksmith-2vcpu-ubuntu-2404
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [job_build_e2e_image, job_setup]
     # Inherits the run_e2e gate transitively via job_build_e2e_image.
     if: needs.job_build_e2e_image.result == 'success'
