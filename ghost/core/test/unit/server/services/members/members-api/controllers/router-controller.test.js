@@ -1743,6 +1743,65 @@ describe('RouterController', function () {
         });
     });
 
+    describe('_handleSignin', function () {
+        let logging;
+
+        beforeEach(function () {
+            logging = require('@tryghost/logging');
+            sinon.stub(logging, 'warn');
+        });
+
+        const createController = (memberRepositoryStub) => {
+            return new RouterController({
+                memberRepository: memberRepositoryStub,
+                sendEmailWithMagicLink: sinon.stub().resolves({}),
+                magicLinkService: {},
+                settingsCache: {get: sinon.stub().returns([])},
+                settingsHelpers,
+                emailAddressService
+            });
+        };
+
+        it('logs a warning when signin is attempted for an unknown member', async function () {
+            const controller = createController({get: sinon.stub().resolves(null)});
+            const req = {body: {emailType: 'signin'}};
+
+            await controller._handleSignin(req, 'unknown@example.com');
+
+            sinon.assert.calledOnce(logging.warn);
+            assert.match(logging.warn.firstCall.args[0], /Signin attempted for unknown member/);
+            assert.match(logging.warn.firstCall.args[0], /example\.com/);
+        });
+
+        it('does not log a warning when signin is attempted for an existing member', async function () {
+            const member = {id: 'member_1', email: 'existing@example.com'};
+            const sendEmailStub = sinon.stub().resolves({});
+            const controller = new RouterController({
+                memberRepository: {get: sinon.stub().resolves(member)},
+                sendEmailWithMagicLink: sendEmailStub,
+                magicLinkService: {},
+                settingsCache: {get: sinon.stub().returns([])},
+                settingsHelpers,
+                emailAddressService
+            });
+            const req = {body: {emailType: 'signin'}};
+
+            await controller._handleSignin(req, 'existing@example.com');
+
+            sinon.assert.notCalled(logging.warn);
+        });
+
+        it('does not include the full email address in the warning log', async function () {
+            const controller = createController({get: sinon.stub().resolves(null)});
+            const req = {body: {emailType: 'signin'}};
+
+            await controller._handleSignin(req, 'secret@example.com');
+
+            sinon.assert.calledOnce(logging.warn);
+            assert.equal(logging.warn.firstCall.args[0].includes('secret'), false);
+        });
+    });
+
     describe('_generateSuccessUrl', function () {
         let urlUtilsStub;
 

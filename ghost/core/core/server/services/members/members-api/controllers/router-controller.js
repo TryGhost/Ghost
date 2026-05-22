@@ -1043,6 +1043,7 @@ module.exports = class RouterController {
         const member = await this._memberRepository.get({email: normalizedEmail});
 
         if (!member) {
+            logging.warn(`[Members] Signin attempted for unknown member (domain: ${normalizedEmail.split('@')[1]})`);
             // Return a fake otcRef when OTC was requested so the response
             // shape is identical regardless of whether a member exists
             return includeOTC ? {otcRef: crypto.randomUUID()} : {};
