@@ -15,14 +15,18 @@ function appendHeaderValue(existingValue, newValue) {
     return raw.concat(newValue).join(', ');
 }
 
-function createLlmsDiscovery({settingsCache}) {
+function createLlmsDiscovery({settingsCache, labs}) {
+    function isDiscoveryEnabled() {
+        return labs.isSet('llmsTxt') && !settingsCache.get('is_private') && settingsCache.get('llms_enabled') !== false;
+    }
+
     return function llmsDiscovery(req, res, next) {
-        if (settingsCache.get('is_private') || settingsCache.get('llms_enabled') === false) {
+        if (!isDiscoveryEnabled()) {
             return next();
         }
 
         onHeaders(res, function addLlmsDiscoveryHeaders() {
-            if (settingsCache.get('is_private') || settingsCache.get('llms_enabled') === false) {
+            if (!isDiscoveryEnabled()) {
                 return;
             }
 

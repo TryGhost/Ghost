@@ -9,9 +9,9 @@ const TRUNCATION_FOOTER = '\n_Truncated after 5 MiB. Use `/llms.txt` for the com
 const BUDGET = FIVE_MIB - Buffer.byteLength(TRUNCATION_FOOTER, 'utf8');
 const FULL_PAGE_SIZE = 100;
 
-function createLlmsService({settingsCache, config, urlServiceFacade, urlUtils, models, routing, api}) {
+function createLlmsService({settingsCache, labs, config, urlServiceFacade, urlUtils, models, routing, api}) {
     function isEnabled() {
-        return !settingsCache.get('is_private') && settingsCache.get('llms_enabled') !== false;
+        return labs.isSet('llmsTxt') && !settingsCache.get('is_private') && settingsCache.get('llms_enabled') !== false;
     }
 
     async function fetchPublicEntry(resourceType, id, member = null) {

@@ -70,6 +70,14 @@ describe('Unit: frontend/services/llms/service', function () {
         };
     }
 
+    function createFakeLabs(flags = {llmsTxt: true}) {
+        return {
+            isSet(flag) {
+                return !!flags[flag];
+            }
+        };
+    }
+
     function createService(opts = {}) {
         const pages = opts.pages || [];
         const posts = opts.posts || [];
@@ -77,6 +85,7 @@ describe('Unit: frontend/services/llms/service', function () {
 
         return createLlmsService({
             settingsCache: opts.settingsCache || createFakeSettingsCache(opts.settingsOverrides),
+            labs: opts.labs || createFakeLabs(opts.labsFlags),
             config: opts.config || createFakeConfig(),
             urlServiceFacade: opts.urlServiceFacade || createFakeUrlServiceFacade(urlMap),
             urlUtils: opts.urlUtils || createFakeUrlUtils(),
@@ -116,7 +125,19 @@ describe('Unit: frontend/services/llms/service', function () {
         assert.match(llmsTxt, /\[Sitemap\]\(http:\/\/127\.0\.0\.1:\d+\/sitemap\.xml\)/);
     });
 
-    it('returns null when disabled', async function () {
+    it('returns null when labs flag is off', async function () {
+        const service = createService({
+            labsFlags: {llmsTxt: false},
+            pages: [],
+            posts: [],
+            urlMap: {}
+        });
+
+        const result = await service.getLlmsTxt();
+        assert.equal(result, null);
+    });
+
+    it('returns null when site is private', async function () {
         const service = createService({
             settingsOverrides: {is_private: true},
             pages: [],

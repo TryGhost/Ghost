@@ -62,12 +62,13 @@ module.exports = function entryController(req, res, next) {
                 }));
             }
 
-            if (config.get('llms') && entry.visibility === 'public') {
+            if (entry.visibility === 'public') {
                 const {getAcceptedMarkdownContentType, renderEntryMarkdown} = require('../../llms/markdown');
                 const markdownContentType = getAcceptedMarkdownContentType(req);
 
                 if (markdownContentType) {
                     const {createLlmsService} = require('../../llms/service');
+                    const labs = require('../../../../shared/labs');
                     const settingsCache = require('../../../../shared/settings-cache');
                     const urlService = require('../../../../server/services/url');
                     const models = require('../../../../server/models');
@@ -76,6 +77,7 @@ module.exports = function entryController(req, res, next) {
 
                     const llmsService = createLlmsService({
                         settingsCache,
+                        labs,
                         config,
                         urlServiceFacade: urlService.facade,
                         urlUtils,
