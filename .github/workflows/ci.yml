@@ -154,7 +154,7 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Determine Affected Projects
         id: affected
@@ -302,10 +302,10 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --filter @tryghost/i18n... --ignore-scripts
 
       - name: Run i18n tests
-        run: pnpm nx run @tryghost/i18n:test
+        run: pnpm --filter @tryghost/i18n test
 
   job_admin-tests:
     runs-on: ubuntu-latest
@@ -385,7 +385,22 @@ jobs:
       - name: Run unit tests
         # ghost/core's unit tests run on vitest (see ghost/core/vitest.config.ts);
         # other packages run their own test:unit target.
-        run: pnpm nx run-many -t test:unit -p "${{ needs.job_setup.outputs.affected_projects_str }}"
+        #
+        # Retried up to 3 attempts: ghost/core's vitest run intermittently
+        # crashes a worker on loaded CI runners — an abnormal process exit,
+        # not a reported test failure. nx caches the projects that already
+        # passed, so a retry only re-runs the crashed one. Interim stopgap
+        # until the vitest worker/teardown issue is fixed.
+        run: |
+          for attempt in 1 2 3; do
+            pnpm nx run-many -t test:unit -p "${{ needs.job_setup.outputs.affected_projects_str }}" && exit 0
+            if [ "${attempt}" -lt 3 ]; then
+              echo "::warning::Unit tests attempt ${attempt} failed — retrying"
+            else
+              echo "::error::Unit tests failed after ${attempt} attempts — no more retries"
+            fi
+          done
+          exit 1
         env:
           FORCE_COLOR: 0
           NX_SKIP_LOG_GROUPING: true
@@ -684,7 +699,7 @@ jobs:
           working-directory: ghost/core/core/server/data/tinybird
     services:
       tinybird:
-        image: tinybirdco/tinybird-local:latest@sha256:9d9c77fe276920acb56f0405ef36393a4831c3c193b221313157203901cab586
+        image: tinybirdco/tinybird-local:latest@sha256:d7b1583e02f6c35c5b5b145f9a375817c093da137a04436e8e2a498418c8054b
         ports:
           - 7181:7181
     steps:

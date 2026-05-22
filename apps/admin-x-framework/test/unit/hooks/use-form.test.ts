@@ -1,19 +1,19 @@
 import {act, renderHook} from '@testing-library/react';
 import useForm from '../../../src/hooks/use-form';
 
-// Mock timers for testing delays
-beforeEach(() => {
-    vi.useFakeTimers();
-    vi.clearAllMocks();
-});
-
-afterEach(() => {
-    vi.useRealTimers();
-    vi.clearAllMocks();
-    vi.restoreAllMocks();
-});
-
 describe('useForm', () => {
+    // Mock timers for testing delays
+    beforeEach(() => {
+        vi.useFakeTimers();
+        vi.clearAllMocks();
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
+        vi.clearAllMocks();
+        vi.restoreAllMocks();
+    });
+
     describe('formState', () => {
         it('returns the initial form state', () => {
             const {result} = renderHook(() => useForm({

@@ -104,7 +104,7 @@
     "eslint": "catalog:",
     "jsdom": "catalog:",
     "nock": "13.5.6",
-    "tailwindcss": "3.4.18",
+    "tailwindcss": "catalog:tailwind3",
     "vite": "catalog:",
     "vite-plugin-svgr": "catalog:",
     "vitest": "catalog:"

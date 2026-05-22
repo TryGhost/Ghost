@@ -250,7 +250,7 @@ describe('AutomationEditor', () => {
         expect(within(sidebar).getByRole('heading', {name: '1 day'})).toBeInTheDocument();
         expect(within(sidebar).getByText('Wait')).toBeInTheDocument();
         expect(within(sidebar).getByText('Wait for')).toBeInTheDocument();
-        expect(within(sidebar).getByRole('button', {name: 'Delete step'})).toBeDisabled();
+        expect(within(sidebar).getByRole('button', {name: 'Delete step'})).toBeEnabled();
 
         const emailStep = screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'});
         fireEvent.click(emailStep);
@@ -263,7 +263,7 @@ describe('AutomationEditor', () => {
         expect(within(sidebar).queryByText('Sender')).not.toBeInTheDocument();
         expect(within(sidebar).queryByText('Reply-to')).not.toBeInTheDocument();
         expect(within(sidebar).getByRole('button', {name: 'Edit email'})).toBeDisabled();
-        expect(within(sidebar).getByRole('button', {name: 'Delete step'})).toBeDisabled();
+        expect(within(sidebar).getByRole('button', {name: 'Delete step'})).toBeEnabled();
     });
 
     it('closes the sidebar from a blank canvas click', () => {
@@ -613,6 +613,101 @@ describe('AutomationEditor', () => {
         const insertedId = edgePairs.find(([source]) => source === 'action-wait')?.[1];
         expect(insertedId).toBeTruthy();
         expect(edgePairs).toContainEqual([insertedId, 'action-email']);
+    });
+
+    it('deletes a wait step and reconnects the chain', () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        const waitStep = screen.getByRole('button', {name: 'Wait: 1 day'});
+        fireEvent.click(waitStep);
+
+        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        fireEvent.click(within(sidebar).getByRole('button', {name: 'Delete step'}));
+
+        // The wait step is gone; only the email step remains in the action chain.
+        expect(screen.queryByRole('button', {name: 'Wait: 1 day'})).not.toBeInTheDocument();
+        expect(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'})).toBeInTheDocument();
+
+        // Edges now wire trigger → action-email → tail directly.
+        const edgeList = screen.getByTestId('react-flow-mock-edges');
+        const edgePairs = Array.from(edgeList.querySelectorAll('li')).map(li => [
+            li.getAttribute('data-source'),
+            li.getAttribute('data-target')
+        ]);
+        expect(edgePairs).toEqual([
+            ['__trigger__', 'action-email'],
+            ['action-email', '__tail__']
+        ]);
+
+        // Sidebar closes after delete.
+        expect(screen.queryByRole('complementary', {name: 'Step details'})).not.toBeInTheDocument();
+
+        // Active automation with a structural change → "Publish changes" enabled.
+        expect(screen.getByRole('button', {name: 'Publish changes'})).toBeEnabled();
+    });
+
+    it('deletes a send email step and keeps the wait step in place', () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        fireEvent.click(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'}));
+        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        fireEvent.click(within(sidebar).getByRole('button', {name: 'Delete step'}));
+
+        expect(screen.queryByRole('button', {name: 'Send email: Welcome to The Blueprint'})).not.toBeInTheDocument();
+        expect(screen.getByRole('button', {name: 'Wait: 1 day'})).toBeInTheDocument();
+
+        const edgeList = screen.getByTestId('react-flow-mock-edges');
+        const edgePairs = Array.from(edgeList.querySelectorAll('li')).map(li => [
+            li.getAttribute('data-source'),
+            li.getAttribute('data-target')
+        ]);
+        expect(edgePairs).toEqual([
+            ['__trigger__', 'action-wait'],
+            ['action-wait', '__tail__']
+        ]);
+
+        expect(screen.queryByRole('complementary', {name: 'Step details'})).not.toBeInTheDocument();
+    });
+
+    it('deletes the only remaining step and leaves only the trigger and tail', () => {
+        const oneStep: AutomationDetail = {
+            ...automationDetail,
+            actions: [{id: 'action-wait', type: 'wait', data: {wait_hours: 24}}],
+            edges: []
+        };
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [oneStep]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        fireEvent.click(screen.getByRole('button', {name: 'Wait: 1 day'}));
+        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        fireEvent.click(within(sidebar).getByRole('button', {name: 'Delete step'}));
+
+        expect(screen.queryByRole('button', {name: 'Wait: 1 day'})).not.toBeInTheDocument();
+
+        // With no steps, the canvas falls back to a single trigger → tail edge.
+        const edgeList = screen.getByTestId('react-flow-mock-edges');
+        const edgePairs = Array.from(edgeList.querySelectorAll('li')).map(li => [
+            li.getAttribute('data-source'),
+            li.getAttribute('data-target')
+        ]);
+        expect(edgePairs).toEqual([['__trigger__', '__tail__']]);
     });
 
     it('enables Publish changes when the user adds a step locally', async () => {

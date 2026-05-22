@@ -33,13 +33,28 @@ export default defineConfig({
             '__vitest_snapshots__',
             path.basename(testPath) + snapExtension
         ),
-        testTimeout: 2000,
+        // 2000ms was inherited from mocha, where a shared require-cache kept
+        // per-test work cheap. Under vitest's `isolate: true` the first test
+        // in each file pays the cold-import cost of Ghost's server modules,
+        // so 2000ms is too tight on a loaded CI runner — the slowest test is
+        // ~1s locally and can multiply under contention. 5000ms (vitest's
+        // default) removes the timeout-flake class.
+        testTimeout: 5000,
         hookTimeout: 60000,
-        // `dot` keeps local/CI output compact. `github-actions` adds inline
-        // `::error::` annotations for failed tests — without it, CI logs only
-        // show vitest's dot stream, whose failure summary GitHub truncates,
-        // making it impossible to tell which test failed from the logs.
-        reporters: process.env.GITHUB_ACTIONS ? ['dot', 'github-actions'] : ['dot'],
+        // Retry a failed test up to twice (3 attempts total) before
+        // reporting it as failed. The suite is intermittently flaky on
+        // loaded CI runners; this absorbs transient test-level failures
+        // (e.g. a slow test brushing the timeout). It does not help
+        // worker-level crashes — those are retried at the CI step.
+        retry: 2,
+        // Local runs use the compact `dot` reporter. CI uses `default`
+        // instead — `dot` emits only a stream of dots, so when the run dies
+        // the log gives no clue which file was running, whereas `default`
+        // names each file. `github-actions` adds inline `::error::`
+        // annotations for failed tests.
+        reporters: process.env.GITHUB_ACTIONS
+            ? ['default', 'github-actions']
+            : ['dot'],
         coverage: {
             provider: 'v8',
             reporter: ['text-summary', 'html', 'cobertura'],

@@ -6,7 +6,8 @@ const crypto = require('crypto');
 const ObjectId = require('bson-objectid').default;
 const KnexMigrator = require('knex-migrator');
 const {sequence} = require('@tryghost/promise');
-const knexMigrator = new KnexMigrator();
+// Resolve MigratorConfig.js from the package root, not process.cwd() — see db-utils.js.
+const knexMigrator = new KnexMigrator({knexMigratorFilePath: path.join(__dirname, '../..')});
 
 // Ghost Internals
 const models = require('../../core/server/models');
