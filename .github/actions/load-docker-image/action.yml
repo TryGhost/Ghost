@@ -46,7 +46,7 @@ runs:
       env:
         IMAGE_TAGS: ${{ inputs.image-tags }}
       run: |
-        IMAGE_TAG=$(printf '%s\n' "$IMAGE_TAGS" | head -n1)
+        IMAGE_TAG="${IMAGE_TAGS%%$'\n'*}"
         echo "Pulling image from registry: $IMAGE_TAG"
 
         max_attempts=5
@@ -73,7 +73,7 @@ runs:
       env:
         IMAGE_TAGS: ${{ inputs.image-tags }}
       run: |
-        IMAGE_TAG=$(printf '%s\n' "$IMAGE_TAGS" | head -n1)
+        IMAGE_TAG="${IMAGE_TAGS%%$'\n'*}"
         echo "Checking for image: $IMAGE_TAG"
         echo "image-tag=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
 
