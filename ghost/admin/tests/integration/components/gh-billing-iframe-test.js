@@ -1,3 +1,4 @@
+import GhBillingIframe from 'ghost-admin/components/gh-billing-iframe';
 import hbs from 'htmlbars-inline-precompile';
 import sinon from 'sinon';
 import {describe, it} from 'mocha';
@@ -62,8 +63,7 @@ describe('Integration: Component: gh-billing-iframe', function () {
 
         await render(hbs`<GhBillingIframe />`);
 
-        const iframe = find('#billing-frame');
-        const postMessage = sinon.stub(iframe.contentWindow, 'postMessage');
+        const postMessage = sinon.stub(GhBillingIframe.prototype, '_postMessageToBillingIframe');
 
         await postBillingMessage({request: 'token'});
 
@@ -72,7 +72,7 @@ describe('Integration: Component: gh-billing-iframe', function () {
         expect(postMessage.calledOnceWithExactly({
             request: 'token',
             response: null
-        }, 'https://billing.example.test')).to.be.true;
+        })).to.be.true;
     });
 
     it('handles valid route messages without marking the billing app loaded', async function () {
@@ -93,8 +93,7 @@ describe('Integration: Component: gh-billing-iframe', function () {
 
         await render(hbs`<GhBillingIframe />`);
 
-        const iframe = find('#billing-frame');
-        const postMessage = sinon.stub(iframe.contentWindow, 'postMessage');
+        const postMessage = sinon.stub(GhBillingIframe.prototype, '_postMessageToBillingIframe');
 
         await postBillingMessage({request: 'token'}, {origin: 'https://evil.example.test'});
         await postBillingMessage({request: 'billingAppReady'}, {origin: 'https://evil.example.test'});

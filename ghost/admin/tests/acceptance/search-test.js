@@ -30,7 +30,7 @@ const assertSearchModalClosed = () => {
 
 // Helper functions for common test operations
 const openSearch = async () => {
-    await triggerKeyEvent(document, 'keydown', 'K', {
+    await triggerKeyEvent(document, 'keydown', 75, {
         metaKey: ctrlOrCmd === 'command',
         ctrlKey: ctrlOrCmd === 'ctrl'
     });
