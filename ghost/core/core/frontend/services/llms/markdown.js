@@ -54,9 +54,9 @@ function getResourcePathFromMarkdownPath(pathname) {
 }
 
 function getAcceptedMarkdownContentType(req) {
-    const acceptHeader = req.get('Accept');
+    const acceptHeader = (req.get('Accept') || '').toLowerCase();
 
-    if (!acceptHeader || (!acceptHeader.includes('text/markdown') && !acceptHeader.includes('text/plain'))) {
+    if (!acceptHeader.includes('text/markdown') && !acceptHeader.includes('text/plain')) {
         return null;
     }
 

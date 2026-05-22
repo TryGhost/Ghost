@@ -95,6 +95,7 @@ module.exports = function entryController(req, res, next) {
 
                                 const llmsIndexUrl = urlUtils.urlFor({relativeUrl: '/llms.txt'}, true);
                                 res.set('Cache-Control', `public, max-age=${config.get('caching:llms:maxAge')}`);
+                                res.vary('Accept');
                                 res.type(markdownContentType);
                                 return res.send(renderEntryMarkdown(markdownEntry, {llmsIndexUrl}));
                             });

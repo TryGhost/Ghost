@@ -4,12 +4,12 @@ const {
     truncateDescription
 } = require('./markdown');
 
-const FIVE_MIB = 5 * 1024 * 1024;
+const DEFAULT_BUDGET = 5 * 1024 * 1024;
 const TRUNCATION_FOOTER = '\n_Truncated after 5 MiB. Use `/llms.txt` for the complete index of older public content._\n';
-const BUDGET = FIVE_MIB - Buffer.byteLength(TRUNCATION_FOOTER, 'utf8');
 const FULL_PAGE_SIZE = 100;
 
-function createLlmsService({settingsCache, labs, config, urlServiceFacade, urlUtils, models, routing, api}) {
+function createLlmsService({settingsCache, labs, config, urlServiceFacade, urlUtils, models, routing, api, fullTxtBudget}) {
+    const BUDGET = (fullTxtBudget || DEFAULT_BUDGET) - Buffer.byteLength(TRUNCATION_FOOTER, 'utf8');
     function isEnabled() {
         return labs.isSet('llmsTxt') && !settingsCache.get('is_private') && settingsCache.get('llms_enabled') !== false;
     }
@@ -229,10 +229,6 @@ function createLlmsService({settingsCache, labs, config, urlServiceFacade, urlUt
             entry.url = resolveEntryUrl(entry);
             return entry;
         }).filter(entry => entry.url);
-
-        if (type === 'page' && pageNum === 1) {
-            entries.sort((left, right) => left.url.localeCompare(right.url));
-        }
 
         const hasMore = result.data.length === FULL_PAGE_SIZE;
 

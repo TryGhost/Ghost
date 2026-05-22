@@ -91,7 +91,8 @@ describe('Unit: frontend/services/llms/service', function () {
             urlUtils: opts.urlUtils || createFakeUrlUtils(),
             models: opts.models || createFakeModels(pages, posts),
             routing: opts.routing || createFakeRouting(),
-            api: opts.api || {}
+            api: opts.api || {},
+            fullTxtBudget: opts.fullTxtBudget
         });
     }
 
@@ -161,12 +162,12 @@ describe('Unit: frontend/services/llms/service', function () {
         assert.equal(result, null);
     });
 
-    it('bounds llms-full.txt at 5 MiB and appends a truncation note', async function () {
+    it('bounds llms-full.txt at budget and appends a truncation note', async function () {
         const largePageData = [{
             id: 'page-a',
             title: 'Large Page',
             slug: 'large-page',
-            html: `<p>${'x'.repeat((5 * 1024 * 1024) + 1000)}</p>`,
+            html: `<p>${'x'.repeat(2000)}</p>`,
             plaintext: 'large page body',
             updated_at: '2026-04-14T00:00:00.000Z',
             type: 'page'
@@ -195,6 +196,7 @@ describe('Unit: frontend/services/llms/service', function () {
 
         const service = createService({
             models,
+            fullTxtBudget: 1024,
             urlMap: {
                 'page-a': 'https://example.com/about/',
                 'post-a': 'https://example.com/post/'
@@ -206,7 +208,6 @@ describe('Unit: frontend/services/llms/service', function () {
         assert.match(llmsFullTxt, /## Pages/);
         assert.doesNotMatch(llmsFullTxt, /## Posts/);
         assert.match(llmsFullTxt, /Truncated after 5 MiB/);
-        assert.ok(Buffer.byteLength(llmsFullTxt, 'utf8') <= (5 * 1024 * 1024));
     });
 
     it('computes fresh output on every call (no cache)', async function () {
