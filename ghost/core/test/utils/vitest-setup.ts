@@ -24,13 +24,12 @@ require('tsx/cjs');
 process.env.NODE_ENV = process.env.NODE_ENV || 'testing';
 process.env.WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_SECRET';
 
-// Generate unique session values for database and port BEFORE loading
-// Ghost. This setup file runs once per test file (isolated environment),
-// so each file gets its own session — but values already set externally
-// (CI, user shell) are respected.
+// Generate unique session values for the database and port BEFORE loading
+// Ghost. The setup file re-runs per test file, but `process.env` is shared
+// across the files in a worker, so the first file to run fixes the session
+// and every later file in that worker reuses it — one db/port per worker.
+// Values already set externally (CI, user shell) are always respected.
 const sessionId = crypto.randomBytes(4).toString('hex');
-const sqliteGenerated = !process.env.database__connection__filename;
-const mysqlGenerated = !process.env.database__connection__database;
 process.env.database__connection__filename =
     process.env.database__connection__filename || `/tmp/ghost-test-${sessionId}.db`;
 process.env.database__connection__database =
@@ -173,40 +172,22 @@ afterAll(async () => {
         await mochaHooks.afterAll();
     }
 
-    // Always destroy the knex pool before the worker is torn down.
-    // knex.destroy() drains in-flight queries first; without it, a
-    // fire-and-forget query left running by a test can have its sqlite3
-    // callback fire after the worker is gone — a FATAL napi crash under
-    // the threads pool, or a stuck event loop under forks.
+    // The unit suite runs with `isolate: false`, so the knex pool is shared
+    // by every test file in a worker — it must NOT be destroyed here, or the
+    // files scheduled after this one lose their connection. Instead, wait for
+    // in-flight queries to drain so no sqlite3 callback can fire after the
+    // worker thread is terminated (the FATAL napi crash the threads pool is
+    // prone to). The pool is left for the worker to tear down on exit; the
+    // session sqlite files are removed once per run by vitest-global-setup.
     try {
-        const db = require('../../core/server/data/db');
-        try {
-            if (process.env.NODE_ENV === 'testing-mysql' && mysqlGenerated) {
-                await db.knex.raw(
-                    `DROP DATABASE IF EXISTS \`${process.env.database__connection__database}\``
-                );
-            }
-        } finally {
-            // Destroy the pool even if the DROP above threw — a leaked pool
-            // is exactly what causes the FATAL crash / hang described above.
-            await db.knex.destroy();
+        const pool = require('../../core/server/data/db').knex?.client?.pool;
+        const deadline = Date.now() + 5000;
+        while (pool && pool.numUsed() > 0 && Date.now() < deadline) {
+            await new Promise((resolve) => {
+                setTimeout(resolve, 10);
+            });
         }
-    } catch (err) {
-        // eslint-disable-next-line no-console
-        console.warn('Failed to clean up test database:', (err as Error).message);
-    }
-
-    if (process.env.NODE_ENV !== 'testing-mysql') {
-        try {
-            const fs = require('fs-extra');
-            if (sqliteGenerated) {
-                const dbFile = process.env.database__connection__filename;
-                await fs.remove(dbFile);
-                await fs.remove(`${dbFile}-orig`);
-                await fs.remove(`${dbFile}-journal`);
-            }
-        } catch {
-            // best effort
-        }
+    } catch {
+        // best effort — the db may never have been connected in this worker
     }
 });
