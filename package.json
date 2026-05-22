@@ -7,13 +7,6 @@
   "engines": {
     "node": "^22.13.1"
   },
-  "devEngines": {
-    "runtime": {
-      "name": "node",
-      "version": "22.18.0",
-      "onFail": "download"
-    }
-  },
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
   "license": "MIT",
