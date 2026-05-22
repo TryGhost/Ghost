@@ -46,7 +46,7 @@
     "archive": "node scripts/pack.js",
     "dev": "nodemon index.js",
     "build:assets": "pnpm build:assets:css && pnpm build:assets:js",
-    "build:assets:js": "node bin/minify-assets.js",
+    "build:assets:js": "pnpm --dir ../../apps/admin-toolbar build && node bin/minify-assets.js",
     "generate-golden-email": "node bin/generate-golden-email.js",
     "migrate:create": "node bin/create-migration.js",
     "build:assets:css": "postcss core/frontend/public/ghost.css --no-map --use cssnano -o core/frontend/public/ghost.min.css",

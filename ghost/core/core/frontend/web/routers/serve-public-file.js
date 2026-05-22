@@ -137,6 +137,9 @@ function servePublicFiles(siteApp) {
     // Member attribution
     siteApp.get('/public/member-attribution.min.js', createPublicFileMiddleware('static', 'public/member-attribution.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
 
+    // Staff admin toolbar
+    siteApp.get('/public/admin-toolbar.min.js', createPublicFileMiddleware('static', 'public/admin-toolbar.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
+
     // Private page runtime
     siteApp.get('/public/private.js', createPublicFileMiddleware('static', 'public/private.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
     siteApp.get('/public/private.min.js', createPublicFileMiddleware('static', 'public/private.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));

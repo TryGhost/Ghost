@@ -1,4 +1,5 @@
 module.exports = {
+    adminToolbar: require('./admin-toolbar'),
     cors: require('./cors'),
     errorHandler: require('./error-handler'),
     frontendCaching: require('./frontend-caching'),

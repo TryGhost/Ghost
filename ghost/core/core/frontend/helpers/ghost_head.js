@@ -14,6 +14,7 @@ const _ = require('lodash');
 const debug = require('@tryghost/debug')('ghost_head');
 const templateStyles = require('./tpl/styles');
 const {getFrontendAppConfig, getDataAttributes} = require('../utils/frontend-apps');
+const {getStaffFrontendHeadScripts} = require('../services/staff-frontend-tools/head-scripts');
 
 /**
  * @typedef {import('@tryghost/custom-fonts').FontSelection} FontSelection
@@ -306,6 +307,11 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
         if (!excludeList.has('announcement')) {
             head.push(getAnnouncementBarHelper(options.data));
         }
+        head.push(...getStaffFrontendHeadScripts({
+            dataRoot,
+            excludeList,
+            siteTitle: meta.site.title
+        }));
         try {
             head.push(getWebmentionDiscoveryLink());
         } catch (err) {

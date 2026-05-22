@@ -15,6 +15,7 @@ const esbuild = require('esbuild');
 const path = require('path');
 const fs = require('fs');
 const logging = require('@tryghost/logging');
+const errors = require('@tryghost/errors');
 
 // Determine the root directory by checking for common project files
 function findProjectRoot() {
@@ -85,9 +86,41 @@ const filesToMinify = [
     }
 ];
 
+const filesToCopy = [
+    {
+        src: '../../apps/admin-toolbar/umd/admin-toolbar.min.js',
+        dest: 'core/frontend/public/admin-toolbar.min.js'
+    }
+];
+
 // Process all files
 (async () => {
     logging.debug('Starting JS minification...');
+
+    for (const file of filesToCopy) {
+        try {
+            const srcPath = resolvePath(file.src);
+            const destPath = resolvePath(file.dest);
+            const destDir = path.dirname(destPath);
+
+            if (!fs.existsSync(srcPath)) {
+                throw new errors.IncorrectUsageError({
+                    message: `${file.src} does not exist. Run pnpm --dir ../../apps/admin-toolbar build first.`
+                });
+            }
+
+            if (!fs.existsSync(destDir)) {
+                fs.mkdirSync(destDir, {recursive: true});
+            }
+
+            fs.copyFileSync(srcPath, destPath);
+            logging.debug(`✓ ${file.src} → ${file.dest} (copied)`);
+        } catch (error) {
+            logging.error(`✗ Error copying ${file.src}:`);
+            logging.error(error);
+            process.exit(1);
+        }
+    }
 
     for (const file of filesToMinify) {
         try {
@@ -116,7 +149,8 @@ const filesToMinify = [
             const bundleStatus = buildConfig.bundle ? 'bundled + minified' : 'minified';
             logging.debug(`✓ ${file.src} → ${file.dest} (${bundleStatus})`);
         } catch (error) {
-            console.error(`✗ Error processing ${file.src}:`, error);
+            logging.error(`✗ Error processing ${file.src}:`);
+            logging.error(error);
             process.exit(1);
         }
     }

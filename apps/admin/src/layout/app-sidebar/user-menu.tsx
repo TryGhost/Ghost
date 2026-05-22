@@ -13,6 +13,20 @@ import { UserMenuAvatar } from "./user-menu-avatar";
 import { UserMenuHeader } from "./user-menu-header";
 import { Link } from "@tryghost/admin-x-framework";
 
+function getAdminToolbarUrl(url: string) {
+    if (!url) {
+        return "";
+    }
+
+    try {
+        const siteUrl = new URL(url);
+        siteUrl.searchParams.set("admin", "1");
+        return siteUrl.href;
+    } catch {
+        return url;
+    }
+}
+
 function UserMenuProfile() {
     const currentUser = useCurrentUser();
 
@@ -188,7 +202,7 @@ function UserMenu(props: UserMenuProps) {
 function ContributorUserMenu() {
     const currentUser = useCurrentUser();
     const site = useBrowseSite();
-    const siteUrl = site.data?.site.url ?? "";
+    const siteUrl = getAdminToolbarUrl(site.data?.site.url ?? "");
 
     return (
         <DropdownMenu>
