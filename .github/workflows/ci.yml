@@ -1019,7 +1019,7 @@ jobs:
           fs.writeFileSync('/tmp/production-bake.json', JSON.stringify(bake, null, 2));
           NODE
 
-          docker buildx bake --progress=plain --file /tmp/production-bake.json production
+          docker buildx bake --allow=fs.read=/tmp/ghost-production --progress=plain --file /tmp/production-bake.json production
 
       - name: Save full image as artifact
         if: steps.strategy.outputs.use-artifact == 'true'
