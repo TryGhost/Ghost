@@ -267,6 +267,26 @@
                 "/^css/"
             ],
             "enabled": false
+        },
+
+        // Hold actions/checkout on v5. v6 reworked credential handling to use
+        // `[includeIf "gitdir:..."]` instead of writing the auth header directly
+        // into `.git/config`, which causes sporadic
+        // `fatal: could not read Username for 'https://github.com'` failures —
+        // especially on submodule direct-commit fetches. Revisit when upstream
+        // ships a fix.
+        //   - https://github.com/actions/checkout/issues/2393
+        //   - https://github.com/actions/checkout/issues/2351
+        //   - https://github.com/actions/checkout/issues/2321
+        {
+            "description": "Block actions/checkout major bumps until v6 credential regression is fixed",
+            "matchPackageNames": [
+                "actions/checkout"
+            ],
+            "matchUpdateTypes": [
+                "major"
+            ],
+            "enabled": false
         }
     ]
 }
