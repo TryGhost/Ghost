@@ -229,7 +229,7 @@ describe('SubscriptionStatsService', function () {
              * @param {string} cadence
              * @param {string} date
              *
-             * @returns {(result: import('../../lib/subscriptions').SubscriptionHistoryEntry) => boolean}
+             * @returns {(result: import('../../../../../core/server/services/stats/subscription-stats-service').SubscriptionHistoryEntry) => boolean}
              **/
             const finder = (tier, cadence, date) => (result) => {
                 return result.tier === tier && result.cadence === cadence && result.date === date;
@@ -319,7 +319,7 @@ describe('SubscriptionStatsService', function () {
              * @param {string} cadence
              * @param {string} date
              *
-             * @returns {(result: import('../../lib/subscriptions').SubscriptionHistoryEntry) => boolean}
+             * @returns {(result: import('../../../../../core/server/services/stats/subscription-stats-service').SubscriptionHistoryEntry) => boolean}
              **/
             const finder = (tier, cadence, date) => (resultItem) => {
                 return resultItem.tier === tier && resultItem.cadence === cadence && resultItem.date === date;

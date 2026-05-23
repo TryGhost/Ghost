@@ -4,6 +4,9 @@
   "description": "The professional publishing platform",
   "private": true,
   "packageManager": "pnpm@10.33.0+sha512.10568bb4a6afb58c9eb3630da90cc9516417abebd3fabbe6739f0ae795728da1491e9db5a544c76ad8eb7570f5c4bb3d6c637b2cb41bfdcdb47fa823c8649319",
+  "engines": {
+    "node": "^22.13.1"
+  },
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
   "license": "MIT",
@@ -30,6 +33,8 @@
     "dev:storage": "DEV_COMPOSE_FILES='-f compose.dev.storage.yaml' pnpm nx run ghost-monorepo:docker:dev",
     "dev:stripe": "./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:docker:dev",
     "dev:all": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml -f compose.dev.storage.yaml' ./docker/stripe/with-stripe.sh pnpm nx run ghost-monorepo:docker:dev",
+    "dev:supervisor": "node scripts/dev-supervisor.js",
+    "dev:status": "node scripts/dev-supervisor.js status",
     "fix": "pnpm store prune && rimraf -g '**/node_modules' && pnpm install && pnpm nx reset",
     "knex-migrator": "pnpm --filter ghost run knex-migrator",
     "setup": "pnpm install && git submodule update --init --recursive",
@@ -45,6 +50,7 @@
     "lint": "pnpm nx run-many -t lint",
     "test": "pnpm nx run-many -t test --exclude @tryghost/e2e --exclude ghost-admin",
     "test:unit": "pnpm nx run-many -t test:unit",
+    "test:watch": "vitest",
     "test:e2e": "pnpm --filter @tryghost/e2e test",
     "test:e2e:analytics": "pnpm --filter @tryghost/e2e test:analytics",
     "test:e2e:all": "pnpm --filter @tryghost/e2e test:all",
@@ -80,7 +86,7 @@
       "lodash.template": "4.5.0",
       "@babel/runtime@<7.26.10": "^7.26.10",
       "@tootallnate/once@<3.0.1": "^3.0.1",
-      "ansi-html@<0.0.8": "^0.0.8",
+      "ansi-html@<0.0.8": "^0.0.9",
       "axios@<1.15.2": "^1.15.2",
       "braces@<3.0.3": "^3.0.3",
       "clean-css@<4.1.11": "^4.1.11",
@@ -121,6 +127,11 @@
         "dependencies": {
           "@babel/runtime": "^7.26.10"
         }
+      },
+      "@tryghost/nql@0.12.10": {
+        "dependencies": {
+          "lodash": "^4.18.0"
+        }
       }
     },
     "onlyBuiltDependencies": [
@@ -154,7 +165,8 @@
     "rimraf": "6.1.3",
     "secretlint": "12.3.1",
     "semver": "7.7.4",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "nx": {
     "includedScripts": [],

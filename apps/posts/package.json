@@ -50,8 +50,9 @@
         "eslint-plugin-react-hooks": "4.6.2",
         "eslint-plugin-react-refresh": "catalog:",
         "eslint-plugin-tailwindcss": "4.0.0-beta.0",
+        "jsdom": "catalog:",
         "msw": "catalog:",
-        "tailwindcss": "4.2.2",
+        "tailwindcss": "catalog:",
         "vite": "catalog:",
         "vitest": "catalog:"
     },
@@ -60,6 +61,7 @@
         "@tryghost/nql-lang": "catalog:",
         "@tryghost/shade": "workspace:*",
         "@xyflow/react": "12.8.6",
+        "dequal": "catalog:",
         "i18n-iso-countries": "7.14.0",
         "moment-timezone": "0.5.45",
         "papaparse": "5.5.3",
@@ -79,11 +81,6 @@
                 ]
             },
             "test:unit": {
-                "dependsOn": [
-                    "^build"
-                ]
-            },
-            "test:acceptance": {
                 "dependsOn": [
                     "^build"
                 ]

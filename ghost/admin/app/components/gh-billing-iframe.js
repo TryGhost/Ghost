@@ -26,7 +26,7 @@ export default class GhBillingIframe extends Component {
 
     @action
     setup() {
-        this.billing.getBillingIframe().src = this.billing.getIframeURL();
+        this.billing.setBillingIframeSrc();
         this.billing.startBillingAppLoadMonitor();
         window.addEventListener('message', this.handleIframeMessage);
     }
@@ -37,22 +37,50 @@ export default class GhBillingIframe extends Component {
             return;
         }
 
-        // only process messages coming from the billing iframe
-        if (event?.data && this.billing.getIframeURL().includes(event?.origin)) {
-            this.billing.markBillingAppLoaded();
-
-            if (event.data?.request === 'token') {
-                this._handleTokenRequest();
-            }
-
-            if (event.data?.request === 'forceUpgradeInfo') {
-                this._handleForceUpgradeRequest();
-            }
-
-            if (event.data?.subscription) {
-                await this._handleSubscriptionUpdate(event.data);
-            }
+        if (!this.billing.isValidBillingIframeMessage(event)) {
+            return;
         }
+
+        const data = event.data;
+
+        if (data?.request === 'billingAppReady') {
+            this.billing.markBillingAppLoaded(data);
+
+            if (data?.route) {
+                this.billing.handleRouteChangeInIframe(data.route);
+            }
+
+            return;
+        }
+
+        this.billing.recordBillingAppPreReadyMessage(data);
+
+        if (data?.route) {
+            this.billing.handleRouteChangeInIframe(data.route);
+        }
+
+        if (data?.request === 'token') {
+            this._handleTokenRequest();
+        }
+
+        if (data?.request === 'forceUpgradeInfo') {
+            this._handleForceUpgradeRequest();
+        }
+
+        if (data?.subscription) {
+            await this._handleSubscriptionUpdate(data);
+        }
+    }
+
+    _postMessageToBillingIframe(message) {
+        const billingIframeWindow = this.billing.getBillingIframe()?.contentWindow;
+        const billingAppOrigin = this.billing.getBillingAppOrigin();
+
+        if (!billingIframeWindow || !billingAppOrigin) {
+            return;
+        }
+
+        billingIframeWindow.postMessage(message, billingAppOrigin);
     }
 
     _handleTokenRequest() {
@@ -61,10 +89,10 @@ export default class GhBillingIframe extends Component {
             this.isOwner = false;
 
             // Avoid letting the BMA waiting for a message and send an empty token response instead
-            this.billing.getBillingIframe().contentWindow.postMessage({
+            this._postMessageToBillingIframe({
                 request: 'token',
                 response: null
-            }, '*');
+            });
         };
 
         if (!this.session.user?.isOwnerOnly) {
@@ -75,10 +103,10 @@ export default class GhBillingIframe extends Component {
         const ghostIdentityUrl = this.ghostPaths.url.api('identities');
         this.ajax.request(ghostIdentityUrl).then((response) => {
             const token = response?.identities?.[0]?.token;
-            this.billing.getBillingIframe().contentWindow.postMessage({
+            this._postMessageToBillingIframe({
                 request: 'token',
                 response: token
-            }, '*');
+            });
 
             this.isOwner = true;
         }).catch((error) => {
@@ -101,14 +129,14 @@ export default class GhBillingIframe extends Component {
                 email: owner?.email
             };
         }
-        this.billing.getBillingIframe().contentWindow.postMessage({
+        this._postMessageToBillingIframe({
             request: 'forceUpgradeInfo',
             response: {
                 forceUpgrade: this.config.hostSettings?.forceUpgrade,
                 isOwner: this.isOwner,
                 ownerUser
             }
-        }, '*');
+        });
     }
 
     async _handleSubscriptionUpdate(data) {

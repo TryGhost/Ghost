@@ -3,7 +3,7 @@
  * @prop {string} memberId
  * @prop {string} batchId
  * @prop {'import' | 'system' | 'api' | 'admin' | 'member'} source
- * @prop {import('@tryghost/member-attribution/lib/Attribution').Attribution} [attribution] Attribution
+ * @prop {import('../../server/services/member-attribution/attribution-builder').Attribution} [attribution] Attribution
  */
 
 module.exports = class MemberCreatedEvent {

@@ -1,6 +1,6 @@
 class UniqueChecker {
     /**
-     * @param {import('./OfferRepository')} repository
+     * @param {import('../offer-bookshelf-repository')} repository
      * @param {import('knex').Transaction} transaction
      */
     constructor(repository, transaction) {

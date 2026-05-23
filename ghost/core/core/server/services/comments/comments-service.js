@@ -12,8 +12,26 @@ const messages = {
     replyToReply: 'Can not reply to a reply',
     commentsNotEnabled: 'Comments are not enabled for this site.',
     cannotCommentOnPost: 'You do not have permission to comment on this post.',
-    cannotEditComment: 'You do not have permission to edit comments'
+    cannotEditComment: 'You do not have permission to edit comments',
+    cannotPinReply: 'Replies cannot be pinned',
+    cannotPinDeletedComment: 'Deleted comments cannot be pinned',
+    invalidPinnedValue: 'Pinned must be a boolean value',
+    commentsPinningNotEnabled: 'Comment pinning is not enabled for this site.'
 };
+
+function withPinnedSelect(options = {}) {
+    if (!options.columns?.includes('pinned')) {
+        return options;
+    }
+
+    const statusClause = options.isAdmin ? '' : ' AND comments.status = \'published\'';
+    const pinnedSelect = `CASE WHEN comments.parent_id IS NULL AND comments.pinned_at IS NOT NULL${statusClause} THEN 1 ELSE 0 END AS pinned`;
+
+    return {
+        ...options,
+        selectRaw: [options.selectRaw, pinnedSelect].filter(Boolean).join(', ')
+    };
+}
 
 class CommentsService {
     constructor({config, logging, models, mailer, settingsCache, settingsHelpers, urlService, urlUtils, contentGating, labs}) {
@@ -25,6 +43,9 @@ class CommentsService {
 
         /** @private */
         this.contentGating = contentGating;
+
+        /** @private */
+        this.labs = labs;
 
         const Emails = require('./comments-service-emails');
         /** @private */
@@ -173,7 +194,8 @@ class CommentsService {
      */
     async getComments(options) {
         this.checkEnabled();
-        const page = await this.models.Comment.findPage({...options, parentId: null});
+        const pinnedFirst = this.labs?.isSet('commentsPinning');
+        const page = await this.models.Comment.findPage(withPinnedSelect({...options, parentId: null, pinnedFirst}));
 
         return page;
     }
@@ -201,7 +223,7 @@ class CommentsService {
      */
     async getAdminAllComments({includeNested, filter, mongoTransformer, reportCount, order, page, limit}) {
         return await this.models.Comment.findPage({
-            withRelated: ['member', 'post', 'count.replies', 'count.direct_replies', 'count.likes', 'count.reports', 'in_reply_to', 'parent'],
+            withRelated: ['member', 'post', 'post.tags', 'post.authors', 'count.replies', 'count.direct_replies', 'count.likes', 'count.reports', 'in_reply_to', 'parent'],
             filter,
             mongoTransformer,
             reportCount,
@@ -216,9 +238,61 @@ class CommentsService {
 
     async getAdminComments(options) {
         this.checkEnabled();
-        const page = await this.models.Comment.findPage({...options, parentId: null, isAdmin: true});
+        const pinnedFirst = this.labs?.isSet('commentsPinning');
+        const page = await this.models.Comment.findPage(withPinnedSelect({...options, parentId: null, isAdmin: true, pinnedFirst}));
 
         return page;
+    }
+
+    async moderateComment(id, data, options) {
+        const editData = {};
+
+        if (Object.prototype.hasOwnProperty.call(data, 'status')) {
+            editData.status = data.status;
+
+            if (data.status === 'deleted') {
+                editData.pinned_at = null;
+            }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(data, 'pinned')) {
+            if (!this.labs?.isSet('commentsPinning')) {
+                throw new errors.MethodNotAllowedError({
+                    message: tpl(messages.commentsPinningNotEnabled)
+                });
+            }
+
+            if (typeof data.pinned !== 'boolean') {
+                throw new errors.BadRequestError({
+                    message: tpl(messages.invalidPinnedValue)
+                });
+            }
+
+            let existingComment;
+            if (data.pinned) {
+                existingComment = await this.models.Comment.findOne({id}, {require: true});
+
+                if (existingComment.get('parent_id') !== null) {
+                    throw new errors.BadRequestError({
+                        message: tpl(messages.cannotPinReply)
+                    });
+                }
+
+                if (existingComment.get('status') === 'deleted' || data.status === 'deleted') {
+                    throw new errors.BadRequestError({
+                        message: tpl(messages.cannotPinDeletedComment)
+                    });
+                }
+            }
+
+            editData.pinned_at = data.pinned ? existingComment.get('pinned_at') || new Date() : null;
+        }
+
+        return await this.models.Comment.edit(editData, {
+            id,
+            require: true,
+            ...options
+        });
     }
 
     /**
@@ -227,7 +301,7 @@ class CommentsService {
      */
     async getReplies(id, options) {
         this.checkEnabled();
-        const page = await this.models.Comment.findPage({...options, parentId: id});
+        const page = await this.models.Comment.findPage(withPinnedSelect({...options, parentId: id}));
 
         return page;
     }
@@ -288,7 +362,7 @@ class CommentsService {
      */
     async getCommentByID(id, options) {
         this.checkEnabled();
-        const model = await this.models.Comment.findOne({id}, options);
+        const model = await this.models.Comment.findOne({id}, withPinnedSelect(options));
 
         if (!model) {
             throw new errors.NotFoundError({
@@ -461,7 +535,8 @@ class CommentsService {
         }
 
         const model = await this.models.Comment.edit({
-            status: 'deleted'
+            status: 'deleted',
+            pinned_at: null
         }, {
             id,
             require: true,

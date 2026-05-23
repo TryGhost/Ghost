@@ -24,7 +24,9 @@ const GA_FEATURES = [
     'customFonts',
     'explore',
     'commentModeration',
-    'featurebaseFeedback'
+    'featurebaseFeedback',
+    'giftSubscriptions',
+    'dangerZoneResetAuth'
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
@@ -50,7 +52,6 @@ const PRIVATE_FEATURES = [
     'indexnow',
     'pictureImageFormats',
     'smarterCounts',
-    'giftSubscriptions',
     'commentsThreads',
     'commentsPinning'
 ];

@@ -25,5 +25,11 @@ module.exports = function getAdapterServiceConfig(config) {
         };
     }
 
+    // FileStore needs Ghost's resolved content path, which isn't
+    // representable as a static value in defaults.json.
+    if (adapterServiceConfig.redirects?.FileStore) {
+        adapterServiceConfig.redirects.FileStore.basePath ||= config.getContentPath('data');
+    }
+
     return adapterServiceConfig;
 };

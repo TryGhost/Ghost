@@ -1,11 +1,8 @@
 import React from 'react';
+import {Stack} from '@/components/primitives/stack';
 import {cn} from '@/lib/utils';
 
-type PropsWithChildrenAndClassName = React.PropsWithChildren & {
-    className?: string;
-};
-
-type ListPageProps = PropsWithChildrenAndClassName;
+type ListPageProps = React.ComponentPropsWithoutRef<'div'>;
 
 /**
  * Sticky, full-bleed header stack. Place `PageHeader`, `ViewBar`, and/or
@@ -18,86 +15,78 @@ type ListPageProps = PropsWithChildrenAndClassName;
  * Pass `sticky={false} blurredBackground={false}` to `PageHeader` when using
  * it here — stickiness and blur are handled by `ListPage.Header` instead.
  */
-function ListPageHeader({className, children}: PropsWithChildrenAndClassName) {
+function ListPageHeader({className, children, ...rest}: ListPageProps) {
     return (
-        <div
+        <Stack
             className={cn(
                 '-mx-4 lg:-mx-8 px-4 lg:px-8',
                 'sticky top-0 z-50',
                 'bg-gradient-to-b from-background via-background/70 to-background/70 backdrop-blur-md dark:bg-black',
-                'flex flex-col gap-3 py-4',
+                'py-6',
                 className
             )}
             data-list-page='header'
+            gap='lg'
+            {...rest}
         >
             {children}
-        </div>
+        </Stack>
     );
 }
 
-function ListPageBody({className, children}: PropsWithChildrenAndClassName) {
+function ListPageBody({className, children, ...rest}: ListPageProps) {
     return (
-        <div
-            className={cn('flex-1 min-h-0 min-w-0', className)}
+        <Stack
+            className={cn('grow min-h-0 min-w-0 pb-4 lg:pb-8', className)}
             data-list-page='body'
+            gap='none'
+            {...rest}
         >
             {children}
-        </div>
-    );
-}
-
-function ListPagePagination({className, children}: PropsWithChildrenAndClassName) {
-    return (
-        <div
-            className={cn('flex items-center justify-center py-4', className)}
-            data-list-page='pagination'
-        >
-            {children}
-        </div>
+        </Stack>
     );
 }
 
 type ListPageComponent = React.FC<ListPageProps> & {
-    Header: React.FC<PropsWithChildrenAndClassName>;
-    Body: React.FC<PropsWithChildrenAndClassName>;
-    Pagination: React.FC<PropsWithChildrenAndClassName>;
+    Header: React.FC<ListPageProps>;
+    Body: React.FC<ListPageProps>;
 };
 
 /**
  * ListPage is the canonical recipe for the **List page** type — the recurring
  * structure used by Members, Tags, Comments, Automations, etc.
  *
- * It is intentionally thin: a vertical flex-col stack with horizontal padding.
- * Drop the named slots in as direct children.
+ * It is intentionally thin: a vertical Stack with horizontal padding
+ * that grows to fill its flex parent. Drop the named slots in as direct children.
  *
  * Composition:
  *  - `<ListPage.Header>` — sticky, blurred, full-bleed chrome band. Place
  *    `PageHeader`, `ViewBar`, and/or `FilterBar` directly inside as siblings.
  *    `FilterBar` auto-collapses when it has no active filters.
- *  - `<ListPage.Body>` — main content area (table, list, or empty state)
- *  - `<ListPage.Pagination>` — optional centered pagination row (load-more, page links)
+ *  - `<ListPage.Body>` — grows to fill remaining space. Use `flex-1 flex items-center justify-center`
+ *    on the immediate child to vertically center empty/loading states.
  */
 const ListPage: ListPageComponent = Object.assign(
-    function ListPage({className, children}: ListPageProps) {
+    function ListPage({className, children, ...rest}: ListPageProps) {
         return (
-            <div
-                className={cn('flex flex-col h-full min-h-0 px-4 lg:px-8', className)}
+            <Stack
+                className={cn('grow h-full min-h-0 px-4 lg:px-8', className)}
                 data-list-page='list-page'
+                gap='none'
+                {...rest}
             >
                 {children}
-            </div>
+            </Stack>
         );
     },
     {
         Header: ListPageHeader,
-        Body: ListPageBody,
-        Pagination: ListPagePagination
+        Body: ListPageBody
     }
 );
 
 export {
     ListPage,
     ListPageHeader,
-    ListPageBody,
-    ListPagePagination
+    ListPageBody
 };

@@ -55,7 +55,7 @@ async function fetchAndLockRuns() {
     return await db.knex.transaction(async (trx) => {
         /** @type {Run[]} */
         const runs = await trx('welcome_email_automation_runs as r')
-            .join('welcome_email_automations as a', 'r.welcome_email_automation_id', 'a.id')
+            .join('automations as a', 'r.welcome_email_automation_id', 'a.id')
             .join('welcome_email_automated_emails as e', 'r.next_welcome_email_automated_email_id', 'e.id')
             .whereNotNull('r.next_welcome_email_automated_email_id')
             .where('r.ready_at', '<=', now)

@@ -1,35 +1,34 @@
 const sinon = require('sinon');
 
-const AutomationsService = require('../../../../../core/server/services/automations');
 const StartAutomationsPollEvent = require('../../../../../core/server/services/automations/events/start-automations-poll-event');
 
-describe('AutomationsService', function () {
-    let service;
+const automationsModulePath = require.resolve('../../../../../core/server/services/automations');
+
+describe('automations service', function () {
+    let automations;
     let domainEvents;
     let schedulerAdapter;
-    let schedulerIntegration;
     let initOptions;
 
     beforeEach(function () {
-        service = new AutomationsService();
+        // Reset the module-level singleton between tests.
+        delete require.cache[automationsModulePath];
+        automations = require(automationsModulePath);
         domainEvents = {
             dispatch: sinon.stub(),
             subscribe: sinon.stub()
         };
         schedulerAdapter = {
-            schedule: sinon.stub()
-        };
-        schedulerIntegration = {
-            api_keys: [{
-                id: 'fake-key-id',
-                secret: '00'.repeat(32)
-            }]
+            schedule: sinon.stub(),
+            register: sinon.stub()
         };
         initOptions = {
             domainEvents,
             apiUrl: 'https://fake.example.com/ghost/api/admin',
             schedulerAdapter,
-            schedulerIntegration
+            internalKeys: new Map([
+                ['ghost-scheduler', Promise.resolve({id: 'k1', secret: 'aaaa'})]
+            ])
         };
     });
 
@@ -39,22 +38,38 @@ describe('AutomationsService', function () {
 
     describe('init', function () {
         it('dispatches a StartAutomationsPollEvent', function () {
-            service.init(initOptions);
-
+            automations.init(initOptions);
             sinon.assert.calledWith(domainEvents.dispatch, sinon.match.instanceOf(StartAutomationsPollEvent));
         });
 
         it('subscribes to StartAutomationsPollEvent', function () {
-            service.init(initOptions);
-
+            automations.init(initOptions);
             sinon.assert.calledOnceWithExactly(domainEvents.subscribe, StartAutomationsPollEvent, sinon.match.func);
         });
 
         it('subscribes only once when init is called multiple times', function () {
-            service.init(initOptions);
-            service.init(initOptions);
-
+            automations.init(initOptions);
+            automations.init(initOptions);
             sinon.assert.calledOnce(domainEvents.subscribe);
+        });
+    });
+
+    describe('rescheduleAll', function () {
+        it('dispatches a fresh StartAutomationsPollEvent', function () {
+            automations.init(initOptions);
+            domainEvents.dispatch.resetHistory();
+
+            automations.rescheduleAll();
+
+            sinon.assert.calledOnceWithExactly(
+                domainEvents.dispatch,
+                sinon.match.instanceOf(StartAutomationsPollEvent)
+            );
+        });
+
+        it('is a no-op before init', function () {
+            automations.rescheduleAll();
+            sinon.assert.notCalled(domainEvents.dispatch);
         });
     });
 });

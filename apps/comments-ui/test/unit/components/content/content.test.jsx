@@ -2,8 +2,9 @@ import Content from '../../../../src/components/content/content';
 import {AppContext} from '../../../../src/app-context';
 import {act, render, screen} from '@testing-library/react';
 import {buildComment} from '../../../utils/fixtures';
+import {vi} from 'vitest';
 
-const contextualRender = (ui, {appContext, ...renderOptions}) => {
+const contextWithDefaults = (appContext = {}) => {
     const member = appContext?.member ?? null;
     const commentsEnabled = appContext?.commentsEnabled ?? 'all';
 
@@ -14,7 +15,7 @@ const contextualRender = (ui, {appContext, ...renderOptions}) => {
     const hasRequiredTier = isPaidMember || !isPaidOnly;
     const isCommentingDisabled = member?.can_comment === false;
 
-    const contextWithDefaults = {
+    return {
         commentsEnabled,
         comments: [],
         openCommentForms: [],
@@ -28,9 +29,11 @@ const contextualRender = (ui, {appContext, ...renderOptions}) => {
         t: str => str,
         ...appContext
     };
+};
 
+const contextualRender = (ui, {appContext, ...renderOptions}) => {
     return render(
-        <AppContext.Provider value={contextWithDefaults}>{ui}</AppContext.Provider>,
+        <AppContext.Provider value={contextWithDefaults(appContext)}>{ui}</AppContext.Provider>,
         renderOptions
     );
 };
@@ -138,6 +141,58 @@ describe('<Content>', function () {
 
             window.removeEventListener('error', onError);
             expect(errors).toHaveLength(0);
+        });
+
+        it('does not scroll to the permalink target again when comments change', function () {
+            const scrollIntoView = vi.fn();
+            const originalScrollIntoView = HTMLElement.prototype.scrollIntoView;
+            HTMLElement.prototype.scrollIntoView = scrollIntoView;
+
+            const comment = buildComment({
+                html: '<p>Permalink target</p>'
+            });
+            const reply = buildComment({
+                html: '<p>Newly loaded reply</p>'
+            });
+            const dispatchAction = vi.fn();
+            window.history.replaceState(null, '', `#ghost-comments-${comment.id}`);
+
+            try {
+                const {rerender} = contextualRender(<Content />, {
+                    appContext: {
+                        comments: [comment],
+                        commentCount: 1,
+                        commentIdFromHash: comment.id,
+                        commentIdToScrollTo: comment.id,
+                        commentsIsLoading: false,
+                        dispatchAction
+                    }
+                });
+
+                expect(scrollIntoView).toHaveBeenCalledTimes(1);
+                expect(dispatchAction).toHaveBeenCalledWith('highlightComment', {commentId: comment.id});
+
+                rerender(
+                    <AppContext.Provider
+                        value={contextWithDefaults({
+                            comments: [{...comment, replies: [reply]}],
+                            commentCount: 1,
+                            commentIdFromHash: comment.id,
+                            commentIdToScrollTo: comment.id,
+                            commentsIsLoading: false,
+                            dispatchAction
+                        })}
+                    >
+                        <Content />
+                    </AppContext.Provider>
+                );
+
+                expect(scrollIntoView).toHaveBeenCalledTimes(1);
+                expect(dispatchAction).toHaveBeenCalledTimes(1);
+            } finally {
+                HTMLElement.prototype.scrollIntoView = originalScrollIntoView;
+                window.history.replaceState(null, '', '/');
+            }
         });
     });
 

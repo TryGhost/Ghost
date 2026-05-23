@@ -10,7 +10,7 @@ describe('PaymentsService', function () {
     let Bookshelf;
     let db;
 
-    before(async function () {
+    beforeAll(async function () {
         db = knex({
             client: 'sqlite3',
             useNullAsDefault: true,
@@ -57,7 +57,7 @@ describe('PaymentsService', function () {
         await db('stripe_customers').truncate();
     });
 
-    after(async function () {
+    afterAll(async function () {
         await db.destroy();
     });
 
@@ -416,6 +416,39 @@ describe('PaymentsService', function () {
             sinon.assert.calledOnce(service.getCustomerForMember);
             sinon.assert.calledWith(service.getCustomerForMember, mockMember);
             assert.equal(getStripeArgs().customer, mockCustomer);
+        });
+
+        it('passes customer email to Stripe for logged-out gift purchases', async function () {
+            const tier = await createTier();
+
+            await service.getGiftPaymentLink({
+                ...defaultGiftOptions,
+                tier,
+                cadence: 'month',
+                email: 'jamie@example.com'
+            });
+
+            assert.equal(getStripeArgs().customerEmail, 'jamie@example.com');
+        });
+
+        it('does not pass customer email when an authenticated customer is available', async function () {
+            const mockCustomer = {id: 'cus_123', email: 'member@example.com'};
+            sinon.stub(service, 'getCustomerForMember').resolves(mockCustomer);
+
+            const tier = await createTier();
+            const mockMember = {id: 'member_123', get: sinon.stub().returns('member@example.com')};
+
+            await service.getGiftPaymentLink({
+                ...defaultGiftOptions,
+                tier,
+                cadence: 'month',
+                member: mockMember,
+                isAuthenticated: true,
+                email: 'jamie@example.com'
+            });
+
+            assert.equal(getStripeArgs().customer, mockCustomer);
+            assert.equal(getStripeArgs().customerEmail, null);
         });
     });
 });

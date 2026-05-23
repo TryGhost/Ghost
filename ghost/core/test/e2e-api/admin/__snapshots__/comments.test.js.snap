@@ -67,6 +67,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "post": Object {
         "excerpt": "HTML Ipsum Presents
 
@@ -124,6 +125,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "post": Object {
         "excerpt": "This is my custom excerpt!",
         "feature_image": "https://example.com/super_photo.jpg",
@@ -162,6 +164,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "post": Object {
         "excerpt": "HTML Ipsum Presents
 
@@ -219,6 +222,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "post": Object {
         "excerpt": "HTML Ipsum Presents
 
@@ -276,6 +280,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "post": Object {
         "excerpt": "HTML Ipsum Presents
 
@@ -333,6 +338,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "post": Object {
         "excerpt": "HTML Ipsum Presents
 
@@ -373,6 +379,7 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "post": Object {
         "excerpt": "HTML Ipsum Presents
 
@@ -430,6 +437,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "post": Object {
         "excerpt": "HTML Ipsum Presents
 
@@ -495,9 +503,11 @@ Object {
         "in_reply_to_snippet": null,
         "member": null,
         "parent_id": Nullable<StringMatching>,
+        "pinned": false,
         "status": "deleted",
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "post": Object {
         "excerpt": "HTML Ipsum Presents
 
@@ -555,6 +565,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "post": Object {
         "excerpt": "HTML Ipsum Presents
 
@@ -612,6 +623,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "post": Object {
         "excerpt": "HTML Ipsum Presents
 
@@ -652,6 +664,7 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "post": Object {
         "excerpt": "HTML Ipsum Presents
 
@@ -717,9 +730,11 @@ Object {
         "in_reply_to_snippet": null,
         "member": null,
         "parent_id": Nullable<StringMatching>,
+        "pinned": false,
         "status": "published",
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "post": Object {
         "excerpt": "HTML Ipsum Presents
 
@@ -760,6 +775,7 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "post": Object {
         "excerpt": "HTML Ipsum Presents
 
@@ -817,6 +833,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "post": Object {
         "excerpt": "HTML Ipsum Presents
 
@@ -874,6 +891,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "post": Object {
         "excerpt": "HTML Ipsum Presents
 
@@ -914,6 +932,7 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "post": Object {
         "excerpt": "HTML Ipsum Presents
 
@@ -1202,6 +1221,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "replies": Array [],
       "status": "published",
     },
@@ -1214,7 +1234,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "446",
+  "content-length": "461",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -1246,6 +1266,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "replies": Array [],
       "status": "hidden",
     },
@@ -1258,7 +1279,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "421",
+  "content-length": "436",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -1290,6 +1311,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "replies": Array [],
       "status": "published",
     },
@@ -1302,7 +1324,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "462",
+  "content-length": "477",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -1334,6 +1356,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "replies": Array [],
       "status": "hidden",
     },
@@ -1346,7 +1369,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "439",
+  "content-length": "454",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -1422,6 +1445,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "replies": Array [
         Object {
           "count": Object {
@@ -1451,6 +1475,7 @@ Object {
             "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
           },
           "parent_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "pinned": Any<Boolean>,
           "status": Any<String>,
         },
         Object {
@@ -1481,6 +1506,7 @@ Object {
             "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
           },
           "parent_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "pinned": Any<Boolean>,
           "status": Any<String>,
         },
         Object {
@@ -1511,6 +1537,7 @@ Object {
             "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
           },
           "parent_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "pinned": Any<Boolean>,
           "status": Any<String>,
         },
       ],
@@ -1568,6 +1595,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "replies": Array [
         Object {
           "count": Object {
@@ -1597,6 +1625,7 @@ Object {
             "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
           },
           "parent_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "pinned": Any<Boolean>,
           "status": "hidden",
         },
         Object {
@@ -1627,6 +1656,7 @@ Object {
             "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
           },
           "parent_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "pinned": Any<Boolean>,
           "status": "published",
         },
       ],
@@ -1694,6 +1724,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "replies": Array [
         Object {
           "count": Object {
@@ -1723,6 +1754,7 @@ Object {
             "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
           },
           "parent_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "pinned": Any<Boolean>,
           "status": "hidden",
         },
         Object {
@@ -1753,6 +1785,7 @@ Object {
             "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
           },
           "parent_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "pinned": Any<Boolean>,
           "status": "published",
         },
       ],
@@ -1804,6 +1837,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "replies": Array [
         Object {
           "count": Object {
@@ -1833,6 +1867,7 @@ Object {
             "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
           },
           "parent_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "pinned": Any<Boolean>,
           "status": "published",
         },
       ],
@@ -1884,6 +1919,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "replies": Array [],
       "status": "published",
     },

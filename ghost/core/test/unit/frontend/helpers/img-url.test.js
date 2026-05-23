@@ -20,11 +20,11 @@ describe('{{img_url}} helper', function () {
     });
 
     describe('without sub-directory', function () {
-        before(function () {
+        beforeAll(function () {
             configUtils.set({url: 'http://localhost:65535/'});
         });
 
-        after(async function () {
+        afterAll(async function () {
             await configUtils.restore();
         });
 
@@ -82,11 +82,11 @@ describe('{{img_url}} helper', function () {
     });
 
     describe('with sub-directory', function () {
-        before(function () {
+        beforeAll(function () {
             configUtils.set({url: 'http://localhost:65535/blog'});
         });
 
-        after(async function () {
+        afterAll(async function () {
             await configUtils.restore();
         });
 
@@ -110,11 +110,11 @@ describe('{{img_url}} helper', function () {
     });
 
     describe('image_sizes', function () {
-        before(function () {
+        beforeAll(function () {
             configUtils.set({url: 'http://localhost:65535/'});
         });
 
-        after(async function () {
+        afterAll(async function () {
             await configUtils.restore();
         });
 
@@ -195,11 +195,11 @@ describe('{{img_url}} helper', function () {
         });
 
         describe('with CDN image base URL', function () {
-            before(function () {
+            beforeAll(function () {
                 configUtils.set('urls:image', 'https://storage.ghost.is/c/6f/a3/test/content/images');
             });
 
-            after(async function () {
+            afterAll(async function () {
                 await configUtils.restore();
                 configUtils.set({url: 'http://localhost:65535/'});
             });
@@ -328,11 +328,11 @@ describe('{{img_url}} helper', function () {
     });
 
     describe('Unsplash', function () {
-        before(function () {
+        beforeAll(function () {
             configUtils.set({url: 'http://localhost:65535/'});
         });
 
-        after(async function () {
+        afterAll(async function () {
             await configUtils.restore();
         });
 

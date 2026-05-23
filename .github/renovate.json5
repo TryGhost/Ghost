@@ -210,7 +210,9 @@
         },
 
         // Allow internal Docker digest pins to automerge once the relevant
-        // CI checks have gone green.
+        // CI checks have gone green. Scoped to base images we control or
+        // pin purely for build reproducibility, so digest rotations don't
+        // change runtime behavior.
         {
             "description": "Automerge internal Docker digest updates after CI passes",
             "matchDatasources": [
@@ -218,7 +220,12 @@
             ],
             "matchPackageNames": [
                 "ghost/traffic-analytics",
-                "tinybirdco/tinybird-local"
+                "tinybirdco/tinybird-local",
+                "python",
+                "ghcr.io/astral-sh/uv",
+                "axllent/mailpit",
+                "caddy",
+                "stripe/stripe-cli"
             ],
             "matchUpdateTypes": [
                 "digest"
