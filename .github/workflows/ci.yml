@@ -585,8 +585,15 @@ jobs:
     name: Legacy tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
-        with:
-          submodules: true
+      # Theme submodules (Casper, Source) live in separate public repos.
+      # The workflow's GITHUB_TOKEN that checkout writes as the global
+      # http.extraheader is scoped to TryGhost/Ghost only — GitHub rejects
+      # the cross-repo auth header (returning 401 instead of falling back
+      # to anonymous) and the submodule clone fails with
+      # `fatal: could not read Username for 'https://github.com'`.
+      # Clear the extraheader for this one command so the clones go anonymous.
+      - name: Initialize theme submodules
+        run: git -c http.https://github.com/.extraheader= submodule update --init --recursive
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         env:
@@ -800,8 +807,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
-        with:
-          submodules: true
+
+      # See note above on `Legacy tests` — theme submodules clone anonymously
+      # to avoid cross-repo auth rejections from the workflow's GITHUB_TOKEN.
+      - name: Initialize theme submodules
+        run: git -c http.https://github.com/.extraheader= submodule update --init --recursive
 
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6

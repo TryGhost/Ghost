@@ -26,14 +26,18 @@ jobs:
         with:
           ref: main
           fetch-depth: 0
-          submodules: true
 
       - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         if: inputs.base-ref != 'latest'
         with:
           ref: ${{ inputs.base-ref }}
           fetch-depth: 0
-          submodules: true
+
+      # Theme submodules (Casper, Source) clone anonymously — the workflow
+      # GITHUB_TOKEN is scoped to Ghost only and GitHub rejects the
+      # cross-repo auth header. Clear the extraheader for this command.
+      - name: Initialize theme submodules
+        run: git -c http.https://github.com/.extraheader= submodule update --init --recursive
 
       - name: Checkout most recent tag
         run: git checkout "$(git describe --tags --abbrev=0 --match=v*)"
