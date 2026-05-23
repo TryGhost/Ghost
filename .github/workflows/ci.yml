@@ -278,6 +278,8 @@ jobs:
         env:
           NX_BASE: ${{ needs.job_setup.outputs.nx_base }}
           NX_HEAD: ${{ env.HEAD_COMMIT }}
+          NX_CLOUD_ACCESS_TOKEN: ${{ github.repository_owner == 'TryGhost' && github.ref_type != 'tag' && secrets.NX_CLOUD_ACCESS_TOKEN || '' }}
+          NX_NO_CLOUD: ${{ (github.repository_owner != 'TryGhost' || github.ref_type == 'tag') && 'true' || '' }}
 
       - uses: tryghost/actions/actions/slack-build@598d6328d89dbd796aa02ae2ea66308f9d942224 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -404,6 +406,8 @@ jobs:
         env:
           FORCE_COLOR: 0
           NX_SKIP_LOG_GROUPING: true
+          NX_CLOUD_ACCESS_TOKEN: ${{ github.repository_owner == 'TryGhost' && github.ref_type != 'tag' && secrets.NX_CLOUD_ACCESS_TOKEN || '' }}
+          NX_NO_CLOUD: ${{ (github.repository_owner != 'TryGhost' || github.ref_type == 'tag') && 'true' || '' }}
           logging__level: fatal
 
       - name: Check for unexpected file changes
@@ -823,6 +827,9 @@ jobs:
             echo "GHOST_BUILD_VERSION=${GHOST_BUILD_VERSION}" >> $GITHUB_ENV
           fi
           pnpm build:production
+        env:
+          NX_CLOUD_ACCESS_TOKEN: ${{ github.repository_owner == 'TryGhost' && github.ref_type != 'tag' && secrets.NX_CLOUD_ACCESS_TOKEN || '' }}
+          NX_NO_CLOUD: ${{ (github.repository_owner != 'TryGhost' || github.ref_type == 'tag') && 'true' || '' }}
 
       - name: Verify tag matches package.json
         if: startsWith(github.ref, 'refs/tags/v')
@@ -837,6 +844,9 @@ jobs:
 
       - name: Build standalone distribution
         run: pnpm --filter ghost archive
+        env:
+          NX_CLOUD_ACCESS_TOKEN: ${{ github.repository_owner == 'TryGhost' && github.ref_type != 'tag' && secrets.NX_CLOUD_ACCESS_TOKEN || '' }}
+          NX_NO_CLOUD: ${{ (github.repository_owner != 'TryGhost' || github.ref_type == 'tag') && 'true' || '' }}
 
       - name: Upload npm tarball
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -1080,6 +1090,9 @@ jobs:
 
       - name: Build public apps for E2E
         run: pnpm --filter @tryghost/e2e build:apps
+        env:
+          NX_CLOUD_ACCESS_TOKEN: ${{ github.repository_owner == 'TryGhost' && github.ref_type != 'tag' && secrets.NX_CLOUD_ACCESS_TOKEN || '' }}
+          NX_NO_CLOUD: ${{ (github.repository_owner != 'TryGhost' || github.ref_type == 'tag') && 'true' || '' }}
 
       - name: Pack public app artifacts
         run: |
@@ -1577,6 +1590,9 @@ jobs:
 
       - name: Build the package
         run: pnpm nx build ${{ matrix.package_name }}
+        env:
+          NX_CLOUD_ACCESS_TOKEN: ${{ github.repository_owner == 'TryGhost' && github.ref_type != 'tag' && secrets.NX_CLOUD_ACCESS_TOKEN || '' }}
+          NX_NO_CLOUD: ${{ (github.repository_owner != 'TryGhost' || github.ref_type == 'tag') && 'true' || '' }}
 
   # Publishes @tryghost/* public apps to npm via OIDC trusted publishing.
   # Runs only on push-to-main — never on pull_request — so the `id-token: write`
