@@ -1,6 +1,8 @@
 {
+    "{count} month_many": "{count} meses",
     "{count} month_one": "{count} mes",
     "{count} month_other": "{count} meses",
+    "{count} year_many": "{count} años",
     "{count} year_one": "{count} año",
     "{count} year_other": "{count} años",
     "{date}": "{date}",
