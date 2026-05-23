@@ -949,41 +949,77 @@ jobs:
             org.opencontainers.image.description=Ghost production build (server + admin)
             org.opencontainers.image.vendor=TryGhost
 
-      - name: Build & push core image
-        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7
+      - name: Build & push production images
         env:
-          BUILDKIT_PROGRESS: plain
-        with:
-          context: /tmp/ghost-production
-          file: Dockerfile.production
-          target: core
-          build-args: |
-            NODE_VERSION=${{ env.NODE_VERSION }}
-            GHOST_BUILD_VERSION=${{ env.GHOST_BUILD_VERSION }}
-          push: ${{ steps.strategy.outputs.should-push }}
-          load: ${{ steps.strategy.outputs.should-push == 'false' }}
-          tags: ${{ steps.meta-core.outputs.tags }}
-          labels: ${{ steps.meta-core.outputs.labels }}
-          cache-from: type=registry,ref=${{ steps.strategy.outputs.image-core-name }}:cache-main
-          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', steps.strategy.outputs.image-core-name, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
+          SHOULD_PUSH: ${{ steps.strategy.outputs.should-push }}
+          CACHE_SUFFIX: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main' }}
+          CORE_IMAGE_NAME: ${{ steps.strategy.outputs.image-core-name }}
+          FULL_IMAGE_NAME: ${{ steps.strategy.outputs.image-full-name }}
+          CORE_TAGS: ${{ steps.meta-core.outputs.tags }}
+          CORE_LABELS: ${{ steps.meta-core.outputs.labels }}
+          FULL_TAGS: ${{ steps.meta-full.outputs.tags }}
+          FULL_LABELS: ${{ steps.meta-full.outputs.labels }}
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
 
-      - name: Build & push full image
-        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7
-        env:
-          BUILDKIT_PROGRESS: plain
-        with:
-          context: /tmp/ghost-production
-          file: Dockerfile.production
-          target: full
-          build-args: |
-            NODE_VERSION=${{ env.NODE_VERSION }}
-            GHOST_BUILD_VERSION=${{ env.GHOST_BUILD_VERSION }}
-          push: ${{ steps.strategy.outputs.should-push }}
-          load: true
-          tags: ${{ steps.meta-full.outputs.tags }}
-          labels: ${{ steps.meta-full.outputs.labels }}
-          cache-from: type=registry,ref=${{ steps.strategy.outputs.image-full-name }}:cache-main
-          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', steps.strategy.outputs.image-full-name, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
+          const list = (name) => (process.env[name] || '')
+              .split(/\r?\n/)
+              .map(line => line.trim())
+              .filter(Boolean);
+
+          const labels = (name) => Object.fromEntries(list(name).map((line) => {
+              const index = line.indexOf('=');
+              return [line.slice(0, index), line.slice(index + 1)];
+          }));
+
+          const shouldPush = process.env.SHOULD_PUSH === 'true';
+          const registryOutput = {type: 'registry', push: true};
+          const dockerOutput = {type: 'docker'};
+
+          const target = ({name, dockerTarget, tags, labels, loadWhenPushed}) => ({
+              context: '/tmp/ghost-production',
+              dockerfile: 'Dockerfile.production',
+              target: dockerTarget,
+              args: {
+                  NODE_VERSION: process.env.NODE_VERSION,
+                  GHOST_BUILD_VERSION: process.env.GHOST_BUILD_VERSION || ''
+              },
+              tags,
+              labels,
+              'cache-from': [`type=registry,ref=${name}:cache-main`],
+              'cache-to': shouldPush ? [`type=registry,ref=${name}:cache-${process.env.CACHE_SUFFIX},mode=max`] : [],
+              output: shouldPush ? [registryOutput, ...(loadWhenPushed ? [dockerOutput] : [])] : [dockerOutput]
+          });
+
+          const bake = {
+              group: {
+                  production: {
+                      targets: ['production-core', 'production-full']
+                  }
+              },
+              target: {
+                  'production-core': target({
+                      name: process.env.CORE_IMAGE_NAME,
+                      dockerTarget: 'core',
+                      tags: list('CORE_TAGS'),
+                      labels: labels('CORE_LABELS'),
+                      loadWhenPushed: false
+                  }),
+                  'production-full': target({
+                      name: process.env.FULL_IMAGE_NAME,
+                      dockerTarget: 'full',
+                      tags: list('FULL_TAGS'),
+                      labels: labels('FULL_LABELS'),
+                      loadWhenPushed: true
+                  })
+              }
+          };
+
+          fs.writeFileSync('/tmp/production-bake.json', JSON.stringify(bake, null, 2));
+          NODE
+
+          docker buildx bake --progress=plain --file /tmp/production-bake.json production
 
       - name: Save full image as artifact
         if: steps.strategy.outputs.use-artifact == 'true'
