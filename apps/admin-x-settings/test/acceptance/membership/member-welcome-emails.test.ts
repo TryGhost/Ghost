@@ -281,8 +281,8 @@ test.describe('Member emails settings', async () => {
             const previewSubject = modal.getByTestId('welcome-email-preview-subject');
             await expect(previewSubject).toHaveValue('Welcome {first_name}');
 
-            await previewSubject.press('End');
-            await previewSubject.type('!');
+            await previewSubject.fill('Welcome {first_name}!');
+            await expect(previewSubject).toHaveValue('Welcome {first_name}!');
             await modal.getByRole('button', {name: 'Save'}).click();
 
             await expect.poll(() => lastApiRequests.editAutomatedEmail?.body).toMatchObject({
@@ -736,18 +736,19 @@ test.describe('Member emails settings', async () => {
 
             const editor = modal.locator('[data-kg="editor"] div[contenteditable="true"]').first();
             await editor.click({timeout: 5000});
-            await page.keyboard.press('ControlOrMeta+a');
-            await page.keyboard.press('Backspace');
+            await editor.fill('');
+            await expect(editor).toBeEmpty();
             await openSlashMenu(page, 'bookmark');
             await page.keyboard.press('Enter');
 
             const bookmarkUrlInput = modal.getByTestId('bookmark-url');
             await expect(bookmarkUrlInput).toBeVisible({timeout: 10000});
             await bookmarkUrlInput.fill('https://ghost.org/');
+            await expect(bookmarkUrlInput).toHaveValue('https://ghost.org/');
             await bookmarkUrlInput.press('Enter');
 
-            await expect(modal.getByTestId('bookmark-title')).toContainText('Ghost: The Creator Economy Platform');
             await expect.poll(() => lastApiRequests.fetchOembed?.url || '').toContain('type=bookmark');
+            await expect(modal.getByTestId('bookmark-title')).toContainText('Ghost: The Creator Economy Platform');
         });
 
         test('welcome email editor inserts call to action card via slash menu', async ({page}) => {
