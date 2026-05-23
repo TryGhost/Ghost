@@ -58,7 +58,7 @@ async function mockChangelog(page: Page, entries: RawChangelogEntry[]): Promise<
     });
 }
 
-test.describe('Ghost Admin - What\'s New', () => {
+test.describe('Ghost Admin - What\'s New Banner', () => {
     test.describe('banner notification', () => {
         test('shows banner for new entries the user has not seen', async ({page}) => {
             await mockChangelog(page, [
@@ -180,121 +180,6 @@ test.describe('Ghost Admin - What\'s New', () => {
 
                 await expect(banner.container).toBeVisible();
                 await expect(banner.title).toHaveText('Second Update');
-            });
-        });
-    });
-
-    test.describe('modal', () => {
-        test('shows modal with all entries when opened from user menu', async ({page}) => {
-            await mockChangelog(page, [
-                createEntry(daysFromNow(1), {
-                    title: 'Latest Update',
-                    excerpt: 'Latest feature',
-                    feature_image: 'https://ghost.org/image1.jpg'
-                }),
-                createEntry(daysAgo(5), {
-                    title: 'Previous Update',
-                    excerpt: 'Previous feature'
-                })
-            ]);
-
-            const menu = new WhatsNewMenu(page);
-            await menu.goto();
-
-            const modal = await menu.openWhatsNewModal();
-
-            await expect(modal.modal).toBeVisible();
-            await expect(modal.title).toBeVisible();
-
-            const entries = await modal.getEntries();
-            expect(entries.length).toBe(2);
-
-            expect(entries[0].title).toBe('Latest Update');
-            expect(entries[0].excerpt).toBe('Latest feature');
-            expect(entries[0].hasImage).toBe(true);
-
-            expect(entries[1].title).toBe('Previous Update');
-            expect(entries[1].excerpt).toBe('Previous feature');
-        });
-    });
-
-    test.describe('badge indicators', () => {
-        test('shows badge for new non-featured entries the user has not seen', async ({page}) => {
-            await mockChangelog(page, [createEntry(daysFromNow(1))]);
-
-            const menu = new WhatsNewMenu(page);
-            await menu.goto();
-
-            await expect(menu.avatarBadge).toBeVisible();
-        });
-
-        test('shows badge in user menu when there are new entries', async ({page}) => {
-            await mockChangelog(page, [createEntry(daysFromNow(1))]);
-
-            const menu = new WhatsNewMenu(page);
-            await menu.goto();
-            await menu.openUserMenu();
-
-            await expect(menu.menuBadge).toBeVisible();
-        });
-
-        test('does not show badges for entries from before user joined', async ({page}) => {
-            await mockChangelog(page, [createEntry(daysAgo(30))]);
-
-            const menu = new WhatsNewMenu(page);
-            await menu.goto();
-
-            await expect(menu.avatarBadge).toBeHidden();
-
-            await menu.openUserMenu();
-            await expect(menu.menuBadge).toBeHidden();
-        });
-
-        test.describe('dismissal behavior', () => {
-            test('hides badges immediately when What\'s new modal is opened', async ({page}) => {
-                await mockChangelog(page, [createEntry(daysFromNow(1))]);
-
-                const menu = new WhatsNewMenu(page);
-                await menu.goto();
-
-                await expect(menu.avatarBadge).toBeVisible();
-
-                const modal = await menu.openWhatsNewModal();
-                await modal.close();
-
-                await expect(menu.avatarBadge).toBeHidden();
-            });
-
-            test('badges remain hidden after reload when What\'s new has been viewed', async ({page}) => {
-                await mockChangelog(page, [createEntry(daysFromNow(1))]);
-
-                const menu = new WhatsNewMenu(page);
-                await menu.goto();
-
-                const modal = await menu.openWhatsNewModal();
-                await modal.close();
-
-                await menu.goto();
-                await expect(menu.avatarBadge).toBeHidden();
-            });
-
-            test('badges reappear when a new entry is published after viewing', async ({page}) => {
-                await mockChangelog(page, [createEntry(daysFromNow(1))]);
-
-                const menu = new WhatsNewMenu(page);
-                await menu.goto();
-
-                const modal = await menu.openWhatsNewModal();
-                await modal.close();
-
-                await menu.goto();
-                await expect(menu.avatarBadge).toBeHidden();
-
-                await mockChangelog(page, [createEntry(daysFromNow(2))]);
-
-                await menu.goto();
-
-                await expect(menu.avatarBadge).toBeVisible();
             });
         });
     });
