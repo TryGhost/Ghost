@@ -964,7 +964,7 @@ jobs:
           load: ${{ steps.strategy.outputs.should-push == 'false' }}
           tags: ${{ steps.meta-core.outputs.tags }}
           labels: ${{ steps.meta-core.outputs.labels }}
-          cache-from: type=registry,ref=${{ steps.strategy.outputs.image-core-name }}:cache-main
+          cache-from: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-main', steps.strategy.outputs.image-core-name) || '' }}
           cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', steps.strategy.outputs.image-core-name, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
 
       - name: Build & push full image
@@ -982,7 +982,7 @@ jobs:
           load: true
           tags: ${{ steps.meta-full.outputs.tags }}
           labels: ${{ steps.meta-full.outputs.labels }}
-          cache-from: type=registry,ref=${{ steps.strategy.outputs.image-full-name }}:cache-main
+          cache-from: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-main', steps.strategy.outputs.image-full-name) || '' }}
           cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', steps.strategy.outputs.image-full-name, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
 
       - name: Save full image as artifact
