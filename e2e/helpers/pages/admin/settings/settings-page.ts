@@ -1,5 +1,5 @@
 import {BasePage} from '@/helpers/pages';
-import {IntegrationsSection, LabsSection, PortalSection, PublicationSection, TiersSection} from './sections';
+import {DangerZoneSection, IntegrationsSection, LabsSection, PortalSection, PublicationSection, TiersSection} from './sections';
 import {Locator, Page} from '@playwright/test';
 import {StaffSection} from './sections/staff-section';
 
@@ -13,6 +13,7 @@ export class SettingsPage extends BasePage {
     readonly labsSection: LabsSection;
     readonly staffSection: StaffSection;
     readonly tiersSection: TiersSection;
+    readonly dangerZoneSection: DangerZoneSection;
 
     readonly sidebar: Locator;
     readonly labsSidebarLink: Locator;
@@ -34,6 +35,7 @@ export class SettingsPage extends BasePage {
         this.integrationsSection = new IntegrationsSection(page);
         this.staffSection = new StaffSection(page);
         this.tiersSection = new TiersSection(page);
+        this.dangerZoneSection = new DangerZoneSection(page);
     }
 
     async searchByInput(text: string) {

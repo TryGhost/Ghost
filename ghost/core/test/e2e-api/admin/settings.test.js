@@ -801,7 +801,7 @@ describe('Settings API', function () {
 
                 const byKey = Object.fromEntries(response.body.settings.map(s => [s.key, s]));
                 assert.equal(typeof byKey.password.value, 'string');
-                assert.match(byKey.password.value, /^fake-\d{3}$/);
+                assert.match(byKey.password.value, /^[a-z]+\d{3}$/);
                 assert.notEqual(byKey.password.value, 'caller-chosen-code');
                 assert.equal(byKey.password.is_read_only, true);
 

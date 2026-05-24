@@ -5,6 +5,7 @@ import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {usePostsExports} from '@tryghost/admin-x-framework/api/posts';
 
 const MigrationToolsExport: React.FC = () => {
+    const [isExportingPosts, setIsExportingPosts] = React.useState(false);
     const {refetch: postsData} = usePostsExports({
         searchParams: {
             limit: '1000'
@@ -14,6 +15,12 @@ const MigrationToolsExport: React.FC = () => {
     const handleError = useHandleError();
 
     const exportPosts = async () => {
+        if (isExportingPosts) {
+            return;
+        }
+
+        setIsExportingPosts(true);
+
         try {
             const {data} = await postsData();
             if (data) {
@@ -30,13 +37,15 @@ const MigrationToolsExport: React.FC = () => {
             }
         } catch (e) {
             handleError(e);
+        } finally {
+            setIsExportingPosts(false);
         }
     };
 
     return (
         <div className='grid grid-cols-1 gap-4 pt-4 md:grid-cols-2 lg:grid-cols-3'>
             <Button className='h-9! font-semibold!' color='grey' icon='export' iconColorClass='h-4! w-auto!' label='Content & settings' onClick={() => downloadAllContent()} />
-            <Button className='h-9! font-semibold!' color='grey' icon='baseline-chart' iconColorClass='h-4! w-auto!' label='Post analytics' onClick={exportPosts} />
+            <Button className='h-9! font-semibold!' color='grey' disabled={isExportingPosts} icon='baseline-chart' iconColorClass='h-4! w-auto!' label='Post analytics' loading={isExportingPosts} testId='post-analytics-export-button' onClick={exportPosts} />
         </div>
     );
 };
