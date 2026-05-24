@@ -35,7 +35,7 @@
     "@lexical/headless": "0.13.1",
     "@lexical/link": "0.13.1",
     "c8": "11.0.0",
-    "mocha": "11.7.5",
+    "mocha": "11.7.6",
     "sinon": "22.0.0",
     "tsx": "4.22.3",
     "typescript": "5.9.3",

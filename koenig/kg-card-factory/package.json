@@ -39,7 +39,7 @@
     "@types/should": "13.0.0",
     "@types/sinon": "21.0.1",
     "c8": "11.0.0",
-    "mocha": "11.7.5",
+    "mocha": "11.7.6",
     "should": "13.2.3",
     "simple-dom": "1.4.0",
     "sinon": "22.0.0",
