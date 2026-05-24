@@ -20,7 +20,7 @@ function compile(templateString) {
 }
 
 describe('{{link}} helper', function () {
-    before(function () {
+    beforeAll(function () {
         handlebars.registerHelper('link', link);
         handlebars.registerHelper('url', url);
         handlebars.registerHelper('concat', concat);
@@ -34,7 +34,7 @@ describe('{{link}} helper', function () {
         };
     });
 
-    after(async function () {
+    afterAll(async function () {
         await configUtils.restore();
     });
 

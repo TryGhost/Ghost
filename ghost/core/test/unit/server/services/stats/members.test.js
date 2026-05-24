@@ -33,14 +33,14 @@ describe('MembersStatsService', function () {
         /** @type {Date} */
         let dayBeforeYesterdayDate;
 
-        after(function () {
+        afterAll(function () {
             sinon.restore();
         });
 
         /** @type {import('knex').Knex} */
         let db;
 
-        before(function () {
+        beforeAll(function () {
             todayDate = moment.utc(today).toDate();
             tomorrowDate = moment.utc(tomorrow).toDate();
             yesterdayDate = moment.utc(yesterday).toDate();

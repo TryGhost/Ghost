@@ -28,13 +28,28 @@ function setCommentStatus(commentId, status) {
     });
 }
 
+function setCommentPinned(commentId, pinned) {
+    const safeId = id(commentId);
+    return fetch(`${adminUrl}/comments/${safeId}/`, {
+        method: 'PUT',
+        body: JSON.stringify({
+            comments: [{id: safeId, pinned}]
+        }),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+}
+
 const actions = {
     browseComments: d => fetch(`${adminUrl}/comments/post/${id(d.postId)}/${qs(d.params)}`),
     getReplies: d => fetch(`${adminUrl}/comments/${id(d.commentId)}/replies/${qs(d.params)}`),
     readComment: d => fetch(`${adminUrl}/comments/${id(d.commentId)}/${qs(d.params)}`),
     getUser: () => fetch(`${adminUrl}/users/me/?include=roles`),
     hideComment: d => setCommentStatus(d.id, 'hidden'),
-    showComment: d => setCommentStatus(d.id, 'published')
+    showComment: d => setCommentStatus(d.id, 'published'),
+    pinComment: d => setCommentPinned(d.id, true),
+    unpinComment: d => setCommentPinned(d.id, false)
 };
 
 window.addEventListener('message', async function (event) {

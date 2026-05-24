@@ -193,6 +193,11 @@
             "defaultValue": "[{\"label\":\"Data & privacy\",\"url\":\"/privacy/\"},{\"label\":\"Contact\",\"url\":\"/contact/\"},{\"label\":\"Contribute →\",\"url\":\"/contribute/\"}]",
             "type": "array"
         },
+        "llms_enabled": {
+            "defaultValue": "true",
+            "validations": {},
+            "type": "boolean"
+        },
         "meta_title": {
             "defaultValue": null,
             "validations": {
@@ -558,7 +563,7 @@
     "comments": {
         "comments_enabled": {
             "type": "string",
-            "defaultValue": "off",
+            "defaultValue": "all",
             "validations": {
                 "isEmpty": false,
                 "isIn": [[

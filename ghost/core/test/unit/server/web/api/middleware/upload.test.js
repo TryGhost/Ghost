@@ -3,6 +3,7 @@ const imageFixturePath = ('../../../../../utils/fixtures/images/');
 const fs = require('fs');
 const path = require('path');
 const assert = require('node:assert/strict');
+const config = require('../../../../../../core/shared/config');
 
 describe('web utils', function () {
     describe('checkFileExists', function () {
@@ -41,6 +42,26 @@ describe('web utils', function () {
 
         it('returns false if file has invalid type', function () {
             assert.equal(validation.checkFileIsValid({name: 'test.txt', mimetype: 'text'}, ['archive'], ['.txt']), false);
+        });
+    });
+
+    describe('getCompressedSizeLimitError', function () {
+        it('returns a structured theme upload size limit error', function () {
+            const expectedLimit = config.get('theme:uploadLimits:compressedBytes');
+            const expectedObserved = expectedLimit + 1;
+            const err = validation.getCompressedSizeLimitError({field: 'file'}, {
+                get: () => `${expectedObserved}`
+            });
+
+            assert.equal(err.errorType, 'UnsupportedMediaTypeError');
+            assert.equal(err.message, 'Theme upload exceeds maximum compressed size.');
+            assert.equal(err.context, 'Theme upload exceeds the maximum compressed size.');
+            assert.equal(err.code, 'COMPRESSED_TOO_LARGE');
+            assert.deepEqual(err.errorDetails, {
+                observedBytes: expectedObserved,
+                limitBytes: expectedLimit,
+                fieldName: 'file'
+            });
         });
     });
 

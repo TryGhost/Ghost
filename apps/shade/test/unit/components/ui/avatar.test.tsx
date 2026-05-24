@@ -67,10 +67,10 @@ describe('Avatar Components', () => {
     it('passes props to Avatar component', () => {
         render(
             <Avatar 
+                aria-label="User avatar" 
                 data-testid="avatar" 
                 id="custom-id" 
-                role="img" 
-                aria-label="User avatar"
+                role="img"
             />
         );
         
@@ -85,7 +85,7 @@ describe('Avatar Components', () => {
         // We're not testing detailed functionality since it's not fully working in the test environment
         const {container} = render(
             <Avatar>
-                <AvatarImage src="test.jpg" alt="Test" />
+                <AvatarImage alt="Test" src="test.jpg" />
             </Avatar>
         );
         

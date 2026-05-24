@@ -8,6 +8,7 @@ export {AppContext, AppProvider, useAppContext} from './providers/app-provider';
 
 // Hooks
 export {useActiveVisitors} from './hooks/use-active-visitors';
+export {useConfirmUnload} from './hooks/use-confirm-unload';
 export {default as useForm} from './hooks/use-form';
 export type {Dirtyable, ErrorMessages, FormHook, OkProps, SaveHandler, SaveState} from './hooks/use-form';
 export {default as useHandleError} from './hooks/use-handle-error';

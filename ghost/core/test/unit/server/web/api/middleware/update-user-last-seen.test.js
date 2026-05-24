@@ -1,18 +1,37 @@
-const assert = require('node:assert/strict');
-const {promisify} = require('node:util');
+const express = require('express');
 const sinon = require('sinon');
+const request = require('supertest');
 const moment = require('moment');
 const updateUserLastSeenMiddleware = require('../../../../../../core/server/web/api/middleware/update-user-last-seen');
-
-const updateUserLastSeen = promisify(updateUserLastSeenMiddleware);
 
 describe('updateUserLastSeenMiddleware', function () {
     afterEach(function () {
         sinon.restore();
     });
 
+    function createApp(user) {
+        const app = express();
+
+        app.use((req, res, next) => {
+            req.user = user;
+            next();
+        });
+        app.use(updateUserLastSeenMiddleware);
+        app.get('/', (_req, res) => {
+            res.sendStatus(204);
+        });
+        app.use((err, _req, res, _next) => {
+            void _next;
+            res.status(500).json({message: err.message});
+        });
+
+        return app;
+    }
+
     it('calls next with no error if there is no user on the request', async function () {
-        await updateUserLastSeen({}, {});
+        await request(createApp())
+            .get('/')
+            .expect(204);
     });
 
     it('calls next with no error if the current last_seen is less than an hour before now', async function () {
@@ -20,7 +39,10 @@ describe('updateUserLastSeenMiddleware', function () {
         const fakeUser = {
             get: sinon.stub().withArgs('last_seen').returns(fakeLastSeen)
         };
-        await updateUserLastSeen({user: fakeUser}, {});
+
+        await request(createApp(fakeUser))
+            .get('/')
+            .expect(204);
     });
 
     describe('when the last_seen is longer than an hour ago', function () {
@@ -30,8 +52,10 @@ describe('updateUserLastSeenMiddleware', function () {
                 get: sinon.stub().withArgs('last_seen').returns(fakeLastSeen),
                 updateLastSeen: sinon.stub().resolves()
             };
-            await updateUserLastSeen({user: fakeUser}, {});
 
+            await request(createApp(fakeUser))
+                .get('/')
+                .expect(204);
             sinon.assert.calledOnce(fakeUser.updateLastSeen);
         });
 
@@ -43,14 +67,10 @@ describe('updateUserLastSeenMiddleware', function () {
                 updateLastSeen: sinon.stub().rejects(fakeError)
             };
 
-            await assert.rejects(
-                updateUserLastSeen({user: fakeUser}, {}),
-                (err) => {
-                    assert.equal(err, fakeError);
-                    return true;
-                }
-            );
-
+            await request(createApp(fakeUser))
+                .get('/')
+                .expect(500)
+                .expect({message: fakeError.message});
             sinon.assert.calledOnce(fakeUser.updateLastSeen);
         });
     });

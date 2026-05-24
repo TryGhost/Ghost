@@ -177,7 +177,7 @@ test.describe('Social account settings', async () => {
         await testUrlValidation(
             facebookInput,
             'http://github.com/username',
-            '',
+            'http://github.com/username',
             'The URL must be in a format like https://www.facebook.com/yourPage'
         );
 
@@ -190,7 +190,7 @@ test.describe('Social account settings', async () => {
         await testUrlValidation(
             facebookInput,
             'http://github.com/pages/username',
-            '',
+            'http://github.com/pages/username',
             'The URL must be in a format like https://www.facebook.com/yourPage'
         );
 
@@ -217,7 +217,7 @@ test.describe('Social account settings', async () => {
         await testUrlValidation(
             twitterInput,
             '*(&*(%%))',
-            '',
+            '*(&*(%%))',
             'The URL must be in a format like https://x.com/yourUsername'
         );
 
@@ -230,7 +230,7 @@ test.describe('Social account settings', async () => {
         await testUrlValidation(
             twitterInput,
             'thisusernamehasmorethan15characters',
-            '',
+            'thisusernamehasmorethan15characters',
             'Your Username is not a valid Twitter Username'
         );
 
@@ -243,7 +243,7 @@ test.describe('Social account settings', async () => {
         await testUrlValidation(
             section.getByLabel('LinkedIn'),
             'https://github.com/ghost',
-            '',
+            'https://github.com/ghost',
             'The URL must be in a format like https://www.linkedin.com/in/yourUsername'
         );
 
@@ -282,5 +282,22 @@ test.describe('Social account settings', async () => {
             'ghostteam',
             'https://www.instagram.com/ghostteam'
         );
+    });
+
+    test('Does not clear the field when invalid input follows a valid value', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests
+        }});
+
+        await page.goto('/');
+
+        const instagramInput = page.getByTestId('social-accounts').getByLabel('Instagram');
+
+        await instagramInput.fill('ghostteam');
+        await expect(instagramInput).toHaveValue('https://www.instagram.com/ghostteam');
+
+        await instagramInput.fill('https://www.instagram.com/ghostteam.');
+        await expect(instagramInput).toHaveValue('https://www.instagram.com/ghostteam.');
+        await expect(instagramInput.locator('xpath=../..')).toContainText('Your Username is not a valid Instagram Username');
     });
 });

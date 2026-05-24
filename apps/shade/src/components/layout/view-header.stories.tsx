@@ -4,7 +4,7 @@ import {H1} from './heading';
 import {ViewHeader, ViewHeaderActions} from './view-header';
 
 const meta = {
-    title: 'Layout / View Header',
+    title: 'Deprecated / View Header',
     component: ViewHeader,
     tags: ['autodocs'],
     parameters: {

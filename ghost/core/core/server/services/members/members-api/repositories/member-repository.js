@@ -9,7 +9,7 @@ const {NotFoundError} = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
 const crypto = require('crypto');
 const hasActiveOffer = require('../utils/has-active-offer');
-const StartAutomationsPollEvent = require('../../../welcome-email-automations/events/start-automations-poll-event');
+const StartAutomationsPollEvent = require('../../../automations/events/start-automations-poll-event');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../member-welcome-emails/constants');
 
 const messages = {
@@ -61,12 +61,12 @@ module.exports = class MemberRepository {
      * @param {any} deps.StripeCustomerSubscription
      * @param {any} deps.OfferRedemption
      * @param {any} deps.Outbox
-     * @param {import('../../services/stripe-api')} deps.stripeAPIService
+     * @param {import('../../../stripe/stripe-api')} deps.stripeAPIService
      * @param {any} deps.productRepository
      * @param {any} deps.offersAPI
      * @param {ITokenService} deps.tokenService
      * @param {any} deps.newslettersService
-     * @param {any} deps.WelcomeEmailAutomation
+     * @param {any} deps.Automation
      * @param {any} deps.WelcomeEmailAutomationRun
      */
     constructor({
@@ -87,7 +87,7 @@ module.exports = class MemberRepository {
         offersAPI,
         tokenService,
         newslettersService,
-        WelcomeEmailAutomation,
+        Automation,
         WelcomeEmailAutomationRun
     }) {
         this._Member = Member;
@@ -107,7 +107,7 @@ module.exports = class MemberRepository {
         this._offersAPI = offersAPI;
         this.tokenService = tokenService;
         this._newslettersService = newslettersService;
-        this._WelcomeEmailAutomation = WelcomeEmailAutomation;
+        this._Automation = Automation;
         this._WelcomeEmailAutomationRun = WelcomeEmailAutomationRun;
 
         DomainEvents.subscribe(OfferRedemptionEvent, async function (event) {
@@ -189,11 +189,11 @@ module.exports = class MemberRepository {
      * @param {object} [options] bookshelf options (transacting, context, etc.)
      */
     async enqueueWelcomeEmailRun(memberId, slug, options = {}) {
-        if (!this._WelcomeEmailAutomation || !this._WelcomeEmailAutomationRun) {
+        if (!this._Automation || !this._WelcomeEmailAutomationRun) {
             return null;
         }
 
-        const automation = await this._WelcomeEmailAutomation.findOne(
+        const automation = await this._Automation.findOne(
             {slug},
             {...options, withRelated: ['welcomeEmailAutomatedEmail']}
         );
@@ -341,7 +341,7 @@ module.exports = class MemberRepository {
      * @param {Object} [data.stripeCustomer]
      * @param {string} [data.offerId]
      * @param {string} [data.status]
-     * @param {import('@tryghost/member-attribution/lib/Attribution').AttributionResource} [data.attribution]
+     * @param {import('../../../member-attribution/attribution-builder').AttributionResource} [data.attribution]
      * @param {boolean} [data.email_disabled]
      * @param {*} options
      * @returns
@@ -1024,7 +1024,7 @@ module.exports = class MemberRepository {
      * @param {string} data.id - member ID
      * @param {Object} data.subscription
      * @param {string} data.offerId
-     * @param {import('@tryghost/member-attribution/lib/Attribution').AttributionResource} [data.attribution]
+     * @param {import('../../../member-attribution/attribution-builder').AttributionResource} [data.attribution]
      * @param {*} options
      * @returns
      */
@@ -1954,15 +1954,15 @@ module.exports = class MemberRepository {
             });
         }
 
-        const zeroValuePrices = defaultProduct.stripePrices.filter((price) => {
-            return price.amount === 0;
+        const complimentaryPrices = defaultProduct.stripePrices.filter((price) => {
+            return price.amount === 0 && this.isComplimentaryPlanNickname(price.nickname);
         });
 
         if (activeSubscriptions.length) {
             for (const subscription of activeSubscriptions) {
                 const price = await subscription.related('stripePrice').fetch(options);
 
-                let zeroValuePrice = zeroValuePrices.find((p) => {
+                let zeroValuePrice = complimentaryPrices.find((p) => {
                     return p.currency.toLowerCase() === price.get('currency').toLowerCase();
                 });
 
@@ -1980,9 +1980,14 @@ module.exports = class MemberRepository {
                         }]
                     }, options)).toJSON();
                     zeroValuePrice = product.stripePrices.find((p) => {
-                        return p.currency.toLowerCase() === price.get('currency').toLowerCase() && p.amount === 0;
+                        return p.currency.toLowerCase() === price.get('currency').toLowerCase() && p.amount === 0 && this.isComplimentaryPlanNickname(p.nickname);
                     });
-                    zeroValuePrices.push(zeroValuePrice);
+                    if (!zeroValuePrice) {
+                        throw new errors.NotFoundError({
+                            message: `Failed to locate a complimentary (zero-amount, nickname matched by isComplimentaryPlanNickname) Stripe price for currency "${price.get('currency')}" on product ${product.id} after update. Returned stripePrices: ${JSON.stringify(product.stripePrices)}`
+                        });
+                    }
+                    complimentaryPrices.push(zeroValuePrice);
                 }
 
                 const stripeSubscription = await this._stripeAPIService.getSubscription(
@@ -2014,7 +2019,7 @@ module.exports = class MemberRepository {
                 name: stripeCustomer.name
             }, sharedOptions);
 
-            let zeroValuePrice = zeroValuePrices[0];
+            let zeroValuePrice = complimentaryPrices[0];
 
             if (!zeroValuePrice) {
                 const product = (await this._productRepository.update({
@@ -2030,9 +2035,14 @@ module.exports = class MemberRepository {
                     }]
                 }, sharedOptions)).toJSON();
                 zeroValuePrice = product.stripePrices.find((price) => {
-                    return price.currency.toLowerCase() === 'usd' && price.amount === 0;
+                    return price.currency.toLowerCase() === 'usd' && price.amount === 0 && this.isComplimentaryPlanNickname(price.nickname);
                 });
-                zeroValuePrices.push(zeroValuePrice);
+                if (!zeroValuePrice) {
+                    throw new errors.NotFoundError({
+                        message: `Failed to locate a complimentary (zero-amount, nickname matched by isComplimentaryPlanNickname) Stripe price for currency "USD" on product ${product.id} after update. Returned stripePrices: ${JSON.stringify(product.stripePrices)}`
+                    });
+                }
+                complimentaryPrices.push(zeroValuePrice);
             }
 
             const subscription = await this._stripeAPIService.createSubscription(

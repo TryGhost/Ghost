@@ -1,7 +1,8 @@
 import React, {useMemo} from 'react';
 import Sources from '../../Web/components/sources';
-import {BarChartLoadingIndicator, Button, Card, CardContent, CardHeader, CardTitle, EmptyIndicator, GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, Separator} from '@tryghost/shade/components';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardHeader, CardTitle, EmptyIndicator, Separator} from '@tryghost/shade/components';
 import {BaseSourceData, useNavigate, useParams} from '@tryghost/admin-x-framework';
+import {GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue} from '@tryghost/shade/patterns';
 import {HTable} from '@tryghost/shade/primitives';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {useGlobalData} from '@src/providers/post-analytics-context';

@@ -4,7 +4,7 @@ import {hasCommentsEnabled, hasMultipleNewsletters} from '../../utils/helpers';
 import CloseButton from '../common/close-button';
 import BackButton from '../common/back-button';
 import ActionButton from '../common/action-button';
-import {ReactComponent as EmailDeliveryFailedIcon} from '../../images/icons/email-delivery-failed.svg';
+import EmailDeliveryFailedIcon from '../../images/icons/email-delivery-failed.svg?react';
 import {t} from '../../utils/i18n';
 
 export default function EmailSuppressedPage() {

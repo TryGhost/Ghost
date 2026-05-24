@@ -119,12 +119,14 @@ async function initCore({ghostServer, config, frontend}) {
     // The URLService is a core part of Ghost, which depends on models.
     debug('Begin: Url Service');
     const urlService = require('./server/services/url');
-    // Note: there is no await here, we do not wait for the url service to finish
-    // We can return, but the site will remain in maintenance mode until this finishes
-    // This is managed on request: https://github.com/TryGhost/Ghost/blob/main/core/app.js#L10
-    urlService.init({
-        urlCache: !frontend // hacky parameter to make the cache initialization kick in as we can't initialize labs before the boot
-    });
+    if (!urlService.facade.isLazy()) {
+        // Note: there is no await here, we do not wait for the url service to finish
+        // We can return, but the site will remain in maintenance mode until this finishes
+        // This is managed on request: https://github.com/TryGhost/Ghost/blob/main/core/app.js#L10
+        urlService.init({
+            urlCache: !frontend // hacky parameter to make the cache initialization kick in as we can't initialize labs before the boot
+        });
+    }
     debug('End: Url Service');
 
     if (ghostServer) {
@@ -154,9 +156,11 @@ async function initCore({ghostServer, config, frontend}) {
         });
         debug('End: Mentions Job Service');
 
-        ghostServer.registerCleanupTask(async () => {
-            await urlService.shutdown();
-        });
+        if (!urlService.facade.isLazy()) {
+            ghostServer.registerCleanupTask(async () => {
+                await urlService.shutdown();
+            });
+        }
     }
 
     debug('End: initCore');
@@ -202,21 +206,14 @@ async function initServicesForFrontend({bootLogger}) {
     await offers.init();
     debug('End: Offers');
 
-    const frontendDataService = require('./server/services/frontend-data-service');
-    let dataService = await frontendDataService.init();
-
     debug('End: initServicesForFrontend');
-    return {dataService};
 }
 
 /**
  * Frontend is intended to be just Ghost's frontend
  */
-async function initFrontend(dataService) {
+async function initFrontend() {
     debug('Begin: initFrontend');
-
-    const proxyService = require('./frontend/services/proxy');
-    proxyService.init({dataService});
 
     const helperService = require('./frontend/services/helpers');
     await helperService.init();
@@ -248,7 +245,10 @@ async function initExpressApps({frontend, backend, config}) {
 
     if (frontend) {
         // SITE + MEMBERS
-        const urlService = require('./server/services/url');
+        // RouterManager and migrated frontend callers expect the facade
+        // (getUrlForResource / ownsResource), not the raw eager UrlService
+        // (which only exposes the legacy id-based methods).
+        const urlService = require('./server/services/url').facade;
         const frontendApp = require('./server/web/parent/frontend')({urlService});
         parentApp.use(vhost(config.getFrontendMountPath(), frontendApp));
     }
@@ -322,7 +322,7 @@ async function initServices() {
     const indexnow = require('./server/services/indexnow');
     const slack = require('./server/services/slack');
     const webhooks = require('./server/services/webhooks');
-    const postScheduling = require('./server/services/post-scheduling');
+    const postScheduling = require('./server/services/post-scheduling').default;
     const comments = require('./server/services/comments');
     const staffService = require('./server/services/staff');
     const memberAttribution = require('./server/services/member-attribution');
@@ -344,22 +344,18 @@ async function initServices() {
     const statsService = require('./server/services/stats');
     const explorePingService = require('./server/services/explore-ping');
     const domainEvents = require('@tryghost/domain-events');
-    const WelcomeEmailAutomationsService = require('./server/services/welcome-email-automations');
+    const automations = require('./server/services/automations');
 
-    const {
-        createAdapter: createSchedulerAdapter,
-        getSchedulerIntegration
-    } = require('./server/adapters/scheduling/utils');
+    const {createAdapter: createSchedulerAdapter} = require('./server/adapters/scheduling/utils');
     const urlUtils = require('./shared/url-utils');
+    const internalKeys = require('./server/services/internal-keys').default;
 
     // Initialize things that other services depend on first.
     emailAddressService.init();
     const apiUrl = urlUtils.urlFor('api', {type: 'admin'}, true);
     const schedulerAdapter = createSchedulerAdapter();
-    const [schedulerIntegration] = await Promise.all([
-        getSchedulerIntegration(),
-        stripe.init()
-    ]);
+    schedulerAdapter.run();
+    await stripe.init();
 
     await Promise.all([
         identityTokens.init(),
@@ -378,11 +374,6 @@ async function initServices() {
         emailService.init(),
         emailAnalytics.init(),
         webhooks.listen(),
-        postScheduling.init({
-            apiUrl,
-            adapter: schedulerAdapter,
-            integration: schedulerIntegration
-        }),
         comments.init(),
         linkTracking.init(),
         emailSuppressionList.init(),
@@ -395,15 +386,19 @@ async function initServices() {
         giftService.init({
             apiUrl,
             schedulerAdapter,
-            schedulerIntegration
+            internalKeys
         }),
-        new WelcomeEmailAutomationsService().init({
+        automations.init({
             domainEvents,
             apiUrl,
             schedulerAdapter,
-            schedulerIntegration
+            internalKeys
         })
     ]);
+
+    if (schedulerAdapter.rescheduleOnBoot) {
+        await postScheduling.rescheduleAll();
+    }
 
     debug('End: Services');
 
@@ -558,10 +553,10 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
             prometheusClient.instrumentKnex(connection);
         }
 
-        const {dataService} = await initServicesForFrontend({bootLogger});
+        await initServicesForFrontend({bootLogger});
 
         if (frontend) {
-            await initFrontend(dataService);
+            await initFrontend();
         }
         const ghostApp = await initExpressApps({frontend, backend, config});
 
