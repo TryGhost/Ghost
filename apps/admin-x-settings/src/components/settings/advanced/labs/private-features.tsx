@@ -63,6 +63,18 @@ const features: Feature[] = [{
     title: 'Smarter Counts',
     description: 'Use optimized COUNT queries for API pagination when safe',
     flag: 'smarterCounts'
+}, {
+    title: 'Comments Threads',
+    description: 'Enable deeper threading view in Comments-UI',
+    flag: 'commentsThreads'
+}, {
+    title: 'Comments Pinning',
+    description: 'Allow staff to pin top-level comments in Comments-UI and Admin',
+    flag: 'commentsPinning'
+}, {
+    title: 'LLMs.txt',
+    description: 'Serve llms.txt, per-entry markdown exports, and Accept: text/markdown content negotiation for AI and LLM tooling',
+    flag: 'llmsTxt'
 }];
 
 const AlphaFeatures: React.FC = () => {
