@@ -12,16 +12,16 @@ describe('Unit: models/tag', function () {
         const mockDb = require('mock-knex');
         let tracker;
 
-        before(function () {
+        beforeAll(function () {
             mockDb.mock(knex);
             tracker = mockDb.getTracker();
         });
 
-        after(function () {
+        afterAll(function () {
             sinon.restore();
         });
 
-        after(function () {
+        afterAll(function () {
             mockDb.unmock(knex);
         });
 

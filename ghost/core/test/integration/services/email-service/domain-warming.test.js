@@ -312,6 +312,11 @@ describe('Domain Warming Integration Tests', function () {
                 return this.skip();
             }
 
+            // Creates 800 members and processes 5 days of batch sends; well over the
+            // 10s suite default. CI was never reaching this test before mocha bailed
+            // on the poll.test.js failure earlier in the run.
+            this.timeout(60000);
+
             await createMembers(800, 'maxlimit');
 
             let previousCsdCount = 0;

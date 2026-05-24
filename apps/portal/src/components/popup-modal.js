@@ -230,6 +230,7 @@ class PopupContent extends React.Component {
         }
 
         const containerClassName = `${className} ${popupWidthStyle} ${pageClass}`;
+        const isGiftLayout = page === 'gift' || page === 'giftSuccess' || page === 'giftRedemption' || (page === 'magiclink' && lastPage === 'gift');
         this.sendPortalPreviewReadyEvent();
         return (
             <>
@@ -238,14 +239,14 @@ class PopupContent extends React.Component {
                     <div className={containerClassName} style={pageStyle} ref={node => (this.node = node)} tabIndex={-1}>
                         <CookieDisabledBanner message={cookieBannerText} />
                         {this.renderActivePage()}
-                        {(popupSize === 'full' ?
+                        {(popupSize === 'full' && !isGiftLayout ?
                             <div className={'gh-portal-powered inside ' + (hasMode(['preview']) ? 'hidden ' : '') + pageClass}>
                                 <PoweredBy />
                             </div>
                             : '')}
                     </div>
                 </div>
-                {page !== 'share' && (
+                {page !== 'share' && !isGiftLayout && (
                     <div className={'gh-portal-powered outside ' + (hasMode(['preview']) ? 'hidden ' : '') + pageClass}>
                         <PoweredBy />
                     </div>

@@ -16,7 +16,7 @@ describe('Unit - services/routing/controllers/collection', function () {
     let renderStub;
     let posts;
     let postsPerPage;
-    let ownsStub;
+    let ownsResourceStub;
     let next;
 
     beforeEach(function () {
@@ -46,8 +46,8 @@ describe('Unit - services/routing/controllers/collection', function () {
 
         sinon.stub(renderer, 'renderEntries').returns(renderStub);
 
-        ownsStub = sinon.stub(routerManager, 'owns');
-        ownsStub.withArgs('identifier', posts[0].id).returns(true);
+        ownsResourceStub = sinon.stub(routerManager, 'ownsResource');
+        ownsResourceStub.withArgs('identifier', posts[0]).returns(true);
 
         req = {
             path: '/',
@@ -83,7 +83,7 @@ describe('Unit - services/routing/controllers/collection', function () {
         sinon.assert.calledOnce(themeEngine.getActive);
         sinon.assert.notCalled(security.string.safe);
         sinon.assert.calledOnce(fetchDataStub);
-        sinon.assert.calledOnce(ownsStub);
+        sinon.assert.calledOnce(ownsResourceStub);
         sinon.assert.notCalled(next);
     });
 
@@ -104,7 +104,7 @@ describe('Unit - services/routing/controllers/collection', function () {
         sinon.assert.calledOnce(themeEngine.getActive);
         sinon.assert.notCalled(security.string.safe);
         sinon.assert.calledOnce(fetchDataStub);
-        sinon.assert.calledOnce(ownsStub);
+        sinon.assert.calledOnce(ownsResourceStub);
         sinon.assert.notCalled(next);
     });
 
@@ -127,7 +127,7 @@ describe('Unit - services/routing/controllers/collection', function () {
         sinon.assert.calledOnce(themeEngine.getActive().updateTemplateOptions.withArgs({data: {config: {posts_per_page: 3}}}));
         sinon.assert.notCalled(security.string.safe);
         sinon.assert.calledOnce(fetchDataStub);
-        sinon.assert.calledOnce(ownsStub);
+        sinon.assert.calledOnce(ownsResourceStub);
         sinon.assert.notCalled(next);
     });
 
@@ -150,7 +150,7 @@ describe('Unit - services/routing/controllers/collection', function () {
         sinon.assert.notCalled(security.string.safe);
         sinon.assert.calledOnce(fetchDataStub);
         sinon.assert.notCalled(renderStub);
-        sinon.assert.notCalled(ownsStub);
+        sinon.assert.notCalled(ownsResourceStub);
     });
 
     it('slug param', async function () {
@@ -170,7 +170,7 @@ describe('Unit - services/routing/controllers/collection', function () {
         sinon.assert.calledOnce(themeEngine.getActive);
         sinon.assert.calledOnce(security.string.safe);
         sinon.assert.calledOnce(fetchDataStub);
-        sinon.assert.calledOnce(ownsStub);
+        sinon.assert.calledOnce(ownsResourceStub);
         sinon.assert.notCalled(next);
     });
 
@@ -191,7 +191,7 @@ describe('Unit - services/routing/controllers/collection', function () {
         sinon.assert.calledOnce(themeEngine.getActive);
         sinon.assert.notCalled(security.string.safe);
         sinon.assert.calledOnce(fetchDataStub);
-        sinon.assert.calledOnce(ownsStub);
+        sinon.assert.calledOnce(ownsResourceStub);
         sinon.assert.notCalled(next);
     });
 
@@ -205,11 +205,11 @@ describe('Unit - services/routing/controllers/collection', function () {
 
         res.routerOptions.filter = 'featured:true';
 
-        ownsStub.reset();
-        ownsStub.withArgs('identifier', posts[0].id).returns(false);
-        ownsStub.withArgs('identifier', posts[1].id).returns(true);
-        ownsStub.withArgs('identifier', posts[2].id).returns(false);
-        ownsStub.withArgs('identifier', posts[3].id).returns(false);
+        ownsResourceStub.reset();
+        ownsResourceStub.withArgs('identifier', posts[0]).returns(false);
+        ownsResourceStub.withArgs('identifier', posts[1]).returns(true);
+        ownsResourceStub.withArgs('identifier', posts[2]).returns(false);
+        ownsResourceStub.withArgs('identifier', posts[3]).returns(false);
 
         fetchDataStub.withArgs({page: 1, slug: undefined, limit: postsPerPage}, res.routerOptions)
             .resolves({
@@ -228,7 +228,7 @@ describe('Unit - services/routing/controllers/collection', function () {
         sinon.assert.calledOnce(themeEngine.getActive);
         sinon.assert.notCalled(security.string.safe);
         sinon.assert.calledOnce(fetchDataStub);
-        sinon.assert.callCount(ownsStub, 4);
+        sinon.assert.callCount(ownsResourceStub, 4);
         sinon.assert.notCalled(next);
     });
 });

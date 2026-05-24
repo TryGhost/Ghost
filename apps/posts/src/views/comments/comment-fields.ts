@@ -69,8 +69,7 @@ export const commentFields = defineFields({
         ui: {
             label: 'Date',
             defaultOperator: DEFAULT_DATE_OPERATOR,
-            type: 'date',
-            className: 'w-full max-w-32'
+            type: 'date'
         },
         codec: dateCodec()
     },

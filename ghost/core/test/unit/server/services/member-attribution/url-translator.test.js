@@ -38,7 +38,7 @@ describe('UrlTranslator', function () {
 
     describe('getResourceDetails', function () {
         let translator;
-        before(function () {
+        beforeAll(function () {
             translator = new UrlTranslator({
                 urlUtils: {
                     relativeToAbsolute: (t) => {
@@ -49,27 +49,18 @@ describe('UrlTranslator', function () {
                     }
                 },
                 urlService: {
-                    getUrlByResourceId: (id) => {
-                        return '/path/' + id;
-                    },
-                    getResource: (path) => {
-                        switch (path) {
-                        case '/path/post': return {
-                            config: {type: 'posts'},
-                            data: {id: 'post'}
-                        };
-                        case '/path/tag': return {
-                            config: {type: 'tags'},
-                            data: {id: 'tag'}
-                        };
-                        case '/path/page': return {
-                            config: {type: 'pages'},
-                            data: {id: 'page'}
-                        };
-                        case '/path/author': return {
-                            config: {type: 'authors'},
-                            data: {id: 'author'}
-                        };
+                    facade: {
+                        getUrlForResource: (resource) => {
+                            return '/path/' + resource.id;
+                        },
+                        resolveUrl: async (path) => {
+                            switch (path) {
+                            case '/path/post': return {type: 'posts', id: 'post'};
+                            case '/path/tag': return {type: 'tags', id: 'tag'};
+                            case '/path/page': return {type: 'pages', id: 'page'};
+                            case '/path/author': return {type: 'authors', id: 'author'};
+                            }
+                            return null;
                         }
                     }
                 },
@@ -132,7 +123,7 @@ describe('UrlTranslator', function () {
 
     describe('getUrlTitle', function () {
         let translator;
-        before(function () {
+        beforeAll(function () {
             translator = new UrlTranslator({});
         });
 
@@ -147,73 +138,64 @@ describe('UrlTranslator', function () {
 
     describe('getTypeAndIdFromPath', function () {
         let translator;
-        before(function () {
+        beforeAll(function () {
             translator = new UrlTranslator({
                 urlService: {
-                    getResource: (path) => {
-                        switch (path) {
-                        case '/post': return {
-                            config: {type: 'posts'},
-                            data: {id: 'post'}
-                        };
-                        case '/tag': return {
-                            config: {type: 'tags'},
-                            data: {id: 'tag'}
-                        };
-                        case '/page': return {
-                            config: {type: 'pages'},
-                            data: {id: 'page'}
-                        };
-                        case '/author': return {
-                            config: {type: 'authors'},
-                            data: {id: 'author'}
-                        };
+                    facade: {
+                        resolveUrl: async (path) => {
+                            switch (path) {
+                            case '/post': return {type: 'posts', id: 'post'};
+                            case '/tag': return {type: 'tags', id: 'tag'};
+                            case '/page': return {type: 'pages', id: 'page'};
+                            case '/author': return {type: 'authors', id: 'author'};
+                            }
+                            return null;
                         }
                     }
                 }
             });
         });
 
-        it('returns posts', function () {
-            assert.deepEqual(translator.getTypeAndIdFromPath('/post'), {
+        it('returns posts', async function () {
+            assert.deepEqual(await translator.getTypeAndIdFromPath('/post'), {
                 type: 'post',
                 id: 'post'
             });
         });
 
-        it('returns pages', function () {
-            assert.deepEqual(translator.getTypeAndIdFromPath('/page'), {
+        it('returns pages', async function () {
+            assert.deepEqual(await translator.getTypeAndIdFromPath('/page'), {
                 type: 'page',
                 id: 'page'
             });
         });
 
-        it('returns authors', function () {
-            assert.deepEqual(translator.getTypeAndIdFromPath('/author'), {
+        it('returns authors', async function () {
+            assert.deepEqual(await translator.getTypeAndIdFromPath('/author'), {
                 type: 'author',
                 id: 'author'
             });
         });
 
-        it('returns tags', function () {
-            assert.deepEqual(translator.getTypeAndIdFromPath('/tag'), {
+        it('returns tags', async function () {
+            assert.deepEqual(await translator.getTypeAndIdFromPath('/tag'), {
                 type: 'tag',
                 id: 'tag'
             });
         });
 
-        it('returns undefined', function () {
-            assert.equal(translator.getTypeAndIdFromPath('/other'), undefined);
+        it('returns undefined', async function () {
+            assert.equal(await translator.getTypeAndIdFromPath('/other'), undefined);
         });
     });
 
     describe('getResourceById', function () {
         let translator;
-        before(function () {
+        beforeAll(function () {
             translator = new UrlTranslator({
                 urlService: {
-                    getUrlByResourceId: () => {
-                        return '/path';
+                    facade: {
+                        getUrlForResource: () => '/path'
                     }
                 },
                 models
@@ -261,9 +243,72 @@ describe('UrlTranslator', function () {
         });
     });
 
+    describe('getResourceUrl', function () {
+        // Lazy URL service evaluates permalink templates against resource fields
+        // (slug, published_at, primary_tag, ...). The facade contract requires
+        // the full resource shape, not just `{id, type}`.
+        it('passes the model\'s plain data (slug, etc.) to the facade', function () {
+            let captured;
+            const translator = new UrlTranslator({
+                urlUtils: {
+                    relativeToAbsolute: t => 'https://abs' + t
+                },
+                urlService: {
+                    facade: {
+                        getUrlForResource: (resource) => {
+                            captured = resource;
+                            return '/' + resource.slug + '/';
+                        }
+                    }
+                },
+                models: {}
+            });
+
+            const tag = {
+                get: () => undefined,
+                toJSON: () => ({id: 'abc', slug: 'changelog', visibility: 'public'})
+            };
+
+            const url = translator.getResourceUrl('abc', 'tag', tag, {absolute: false});
+
+            assert.equal(url, '/changelog/');
+            assert.equal(captured.id, 'abc');
+            assert.equal(captured.type, 'tags');
+            assert.equal(captured.slug, 'changelog');
+        });
+
+        it('keeps the email-only short-circuit for sent posts', function () {
+            const translator = new UrlTranslator({
+                urlUtils: {
+                    relativeToAbsolute: t => 'https://abs' + t
+                },
+                urlService: {
+                    facade: {
+                        getUrlForResource: () => {
+                            throw new Error('facade should not be consulted for email-only posts');
+                        }
+                    }
+                },
+                models: {}
+            });
+
+            const post = {
+                get(k) {
+                    return k === 'status' ? 'sent' : 'uuid-123';
+                },
+                toJSON: () => ({id: 'pid', uuid: 'uuid-123', status: 'sent'})
+            };
+
+            assert.equal(
+                translator.getResourceUrl('pid', 'post', post, {absolute: false}),
+                '/email/uuid-123/'
+            );
+        });
+    });
+
     describe('relativeToAbsolute', function () {
         let translator;
-        before(function () {
+        beforeAll(function () {
             translator = new UrlTranslator({
                 urlUtils: {
                     relativeToAbsolute: (t) => {
@@ -280,7 +325,7 @@ describe('UrlTranslator', function () {
 
     describe('stripSubdirectoryFromPath', function () {
         let translator;
-        before(function () {
+        beforeAll(function () {
             translator = new UrlTranslator({
                 urlUtils: {
                     relativeToAbsolute: (t) => {

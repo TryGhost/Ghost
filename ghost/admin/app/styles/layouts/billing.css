@@ -42,6 +42,85 @@
     transform: translate3d(0, 0, 0);
 }
 
+.gh-billing-status {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--main-bg-color);
+}
+
+.gh-billing-status-error {
+    padding: 32px;
+}
+
+.gh-billing-empty-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    max-width: 760px;
+    color: var(--black);
+    text-align: center;
+}
+
+.gh-billing-empty-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    max-width: 48px;
+    max-height: 48px;
+    color: var(--midgrey);
+    background: var(--whitegrey-l1);
+    border-radius: 50%;
+}
+
+.gh-billing-empty-badge svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.gh-billing-empty-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.gh-billing-empty-copy h3,
+.gh-billing-empty-copy p {
+    margin: 0;
+}
+
+.gh-billing-empty-copy h3 {
+    color: var(--black);
+    font-size: 1.8rem;
+    line-height: 1.3;
+    font-weight: 500;
+    letter-spacing: 0;
+}
+
+.gh-billing-empty-copy p {
+    color: var(--midgrey);
+    font-size: 1.6rem;
+    line-height: 1.35;
+    text-wrap: pretty;
+}
+
+.gh-billing-status-error a {
+    color: inherit;
+    padding-bottom: 1px;
+    border-bottom: 1px solid currentcolor;
+    text-decoration: none;
+}
+
 .gh-billing-close {
     width: calc(50vw - 200px)
 }

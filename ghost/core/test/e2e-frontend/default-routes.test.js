@@ -116,6 +116,37 @@ describe('Default Frontend routing', function () {
         });
     });
 
+    describe('Gift preview routes', function () {
+        before(async function () {
+            await testUtils.createPost({
+                post: {
+                    title: 'Gift a subscription',
+                    slug: 'gift',
+                    status: 'published',
+                    type: 'page'
+                }
+            });
+        });
+
+        it('does not intercept /gift/ when no token is provided — a custom page at that slug renders', async function () {
+            await request.get('/gift/')
+                .expect('Content-Type', /html/)
+                .expect(200)
+                .expect(assertCorrectFrontendHeaders)
+                .expect((res) => {
+                    const $ = cheerio.load(res.text);
+
+                    assert.match($('title').text(), /Gift a subscription/);
+                });
+        });
+
+        it('still handles /gift/<token> via the gift-preview controller (invalid token redirects to homepage)', async function () {
+            await request.get('/gift/this-token-does-not-exist')
+                .expect(302)
+                .expect('Location', /\/$/);
+        });
+    });
+
     describe('Single post', function () {
         it('/welcome/ should respond with valid HTML', async function () {
             await request.get('/welcome/')

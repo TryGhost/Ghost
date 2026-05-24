@@ -6,27 +6,22 @@ const {mockManager} = require('../../../utils/e2e-framework');
 
 const comments = require('../../../../core/frontend/helpers/comments');
 const proxy = require('../../../../core/frontend/services/proxy');
+const internalKeys = require('../../../../core/server/services/internal-keys').default;
 const {settingsCache} = proxy;
 
 describe('{{comments}} helper', function () {
-    let keyStub;
     let settingsCacheGetStub;
 
-    before(function () {
-        keyStub = sinon.stub().resolves('xyz');
-        const dataService = {
-            getFrontendKey: keyStub
-        };
-        proxy.init({dataService});
-    });
-
     beforeEach(function () {
+        internalKeys.clear();
+        internalKeys.set('ghost-internal-frontend', Promise.resolve({id: 'k', secret: 'xyz'}));
         mockManager.mockMail();
         settingsCacheGetStub = sinon.stub(settingsCache, 'get');
         configUtils.set('comments:version', 'test.version');
     });
 
     afterEach(async function () {
+        internalKeys.clear();
         mockManager.restore();
         sinon.restore();
         await configUtils.restore();

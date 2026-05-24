@@ -9,6 +9,7 @@ yarn-error.log*
 
 # Runtime data
 pids
+.ghost-dev
 *.pid
 *.seed
 *.pid.lock

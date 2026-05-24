@@ -95,12 +95,5 @@ describe('Unit: Service: membersStats', function () {
             };
             expect(memberStatsService.memberCount).to.equal(117);
         });
-
-        it('defaults gift to 0 when missing from API response', function () {
-            memberStatsService.totalMemberCount = {
-                meta: {totals: {paid: 10, free: 100, comped: 5}}
-            };
-            expect(memberStatsService.memberCount).to.equal(115);
-        });
     });
 });

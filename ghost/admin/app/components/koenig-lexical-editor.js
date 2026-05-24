@@ -303,7 +303,7 @@ export default class KoenigLexicalEditor extends Component {
             const giftLink = () => {
                 if (this.feature.giftSubscriptions) {
                     return [{
-                        label: 'Gift subscription',
+                        label: 'Gift subscriptions',
                         value: '#/portal/gift'
                     }];
                 }

@@ -30,6 +30,7 @@ services:
       - MINIO_ROOT_USER=minio-user
       - MINIO_ROOT_PASSWORD=minio-pass
       - MINIO_BUCKET=ghost-dev
+      - MINIO_REDIRECTS_BUCKET=ghost-dev-redirects
     volumes:
       - ./docker/minio/setup.sh:/setup.sh:ro
     depends_on:

@@ -25,7 +25,7 @@ const messages = {
  */
 
 /**
- * @typedef {import('@tryghost/members-offers/lib/application/OfferMapper').OfferDTO} OfferDTO
+ * @typedef {import('../../../offers/application/offer-mapper').OfferDTO} OfferDTO
  */
 
 /**
@@ -37,13 +37,13 @@ module.exports = class MemberBREADService {
     /**
      * @param {object} deps
      * @param {import('../repositories/member-repository')} deps.memberRepository
-     * @param {import('@tryghost/members-offers/lib/application/OffersAPI')} deps.offersAPI
+     * @param {import('../../../offers/application/offers-api')} deps.offersAPI
      * @param {ILabsService} deps.labsService
      * @param {IEmailService} deps.emailService
      * @param {IStripeService} deps.stripeService
-     * @param {import('@tryghost/member-attribution/lib/service')} deps.memberAttributionService
-     * @param {import('@tryghost/email-suppression-list/lib/email-suppression-list').IEmailSuppressionList} deps.emailSuppressionList
-     * @param {import('@tryghost/settings-helpers')} deps.settingsHelpers
+     * @param {import('../../../member-attribution/member-attribution-service')} deps.memberAttributionService
+     * @param {import('../../../email-suppression-list/email-suppression-list').IEmailSuppressionList} deps.emailSuppressionList
+     * @param {import('../../../settings-helpers/settings-helpers')} deps.settingsHelpers
      * @param {import('./next-payment-calculator')} deps.nextPaymentCalculator
      * @param {IGiftServiceWrapper} deps.giftService
      */
@@ -349,10 +349,6 @@ module.exports = class MemberBREADService {
             withRelated.add('productEvents');
         }
 
-        if (withRelated.has('email_recipients')) {
-            withRelated.add('email_recipients.email');
-        }
-
         const model = await this.memberRepository.get(data, {
             ...options,
             withRelated: Array.from(withRelated)
@@ -608,10 +604,6 @@ module.exports = class MemberBREADService {
 
         if (!withRelated.has('productEvents')) {
             withRelated.add('productEvents');
-        }
-
-        if (withRelated.has('email_recipients')) {
-            withRelated.add('email_recipients.email');
         }
 
         //option param to skip distinct from count query, distinct adds a lot of latency and in this case the result set will always be unique.

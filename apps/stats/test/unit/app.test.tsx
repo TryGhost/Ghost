@@ -19,7 +19,7 @@ vi.mock('@tryghost/admin-x-framework', () => ({
     RouterProvider: ({children}: {children: React.ReactNode}) => <div data-testid="router-provider">{children}</div>,
     AppProvider: ({children}: {children: React.ReactNode}) => <div data-testid="app-provider">{children}</div>,
     Outlet: () => <div data-testid="outlet">Outlet content</div>,
-    lazyComponent: (fn: () => Promise<{default: React.ComponentType}>) => fn().then(({default: Component}) => ({Component}))
+    lazyComponent: () => () => Promise.resolve({Component: () => null})
 }));
 
 vi.mock('@tryghost/shade/app', () => ({

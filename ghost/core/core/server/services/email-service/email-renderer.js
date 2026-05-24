@@ -1058,13 +1058,13 @@ class EmailRenderer {
         // Audience feedback
         const positiveLink = this.#audienceFeedbackService.buildLink(
             '--uuid--',
-            post.id,
+            post,
             1,
             '--key--'
         ).href.replace('--uuid--', '%%{uuid}%%').replace('--key--', '%%{key}%%');
         const negativeLink = this.#audienceFeedbackService.buildLink(
             '--uuid--',
-            post.id,
+            post,
             0,
             '--key--'
         ).href.replace('--uuid--', '%%{uuid}%%').replace('--key--', '%%{key}%%');
@@ -1086,7 +1086,8 @@ class EmailRenderer {
             const {data} = await this.#models.Post.findPage({
                 filter: `status:published+id:-'${post.id}'`,
                 order: 'published_at DESC',
-                limit: 3
+                limit: 3,
+                withRelated: ['tags', 'authors']
             });
 
             for (const latestPost of data) {

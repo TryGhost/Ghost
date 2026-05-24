@@ -1655,6 +1655,27 @@ describe('Email renderer', function () {
             assert.equal($('.preheader').text(), 'Lexical Test some text for both');
         });
 
+        it('excludes preheader spacing characters from plaintext', async function () {
+            const post = createModel(basePost);
+            const newsletter = createModel(baseNewsletter);
+
+            const response = await emailRenderer.renderBody(
+                post,
+                newsletter,
+                null,
+                {}
+            );
+
+            // These characters are in the spacing after the preheader, which should be excluded
+            const FIGURE_SPACE = '\u2007';
+            const COMBINING_GRAPHEME_JOINER = '\u034F';
+            const SOFT_HYPHEN = '\u00AD';
+
+            assert(!response.plaintext.includes(FIGURE_SPACE), 'plaintext should not contain preheader figure space');
+            assert(!response.plaintext.includes(COMBINING_GRAPHEME_JOINER), 'plaintext should not contain preheader combining grapheme joiner');
+            assert(!response.plaintext.includes(SOFT_HYPHEN), 'plaintext should not contain preheader soft hyphen');
+        });
+
         it('only includes first author if more than 2', async function () {
             const post = createModel({...basePost, authors: [
                 createModel({
@@ -2380,6 +2401,63 @@ describe('Email renderer', function () {
                     buttonTextColor: '#000000'
                 }
             });
+        });
+
+        it('does not entity-encode interpolated values in the t helper', async function () {
+            // Refs https://github.com/TryGhost/Ghost/issues/26905
+            // pt-PT formats the publication date with slashes (19/03/2026),
+            // which is what triggers double-encoding of interpolated values.
+            customSettings.locale = 'pt-PT';
+            const post = createModel(Object.assign({}, basePost, {
+                published_at: new Date(2026, 2, 19),
+                authors: [
+                    createModel({name: 'Author/Name O\'Brien & Co.'})
+                ]
+            }));
+            const newsletter = createModel({
+                header_image: null,
+                name: 'Test Newsletter',
+                show_badge: true,
+                feedback_enabled: true,
+                show_share_button: true,
+                show_post_title_section: true
+            });
+
+            const response = await emailRenderer.renderBody(post, newsletter, null, {});
+
+            // `&#39;` and `&amp;` are valid single-encoded HTML and expected;
+            // only the double-encoded forms are bugs.
+            const forbiddenInHtml = [
+                '&#x2F;', '&#X2F;', '&#x2f;', '&#47;',
+                '&amp;#x2F;', '&amp;#47;',
+                '&amp;#39;', '&amp;#x27;',
+                '&amp;amp;'
+            ];
+            for (const entity of forbiddenInHtml) {
+                assert.equal(response.html.includes(entity), false, `HTML should not contain ${entity}`);
+            }
+
+            // Plaintext must be fully decoded — no entities of any kind.
+            const forbiddenInPlaintext = [
+                '&#x2F;', '&#X2F;', '&#x2f;', '&#47;',
+                '&#39;', '&#x27;', '&amp;',
+                '&amp;#x2F;', '&amp;#47;', '&amp;#39;', '&amp;#x27;', '&amp;amp;'
+            ];
+            for (const entity of forbiddenInPlaintext) {
+                assert.equal(response.plaintext.includes(entity), false, `Plaintext should not contain ${entity}`);
+            }
+
+            // Author name flows through {{{t 'By {authors}'}}} (triple-brace).
+            assert.ok(response.html.includes('Author/Name'), 'HTML should contain raw slash');
+            assert.ok(response.html.includes('O&#39;Brien'), 'HTML should contain single-encoded apostrophe');
+            assert.ok(response.html.includes('&amp; Co.'), 'HTML should contain single-encoded ampersand');
+
+            // Publication date flows through {{t '{date}'}} (double-brace) —
+            // the actual symptom path in the issue.
+            assert.ok(response.html.includes('19/03/2026'), 'HTML should contain the literal slash-separated date');
+            assert.ok(response.plaintext.includes('19/03/2026'), 'Plaintext should contain the literal slash-separated date');
+
+            assert.ok(response.plaintext.includes('Author/Name O\'Brien & Co.'), 'Plaintext should fully decode to raw characters');
         });
     });
 

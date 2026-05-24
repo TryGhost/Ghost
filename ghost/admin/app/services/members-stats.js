@@ -23,8 +23,7 @@ export default class MembersStatsService extends Service {
         if (!stats) {
             return 0;
         }
-        // TODO: remove gift default once API includes `gift`
-        const {free, paid, comped, gift = 0} = stats.meta.totals;
+        const {free, paid, comped, gift} = stats.meta.totals;
         const total = free + paid + comped + gift || 0;
         return total;
     }

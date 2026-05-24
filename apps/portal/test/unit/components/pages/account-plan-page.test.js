@@ -727,4 +727,107 @@ describe('Account Plan Page', () => {
         expect(queryByText('20% off')).toBeInTheDocument();
         expect(queryByText('Save 20% on your next 3 billing cycles. Then $10/month.')).toBeInTheDocument();
     });
+
+    describe('gift members', () => {
+        const buildGiftMember = ({tier}) => {
+            const subscription = getSubscriptionData({
+                status: 'active',
+                interval: 'month',
+                amount: 1200,
+                currency: 'USD',
+                priceId: '',
+                tier: {
+                    id: tier.id,
+                    name: tier.name,
+                    expiry_at: '2027-01-11T00:00:00.000Z'
+                }
+            });
+            subscription.id = '';
+            subscription.price.id = '';
+            subscription.price.product.product_id = tier.id;
+
+            return getMemberData({
+                status: 'gift',
+                paid: true,
+                subscriptions: [subscription]
+            });
+        };
+
+        describe('on an archived tier', () => {
+            test('hides the Cancel subscription button and allows to upgrade to a new plan', async () => {
+                const premiumTier = getProductData({
+                    name: 'Premium',
+                    monthlyPrice: getPriceData({interval: 'month', amount: 1500, currency: 'usd'}),
+                    yearlyPrice: getPriceData({interval: 'year', amount: 15000, currency: 'usd'})
+                });
+                const ultraTier = getProductData({
+                    name: 'Ultra',
+                    monthlyPrice: getPriceData({interval: 'month', amount: 2500, currency: 'usd'}),
+                    yearlyPrice: getPriceData({interval: 'year', amount: 25000, currency: 'usd'})
+                });
+
+                const archivedTier = getProductData({
+                    name: 'Archived Tier',
+                    monthlyPrice: getPriceData({interval: 'month', amount: 1200, currency: 'usd'}),
+                    yearlyPrice: getPriceData({interval: 'year', amount: 12000, currency: 'usd'})
+                });
+
+                // Archived tiers are filtered out of site.products by the backend
+                const site = getSiteData({
+                    products: [premiumTier, ultraTier, getProductData({type: 'free'})],
+                    portalProducts: [premiumTier.id, ultraTier.id]
+                });
+
+                const member = buildGiftMember({tier: archivedTier});
+
+                const {queryByRole, queryAllByRole, mockDoActionFn} = customSetup({site, member});
+
+                expect(queryByRole('button', {name: 'Cancel subscription'})).not.toBeInTheDocument();
+                expect(queryByRole('button', {name: 'Confirm cancellation'})).not.toBeInTheDocument();
+
+                const chooseButtons = queryAllByRole('button', {name: 'Choose'});
+                expect(chooseButtons.length).toBeGreaterThan(0);
+
+                fireEvent.click(chooseButtons[0]);
+
+                expect(mockDoActionFn).toHaveBeenCalledWith('checkoutPlan', expect.objectContaining({plan: expect.any(String)}));
+                expect(mockDoActionFn).not.toHaveBeenCalledWith('updateSubscription', expect.anything());
+                expect(mockDoActionFn).not.toHaveBeenCalledWith('cancelSubscription', expect.anything());
+            });
+        });
+
+        describe('on an active tier', () => {
+            test('hides the cancellations button and allows to continue on the same tier', () => {
+                const activeTier = getProductData({
+                    name: 'Basic',
+                    monthlyPrice: getPriceData({interval: 'month', amount: 1200, currency: 'usd'}),
+                    yearlyPrice: getPriceData({interval: 'year', amount: 12000, currency: 'usd'})
+                });
+                const otherTier = getProductData({
+                    name: 'Premium',
+                    monthlyPrice: getPriceData({interval: 'month', amount: 2000, currency: 'usd'}),
+                    yearlyPrice: getPriceData({interval: 'year', amount: 20000, currency: 'usd'})
+                });
+
+                const site = getSiteData({
+                    products: [activeTier, otherTier, getProductData({type: 'free'})],
+                    portalProducts: [activeTier.id, otherTier.id]
+                });
+
+                const member = buildGiftMember({tier: activeTier});
+
+                const {mockDoActionFn, queryByRole} = customSetup({site, member});
+
+                // No "Cancel subscription" — gift subs cannot be cancelled.
+                expect(queryByRole('button', {name: 'Cancel subscription'})).not.toBeInTheDocument();
+
+                // Active-tier gift members are bounced back to AccountHomePage where their only
+                // option is to "Continue" on the same tier (via continueGiftSubscription). The
+                // change-plan UI is not available to them.
+                expect(mockDoActionFn).toHaveBeenCalledWith('switchPage', {page: 'accountHome'});
+                expect(mockDoActionFn).not.toHaveBeenCalledWith('checkoutPlan', expect.anything());
+                expect(mockDoActionFn).not.toHaveBeenCalledWith('updateSubscription', expect.anything());
+            });
+        });
+    });
 });

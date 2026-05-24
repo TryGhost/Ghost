@@ -549,6 +549,21 @@ describe('PaidAccountActions', () => {
             expect(container.querySelector('[data-test-button="change-plan"]')).not.toBeInTheDocument();
         });
 
+        test('renders nothing for a gift member when Stripe is disconnected', () => {
+            const products = getProductsData({numOfProducts: 1});
+            const site = getSiteData({
+                products,
+                portalProducts: products.map(p => p.id),
+                isStripeConfigured: false
+            });
+            const member = buildGiftMember({tierId: products[0].id});
+
+            const {container} = setup({site, member});
+
+            expect(container.querySelector('[data-test-button="continue-gift-subscription"]')).not.toBeInTheDocument();
+            expect(container.querySelector('[data-test-button="change-plan"]')).not.toBeInTheDocument();
+        });
+
         test('renders "Change" for a gift member when the tier has been archived', () => {
             // Archived tier = tier id absent from site.products
             const {site} = buildPaidSite();

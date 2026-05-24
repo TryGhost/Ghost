@@ -1,7 +1,8 @@
 const _ = require('lodash');
 const limitService = require('../services/limits');
 const ghostBookshelf = require('./base');
-const {NoPermissionError} = require('@tryghost/errors');
+const errors = require('@tryghost/errors');
+const {NoPermissionError} = errors;
 
 const Integration = ghostBookshelf.Model.extend({
     tableName: 'integrations',
@@ -98,12 +99,29 @@ const Integration = ghostBookshelf.Model.extend({
         }
     },
 
-    async getInternalFrontendKey(options) {
-        options = options || {};
+    /**
+     * Returns the API key of the requested `type` ('admin' | 'content') for
+     * the integration identified by `slug`, as a flat `InternalApiKey` DTO.
+     *
+     * Throws NotFoundError when no matching key exists.
+     *
+     * @param {string} slug
+     * @param {import('../services/internal-keys').ApiKeyType} type
+     * @param {Object} [options]
+     * @returns {Promise<import('../services/internal-keys').InternalApiKey>}
+     */
+    async getApiKeyBySlug(slug, type, options = {}) {
+        const query = (options.transacting || ghostBookshelf.knex)('api_keys')
+            .join('integrations', 'api_keys.integration_id', 'integrations.id')
+            .where('integrations.slug', slug)
+            .where('api_keys.type', type)
+            .first('api_keys.id', 'api_keys.secret');
 
-        options.withRelated = ['api_keys'];
-
-        return this.findOne({slug: 'ghost-internal-frontend'}, options);
+        const apiKey = await query;
+        if (!apiKey) {
+            throw new errors.NotFoundError({message: `${type} API key for integration "${slug}" not found.`});
+        }
+        return {id: apiKey.id, secret: apiKey.secret};
     }
 });
 

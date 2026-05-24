@@ -13,7 +13,7 @@ describe('Card Asset Service', function () {
         srcDir,
         destDir;
 
-    before(async function () {
+    beforeAll(async function () {
         testDir = await fs.mkdtemp(path.join(os.tmpdir(), 'ghost-tests-'));
         srcDir = path.join(testDir, 'src');
         destDir = path.join(testDir, 'dest');
@@ -24,7 +24,7 @@ describe('Card Asset Service', function () {
         await fs.mkdir(path.join(srcDir, 'js'));
     });
 
-    after(async function () {
+    afterAll(async function () {
         await fs.rm(testDir, {recursive: true});
     });
 
