@@ -1,85 +1,62 @@
-const sinon = require('sinon');
+const assert = require('node:assert/strict');
+const express = require('express');
+const request = require('supertest');
+
 // Thing we are testing
 const redirectAdminUrls = require('../../../../../core/server/web/admin/middleware/redirect-admin-urls');
 
 describe('Admin App', function () {
-    afterEach(function () {
-        sinon.restore();
-    });
-
     describe('middleware', function () {
         describe('redirectAdminUrls', function () {
-            let req;
-            let res;
-            let next;
-            // Input: req.originalUrl
-            // Output: either next or res.redirect are called
-            beforeEach(function () {
-                req = {};
-                res = {};
-                next = sinon.stub();
-                res.redirect = sinon.stub();
+            const app = express();
+
+            app.use(redirectAdminUrls);
+            app.use((req, res) => {
+                res.json({url: req.originalUrl});
             });
 
-            it('should redirect a url which starts with ghost', function () {
-                req.originalUrl = '/ghost/x';
-
-                redirectAdminUrls(req, res, next);
-
-                sinon.assert.notCalled(next);
-                sinon.assert.called(res.redirect);
-                sinon.assert.calledWith(res.redirect, '/ghost/#/x');
+            it('should redirect a url which starts with ghost', async function () {
+                await request(app)
+                    .get('/ghost/x')
+                    .expect(302)
+                    .expect('Location', '/ghost/#/x');
             });
 
-            it('should not redirect /ghost/ on its owh', function () {
-                req.originalUrl = '/ghost/';
+            it('should not redirect /ghost/ on its own', async function () {
+                const {body} = await request(app)
+                    .get('/ghost/')
+                    .expect(200);
 
-                redirectAdminUrls(req, res, next);
-
-                sinon.assert.called(next);
-                sinon.assert.notCalled(res.redirect);
+                assert.deepEqual(body, {url: '/ghost/'});
             });
 
-            it('should not redirect url that has no slash', function () {
-                req.originalUrl = 'ghost/x';
+            it('should not redirect url that starts with something other than /ghost/', async function () {
+                const {body} = await request(app)
+                    .get('/x/ghost/x')
+                    .expect(200);
 
-                redirectAdminUrls(req, res, next);
-
-                sinon.assert.called(next);
-                sinon.assert.notCalled(res.redirect);
+                assert.deepEqual(body, {url: '/x/ghost/x'});
             });
 
-            it('should not redirect url that starts with something other than /ghost/', function () {
-                req.originalUrl = 'x/ghost/x';
-
-                redirectAdminUrls(req, res, next);
-
-                sinon.assert.called(next);
-                sinon.assert.notCalled(res.redirect);
+            it('should strip a trailing slash before building the hash url', async function () {
+                await request(app)
+                    .get('/ghost/members/import/')
+                    .expect(302)
+                    .expect('Location', '/ghost/#/members/import');
             });
 
-            it('should strip a trailing slash before building the hash url', function () {
-                req.originalUrl = '/ghost/members/import/';
-
-                redirectAdminUrls(req, res, next);
-
-                sinon.assert.calledWith(res.redirect, '/ghost/#/members/import');
+            it('should strip a trailing slash before the query string', async function () {
+                await request(app)
+                    .get('/ghost/members/import/?source=link')
+                    .expect(302)
+                    .expect('Location', '/ghost/#/members/import?source=link');
             });
 
-            it('should strip a trailing slash before the query string', function () {
-                req.originalUrl = '/ghost/members/import/?source=link';
-
-                redirectAdminUrls(req, res, next);
-
-                sinon.assert.calledWith(res.redirect, '/ghost/#/members/import?source=link');
-            });
-
-            it('should preserve trailing slashes inside query values', function () {
-                req.originalUrl = '/ghost/members/import?next=/settings/';
-
-                redirectAdminUrls(req, res, next);
-
-                sinon.assert.calledWith(res.redirect, '/ghost/#/members/import?next=/settings/');
+            it('should preserve trailing slashes inside query values', async function () {
+                await request(app)
+                    .get('/ghost/members/import?next=/settings/')
+                    .expect(302)
+                    .expect('Location', '/ghost/#/members/import?next=/settings/');
             });
         });
     });
