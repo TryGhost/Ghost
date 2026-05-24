@@ -206,7 +206,7 @@ describe('Migrations', function () {
             assertHavePermission(permissions, 'Add Products', ['Administrator', 'Admin Integration']);
             assertHavePermission(permissions, 'Delete Products', ['Administrator']);
 
-            assertHavePermission(permissions, 'Reset all passwords', ['Administrator']);
+            assertHavePermission(permissions, 'Reset authentication', ['Administrator']);
 
             assertHavePermission(permissions, 'Browse custom theme settings', ['Administrator']);
             assertHavePermission(permissions, 'Edit custom theme settings', ['Administrator']);

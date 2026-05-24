@@ -1,9 +1,9 @@
 import AppContext from '../app-context';
+import CircleAnimated from '../icons/circle-anim.svg?react';
+import ClearIcon from '../icons/clear.svg?react';
 import Frame from './frame';
 import React, {useContext, useEffect, useMemo, useRef, useState} from 'react';
-import {ReactComponent as CircleAnimated} from '../icons/circle-anim.svg';
-import {ReactComponent as ClearIcon} from '../icons/clear.svg';
-import {ReactComponent as SearchIcon} from '../icons/search.svg';
+import SearchIcon from '../icons/search.svg?react';
 
 const DEFAULT_MAX_POSTS = 10;
 const STEP_MAX_POSTS = 10;

@@ -64,6 +64,27 @@ export const IconAsFallback: Story = {
     }
 };
 
+export const WithIdentityProps: Story = {
+    parameters: {
+        docs: {
+            description: {
+                story: 'Pass `src`, `name`, and/or `email` for the standard Gravatar → initials → user-icon fallback chain.'
+            }
+        }
+    },
+    render: () => (
+        <div className="flex items-center gap-4">
+            <Avatar email="aileen@example.com" name="Aileen Greer" src="https://avatars.githubusercontent.com/u/2178663?s=200&v=4" />
+            <Avatar email="aileen@example.com" name="Aileen Greer" src="https://broken-url.example.com/image.jpg" />
+            {/* Gravatar's d=blank returns a 1x1 transparent PNG with HTTP 200 for emails without a Gravatar account. Initials must remain visible — if this avatar ever shows blank, the dimension check in ValidatedAvatarImage has regressed. */}
+            <Avatar email="aileen@example.com" name="Aileen Greer" src="https://www.gravatar.com/avatar/0000000000000000000000000000000000000000000000000000000000000000?d=blank&s=250" />
+            <Avatar email="aileen@example.com" name="Aileen Greer" />
+            <Avatar email="anon@example.com" />
+            <Avatar />
+        </div>
+    )
+};
+
 export const DifferentSizes: Story = {
     render: () => (
         <div className="flex items-center gap-4">

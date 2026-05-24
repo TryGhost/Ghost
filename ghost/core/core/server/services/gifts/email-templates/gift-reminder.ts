@@ -1,3 +1,5 @@
+import type {Translate} from '../gift-email-renderer';
+
 export interface GiftReminderData {
     siteTitle: string;
     siteUrl: string;
@@ -5,28 +7,44 @@ export interface GiftReminderData {
     siteDomain: string;
     accentColor: string | undefined;
     memberEmail: string;
+    firstName: string | null;
     gift: {
         tierName: string;
         consumesAt: string;
-        priceAfter: string;
         manageSubscriptionUrl: string;
     };
 }
 
-export function renderText(data: GiftReminderData): string {
-    return `Your gift subscription is ending soon
+export function renderText(data: GiftReminderData, t: Translate): string {
+    const greeting = data.firstName
+        ? t('Hi {firstName},', {firstName: data.firstName, interpolation: {escapeValue: false}})
+        : t('Hey there,');
 
-Your gift subscription to ${data.siteTitle} ends on ${data.gift.consumesAt}. Continue with a paid subscription to keep reading.
+    return `${greeting}
 
-Gift subscription: ${data.gift.tierName}
-Ends on: ${data.gift.consumesAt}
-Price after gift ends: ${data.gift.priceAfter}
+${t('Your gift subscription to {siteTitle} ends on {consumesAt}.', {
+        siteTitle: data.siteTitle,
+        consumesAt: data.gift.consumesAt,
+        interpolation: {escapeValue: false}
+    })}
 
-Continue subscription:
+${t('To keep your {tierName} membership, continue with a paid subscription today and we\'ll automatically add the rest of your gift period as a free trial.', {
+        tierName: data.gift.tierName,
+        interpolation: {escapeValue: false}
+    })}
+
+${t('Continue subscription')}:
 ${data.gift.manageSubscriptionUrl}
 
----
+${t('Thanks for reading {siteTitle}.', {
+        siteTitle: data.siteTitle,
+        interpolation: {escapeValue: false}
+    })}
 
-Sent to ${data.memberEmail} from ${data.siteDomain}.
-You received this email because your gift subscription to ${data.siteTitle} is ending soon.`;
+---
+${t('This message was sent from {siteDomain} to {email}.', {
+        siteDomain: data.siteDomain,
+        email: data.memberEmail,
+        interpolation: {escapeValue: false}
+    })}`;
 }

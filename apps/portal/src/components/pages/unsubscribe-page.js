@@ -4,7 +4,7 @@ import {useContext, useEffect, useState} from 'react';
 import {getSiteNewsletters,hasNewsletterSendingEnabled} from '../../utils/helpers';
 import NewsletterManagement from '../common/newsletter-management';
 import CloseButton from '../common/close-button';
-import {ReactComponent as WarningIcon} from '../../images/icons/warning-fill.svg';
+import WarningIcon from '../../images/icons/warning-fill.svg?react';
 import Interpolate from '@doist/react-interpolate';
 import LoadingPage from './loading-page';
 import {t} from '../../utils/i18n';

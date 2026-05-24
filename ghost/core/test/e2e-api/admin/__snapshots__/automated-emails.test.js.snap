@@ -1096,7 +1096,7 @@ table.body h2 span {
     <body data-testid=\\"email-preview-body\\" style=\\"background-color: #fff; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; font-size: 18px; line-height: 0; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #15212A; direction: ltr;\\">
         <span class=\\"preheader\\" style=\\"color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;\\"></span>
         <!-- SPACING TO AVOID BODY TEXT BEING DUPLICATED IN PREVIEW TEXT -->
-        <div style=\\"display:none; max-height:0; overflow:hidden; mso-hide: all;\\" aria-hidden=\\"true\\" role=\\"presentation\\">
+        <div class=\\"preheader-spacing\\" style=\\"display:none; max-height:0; overflow:hidden; mso-hide: all;\\" aria-hidden=\\"true\\" role=\\"presentation\\">
             
         </div>
 
@@ -1203,8 +1203,6 @@ table.body h2 span {
 </html>
 ",
       "plaintext": "
-
-
 
 
 
@@ -1334,7 +1332,7 @@ exports[`Automated Emails API Preview Can render preview 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "22596",
+  "content-length": "22620",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

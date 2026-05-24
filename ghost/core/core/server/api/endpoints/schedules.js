@@ -1,4 +1,3 @@
-const models = require('../../models');
 const postScheduling = require('../../services/posts/post-scheduling');
 
 /** @type {import('@tryghost/api-framework').Controller} */
@@ -50,35 +49,6 @@ const controller = {
 
             const response = {};
             response[resourceType] = [scheduledResource];
-            return response;
-        }
-    },
-
-    getScheduled: {
-        // NOTE: this method is for internal use only by DefaultScheduler
-        //       it is not exposed anywhere!
-        headers: {
-            cacheInvalidate: false
-        },
-        permissions: false,
-        validation: {
-            options: {
-                resource: {
-                    required: true,
-                    values: ['posts', 'pages']
-                }
-            }
-        },
-        async query(frame) {
-            const resourceModel = 'Post';
-            const resourceType = (frame.options.resource === 'post') ? 'post' : 'page';
-            const cleanOptions = {};
-            cleanOptions.filter = `status:scheduled+type:${resourceType}`;
-            cleanOptions.columns = ['id', 'published_at', 'created_at', 'type'];
-
-            const result = await models[resourceModel].findAll(cleanOptions);
-            let response = {};
-            response[resourceType] = result;
             return response;
         }
     }

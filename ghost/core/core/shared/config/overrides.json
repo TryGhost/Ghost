@@ -38,6 +38,7 @@
                 "audio/wav",
                 "audio/x-wav",
                 "audio/ogg",
+                "application/ogg",
                 "audio/mp4",
                 "audio/x-m4a"
             ]

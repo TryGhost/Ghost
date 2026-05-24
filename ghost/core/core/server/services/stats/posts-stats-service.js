@@ -213,7 +213,7 @@ class PostsStatsService {
         }
 
         // Transform results and enrich with titles and URL existence validation
-        return results.map((row) => {
+        return Promise.all(results.map(async (row) => {
             const title = row.title || this._generateTitleFromPath(row.attribution_url);
 
             // Check if URL exists using the URL service
@@ -222,8 +222,8 @@ class PostsStatsService {
             if (this.urlService && row.attribution_url) {
                 try {
                     // Check if URL service is ready
-                    if (this.urlService.hasFinished && this.urlService.hasFinished()) {
-                        const resource = this.urlService.getResource(row.attribution_url);
+                    if (this.urlService.facade.hasFinished && this.urlService.facade.hasFinished()) {
+                        const resource = await this.urlService.facade.resolveUrl(row.attribution_url);
                         urlExists = !!resource; // Convert to boolean
                     }
                     // If URL service isn't ready, we default to true (clickable)
@@ -246,7 +246,7 @@ class PostsStatsService {
                 post_type: row.attribution_type === 'post' ? 'post' : (row.attribution_type === 'page' ? 'page' : null),
                 url_exists: urlExists
             };
-        });
+        }));
     }
 
     _generateTitleFromPath(path) {

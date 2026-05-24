@@ -8,9 +8,9 @@ const settingsCache = require('../../../../../core/shared/settings-cache');
 const config = require('../../../../../core/shared/config');
 const privateBlogging = require('../../../../../core/frontend/apps/private-blogging/lib/middleware');
 
-function hash(password, salt) {
+function hash(accessCode, salt) {
     const hasher = crypto.createHash('sha256');
-    hasher.update(password + salt, 'utf8');
+    hasher.update(accessCode + salt, 'utf8');
     return hasher.digest('hex');
 }
 
@@ -239,15 +239,69 @@ describe('Private Blogging', function () {
                 sinon.assert.called(next);
             });
 
-            it('doLoginToPrivateSite should return next if password is incorrect', function () {
+            it('doLoginToPrivateSite should return next if access code is incorrect', function () {
                 req.body = {password: 'wrongpassword'};
 
                 privateBlogging.doLoginToPrivateSite(req, res, next);
                 assertExists(res.error);
+                assert.equal(res.error.message, 'Incorrect access code.');
                 sinon.assert.called(next);
             });
 
-            it('doLoginToPrivateSite should redirect if password is correct', function () {
+            it('doLoginToPrivateSite should return next if stored access code is empty', function () {
+                settingsStub.withArgs('password').returns('');
+                req.body = {password: 'rightpassword'};
+
+                privateBlogging.doLoginToPrivateSite(req, res, next);
+                assertExists(res.error);
+                assert.equal(res.error.message, 'Incorrect access code.');
+                sinon.assert.notCalled(res.redirect);
+                sinon.assert.called(next);
+            });
+
+            it('doLoginToPrivateSite should return next if stored access code is undefined', function () {
+                settingsStub.withArgs('password').returns(undefined);
+                req.body = {password: 'rightpassword'};
+
+                privateBlogging.doLoginToPrivateSite(req, res, next);
+                assertExists(res.error);
+                assert.equal(res.error.message, 'Incorrect access code.');
+                sinon.assert.notCalled(res.redirect);
+                sinon.assert.called(next);
+            });
+
+            it('doLoginToPrivateSite should return next if stored access code is null', function () {
+                settingsStub.withArgs('password').returns(null);
+                req.body = {password: 'rightpassword'};
+
+                privateBlogging.doLoginToPrivateSite(req, res, next);
+                assertExists(res.error);
+                assert.equal(res.error.message, 'Incorrect access code.');
+                sinon.assert.notCalled(res.redirect);
+                sinon.assert.called(next);
+            });
+
+            it('doLoginToPrivateSite should return next if submitted access code is empty', function () {
+                req.body = {password: ''};
+
+                privateBlogging.doLoginToPrivateSite(req, res, next);
+                assertExists(res.error);
+                assert.equal(res.error.message, 'Incorrect access code.');
+                sinon.assert.notCalled(res.redirect);
+                sinon.assert.called(next);
+            });
+
+            it('doLoginToPrivateSite should return next if submitted access code is missing', function () {
+                req.body = {};
+
+                privateBlogging.doLoginToPrivateSite(req, res, next);
+                assertExists(res.error);
+                assert.equal(res.error.message, 'Incorrect access code.');
+                sinon.assert.notCalled(res.redirect);
+                sinon.assert.called(next);
+            });
+
+            it('doLoginToPrivateSite should redirect if access code is correct', function () {
                 req.body = {password: 'rightpassword'};
                 req.session = {};
                 res.redirect = sinon.spy();
@@ -321,7 +375,7 @@ describe('Private Blogging', function () {
                 assert.equal(res.redirect.args[0][0], '/');
             });
 
-            describe('Bad Password', function () {
+            describe('Bad access code', function () {
                 beforeEach(function () {
                     req.session = {
                         token: 'wrongpassword',
@@ -356,6 +410,21 @@ describe('Private Blogging', function () {
             it('authenticatePrivateSession should return next', function () {
                 privateBlogging.authenticatePrivateSession(req, res, next);
                 sinon.assert.called(next);
+            });
+
+            it('authenticatePrivateSession should redirect when stored access code is empty', function () {
+                const salt = Date.now().toString();
+                settingsStub.withArgs('password').returns('');
+                req.url = '/welcome';
+                req.session = {
+                    token: hash('', salt),
+                    salt
+                };
+
+                privateBlogging.authenticatePrivateSession(req, res, next);
+                sinon.assert.notCalled(next);
+                sinon.assert.called(res.redirect);
+                sinon.assert.calledWith(res.redirect, '/private/?r=%2Fwelcome');
             });
 
             it('handle404 should still 404', function () {

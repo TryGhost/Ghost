@@ -65,16 +65,16 @@ const CommentContextMenu: React.FC<Props> = ({comment, close, toggleEdit}) => {
         event.stopPropagation();
     };
 
+    const menuClassName = 'absolute z-10 w-52 rounded-lg bg-white p-1 font-sans text-sm shadow-lg outline-0 dark:bg-neutral-800 dark:text-white';
+
     let contextMenu = null;
     if (comment.status === 'published') {
-        if (isAuthor) {
+        if (isAdmin) {
+            contextMenu = <AdminContextMenu close={close} comment={comment} showAuthorActions={!!isAuthor} toggleEdit={toggleEdit}/>;
+        } else if (isAuthor) {
             contextMenu = <AuthorContextMenu close={close} comment={comment} toggleEdit={toggleEdit} />;
         } else {
-            if (isAdmin) {
-                contextMenu = <AdminContextMenu close={close} comment={comment}/>;
-            } else {
-                contextMenu = <NotAuthorContextMenu close={close} comment={comment}/>;
-            }
+            contextMenu = <NotAuthorContextMenu close={close} comment={comment}/>;
         }
     } else {
         if (isAdmin) {
@@ -86,7 +86,7 @@ const CommentContextMenu: React.FC<Props> = ({comment, close, toggleEdit}) => {
 
     return (
         <div ref={element} className="relative" data-testid="comment-context-menu" onClick={stopPropagation}>
-            <div ref={innerElement} className={`absolute z-10 min-w-min whitespace-nowrap rounded bg-white p-1 font-sans text-sm shadow-lg outline-0 sm:min-w-[80px] dark:bg-neutral-800 dark:text-white`} data-testid="comment-context-menu-inner">
+            <div ref={innerElement} className={menuClassName} data-testid="comment-context-menu-inner">
                 {contextMenu}
             </div>
         </div>

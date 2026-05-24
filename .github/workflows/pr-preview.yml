@@ -100,6 +100,34 @@ jobs:
             echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Resolve image digest from GHCR
+        id: digest
+        if: steps.recheck.outputs.skip != 'true'
+        env:
+          IMAGE_REPO: tryghost/ghost
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          # Pin the deploy to an immutable digest so Artifact Registry's pull-through
+          # cache cannot serve a stale manifest for the mutable pr-N tag.
+          TOKEN=$(curl -sf "https://ghcr.io/token?service=ghcr.io&scope=repository:${IMAGE_REPO}:pull" | jq -r '.token')
+          if [ -z "$TOKEN" ] || [ "$TOKEN" = "null" ]; then
+            echo "::error::Failed to acquire anonymous GHCR token for ${IMAGE_REPO}"
+            exit 1
+          fi
+          DIGEST=$(curl -sfI \
+            -H "Authorization: Bearer $TOKEN" \
+            -H "Accept: application/vnd.oci.image.index.v1+json" \
+            -H "Accept: application/vnd.docker.distribution.manifest.list.v2+json" \
+            -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
+            "https://ghcr.io/v2/${IMAGE_REPO}/manifests/pr-${PR_NUMBER}" \
+            | awk 'tolower($1) == "docker-content-digest:" {print $2}' | tr -d '\r\n')
+          if [[ ! "$DIGEST" =~ ^sha256:[a-f0-9]{64}$ ]]; then
+            echo "::error::Could not resolve digest for ghcr.io/${IMAGE_REPO}:pr-${PR_NUMBER} (got: '$DIGEST')"
+            exit 1
+          fi
+          echo "Resolved digest: $DIGEST"
+          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+
       - name: Dispatch deploy to Ghost-Moya
         if: steps.recheck.outputs.skip != 'true'
         uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4
@@ -110,6 +138,7 @@ jobs:
           client-payload: >-
             {
               "pr_number": "${{ github.event.pull_request.number }}",
+              "image_digest": "${{ steps.digest.outputs.digest }}",
               "action": "deploy",
               "seed": "true"
             }

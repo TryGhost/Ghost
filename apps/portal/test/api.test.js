@@ -114,3 +114,65 @@ describe('Portal API gift redemption', () => {
         await expect(ghostApi.gift.redeem({token: 'gift-token-123'})).rejects.toEqual(new HumanReadableError('This gift has already been redeemed.'));
     });
 });
+
+describe('Portal API gift checkout', () => {
+    let originalLocation;
+
+    beforeEach(() => {
+        vi.restoreAllMocks();
+        originalLocation = window.location;
+        delete window.location;
+        window.location = {
+            href: 'https://example.com/#/portal/gift',
+            assign: vi.fn()
+        };
+    });
+
+    afterEach(() => {
+        window.location = originalLocation;
+    });
+
+    test('passes customer email when creating a gift checkout session', async () => {
+        const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
+
+        vi.spyOn(window, 'fetch').mockImplementation((url) => {
+            if (url.includes('/members/api/session/')) {
+                return Promise.resolve(new Response('identity-token', {status: 200}));
+            }
+
+            return Promise.resolve(new Response(JSON.stringify({
+                url: 'https://checkout.stripe.com/gift-session'
+            }), {
+                status: 200,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }));
+        });
+
+        await ghostApi.member.checkoutGift({
+            tierId: 'tier_123',
+            cadence: 'month',
+            email: 'jamie@example.com'
+        });
+
+        expect(window.fetch).toHaveBeenLastCalledWith('https://example.com/members/api/create-stripe-checkout-session/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                identity: 'identity-token',
+                metadata: {
+                    requestSrc: 'portal'
+                },
+                type: 'gift',
+                tierId: 'tier_123',
+                cadence: 'month',
+                cancelUrl: 'https://example.com/#/portal/gift',
+                customerEmail: 'jamie@example.com'
+            })
+        });
+        expect(window.location.assign).toHaveBeenCalledWith('https://checkout.stripe.com/gift-session');
+    });
+});

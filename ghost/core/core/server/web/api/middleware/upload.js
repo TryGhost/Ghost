@@ -8,6 +8,7 @@ const errors = require('@tryghost/errors');
 const config = require('../../../../shared/config');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
+const {reportThemeUploadSizeLimitError} = require('../../../services/themes/upload-size-limit-reporter');
 
 const gunzip = util.promisify(zlib.gunzip);
 const gzip = util.promisify(zlib.gzip);
@@ -61,6 +62,39 @@ const messages = {
 
 const enabledClear = config.get('uploadClear') || true;
 const upload = multer({dest: os.tmpdir()});
+const themeUpload = multer({
+    dest: os.tmpdir(),
+    limits: {
+        fileSize: config.get('theme:uploadLimits:compressedBytes')
+    }
+});
+
+const getContentLength = (req) => {
+    const contentLengthHeader = req.get?.('content-length') ?? req.headers?.['content-length'];
+    const contentLength = Number(contentLengthHeader);
+
+    if (Number.isFinite(contentLength)) {
+        return contentLength;
+    }
+
+    return undefined;
+};
+
+const getCompressedSizeLimitError = (err, req) => {
+    const observedBytes = getContentLength(req);
+    const limitBytes = config.get('theme:uploadLimits:compressedBytes');
+
+    return new errors.UnsupportedMediaTypeError({
+        message: 'Theme upload exceeds maximum compressed size.',
+        context: 'Theme upload exceeds the maximum compressed size.',
+        code: 'COMPRESSED_TOO_LARGE',
+        errorDetails: {
+            observedBytes,
+            limitBytes,
+            fieldName: err.field
+        }
+    });
+};
 
 const deleteSingleFile = (file) => {
     if (!file.path) {
@@ -70,11 +104,21 @@ const deleteSingleFile = (file) => {
     fs.unlink(file.path).catch(err => logging.error(err));
 };
 
-const single = name => function singleUploadFunction(req, res, next) {
-    const singleUpload = upload.single(name);
+const single = (name, uploader = upload, options = {}) => function singleUploadFunction(req, res, next) {
+    const singleUpload = uploader.single(name);
 
     singleUpload(req, res, (err) => {
         if (err) {
+            if (options.isThemeUpload && err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
+                const sizeLimitError = getCompressedSizeLimitError(err, req);
+
+                reportThemeUploadSizeLimitError(sizeLimitError, {
+                    zip: {size: sizeLimitError.errorDetails.observedBytes}
+                });
+
+                return next(sizeLimitError);
+            }
+
             // Busboy, Multer or Dicer errors are usually caused by invalid file uploads
             if (err instanceof multer.MulterError || err.stack?.includes('dicer') || err.stack?.includes('busboy')) {
                 return next(new errors.BadRequestError({
@@ -106,6 +150,8 @@ const single = name => function singleUploadFunction(req, res, next) {
         next();
     });
 };
+
+const themeZip = name => single(name, themeUpload, {isThemeUpload: true});
 
 const media = (fileName, thumbName) => function mediaUploadFunction(req, res, next) {
     const mediaUpload = upload.fields([{
@@ -398,6 +444,7 @@ const fileValidation = function ({type}) {
 
 module.exports = {
     single,
+    themeZip,
     media,
     validation,
     mediaValidation,
@@ -408,5 +455,6 @@ module.exports = {
 module.exports._test = {
     checkFileExists,
     checkFileIsValid,
+    getCompressedSizeLimitError,
     sanitizeSvgContent
 };

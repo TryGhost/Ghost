@@ -6,6 +6,8 @@ This file provides guidance to AI Agents when working with code in this reposito
 
 **Always use `pnpm` for all commands.** This repository uses pnpm workspaces, not npm.
 
+Shared dependency versions are pinned in `pnpm-workspace.yaml` under `catalog:` and referenced as `"pkg": "catalog:"` (or `catalog:<name>` for named catalogs). `catalogMode` is `strict`, so `pnpm add` routes new deps into the catalog automatically — don't inline the version.
+
 ## Monorepo Structure
 
 Ghost is a pnpm + Nx monorepo with three workspace groups:
@@ -57,10 +59,12 @@ pnpm build:clean               # Clean build artifacts and rebuild
 ```bash
 # Unit tests (from root)
 pnpm test:unit                 # Run all unit tests in all packages
+pnpm test:watch                # Watch mode — unified Vitest watcher (ghost/core + all apps)
 
 # Ghost core tests (from ghost/core/)
 cd ghost/core
-pnpm test:unit                 # Unit tests only
+pnpm test:unit                 # Unit tests only (Vitest, run once)
+pnpm test:watch                # Watch mode — ghost/core unit tests only
 pnpm test:integration          # Integration tests
 pnpm test:e2e                  # E2E API tests (not browser)
 pnpm test:all                  # All test types

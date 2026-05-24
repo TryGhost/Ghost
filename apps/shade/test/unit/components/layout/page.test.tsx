@@ -31,7 +31,7 @@ describe('Page Component', () => {
             <Page data-testid="page">
                 <h1>Page Title</h1>
                 <p>Page paragraph</p>
-                <button>Page button</button>
+                <button type="button">Page button</button>
             </Page>
         );
         
@@ -48,9 +48,9 @@ describe('Page Component', () => {
     it('passes additional props to the div element', () => {
         render(
             <Page 
-                data-testid="page" 
+                aria-label="Test page" 
+                data-testid="page"
                 id="test-page-id"
-                aria-label="Test page"
             >
                 Page Content
             </Page>

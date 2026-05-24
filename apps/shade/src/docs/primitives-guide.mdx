@@ -1,212 +1,51 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-<Meta title="Primitives Guide" />
+<Meta title="Primitives / Primitives Guide" />
 
 <div className="sb-doc">
 
-# Working with primitives
+# Primitives
 
-<p className="excerpt">Primitives are how Shade replaces the endless string of `flex flex-col gap-4 items-start` utilities with something a human can read and an AI agent can generate consistently. This page is a practical guide to the six primitives, their props, and how to migrate existing layouts.</p>
+<p className="excerpt">Layout vocabulary. `Stack`, `Inline`, `Box`, `Grid`, `Container`, `Text`. Use these instead of writing `flex flex-col gap-4` so layouts read by intent.</p>
 
-## Why primitives exist
+## Use a primitive when
 
-Most layout code in any React codebase looks the same: a `<div>` with five Tailwind layout utilities. After a while it becomes invisible. Reviewers stop reading those classes; agents glue together their own variants of "vertical stack with medium gap"; small spacing inconsistencies accumulate across the product.
+- You need a column of children → `Stack`
+- You need a row → `Inline`
+- You need padding or a radius around content → `Box`
+- You need a width-constrained shell → `Container`
+- You need a two-dimensional layout → `Grid`
+- You're rendering text with a size/tone/weight → `Text`
 
-Primitives solve that by giving the structural concepts names. Instead of inferring "this is a vertical stack" from `flex flex-col gap-4`, you write `<Stack gap="md">` and the intent is right there.
+Use semantic gaps (`gap="md"`), not raw numbers (`gap-4`). Map: see [Tokens / Spacing](?path=/docs/tokens-spacing--docs).
 
-The benefits are practical:
+## Don't
 
-- A reviewer skimming a screen can tell in one second what its structure is.
-- An AI agent generating UI doesn't have to re-derive flex syntax every time.
-- Spacing decisions become semantic (`gap="lg"`) rather than numeric (`gap-6`), so we can tune the spacing scale without touching every component.
+- Reach for a pattern first if one exists. Building a page header? Use `PageHeader`. Building a list page? Use `ListPage`.
+- Put product logic inside a primitive. If a wrapper is starting to know about Ghost data, it's a Pattern.
+- Wrap content in a bare `<div>` carrying only `flex / grid / gap` utilities — that's exactly what primitives replace.
 
-## The six primitives
+Full rules and decision flow: [Layers](?path=/docs/overview-layers--docs). Agent rules: `apps/shade/AGENTS.md`.
 
-You only need to remember six. They cover essentially every layout situation that doesn't involve writing a custom component.
+## Example
 
-**`Stack`** is for vertical groupings. Use it whenever you have a column of children that need consistent spacing between them.
-
-**`Inline`** is for horizontal groupings — toolbars, action rows, sequences of inline controls.
-
-**`Box`** is a framing primitive. Use it when you want padding or radius without imposing a layout direction.
-
-**`Container`** constrains width — for page shells where content shouldn't span the full viewport.
-
-**`Grid`** is for actual two-dimensional grids: card grids, multi-column lists.
-
-**`Text`** is the typographic primitive. Use it for paragraphs, headings, labels, captions — anything that's "rendered text".
-
-The fast version of when to reach for each:
-
-- Vertical composition? `Stack`.
-- Horizontal composition? `Inline`.
-- A framed region? `Box`.
-- A page shell with a max width? `Container`.
-- Cards or columns? `Grid`.
-- Words on the screen? `Text`.
-
-## Props at a glance
-
-### Stack
-
-| Prop | Type | Default | Purpose |
-| --- | --- | --- | --- |
-| `gap` | `none|xs|sm|md|lg|xl|2xl` | `md` | Vertical spacing between children |
-| `align` | `start|center|end|stretch|baseline` | `stretch` | Cross-axis alignment |
-| `justify` | `start|center|end|between|around|evenly` | `start` | Main-axis distribution |
-
-### Inline
-
-| Prop | Type | Default | Purpose |
-| --- | --- | --- | --- |
-| `as` | `div|header|section|footer|nav|span` | `div` | Render element |
-| `gap` | `none|xs|sm|md|lg|xl|2xl` | `md` | Horizontal spacing between children |
-| `align` | `start|center|end|stretch|baseline` | `center` | Cross-axis alignment |
-| `justify` | `start|center|end|between|around|evenly` | `start` | Main-axis distribution |
-| `wrap` | `boolean` | `false` | Wrap children to multiple rows |
-
-### Box
-
-| Prop | Type | Default | Purpose |
-| --- | --- | --- | --- |
-| `padding` | `none|xs|sm|md|lg|xl|2xl` | unset | Uniform padding |
-| `paddingX` | `none|xs|sm|md|lg|xl|2xl` | unset | Horizontal padding only |
-| `paddingY` | `none|xs|sm|md|lg|xl|2xl` | unset | Vertical padding only |
-| `radius` | `none|sm|md|lg|xl|full` | unset | Border radius |
-
-### Container
-
-| Prop | Type | Default | Purpose |
-| --- | --- | --- | --- |
-| `size` | `xs...9xl|prose|page|page-with-sidebar` | `page` | Maximum width |
-| `centered` | `boolean` | `true` | Apply horizontal centering |
-| `paddingX` | `none|xs|sm|md|lg|xl|2xl` | unset | Horizontal shell padding |
-
-### Grid
-
-| Prop | Type | Default | Purpose |
-| --- | --- | --- | --- |
-| `columns` | `1|2|3|4|5|6|12` | `1` | Column count |
-| `gap` | `none|xs|sm|md|lg|xl|2xl` | `md` | Grid spacing |
-| `align` | `start|center|end|stretch|baseline` | `stretch` | Cross-axis alignment |
-| `justify` | `start|center|end|between|around|evenly` | `start` | Main-axis distribution |
-
-### Text
-
-| Prop | Type | Default | Purpose |
-| --- | --- | --- | --- |
-| `as` | `p|span|div|label|small|strong|em|h1..h6` | `p` | Semantic element |
-| `size` | `2xs|xs|sm|md|lg|xl|2xl|3xl` | `md` | Font size token |
-| `weight` | `regular|medium|semibold|bold` | `regular` | Font weight |
-| `tone` | `primary|secondary|tertiary|inverse` | `primary` | Text tone token |
-| `leading` | `none|snug|normal|relaxed|tight|tighter|supertight|body|heading` | `body` | Line-height token |
-| `truncate` | `boolean` | `false` | Single-line truncation with ellipsis |
-
-## Putting them together
-
-A typical page shell, all primitives:
+A settings row — label and description on the left, control on the right:
 
 ```tsx
-import {Button} from '@tryghost/shade/components';
-import {Container, Inline, Stack, Text} from '@tryghost/shade/primitives';
+import {Switch} from '@tryghost/shade/components';
+import {Box, Inline, Stack, Text} from '@tryghost/shade/primitives';
 
-<Container size="page" paddingX="lg">
-    <Stack gap="xl">
-        <Inline justify="between" align="center">
-            <Text as="h1" size="2xl" weight="bold" leading="heading">Members</Text>
-            <Button>New member</Button>
-        </Inline>
-
-        <Stack gap="md">
-            <Text tone="secondary">Manage your audience.</Text>
+<Box padding="lg" radius="md" className="border border-border-default">
+    <Inline align="center" gap="md" justify="between">
+        <Stack gap="xs">
+            <Text weight="semibold">Email notifications</Text>
+            <Text size="sm" tone="secondary">Get notified when your posts get engagement.</Text>
         </Stack>
-    </Stack>
-</Container>
-```
-
-Read that out loud and it tells you what's there: a page-width container; vertically stacked content; the top row is a horizontal inline split with the title on the left and the action button on the right; the body below is another vertical stack of text.
-
-A header with actions and a count:
-
-```tsx
-<Stack gap="sm">
-    <Text as="h2" size="xl" weight="semibold" leading="heading">Posts</Text>
-    <Inline justify="between" align="center" wrap>
-        <Text tone="secondary">2,132 total</Text>
-        <Inline gap="sm">
-            <Button variant="outline">Export</Button>
-            <Button>New post</Button>
-        </Inline>
+        <Switch />
     </Inline>
-</Stack>
+</Box>
 ```
 
-A list of framed rows:
-
-```tsx
-<Stack gap="sm">
-    <Text as="h3" size="lg" weight="semibold">Drafts</Text>
-    <Grid columns={1} gap="sm">
-        <Box padding="md" radius="md" className="border border-border-default">
-            <Text>Draft row content</Text>
-        </Box>
-        <Box padding="md" radius="md" className="border border-border-default">
-            <Text>Another draft row</Text>
-        </Box>
-    </Grid>
-</Stack>
-```
-
-## Migrating existing layouts
-
-The migration is mechanical, and almost always shorter:
-
-```tsx
-// Before
-<div className="flex flex-col gap-4">
-    <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold">Members</h1>
-        <p className="text-gray-600">Manage your audience</p>
-    </div>
-    <div className="flex items-center justify-between gap-2">...</div>
-</div>
-
-// After
-<Stack gap="lg">
-    <Stack gap="sm">
-        <Text as="h1" size="2xl" weight="bold" leading="heading">Members</Text>
-        <Text tone="secondary">Manage your audience</Text>
-    </Stack>
-    <Inline align="center" justify="between" gap="sm">...</Inline>
-</Stack>
-```
-
-Or for a card grid:
-
-```tsx
-// Before
-<div className="grid grid-cols-3 gap-6">
-    <div className="rounded-lg p-4">A</div>
-    <div className="rounded-lg p-4">B</div>
-    <div className="rounded-lg p-4">C</div>
-</div>
-
-// After
-<Grid columns={3} gap="xl">
-    <Box radius="lg" padding="lg">A</Box>
-    <Box radius="lg" padding="lg">B</Box>
-    <Box radius="lg" padding="lg">C</Box>
-</Grid>
-```
-
-## Things to avoid
-
-Don't add anonymous `<div>` wrappers that only carry `flex/grid/gap` utilities. If you need that structure, reach for a primitive instead.
-
-Don't use raw spacing numbers (`gap-6`, `p-3`) in primitive APIs. Use the semantic scale (`gap="lg"`, `padding="sm"`) — it's what the spacing tokens are for.
-
-Don't put product workflow logic inside a primitive. Primitives are layout vocabulary; if a component is starting to know about Ghost-specific data, it belongs in a Feature, not a primitive.
-
-Don't reach for `Box` when `Stack` or `Inline` would do. `Box` is the right tool when you genuinely don't want a layout direction — just framing.
+Browse the sidebar for each primitive's props and live stories.
 
 </div>

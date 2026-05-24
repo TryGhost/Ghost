@@ -12,9 +12,7 @@ ARG NODE_VERSION=22.18.0
 # ---- Core: server + production deps ----
 FROM node:$NODE_VERSION-bookworm-slim AS core
 
-ARG GHOST_BUILD_VERSION=""
 ENV NODE_ENV=production
-ENV GHOST_BUILD_VERSION=${GHOST_BUILD_VERSION}
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends libjemalloc2 fontconfig && \
@@ -25,9 +23,10 @@ RUN apt-get update && \
 
 WORKDIR /home/ghost
 
-COPY --exclude=core/built/admin . .
-
 RUN corepack enable
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY components ./components
 
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store,id=pnpm-store \
     apt-get update && \
@@ -36,14 +35,20 @@ RUN --mount=type=cache,target=/root/.local/share/pnpm/store,id=pnpm-store \
     (cd node_modules/sqlite3 && npm run install) && \
     apt-get purge -y build-essential python3 && \
     apt-get autoremove -y && \
-    rm -rf /var/lib/apt/lists/* && \
-    mkdir -p default log && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY --exclude=core/built/admin . .
+
+RUN mkdir -p default log && \
     cp -R content base_content && \
     cp -R content/themes/casper default/casper && \
     ([ -d content/themes/source ] && cp -R content/themes/source default/source || true) && \
     chown ghost:ghost /home/ghost && \
     chown -R nobody:nogroup /home/ghost/* && \
     chown -R ghost:ghost /home/ghost/content /home/ghost/log
+
+ARG GHOST_BUILD_VERSION=""
+ENV GHOST_BUILD_VERSION=${GHOST_BUILD_VERSION}
 
 USER ghost
 ENV LD_PRELOAD=libjemalloc.so.2

@@ -312,32 +312,29 @@ const Member = ghostBookshelf.Model.extend({
     },
 
     onSaving: function onSaving(model, attr, options) {
-        let labelsToSave = [];
+        const rawLabels = this.get('labels');
 
-        if (_.isUndefined(this.get('labels'))) {
+        if (_.isUndefined(rawLabels)) {
             this.unset('labels');
             return;
         }
 
-        // CASE: detect lowercase/uppercase label slugs
-        if (!_.isUndefined(this.get('labels')) && !_.isNull(this.get('labels'))) {
-            labelsToSave = [];
+        // CASE: trim, drop nameless, and dedupe by case-insensitive name (first wins)
+        const seen = new Set();
+        const labelsToSave = (rawLabels || []).filter((item) => {
+            item.name = item.name && item.name.trim();
+            if (!item.name) {
+                return false;
+            }
+            const key = item.name.toLowerCase();
+            if (seen.has(key)) {
+                return false;
+            }
+            seen.add(key);
+            return true;
+        });
 
-            //  and deduplicate upper/lowercase tags
-            _.each(this.get('labels'), function each(item) {
-                item.name = item.name && item.name.trim();
-                for (let i = 0; i < labelsToSave.length; i = i + 1) {
-                    if (labelsToSave[i].name && item.name && labelsToSave[i].name.toLocaleLowerCase() === item.name.toLocaleLowerCase()) {
-                        return;
-                    }
-                }
-
-                labelsToSave.push(item);
-            });
-
-            this.set('labels', labelsToSave);
-        }
-
+        this.set('labels', labelsToSave);
         this.handleAttachedModels(model);
 
         // CASE: Detect existing labels with same case-insensitive name and replace
@@ -346,12 +343,20 @@ const Member = ghostBookshelf.Model.extend({
                 columns: ['id', 'name']
             }, _.pick(options, 'transacting')))
             .then((labels) => {
+                const existingByName = new Map();
+                for (const lab of labels.models) {
+                    const name = lab.get('name');
+                    if (name) {
+                        existingByName.set(name.toLowerCase(), lab);
+                    }
+                }
+
                 labelsToSave.forEach((label) => {
-                    let existingLabel = labels.find((lab) => {
-                        return label.name.toLowerCase() === lab.get('name').toLowerCase();
-                    });
-                    label.name = (existingLabel && existingLabel.get('name')) || label.name;
-                    label.id = (existingLabel && existingLabel.id) || label.id;
+                    const match = existingByName.get(label.name.toLowerCase());
+                    if (match) {
+                        label.name = match.get('name');
+                        label.id = match.id;
+                    }
                 });
 
                 model.set('labels', labelsToSave);

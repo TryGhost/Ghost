@@ -10,7 +10,6 @@ const mail = require('../mail');
 
 const messages = {
     userNotFound: 'User not found.',
-    tokenLocked: 'Token locked',
     resetPassword: 'Reset Password',
     expired: {
         message: 'Cannot reset password.',
@@ -28,8 +27,6 @@ const messages = {
         help: 'Check if password reset link has been fully copied or request new password reset via the login form.'
     }
 };
-
-const tokenSecurity = {};
 
 function generateToken(email, settingsAPI, transaction) {
     const options = {context: {internal: true}, transacting: transaction};
@@ -73,18 +70,6 @@ function extractTokenParts(options) {
             message: tpl(messages.corruptedToken.message),
             context: tpl(messages.corruptedToken.context),
             help: tpl(messages.corruptedToken.help)
-        }));
-    }
-
-    return Promise.resolve({options, tokenParts});
-}
-
-// @TODO: use brute force middleware (see https://github.com/TryGhost/Ghost/pull/7579)
-function protectBruteForce({options, tokenParts}) {
-    if (tokenSecurity[`${tokenParts.email}+${tokenParts.expires}`] &&
-        tokenSecurity[`${tokenParts.email}+${tokenParts.expires}`].count >= 10) {
-        return Promise.reject(new errors.NoPermissionError({
-            message: tpl(messages.tokenLocked)
         }));
     }
 
@@ -187,7 +172,6 @@ async function sendResetNotification(data, mailAPI) {
 module.exports = {
     generateToken,
     extractTokenParts,
-    protectBruteForce,
     doReset,
     sendResetNotification
 };

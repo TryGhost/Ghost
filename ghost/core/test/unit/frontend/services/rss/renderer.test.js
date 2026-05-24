@@ -24,10 +24,10 @@ describe('RSS: Renderer', function () {
         sinon.restore();
     });
 
-    it('calls the cache and attempts to render, even without data', async function () {
-        rssCacheStub.returns(Promise.resolve('dummyxml'));
+    it('calls the cache and attempts to render, even without data', function () {
+        rssCacheStub.returns('dummyxml');
 
-        await renderer.render(res, baseUrl);
+        renderer.render(res, baseUrl);
         sinon.assert.calledOnce(rssCacheStub);
         assert.deepEqual(rssCacheStub.firstCall.args, ['/rss/', {}]);
 
@@ -38,12 +38,12 @@ describe('RSS: Renderer', function () {
         sinon.assert.calledWith(res.send, 'dummyxml');
     });
 
-    it('correctly merges locals into empty data before rendering', async function () {
-        rssCacheStub.returns(Promise.resolve('dummyxml'));
+    it('correctly merges locals into empty data before rendering', function () {
+        rssCacheStub.returns('dummyxml');
 
         res.locals = {foo: 'bar'};
 
-        await renderer.render(res, baseUrl);
+        renderer.render(res, baseUrl);
         sinon.assert.calledOnce(rssCacheStub);
         assert.deepEqual(rssCacheStub.firstCall.args, ['/rss/', {foo: 'bar'}]);
 
@@ -54,13 +54,13 @@ describe('RSS: Renderer', function () {
         sinon.assert.calledWith(res.send, 'dummyxml');
     });
 
-    it('correctly merges locals into non-empty data before rendering', async function () {
-        rssCacheStub.returns(Promise.resolve('dummyxml'));
+    it('correctly merges locals into non-empty data before rendering', function () {
+        rssCacheStub.returns('dummyxml');
 
         res.locals = {foo: 'bar'};
         const data = {foo: 'baz', fizz: 'buzz'};
 
-        await renderer.render(res, baseUrl, data);
+        renderer.render(res, baseUrl, data);
         sinon.assert.calledOnce(rssCacheStub);
         assert.deepEqual(rssCacheStub.firstCall.args, ['/rss/', {foo: 'baz', fizz: 'buzz'}]);
 
@@ -71,10 +71,10 @@ describe('RSS: Renderer', function () {
         sinon.assert.calledWith(res.send, 'dummyxml');
     });
 
-    it('does nothing if it gets an error', async function () {
-        rssCacheStub.returns(Promise.reject(new Error('Fake Error')));
+    it('does nothing if it gets an error', function () {
+        rssCacheStub.throws(new Error('Fake Error'));
 
-        await assert.rejects(() => renderer.render(res, baseUrl), {
+        assert.throws(() => renderer.render(res, baseUrl), {
             message: 'Fake Error'
         });
 

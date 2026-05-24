@@ -1,8 +1,7 @@
 import moment from 'moment-timezone';
 
+import {Avatar, TableCell, TableRow} from '@tryghost/shade/components';
 import {Member} from '@tryghost/admin-x-framework/api/members';
-import {MemberAvatar} from '@components/member-avatar';
-import {TableCell, TableRow} from '@tryghost/shade/components';
 import {buildMemberDetailPath} from '../member-detail-hash';
 import {cn} from '@tryghost/shade/utils';
 import {getActiveColumnValue} from '../member-query-params';
@@ -72,12 +71,11 @@ function openMemberInNewTab(memberId: string, backPath?: string) {
 function MembersListItemName({item, backPath, onClick}: { item: Member; backPath?: string; onClick?: (memberId: string) => void }) {
     return (
         <div className="flex min-w-0 items-center gap-3">
-            <MemberAvatar
-                avatarImage={item.avatar_image}
-                className="size-10 min-w-10 md:size-10 md:min-w-10"
-                memberEmail={item.email}
-                memberId={item.id}
-                memberName={item.name}
+            <Avatar
+                className="size-10 min-w-10"
+                email={item.email}
+                name={item.name}
+                src={item.avatar_image}
             />
             <div className="min-w-0">
                 <a
