@@ -914,6 +914,8 @@ describe('AutomationEditor', () => {
         await pickWaitAtTail();
 
         fireEvent.click(screen.getByRole('button', {name: 'Publish changes'}));
+        const dialog = screen.getByRole('alertdialog', {name: 'Update automation?'});
+        fireEvent.click(within(dialog).getByRole('button', {name: 'Publish changes'}));
 
         const mutateCall = mockEditMutation.mutate.mock.calls.at(-1)![0];
         // Original 2 actions + 3 locally inserted = 5.
@@ -926,6 +928,81 @@ describe('AutomationEditor', () => {
         const actionIds = new Set(mutateCall.actions.map((a: {id: string}) => a.id));
         sources.forEach(id => expect(actionIds.has(id as string)).toBe(true));
         targets.forEach(id => expect(actionIds.has(id as string)).toBe(true));
+    });
+
+    it('confirms before publishing changes to an active automation', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        await stageLocalEdit();
+
+        fireEvent.click(screen.getByRole('button', {name: 'Publish changes'}));
+
+        const dialog = screen.getByRole('alertdialog', {name: 'Update automation?'});
+        expect(within(dialog).getByText(/new runs of the automation/)).toBeInTheDocument();
+        expect(within(dialog).getByText(/actively-running ones/)).toBeInTheDocument();
+        expect(mockEditMutation.mutate).not.toHaveBeenCalled();
+
+        fireEvent.click(within(dialog).getByRole('button', {name: 'Publish changes'}));
+
+        expect(mockEditMutation.mutate).toHaveBeenCalledWith(
+            {
+                id: 'automation-id-1',
+                status: 'active',
+                actions: expect.any(Array),
+                edges: expect.any(Array)
+            },
+            expect.any(Object)
+        );
+    });
+
+    it('spins the modal button while publishing changes to an active automation', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        await stageLocalEdit();
+        fireEvent.click(screen.getByRole('button', {name: 'Publish changes'}));
+
+        let dialog = screen.getByRole('alertdialog', {name: 'Update automation?'});
+        fireEvent.click(within(dialog).getByRole('button', {name: 'Publish changes'}));
+
+        dialog = screen.getByRole('alertdialog', {name: 'Update automation?'});
+        const button = within(dialog).getByRole('button', {name: 'Publishing...'});
+        expect(button).toBeDisabled();
+        expect(button.querySelector('.animate-spin')).toBeInTheDocument();
+    });
+
+    it('shows a retry state and error in the modal when re-publishing fails', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+        mockEditMutation.mutate.mockImplementation((_payload, options) => {
+            options.onError();
+        });
+
+        renderEditor();
+
+        await stageLocalEdit();
+        fireEvent.click(screen.getByRole('button', {name: 'Publish changes'}));
+
+        const dialog = screen.getByRole('alertdialog', {name: 'Update automation?'});
+        fireEvent.click(within(dialog).getByRole('button', {name: 'Publish changes'}));
+
+        const button = within(dialog).getByRole('button', {name: 'Retry'});
+        expect(button).not.toBeDisabled();
+        expect(button).toHaveClass('bg-destructive');
     });
 
     // Publish-button label matrix. Captures the contract that the label switches across the four
