@@ -293,6 +293,6 @@
     "Your name": "",
     "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "Áskrift þinni lýkur {expiryDate}",
-    "Your subscription will renew on {renewalDate}": "Áskrift þín verður endurnýjuð {expiryDate}",
+    "Your subscription will renew on {renewalDate}": "Áskrift þín verður endurnýjuð {renewalDate}",
     "Your subscription will start on {subscriptionStart}": "Áskrift þín hefst {subscriptionStart}"
 }

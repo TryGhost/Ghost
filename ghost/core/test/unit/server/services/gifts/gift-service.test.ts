@@ -38,6 +38,7 @@ describe('GiftService', function () {
         findPendingConsumption: sinon.SinonStub<[], Promise<Gift[]>>;
         findPendingExpiration: sinon.SinonStub<[], Promise<Gift[]>>;
         findPendingReminder: sinon.SinonStub<[FindPendingReminderOptions], Promise<Gift[]>>;
+        findUnsentReminders: sinon.SinonStub<[], Promise<Gift[]>>;
         create: sinon.SinonStub;
         update: sinon.SinonStub;
         transaction: sinon.SinonStub<Parameters<GiftRepository['transaction']>, Promise<unknown>>;
@@ -86,6 +87,7 @@ describe('GiftService', function () {
             findPendingConsumption: sinon.stub<[], Promise<Gift[]>>().resolves([]),
             findPendingExpiration: sinon.stub<[], Promise<Gift[]>>().resolves([]),
             findPendingReminder: sinon.stub<[FindPendingReminderOptions], Promise<Gift[]>>().resolves([]),
+            findUnsentReminders: sinon.stub<[], Promise<Gift[]>>().resolves([]),
             create: sinon.stub(),
             update: sinon.stub(),
             transaction: sinon.stub<Parameters<GiftRepository['transaction']>, Promise<unknown>>().callsFake(async (callback) => {
@@ -128,24 +130,21 @@ describe('GiftService', function () {
         sinon.restore();
     });
 
+    let giftReminderScheduler: {scheduleFor: sinon.SinonStub};
+
     function createService(overrides: {
-        schedulerAdapter?: {schedule: sinon.SinonStub} | null;
-        getSchedulerKey?: (() => Promise<{id: string; secret: string}>) | null;
-        getSignedAdminToken?: sinon.SinonStub | null;
-        urlJoin?: sinon.SinonStub | null;
-        apiUrl?: string | null;
+        giftReminderScheduler?: {scheduleFor: sinon.SinonStub};
     } = {}) {
+        giftReminderScheduler = overrides.giftReminderScheduler ?? {
+            scheduleFor: sinon.stub().resolves()
+        };
         return new GiftService({
             giftRepository: giftRepository as any,
             memberRepository,
             tiersService,
             giftEmailService,
             staffServiceEmails,
-            schedulerAdapter: overrides.schedulerAdapter ?? null,
-            getSchedulerKey: overrides.getSchedulerKey ?? null,
-            getSignedAdminToken: overrides.getSignedAdminToken ?? null,
-            urlJoin: overrides.urlJoin ?? null,
-            apiUrl: overrides.apiUrl ?? null
+            giftReminderScheduler
         });
     }
 
@@ -1331,177 +1330,67 @@ describe('GiftService', function () {
         });
     });
 
-    describe('scheduleReminder (via redeem)', function () {
-        const apiUrl = 'https://example.com/ghost/api/admin';
-
-        function buildSchedulerDeps() {
-            const schedule = sinon.stub();
-            const getSignedAdminToken = sinon.stub().returns('signed-token');
-            const urlJoin = sinon.stub().callsFake((...parts: string[]) => parts.join('/'));
-            const key = {id: 'key-id', secret: '00'.repeat(32)};
-            const getSchedulerKey = sinon.stub().resolves(key);
-
-            return {
-                schedulerAdapter: {schedule},
-                key,
-                getSchedulerKey,
-                getSignedAdminToken,
-                urlJoin,
-                apiUrl
-            };
-        }
-
+    describe('redeem delegates reminder scheduling', function () {
         function stubRedeemer() {
             const memberGet = sinon.stub();
-
             memberGet.withArgs('status').returns('free');
             memberGet.withArgs('name').returns('Member Name');
             memberGet.withArgs('email').returns('member@example.com');
-
             memberRepository.get.resolves({id: 'member_1', get: memberGet});
         }
 
-        it('schedules a reminder 7 days before consumes_at after redeem commits', async function () {
+        it('calls giftReminderScheduler.scheduleFor with the redeemed gift after commit', async function () {
             stubRedeemer();
+            giftRepository.getByToken.resolves(buildGift());
 
-            const gift = buildGift();
-            giftRepository.getByToken.resolves(gift);
-
-            const deps = buildSchedulerDeps();
-            const service = createService(deps);
-
+            const service = createService();
             const redeemed = await service.redeem('gift-token', 'member_1');
 
-            assert.ok(redeemed.consumesAt);
-            const expectedTime = redeemed.consumesAt.getTime() - 7 * 24 * 60 * 60 * 1000;
-
-            sinon.assert.calledOnce(deps.schedulerAdapter.schedule);
-            const [job] = deps.schedulerAdapter.schedule.getCall(0).args;
-            assert.equal(job.time, expectedTime);
-            assert.equal(job.extra.httpMethod, 'PUT');
-            assert.equal(job.url, `${apiUrl}/gifts/flush_reminders?token=signed-token`);
-
-            sinon.assert.calledOnceWithExactly(deps.getSignedAdminToken, {
-                publishedAt: new Date(expectedTime).toISOString(),
-                apiUrl,
-                key: deps.key
-            });
+            sinon.assert.calledOnceWithExactly(giftReminderScheduler.scheduleFor, redeemed);
         });
 
-        it('does NOT schedule a reminder when scheduler deps are absent', async function () {
+        it('schedules even when staff notification fails', async function () {
             stubRedeemer();
+            giftRepository.getByToken.resolves(buildGift());
+            staffServiceEmails.notifyGiftSubscriptionStarted.rejects(new Error('SMTP error'));
 
-            const gift = buildGift();
-            giftRepository.getByToken.resolves(gift);
-
-            // No scheduler deps at all
             const service = createService();
             await service.redeem('gift-token', 'member_1');
 
-            // If we got here without throwing, the no-op path worked.
-            // Explicit assertion: staff notification still ran.
-            sinon.assert.calledOnce(staffServiceEmails.notifyGiftSubscriptionStarted);
+            sinon.assert.calledOnce(giftReminderScheduler.scheduleFor);
         });
 
-        it('does NOT schedule a reminder when only some scheduler deps are present', async function () {
+        it('schedules after an external transaction commits', async function () {
             stubRedeemer();
+            giftRepository.getByToken.resolves(buildGift());
 
-            const gift = buildGift();
-            giftRepository.getByToken.resolves(gift);
-
-            const schedule = sinon.stub();
-            // schedulerAdapter provided but apiUrl missing
-            const service = createService({
-                schedulerAdapter: {schedule},
-                getSchedulerKey: null,
-                getSignedAdminToken: sinon.stub(),
-                urlJoin: sinon.stub(),
-                apiUrl: null
-            });
-
-            await service.redeem('gift-token', 'member_1');
-
-            sinon.assert.notCalled(schedule);
-        });
-
-        it('logs but does not throw when getSignedAdminToken throws', async function () {
-            stubRedeemer();
-
-            const gift = buildGift();
-            giftRepository.getByToken.resolves(gift);
-
-            const deps = buildSchedulerDeps();
-            deps.getSignedAdminToken.throws(new Error('JWT signing failed'));
-
-            const service = createService(deps);
-
-            // Should not throw — error is caught and logged.
-            const redeemed = await service.redeem('gift-token', 'member_1');
-
-            assert.equal(redeemed.status, 'redeemed');
-            sinon.assert.notCalled(deps.schedulerAdapter.schedule);
-        });
-
-        it('schedules the reminder even when staff notification fails', async function () {
-            stubRedeemer();
-
-            const gift = buildGift();
-            giftRepository.getByToken.resolves(gift);
-
-            staffServiceEmails.notifyGiftSubscriptionStarted.rejects(new Error('SMTP error'));
-
-            const deps = buildSchedulerDeps();
-            const service = createService(deps);
-
-            await service.redeem('gift-token', 'member_1');
-
-            sinon.assert.calledOnce(deps.schedulerAdapter.schedule);
-        });
-
-        it('schedules a reminder when redeem uses an external transaction (after commit)', async function () {
-            stubRedeemer();
-
-            const gift = buildGift();
-            giftRepository.getByToken.resolves(gift);
-
-            const deps = buildSchedulerDeps();
-            const service = createService(deps);
-
+            const service = createService();
             const externalTrx = {executionPromise: Promise.resolve()};
             await service.redeem('gift-token', 'member_1', {transacting: externalTrx});
 
-            // Wait for the post-commit notify callback to run.
             await externalTrx.executionPromise;
-            // One more microtask flush for the .then chain.
             await new Promise((resolve) => {
                 setImmediate(resolve);
             });
 
-            sinon.assert.calledOnce(deps.schedulerAdapter.schedule);
+            sinon.assert.calledOnce(giftReminderScheduler.scheduleFor);
         });
 
-        it('does NOT schedule a reminder when an external transaction rolls back', async function () {
+        it('does NOT schedule when an external transaction rolls back', async function () {
             stubRedeemer();
+            giftRepository.getByToken.resolves(buildGift());
 
-            const gift = buildGift();
-            giftRepository.getByToken.resolves(gift);
-
-            const deps = buildSchedulerDeps();
-            const service = createService(deps);
-
+            const service = createService();
             const rejection = Promise.reject(new Error('rolled back'));
-            // Suppress unhandled rejection warning
             rejection.catch(() => {});
             const externalTrx = {executionPromise: rejection};
-
             await service.redeem('gift-token', 'member_1', {transacting: externalTrx});
 
-            // Wait for the .then(notify, () => {}) reject branch.
             await new Promise((resolve) => {
                 setImmediate(resolve);
             });
 
-            sinon.assert.notCalled(deps.schedulerAdapter.schedule);
+            sinon.assert.notCalled(giftReminderScheduler.scheduleFor);
         });
     });
 

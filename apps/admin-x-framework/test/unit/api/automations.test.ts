@@ -5,7 +5,8 @@ import {
     AutomationSendEmailAction,
     InsertActionAnchor,
     insertSendEmailAction,
-    insertWaitAction
+    insertWaitAction,
+    removeAction
 } from '../../../src/api/automations';
 
 const baseDetail = (actions: AutomationDetail['actions'], edges: AutomationDetail['edges']): AutomationDetail => ({
@@ -189,6 +190,78 @@ describe('automations api helpers', () => {
             const next = insertSendEmailAction({detail: baseDetail([], []), anchor: {}});
 
             expect(ObjectId.isValid(next.actions[0].id)).toBe(true);
+        });
+    });
+
+    describe('removeAction', () => {
+        it('removes the only step and leaves the automation empty', () => {
+            const detail = baseDetail(
+                [{id: 'a', type: 'wait', data: {wait_hours: 24}}],
+                []
+            );
+
+            const next = removeAction({detail, actionId: 'a'});
+
+            expect(next.actions).toEqual([]);
+            expect(next.edges).toEqual([]);
+        });
+
+        it('removes the head step, promoting the second action to head', () => {
+            const detail = baseDetail(
+                [
+                    {id: 'a', type: 'wait', data: {wait_hours: 24}},
+                    {id: 'b', type: 'wait', data: {wait_hours: 48}}
+                ],
+                [{source_action_id: 'a', target_action_id: 'b'}]
+            );
+
+            const next = removeAction({detail, actionId: 'a'});
+
+            expect(next.actions.map(action => action.id)).toEqual(['b']);
+            expect(next.edges).toEqual([]);
+        });
+
+        it('removes the tail step, leaving the previous action as the new tail', () => {
+            const detail = baseDetail(
+                [
+                    {id: 'a', type: 'wait', data: {wait_hours: 24}},
+                    {id: 'b', type: 'wait', data: {wait_hours: 48}}
+                ],
+                [{source_action_id: 'a', target_action_id: 'b'}]
+            );
+
+            const next = removeAction({detail, actionId: 'b'});
+
+            expect(next.actions.map(action => action.id)).toEqual(['a']);
+            expect(next.edges).toEqual([]);
+        });
+
+        it('removes a middle step by stitching its neighbours together', () => {
+            const detail = baseDetail(
+                [
+                    {id: 'a', type: 'wait', data: {wait_hours: 24}},
+                    {id: 'b', type: 'wait', data: {wait_hours: 48}},
+                    {id: 'c', type: 'wait', data: {wait_hours: 72}}
+                ],
+                [
+                    {source_action_id: 'a', target_action_id: 'b'},
+                    {source_action_id: 'b', target_action_id: 'c'}
+                ]
+            );
+
+            const next = removeAction({detail, actionId: 'b'});
+
+            expect(next.actions.map(action => action.id)).toEqual(['a', 'c']);
+            expect(next.edges).toEqual([{source_action_id: 'a', target_action_id: 'c'}]);
+        });
+
+        it('throws when actionId references a non-existent action', () => {
+            const detail = baseDetail(
+                [{id: 'a', type: 'wait', data: {wait_hours: 24}}],
+                []
+            );
+
+            expect(() => removeAction({detail, actionId: 'does-not-exist'})).toThrow(/unknown action id "does-not-exist"/);
         });
     });
 });

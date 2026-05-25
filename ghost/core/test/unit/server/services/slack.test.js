@@ -205,7 +205,10 @@ describe('Slack', function () {
             const wait = ms => new Promise((resolve) => {
                 setTimeout(resolve, ms);
             });
-            while (!loggingStub.calledOnce) {
+            // Bound the poll so a regression fails with a clear assertion
+            // below rather than stalling until the suite-wide test timeout.
+            const deadline = Date.now() + 1000;
+            while (!loggingStub.calledOnce && Date.now() < deadline) {
                 await wait(50);
             }
             sinon.assert.calledOnce(makeRequestStub);
