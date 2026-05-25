@@ -130,8 +130,8 @@ catalogs:
       specifier: 0.4.24
       version: 0.4.24
     fs-extra:
-      specifier: 11.3.4
-      version: 11.3.4
+      specifier: 11.3.5
+      version: 11.3.5
     glob:
       specifier: 10.5.0
       version: 10.5.0
@@ -2062,7 +2062,7 @@ importers:
         version: 0.7.43
       fs-extra:
         specifier: 'catalog:'
-        version: 11.3.4
+        version: 11.3.5
       ghost:
         specifier: workspace:*
         version: link:../core
@@ -2422,7 +2422,7 @@ importers:
         version: 4.0.5
       fs-extra:
         specifier: 'catalog:'
-        version: 11.3.4
+        version: 11.3.5
       ghost-storage-base:
         specifier: 1.1.2
         version: 1.1.2
@@ -2806,7 +2806,7 @@ importers:
         version: 8.57.1
       fs-extra:
         specifier: 'catalog:'
-        version: 11.3.4
+        version: 11.3.5
       glob:
         specifier: 'catalog:'
         version: 10.5.0
