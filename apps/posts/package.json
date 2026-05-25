@@ -81,9 +81,7 @@
                 ]
             },
             "test:unit": {
-                "dependsOn": [
-                    "^build"
-                ]
+                "dependsOn": []
             }
         }
     }
