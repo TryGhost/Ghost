@@ -10,10 +10,14 @@ export type AutomationRequestState = 'idle' | 'loading' | 'error';
 interface AutomationHeaderProps {
     automation: AutomationDetail | undefined;
     isLoadingAutomation: boolean;
+    isSaveButtonEnabled: boolean;
     isPublishButtonEnabled: boolean;
+    saveButtonVariant: ButtonProps['variant'];
     publishButtonVariant: ButtonProps['variant'];
     isTurnOffButtonEnabled: boolean;
+    saveButtonChildren: React.ReactNode;
     publishButtonChildren: React.ReactNode;
+    onSave: () => void;
     onPublish: () => void;
     onTurnOff: () => void;
 }
@@ -21,10 +25,14 @@ interface AutomationHeaderProps {
 const AutomationHeader: React.FC<AutomationHeaderProps> = ({
     automation,
     isLoadingAutomation,
+    isSaveButtonEnabled,
     isPublishButtonEnabled,
+    saveButtonVariant,
     publishButtonVariant,
     isTurnOffButtonEnabled,
+    saveButtonChildren,
     publishButtonChildren,
+    onSave,
     onPublish,
     onTurnOff
 }) => {
@@ -63,6 +71,15 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
+                )}
+                {status === 'inactive' && (
+                    <Button
+                        disabled={!isSaveButtonEnabled}
+                        variant={saveButtonVariant}
+                        onClick={onSave}
+                    >
+                        {saveButtonChildren}
+                    </Button>
                 )}
                 <Button
                     disabled={!isPublishButtonEnabled}
