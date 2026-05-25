@@ -20,7 +20,7 @@ import articleBodyStyles from '@src/components/article-body-styles';
 import getReadingTime from '../../../utils/get-reading-time';
 import {Activity} from '@src/api/activitypub';
 import {cardsCSS, cardsJS} from '@src/utils/cards-assets';
-import {disableVideoCardAutoplay, escapeHtml, isSafeUrl, openLinksInNewTab} from '@src/utils/content-formatters';
+import {enforceVideoCardInlinePlayback, escapeHtml, isSafeUrl, openLinksInNewTab} from '@src/utils/content-formatters';
 import {handleProfileClick} from '@src/utils/handle-profile-click';
 import {isPendingActivity} from '../../../utils/pending-activity';
 import {useDebounce} from 'use-debounce';
@@ -68,11 +68,11 @@ const ArticleBody: React.FC<{
     const darkMode = (document.documentElement.classList.contains('dark') && backgroundColor === 'SYSTEM') || backgroundColor === 'DARK';
 
     const cssContent = articleBodyStyles();
-    const shouldDisableVideoCardAutoplay = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+    const shouldEnforceVideoCardInlinePlayback = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(hover: none) and (pointer: coarse)').matches;
     const articleHtml = useMemo(() => {
-        const transformedHtml = shouldDisableVideoCardAutoplay ? disableVideoCardAutoplay(html) : html;
+        const transformedHtml = shouldEnforceVideoCardInlinePlayback ? enforceVideoCardInlinePlayback(html) : html;
         return openLinksInNewTab(transformedHtml);
-    }, [html, shouldDisableVideoCardAutoplay]);
+    }, [html, shouldEnforceVideoCardInlinePlayback]);
 
     const htmlContent = `
         <html class="has-${!darkMode ? 'dark' : 'light'}-text has-${fontStyle}-body ${backgroundColor === 'SEPIA' && 'has-sepia-bg'}">

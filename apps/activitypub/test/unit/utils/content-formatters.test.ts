@@ -2,11 +2,11 @@
  * @vitest-environment jsdom
  */
 
-import {disableVideoCardAutoplay} from '../../../src/utils/content-formatters';
+import {enforceVideoCardInlinePlayback} from '../../../src/utils/content-formatters';
 
-describe('disableVideoCardAutoplay', function () {
-    it('makes autoplay video cards manual and inline-playable', function () {
-        const result = disableVideoCardAutoplay(`
+describe('enforceVideoCardInlinePlayback', function () {
+    it('keeps autoplay video cards autoplaying and inline-playable', function () {
+        const result = enforceVideoCardInlinePlayback(`
             <figure class="kg-card kg-video-card">
                 <div class="kg-video-container">
                     <video src="/video.mp4" autoplay loop muted playsinline></video>
@@ -21,22 +21,22 @@ describe('disableVideoCardAutoplay', function () {
         const video = div.querySelector('video') as HTMLVideoElement;
         const playerContainer = div.querySelector('.kg-video-player-container');
 
-        expect(video.hasAttribute('autoplay')).toBe(false);
-        expect(video.hasAttribute('loop')).toBe(false);
-        expect(video.autoplay).toBe(false);
-        expect(video.loop).toBe(false);
+        expect(video.hasAttribute('autoplay')).toBe(true);
+        expect(video.hasAttribute('loop')).toBe(true);
+        expect(video.autoplay).toBe(true);
+        expect(video.loop).toBe(true);
         expect(video.hasAttribute('muted')).toBe(true);
         expect(video.hasAttribute('playsinline')).toBe(true);
         expect(video.hasAttribute('webkit-playsinline')).toBe(true);
         expect(video.hasAttribute('x5-playsinline')).toBe(true);
-        expect(playerContainer?.classList.contains('kg-video-hide')).toBe(false);
+        expect(playerContainer?.classList.contains('kg-video-hide')).toBe(true);
     });
 
-    it('leaves non-autoplay video cards unchanged', function () {
-        const result = disableVideoCardAutoplay(`
+    it('adds inline playback attributes to non-autoplay video cards', function () {
+        const result = enforceVideoCardInlinePlayback(`
             <figure class="kg-card kg-video-card">
                 <div class="kg-video-container">
-                    <video src="/video.mp4" loop muted playsinline></video>
+                    <video src="/video.mp4" loop muted></video>
                     <div class="kg-video-player-container kg-video-hide"></div>
                 </div>
             </figure>
@@ -50,7 +50,9 @@ describe('disableVideoCardAutoplay', function () {
 
         expect(video.hasAttribute('autoplay')).toBe(false);
         expect(video.hasAttribute('loop')).toBe(true);
-        expect(video.hasAttribute('webkit-playsinline')).toBe(false);
+        expect(video.hasAttribute('playsinline')).toBe(true);
+        expect(video.hasAttribute('webkit-playsinline')).toBe(true);
+        expect(video.hasAttribute('x5-playsinline')).toBe(true);
         expect(playerContainer?.classList.contains('kg-video-hide')).toBe(true);
     });
 });
