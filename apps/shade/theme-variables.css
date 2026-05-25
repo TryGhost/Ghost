@@ -25,7 +25,6 @@
     --text-primary: var(--foreground);
     --text-secondary: hsl(210 13% 55%);
     --text-tertiary: hsl(210 13% 63%);
-    --text-inverse: hsl(0 0% 100%);
     --border-subtle: var(--input);
     --border-default: var(--border);
     --border-strong: hsl(210 13% 79%);
@@ -93,7 +92,6 @@
     --text-primary: var(--foreground);
     --text-secondary: hsl(210 13% 72%);
     --text-tertiary: hsl(210 13% 63%);
-    --text-inverse: hsl(216 11% 9%);
     --border-subtle: hsl(210 11% 20%);
     --border-default: var(--border);
     --border-strong: hsl(210 13% 55%);

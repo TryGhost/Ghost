@@ -52,12 +52,11 @@ export const Surface: Story = {
 export const Text: Story = {
     render: () => (
         <ColorPalette
-            description="Hierarchy for body and label copy. Reach for these instead of foreground variants when you want explicit hierarchy."
+            description="Hierarchy for body and label copy. Primary is the default body tone, secondary supports subdued labels and helper text, and tertiary is reserved for the quietest supporting copy or empty-state details."
             swatches={[
                 {name: 'primary', cssVar: '--text-primary'},
                 {name: 'secondary', cssVar: '--text-secondary'},
-                {name: 'tertiary', cssVar: '--text-tertiary'},
-                {name: 'inverse', cssVar: '--text-inverse'}
+                {name: 'tertiary', cssVar: '--text-tertiary'}
             ]}
             title="Text"
         />
