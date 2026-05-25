@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/sodo-search",
-  "version": "1.8.20",
+  "version": "1.8.21",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -27,8 +27,6 @@
     "tailwind": "pnpm tailwind:base --watch ",
     "tailwind:base": "tailwindcss -i ./src/index.css -o ./umd/main.css --minify",
     "test": "vitest run",
-    "test:ci": "pnpm test --coverage",
-    "test:unit": "pnpm test:ci",
     "lint": "eslint src --ext .js --cache",
     "preship": "pnpm lint",
     "ship": "node ../../.github/scripts/release-apps.js",
