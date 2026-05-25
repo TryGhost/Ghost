@@ -11,6 +11,28 @@ function hasParagraphWrapper(html) {
     return doc.body?.firstElementChild?.tagName === 'P';
 }
 
+function cleanCaptionHtml(html) {
+    return cleanBasicHtml(html || '', {firstChildInnerContent: true});
+}
+
+function isLexicalPlainTextSpan(element) {
+    return element.tagName === 'SPAN' && element.style.length === 1 && element.style.whiteSpace === 'pre-wrap';
+}
+
+function normalizeCaptionHtml(html) {
+    const cleanedHtml = cleanCaptionHtml(html);
+    const domParser = new DOMParser();
+    const doc = domParser.parseFromString(cleanedHtml, 'text/html');
+
+    doc.body.querySelectorAll('span').forEach((element) => {
+        if (isLexicalPlainTextSpan(element)) {
+            element.replaceWith(...element.childNodes);
+        }
+    });
+
+    return doc.body.innerHTML.trim();
+}
+
 export default class GhEditorFeatureImageComponent extends Component {
     @service settings;
 
@@ -31,7 +53,11 @@ export default class GhEditorFeatureImageComponent extends Component {
 
     @action
     setCaption(html) {
-        const cleanedHtml = cleanBasicHtml(html || '', {firstChildInnerContent: true});
+        const cleanedHtml = cleanCaptionHtml(html);
+        if (normalizeCaptionHtml(cleanedHtml) === normalizeCaptionHtml(this.caption)) {
+            return;
+        }
+
         this.args.updateCaption(cleanedHtml);
     }
 
