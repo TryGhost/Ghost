@@ -55,6 +55,19 @@
         "* 22-23 * * 1-5",
         "* 0-4 * * 2-6"
     ],
+    // CVE-driven updates skip the weekend schedule and the dashboard-
+    // approval gate, and stay rebased against main so conflicts don't
+    // strand them. The 72h release-age soak is deliberately kept so a
+    // malicious "fix" publish can't fast-track into main. Automerge is
+    // configured per update-type in packageRules below so security
+    // majors still wait for human review.
+    "vulnerabilityAlerts": {
+        "schedule": ["at any time"],
+        "rebaseWhen": "behind-base-branch",
+        "minimumReleaseAge": "3 days",
+        "dependencyDashboardApproval": false,
+        "labels": ["dependencies", "security"]
+    },
     "ignoreDeps": [
         // https://github.com/TryGhost/Ghost/commit/2b9e494dfcb95c40f596ccf54ec3151c25d53601
         // `got` 10.x has a Node 10 bug that makes it pretty much unusable for now
@@ -230,6 +243,23 @@
             "matchUpdateTypes": [
                 "digest"
             ],
+            "automerge": true,
+            "automergeType": "pr"
+        },
+
+        // Security patches and minors automerge after CI passes regardless
+        // of any other automerge exclusion (e.g. the CSS preprocessor rule
+        // in the shared preset). Security majors are intentionally left
+        // for human merge — but the `vulnerabilityAlerts` block above
+        // still opens them without a dashboard-approval tick.
+        {
+            "description": "Automerge non-major security updates after CI passes",
+            "matchUpdateTypes": [
+                "patch",
+                "minor",
+                "digest"
+            ],
+            "isVulnerabilityAlert": true,
             "automerge": true,
             "automergeType": "pr"
         },

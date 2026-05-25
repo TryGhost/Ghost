@@ -56,6 +56,21 @@ function getRedirectUrl(query) {
     }
 }
 
+function authenticatePrivateSession(req, res, next) {
+    const hash = req.session.token || '';
+    const salt = req.session.salt || '';
+    const isVerified = verifySessionHash(salt, hash);
+
+    if (isVerified) {
+        return next();
+    } else {
+        let redirectUrl = urlUtils.urlFor({relativeUrl: privateRoute});
+        redirectUrl += '?r=' + encodeURIComponent(req.url);
+
+        return res.redirect(redirectUrl);
+    }
+}
+
 const privateBlogging = {
     checkIsPrivate: function checkIsPrivate(req, res, next) {
         let isPrivateBlog = settingsCache.get('is_private');
@@ -112,7 +127,7 @@ const privateBlogging = {
         }
 
         // NOTE: Redirect to /private if the session does not exist.
-        privateBlogging.authenticatePrivateSession(req, res, function onSessionVerified() {
+        authenticatePrivateSession(req, res, function onSessionVerified() {
             // CASE: RSS is disabled for private blogging e.g. they create overhead
             if (req.path.match(/\/rss\/$/)) {
                 return next(new errors.NotFoundError({
@@ -122,21 +137,6 @@ const privateBlogging = {
 
             next();
         });
-    },
-
-    authenticatePrivateSession: function authenticatePrivateSession(req, res, next) {
-        const hash = req.session.token || '';
-        const salt = req.session.salt || '';
-        const isVerified = verifySessionHash(salt, hash);
-
-        if (isVerified) {
-            return next();
-        } else {
-            let redirectUrl = urlUtils.urlFor({relativeUrl: privateRoute});
-            redirectUrl += '?r=' + encodeURIComponent(req.url);
-
-            return res.redirect(redirectUrl);
-        }
     },
 
     // This is here so a call to /private/ after a session is verified will redirect to home;
@@ -198,7 +198,7 @@ const privateBlogging = {
         }
 
         // CASE: 404 - redirect this page back to /private/ if the user isn't verified
-        return privateBlogging.authenticatePrivateSession(req, res, function onSessionVerified() {
+        return authenticatePrivateSession(req, res, function onSessionVerified() {
             // CASE: User is logged in, render an error
             return next(err);
         });
