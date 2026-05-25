@@ -1,8 +1,9 @@
 import '@xyflow/react/dist/style.css';
 import AddStepEdge, {type AddStepEdgeData} from './add-step-edge';
+import EmailContentModal from './email-modal/email-content-modal';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import StepPicker, {type StepPickerType} from './step-picker';
-import {AutomationAction, AutomationDetail, AutomationSendEmailAction, AutomationWaitAction, InsertActionAnchor, MAX_AUTOMATION_ACTIONS, insertSendEmailAction, insertWaitAction, removeAction, updateWaitAction} from '@tryghost/admin-x-framework/api/automations';
+import {AutomationAction, AutomationDetail, AutomationSendEmailAction, AutomationWaitAction, InsertActionAnchor, MAX_AUTOMATION_ACTIONS, insertSendEmailAction, insertWaitAction, removeAction, updateSendEmailAction, updateWaitAction} from '@tryghost/admin-x-framework/api/automations';
 import {Background, Edge, Handle, Node, NodeProps, Position, ReactFlow} from '@xyflow/react';
 import {Banner, Button, Checkbox, Input, Label, LoadingIndicator, Popover, PopoverContent, PopoverTrigger, Select, SelectTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
@@ -365,7 +366,10 @@ type WaitStepSidebarDetail = ActionStepSidebarDetail<AutomationWaitAction, 'Wait
     onUpdate: (waitHours: number) => void;
 };
 
-type SendEmailStepSidebarDetail = ActionStepSidebarDetail<AutomationSendEmailAction, 'Send email'>;
+type SendEmailStepSidebarDetail = ActionStepSidebarDetail<AutomationSendEmailAction, 'Send email'> & {
+    onUpdateSubject: (subject: string) => void;
+    onEditEmail: () => void;
+};
 
 type StepSidebarDetail = TriggerStepSidebarDetail | WaitStepSidebarDetail | SendEmailStepSidebarDetail;
 
@@ -380,10 +384,12 @@ type StepSidebarDetailOptions = {
     automation: AutomationDetail;
     onDelete: (actionId: string) => void;
     onUpdateWait: (actionId: string, waitHours: number) => void;
+    onUpdateSubject: (actionId: string, subject: string) => void;
+    onEditEmail: (actionId: string) => void;
     stepId: string | null;
 };
 
-const getStepSidebarDetail = ({automation, stepId, onDelete, onUpdateWait}: StepSidebarDetailOptions): StepSidebarDetail | null => {
+const getStepSidebarDetail = ({automation, stepId, onDelete, onUpdateWait, onUpdateSubject, onEditEmail}: StepSidebarDetailOptions): StepSidebarDetail | null => {
     if (!stepId) {
         return null;
     }
@@ -423,6 +429,8 @@ const getStepSidebarDetail = ({automation, stepId, onDelete, onUpdateWait}: Step
             title: action.data.email_subject || 'No subject',
             action,
             onDelete: () => onDelete(action.id),
+            onUpdateSubject: (subject: string) => onUpdateSubject(action.id, subject),
+            onEditEmail: () => onEditEmail(action.id),
             type: 'send_email'
         };
     default: {
@@ -445,17 +453,6 @@ const ReadOnlySelect: React.FC<{value: string}> = ({value}) => (
             <span>{value}</span>
         </SelectTrigger>
     </Select>
-);
-
-const DisabledPanelButton: React.FC<React.PropsWithChildren<{variant?: 'default' | 'destructive'}>> = ({children, variant = 'default'}) => (
-    <Button
-        className={cn('w-full', variant === 'destructive' && 'border-red text-red')}
-        type='button'
-        variant='outline'
-        disabled
-    >
-        {children}
-    </Button>
 );
 
 const TriggerSidebarBody: React.FC<{memberTiers: MemberTier[]}> = ({memberTiers}) => (
@@ -555,15 +552,29 @@ const WaitSidebarBody: React.FC<{
     );
 };
 
-const SendEmailSidebarBody: React.FC<{action: AutomationSendEmailAction; onDelete: () => void}> = ({action, onDelete}) => (
+const SendEmailSidebarBody: React.FC<{
+    action: AutomationSendEmailAction;
+    onUpdateSubject: (subject: string) => void;
+    onEditEmail: () => void;
+    onDelete: () => void;
+}> = ({action, onUpdateSubject, onEditEmail, onDelete}) => (
     <div className='flex flex-1 flex-col gap-5'>
         <SidebarField label='Subject line'>
-            <Input value={action.data.email_subject || 'No subject'} readOnly />
+            <Input
+                placeholder='Subject line'
+                value={action.data.email_subject}
+                onChange={e => onUpdateSubject(e.target.value)}
+            />
         </SidebarField>
-        <DisabledPanelButton>
+        <Button
+            className='w-full'
+            type='button'
+            variant='outline'
+            onClick={onEditEmail}
+        >
             <LucideIcon.Pencil className='size-4' />
             Edit email
-        </DisabledPanelButton>
+        </Button>
         <div className='mt-auto pt-6'>
             <DeleteStepButton onClick={onDelete} />
         </div>
@@ -577,7 +588,7 @@ const StepSidebarBody: React.FC<{detail: StepSidebarDetail}> = ({detail}) => {
     case 'wait':
         return <WaitSidebarBody key={detail.action.id} action={detail.action} onDelete={detail.onDelete} onUpdate={detail.onUpdate} />;
     case 'send_email':
-        return <SendEmailSidebarBody action={detail.action} onDelete={detail.onDelete} />;
+        return <SendEmailSidebarBody key={detail.action.id} action={detail.action} onDelete={detail.onDelete} onEditEmail={detail.onEditEmail} onUpdateSubject={detail.onUpdateSubject} />;
     default: {
         const _exhaustive: never = detail;
         throw new Error(`Unknown sidebar type: ${_exhaustive}`);
@@ -655,6 +666,7 @@ const insertActionByType = {
 
 const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoading, isError, onChange}) => {
     const [selectedStepId, setSelectedStepId] = useState<string | null>(null);
+    const [emailModalActionId, setEmailModalActionId] = useState<string | null>(null);
 
     const handlePick = useCallback((type: StepPickerType, anchor: CanvasAnchor) => {
         if (!automation) {
@@ -685,6 +697,21 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
         onChange(updateWaitAction({detail: automation, actionId, waitHours}));
     }, [automation, onChange]);
 
+    const handleUpdateSubject = useCallback((actionId: string, subject: string) => {
+        if (!automation) {
+            return;
+        }
+        onChange(updateSendEmailAction({detail: automation, actionId, emailSubject: subject}));
+    }, [automation, onChange]);
+
+    const handleEditEmail = useCallback((actionId: string) => {
+        setEmailModalActionId(actionId);
+    }, []);
+
+    const emailModalAction = emailModalActionId && automation
+        ? automation.actions.find((action): action is AutomationSendEmailAction => action.id === emailModalActionId && action.type === 'send_email')
+        : undefined;
+
     const initialViewport = useRef(getInitialViewport(window.innerWidth));
 
     const graph = useMemo(() => {
@@ -704,6 +731,8 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
         automation,
         onDelete: handleDelete,
         onUpdateWait: handleUpdateWait,
+        onUpdateSubject: handleUpdateSubject,
+        onEditEmail: handleEditEmail,
         stepId: selectedStepId
     }) : null;
     const clearDetail = useCallback(() => {
@@ -760,6 +789,18 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
                 <Background />
             </ReactFlow>
             <StepSidebar detail={sidebarDetail} onClose={clearDetail} />
+            {emailModalAction && automation && (
+                <EmailContentModal
+                    initialLexical={emailModalAction.data.email_lexical || ''}
+                    initialSubject={emailModalAction.data.email_subject || ''}
+                    onClose={() => setEmailModalActionId(null)}
+                    onSave={({subject, lexical}) => {
+                        // Commit the edited content into the local draft; persisted on Publish.
+                        onChange(updateSendEmailAction({detail: automation, actionId: emailModalAction.id, emailSubject: subject, emailLexical: lexical}));
+                        setEmailModalActionId(null);
+                    }}
+                />
+            )}
         </div>
     );
 };

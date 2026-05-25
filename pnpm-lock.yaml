@@ -1187,6 +1187,9 @@ importers:
       '@tryghost/color-utils':
         specifier: 'catalog:'
         version: 0.2.16
+      '@tryghost/koenig-lexical':
+        specifier: 'catalog:'
+        version: 1.8.1
       '@tryghost/nql-lang':
         specifier: 'catalog:'
         version: 0.6.4

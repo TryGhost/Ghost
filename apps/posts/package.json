@@ -61,6 +61,7 @@
         "@ebay/nice-modal-react": "1.2.13",
         "@tryghost/color-utils": "catalog:",
         "@tryghost/admin-x-framework": "workspace:*",
+        "@tryghost/koenig-lexical": "catalog:",
         "@tryghost/nql-lang": "catalog:",
         "@tryghost/shade": "workspace:*",
         "@xyflow/react": "12.8.6",

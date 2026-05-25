@@ -92,16 +92,9 @@ export const useEditAutomation = createMutation<AutomationDetailResponseType, Ed
 
 const generateActionId = (): string => ObjectId().toHexString();
 
-// TODO NY-1253: replace this placeholder when email content can be edited.
-const PLACEHOLDER_EMAIL_LEXICAL = JSON.stringify({
+const EMPTY_EMAIL_LEXICAL = JSON.stringify({
     root: {
-        children: [{
-            type: 'paragraph',
-            children: [{
-                type: 'text',
-                text: 'Untitled email body.'
-            }]
-        }],
+        children: [],
         direction: null,
         format: '',
         indent: 0,
@@ -121,7 +114,7 @@ const buildSendEmailAction = (): AutomationSendEmailAction => ({
     type: 'send_email',
     data: {
         email_subject: 'Untitled email',
-        email_lexical: PLACEHOLDER_EMAIL_LEXICAL,
+        email_lexical: EMPTY_EMAIL_LEXICAL,
         email_sender_name: null,
         email_sender_email: null,
         email_sender_reply_to: null,
@@ -210,6 +203,13 @@ type UpdateWaitActionArgs = ReadonlyDeep<{
     waitHours: number;
 }>;
 
+type UpdateSendEmailActionArgs = ReadonlyDeep<{
+    detail: AutomationDetail;
+    actionId: string;
+    emailSubject?: string;
+    emailLexical?: string;
+}>;
+
 export const updateWaitAction = ({detail, actionId, waitHours}: UpdateWaitActionArgs): AutomationDetail => {
     if (!Number.isSafeInteger(waitHours) || waitHours <= 0) {
         throw new Error(`updateWaitAction: waitHours must be a safe positive integer, received "${waitHours}"`);
@@ -237,6 +237,26 @@ export const updateWaitAction = ({detail, actionId, waitHours}: UpdateWaitAction
         throw new Error(`updateWaitAction: unknown action id "${actionId}"`);
     }
 
+    return {...detail, actions, edges: [...detail.edges]};
+};
+
+export const updateSendEmailAction = ({detail, actionId, emailSubject, emailLexical}: UpdateSendEmailActionArgs): AutomationDetail => {
+    const target = detail.actions.find(action => action.id === actionId);
+    if (!target) {
+        throw new Error(`updateSendEmailAction: unknown action id "${actionId}"`);
+    }
+    if (target.type !== 'send_email') {
+        throw new Error(`updateSendEmailAction: action "${actionId}" is not a send_email action`);
+    }
+    const updated: AutomationSendEmailAction = {
+        ...target,
+        data: {
+            ...target.data,
+            ...(emailSubject !== undefined ? {email_subject: emailSubject} : {}),
+            ...(emailLexical !== undefined ? {email_lexical: emailLexical} : {})
+        }
+    };
+    const actions = detail.actions.map(action => (action.id === actionId ? updated : action));
     return {...detail, actions, edges: [...detail.edges]};
 };
 
