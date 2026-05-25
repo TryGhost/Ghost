@@ -351,6 +351,30 @@ describe('AutomationEditor', () => {
         );
     });
 
+    it('saves an inactive automation without publishing it', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [{...automationDetail, status: 'inactive'}]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        fireEvent.click(screen.getByTestId('add-step-tail-button'));
+        const picker = await screen.findByTestId('step-picker');
+        fireEvent.click(within(picker).getByText('Wait'));
+
+        const button = screen.getByRole('button', {name: 'Save'});
+        expect(button).toBeEnabled();
+        fireEvent.click(button);
+
+        const mutateCall = mockEditMutation.mutate.mock.calls.at(-1)![0];
+        expect(mutateCall.id).toBe('automation-id-1');
+        expect(mutateCall.status).toBe('inactive');
+        expect(mutateCall.actions).toHaveLength(3);
+        expect(mutateCall.edges).toHaveLength(2);
+    });
+
     it('shows the dropdown for active automations', () => {
         mockUseReadAutomation.mockReturnValue({
             data: {automations: [automationDetail]},
@@ -362,6 +386,7 @@ describe('AutomationEditor', () => {
 
         expect(screen.getByRole('button', {name: 'Automation options'})).toBeInTheDocument();
         expect(screen.getByRole('button', {name: 'Published'})).toBeDisabled();
+        expect(screen.queryByRole('button', {name: 'Save'})).not.toBeInTheDocument();
     });
 
     it('hides the dropdown for inactive automations', () => {
