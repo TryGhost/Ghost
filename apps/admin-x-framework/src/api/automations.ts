@@ -204,6 +204,42 @@ type RemoveActionArgs = ReadonlyDeep<{
     actionId: string;
 }>;
 
+type UpdateWaitActionArgs = ReadonlyDeep<{
+    detail: AutomationDetail;
+    actionId: string;
+    waitHours: number;
+}>;
+
+export const updateWaitAction = ({detail, actionId, waitHours}: UpdateWaitActionArgs): AutomationDetail => {
+    if (!Number.isSafeInteger(waitHours) || waitHours <= 0) {
+        throw new Error(`updateWaitAction: waitHours must be a safe positive integer, received "${waitHours}"`);
+    }
+
+    let hasUpdated = false;
+    const actions = detail.actions.map((action) => {
+        if (action.id === actionId) {
+            if (action.type !== 'wait') {
+                throw new Error(`updateWaitAction: action "${actionId}" is not a wait action`);
+            }
+            hasUpdated = true;
+            return {
+                ...action,
+                data: {
+                    ...action.data,
+                    wait_hours: waitHours
+                }
+            };
+        }
+        return action;
+    });
+
+    if (!hasUpdated) {
+        throw new Error(`updateWaitAction: unknown action id "${actionId}"`);
+    }
+
+    return {...detail, actions, edges: [...detail.edges]};
+};
+
 export const removeAction = ({detail, actionId}: RemoveActionArgs): AutomationDetail => {
     const remainingActions = detail.actions.filter(action => action.id !== actionId);
 
