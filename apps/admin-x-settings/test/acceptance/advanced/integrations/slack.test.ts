@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
+import {globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse, waitForApiRequest} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Slack integration', async () => {
     test('Supports updating Slack settings', async ({page}) => {
@@ -76,7 +76,7 @@ test.describe('Slack integration', async () => {
                 {key: 'slack_url', value: 'https://hooks.slack.com/services/123456789/123456789/123456789'},
                 {key: 'slack_username', value: 'My site'}
             ])},
-            testSlack: {method: 'POST', path: '/slack/test/', responseStatus: 204, response: ''}
+            testSlack: {method: 'POST', path: '/slack/test/', response: {}}
         }});
 
         await page.goto('/');
@@ -100,6 +100,7 @@ test.describe('Slack integration', async () => {
         await slackModal.getByLabel('Username').fill('My site');
         await slackModal.getByRole('button', {name: 'Send test notification'}).click();
 
+        await waitForApiRequest(lastApiRequests, 'testSlack');
         await expect(page.getByTestId('toast-info')).toHaveText(/Check your Slack channel for the test message/);
 
         expect(lastApiRequests.editSettings?.body).toEqual({
@@ -108,6 +109,5 @@ test.describe('Slack integration', async () => {
                 {key: 'slack_username', value: 'My site'}
             ]
         });
-        expect(lastApiRequests.testSlack).toBeTruthy();
     });
 });
