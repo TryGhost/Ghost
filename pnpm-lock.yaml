@@ -145,8 +145,8 @@ catalogs:
       specifier: 4.18.1
       version: 4.18.1
     mocha:
-      specifier: 11.7.5
-      version: 11.7.5
+      specifier: 11.7.6
+      version: 11.7.6
     msw:
       specifier: 2.12.14
       version: 2.12.14
@@ -2735,7 +2735,7 @@ importers:
         version: 4.18.1
       mocha:
         specifier: 'catalog:'
-        version: 11.7.5
+        version: 11.7.6
       mocha-slow-test-reporter:
         specifier: 0.1.2
         version: 0.1.2
@@ -2815,7 +2815,7 @@ importers:
         version: 9.3.0
       mocha:
         specifier: 'catalog:'
-        version: 11.7.5
+        version: 11.7.6
 
   ghost/parse-email-address:
     dependencies:
@@ -2837,7 +2837,7 @@ importers:
         version: 8.57.1
       mocha:
         specifier: 'catalog:'
-        version: 11.7.5
+        version: 11.7.6
       tsx:
         specifier: 4.21.0
         version: 4.21.0
@@ -17114,8 +17114,8 @@ packages:
   mocha-slow-test-reporter@0.1.2:
     resolution: {integrity: sha512-c970lxDVywGYUMoDhp8x718hEYkCHXmMNtS+rJDGrDahd1cizo67zrBkxVQULcw0QotZmvKSp0ZLhlIKkPSAFw==}
 
-  mocha@11.7.5:
-    resolution: {integrity: sha512-mTT6RgopEYABzXWFx+GcJ+ZQ32kp4fMf0xvpZIIfSq9Z8lC/++MtcCnQ9t5FP2veYEP95FIYSvW+U9fV4xrlig==}
+  mocha@11.7.6:
+    resolution: {integrity: sha512-nS9xOGbw2I3cjCpxwZAEJ9xK9lmJ08vEkQvLtz4du9ZrF9UrjRpeJGiIgl2Z+Qs++pmB4ecDe48Fwsh+j+j7xA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     hasBin: true
 
@@ -41207,7 +41207,7 @@ snapshots:
       text-table: 0.2.0
       wordwrap: 1.0.0
 
-  mocha@11.7.5:
+  mocha@11.7.6:
     dependencies:
       browser-stdout: 1.3.1
       chokidar: 4.0.3
