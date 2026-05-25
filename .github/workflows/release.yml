@@ -105,7 +105,7 @@ jobs:
 
       - name: Notify on failure
         if: failure()
-        uses: tryghost/actions/actions/slack-build@598d6328d89dbd796aa02ae2ea66308f9d942224 # main
+        uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
         with:
           status: ${{ job.status }}
         env:

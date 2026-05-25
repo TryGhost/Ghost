@@ -45,19 +45,24 @@ const AutomationEditor: React.FC = () => {
     const onDraftChange = (next: AutomationDetail) => {
         setDraft(next);
         setEditState((prev) => {
-            if (prev === 'failed to publish' || prev === 'failed to unpublish') {
+            if (prev === 'failed to save' || prev === 'failed to publish' || prev === 'failed to unpublish') {
                 return 'idle';
             }
             return prev;
         });
     };
 
-    const editStatus = (status: AutomationStatus): void => {
+    const save = (statusToSave?: AutomationStatus) => {
         if (!draft) {
             throw new Error('Cannot edit an automation that has not loaded.');
         }
+
         let errorState: AutomationEditState;
-        switch (status) {
+        switch (statusToSave) {
+        case undefined:
+            setEditState('saving');
+            errorState = 'failed to save';
+            break;
         case 'active':
             setEditState('publishing');
             errorState = 'failed to publish';
@@ -67,14 +72,14 @@ const AutomationEditor: React.FC = () => {
             errorState = 'failed to unpublish';
             break;
         default: {
-            const _exhaustive: never = status;
+            const _exhaustive: never = statusToSave;
             throw new Error(`Unhandled status: ${_exhaustive}`);
         }
         }
         editMutation.mutate(
             {
                 id: draft.id,
-                status,
+                status: statusToSave ?? draft.status,
                 actions: draft.actions,
                 edges: draft.edges
             },
@@ -90,6 +95,9 @@ const AutomationEditor: React.FC = () => {
 
     let isConfirmUnpublishAlertOpen = false;
     let isEditRequestActive = false;
+    let isSaveButtonEnabled = !!draft && draft.actions.length > 0 && draft.status === 'inactive' && hasUnsavedChanges;
+    let saveButtonVariant: ButtonProps['variant'] = 'secondary';
+    let saveButtonChildren: React.ReactNode = 'Save';
     let isPublishButtonEnabled = !!draft && draft.actions.length > 0 && (draft.status === 'inactive' || hasUnsavedChanges);
     let publishButtonVariant: ButtonProps['variant'] = 'default';
     let publishButtonChildren: React.ReactNode = draft?.status === 'active'
@@ -98,8 +106,23 @@ const AutomationEditor: React.FC = () => {
     let isTurnOffButtonEnabled = true;
     let turnOffButtonChildren: React.ReactNode = 'Turn off';
     switch (editState) {
+    case 'idle':
+        break;
+    case 'saving':
+        isEditRequestActive = true;
+        isSaveButtonEnabled = false;
+        isPublishButtonEnabled = false;
+        isTurnOffButtonEnabled = false;
+        saveButtonChildren = (
+            <>
+                <LoadingIndicator size='sm' />
+                <span className='sr-only'>Saving...</span>
+            </>
+        );
+        break;
     case 'publishing':
         isEditRequestActive = true;
+        isSaveButtonEnabled = false;
         isPublishButtonEnabled = false;
         isTurnOffButtonEnabled = false;
         publishButtonChildren = (
@@ -112,6 +135,7 @@ const AutomationEditor: React.FC = () => {
     case 'unpublishing':
         isEditRequestActive = true;
         isConfirmUnpublishAlertOpen = true;
+        isSaveButtonEnabled = false;
         isPublishButtonEnabled = false;
         isTurnOffButtonEnabled = false;
         turnOffButtonChildren = (
@@ -123,8 +147,13 @@ const AutomationEditor: React.FC = () => {
         break;
     case 'confirming unpublish':
         isConfirmUnpublishAlertOpen = true;
+        isSaveButtonEnabled = false;
         isPublishButtonEnabled = false;
         isTurnOffButtonEnabled = false;
+        break;
+    case 'failed to save':
+        saveButtonVariant = 'destructive';
+        saveButtonChildren = 'Retry';
         break;
     case 'failed to publish':
         publishButtonVariant = 'destructive';
@@ -135,16 +164,22 @@ const AutomationEditor: React.FC = () => {
         isTurnOffButtonEnabled = true;
         turnOffButtonChildren = 'Retry';
         break;
+    default: {
+        const _exhaustive: never = editState;
+        throw new Error(`Unhandled edit state: ${_exhaustive}`);
+    }
     }
 
     const onConfirmUnpublishOpenChange = (open: boolean): void => {
         setEditState((oldEditState) => {
             switch (oldEditState) {
             case 'idle':
+            case 'failed to save':
             case 'failed to publish':
                 return open ? 'confirming unpublish' : oldEditState;
             case 'failed to unpublish':
                 return open ? 'confirming unpublish' : 'idle';
+            case 'saving':
             case 'publishing':
                 throw new Error('It should be impossible to hit this state');
             case 'unpublishing':
@@ -167,10 +202,14 @@ const AutomationEditor: React.FC = () => {
                 automation={draft}
                 isLoadingAutomation={isLoadingAutomation}
                 isPublishButtonEnabled={isPublishButtonEnabled}
+                isSaveButtonEnabled={isSaveButtonEnabled}
                 isTurnOffButtonEnabled={isTurnOffButtonEnabled}
                 publishButtonChildren={publishButtonChildren}
                 publishButtonVariant={publishButtonVariant}
-                onPublish={() => editStatus('active')}
+                saveButtonChildren={saveButtonChildren}
+                saveButtonVariant={saveButtonVariant}
+                onPublish={() => save('active')}
+                onSave={() => save()}
                 onTurnOff={() => setEditState('confirming unpublish')}
             />
 
@@ -197,7 +236,7 @@ const AutomationEditor: React.FC = () => {
                         <Button
                             disabled={isEditRequestActive}
                             variant={editState === 'failed to unpublish' ? 'destructive' : 'default'}
-                            onClick={() => editStatus('inactive')}
+                            onClick={() => save('inactive')}
                         >
                             {turnOffButtonChildren}
                         </Button>

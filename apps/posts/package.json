@@ -39,7 +39,7 @@
     "devDependencies": {
         "@playwright/test": "catalog:",
         "@tanstack/react-query": "catalog:",
-        "@tanstack/react-virtual": "3.13.24",
+        "@tanstack/react-virtual": "3.13.25",
         "@testing-library/jest-dom": "6.9.1",
         "@testing-library/react": "14.3.1",
         "@types/jest": "catalog:",
@@ -69,7 +69,7 @@
         "react-dom": "18.3.1",
         "react-router": "catalog:",
         "sonner": "catalog:",
-        "temporal-polyfill": "0.3.0",
+        "temporal-polyfill": "0.3.2",
         "use-debounce": "10.1.1",
         "zod": "catalog:"
     },

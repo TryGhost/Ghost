@@ -281,7 +281,7 @@ jobs:
           NX_CLOUD_ACCESS_TOKEN: ${{ github.repository_owner == 'TryGhost' && github.ref_type != 'tag' && secrets.NX_CLOUD_ACCESS_TOKEN || '' }}
           NX_NO_CLOUD: ${{ (github.repository_owner != 'TryGhost' || github.ref_type == 'tag') && 'true' || '' }}
 
-      - uses: tryghost/actions/actions/slack-build@598d6328d89dbd796aa02ae2ea66308f9d942224 # main
+      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -345,7 +345,7 @@ jobs:
           name: admin-coverage
           path: ghost/*/coverage/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@598d6328d89dbd796aa02ae2ea66308f9d942224 # main
+      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -419,7 +419,7 @@ jobs:
             exit 1
           fi
 
-      - uses: tryghost/actions/actions/slack-build@598d6328d89dbd796aa02ae2ea66308f9d942224 # main
+      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -547,7 +547,7 @@ jobs:
             ghost/*/coverage-e2e/cobertura-coverage.xml
             ghost/*/coverage-integration/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@598d6328d89dbd796aa02ae2ea66308f9d942224 # main
+      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -633,7 +633,7 @@ jobs:
             exit 1
           fi
 
-      - uses: tryghost/actions/actions/slack-build@598d6328d89dbd796aa02ae2ea66308f9d942224 # main
+      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -686,7 +686,7 @@ jobs:
           path: apps/${{ steps.app_name.outputs.name }}/playwright-report
           retention-days: 30
 
-      - uses: tryghost/actions/actions/slack-build@598d6328d89dbd796aa02ae2ea66308f9d942224 # main
+      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -703,7 +703,7 @@ jobs:
           working-directory: ghost/core/core/server/data/tinybird
     services:
       tinybird:
-        image: tinybirdco/tinybird-local:latest@sha256:d7b1583e02f6c35c5b5b145f9a375817c093da137a04436e8e2a498418c8054b
+        image: tinybirdco/tinybird-local:latest@sha256:2f8317aceba18ce20dc4105b0b712b2701bb477a4d9a25477e2aa72bdf9d1423
         ports:
           - 7181:7181
     steps:
@@ -785,7 +785,7 @@ jobs:
         run: |
           [ -f ~/.ghost/logs/*.log ] && cat ~/.ghost/logs/*.log
 
-      - uses: tryghost/actions/actions/slack-build@598d6328d89dbd796aa02ae2ea66308f9d942224 # main
+      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -913,7 +913,7 @@ jobs:
         uses: ./.github/actions/setup-docker-registry-mirrors
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4
 
       - name: Log in to GitHub Container Registry
         if: steps.strategy.outputs.should-push == 'true'
@@ -925,7 +925,7 @@ jobs:
 
       - name: Docker meta (core)
         id: meta-core
-        uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf # v6
+        uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6
         with:
           images: ${{ steps.strategy.outputs.image-core-name }}
           tags: |
@@ -943,7 +943,7 @@ jobs:
 
       - name: Docker meta (full)
         id: meta-full
-        uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf # v6
+        uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6
         with:
           images: ${{ steps.strategy.outputs.image-full-name }}
           tags: |
@@ -989,7 +989,7 @@ jobs:
             NODE_VERSION=${{ env.NODE_VERSION }}
             GHOST_BUILD_VERSION=${{ env.GHOST_BUILD_VERSION }}
           push: ${{ steps.strategy.outputs.should-push }}
-          load: true
+          load: ${{ steps.strategy.outputs.should-push == 'false' }}
           tags: ${{ steps.meta-full.outputs.tags }}
           labels: ${{ steps.meta-full.outputs.labels }}
           cache-from: type=registry,ref=${{ steps.strategy.outputs.image-full-name }}:cache-main
@@ -1013,6 +1013,7 @@ jobs:
           retention-days: 1
 
       - name: Inspect image size and layers
+        if: steps.strategy.outputs.use-artifact == 'true'
         shell: bash
         run: |
           IMAGE_TAG=$(echo "${{ steps.meta-full.outputs.tags }}" | head -n1)
@@ -1137,7 +1138,7 @@ jobs:
         uses: ./.github/actions/setup-docker-registry-mirrors
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4
         with:
           # Fork/cross-repo PRs use artifact transfer (no GHCR push). The default
           # docker-container driver runs in an isolated BuildKit container that
@@ -1175,7 +1176,7 @@ jobs:
 
       - name: Docker meta (e2e)
         id: meta-e2e
-        uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf # v6
+        uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6
         with:
           images: ${{ needs.job_build_artifacts.outputs.image-e2e-name }}
           tags: |
@@ -1301,7 +1302,7 @@ jobs:
         uses: ./.github/actions/setup-docker-registry-mirrors
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4
 
       - name: Pull or build Tinybird CLI Image
         if: matrix.analytics == 'true'
@@ -1376,7 +1377,7 @@ jobs:
           path: e2e/test-results
           retention-days: 7
 
-      - uses: tryghost/actions/actions/slack-build@598d6328d89dbd796aa02ae2ea66308f9d942224 # main
+      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1839,7 +1840,7 @@ jobs:
       - name: Publish to npm
         run: npm publish ghost-*.tgz --access public
 
-      - uses: tryghost/actions/actions/slack-build@598d6328d89dbd796aa02ae2ea66308f9d942224 # main
+      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
         if: failure()
         with:
           status: ${{ job.status }}
