@@ -29,8 +29,26 @@ process.env.WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_
 // snapshots — no per-worker session overrides needed.
 require('../../core/server/overrides');
 
-const snapshotExports = require('@tryghost/express-test').snapshot;
-const {mochaHooks} = snapshotExports;
+// @tryghost/express-test's snapshot bridge is pulled in lazily — requiring it
+// is ~170ms per worker and only the hooks below ever read it. The mock-manager
+// just below uses the same shape.
+type SnapshotExports = {
+    snapshotManager?: {
+        setCurrentTest: (_info: {testPath?: string; testTitle: string}) => void;
+    };
+    mochaHooks?: {
+        beforeAll?: () => Promise<void>;
+        afterEach?: () => Promise<void>;
+        afterAll?: () => Promise<void>;
+    };
+};
+let snapshotExports: SnapshotExports | undefined;
+const getSnapshotExports = (): SnapshotExports => {
+    if (!snapshotExports) {
+        snapshotExports = require('@tryghost/express-test').snapshot;
+    }
+    return snapshotExports!;
+};
 
 // e2e-framework-mock-manager is pulled in lazily — it boots a fair
 // amount of Ghost-side machinery, which unit tests in the spike subtree
@@ -47,6 +65,7 @@ const getMockManager = () => {
 // globals. The hooks are plain async functions so they translate
 // directly. Order matches overrides.js for parity.
 beforeAll(async () => {
+    const {mochaHooks} = getSnapshotExports();
     if (mochaHooks?.beforeAll) {
         await mochaHooks.beforeAll();
     }
@@ -59,7 +78,7 @@ beforeAll(async () => {
 // mocha's `fullTitle()` (describe names + test name joined by spaces) or
 // committed .snap keys won't resolve.
 beforeEach((context: {task: {name: string; suite?: unknown; file?: {filepath?: string}}}) => {
-    const snapshotManager = snapshotExports.snapshotManager;
+    const {snapshotManager} = getSnapshotExports();
     if (!snapshotManager) {
         return;
     }
@@ -99,6 +118,7 @@ afterEach(async () => {
     clearTimeout(timeout);
 
     try {
+        const {mochaHooks} = getSnapshotExports();
         if (mochaHooks?.afterEach) {
             await mochaHooks.afterEach();
         }
@@ -111,6 +131,7 @@ afterEach(async () => {
 });
 
 afterAll(async () => {
+    const {mochaHooks} = getSnapshotExports();
     if (mochaHooks?.afterAll) {
         await mochaHooks.afterAll();
     }
