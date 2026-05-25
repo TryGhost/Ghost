@@ -336,7 +336,7 @@ describe('automations api helpers', () => {
                 []
             );
 
-            expect(() => updateWaitAction({detail, actionId: 'a', waitHours})).toThrow(/waitHours must be a finite positive integer/);
+            expect(() => updateWaitAction({detail, actionId: 'a', waitHours})).toThrow(/waitHours must be a safe positive integer/);
             expect(detail.actions).toEqual([{id: 'a', type: 'wait', data: {wait_hours: 24}}]);
             expect(detail.edges).toEqual([]);
         };
@@ -351,6 +351,10 @@ describe('automations api helpers', () => {
 
         it('throws when waitHours is fractional', () => {
             expectInvalidWaitHoursRejected(1.5);
+        });
+
+        it('throws when waitHours is out of the double precision range', () => {
+            expectInvalidWaitHoursRejected(Number.MAX_SAFE_INTEGER + 1);
         });
 
         it('throws when waitHours is Infinity', () => {

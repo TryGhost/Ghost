@@ -7,7 +7,8 @@ import {Background, Edge, Handle, Node, NodeProps, Position, ReactFlow} from '@x
 import {Banner, Button, Checkbox, Input, Label, LoadingIndicator, Popover, PopoverContent, PopoverTrigger, Select, SelectTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 
-const MAX_WAIT_DAYS = 90;
+const MAX_WAIT_DAYS = 30;
+const WHOLE_NUMBER_PATTERN = /^\d+$/;
 
 const NODE_X = 0;
 const NODE_WIDTH = 256;
@@ -488,6 +489,14 @@ const DeleteStepButton: React.FC<{onClick: () => void}> = ({onClick}) => (
     </Button>
 );
 
+const getValidWaitDays = (value: string): number | null => {
+    const days = Number(value);
+    if (!WHOLE_NUMBER_PATTERN.test(value) || !Number.isInteger(days) || days < 1 || days > MAX_WAIT_DAYS) {
+        return null;
+    }
+    return days;
+};
+
 const WaitSidebarBody: React.FC<{
     action: AutomationWaitAction;
     onUpdate: (waitHours: number) => void;
@@ -500,17 +509,25 @@ const WaitSidebarBody: React.FC<{
     const [daysText, setDaysText] = useState<string>(String(initialDays));
 
     const days = Number(daysText);
-    const isValid = daysText.trim() !== '' && Number.isInteger(days) && days >= 1 && days <= MAX_WAIT_DAYS;
+    const isValid = getValidWaitDays(daysText) !== null;
     const unitLabel = days === 1 ? 'Day' : 'Days';
 
-    const handleBlur = () => {
-        if (!isValid) {
-            return;
-        }
-        const nextHours = days * 24;
+    const updateWaitDays = (nextDays: number) => {
+        const nextHours = nextDays * 24;
         if (nextHours !== action.data.wait_hours) {
             onUpdate(nextHours);
         }
+    };
+
+    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const nextDaysText = event.target.value;
+        setDaysText(nextDaysText);
+
+        const nextDays = getValidWaitDays(nextDaysText);
+        if (nextDays === null) {
+            return;
+        }
+        updateWaitDays(nextDays);
     };
 
     return (
@@ -521,8 +538,7 @@ const WaitSidebarBody: React.FC<{
                         aria-invalid={!isValid}
                         inputMode='numeric'
                         value={daysText}
-                        onBlur={handleBlur}
-                        onChange={e => setDaysText(e.target.value)}
+                        onChange={handleChange}
                     />
                     <ReadOnlySelect value={unitLabel} />
                 </div>

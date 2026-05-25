@@ -298,6 +298,52 @@ describe('AutomationEditor', () => {
         expect(within(sidebar).getByDisplayValue('3')).toBeInTheDocument();
     });
 
+    it('updates a wait step as the wait editor value changes', () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        fireEvent.click(screen.getByRole('button', {name: 'Wait: 1 day'}));
+        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        const waitInput = within(sidebar).getByDisplayValue('1');
+
+        fireEvent.change(waitInput, {target: {value: '3'}});
+
+        expect(screen.getByRole('button', {name: 'Wait: 3 days'})).toBeInTheDocument();
+        expect(screen.getByRole('button', {name: 'Publish changes'})).toBeEnabled();
+
+        fireEvent.click(screen.getByRole('button', {name: 'Publish changes'}));
+
+        const mutateCall = mockEditMutation.mutate.mock.calls.at(-1)![0];
+        expect(mutateCall.actions).toContainEqual({id: 'action-wait', type: 'wait', data: {wait_hours: 72}});
+    });
+
+    it('rejects non-decimal wait editor values', () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        fireEvent.click(screen.getByRole('button', {name: 'Wait: 1 day'}));
+        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        const waitInput = within(sidebar).getByDisplayValue('1');
+
+        for (const value of ['2e1', '+2']) {
+            fireEvent.change(waitInput, {target: {value}});
+
+            expect(waitInput).toHaveAttribute('aria-invalid', 'true');
+            expect(within(sidebar).getByText('Enter a whole number between 1 and 30 days.')).toBeInTheDocument();
+            expect(screen.getByRole('button', {name: 'Published'})).toBeDisabled();
+        }
+    });
+
     it('closes the sidebar from a blank canvas click', () => {
         mockUseReadAutomation.mockReturnValue({
             data: {automations: [automationDetail]},

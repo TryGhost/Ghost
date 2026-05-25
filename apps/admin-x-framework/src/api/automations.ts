@@ -211,19 +211,32 @@ type UpdateWaitActionArgs = ReadonlyDeep<{
 }>;
 
 export const updateWaitAction = ({detail, actionId, waitHours}: UpdateWaitActionArgs): AutomationDetail => {
-    if (!Number.isFinite(waitHours) || !Number.isInteger(waitHours) || waitHours <= 0) {
-        throw new Error(`updateWaitAction: waitHours must be a finite positive integer, received "${waitHours}"`);
+    if (!Number.isSafeInteger(waitHours) || waitHours <= 0) {
+        throw new Error(`updateWaitAction: waitHours must be a safe positive integer, received "${waitHours}"`);
     }
-    const validWaitHours = waitHours;
-    const target = detail.actions.find(action => action.id === actionId);
-    if (!target) {
+
+    let hasUpdated = false;
+    const actions = detail.actions.map((action) => {
+        if (action.id === actionId) {
+            if (action.type !== 'wait') {
+                throw new Error(`updateWaitAction: action "${actionId}" is not a wait action`);
+            }
+            hasUpdated = true;
+            return {
+                ...action,
+                data: {
+                    ...action.data,
+                    wait_hours: waitHours
+                }
+            };
+        }
+        return action;
+    });
+
+    if (!hasUpdated) {
         throw new Error(`updateWaitAction: unknown action id "${actionId}"`);
     }
-    if (target.type !== 'wait') {
-        throw new Error(`updateWaitAction: action "${actionId}" is not a wait action`);
-    }
-    const updated: AutomationWaitAction = {...target, data: {wait_hours: validWaitHours}};
-    const actions = detail.actions.map(action => (action.id === actionId ? updated : action));
+
     return {...detail, actions, edges: [...detail.edges]};
 };
 
