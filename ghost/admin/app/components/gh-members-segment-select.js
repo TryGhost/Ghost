@@ -55,7 +55,7 @@ export default class GhMembersSegmentSelect extends Component {
                 class: 'segment-status-free'
             }, {
                 name: 'Paid members',
-                segment: 'status:-free', // paid & comped
+                segment: 'status:-free', // paid & comped & gift
                 class: 'segment-status-paid'
             });
         }

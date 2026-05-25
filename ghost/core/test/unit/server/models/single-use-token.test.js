@@ -8,13 +8,12 @@ let clock;
 let sandbox;
 
 describe('Unit: models/single-use-token', function () {
-    before(function () {
-        models.init();
+    beforeAll(function () {
         sandbox = sinon.createSandbox();
         clock = sandbox.useFakeTimers();
     });
 
-    after(function () {
+    afterAll(function () {
         clock.restore();
         sandbox.restore();
     });

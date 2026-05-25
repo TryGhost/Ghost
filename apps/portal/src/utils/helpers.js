@@ -274,6 +274,14 @@ export function hasGiftSubscriptions({site}) {
     return site?.labs?.giftSubscriptions === true;
 }
 
+export function isStripeConfigured({site}) {
+    return site?.is_stripe_configured === true;
+}
+
+export function canPurchaseGift({site}) {
+    return hasGiftSubscriptions({site}) && isStripeConfigured({site});
+}
+
 export function isSigninAllowed({site}) {
     return site?.members_signup_access !== 'none';
 }
@@ -604,11 +612,10 @@ export function getProductCadenceFromPrice({site, priceId}) {
 
 export function getAvailablePrices({site, products = null}) {
     const {
-        portal_plans: portalPlans = [],
-        is_stripe_configured: isStripeConfigured
+        portal_plans: portalPlans = []
     } = site || {};
 
-    if (!isStripeConfigured) {
+    if (!isStripeConfigured({site})) {
         return [];
     }
 

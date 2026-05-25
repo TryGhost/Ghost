@@ -1,5 +1,18 @@
-import {chooseOptionInSelect, getOptionsFromSelect, globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
+import {chooseOptionInSelect, getOptionsFromSelect, globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse, waitForApiRequest} from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';
+
+const createConfigWithLimits = (limits: Record<string, unknown>) => ({
+    ...globalDataRequests.browseConfig,
+    response: {
+        config: {
+            ...responseFixtures.config.config,
+            hostSettings: {
+                ...responseFixtures.config.config.hostSettings,
+                limits
+            }
+        }
+    }
+});
 
 test.describe('Access settings', async () => {
     test('Supports switching site visibility between public and private', async ({page}) => {
@@ -102,6 +115,45 @@ test.describe('Access settings', async () => {
         });
     });
 
+    test('Regenerates locked private-site access code server-side', async ({page}) => {
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseConfig: createConfigWithLimits({
+                publicSiteAccess: {
+                    disabled: true,
+                    error: 'This plan does not include public site access'
+                }
+            }),
+            browseSettings: {
+                ...globalDataRequests.browseSettings,
+                response: updatedSettingsResponse([
+                    {key: 'is_private', value: true, is_read_only: true},
+                    {key: 'password', value: 'fake-123', is_read_only: true}
+                ])
+            },
+            regenerateAccessCode: {
+                method: 'POST',
+                path: '/settings/access_code/regenerate/',
+                response: updatedSettingsResponse([
+                    {key: 'is_private', value: true, is_read_only: true},
+                    {key: 'password', value: 'fake-456', is_read_only: true}
+                ])
+            }
+        }});
+
+        await page.goto('/');
+
+        const accessSection = page.getByTestId('access');
+        const accessCode = accessSection.getByTestId('site-access-code');
+
+        await expect(accessCode).toHaveValue('fake-123');
+        await accessSection.getByTestId('regenerate-access-code').click();
+
+        const request = await waitForApiRequest(lastApiRequests, 'regenerateAccessCode');
+        expect(request.body).toBeNull();
+        await expect(accessCode).toHaveValue('fake-456');
+    });
+
     test('Disables other sections when signup is disabled', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
@@ -127,7 +179,7 @@ test.describe('Access settings', async () => {
         await expect(section.getByTestId('subscription-access-select')).toContainText('Nobody');
 
         await expect(page.getByTestId('portal').getByRole('button', {name: 'Customize'})).toBeDisabled();
-        await expect(page.getByTestId('enable-newsletters')).toContainText('only existing members will receive newsletters');
+        await expect(page.getByTestId('enable-newsletters')).toContainText('which disables all newsletter sending');
     });
 
     test('Supports selecting specific tiers', async ({page}) => {

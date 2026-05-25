@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const deferred = require('../../../../../utils/deferred');
 const {assertExists} = require('../../../../../utils/assertions');
 const errors = require('@tryghost/errors');
 const jwt = require('jsonwebtoken');
@@ -10,10 +11,12 @@ describe('Admin API Key Auth', function () {
     const ADMIN_API_URL_VERSIONED = '/ghost/api/v4/admin/';
     const ADMIN_API_URL_NON_VERSIONED = '/ghost/api/admin/';
 
-    before(models.init);
+    let fakeApiKey;
+    let secret;
+    let apiKeyStub;
 
     beforeEach(function () {
-        const fakeApiKey = {
+        fakeApiKey = {
             id: '1234',
             type: 'admin',
             secret: Buffer.from('testing').toString('hex'),
@@ -21,26 +24,26 @@ describe('Admin API Key Auth', function () {
                 return this[prop];
             }
         };
-        this.fakeApiKey = fakeApiKey;
-        this.secret = Buffer.from(fakeApiKey.secret, 'hex');
+        secret = Buffer.from(fakeApiKey.secret, 'hex');
 
-        this.apiKeyStub = sinon.stub(models.ApiKey, 'findOne');
-        this.apiKeyStub.resolves();
-        this.apiKeyStub.withArgs({id: fakeApiKey.id}).resolves(fakeApiKey);
+        apiKeyStub = sinon.stub(models.ApiKey, 'findOne');
+        apiKeyStub.resolves();
+        apiKeyStub.withArgs({id: fakeApiKey.id}).resolves(fakeApiKey);
     });
 
     afterEach(function () {
         sinon.restore();
     });
 
-    it('should authenticate known+valid v4 API key', function (done) {
+    it('should authenticate known+valid v4 API key', function () {
+        const {promise, done} = deferred();
         const token = jwt.sign({
-        }, this.secret, {
-            keyid: this.fakeApiKey.id,
+        }, secret, {
+            keyid: fakeApiKey.id,
             algorithm: 'HS256',
             expiresIn: '5m',
             audience: '/v4/admin/',
-            issuer: this.fakeApiKey.id
+            issuer: fakeApiKey.id
         });
 
         const req = {
@@ -53,19 +56,21 @@ describe('Admin API Key Auth', function () {
 
         apiKeyAuth.admin.authenticate(req, res, (err) => {
             assert.equal(err, undefined);
-            assert.equal(req.api_key, this.fakeApiKey);
+            assert.equal(req.api_key, fakeApiKey);
             done();
         });
+        return promise;
     });
 
-    it('should authenticate known+valid non-versioned API key', function (done) {
+    it('should authenticate known+valid non-versioned API key', function () {
+        const {promise, done} = deferred();
         const token = jwt.sign({
-        }, this.secret, {
-            keyid: this.fakeApiKey.id,
+        }, secret, {
+            keyid: fakeApiKey.id,
             algorithm: 'HS256',
             expiresIn: '5m',
             audience: '/admin/',
-            issuer: this.fakeApiKey.id
+            issuer: fakeApiKey.id
         });
 
         const req = {
@@ -78,19 +83,21 @@ describe('Admin API Key Auth', function () {
 
         apiKeyAuth.admin.authenticate(req, res, (err) => {
             assert.equal(err, undefined);
-            assert.equal(req.api_key, this.fakeApiKey);
+            assert.equal(req.api_key, fakeApiKey);
             done();
         });
+        return promise;
     });
 
-    it('should authenticate known+valid non-versioned API key with a token created for versioned API', function (done) {
+    it('should authenticate known+valid non-versioned API key with a token created for versioned API', function () {
+        const {promise, done} = deferred();
         const token = jwt.sign({
-        }, this.secret, {
-            keyid: this.fakeApiKey.id,
+        }, secret, {
+            keyid: fakeApiKey.id,
             algorithm: 'HS256',
             expiresIn: '5m',
             audience: 'v4/admin/',
-            issuer: this.fakeApiKey.id
+            issuer: fakeApiKey.id
         });
 
         const req = {
@@ -103,19 +110,21 @@ describe('Admin API Key Auth', function () {
 
         apiKeyAuth.admin.authenticate(req, res, (err) => {
             assert.equal(err, undefined);
-            assert.equal(req.api_key, this.fakeApiKey);
+            assert.equal(req.api_key, fakeApiKey);
             done();
         });
+        return promise;
     });
 
-    it('should NOT authenticate known+valid versioned API key with a token created for non-versioned API', function (done) {
+    it('should NOT authenticate known+valid versioned API key with a token created for non-versioned API', function () {
+        const {promise, done} = deferred();
         const token = jwt.sign({
-        }, this.secret, {
-            keyid: this.fakeApiKey.id,
+        }, secret, {
+            keyid: fakeApiKey.id,
             algorithm: 'HS256',
             expiresIn: '5m',
             audience: 'admin/',
-            issuer: this.fakeApiKey.id
+            issuer: fakeApiKey.id
         });
 
         const req = {
@@ -133,9 +142,11 @@ describe('Admin API Key Auth', function () {
             assert.equal(req.api_key, undefined);
             done();
         });
+        return promise;
     });
 
-    it('shouldn\'t authenticate with missing Ghost token', function (done) {
+    it('shouldn\'t authenticate with missing Ghost token', function () {
+        const {promise, done} = deferred();
         const token = '';
         const req = {
             headers: {
@@ -151,9 +162,11 @@ describe('Admin API Key Auth', function () {
             assert.equal(req.api_key, undefined);
             done();
         });
+        return promise;
     });
 
-    it('shouldn\'t authenticate with broken Ghost token', function (done) {
+    it('shouldn\'t authenticate with broken Ghost token', function () {
+        const {promise, done} = deferred();
         const token = 'invalid';
         const req = {
             headers: {
@@ -169,11 +182,13 @@ describe('Admin API Key Auth', function () {
             assert.equal(req.api_key, undefined);
             done();
         });
+        return promise;
     });
 
-    it('shouldn\'t authenticate with invalid/unknown key', function (done) {
+    it('shouldn\'t authenticate with invalid/unknown key', function () {
+        const {promise, done} = deferred();
         const token = jwt.sign({
-        }, this.secret, {
+        }, secret, {
             keyid: 'unknown',
             algorithm: 'HS256',
             expiresIn: '5m',
@@ -196,18 +211,20 @@ describe('Admin API Key Auth', function () {
             assert.equal(req.api_key, undefined);
             done();
         });
+        return promise;
     });
 
-    it('shouldn\'t authenticate with JWT signed > 5min ago', function (done) {
+    it('shouldn\'t authenticate with JWT signed > 5min ago', function () {
+        const {promise, done} = deferred();
         const payload = {
             iat: Math.floor(Date.now() / 1000) - 6 * 60
         };
-        const token = jwt.sign(payload, this.secret, {
-            keyid: this.fakeApiKey.id,
+        const token = jwt.sign(payload, secret, {
+            keyid: fakeApiKey.id,
             algorithm: 'HS256',
             expiresIn: '5m',
             audience: '/v4/admin/',
-            issuer: this.fakeApiKey.id
+            issuer: fakeApiKey.id
         });
 
         const req = {
@@ -226,18 +243,20 @@ describe('Admin API Key Auth', function () {
             assert.equal(req.api_key, undefined);
             done();
         });
+        return promise;
     });
 
-    it('shouldn\'t authenticate with JWT with maxAge > 5min', function (done) {
+    it('shouldn\'t authenticate with JWT with maxAge > 5min', function () {
+        const {promise, done} = deferred();
         const payload = {
             iat: Math.floor(Date.now() / 1000) - 6 * 60
         };
-        const token = jwt.sign(payload, this.secret, {
-            keyid: this.fakeApiKey.id,
+        const token = jwt.sign(payload, secret, {
+            keyid: fakeApiKey.id,
             algorithm: 'HS256',
             expiresIn: '10m',
             audience: '/v4/admin/',
-            issuer: this.fakeApiKey.id
+            issuer: fakeApiKey.id
         });
 
         const req = {
@@ -256,16 +275,18 @@ describe('Admin API Key Auth', function () {
             assert.equal(req.api_key, undefined);
             done();
         });
+        return promise;
     });
 
-    it('shouldn\'t authenticate with a Content API Key', function (done) {
+    it('shouldn\'t authenticate with a Content API Key', function () {
+        const {promise, done} = deferred();
         const token = jwt.sign({
-        }, this.secret, {
-            keyid: this.fakeApiKey.id,
+        }, secret, {
+            keyid: fakeApiKey.id,
             algorithm: 'HS256',
             expiresIn: '5m',
             audience: 'v4/admin/',
-            issuer: this.fakeApiKey.id
+            issuer: fakeApiKey.id
         });
 
         const req = {
@@ -276,7 +297,7 @@ describe('Admin API Key Auth', function () {
         };
         const res = {};
 
-        this.fakeApiKey.type = 'content';
+        fakeApiKey.type = 'content';
 
         apiKeyAuth.admin.authenticate(req, res, function next(err) {
             assertExists(err);
@@ -285,5 +306,6 @@ describe('Admin API Key Auth', function () {
             assert.equal(req.api_key, undefined);
             done();
         });
+        return promise;
     });
 });

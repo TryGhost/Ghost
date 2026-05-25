@@ -14,6 +14,7 @@ import MyProfileRedirect from "./my-profile-redirect";
 import { EmberFallback, ForceUpgradeGuard } from "./ember-bridge";
 import type { RouteHandle } from "./ember-bridge";
 import { MembersRoute } from "./members-route";
+import { OnboardingRedirect } from "./onboarding/onboarding-redirect";
 
 import { NotFound } from "./not-found";
 
@@ -98,11 +99,17 @@ export const routes: RouteObject[] = [
             },
             {
                 element: (
-                    <GlobalDataProvider>
-                        <Outlet />
-                    </GlobalDataProvider>
+                    <OnboardingRedirect>
+                        <GlobalDataProvider>
+                            <Outlet />
+                        </GlobalDataProvider>
+                    </OnboardingRedirect>
                 ),
                 children: statsRoutes,
+            },
+            {
+                path: "setup/onboarding",
+                lazy: lazyComponent(() => import("./onboarding/onboarding-route")),
             },
             {
                 path: `network`,

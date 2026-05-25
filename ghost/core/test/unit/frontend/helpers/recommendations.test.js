@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const models = require('../../../../core/server/models');
 const api = require('../../../../core/server/api').endpoints;
 const hbs = require('../../../../core/frontend/services/theme-engine/engine');
 const configUtils = require('../../../utils/config-utils');
@@ -21,9 +20,7 @@ function trimSpaces(string) {
 describe('{{#recommendations}} helper', function () {
     let logging;
 
-    before(async function () {
-        models.init();
-
+    beforeAll(async function () {
         hbs.express4({
             partialsDir: [configUtils.config.get('paths').helperTemplates]
         });
@@ -58,7 +55,7 @@ describe('{{#recommendations}} helper', function () {
         };
     });
 
-    after(function () {
+    afterAll(function () {
         sinon.restore();
     });
 
@@ -105,7 +102,7 @@ describe('{{#recommendations}} helper', function () {
     });
 
     describe('when there are no recommendations', function () {
-        before(function () {
+        beforeAll(function () {
             sinon.stub(api, 'recommendationsPublic').get(() => {
                 return {
                     browse: () => {
@@ -131,7 +128,7 @@ describe('{{#recommendations}} helper', function () {
     });
 
     describe('when recommendations_enabled is false', function () {
-        before(function () {
+        beforeAll(function () {
             // @ts-ignore
             settingsCache.get.withArgs('recommendations_enabled').returns(true);
         });
@@ -148,7 +145,9 @@ describe('{{#recommendations}} helper', function () {
     });
 
     describe('when timeout is exceeded', function () {
-        before(function () {
+        let clock;
+
+        beforeAll(function () {
             sinon.stub(api, 'recommendationsPublic').get(() => {
                 return {
                     browse: () => {
@@ -161,16 +160,28 @@ describe('{{#recommendations}} helper', function () {
                 };
             });
         });
-        after(async function () {
+
+        beforeEach(function () {
+            clock = sinon.useFakeTimers({toFake: ['setTimeout', 'clearTimeout']});
+        });
+
+        afterEach(function () {
+            clock.restore();
+        });
+
+        afterAll(async function () {
             await configUtils.restore();
         });
 
         it('should log an error and return safely if it hits the timeout threshold', async function () {
             configUtils.set('optimization:getHelper:timeout:threshold', 1);
 
-            const response = await recommendations.call(
+            const responsePromise = recommendations.call(
                 'recommendations'
             );
+            // 2 > threshold (1), < stub's 5 — fires only the helper's timer.
+            await clock.tickAsync(2);
+            const response = await responsePromise;
 
             // An error message is logged
             sinon.assert.calledOnce(logging.error);

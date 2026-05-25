@@ -3,7 +3,6 @@ import moment, {DurationInputObject} from 'moment';
 import sinon from 'sinon';
 import {buildAnonymousMember, buildComment, buildDeletedMember} from '../../utils/fixtures';
 
-
 describe('COMMENT_HASH_PREFIX', function () {
     it('exports the correct prefix', function () {
         expect(helpers.COMMENT_HASH_PREFIX).toEqual('ghost-comments-');
@@ -34,6 +33,23 @@ describe('buildCommentPermalink', function () {
     it('handles URL with query parameters', function () {
         expect(helpers.buildCommentPermalink('https://example.com/post?ref=twitter', 'abc123'))
             .toEqual('https://example.com/post?ref=twitter#ghost-comments-abc123');
+    });
+});
+
+describe('buildCommentsRootPermalink', function () {
+    it('builds permalink with comments root hash', function () {
+        expect(helpers.buildCommentsRootPermalink('https://example.com/post'))
+            .toEqual('https://example.com/post#ghost-comments');
+    });
+
+    it('removes existing hash from base URL', function () {
+        expect(helpers.buildCommentsRootPermalink('https://example.com/post#existing'))
+            .toEqual('https://example.com/post#ghost-comments');
+    });
+
+    it('handles URL with query parameters', function () {
+        expect(helpers.buildCommentsRootPermalink('https://example.com/post?ref=twitter'))
+            .toEqual('https://example.com/post?ref=twitter#ghost-comments');
     });
 });
 

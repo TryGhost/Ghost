@@ -5,10 +5,6 @@ const models = require('../../../../../core/server/models');
 describe('Unit: models/base/plugins/actions', function () {
     let TestModel;
 
-    before(function () {
-        models.init();
-    });
-
     beforeEach(function () {
         // Create a test model that has actions enabled
         TestModel = models.Base.Model.extend({

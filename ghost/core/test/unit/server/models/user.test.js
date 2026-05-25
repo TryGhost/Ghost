@@ -8,12 +8,51 @@ const security = require('@tryghost/security');
 const testUtils = require('../../../utils');
 
 describe('Unit: models/user', function () {
-    before(function () {
-        models.init();
-    });
-
     afterEach(function () {
         sinon.restore();
+    });
+
+    describe('lock method', function () {
+        function lockUser(status) {
+            const save = sinon.stub().resolves();
+            const instance = {
+                get(key) {
+                    if (key === 'status') {
+                        return status;
+                    }
+                    return undefined;
+                },
+                save
+            };
+            models.User.prototype.lock.call(instance, {transacting: 'tx'});
+            return save;
+        }
+
+        it('rotates the password and transitions an active user to locked', function () {
+            const save = lockUser('active');
+            const update = save.firstCall.args[0];
+            assert.equal(update.status, 'locked');
+            assert.equal(typeof update.password, 'string');
+            assert.ok(update.password.length > 0);
+        });
+
+        it('rotates the password on a suspended user but preserves inactive status', function () {
+            // The compromised credential is invalidated for the inactive
+            // account too, but the account stays on the suspended-signin
+            // path rather than gaining a password-reset path it shouldn't have.
+            const save = lockUser('inactive');
+            const update = save.firstCall.args[0];
+            assert.equal(update.status, undefined, 'status is left unchanged for inactive users');
+            assert.equal(typeof update.password, 'string');
+            assert.ok(update.password.length > 0);
+        });
+
+        it('rotates the password and transitions an already-locked user (still locked)', function () {
+            const save = lockUser('locked');
+            const update = save.firstCall.args[0];
+            assert.equal(update.status, 'locked');
+            assert.equal(typeof update.password, 'string');
+        });
     });
 
     describe('updateLastSeen method', function () {

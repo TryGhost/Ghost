@@ -3,18 +3,13 @@ const {assertExists} = require('../../../utils/assertions');
 const sinon = require('sinon');
 const testUtils = require('../../../utils');
 const urlService = require('../../../../core/server/services/url');
-const models = require('../../../../core/server/models');
 const tagsHelper = require('../../../../core/frontend/helpers/tags');
 
 describe('{{tags}} helper', function () {
-    let urlServiceGetUrlByResourceIdStub;
-
-    before(function () {
-        models.init();
-    });
+    let urlServiceGetUrlForResourceStub;
 
     beforeEach(function () {
-        urlServiceGetUrlByResourceIdStub = sinon.stub(urlService, 'getUrlByResourceId');
+        urlServiceGetUrlForResourceStub = sinon.stub(urlService.facade, 'getUrlForResource');
     });
 
     afterEach(function () {
@@ -106,8 +101,8 @@ describe('{{tags}} helper', function () {
             testUtils.DataGenerator.forKnex.createTag({name: 'bar', slug: 'bar'})
         ];
 
-        urlServiceGetUrlByResourceIdStub.withArgs(tags[0].id).returns('tag url 1');
-        urlServiceGetUrlByResourceIdStub.withArgs(tags[1].id).returns('tag url 2');
+        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: tags[0].id})).returns('tag url 1');
+        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: tags[1].id})).returns('tag url 2');
 
         const rendered = tagsHelper.call({tags: tags});
         assertExists(rendered);
@@ -121,7 +116,7 @@ describe('{{tags}} helper', function () {
             testUtils.DataGenerator.forKnex.createTag({name: 'bar', slug: 'bar'})
         ];
 
-        urlServiceGetUrlByResourceIdStub.withArgs(tags[0].id).returns('tag url 1');
+        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: tags[0].id})).returns('tag url 1');
 
         const rendered = tagsHelper.call({tags: tags}, {hash: {limit: '1'}});
         assertExists(rendered);
@@ -135,7 +130,7 @@ describe('{{tags}} helper', function () {
             testUtils.DataGenerator.forKnex.createTag({name: 'bar', slug: 'bar'})
         ];
 
-        urlServiceGetUrlByResourceIdStub.withArgs(tags[1].id).returns('tag url 2');
+        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: tags[1].id})).returns('tag url 2');
 
         const rendered = tagsHelper.call({tags: tags}, {hash: {from: '2'}});
         assertExists(rendered);
@@ -149,7 +144,7 @@ describe('{{tags}} helper', function () {
             testUtils.DataGenerator.forKnex.createTag({name: 'bar', slug: 'bar'})
         ];
 
-        urlServiceGetUrlByResourceIdStub.withArgs(tags[0].id).returns('tag url x');
+        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: tags[0].id})).returns('tag url x');
 
         const rendered = tagsHelper.call({tags: tags}, {hash: {to: '1'}});
         assertExists(rendered);
@@ -164,8 +159,8 @@ describe('{{tags}} helper', function () {
             testUtils.DataGenerator.forKnex.createTag({name: 'baz', slug: 'baz'})
         ];
 
-        urlServiceGetUrlByResourceIdStub.withArgs(tags[1].id).returns('tag url b');
-        urlServiceGetUrlByResourceIdStub.withArgs(tags[2].id).returns('tag url c');
+        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: tags[1].id})).returns('tag url b');
+        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: tags[2].id})).returns('tag url c');
 
         const rendered = tagsHelper.call({tags: tags}, {hash: {from: '2', to: '3'}});
         assertExists(rendered);
@@ -180,7 +175,7 @@ describe('{{tags}} helper', function () {
             testUtils.DataGenerator.forKnex.createTag({name: 'baz', slug: 'baz'})
         ];
 
-        urlServiceGetUrlByResourceIdStub.withArgs(tags[1].id).returns('tag url b');
+        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: tags[1].id})).returns('tag url b');
 
         const rendered = tagsHelper.call({tags: tags}, {hash: {from: '2', limit: '1'}});
         assertExists(rendered);
@@ -195,9 +190,9 @@ describe('{{tags}} helper', function () {
             testUtils.DataGenerator.forKnex.createTag({name: 'baz', slug: 'baz'})
         ];
 
-        urlServiceGetUrlByResourceIdStub.withArgs(tags[0].id).returns('tag url a');
-        urlServiceGetUrlByResourceIdStub.withArgs(tags[1].id).returns('tag url b');
-        urlServiceGetUrlByResourceIdStub.withArgs(tags[2].id).returns('tag url c');
+        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: tags[0].id})).returns('tag url a');
+        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: tags[1].id})).returns('tag url b');
+        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: tags[2].id})).returns('tag url c');
 
         const rendered = tagsHelper.call({tags: tags}, {hash: {from: '1', to: '3', limit: '2'}});
         assertExists(rendered);
@@ -220,11 +215,11 @@ describe('{{tags}} helper', function () {
         ];
 
         beforeEach(function () {
-            urlServiceGetUrlByResourceIdStub.withArgs(tags[0].id).returns('1');
-            urlServiceGetUrlByResourceIdStub.withArgs(tags[1].id).returns('2');
-            urlServiceGetUrlByResourceIdStub.withArgs(tags[2].id).returns('3');
-            urlServiceGetUrlByResourceIdStub.withArgs(tags[3].id).returns('4');
-            urlServiceGetUrlByResourceIdStub.withArgs(tags[4].id).returns('5');
+            urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: tags[0].id})).returns('1');
+            urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: tags[1].id})).returns('2');
+            urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: tags[2].id})).returns('3');
+            urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: tags[3].id})).returns('4');
+            urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: tags[4].id})).returns('5');
         });
 
         it('will not output internal tags by default', function () {

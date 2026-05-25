@@ -5,11 +5,7 @@ const sinon = require('sinon');
 const models = require('../../../../core/server/models');
 
 describe('Unit: models/newsletter', function () {
-    before(function () {
-        models.init();
-    });
-
-    after(function () {
+    afterAll(function () {
         sinon.restore();
     });
 

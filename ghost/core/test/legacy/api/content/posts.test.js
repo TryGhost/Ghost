@@ -141,17 +141,13 @@ describe('api/endpoints/content/posts', function () {
         }
     });
 
-    it('browse posts', function (done) {
-        request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}`))
+    it('browse posts', async function () {
+        await request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.public)
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
+            .expect(function (res) {
                 assert.equal(res.headers.vary, 'Accept-Version, Accept-Encoding');
                 assertExists(res.headers['access-control-allow-origin']);
                 assert.equal(res.headers['x-cache-invalidate'], undefined);
@@ -177,22 +173,16 @@ describe('api/endpoints/content/posts', function () {
                 assert.equal(jsonResponse.meta.pagination.hasOwnProperty('prev'), true);
                 assert.equal(jsonResponse.meta.pagination.next, null);
                 assert.equal(jsonResponse.meta.pagination.prev, null);
-
-                done();
             });
     });
 
-    it('browse posts with related authors/tags also returns primary_author/primary_tag', function (done) {
-        request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&include=authors,tags`))
+    it('browse posts with related authors/tags also returns primary_author/primary_tag', async function () {
+        await request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&include=authors,tags`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.public)
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
+            .expect(function (res) {
                 assert.equal(res.headers.vary, 'Accept-Version, Accept-Encoding');
                 assertExists(res.headers['access-control-allow-origin']);
                 assert.equal(res.headers['x-cache-invalidate'], undefined);
@@ -224,8 +214,6 @@ describe('api/endpoints/content/posts', function () {
                 assert.equal(jsonResponse.meta.pagination.hasOwnProperty('prev'), true);
                 assert.equal(jsonResponse.meta.pagination.next, null);
                 assert.equal(jsonResponse.meta.pagination.prev, null);
-
-                done();
             });
     });
 
@@ -236,21 +224,16 @@ describe('api/endpoints/content/posts', function () {
             .expect(400);
     });
 
-    it('browse posts with published and draft status, should not return drafts', function (done) {
-        request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=status:published,status:draft`))
+    it('browse posts with published and draft status, should not return drafts', async function () {
+        await request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=status:published,status:draft`))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.public)
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 const jsonResponse = res.body;
 
                 assert(Array.isArray(jsonResponse.posts));
                 assert.equal(jsonResponse.posts.length, 13);
-
-                done();
             });
     });
 
@@ -286,26 +269,21 @@ describe('api/endpoints/content/posts', function () {
             });
     });
 
-    it('ensure origin header on redirect is not getting lost', function (done) {
+    it('ensure origin header on redirect is not getting lost', async function () {
         // NOTE: force a redirect to the admin url
         configUtils.set('admin:url', 'http://localhost:9999');
         urlUtils.stubUrlUtilsFromConfig();
 
-        request.get(localUtils.API.getApiQuery(`posts?key=${validKey}`))
+        await request.get(localUtils.API.getApiQuery(`posts?key=${validKey}`))
             .set('Origin', 'https://example.com')
             // 301 Redirects _should_ be cached
             .expect('Cache-Control', testUtils.cacheRules.year)
             .expect(301)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
+            .expect(function (res) {
                 assert.equal(res.headers.vary, 'Accept-Version, Accept, Accept-Encoding');
                 assert.equal(res.headers.location, `http://localhost:9999/ghost/api/content/posts/?key=${validKey}`);
                 assertExists(res.headers['access-control-allow-origin']);
                 assert.equal(res.headers['x-cache-invalidate'], undefined);
-                done();
             });
     });
 

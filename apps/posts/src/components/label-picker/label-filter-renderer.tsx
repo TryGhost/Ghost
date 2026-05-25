@@ -42,13 +42,6 @@ const LabelFilterRenderer: React.FC<CustomRendererProps<string>> = ({field, valu
         triggerText = `${picker.resolvedSelectedLabels.length} labels`;
     }
 
-    // Convert labels to FilterOption format for MultiSelectCombobox
-    const options = picker.labels.map(label => ({
-        value: label.slug,
-        label: label.name,
-        metadata: {id: label.id}
-    }));
-
     const [editingLabelId, setEditingLabelId] = useState<string | null>(null);
 
     const renderItem = useCallback(({option, isSelected, onSelect}: RenderItemProps<string>) => {
@@ -142,7 +135,7 @@ const LabelFilterRenderer: React.FC<CustomRendererProps<string>> = ({field, valu
                 } else {
                     // MultiSelectCombobox remounts with an empty input, so clear the picker query
                     // too or the hidden search state keeps filtering labels after reopen.
-                    picker.onSearchChange('');
+                    picker.optionSource.onSearchChange?.('');
                 }
             }}
         >
@@ -156,7 +149,7 @@ const LabelFilterRenderer: React.FC<CustomRendererProps<string>> = ({field, valu
                 </button>
             </PopoverTrigger>
             <PopoverContent align="start" alignOffset={alignOffset} className="w-64 p-0">
-                {picker.isLoading ? (
+                {picker.optionSource.isInitialLoad ? (
                     <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
                         Loading labels...
                     </div>
@@ -167,12 +160,10 @@ const LabelFilterRenderer: React.FC<CustomRendererProps<string>> = ({field, valu
                             searchPlaceholder: 'Search labels...',
                             noResultsFound: 'No labels found'
                         }}
-                        options={options}
+                        optionSource={picker.optionSource}
                         renderItem={renderItem}
-                        shouldFilter={false}
                         values={values}
                         onChange={onChange}
-                        onSearchChange={picker.onSearchChange}
                     />
                 )}
             </PopoverContent>

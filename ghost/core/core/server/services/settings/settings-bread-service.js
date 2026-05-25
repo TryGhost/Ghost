@@ -8,10 +8,12 @@ const MagicLink = require('../lib/magic-link/magic-link');
 const sentry = require('../../../shared/sentry');
 
 const EMAIL_KEYS = ['members_support_address'];
+const PUBLIC_SITE_ACCESS_LOCKED_KEYS = ['is_private', 'password'];
 const messages = {
     problemFindingSetting: 'Problem finding setting: {key}',
     accessCoreSettingFromExtReq: 'Attempted to access core setting from external request',
-    invalidEmail: 'Invalid email address'
+    invalidEmail: 'Invalid email address',
+    publicSiteAccessLocked: 'Site visibility and access code cannot be changed.'
 };
 
 class SettingsBREADService {
@@ -193,6 +195,21 @@ class SettingsBREADService {
                     message: tpl(messages.accessCoreSettingFromExtReq)
                 });
             }
+
+            if (this._isPublicSiteAccessLimited()) {
+                const lockedEdit = filteredSettings.find((setting) => {
+                    if (setting.key === 'password') {
+                        return true;
+                    }
+                    return setting.key === 'is_private' && setting.value !== true;
+                });
+
+                if (lockedEdit) {
+                    throw new NoPermissionError({
+                        message: tpl(messages.publicSiteAccessLocked)
+                    });
+                }
+            }
         }
 
         if (stripeConnectData) {
@@ -300,7 +317,20 @@ class SettingsBREADService {
             labsSetting.value = JSON.stringify(this.labs.getAll());
         }
 
+        if (this._isPublicSiteAccessLimited()) {
+            settings = settings.map((setting) => {
+                if (PUBLIC_SITE_ACCESS_LOCKED_KEYS.includes(setting.key)) {
+                    return {...setting, is_read_only: true};
+                }
+                return setting;
+            });
+        }
+
         return settings;
+    }
+
+    _isPublicSiteAccessLimited() {
+        return Boolean(this.limitsService && this.limitsService.isDisabled('publicSiteAccess'));
     }
 
     /**

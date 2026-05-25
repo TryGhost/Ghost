@@ -1,9 +1,9 @@
 import AppContext from '../../../../app-context';
-import {getSubscriptionExpiry, getMemberSubscription, getMemberTierName, hasMultipleProductsFeature, hasOnlyFreePlan, isArchivedTier, isComplimentaryMember, isGiftMember, isPaidMember, subscriptionHasFreeTrial} from '../../../../utils/helpers';
+import {getSubscriptionExpiry, getMemberSubscription, getMemberTierName, hasMultipleProductsFeature, hasOnlyFreePlan, isArchivedTier, isComplimentaryMember, isGiftMember, isPaidMember, isStripeConfigured, subscriptionHasFreeTrial} from '../../../../utils/helpers';
 import {getDateString} from '../../../../utils/date-time';
-import {ReactComponent as GiftIcon} from '../../../../images/icons/gift.svg';
-import {ReactComponent as LoaderIcon} from '../../../../images/icons/loader.svg';
-import {ReactComponent as OfferTagIcon} from '../../../../images/icons/offer-tag.svg';
+import GiftIcon from '../../../../images/icons/gift.svg?react';
+import LoaderIcon from '../../../../images/icons/loader.svg?react';
+import OfferTagIcon from '../../../../images/icons/offer-tag.svg?react';
 import {useContext} from 'react';
 import {t} from '../../../../utils/i18n';
 
@@ -16,8 +16,7 @@ const PaidAccountActions = () => {
     };
 
     const openUpdatePlan = () => {
-        const {is_stripe_configured: isStripeConfigured} = site;
-        if (isStripeConfigured) {
+        if (isStripeConfigured({site})) {
             doAction('switchPage', {
                 page: 'accountPlan',
                 lastPage: 'accountHome'
@@ -40,7 +39,9 @@ const PaidAccountActions = () => {
             return (
                 <p className="gh-portal-account-discountcontainer">
                     <GiftIcon className="gh-portal-account-tagicon" />
-                    <span>{`${t('Gift subscription')} - ${t('Expires {expiryDate}', {expiryDate: subscriptionExpiry})}`}</span>
+                    <span>{t('Gift subscription')}</span>
+                    <span className="gh-portal-account-expiry-separator">-</span>
+                    <span className="gh-portal-account-expiry">{t('Expires {expiryDate}', {expiryDate: subscriptionExpiry})}</span>
                 </p>
             );
         } else if (isComplimentary) {
@@ -98,6 +99,11 @@ const PaidAccountActions = () => {
 
     const PlanUpdateButton = ({isPaid}) => {
         const hasGiftSubscription = isGiftMember({member});
+
+        if (hasGiftSubscription && !isStripeConfigured({site})) {
+            return null;
+        }
+
         const canContinueGiftSubscription = hasGiftSubscription && !isArchivedTier({member, site});
 
         // If no paid tiers are available, hide the plan update button for:
@@ -143,14 +149,11 @@ const PaidAccountActions = () => {
         return null;
     };
 
-    const BillingSection = ({defaultCardLast4, isComplimentary}) => {
+    const BillingSection = ({defaultCardLast4}) => {
         const {action} = useContext(AppContext);
         const label = action === 'manageBilling:running' ? (
             <LoaderIcon className='gh-portal-billing-button-loader' />
         ) : t('Update');
-        if (isComplimentary) {
-            return null;
-        }
 
         return (
             <section>
@@ -171,6 +174,7 @@ const PaidAccountActions = () => {
 
     const subscription = getMemberSubscription({member});
     const isComplimentary = isComplimentaryMember({member});
+    const isGift = isGiftMember({member});
     const isPaid = isPaidMember({member});
     if (subscription || isComplimentary) {
         const {
@@ -201,7 +205,7 @@ const PaidAccountActions = () => {
                     </div>
                     <PlanUpdateButton isPaid={isPaid} />
                 </section>
-                <BillingSection isComplimentary={isComplimentary} defaultCardLast4={defaultCardLast4} />
+                {!isComplimentary && !isGift && <BillingSection defaultCardLast4={defaultCardLast4} />}
             </>
         );
     }

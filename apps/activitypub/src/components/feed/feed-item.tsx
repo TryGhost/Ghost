@@ -174,7 +174,7 @@ export function renderFeedAttachment(
 function renderInboxAttachment(object: ObjectProperties, isLoading: boolean | undefined) {
     const attachment = getAttachment(object);
 
-    const videoAttachmentStyles = 'ml-8 md:ml-9 shrink-0 rounded-md h-[91px] w-[121px] relative';
+    const videoAttachmentStyles = 'ml-8 md:ml-9 shrink-0 rounded-md h-[91px] w-[121px] relative hidden @md/inbox-item:block';
     const imageAttachmentStyles = clsx('object-cover outline outline-1 -outline-offset-1 outline-black/[0.05]', videoAttachmentStyles);
 
     if (isLoading) {
@@ -686,7 +686,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
         return (
             <>
                 {object && (
-                    <div className='group/article relative -mx-4 -my-px flex min-h-[112px] min-w-0 cursor-pointer items-center justify-between rounded-lg p-6 hover:bg-gray-75 dark:hover:bg-gray-950/50' data-layout='inbox' data-object-id={object.id} onClick={onClick}>
+                    <div className='group/article @container/inbox-item relative -mx-4 -my-px flex min-h-[112px] min-w-0 cursor-pointer items-center justify-between rounded-lg p-6 hover:bg-gray-75 dark:hover:bg-gray-950/50' data-layout='inbox' data-object-id={object.id} onClick={onClick}>
                         <div className='w-full min-w-0'>
                             <div className='z-10 mb-1.5 flex w-full min-w-0 items-center gap-1.5 text-sm group-hover/article:border-transparent'>
                                 {!isLoading ?
@@ -694,7 +694,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                         <ProfilePreviewHoverCard actor={author} isCurrentUser={isAuthorCurrentUser}>
                                             <div className='flex items-center gap-1'>
                                                 <APAvatar author={author} size='2xs' />
-                                                <span className='break-anywhere min-w-0 font-semibold text-gray-900 hover:underline dark:text-gray-600'
+                                                <span className='min-w-0 truncate font-semibold text-gray-900 hover:underline dark:text-gray-600'
                                                     data-test-activity-heading
                                                     onClick={(e) => {
                                                         handleProfileClick(author, navigate, e);

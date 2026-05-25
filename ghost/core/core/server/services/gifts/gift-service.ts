@@ -3,8 +3,10 @@ import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import {Gift} from './gift';
 import type {GiftRepository} from './gift-repository';
+import type {GiftReminderScheduler} from './gift-reminder-scheduler';
 import tpl from '@tryghost/tpl';
 import {GIFT_REMINDER_FLOOR_DAYS, GIFT_REMINDER_LEAD_DAYS} from './constants';
+import {MEMBER_WELCOME_EMAIL_SLUGS} from '../member-welcome-emails/constants';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const GIFT_REMINDER_LEAD_MS = GIFT_REMINDER_LEAD_DAYS * MS_PER_DAY;
@@ -37,6 +39,7 @@ interface MemberModel {
 interface MemberRepository {
     get(filter: Record<string, unknown>, options?: Record<string, unknown>): Promise<MemberModel | null>;
     update(data: Record<string, unknown>, options?: Record<string, unknown>): Promise<unknown>;
+    enqueueWelcomeEmailRun(memberId: string, slug: string, options?: Record<string, unknown>): Promise<unknown>;
 }
 
 type Tier = {
@@ -61,8 +64,6 @@ interface TiersService {
 interface GiftEmailService {
     sendPurchaseConfirmation(data: {
         buyerEmail: string;
-        amount: number;
-        currency: string;
         token: string;
         tierName: string;
         cadence: 'month' | 'year';
@@ -71,16 +72,14 @@ interface GiftEmailService {
     }): Promise<void>;
     sendReminder(data: {
         memberEmail: string;
+        memberName: string | null;
         tierName: string;
-        tierPrice: number;
-        tierCurrency: string;
-        cadence: 'month' | 'year';
         consumesAt: Date;
     }): Promise<void>;
 }
 
 interface StaffServiceEmails {
-    notifyGiftReceived(data: {
+    notifyGiftPurchased(data: {
         name: string | null;
         email: string;
         memberId: string | null;
@@ -114,38 +113,18 @@ export interface GiftPurchaseData {
     stripePaymentIntentId: string;
 }
 
-interface SchedulerAdapter {
-    schedule(job: {time: number; url: string; extra: {httpMethod: string}}): void;
-}
-
-interface SchedulerIntegration {
-    api_keys: Array<{id: string; secret: string}>;
-}
-
-type GetSignedAdminToken = (options: {
-    publishedAt: string;
-    apiUrl: string;
-    integration: SchedulerIntegration;
-}) => string;
-
-type UrlJoin = (...parts: string[]) => string;
-
 interface GiftServiceDeps {
     giftRepository: GiftRepository;
     memberRepository: MemberRepository;
     tiersService: TiersService;
     giftEmailService: GiftEmailService;
     staffServiceEmails: StaffServiceEmails;
-    schedulerAdapter: SchedulerAdapter | null;
-    schedulerIntegration: SchedulerIntegration | null;
-    getSignedAdminToken: GetSignedAdminToken | null;
-    urlJoin: UrlJoin | null;
-    apiUrl: string | null;
+    giftReminderScheduler: Pick<GiftReminderScheduler, 'scheduleFor'>;
 }
 
 interface ReminderSend {
     memberEmail: string;
-    cadence: 'month' | 'year';
+    memberName: string | null;
     consumesAt: Date;
 }
 
@@ -208,7 +187,7 @@ export class GiftService {
         }
 
         try {
-            await this.deps.staffServiceEmails.notifyGiftReceived({
+            await this.deps.staffServiceEmails.notifyGiftPurchased({
                 name: member?.get('name') ?? null,
                 email: member?.get('email') ?? data.buyerEmail,
                 memberId: member?.id ?? null,
@@ -225,8 +204,6 @@ export class GiftService {
         try {
             await this.deps.giftEmailService.sendPurchaseConfirmation({
                 buyerEmail: data.buyerEmail,
-                amount: data.amount,
-                currency: data.currency,
                 token: data.token,
                 tierName: tier.name,
                 cadence: data.cadence,
@@ -251,23 +228,28 @@ export class GiftService {
             switch (redeemableCheck.reason) {
             case 'redeemed':
                 throw new errors.BadRequestError({
-                    message: tpl(errorMessages.giftAlreadyRedeemed)
+                    message: tpl(errorMessages.giftAlreadyRedeemed),
+                    code: 'GIFT_REDEEMED'
                 });
             case 'consumed':
                 throw new errors.BadRequestError({
-                    message: tpl(errorMessages.giftConsumed)
+                    message: tpl(errorMessages.giftConsumed),
+                    code: 'GIFT_CONSUMED'
                 });
             case 'expired':
                 throw new errors.BadRequestError({
-                    message: tpl(errorMessages.giftExpired)
+                    message: tpl(errorMessages.giftExpired),
+                    code: 'GIFT_EXPIRED'
                 });
             case 'refunded':
                 throw new errors.BadRequestError({
-                    message: tpl(errorMessages.giftRefunded)
+                    message: tpl(errorMessages.giftRefunded),
+                    code: 'GIFT_REFUNDED'
                 });
             case 'paid-member':
                 throw new errors.BadRequestError({
-                    message: tpl(errorMessages.paidMember)
+                    message: tpl(errorMessages.paidMember),
+                    code: 'GIFT_PAID_MEMBER'
                 });
             default: {
                 const exhaustiveCheck: never = redeemableCheck.reason;
@@ -324,6 +306,9 @@ export class GiftService {
 
             await this.deps.giftRepository.update(redeemed, {transacting});
 
+            // Gift members receive the paid welcome email, as they receive access to paid content
+            await this.deps.memberRepository.enqueueWelcomeEmailRun(memberId, MEMBER_WELCOME_EMAIL_SLUGS.paid, {transacting});
+
             return {redeemed, member};
         };
 
@@ -352,7 +337,7 @@ export class GiftService {
                 logging.error('Failed to notify staff of gift redemption', err);
             }
 
-            this.scheduleReminder(redeemed);
+            await this.deps.giftReminderScheduler.scheduleFor(redeemed);
         };
 
         if (options.transacting) {
@@ -370,6 +355,13 @@ export class GiftService {
             return null;
         }
         return this.deps.giftRepository.getActiveByMember(memberId, options);
+    }
+
+    async getActiveByMembers(memberIds: string[], options: {transacting?: unknown} = {}): Promise<Map<string, Gift>> {
+        if (!memberIds || memberIds.length === 0) {
+            return new Map();
+        }
+        return this.deps.giftRepository.getActiveByMembers(memberIds, options);
     }
 
     getRemainingActiveDays(gift: Gift, now: Date = new Date()): number {
@@ -585,43 +577,6 @@ export class GiftService {
         return {expiredCount};
     }
 
-    private scheduleReminder(gift: Gift): void {
-        const {schedulerAdapter, schedulerIntegration, getSignedAdminToken, urlJoin, apiUrl} = this.deps;
-
-        if (!schedulerAdapter || !schedulerIntegration || !getSignedAdminToken || !urlJoin || !apiUrl) {
-            return;
-        }
-
-        if (!gift.consumesAt) {
-            return;
-        }
-
-        const time = gift.consumesAt.getTime() - GIFT_REMINDER_LEAD_MS;
-
-        if (time <= Date.now()) {
-            return;
-        }
-
-        try {
-            const signedAdminToken = getSignedAdminToken({
-                publishedAt: new Date(time).toISOString(),
-                apiUrl,
-                integration: schedulerIntegration
-            });
-
-            const url = new URL(urlJoin(apiUrl, 'gifts', 'flush_reminders'));
-            url.searchParams.set('token', signedAdminToken);
-
-            schedulerAdapter.schedule({
-                time,
-                url: url.toString(),
-                extra: {httpMethod: 'PUT'}
-            });
-        } catch (err) {
-            logging.error('Failed to schedule gift reminder', err);
-        }
-    }
-
     async processReminders(): Promise<{remindedCount: number; skippedCount: number; failedCount: number}> {
         const now = new Date();
         const toRemind = await this.deps.giftRepository.findPendingReminder({
@@ -670,16 +625,6 @@ export class GiftService {
             throw new errors.NotFoundError({message: `Tier not found for gift: ${gift.tierId}`});
         }
 
-        // Throw before the transaction so the gift isn't marked as reminded;
-        // the next run recovers after an admin restores pricing.
-        const tierPrice = gift.cadence === 'month' ? tier.monthlyPrice : tier.yearlyPrice;
-
-        if (tierPrice === null || tier.currency === null) {
-            throw new errors.NotFoundError({
-                message: `Tier missing ${gift.cadence}ly pricing for gift: ${gift.tierId}`
-            });
-        }
-
         const result = await this.deps.giftRepository.transaction(async (transacting): Promise<ReminderSend | null> => {
             const locked = await this.deps.giftRepository.getByToken(token, {transacting, forUpdate: true});
 
@@ -726,7 +671,7 @@ export class GiftService {
 
             return {
                 memberEmail: member.get('email'),
-                cadence: locked.cadence,
+                memberName: member.get('name'),
                 consumesAt: locked.consumesAt
             };
         });
@@ -737,10 +682,8 @@ export class GiftService {
 
         await this.deps.giftEmailService.sendReminder({
             memberEmail: result.memberEmail,
+            memberName: result.memberName,
             tierName: tier.name,
-            tierPrice,
-            tierCurrency: tier.currency,
-            cadence: result.cadence,
             consumesAt: result.consumesAt
         });
 

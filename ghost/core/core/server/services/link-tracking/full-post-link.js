@@ -12,7 +12,7 @@ module.exports = class FullPostLink {
     /** @type {ObjectID} */
     post_id;
     
-    /** @type {import('@tryghost/link-redirects/lib/LinkRedirect')} */
+    /** @type {import('../link-redirection/link-redirect')} */
     link;
 
     /** @type {FullPostLinkCount} */
@@ -21,7 +21,7 @@ module.exports = class FullPostLink {
     /**
      * @param {object} data
      * @param {string|ObjectID} data.post_id
-     * @param {import('@tryghost/link-redirects/lib/LinkRedirect')} data.link
+     * @param {import('../link-redirection/link-redirect')} data.link
      * @param {FullPostLinkCount} data.count
      */
     constructor(data) {

@@ -296,6 +296,12 @@ describe('MemberBreadService', function () {
             getRedeemedOfferIdsForSubscriptions: sinon.stub().resolves([])
         };
 
+        const defaultGiftService = {
+            service: {
+                getActiveByMembers: sinon.stub().resolves(new Map())
+            }
+        };
+
         const getService = (options = {}) => {
             return new MemberBreadService({
                 settingsHelpers: {
@@ -305,7 +311,8 @@ describe('MemberBreadService', function () {
                 memberAttributionService: memberAttributionServiceStub,
                 emailSuppressionList: emailSuppressionListStub,
                 nextPaymentCalculator: options.nextPaymentCalculator || nextPaymentCalculator,
-                offersAPI: options.offersAPI || defaultOffersAPI
+                offersAPI: options.offersAPI || defaultOffersAPI,
+                giftService: options.giftService || defaultGiftService
             });
         };
 
@@ -385,6 +392,24 @@ describe('MemberBreadService', function () {
             const member = await memberBreadService.read({id: MEMBER_ID});
 
             assert.deepEqual(member.subscriptions, subscriptionsJSON);
+        });
+
+        it('does not eager-load the embedded email when email_recipients is included', async function () {
+            // Including ?include=email_recipients should fetch the recipient
+            // metadata only — not bolt on the joined email row, which used
+            // to ship multi-MB LONGTEXT bodies and crash JSON.stringify on
+            // high-volume sites. Clients that want the email itself should
+            // call /emails/:id.
+            memberRepositoryStub.get.resolves(memberModelStub);
+
+            const memberBreadService = getService();
+            await memberBreadService.read({id: MEMBER_ID}, {withRelated: ['email_recipients']});
+
+            const passedWithRelated = memberRepositoryStub.get.lastCall.args[1].withRelated;
+
+            assert.ok(passedWithRelated.includes('email_recipients'), 'email_recipients itself should still be eager-loaded');
+            assert.ok(!passedWithRelated.includes('email_recipients.email'), 'email_recipients.email must not be eager-loaded');
+            assert.ok(!passedWithRelated.some(item => typeof item === 'object' && item !== null && 'email_recipients.email' in item), 'email_recipients.email must not be eager-loaded via object form either');
         });
 
         it('returns a member with subscriptions that only have a price', async function () {
@@ -637,12 +662,24 @@ describe('MemberBreadService', function () {
                 productEvents: productEventsJSON
             });
 
+            memberModelStub.status = 'gift';
+
             memberRepositoryStub.isActiveSubscriptionStatus = sinon.stub().returns(true);
 
-            const memberBreadService = getService();
+            const giftServiceStub = {
+                service: {
+                    getActiveByMembers: sinon.stub().resolves(new Map([
+                        [MEMBER_ID, {cadence: 'month', currency: 'eur', amount: 1500}]
+                    ]))
+                }
+            };
+
+            const memberBreadService = getService({giftService: giftServiceStub});
             const member = await memberBreadService.read({id: MEMBER_ID});
 
             assert.equal(member.subscriptions.length, 1);
+
+            sinon.assert.calledOnceWithExactly(giftServiceStub.service.getActiveByMembers, [MEMBER_ID]);
 
             sinon.assert.match(member.subscriptions[0], {
                 id: '',
@@ -655,9 +692,9 @@ describe('MemberBreadService', function () {
                 plan: {
                     id: '',
                     nickname: 'Gift subscription',
-                    interval: 'year',
-                    currency: 'USD',
-                    amount: 0
+                    interval: 'month',
+                    currency: 'eur',
+                    amount: 1500
                 },
                 status: 'active',
                 start_date: moment(productEventsJSON[0].created_at),
@@ -669,16 +706,37 @@ describe('MemberBreadService', function () {
                     id: '',
                     price_id: '',
                     nickname: 'Gift subscription',
-                    amount: 0,
-                    interval: 'year',
+                    amount: 1500,
+                    interval: 'month',
                     type: 'recurring',
-                    currency: 'USD',
+                    currency: 'eur',
                     product: {
                         id: '',
                         product_id: productsJSON[0].id
                     }
                 }
             });
+        });
+
+        it('does not call giftService for non-gift members', async function () {
+            memberModelStub.toJSON.returns({
+                ...memberModelJSON,
+                status: 'free',
+                subscriptions: [],
+                products: [],
+                productEvents: []
+            });
+
+            const giftServiceStub = {
+                service: {
+                    getActiveByMembers: sinon.stub().resolves(new Map())
+                }
+            };
+
+            const memberBreadService = getService({giftService: giftServiceStub});
+            await memberBreadService.read({id: MEMBER_ID});
+
+            sinon.assert.notCalled(giftServiceStub.service.getActiveByMembers);
         });
 
         it('returns a member with attribution data', async function () {

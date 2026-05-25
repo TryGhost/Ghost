@@ -514,7 +514,8 @@ describe('sendMagicLink', function () {
         beforeEach(async function () {
             await dbUtils.truncate('brute');
             await resetRateLimits();
-            clock = sinon.useFakeTimers(new Date());
+            // TODO: shouldAdvanceTime is a fake-timer + HTTP-await workaround; see docs/dep-consolidation.md
+            clock = sinon.useFakeTimers({now: new Date(), shouldAdvanceTime: true});
         });
 
         afterEach(function () {
@@ -768,14 +769,24 @@ describe('sendMagicLink', function () {
         function assertNoOTCInEmailContent(mail) {
             const otcRegex = /\d{6}|\scode\s|\sotc\s/i;
 
+            // \d{6} would otherwise match digits inside the magic-link token.
+            const stripUrls = string => string.replace(/https?:\/\/\S+/g, ' ');
+
             const subjectMatch = mail.subject.match(otcRegex);
             assert(!subjectMatch, `Email subject should not contain OTC. Found: "${subjectMatch?.[0]}" in subject: "${mail.subject}"`);
 
-            const textMatch = mail.text.match(otcRegex);
-            assert(!textMatch, `Email text should not contain OTC. Found: "${textMatch?.[0]}" near: "${mail.text.substring(mail.text.search(otcRegex) - 50, mail.text.search(otcRegex) + 100)}"`);
+            const text = stripUrls(mail.text);
+            const textMatch = text.match(otcRegex);
+            assert(!textMatch, `Email text should not contain OTC. Found: "${textMatch?.[0]}" near: "${text.substring(text.search(otcRegex) - 50, text.search(otcRegex) + 100)}"`);
 
-            // It's possible that there's an OTC-like in an href, so only check the rendered text.
-            const htmlText = cheerio.load(mail.html).text();
+            // Per text node — cheerio's .text() concatenates without
+            // separators, so URLs could otherwise merge with adjacent digits.
+            const $ = cheerio.load(mail.html);
+            const htmlText = $('*').contents()
+                .toArray()
+                .filter(n => n.type === 'text')
+                .map(n => stripUrls(n.data))
+                .join(' ');
             const htmlMatch = htmlText.match(otcRegex);
             assert(!htmlMatch, `Email HTML should not contain OTC. Found: "${htmlMatch?.[0]}" near: "${htmlText.substring(htmlText.search(otcRegex) - 50, htmlText.search(otcRegex) + 100)}"`);
         }

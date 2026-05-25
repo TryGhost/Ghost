@@ -7,7 +7,6 @@ const loggingLib = require('@tryghost/logging');
 // Stuff we are testing
 const get = require('../../../../core/frontend/helpers/get');
 const {querySimplePath} = get;
-const models = require('../../../../core/server/models');
 const api = require('../../../../core/server/api').endpoints;
 const maxLimitCap = require('../../../../core/shared/max-limit-cap');
 
@@ -16,10 +15,6 @@ describe('{{#get}} helper', function () {
     let inverse;
     let locals = {};
     let logging;
-
-    before(function () {
-        models.init();
-    });
 
     beforeEach(function () {
         fn = sinon.spy();
@@ -556,23 +551,29 @@ describe('{{#get}} helper', function () {
         });
 
         it('should log an error and return safely if it hits the timeout threshold', async function () {
-            configUtils.set('optimization:getHelper:timeout:threshold', 1);
+            const clock = sinon.useFakeTimers({toFake: ['setTimeout', 'clearTimeout']});
+            try {
+                configUtils.set('optimization:getHelper:timeout:threshold', 1);
 
-            const result = await get.call(
-                {},
-                'posts',
-                {hash: {}, data: locals, fn: fn, inverse: inverse}
-            );
+                const resultPromise = get.call(
+                    {},
+                    'posts',
+                    {hash: {}, data: locals, fn: fn, inverse: inverse}
+                );
+                // 2 > threshold (1), < stub's 5 — fires only the helper's timer.
+                await clock.tickAsync(2);
+                const result = await resultPromise;
 
-            assert(result.toString().includes('data-aborted-get-helper'));
-            // A log message will be output
-            sinon.assert.calledOnce(logging.error);
-            // The get helper gets called with an empty array of results
-            sinon.assert.calledOnce(fn);
-            const args = fn.firstCall.args[0];
-            assert(args && typeof args === 'object');
-            assert('posts' in args);
-            assert.deepEqual(args.posts, []);
+                assert(result.toString().includes('data-aborted-get-helper'));
+                sinon.assert.calledOnce(logging.error);
+                sinon.assert.calledOnce(fn);
+                const args = fn.firstCall.args[0];
+                assert(args && typeof args === 'object');
+                assert('posts' in args);
+                assert.deepEqual(args.posts, []);
+            } finally {
+                clock.restore();
+            }
         });
     });
 

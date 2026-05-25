@@ -13,7 +13,7 @@ describe('{{asset}} helper', function () {
     let rendered;
     const localSettingsCache = {};
 
-    before(function () {
+    beforeAll(function () {
         configUtils.set({assetHash: 'abc'});
         configUtils.set({useMinFiles: true});
 
@@ -22,7 +22,7 @@ describe('{{asset}} helper', function () {
         });
     });
 
-    after(async function () {
+    afterAll(async function () {
         await configUtils.restore();
         sinon.restore();
     });
@@ -88,12 +88,12 @@ describe('{{asset}} helper', function () {
     });
 
     describe('different admin and site urls', function () {
-        before(function () {
+        beforeAll(function () {
             configUtils.set({url: 'http://127.0.0.1'});
             configUtils.set({'admin:url': 'http://localhost'});
         });
 
-        after(async function () {
+        afterAll(async function () {
             await configUtils.restore();
         });
 
@@ -111,12 +111,12 @@ describe('{{asset}} helper', function () {
     });
 
     describe('with contentBasedHash enabled', function () {
-        before(function () {
+        beforeAll(function () {
             configUtils.set({assetHash: 'abc'});
             configUtils.set({'caching:assets:contentBasedHash:enabled': true});
         });
 
-        after(async function () {
+        afterAll(async function () {
             await configUtils.restore();
         });
 

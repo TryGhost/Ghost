@@ -8,6 +8,7 @@
     {"location":"FR","visits":2}
     {"location":"ES","visits":2}
     {"location":"DE","visits":1}
+    {"location":"IT","visits":1}
 
 - name: Filtered by location - UK
   description: Filtered by location - UK
@@ -43,13 +44,14 @@
     {"location":"GB","visits":1}
 
 - name: Filtered by member status - paid
-  description: Filtered by member status - paid
+  description: Filtered by member status - paid (includes comped and gift)
   parameters: site_uuid=mock_site_uuid&date_from=2100-01-01&date_to=2100-01-07&timezone=Etc/UTC&member_status=paid
   expected_result: |
     {"location":"GB","visits":2}
     {"location":"FR","visits":1}
     {"location":"DE","visits":1}
     {"location":"ES","visits":1}
+    {"location":"IT","visits":1}
 
 - name: Filtered by member status - undefined
   description: Filtered by member status - undefined
@@ -67,6 +69,7 @@
     {"location":"FR","visits":2}
     {"location":"DE","visits":1}
     {"location":"ES","visits":1}
+    {"location":"IT","visits":1}
 
 - name: Test with multiple filters combined
   description: Test with multiple filters combined
@@ -84,3 +87,4 @@
     {"location":"FR","visits":2}
     {"location":"ES","visits":2}
     {"location":"DE","visits":1}
+    {"location":"IT","visits":1}

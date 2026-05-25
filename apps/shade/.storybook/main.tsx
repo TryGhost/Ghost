@@ -2,6 +2,7 @@ import type { StorybookConfig } from "@storybook/react-vite";
 import {dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import path from 'path';
+import remarkGfm from 'remark-gfm';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -16,7 +17,8 @@ const config: StorybookConfig = {
             options: {
                 mdxPluginOptions: {
                     mdxCompileOptions: {
-                        providerImportSource: "@storybook/addon-docs/mdx-react-shim"
+                        providerImportSource: "@storybook/addon-docs/mdx-react-shim",
+                        remarkPlugins: [remarkGfm]
                     }
                 }
             }

@@ -630,8 +630,8 @@
                     "object_type": "offer"
                 },
                 {
-                    "name": "Reset all passwords",
-                    "action_type": "resetAllPasswords",
+                    "name": "Reset authentication",
+                    "action_type": "reset",
                     "object_type": "authentication"
                 },
                 {
@@ -773,6 +773,21 @@
                     "name": "Delete recommendations",
                     "action_type": "destroy",
                     "object_type": "recommendation"
+                },
+                {
+                    "name": "Browse automations",
+                    "action_type": "browse",
+                    "object_type": "automation"
+                },
+                {
+                    "name": "Read automations",
+                    "action_type": "read",
+                    "object_type": "automation"
+                },
+                {
+                    "name": "Edit automations",
+                    "action_type": "edit",
+                    "object_type": "automation"
                 },
                 {
                     "name": "Poll automations",
@@ -942,7 +957,7 @@
                     "snippet": "all",
                     "custom_theme_setting": "all",
                     "offer": "all",
-                    "authentication": "resetAllPasswords",
+                    "authentication": "reset",
                     "members_stripe_connect": "auth",
                     "newsletter": "all",
                     "explore": "read",
@@ -951,6 +966,7 @@
                     "mention": "browse",
                     "collection": "all",
                     "recommendation": "all",
+                    "automation": ["browse", "read", "edit"],
                     "identity": "read"
                 },
                 "DB Backup Integration": {
@@ -1000,6 +1016,7 @@
                     "mention": "browse",
                     "collection": "all",
                     "recommendation": "all",
+                    "automation": ["browse", "read", "edit"],
                     "member_signin_url": "read"
                 },
                 "Super Editor": {

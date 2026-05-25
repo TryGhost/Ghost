@@ -25,7 +25,7 @@ describe('Themes', function () {
         });
 
         describe('Load All', function () {
-            it('should load directory and include only folders', function (done) {
+            it('should load directory and include only folders', async function () {
                 // create trash
                 fs.writeFileSync(join(themePath.name, 'casper.zip'), '');
                 fs.writeFileSync(join(themePath.name, '.DS_Store'), '');
@@ -36,27 +36,22 @@ describe('Themes', function () {
                 fs.writeFileSync(join(themePath.name, 'casper', 'index.hbs'), '');
                 fs.writeFileSync(join(themePath.name, 'casper', 'partials', 'navigation.hbs'), '');
 
-                loader.loadAllThemes()
-                    .then(function (result) {
-                        const themeResult = themeList.getAll();
+                const result = await loader.loadAllThemes();
+                const themeResult = themeList.getAll();
 
-                        // Loader doesn't return anything
-                        assert.equal(result, undefined);
+                // Loader doesn't return anything
+                assert.equal(result, undefined);
 
-                        assert.deepEqual(themeResult, {
-                            casper: {
-                                name: 'casper',
-                                path: join(themePath.name, 'casper'),
-                                'package.json': null
-                            }
-                        });
-
-                        done();
-                    })
-                    .catch(done);
+                assert.deepEqual(themeResult, {
+                    casper: {
+                        name: 'casper',
+                        path: join(themePath.name, 'casper'),
+                        'package.json': null
+                    }
+                });
             });
 
-            it('should read directory and read package.json if present', function (done) {
+            it('should read directory and read package.json if present', async function () {
                 // create trash
                 fs.writeFileSync(join(themePath.name, 'README.md'), '');
                 fs.writeFileSync(join(themePath.name, 'Thumbs.db'), '');
@@ -69,34 +64,29 @@ describe('Themes', function () {
                     JSON.stringify({name: 'casper', version: '0.1.2'})
                 );
 
-                loader.loadAllThemes()
-                    .then(function (result) {
-                        const themeResult = themeList.getAll();
+                const result = await loader.loadAllThemes();
+                const themeResult = themeList.getAll();
 
-                        // Loader doesn't return anything
-                        assert.equal(result, undefined);
+                // Loader doesn't return anything
+                assert.equal(result, undefined);
 
-                        assert.deepEqual(themeResult, {
-                            casper: {
-                                name: 'casper',
-                                path: join(themePath.name, 'casper'),
-                                'package.json': {name: 'casper', version: '0.1.2'}
-                            },
-                            'not-casper': {
-                                name: 'not-casper',
-                                path: join(themePath.name, 'not-casper'),
-                                'package.json': null
-                            }
-                        });
-
-                        done();
-                    })
-                    .catch(done);
+                assert.deepEqual(themeResult, {
+                    casper: {
+                        name: 'casper',
+                        path: join(themePath.name, 'casper'),
+                        'package.json': {name: 'casper', version: '0.1.2'}
+                    },
+                    'not-casper': {
+                        name: 'not-casper',
+                        path: join(themePath.name, 'not-casper'),
+                        'package.json': null
+                    }
+                });
             });
         });
 
         describe('Load One', function () {
-            it('should read directory and include only single requested theme', function (done) {
+            it('should read directory and include only single requested theme', async function () {
                 // create trash
                 fs.writeFileSync(join(themePath.name, 'casper.zip'), '');
                 fs.writeFileSync(join(themePath.name, '.DS_Store'), '');
@@ -111,32 +101,27 @@ describe('Themes', function () {
                 fs.mkdirSync(join(themePath.name, 'not-casper'));
                 fs.writeFileSync(join(themePath.name, 'not-casper', 'index.hbs'), '');
 
-                loader.loadOneTheme('casper')
-                    .then(function (themeResult) {
-                        assert.deepEqual(themeResult, {
-                            name: 'casper',
-                            path: join(themePath.name, 'casper'),
-                            'package.json': {name: 'casper', version: '0.1.2'}
-                        });
+                const themeResult = await loader.loadOneTheme('casper');
 
-                        done();
-                    })
-                    .catch(done);
+                assert.deepEqual(themeResult, {
+                    name: 'casper',
+                    path: join(themePath.name, 'casper'),
+                    'package.json': {name: 'casper', version: '0.1.2'}
+                });
             });
 
-            it('should throw an error if theme cannot be found', function (done) {
+            it('should throw an error if theme cannot be found', async function () {
                 // create trash
                 fs.writeFileSync(join(themePath.name, 'casper.zip'), '');
                 fs.writeFileSync(join(themePath.name, '.DS_Store'), '');
 
-                loader.loadOneTheme('casper')
-                    .then(function () {
-                        done('Should have thrown an error');
-                    })
-                    .catch(function (err) {
+                await assert.rejects(
+                    loader.loadOneTheme('casper'),
+                    (err) => {
                         assert.equal(err.message, 'Package not found');
-                        done();
-                    });
+                        return true;
+                    }
+                );
             });
         });
     });

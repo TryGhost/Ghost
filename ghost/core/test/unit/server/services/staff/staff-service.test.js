@@ -511,7 +511,7 @@ describe('StaffService', function () {
             let tier;
             let offer;
             let subscription;
-            before(function () {
+            beforeAll(function () {
                 member = {
                     name: 'Ghost',
                     email: 'member@example.com',
@@ -565,7 +565,7 @@ describe('StaffService', function () {
                 testCommonPaidSubMailData({...stubs, member});
 
                 assert.equal(mailStub.calledWith(
-                    sinon.match.has('html', 'Offer')
+                    sinon.match.has('html', sinon.match('Offer'))
                 ), false);
             });
 
@@ -580,7 +580,7 @@ describe('StaffService', function () {
                 testCommonPaidSubMailData({...stubs, member: memberData});
 
                 assert.equal(mailStub.calledWith(
-                    sinon.match.has('html', 'Offer')
+                    sinon.match.has('html', sinon.match('Offer'))
                 ), false);
 
                 // check preview text
@@ -656,6 +656,56 @@ describe('StaffService', function () {
                 sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('Free week')));
                 sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('7 days free')));
             });
+
+            it('sends paid subscription start alert with gift-derived trial period', async function () {
+                const trialStart = new Date('2022-08-01T07:30:39.882Z');
+                const trialEnd = new Date('2022-08-31T07:30:39.882Z');
+                const trialSubscription = {
+                    ...subscription,
+                    trialStart,
+                    trialEnd
+                };
+
+                await service.emails.notifyPaidSubscriptionStarted({member, offer: null, tier, subscription: trialSubscription}, options);
+
+                sinon.assert.calledOnce(mailStub);
+                testCommonPaidSubMailData({...stubs, member});
+
+                // Trial appears inline on the Tier line, not as a separate Offer block
+                sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('30 days free')));
+                assert.equal(mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Offer'))
+                ), false);
+
+                // check preview text — trial appended to tier line
+                sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('Test Tier: $50.00/month - 30 days free')));
+            });
+
+            it('does not show inline trial on tier line when a trial offer is present', async function () {
+                offer = {
+                    name: 'Free week',
+                    duration: 'trial',
+                    type: 'trial',
+                    amount: 7
+                };
+                const trialSubscription = {
+                    ...subscription,
+                    trialStart: new Date('2022-08-01T07:30:39.882Z'),
+                    trialEnd: new Date('2022-08-08T07:30:39.882Z')
+                };
+
+                await service.emails.notifyPaidSubscriptionStarted({member, offer, tier, subscription: trialSubscription}, options);
+
+                sinon.assert.calledOnce(mailStub);
+                testCommonPaidSubMailData({...stubs, member});
+
+                // The Offer block renders "7 days free" but the Tier line should NOT also show it
+                sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('Free week')));
+                sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('7 days free')));
+                assert.equal(mailStub.calledWith(
+                    sinon.match.has('html', sinon.match('Test Tier: $50.00/month - 7 days free'))
+                ), false);
+            });
         });
 
         describe('notifyPaidSubscriptionCancel', function () {
@@ -665,7 +715,7 @@ describe('StaffService', function () {
             let expiryAt;
             let canceledAt;
             let cancelNow;
-            before(function () {
+            beforeAll(function () {
                 member = {
                     name: 'Ghost',
                     email: 'member@example.com',
@@ -704,7 +754,7 @@ describe('StaffService', function () {
                 sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('5 Sep 2024')));
 
                 assert.equal(mailStub.calledWith(
-                    sinon.match.has('html', 'Offer')
+                    sinon.match.has('html', sinon.match('Offer'))
                 ), false);
 
                 sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('Cancellation reason')));
@@ -750,7 +800,7 @@ describe('StaffService', function () {
                 sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('5 Sep 2024')));
 
                 assert.equal(mailStub.calledWith(
-                    sinon.match.has('html', 'Offer')
+                    sinon.match.has('html', sinon.match('Offer'))
                 ), false);
 
                 sinon.assert.calledWith(mailStub, sinon.match.has('html', sinon.match('Cancellation reason')));
@@ -974,9 +1024,9 @@ describe('StaffService', function () {
             });
         });
 
-        describe('notifyGiftReceived', function () {
+        describe('notifyGiftPurchased', function () {
             it('sends gift email with correct subject', async function () {
-                await service.emails.notifyGiftReceived({
+                await service.emails.notifyGiftPurchased({
                     name: 'Alice',
                     email: 'alice@example.com',
                     memberId: null,
@@ -987,13 +1037,13 @@ describe('StaffService', function () {
                     duration: 1
                 });
 
-                sinon.assert.calledWith(getEmailAlertUsersStub, 'gift-subscription-purchased');
+                sinon.assert.calledWith(getEmailAlertUsersStub, 'gift-subscriptions');
                 sinon.assert.calledOnce(mailStub);
                 sinon.assert.calledWith(mailStub, sinon.match.has('subject', sinon.match('Gift subscription purchased: $60.00 from Alice')));
             });
 
             it('includes amount in HTML', async function () {
-                await service.emails.notifyGiftReceived({
+                await service.emails.notifyGiftPurchased({
                     name: 'Bob',
                     email: 'bob@example.com',
                     memberId: null,
@@ -1009,7 +1059,7 @@ describe('StaffService', function () {
             });
 
             it('includes purchaser name in HTML', async function () {
-                await service.emails.notifyGiftReceived({
+                await service.emails.notifyGiftPurchased({
                     name: 'Charlie',
                     email: 'charlie@example.com',
                     memberId: null,
@@ -1025,7 +1075,7 @@ describe('StaffService', function () {
             });
 
             it('includes amount in plain text', async function () {
-                await service.emails.notifyGiftReceived({
+                await service.emails.notifyGiftPurchased({
                     name: 'Diana',
                     email: 'diana@example.com',
                     memberId: null,
@@ -1041,7 +1091,7 @@ describe('StaffService', function () {
             });
 
             it('falls back to email when name is null', async function () {
-                await service.emails.notifyGiftReceived({
+                await service.emails.notifyGiftPurchased({
                     name: null,
                     email: 'anon@example.com',
                     memberId: null,
@@ -1057,7 +1107,7 @@ describe('StaffService', function () {
             });
 
             it('includes tier and cadence in HTML when provided', async function () {
-                await service.emails.notifyGiftReceived({
+                await service.emails.notifyGiftPurchased({
                     name: 'Erin',
                     email: 'erin@example.com',
                     memberId: null,
@@ -1074,7 +1124,7 @@ describe('StaffService', function () {
             });
 
             it('formats cadence with pluralized unit when duration is greater than 1', async function () {
-                await service.emails.notifyGiftReceived({
+                await service.emails.notifyGiftPurchased({
                     name: 'Erin',
                     email: 'erin@example.com',
                     memberId: null,
@@ -1102,9 +1152,9 @@ describe('StaffService', function () {
                     buyerEmail: 'gifter@example.com'
                 });
 
-                sinon.assert.calledWith(getEmailAlertUsersStub, 'paid-started');
+                sinon.assert.calledWith(getEmailAlertUsersStub, 'gift-subscriptions');
                 sinon.assert.calledOnce(mailStub);
-                sinon.assert.calledWith(mailStub, sinon.match.has('subject', sinon.match('🎁 Paid subscription started: Jamie')));
+                sinon.assert.calledWith(mailStub, sinon.match.has('subject', sinon.match('🎁 Gift subscription redeemed: Jamie')));
             });
 
             it('includes the tier and cadence in HTML and plain text', async function () {

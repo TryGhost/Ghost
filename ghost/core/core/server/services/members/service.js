@@ -136,6 +136,7 @@ module.exports = {
             cookieSecure: urlUtils.isSSL(urlUtils.getSiteUrl()),
             cookieKeys: [settingsCache.get('theme_session_secret')],
             cookieName: 'ghost-members-ssr',
+            cookiePath: urlUtils.getSubdir() || '/',
             getMembersApi: () => module.exports.api
         });
 
@@ -167,13 +168,6 @@ module.exports = {
 
         // Schedule daily cron job to clean expired tokens
         memberJobs.scheduleTokenCleanupJob();
-
-        // Schedule daily cron jobs to clean up consumed/expired gifts and to
-        // send gift reminder emails.
-        if (labsService.isSet('giftSubscriptions')) {
-            memberJobs.scheduleGiftCleanupJob();
-            memberJobs.scheduleGiftReminderJob();
-        }
     },
     contentGating: require('./content-gating'),
 

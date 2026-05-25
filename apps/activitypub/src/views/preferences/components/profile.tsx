@@ -405,7 +405,7 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
                             </a>
                         </div>
                         <Button className={`min-w-[160px] dark:bg-black dark:text-white dark:hover:bg-black/90 ${backgroundColor === 'dark' && 'bg-white text-black hover:bg-gray-50 dark:bg-white dark:text-black dark:hover:bg-gray-50/90'}`} onClick={handleCopy}>
-                            {isProcessing ? <LoadingIndicator color={`${backgroundColor === 'dark' ? 'dark' : 'light'}`} size='sm' /> : <LucideIcon.Copy />}
+                            {isProcessing ? <LoadingIndicator className='!border-current/10 before:!bg-current' size='sm' /> : <LucideIcon.Copy />}
                             {!isProcessing && 'Copy image'}
                         </Button>
                     </div>

@@ -1,4 +1,5 @@
-import {BarChartLoadingIndicator, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, KpiDropdownButton, KpiTabTrigger, KpiTabValue, Tabs, TabsList} from '@tryghost/shade/components';
+import {BarChartLoadingIndicator, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Tabs, TabsList} from '@tryghost/shade/components';
+import {GhAreaChart, KpiDropdownButton, KpiTabTrigger, KpiTabValue} from '@tryghost/shade/patterns';
 import {KPI_METRICS} from '../web';
 import {STATS_RANGES} from '@src/utils/constants';
 import {formatDuration, formatNumber, formatPercentage} from '@tryghost/shade/utils';

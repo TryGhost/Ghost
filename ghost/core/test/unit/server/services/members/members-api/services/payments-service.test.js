@@ -10,7 +10,7 @@ describe('PaymentsService', function () {
     let Bookshelf;
     let db;
 
-    before(async function () {
+    beforeAll(async function () {
         db = knex({
             client: 'sqlite3',
             useNullAsDefault: true,
@@ -57,7 +57,7 @@ describe('PaymentsService', function () {
         await db('stripe_customers').truncate();
     });
 
-    after(async function () {
+    afterAll(async function () {
         await db.destroy();
     });
 
@@ -368,7 +368,7 @@ describe('PaymentsService', function () {
             assert.equal(args.metadata.gift_token, 'AbCdEfGhIjKl');
         });
 
-        it('appends gift token to success URL', async function () {
+        it('appends gift token, tier and cadence to success URL', async function () {
             const tier = await createTier({monthlyPrice: 5000, yearlyPrice: 50000});
 
             await service.getGiftPaymentLink({...defaultGiftOptions, tier, cadence: 'year'});
@@ -378,6 +378,8 @@ describe('PaymentsService', function () {
 
             assert.equal(successUrl.searchParams.get('stripe'), 'gift-purchase-success');
             assert.equal(successUrl.searchParams.get('gift_token'), args.metadata.gift_token);
+            assert.equal(successUrl.searchParams.get('gift_tier'), tier.id.toHexString());
+            assert.equal(successUrl.searchParams.get('gift_cadence'), 'year');
         });
 
         it('prevents caller metadata from overwriting gift-specific keys', async function () {
@@ -414,6 +416,39 @@ describe('PaymentsService', function () {
             sinon.assert.calledOnce(service.getCustomerForMember);
             sinon.assert.calledWith(service.getCustomerForMember, mockMember);
             assert.equal(getStripeArgs().customer, mockCustomer);
+        });
+
+        it('passes customer email to Stripe for logged-out gift purchases', async function () {
+            const tier = await createTier();
+
+            await service.getGiftPaymentLink({
+                ...defaultGiftOptions,
+                tier,
+                cadence: 'month',
+                email: 'jamie@example.com'
+            });
+
+            assert.equal(getStripeArgs().customerEmail, 'jamie@example.com');
+        });
+
+        it('does not pass customer email when an authenticated customer is available', async function () {
+            const mockCustomer = {id: 'cus_123', email: 'member@example.com'};
+            sinon.stub(service, 'getCustomerForMember').resolves(mockCustomer);
+
+            const tier = await createTier();
+            const mockMember = {id: 'member_123', get: sinon.stub().returns('member@example.com')};
+
+            await service.getGiftPaymentLink({
+                ...defaultGiftOptions,
+                tier,
+                cadence: 'month',
+                member: mockMember,
+                isAuthenticated: true,
+                email: 'jamie@example.com'
+            });
+
+            assert.equal(getStripeArgs().customer, mockCustomer);
+            assert.equal(getStripeArgs().customerEmail, null);
         });
     });
 });

@@ -3,6 +3,7 @@ const security = require('@tryghost/security');
 const ghostBookshelf = require('./base');
 const {Role} = require('./role');
 
+// secretlint-disable-next-line @secretlint/secretlint-rule-pattern
 const ApiKey = ghostBookshelf.Model.extend({
     tableName: 'api_keys',
 
@@ -61,6 +62,22 @@ const ApiKey = ghostBookshelf.Model.extend({
     refreshSecret(data, options) {
         const secret = security.secret.create(data.type);
         return this.edit(Object.assign({}, data, {secret}), options);
+    },
+
+    /**
+     * Refresh the secret on every API key row, returning the count rotated.
+     * Used by the danger-zone reset flow; callers are expected to wrap this
+     * in a transaction.
+     *
+     * @param {Object} options
+     * @returns {Promise<{count: number}>}
+     */
+    async refreshAllSecrets(options) {
+        const apiKeys = await this.findAll(options);
+        for (const apiKey of apiKeys.models) {
+            await this.refreshSecret(apiKey.toJSON(), Object.assign({}, options, {id: apiKey.id}));
+        }
+        return {count: apiKeys.length};
     }
 });
 
@@ -69,6 +86,7 @@ const ApiKeys = ghostBookshelf.Collection.extend({
 });
 
 module.exports = {
+    // secretlint-disable-next-line @secretlint/secretlint-rule-pattern
     ApiKey: ghostBookshelf.model('ApiKey', ApiKey),
     ApiKeys: ghostBookshelf.collection('ApiKeys', ApiKeys)
 };

@@ -521,6 +521,9 @@ html[dir="rtl"] .gh-portal-powered a {
 }
 
 .gh-portal-closeicon-container {
+    background: none;
+    border: none;
+    padding: 0;
     position: fixed;
     top: 24px;
     right: 24px;
@@ -600,6 +603,7 @@ html[dir="rtl"] .gh-portal-logout-container {
     align-items: center;
     justify-content: center;
     margin: -2px 0 40px;
+    padding-inline: 60px;
 }
 
 .gh-portal-detail-footer .gh-portal-btn {
@@ -1049,7 +1053,6 @@ const MobileStyles = `
     .gh-portal-popup-container:not(.account-plan) .gh-portal-detail-header .gh-portal-main-title {
         font-size: 2.1rem;
         margin-top: 1px;
-        padding: 0 74px;
         text-align: center;
     }
 

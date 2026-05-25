@@ -44,8 +44,9 @@ const setAccessCookies = function setAccessCookies(member, req, res, freeTier) {
             return;
         }
         // If there are cookies sent with the request, set them to null and expire them immediately
-        const accessCookie = `ghost-access=null; Max-Age=0; Path=/; HttpOnly; SameSite=Strict;`;
-        const hmacCookie = `ghost-access-hmac=null; Max-Age=0; Path=/; HttpOnly; SameSite=Strict;`;
+        const cookiePath = urlUtils.getSubdir() || '/';
+        const accessCookie = `ghost-access=null; Max-Age=0; Path=${cookiePath}; HttpOnly; SameSite=Strict;`;
+        const hmacCookie = `ghost-access-hmac=null; Max-Age=0; Path=${cookiePath}; HttpOnly; SameSite=Strict;`;
         const existingCookies = res.getHeader('Set-Cookie') || [];
         const cookiesToSet = [accessCookie, hmacCookie].concat(existingCookies);
 
@@ -68,8 +69,9 @@ const setAccessCookies = function setAccessCookies(member, req, res, freeTier) {
     const memberTierHmac = crypto.createHmac('sha256', hmacSecretBuffer).update(memberTierAndTimestamp).digest('hex');
 
     const maxAge = 3600;
-    const accessCookie = `ghost-access=${memberTierAndTimestamp}; Max-Age=${maxAge}; Path=/; HttpOnly; SameSite=Strict;`;
-    const hmacCookie = `ghost-access-hmac=${memberTierHmac}; Max-Age=${maxAge}; Path=/; HttpOnly; SameSite=Strict;`;
+    const cookiePath = urlUtils.getSubdir() || '/';
+    const accessCookie = `ghost-access=${memberTierAndTimestamp}; Max-Age=${maxAge}; Path=${cookiePath}; HttpOnly; SameSite=Strict;`;
+    const hmacCookie = `ghost-access-hmac=${memberTierHmac}; Max-Age=${maxAge}; Path=${cookiePath}; HttpOnly; SameSite=Strict;`;
 
     const existingCookies = res.getHeader('Set-Cookie') || [];
     const cookiesToSet = [accessCookie, hmacCookie].concat(existingCookies);
@@ -430,6 +432,10 @@ const createSessionFromMagicLink = async function createSessionFromMagicLink(req
         res.redirect(`${urlUtils.getSubdir()}/?${searchParams.toString()}`);
     } catch (err) {
         logging.warn(err.message);
+
+        if (err.code && typeof err.code === 'string') {
+            searchParams.set('errorCode', err.code);
+        }
 
         const referrer = req.query.r;
         const siteUrl = urlUtils.getSiteUrl();

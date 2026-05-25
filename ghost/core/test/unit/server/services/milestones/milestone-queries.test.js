@@ -1,4 +1,11 @@
 const db = require('../../../../../core/server/data/db');
+// Load the model layer at import time — before db.knex is stubbed below — so
+// Bookshelf is constructed once with the real knex instance and cached. The
+// shared vitest afterEach hook lazily requires the jobs service (which pulls
+// in models); without this, that require would re-run Bookshelf against the
+// stubbed knex and throw "Invalid knex instance".
+require('../../../../../core/server/models');
+const MilestoneQueries = require('../../../../../core/server/services/milestones/milestone-queries');
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 
@@ -7,7 +14,7 @@ describe('MilestoneQueries', function () {
     let queryMock;
     let knexMock;
 
-    before(function () {
+    beforeAll(function () {
         queryMock = {
             groupBy: sinon.stub(),
             select: sinon.stub(),
@@ -23,8 +30,11 @@ describe('MilestoneQueries', function () {
         });
     });
 
+    afterAll(function () {
+        sinon.restore();
+    });
+
     it('Provides expected public API', async function () {
-        const MilestoneQueries = require('../../../../../core/server/services/milestones/milestone-queries');
         milestoneQueries = new MilestoneQueries({db: knexMock});
 
         assert.ok(milestoneQueries.getMembersCount);
