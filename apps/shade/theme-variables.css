@@ -24,7 +24,7 @@
     --surface-elevated: var(--color-white);
     --text-primary: var(--foreground);
     --text-secondary: var(--muted-foreground);
-    --text-tertiary: var(--color-gray-600);
+    --text-tertiary: var(--color-gray-400);
     --border-subtle: var(--input);
     --border-default: var(--border);
     --border-strong: var(--color-gray-500);
@@ -91,7 +91,7 @@
     --surface-elevated: var(--color-gray-950);
     --text-primary: var(--foreground);
     --text-secondary: var(--color-gray-400);
-    --text-tertiary: var(--muted-foreground);
+    --text-tertiary: var(--color-gray-500);
     --border-subtle: var(--color-gray-900);
     --border-default: var(--border);
     --border-strong: var(--color-gray-700);
