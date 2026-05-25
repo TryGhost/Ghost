@@ -38,13 +38,11 @@ type Story = StoryObj;
 export const Surface: Story = {
     render: () => (
         <ColorPalette
-            description="Backgrounds with intent. Use these instead of raw color values for any container chrome."
+            description="Backgrounds with intent. Page is the main canvas. Panel is the standard contained surface and aliases card today so it can diverge later. Elevated is for raised or interactive surfaces: it matches page in light mode today and separates by color in dark mode, leaving borders and shadows to carry light-mode elevation."
             swatches={[
                 {name: 'page', cssVar: '--surface-page'},
                 {name: 'panel', cssVar: '--surface-panel'},
-                {name: 'elevated', cssVar: '--surface-elevated'},
-                {name: 'overlay', cssVar: '--surface-overlay'},
-                {name: 'inverse', cssVar: '--surface-inverse'}
+                {name: 'elevated', cssVar: '--surface-elevated'}
             ]}
             title="Surface"
         />
