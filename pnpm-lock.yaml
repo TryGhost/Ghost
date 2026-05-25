@@ -1070,8 +1070,8 @@ importers:
         specifier: 6.1.4
         version: 6.1.4
       eslint-plugin-tailwindcss:
-        specifier: 3.18.2
-        version: 3.18.2(tailwindcss@3.4.18(tsx@4.21.0)(yaml@2.8.3))
+        specifier: 3.18.3
+        version: 3.18.3(tailwindcss@3.4.18(tsx@4.21.0)(yaml@2.8.3))
       jsdom:
         specifier: 'catalog:'
         version: 29.1.1(@noble/hashes@1.8.0)
@@ -1539,8 +1539,8 @@ importers:
         specifier: 'catalog:'
         version: 8.57.1
       eslint-plugin-tailwindcss:
-        specifier: 3.18.2
-        version: 3.18.2(tailwindcss@3.4.18(tsx@4.21.0)(yaml@2.8.3))
+        specifier: 3.18.3
+        version: 3.18.3(tailwindcss@3.4.18(tsx@4.21.0)(yaml@2.8.3))
       jsdom:
         specifier: 'catalog:'
         version: 29.1.1(@noble/hashes@1.8.0)
@@ -13502,11 +13502,11 @@ packages:
       eslint: '>=8'
       storybook: ^10.3.5
 
-  eslint-plugin-tailwindcss@3.18.2:
-    resolution: {integrity: sha512-QbkMLDC/OkkjFQ1iz/5jkMdHfiMu/uwujUHLAJK5iwNHD8RTxVTlsUezE0toTZ6VhybNBsk+gYGPDq2agfeRNA==}
+  eslint-plugin-tailwindcss@3.18.3:
+    resolution: {integrity: sha512-lqjNX7mt1Ip2qR236hvhbZ9ff2TFLUWou+tBHz82SA1nWFzOZSoEOI+9UBZmuf2977r2MMp9/y3/broyz8AYig==}
     engines: {node: '>=18.12.0'}
     peerDependencies:
-      tailwindcss: ^3.4.0
+      tailwindcss: ^3.4.0 || ^4.0.0
 
   eslint-plugin-tailwindcss@4.0.0-beta.0:
     resolution: {integrity: sha512-WWCajZgQu38Sd67ZCl2W6i3MRzqB0d+H8s4qV9iB6lBJbsDOIpIlj6R1Fj2FXkoWErbo05pZnZYbCGIU9o/DsA==}
@@ -36343,10 +36343,12 @@ snapshots:
       - supports-color
       - typescript
 
-  eslint-plugin-tailwindcss@3.18.2(tailwindcss@3.4.18(tsx@4.21.0)(yaml@2.8.3)):
+  eslint-plugin-tailwindcss@3.18.3(tailwindcss@3.4.18(tsx@4.21.0)(yaml@2.8.3)):
     dependencies:
       fast-glob: 3.3.3
       postcss: 8.5.6
+      synckit: 0.11.12
+      tailwind-api-utils: 1.0.3(tailwindcss@3.4.18(tsx@4.21.0)(yaml@2.8.3))
       tailwindcss: 3.4.18(tsx@4.21.0)(yaml@2.8.3)
 
   eslint-plugin-tailwindcss@4.0.0-beta.0(tailwindcss@4.2.2):
@@ -45436,6 +45438,13 @@ snapshots:
       strip-ansi: 6.0.1
 
   tagged-tag@1.0.0: {}
+
+  tailwind-api-utils@1.0.3(tailwindcss@3.4.18(tsx@4.21.0)(yaml@2.8.3)):
+    dependencies:
+      enhanced-resolve: 5.20.1
+      jiti: 2.6.1
+      local-pkg: 1.1.2
+      tailwindcss: 3.4.18(tsx@4.21.0)(yaml@2.8.3)
 
   tailwind-api-utils@1.0.3(tailwindcss@4.2.2):
     dependencies:

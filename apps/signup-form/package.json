@@ -48,7 +48,7 @@
     "autoprefixer": "10.4.21",
     "concurrently": "catalog:",
     "eslint": "catalog:",
-    "eslint-plugin-tailwindcss": "3.18.2",
+    "eslint-plugin-tailwindcss": "3.18.3",
     "jsdom": "catalog:",
     "postcss": "catalog:",
     "postcss-import": "16.1.1",
