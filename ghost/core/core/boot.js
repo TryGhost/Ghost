@@ -322,7 +322,7 @@ async function initServices() {
     const indexnow = require('./server/services/indexnow');
     const slack = require('./server/services/slack');
     const webhooks = require('./server/services/webhooks');
-    const postScheduling = require('./server/services/post-scheduling');
+    const postScheduling = require('./server/services/post-scheduling').default;
     const comments = require('./server/services/comments');
     const staffService = require('./server/services/staff');
     const memberAttribution = require('./server/services/member-attribution');
@@ -344,7 +344,7 @@ async function initServices() {
     const statsService = require('./server/services/stats');
     const explorePingService = require('./server/services/explore-ping');
     const domainEvents = require('@tryghost/domain-events');
-    const AutomationsService = require('./server/services/automations');
+    const automations = require('./server/services/automations');
 
     const {createAdapter: createSchedulerAdapter} = require('./server/adapters/scheduling/utils');
     const urlUtils = require('./shared/url-utils');
@@ -354,6 +354,7 @@ async function initServices() {
     emailAddressService.init();
     const apiUrl = urlUtils.urlFor('api', {type: 'admin'}, true);
     const schedulerAdapter = createSchedulerAdapter();
+    schedulerAdapter.run();
     await stripe.init();
 
     await Promise.all([
@@ -373,11 +374,6 @@ async function initServices() {
         emailService.init(),
         emailAnalytics.init(),
         webhooks.listen(),
-        postScheduling.init({
-            apiUrl,
-            adapter: schedulerAdapter,
-            internalKeys
-        }),
         comments.init(),
         linkTracking.init(),
         emailSuppressionList.init(),
@@ -392,13 +388,17 @@ async function initServices() {
             schedulerAdapter,
             internalKeys
         }),
-        new AutomationsService().init({
+        automations.init({
             domainEvents,
             apiUrl,
             schedulerAdapter,
             internalKeys
         })
     ]);
+
+    if (schedulerAdapter.rescheduleOnBoot) {
+        await postScheduling.rescheduleAll();
+    }
 
     debug('End: Services');
 

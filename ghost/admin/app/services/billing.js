@@ -24,6 +24,11 @@ export default class BillingService extends Service {
 
     @tracked billingAppLoaded = false;
     @tracked billingAppLoadFailureReported = false;
+    @tracked billingAppPreReadyMessageCount = 0;
+    @tracked billingAppPreReadyMessageTypes = [];
+    @tracked billingAppLastPreReadyMessageType = null;
+    @tracked billingAppReadyReceivedAt = null;
+    @tracked billingAppReadyPayload = null;
 
     billingAppLoadTimeout = null;
     billingAppRetryTimeout = null;
@@ -34,18 +39,6 @@ export default class BillingService extends Service {
     billingAppIframeLoadFired = false;
 
     _loadListenerAttachedTo = null;
-
-    constructor() {
-        super(...arguments);
-
-        if (this.config.hostSettings?.billing?.url) {
-            window.addEventListener('message', (event) => {
-                if (event && event.data && event.data.route) {
-                    this.handleRouteChangeInIframe(event.data.route);
-                }
-            });
-        }
-    }
 
     willDestroy() {
         super.willDestroy(...arguments);
@@ -79,6 +72,7 @@ export default class BillingService extends Service {
             this.billingAppLoaded = false;
             this.billingAppLoadAttempts = 0;
             this.billingAppLoadFailureReported = false;
+            this.resetBillingAppLoadDiagnostics();
         }
 
         this.billingAppLoadAttempts += 1;
@@ -116,6 +110,7 @@ export default class BillingService extends Service {
         }
         this.billingAppIframeLoadFired = false;
         this.billingAppIframeSrcSetAt = Date.now();
+        this.resetBillingAppLoadDiagnostics();
         iframe.src = this.getIframeURL();
     }
 
@@ -129,9 +124,100 @@ export default class BillingService extends Service {
         this.setBillingIframeSrc();
     }
 
-    markBillingAppLoaded() {
+    markBillingAppLoaded(payload = null) {
         this.billingAppLoaded = true;
+        this.billingAppLoadFailureReported = false;
+        this.billingAppReadyReceivedAt = Date.now();
+        this.billingAppReadyPayload = payload;
         this.clearBillingAppLoadMonitor();
+    }
+
+    resetBillingAppLoadDiagnostics() {
+        this.billingAppPreReadyMessageCount = 0;
+        this.billingAppPreReadyMessageTypes = [];
+        this.billingAppLastPreReadyMessageType = null;
+        this.billingAppReadyReceivedAt = null;
+        this.billingAppReadyPayload = null;
+    }
+
+    recordBillingAppPreReadyMessage(data) {
+        if (this.billingAppLoaded || this.billingAppReadyReceivedAt || this.billingAppLoadFailureReported) {
+            return;
+        }
+
+        if (!this.billingAppLoadTimeout && !this.billingAppRetryTimeout) {
+            return;
+        }
+
+        const messageType = this.getBillingAppMessageType(data);
+
+        this.billingAppPreReadyMessageCount += 1;
+        this.billingAppLastPreReadyMessageType = messageType;
+
+        if (!this.billingAppPreReadyMessageTypes.includes(messageType)) {
+            this.billingAppPreReadyMessageTypes = [
+                ...this.billingAppPreReadyMessageTypes,
+                messageType
+            ];
+        }
+    }
+
+    getBillingAppMessageType(data) {
+        if (data?.request) {
+            return data.request;
+        }
+
+        if (data?.route) {
+            return 'route';
+        }
+
+        if (data?.subscription) {
+            return 'subscription';
+        }
+
+        if (data?.query) {
+            return data.query;
+        }
+
+        return 'unknown';
+    }
+
+    getBillingAppOrigin() {
+        const iframeURL = this.getIframeURL({fetchOwner: false});
+
+        if (!iframeURL) {
+            return null;
+        }
+
+        try {
+            return new URL(iframeURL).origin;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    isValidBillingIframeMessage(event) {
+        if (!event?.data) {
+            return false;
+        }
+
+        const billingAppOrigin = this.getBillingAppOrigin();
+
+        if (!billingAppOrigin || event.origin !== billingAppOrigin) {
+            return false;
+        }
+
+        const billingIframeWindow = this.getBillingIframe()?.contentWindow;
+
+        if (!billingIframeWindow) {
+            return false;
+        }
+
+        if (event.source !== billingIframeWindow) {
+            return false;
+        }
+
+        return true;
     }
 
     clearBillingAppLoadMonitor() {
@@ -159,6 +245,8 @@ export default class BillingService extends Service {
 
         const iframe = this.getBillingIframe();
         const visibilityState = document.visibilityState;
+        const iframeSrc = iframe?.src || null;
+        const configuredBillingOrigin = this.getBillingAppOrigin();
 
         // Fields are kept flat on `billing_monitor` because Sentry's default
         // `normalizeDepth` of 3 stringifies anything deeper to '[Object]',
@@ -203,6 +291,8 @@ export default class BillingService extends Service {
                         is_force_upgrade: !!this.config.hostSettings?.forceUpgrade,
                         location_hash: window.location.hash,
                         retry_delays_ms: this.billingAppLoadRetryDelaysMs,
+                        iframe_src: iframeSrc,
+                        configured_billing_origin: configuredBillingOrigin,
                         document_visibility_state: visibilityState,
                         iframe_offset_parent_visible: iframe ? iframe.offsetParent !== null : null,
                         iframe_computed_display: computedDisplay,
@@ -211,6 +301,10 @@ export default class BillingService extends Service {
                         iframe_rect_height: rectHeight,
                         iframe_load_fired: this.billingAppIframeLoadFired,
                         ms_since_src_set: this.billingAppIframeSrcSetAt ? Date.now() - this.billingAppIframeSrcSetAt : null,
+                        non_ready_message_count: this.billingAppPreReadyMessageCount,
+                        non_ready_message_types: this.billingAppPreReadyMessageTypes.join(','),
+                        last_non_ready_message_type: this.billingAppLastPreReadyMessageType,
+                        ready_received: false,
                         navigator_online: navigator.onLine,
                         connection_effective_type: navigator.connection?.effectiveType ?? null,
                         bma_boot_accessible: bmaBootAccessible,
@@ -228,9 +322,13 @@ export default class BillingService extends Service {
         });
     }
 
-    getIframeURL() {
+    getIframeURL(options = {}) {
+        const {fetchOwner = true} = options;
+
         // initiate getting owner user in the background
-        this.getOwnerUser();
+        if (fetchOwner) {
+            this.getOwnerUser();
+        }
 
         let url = this.config.hostSettings?.billing?.url;
 

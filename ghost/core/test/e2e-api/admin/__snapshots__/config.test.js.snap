@@ -16,6 +16,7 @@ Object {
       "commentsPinning": true,
       "commentsThreads": true,
       "customFonts": true,
+      "dangerZoneResetAuth": true,
       "editorExcerpt": true,
       "emailCustomization": true,
       "emailUniqueid": true,

@@ -34,7 +34,7 @@ runs:
 
     - name: Log in to GitHub Container Registry
       if: inputs.use-artifact == 'false'
-      uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4
+      uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
@@ -46,7 +46,7 @@ runs:
       env:
         IMAGE_TAGS: ${{ inputs.image-tags }}
       run: |
-        IMAGE_TAG=$(printf '%s\n' "$IMAGE_TAGS" | head -n1)
+        IMAGE_TAG="${IMAGE_TAGS%%$'\n'*}"
         echo "Pulling image from registry: $IMAGE_TAG"
 
         max_attempts=5
@@ -73,7 +73,7 @@ runs:
       env:
         IMAGE_TAGS: ${{ inputs.image-tags }}
       run: |
-        IMAGE_TAG=$(printf '%s\n' "$IMAGE_TAGS" | head -n1)
+        IMAGE_TAG="${IMAGE_TAGS%%$'\n'*}"
         echo "Checking for image: $IMAGE_TAG"
         echo "image-tag=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
 

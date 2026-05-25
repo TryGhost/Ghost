@@ -174,7 +174,7 @@ describe('UNIT: Settings Service', function () {
             const writes = editStub.firstCall.args[0];
             const writesByKey = Object.fromEntries(writes.map(w => [w.key, w.value]));
             assert.equal(writesByKey.is_private, true);
-            assert.match(writesByKey.password, /^fake-\d{3}$/);
+            assert.match(writesByKey.password, /^[a-z]+\d{3}$/);
             assert.deepEqual(editStub.firstCall.args[1], {context: {internal: true}});
         });
 
@@ -196,7 +196,7 @@ describe('UNIT: Settings Service', function () {
             sinon.stub(limits, 'isDisabled').withArgs('publicSiteAccess').returns(true);
             const findOneStub = sinon.stub(models.Settings, 'findOne');
             findOneStub.withArgs({key: 'is_private'}).resolves(fakeSettingRow(true));
-            findOneStub.withArgs({key: 'password'}).resolves(fakeSettingRow('fake-042'));
+            findOneStub.withArgs({key: 'password'}).resolves(fakeSettingRow('anchor042'));
             const editStub = sinon.stub(models.Settings, 'edit').resolves();
 
             await settingsService.init();

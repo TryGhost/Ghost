@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const errors = require('@tryghost/errors');
 const sinon = require('sinon');
 const moment = require('moment');
 const testUtils = require('../../../../utils');
@@ -8,16 +7,15 @@ const events = require('../../../../../core/server/lib/common/events');
 const schedulingUtils = require('../../../../../core/server/adapters/scheduling/utils');
 const SchedulingDefault = require('../../../../../core/server/adapters/scheduling/scheduling-default');
 const urlUtils = require('../../../../../core/shared/url-utils');
-const PostSchedulerService = require('../../../../../core/server/services/post-scheduling/post-scheduler-service');
+const PostScheduling = require('../../../../../core/server/services/post-scheduling/post-scheduling').default;
 const nock = require('nock');
 
-describe('Post Scheduler Service', function () {
+describe('PostScheduling', function () {
     let adapter;
     let internalKeys;
 
     beforeEach(function () {
         adapter = new SchedulingDefault();
-
         sinon.stub(schedulingUtils, 'createAdapter').returns(Promise.resolve(adapter));
         sinon.spy(adapter, 'schedule');
         sinon.spy(adapter, 'unschedule');
@@ -32,20 +30,6 @@ describe('Post Scheduler Service', function () {
     });
 
     describe('constructor', function () {
-        it('throws when apiUrl is missing', function () {
-            assert.throws(
-                () => new PostSchedulerService(),
-                err => err instanceof errors.IncorrectUsageError
-            );
-        });
-
-        it('throws when internalKeys is missing', function () {
-            assert.throws(
-                () => new PostSchedulerService({apiUrl: 'http://scheduler.local:1111/'}),
-                err => err instanceof errors.IncorrectUsageError
-            );
-        });
-
         it('wires event handlers and starts the adapter', async function () {
             const post = models.Post.forge(testUtils.DataGenerator.forKnex.createPost({
                 id: 1337,
@@ -55,12 +39,7 @@ describe('Post Scheduler Service', function () {
             nock('http://scheduler.local:1111').post(() => true).query(true).reply(200);
             nock('http://scheduler.local:1111').put(() => true).query(true).reply(200);
 
-            new PostSchedulerService({
-                apiUrl: 'http://scheduler.local:1111/',
-                internalKeys,
-                adapter,
-                events
-            });
+            new PostScheduling({apiUrl: 'http://scheduler.local:1111/', internalKeys, adapter});
 
             events.emit('post.scheduled', post);
             await new Promise((resolve) => {
@@ -77,28 +56,27 @@ describe('Post Scheduler Service', function () {
         });
     });
 
-    describe('reschedule', function () {
-        it('unschedules with the previous key and reschedules with the current key', async function () {
+    describe('rescheduleAll', function () {
+        function stubScheduledPost() {
             const post = models.Post.forge(testUtils.DataGenerator.forKnex.createPost({
                 id: 4004,
                 mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('something')
             }));
+            sinon.stub(models.Post, 'findAll').callsFake(({filter}) => {
+                return Promise.resolve(filter.includes('type:post') ? [post] : []);
+            });
+            return post;
+        }
 
+        it('unschedules with the previous key and reschedules with the current key', async function () {
+            stubScheduledPost();
             internalKeys = new Map([
                 ['ghost-scheduler', Promise.resolve({id: 'k1', secret: 'aaaabbbb'})]
             ]);
 
-            const service = new PostSchedulerService({
-                apiUrl: 'http://scheduler.local:1111/',
-                internalKeys,
-                adapter,
-                events
-            });
+            const service = new PostScheduling({apiUrl: 'http://scheduler.local:1111/', internalKeys, adapter});
 
-            await service.reschedule(
-                {post: [post], page: []},
-                {previousKey: {id: 'k1', secret: 'ccccdddd'}}
-            );
+            await service.rescheduleAll({previousKey: {id: 'k1', secret: 'ccccdddd'}});
 
             sinon.assert.calledOnce(adapter.unschedule);
             sinon.assert.calledOnce(adapter.schedule);
@@ -107,6 +85,42 @@ describe('Post Scheduler Service', function () {
                 adapter.schedule.args[0][0].url,
                 'unschedule URL (signed with old key) must differ from schedule URL (signed with new key)'
             );
+        });
+
+        it('rotation tells the adapter to actually delete the stale queued job', async function () {
+            // Outcome: rotation requests a real (non-bootstrap) unschedule of
+            // the previous-key URL, so the adapter writes a tombstone and the
+            // stale callback is suppressed at execution time. Without this,
+            // the old URL keeps firing and the server logs 401s. SchedulingDefault's
+            // own tests cover the tombstone semantics; here we verify
+            // PostScheduling honours the contract.
+            stubScheduledPost();
+            internalKeys = new Map([
+                ['ghost-scheduler', Promise.resolve({id: 'k1', secret: 'aaaabbbb'})]
+            ]);
+
+            const service = new PostScheduling({apiUrl: 'http://scheduler.local:1111/', internalKeys, adapter});
+            await service.rescheduleAll({previousKey: {id: 'k1', secret: 'ccccdddd'}});
+
+            sinon.assert.calledOnce(adapter.unschedule);
+            assert.equal(adapter.unschedule.args[0][1].bootstrap, false);
+        });
+
+        it('same-key rebuild marks unschedule as bootstrap so the new job survives', async function () {
+            // Outcome: when no previousKey is supplied (boot), unschedule and
+            // schedule use the same URL. PostScheduling must mark the
+            // unschedule as bootstrap so the adapter skips the tombstone and
+            // the about-to-be-scheduled job stays pingable.
+            stubScheduledPost();
+            internalKeys = new Map([
+                ['ghost-scheduler', Promise.resolve({id: 'k1', secret: 'aaaabbbb'})]
+            ]);
+
+            const service = new PostScheduling({apiUrl: 'http://scheduler.local:1111/', internalKeys, adapter});
+            await service.rescheduleAll();
+
+            sinon.assert.calledOnce(adapter.unschedule);
+            assert.equal(adapter.unschedule.args[0][1].bootstrap, true);
         });
     });
 });

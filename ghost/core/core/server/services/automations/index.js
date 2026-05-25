@@ -18,10 +18,12 @@ const memberWelcomeEmailService = require('../member-welcome-emails/service');
  *         httpMethod: string;
  *     };
  * }) => void} schedule
+ * @prop {(rescheduler: {rescheduleAll: () => unknown}) => void} register
  */
 
 class AutomationsService {
     #initialized = false;
+    #enqueuePollNow;
 
     /**
      * @param {object} options
@@ -36,13 +38,9 @@ class AutomationsService {
             return;
         }
 
-        const enqueuePollNow = () => {
-            domainEvents.dispatch(StartAutomationsPollEvent.create());
-        };
+        this.#enqueuePollNow = () => domainEvents.dispatch(StartAutomationsPollEvent.create());
 
-        /**
-         * @param {Readonly<Date>} date
-         */
+        /** @param {Readonly<Date>} date */
         const enqueuePollAt = async (date) => {
             try {
                 const key = await internalKeys.get('ghost-scheduler');
@@ -55,18 +53,26 @@ class AutomationsService {
             }
         };
 
-        domainEvents.subscribe(StartAutomationsPollEvent, oneAtATime(async () => {
-            await poll({
-                memberWelcomeEmailService,
-                enqueueAnotherPollNow: enqueuePollNow,
-                enqueueAnotherPollAt: enqueuePollAt
-            });
-        }));
+        domainEvents.subscribe(StartAutomationsPollEvent, oneAtATime(async () => poll({
+            memberWelcomeEmailService,
+            enqueueAnotherPollNow: this.#enqueuePollNow,
+            enqueueAnotherPollAt: enqueuePollAt
+        })));
 
-        enqueuePollNow();
+        schedulerAdapter.register(this);
 
+        this.#enqueuePollNow();
         this.#initialized = true;
+    }
+
+    /**
+     * Re-arm the poll chain. A queued poll signed under the previous scheduler
+     * key fails JWT verification when fired; this dispatches a fresh in-process
+     * poll that re-schedules the next callback under the current key.
+     */
+    rescheduleAll() {
+        this.#enqueuePollNow?.();
     }
 }
 
-module.exports = AutomationsService;
+module.exports = new AutomationsService();
