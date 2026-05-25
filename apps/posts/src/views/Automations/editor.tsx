@@ -106,6 +106,8 @@ const AutomationEditor: React.FC = () => {
     let isTurnOffButtonEnabled = true;
     let turnOffButtonChildren: React.ReactNode = 'Turn off';
     switch (editState) {
+    case 'idle':
+        break;
     case 'saving':
         isEditRequestActive = true;
         isSaveButtonEnabled = false;
@@ -162,6 +164,10 @@ const AutomationEditor: React.FC = () => {
         isTurnOffButtonEnabled = true;
         turnOffButtonChildren = 'Retry';
         break;
+    default: {
+        const _exhaustive: never = editState;
+        throw new Error(`Unhandled edit state: ${_exhaustive}`);
+    }
     }
 
     const onConfirmUnpublishOpenChange = (open: boolean): void => {
