@@ -101,14 +101,108 @@ describe('Unit: Service: billing', function () {
         expect(iframe.src).to.equal('https://billing.example.test/pro');
     });
 
+    it('adds the active attempt id to the billing iframe URL', function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        service.billingAppLoadAttemptId = 'attempt-123';
+
+        expect(service.getIframeURL({fetchOwner: false})).to.equal('https://billing.example.test/?bmaAttemptId=attempt-123');
+    });
+
+    it('records hidden preload timeout without reporting a visible failure', async function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        service.billingAppLoadTimeoutMs = 1;
+        service.billingAppLoadRetryDelaysMs = [];
+        service.billingAppIframeSrcSetAt = Date.now() - 100;
+
+        service.startBillingAppLoadMonitor();
+
+        await waitUntil(() => service.billingAppPreloadFailure);
+
+        expect(service.billingAppLoadFailureReported).to.be.false;
+        expect(service.billingAppPreloadFailure).to.deep.include({
+            attempts: 1,
+            nonReadyMessageCount: 0,
+            lastNonReadyMessageType: null
+        });
+        expect(testkit.reports()).to.have.lengthOf(0);
+    });
+
+    it('promotes an in-flight preload attempt when the user opens billing', function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        service.billingAppLoadTimeoutMs = 1000;
+        const reloadBillingIframe = sinon.spy(service, 'reloadBillingIframe');
+
+        service.startBillingAppLoadMonitor();
+        service.toggleProWindow(true);
+
+        expect(service.billingWindowOpen).to.be.true;
+        expect(service.billingAppLoadAttemptSource).to.equal('user_open');
+        expect(service.billingAppLoadAttempts).to.equal(1);
+        expect(service.billingAppLoadTimeout).to.not.be.null;
+        expect(reloadBillingIframe.called).to.be.false;
+    });
+
+    it('reloads the iframe for a fresh visible attempt after preload failed', function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        const iframe = {src: '', addEventListener: sinon.stub()};
+        sinon.stub(service, 'getBillingIframe').returns(iframe);
+        service.billingAppPreloadFailure = {
+            attemptId: 'preload-attempt',
+            attempts: 2,
+            elapsedMs: 12000,
+            nonReadyMessageCount: 1,
+            nonReadyMessageTypes: ['token']
+        };
+
+        service.toggleProWindow(true);
+
+        expect(service.billingWindowOpen).to.be.true;
+        expect(service.billingAppLoadFailureReported).to.be.false;
+        expect(service.billingAppLoadAttemptSource).to.equal('user_open');
+        expect(service.billingAppIframeReloadReason).to.equal('visible_open_after_preload_failure');
+        expect(service.billingAppLoadTimeout).to.not.be.null;
+        expect(iframe.src).to.match(/^https:\/\/billing\.example\.test\/\?bmaAttemptId=/);
+    });
+
+    it('reloads the iframe for a fresh visible attempt after a previous visible failure', function () {
+        const service = this.owner.lookup('service:billing');
+        billingService = service;
+        const iframe = {src: '', addEventListener: sinon.stub()};
+        sinon.stub(service, 'getBillingIframe').returns(iframe);
+        service.billingAppLoadFailureReported = true;
+
+        service.toggleProWindow(true);
+
+        expect(service.billingWindowOpen).to.be.true;
+        expect(service.billingAppLoadFailureReported).to.be.false;
+        expect(service.billingAppIframeReloadReason).to.equal('visible_open_after_load_failure');
+        expect(service.billingAppLoadTimeout).to.not.be.null;
+        expect(iframe.src).to.match(/^https:\/\/billing\.example\.test\/\?bmaAttemptId=/);
+    });
+
     it('reports to Sentry with diagnostics when the billing app does not become ready', async function () {
         const service = this.owner.lookup('service:billing');
         billingService = service;
         sinon.stub(service, 'getBillingIframe').returns(null);
         service.billingAppLoadAttempts = 2;
+        service.billingAppLoadAttemptId = 'attempt-123';
+        service.billingAppLoadAttemptSource = 'user_open';
+        service.billingAppIframeReloadReason = 'visible_open_after_preload_failure';
         service.billingAppIframeSrcSetAt = Date.now() - 1234;
         service.billingAppIframeLoadFired = true;
         service.billingWindowOpen = true;
+        service.billingAppPreloadFailure = {
+            attemptId: 'preload-attempt',
+            attempts: 2,
+            elapsedMs: 12000,
+            nonReadyMessageCount: 1,
+            nonReadyMessageTypes: ['token'],
+            lastNonReadyMessageType: 'token'
+        };
 
         service.reportBillingAppLoadFailure();
 
@@ -127,12 +221,20 @@ describe('Unit: Service: billing', function () {
         const billingMonitor = report.originalReport.contexts.ghost.billing_monitor;
         expect(billingMonitor).to.deep.include({
             attempts: 2,
+            attempt_id: 'attempt-123',
+            attempt_source: 'user_open',
+            attempt_phase: 'shell_ready',
+            iframe_reload_reason: 'visible_open_after_preload_failure',
             has_billing_url: true,
             is_force_upgrade: false,
             iframe_src: null,
             configured_billing_origin: 'https://billing.example.test',
             iframe_load_fired: true,
             billing_window_open: true,
+            has_preload_failure: true,
+            preload_failure_elapsed_ms: 12000,
+            preload_non_ready_message_count: 1,
+            preload_non_ready_message_types: 'token',
             non_ready_message_count: 0,
             non_ready_message_types: '',
             last_non_ready_message_type: null,
@@ -144,12 +246,18 @@ describe('Unit: Service: billing', function () {
             bma_boot_threw: false
         });
         expect(billingMonitor.ms_since_src_set).to.be.a('number').and.to.be.at.least(1234);
+        expect(report.tags).to.deep.include({
+            attempt_source: 'user_open',
+            attempt_phase: 'shell_ready'
+        });
     });
 
     it('reports pre-ready message diagnostics to Sentry', async function () {
         const service = this.owner.lookup('service:billing');
         billingService = service;
         sinon.stub(service, 'getBillingIframe').returns(null);
+        service.billingWindowOpen = true;
+        service.billingAppLoadAttemptSource = 'user_open';
         service.billingAppLoadAttempts = 2;
         service.billingAppLoadTimeout = setTimeout(() => {}, 10000);
         service.billingAppIframeSrcSetAt = Date.now() - 100;
