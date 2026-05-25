@@ -6,6 +6,9 @@ import {tracked} from '@glimmer/tracking';
 const BILLING_APP_LOAD_TIMEOUT_MS = 10_000;
 const BILLING_APP_LOAD_RETRY_DELAYS_MS = [1_000];
 const BILLING_APP_LOAD_FAILURE_MESSAGE = 'Billing app failed to become ready';
+const BILLING_APP_ATTEMPT_SOURCE_PRELOAD = 'preload';
+const BILLING_APP_ATTEMPT_SOURCE_USER_OPEN = 'user_open';
+const BILLING_APP_ATTEMPT_SOURCE_RETRY = 'retry';
 
 export default class BillingService extends Service {
     @service ghostPaths;
@@ -29,12 +32,17 @@ export default class BillingService extends Service {
     @tracked billingAppLastPreReadyMessageType = null;
     @tracked billingAppReadyReceivedAt = null;
     @tracked billingAppReadyPayload = null;
+    @tracked billingAppPreloadFailure = null;
 
     billingAppLoadTimeout = null;
     billingAppRetryTimeout = null;
     billingAppLoadAttempts = 0;
     billingAppLoadTimeoutMs = BILLING_APP_LOAD_TIMEOUT_MS;
     billingAppLoadRetryDelaysMs = BILLING_APP_LOAD_RETRY_DELAYS_MS;
+    billingAppLoadAttemptId = null;
+    billingAppLoadAttemptSource = BILLING_APP_ATTEMPT_SOURCE_PRELOAD;
+    billingAppIframeReloadReason = null;
+    billingAppLoadAttemptSequence = 0;
     billingAppIframeSrcSetAt = null;
     billingAppIframeLoadFired = false;
 
@@ -63,8 +71,11 @@ export default class BillingService extends Service {
         return this.getBillingIframe() !== null && this.getBillingIframe().contentWindow;
     }
 
-    startBillingAppLoadMonitor() {
+    startBillingAppLoadMonitor(options = {}) {
+        const {source = this.billingAppLoadAttemptSource} = options;
+
         if (this.billingAppLoadTimeout || this.billingAppRetryTimeout) {
+            this.billingAppLoadAttemptSource = source;
             return;
         }
 
@@ -75,6 +86,7 @@ export default class BillingService extends Service {
             this.resetBillingAppLoadDiagnostics();
         }
 
+        this.billingAppLoadAttemptSource = source;
         this.billingAppLoadAttempts += 1;
         this.billingAppLoadTimeout = setTimeout(() => {
             this.billingAppLoadTimeout = null;
@@ -88,8 +100,10 @@ export default class BillingService extends Service {
         if (retryDelay !== undefined) {
             this.billingAppRetryTimeout = setTimeout(() => {
                 this.billingAppRetryTimeout = null;
-                this.reloadBillingIframe();
-                this.startBillingAppLoadMonitor();
+                const source = this.billingWindowOpen ? BILLING_APP_ATTEMPT_SOURCE_RETRY : this.billingAppLoadAttemptSource;
+
+                this.reloadBillingIframe({source, reloadReason: 'timeout_retry'});
+                this.startBillingAppLoadMonitor({source});
             }, retryDelay);
             return;
         }
@@ -97,36 +111,47 @@ export default class BillingService extends Service {
         this.reportBillingAppLoadFailure();
     }
 
-    setBillingIframeSrc() {
+    setBillingIframeSrc(options = {}) {
         const iframe = this.getBillingIframe();
         if (!iframe) {
             return;
         }
+
+        const {
+            source = this.billingAppLoadAttemptSource || BILLING_APP_ATTEMPT_SOURCE_PRELOAD,
+            reloadReason = 'set_src'
+        } = options;
+
         if (this._loadListenerAttachedTo !== iframe && typeof iframe.addEventListener === 'function') {
             iframe.addEventListener('load', () => {
                 this.billingAppIframeLoadFired = true;
             });
             this._loadListenerAttachedTo = iframe;
         }
+        this.billingAppLoadAttemptSequence += 1;
+        this.billingAppLoadAttemptId = `${Date.now()}-${this.billingAppLoadAttemptSequence}`;
+        this.billingAppLoadAttemptSource = source;
+        this.billingAppIframeReloadReason = reloadReason;
         this.billingAppIframeLoadFired = false;
         this.billingAppIframeSrcSetAt = Date.now();
         this.resetBillingAppLoadDiagnostics();
         iframe.src = this.getIframeURL();
     }
 
-    reloadBillingIframe() {
+    reloadBillingIframe(options = {}) {
         const iframe = this.getBillingIframe();
 
         if (!iframe || this.billingAppLoaded) {
             return;
         }
 
-        this.setBillingIframeSrc();
+        this.setBillingIframeSrc(options);
     }
 
     markBillingAppLoaded(payload = null) {
         this.billingAppLoaded = true;
         this.billingAppLoadFailureReported = false;
+        this.billingAppPreloadFailure = null;
         this.billingAppReadyReceivedAt = Date.now();
         this.billingAppReadyPayload = payload;
         this.clearBillingAppLoadMonitor();
@@ -232,8 +257,48 @@ export default class BillingService extends Service {
         }
     }
 
+    ensureBillingAppReadyForVisibleUse() {
+        if (this.billingAppLoaded) {
+            return;
+        }
+
+        const hadPreloadFailure = !!this.billingAppPreloadFailure;
+        const hadVisibleFailure = this.billingAppLoadFailureReported;
+
+        this.billingAppLoadFailureReported = false;
+        this.clearBillingAppLoadMonitor();
+        this.billingAppLoadAttempts = 0;
+
+        if (hadPreloadFailure || hadVisibleFailure) {
+            this.reloadBillingIframe({
+                source: BILLING_APP_ATTEMPT_SOURCE_USER_OPEN,
+                reloadReason: hadPreloadFailure ? 'visible_open_after_preload_failure' : 'visible_open_after_load_failure'
+            });
+        } else {
+            this.billingAppLoadAttemptSource = BILLING_APP_ATTEMPT_SOURCE_USER_OPEN;
+        }
+
+        this.startBillingAppLoadMonitor({source: BILLING_APP_ATTEMPT_SOURCE_USER_OPEN});
+    }
+
+    recordBillingAppPreloadFailure() {
+        this.billingAppPreloadFailure = {
+            attemptId: this.billingAppLoadAttemptId,
+            attempts: this.billingAppLoadAttempts,
+            elapsedMs: this.billingAppIframeSrcSetAt ? Date.now() - this.billingAppIframeSrcSetAt : null,
+            nonReadyMessageCount: this.billingAppPreReadyMessageCount,
+            nonReadyMessageTypes: [...this.billingAppPreReadyMessageTypes],
+            lastNonReadyMessageType: this.billingAppLastPreReadyMessageType
+        };
+    }
+
     reportBillingAppLoadFailure() {
         if (this.billingAppLoadFailureReported) {
+            return;
+        }
+
+        if (!this.billingWindowOpen) {
+            this.recordBillingAppPreloadFailure();
             return;
         }
 
@@ -287,6 +352,10 @@ export default class BillingService extends Service {
                 ghost: {
                     billing_monitor: {
                         attempts: this.billingAppLoadAttempts,
+                        attempt_id: this.billingAppLoadAttemptId,
+                        attempt_source: this.billingAppLoadAttemptSource,
+                        attempt_phase: 'shell_ready',
+                        iframe_reload_reason: this.billingAppIframeReloadReason,
                         has_billing_url: !!this.config.hostSettings?.billing?.url,
                         is_force_upgrade: !!this.config.hostSettings?.forceUpgrade,
                         location_hash: window.location.hash,
@@ -304,6 +373,11 @@ export default class BillingService extends Service {
                         non_ready_message_count: this.billingAppPreReadyMessageCount,
                         non_ready_message_types: this.billingAppPreReadyMessageTypes.join(','),
                         last_non_ready_message_type: this.billingAppLastPreReadyMessageType,
+                        has_preload_failure: !!this.billingAppPreloadFailure,
+                        preload_failure_elapsed_ms: this.billingAppPreloadFailure?.elapsedMs ?? null,
+                        preload_non_ready_message_count: this.billingAppPreloadFailure?.nonReadyMessageCount ?? null,
+                        preload_non_ready_message_types: this.billingAppPreloadFailure?.nonReadyMessageTypes?.join(',') ?? null,
+                        preload_last_non_ready_message_type: this.billingAppPreloadFailure?.lastNonReadyMessageType ?? null,
                         ready_received: false,
                         navigator_online: navigator.onLine,
                         connection_effective_type: navigator.connection?.effectiveType ?? null,
@@ -316,6 +390,8 @@ export default class BillingService extends Service {
             },
             tags: {
                 source: 'billing-app-load-monitor',
+                attempt_source: this.billingAppLoadAttemptSource,
+                attempt_phase: 'shell_ready',
                 route: this.router.currentRouteName,
                 path: window.location.hash
             }
@@ -340,7 +416,21 @@ export default class BillingService extends Service {
             }
         }
 
-        return url;
+        return this.addBillingAppAttemptIdToURL(url);
+    }
+
+    addBillingAppAttemptIdToURL(url) {
+        if (!url || !this.billingAppLoadAttemptId) {
+            return url;
+        }
+
+        try {
+            const billingUrl = new URL(url);
+            billingUrl.searchParams.set('bmaAttemptId', this.billingAppLoadAttemptId);
+            return billingUrl.toString();
+        } catch (e) {
+            return url;
+        }
     }
 
     async getOwnerUser() {
@@ -398,6 +488,10 @@ export default class BillingService extends Service {
         this.sendRouteUpdate();
 
         this.billingWindowOpen = value;
+
+        if (value) {
+            this.ensureBillingAppReadyForVisibleUse();
+        }
     }
 
     // Controls navigation to billing window modal which is triggered from the application UI.
