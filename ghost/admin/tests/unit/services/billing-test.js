@@ -235,6 +235,7 @@ describe('Unit: Service: billing', function () {
             preload_failure_elapsed_ms: 12000,
             preload_non_ready_message_count: 1,
             preload_non_ready_message_types: 'token',
+            preload_last_non_ready_message_type: 'token',
             non_ready_message_count: 0,
             non_ready_message_types: '',
             last_non_ready_message_type: null,

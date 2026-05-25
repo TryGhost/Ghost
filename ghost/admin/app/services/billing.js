@@ -377,6 +377,7 @@ export default class BillingService extends Service {
                         preload_failure_elapsed_ms: this.billingAppPreloadFailure?.elapsedMs ?? null,
                         preload_non_ready_message_count: this.billingAppPreloadFailure?.nonReadyMessageCount ?? null,
                         preload_non_ready_message_types: this.billingAppPreloadFailure?.nonReadyMessageTypes?.join(',') ?? null,
+                        preload_last_non_ready_message_type: this.billingAppPreloadFailure?.lastNonReadyMessageType ?? null,
                         ready_received: false,
                         navigator_online: navigator.onLine,
                         connection_effective_type: navigator.connection?.effectiveType ?? null,
