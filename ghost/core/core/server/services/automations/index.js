@@ -42,6 +42,12 @@ class AutomationsService {
 
         /** @param {Readonly<Date>} date */
         const enqueuePollAt = async (date) => {
+            const isRequestedDateInTheFuture = new Date() < date;
+            if (!isRequestedDateInTheFuture) {
+                this.#enqueuePollNow();
+                return;
+            }
+
             try {
                 const key = await internalKeys.get('ghost-scheduler');
                 const signedAdminToken = getSignedAdminToken({publishedAt: date.toISOString(), apiUrl, key});
@@ -55,13 +61,13 @@ class AutomationsService {
 
         domainEvents.subscribe(StartAutomationsPollEvent, oneAtATime(async () => poll({
             memberWelcomeEmailService,
-            enqueueAnotherPollNow: this.#enqueuePollNow,
             enqueueAnotherPollAt: enqueuePollAt
         })));
 
         schedulerAdapter.register(this);
 
-        this.#enqueuePollNow();
+        enqueuePollAt(new Date());
+
         this.#initialized = true;
     }
 
