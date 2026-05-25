@@ -317,6 +317,8 @@ describe('AutomationEditor', () => {
         expect(screen.getByRole('button', {name: 'Publish changes'})).toBeEnabled();
 
         fireEvent.click(screen.getByRole('button', {name: 'Publish changes'}));
+        const dialog = screen.getByRole('alertdialog', {name: 'Update automation?'});
+        fireEvent.click(within(dialog).getByRole('button', {name: 'Publish changes'}));
 
         const mutateCall = mockEditMutation.mutate.mock.calls.at(-1)![0];
         expect(mutateCall.actions).toContainEqual({id: 'action-wait', type: 'wait', data: {wait_hours: 72}});
