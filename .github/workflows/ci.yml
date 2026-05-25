@@ -979,7 +979,7 @@ jobs:
             NODE_VERSION=${{ env.NODE_VERSION }}
             GHOST_BUILD_VERSION=${{ env.GHOST_BUILD_VERSION }}
           push: ${{ steps.strategy.outputs.should-push }}
-          load: true
+          load: ${{ steps.strategy.outputs.should-push == 'false' }}
           tags: ${{ steps.meta-full.outputs.tags }}
           labels: ${{ steps.meta-full.outputs.labels }}
           cache-from: type=registry,ref=${{ steps.strategy.outputs.image-full-name }}:cache-main
@@ -1003,6 +1003,7 @@ jobs:
           retention-days: 1
 
       - name: Inspect image size and layers
+        if: steps.strategy.outputs.use-artifact == 'true'
         shell: bash
         run: |
           IMAGE_TAG=$(echo "${{ steps.meta-full.outputs.tags }}" | head -n1)
