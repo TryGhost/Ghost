@@ -1,7 +1,7 @@
 import AutomationEditor from '@src/views/Automations/editor';
 import React from 'react';
 import {AutomationDetail, MAX_AUTOMATION_ACTIONS} from '@tryghost/admin-x-framework/api/automations';
-import {MemoryRouter, Route, Routes} from 'react-router';
+import {RouterProvider, createMemoryRouter} from 'react-router';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {fireEvent, render, screen, waitFor, within} from '@testing-library/react';
 
@@ -117,13 +117,25 @@ const automationDetail: AutomationDetail = {
     edges: [{source_action_id: 'action-wait', target_action_id: 'action-email'}]
 };
 
-const renderEditor = () => render(
-    <MemoryRouter initialEntries={['/automations/automation-id-1']}>
-        <Routes>
-            <Route element={<AutomationEditor />} path='/automations/:id' />
-        </Routes>
-    </MemoryRouter>
-);
+const renderEditor = () => {
+    const router = createMemoryRouter([
+        {
+            path: '/automations/:id',
+            element: <AutomationEditor />
+        },
+        {
+            path: '/automations',
+            element: <div data-testid='automations-list-route'>Automations list route</div>
+        }
+    ], {
+        initialEntries: ['/automations/automation-id-1']
+    });
+
+    return {
+        router,
+        ...render(<RouterProvider router={router} />)
+    };
+};
 
 describe('AutomationEditor', () => {
     beforeEach(() => {
@@ -647,6 +659,83 @@ describe('AutomationEditor', () => {
         expect(screen.getByRole('link', {name: 'Back to automations'})).toHaveAttribute('href', '/automations');
     });
 
+    it('confirms before navigating away from an automation with unsaved changes', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        await stageLocalEdit();
+        fireEvent.click(screen.getByRole('link', {name: 'Back to automations'}));
+
+        const dialog = screen.getByRole('alertdialog', {name: 'Discard unsaved changes?'});
+        expect(within(dialog).getByText('Your changes will be lost if you leave this automation.')).toBeInTheDocument();
+        expect(within(dialog).getByRole('button', {name: 'Keep working'})).toBeInTheDocument();
+        expect(within(dialog).getByRole('button', {name: 'Discard changes'})).toHaveClass('bg-destructive');
+        expect(screen.queryByTestId('automations-list-route')).not.toBeInTheDocument();
+    });
+
+    it('keeps editing when cancelling navigation away from an automation with unsaved changes', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        await stageLocalEdit();
+        fireEvent.click(screen.getByRole('link', {name: 'Back to automations'}));
+        const dialog = screen.getByRole('alertdialog', {name: 'Discard unsaved changes?'});
+        fireEvent.click(within(dialog).getByRole('button', {name: 'Keep working'}));
+
+        await waitFor(() => {
+            expect(screen.queryByRole('alertdialog', {name: 'Discard unsaved changes?'})).not.toBeInTheDocument();
+        });
+        expect(screen.getByTestId('automation-editor')).toBeInTheDocument();
+        expect(screen.queryByTestId('automations-list-route')).not.toBeInTheDocument();
+    });
+
+    it('discards changes and continues navigation when confirming navigation away from an automation', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        await stageLocalEdit();
+        fireEvent.click(screen.getByRole('link', {name: 'Back to automations'}));
+        const dialog = screen.getByRole('alertdialog', {name: 'Discard unsaved changes?'});
+        fireEvent.click(within(dialog).getByRole('button', {name: 'Discard changes'}));
+
+        await waitFor(() => {
+            expect(screen.getByTestId('automations-list-route')).toBeInTheDocument();
+        });
+        expect(screen.queryByTestId('automation-editor')).not.toBeInTheDocument();
+    });
+
+    it('navigates away without confirmation when the automation has no unsaved changes', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        fireEvent.click(screen.getByRole('link', {name: 'Back to automations'}));
+
+        await waitFor(() => {
+            expect(screen.getByTestId('automations-list-route')).toBeInTheDocument();
+        });
+        expect(screen.queryByRole('alertdialog', {name: 'Discard unsaved changes?'})).not.toBeInTheDocument();
+    });
+
     it('inserts a wait step at the tail when the tail + is clicked and a type is picked', async () => {
         // Use a 48-hour wait in the fixture so the appended 24h step's "1 day" label is distinguishable.
         const fixture: AutomationDetail = {
@@ -944,7 +1033,7 @@ describe('AutomationEditor', () => {
             isError: false
         });
 
-        const {rerender} = renderEditor();
+        const {rerender, router} = renderEditor();
 
         // Baseline: clean active automation → Published, disabled.
         expect(screen.getByRole('button', {name: 'Published'})).toBeDisabled();
@@ -955,13 +1044,7 @@ describe('AutomationEditor', () => {
             isLoading: false,
             isError: false
         });
-        rerender(
-            <MemoryRouter initialEntries={['/automations/automation-id-1']}>
-                <Routes>
-                    <Route element={<AutomationEditor />} path='/automations/:id' />
-                </Routes>
-            </MemoryRouter>
-        );
+        rerender(<RouterProvider router={router} />);
 
         expect(screen.getByRole('button', {name: 'Published'})).toBeDisabled();
     });
