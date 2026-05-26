@@ -1,4 +1,5 @@
 const errors = require('@tryghost/errors');
+const {escapeHtml} = require('../../services/koenig/render-utils/escape-html');
 
 function getEntryIdentifier(context) {
     if (!context) {
@@ -39,7 +40,22 @@ function throwImportErrors(importErrors) {
     });
 }
 
+function formatImportFailureDetailsHtml(importErrors) {
+    if (!importErrors?.length) {
+        return '';
+    }
+
+    const lines = importErrors.map((err) => escapeHtml(formatImportErrorMessage(err)));
+
+    if (lines.length === 1) {
+        return lines[0];
+    }
+
+    return lines.map((line, index) => `${index + 1}. ${line}`).join('<br>');
+}
+
 module.exports = {
     formatImportErrorMessage,
+    formatImportFailureDetailsHtml,
     throwImportErrors
 };

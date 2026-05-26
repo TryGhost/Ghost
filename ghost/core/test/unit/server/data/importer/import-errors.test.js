@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
-const {formatImportErrorMessage, throwImportErrors} = require('../../../../../core/server/data/importer/import-errors');
+const {formatImportErrorMessage, formatImportFailureDetailsHtml, throwImportErrors} = require('../../../../../core/server/data/importer/import-errors');
 
 describe('import-errors', function () {
     describe('formatImportErrorMessage', function () {
