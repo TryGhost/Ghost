@@ -81,7 +81,7 @@
       "ember-in-viewport": "4.1.0",
       "eslint-plugin-ghost>@typescript-eslint/eslint-plugin": "8.49.0",
       "eslint-plugin-ghost>@typescript-eslint/utils": "8.49.0",
-      "ember-svg-jar>cheerio": "1.0.0-rc.12",
+      "ember-svg-jar>cheerio": "1.2.0",
       "juice>cheerio": "0.22.0",
       "lodash.template": "4.5.0",
       "@babel/runtime@<7.26.10": "^7.26.10",
