@@ -290,17 +290,9 @@ describe('Update Check', function () {
             assert.equal(targetNotification.type, 'info');
             assert.equal(targetNotification.message, notification.messages[0].content);
 
-            sinon.assert.calledTwice(usersBrowseStub);
-
-            // Second (non statistical) call should be looking for admin users with an 'active' status only
-            assert.deepEqual(usersBrowseStub.args[1][0], {
-                limit: 'all',
-                include: ['roles'],
-                filter: 'status:active',
-                context: {
-                    internal: true
-                }
-            });
+            // A release (non-alert) notification doesn't trigger the admin-email
+            // lookup, so users.browse is called only once, for update-check stats.
+            sinon.assert.calledOnce(usersBrowseStub);
         });
 
         it('preserves custom flag value from update check response', async function () {
@@ -365,6 +357,7 @@ describe('Update Check', function () {
 
             const notificationsAPIAddStub = sinon.stub().resolves();
             const sendEmailStub = sinon.stub().resolves();
+            const generateEmailContentStub = sinon.stub().resolves({html: '<html>rendered</html>', text: 'rendered'});
 
             const updateCheckService = new UpdateCheckService({
                 api: {
@@ -396,16 +389,17 @@ describe('Update Check', function () {
                     ghostVersion: '0.8.0'
                 },
                 request: request,
-                sendEmail: sendEmailStub
+                sendEmail: sendEmailStub,
+                generateEmailContent: generateEmailContentStub
             });
 
             await updateCheckService.check();
 
             sinon.assert.called(sendEmailStub);
             assert.equal(sendEmailStub.args[0][0].to, 'jbloggs@example.com');
-            assert.equal(sendEmailStub.args[0][0].subject, 'Action required: Critical alert from Ghost instance http://127.0.0.1:2369');
-            assert.equal(sendEmailStub.args[0][0].html, '<p>Critical message. Upgrade your site!</p>');
-            assert.equal(sendEmailStub.args[0][0].forceTextContent, true);
+            assert.equal(sendEmailStub.args[0][0].subject, 'Ghost notification from http://127.0.0.1:2369');
+            // Rendering and sanitization are covered in sanitize-email-html.test.ts.
+            assert.equal(sendEmailStub.args[0][0].forceTextContent, undefined);
 
             sinon.assert.calledOnce(notificationsAPIAddStub);
             assert.equal(notificationsAPIAddStub.args[0][0].notifications.length, 1);

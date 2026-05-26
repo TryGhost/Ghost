@@ -3,9 +3,6 @@ packages:
   - 'apps/*'
   - 'e2e'
 
-strictDepBuilds: true
-catalogMode: strict
-
 catalog:
   '@eslint/js': 8.57.1
   '@playwright/test': 1.59.1
@@ -34,6 +31,7 @@ catalog:
   '@types/node': 22.19.18
   '@types/react': 18.3.28
   '@types/react-dom': 18.3.7
+  '@types/sanitize-html': ^2.16.1
   '@types/validator': 13.15.10
   '@typescript-eslint/parser': 8.49.0
   '@vitejs/plugin-react': 4.7.0
@@ -71,6 +69,7 @@ catalog:
   vite-plugin-svgr: 4.5.0
   vitest: 4.1.5
   zod: 4.1.12
+catalogMode: strict
 
 catalogs:
   eslint9:
@@ -78,3 +77,5 @@ catalogs:
     eslint: 9.37.0
   tailwind3:
     tailwindcss: 3.4.18
+
+strictDepBuilds: true

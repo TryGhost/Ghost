@@ -268,9 +268,11 @@
     "@types/nodemailer": "6.4.23",
     "@types/on-headers": "1.0.4",
     "@types/papaparse": "5.5.2",
+    "@types/sanitize-html": "catalog:",
     "@types/sinon": "17.0.4",
     "@types/supertest": "6.0.3",
     "@typescript-eslint/parser": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
     "bunyan": "1.8.15",
     "c8": "catalog:",
     "chai": "catalog:",
@@ -301,8 +303,7 @@
     "tsx": "4.21.0",
     "typescript": "catalog:",
     "validator": "catalog:",
-    "vitest": "catalog:",
-    "@vitest/coverage-v8": "catalog:"
+    "vitest": "catalog:"
   },
   "nx": {
     "tags": [
