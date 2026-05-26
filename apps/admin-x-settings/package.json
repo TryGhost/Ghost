@@ -61,7 +61,7 @@
     "@uiw/react-codemirror": "4.25.10",
     "clsx": "catalog:",
     "jszip": "3.10.1",
-    "lucide-react": "0.577.0",
+    "lucide-react": "catalog:",
     "mingo": "2.5.3",
     "react": "18.3.1",
     "react-dom": "18.3.1",

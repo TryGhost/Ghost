@@ -66,7 +66,7 @@
         "@xyflow/react": "12.8.6",
         "dequal": "catalog:",
         "i18n-iso-countries": "7.14.0",
-        "lucide-react": "0.577.0",
+        "lucide-react": "catalog:",
         "moment-timezone": "0.5.45",
         "papaparse": "5.5.3",
         "react": "18.3.1",
