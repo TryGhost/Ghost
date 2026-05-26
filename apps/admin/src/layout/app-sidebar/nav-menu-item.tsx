@@ -66,7 +66,7 @@ function NavMenuCollapsibleItem({ariaLabel, children}: NavMenuCollapsibleItemPro
                 aria-label={ariaLabel}
                 variant="ghost"
                 size="icon"
-                className="hover:text-gray-black absolute top-0 left-3 h-[34px]! w-auto p-0 text-sidebar-accent-foreground transition-all group-hover/menu-item:opacity-100 hover:bg-transparent focus-visible:opacity-100 sidebar:opacity-0"
+                className="hover:text-gray-black absolute top-0 left-3 h-[34px]! w-auto p-0 text-md text-sidebar-accent-foreground transition-all group-hover/menu-item:opacity-100 hover:bg-transparent focus-visible:opacity-100 sidebar:opacity-0"
                 onClick={() => void onExpandedChange(!expanded)}
             >
                 <LucideIcon.ChevronRight
@@ -91,7 +91,7 @@ function NavMenuCollapsibleMenu({children}: NavMenuCollapsibleMenuProps) {
             id={id}
             className={`grid transition-all duration-200 ease-out ${expanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
         >
-            <div className="overflow-hidden">
+            <div className="flex flex-col gap-px overflow-hidden">
                 {expanded ? children : null}
             </div>
         </div>
@@ -149,7 +149,12 @@ interface NavMenuLabelProps extends React.HTMLAttributes<HTMLSpanElement>
 }
 function NavMenuLabel({children, ...props}: NavMenuLabelProps) {
     return (
-        <span {...props}>{children}</span>
+        <span
+            {...props}
+            className={cn('min-w-0 truncate', props.className)}
+        >
+            {children}
+        </span>
     );
 }
 
@@ -161,12 +166,14 @@ function NavSubmenuItem({
 }: NavSubmenuItemProps) {
     return (
         <NavMenuItem className="before:absolute before:inset-y-0 before:left-5 before:z-10 before:w-px before:bg-sidebar-accent">
-            <NavMenuItem.Link
-                className={cn('ml-7 w-auto pl-2', className)}
-                {...props}
-            >
-                {children}
-            </NavMenuItem.Link>
+            <div className="min-w-0 pl-7">
+                <NavMenuItem.Link
+                    className={cn('w-full min-w-0 pl-2 focus-visible:ring-inset', className)}
+                    {...props}
+                >
+                    {children}
+                </NavMenuItem.Link>
+            </div>
         </NavMenuItem>
     );
 }

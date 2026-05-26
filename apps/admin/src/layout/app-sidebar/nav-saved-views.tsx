@@ -25,6 +25,7 @@ export function NavSavedViews({views}: NavSavedViewsProps) {
                     key={view.key}
                     to={view.to}
                     isActive={view.isActive}
+                    title={view.name}
                 >
                     <NavMenuItem.Label className={view.color ? 'grow' : undefined}>{view.name}</NavMenuItem.Label>
                     {view.color && (
