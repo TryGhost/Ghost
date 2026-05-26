@@ -96,12 +96,22 @@ jobs:
           filters: |
             shared: &shared
               - '.github/**'
+              # Renovate config / workflow files have no Ghost
+              # runtime/test impact. Anchored as &renovate_only and
+              # referenced from every filter below so a PR touching
+              # only these files skips all downstream jobs; the
+              # rollup gate passes on skipped deps.
+              - &renovate_only
+                - '!.github/renovate.json5'
+                - '!.github/renovate-bot.cjs'
+                - '!.github/workflows/renovate.yml'
               - '.npmrc'
               - 'package.json'
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
             ci:
               - '.github/workflows/**'
+              - *renovate_only
               - '.github/actions/**'
               - '.github/scripts/**'
             core:
@@ -131,6 +141,7 @@ jobs:
               - '!**/*.md'
               - '!.devcontainer/**'
               - '!.vscode/**'
+              - *renovate_only
             # Drives the run_e2e output: matches any changed file that could
             # affect a running Ghost instance. Test files, test config and
             # docs are excluded — a change confined to them cannot alter
@@ -143,6 +154,7 @@ jobs:
               - '!.vscode/**'
               - '!ghost/core/test/**'
               - '!ghost/core/vitest.config.ts'
+              - *renovate_only
 
       - name: Define Node test matrix
         id: node_matrix
