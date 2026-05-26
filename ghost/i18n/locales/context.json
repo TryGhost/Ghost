@@ -142,7 +142,7 @@
     "Gift could not be redeemed": "Error message when redeeming a gift subscription",
     "Gift details": "Button label in Portal to reveal the gift tier description and benefits on the gift checkout and redemption pages",
     "Gift redeemed! You're all set.": "Fallback success notification shown in Portal after a gift is redeemed when tier or expiry info is not available",
-    "Gift subscription": "Label for members who have an active gift subscription",
+    "Gift subscription": "Label for a gift subscription, including members who have an active gift subscription and the Stripe Checkout product title when buying one",
     "Gift subscriptions are not available right now.": "Subtitle on the Portal gift purchase page shown when no paid tiers are available",
     "Gift value": "Label on the gift card preview in Portal showing the monetary value of the gift",
     "Give feedback on this post": "A label that goes with the member feedback buttons at the bottom of newsletters",
