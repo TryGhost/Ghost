@@ -39,7 +39,8 @@ execFileSync(
         '--filter', 'ghost',
         'deploy', DEPLOY_DIR,
         '--prod',
-        '--config.inject-workspace-packages=true'
+        '--config.inject-workspace-packages=true',
+        '--config.ignore-scripts=true'
     ],
     {cwd: ROOT_DIR, stdio: 'inherit'}
 );
