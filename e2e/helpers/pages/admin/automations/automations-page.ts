@@ -1,7 +1,7 @@
-import {BasePage} from '@/helpers/pages';
+import {AdminPage} from '@/helpers/pages';
 import {Locator, Page} from '@playwright/test';
 
-export class AutomationsPage extends BasePage {
+export class AutomationsPage extends AdminPage {
     readonly pageRoot: Locator;
     readonly emailDesignButton: Locator;
     readonly emailDesignModal: Locator;
@@ -27,7 +27,8 @@ export class AutomationsPage extends BasePage {
     readonly imageCornersRounded: Locator;
 
     constructor(page: Page) {
-        super(page, '/ghost/#/automations');
+        super(page);
+        this.pageUrl = '/ghost/#/automations';
 
         this.pageRoot = page.getByTestId('automations-page');
         this.emailDesignButton = page.getByRole('button', {name: 'Email design'});
