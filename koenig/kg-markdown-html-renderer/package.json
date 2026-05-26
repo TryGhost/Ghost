@@ -50,7 +50,7 @@
   },
   "dependencies": {
     "@tryghost/kg-utils": "1.1.1",
-    "markdown-it": "14.1.1",
+    "markdown-it": "14.2.0",
     "markdown-it-footnote": "4.0.0",
     "markdown-it-image-lazy-loading": "2.0.1",
     "markdown-it-lazy-headers": "0.1.3",
