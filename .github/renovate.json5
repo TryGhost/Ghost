@@ -2,10 +2,14 @@
     "extends": [
         "github>tryghost/renovate-config"
     ],
-    // Limit concurrent branches to keep Renovate runs within the 30-minute
-    // Mend timeout and avoid overwhelming CI with dozens of queued jobs.
-    // The shared preset disables rate limiting, but Ghost's monorepo is
-    // large enough that unlimited branches cause timeouts during rebasing.
+    // Cap total open Renovate PRs at 10. The shared preset extends
+    // :disableRateLimiting (prConcurrentLimit: 0, prHourlyLimit: 0), so
+    // branchConcurrentLimit alone leaks — it exempts grouped, automerge-
+    // eligible, and vulnerability PRs, and is enforced per-run rather than
+    // as a true total. Setting prConcurrentLimit overrides the preset and
+    // gives us a hard ceiling regardless of update type. branchConcurrentLimit
+    // stays as a secondary guardrail.
+    "prConcurrentLimit": 10,
     "branchConcurrentLimit": 10,
     // Keep manually-closed immortal/grouped PRs closed unless explicitly
     // reopened from the Dependency Dashboard.
