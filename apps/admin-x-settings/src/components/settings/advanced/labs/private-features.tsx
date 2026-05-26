@@ -63,10 +63,6 @@ const features: Feature[] = [{
     title: 'Smarter Counts',
     description: 'Use optimized COUNT queries for API pagination when safe',
     flag: 'smarterCounts'
-}, {
-    title: 'Comments Pinning',
-    description: 'Allow staff to pin top-level comments in Comments-UI and Admin',
-    flag: 'commentsPinning'
 }];
 
 const AlphaFeatures: React.FC = () => {
