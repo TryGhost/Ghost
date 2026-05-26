@@ -220,7 +220,7 @@ overrides:
   ember-in-viewport: 4.1.0
   eslint-plugin-ghost>@typescript-eslint/eslint-plugin: 8.49.0
   eslint-plugin-ghost>@typescript-eslint/utils: 8.49.0
-  ember-svg-jar>cheerio: 1.0.0-rc.12
+  ember-svg-jar>cheerio: 1.2.0
   juice>cheerio: 0.22.0
   lodash.template: 4.5.0
   '@babel/runtime@<7.26.10': ^7.26.10
@@ -35754,7 +35754,7 @@ snapshots:
       broccoli-plugin: 4.0.7
       broccoli-replace: 2.0.2
       broccoli-svg-optimizer: 2.1.0
-      cheerio: 1.0.0-rc.12
+      cheerio: 1.2.0
       console-ui: 3.1.2
       ember-cli-babel: 7.26.11
       ember-cli-htmlbars: 5.7.2
