@@ -54,6 +54,5 @@
             "continuous": true
         }
     },
-    "cacheDirectory": ".nxcache",
-    "nxCloudId": "6a146249a88a39d9ffa5046c"
+    "cacheDirectory": ".nxcache"
 }
