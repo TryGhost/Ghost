@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/signup-form",
-  "version": "0.3.26",
+  "version": "0.3.27",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -20,7 +20,6 @@
     "build": "tsc && vite build",
     "lint": "pnpm run lint:js",
     "lint:js": "eslint --ext .js,.ts,.cjs,.tsx --cache src test",
-    "test:unit": "pnpm build",
     "test:acceptance": "NODE_OPTIONS='--experimental-specifier-resolution=node --no-warnings' VITE_TEST=true playwright test",
     "test:acceptance:slowmo": "TIMEOUT=100000 PLAYWRIGHT_SLOWMO=100 pnpm test:acceptance --headed",
     "test:acceptance:full": "ALL_BROWSERS=1 pnpm test:acceptance",
