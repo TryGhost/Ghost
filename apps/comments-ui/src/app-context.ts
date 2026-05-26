@@ -5,12 +5,13 @@ import {AdminApi} from './utils/admin-api';
 import {Page} from './pages';
 
 export type Member = {
-    id: string,
-    uuid: string,
+    id?: string,
+    uuid?: string,
     name: string,
     avatar_image: string,
     expertise: string,
-    can_comment?: boolean
+    can_comment?: boolean,
+    is_author?: boolean
 }
 
 export type Comment = {

@@ -54,7 +54,7 @@ describe('<CommentContextMenu>', () => {
         const member = {uuid: 'member-uuid'};
         const comment = buildComment({
             member: {
-                uuid: member.uuid
+                is_author: true
             },
             pinned: false
         });

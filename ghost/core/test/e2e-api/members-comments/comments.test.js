@@ -108,8 +108,7 @@ const commentMatcher = {
     parent_id: nullable(anyObjectId),
     created_at: anyISODateTime,
     member: {
-        id: anyObjectId,
-        uuid: anyUuid
+        is_author: anyBoolean
     },
     count: {
         likes: anyNumber

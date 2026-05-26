@@ -12,7 +12,7 @@ type Props = {
 };
 const CommentContextMenu: React.FC<Props> = ({comment, close, toggleEdit}) => {
     const {member, isAdmin} = useAppContext();
-    const isAuthor = member && comment.member?.uuid === member?.uuid;
+    const isAuthor = !!member && !!comment.member?.is_author;
     const element = useRef<HTMLDivElement>(null);
     const innerElement = useRef<HTMLDivElement>(null);
 

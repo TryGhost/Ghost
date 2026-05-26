@@ -8,7 +8,6 @@ const htmlToPlaintext = (html) => {
     return html.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
 };
 
-
 export class MockedApi {
     comments: any[];
     postId: string;
@@ -27,7 +26,7 @@ export class MockedApi {
         return this.comments.flatMap(c => c.replies).find(r => r.id === id);
     }
 
-    constructor({postId = 'ABC', comments = [], member = undefined, settings = {}, members = [], labs = {}}: {postId?: string, comments?: any[], member?: any, settings?: any, members?: any[], labs?: any}) {
+    constructor({postId = 'ABC', comments = [], member = undefined, settings = {}, labs = {}}: {postId?: string, comments?: any[], member?: any, settings?: any, members?: any[], labs?: any}) {
         this.postId = postId;
         this.comments = comments;
         this.member = member;
@@ -216,14 +215,14 @@ export class MockedApi {
 
         return {
             comments: comments.map((comment) => {
-                return {
+                return this.#withIsAuthor({
                     ...comment,
                     replies: comment.replies ? comment.replies : [],
                     count: {
                         ...comment.count,
                         replies: comment.replies ? comment.replies?.length : 0
                     }
-                };
+                });
             }),
             meta: {
                 pagination: {
@@ -233,6 +232,15 @@ export class MockedApi {
                     limit
                 }
             }
+        };
+    }
+
+    #withIsAuthor(comment: any): any {
+        const memberId = this.member?.id;
+        return {
+            ...comment,
+            member: comment.member ? {...comment.member, is_author: !!memberId && comment.member.id === memberId} : null,
+            replies: (comment.replies ?? []).map((reply: any) => this.#withIsAuthor(reply))
         };
     }
 
@@ -271,7 +279,7 @@ export class MockedApi {
         const hasMore = filteredReplies.length > limit;
 
         return {
-            comments: limitedReplies,
+            comments: limitedReplies.map(reply => this.#withIsAuthor(reply)),
             meta: {
                 pagination: {
                     page: 1,
@@ -349,7 +357,7 @@ export class MockedApi {
                 status: 200,
                 body: JSON.stringify({
                     comments: [
-                        this.comments[this.comments.length - 1]
+                        this.#withIsAuthor(this.comments[this.comments.length - 1])
                     ]
                 })
             });

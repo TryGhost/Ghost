@@ -164,7 +164,6 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({children, comment, p
             isLastSibling={isLastSibling}
             isPinned={comment.pinned}
             layoutVariant={layoutVariant}
-            memberUuid={comment.member?.uuid}
             replies={<RepliesContainer comment={comment} parent={parent} useThreading={useThreading}>{children}</RepliesContainer>}
             replyForm={displayReplyForm ? <ReplyFormBox continueLine={hasChildReplies} openForm={openForm} parent={replyFormParent} useThreading={useThreading} /> : null}
             useThreading={useThreading}
@@ -254,7 +253,7 @@ const UnpublishedComment: React.FC<React.PropsWithChildren<UnpublishedCommentPro
 
 const MemberExpertise: React.FC<{comment: Comment}> = ({comment}) => {
     const {member} = useAppContext();
-    const memberExpertise = member && comment.member && comment.member.uuid === member.uuid ? member.expertise : comment?.member?.expertise;
+    const memberExpertise = comment.member?.is_author ? member?.expertise : comment?.member?.expertise;
 
     if (!memberExpertise) {
         return null;
@@ -376,7 +375,7 @@ type CommentHeaderProps = {
 const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = '', useThreading}) => {
     const {member, t, pageUrl} = useAppContext();
     const createdAtRelative = useRelativeTime(comment.created_at);
-    const memberExpertise = member && comment.member && comment.member.uuid === member.uuid ? member.expertise : comment?.member?.expertise;
+    const memberExpertise = comment.member?.is_author ? member?.expertise : comment?.member?.expertise;
     const showReplyContext = !useThreading && comment.in_reply_to_id && comment.in_reply_to_snippet;
 
     const timestampElement = (
@@ -466,7 +465,7 @@ const CommentMenu: React.FC<CommentMenuProps> = ({comment, openReplyForm, highli
     const {member, t, isMember, isAdmin, isCommentingDisabled} = useAppContext();
 
     const isPublished = comment.status === 'published';
-    const isOwnComment = member && comment.member?.uuid === member?.uuid;
+    const isOwnComment = !!member && !!comment.member?.is_author;
 
     // Visibility decisions
     const showLikeButton = !isCommentingDisabled;
@@ -517,7 +516,6 @@ type CommentLayoutProps = {
     avatar: React.ReactNode;
     hasReplies: boolean;
     className?: string;
-    memberUuid?: string;
     isLastSibling?: boolean;
     isPinned?: boolean;
     layoutVariant?: CommentLayoutVariant;
@@ -530,13 +528,13 @@ const COMMENT_GAP_CLASS_NAME = 'mb-7';
 const PINNED_COMMENT_GAP_CLASS_NAME = 'mb-4';
 const PINNED_COMMENT_BOX_CLASS_NAME = 'bg-amber-50/70 px-3 py-3 dark:bg-amber-400/10';
 
-const CommentLayout: React.FC<CommentLayoutProps> = ({children, avatar, hasReplies, className = '', memberUuid = '', isLastSibling = false, isPinned = false, layoutVariant = 'root', replies, replyForm, useThreading}) => {
+const CommentLayout: React.FC<CommentLayoutProps> = ({children, avatar, hasReplies, className = '', isLastSibling = false, isPinned = false, layoutVariant = 'root', replies, replyForm, useThreading}) => {
     const isReplyLayout = layoutVariant === 'reply';
 
     if (!useThreading) {
         const bottomMarginClassName = isPinned ? PINNED_COMMENT_GAP_CLASS_NAME : hasReplies ? 'mb-0' : COMMENT_GAP_CLASS_NAME;
         return (
-            <div className={`flex w-full flex-row rounded-lg ${isPinned ? PINNED_COMMENT_BOX_CLASS_NAME : ''} ${bottomMarginClassName}`} data-member-uuid={memberUuid} data-pinned={isPinned ? 'true' : undefined} data-testid="comment-component">
+            <div className={`flex w-full flex-row rounded-lg ${isPinned ? PINNED_COMMENT_BOX_CLASS_NAME : ''} ${bottomMarginClassName}`} data-pinned={isPinned ? 'true' : undefined} data-testid="comment-component">
                 <div className="mr-2 flex flex-col items-center justify-start sm:mr-3">
                     <div className={`flex-0 mb-3 sm:mb-4 ${className}`}>
                         {avatar}
@@ -566,7 +564,7 @@ const CommentLayout: React.FC<CommentLayoutProps> = ({children, avatar, hasRepli
                     aria-hidden
                 />
             )}
-            <div className="flex w-full flex-row" data-member-uuid={memberUuid} data-testid="comment-component">
+            <div className="flex w-full flex-row" data-testid="comment-component">
                 <div className="mr-2 flex flex-col items-center justify-start sm:mr-3">
                     <div className={`flex-0 mb-1 ${className}`}>
                         {avatar}

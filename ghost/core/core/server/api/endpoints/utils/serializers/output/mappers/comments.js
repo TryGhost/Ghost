@@ -15,8 +15,6 @@ const commentFields = [
 ];
 
 const memberFields = [
-    'id',
-    'uuid',
     'name',
     'expertise',
     'avatar_image'
@@ -105,6 +103,11 @@ const commentMapper = (model, frame) => {
 
     if (jsonModel.member) {
         response.member = _.pick(jsonModel.member, isPublicRequest ? memberFields : memberFieldsAdmin);
+
+        if (isPublicRequest) {
+            const currentMemberId = frame.options?.context?.member?.id;
+            response.member.is_author = !!currentMemberId && jsonModel.member.id === currentMemberId;
+        }
     } else {
         response.member = null;
     }
