@@ -7,12 +7,12 @@ import type {Config} from '@tryghost/admin-x-framework/api/config';
 
 type AutomatedEmailSenderFields = Pick<AutomatedEmail, 'slug' | 'sender_name' | 'sender_email' | 'sender_reply_to'>;
 
-type WelcomeEmailSenderDetailsOptions = {
+interface WelcomeEmailSenderDetailsOptions {
     config: Config;
     defaultEmailAddress?: string | null;
     siteTitle?: string | null;
     supportEmailAddress?: string | null;
-};
+}
 
 export const useWelcomeEmailSenderDetails = (automatedEmails: AutomatedEmailSenderFields[] = [], {
     config,
