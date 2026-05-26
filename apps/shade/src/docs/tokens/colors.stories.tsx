@@ -26,7 +26,7 @@ const meta = {
         layout: 'padded',
         docs: {
             description: {
-                component: 'Color tokens. Semantic tokens (surface, text, border, state) flip between light and dark mode automatically. Use the toolbar light/dark switch to verify.'
+                component: 'Color tokens. Prefer semantic tokens for UI color decisions wherever possible because they carry intent and flip between light and dark mode automatically. Use raw palette tokens only when there is no semantic fit, then use the toolbar light/dark switch to verify.'
             }
         }
     }
