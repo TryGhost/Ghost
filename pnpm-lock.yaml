@@ -1175,9 +1175,15 @@ importers:
 
   apps/posts:
     dependencies:
+      '@ebay/nice-modal-react':
+        specifier: 1.2.13
+        version: 1.2.13(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tryghost/admin-x-framework':
         specifier: workspace:*
         version: link:../admin-x-framework
+      '@tryghost/color-utils':
+        specifier: 'catalog:'
+        version: 0.2.16
       '@tryghost/nql-lang':
         specifier: 'catalog:'
         version: 0.6.4
@@ -1193,6 +1199,9 @@ importers:
       i18n-iso-countries:
         specifier: 7.14.0
         version: 7.14.0
+      lucide-react:
+        specifier: 0.577.0
+        version: 0.577.0(react@18.3.1)
       moment-timezone:
         specifier: 0.5.45
         version: 0.5.45
@@ -1217,6 +1226,9 @@ importers:
       use-debounce:
         specifier: 10.1.1
         version: 10.1.1(react@18.3.1)
+      validator:
+        specifier: 'catalog:'
+        version: 13.12.0
       zod:
         specifier: 'catalog:'
         version: 4.1.12
@@ -1245,6 +1257,9 @@ importers:
       '@types/react':
         specifier: 'catalog:'
         version: 18.3.28
+      '@types/validator':
+        specifier: 'catalog:'
+        version: 13.15.10
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 4.1.5(vitest@4.1.5)
