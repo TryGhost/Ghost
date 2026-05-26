@@ -11,11 +11,23 @@ const debug = require('@tryghost/debug')('update-check');
 
 const internal = {context: {internal: true}};
 
+/**
+ * @typedef {import('./notification').UpdateCheckMessage} UpdateCheckMessage
+ * @typedef {import('./notification').UpdateCheckNotification} UpdateCheckNotification
+ */
+
+/**
+ * @param {UpdateCheckMessage} rawMessage
+ * @param {UpdateCheckNotification | undefined} rawNotification
+ */
 function normalizeMessage(rawMessage, rawNotification) {
     const notification = rawNotification || {};
     return {
         id: rawMessage.id,
         message: rawMessage.content,
+        // `status` is not on the wire — see ./notification.ts. The admin client
+        // uses it to route between banner area (`alert`) and toast (`notification`).
+        // Update-check messages always land in the banner.
         status: rawMessage.status || 'alert',
         type: rawMessage.type || 'info',
         top: !!rawMessage.top,
@@ -25,6 +37,13 @@ function normalizeMessage(rawMessage, rawNotification) {
     };
 }
 
+/**
+ * `type === 'alert'` is the Ghost-side convention (since 2021, ref df4df2a4aa)
+ * used to flag a notification as critical enough to email admins. The value is
+ * not in upstream's documented severity enum — see `./notification.ts`.
+ *
+ * @param {{type: string}} message
+ */
 function isCriticalAlert(message) {
     return message.type === 'alert';
 }
