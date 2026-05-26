@@ -919,7 +919,7 @@ jobs:
         uses: ./.github/actions/setup-docker-registry-mirrors
 
       - name: Setup Blacksmith Builder
-        uses: useblacksmith/setup-docker-builder@v1
+        uses: useblacksmith/setup-docker-builder@722e97d12b1d06a961800dd6c05d79d951ad3c80 # v1
 
       - name: Log in to GitHub Container Registry
         if: steps.strategy.outputs.should-push == 'true'
@@ -966,7 +966,7 @@ jobs:
             org.opencontainers.image.vendor=TryGhost
 
       - name: Build & push core image
-        uses: useblacksmith/build-push-action@v2
+        uses: useblacksmith/build-push-action@fb9e3e6a9299c78462bfadd0d93352c316adc9b8 # v2
         with:
           context: /tmp/ghost-production
           file: Dockerfile.production
@@ -980,7 +980,7 @@ jobs:
           labels: ${{ steps.meta-core.outputs.labels }}
 
       - name: Build & push full image
-        uses: useblacksmith/build-push-action@v2
+        uses: useblacksmith/build-push-action@fb9e3e6a9299c78462bfadd0d93352c316adc9b8 # v2
         with:
           context: /tmp/ghost-production
           file: Dockerfile.production
@@ -1133,7 +1133,7 @@ jobs:
         uses: ./.github/actions/setup-docker-registry-mirrors
 
       - name: Setup Blacksmith Builder
-        uses: useblacksmith/setup-docker-builder@v1
+        uses: useblacksmith/setup-docker-builder@722e97d12b1d06a961800dd6c05d79d951ad3c80 # v1
 
       - name: Load base Ghost image
         uses: ./.github/actions/load-docker-image
@@ -1179,7 +1179,7 @@ jobs:
             org.opencontainers.image.vendor=TryGhost
 
       - name: Build & push E2E image
-        uses: useblacksmith/build-push-action@v2
+        uses: useblacksmith/build-push-action@fb9e3e6a9299c78462bfadd0d93352c316adc9b8 # v2
         with:
           context: .
           file: e2e/Dockerfile.e2e
