@@ -513,6 +513,35 @@ async function reportComment({api, data: comment}: {api: GhostApi, data: {id: st
     return {};
 }
 
+function hasDescendantReply(replies: Comment[], commentId: string) {
+    return replies.some(reply => reply.in_reply_to_id === commentId);
+}
+
+function isTombstoneReply(reply: Comment) {
+    return ['hidden', 'deleted'].includes(reply.status);
+}
+
+function pruneOrphanTombstoneReplies(replies: Comment[], deletedReply: Comment | undefined) {
+    let prunedReplies = replies;
+    let ancestorId = deletedReply?.in_reply_to_id;
+
+    while (ancestorId) {
+        const ancestor = prunedReplies.find(reply => reply.id === ancestorId);
+        if (!ancestor || !isTombstoneReply(ancestor) || hasDescendantReply(prunedReplies, ancestor.id)) {
+            break;
+        }
+
+        ancestorId = ancestor.in_reply_to_id;
+        prunedReplies = prunedReplies.filter(reply => reply.id !== ancestor.id);
+    }
+
+    return prunedReplies;
+}
+
+function decrementCount(count: number | undefined) {
+    return Math.max((count || 0) - 1, 0);
+}
+
 async function deleteComment({state, api, data: comment, dispatchAction}: {state: EditableAppContext, api: GhostApi, data: {id: string}, dispatchAction: DispatchActionType}) {
     await api.comments.edit({
         comment: {
@@ -545,18 +574,40 @@ async function deleteComment({state, api, data: comment, dispatchAction}: {state
             }
 
             const originalLength = topLevelComment.replies.length;
-            const updatedReplies = topLevelComment.replies.filter(reply => reply.id !== comment.id);
-            const hasDeletedReply = originalLength !== updatedReplies.length;
+            const replyToDelete = topLevelComment.replies.find(reply => reply.id === comment.id);
+            const keepTombstone = replyToDelete ? hasDescendantReply(topLevelComment.replies, replyToDelete.id) : false;
+            const repliesAfterDelete = topLevelComment.replies.reduce<Comment[]>((replies, reply) => {
+                if (reply.id !== comment.id) {
+                    replies.push(reply);
+                    return replies;
+                }
+
+                if (keepTombstone) {
+                    replies.push({
+                        ...reply,
+                        status: 'deleted',
+                        html: null
+                    });
+                }
+
+                return replies;
+            }, []);
+            const updatedReplies = pruneOrphanTombstoneReplies(repliesAfterDelete, replyToDelete);
+            const hasDeletedReply = originalLength !== updatedReplies.length || keepTombstone;
 
             const updatedTopLevelComment = {
                 ...topLevelComment,
                 replies: updatedReplies
             };
 
-            // When a reply is deleted we need to update the parent's count so
-            // pagination displays the correct number of replies still to load
-            if (hasDeletedReply && topLevelComment.count?.replies) {
-                topLevelComment.count.replies = topLevelComment.count.replies - 1;
+            if (hasDeletedReply && replyToDelete && !['hidden', 'deleted'].includes(replyToDelete.status)) {
+                const wasDirectReply = !replyToDelete.in_reply_to_id || replyToDelete.in_reply_to_id === topLevelComment.id;
+
+                updatedTopLevelComment.count = {
+                    ...updatedTopLevelComment.count,
+                    replies: decrementCount(updatedTopLevelComment.count?.replies),
+                    direct_replies: wasDirectReply ? decrementCount(updatedTopLevelComment.count?.direct_replies) : updatedTopLevelComment.count?.direct_replies
+                };
             }
 
             return updatedTopLevelComment;
