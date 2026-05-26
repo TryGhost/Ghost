@@ -1840,13 +1840,6 @@ jobs:
       - name: Publish to npm
         run: npm publish ghost-*.tgz --access public
 
-      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
-        if: failure()
-        with:
-          status: ${{ job.status }}
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
   # --------------------------------------------------------------------------- #
   # Create GitHub Release — runs after successful npm publish
   # --------------------------------------------------------------------------- #
@@ -1888,13 +1881,15 @@ jobs:
           cat /tmp/release-notes.md
 
       - name: Create GitHub Release
+        id: create_release
         run: |
           gh release create "${GITHUB_REF_NAME}" \
             --title "${GITHUB_REF_NAME}" \
             --notes-file /tmp/release-notes.md
 
+      # Gate on create_release, not notes, so a failed release can't announce success
       - name: Notify Slack
-        if: always() && steps.notes.outcome == 'success'
+        if: success() && steps.create_release.outcome == 'success'
         run: |
           VERSION="${GITHUB_REF_NAME}"
           RELEASE_URL="https://github.com/TryGhost/Ghost/releases/tag/${VERSION}"
@@ -1910,3 +1905,28 @@ jobs:
             -H 'Content-type: application/json' \
             --data "${PAYLOAD}" \
             "${{ secrets.RELEASE_NOTIFICATION_URL }}" || echo "Slack notification failed (non-fatal)"
+
+  # --------------------------------------------------------------------------- #
+  # Notify on any release-path failure — fires if the tag was created but the
+  # publish run (build, npm publish, or GitHub Release) failed at any point.
+  # A single terminal job catches jobs skipped by an upstream failure, which a
+  # per-job `if: failure()` step cannot.
+  # --------------------------------------------------------------------------- #
+  notify_release_failure:
+    name: Notify release failure
+    needs: [job_setup, job_build_artifacts, job_ghost-cli, publish_ghost, create_github_release]
+    if: failure() && startsWith(github.ref, 'refs/tags/v') && github.repository == 'TryGhost/Ghost'
+    runs-on: ubuntu-latest
+    permissions: {}  # only posts to Slack via curl; needs no GITHUB_TOKEN scopes
+    steps:
+      - name: Notify Slack
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          RELEASE_NOTIFICATION_URL: ${{ secrets.RELEASE_NOTIFICATION_URL }}
+        run: |
+          VALUE=$(printf '<!subteam^S07ATDH3CLB|on-call-product> — check the failed run: <%s|view run>' "$RUN_URL")
+          PAYLOAD=$(jq -n --arg value "$VALUE" \
+            '{username: "Ghost CI", attachments: [{color: "danger", fields: [{title: "🚨 Ghost release failed", value: $value}]}]}')
+          curl -sf -X POST -H 'Content-type: application/json' \
+            --data "$PAYLOAD" \
+            "$RELEASE_NOTIFICATION_URL" || echo "Slack notification failed (non-fatal)"
