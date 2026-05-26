@@ -259,7 +259,7 @@ overrides:
   trim@<0.0.3: ^0.0.3
   undici@<6.24.0: ^6.24.0
   underscore@>=1.3.2 <1.12.1: ^1.12.1
-  '@xmldom/xmldom@<0.8.13': ^0.8.13
+  '@xmldom/xmldom@<0.8.13': ^0.9.0
 
 packageExtensionsChecksum: sha256-VoukEtG/3ZKlZLtw2HjOKS0hPvjiZTwZtAPotZw7zcw=
 
@@ -9512,9 +9512,9 @@ packages:
   '@webcontainer/env@1.1.1':
     resolution: {integrity: sha512-6aN99yL695Hi9SuIk1oC88l9o0gmxL1nGWWQ/kNy81HigJ0FoaoTXpytCj6ItzgyCEwA9kF1wixsTuv5cjsgng==}
 
-  '@xmldom/xmldom@0.8.13':
-    resolution: {integrity: sha512-KRYzxepc14G/CEpEGc3Yn+JKaAeT63smlDr+vjB8jRfgTBBI9wRj/nkQEO+ucV8p8I9bfKLWp37uHgFrbntPvw==}
-    engines: {node: '>=10.0.0'}
+  '@xmldom/xmldom@0.9.10':
+    resolution: {integrity: sha512-A9gOqLdi6cV4ibazAjcQufGj0B1y/vDqYrcuP6d/6x8P27gRS8643Dj9o1dEKtB6O7fwxb2FgBmJS2mX7gpvdw==}
+    engines: {node: '>=14.6'}
 
   '@xtuc/ieee754@1.2.0':
     resolution: {integrity: sha512-DX8nKgqcGwsc0eJSqYt5lwP4DH5FlHnmuWWBRy7X0NcaGR0ZtuyeESgMwTYVEtxmsNGY+qit4QYT/MIYTOTPeA==}
@@ -30597,7 +30597,7 @@ snapshots:
 
   '@webcontainer/env@1.1.1': {}
 
-  '@xmldom/xmldom@0.8.13': {}
+  '@xmldom/xmldom@0.9.10': {}
 
   '@xtuc/ieee754@1.2.0': {}
 
@@ -45558,7 +45558,7 @@ snapshots:
 
   testem@3.19.1(@babel/core@7.29.0)(handlebars@4.7.9)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(underscore@1.13.8):
     dependencies:
-      '@xmldom/xmldom': 0.8.13
+      '@xmldom/xmldom': 0.9.10
       backbone: 1.6.1
       charm: 1.0.2
       commander: 2.20.3
