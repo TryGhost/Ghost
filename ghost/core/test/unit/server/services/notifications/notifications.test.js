@@ -89,6 +89,31 @@ describe('Notifications Service', function () {
             sinon.assert.calledOnceWithExactly(repository.deleteById, 'old-release');
             sinon.assert.calledOnce(repository.add);
         });
+
+        it('runs the email reaction for each added notification', async function () {
+            const repository = fakeRepository([]);
+            const maybeSendEmail = sinon.stub().resolves();
+            const notificationsSvc = new Notifications({repository, maybeSendEmail});
+
+            await notificationsSvc.add({
+                notifications: [{custom: true, type: 'alert', message: 'critical'}]
+            });
+
+            sinon.assert.calledOnce(maybeSendEmail);
+            assert.equal(maybeSendEmail.args[0][0].type, 'alert');
+        });
+
+        it('does not run the email reaction when nothing is added', async function () {
+            const repository = fakeRepository([{id: 'dupe', custom: true, message: 'existing'}]);
+            const maybeSendEmail = sinon.stub().resolves();
+            const notificationsSvc = new Notifications({repository, maybeSendEmail});
+
+            await notificationsSvc.add({
+                notifications: [{id: 'dupe', custom: true, message: 'incoming'}]
+            });
+
+            sinon.assert.notCalled(maybeSendEmail);
+        });
     });
 
     describe('browse', function () {

@@ -335,7 +335,10 @@ describe('Update Check', function () {
             assert.equal(targetNotification.custom, 0);
         });
 
-        it('should send an email for critical notification', async function () {
+        it('adds an alert notification from the update-check service', async function () {
+            // Emailing alert notifications is the notification service's reaction
+            // to a notification being added (see email-reactor.test.ts); update
+            // check only forwards the message into storage.
             const notification = {
                 id: 1,
                 messages: [{
@@ -356,8 +359,6 @@ describe('Update Check', function () {
                 });
 
             const notificationsAPIAddStub = sinon.stub().resolves();
-            const sendEmailStub = sinon.stub().resolves();
-            const generateEmailContentStub = sinon.stub().resolves({html: '<html>rendered</html>', text: 'rendered'});
 
             const updateCheckService = new UpdateCheckService({
                 api: {
@@ -366,14 +367,7 @@ describe('Update Check', function () {
                         edit: settingsStub
                     },
                     users: {
-                        browse: sinon.stub().resolves({
-                            users: [{
-                                email: 'jbloggs@example.com',
-                                roles: [{
-                                    name: 'Owner'
-                                }]
-                            }]
-                        })
+                        browse: sinon.stub().resolves()
                     },
                     posts: {
                         browse: sinon.stub().resolves()
@@ -388,21 +382,15 @@ describe('Update Check', function () {
                     isPrivacyDisabled: true,
                     ghostVersion: '0.8.0'
                 },
-                request: request,
-                sendEmail: sendEmailStub,
-                generateEmailContent: generateEmailContentStub
+                request: request
             });
 
             await updateCheckService.check();
 
-            sinon.assert.called(sendEmailStub);
-            assert.equal(sendEmailStub.args[0][0].to, 'jbloggs@example.com');
-            assert.equal(sendEmailStub.args[0][0].subject, 'Ghost notification from http://127.0.0.1:2369');
-            // Rendering and sanitization are covered in sanitize-email-html.test.ts.
-            assert.equal(sendEmailStub.args[0][0].forceTextContent, undefined);
-
             sinon.assert.calledOnce(notificationsAPIAddStub);
-            assert.equal(notificationsAPIAddStub.args[0][0].notifications.length, 1);
+            const added = notificationsAPIAddStub.args[0][0].notifications[0];
+            assert.equal(added.type, 'alert');
+            assert.equal(added.message, '<p>Critical message. Upgrade your site!</p>');
         });
 
         it('not create a notification if the check response has no messages', async function () {

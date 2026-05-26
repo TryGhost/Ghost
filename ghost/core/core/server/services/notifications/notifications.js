@@ -15,9 +15,11 @@ class Notifications {
     /**
      * @param {Object} options
      * @param {import('./repository').NotificationRepository} options.repository
+     * @param {(notification: object) => Promise<void>} [options.maybeSendEmail] - reaction run after a notification is persisted
      */
-    constructor({repository}) {
+    constructor({repository, maybeSendEmail}) {
         this.repository = repository;
+        this.maybeSendEmail = maybeSendEmail;
     }
 
     wasSeen(notification, user) {
@@ -124,6 +126,9 @@ class Notifications {
 
         for (const notification of notificationsToAdd) {
             await this.repository.add(notification);
+            if (this.maybeSendEmail) {
+                await this.maybeSendEmail(notification);
+            }
         }
 
         return notificationsToAdd;

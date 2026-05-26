@@ -34,9 +34,6 @@ module.exports = async ({
         }
     }
 
-    const mailService = require('../mail');
-    const ghostMailer = new mailService.GhostMailer();
-
     const updateChecker = new UpdateCheckService({
         api: {
             settings: {
@@ -65,9 +62,7 @@ module.exports = async ({
             ghostVersion: ghostVersion.original,
             rethrowErrors
         },
-        request,
-        sendEmail: ghostMailer.send.bind(ghostMailer),
-        generateEmailContent: mailService.utils.generateContent
+        request
     });
 
     await updateChecker.check();

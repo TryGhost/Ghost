@@ -1,5 +1,5 @@
 const {assertMatchSnapshot} = require('../../../../utils/assertions');
-const {sanitizeEmailHtml} = require('../../../../../core/server/services/update-check/sanitize-email-html');
+const {sanitizeEmailHtml} = require('../../../../../core/server/services/notifications/sanitize-email-html');
 
 // The script tag, on* handler, and javascript: URL are deliberate negative
 // cases — the snapshot must show them stripped.
