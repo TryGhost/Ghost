@@ -35,6 +35,118 @@ const meta = {
 export default meta;
 type Story = StoryObj;
 
+export const RawPalette: Story = {
+    render: () => (
+        <div className="flex flex-col gap-10">
+            <section className="flex flex-col gap-8">
+                <ColorRow
+                    swatches={rawPalettes.gray}
+                    title="Gray (raw)"
+                />
+                <ColorRow
+                    swatches={rawPalettes.grey}
+                    title="Grey (raw duplicate)"
+                />
+            </section>
+            <section className="flex flex-col gap-8">
+                <ColorRow
+                    swatches={rawPalettes.green}
+                    title="Green"
+                />
+                <ColorRow
+                    swatches={rawPalettes.blue}
+                    title="Blue"
+                />
+                <ColorRow
+                    swatches={rawPalettes.purple}
+                    title="Purple"
+                />
+                <ColorRow
+                    swatches={rawPalettes.pink}
+                    title="Pink"
+                />
+                <ColorRow
+                    swatches={rawPalettes.red}
+                    title="Red"
+                />
+                <ColorRow
+                    swatches={rawPalettes.orange}
+                    title="Orange"
+                />
+                <ColorRow
+                    swatches={rawPalettes.yellow}
+                    title="Yellow"
+                />
+                <ColorRow
+                    swatches={rawPalettes.lime}
+                    title="Lime"
+                />
+            </section>
+            <ColorPalette
+                description="Special raw color tokens that are not part of the stepped palettes."
+                swatches={[
+                    {name: 'white', cssVar: '--color-white'},
+                    {name: 'black', cssVar: '--color-black'},
+                    {name: 'transparent', cssVar: '--color-transparent'},
+                    {name: 'current', cssVar: '--color-current'},
+                    {name: 'ghostaccent', cssVar: '--color-ghostaccent'}
+                ]}
+                title="Special raw"
+            />
+        </div>
+    ),
+    parameters: {
+        docs: {
+            description: {
+                story: 'Raw palette. Gray and grey are kept as duplicate 11-step scales for this sweep; naming consolidation is handled separately. Brand palettes use the Tailwind-style 11-step scale: 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950.'
+            }
+        }
+    }
+};
+
+export const SemanticAuthoring: Story = {
+    render: () => (
+        <div className="max-w-3xl space-y-4 text-sm text-text-secondary">
+            <p>
+                Semantic color variables in <code>theme-variables.css</code> should resolve directly to raw color tokens such as <code>--color-gray-700</code>, not to another semantic token such as <code>--foreground</code> or <code>--muted-foreground</code>.
+            </p>
+            <p>
+                This keeps each semantic decision inspectable in one place while the raw palette remains the single source of concrete color values. Tailwind-facing aliases still live in <code>tailwind.theme.css</code>.
+            </p>
+        </div>
+    ),
+    parameters: {
+        docs: {
+            description: {
+                story: 'Authoring rule for semantic color variables.'
+            }
+        }
+    }
+};
+
+export const CoreChrome: Story = {
+    render: () => (
+        <ColorPalette
+            description="Default chrome tokens used by most components. Most consumers should reach for surface / text / border tokens above instead of these."
+            swatches={[
+                {name: 'background', cssVar: '--background'},
+                {name: 'foreground', cssVar: '--foreground'},
+                {name: 'primary', cssVar: '--primary'},
+                {name: 'primary-foreground', cssVar: '--primary-foreground'},
+                {name: 'secondary', cssVar: '--secondary'},
+                {name: 'muted', cssVar: '--muted'},
+                {name: 'muted-foreground', cssVar: '--muted-foreground'},
+                {name: 'accent', cssVar: '--accent'},
+                {name: 'destructive', cssVar: '--destructive'},
+                {name: 'card', cssVar: '--card'},
+                {name: 'popover', cssVar: '--popover'},
+                {name: 'ring', cssVar: '--ring'}
+            ]}
+            title="Core chrome"
+        />
+    )
+};
+
 export const Surface: Story = {
     render: () => (
         <ColorPalette
@@ -92,50 +204,7 @@ export const State: Story = {
     )
 };
 
-export const CoreChrome: Story = {
-    render: () => (
-        <ColorPalette
-            description="Default chrome tokens used by most components. Most consumers should reach for surface / text / border tokens above instead of these."
-            swatches={[
-                {name: 'background', cssVar: '--background'},
-                {name: 'foreground', cssVar: '--foreground'},
-                {name: 'primary', cssVar: '--primary'},
-                {name: 'primary-foreground', cssVar: '--primary-foreground'},
-                {name: 'secondary', cssVar: '--secondary'},
-                {name: 'muted', cssVar: '--muted'},
-                {name: 'muted-foreground', cssVar: '--muted-foreground'},
-                {name: 'accent', cssVar: '--accent'},
-                {name: 'destructive', cssVar: '--destructive'},
-                {name: 'card', cssVar: '--card'},
-                {name: 'popover', cssVar: '--popover'},
-                {name: 'ring', cssVar: '--ring'}
-            ]}
-            title="Core chrome"
-        />
-    )
-};
-
-export const SemanticAuthoring: Story = {
-    render: () => (
-        <div className="max-w-3xl space-y-4 text-sm text-text-secondary">
-            <p>
-                Semantic color variables in <code>theme-variables.css</code> should resolve directly to raw color tokens such as <code>--color-gray-700</code>, not to another semantic token such as <code>--foreground</code> or <code>--muted-foreground</code>.
-            </p>
-            <p>
-                This keeps each semantic decision inspectable in one place while the raw palette remains the single source of concrete color values. Tailwind-facing aliases still live in <code>tailwind.theme.css</code>.
-            </p>
-        </div>
-    ),
-    parameters: {
-        docs: {
-            description: {
-                story: 'Authoring rule for semantic color variables.'
-            }
-        }
-    }
-};
-
-export const Chart: Story = {
+export const ChartColors: Story = {
     render: () => (
         <ColorPalette
             description="Reserved for data visualisation. Don't use these for UI chrome."
@@ -157,78 +226,6 @@ export const Chart: Story = {
                 {name: 'gray', cssVar: '--chart-gray'}
             ]}
             title="Chart"
-        />
-    )
-};
-
-export const RawGray: Story = {
-    render: () => (
-        <div className="flex flex-col gap-8">
-            <ColorRow
-                swatches={rawPalettes.gray}
-                title="Gray (raw)"
-            />
-            <ColorRow
-                swatches={rawPalettes.grey}
-                title="Grey (raw duplicate)"
-            />
-        </div>
-    ),
-    parameters: {docs: {description: {story: 'Raw palette. Both gray and grey are kept as duplicate 11-step scales for this sweep; naming consolidation is handled separately.'}}}
-};
-
-export const RawBrand: Story = {
-    render: () => (
-        <div className="flex flex-col gap-8">
-            <ColorRow
-                swatches={rawPalettes.green}
-                title="Green"
-            />
-            <ColorRow
-                swatches={rawPalettes.blue}
-                title="Blue"
-            />
-            <ColorRow
-                swatches={rawPalettes.purple}
-                title="Purple"
-            />
-            <ColorRow
-                swatches={rawPalettes.pink}
-                title="Pink"
-            />
-            <ColorRow
-                swatches={rawPalettes.red}
-                title="Red"
-            />
-            <ColorRow
-                swatches={rawPalettes.orange}
-                title="Orange"
-            />
-            <ColorRow
-                swatches={rawPalettes.yellow}
-                title="Yellow"
-            />
-            <ColorRow
-                swatches={rawPalettes.lime}
-                title="Lime"
-            />
-        </div>
-    ),
-    parameters: {docs: {description: {story: 'Raw brand palettes use the Tailwind-style 11-step scale: 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950.'}}}
-};
-
-export const RawSpecial: Story = {
-    render: () => (
-        <ColorPalette
-            description="Special raw color tokens that are not part of the stepped palettes."
-            swatches={[
-                {name: 'white', cssVar: '--color-white'},
-                {name: 'black', cssVar: '--color-black'},
-                {name: 'transparent', cssVar: '--color-transparent'},
-                {name: 'current', cssVar: '--color-current'},
-                {name: 'ghostaccent', cssVar: '--color-ghostaccent'}
-            ]}
-            title="Special"
         />
     )
 };
