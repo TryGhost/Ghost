@@ -7,6 +7,7 @@ import {
     insertSendEmailAction,
     insertWaitAction,
     removeAction,
+    updateSendEmailAction,
     updateWaitAction
 } from '../../../src/api/automations';
 
@@ -173,7 +174,7 @@ describe('automations api helpers', () => {
     });
 
     describe('insertSendEmailAction', () => {
-        it('creates a send_email action with placeholder defaults', () => {
+        it('creates a send_email action with a blank body and default subject', () => {
             const detail = baseDetail([], []);
 
             const next = insertSendEmailAction({detail, anchor: {}});
@@ -183,7 +184,7 @@ describe('automations api helpers', () => {
             expectSendEmailAction(newAction);
             expect(newAction.data.email_subject).toBe('Untitled email');
             expect(() => JSON.parse(newAction.data.email_lexical)).not.toThrow();
-            expect(JSON.parse(newAction.data.email_lexical).root.children.length).toBeGreaterThan(0);
+            expect(JSON.parse(newAction.data.email_lexical).root.children).toEqual([]);
             expect(newAction.data.email_design_setting_id).toBe('placeholder');
         });
 
@@ -363,6 +364,93 @@ describe('automations api helpers', () => {
 
         it('throws when waitHours is NaN', () => {
             expectInvalidWaitHoursRejected(Number.NaN);
+        });
+    });
+
+    describe('updateSendEmailAction', () => {
+        const sendEmailAction = (id: string, overrides: Partial<AutomationSendEmailAction['data']> = {}): AutomationSendEmailAction => ({
+            id,
+            type: 'send_email',
+            data: {
+                email_subject: 'Original subject',
+                email_lexical: '{"root":{"children":[]}}',
+                email_sender_name: null,
+                email_sender_email: null,
+                email_sender_reply_to: null,
+                email_design_setting_id: 'placeholder',
+                ...overrides
+            }
+        });
+
+        it('updates subject and lexical on the targeted send_email action', () => {
+            const detail = baseDetail([sendEmailAction('a')], []);
+
+            const next = updateSendEmailAction({
+                detail,
+                actionId: 'a',
+                emailSubject: 'New subject',
+                emailLexical: '{"root":{"children":[{"type":"paragraph"}]}}'
+            });
+
+            const updated = next.actions[0];
+            expectSendEmailAction(updated);
+            expect(updated.data.email_subject).toBe('New subject');
+            expect(updated.data.email_lexical).toBe('{"root":{"children":[{"type":"paragraph"}]}}');
+        });
+
+        it('updates subject and lexical, preserving the rest of data', () => {
+            const detail = baseDetail([sendEmailAction('a', {email_sender_name: 'Jane'})], []);
+
+            const next = updateSendEmailAction({
+                detail,
+                actionId: 'a',
+                emailSubject: 'Just the subject',
+                emailLexical: '{"root":{"children":[{"type":"paragraph"}]}}'
+            });
+
+            const updated = next.actions[0];
+            expectSendEmailAction(updated);
+            expect(updated.data.email_subject).toBe('Just the subject');
+            expect(updated.data.email_lexical).toBe('{"root":{"children":[{"type":"paragraph"}]}}');
+            expect(updated.data.email_sender_name).toBe('Jane');
+            expect(updated.data.email_design_setting_id).toBe('placeholder');
+        });
+
+        it('does not mutate the original detail or action', () => {
+            const detail = baseDetail([sendEmailAction('a')], []);
+
+            updateSendEmailAction({detail, actionId: 'a', emailSubject: 'Changed', emailLexical: '{"root":{"children":[{"type":"paragraph"}]}}'});
+
+            const original = detail.actions[0];
+            expectSendEmailAction(original);
+            expect(original.data.email_subject).toBe('Original subject');
+        });
+
+        it('leaves other actions, edges, and top-level fields untouched', () => {
+            const detail = baseDetail(
+                [sendEmailAction('a'), {id: 'b', type: 'wait', data: {wait_hours: 24}}],
+                [{source_action_id: 'a', target_action_id: 'b'}]
+            );
+
+            const next = updateSendEmailAction({detail, actionId: 'a', emailSubject: 'New', emailLexical: '{"root":{"children":[]}}'});
+
+            expect(next.actions[1]).toBe(detail.actions[1]);
+            expect(next.edges).toEqual(detail.edges);
+            expect(next.id).toBe(detail.id);
+            expect(next.slug).toBe(detail.slug);
+            expect(next.status).toBe(detail.status);
+        });
+
+        it('throws when actionId references a non-existent action', () => {
+            const detail = baseDetail([sendEmailAction('a')], []);
+
+            expect(() => updateSendEmailAction({detail, actionId: 'nope', emailSubject: 'x', emailLexical: '{"root":{"children":[]}}'})).toThrow(/unknown action id "nope"/);
+        });
+
+        it('throws when the targeted action is not a send_email action', () => {
+            const detail = baseDetail([{id: 'a', type: 'wait', data: {wait_hours: 24}}], []);
+
+            expect(() => updateSendEmailAction({detail, actionId: 'a', emailSubject: 'x', emailLexical: '{"root":{"children":[]}}'})).toThrow(/is not a send_email action/);
         });
     });
 });
