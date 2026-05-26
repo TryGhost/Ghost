@@ -4,7 +4,7 @@ const {oneAtATime} = require('../../../shared/one-at-a-time');
 const logging = require('@tryghost/logging');
 const {getSignedAdminToken} = require('../../adapters/scheduling/utils');
 const StartAutomationsPollEvent = require('./events/start-automations-poll-event');
-const {poll} = require('./poll');
+const {welcomeEmailAutomationPoll} = require('./welcome-email-automation-poll');
 const memberWelcomeEmailService = require('../member-welcome-emails/service');
 /** @import DomainEvents from '@tryghost/domain-events' */
 
@@ -59,7 +59,7 @@ class AutomationsService {
             }
         };
 
-        domainEvents.subscribe(StartAutomationsPollEvent, oneAtATime(async () => poll({
+        domainEvents.subscribe(StartAutomationsPollEvent, oneAtATime(async () => welcomeEmailAutomationPoll({
             memberWelcomeEmailService,
             enqueueAnotherPollAt: enqueuePollAt
         })));
