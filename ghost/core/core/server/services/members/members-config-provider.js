@@ -1,5 +1,6 @@
 const logging = require('@tryghost/logging');
 const createKeypair = require('keypair');
+const {RSA_KEY_BITS_FOR_RS512} = require('../../lib/rsa-key-utils');
 
 class MembersConfigProvider {
     /**
@@ -53,8 +54,8 @@ class MembersConfigProvider {
         let publicKey = this._settingsCache.get('members_public_key');
 
         if (!privateKey || !publicKey) {
-            logging.warn('Could not find members_private_key, using dynamically generated keypair');
-            const keypair = createKeypair({bits: 1024});
+            logging.warn('Could not find members_private_key or members_public_key, generating a temporary keypair');
+            const keypair = createKeypair({bits: RSA_KEY_BITS_FOR_RS512});
             privateKey = keypair.private;
             publicKey = keypair.public;
         }

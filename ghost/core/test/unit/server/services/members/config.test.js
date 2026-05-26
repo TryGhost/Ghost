@@ -1,7 +1,9 @@
 const assert = require('node:assert/strict');
+const crypto = require('crypto');
 const sinon = require('sinon');
 
 const MembersConfigProvider = require('../../../../../core/server/services/members/members-config-provider');
+const {RSA_KEY_BITS_FOR_RS512} = require('../../../../../core/server/lib/rsa-key-utils');
 
 const urlUtils = require('../../../../utils/url-utils');
 const configUtils = require('../../../../utils/config-utils');
@@ -11,7 +13,7 @@ const configUtils = require('../../../../utils/config-utils');
  * @param {boolean} options.setDirect - Whether the "direct" keys should be set
  * @param {boolean} options.setConnect - Whether the connect_integration keys should be set
  */
-function createSettingsMock({setDirect, setConnect}) {
+function createSettingsMock({setDirect, setConnect, setMemberKeys = true}) {
     const getStub = sinon.stub();
 
     getStub.withArgs('members_signup_access').returns('all');
@@ -35,8 +37,8 @@ function createSettingsMock({setDirect, setConnect}) {
     getStub.withArgs('stripe_connect_display_name').returns('Test');
     getStub.withArgs('stripe_connect_account_id').returns('ac_XXXXXXXXXXXXX');
 
-    getStub.withArgs('members_private_key').returns('PRIVATE');
-    getStub.withArgs('members_public_key').returns('PUBLIC');
+    getStub.withArgs('members_private_key').returns(setMemberKeys ? 'PRIVATE' : null);
+    getStub.withArgs('members_public_key').returns(setMemberKeys ? 'PUBLIC' : null);
 
     return {
         get: getStub
@@ -71,6 +73,23 @@ describe('Members - config', function () {
         assert.equal(issuer, 'http://domain.tld/subdir/members/api');
         assert.equal(publicKey, 'PUBLIC');
         assert.equal(privateKey, 'PRIVATE');
+    });
+
+    it('generates 2048-bit fallback keys when member keys are missing', function () {
+        const fallbackConfig = new MembersConfigProvider({
+            config: configUtils.config,
+            settingsCache: createSettingsMock({setDirect: true, setConnect: false, setMemberKeys: false}),
+            urlUtils: urlUtils.stubUrlUtilsFromConfig()
+        });
+
+        const {publicKey} = fallbackConfig.getTokenConfig();
+        const publicKeyObj = crypto.createPublicKey({
+            key: publicKey,
+            format: 'pem'
+        });
+
+        assert.ok(publicKeyObj.asymmetricKeyDetails);
+        assert.equal(publicKeyObj.asymmetricKeyDetails.modulusLength, RSA_KEY_BITS_FOR_RS512);
     });
 
     it('can get correct signinUrl', function () {

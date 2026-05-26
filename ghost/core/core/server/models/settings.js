@@ -9,6 +9,7 @@ const validator = require('@tryghost/validator');
 const urlUtils = require('../../shared/url-utils');
 const {WRITABLE_KEYS_ALLOWLIST} = require('../../shared/labs');
 const {getOrGenerateSiteUuid} = require('../services/settings/settings-utils');
+const {RSA_KEY_BITS_FOR_RS512} = require('../lib/rsa-key-utils');
 
 const messages = {
     valueCannotBeBlank: 'Value in [settings.key] cannot be blank.',
@@ -26,7 +27,7 @@ const getMembersKey = doBlock(() => {
     let UNO_KEYPAIRINO;
     return function getKey(type) {
         if (!UNO_KEYPAIRINO) {
-            UNO_KEYPAIRINO = keypair({bits: 1024});
+            UNO_KEYPAIRINO = keypair({bits: RSA_KEY_BITS_FOR_RS512});
         }
         return UNO_KEYPAIRINO[type];
     };
@@ -36,7 +37,7 @@ const getGhostKey = doBlock(() => {
     let UNO_KEYPAIRINO;
     return function getKey(type) {
         if (!UNO_KEYPAIRINO) {
-            UNO_KEYPAIRINO = keypair({bits: 1024});
+            UNO_KEYPAIRINO = keypair({bits: RSA_KEY_BITS_FOR_RS512});
         }
         return UNO_KEYPAIRINO[type];
     };
