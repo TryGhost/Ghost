@@ -27,7 +27,6 @@ export type Comment = {
     votePending?: boolean,
     count: {
         replies: number,
-        total_replies?: number,
         likes: number
     },
     member: Member | null,
