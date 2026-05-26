@@ -122,6 +122,11 @@ jobs:
             tinybird-datafiles:
               - 'ghost/core/core/server/data/tinybird/**'
               - '!ghost/core/core/server/data/tinybird/**/*.md'
+            unit-test-globals:
+              - 'vitest.config.mjs'
+            core-unit-test-globals:
+              - 'ghost/core/vitest.config.ts'
+              - 'ghost/core/test/utils/vitest-*.ts'
             any-code:
               - '!**/*.md'
               - '!.devcontainer/**'
@@ -172,6 +177,16 @@ jobs:
           AFFECTED_PROJECTS_STR=$(pnpm -s nx show projects ${AFFECTED_ARG} --sep=, | tr -d '\n')
           echo "affected_projects_str=$AFFECTED_PROJECTS_STR" >> "$GITHUB_OUTPUT"
 
+          UNIT_TEST_AFFECTED_ARG="$AFFECTED_ARG"
+          if [[ "${{ steps.changed.outputs.unit-test-globals }}" == 'true' ]]; then
+            UNIT_TEST_AFFECTED_ARG=""
+          fi
+          UNIT_TEST_PROJECTS_STR=$(pnpm -s nx show projects ${UNIT_TEST_AFFECTED_ARG} --withTarget test:unit --sep=, | tr -d '\n')
+          if [[ "${{ steps.changed.outputs.core-unit-test-globals }}" == 'true' ]]; then
+            UNIT_TEST_PROJECTS_STR=$(printf '%s\n%s\n' "$UNIT_TEST_PROJECTS_STR" "ghost" | awk 'NF && !seen[$0]++' | paste -sd, -)
+          fi
+          echo "unit_test_projects_str=$UNIT_TEST_PROJECTS_STR" >> "$GITHUB_OUTPUT"
+
           # "i18n" tag = packages whose source is scanned by @tryghost/i18n's
           # translate:* scripts (not packages that merely import @tryghost/i18n).
           I18N_PROJECTS=$(pnpm -s nx show projects ${AFFECTED_ARG} --projects 'tag:i18n' --sep=, | tr -d '\n')
@@ -186,6 +201,7 @@ jobs:
     outputs:
       affected_projects: ${{ steps.affected.outputs.affected_projects }}
       affected_projects_str: ${{ steps.affected.outputs.affected_projects_str }}
+      unit_test_projects_str: ${{ steps.affected.outputs.unit_test_projects_str }}
       affected_playwright_projects: ${{ steps.affected.outputs.affected_playwright_projects }}
       changed_i18n_apps: ${{ steps.affected.outputs.affected_i18n_projects != '' }}
       changed_core: ${{ steps.changed.outputs.core }}
@@ -279,7 +295,7 @@ jobs:
           NX_BASE: ${{ needs.job_setup.outputs.nx_base }}
           NX_HEAD: ${{ env.HEAD_COMMIT }}
 
-      - uses: tryghost/actions/actions/slack-build@598d6328d89dbd796aa02ae2ea66308f9d942224 # main
+      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -343,7 +359,7 @@ jobs:
           name: admin-coverage
           path: ghost/*/coverage/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@598d6328d89dbd796aa02ae2ea66308f9d942224 # main
+      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -353,7 +369,7 @@ jobs:
   job_unit-tests:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.affected_projects_str != ''
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.unit_test_projects_str != ''
     strategy:
       matrix:
         node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
@@ -385,7 +401,22 @@ jobs:
       - name: Run unit tests
         # ghost/core's unit tests run on vitest (see ghost/core/vitest.config.ts);
         # other packages run their own test:unit target.
-        run: pnpm nx run-many -t test:unit -p "${{ needs.job_setup.outputs.affected_projects_str }}"
+        #
+        # Retried up to 3 attempts: ghost/core's vitest run intermittently
+        # crashes a worker on loaded CI runners — an abnormal process exit,
+        # not a reported test failure. nx caches the projects that already
+        # passed, so a retry only re-runs the crashed one. Interim stopgap
+        # until the vitest worker/teardown issue is fixed.
+        run: |
+          for attempt in 1 2 3; do
+            pnpm nx run-many -t test:unit -p "${{ needs.job_setup.outputs.unit_test_projects_str }}" && exit 0
+            if [ "${attempt}" -lt 3 ]; then
+              echo "::warning::Unit tests attempt ${attempt} failed — retrying"
+            else
+              echo "::error::Unit tests failed after ${attempt} attempts — no more retries"
+            fi
+          done
+          exit 1
         env:
           FORCE_COLOR: 0
           NX_SKIP_LOG_GROUPING: true
@@ -400,7 +431,7 @@ jobs:
             exit 1
           fi
 
-      - uses: tryghost/actions/actions/slack-build@598d6328d89dbd796aa02ae2ea66308f9d942224 # main
+      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -528,7 +559,7 @@ jobs:
             ghost/*/coverage-e2e/cobertura-coverage.xml
             ghost/*/coverage-integration/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@598d6328d89dbd796aa02ae2ea66308f9d942224 # main
+      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -614,7 +645,7 @@ jobs:
             exit 1
           fi
 
-      - uses: tryghost/actions/actions/slack-build@598d6328d89dbd796aa02ae2ea66308f9d942224 # main
+      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -667,7 +698,7 @@ jobs:
           path: apps/${{ steps.app_name.outputs.name }}/playwright-report
           retention-days: 30
 
-      - uses: tryghost/actions/actions/slack-build@598d6328d89dbd796aa02ae2ea66308f9d942224 # main
+      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -684,7 +715,7 @@ jobs:
           working-directory: ghost/core/core/server/data/tinybird
     services:
       tinybird:
-        image: tinybirdco/tinybird-local:latest@sha256:d7b1583e02f6c35c5b5b145f9a375817c093da137a04436e8e2a498418c8054b
+        image: tinybirdco/tinybird-local:latest@sha256:2f8317aceba18ce20dc4105b0b712b2701bb477a4d9a25477e2aa72bdf9d1423
         ports:
           - 7181:7181
     steps:
@@ -766,7 +797,7 @@ jobs:
         run: |
           [ -f ~/.ghost/logs/*.log ] && cat ~/.ghost/logs/*.log
 
-      - uses: tryghost/actions/actions/slack-build@598d6328d89dbd796aa02ae2ea66308f9d942224 # main
+      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -888,11 +919,11 @@ jobs:
         uses: ./.github/actions/setup-docker-registry-mirrors
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4
 
       - name: Log in to GitHub Container Registry
         if: steps.strategy.outputs.should-push == 'true'
-        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -900,7 +931,7 @@ jobs:
 
       - name: Docker meta (core)
         id: meta-core
-        uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf # v6
+        uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6
         with:
           images: ${{ steps.strategy.outputs.image-core-name }}
           tags: |
@@ -918,7 +949,7 @@ jobs:
 
       - name: Docker meta (full)
         id: meta-full
-        uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf # v6
+        uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6
         with:
           images: ${{ steps.strategy.outputs.image-full-name }}
           tags: |
@@ -935,7 +966,9 @@ jobs:
             org.opencontainers.image.vendor=TryGhost
 
       - name: Build & push core image
-        uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7
+        env:
+          BUILDKIT_PROGRESS: plain
         with:
           context: /tmp/ghost-production
           file: Dockerfile.production
@@ -951,7 +984,9 @@ jobs:
           cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', steps.strategy.outputs.image-core-name, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
 
       - name: Build & push full image
-        uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7
+        env:
+          BUILDKIT_PROGRESS: plain
         with:
           context: /tmp/ghost-production
           file: Dockerfile.production
@@ -960,13 +995,14 @@ jobs:
             NODE_VERSION=${{ env.NODE_VERSION }}
             GHOST_BUILD_VERSION=${{ env.GHOST_BUILD_VERSION }}
           push: ${{ steps.strategy.outputs.should-push }}
-          load: true
+          load: ${{ steps.strategy.outputs.should-push == 'false' }}
           tags: ${{ steps.meta-full.outputs.tags }}
           labels: ${{ steps.meta-full.outputs.labels }}
           cache-from: type=registry,ref=${{ steps.strategy.outputs.image-full-name }}:cache-main
           cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', steps.strategy.outputs.image-full-name, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
 
       - name: Save full image as artifact
+        if: steps.strategy.outputs.use-artifact == 'true'
         run: |
           IMAGE_TAG=$(echo "${{ steps.meta-full.outputs.tags }}" | head -n1)
           echo "Saving image: $IMAGE_TAG"
@@ -975,6 +1011,7 @@ jobs:
           ls -lh docker-image-production.tar.gz
 
       - name: Upload image artifact
+        if: steps.strategy.outputs.use-artifact == 'true'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: docker-image-production
@@ -982,6 +1019,7 @@ jobs:
           retention-days: 1
 
       - name: Inspect image size and layers
+        if: steps.strategy.outputs.use-artifact == 'true'
         shell: bash
         run: |
           IMAGE_TAG=$(echo "${{ steps.meta-full.outputs.tags }}" | head -n1)
@@ -1103,7 +1141,7 @@ jobs:
         uses: ./.github/actions/setup-docker-registry-mirrors
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4
         with:
           # Fork/cross-repo PRs use artifact transfer (no GHCR push). The default
           # docker-container driver runs in an isolated BuildKit container that
@@ -1133,7 +1171,7 @@ jobs:
 
       - name: Log in to GitHub Container Registry
         if: steps.strategy.outputs.should-push == 'true'
-        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -1141,7 +1179,7 @@ jobs:
 
       - name: Docker meta (e2e)
         id: meta-e2e
-        uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf # v6
+        uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6
         with:
           images: ${{ needs.job_build_artifacts.outputs.image-e2e-name }}
           tags: |
@@ -1155,7 +1193,7 @@ jobs:
             org.opencontainers.image.vendor=TryGhost
 
       - name: Build & push E2E image
-        uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7
         with:
           context: .
           file: e2e/Dockerfile.e2e
@@ -1203,42 +1241,52 @@ jobs:
             projects: main
             analytics: 'false'
             shardIndex: 1
-            shardTotal: 8
+            shardTotal: 10
           - projectName: Main
             projects: main
             analytics: 'false'
             shardIndex: 2
-            shardTotal: 8
+            shardTotal: 10
           - projectName: Main
             projects: main
             analytics: 'false'
             shardIndex: 3
-            shardTotal: 8
+            shardTotal: 10
           - projectName: Main
             projects: main
             analytics: 'false'
             shardIndex: 4
-            shardTotal: 8
+            shardTotal: 10
           - projectName: Main
             projects: main
             analytics: 'false'
             shardIndex: 5
-            shardTotal: 8
+            shardTotal: 10
           - projectName: Main
             projects: main
             analytics: 'false'
             shardIndex: 6
-            shardTotal: 8
+            shardTotal: 10
           - projectName: Main
             projects: main
             analytics: 'false'
             shardIndex: 7
-            shardTotal: 8
+            shardTotal: 10
           - projectName: Main
             projects: main
             analytics: 'false'
             shardIndex: 8
-            shardTotal: 8
+            shardTotal: 10
+          - projectName: Main
+            projects: main
+            analytics: 'false'
+            shardIndex: 9
+            shardTotal: 10
+          - projectName: Main
+            projects: main
+            analytics: 'false'
+            shardIndex: 10
+            shardTotal: 10
           - projectName: Analytics
             projects: analytics
             analytics: 'true'
@@ -1257,7 +1305,7 @@ jobs:
         uses: ./.github/actions/setup-docker-registry-mirrors
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4
 
       - name: Pull or build Tinybird CLI Image
         if: matrix.analytics == 'true'
@@ -1332,7 +1380,7 @@ jobs:
           path: e2e/test-results
           retention-days: 7
 
-      - uses: tryghost/actions/actions/slack-build@598d6328d89dbd796aa02ae2ea66308f9d942224 # main
+      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1341,7 +1389,7 @@ jobs:
 
   job_merge_e2e_reports:
     name: Merge Reports
-    if: always()
+    if: always() && needs.job_e2e_tests.result == 'failure'
     needs: [job_e2e_tests, job_setup]
     runs-on: ubuntu-latest
     strategy:
@@ -1792,7 +1840,7 @@ jobs:
       - name: Publish to npm
         run: npm publish ghost-*.tgz --access public
 
-      - uses: tryghost/actions/actions/slack-build@598d6328d89dbd796aa02ae2ea66308f9d942224 # main
+      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
         if: failure()
         with:
           status: ${{ job.status }}

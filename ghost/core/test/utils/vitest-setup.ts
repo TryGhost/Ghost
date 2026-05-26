@@ -10,7 +10,6 @@
 // at the top level. Disable for this file only.
 /* eslint-disable ghost/mocha/no-top-level-hooks, ghost/mocha/no-sibling-hooks, ghost/mocha/handle-done-callback */
 
-import crypto from 'node:crypto';
 import chalk from 'chalk';
 import {beforeAll, beforeEach, afterEach, afterAll} from 'vitest';
 
@@ -24,71 +23,32 @@ require('tsx/cjs');
 process.env.NODE_ENV = process.env.NODE_ENV || 'testing';
 process.env.WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_SECRET';
 
-// Generate unique session values for database and port BEFORE loading
-// Ghost. This setup file runs once per test file (isolated environment),
-// so each file gets its own session — but values already set externally
-// (CI, user shell) are respected.
-const sessionId = crypto.randomBytes(4).toString('hex');
-const sqliteGenerated = !process.env.database__connection__filename;
-const mysqlGenerated = !process.env.database__connection__database;
-process.env.database__connection__filename =
-    process.env.database__connection__filename || `/tmp/ghost-test-${sessionId}.db`;
-process.env.database__connection__database =
-    process.env.database__connection__database || `ghost_testing_${sessionId}`;
-
-const canonicalTestPort = 2369;
-process.env.server__port =
-    process.env.server__port || String(2370 + Math.floor(Math.random() * 7630));
-process.env.url = process.env.url || `http://127.0.0.1:${process.env.server__port}`;
-const sessionPort = parseInt(process.env.server__port, 10);
-
-// Load Ghost's runtime overrides (nconf wiring, etc.) — must happen
-// after the env vars above are set.
+// Load Ghost's runtime overrides (nconf wiring, etc.). Ghost's testing
+// config (core/shared/config/env/config.testing.json) supplies url and
+// port 2369 by default, which matches the canonical port committed in
+// snapshots — no per-worker session overrides needed.
 require('../../core/server/overrides');
 
-const snapshotExports = require('@tryghost/express-test').snapshot;
-const {mochaHooks} = snapshotExports;
-
-// Monkey-patch the snapshot manager to normalize URLs before comparison.
-// When a random port is in use, response URLs contain the session port
-// but committed snapshots use the canonical port (2369). Without this,
-// every snapshot diff would contain a port mismatch.
-if (sessionPort !== canonicalTestPort && snapshotExports.snapshotManager) {
-    const snapshotManager = snapshotExports.snapshotManager;
-    const originalMatch = snapshotManager.match.bind(snapshotManager);
-    const portRegex = new RegExp(`127\\.0\\.0\\.1:${sessionPort}`, 'g');
-
-    const normalizePort = (obj: unknown): unknown => {
-        if (obj === null || obj === undefined) {
-            return obj;
-        }
-        if (typeof obj === 'string') {
-            return obj.replace(portRegex, `127.0.0.1:${canonicalTestPort}`);
-        }
-        if (typeof obj !== 'object') {
-            return obj;
-        }
-        if (Array.isArray(obj)) {
-            return obj.map(normalizePort);
-        }
-        const proto = Object.getPrototypeOf(obj);
-        if (proto !== Object.prototype && proto !== null) {
-            return obj;
-        }
-        const result: Record<string, unknown> = {};
-        for (const key of Object.keys(obj as Record<string, unknown>)) {
-            result[key] = normalizePort((obj as Record<string, unknown>)[key]);
-        }
-        return result;
+// @tryghost/express-test's snapshot bridge is pulled in lazily — requiring it
+// is ~170ms per worker and only the hooks below ever read it. The mock-manager
+// just below uses the same shape.
+type SnapshotExports = {
+    snapshotManager?: {
+        setCurrentTest: (_info: {testPath?: string; testTitle: string}) => void;
     };
-
-    snapshotManager.match = function (received: unknown, properties: unknown, hint: unknown) {
-        const normalized = JSON.parse(
-            JSON.stringify(received).replace(portRegex, `127.0.0.1:${canonicalTestPort}`)
-        );
-        return originalMatch(normalized, normalizePort(properties), hint);
+    mochaHooks?: {
+        beforeAll?: () => Promise<void>;
+        afterEach?: () => Promise<void>;
+        afterAll?: () => Promise<void>;
     };
-}
+};
+let snapshotExports: SnapshotExports | undefined;
+const getSnapshotExports = (): SnapshotExports => {
+    if (!snapshotExports) {
+        snapshotExports = require('@tryghost/express-test').snapshot;
+    }
+    return snapshotExports!;
+};
 
 // e2e-framework-mock-manager is pulled in lazily — it boots a fair
 // amount of Ghost-side machinery, which unit tests in the spike subtree
@@ -105,6 +65,7 @@ const getMockManager = () => {
 // globals. The hooks are plain async functions so they translate
 // directly. Order matches overrides.js for parity.
 beforeAll(async () => {
+    const {mochaHooks} = getSnapshotExports();
     if (mochaHooks?.beforeAll) {
         await mochaHooks.beforeAll();
     }
@@ -117,7 +78,7 @@ beforeAll(async () => {
 // mocha's `fullTitle()` (describe names + test name joined by spaces) or
 // committed .snap keys won't resolve.
 beforeEach((context: {task: {name: string; suite?: unknown; file?: {filepath?: string}}}) => {
-    const snapshotManager = snapshotExports.snapshotManager;
+    const {snapshotManager} = getSnapshotExports();
     if (!snapshotManager) {
         return;
     }
@@ -157,6 +118,7 @@ afterEach(async () => {
     clearTimeout(timeout);
 
     try {
+        const {mochaHooks} = getSnapshotExports();
         if (mochaHooks?.afterEach) {
             await mochaHooks.afterEach();
         }
@@ -169,44 +131,8 @@ afterEach(async () => {
 });
 
 afterAll(async () => {
+    const {mochaHooks} = getSnapshotExports();
     if (mochaHooks?.afterAll) {
         await mochaHooks.afterAll();
-    }
-
-    // Always destroy the knex pool before the worker is torn down.
-    // knex.destroy() drains in-flight queries first; without it, a
-    // fire-and-forget query left running by a test can have its sqlite3
-    // callback fire after the worker is gone — a FATAL napi crash under
-    // the threads pool, or a stuck event loop under forks.
-    try {
-        const db = require('../../core/server/data/db');
-        try {
-            if (process.env.NODE_ENV === 'testing-mysql' && mysqlGenerated) {
-                await db.knex.raw(
-                    `DROP DATABASE IF EXISTS \`${process.env.database__connection__database}\``
-                );
-            }
-        } finally {
-            // Destroy the pool even if the DROP above threw — a leaked pool
-            // is exactly what causes the FATAL crash / hang described above.
-            await db.knex.destroy();
-        }
-    } catch (err) {
-        // eslint-disable-next-line no-console
-        console.warn('Failed to clean up test database:', (err as Error).message);
-    }
-
-    if (process.env.NODE_ENV !== 'testing-mysql') {
-        try {
-            const fs = require('fs-extra');
-            if (sqliteGenerated) {
-                const dbFile = process.env.database__connection__filename;
-                await fs.remove(dbFile);
-                await fs.remove(`${dbFile}-orig`);
-                await fs.remove(`${dbFile}-journal`);
-            }
-        } catch {
-            // best effort
-        }
     }
 });

@@ -23,10 +23,11 @@ export type Comment = {
     status: string,
     pinned: boolean,
     liked: boolean,
+    disliked?: boolean,
+    votePending?: boolean,
     count: {
         replies: number,
-        total_replies?: number,
-        likes: number,
+        likes: number
     },
     member: Member | null,
     edited_at: string,
@@ -51,6 +52,10 @@ export type AddComment = {
 
 export type LabsContextType = {
     [key: string]: boolean | undefined
+}
+
+export type CapabilitiesContextType = {
+    dislikes?: boolean
 }
 
 export type CommentsOptions = {
@@ -84,6 +89,7 @@ export type EditableAppContext = {
     openCommentForms: OpenCommentForm[],
     popup: Page | null,
     labs: LabsContextType,
+    capabilities: CapabilitiesContextType,
     order: string,
     adminApi: AdminApi | null,
     commentsIsLoading?: boolean,

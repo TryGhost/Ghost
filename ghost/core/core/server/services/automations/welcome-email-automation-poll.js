@@ -264,13 +264,11 @@ async function processRun({
  *
  * @param {object} options
  * @param {MemberWelcomeEmailService} options.memberWelcomeEmailService
- * @param {() => unknown} options.enqueueAnotherPollNow
  * @param {(date: Readonly<Date>) => unknown} options.enqueueAnotherPollAt
  */
-async function poll(options) {
+async function welcomeEmailAutomationPoll(options) {
     const {
         memberWelcomeEmailService,
-        enqueueAnotherPollNow,
         enqueueAnotherPollAt
     } = options;
     const {runs, nextFutureReadyAt} = await fetchAndLockRuns();
@@ -290,10 +288,10 @@ async function poll(options) {
     // If the batch is full, we might have another batch to execute. (There's
     // no way to know without trying.)
     if (runs.length >= MAX_RUNS_PER_BATCH) {
-        enqueueAnotherPollNow();
+        enqueueAnotherPollAt(new Date());
     }
 }
 
 module.exports = {
-    poll
+    welcomeEmailAutomationPoll
 };

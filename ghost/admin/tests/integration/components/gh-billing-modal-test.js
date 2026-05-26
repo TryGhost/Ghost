@@ -102,6 +102,17 @@ describe('Integration: Component: gh-billing-modal', function () {
         expect(find('[data-test-billing-load-error-description] a')).to.have.attribute('href', 'mailto:support@ghost.org');
     });
 
+    it('keeps showing the loading state for hidden preload diagnostics', async function () {
+        billing.billingAppPreloadFailure = {
+            attemptId: 'preload-attempt'
+        };
+
+        await render(hbs`<GhBillingModal @billingWindowOpen={{true}} />`);
+
+        expect(find('[data-test-billing-loading]')).to.exist;
+        expect(find('[data-test-billing-load-error]')).to.not.exist;
+    });
+
     it('clears a reported error when the billing app sends a late message', async function () {
         billing.billingAppLoadFailureReported = true;
 

@@ -1,5 +1,7 @@
 const assert = require('node:assert/strict');
 const crypto = require('crypto');
+const express = require('express');
+const request = require('supertest');
 const sinon = require('sinon');
 
 const urlUtils = require('../../../../../core/shared/url-utils');
@@ -13,17 +15,9 @@ describe('Members Service Middleware', function () {
     describe('createSessionFromMagicLink', function () {
         let oldSSR;
         let oldProductModel;
-        let req;
-        let res;
-        let next;
+        let app;
 
         beforeEach(function () {
-            req = {};
-            res = {};
-            next = sinon.stub();
-
-            res.redirect = sinon.stub().returns('');
-
             // Stub the members Service, handle this in separate tests
             oldSSR = membersService.ssr;
             membersService.ssr = {
@@ -38,6 +32,12 @@ describe('Members Service Middleware', function () {
 
             sinon.stub(urlUtils, 'getSubdir').returns('/blah');
             sinon.stub(urlUtils, 'getSiteUrl').returns('https://site.com/blah');
+
+            app = express();
+            app.use(membersMiddleware.createSessionFromMagicLink);
+            app.use((_req, res) => {
+                res.sendStatus(204);
+            });
         });
 
         afterEach(function () {
@@ -47,21 +47,12 @@ describe('Members Service Middleware', function () {
         });
 
         it('calls next if url does not include a token', async function () {
-            req.url = '/members';
-            req.query = {};
-
-            // Call the middleware
-            await membersMiddleware.createSessionFromMagicLink(req, res, next);
-
-            // Check behavior
-            sinon.assert.calledOnce(next);
-            assert.deepEqual(next.firstCall.args, []);
+            await request(app)
+                .get('/members')
+                .expect(204);
         });
 
         it('redirects correctly on success', async function () {
-            req.url = '/members?token=test&action=signup';
-            req.query = {token: 'test', action: 'signup'};
-
             // Fake token handling success
             membersService.ssr.exchangeTokenForSession.resolves({
                 subscriptions: [{
@@ -72,62 +63,47 @@ describe('Members Service Middleware', function () {
                 }]
             });
 
-            // Call the middleware
-            await membersMiddleware.createSessionFromMagicLink(req, res, next);
-
-            // Check behavior
-            sinon.assert.notCalled(next);
-            sinon.assert.calledOnce(res.redirect);
-            assert.equal(res.redirect.firstCall.args[0], '/blah/?action=signup&success=true');
+            await request(app)
+                .get('/members')
+                .query({token: 'test', action: 'signup'})
+                .expect(302)
+                .expect('Location', '/blah/?action=signup&success=true');
         });
 
         it('redirects correctly on failure', async function () {
-            req.url = '/members?token=test&action=signup';
-            req.query = {token: 'test', action: 'signup'};
-
             // Fake token handling failure
             membersService.ssr.exchangeTokenForSession.rejects();
 
-            // Call the middleware
-            await membersMiddleware.createSessionFromMagicLink(req, res, next);
-
-            // Check behavior
-            sinon.assert.notCalled(next);
-            sinon.assert.calledOnce(res.redirect);
-            assert.equal(res.redirect.firstCall.args[0], '/blah/?action=signup&success=false');
+            await request(app)
+                .get('/members')
+                .query({token: 'test', action: 'signup'})
+                .expect(302)
+                .expect('Location', '/blah/?action=signup&success=false');
         });
 
         it('appends errorCode to the redirect when the rejection has a string code', async function () {
-            req.url = '/members?token=test&action=subscribe';
-            req.query = {token: 'test', action: 'subscribe'};
-
             const err = new Error('This gift has expired.');
             err.code = 'GIFT_EXPIRED';
             membersService.ssr.exchangeTokenForSession.rejects(err);
 
-            await membersMiddleware.createSessionFromMagicLink(req, res, next);
-
-            sinon.assert.notCalled(next);
-            sinon.assert.calledOnce(res.redirect);
-            assert.equal(res.redirect.firstCall.args[0], '/blah/?action=subscribe&errorCode=GIFT_EXPIRED&success=false');
+            await request(app)
+                .get('/members')
+                .query({token: 'test', action: 'subscribe'})
+                .expect(302)
+                .expect('Location', '/blah/?action=subscribe&errorCode=GIFT_EXPIRED&success=false');
         });
 
         it('does not append errorCode when the rejection has no code', async function () {
-            req.url = '/members?token=test&action=subscribe';
-            req.query = {token: 'test', action: 'subscribe'};
-
             membersService.ssr.exchangeTokenForSession.rejects(new Error('boom'));
 
-            await membersMiddleware.createSessionFromMagicLink(req, res, next);
-
-            sinon.assert.calledOnce(res.redirect);
-            assert.equal(res.redirect.firstCall.args[0], '/blah/?action=subscribe&success=false');
+            await request(app)
+                .get('/members')
+                .query({token: 'test', action: 'subscribe'})
+                .expect(302)
+                .expect('Location', '/blah/?action=subscribe&success=false');
         });
 
         it('redirects free member to custom redirect on signup', async function () {
-            req.url = '/members?token=test&action=signup';
-            req.query = {token: 'test', action: 'signup'};
-
             // Fake token handling failure
             membersService.ssr.exchangeTokenForSession.resolves({});
 
@@ -138,19 +114,14 @@ describe('Members Service Middleware', function () {
                 }
             });
 
-            // Call the middleware
-            await membersMiddleware.createSessionFromMagicLink(req, res, next);
-
-            // Check behavior
-            sinon.assert.notCalled(next);
-            sinon.assert.calledOnce(res.redirect);
-            assert.equal(res.redirect.firstCall.args[0], 'https://custom.com/redirect/');
+            await request(app)
+                .get('/members')
+                .query({token: 'test', action: 'signup'})
+                .expect(302)
+                .expect('Location', 'https://custom.com/redirect/');
         });
 
         it('redirects paid member to custom redirect on signup', async function () {
-            req.url = '/members?token=test&action=signup';
-            req.query = {token: 'test', action: 'signup'};
-
             // Fake token handling failure
             membersService.ssr.exchangeTokenForSession.resolves({
                 subscriptions: [{
@@ -161,78 +132,58 @@ describe('Members Service Middleware', function () {
                 }]
             });
 
-            // Call the middleware
-            await membersMiddleware.createSessionFromMagicLink(req, res, next);
-
-            // Check behavior
-            sinon.assert.notCalled(next);
-            sinon.assert.calledOnce(res.redirect);
-            assert.equal(res.redirect.firstCall.args[0], 'https://custom.com/paid/');
+            await request(app)
+                .get('/members')
+                .query({token: 'test', action: 'signup'})
+                .expect(302)
+                .expect('Location', 'https://custom.com/paid/');
         });
 
         it('redirects member to referrer param path on signin if it is on the site', async function () {
-            req.url = '/members?token=test&action=signin&r=https%3A%2F%2Fsite.com%2Fblah%2Fmy-post%2F';
-            req.query = {token: 'test', action: 'signin', r: 'https://site.com/blah/my-post/#comment-123'};
-
             // Fake token handling failure
             membersService.ssr.exchangeTokenForSession.resolves({});
 
-            // Call the middleware
-            await membersMiddleware.createSessionFromMagicLink(req, res, next);
-
-            // Check behavior
-            sinon.assert.notCalled(next);
-            sinon.assert.calledOnce(res.redirect);
-            assert.equal(res.redirect.firstCall.args[0], 'https://site.com/blah/my-post/?action=signin&success=true#comment-123');
+            await request(app)
+                .get('/members')
+                .query({token: 'test', action: 'signin', r: 'https://site.com/blah/my-post/#comment-123'})
+                .expect(302)
+                .expect('Location', 'https://site.com/blah/my-post/?action=signin&success=true#comment-123');
         });
 
         it('redirects member to referrer param path on signup if it is on the site', async function () {
-            req.url = '/members?token=test&action=signup&r=https%3A%2F%2Fsite.com%2Fblah%2Fmy-post%2F';
-            req.query = {token: 'test', action: 'signup', r: 'https://site.com/blah/my-post/#comment-123'};
-
             // Fake token handling failure
             membersService.ssr.exchangeTokenForSession.resolves({});
 
-            // Call the middleware
-            await membersMiddleware.createSessionFromMagicLink(req, res, next);
-
-            // Check behavior
-            sinon.assert.notCalled(next);
-            sinon.assert.calledOnce(res.redirect);
-            assert.equal(res.redirect.firstCall.args[0], 'https://site.com/blah/my-post/?action=signup&success=true#comment-123');
+            await request(app)
+                .get('/members')
+                .query({token: 'test', action: 'signup', r: 'https://site.com/blah/my-post/#comment-123'})
+                .expect(302)
+                .expect('Location', 'https://site.com/blah/my-post/?action=signup&success=true#comment-123');
         });
 
         it('redirects member to referrer param path on failure if it is on the site', async function () {
-            req.url = '/members?token=test&action=subscribe&r=https%3A%2F%2Fsite.com%2Fblah%2F';
-            req.query = {
-                token: 'test',
-                action: 'subscribe',
-                r: 'https://site.com/blah/#/portal/account?giftRedemption=true'
-            };
-
             membersService.ssr.exchangeTokenForSession.rejects();
 
-            await membersMiddleware.createSessionFromMagicLink(req, res, next);
-
-            sinon.assert.notCalled(next);
-            sinon.assert.calledOnce(res.redirect);
-            assert.equal(res.redirect.firstCall.args[0], 'https://site.com/blah/?action=subscribe&success=false#/portal/account?giftRedemption=true');
+            await request(app)
+                .get('/members')
+                .query({
+                    token: 'test',
+                    action: 'subscribe',
+                    r: 'https://site.com/blah/#/portal/account?giftRedemption=true'
+                })
+                .expect(302)
+                .expect('Location', 'https://site.com/blah/?action=subscribe&success=false#/portal/account?giftRedemption=true');
         });
 
         it('does not redirect to referrer param if it is external', async function () {
-            req.url = '/members?token=test&action=signin&r=https%3A%2F%2Fexternal.com%2Fwhatever%2F';
-            req.query = {token: 'test', action: 'signin', r: 'https://external.com/whatever/'};
-
             // Fake token handling failure
             membersService.ssr.exchangeTokenForSession.resolves({});
 
-            // Call the middleware
-            await membersMiddleware.createSessionFromMagicLink(req, res, next);
-
-            // Check behavior
-            sinon.assert.notCalled(next);
-            sinon.assert.calledOnce(res.redirect);
-            assert.equal(res.redirect.firstCall.args[0], '/blah/?action=signin&success=true');
+            await request(app)
+                .get('/members')
+                .query({token: 'test', action: 'signin', r: 'https://external.com/whatever/'})
+                .expect(302)
+                .expect('Location', '/blah/?action=signin&success=true');
         });
     });
 

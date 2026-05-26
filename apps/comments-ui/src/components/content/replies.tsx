@@ -10,7 +10,7 @@ export type RepliesProps = {
     useThreading?: boolean;
 };
 const Replies: React.FC<RepliesProps> = ({comment, useThreading = false}) => {
-    const {dispatchAction, commentIdToScrollTo} = useAppContext();
+    const {commentIdToScrollTo} = useAppContext();
     const initialReplyIds = useRef(new Set(comment.replies.map(reply => reply.id)));
 
     const [showAll, setShowAll] = useState(() => {
@@ -21,19 +21,10 @@ const Replies: React.FC<RepliesProps> = ({comment, useThreading = false}) => {
     const hasNewReplies = comment.replies.some(reply => !initialReplyIds.current.has(reply.id));
     const expanded = showAll || hasNewReplies;
 
-    // The API may return fewer replies than count.replies (e.g. old API with LIMIT 3).
-    // When that happens, "Show more" fetches the rest from the server first.
-    const serverHasMore = comment.count.replies > comment.replies.length;
     const visibleReplies = expanded ? comment.replies : comment.replies.slice(0, INITIAL_REPLIES_SHOWN);
-    const clientHiddenCount = comment.replies.length - visibleReplies.length;
-    const totalHiddenCount = serverHasMore
-        ? comment.count.replies - visibleReplies.length
-        : clientHiddenCount;
+    const hiddenRepliesCount = comment.replies.length - visibleReplies.length;
 
     const loadMore = () => {
-        if (serverHasMore) {
-            dispatchAction('loadMoreReplies', {comment, limit: 'all'});
-        }
         setShowAll(true);
     };
 
@@ -49,7 +40,7 @@ const Replies: React.FC<RepliesProps> = ({comment, useThreading = false}) => {
                     useThreading={useThreading}
                 />
             ))}
-            {totalHiddenCount > 0 && <RepliesPagination count={totalHiddenCount} loadMore={loadMore}/>}
+            {hiddenRepliesCount > 0 && <RepliesPagination count={hiddenRepliesCount} loadMore={loadMore}/>}
         </div>
     );
 };
