@@ -659,14 +659,19 @@ type AutomationCanvasProps = {
     onChange: (next: AutomationDetail) => void;
 };
 
+type SelectedStep = {
+    id: string;
+    isEditingEmail: boolean;
+};
+
 const insertActionByType = {
     wait: insertWaitAction,
     send_email: insertSendEmailAction
 };
 
 const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoading, isError, onChange}) => {
-    const [selectedStepId, setSelectedStepId] = useState<string | null>(null);
-    const [emailModalActionId, setEmailModalActionId] = useState<string | null>(null);
+    const [selectedStep, setSelectedStep] = useState<SelectedStep | null>(null);
+    const selectedStepId = selectedStep?.id ?? null;
 
     const handlePick = useCallback((type: StepPickerType, anchor: CanvasAnchor) => {
         if (!automation) {
@@ -686,7 +691,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
             return;
         }
         const next = removeAction({detail: automation, actionId});
-        setSelectedStepId(null);
+        setSelectedStep(null);
         onChange(next);
     }, [automation, onChange]);
 
@@ -701,15 +706,19 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
         if (!automation) {
             return;
         }
-        onChange(updateSendEmailAction({detail: automation, actionId, emailSubject: subject}));
+        const action = automation.actions.find((item): item is AutomationSendEmailAction => item.id === actionId && item.type === 'send_email');
+        if (!action) {
+            return;
+        }
+        onChange(updateSendEmailAction({detail: automation, actionId, emailSubject: subject, emailLexical: action.data.email_lexical}));
     }, [automation, onChange]);
 
-    const handleEditEmail = useCallback((actionId: string) => {
-        setEmailModalActionId(actionId);
-    }, []);
+    const handleEditEmail = (actionId: string) => {
+        setSelectedStep({id: actionId, isEditingEmail: true});
+    };
 
-    const emailModalAction = emailModalActionId && automation
-        ? automation.actions.find((action): action is AutomationSendEmailAction => action.id === emailModalActionId && action.type === 'send_email')
+    const emailModalAction = selectedStep?.isEditingEmail && automation
+        ? automation.actions.find((action): action is AutomationSendEmailAction => action.id === selectedStep.id && action.type === 'send_email')
         : undefined;
 
     const initialViewport = useRef(getInitialViewport(window.innerWidth));
@@ -722,7 +731,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
             automation,
             disabled: automation.actions.length >= MAX_AUTOMATION_ACTIONS,
             onPick: handlePick,
-            onSelectStep: setSelectedStepId,
+            onSelectStep: id => setSelectedStep({id, isEditingEmail: false}),
             selectedStepId
         });
     }, [automation, handlePick, selectedStepId]);
@@ -736,8 +745,15 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
         stepId: selectedStepId
     }) : null;
     const clearDetail = useCallback(() => {
-        setSelectedStepId(null);
+        setSelectedStep(null);
     }, []);
+
+    const closeEmailModal = () => {
+        if (!emailModalAction) {
+            return;
+        }
+        setSelectedStep({id: emailModalAction.id, isEditingEmail: false});
+    };
 
     if (isLoading) {
         return (
@@ -781,7 +797,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
                 panOnScroll
                 onNodeClick={(_, node) => {
                     if (node.id !== TAIL_CANVAS_ID) {
-                        setSelectedStepId(node.id);
+                        setSelectedStep({id: node.id, isEditingEmail: false});
                     }
                 }}
                 onPaneClick={clearDetail}
@@ -791,13 +807,12 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
             <StepSidebar detail={sidebarDetail} onClose={clearDetail} />
             {emailModalAction && automation && (
                 <EmailContentModal
-                    initialLexical={emailModalAction.data.email_lexical || ''}
-                    initialSubject={emailModalAction.data.email_subject || ''}
-                    onClose={() => setEmailModalActionId(null)}
+                    initialLexical={emailModalAction.data.email_lexical}
+                    initialSubject={emailModalAction.data.email_subject}
+                    onClose={closeEmailModal}
                     onSave={({subject, lexical}) => {
-                        // Commit the edited content into the local draft; persisted on Publish.
                         onChange(updateSendEmailAction({detail: automation, actionId: emailModalAction.id, emailSubject: subject, emailLexical: lexical}));
-                        setEmailModalActionId(null);
+                        setSelectedStep({id: emailModalAction.id, isEditingEmail: false});
                     }}
                 />
             )}

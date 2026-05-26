@@ -398,15 +398,20 @@ describe('automations api helpers', () => {
             expect(updated.data.email_lexical).toBe('{"root":{"children":[{"type":"paragraph"}]}}');
         });
 
-        it('only updates the provided fields, preserving the rest of data', () => {
+        it('updates subject and lexical, preserving the rest of data', () => {
             const detail = baseDetail([sendEmailAction('a', {email_sender_name: 'Jane'})], []);
 
-            const next = updateSendEmailAction({detail, actionId: 'a', emailSubject: 'Just the subject'});
+            const next = updateSendEmailAction({
+                detail,
+                actionId: 'a',
+                emailSubject: 'Just the subject',
+                emailLexical: '{"root":{"children":[{"type":"paragraph"}]}}'
+            });
 
             const updated = next.actions[0];
             expectSendEmailAction(updated);
             expect(updated.data.email_subject).toBe('Just the subject');
-            expect(updated.data.email_lexical).toBe('{"root":{"children":[]}}');
+            expect(updated.data.email_lexical).toBe('{"root":{"children":[{"type":"paragraph"}]}}');
             expect(updated.data.email_sender_name).toBe('Jane');
             expect(updated.data.email_design_setting_id).toBe('placeholder');
         });
@@ -414,7 +419,7 @@ describe('automations api helpers', () => {
         it('does not mutate the original detail or action', () => {
             const detail = baseDetail([sendEmailAction('a')], []);
 
-            updateSendEmailAction({detail, actionId: 'a', emailSubject: 'Changed'});
+            updateSendEmailAction({detail, actionId: 'a', emailSubject: 'Changed', emailLexical: '{"root":{"children":[{"type":"paragraph"}]}}'});
 
             const original = detail.actions[0];
             expectSendEmailAction(original);
@@ -427,7 +432,7 @@ describe('automations api helpers', () => {
                 [{source_action_id: 'a', target_action_id: 'b'}]
             );
 
-            const next = updateSendEmailAction({detail, actionId: 'a', emailSubject: 'New'});
+            const next = updateSendEmailAction({detail, actionId: 'a', emailSubject: 'New', emailLexical: '{"root":{"children":[]}}'});
 
             expect(next.actions[1]).toBe(detail.actions[1]);
             expect(next.edges).toEqual(detail.edges);
@@ -439,13 +444,13 @@ describe('automations api helpers', () => {
         it('throws when actionId references a non-existent action', () => {
             const detail = baseDetail([sendEmailAction('a')], []);
 
-            expect(() => updateSendEmailAction({detail, actionId: 'nope', emailSubject: 'x'})).toThrow(/unknown action id "nope"/);
+            expect(() => updateSendEmailAction({detail, actionId: 'nope', emailSubject: 'x', emailLexical: '{"root":{"children":[]}}'})).toThrow(/unknown action id "nope"/);
         });
 
         it('throws when the targeted action is not a send_email action', () => {
             const detail = baseDetail([{id: 'a', type: 'wait', data: {wait_hours: 24}}], []);
 
-            expect(() => updateSendEmailAction({detail, actionId: 'a', emailSubject: 'x'})).toThrow(/is not a send_email action/);
+            expect(() => updateSendEmailAction({detail, actionId: 'a', emailSubject: 'x', emailLexical: '{"root":{"children":[]}}'})).toThrow(/is not a send_email action/);
         });
     });
 });

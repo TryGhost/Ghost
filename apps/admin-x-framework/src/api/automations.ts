@@ -206,8 +206,8 @@ type UpdateWaitActionArgs = ReadonlyDeep<{
 type UpdateSendEmailActionArgs = ReadonlyDeep<{
     detail: AutomationDetail;
     actionId: string;
-    emailSubject?: string;
-    emailLexical?: string;
+    emailSubject: string;
+    emailLexical: string;
 }>;
 
 export const updateWaitAction = ({detail, actionId, waitHours}: UpdateWaitActionArgs): AutomationDetail => {
@@ -241,22 +241,29 @@ export const updateWaitAction = ({detail, actionId, waitHours}: UpdateWaitAction
 };
 
 export const updateSendEmailAction = ({detail, actionId, emailSubject, emailLexical}: UpdateSendEmailActionArgs): AutomationDetail => {
-    const target = detail.actions.find(action => action.id === actionId);
-    if (!target) {
+    let hasUpdated = false;
+    const actions = detail.actions.map((action) => {
+        if (action.id === actionId) {
+            if (action.type !== 'send_email') {
+                throw new Error(`updateSendEmailAction: action "${actionId}" is not a send_email action`);
+            }
+            hasUpdated = true;
+            return {
+                ...action,
+                data: {
+                    ...action.data,
+                    email_subject: emailSubject,
+                    email_lexical: emailLexical
+                }
+            };
+        }
+        return action;
+    });
+
+    if (!hasUpdated) {
         throw new Error(`updateSendEmailAction: unknown action id "${actionId}"`);
     }
-    if (target.type !== 'send_email') {
-        throw new Error(`updateSendEmailAction: action "${actionId}" is not a send_email action`);
-    }
-    const updated: AutomationSendEmailAction = {
-        ...target,
-        data: {
-            ...target.data,
-            ...(emailSubject !== undefined ? {email_subject: emailSubject} : {}),
-            ...(emailLexical !== undefined ? {email_lexical: emailLexical} : {})
-        }
-    };
-    const actions = detail.actions.map(action => (action.id === actionId ? updated : action));
+
     return {...detail, actions, edges: [...detail.edges]};
 };
 

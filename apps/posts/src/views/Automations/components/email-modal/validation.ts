@@ -3,6 +3,9 @@ export type EmailDraft = {
     lexical: string;
 };
 
+/**
+ * Lexical data is considered empty if it has no children or only has an empty paragraph.
+ */
 const isEmptyLexical = (lexical: string | null | undefined): boolean => {
     if (!lexical) {
         return true;
@@ -12,7 +15,6 @@ const isEmptyLexical = (lexical: string | null | undefined): boolean => {
         const parsed = JSON.parse(lexical);
         const children = parsed?.root?.children;
 
-        // Empty if no children or only an empty paragraph
         if (!children || children.length === 0) {
             return true;
         }

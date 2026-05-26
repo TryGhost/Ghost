@@ -9,7 +9,7 @@ export const useEmailLinkSuggestions = () => {
     const {data: settingsData} = useBrowseSettings();
     const {data: siteData} = useBrowseSite();
     const settings = settingsData?.settings || [];
-    const siteUrl = (siteData?.site?.url as string) || '';
+    const siteUrl = siteData?.site?.url || '';
     const [
         membersSignupAccess = 'all',
         donationsEnabled = false,
