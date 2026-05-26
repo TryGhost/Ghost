@@ -225,7 +225,7 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     flex-shrink: 0;
     height: 32px;
     color: var(--darkgrey);
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     font-weight: 600;
     line-height: 32px;
     background: none;
