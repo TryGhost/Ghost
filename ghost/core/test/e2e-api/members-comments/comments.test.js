@@ -86,7 +86,21 @@ const dbFns = {
     addLike: async (data) => {
         return await models.CommentLike.add({
             comment_id: data.comment_id,
-            member_id: data.member_id
+            member_id: data.member_id,
+            score: data.score ?? 1
+        });
+    },
+    /**
+     * @param {Object} data
+     * @param {string} data.comment_id
+     * @param {string} data.member_id
+     * @returns {Promise<any>}
+     */
+    addDislike: async (data) => {
+        return await models.CommentLike.add({
+            comment_id: data.comment_id,
+            member_id: data.member_id,
+            score: -1
         });
     },
     /**
@@ -406,6 +420,16 @@ describe('Comments API', function () {
                 ]);
             });
 
+            it('advertises dislike support on comment list responses', async function () {
+                const {body} = await membersAgent
+                    .get(`/api/comments/post/${postId}/`)
+                    .expectStatus(200);
+
+                assert.deepEqual(body.meta.capabilities, {
+                    dislikes: true
+                });
+            });
+
             it('excludes hidden comments', async function () {
                 const hiddenComment = await dbFns.addComment({
                     post_id: postId,
@@ -569,6 +593,26 @@ describe('Comments API', function () {
                 });
 
                 await testBasicErrorResponse('delete', `/api/comments/${comment.get('id')}/like/`, 401);
+            });
+
+            it('cannot dislike a comment', async function () {
+                const comment = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 2).id
+                });
+
+                await testBasicErrorResponse('post', `/api/comments/${comment.get('id')}/dislike/`, 401);
+            });
+
+            it('cannot undislike a comment', async function () {
+                const comment = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 2).id
+                });
+                await dbFns.addDislike({
+                    comment_id: comment.get('id'),
+                    member_id: fixtureManager.get('members', 0).id
+                });
+
+                await testBasicErrorResponse('delete', `/api/comments/${comment.get('id')}/dislike/`, 401);
             });
         });
 
@@ -1222,6 +1266,88 @@ describe('Comments API', function () {
                         assert.equal(body.comments[0].liked, true);
                         assert.equal(body.comments[0].count.likes, 1);
                     });
+            });
+
+            it('Can dislike a comment without exposing public dislike counts', async function () {
+                const comment = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 2).id
+                });
+
+                await membersAgent
+                    .post(`/api/comments/${comment.get('id')}/dislike/`)
+                    .expectStatus(204)
+                    .matchHeaderSnapshot({
+                        etag: anyEtag
+                    })
+                    .expectEmptyBody();
+
+                await testGetComments(`/api/comments/${comment.get('id')}/`, [commentMatcher])
+                    .expect(({body}) => {
+                        assert.equal(body.comments[0].disliked, true);
+                        assert.equal(Object.prototype.hasOwnProperty.call(body.comments[0].count, 'dislikes'), false);
+                    });
+            });
+
+            it('Can remove a dislike', async function () {
+                const comment = await dbFns.addComment({
+                    member_id: loggedInMember.id
+                });
+                await dbFns.addDislike({
+                    comment_id: comment.get('id'),
+                    member_id: loggedInMember.id
+                });
+
+                await testBasicEmptyResponse('delete', `/api/comments/${comment.get('id')}/dislike/`, 204);
+
+                await testGetComments(`/api/comments/${comment.get('id')}/`, [commentMatcher])
+                    .expect(({body}) => {
+                        assert.equal(body.comments[0].disliked, false);
+                        assert.equal(Object.prototype.hasOwnProperty.call(body.comments[0].count, 'dislikes'), false);
+                    });
+            });
+
+            it('can order by net score without exposing the net score', async function () {
+                const bestComment = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 0).id,
+                    html: '<p>Best comment</p>'
+                });
+                const likedComment = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 1).id,
+                    html: '<p>Liked comment</p>'
+                });
+                const dislikedComment = await dbFns.addComment({
+                    member_id: fixtureManager.get('members', 2).id,
+                    html: '<p>Disliked comment</p>'
+                });
+
+                await dbFns.addLike({
+                    comment_id: bestComment.get('id'),
+                    member_id: fixtureManager.get('members', 0).id
+                });
+                await dbFns.addLike({
+                    comment_id: bestComment.get('id'),
+                    member_id: fixtureManager.get('members', 1).id
+                });
+                await dbFns.addLike({
+                    comment_id: likedComment.get('id'),
+                    member_id: fixtureManager.get('members', 0).id
+                });
+                await dbFns.addDislike({
+                    comment_id: dislikedComment.get('id'),
+                    member_id: fixtureManager.get('members', 0).id
+                });
+
+                const {body} = await membersAgent
+                    .get(`/api/comments/post/${postId}/?order=${encodeURIComponent('count__net_score desc, created_at desc')}`)
+                    .expectStatus(200);
+
+                assert.deepEqual(body.comments.map(comment => comment.id), [
+                    bestComment.get('id'),
+                    likedComment.get('id'),
+                    dislikedComment.get('id')
+                ]);
+                assert.equal(Object.prototype.hasOwnProperty.call(body.comments[0].count, 'dislikes'), false);
+                assert.equal(Object.prototype.hasOwnProperty.call(body.comments[0].count, 'net_score'), false);
             });
 
             it('Cannot like a comment multiple times', async function () {
