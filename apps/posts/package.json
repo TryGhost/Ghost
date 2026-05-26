@@ -63,7 +63,7 @@
         "@tryghost/admin-x-framework": "workspace:*",
         "@tryghost/nql-lang": "catalog:",
         "@tryghost/shade": "workspace:*",
-        "@xyflow/react": "12.8.6",
+        "@xyflow/react": "12.10.2",
         "dequal": "catalog:",
         "i18n-iso-countries": "7.14.0",
         "lucide-react": "catalog:",
