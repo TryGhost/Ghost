@@ -266,7 +266,7 @@ async function processRun({
  * @param {MemberWelcomeEmailService} options.memberWelcomeEmailService
  * @param {(date: Readonly<Date>) => unknown} options.enqueueAnotherPollAt
  */
-async function poll(options) {
+async function welcomeEmailAutomationPoll(options) {
     const {
         memberWelcomeEmailService,
         enqueueAnotherPollAt
@@ -293,5 +293,5 @@ async function poll(options) {
 }
 
 module.exports = {
-    poll
+    welcomeEmailAutomationPoll
 };
