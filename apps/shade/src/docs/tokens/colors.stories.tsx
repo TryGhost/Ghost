@@ -116,6 +116,26 @@ export const CoreChrome: Story = {
     )
 };
 
+export const SemanticAuthoring: Story = {
+    render: () => (
+        <div className="max-w-3xl space-y-4 text-sm text-text-secondary">
+            <p>
+                Semantic color variables in <code>theme-variables.css</code> should resolve directly to raw color tokens such as <code>--color-gray-700</code>, not to another semantic token such as <code>--foreground</code> or <code>--muted-foreground</code>.
+            </p>
+            <p>
+                This keeps each semantic decision inspectable in one place while the raw palette remains the single source of concrete color values. Tailwind-facing aliases still live in <code>tailwind.theme.css</code>.
+            </p>
+        </div>
+    ),
+    parameters: {
+        docs: {
+            description: {
+                story: 'Authoring rule for semantic color variables.'
+            }
+        }
+    }
+};
+
 export const Chart: Story = {
     render: () => (
         <ColorPalette
