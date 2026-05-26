@@ -121,8 +121,8 @@ catalogs:
       specifier: 3.4.5
       version: 3.4.5
     dotenv:
-      specifier: 17.3.1
-      version: 17.3.1
+      specifier: 17.4.2
+      version: 17.4.2
     eslint:
       specifier: 8.57.1
       version: 8.57.1
@@ -1701,7 +1701,7 @@ importers:
         version: 4.1.5(vitest@4.1.5)
       dotenv:
         specifier: 'catalog:'
-        version: 17.3.1
+        version: 17.4.2
       eslint:
         specifier: 'catalog:'
         version: 8.57.1
@@ -1761,7 +1761,7 @@ importers:
         version: 4.0.12
       dotenv:
         specifier: 'catalog:'
-        version: 17.3.1
+        version: 17.4.2
       eslint:
         specifier: 'catalog:'
         version: 8.57.1
@@ -12644,8 +12644,8 @@ packages:
     resolution: {integrity: sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow==}
     engines: {node: '>=12'}
 
-  dotenv@17.3.1:
-    resolution: {integrity: sha512-IO8C/dzEb6O3F9/twg6ZLXz164a2fhTnEWb95H23Dm4OuN+92NmEAlTrupP9VW6Jm3sO26tQlqyvyi4CsnY9GA==}
+  dotenv@17.4.2:
+    resolution: {integrity: sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw==}
     engines: {node: '>=12'}
 
   downsize@0.0.8:
@@ -30344,7 +30344,7 @@ snapshots:
       obug: 2.1.1
       std-env: 4.0.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@25.6.0)(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.12.14(@types/node@25.6.0)(typescript@5.9.3))(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
+      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@22.19.18)(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.12.14(@types/node@22.19.18)(typescript@5.9.3))(vite@7.3.2(@types/node@22.19.18)(jiti@2.6.1)(less@4.6.4)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.8.3))
 
   '@vitest/expect@3.2.4':
     dependencies:
@@ -34377,7 +34377,7 @@ snapshots:
 
   dotenv@16.6.1: {}
 
-  dotenv@17.3.1: {}
+  dotenv@17.4.2: {}
 
   downsize@0.0.8:
     dependencies:
