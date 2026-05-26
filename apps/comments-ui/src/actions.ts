@@ -3,6 +3,20 @@ import {AdminApi} from './utils/admin-api';
 import {GhostApi} from './utils/api';
 import {Page} from './pages';
 
+function findCommentById(comments: Comment[], id: string): Comment | undefined {
+    for (const c of comments) {
+        if (c.id === id) {
+            return c;
+        }
+        for (const r of c.replies || []) {
+            if (r.id === id) {
+                return r;
+            }
+        }
+    }
+    return undefined;
+}
+
 async function loadMoreComments({state, api, options, order}: {state: EditableAppContext, api: GhostApi, options: CommentsOptions, order?:string}): Promise<Partial<EditableAppContext>> {
     let page = 1;
     if (state.pagination && state.pagination.page) {
@@ -232,14 +246,26 @@ async function unpinComment({state, data: comment, dispatchAction}: {state: Edit
     return null;
 }
 
-async function updateCommentLikeState({state, data: comment}: {state: EditableAppContext, data: {id: string, liked: boolean}}) {
+async function updateCommentLikeState({state, data: comment}: {state: EditableAppContext, data: {id: string, liked: boolean, wasDisliked?: boolean, restoreDisliked?: boolean, expectedLiked?: boolean, expectedDisliked?: boolean, expectedVotePending?: boolean, votePending?: boolean}}) {
     return {
         comments: state.comments.map((c) => {
             const replies = c.replies.map((r) => {
                 if (r.id === comment.id) {
+                    if (comment.expectedLiked !== undefined && r.liked !== comment.expectedLiked) {
+                        return r;
+                    }
+                    if (comment.expectedDisliked !== undefined && Boolean(r.disliked) !== comment.expectedDisliked) {
+                        return r;
+                    }
+                    if (comment.expectedVotePending !== undefined && Boolean(r.votePending) !== comment.expectedVotePending) {
+                        return r;
+                    }
+
                     return {
                         ...r,
                         liked: comment.liked,
+                        disliked: comment.restoreDisliked ?? (comment.liked ? false : r.disliked),
+                        votePending: comment.votePending ?? r.votePending,
                         count: {
                             ...r.count,
                             likes: comment.liked ? r.count.likes + 1 : r.count.likes - 1
@@ -251,9 +277,30 @@ async function updateCommentLikeState({state, data: comment}: {state: EditableAp
             });
 
             if (c.id === comment.id) {
+                if (comment.expectedLiked !== undefined && c.liked !== comment.expectedLiked) {
+                    return {
+                        ...c,
+                        replies
+                    };
+                }
+                if (comment.expectedDisliked !== undefined && Boolean(c.disliked) !== comment.expectedDisliked) {
+                    return {
+                        ...c,
+                        replies
+                    };
+                }
+                if (comment.expectedVotePending !== undefined && Boolean(c.votePending) !== comment.expectedVotePending) {
+                    return {
+                        ...c,
+                        replies
+                    };
+                }
+
                 return {
                     ...c,
                     liked: comment.liked,
+                    disliked: comment.restoreDisliked ?? (comment.liked ? false : c.disliked),
+                    votePending: comment.votePending ?? c.votePending,
                     replies,
                     count: {
                         ...c.count,
@@ -270,24 +317,193 @@ async function updateCommentLikeState({state, data: comment}: {state: EditableAp
     };
 }
 
-async function likeComment({api, data: comment, dispatchAction}: {state: EditableAppContext, api: GhostApi, data: {id: string}, dispatchAction: DispatchActionType}) {
-    dispatchAction('updateCommentLikeState', {id: comment.id, liked: true});
+async function updateCommentDislikeState({state, data: comment}: {state: EditableAppContext, data: {id: string, disliked: boolean, wasLiked?: boolean, restoreLiked?: boolean, expectedDisliked?: boolean, expectedLiked?: boolean, expectedVotePending?: boolean, votePending?: boolean}}) {
+    const updateLikeCount = (count: number) => {
+        if (comment.disliked && comment.wasLiked) {
+            return count - 1;
+        }
+        if (comment.restoreLiked) {
+            return count + 1;
+        }
+        return count;
+    };
+
+    return {
+        comments: state.comments.map((c) => {
+            const replies = c.replies.map((r) => {
+                if (r.id === comment.id) {
+                    if (comment.expectedDisliked !== undefined && r.disliked !== comment.expectedDisliked) {
+                        return r;
+                    }
+                    if (comment.expectedLiked !== undefined && r.liked !== comment.expectedLiked) {
+                        return r;
+                    }
+                    if (comment.expectedVotePending !== undefined && Boolean(r.votePending) !== comment.expectedVotePending) {
+                        return r;
+                    }
+
+                    return {
+                        ...r,
+                        disliked: comment.disliked,
+                        liked: comment.restoreLiked ?? (comment.disliked ? false : r.liked),
+                        votePending: comment.votePending ?? r.votePending,
+                        count: {
+                            ...r.count,
+                            likes: updateLikeCount(r.count.likes)
+                        }
+                    };
+                }
+
+                return r;
+            });
+
+            if (c.id === comment.id) {
+                if (comment.expectedDisliked !== undefined && c.disliked !== comment.expectedDisliked) {
+                    return {
+                        ...c,
+                        replies
+                    };
+                }
+                if (comment.expectedLiked !== undefined && c.liked !== comment.expectedLiked) {
+                    return {
+                        ...c,
+                        replies
+                    };
+                }
+                if (comment.expectedVotePending !== undefined && Boolean(c.votePending) !== comment.expectedVotePending) {
+                    return {
+                        ...c,
+                        replies
+                    };
+                }
+
+                return {
+                    ...c,
+                    disliked: comment.disliked,
+                    liked: comment.restoreLiked ?? (comment.disliked ? false : c.liked),
+                    votePending: comment.votePending ?? c.votePending,
+                    replies,
+                    count: {
+                        ...c.count,
+                        likes: updateLikeCount(c.count.likes)
+                    }
+                };
+            }
+
+            return {
+                ...c,
+                replies
+            };
+        })
+    };
+}
+
+async function updateCommentVotePendingState({state, data: comment}: {state: EditableAppContext, data: {id: string, votePending: boolean, expectedVotePending?: boolean}}) {
+    return {
+        comments: state.comments.map((c) => {
+            const replies = c.replies.map((r) => {
+                if (r.id === comment.id) {
+                    if (comment.expectedVotePending !== undefined && Boolean(r.votePending) !== comment.expectedVotePending) {
+                        return r;
+                    }
+
+                    return {
+                        ...r,
+                        votePending: comment.votePending
+                    };
+                }
+
+                return r;
+            });
+
+            if (c.id === comment.id) {
+                if (comment.expectedVotePending !== undefined && Boolean(c.votePending) !== comment.expectedVotePending) {
+                    return {
+                        ...c,
+                        replies
+                    };
+                }
+
+                return {
+                    ...c,
+                    votePending: comment.votePending,
+                    replies
+                };
+            }
+
+            return {
+                ...c,
+                replies
+            };
+        })
+    };
+}
+
+async function likeComment({state, api, data: comment, dispatchAction}: {state: EditableAppContext, api: GhostApi, data: {id: string}, dispatchAction: DispatchActionType}) {
+    const currentComment = findCommentById(state.comments, comment.id);
+    if (currentComment?.votePending) {
+        return {};
+    }
+
+    const wasDisliked = currentComment?.disliked ?? false;
+    dispatchAction('updateCommentLikeState', {id: comment.id, liked: true, wasDisliked, votePending: true});
     try {
         await api.comments.like({comment});
+        dispatchAction('updateCommentVotePendingState', {id: comment.id, votePending: false, expectedVotePending: true});
         return {};
     } catch {
-        dispatchAction('updateCommentLikeState', {id: comment.id, liked: false});
+        dispatchAction('updateCommentLikeState', {id: comment.id, liked: false, restoreDisliked: wasDisliked, expectedLiked: true, expectedVotePending: true, votePending: false});
     }
 }
 
-async function unlikeComment({api, data: comment, dispatchAction}: {state: EditableAppContext, api: GhostApi, data: {id: string}, dispatchAction: DispatchActionType}) {
-    dispatchAction('updateCommentLikeState', {id: comment.id, liked: false});
+async function unlikeComment({state, api, data: comment, dispatchAction}: {state: EditableAppContext, api: GhostApi, data: {id: string}, dispatchAction: DispatchActionType}) {
+    const currentComment = findCommentById(state.comments, comment.id);
+    if (currentComment?.votePending) {
+        return {};
+    }
+
+    dispatchAction('updateCommentLikeState', {id: comment.id, liked: false, votePending: true});
 
     try {
         await api.comments.unlike({comment});
+        dispatchAction('updateCommentVotePendingState', {id: comment.id, votePending: false, expectedVotePending: true});
         return {};
     } catch {
-        dispatchAction('updateCommentLikeState', {id: comment.id, liked: true});
+        dispatchAction('updateCommentLikeState', {id: comment.id, liked: true, expectedLiked: false, expectedDisliked: false, expectedVotePending: true, votePending: false});
+    }
+}
+
+async function dislikeComment({state, api, data: comment, dispatchAction}: {state: EditableAppContext, api: GhostApi, data: {id: string}, dispatchAction: DispatchActionType}) {
+    const currentComment = findCommentById(state.comments, comment.id);
+    if (currentComment?.votePending) {
+        return {};
+    }
+
+    const wasLiked = currentComment?.liked ?? false;
+    dispatchAction('updateCommentDislikeState', {id: comment.id, disliked: true, wasLiked, votePending: true});
+    try {
+        await api.comments.dislike({comment});
+        dispatchAction('updateCommentVotePendingState', {id: comment.id, votePending: false, expectedVotePending: true});
+        return {};
+    } catch {
+        dispatchAction('updateCommentDislikeState', {id: comment.id, disliked: false, restoreLiked: wasLiked, expectedDisliked: true, expectedVotePending: true, votePending: false});
+    }
+}
+
+async function undislikeComment({state, api, data: comment, dispatchAction}: {state: EditableAppContext, api: GhostApi, data: {id: string}, dispatchAction: DispatchActionType}) {
+    const currentComment = findCommentById(state.comments, comment.id);
+    if (currentComment?.votePending) {
+        return {};
+    }
+
+    dispatchAction('updateCommentDislikeState', {id: comment.id, disliked: false, votePending: true});
+
+    try {
+        await api.comments.undislike({comment});
+        dispatchAction('updateCommentVotePendingState', {id: comment.id, votePending: false, expectedVotePending: true});
+        return {};
+    } catch {
+        dispatchAction('updateCommentDislikeState', {id: comment.id, disliked: true, expectedDisliked: false, expectedLiked: false, expectedVotePending: true, votePending: false});
     }
 }
 
@@ -530,6 +746,8 @@ export const Actions = {
     showComment,
     likeComment,
     unlikeComment,
+    dislikeComment,
+    undislikeComment,
     reportComment,
     addReply,
     loadMoreComments,
@@ -540,7 +758,9 @@ export const Actions = {
     highlightComment,
     setHighlightComment,
     setCommentsIsLoading,
-    updateCommentLikeState
+    updateCommentLikeState,
+    updateCommentDislikeState,
+    updateCommentVotePendingState
 };
 
 export type ActionType = keyof typeof Actions;
