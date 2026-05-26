@@ -43,6 +43,10 @@
         translate: none;
     }
 
+    .-translate-y-2 {
+        translate: none;
+    }
+
     .-translate-y-full {
         translate: none;
     }
