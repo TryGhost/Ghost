@@ -192,7 +192,7 @@ function HideableSidebarItem({children, id, label}: SidebarCustomizationItem & {
         <>
             <RegisterHideableSidebarItem id={id} label={label} />
             {React.cloneElement(child, {
-                onContextMenu: (event: React.MouseEvent) => {
+                onContextMenu: (event: React.MouseEvent<HTMLElement>) => {
                     child.props.onContextMenu?.(event);
 
                     if (!event.defaultPrevented) {
