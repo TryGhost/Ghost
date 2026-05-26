@@ -6,11 +6,11 @@ import {ChevronDown} from 'lucide-react';
 import {cn} from '@/lib/utils';
 
 const buttonVariants = cva(
-    'inline-flex items-center justify-center gap-2 rounded-md text-control whitespace-nowrap transition-colors focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:stroke-[1.5px]',
+    'inline-flex items-center justify-center gap-1.5 rounded-md text-control whitespace-nowrap transition-colors focus-visible:ring-1 focus-visible:ring-focus-ring focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:stroke-[1.5px]',
     {
         variants: {
             variant: {
-                default: 'bg-primary font-medium text-primary-foreground hover:bg-primary/90',
+                default: 'bg-primary font-semibold text-primary-foreground hover:bg-primary/90',
                 destructive: 'bg-destructive font-medium text-destructive-foreground hover:bg-destructive/90',
                 outline: 'border border-input bg-background font-medium hover:bg-accent hover:text-accent-foreground',
                 secondary: 'bg-secondary font-medium text-secondary-foreground hover:bg-secondary/80',

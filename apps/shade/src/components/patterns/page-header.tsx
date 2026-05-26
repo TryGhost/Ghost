@@ -35,7 +35,7 @@ function PageHeaderCount({className, children}: PropsWithChildrenAndClassName) {
     return (
         <Text
             as='span'
-            className={cn('ml-2 lg:ml-3 text-base tabular-nums', className)}
+            className={cn('ml-1 text-base tabular-nums', className)}
             data-page-header='count'
             tone='secondary'
             weight='regular'
@@ -101,7 +101,7 @@ function PageHeaderTitle({className, children}: PropsWithChildrenAndClassName) {
     const heading = (
         <H1
             className={cn(
-                'text-lg tracking-normal font-semibold whitespace-nowrap',
+                'text-lg tracking-[0.1px] font-semibold whitespace-nowrap',
                 className
             )}
             data-page-header='title'

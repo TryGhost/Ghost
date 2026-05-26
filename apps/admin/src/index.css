@@ -135,8 +135,8 @@ body.react-admin #ember-app {
 
 /* Temporary overrides until Ember transition is finished */
 body.react-admin .gh-canvas-header {
-    padding-top: 24px;
-    padding-bottom: 24px;
+    padding-top: 20px;
+    padding-bottom: 20px;
 }
 
 body.react-admin .gh-canvas-breadcrumb+.gh-canvas-title {
@@ -146,19 +146,20 @@ body.react-admin .gh-canvas-breadcrumb+.gh-canvas-title {
 
 body.react-admin .gh-canvas-title,
 body.react-admin [data-header="header-title"] {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
     letter-spacing: 0;
 }
 
 body.react-admin [data-header="header"] {
-    padding-top: 24px;
+    padding-top: 20px;
+    min-height: 32px;
     /* padding-bottom: 18px; */
 }
 
 body.react-admin [data-navbar="navbar"] {
-    padding-top: 24px;
-    padding-bottom: 24px;
+    padding-top: 20px;
+    padding-bottom: 20px;
 }
 
 body.react-admin #ember-app .gh-viewport {

@@ -19,14 +19,14 @@ function ListPageHeader({className, children, ...rest}: ListPageProps) {
     return (
         <Stack
             className={cn(
-                '-mx-4 lg:-mx-8 px-4 lg:px-8',
+                '-mx-4 lg:-mx-5 px-4 lg:px-5',
                 'sticky top-0 z-50',
                 'bg-gradient-to-b from-background via-background/70 to-background/70 backdrop-blur-md dark:bg-black',
-                'py-6',
+                'py-5',
                 className
             )}
             data-list-page='header'
-            gap='xl'
+            gap='lg'
             {...rest}
         >
             {children}
@@ -70,7 +70,7 @@ const ListPage: ListPageComponent = Object.assign(
     function ListPage({className, children, ...rest}: ListPageProps) {
         return (
             <Stack
-                className={cn('grow h-full min-h-0 px-4 lg:px-8', className)}
+                className={cn('grow h-full min-h-0 px-4 lg:px-6', className)}
                 data-list-page='list-page'
                 gap='none'
                 {...rest}
