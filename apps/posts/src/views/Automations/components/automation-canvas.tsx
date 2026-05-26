@@ -618,7 +618,7 @@ const StepSidebarContent: React.FC<{detail: StepSidebarDetail}> = ({detail}) => 
     );
 };
 
-const StepSidebar: React.FC<{detail: StepSidebarDetail | null; onClose: () => void}> = ({detail, onClose}) => {
+const StepSidebar: React.FC<{detail: StepSidebarDetail | null; isEmailModalOpen: boolean; onClose: () => void}> = ({detail, isEmailModalOpen, onClose}) => {
     useEffect(() => {
         if (!detail) {
             return;
@@ -626,6 +626,9 @@ const StepSidebar: React.FC<{detail: StepSidebarDetail | null; onClose: () => vo
 
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
+                if (isEmailModalOpen) {
+                    return;
+                }
                 onClose();
             }
         };
@@ -634,7 +637,7 @@ const StepSidebar: React.FC<{detail: StepSidebarDetail | null; onClose: () => vo
         return () => {
             document.removeEventListener('keydown', handleKeyDown);
         };
-    }, [detail, onClose]);
+    }, [detail, isEmailModalOpen, onClose]);
 
     return (
         <aside
@@ -804,7 +807,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
             >
                 <Background />
             </ReactFlow>
-            <StepSidebar detail={sidebarDetail} onClose={clearDetail} />
+            <StepSidebar detail={sidebarDetail} isEmailModalOpen={Boolean(emailModalAction)} onClose={clearDetail} />
             {emailModalAction && automation && (
                 <EmailContentModal
                     initialLexical={emailModalAction.data.email_lexical}

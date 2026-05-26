@@ -228,6 +228,11 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialSubject, in
                 <DialogContent
                     aria-describedby={undefined}
                     className='top-0 left-0 h-[100dvh] w-full max-w-full translate-x-0 translate-y-0 grid-rows-[1fr] gap-0 rounded-none border-0 p-0 shadow-none outline-hidden sm:rounded-none dark:bg-[#151719]'
+                    onEscapeKeyDown={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        attemptClose();
+                    }}
                 >
                     <DialogTitle className='sr-only'>Edit email</DialogTitle>
                     <EmailPreviewModalContent
