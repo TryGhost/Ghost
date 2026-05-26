@@ -4,6 +4,7 @@ import React from 'react';
 import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, type ButtonProps, LoadingIndicator} from '@tryghost/shade/components';
 import {AutomationDetail, AutomationStatus, useEditAutomation, useReadAutomation} from '@tryghost/admin-x-framework/api/automations';
 import {dequal} from 'dequal';
+import {useBlocker} from 'react-router';
 import {useConfirmUnload, useParams} from '@tryghost/admin-x-framework';
 import type {AutomationEditState} from './types';
 
@@ -277,6 +278,15 @@ const AutomationEditor: React.FC = () => {
     };
 
     useConfirmUnload(isEditRequestActive || hasUnsavedChanges);
+    const navigationBlocker = useBlocker(({currentLocation, nextLocation}) => (
+        hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname
+    ));
+
+    const onConfirmDiscardOpenChange = (open: boolean): void => {
+        if (!open && navigationBlocker.state === 'blocked') {
+            navigationBlocker.reset();
+        }
+    };
 
     return (
         <div className='fixed inset-0 z-50 flex flex-col bg-background' data-testid='automation-editor'>
@@ -301,6 +311,29 @@ const AutomationEditor: React.FC = () => {
                 isLoading={isLoadingAutomation}
                 onChange={onDraftChange}
             />
+
+            <AlertDialog
+                open={navigationBlocker.state === 'blocked'}
+                onOpenChange={onConfirmDiscardOpenChange}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Discard unsaved changes?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Your changes will be lost if you leave this automation.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Keep working</AlertDialogCancel>
+                        <Button
+                            variant='destructive'
+                            onClick={() => navigationBlocker.proceed?.()}
+                        >
+                            Discard changes
+                        </Button>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
             <AlertDialog
                 open={isConfirmUnpublishAlertOpen}
