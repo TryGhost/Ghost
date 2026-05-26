@@ -66,9 +66,8 @@ export const Text: Story = {
 export const Border: Story = {
     render: () => (
         <ColorPalette
-            description="Three weights of border plus the focus ring color."
+            description="Default border for component outlines, strong border for emphasized states, and the focus ring color."
             swatches={[
-                {name: 'subtle', cssVar: '--border-subtle'},
                 {name: 'default', cssVar: '--border-default'},
                 {name: 'strong', cssVar: '--border-strong'},
                 {name: 'focus-ring', cssVar: '--focus-ring'}

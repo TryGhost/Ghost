@@ -25,7 +25,6 @@
     --text-primary: var(--color-black);
     --text-secondary: var(--color-gray-700);
     --text-tertiary: var(--color-gray-400);
-    --border-subtle: var(--color-gray-200);
     --border-default: var(--color-gray-200);
     --border-strong: var(--color-gray-500);
     --focus-ring: var(--color-gray-600);
@@ -92,7 +91,6 @@
     --text-primary: var(--color-gray-200);
     --text-secondary: var(--color-gray-400);
     --text-tertiary: var(--color-gray-500);
-    --border-subtle: var(--color-gray-900);
     --border-default: var(--color-gray-950);
     --border-strong: var(--color-gray-700);
     --focus-ring: var(--color-gray-900);
