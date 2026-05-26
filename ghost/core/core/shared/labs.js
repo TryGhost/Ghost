@@ -24,6 +24,7 @@ const GA_FEATURES = [
     'customFonts',
     'explore',
     'commentModeration',
+    'commentsThreads',
     'featurebaseFeedback',
     'giftSubscriptions',
     'dangerZoneResetAuth'
@@ -52,7 +53,6 @@ const PRIVATE_FEATURES = [
     'indexnow',
     'pictureImageFormats',
     'smarterCounts',
-    'commentsThreads',
     'commentsPinning'
 ];
 
