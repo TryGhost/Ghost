@@ -1,3 +1,19 @@
+const {formatImportErrorMessage} = require('./import-errors');
+
+function formatImportFailureDetails(importErrors) {
+    if (!importErrors?.length) {
+        return '';
+    }
+
+    const lines = importErrors.map(formatImportErrorMessage);
+
+    if (lines.length === 1) {
+        return lines[0];
+    }
+
+    return lines.map((line, index) => `${index + 1}. ${line}`).join('<br>');
+}
+
 module.exports = ({result, siteUrl, postsUrl, emailRecipient}) => `
 <!doctype html>
 <html>
@@ -127,7 +143,7 @@ module.exports = ({result, siteUrl, postsUrl, emailRecipient}) => `
                     </tr>
                     ${result?.data?.errors ? `
                     <tr>
-                      <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; padding-bottom: 16px;">One or more error occured while importing your content. Please contact support or report on the <a href="https://forum.ghost.org/">Ghost Community Forum</a>.</td>
+                      <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; padding-bottom: 16px;">One or more errors occurred while importing your content.${formatImportFailureDetails(result.data.errors) ? `<br><br><strong>Details:</strong><br>${formatImportFailureDetails(result.data.errors)}` : ''}<br><br>If you need help, report this on the <a href="https://forum.ghost.org/">Ghost Community Forum</a>.</td>
                     </tr>
                     ` : `
                     <tr>

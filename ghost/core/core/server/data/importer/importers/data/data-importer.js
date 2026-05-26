@@ -2,6 +2,7 @@ const _ = require('lodash');
 const ObjectId = require('bson-objectid').default;
 const semver = require('semver');
 const {IncorrectUsageError} = require('@tryghost/errors');
+const {throwImportErrors} = require('../../import-errors');
 const debug = require('@tryghost/debug')('importer:data');
 const {sequence} = require('@tryghost/promise');
 const models = require('../../../../models');
@@ -186,7 +187,7 @@ DataImporter = {
             // Errors preventing import:
             if (errors.length > 0) {
                 debug(errors);
-                throw errors;
+                throwImportErrors(errors);
             }
 
             return {

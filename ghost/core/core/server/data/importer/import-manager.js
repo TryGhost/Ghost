@@ -528,8 +528,11 @@ class ImportManager {
 
             return importResult;
         } catch (err) {
-            logging.error(err, 'Content import was unsuccessful');
-            importResult = {data: {errors: [err]}};
+            const importErrors = Array.isArray(err) ? err : [err];
+            const logErr = importErrors.length === 1 ? importErrors[0] : err;
+
+            logging.error(logErr, 'Content import was unsuccessful');
+            importResult = {data: {errors: importErrors}};
         } finally {
             // Step 5: Cleanup any files
             await this.cleanUp();
