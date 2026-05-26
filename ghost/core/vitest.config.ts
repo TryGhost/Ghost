@@ -65,8 +65,6 @@ const sharedConfig = {
 
 export default defineConfig({
     test: {
-        // Removes the per-worker session sqlite databases after the run.
-        globalSetup: ['./test/utils/vitest-global-setup.ts'],
         resolveSnapshotPath,
         // Local runs use the compact `dot` reporter. CI uses `default`
         // (names each file) plus `github-actions` for inline annotations.
