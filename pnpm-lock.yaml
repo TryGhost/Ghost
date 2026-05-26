@@ -706,8 +706,8 @@ importers:
         specifier: 'catalog:'
         version: 4.36.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tinybirdco/charts':
-        specifier: 0.2.4
-        version: 0.2.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: 0.3.0
+        version: 0.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tryghost/admin-x-design-system':
         specifier: workspace:*
         version: link:../admin-x-design-system
@@ -8372,11 +8372,11 @@ packages:
   '@textlint/types@15.6.0':
     resolution: {integrity: sha512-CvgYb1PiqF4BGyoZebGWzAJCZ4ChJAZ9gtWjpQIMKE4Xe2KlSwDA8m8MsiZIV321f5Ibx38BMjC1Z/2ZYP2GQg==}
 
-  '@tinybirdco/charts@0.2.4':
-    resolution: {integrity: sha512-0N8fYPY8uxO5KcBkW5Dgmapj4AqcWgyCmWnZBYsugXnnbx4/yg//f3/9oMWnM3RZ6ltt9moltYIzF/95NO2zNg==}
+  '@tinybirdco/charts@0.3.0':
+    resolution: {integrity: sha512-nL/SswRPO8VBOjRBxpJ9o4O6dWCgvs2xcsYiucA7AR4dTTewydTy+2bPFBxkubuX/LFce9FLOGWwFy8yOIi37g==}
     peerDependencies:
-      react: ^18.0.0
-      react-dom: '>=16.6.0'
+      react: ^18.2.0
+      react-dom: ^18.2.0
 
   '@tiptap/core@2.26.3':
     resolution: {integrity: sha512-TaOJzu2v5ufsOx+yu94NqXE504zmupVdFCxH1g3hk5fzZ3gT57Lh9R/27OjwM4e6o+Z3DXDl8yfFMHIcR3zUkg==}
@@ -28677,7 +28677,7 @@ snapshots:
     dependencies:
       '@textlint/ast-node-types': 15.6.0
 
-  '@tinybirdco/charts@0.2.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@tinybirdco/charts@0.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       echarts: 5.6.0
       react: 18.3.1
