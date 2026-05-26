@@ -314,7 +314,7 @@ const ReplyFormBox: React.FC<ReplyFormBoxProps> = ({openForm, parent, useThreadi
         <div className={`relative ml-8 sm:ml-9 ${spacingClass}`}>
             {continueLine && (
                 <div
-                    className="pointer-events-none absolute inset-y-0 -left-4 w-px bg-neutral-300 sm:-left-5 dark:bg-neutral-700"
+                    className="pointer-events-none absolute inset-y-0 -left-4 border-l border-neutral-300 sm:-left-5 dark:border-neutral-700"
                     data-testid="reply-form-continuation-line"
                     aria-hidden
                 />
@@ -512,7 +512,7 @@ const RepliesLine: React.FC<{hasReplies: boolean; useThreading: boolean}> = ({ha
         return (<div className="mb-2 h-full w-px grow rounded bg-gradient-to-b from-neutral-900/15 from-70% to-transparent dark:from-white/20 dark:from-70%" data-testid="replies-line" />);
     }
 
-    return (<div className="ml-4 h-full w-px grow self-start bg-neutral-300 dark:bg-neutral-700" data-testid="replies-line" />);
+    return (<div className="ml-4 h-full grow self-start border-l border-neutral-300 dark:border-neutral-700" data-testid="replies-line" />);
 };
 
 type CommentLayoutProps = {
@@ -559,7 +559,7 @@ const CommentLayout: React.FC<CommentLayoutProps> = ({children, avatar, hasRepli
         <div className={`relative flow-root ${hasReplies ? 'pb-4 sm:pb-0' : 'pb-7'}`}>
             {isReplyLayout && !isLastSibling && (
                 <div
-                    className="pointer-events-none absolute inset-y-0 -left-4 w-px bg-neutral-300 sm:-left-5 dark:bg-neutral-700"
+                    className="pointer-events-none absolute inset-y-0 -left-4 border-l border-neutral-300 sm:-left-5 dark:border-neutral-700"
                     aria-hidden
                 />
             )}
