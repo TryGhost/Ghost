@@ -2,7 +2,7 @@ import EmailEditor from './email-editor';
 import EmailPreviewFrame from './preview-frame';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import TestEmailDropdown from './test-email-dropdown';
-import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, Dialog, DialogContent, DialogTitle, Input, Tabs, TabsList, TabsTrigger} from '@tryghost/shade/components';
+import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, Dialog, DialogContent, DialogTitle, Input, Tabs, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {WELCOME_EMAIL_SLUGS} from './sender-details';
 import {getEmailValidationErrors} from './validation';
@@ -347,14 +347,15 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialSubject, in
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>Keep editing</AlertDialogCancel>
-                        <AlertDialogAction
+                        <Button
+                            variant='destructive'
                             onClick={() => {
                                 setConfirmDiscardOpen(false);
                                 onClose();
                             }}
                         >
                             Discard
-                        </AlertDialogAction>
+                        </Button>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
