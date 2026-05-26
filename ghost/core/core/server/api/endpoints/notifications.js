@@ -1,7 +1,4 @@
 const {notifications} = require('../../services/notifications');
-const settingsService = require('../../services/settings/settings-service');
-const settingsBREADService = settingsService.getSettingsBREADServiceInstance();
-const internalContext = {context: {internal: true}};
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -34,18 +31,9 @@ const controller = {
         },
         permissions: true,
         async query(frame) {
-            const {allNotifications, notificationsToAdd} = notifications.add({
+            return await notifications.add({
                 notifications: frame.data.notifications
             });
-
-            if (notificationsToAdd.length){
-                await settingsBREADService.edit([{
-                    key: 'notifications',
-                    // @NOTE: We always need to store all notifications!
-                    value: allNotifications.concat(notificationsToAdd)
-                }], internalContext);
-                return notificationsToAdd;
-            }
         }
     },
 
@@ -64,17 +52,12 @@ const controller = {
         },
         permissions: true,
         async query(frame) {
-            const allNotifications = await notifications.destroy({
+            await notifications.destroy({
                 notificationId: frame.options.notification_id,
                 user: {
                     id: frame.user && frame.user.id
                 }
             });
-
-            await settingsBREADService.edit([{
-                key: 'notifications',
-                value: allNotifications
-            }], internalContext);
         }
     },
 
@@ -92,12 +75,7 @@ const controller = {
             method: 'destroy'
         },
         async query() {
-            const allNotifications = notifications.destroyAll();
-
-            await settingsBREADService.edit([{
-                key: 'notifications',
-                value: allNotifications
-            }], internalContext);
+            await notifications.destroyAll();
         }
     }
 };

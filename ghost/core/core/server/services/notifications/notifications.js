@@ -13,52 +13,11 @@ const messages = {
 
 class Notifications {
     /**
-     *
      * @param {Object} options
-     * @param {Object} options.settingsCache - settings cache instance
-     * @param {Object} options.SettingsModel - Ghost's Setting model instance
+     * @param {import('./repository').NotificationRepository} options.repository
      */
-    constructor({settingsCache, SettingsModel}) {
-        this.settingsCache = settingsCache;
-        this.SettingsModel = SettingsModel;
-    }
-
-    /**
-     * @returns {Object[]} - all notifications
-     */
-    fetchAllNotifications() {
-        let allNotifications = this.settingsCache.get('notifications');
-
-        // @TODO: this check can be removed to improve read operation perf. It's here only because
-        //        reads are done often and this gives a possibility to self-heal any broken records.
-        //        The check can be removed/moved to write operations once we have the guardrails on that
-        //        level long enough and are confident there's no broken data in the DB (e.g few minors after Ghost v5?)
-        if (!this.areNotificationsValid(allNotifications)) {
-            // Not using "await" here and doing the "fire-and-forget" because the result is know beforehand
-            // We only care for the notifications to ge into "correct" state eventually and work properly with next request
-            this.dangerousDestroyAll();
-            return [];
-        }
-
-        allNotifications.forEach((notification) => {
-            notification.addedAt = moment(notification.addedAt).toDate();
-        });
-
-        return allNotifications;
-    }
-
-    /**
-     *
-     * @param {Object[]} notifications - objects to check if they have valid notifications array format
-     *
-     * @returns {boolean}
-     */
-    areNotificationsValid(notifications) {
-        if (!(_.isArray(notifications))) {
-            return false;
-        }
-
-        return true;
+    constructor({repository}) {
+        this.repository = repository;
     }
 
     wasSeen(notification, user) {
@@ -70,7 +29,7 @@ class Notifications {
     }
 
     browse({user}) {
-        let allNotifications = this.fetchAllNotifications();
+        let allNotifications = this.repository.getAll();
         allNotifications = _.orderBy(allNotifications, 'addedAt', 'desc');
         const blogVersion = semver.clean(ghostVersion.full);
 
@@ -120,7 +79,7 @@ class Notifications {
         return allNotifications;
     }
 
-    add({notifications}) {
+    async add({notifications}) {
         const defaults = {
             dismissible: true,
             location: 'bottom',
@@ -134,125 +93,77 @@ class Notifications {
             addedAt: moment().toDate()
         };
 
-        let notificationsToCheck = notifications;
+        const existing = this.repository.getAll();
+
         let notificationsToAdd = [];
-
-        const allNotifications = this.fetchAllNotifications();
-
-        notificationsToCheck.forEach((notification) => {
-            const isDuplicate = allNotifications.find((n) => {
-                return n.id === notification.id;
-            });
-
+        notifications.forEach((notification) => {
+            const isDuplicate = existing.find(n => n.id === notification.id);
             if (!isDuplicate) {
                 notificationsToAdd.push(Object.assign({}, defaults, notification, overrides));
             }
         });
 
-        const hasReleaseNotification = notificationsToCheck.find((notification) => {
-            return !notification.custom;
-        });
-
         // CASE: remove any existing release notifications if a new release notification comes in
+        const hasReleaseNotification = notifications.find(notification => !notification.custom);
         if (hasReleaseNotification) {
-            _.remove(allNotifications, (el) => {
-                return !el.custom;
-            });
+            for (const releaseNotification of existing.filter(n => !n.custom)) {
+                await this.repository.deleteById(releaseNotification.id);
+            }
         }
 
-        // CASE: nothing to add, skip
         if (!notificationsToAdd.length) {
-            return {allNotifications, notificationsToAdd};
+            return [];
         }
-
-        const releaseNotificationsToAdd = notificationsToAdd.filter((notification) => {
-            return !notification.custom;
-        });
 
         // CASE: reorder notifications before save
+        const releaseNotificationsToAdd = notificationsToAdd.filter(notification => !notification.custom);
         if (releaseNotificationsToAdd.length > 1) {
-            notificationsToAdd = notificationsToAdd.filter((notification) => {
-                return notification.custom;
-            });
+            notificationsToAdd = notificationsToAdd.filter(notification => notification.custom);
             notificationsToAdd.push(_.orderBy(releaseNotificationsToAdd, 'created_at', 'desc')[0]);
         }
 
-        return {allNotifications, notificationsToAdd};
-    }
-
-    /**
-     *
-     * @param {Object} options
-     * @param {string} options.notificationId - UUID of the notification
-     * @param {Object} options.user
-     * @param {string} options.user.id
-     *
-     * @returns {Promise<Object[]>}
-     */
-    destroy({notificationId, user}) {
-        const allNotifications = this.fetchAllNotifications();
-
-        const notificationToMarkAsSeen = allNotifications.find((notification) => {
-            return notification.id === notificationId;
-        });
-
-        const notificationToMarkAsSeenIndex = allNotifications.findIndex((notification) => {
-            return notification.id === notificationId;
-        });
-
-        if (notificationToMarkAsSeenIndex > -1 && !notificationToMarkAsSeen.dismissible) {
-            return Promise.reject(new errors.NoPermissionError({
-                message: tpl(messages.noPermissionToDismissNotif)
-            }));
+        for (const notification of notificationsToAdd) {
+            await this.repository.add(notification);
         }
 
-        if (notificationToMarkAsSeenIndex < 0) {
-            return Promise.reject(new errors.NotFoundError({
+        return notificationsToAdd;
+    }
+
+    async destroy({notificationId, user}) {
+        const notification = this.repository.getById(notificationId);
+
+        if (!notification) {
+            throw new errors.NotFoundError({
                 message: tpl(messages.notificationDoesNotExist)
-            }));
+            });
         }
 
-        if (this.wasSeen(notificationToMarkAsSeen, user)) {
-            return Promise.resolve();
+        if (!notification.dismissible) {
+            throw new errors.NoPermissionError({
+                message: tpl(messages.noPermissionToDismissNotif)
+            });
         }
 
-        // @NOTE: We don't remove the notifications, because otherwise we will receive them again from the service.
-        allNotifications[notificationToMarkAsSeenIndex].seen = true;
-
-        if (!allNotifications[notificationToMarkAsSeenIndex].seenBy) {
-            allNotifications[notificationToMarkAsSeenIndex].seenBy = [];
+        if (this.wasSeen(notification, user)) {
+            return;
         }
 
-        allNotifications[notificationToMarkAsSeenIndex].seenBy.push(user.id);
+        // @NOTE: We mark as seen rather than remove, otherwise the notification
+        //        would be served again on the next update check.
+        notification.seen = true;
+        if (!notification.seenBy) {
+            notification.seenBy = [];
+        }
+        notification.seenBy.push(user.id);
 
-        return allNotifications;
+        await this.repository.edit(notification);
     }
 
-    destroyAll() {
-        const allNotifications = this.fetchAllNotifications();
-
-        allNotifications.forEach((notification) => {
-            // @NOTE: We don't remove the notifications, because otherwise we will receive them again from the service.
+    async destroyAll() {
+        for (const notification of this.repository.getAll()) {
             notification.seen = true;
-        });
-
-        return allNotifications;
-    }
-
-    /**
-     * Comparing to destroyAll method this one wipes out the notifications data!
-     * It is only to be used in a situation when notifications data has been corrupted and
-     * there's a need to self-heal. Wiping out notifications will fetch some of the notifications
-     * again and repopulate the array with correct data.
-     */
-    async dangerousDestroyAll() {
-        // Same default as defined in "default-settings.json"
-        const defaultValue = '[]';
-
-        return this.SettingsModel.edit([{
-            key: 'notifications',
-            value: defaultValue
-        }], {context: {internal: true}});
+            await this.repository.edit(notification);
+        }
     }
 }
 

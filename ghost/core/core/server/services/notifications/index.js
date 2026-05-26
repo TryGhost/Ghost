@@ -1,8 +1,13 @@
 const settingsCache = require('../../../shared/settings-cache');
-const Notifications = require('./notifications');
+const settingsService = require('../settings/settings-service');
 const models = require('../../models');
+const Notifications = require('./notifications');
+const {NotificationRepository} = require('./repository');
 
-module.exports.notifications = new Notifications({
+const repository = new NotificationRepository({
     settingsCache,
-    SettingsModel: models.Settings
+    getSettingsBREADService: () => settingsService.getSettingsBREADServiceInstance(),
+    settingsModel: models.Settings
 });
+
+module.exports.notifications = new Notifications({repository});
