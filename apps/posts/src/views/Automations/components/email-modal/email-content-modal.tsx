@@ -33,7 +33,7 @@ const EmailPreviewModalContent = React.forwardRef<
             className
         )}
     >
-        <div className="sticky top-0 grid shrink-0 grid-cols-[1fr_auto_1fr] items-center border-b border-gray-200 bg-white px-5 py-3 dark:border-gray-900 dark:bg-gray-975">
+        <div className="sticky top-0 grid shrink-0 grid-cols-[1fr_auto_1fr] items-center border-b border-gray-200 bg-white px-5 py-3 dark:border-gray-900 dark:bg-gray-950">
             <h3 className="justify-self-start text-xl font-semibold">
                 {title}
             </h3>
