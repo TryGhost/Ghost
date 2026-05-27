@@ -366,6 +366,15 @@ class MemberWelcomeEmailService {
         }
     }
 
+    /**
+     * @param {object} options
+     * @param {object} options.member
+     * @param {undefined | null | string} options.member.name
+     * @param {string} options.member.email
+     * @param {string} options.member.uuid
+     * @param {'free' | 'paid'} options.memberStatus
+     * @returns {Promise<void>}
+     */
     async send({member, memberStatus}) {
         if (!member.email) {
             throw new errors.IncorrectUsageError({

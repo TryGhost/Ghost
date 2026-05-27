@@ -47,7 +47,8 @@ function CommentsList({
     fetchNextPage,
     resetKey,
     onAddFilter,
-    isLoading
+    isLoading,
+    dislikesEnabled
 }: {
     items: Comment[];
     totalItems: number;
@@ -57,6 +58,7 @@ function CommentsList({
     resetKey: string;
     onAddFilter: (field: string, value: string, operator?: string) => void;
     isLoading?: boolean;
+    dislikesEnabled: boolean;
 }) {
     const parentRef = useRef<HTMLDivElement>(null);
     const {visibleItemCount, canLoadMore, loadMore} = useVirtualListWindow(totalItems, {resetKey});
@@ -198,6 +200,7 @@ function CommentsList({
                                             <CommentMetrics
                                                 className="ml-2"
                                                 comment={item}
+                                                dislikesEnabled={dislikesEnabled}
                                             />
                                             <CommentMenu
                                                 comment={item}
@@ -228,6 +231,7 @@ function CommentsList({
 
             <CommentThreadSidebar
                 commentId={selectedThreadCommentId}
+                dislikesEnabled={dislikesEnabled}
                 open={threadSidebarOpen}
                 onOpenChange={handleCloseSidebar}
             />

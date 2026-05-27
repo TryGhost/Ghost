@@ -5,7 +5,7 @@ const ObjectId = require('bson-objectid').default;
 const sinon = require('sinon');
 const testUtils = require('../../../utils');
 
-const {poll} = require('../../../../core/server/services/automations/poll');
+const {welcomeEmailAutomationPoll} = require('../../../../core/server/services/automations/welcome-email-automation-poll');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../../core/server/services/member-welcome-emails/constants');
 const {Member, WelcomeEmailAutomationRun} = require('../../../../core/server/models');
 
@@ -162,7 +162,7 @@ describe('automations poll', function () {
     }
 
     it('does nothing if no runs exist in database', async function () {
-        await poll(options);
+        await welcomeEmailAutomationPoll(options);
 
         sinon.assert.notCalled(options.memberWelcomeEmailService.init);
         sinon.assert.notCalled(options.memberWelcomeEmailService.api.loadMemberWelcomeEmails);
@@ -206,7 +206,7 @@ describe('automations poll', function () {
             step_started_at: new Date(Date.now() - LOCK_TIMEOUT_MS + 60 * 1000)
         });
 
-        await poll(options);
+        await welcomeEmailAutomationPoll(options);
 
         sinon.assert.notCalled(options.memberWelcomeEmailService.init);
         sinon.assert.notCalled(options.memberWelcomeEmailService.api.loadMemberWelcomeEmails);
@@ -251,7 +251,7 @@ describe('automations poll', function () {
             ready_at: new Date(Date.now() - 1000)
         });
 
-        await poll(options);
+        await welcomeEmailAutomationPoll(options);
 
         sinon.assert.calledOnce(options.memberWelcomeEmailService.init);
         sinon.assert.calledOnce(options.memberWelcomeEmailService.api.loadMemberWelcomeEmails);
@@ -319,7 +319,7 @@ describe('automations poll', function () {
         // shouldAdvanceTime the wall clock moves through awaits, so we compare
         // against a bracket rather than a fresh `Date.now()` post-poll.
         const pollStart = Date.now();
-        await poll(options);
+        await welcomeEmailAutomationPoll(options);
 
         sinon.assert.calledOnce(options.memberWelcomeEmailService.init);
         sinon.assert.calledOnce(options.memberWelcomeEmailService.api.loadMemberWelcomeEmails);
@@ -364,7 +364,7 @@ describe('automations poll', function () {
         });
 
         const pollStart = Date.now();
-        await poll(options);
+        await welcomeEmailAutomationPoll(options);
 
         sinon.assert.calledOnce(options.memberWelcomeEmailService.api.send);
         const enqueuedAt = options.enqueueAnotherPollAt.firstCall.args[0];
@@ -395,7 +395,7 @@ describe('automations poll', function () {
         const sendError = new Error('send failed');
         options.memberWelcomeEmailService.api.send.rejects(sendError);
 
-        await poll(options);
+        await welcomeEmailAutomationPoll(options);
 
         sinon.assert.notCalled(options.memberWelcomeEmailService.api.send);
         sinon.assert.notCalled(options.enqueueAnotherPollAt);
@@ -423,7 +423,7 @@ describe('automations poll', function () {
             ready_at: new Date(Date.now() - 1000)
         });
 
-        await poll(options);
+        await welcomeEmailAutomationPoll(options);
 
         sinon.assert.notCalled(options.memberWelcomeEmailService.api.send);
         sinon.assert.notCalled(options.enqueueAnotherPollAt);
@@ -457,7 +457,7 @@ describe('automations poll', function () {
             return originalFindOne.apply(this, arguments);
         });
 
-        await poll(options);
+        await welcomeEmailAutomationPoll(options);
 
         sinon.assert.notCalled(options.memberWelcomeEmailService.api.send);
         sinon.assert.notCalled(options.enqueueAnotherPollAt);
@@ -487,7 +487,7 @@ describe('automations poll', function () {
             updated_at: new Date()
         });
 
-        await poll(options);
+        await welcomeEmailAutomationPoll(options);
 
         sinon.assert.notCalled(options.memberWelcomeEmailService.api.send);
         sinon.assert.notCalled(options.enqueueAnotherPollAt);
@@ -520,7 +520,7 @@ describe('automations poll', function () {
             ready_at: new Date(Date.now() - 1000)
         });
 
-        await poll(options);
+        await welcomeEmailAutomationPoll(options);
 
         sinon.assert.calledWith(options.memberWelcomeEmailService.api.send, sinon.match({
             member: {
@@ -554,7 +554,7 @@ describe('automations poll', function () {
             step_attempts: 99
         });
 
-        await poll(options);
+        await welcomeEmailAutomationPoll(options);
 
         sinon.assert.notCalled(options.memberWelcomeEmailService.api.send);
 
@@ -583,7 +583,7 @@ describe('automations poll', function () {
 
         const beforePoll = new Date();
 
-        await poll(options);
+        await welcomeEmailAutomationPoll(options);
 
         sinon.assert.callCount(options.memberWelcomeEmailService.api.send, MAX_RUNS_PER_BATCH);
         sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, sinon.match(date => (

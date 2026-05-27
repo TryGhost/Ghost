@@ -1,0 +1,63 @@
+name: Renovate
+
+# Self-hosted Renovate runner. Replaces the Mend-hosted scheduler so we can tick
+# more frequently than ~4h and clear the dependency backlog within the existing
+# automerge windows. See PLA-48 for the throughput rationale;
+# .github/renovate.json5 is still the source of truth for package rules,
+# schedule, and automergeSchedule.
+on:
+  schedule:
+    # Hourly. The repo-level `schedule` / `automergeSchedule` blocks in
+    # renovate.json5 still gate when Renovate actually acts or merges, so
+    # extra wake-ups outside those windows are no-ops (~30s each). Hourly
+    # ticks during the 7h weeknight automerge window roughly match Ghost's
+    # CI duration, giving each merge a fresh rebase + green CI window
+    # before the next tick.
+    - cron: '0 * * * *'
+  workflow_dispatch:
+    inputs:
+      ignoreSchedule:
+        description: 'Ignore Renovate schedule for this manual run'
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: renovate
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  renovate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Get GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
+        with:
+          app-id: ${{ secrets.TRYGHOST_RENOVATE_APP_ID }}
+          private-key: ${{ secrets.TRYGHOST_RENOVATE_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: Ghost
+
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Allow manual run outside schedule
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.ignoreSchedule }}
+        run: echo 'RENOVATE_FORCE={"schedule":null,"automergeSchedule":null}' >> "$GITHUB_ENV"
+
+      - name: Self-hosted Renovate
+        uses: renovatebot/github-action@693b9ef15eec82123529a37c782242f091365961 # v46.1.14
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+        env:
+          LOG_LEVEL: debug
+          RENOVATE_REPOSITORY_CACHE: enabled
+          RENOVATE_REPOSITORIES: TryGhost/Ghost
+          # Ghost is already onboarded via Mend; don't open an onboarding PR.
+          RENOVATE_ONBOARDING: 'false'

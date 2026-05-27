@@ -1,9 +1,28 @@
 import AutomationEditor from '@src/views/Automations/editor';
 import React from 'react';
 import {AutomationDetail, MAX_AUTOMATION_ACTIONS} from '@tryghost/admin-x-framework/api/automations';
-import {MemoryRouter, Route, Routes} from 'react-router';
+import {RouterProvider, createMemoryRouter} from 'react-router';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {fireEvent, render, screen, waitFor, within} from '@testing-library/react';
+
+// Stub the email content editor modal — its real internals (Koenig + email API
+// hooks) are out of scope here. The stub exposes the seed props and a save button
+// so we can assert the canvas wiring (open → seed → onSave → draft → publish).
+vi.mock('@src/views/Automations/components/email-modal/email-content-modal', () => ({
+    default: ({initialSubject, initialLexical, onClose, onSave}: {
+        initialSubject: string;
+        initialLexical: string;
+        onClose: () => void;
+        onSave: (data: {subject: string; lexical: string}) => void;
+    }) => (
+        <div data-testid='email-content-modal'>
+            <span data-testid='modal-initial-subject'>{initialSubject}</span>
+            <span data-testid='modal-initial-lexical'>{initialLexical}</span>
+            <button data-testid='modal-save' type='button' onClick={() => onSave({subject: 'Edited via modal', lexical: '{"root":{"children":[{"type":"paragraph"}]}}'})}>save</button>
+            <button data-testid='modal-close' type='button' onClick={onClose}>close</button>
+        </div>
+    )
+}));
 
 const mockUseReadAutomation = vi.fn();
 const mockEditMutation = {
@@ -117,13 +136,25 @@ const automationDetail: AutomationDetail = {
     edges: [{source_action_id: 'action-wait', target_action_id: 'action-email'}]
 };
 
-const renderEditor = () => render(
-    <MemoryRouter initialEntries={['/automations/automation-id-1']}>
-        <Routes>
-            <Route element={<AutomationEditor />} path='/automations/:id' />
-        </Routes>
-    </MemoryRouter>
-);
+const renderEditor = () => {
+    const router = createMemoryRouter([
+        {
+            path: '/automations/:id',
+            element: <AutomationEditor />
+        },
+        {
+            path: '/automations',
+            element: <div data-testid='automations-list-route'>Automations list route</div>
+        }
+    ], {
+        initialEntries: ['/automations/automation-id-1']
+    });
+
+    return {
+        router,
+        ...render(<RouterProvider router={router} />)
+    };
+};
 
 describe('AutomationEditor', () => {
     beforeEach(() => {
@@ -262,8 +293,112 @@ describe('AutomationEditor', () => {
         expect(within(sidebar).getByDisplayValue('Welcome to The Blueprint')).toBeInTheDocument();
         expect(within(sidebar).queryByText('Sender')).not.toBeInTheDocument();
         expect(within(sidebar).queryByText('Reply-to')).not.toBeInTheDocument();
-        expect(within(sidebar).getByRole('button', {name: 'Edit email'})).toBeDisabled();
+        expect(within(sidebar).getByRole('button', {name: 'Edit email'})).toBeEnabled();
         expect(within(sidebar).getByRole('button', {name: 'Delete step'})).toBeEnabled();
+    });
+
+    it('persists an edited subject from the sidebar on publish', () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        fireEvent.click(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'}));
+        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        const subjectInput = within(sidebar).getByDisplayValue('Welcome to The Blueprint');
+
+        fireEvent.change(subjectInput, {target: {value: 'Updated subject'}});
+        fireEvent.blur(subjectInput);
+
+        const publish = screen.getByRole('button', {name: 'Publish changes'});
+        expect(publish).toBeEnabled();
+        fireEvent.click(publish);
+
+        const dialog = screen.getByRole('alertdialog', {name: 'Update automation?'});
+        fireEvent.click(within(dialog).getByRole('button', {name: 'Publish changes'}));
+
+        expect(mockEditMutation.mutate).toHaveBeenCalledWith(
+            expect.objectContaining({
+                id: 'automation-id-1',
+                status: 'active',
+                actions: expect.arrayContaining([
+                    expect.objectContaining({
+                        id: 'action-email',
+                        type: 'send_email',
+                        data: expect.objectContaining({email_subject: 'Updated subject'})
+                    })
+                ])
+            }),
+            expect.any(Object)
+        );
+    });
+
+    it('opens the email editor modal seeded from the step and commits edits to the draft (not the API) until publish', () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        fireEvent.click(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'}));
+        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        fireEvent.click(within(sidebar).getByRole('button', {name: 'Edit email'}));
+
+        // The modal opens, seeded from the step's current content.
+        expect(screen.getByTestId('email-content-modal')).toBeInTheDocument();
+        expect(screen.getByTestId('modal-initial-subject')).toHaveTextContent('Welcome to The Blueprint');
+        expect(screen.getByTestId('modal-initial-lexical')).toHaveTextContent('{"root":{"children":[]}}');
+
+        // Saving in the modal commits to the local draft only — no API call.
+        expect(mockEditMutation.mutate).not.toHaveBeenCalled();
+        fireEvent.click(screen.getByTestId('modal-save'));
+        expect(mockEditMutation.mutate).not.toHaveBeenCalled();
+        // The modal closes after saving.
+        expect(screen.queryByTestId('email-content-modal')).not.toBeInTheDocument();
+
+        // Publishing persists the edited content.
+        fireEvent.click(screen.getByRole('button', {name: 'Publish changes'}));
+        const dialog = screen.getByRole('alertdialog', {name: 'Update automation?'});
+        fireEvent.click(within(dialog).getByRole('button', {name: 'Publish changes'}));
+        expect(mockEditMutation.mutate).toHaveBeenCalledWith(
+            expect.objectContaining({
+                actions: expect.arrayContaining([
+                    expect.objectContaining({
+                        id: 'action-email',
+                        data: expect.objectContaining({
+                            email_subject: 'Edited via modal',
+                            email_lexical: '{"root":{"children":[{"type":"paragraph"}]}}'
+                        })
+                    })
+                ])
+            }),
+            expect.any(Object)
+        );
+    });
+
+    it('reflects a subject edited in the modal back in the sidebar input', () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        fireEvent.click(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'}));
+        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        expect(within(sidebar).getByDisplayValue('Welcome to The Blueprint')).toBeInTheDocument();
+
+        fireEvent.click(within(sidebar).getByRole('button', {name: 'Edit email'}));
+        fireEvent.click(screen.getByTestId('modal-save'));
+
+        expect(within(sidebar).getByDisplayValue('Edited via modal')).toBeInTheDocument();
+        expect(within(sidebar).queryByDisplayValue('Welcome to The Blueprint')).not.toBeInTheDocument();
     });
 
     it('resets the wait editor value when switching between wait steps', () => {
@@ -647,6 +782,83 @@ describe('AutomationEditor', () => {
         expect(screen.getByRole('link', {name: 'Back to automations'})).toHaveAttribute('href', '/automations');
     });
 
+    it('confirms before navigating away from an automation with unsaved changes', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        await stageLocalEdit();
+        fireEvent.click(screen.getByRole('link', {name: 'Back to automations'}));
+
+        const dialog = screen.getByRole('alertdialog', {name: 'Discard unsaved changes?'});
+        expect(within(dialog).getByText('Your changes will be lost if you leave this automation.')).toBeInTheDocument();
+        expect(within(dialog).getByRole('button', {name: 'Keep working'})).toBeInTheDocument();
+        expect(within(dialog).getByRole('button', {name: 'Discard changes'})).toHaveClass('bg-destructive');
+        expect(screen.queryByTestId('automations-list-route')).not.toBeInTheDocument();
+    });
+
+    it('keeps editing when cancelling navigation away from an automation with unsaved changes', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        await stageLocalEdit();
+        fireEvent.click(screen.getByRole('link', {name: 'Back to automations'}));
+        const dialog = screen.getByRole('alertdialog', {name: 'Discard unsaved changes?'});
+        fireEvent.click(within(dialog).getByRole('button', {name: 'Keep working'}));
+
+        await waitFor(() => {
+            expect(screen.queryByRole('alertdialog', {name: 'Discard unsaved changes?'})).not.toBeInTheDocument();
+        });
+        expect(screen.getByTestId('automation-editor')).toBeInTheDocument();
+        expect(screen.queryByTestId('automations-list-route')).not.toBeInTheDocument();
+    });
+
+    it('discards changes and continues navigation when confirming navigation away from an automation', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        await stageLocalEdit();
+        fireEvent.click(screen.getByRole('link', {name: 'Back to automations'}));
+        const dialog = screen.getByRole('alertdialog', {name: 'Discard unsaved changes?'});
+        fireEvent.click(within(dialog).getByRole('button', {name: 'Discard changes'}));
+
+        await waitFor(() => {
+            expect(screen.getByTestId('automations-list-route')).toBeInTheDocument();
+        });
+        expect(screen.queryByTestId('automation-editor')).not.toBeInTheDocument();
+    });
+
+    it('navigates away without confirmation when the automation has no unsaved changes', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        fireEvent.click(screen.getByRole('link', {name: 'Back to automations'}));
+
+        await waitFor(() => {
+            expect(screen.getByTestId('automations-list-route')).toBeInTheDocument();
+        });
+        expect(screen.queryByRole('alertdialog', {name: 'Discard unsaved changes?'})).not.toBeInTheDocument();
+    });
+
     it('inserts a wait step at the tail when the tail + is clicked and a type is picked', async () => {
         // Use a 48-hour wait in the fixture so the appended 24h step's "1 day" label is distinguishable.
         const fixture: AutomationDetail = {
@@ -944,7 +1156,7 @@ describe('AutomationEditor', () => {
             isError: false
         });
 
-        const {rerender} = renderEditor();
+        const {rerender, router} = renderEditor();
 
         // Baseline: clean active automation → Published, disabled.
         expect(screen.getByRole('button', {name: 'Published'})).toBeDisabled();
@@ -955,13 +1167,7 @@ describe('AutomationEditor', () => {
             isLoading: false,
             isError: false
         });
-        rerender(
-            <MemoryRouter initialEntries={['/automations/automation-id-1']}>
-                <Routes>
-                    <Route element={<AutomationEditor />} path='/automations/:id' />
-                </Routes>
-            </MemoryRouter>
-        );
+        rerender(<RouterProvider router={router} />);
 
         expect(screen.getByRole('button', {name: 'Published'})).toBeDisabled();
     });

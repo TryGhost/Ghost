@@ -45,6 +45,7 @@
         "@types/jest": "catalog:",
         "@types/papaparse": "5.5.2",
         "@types/react": "catalog:",
+        "@types/validator": "catalog:",
         "@vitest/coverage-v8": "catalog:",
         "eslint": "catalog:",
         "eslint-plugin-react-hooks": "4.6.2",
@@ -57,12 +58,16 @@
         "vitest": "catalog:"
     },
     "dependencies": {
+        "@ebay/nice-modal-react": "1.2.13",
+        "@tryghost/color-utils": "catalog:",
         "@tryghost/admin-x-framework": "workspace:*",
+        "@tryghost/koenig-lexical": "catalog:",
         "@tryghost/nql-lang": "catalog:",
         "@tryghost/shade": "workspace:*",
-        "@xyflow/react": "12.8.6",
+        "@xyflow/react": "12.10.2",
         "dequal": "catalog:",
         "i18n-iso-countries": "7.14.0",
+        "lucide-react": "catalog:",
         "moment-timezone": "0.5.45",
         "papaparse": "5.5.3",
         "react": "18.3.1",
@@ -71,6 +76,7 @@
         "sonner": "catalog:",
         "temporal-polyfill": "0.3.2",
         "use-debounce": "10.1.1",
+        "validator": "catalog:",
         "zod": "catalog:"
     },
     "nx": {

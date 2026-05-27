@@ -61,7 +61,7 @@ test.describe('Ghost Public - Comments - Replies', () => {
         await expect(postCommentsSection.comments.last()).toContainText('Reply to main comment 2');
     });
 
-    test('reply to reply comment', async ({page}) => {
+    test('reply to reply comment in threaded layout', async ({page}) => {
         const post = await postFactory.create({status: 'published'});
         const member = await memberFactory.create({status: 'free'});
         const paidTier = await tierFactory.getFirstPaidTier();
@@ -93,10 +93,9 @@ test.describe('Ghost Public - Comments - Replies', () => {
         await expect(postCommentsSection.comments).toHaveCount(3);
         await expect(postCommentsSection.comments.first()).toContainText('Main comment');
         await expect(postCommentsSection.comments.last()).toContainText('My reply');
-        await expect(postCommentsSection.comments.last()).toContainText('Replied to: Reply to main comment');
     });
 
-    test('show replies and load more replies', async ({page}) => {
+    test('show replies in threaded layout', async ({page}) => {
         const post = await postFactory.create({status: 'published'});
         const member = await memberFactory.create({status: 'free'});
 
@@ -122,13 +121,7 @@ test.describe('Ghost Public - Comments - Replies', () => {
         await postPage.waitForCommentsToLoad();
         const postCommentsSection = postPage.commentsSection;
 
-        await expect(postCommentsSection.comments).toHaveCount(4);
-        await expect(postCommentsSection.comments.last()).toContainText('reply 3 to comment 1');
-        await expect(postCommentsSection.showMoreRepliesButton).toBeVisible();
-        await expect(postCommentsSection.showMoreRepliesButton).toContainText('Show 2 more replies');
-
-        await postCommentsSection.showMoreRepliesButton.click();
-        await expect(postCommentsSection.comments.last()).toContainText('reply 5 to comment 1');
         await expect(postCommentsSection.comments).toHaveCount(6);
+        await expect(postCommentsSection.comments.last()).toContainText('reply 5 to comment 1');
     });
 });

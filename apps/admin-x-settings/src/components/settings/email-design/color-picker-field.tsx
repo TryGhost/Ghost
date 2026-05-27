@@ -1,3 +1,4 @@
+// NOTE: this has been copy-pasted into apps/posts/src/views/Automations/components/email-design/color-picker-field.tsx because we need to support the email design modal in both the settings app and the posts app until Automations GAs
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {ColorPicker} from '@tryghost/shade/patterns';
 import {Popover, PopoverContent, PopoverTrigger} from '@tryghost/shade/components';
