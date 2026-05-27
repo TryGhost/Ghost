@@ -4,6 +4,7 @@ import { describe, expect, beforeEach, afterEach, vi, test as baseTest } from "v
 import { queryClientFixtures, type TestWrapperComponent } from "@test-utils/fixtures/query-client";
 import type { QueryClient } from "@tanstack/react-query";
 import type { StateBridge, StateBridgeEventMap } from "./ember-bridge";
+import { useBrowseMembers } from "@tryghost/admin-x-framework/api/members";
 
 const queryTest = baseTest.extend<{
     queryClient: QueryClient;
@@ -112,6 +113,58 @@ describe('useEmberDataSync', () => {
         });
 
         unmount();
+    });
+
+    queryTest('invalidates the sidebar member count query for Ember member changes', async ({ queryClient, wrapper }) => {
+        const mock = createMockStateBridge();
+        window.EmberBridge = { state: mock.stateBridge };
+        const postsKey = ['PostsResponseType', '/posts'];
+
+        renderHook(() => {
+            useEmberDataSync();
+            useBrowseMembers({
+                enabled: false,
+                searchParams: {limit: '1'}
+            });
+        }, { wrapper });
+
+        const sidebarMemberCountKey = queryClient.getQueryCache().getAll().find(q => (
+            q.queryKey[0] === 'MembersResponseType' &&
+            typeof q.queryKey[1] === 'string' &&
+            q.queryKey[1].endsWith('/ghost/api/admin/members/?limit=1')
+        ))?.queryKey;
+
+        if (!sidebarMemberCountKey) {
+            throw new Error('Expected the sidebar member count query to be registered');
+        }
+
+        queryClient.setQueryData(sidebarMemberCountKey, {
+            members: [],
+            meta: {pagination: {page: 1, limit: 1, pages: 1, total: 102466, next: null, prev: null}}
+        });
+        queryClient.setQueryData(postsKey, { posts: [] });
+
+        await waitFor(() => {
+            expect(mock.onSpy).toHaveBeenCalledWith('emberDataChange', expect.any(Function));
+        });
+
+        act(() => {
+            mock.emit('emberDataChange', {
+                operation: 'delete',
+                modelName: 'member',
+                id: 'member-1',
+                data: null,
+            });
+        });
+
+        await waitFor(() => {
+            const queries = queryClient.getQueryCache().getAll();
+            const sidebarMemberCountQuery = queries.find(q => q.queryKey[0] === sidebarMemberCountKey[0] && q.queryKey[1] === sidebarMemberCountKey[1]);
+            const nonMemberQueries = queries.filter(q => q.queryKey[0] !== 'MembersResponseType');
+
+            expect(sidebarMemberCountQuery?.state.isInvalidated).toBe(true);
+            expect(nonMemberQueries.every(q => !q.state.isInvalidated)).toBe(true);
+        });
     });
 
     queryTest('ignores unmapped Ember models', async ({ queryClient, wrapper }) => {

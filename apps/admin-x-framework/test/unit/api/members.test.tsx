@@ -1,0 +1,153 @@
+import {act, waitFor} from '@testing-library/react';
+import {describe, expect, it, vi} from 'vitest';
+import {createTestQueryClient, renderHookWithProviders} from '../../../src/test/test-utils';
+import {useAddMember, useBulkDeleteMembers, useImportMembers} from '../../../src/api/members';
+import {withMockFetch} from '../../utils/mock-fetch';
+
+describe('members api', () => {
+    function expectQueryInvalidation(queryClient: ReturnType<typeof createTestQueryClient>, dataType: string, isInvalidated: boolean) {
+        const queries = queryClient.getQueryCache().getAll().filter(q => q.queryKey[0] === dataType);
+        expect(queries.length).toBeGreaterThan(0);
+        expect(queries.every(q => q.state.isInvalidated === isInvalidated)).toBe(true);
+    }
+
+    it('invalidates member queries after adding a member', async () => {
+        const queryClient = createTestQueryClient();
+        const memberCountKey = ['MembersResponseType', 'http://localhost:3000/ghost/api/admin/members/?limit=1'];
+
+        queryClient.setQueryData(memberCountKey, {
+            members: [],
+            meta: {pagination: {page: 1, limit: 1, pages: 1, total: 10, next: null, prev: null}}
+        });
+
+        await withMockFetch({
+            json: {
+                members: [{
+                    email: 'jamie@example.com'
+                }]
+            }
+        }, async () => {
+            const {result} = renderHookWithProviders(() => useAddMember(), {queryClient});
+
+            await act(async () => {
+                await result.current.mutateAsync({email: 'jamie@example.com'});
+            });
+
+            await waitFor(() => {
+                expectQueryInvalidation(queryClient, 'MembersResponseType', true);
+            });
+        });
+    });
+
+    it('invalidates member queries after importing members', async () => {
+        const queryClient = createTestQueryClient();
+        const onInvalidate = vi.fn();
+        const memberCountKey = ['MembersResponseType', 'http://localhost:3000/ghost/api/admin/members/?limit=1'];
+        const unrelatedKey = ['PostsResponseType', 'http://localhost:3000/ghost/api/admin/posts/'];
+        const file = new File(['email\njamie@example.com'], 'members.csv', {type: 'text/csv'});
+
+        queryClient.setQueryData(memberCountKey, {
+            members: [],
+            meta: {pagination: {page: 1, limit: 1, pages: 1, total: 10, next: null, prev: null}}
+        });
+        queryClient.setQueryData(unrelatedKey, {posts: []});
+
+        await withMockFetch({
+            json: {
+                meta: {
+                    stats: {
+                        imported: 1,
+                        invalid: []
+                    }
+                }
+            }
+        }, async (mock) => {
+            const {result} = renderHookWithProviders(() => useImportMembers(), {
+                frameworkProps: {onInvalidate},
+                queryClient
+            });
+
+            await act(async () => {
+                await result.current.mutateAsync({
+                    file,
+                    labels: ['VIP'],
+                    mapping: {email: 'Email'}
+                });
+            });
+
+            expect(mock.calls[0][0]).toBe('http://localhost:3000/ghost/api/admin/members/upload/');
+            expect(mock.calls[0][1].method).toBe('POST');
+            expect(mock.calls[0][1].body).toBeInstanceOf(FormData);
+            expect(mock.calls[0][1].body.get('membersfile')).toBe(file);
+            expect(mock.calls[0][1].body.get('labels')).toBe('VIP');
+            expect(mock.calls[0][1].body.get('mapping[email]')).toBe('Email');
+            expect(mock.calls[0][1].headers).not.toHaveProperty('content-type');
+            await waitFor(() => {
+                expectQueryInvalidation(queryClient, 'MembersResponseType', true);
+                expectQueryInvalidation(queryClient, 'PostsResponseType', false);
+            });
+            expect(onInvalidate).toHaveBeenCalledWith('MembersResponseType');
+        });
+    });
+
+    it('invalidates member queries after accepting a background member import', async () => {
+        const queryClient = createTestQueryClient();
+        const memberCountKey = ['MembersResponseType', 'http://localhost:3000/ghost/api/admin/members/?limit=1'];
+        const file = new File(['email\njamie@example.com'], 'members.csv', {type: 'text/csv'});
+
+        queryClient.setQueryData(memberCountKey, {
+            members: [],
+            meta: {pagination: {page: 1, limit: 1, pages: 1, total: 10, next: null, prev: null}}
+        });
+
+        await withMockFetch({
+            status: 202,
+            json: {
+                meta: {
+                    originalImportSize: 501
+                }
+            }
+        }, async () => {
+            const {result} = renderHookWithProviders(() => useImportMembers(), {queryClient});
+
+            await act(async () => {
+                await result.current.mutateAsync({file});
+            });
+
+            await waitFor(() => {
+                expectQueryInvalidation(queryClient, 'MembersResponseType', true);
+            });
+        });
+    });
+
+    it('invalidates member queries after bulk deleting members', async () => {
+        const queryClient = createTestQueryClient();
+        const memberCountKey = ['MembersResponseType', 'http://localhost:3000/ghost/api/admin/members/?limit=1'];
+
+        queryClient.setQueryData(memberCountKey, {
+            members: [],
+            meta: {pagination: {page: 1, limit: 1, pages: 1, total: 10, next: null, prev: null}}
+        });
+
+        await withMockFetch({
+            json: {
+                meta: {
+                    stats: {
+                        successful: 3,
+                        unsuccessful: 0
+                    }
+                }
+            }
+        }, async () => {
+            const {result} = renderHookWithProviders(() => useBulkDeleteMembers(), {queryClient});
+
+            await act(async () => {
+                await result.current.mutateAsync({all: true});
+            });
+
+            await waitFor(() => {
+                expectQueryInvalidation(queryClient, 'MembersResponseType', true);
+            });
+        });
+    });
+});

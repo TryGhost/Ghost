@@ -1,3 +1,4 @@
+import {HostLimitError, JSONError, RequestEntityTooLargeError, ValidationError} from '@tryghost/admin-x-framework/errors';
 import {ImportMembersModal} from '@src/views/members/components/bulk-action-modals/import-members-modal';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {fireEvent, render, screen, waitFor} from '@testing-library/react';
@@ -15,9 +16,19 @@ vi.mock('@tryghost/admin-x-framework/api/config', () => ({
     })
 }));
 
-vi.mock('@tryghost/admin-x-framework/helpers', () => ({
-    getGhostPaths: () => ({
-        apiRoot: '/ghost/api/admin'
+const {mockImportMembers} = vi.hoisted(() => ({
+    mockImportMembers: vi.fn()
+}));
+
+vi.mock('@tryghost/admin-x-framework/api/members', () => ({
+    isImportMembersAcceptedResponse: (response: {meta?: {originalImportSize?: number; stats?: unknown}}) => (
+        typeof response.meta?.originalImportSize === 'number' && response.meta.stats === undefined
+    ),
+    isImportMembersCompleteResponse: (response: {meta?: {stats?: {imported?: number}}}) => (
+        typeof response.meta?.stats?.imported === 'number'
+    ),
+    useImportMembers: () => ({
+        mutateAsync: mockImportMembers
     })
 }));
 
@@ -42,6 +53,42 @@ function createFile(name: string, type: string, contents = 'content') {
         type,
         size: contents.length
     };
+}
+
+function createApiError(type: string, message: string, code = '') {
+    return {
+        errors: [{
+            code,
+            context: null,
+            details: null,
+            ghostErrorCode: null,
+            help: '',
+            id: 'error-id',
+            message,
+            property: null,
+            type
+        }]
+    };
+}
+
+async function uploadCsv() {
+    const dropTarget = screen.getByRole('button', {name: /select or drop a csv file/i});
+    const csvFile = createFile('members.csv', 'text/csv', 'email,name\nmember@example.com,Member');
+
+    fireEvent.drop(dropTarget, {
+        dataTransfer: {
+            files: [csvFile],
+            items: [{
+                kind: 'file',
+                type: csvFile.type,
+                getAsFile: () => csvFile
+            }],
+            types: ['Files']
+        }
+    });
+
+    const importButton = await screen.findByRole('button', {name: /import 1 member/i});
+    fireEvent.click(importButton);
 }
 
 class MockFileReader {
@@ -74,6 +121,12 @@ describe('ImportMembersModal', () => {
         mockCsvContents = 'email,name\nmember@example.com,Member';
         vi.stubGlobal('FileReader', MockFileReader);
         vi.stubGlobal('fetch', vi.fn(async () => new Response(null, {status: 202})));
+        mockImportMembers.mockReset();
+        mockImportMembers.mockResolvedValue({
+            meta: {
+                originalImportSize: 1
+            }
+        });
         Object.defineProperty(URL, 'createObjectURL', {
             configurable: true,
             writable: true,
@@ -101,6 +154,30 @@ describe('ImportMembersModal', () => {
         });
     });
 
+    it('uploads members through the members API mutation so member queries are invalidated', async () => {
+        render(
+            <ImportMembersModal
+                open
+                onOpenChange={() => {}}
+            />
+        );
+
+        await uploadCsv();
+
+        await waitFor(() => {
+            expect(mockImportMembers).toHaveBeenCalledTimes(1);
+        });
+
+        expect(mockImportMembers.mock.calls[0][0]).toEqual(expect.objectContaining({
+            file: expect.objectContaining({name: 'members.csv'}),
+            mapping: expect.objectContaining({
+                email: 'email',
+                name: 'name'
+            })
+        }));
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
     it('calls onComplete when the upload response is accepted for background processing', async () => {
         const onComplete = vi.fn();
         render(
@@ -111,29 +188,132 @@ describe('ImportMembersModal', () => {
             />
         );
 
-        const dropTarget = screen.getByRole('button', {name: /select or drop a csv file/i});
-        const csvFile = createFile('members.csv', 'text/csv', 'email,name\nmember@example.com,Member');
-
-        fireEvent.drop(dropTarget, {
-            dataTransfer: {
-                files: [csvFile],
-                items: [{
-                    kind: 'file',
-                    type: csvFile.type,
-                    getAsFile: () => csvFile
-                }],
-                types: ['Files']
-            }
-        });
-
-        const importButton = await screen.findByRole('button', {name: /import 1 member/i});
-        fireEvent.click(importButton);
+        await uploadCsv();
 
         await waitFor(() => {
             expect(onComplete).toHaveBeenCalledTimes(1);
         });
 
         expect(screen.getByRole('heading', {name: /import in progress/i})).toBeInTheDocument();
+    });
+
+    it('shows the import result when the upload completes inline', async () => {
+        const onComplete = vi.fn();
+        mockImportMembers.mockResolvedValueOnce({
+            meta: {
+                stats: {
+                    imported: 1,
+                    invalid: []
+                },
+                import_label: {
+                    name: 'Test Import',
+                    slug: 'test-import'
+                }
+            }
+        });
+
+        render(
+            <ImportMembersModal
+                open
+                onComplete={onComplete}
+                onOpenChange={() => {}}
+            />
+        );
+
+        await uploadCsv();
+
+        await waitFor(() => {
+            expect(onComplete).toHaveBeenCalledWith(expect.objectContaining({
+                importedCount: 1,
+                errorCount: 0,
+                errorCsvUrl: 'blob:mock/0'
+            }));
+        });
+
+        expect(screen.getByRole('heading', {name: /import complete/i})).toBeInTheDocument();
+    });
+
+    it('shows the file size error when the upload is too large', async () => {
+        mockImportMembers.mockRejectedValueOnce(new RequestEntityTooLargeError(new Response(null, {status: 413}), 'too large'));
+
+        render(
+            <ImportMembersModal
+                open
+                onOpenChange={() => {}}
+            />
+        );
+
+        await uploadCsv();
+
+        expect(await screen.findByText('The file you uploaded was larger than the maximum file size your server allows.')).toBeInTheDocument();
+    });
+
+    it('shows the email verification host limit error without retrying', async () => {
+        const onComplete = vi.fn();
+        const errorData = createApiError('HostLimitError', 'Please verify your email before importing this many members.', 'EMAIL_VERIFICATION_NEEDED');
+        mockImportMembers.mockRejectedValueOnce(new HostLimitError(new Response(JSON.stringify(errorData), {status: 403}), errorData));
+
+        render(
+            <ImportMembersModal
+                open
+                onComplete={onComplete}
+                onOpenChange={() => {}}
+            />
+        );
+
+        await uploadCsv();
+
+        expect(await screen.findByRole('heading', {name: /woah there cowboy/i})).toBeInTheDocument();
+        expect(screen.getByText('Please verify your email before importing this many members.')).toBeInTheDocument();
+        expect(screen.queryByRole('button', {name: /try again/i})).not.toBeInTheDocument();
+        expect(onComplete).toHaveBeenCalledTimes(1);
+    });
+
+    it('shows validation errors returned by the upload API', async () => {
+        const errorData = createApiError('ValidationError', 'Please map Email to one of the fields in the CSV.');
+        mockImportMembers.mockRejectedValueOnce(new ValidationError(new Response(JSON.stringify(errorData), {status: 422}), errorData));
+
+        render(
+            <ImportMembersModal
+                open
+                onOpenChange={() => {}}
+            />
+        );
+
+        await uploadCsv();
+
+        expect(await screen.findByText('Please map Email to one of the fields in the CSV.')).toBeInTheDocument();
+    });
+
+    it('shows data import errors returned by the upload API', async () => {
+        const errorData = createApiError('DataImportError', 'Some rows could not be imported.');
+        mockImportMembers.mockRejectedValueOnce(new JSONError(new Response(JSON.stringify(errorData), {status: 422}), errorData));
+
+        render(
+            <ImportMembersModal
+                open
+                onOpenChange={() => {}}
+            />
+        );
+
+        await uploadCsv();
+
+        expect(await screen.findByText('Some rows could not be imported.')).toBeInTheDocument();
+    });
+
+    it('shows a generic error for unexpected successful upload responses', async () => {
+        mockImportMembers.mockResolvedValueOnce({meta: {}} as never);
+
+        render(
+            <ImportMembersModal
+                open
+                onOpenChange={() => {}}
+            />
+        );
+
+        await uploadCsv();
+
+        expect(await screen.findByText('An unexpected error occurred, please try again')).toBeInTheDocument();
     });
 
     it('shows tier as a mapped field when importMemberTier is enabled', async () => {

@@ -123,6 +123,70 @@ export const useAddMember = createMutation<MembersResponseType, NewMember>({
     invalidateQueries: {dataType}
 });
 
+export type ImportMembersImportLabel = {
+    name: string;
+    slug: string;
+} | null;
+
+export type ImportMembersAcceptedResponseType = {
+    meta: {
+        originalImportSize: number;
+        stats?: undefined;
+        import_label?: ImportMembersImportLabel;
+    };
+};
+
+export type ImportMembersCompleteResponseType = {
+    meta: {
+        originalImportSize?: number;
+        stats: {
+            imported: number;
+            invalid?: Array<Record<string, string> & {error: string}>;
+        };
+        import_label?: ImportMembersImportLabel;
+    };
+};
+
+export type ImportMembersResponseType = ImportMembersAcceptedResponseType | ImportMembersCompleteResponseType;
+
+export function isImportMembersAcceptedResponse(response: ImportMembersResponseType): response is ImportMembersAcceptedResponseType {
+    return typeof response.meta?.originalImportSize === 'number' && response.meta.stats === undefined;
+}
+
+export function isImportMembersCompleteResponse(response: ImportMembersResponseType): response is ImportMembersCompleteResponseType {
+    return typeof response.meta?.stats?.imported === 'number';
+}
+
+export type ImportMembersPayload = {
+    file: File;
+    labels?: string[];
+    mapping?: Record<string, string | null | undefined>;
+};
+
+function buildImportMembersFormData({file, labels = [], mapping = {}}: ImportMembersPayload) {
+    const formData = new FormData();
+    formData.append('membersfile', file);
+
+    for (const label of labels) {
+        formData.append('labels', label);
+    }
+
+    for (const [key, val] of Object.entries(mapping)) {
+        if (val) {
+            formData.append(`mapping[${key}]`, val);
+        }
+    }
+
+    return formData;
+}
+
+export const useImportMembers = createMutation<ImportMembersResponseType, ImportMembersPayload>({
+    method: 'POST',
+    path: () => '/members/upload/',
+    body: buildImportMembersFormData,
+    invalidateQueries: {dataType}
+});
+
 export const getMember = createQueryWithId<MembersResponseType>({
     dataType,
     path: id => `/members/${id}/`
