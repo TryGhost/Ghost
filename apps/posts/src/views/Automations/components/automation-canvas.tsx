@@ -646,7 +646,7 @@ const StepSidebar: React.FC<{detail: StepSidebarDetail | null; isEmailModalOpen:
             aria-hidden={!detail}
             aria-label='Step details'
             className={cn(
-                'absolute inset-y-0 right-0 z-[1] flex w-[calc(100%-6rem)] max-w-none translate-x-full flex-col gap-6 overflow-y-auto bg-background p-6 shadow-sm transition-transform duration-200 ease-out sm:w-[36rem] dark:bg-gray-950',
+                'absolute inset-y-0 right-0 z-[1] flex w-[calc(100%-6rem)] max-w-none translate-x-full flex-col gap-6 overflow-y-auto bg-background p-6 shadow-sm transition-transform duration-200 ease-out sm:w-[36rem] dark:border-l dark:border-gray-950',
                 detail ? 'translate-x-0' : 'pointer-events-none'
             )}
             data-state={detail ? 'open' : 'closed'}
