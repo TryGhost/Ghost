@@ -44,6 +44,7 @@ jobs:
   review:
     name: Review translations
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     if: |
       github.repository_owner == 'TryGhost' && (
         github.event_name == 'workflow_dispatch' ||

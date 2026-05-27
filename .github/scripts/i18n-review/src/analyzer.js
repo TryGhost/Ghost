@@ -11,6 +11,12 @@ const PROMPT_PATH = path.join(__dirname, '..', 'prompt.md');
 const I18N_PATH_PATTERN = /^ghost\/i18n\/locales\/(?!en\/)[^/]+\/[^/]+\.json$/;
 const DEFAULT_MODEL = 'claude-sonnet-4-6';
 const MAX_TOKENS = 4096;
+// Abuse / cost guards. A normal translation PR touches one locale and adds a
+// handful of strings; well past that is either a bulk regeneration that a
+// human should review, or someone trying to burn API budget. When exceeded we
+// skip the model call and post a short notice instead.
+const MAX_FILES = 15;
+const MAX_ADDED_LINES = 500;
 
 const REVIEW_TOOL = {
     name: 'post_translation_review',
@@ -104,6 +110,24 @@ export async function analyzePR(prNumber, {octokit, anthropic, owner, repo, mode
             validKeys.add(key);
             lineLookup.set(key, l.line);
         }
+    }
+
+    if (fileChanges.length > MAX_FILES || validKeys.size > MAX_ADDED_LINES) {
+        console.log(`PR exceeds review caps (files=${fileChanges.length}/${MAX_FILES}, lines=${validKeys.size}/${MAX_ADDED_LINES}). Skipping model call.`);
+        return {
+            prNumber: pr.number,
+            prTitle: pr.title,
+            headSha: pr.head.sha,
+            verdict: 'skipped',
+            overall: `This PR touches ${fileChanges.length} translation file${fileChanges.length === 1 ? '' : 's'} and ${validKeys.size} added line${validKeys.size === 1 ? '' : 's'}, which is beyond the automated reviewer's per-PR limit (max ${MAX_FILES} files / ${MAX_ADDED_LINES} lines). A maintainer should review the translations manually.`,
+            comments: [],
+            stats: {
+                filesReviewed: fileChanges.length,
+                linesReviewed: validKeys.size,
+                commentsRaised: 0
+            },
+            usage: null
+        };
     }
 
     const systemPrompt = await fs.readFile(PROMPT_PATH, 'utf8');

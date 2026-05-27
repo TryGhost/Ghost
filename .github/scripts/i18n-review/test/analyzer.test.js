@@ -57,6 +57,41 @@ test('ignores English source locale files', async () => {
     assert.equal(anthropicCalled, false);
 });
 
+test('skips the model call when the PR exceeds the per-PR line cap', async () => {
+    const lines = [];
+    for (let i = 0; i < 600; i++) {
+        lines.push(`+  "Key${i}": "Wert${i}"`);
+    }
+    const patch = `@@ -1,1 +1,${lines.length + 1} @@\n {\n${lines.join('\n')}\n }`;
+    let anthropicCalled = false;
+    const octokit = createOctokit({
+        files: [{
+            filename: 'ghost/i18n/locales/de/ghost.json',
+            status: 'modified',
+            patch
+        }]
+    });
+    const anthropic = {
+        messages: {
+            create: async () => {
+                anthropicCalled = true;
+            }
+        }
+    };
+
+    const review = await analyzePR(123, {
+        octokit,
+        anthropic,
+        owner: 'TryGhost',
+        repo: 'Ghost'
+    });
+
+    assert.equal(anthropicCalled, false);
+    assert.equal(review.verdict, 'skipped');
+    assert.equal(review.comments.length, 0);
+    assert.ok(review.overall.includes('beyond the automated reviewer'));
+});
+
 test('downgrades verdict when all model comments are filtered out', async () => {
     const octokit = createOctokit({
         files: [{

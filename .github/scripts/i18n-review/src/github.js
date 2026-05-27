@@ -26,7 +26,9 @@ function formatReviewBody(review) {
     const {comments, stats, overall, verdict} = review;
     const verdictLine = verdict === 'ok'
         ? '✅ **Looks good** — no concerns flagged'
-        : `⚠️ **Has questions** — ${comments.length} inline comment${comments.length === 1 ? '' : 's'}`;
+        : verdict === 'skipped'
+            ? '⏭️ **Skipped** — PR is too large for automated review'
+            : `⚠️ **Has questions** — ${comments.length} inline comment${comments.length === 1 ? '' : 's'}`;
 
     const lines = [
         '### 🌐 Automated translation review',
