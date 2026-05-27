@@ -2574,8 +2574,8 @@ importers:
         specifier: 2.2.0
         version: 2.2.0
       nodemailer:
-        specifier: 8.0.7
-        version: 8.0.7
+        specifier: 8.0.8
+        version: 8.0.8
       on-headers:
         specifier: 1.1.0
         version: 1.1.0
@@ -17549,6 +17549,10 @@ packages:
 
   nodemailer@8.0.7:
     resolution: {integrity: sha512-pkjE4mkBzQjdJT4/UmlKl3pX0rC9fZmjh7c6C9o7lv66Ac6w9WCnzPzhbPNxwZAzlF4mdq4CSWB5+FbK6FWCow==}
+    engines: {node: '>=6.0.0'}
+
+  nodemailer@8.0.8:
+    resolution: {integrity: sha512-p+XsnzXGdtIHXUu2ugxdfG+eX2nehsGhMjW9h0CWj1BhE30hrFz0kh0yIM0/VjUgVsRrDj+80ZO+I1nSkGE4tA==}
     engines: {node: '>=6.0.0'}
 
   nodemon@3.1.14:
@@ -41827,6 +41831,8 @@ snapshots:
   nodemailer-stub-transport@1.1.0: {}
 
   nodemailer@8.0.7: {}
+
+  nodemailer@8.0.8: {}
 
   nodemon@3.1.14:
     dependencies:
