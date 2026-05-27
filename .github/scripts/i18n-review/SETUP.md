@@ -1,7 +1,7 @@
 # Translation review bot — setup
 
 This is the deployment + operations guide for the agentic translation review
-that posts a draft GitHub review on PRs labelled `affects:i18n`.
+that posts an advisory (non-approving) GitHub review on PRs labelled `affects:i18n`.
 
 For the design rationale and how the code is organised, see `README.md`.
 
@@ -25,7 +25,9 @@ Defaults to **`claude-sonnet-4-6`**. Each PR run sends roughly
 current contents + the diff) and produces a few hundred output tokens.
 That works out to roughly **$0.05–0.30 per PR** at current pricing.
 
-If that's higher than desired, swap to Haiku by editing the workflow:
+Haiku 4.5 is roughly 3× cheaper at similar quality for this kind of
+structured pattern-matching task. To switch the default permanently, edit
+the workflow:
 
 ```yaml
 - name: Run review
@@ -34,6 +36,9 @@ If that's higher than desired, swap to Haiku by editing the workflow:
     # ...existing env...
     ANTHROPIC_MODEL: claude-haiku-4-5
 ```
+
+For a one-off comparison (Sonnet vs. Haiku on the same PR), use the
+**`model`** input on `workflow_dispatch` — see §3.
 
 No code change required — the model is read from `ANTHROPIC_MODEL` and falls
 back to the Sonnet default if unset.
@@ -45,8 +50,8 @@ The workflow runs on three events, all gated on `affects:i18n`:
 | Event | Trigger | Notes |
 |---|---|---|
 | `pull_request_target.labeled` | When a maintainer adds the `affects:i18n` label | The most common path. Fires once per label-add. |
-| `pull_request_target.synchronize` | When new commits are pushed to a PR that already has the label | The bot re-runs and replaces its previous draft review. |
-| `workflow_dispatch` | Manual run from the Actions tab with a PR number input | Used to retroactively review existing PRs (see §3). |
+| `pull_request_target.synchronize` | When new commits are pushed to a PR that already has the label | The bot re-runs and posts a fresh advisory review. Prior runs are not auto-deleted — GitHub does not allow deleting a submitted review. |
+| `workflow_dispatch` | Manual run from the Actions tab with PR number + optional model override | Used to retroactively review existing PRs (see §3) or to A/B compare models. |
 
 Concurrency is set to `cancel-in-progress` per PR, so rapid pushes only
 result in one live run reviewing the latest commit.
@@ -66,9 +71,12 @@ To kick one off manually:
 1. Go to *Actions → Translation Review*
 2. Click *Run workflow*
 3. Enter the PR number
-4. Click *Run workflow*
+4. (Optional) pick a `model` to override the default — leave blank to use
+   the workflow's configured default. Useful for comparing Sonnet vs.
+   Haiku output on the same PR.
+5. Click *Run workflow*
 
-The draft review appears on the PR within ~1 minute.
+The advisory review appears on the PR within ~1 minute.
 
 ## 4. Verify it's working
 
@@ -77,13 +85,14 @@ After adding the secret, the easiest end-to-end check is to use
 `affects:i18n` label search). What you should see:
 
 1. Workflow run completes in ~30–60 seconds.
-2. A new pending review appears on the PR, attributed to `github-actions`.
+2. A new review appears on the PR, attributed to `github-actions`, with
+   state **`COMMENTED`** (not `APPROVED` / `CHANGES_REQUESTED`).
 3. The review body opens with **`Verdict:` ✅ Looks good** or
    **`Verdict:` ⚠️ Has questions**.
 4. If verdict is `questions`, there are inline comments on the flagged lines.
-5. The review is in **pending** state — a maintainer must submit, dismiss,
-   or edit it. The bot's `GITHUB_TOKEN` cannot approve PRs, so even a
-   confused review can never auto-merge anything.
+5. The review never blocks merge. The bot's `GITHUB_TOKEN` cannot approve
+   PRs, and a `COMMENT`-event review carries no approval/changes-requested
+   signal — it's purely advisory.
 
 If the run fails, check the workflow logs for the failing step. The most
 likely causes:
@@ -109,7 +118,7 @@ Common tunings:
 - **Change verdict bias** (when in doubt, ⚠️ vs. ✅): edit the "Verdict"
   section of `prompt.md`. Default is biased toward ✅.
 - **Change severity icons**: edit `formatCommentBody` in `src/github.js`.
-- **Change the "draft review" preamble**: edit `formatReviewBody` in
+- **Change the review preamble**: edit `formatReviewBody` in
   `src/github.js`.
 
 The structured-output schema (`REVIEW_TOOL` in `src/analyzer.js`) is the
@@ -124,8 +133,8 @@ If the bot starts misbehaving and you want to mute it without reverting:
 - Or comment out the trigger block in `translation-review.yml` and PR
 - Or simply rename the `affects:i18n` label — the conditional won't match
 
-The bot only ever posts pending draft reviews; it cannot leave a merged
-artifact behind, so disabling it is always safe.
+The bot only ever posts advisory `COMMENT`-event reviews; it cannot
+approve a PR or block a merge, so disabling it is always safe.
 
 ## 7. Local development / debugging
 
@@ -144,5 +153,7 @@ GITHUB_TOKEN=ghp_... \
 to GitHub. `DEBUG=true` also dumps the user message sent to Claude to
 stderr so you can iterate on the prompt locally.
 
-Once the payload looks right, drop `--dry-run` to actually post the draft
+Once the payload looks right, drop `--dry-run` to actually post the
 review (you'll need a token with `pull_request: write` for the target PR).
+Set `ANTHROPIC_MODEL=claude-haiku-4-5` (or any other model id) to override
+the default for a local run.

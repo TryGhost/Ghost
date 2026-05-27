@@ -1,8 +1,6 @@
 const BOT_MARKER = '<!-- i18n-review-bot -->';
 
-export async function postDraftReview({octokit, owner, repo, prNumber, review}) {
-    await replaceExistingDraft({octokit, owner, repo, prNumber});
-
+export async function postReview({octokit, owner, repo, prNumber, review}) {
     const body = formatReviewBody(review);
     const comments = review.comments.map(c => ({
         path: c.filename,
@@ -16,30 +14,12 @@ export async function postDraftReview({octokit, owner, repo, prNumber, review}) 
         repo,
         pull_number: prNumber,
         commit_id: review.headSha,
+        event: 'COMMENT',
         body,
         comments
-        // No `event` => draft (PENDING) review. Human submits or dismisses.
     });
 
-    console.log(`Posted draft review: verdict=${review.verdict}, comments=${review.comments.length}`);
-}
-
-async function replaceExistingDraft({octokit, owner, repo, prNumber}) {
-    const reviews = await octokit.paginate(octokit.pulls.listReviews, {
-        owner,
-        repo,
-        pull_number: prNumber,
-        per_page: 100
-    });
-    const ownDraft = reviews.find(r => r.state === 'PENDING' && r.body && r.body.includes(BOT_MARKER));
-    if (!ownDraft) return;
-    console.log(`Replacing existing bot draft review (id=${ownDraft.id}).`);
-    await octokit.pulls.deletePendingReview({
-        owner,
-        repo,
-        pull_number: prNumber,
-        review_id: ownDraft.id
-    });
+    console.log(`Posted advisory review: verdict=${review.verdict}, comments=${review.comments.length}`);
 }
 
 function formatReviewBody(review) {
@@ -63,7 +43,7 @@ function formatReviewBody(review) {
     lines.push(
         '',
         '---',
-        '<sub>Draft review by `i18n-review-bot`. A maintainer should submit, dismiss, or edit before merge — the bot does not approve PRs on its own. Translator expertise wins where there is doubt.</sub>',
+        '<sub>Advisory review by `i18n-review-bot`. Non-blocking — a maintainer still owns the merge decision, and the bot cannot approve PRs on its own. Translator expertise wins where there is doubt.</sub>',
         BOT_MARKER
     );
     return lines.join('\n');

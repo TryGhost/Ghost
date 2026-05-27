@@ -22,6 +22,15 @@ on:
         description: 'PR number to review (manual rerun)'
         required: true
         type: number
+      model:
+        description: 'Anthropic model to use (overrides default)'
+        required: false
+        type: choice
+        default: ''
+        options:
+          - ''
+          - claude-sonnet-4-6
+          - claude-haiku-4-5
 
 permissions:
   contents: read
@@ -64,6 +73,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_MODEL: ${{ inputs.model }}
           GITHUB_OWNER: ${{ github.repository_owner }}
           GITHUB_REPO: ${{ github.event.repository.name }}
         run: |

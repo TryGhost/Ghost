@@ -2,7 +2,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import {Octokit} from '@octokit/rest';
 import {analyzePR} from './src/analyzer.js';
-import {postDraftReview} from './src/github.js';
+import {postReview} from './src/github.js';
 
 function requireEnv(name) {
     const value = process.env[name];
@@ -44,12 +44,12 @@ async function main() {
     }
 
     if (dryRun) {
-        console.log('--dry-run: skipping draft review posting. Payload:');
+        console.log('--dry-run: skipping review posting. Payload:');
         console.log(JSON.stringify(review, null, 2));
         return;
     }
 
-    await postDraftReview({octokit, owner, repo, prNumber, review});
+    await postReview({octokit, owner, repo, prNumber, review});
 }
 
 main().catch(err => {
