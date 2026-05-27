@@ -162,12 +162,13 @@ describe('Unit: frontend/services/llms/markdown', function () {
             const entry = {
                 title: 'My Post',
                 url: 'https://example.com/my-post/',
+                type: 'post',
                 published_at: '2026-01-01T00:00:00.000Z',
                 updated_at: '2026-01-02T00:00:00.000Z',
                 custom_excerpt: 'A post about things',
                 html: '<p>Hello world</p>',
                 authors: [{name: 'Alice'}],
-                tags: [{name: 'Tech'}]
+                tags: [{name: 'Tech'}, {name: 'JavaScript'}]
             };
 
             const result = renderEntryMarkdown(entry, {llmsIndexUrl: 'https://example.com/llms.txt'});
@@ -176,9 +177,25 @@ describe('Unit: frontend/services/llms/markdown', function () {
             assert.match(result, /https:\/\/example\.com\/llms\.txt/);
             assert.match(result, /^# My Post$/m);
             assert.match(result, /- URL: https:\/\/example\.com\/my-post\//);
+            assert.match(result, /- Type: post/);
             assert.match(result, /- Author: Alice/);
-            assert.match(result, /- Primary tag: Tech/);
+            assert.match(result, /- Tags: Tech, JavaScript/);
             assert.match(result, /Hello world/);
+        });
+
+        it('renders page type correctly', function () {
+            const entry = {
+                title: 'About',
+                url: 'https://example.com/about/',
+                type: 'page',
+                html: '<p>About us</p>',
+                tags: []
+            };
+
+            const result = renderEntryMarkdown(entry, {llmsIndexUrl: 'https://example.com/llms.txt'});
+
+            assert.match(result, /- Type: page/);
+            assert.doesNotMatch(result, /- Tags:/);
         });
     });
 });

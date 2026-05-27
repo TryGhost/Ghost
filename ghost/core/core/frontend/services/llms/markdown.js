@@ -105,16 +105,16 @@ function getPrimaryAuthorName(entry) {
     return null;
 }
 
-function getPrimaryTagName(entry) {
+function getTagNames(entry) {
+    if (Array.isArray(entry.tags) && entry.tags.length) {
+        return entry.tags.map(t => t.name).filter(Boolean);
+    }
+
     if (entry.primary_tag?.name) {
-        return entry.primary_tag.name;
+        return [entry.primary_tag.name];
     }
 
-    if (Array.isArray(entry.tags) && entry.tags[0]?.name) {
-        return entry.tags[0].name;
-    }
-
-    return null;
+    return [];
 }
 
 function renderEntryMarkdownBody(entry) {
@@ -132,13 +132,15 @@ function renderEntryMarkdownBody(entry) {
 }
 
 function renderEntryMarkdown(entry, {llmsIndexUrl}) {
+    const tags = getTagNames(entry);
     const metadata = [
         entry.url ? `- URL: ${entry.url}` : null,
+        entry.type ? `- Type: ${entry.type}` : null,
         formatIsoDate(entry.published_at) ? `- Published: ${formatIsoDate(entry.published_at)}` : null,
         formatIsoDate(entry.updated_at) ? `- Updated: ${formatIsoDate(entry.updated_at)}` : null,
         collapseWhitespace(entry.custom_excerpt) ? `- Description: ${collapseWhitespace(entry.custom_excerpt)}` : null,
         getPrimaryAuthorName(entry) ? `- Author: ${getPrimaryAuthorName(entry)}` : null,
-        getPrimaryTagName(entry) ? `- Primary tag: ${getPrimaryTagName(entry)}` : null
+        tags.length ? `- Tags: ${tags.join(', ')}` : null
     ].filter(Boolean);
 
     const body = renderEntryMarkdownBody(entry) || '_No content available._';
@@ -169,7 +171,7 @@ module.exports = {
     getMarkdownPath,
     getMarkdownUrl,
     getPrimaryAuthorName,
-    getPrimaryTagName,
+    getTagNames,
     getResourcePathFromMarkdownPath,
     markdownFromHtml,
     renderEntryMarkdown,
