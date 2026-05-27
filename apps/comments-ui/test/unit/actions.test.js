@@ -81,6 +81,110 @@ describe('Actions', function () {
         });
     });
 
+    describe('addReply', function () {
+        it('adds the created reply when the replies refetch is stale', async function () {
+            const newReply = makeComment({
+                id: 'new-reply',
+                html: '<p>New reply</p>',
+                parent_id: 'comment-1'
+            });
+            const existingReply = makeComment({
+                id: 'existing-reply',
+                html: '<p>Existing reply</p>',
+                parent_id: 'comment-1'
+            });
+            const state = {
+                commentCount: 1,
+                comments: [
+                    makeComment({
+                        id: 'comment-1',
+                        replies: [],
+                        count: {
+                            replies: 0,
+                            likes: 0
+                        }
+                    })
+                ]
+            };
+            const api = {
+                comments: {
+                    add: vi.fn(() => Promise.resolve({comments: [newReply]})),
+                    replies: vi.fn(() => Promise.resolve({comments: [existingReply]}))
+                }
+            };
+
+            const newState = await Actions.addReply({
+                state,
+                api,
+                data: {
+                    parent: state.comments[0],
+                    reply: {
+                        post_id: 'post-1',
+                        html: '<p>New reply</p>',
+                        status: 'published'
+                    }
+                }
+            });
+
+            expect(api.comments.add).toHaveBeenCalledWith({
+                comment: {
+                    post_id: 'post-1',
+                    html: '<p>New reply</p>',
+                    status: 'published',
+                    parent_id: 'comment-1'
+                }
+            });
+            expect(api.comments.replies).toHaveBeenCalledWith({commentId: 'comment-1', limit: 'all'});
+            expect(newState.comments[0].replies.map(reply => reply.id)).toEqual(['existing-reply', 'new-reply']);
+            expect(newState.comments[0].count.replies).toBe(2);
+            expect(newState.commentCount).toBe(2);
+            expect(newState.commentIdToScrollTo).toBe('new-reply');
+        });
+
+        it('does not duplicate the created reply when the replies refetch includes it', async function () {
+            const newReply = makeComment({
+                id: 'new-reply',
+                html: '<p>New reply</p>',
+                parent_id: 'comment-1'
+            });
+            const state = {
+                commentCount: 1,
+                comments: [
+                    makeComment({
+                        id: 'comment-1',
+                        replies: [],
+                        count: {
+                            replies: 0,
+                            likes: 0
+                        }
+                    })
+                ]
+            };
+            const api = {
+                comments: {
+                    add: vi.fn(() => Promise.resolve({comments: [newReply]})),
+                    replies: vi.fn(() => Promise.resolve({comments: [newReply]}))
+                }
+            };
+
+            const newState = await Actions.addReply({
+                state,
+                api,
+                data: {
+                    parent: state.comments[0],
+                    reply: {
+                        post_id: 'post-1',
+                        html: '<p>New reply</p>',
+                        status: 'published'
+                    }
+                }
+            });
+
+            expect(newState.comments[0].replies.map(reply => reply.id)).toEqual(['new-reply']);
+            expect(newState.comments[0].count.replies).toBe(1);
+        });
+    });
+
     describe('deleteComment', function () {
         it('keeps a deleted reply as a tombstone when it has descendants', async function () {
             const state = {

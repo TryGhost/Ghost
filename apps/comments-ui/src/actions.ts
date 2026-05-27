@@ -136,16 +136,21 @@ async function addReply({state, api, data: {reply, parent}}: {state: EditableApp
     const newComment = data.comments[0];
 
     const allReplies = await api.comments.replies({commentId: parent.id, limit: 'all'});
+    // Caching can serve a stale replies response immediately after creation, so
+    // keep the refetch for concurrent replies but preserve the POSTed reply.
+    const replies = allReplies.comments.some(replyComment => replyComment.id === newComment.id)
+        ? allReplies.comments
+        : [...allReplies.comments, newComment];
 
     return {
         comments: state.comments.map((c) => {
             if (c.id === parent.id) {
                 return {
                     ...c,
-                    replies: allReplies.comments,
+                    replies,
                     count: {
                         ...c.count,
-                        replies: allReplies.comments.length
+                        replies: replies.length
                     }
                 };
             }
