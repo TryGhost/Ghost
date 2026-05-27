@@ -6,10 +6,9 @@ import {extractAddedLines} from './diff.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROMPT_PATH = path.join(__dirname, '..', 'prompt.md');
 // Matches per-locale translation files (`ghost/i18n/locales/<locale>/<namespace>.json`)
-// but deliberately excludes `ghost/i18n/locales/context.json`, which is the
-// English-source key-description file the reviewer is given as *context*, not a
-// translation to be reviewed.
-const I18N_PATH_PATTERN = /^ghost\/i18n\/locales\/[^/]+\/[^/]+\.json$/;
+// but deliberately excludes English source files and `context.json`, because
+// the reviewer validates translations from English rather than source copy.
+const I18N_PATH_PATTERN = /^ghost\/i18n\/locales\/(?!en\/)[^/]+\/[^/]+\.json$/;
 const DEFAULT_MODEL = 'claude-sonnet-4-6';
 const MAX_TOKENS = 4096;
 
@@ -144,11 +143,13 @@ export async function analyzePR(prNumber, {octokit, anthropic, owner, repo, mode
         })
         .map(c => ({...c, line: lineLookup.get(`${c.filename}:${c.position}`)}));
 
+    const verdict = validComments.length > 0 ? 'questions' : 'ok';
+
     return {
         prNumber: pr.number,
         prTitle: pr.title,
         headSha: pr.head.sha,
-        verdict: review.verdict === 'ok' ? 'ok' : 'questions',
+        verdict,
         overall: typeof review.overall === 'string' ? review.overall : '',
         comments: validComments,
         stats: {
