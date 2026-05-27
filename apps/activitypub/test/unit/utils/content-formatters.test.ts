@@ -9,7 +9,7 @@ describe('enforceVideoCardInlinePlayback', function () {
         const result = enforceVideoCardInlinePlayback(`
             <figure class="kg-card kg-video-card">
                 <div class="kg-video-container">
-                    <video src="/video.mp4" autoplay loop muted playsinline></video>
+                    <video src="/video.mp4" autoplay loop playsinline></video>
                     <div class="kg-video-player-container kg-video-hide"></div>
                 </div>
             </figure>
