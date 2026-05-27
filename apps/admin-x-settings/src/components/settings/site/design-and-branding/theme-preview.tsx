@@ -71,8 +71,11 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({settings,url}) => {
             return;
         }
 
-        // Fetch theme preview HTML
-        fetch(url, {
+        // Fetch theme preview HTML (suppress admin toolbar in preview)
+        const previewUrl = new URL(url);
+        previewUrl.searchParams.set('admin_toolbar', '0');
+
+        fetch(previewUrl.toString(), {
             method: 'POST',
             headers: {
                 'Content-Type': 'text/html;charset=utf-8',
