@@ -70,11 +70,48 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
+      # True global cap on open Renovate PRs. Renovate's own
+      # `prConcurrentLimit` is per-run scoped (counts only branches in the
+      # current run's update list), so a global cap has to live outside
+      # Renovate. Count open PRs authored by the Renovate App; if at or
+      # above the cap, skip this tick. The next scheduled tick will run
+      # once automerge/review has drained the queue below the cap.
+      #
+      # Exemptions (always run regardless of backlog):
+      #   - workflow_dispatch — manual force-runs always proceed.
+      #   - The 14:17 UTC weekday CVE-pickup tick — exists specifically to
+      #     service `vulnerabilityAlerts.schedule: "at any time"`, and
+      #     vulnerability alerts bypass Renovate's own concurrent limits
+      #     by design. We don't want a stale backlog to block CVE flow.
+      #
+      # Tune via repo variable `RENOVATE_OPEN_PR_CAP` (default 10).
+      - name: Check open Renovate PR count
+        id: pr-cap
+        if: ${{ github.event_name == 'schedule' && github.event.schedule != '17 14 * * 1-5' }}
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR_CAP: ${{ vars.RENOVATE_OPEN_PR_CAP || '10' }}
+        run: |
+          set -euo pipefail
+          open_count=$(gh pr list \
+            --repo "${{ github.repository }}" \
+            --author "app/tryghost-renovate" \
+            --state open \
+            --json number --jq 'length')
+          echo "Renovate has $open_count open PRs (cap: $PR_CAP)"
+          if [ "$open_count" -ge "$PR_CAP" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::Skipping Renovate run — $open_count open PRs at or above cap of $PR_CAP. Drain the queue or raise RENOVATE_OPEN_PR_CAP."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Allow manual run outside schedule
         if: ${{ github.event_name == 'workflow_dispatch' && inputs.ignoreSchedule }}
         run: echo 'RENOVATE_FORCE={"schedule":null,"automergeSchedule":null}' >> "$GITHUB_ENV"
 
       - name: Self-hosted Renovate
+        if: ${{ steps.pr-cap.outputs.skip != 'true' }}
         uses: renovatebot/github-action@693b9ef15eec82123529a37c782242f091365961 # v46.1.14
         with:
           token: ${{ steps.app-token.outputs.token }}
