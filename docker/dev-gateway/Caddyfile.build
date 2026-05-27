@@ -11,11 +11,10 @@
         format console
     }
 
-    # Ghost API with canonical Origin to keep admin session origin stable across worker ports
+    # Ghost API with worker origin preserved for Ghost session origin checks
     handle /ghost/api/* {
         reverse_proxy {env.GHOST_BACKEND} {
             header_up Host {host}
-            header_up Origin http://localhost:2368
             header_up X-Real-IP {remote_host}
             header_up X-Forwarded-For {remote_host}
             header_up X-Forwarded-Proto https

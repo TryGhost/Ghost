@@ -25,7 +25,6 @@
     handle /ghost/api/* {
         reverse_proxy {env.GHOST_BACKEND} {
             header_up Host {host}
-            header_up Origin http://localhost:2368
             header_up X-Real-IP {remote_host}
             header_up X-Forwarded-For {remote_host}
 

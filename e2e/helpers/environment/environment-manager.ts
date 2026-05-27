@@ -145,6 +145,7 @@ export class EnvironmentManager {
 
         // Setup database
         await this.mysql.setupTestDatabase(instanceId, siteUuid, {
+            sessionOrigin: `http://localhost:${this.ghost.getGatewayPort()}`,
             stripe: options.stripe
         });
 

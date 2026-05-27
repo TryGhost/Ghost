@@ -34,12 +34,16 @@ export class MySQLManager {
             secretKey: string;
             publishableKey: string;
         };
+        sessionOrigin?: string;
     } = {}): Promise<void> {
         debug('Setting up test database:', databaseName);
         try {
             await this.createDatabase(databaseName);
             await this.restoreDatabaseFromSnapshot(databaseName);
             await this.updateSiteUuid(databaseName, siteUuid);
+            if (options.sessionOrigin) {
+                await this.updateSessionOrigin(databaseName, options.sessionOrigin);
+            }
             if (options.stripe) {
                 await this.updateStripeSettings(databaseName, options.stripe.secretKey, options.stripe.publishableKey);
             }
@@ -165,6 +169,14 @@ export class MySQLManager {
         return `'${value.replace(/'/g, `'\\''`)}'`;
     }
 
+    private sqlIdentifier(value: string): string {
+        return '`' + value.replace(/`/g, '``') + '`';
+    }
+
+    private sqlString(value: string): string {
+        return '\'' + value.replace(/\\/g, '\\\\').replace(/'/g, '\\\'') + '\'';
+    }
+
     async recreateBaseDatabase(database: string = 'ghost_testing'): Promise<void> {
         debug('Recreating base database:', database);
 
@@ -225,6 +237,18 @@ export class MySQLManager {
         await this.exec(command);
 
         debug('site_uuid updated in database settings:', siteUuid);
+    }
+
+    async updateSessionOrigin(database: string, origin: string): Promise<void> {
+        debug('Updating session origins in database:', database, origin);
+
+        const sql = 'UPDATE ' + this.sqlIdentifier(database) + '.sessions ' +
+            'SET session_data = JSON_SET(session_data, \'$.origin\', ' + this.sqlString(origin) + ') ' +
+            'WHERE JSON_VALID(session_data) AND JSON_EXTRACT(session_data, \'$.origin\') IS NOT NULL;';
+
+        await this.exec(`mysql -uroot -proot -e ${this.shellQuote(sql)}`);
+
+        debug('Session origins updated in database:', origin);
     }
 
     async updateStripeSettings(database: string, secretKey: string, publishableKey: string): Promise<void> {

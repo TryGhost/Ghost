@@ -68,6 +68,7 @@ export interface GhostConfig {
     hostSettings__forceUpgrade?: string;
     hostSettings__limits__customIntegrations__disabled?: string;
     hostSettings__limits__customIntegrations__error?: string;
+    security__staffDeviceVerification?: string;
 }
 
 export interface GhostInstanceFixture {

@@ -8,7 +8,6 @@ const __dirname = path.dirname(__filename);
 const E2E_ROOT = path.resolve(__dirname, '../..');
 const REPO_ROOT = path.resolve(E2E_ROOT, '..');
 
-export const CANONICAL_ADMIN_ORIGIN = 'http://localhost:2368';
 export const SNAPSHOT_PATH = '/tmp/dump.sql';
 export const FORCE_FIXTURE_RESET_ENV = 'E2E_FORCE_FIXTURE_RESET';
 export const FIXTURE_CACHE_VERSION = 2;
