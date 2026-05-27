@@ -44,6 +44,16 @@
     // Each block starts one hour earlier than the matching automerge
     // window so Renovate has time to rebase and open/refresh PRs before
     // automerge is eligible to run.
+    //
+    // `schedule` alone only gates *new* PR creation — Renovate defaults to
+    // `updateNotScheduled: true`, which lets existing branches keep getting
+    // rebased and force-pushed any time the runner ticks. With the hourly
+    // self-hosted workflow that means a CI-storm of force-pushes across all
+    // open Renovate PRs during the workday. Setting `updateNotScheduled:
+    // false` keeps existing branch maintenance inside the same windows.
+    // `vulnerabilityAlerts.schedule: "at any time"` overrides this for
+    // CVE-driven PRs so security work still flows intraday.
+    "updateNotScheduled": false,
     "schedule": [
         // Run all weekend
         "* * * * 0,6",
