@@ -2,6 +2,7 @@ import {E2E_PORT} from '../../playwright.config';
 import {Locator, Page} from '@playwright/test';
 import {MockedApi} from './mocked-api';
 import {expect} from '@playwright/test';
+import {platform} from 'os';
 
 export const MOCKED_SITE_URL = 'https://localhost:1234';
 export {MockedApi};
@@ -190,6 +191,10 @@ export async function initialize({mockedApi, page, bodyStyle, labs = {}, key = '
 export async function selectText(locator: Locator, pattern: string | RegExp): Promise<void> {
     await locator.evaluate(
         (element, {pattern: p}) => {
+            if (element instanceof HTMLElement) {
+                element.focus();
+            }
+
             let textNode = element.childNodes[0];
 
             while (textNode.nodeType !== Node.TEXT_NODE && textNode.childNodes.length) {
@@ -200,7 +205,7 @@ export async function selectText(locator: Locator, pattern: string | RegExp): Pr
                 const range = document.createRange();
                 range.setStart(textNode, match.index!);
                 range.setEnd(textNode, match.index! + match[0].length);
-                const selection = document.getSelection();
+                const selection = element.ownerDocument.getSelection();
                 selection?.removeAllRanges();
                 selection?.addRange(range);
             }
@@ -224,9 +229,7 @@ export async function setClipboard(page, text) {
 }
 
 export function getModifierKey() {
-    const os = require('os'); // eslint-disable-line @typescript-eslint/no-var-requires
-    const platform = os.platform();
-    if (platform === 'darwin') {
+    if (platform() === 'darwin') {
         return 'Meta';
     } else {
         return 'Control';

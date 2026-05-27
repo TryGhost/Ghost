@@ -18,6 +18,11 @@ type AppProps = {
     pageUrl: string;
 };
 
+type Pagination = NonNullable<EditableAppContext['pagination']>;
+type CommentsRequestApi = {
+    browse: ({page, postId, order}: {page: number; postId: string; order?: string}) => Promise<{comments: Comment[]; meta: {pagination: Pagination}}>;
+};
+
 const ALLOWED_MODERATORS = ['Owner', 'Administrator', 'Super Editor'];
 const LIKES_ORDER = 'count__likes desc, created_at desc';
 const NET_SCORE_ORDER = 'count__net_score desc, created_at desc';
@@ -148,11 +153,45 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
 
                 if (admin) {
                     // this is a bit of a hack, but we need to fetch the comments fully populated if the user is an admin
-                    const adminComments = await adminApi.browse({page: 1, postId: options.postId, order: state.order, memberUuid: state.member?.uuid});
+                    const memberUuid = state.member?.uuid;
+                    const adminComments = await adminApi.browse({page: 1, postId: options.postId, order: state.order, memberUuid});
+                    let adminPermalinkState: Partial<EditableAppContext> | null = null;
+
+                    if (initialCommentId) {
+                        try {
+                            const targetResponse = await adminApi.read({commentId: initialCommentId, memberUuid});
+                            const targetComment = targetResponse.comments?.[0];
+                            if (targetComment) {
+                                const result = await loadScrollTarget(
+                                    initialCommentId,
+                                    targetComment,
+                                    adminComments.comments,
+                                    adminComments.meta.pagination,
+                                    state.order,
+                                    {
+                                        browse: ({page, postId, order}) => adminApi.browse({page, postId, order, memberUuid})
+                                    }
+                                );
+
+                                if (result.found) {
+                                    adminPermalinkState = {
+                                        comments: result.comments,
+                                        pagination: result.pagination,
+                                        commentIdToScrollTo: initialCommentId,
+                                        commentIdFromHash: initialCommentId,
+                                        showMissingCommentNotice: false
+                                    };
+                                }
+                            }
+                        } catch {
+                            // Keep the public API permalink result when the admin API can't load this target.
+                        }
+                    }
+
                     setState((currentState) => {
                         // Don't overwrite comments when initSetup loaded extra data
                         // for permalink scrolling (multiple pages or expanded replies)
-                        if ((currentState.pagination && currentState.pagination.page > 1) || initialCommentId) {
+                        if ((currentState.pagination && currentState.pagination.page > 1 && !initialCommentId) || (initialCommentId && !adminPermalinkState)) {
                             return {
                                 adminApi,
                                 admin,
@@ -163,9 +202,12 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
                             adminApi,
                             admin,
                             isAdmin: true,
-                            comments: adminComments.comments,
-                            pagination: adminComments.meta.pagination,
-                            capabilities: adminComments.meta?.capabilities ?? currentState.capabilities
+                            comments: adminPermalinkState?.comments ?? adminComments.comments,
+                            pagination: adminPermalinkState?.pagination ?? adminComments.meta.pagination,
+                            capabilities: adminComments.meta?.capabilities ?? currentState.capabilities,
+                            commentIdToScrollTo: adminPermalinkState?.commentIdToScrollTo ?? currentState.commentIdToScrollTo,
+                            commentIdFromHash: adminPermalinkState?.commentIdFromHash ?? currentState.commentIdFromHash,
+                            showMissingCommentNotice: adminPermalinkState?.showMissingCommentNotice ?? currentState.showMissingCommentNotice
                         };
                     });
                 }
@@ -222,18 +264,20 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
         targetId: string,
         parentId: string | undefined,
         initialComments: Comment[],
-        initialPagination: {page: number; pages: number},
-        order = state.order
+        initialPagination: Pagination,
+        order = state.order,
+        requestApi?: CommentsRequestApi
     ): Promise<{comments: Comment[]; pagination: typeof initialPagination}> => {
         let comments = initialComments;
         let pagination = initialPagination;
+        const commentsApi = requestApi ?? {browse: api.comments.browse};
 
         while (!isCommentLoaded(comments, targetId) && pagination.page < pagination.pages) {
             if (parentId && comments.some(c => c.id === parentId)) {
                 break;
             }
 
-            const nextPage = await api.comments.browse({
+            const nextPage = await commentsApi.browse({
                 page: pagination.page + 1,
                 postId: options.postId,
                 order
@@ -246,29 +290,21 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
     };
 
     /**
-     * Load additional comment pages and/or replies until the scroll
-     * target is found. After paginating to the parent comment, if the
-     * target reply isn't in the inline replies (partial API response),
-     * fetch all replies from the server.
+     * Load additional comment pages until the scroll target is found.
      */
     const loadScrollTarget = async (
         targetId: string,
         targetComment: Comment,
         initialComments: Comment[],
-        initialPagination: {page: number; pages: number},
-        order = state.order
+        initialPagination: Pagination,
+        order = state.order,
+        requestApi?: CommentsRequestApi
     ): Promise<{comments: Comment[]; pagination: typeof initialPagination; found: boolean}> => {
         const parentId = targetComment.parent_id;
 
-        const {comments: paginatedComments, pagination} = await paginateToComment(targetId, parentId, initialComments, initialPagination, order);
-        let comments = paginatedComments;
+        const {comments: paginatedComments, pagination} = await paginateToComment(targetId, parentId, initialComments, initialPagination, order, requestApi);
 
-        if (parentId && !isCommentLoaded(comments, targetId)) {
-            const {comments: allReplies} = await api.comments.replies({commentId: parentId, limit: 'all'});
-            comments = comments.map(c => (c.id === parentId ? {...c, replies: allReplies} : c));
-        }
-
-        return {comments, pagination, found: isCommentLoaded(comments, targetId)};
+        return {comments: paginatedComments, pagination, found: isCommentLoaded(paginatedComments, targetId)};
     };
 
     /** Initialize comments setup once in viewport, fetch data and setup state */

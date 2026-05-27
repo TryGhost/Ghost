@@ -12,7 +12,8 @@ async function setupPermalinkTest(
     mockedApi: MockedApi,
     hash: string,
     bodyHtml = '<html><head><meta charset="UTF-8" /></head><body></body></html>',
-    labs = {}
+    labs = {},
+    admin?: string
 ): Promise<FrameLocator> {
     const sitePath = MOCKED_SITE_URL;
     mockedApi.setSettings({
@@ -20,6 +21,10 @@ async function setupPermalinkTest(
             labs
         }
     });
+
+    if (admin) {
+        await mockAdminAuthFrame({page, admin});
+    }
 
     await page.route(sitePath, async (route) => {
         await route.fulfill({status: 200, body: bodyHtml});
@@ -37,7 +42,8 @@ async function setupPermalinkTest(
         ghostComments: MOCKED_SITE_URL,
         postId: mockedApi.postId,
         api: MOCKED_SITE_URL,
-        key: '12345678'
+        key: '12345678',
+        ...(admin ? {admin} : {})
     };
 
     await page.evaluate((data) => {
@@ -236,6 +242,55 @@ test.describe('Comment Permalinks', async () => {
         await expect(comments).toHaveCount(1);
     });
 
+    test('shows hidden permalink comment content for admins', async ({page}) => {
+        const mockedApi = new MockedApi({});
+        mockedApi.setMember({});
+        const admin = MOCKED_SITE_URL + '/ghost/';
+
+        mockedApi.addComment({
+            html: '<p>Visible comment</p>'
+        });
+
+        const hiddenCommentId = '64a1b2c3d4e5f6a7b8c9d0e2';
+        mockedApi.addComment({
+            id: hiddenCommentId,
+            html: '<p>Hidden comment content</p>',
+            status: 'hidden'
+        });
+
+        const commentsFrame = await setupPermalinkTest(page, mockedApi, `#ghost-comments-${hiddenCommentId}`, TALL_BODY_HTML, {}, admin);
+
+        await expect(commentsFrame.locator(`[id="${hiddenCommentId}"]`)).toBeVisible();
+        await expect(commentsFrame.getByText('Hidden comment content')).toBeVisible();
+        await expect(commentsFrame.getByText('Hidden for members')).toBeVisible();
+        await expect(commentsFrame.getByTestId('missing-comment-notice')).toHaveCount(0);
+    });
+
+    test('shows hidden permalink comment content for admins when target is on a later page', async ({page}) => {
+        const mockedApi = new MockedApi({});
+        mockedApi.setMember({});
+        const admin = MOCKED_SITE_URL + '/ghost/';
+
+        for (let i = 1; i <= 24; i++) {
+            mockedApi.addComment({
+                html: `<p>Filler comment ${i}</p>`
+            });
+        }
+
+        const hiddenCommentId = '64a1b2c3d4e5f6a7b8c9d0e4';
+        mockedApi.addComment({
+            id: hiddenCommentId,
+            html: '<p>Hidden comment beyond page one</p>',
+            status: 'hidden'
+        });
+
+        const commentsFrame = await setupPermalinkTest(page, mockedApi, `#ghost-comments-${hiddenCommentId}`, TALL_BODY_HTML, {}, admin);
+
+        await expect(commentsFrame.locator(`[id="${hiddenCommentId}"]`)).toBeVisible();
+        await expect(commentsFrame.getByText('Hidden comment beyond page one')).toBeVisible();
+        await expect(commentsFrame.getByTestId('missing-comment-notice')).toHaveCount(0);
+    });
+
     test('shows missing-comment notice for deleted permalink and scrolls to comments area', async ({page}) => {
         const mockedApi = new MockedApi({});
         mockedApi.setMember({});
@@ -269,6 +324,32 @@ test.describe('Comment Permalinks', async () => {
         // Page should still function normally
         const comments = commentsFrame.getByTestId('comment-component');
         await expect(comments).toHaveCount(1);
+    });
+
+    test('shows deleted permalink tombstone for admins when target has replies', async ({page}) => {
+        const mockedApi = new MockedApi({});
+        mockedApi.setMember({});
+        const admin = MOCKED_SITE_URL + '/ghost/';
+
+        const deletedCommentId = '64a1b2c3d4e5f6a7b8c9d0e3';
+        mockedApi.addComment({
+            id: deletedCommentId,
+            html: '<p>Deleted parent content</p>',
+            status: 'deleted',
+            replies: [
+                mockedApi.buildReply({
+                    html: '<p>Visible reply under deleted parent</p>',
+                    parent_id: deletedCommentId
+                })
+            ]
+        });
+
+        const commentsFrame = await setupPermalinkTest(page, mockedApi, `#ghost-comments-${deletedCommentId}`, TALL_BODY_HTML, {}, admin);
+
+        await expect(commentsFrame.locator(`[id="${deletedCommentId}"]`)).toBeVisible();
+        await expect(commentsFrame.getByText('This comment has been removed')).toBeVisible();
+        await expect(commentsFrame.getByText('Visible reply under deleted parent')).toBeVisible();
+        await expect(commentsFrame.getByTestId('missing-comment-notice')).toHaveCount(0);
     });
 
     test('loads reply behind "Load more" when permalinking to it', async ({page}) => {
@@ -412,63 +493,6 @@ test.describe('Comment Permalinks', async () => {
         await expect(commentsFrame.getByTestId('back-to-parent')).not.toBeVisible();
     });
 
-    test('opens commentsThreads focused view when target reply is not in the initial comments response', async ({page}) => {
-        const mockedApi = new MockedApi({});
-        mockedApi.setMember({});
-
-        const parentId = 'aaa0000000000000000300';
-        const replyIds = [
-            'aaa0000000000000000301',
-            'aaa0000000000000000302',
-            'aaa0000000000000000303',
-            'aaa0000000000000000304',
-            'aaa0000000000000000305',
-            'aaa0000000000000000306'
-        ];
-
-        mockedApi.addComment({
-            id: parentId,
-            html: '<p>Parent comment</p>',
-            replies: replyIds.map((id, index) => mockedApi.buildReply({
-                id,
-                html: `<p>Lazy nested reply ${index + 1}</p>`,
-                parent_id: parentId,
-                ...(index > 0 ? {in_reply_to_id: replyIds[index - 1]} : {})
-            })),
-            count: {
-                replies: replyIds.length
-            }
-        });
-
-        const originalBrowse = mockedApi.browseComments.bind(mockedApi);
-        mockedApi.browseComments = function (options) {
-            const result = originalBrowse(options);
-            result.comments = result.comments.map((comment) => {
-                if (comment.id === parentId) {
-                    return {...comment, replies: comment.replies.slice(0, 3)};
-                }
-                return comment;
-            });
-            return result;
-        };
-
-        const targetReplyId = replyIds[4];
-        const commentsFrame = await setupPermalinkTest(
-            page,
-            mockedApi,
-            `#ghost-comments-${targetReplyId}`,
-            undefined,
-            {commentsThreads: true}
-        );
-
-        await expect(commentsFrame.getByTestId('back-to-parent')).toBeVisible();
-        await expect(commentsFrame.getByText('Lazy nested reply 4')).toBeVisible();
-        await expect(commentsFrame.getByText('Lazy nested reply 5')).toBeVisible();
-
-        const targetReplyContent = commentsFrame.locator(`[id="${targetReplyId}"]`).getByTestId('comment-content').first();
-        await expect(targetReplyContent.locator('mark')).toContainText('Lazy nested reply 5');
-    });
-
     test('loads reply on later page when permalinking to it', async ({page}) => {
         const mockedApi = new MockedApi({});
         mockedApi.setMember({});
@@ -541,66 +565,10 @@ test.describe('Comment Permalinks', async () => {
         // Wait for the parent to load
         await expect(commentsFrame.getByText('Parent with many replies')).toBeVisible();
 
-        // The 105th reply should be loaded (requires pagination beyond first 100)
+        // The 105th reply should be visible from the replies included in the comments response
         await expect(commentsFrame.getByText('Reply number 105')).toBeVisible();
 
         // The element should have the correct ID for highlighting
-        const targetElement = commentsFrame.locator(`[id="${targetReplyId}"]`);
-        await expect(targetElement).toBeVisible();
-    });
-
-    test('loads reply via server fetch when permalink target is not in partial API response', async ({page}) => {
-        const mockedApi = new MockedApi({});
-        mockedApi.setMember({});
-
-        const parentId = 'aaa0000000000000000000';
-        const parentComment = {
-            id: parentId,
-            html: '<p>Parent comment</p>',
-            replies: [] as any[]
-        };
-
-        // Add 5 replies to the parent
-        const replyIds = [
-            'bbb0000000000000000001',
-            'bbb0000000000000000002',
-            'bbb0000000000000000003',
-            'bbb0000000000000000004',
-            'bbb0000000000000000005'
-        ];
-        for (let i = 0; i < 5; i++) {
-            parentComment.replies.push(mockedApi.buildReply({
-                id: replyIds[i],
-                html: `<p>Reply ${i + 1}</p>`,
-                parent_id: parentId
-            }));
-        }
-
-        mockedApi.addComment(parentComment);
-
-        // Override browseComments to only return 3 replies (simulating old API LIMIT 3)
-        // while count.replies stays at 5
-        const originalBrowse = mockedApi.browseComments.bind(mockedApi);
-        mockedApi.browseComments = function (options) {
-            const result = originalBrowse(options);
-            result.comments = result.comments.map((c) => {
-                if (c.replies.length > 3) {
-                    return {...c, replies: c.replies.slice(0, 3)};
-                }
-                return c;
-            });
-            return result;
-        };
-
-        // Permalink to reply 5 — not in the initial 3 returned by browseComments
-        const targetReplyId = replyIds[4];
-        const commentsFrame = await setupPermalinkTest(page, mockedApi, `#ghost-comments-${targetReplyId}`);
-
-        await expect(commentsFrame.getByText('Parent comment')).toBeVisible();
-
-        // Reply 5 must be loaded via server fetch and visible
-        await expect(commentsFrame.getByText('Reply 5')).toBeVisible();
-
         const targetElement = commentsFrame.locator(`[id="${targetReplyId}"]`);
         await expect(targetElement).toBeVisible();
     });
