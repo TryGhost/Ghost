@@ -1,3 +1,4 @@
+// NOTE: this has been copy-pasted into apps/posts/src/views/Automations/components/email-design/show-badge-field.tsx because we need to support the email design modal in both the settings app and the posts app until Automations GAs
 import React from 'react';
 import {Heart} from 'lucide-react';
 import {Switch} from '@tryghost/shade/components';

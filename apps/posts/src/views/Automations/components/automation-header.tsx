@@ -40,9 +40,9 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
     const status = automation?.status;
 
     return (
-        <header className='relative z-10 flex h-14 shrink-0 items-center justify-between bg-background px-4 shadow-sm'>
+        <header className='relative z-10 flex h-14 shrink-0 items-center justify-between bg-background px-4 shadow-sm dark:border-b dark:border-gray-950'>
             <div className='flex min-w-0 items-center gap-3'>
-                <Button size='icon' variant='ghost' asChild>
+                <Button variant='ghost' asChild>
                     <Link aria-label='Back to automations' to='/automations'>
                         <LucideIcon.ArrowLeft strokeWidth={2} />
                     </Link>
@@ -51,7 +51,7 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
                     <Skeleton className='h-5 w-40' />
                 ) : (
                     <>
-                        <span className='truncate font-medium'>{name}</span>
+                        <span className='truncate text-lg font-semibold'>{name}</span>
                         {status && <AutomationStatusBadge status={status} />}
                     </>
                 )}
@@ -60,11 +60,11 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
                 {status === 'active' && (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button aria-label='Automation options' size='icon' variant='ghost'>
+                            <Button aria-label='Automation options' variant='ghost'>
                                 <LucideIcon.Ellipsis />
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align='end'>
+                        <DropdownMenuContent align='end' className='min-w-40'>
                             <DropdownMenuItem disabled={!isTurnOffButtonEnabled} onSelect={onTurnOff}>
                                 <LucideIcon.Power className='size-4' />
                                 Turn off

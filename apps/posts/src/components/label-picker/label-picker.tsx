@@ -301,7 +301,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
     return (
         <div ref={containerRef} className="relative">
             <div
-                className="flex min-h-9 w-full cursor-text flex-wrap items-center gap-1.5 rounded-md border border-transparent bg-gray-150 px-3 py-1 text-sm transition-colors focus-within:border-green focus-within:bg-transparent focus-within:shadow-[0_0_0_2px_rgba(48,207,67,.25)] dark:bg-gray-900"
+                className="flex min-h-9 w-full cursor-text flex-wrap items-center gap-1.5 rounded-md border border-transparent bg-gray-100 px-3 py-1 text-sm transition-colors focus-within:border-green focus-within:bg-transparent focus-within:shadow-[0_0_0_2px_rgba(48,207,67,.25)] dark:bg-gray-950"
                 role="combobox"
                 onClick={() => {
                     inputRef.current?.focus();

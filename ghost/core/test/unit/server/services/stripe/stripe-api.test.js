@@ -2,6 +2,9 @@ const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
 const rewire = require('rewire');
+
+require('../../../../../core/server/services/i18n').init();
+const {t: i18nT} = require('../../../../../core/server/services/i18n');
 const StripeAPI = rewire('../../../../../core/server/services/stripe/stripe-api');
 
 describe('StripeAPI', function () {
@@ -671,6 +674,7 @@ describe('StripeAPI', function () {
             const mockStripeConstructor = sinon.stub().returns(mockStripe);
 
             StripeAPI.__set__('Stripe', mockStripeConstructor);
+            StripeAPI.__set__('t', i18nT);
 
             api.configure({
                 checkoutSessionSuccessUrl: '/success',
@@ -706,7 +710,7 @@ describe('StripeAPI', function () {
             assert.equal(args.line_items[0].quantity, 1);
             assert.equal(args.line_items[0].price_data.unit_amount, 5000);
             assert.equal(args.line_items[0].price_data.currency, 'usd');
-            assert.equal(args.line_items[0].price_data.product_data.name, 'Gift Subscription - Pro (1 year)');
+            assert.equal(args.line_items[0].price_data.product_data.name, 'Gift subscription — Pro (1 year)');
         });
 
         it('uses 1 month label for monthly cadence', async function () {
@@ -723,7 +727,7 @@ describe('StripeAPI', function () {
 
             const args = mockStripe.checkout.sessions.create.firstCall.firstArg;
 
-            assert.equal(args.line_items[0].price_data.product_data.name, 'Gift Subscription - Basic (1 month)');
+            assert.equal(args.line_items[0].price_data.product_data.name, 'Gift subscription — Basic (1 month)');
         });
 
         it('pluralises cadence label when duration is greater than 1', async function () {
@@ -740,7 +744,36 @@ describe('StripeAPI', function () {
 
             const args = mockStripe.checkout.sessions.create.firstCall.firstArg;
 
-            assert.equal(args.line_items[0].price_data.product_data.name, 'Gift Subscription - Pro (3 months)');
+            assert.equal(args.line_items[0].price_data.product_data.name, 'Gift subscription — Pro (3 months)');
+        });
+
+        it('uses translated title and cadence labels', async function () {
+            StripeAPI.__set__('t', (key, options = {}) => {
+                if (key === 'Gift subscription') {
+                    return 'Abonnement offert';
+                }
+
+                if (key === '{count} month') {
+                    return `${options.count} mois`;
+                }
+
+                return key;
+            });
+
+            await api.createGiftCheckoutSession({
+                amount: 3000,
+                currency: 'eur',
+                tierName: 'Pro',
+                cadence: 'month',
+                duration: 3,
+                successUrl: '/gift-success',
+                cancelUrl: '/gift-cancel',
+                metadata: {}
+            });
+
+            const args = mockStripe.checkout.sessions.create.firstCall.firstArg;
+
+            assert.equal(args.line_items[0].price_data.product_data.name, 'Abonnement offert — Pro (3 mois)');
         });
 
         it('passes metadata through directly', async function () {

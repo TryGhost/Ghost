@@ -164,9 +164,9 @@ const Select: React.FC<SelectProps> = ({
             controlClasses?.control,
             'h-[var(--control-height)] !min-h-[var(--control-height)] w-full appearance-none rounded-lg border outline-hidden',
             size === 'xs' ? 'py-0 pr-2 text-sm' : 'py-1 pr-4',
-            clearBg ? '' : 'bg-grey-150 px-3 dark:bg-grey-900',
+            clearBg ? '' : 'bg-grey-100 px-3 dark:bg-grey-900',
             disabled && !clearBg && 'bg-grey-50 shadow-[0_0_0_1px_rgba(255,255,255,0.45)] hover:bg-grey-50 dark:bg-grey-950 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.18)] dark:hover:bg-grey-950',
-            error ? 'border-red' : `border-transparent ${!clearBg && !disabled && 'hover:bg-grey-100 dark:hover:bg-grey-925'}`,
+            error ? 'border-red' : `border-transparent ${!clearBg && !disabled && 'hover:bg-grey-100 dark:hover:bg-grey-900'}`,
             !disabled && 'cursor-pointer',
             disabled ? 'dark:text-grey-800' : 'dark:text-white',
             (title && !clearBg) && 'mt-1.5'

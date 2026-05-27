@@ -1,13 +1,15 @@
+// NOTE: this has been copy-pasted into apps/posts/src/views/Automations/components/email-design/email-preview.tsx because we need to support the email design modal in both the settings app and the posts app until Automations GAs
 import React from 'react';
 import {GhostOrb} from '@tryghost/shade/components';
 import {cn} from '@tryghost/shade/utils';
-import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {resolveAllColors, resolveImageCorners} from './design-utils';
-import {useGlobalData} from '../../providers/global-data-provider';
 import type {EmailDesignSettings} from './types';
 
 interface EmailPreviewProps {
     settings: EmailDesignSettings;
+    accentColor: string;
+    publicationIcon?: string | null;
+    siteTitle?: string | null;
     senderName?: string;
     senderEmail?: string;
     replyToEmail?: string;
@@ -127,13 +129,10 @@ const Footer: React.FC<{siteTitle?: string; footerLinkText?: string; emailFooter
 
 // --- Main component ---
 
-const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, senderEmail, replyToEmail, subject, showRecipientLine = true, showSubjectLine = true, headerImage, showPublicationIcon = false, showPublicationTitle = true, showBadge = true, emailFooter, footerLinkText, children}) => {
-    const {settings: globalSettings, siteData} = useGlobalData();
-    const [siteTitle, icon] = getSettingValues<string>(globalSettings, ['title', 'icon']);
-    const accentColor = siteData.accent_color;
-
+const EmailPreview: React.FC<EmailPreviewProps> = ({settings, accentColor, publicationIcon, siteTitle, senderName, senderEmail, replyToEmail, subject, showRecipientLine = true, showSubjectLine = true, headerImage, showPublicationIcon = false, showPublicationTitle = true, showBadge = true, emailFooter, footerLinkText, children}) => {
     const colors = resolveAllColors(settings, accentColor);
     const imageCornerClass = resolveImageCorners(settings.image_corners);
+    const resolvedSiteTitle = siteTitle || undefined;
 
     return (
         <div className="mx-auto flex max-h-full min-h-0 w-full max-w-[700px] flex-col overflow-hidden rounded-[4px] text-black shadow-sm">
@@ -152,17 +151,17 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, sender
 
                     <PublicationHeader
                         backgroundColor="transparent"
-                        iconUrl={icon}
-                        showIcon={showPublicationIcon && Boolean(icon)}
+                        iconUrl={publicationIcon}
+                        showIcon={showPublicationIcon && Boolean(publicationIcon)}
                         showTitle={showPublicationTitle}
-                        siteTitle={siteTitle}
+                        siteTitle={resolvedSiteTitle}
                         textColor={colors.headerTextColor}
                     />
                 </div>
 
                 {children}
 
-                <Footer color={colors.secondaryTextColor} emailFooter={emailFooter} footerLinkText={footerLinkText} showBadge={showBadge} siteTitle={siteTitle} textColor={colors.textColor} />
+                <Footer color={colors.secondaryTextColor} emailFooter={emailFooter} footerLinkText={footerLinkText} showBadge={showBadge} siteTitle={resolvedSiteTitle} textColor={colors.textColor} />
             </div>
         </div>
     );
