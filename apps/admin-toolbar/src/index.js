@@ -71,6 +71,11 @@ async function init() {
         return;
     }
 
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('admin_toolbar') === '0') {
+        return;
+    }
+
     const config = getConfig(getScript());
     if (!config) {
         return;
