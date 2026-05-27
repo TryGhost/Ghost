@@ -1,8 +1,6 @@
-const {metaData, settingsCache, urlUtils} = require('../proxy');
+const {settingsCache, urlUtils} = require('../proxy');
 const {escapeExpression} = require('../handlebars');
-const {getDataAttributes} = require('../../utils/frontend-apps');
-
-const {getAssetUrl} = metaData;
+const {getFrontendAppConfig, getDataAttributes} = require('../../utils/frontend-apps');
 
 function getStaffFrontendHeadScripts({dataRoot, excludeList = new Set(), siteTitle}) {
     if (!dataRoot._locals?.staffFrontendToolsEnabled || excludeList.has('admin_toolbar')) {
@@ -13,11 +11,11 @@ function getStaffFrontendHeadScripts({dataRoot, excludeList = new Set(), siteTit
 }
 
 function getAdminToolbarScript(dataRoot, siteTitle) {
-    const src = getAssetUrl('public/admin-toolbar.min.js', false);
+    const {scriptUrl} = getFrontendAppConfig('adminToolbar');
     const attrs = getAdminToolbarAttributes(dataRoot, siteTitle);
     const dataAttrs = getDataAttributes(attrs);
 
-    return `<script defer src="${src}" ${dataAttrs}></script>`;
+    return `<script defer src="${scriptUrl}" ${dataAttrs}></script>`;
 }
 
 function getAdminToolbarAttributes(dataRoot, siteTitle) {
