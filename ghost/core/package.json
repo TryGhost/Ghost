@@ -82,7 +82,7 @@
     "cli": "^1.29.1"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "3.1025.0",
+    "@aws-sdk/client-s3": "3.1053.0",
     "@extractus/oembed-extractor": "3.2.1",
     "@faker-js/faker": "7.6.0",
     "@isaacs/ttlcache": "1.4.1",
