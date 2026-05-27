@@ -48,6 +48,12 @@ permissions:
 
 jobs:
   renovate:
+    # Pause without merging a PR: set repo variable RENOVATE_PAUSED=true
+    # (Settings → Secrets and variables → Actions → Variables). Manual
+    # workflow_dispatch runs are exempt so you can still force a run while
+    # paused. The "Disable workflow" toggle in the Actions UI also works as
+    # a faster emergency stop.
+    if: ${{ vars.RENOVATE_PAUSED != 'true' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
 

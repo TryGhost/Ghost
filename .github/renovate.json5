@@ -2,15 +2,36 @@
     "extends": [
         "github>tryghost/renovate-config"
     ],
-    // Cap total open Renovate PRs at 10. The shared preset extends
-    // :disableRateLimiting (prConcurrentLimit: 0, prHourlyLimit: 0), so
-    // branchConcurrentLimit alone leaks — it exempts grouped, automerge-
-    // eligible, and vulnerability PRs, and is enforced per-run rather than
-    // as a true total. Setting prConcurrentLimit overrides the preset and
-    // gives us a hard ceiling regardless of update type. branchConcurrentLimit
-    // stays as a secondary guardrail.
+    // PR/branch throughput caps. All three live at the top level — these
+    // options aren't valid inside packageRules (no `parents: ['packageRules']`
+    // in renovate `lib/config/options/index.ts`).
+    //
+    // Important Renovate semantics (verified against
+    // `lib/workers/repository/process/limits.ts`):
+    //
+    //   - `prConcurrentLimit` and `branchConcurrentLimit` are **per-run**:
+    //     `getConcurrentPrsCount` iterates only the branches Renovate is
+    //     processing in the current run and counts how many already have
+    //     open PRs. PRs for deps not in the current run's update list
+    //     do NOT count. So this caps "new opens within a single run,"
+    //     not "total open across the repo." See
+    //     https://github.com/renovatebot/renovate/discussions/19585.
+    //
+    //   - `prHourlyLimit` is the only true global throttle: it scans
+    //     `platform.getPrList()` for every PR whose `sourceBranch`
+    //     starts with `branchPrefix` and was created this hour. With
+    //     our hourly-windowed cron it caps cross-run PR creation rate.
+    //
+    //   - Vulnerability alerts bypass all three (hardcoded in
+    //     `lib/workers/repository/update/branch/index.ts`, no config
+    //     toggle). CVE waves can overshoot — intentional.
+    //
+    // The shared preset extends `:disableRateLimiting` which sets all
+    // three to 0; these top-level values override that via the standard
+    // repo-wins config merge (`merge.ts` line 326).
     "prConcurrentLimit": 10,
     "branchConcurrentLimit": 10,
+    "prHourlyLimit": 2,
     // Keep manually-closed immortal/grouped PRs closed unless explicitly
     // reopened from the Dependency Dashboard.
     "recreateWhen": "never",
