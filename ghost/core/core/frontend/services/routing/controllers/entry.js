@@ -60,7 +60,9 @@ module.exports = function entryController(req, res, next) {
             // CASE: .md URL — serve entry as markdown for LLM consumption
             if (res.routerOptions.isMarkdownRequest) {
                 if (entry.visibility !== 'public') {
-                    return next();
+                    return res.status(403).type('text/markdown').send(
+                        '# Members-only content\n\nThis post requires a subscription and is not available for public access.\n'
+                    );
                 }
 
                 const llmsService = getLlmsService(req);
