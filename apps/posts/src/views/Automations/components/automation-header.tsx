@@ -40,7 +40,7 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
     const status = automation?.status;
 
     return (
-        <header className='relative z-10 flex h-14 shrink-0 items-center justify-between bg-background px-4 shadow-sm'>
+        <header className='relative z-10 flex h-14 shrink-0 items-center justify-between bg-background px-4 shadow-sm dark:bg-gray-950'>
             <div className='flex min-w-0 items-center gap-3'>
                 <Button variant='ghost' asChild>
                     <Link aria-label='Back to automations' to='/automations'>

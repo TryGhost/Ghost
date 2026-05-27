@@ -57,6 +57,7 @@ const baseEditorStyles = cn(
     '[&_[data-kg-plus-button]]:top-[-4px]',
     // Settings panel
     '[&_[data-kg-card-selected]]:isolate',
+    '[&_[data-kg-settings-panel]]:dark:bg-gray-950',
     // Content typography
     '[&_:is(p,blockquote,aside,ul,ol)]:tracking-tight',
     // Reset content typography inside card captions to match Koenig's caption styles
