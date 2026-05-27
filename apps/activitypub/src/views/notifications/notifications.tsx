@@ -306,7 +306,7 @@ const Notifications: React.FC = () => {
                                     <React.Fragment key={group.id || `${group.type}_${index}`}>
                                         <NotificationItem
                                             centerAlign={group.actors.length < 2 && group.type === 'follow'}
-                                            className='hover:bg-gray-75 dark:hover:bg-gray-950'
+                                            className='hover:bg-gray-100 dark:hover:bg-gray-950'
                                             isGrouped={group.actors.length > 1}
                                             onClick={() => handleNotificationClick(group, index)}
                                         >
@@ -343,7 +343,7 @@ const Notifications: React.FC = () => {
                                                                     name: actor.name,
                                                                     handle: actor.handle
                                                                 }}
-                                                                className='-ml-2 bg-[#F3F3F3]! outline outline-2 outline-white group-hover:bg-[#EDEEF0]! group-hover:outline-gray-75 dark:outline-black group-hover:dark:outline-gray-950'
+                                                                className='-ml-2 bg-[#F3F3F3]! outline outline-2 outline-white group-hover:bg-[#EDEEF0]! group-hover:outline-gray-100 dark:outline-black group-hover:dark:outline-gray-950'
                                                                 size='notification'
                                                             />
                                                         ))}
@@ -439,7 +439,7 @@ const Notifications: React.FC = () => {
                                                             <span dangerouslySetInnerHTML={{__html: stripHtml(group.post?.content || '')}} />
                                                         </div> :
                                                         <>
-                                                            <div className='mt-2.5 rounded-md bg-gray-100 px-5 py-[14px] group-hover:bg-gray-200 dark:bg-gray-925/30 group-hover:dark:bg-black/40'>
+                                                            <div className='mt-2.5 rounded-md bg-gray-100 px-5 py-[14px] group-hover:bg-gray-200 dark:bg-gray-950/30 group-hover:dark:bg-black/40'>
                                                                 <ProfileLinkedContent
                                                                     className='ap-note-content text-pretty'
                                                                     content={group.post?.content || ''}

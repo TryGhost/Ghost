@@ -24,7 +24,11 @@ const GA_FEATURES = [
     'customFonts',
     'explore',
     'commentModeration',
-    'featurebaseFeedback'
+    'commentsThreads',
+    'commentsPinning',
+    'featurebaseFeedback',
+    'giftSubscriptions',
+    'dangerZoneResetAuth'
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
@@ -49,10 +53,7 @@ const PRIVATE_FEATURES = [
     'themeTranslation',
     'indexnow',
     'pictureImageFormats',
-    'smarterCounts',
-    'giftSubscriptions',
-    'commentsThreads',
-    'commentsPinning'
+    'smarterCounts'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

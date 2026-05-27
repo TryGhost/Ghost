@@ -131,6 +131,22 @@ module.exports = {
     },
 
     /**
+     * Generate and persist a new private site access code.
+     *
+     * The code is always generated server-side. Callers cannot provide their
+     * own value, and the write runs with internal context so it can regenerate
+     * a read-only access code without opening up generic settings edits.
+     *
+     * @returns {Promise<*>}
+     */
+    async regeneratePrivateSiteAccessCode() {
+        return await models.Settings.edit([{
+            key: 'password',
+            value: generatePrivateSiteAccessCode()
+        }], {context: {internal: true}});
+    },
+
+    /**
      * Restore the cache, used during e2e testing only
      */
     reset() {

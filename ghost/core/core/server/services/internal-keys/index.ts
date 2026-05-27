@@ -20,6 +20,16 @@ const SLUG_KEY_TYPE = {
 
 export type ApiKeyType = typeof SLUG_KEY_TYPE[InternalIntegrationSlug];
 
+/**
+ * The shape consumers receive when they import the singleton: an
+ * `AutoFillingMap` whose `get` returns `Promise<InternalApiKey>` directly
+ * (the override drops the `| undefined` from the structural `Map.get`
+ * signature). Rotation orchestration uses the inherited `Map` surface
+ * (`.clear()`, `.delete()`) to invalidate after rotating the underlying
+ * api_keys row.
+ */
+export type InternalKeys = AutoFillingMap<InternalIntegrationSlug, Promise<InternalApiKey>>;
+
 // models/index.js is the Bookshelf model registry — a JS module without
 // TypeScript declarations. Use a typed require so we can call the model
 // method without polluting the file with `any`. The generic constrains
@@ -35,9 +45,7 @@ const models = require('../../models') as {
 
 /**
  * Process-lifetime cache of internal-integration API keys, keyed by slug.
- * Exposed to consumers as a `ReadonlyMap<InternalIntegrationSlug, Promise<InternalApiKey>>`
- * so they only see `.get(slug)`; rotation orchestration uses the full Map
- * surface (`.delete(slug)`, `.clear()`) to invalidate after rotating the
+ * Rotation orchestration calls `.clear()` to invalidate after rotating the
  * underlying api_keys row.
  */
 const internalKeys = new AutoFillingMap<InternalIntegrationSlug, Promise<InternalApiKey>>(

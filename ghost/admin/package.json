@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "6.40.0-rc.0",
+  "version": "6.42.1-rc.0",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -19,7 +19,6 @@
     "dev": "ember serve",
     "build": "ember build --environment=production --silent",
     "build:dev": "pnpm build --environment=development",
-    "test:unit": "true",
     "test": "ember exam --split 2 --parallel",
     "lint:js": "eslint . --cache",
     "lint:hbs": "ember-template-lint .",
@@ -29,9 +28,9 @@
     "node": "^22.13.1"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "7.28.4",
+    "@babel/eslint-parser": "7.28.6",
     "@babel/plugin-proposal-class-properties": "7.18.6",
-    "@babel/plugin-proposal-decorators": "7.28.0",
+    "@babel/plugin-proposal-decorators": "7.29.0",
     "@ember/jquery": "2.0.0",
     "@ember/optional-features": "2.1.0",
     "@ember/render-modifiers": "2.1.0",
@@ -66,7 +65,7 @@
     "broccoli-terser-sourcemap": "4.1.1",
     "chai": "catalog:",
     "chai-dom": "1.12.1",
-    "codemirror": "5.48.2",
+    "codemirror": "5.65.21",
     "cssnano": "4.1.10",
     "element-resize-detector": "1.2.4",
     "ember-ajax": "5.1.2",
@@ -166,6 +165,7 @@
     "*.js": "eslint"
   },
   "dependencies": {
+    "lodash": "catalog:",
     "path-browserify": "1.0.1",
     "webpack": "5.105.4"
   },

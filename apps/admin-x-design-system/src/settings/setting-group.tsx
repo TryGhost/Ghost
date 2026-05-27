@@ -76,7 +76,7 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
         onSave?.();
     };
 
-    styles += ' border-grey-250 dark:border-grey-925';
+    styles += ' border-grey-200 dark:border-grey-900 dark:hover:border-grey-800';
 
     // The links visible before editing
     const viewButtons: ButtonProps[] = [];

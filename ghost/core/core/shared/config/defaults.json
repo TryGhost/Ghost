@@ -34,6 +34,11 @@
             "settings": {},
             "imageSizes": {},
             "gscan": {}
+        },
+        "redirects": {
+            "active": "FileStore",
+            "FileStore": {},
+            "S3RedirectsStore": {}
         }
     },
     "storage": {
@@ -262,7 +267,7 @@
     },
     "comments": {
         "url": "https://cdn.jsdelivr.net/ghost/comments-ui@~{version}/umd/comments-ui.min.js",
-        "version": "1.4"
+        "version": "1.5"
     },
     "signupForm": {
         "url": "https://cdn.jsdelivr.net/ghost/signup-form@~{version}/umd/signup-form.min.js",

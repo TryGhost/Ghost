@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/activitypub",
-  "version": "3.1.23",
+  "version": "3.1.29",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -48,7 +48,7 @@
     "eslint-plugin-tailwindcss": "4.0.0-beta.0",
     "jest": "29.7.0",
     "jsdom": "catalog:",
-    "tailwindcss": "4.2.2",
+    "tailwindcss": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"
   },

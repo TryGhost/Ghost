@@ -1,5 +1,56 @@
 const nql = require('@tryghost/nql');
 const logging = require('@tryghost/logging');
+const {Readable} = require('stream');
+
+const EXPORT_BATCH_SIZE = 50;
+const DEFAULT_EXPORT_LIMIT = 15;
+const EXPORT_WITH_RELATED = [
+    'tiers',
+    'tags',
+    'authors',
+    'count.signups',
+    'count.paid_conversions',
+    'count.clicks',
+    'count.positive_feedback',
+    'count.negative_feedback',
+    'email'
+];
+
+function parseExportLimit(limit) {
+    if (limit === 'all') {
+        return Infinity;
+    }
+
+    if (limit === undefined || limit === null) {
+        return DEFAULT_EXPORT_LIMIT;
+    }
+
+    const parsed = Number.parseInt(limit, 10);
+
+    if (!Number.isSafeInteger(parsed)) {
+        return DEFAULT_EXPORT_LIMIT;
+    }
+
+    return Math.max(parsed, 1);
+}
+
+function hasIdOrder(order) {
+    return String(order)
+        .split(',')
+        .map(orderPart => orderPart.trim().toLowerCase())
+        .some((orderPart) => {
+            const [field] = orderPart.split(/\s+/);
+            return field === 'id' || field === 'posts.id';
+        });
+}
+
+function withStableExportOrder(order) {
+    if (!order || hasIdOrder(order)) {
+        return order;
+    }
+
+    return `${order}, id desc`;
+}
 
 class PostsExporter {
     #models;
@@ -26,42 +77,122 @@ class PostsExporter {
     }
 
     /**
-     *
      * @param {object} options
      * @param {string} [options.filter]
      * @param {string} [options.order]
      * @param {string|number} [options.limit]
+     * @returns {Promise<Readable>}
      */
     async export({filter, order, limit}) {
-        const posts = await this.#models.Post.findPage({
-            filter: filter ?? 'status:published,status:sent',
-            order,
-            limit,
-            withRelated: [
-                'tiers',
-                'tags',
-                'authors',
-                'count.signups',
-                'count.paid_conversions',
-                'count.clicks',
-                'count.positive_feedback',
-                'count.negative_feedback',
-                'email'
-            ]
-        });
+        const exportContext = await this.#getExportContext();
+        const requestedLimit = parseExportLimit(limit);
+        const pageLimit = Math.min(EXPORT_BATCH_SIZE, requestedLimit);
 
-        const newsletters = (await this.#models.Newsletter.findAll()).models;
-        const labels = (await this.#models.Label.findAll()).models;
-        const tiers = (await this.#models.Product.findAll()).models;
+        return Readable.from(this.#streamPosts({
+            filter,
+            order: withStableExportOrder(order),
+            requestedLimit,
+            pageLimit,
+            exportContext
+        }), {objectMode: true});
+    }
+
+    /**
+     * @typedef {object} ExportContext
+     * @property {object[]} newsletters
+     * @property {object[]} labels
+     * @property {object[]} tiers
+     * @property {boolean} membersEnabled
+     * @property {boolean} membersTrackSources
+     * @property {boolean} paidMembersEnabled
+     * @property {boolean} trackOpens
+     * @property {boolean} trackClicks
+     * @property {boolean} hasNewslettersWithFeedback
+     */
+
+    /**
+     * @param {object} options
+     * @param {string} [options.filter]
+     * @param {string} [options.order]
+     * @param {number} options.requestedLimit - Infinity means unbounded
+     * @param {number} options.pageLimit
+     * @param {ExportContext} options.exportContext
+     * @returns {AsyncGenerator<object>}
+     */
+    async *#streamPosts({filter, order, requestedLimit, pageLimit, exportContext}) {
+        let emitted = 0;
+
+        for (let page = 1; emitted < requestedLimit; page++) {
+            const posts = await this.#models.Post.findPage({
+                filter: filter ?? 'status:published,status:sent',
+                order,
+                limit: pageLimit,
+                page,
+                skipPagination: true,
+                withRelated: EXPORT_WITH_RELATED
+            });
+
+            if (posts.data.length === 0) {
+                break;
+            }
+
+            const remaining = requestedLimit - emitted;
+            const batch = posts.data.slice(0, remaining);
+            const mapped = this.#mapPosts(batch, exportContext);
+            emitted += mapped.length;
+            yield* mapped;
+
+            if (posts.data.length < pageLimit) {
+                break;
+            }
+        }
+    }
+
+    async #getExportContext() {
+        const [
+            newsletters,
+            labels,
+            tiers
+        ] = await Promise.all([
+            this.#models.Newsletter.findAll(),
+            this.#models.Label.findAll(),
+            this.#models.Product.findAll()
+        ]);
 
         const membersEnabled = this.#settingsHelpers.isMembersEnabled();
         const membersTrackSources = membersEnabled && this.#settingsCache.get('members_track_sources');
         const paidMembersEnabled = membersEnabled && this.#settingsHelpers.arePaidMembersEnabled();
         const trackOpens = this.#settingsCache.get('email_track_opens');
         const trackClicks = this.#settingsCache.get('email_track_clicks');
-        const hasNewslettersWithFeedback = !!newsletters.find(newsletter => newsletter.get('feedback_enabled'));
+        const hasNewslettersWithFeedback = !!newsletters.models.find(newsletter => newsletter.get('feedback_enabled'));
 
-        const mapped = posts.data.map((post) => {
+        return {
+            newsletters: newsletters.models,
+            labels: labels.models,
+            tiers: tiers.models,
+            membersEnabled,
+            membersTrackSources,
+            paidMembersEnabled,
+            trackOpens,
+            trackClicks,
+            hasNewslettersWithFeedback
+        };
+    }
+
+    #mapPosts(posts, exportContext) {
+        const {
+            newsletters,
+            labels,
+            tiers,
+            membersEnabled,
+            membersTrackSources,
+            paidMembersEnabled,
+            trackOpens,
+            trackClicks,
+            hasNewslettersWithFeedback
+        } = exportContext;
+
+        const mapped = posts.map((post) => {
             let email = post.related('email');
 
             // Weird bookshelf thing fix

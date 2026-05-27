@@ -13,6 +13,8 @@ catalog:
   '@storybook/addon-docs': 10.3.5
   '@storybook/addon-links': 10.3.5
   '@storybook/react-vite': 10.3.5
+  '@tailwindcss/postcss': 4.2.2
+  '@tailwindcss/vite': 4.2.2
   '@tanstack/react-query': 4.36.1
   '@tryghost/color-utils': 0.2.16
   '@tryghost/custom-fonts': 1.0.8
@@ -42,21 +44,27 @@ catalog:
   clsx: 2.1.1
   concurrently: 8.2.2
   cross-fetch: 4.1.0
-  dompurify: 3.4.1
-  dotenv: 17.3.1
+  dequal: 2.0.3
+  dompurify: 3.4.5
+  dotenv: 17.4.2
   eslint: 8.57.1
   eslint-plugin-react-refresh: 0.4.24
-  fs-extra: 11.3.4
+  fs-extra: 11.3.5
   glob: 10.5.0
   jsdom: 29.1.1
   jsonc-parser: 3.3.1
-  mocha: 11.7.5
-  msw: 2.12.14
-  postcss: 8.5.6
+  lodash: 4.18.1
+  lucide-react: 0.577.0
+  mocha: 11.7.6
+  msw: 2.14.6
+  postcss: 8.5.10
   react-router: 7.14.0
-  sinon: 21.1.1
+  sinon: 21.1.2
   sonner: 2.0.7
   storybook: 10.3.5
+  tailwindcss: 4.2.2
+  tw-animate-css: 1.4.0
+  type-fest: 4.41.0
   typescript: 5.9.3
   validator: 13.12.0
   vite: 7.3.2
@@ -68,3 +76,5 @@ catalogs:
   eslint9:
     '@eslint/js': 9.37.0
     eslint: 9.37.0
+  tailwind3:
+    tailwindcss: 3.4.18

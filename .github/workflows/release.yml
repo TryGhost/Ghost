@@ -103,10 +103,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.CANARY_DOCKER_BUILD }}  # PAT for GitHub API (check polling)
 
-      - name: Notify on failure
+      - name: Notify Slack on release failure
         if: failure()
-        uses: tryghost/actions/actions/slack-build@bf96db0e7f57eb048ead40594f6c222b4a7e3e93 # main
-        with:
-          status: ${{ job.status }}
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          RELEASE_NOTIFICATION_URL: ${{ secrets.RELEASE_NOTIFICATION_URL }}
+        run: |
+          VALUE=$(printf '<!subteam^S07ATDH3CLB|on-call-product> — check the failed run: <%s|view run>' "$RUN_URL")
+          PAYLOAD=$(jq -n --arg value "$VALUE" \
+            '{username: "Ghost CI", attachments: [{color: "danger", fields: [{title: "🚨 Ghost release failed", value: $value}]}]}')
+          curl -sf -X POST -H 'Content-type: application/json' \
+            --data "$PAYLOAD" \
+            "$RELEASE_NOTIFICATION_URL" || echo "Slack notification failed (non-fatal)"
