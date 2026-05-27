@@ -1,6 +1,6 @@
 name: Translation Review
 
-# Posts an advisory draft review on translation PRs labelled `affects:i18n`.
+# Posts an advisory (non-approving) review on translation PRs labelled `affects:i18n`.
 #
 # The job runs from `main` (NOT the PR head) and never executes any code
 # from the PR — it only reads the PR's locale-file changes via the GitHub
@@ -10,8 +10,8 @@ name: Translation Review
 # Required secrets:
 #   - ANTHROPIC_API_KEY
 #
-# The draft review must be submitted or dismissed by a human maintainer —
-# the bot never approves a PR on its own.
+# The bot uses a `COMMENT`-event review — it cannot approve a PR and the
+# review never blocks merge.
 
 on:
   pull_request_target:
@@ -26,9 +26,9 @@ on:
         description: 'Anthropic model to use (overrides default)'
         required: false
         type: choice
-        default: ''
+        default: workflow-default
         options:
-          - ''
+          - workflow-default
           - claude-sonnet-4-6
           - claude-haiku-4-5
 
@@ -54,6 +54,7 @@ jobs:
       - name: Checkout main (trusted ref — never the PR head)
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
+          persist-credentials: false
           ref: main
           sparse-checkout: |
             .github/scripts/i18n-review
@@ -66,14 +67,14 @@ jobs:
 
       - name: Install dependencies
         working-directory: .github/scripts/i18n-review
-        run: npm install --no-audit --no-fund --omit=dev
+        run: npm ci --no-audit --no-fund --omit=dev
 
       - name: Run review
         working-directory: .github/scripts/i18n-review
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          ANTHROPIC_MODEL: ${{ inputs.model }}
+          ANTHROPIC_MODEL: ${{ inputs.model == 'workflow-default' && '' || inputs.model }}
           GITHUB_OWNER: ${{ github.repository_owner }}
           GITHUB_REPO: ${{ github.event.repository.name }}
         run: |

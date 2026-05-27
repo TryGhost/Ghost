@@ -5,7 +5,11 @@ import {extractAddedLines} from './diff.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROMPT_PATH = path.join(__dirname, '..', 'prompt.md');
-const I18N_PATH_PATTERN = /^ghost\/i18n\/locales\/.*\.json$/;
+// Matches per-locale translation files (`ghost/i18n/locales/<locale>/<namespace>.json`)
+// but deliberately excludes `ghost/i18n/locales/context.json`, which is the
+// English-source key-description file the reviewer is given as *context*, not a
+// translation to be reviewed.
+const I18N_PATH_PATTERN = /^ghost\/i18n\/locales\/[^/]+\/[^/]+\.json$/;
 const DEFAULT_MODEL = 'claude-sonnet-4-6';
 const MAX_TOKENS = 4096;
 
@@ -128,7 +132,8 @@ export async function analyzePR(prNumber, {octokit, anthropic, owner, repo, mode
     }
 
     const review = toolUse.input;
-    const validComments = (review.comments || [])
+    const rawComments = Array.isArray(review.comments) ? review.comments : [];
+    const validComments = rawComments
         .filter(c => {
             const key = `${c.filename}:${c.position}`;
             if (!validKeys.has(key)) {

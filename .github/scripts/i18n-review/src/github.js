@@ -36,8 +36,9 @@ function formatReviewBody(review) {
         `Reviewed ${stats.linesReviewed} translation${stats.linesReviewed === 1 ? '' : 's'} across ${stats.filesReviewed} file${stats.filesReviewed === 1 ? '' : 's'}.`
     ];
 
-    if (overall && overall.trim()) {
-        lines.push('', overall.trim());
+    const safeOverall = sanitiseModelText(overall);
+    if (safeOverall) {
+        lines.push('', safeOverall);
     }
 
     lines.push(
@@ -49,9 +50,24 @@ function formatReviewBody(review) {
     return lines.join('\n');
 }
 
+const MAX_COMMENT_CHARS = 2000;
+
+// The comment text comes from a model that is itself reading untrusted PR
+// content. Neutralise @-mentions so a prompt-injected translation can't trick
+// the bot into pinging users/teams, and cap length to avoid oversized payloads
+// or API rejection. The `​` zero-width space breaks the mention without
+// visibly changing the rendered text.
+function sanitiseModelText(text) {
+    const s = (typeof text === 'string' ? text : '').trim();
+    const neutralised = s.replace(/@/g, '@​');
+    return neutralised.length > MAX_COMMENT_CHARS
+        ? `${neutralised.slice(0, MAX_COMMENT_CHARS)}…`
+        : neutralised;
+}
+
 function formatCommentBody(c) {
     const icon = c.severity === 'error' ? '❌'
         : c.severity === 'question' ? '❓'
             : '💡';
-    return `${icon} ${c.message}\n\n<sub>Automated suggestion — verify against your judgement as a native speaker.</sub>`;
+    return `${icon} ${sanitiseModelText(c.message)}\n\n<sub>Automated suggestion — verify against your judgement as a native speaker.</sub>`;
 }
