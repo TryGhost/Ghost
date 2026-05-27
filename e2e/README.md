@@ -207,8 +207,8 @@ Infrastructure (MySQL, Redis, Mailpit, Tinybird) must already be running before 
 Global setup (`tests/global.setup.ts`) does:
 - Validates local fixture cache package (snapshot + role auth states)
 - On cache miss: recreates base DB, creates owner + staff users, stores role auth state files, snapshots DB
-- On cache hit (local only): skips fixture regeneration and reuses cached package
-- In CI: always rebuilds fixture package
+- On cache hit: restores the base DB from the cached snapshot, skips fixture regeneration, and reuses cached role auth states
+- In CI: restores the same fixture package from an exact GitHub Actions cache key based on DB integrity and migration inputs; cache misses rebuild via the same Playwright global setup flow
 
 Per-file mode (`helpers/playwright/fixture.ts`) does:
 - Clones a new database from snapshot at file boundary
@@ -277,8 +277,9 @@ Tests run automatically in GitHub Actions on every PR and commit to `main`.
 2. **Build Assets**: Build server/admin assets and public app UMD bundles
 3. **Build E2E Image**: `pnpm --filter @tryghost/e2e build:docker` (layers public apps into `/content/files`)
 4. **Prepare E2E Runtime**: Pull Playwright/gateway images in parallel, start infra, and sync Tinybird state (`pnpm --filter @tryghost/e2e preflight:build`)
-5. **Test Execution**: Run Playwright E2E tests inside the official Playwright container
-6. **Artifacts**: Upload Playwright traces and reports on failure
+5. **Fixture Cache**: Restore the DB snapshot + role auth states from GitHub Actions cache when the exact fixture key exists
+6. **Test Execution**: Run Playwright E2E tests inside the official Playwright container
+7. **Artifacts**: Upload Playwright traces and reports on failure
 
 ## Available Scripts
 

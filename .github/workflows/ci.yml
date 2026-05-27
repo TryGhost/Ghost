@@ -798,7 +798,47 @@ jobs:
       - name: Latest Release
         run: |
           DIR=$(mktemp -d)
+          ARCHIVE_VERSION=$(tar -xOf ghost.tgz package/package.json | jq -r '.version')
           ghost install local -d "$DIR"
+          CURRENT_VERSION=$(DIR="$DIR" node -e "const fs = require('fs'); const path = require('path'); const current = fs.realpathSync(path.join(process.env.DIR, 'current')); console.log(require(path.join(current, 'package.json')).version);")
+          if ! node - "$ARCHIVE_VERSION" "$CURRENT_VERSION" <<'NODE'
+          function parse(version) {
+              const [main, prerelease = ''] = version.split('-', 2);
+              return {
+                  numbers: main.split('.').map(Number),
+                  prerelease
+              };
+          }
+
+          function compare(left, right) {
+              for (let index = 0; index < 3; index += 1) {
+                  if (left.numbers[index] !== right.numbers[index]) {
+                      return left.numbers[index] - right.numbers[index];
+                  }
+              }
+
+              if (left.prerelease === right.prerelease) {
+                  return 0;
+              }
+
+              if (!left.prerelease) {
+                  return 1;
+              }
+
+              if (!right.prerelease) {
+                  return -1;
+              }
+
+              return left.prerelease.localeCompare(right.prerelease, undefined, {numeric: true});
+          }
+
+          process.exit(compare(parse(process.argv[2]), parse(process.argv[3])) > 0 ? 0 : 1);
+          NODE
+          then
+              echo "Skipping update from $CURRENT_VERSION to $ARCHIVE_VERSION because the archive is not newer"
+              ghost stop -d "$DIR"
+              exit 0
+          fi
           ghost update -d "$DIR" --archive "$(pwd)/ghost.tgz"
           URL=$(ghost config get url -d "$DIR" --no-prompt --no-color | tail -n1)
           curl --retry 10 --retry-connrefused --retry-delay 3 -fsSI "$URL"
@@ -1349,6 +1389,15 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Restore E2E fixture cache
+        id: e2e-fixture-cache
+        uses: actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        with:
+          path: |
+            e2e/data/cache/mysql
+            e2e/data/state/auth
+          key: e2e-fixture-v3-${{ hashFiles('ghost/core/test/unit/server/data/schema/integrity.test.js', 'ghost/core/core/server/data/migrations/versions/**/*.js') }}
+
       - name: Prepare E2E CI job
         env:
           GHOST_E2E_IMAGE: ${{ steps.load.outputs.image-tag }}
@@ -1366,7 +1415,18 @@ jobs:
           E2E_SHARD_INDEX: ${{ matrix.shardIndex }}
           E2E_SHARD_TOTAL: ${{ matrix.shardTotal }}
           E2E_RETRIES: 2
+          E2E_ENABLE_CI_FIXTURE_CACHE: 'true'
         run: bash ./e2e/scripts/run-playwright-container.sh
+
+      - name: Save E2E fixture cache
+        if: success() && steps.e2e-fixture-cache.outputs.cache-hit != 'true' && github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/v') || endsWith(github.ref, '.x')) && matrix.projectName == 'Main' && matrix.shardIndex == 1
+        uses: actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
+        continue-on-error: true
+        with:
+          path: |
+            e2e/data/cache/mysql
+            e2e/data/state/auth
+          key: ${{ steps.e2e-fixture-cache.outputs.cache-primary-key }}
 
       - name: Dump E2E docker logs
         if: failure()
