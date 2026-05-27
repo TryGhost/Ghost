@@ -9,6 +9,10 @@ export default defineConfig({
     define: {
         'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production')
     },
+    preview: {
+        allowedHosts: true,
+        port: 4176
+    },
     build: {
         outDir: resolve(import.meta.dirname, 'umd'),
         emptyOutDir: true,

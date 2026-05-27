@@ -531,6 +531,9 @@ importers:
         specifier: 'catalog:'
         version: 10.29.2
     devDependencies:
+      concurrently:
+        specifier: 'catalog:'
+        version: 8.2.2
       eslint:
         specifier: 'catalog:'
         version: 8.57.1

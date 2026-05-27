@@ -19,10 +19,13 @@
   },
   "scripts": {
     "build": "pnpm exec vite build",
+    "build:watch": "pnpm exec vite build --watch",
+    "dev": "concurrently --kill-others --names preview,build \"pnpm exec vite preview -l silent\" \"pnpm build:watch\"",
     "lint": "pnpm exec eslint src --ext .js --cache",
     "test": "pnpm run build && pnpm exec mocha --exit --trace-warnings --timeout=60000 \"test/**/*.test.js\""
   },
   "devDependencies": {
+    "concurrently": "catalog:",
     "eslint": "catalog:",
     "jsdom": "catalog:",
     "mocha": "catalog:",

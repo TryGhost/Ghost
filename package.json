@@ -126,6 +126,7 @@
               "@tryghost/signup-form",
               "@tryghost/sodo-search",
               "@tryghost/announcement-bar",
+              "@tryghost/admin-toolbar",
               "@tryghost/parse-email-address"
             ]
           }
