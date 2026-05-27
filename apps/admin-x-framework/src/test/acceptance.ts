@@ -322,7 +322,7 @@ export async function mockSitePreview({page, url, response}: {page: Page, url: s
     const lastRequest: {previewHeader?: string} = {};
     const previewRequests: string[] = [];
 
-    await page.route(url, async (route) => {
+    await page.route(`${url}**`, async (route) => {
         if (route.request().method() !== 'POST') {
             return route.continue();
         }
