@@ -32,6 +32,11 @@
     // We have to disable platform based automerge (forcing renovate to do it manually)
     // as otherwise renovate wont follow our schedule
     "platformAutomerge": false,
+    // Soak every dependency update for 72 hours before opening a PR. This guards
+    // against compromised publishes (malicious version yanked within a few hours)
+    // and against unstable releases that get hotfixed shortly after publish.
+    // Applies to vulnerability alerts too — see the comment on vulnerabilityAlerts.
+    "minimumReleaseAge": "3 days",
     "timezone": "Etc/UTC",
     // Restrict Renovate runs to the automerge windows so branch updates
     // (rebasing, force-pushes) happen around the same times automerge
@@ -61,14 +66,13 @@
     ],
     // CVE-driven updates skip the weekend schedule and the dashboard-
     // approval gate, and stay rebased against main so conflicts don't
-    // strand them. The 72h release-age soak is deliberately kept so a
-    // malicious "fix" publish can't fast-track into main. Automerge is
-    // configured per update-type in packageRules below so security
-    // majors still wait for human review.
+    // strand them. The 72h release-age soak from the top-level
+    // minimumReleaseAge still applies here so a malicious "fix" publish
+    // can't fast-track into main. Automerge is configured per update-type
+    // in packageRules below so security majors still wait for human review.
     "vulnerabilityAlerts": {
         "schedule": ["at any time"],
         "rebaseWhen": "behind-base-branch",
-        "minimumReleaseAge": "3 days",
         "dependencyDashboardApproval": false,
         "labels": ["dependencies", "security"]
     },
