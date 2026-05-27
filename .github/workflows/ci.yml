@@ -1536,6 +1536,7 @@ jobs:
         job_migration_integrity_check,
         job_lint,
         job_i18n,
+        job_build_artifacts,
         job_ghost-cli,
         job_admin-tests,
         job_unit-tests,
