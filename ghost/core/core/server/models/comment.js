@@ -268,7 +268,8 @@ const Comment = ghostBookshelf.Model.extend({
             }
 
             if (methodName !== 'findPage') {
-                this.applyRepliesWithRelatedOption(options.withRelated, options.isAdmin);
+                const parentIds = options.id ? [options.id] : undefined;
+                this.applyRepliesWithRelatedOption(options.withRelated, options.isAdmin, parentIds);
             }
         }
 
