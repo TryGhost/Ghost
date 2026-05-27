@@ -521,19 +521,21 @@ function isTombstoneReply(reply: Comment, isAdmin: boolean) {
     return reply.status === 'deleted' || (!isAdmin && reply.status === 'hidden');
 }
 
-function pruneOrphanTombstoneReplies(replies: Comment[], deletedReply: Comment | undefined, isAdmin: boolean) {
+function pruneOrphanTombstoneReplies(replies: Comment[], isAdmin: boolean) {
     let prunedReplies = replies;
-    let ancestorId = deletedReply?.in_reply_to_id;
+    let removedReply = false;
 
-    while (ancestorId) {
-        const ancestor = prunedReplies.find(reply => reply.id === ancestorId);
-        if (!ancestor || !isTombstoneReply(ancestor, isAdmin) || hasDescendantReply(prunedReplies, ancestor.id)) {
-            break;
-        }
+    do {
+        removedReply = false;
+        prunedReplies = prunedReplies.filter((reply) => {
+            if (!isTombstoneReply(reply, isAdmin) || hasDescendantReply(prunedReplies, reply.id)) {
+                return true;
+            }
 
-        ancestorId = ancestor.in_reply_to_id;
-        prunedReplies = prunedReplies.filter(reply => reply.id !== ancestor.id);
-    }
+            removedReply = true;
+            return false;
+        });
+    } while (removedReply);
 
     return prunedReplies;
 }
@@ -592,7 +594,7 @@ async function deleteComment({state, api, data: comment, dispatchAction}: {state
 
                 return replies;
             }, []);
-            const updatedReplies = pruneOrphanTombstoneReplies(repliesAfterDelete, replyToDelete, state.isAdmin);
+            const updatedReplies = pruneOrphanTombstoneReplies(repliesAfterDelete, state.isAdmin);
             const hasDeletedReply = originalLength !== updatedReplies.length || keepTombstone;
 
             const updatedTopLevelComment = {

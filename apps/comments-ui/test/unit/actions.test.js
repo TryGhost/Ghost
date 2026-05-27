@@ -309,7 +309,7 @@ describe('Actions', function () {
             });
         });
 
-        it('does not remove unrelated tombstones without loaded descendants', async function () {
+        it('removes unrelated tombstones without loaded descendants', async function () {
             const state = {
                 commentCount: 2,
                 comments: [
@@ -345,13 +345,7 @@ describe('Actions', function () {
 
             const newState = await Actions.deleteComment({state, api, data: {id: 'reply-2'}, dispatchAction: vi.fn()});
 
-            expect(newState.comments[0].replies).toMatchObject([
-                {
-                    id: 'reply-1',
-                    status: 'deleted',
-                    html: null
-                }
-            ]);
+            expect(newState.comments[0].replies).toEqual([]);
             expect(newState.comments[0].count).toMatchObject({
                 replies: 0,
                 direct_replies: 0
