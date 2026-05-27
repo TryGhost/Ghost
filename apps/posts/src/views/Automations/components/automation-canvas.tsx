@@ -534,6 +534,7 @@ const WaitSidebarBody: React.FC<{
                 <div className='grid grid-cols-[6rem_1fr] gap-2'>
                     <Input
                         aria-invalid={!isValid}
+                        className='h-(--control-height)'
                         inputMode='numeric'
                         value={daysText}
                         onChange={handleChange}
