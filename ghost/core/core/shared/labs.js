@@ -54,8 +54,6 @@ const PRIVATE_FEATURES = [
     'indexnow',
     'pictureImageFormats',
     'smarterCounts',
-    'commentsThreads',
-    'commentsPinning',
     'llmsTxt'
 ];
 
