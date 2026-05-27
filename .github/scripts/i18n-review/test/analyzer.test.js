@@ -3,7 +3,8 @@ import test from 'node:test';
 import {analyzePR} from '../src/analyzer.js';
 
 function createOctokit({files, headSha = 'abc123'}) {
-    return {
+    const getContentCalls = [];
+    const octokit = {
         pulls: {
             get: async () => ({
                 data: {
@@ -20,13 +21,18 @@ function createOctokit({files, headSha = 'abc123'}) {
             return response.data;
         },
         repos: {
-            getContent: async ({path, ref}) => ({
-                data: {
-                    content: Buffer.from(JSON.stringify({path, ref}), 'utf8').toString('base64')
-                }
-            })
+            getContent: async ({path, ref}) => {
+                getContentCalls.push({path, ref});
+                return {
+                    data: {
+                        content: Buffer.from(JSON.stringify({path, ref}), 'utf8').toString('base64')
+                    }
+                };
+            }
         }
     };
+    octokit.getContentCalls = getContentCalls;
+    return octokit;
 }
 
 test('ignores English source locale files', async () => {
@@ -90,6 +96,40 @@ test('skips the model call when the PR exceeds the per-PR line cap', async () =>
     assert.equal(review.verdict, 'skipped');
     assert.equal(review.comments.length, 0);
     assert.ok(review.overall.includes('beyond the automated reviewer'));
+    // The model call AND the per-file currentContent fetch should be skipped.
+    assert.equal(octokit.getContentCalls.length, 0);
+});
+
+test('skips the model call when the PR exceeds the per-PR file cap without fetching per-file contents', async () => {
+    const files = [];
+    for (let i = 0; i < 20; i++) {
+        files.push({
+            filename: `ghost/i18n/locales/de/file${i}.json`,
+            status: 'modified',
+            patch: '@@ -1,1 +1,2 @@\n {\n+  "New": "Neu"\n }'
+        });
+    }
+    let anthropicCalled = false;
+    const octokit = createOctokit({files});
+    const anthropic = {
+        messages: {
+            create: async () => {
+                anthropicCalled = true;
+            }
+        }
+    };
+
+    const review = await analyzePR(123, {
+        octokit,
+        anthropic,
+        owner: 'TryGhost',
+        repo: 'Ghost'
+    });
+
+    assert.equal(anthropicCalled, false);
+    assert.equal(review.verdict, 'skipped');
+    // Neither context.json nor any per-file currentContent should have been fetched.
+    assert.equal(octokit.getContentCalls.length, 0);
 });
 
 test('downgrades verdict when all model comments are filtered out', async () => {

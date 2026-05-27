@@ -82,9 +82,17 @@ export async function analyzePR(prNumber, {octokit, anthropic, owner, repo, mode
     }
     console.log(`Found ${i18nFiles.length} i18n file(s) to review.`);
 
-    const contextJson = await fetchFile(octokit, owner, repo, 'ghost/i18n/locales/context.json', 'main');
+    // Short-circuit on raw file count before any network call. Patch contents
+    // for the diff are already on the listFiles response, so we can also
+    // compute the added-line count without any further fetches.
+    if (i18nFiles.length > MAX_FILES) {
+        console.log(`PR exceeds file cap (files=${i18nFiles.length}/${MAX_FILES}). Skipping model call.`);
+        return buildSkippedReview({pr, filesCount: i18nFiles.length, linesCount: 0, reason: 'files'});
+    }
 
-    const fileChanges = [];
+    const eligibleFiles = [];
+    const lineLookup = new Map();
+    const validKeys = new Set();
     for (const file of i18nFiles) {
         if (file.status === 'removed') continue;
         if (!file.patch) {
@@ -93,41 +101,30 @@ export async function analyzePR(prNumber, {octokit, anthropic, owner, repo, mode
         }
         const addedLines = extractAddedLines(file.patch);
         if (addedLines.length === 0) continue;
-        const currentContent = await fetchFile(octokit, owner, repo, file.filename, pr.head.sha);
-        fileChanges.push({filename: file.filename, addedLines, currentContent});
+        for (const l of addedLines) {
+            const key = `${file.filename}:${l.position}`;
+            validKeys.add(key);
+            lineLookup.set(key, l.line);
+        }
+        eligibleFiles.push({file, addedLines});
     }
 
-    if (fileChanges.length === 0) {
+    if (eligibleFiles.length === 0) {
         console.log('No added translation lines found. Nothing to review.');
         return null;
     }
 
-    const lineLookup = new Map();
-    const validKeys = new Set();
-    for (const fc of fileChanges) {
-        for (const l of fc.addedLines) {
-            const key = `${fc.filename}:${l.position}`;
-            validKeys.add(key);
-            lineLookup.set(key, l.line);
-        }
+    if (validKeys.size > MAX_ADDED_LINES) {
+        console.log(`PR exceeds line cap (lines=${validKeys.size}/${MAX_ADDED_LINES}). Skipping model call.`);
+        return buildSkippedReview({pr, filesCount: eligibleFiles.length, linesCount: validKeys.size, reason: 'lines'});
     }
 
-    if (fileChanges.length > MAX_FILES || validKeys.size > MAX_ADDED_LINES) {
-        console.log(`PR exceeds review caps (files=${fileChanges.length}/${MAX_FILES}, lines=${validKeys.size}/${MAX_ADDED_LINES}). Skipping model call.`);
-        return {
-            prNumber: pr.number,
-            prTitle: pr.title,
-            headSha: pr.head.sha,
-            verdict: 'skipped',
-            overall: `This PR touches ${fileChanges.length} translation file${fileChanges.length === 1 ? '' : 's'} and ${validKeys.size} added line${validKeys.size === 1 ? '' : 's'}, which is beyond the automated reviewer's per-PR limit (max ${MAX_FILES} files / ${MAX_ADDED_LINES} lines). A maintainer should review the translations manually.`,
-            comments: [],
-            stats: {
-                filesReviewed: fileChanges.length,
-                linesReviewed: validKeys.size,
-                commentsRaised: 0
-            },
-            usage: null
-        };
+    // Both caps passed — now make the network calls we need for the review.
+    const contextJson = await fetchFile(octokit, owner, repo, 'ghost/i18n/locales/context.json', 'main');
+    const fileChanges = [];
+    for (const {file, addedLines} of eligibleFiles) {
+        const currentContent = await fetchFile(octokit, owner, repo, file.filename, pr.head.sha);
+        fileChanges.push({filename: file.filename, addedLines, currentContent});
     }
 
     const systemPrompt = await fs.readFile(PROMPT_PATH, 'utf8');
@@ -182,6 +179,26 @@ export async function analyzePR(prNumber, {octokit, anthropic, owner, repo, mode
             commentsRaised: validComments.length
         },
         usage: response.usage || null
+    };
+}
+
+function buildSkippedReview({pr, filesCount, linesCount, reason}) {
+    const overall = reason === 'files'
+        ? `This PR touches ${filesCount} translation file${filesCount === 1 ? '' : 's'}, which is beyond the automated reviewer's per-PR limit (max ${MAX_FILES} files / ${MAX_ADDED_LINES} lines). A maintainer should review the translations manually.`
+        : `This PR adds ${linesCount} translation line${linesCount === 1 ? '' : 's'}, which is beyond the automated reviewer's per-PR limit (max ${MAX_FILES} files / ${MAX_ADDED_LINES} lines). A maintainer should review the translations manually.`;
+    return {
+        prNumber: pr.number,
+        prTitle: pr.title,
+        headSha: pr.head.sha,
+        verdict: 'skipped',
+        overall,
+        comments: [],
+        stats: {
+            filesReviewed: filesCount,
+            linesReviewed: linesCount,
+            commentsRaised: 0
+        },
+        usage: null
     };
 }
 
