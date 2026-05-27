@@ -1,0 +1,100 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import {analyzePR} from '../src/analyzer.js';
+
+function createOctokit({files, headSha = 'abc123'}) {
+    return {
+        pulls: {
+            get: async () => ({
+                data: {
+                    number: 123,
+                    title: 'Translation test',
+                    body: '',
+                    head: {sha: headSha}
+                }
+            }),
+            listFiles: async () => ({data: files})
+        },
+        paginate: async fn => {
+            const response = await fn();
+            return response.data;
+        },
+        repos: {
+            getContent: async ({path, ref}) => ({
+                data: {
+                    content: Buffer.from(JSON.stringify({path, ref}), 'utf8').toString('base64')
+                }
+            })
+        }
+    };
+}
+
+test('ignores English source locale files', async () => {
+    let anthropicCalled = false;
+    const octokit = createOctokit({
+        files: [{
+            filename: 'ghost/i18n/locales/en/ghost.json',
+            status: 'modified',
+            patch: '@@ -1,1 +1,2 @@\n {\n+  "New": "New"\n }'
+        }]
+    });
+    const anthropic = {
+        messages: {
+            create: async () => {
+                anthropicCalled = true;
+            }
+        }
+    };
+
+    const review = await analyzePR(123, {
+        octokit,
+        anthropic,
+        owner: 'TryGhost',
+        repo: 'Ghost'
+    });
+
+    assert.equal(review, null);
+    assert.equal(anthropicCalled, false);
+});
+
+test('downgrades verdict when all model comments are filtered out', async () => {
+    const octokit = createOctokit({
+        files: [{
+            filename: 'ghost/i18n/locales/de/ghost.json',
+            status: 'modified',
+            patch: '@@ -1,1 +1,2 @@\n {\n+  "New": "Neu"\n }'
+        }]
+    });
+    const anthropic = {
+        messages: {
+            create: async () => ({
+                content: [{
+                    type: 'tool_use',
+                    name: 'post_translation_review',
+                    input: {
+                        verdict: 'questions',
+                        overall: 'Looks fine after filtering.',
+                        comments: [{
+                            filename: 'ghost/i18n/locales/de/ghost.json',
+                            position: 999,
+                            severity: 'question',
+                            message: 'Invalid position'
+                        }]
+                    }
+                }],
+                usage: null
+            })
+        }
+    };
+
+    const review = await analyzePR(123, {
+        octokit,
+        anthropic,
+        owner: 'TryGhost',
+        repo: 'Ghost'
+    });
+
+    assert.equal(review.verdict, 'ok');
+    assert.deepEqual(review.comments, []);
+    assert.equal(review.stats.commentsRaised, 0);
+});

@@ -74,11 +74,12 @@ export class MockedApi {
             if (parent) {
                 parent.replies.push(fixture);
                 parent.count.replies = parent.replies.length;
-                return;
+                return fixture;
             }
         }
 
         this.comments.push(fixture);
+        return fixture;
     }
 
     buildReply(overrides: any = {}) {
@@ -361,7 +362,7 @@ export class MockedApi {
             const payload = JSON.parse(route.request().postData());
 
             this.#lastCommentDate = new Date();
-            this.addComment({
+            const comment = this.addComment({
                 ...payload.comments[0],
                 member: this.member
             });
@@ -369,7 +370,7 @@ export class MockedApi {
                 status: 200,
                 body: JSON.stringify({
                     comments: [
-                        this.comments[this.comments.length - 1]
+                        comment
                     ]
                 })
             });
