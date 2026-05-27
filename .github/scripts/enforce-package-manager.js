@@ -4,11 +4,11 @@ if (/\bpnpm\//.test(userAgent)) {
     process.exit(0);
 }
 
-// Fallback for environments where pnpm 11 doesn't propagate
-// npm_config_user_agent to lifecycle scripts — observed on GitHub Actions
-// where the runner's pre-installed pnpm v10 shim layer strips the var even
-// when pnpm 11 is the active binary. The `pnpm_config_*` env-var prefix is
-// exclusive to pnpm and reliably set when pnpm 11 spawns a child process.
+// Fallback heuristic for environments where npm_config_user_agent isn't
+// propagated to lifecycle scripts (we've hit this on CI runners with mixed
+// pnpm install layouts). pnpm-driven lifecycles typically set
+// `pnpm_config_*` env vars, so we treat the presence of any such key as a
+// strong-but-not-absolute signal that pnpm is the active package manager.
 if (Object.keys(process.env).some(key => key.startsWith('pnpm_config_'))) {
     process.exit(0);
 }
