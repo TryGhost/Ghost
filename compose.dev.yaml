@@ -121,7 +121,7 @@ services:
         condition: service_healthy
 
   stripe:
-    image: stripe/stripe-cli:latest@sha256:c901c8503bc02f32566b785eb652420a66d68294eae4148b21ff9290203fa7c0
+    image: stripe/stripe-cli:latest@sha256:49adc22954b07ace90944d0c2816cd8d4c08f527548f150785aff7c4d1109d42
     container_name: ghost-dev-stripe
     entrypoint: ["/entrypoint.sh"]
     profiles: ["stripe"]
