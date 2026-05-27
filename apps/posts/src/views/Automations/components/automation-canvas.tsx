@@ -4,7 +4,7 @@ import EmailContentModal from './email-modal/email-content-modal';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import StepPicker, {type StepPickerType} from './step-picker';
 import {AutomationAction, AutomationDetail, AutomationSendEmailAction, AutomationWaitAction, InsertActionAnchor, MAX_AUTOMATION_ACTIONS, insertSendEmailAction, insertWaitAction, removeAction, updateSendEmailAction, updateWaitAction} from '@tryghost/admin-x-framework/api/automations';
-import {Background, Edge, Handle, Node, NodeProps, Position, ReactFlow} from '@xyflow/react';
+import {Background, BackgroundVariant, Edge, Handle, Node, NodeProps, Position, ReactFlow} from '@xyflow/react';
 import {Banner, Button, Checkbox, Input, Label, LoadingIndicator, Popover, PopoverContent, PopoverTrigger, Select, SelectTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 
@@ -71,8 +71,9 @@ const NodeShell: React.FC<React.PropsWithChildren<{className?: string; data: Ste
         aria-label={data.value ? `${data.label}: ${data.value}` : data.label}
         aria-pressed={data.selected}
         className={cn(
-            'flex w-64 items-center gap-3 rounded-lg border border-border-default bg-surface-elevated px-4 py-3 text-left text-sm text-foreground shadow-sm transition-colors hover:border-border-strong focus-visible:border-border-strong focus-visible:outline-none',
-            data.selected && 'border-blue-500 shadow-[inset_0_0_0_1px_var(--color-blue-500),0_1px_2px_0_rgb(0_0_0_/_0.05)]',
+            'flex w-64 items-center gap-3 rounded-lg border border-transparent bg-surface-elevated p-3 text-left text-sm text-foreground shadow-sm transition-all focus-visible:border-border-strong focus-visible:outline-none',
+            !data.selected && 'hover:border-border-strong',
+            data.selected && 'border-gray-700 shadow-[inset_0_0_0_1px_var(--color-gray-700),0_1px_2px_0_rgb(0_0_0_/_0.05)]',
             className
         )}
         type='button'
@@ -533,6 +534,7 @@ const WaitSidebarBody: React.FC<{
                 <div className='grid grid-cols-[6rem_1fr] gap-2'>
                     <Input
                         aria-invalid={!isValid}
+                        className='h-(--control-height)'
                         inputMode='numeric'
                         value={daysText}
                         onChange={handleChange}
@@ -644,7 +646,7 @@ const StepSidebar: React.FC<{detail: StepSidebarDetail | null; isEmailModalOpen:
             aria-hidden={!detail}
             aria-label='Step details'
             className={cn(
-                'absolute inset-y-0 right-0 z-[1] flex w-[calc(100%-6rem)] max-w-none translate-x-full flex-col gap-6 overflow-y-auto border-l border-border-default bg-background p-6 shadow-lg transition-transform duration-200 ease-out sm:w-[36rem]',
+                'absolute inset-y-0 right-0 z-[1] flex w-[calc(100%-6rem)] max-w-none translate-x-full flex-col gap-6 overflow-y-auto bg-background p-6 shadow-sm transition-transform duration-200 ease-out sm:w-[36rem] dark:border-l dark:border-gray-950',
                 detail ? 'translate-x-0' : 'pointer-events-none'
             )}
             data-state={detail ? 'open' : 'closed'}
@@ -785,7 +787,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
     return (
         <div className='relative flex-1 overflow-hidden bg-surface-page' data-testid='automation-canvas'>
             <ReactFlow
-                className='[--xy-background-color:var(--surface-page)] [--xy-background-pattern-color:var(--border-default)] [--xy-edge-stroke:var(--border-default)] dark:[--xy-background-pattern-color:var(--color-grey-900)] dark:[--xy-edge-stroke:var(--color-grey-800)]'
+                className='[--xy-background-color:var(--color-grey-50)] [--xy-background-pattern-color:var(--color-grey-500)] [--xy-edge-stroke:var(--border-default)] dark:[--xy-background-color:var(--color-black)] dark:[--xy-background-pattern-color:var(--color-grey-900)] dark:[--xy-edge-stroke:var(--color-grey-800)]'
                 defaultViewport={initialViewport.current}
                 edges={graph.edges}
                 edgesFocusable={false}
@@ -805,7 +807,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
                 }}
                 onPaneClick={clearDetail}
             >
-                <Background />
+                <Background variant={BackgroundVariant.Dots} />
             </ReactFlow>
             <StepSidebar detail={sidebarDetail} isEmailModalOpen={Boolean(emailModalAction)} onClose={clearDetail} />
             {emailModalAction && automation && (
