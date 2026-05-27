@@ -90,6 +90,59 @@ describe('Unit: endpoints/utils/serializers/output/utils/url', function () {
             assert.equal(resource.id, 'post-id');
             assert.equal(resource.type, 'posts');
         });
+
+        describe('preview URL override for non-published posts', function () {
+            it('sets /email/<uuid>/ for email-only sent posts regardless of the facade URL', function () {
+                getUrlForResourceStub.returns('http://localhost/the-slug/');
+
+                const post = {
+                    id: 'post-id',
+                    uuid: 'post-uuid',
+                    slug: 'the-slug',
+                    status: 'sent',
+                    posts_meta: {email_only: true}
+                };
+
+                urlUtil.forPost(post.id, post, {options: {}});
+
+                assert.equal(post.url, 'urlFor');
+                const [args] = urlUtils.urlFor.firstCall.args;
+                assert.equal(args.relativeUrl, '/email/post-uuid/');
+            });
+
+            it('sets /p/<uuid>/ for draft posts regardless of the facade URL', function () {
+                getUrlForResourceStub.returns('http://localhost/the-slug/');
+
+                const post = {
+                    id: 'post-id',
+                    uuid: 'post-uuid',
+                    slug: 'the-slug',
+                    status: 'draft'
+                };
+
+                urlUtil.forPost(post.id, post, {options: {}});
+
+                assert.equal(post.url, 'urlFor');
+                const [args] = urlUtils.urlFor.firstCall.args;
+                assert.equal(args.relativeUrl, '/p/post-uuid/');
+            });
+
+            it('keeps the facade URL for published posts', function () {
+                getUrlForResourceStub.returns('http://localhost/the-slug/');
+
+                const post = {
+                    id: 'post-id',
+                    uuid: 'post-uuid',
+                    slug: 'the-slug',
+                    status: 'published'
+                };
+
+                urlUtil.forPost(post.id, post, {options: {}});
+
+                assert.equal(post.url, 'http://localhost/the-slug/');
+                sinon.assert.notCalled(urlUtils.urlFor);
+            });
+        });
     });
 
     describe('forTag', function () {

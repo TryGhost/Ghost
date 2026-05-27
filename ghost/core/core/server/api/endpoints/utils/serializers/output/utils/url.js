@@ -31,7 +31,9 @@ const forPost = (id, attrs, frame, type = 'posts') => {
      * Needs further discussion.
      */
     if (!localUtils.isContentAPI(frame)) {
-        if (attrs.status !== 'published' && attrs.url.match(/\/404\//)) {
+        // Gate on status alone — the previous `/404/` URL check broke
+        // under `config.lazyRouting` (the lazy service returns `/{slug}/`).
+        if (attrs.status !== 'published') {
             if (attrs.posts_meta && attrs.posts_meta.email_only) {
                 attrs.url = urlUtils.urlFor({
                     relativeUrl: urlUtils.urlJoin('/email', attrs.uuid, '/')
