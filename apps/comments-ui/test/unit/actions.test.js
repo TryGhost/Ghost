@@ -259,6 +259,56 @@ describe('Actions', function () {
             });
         });
 
+        it('keeps hidden admin replies when their last descendant is deleted', async function () {
+            const state = {
+                isAdmin: true,
+                commentCount: 2,
+                comments: [
+                    makeComment({
+                        id: 'root',
+                        count: {
+                            replies: 1,
+                            direct_replies: 0,
+                            likes: 0
+                        },
+                        replies: [
+                            makeComment({
+                                id: 'reply-1',
+                                status: 'hidden',
+                                html: '<p>Hidden admin-visible reply</p>',
+                                in_reply_to_id: null
+                            }),
+                            makeComment({
+                                id: 'reply-2',
+                                status: 'published',
+                                html: '<p>Reply 2</p>',
+                                in_reply_to_id: 'reply-1'
+                            })
+                        ]
+                    })
+                ]
+            };
+            const api = {
+                comments: {
+                    edit: vi.fn(() => Promise.resolve())
+                }
+            };
+
+            const newState = await Actions.deleteComment({state, api, data: {id: 'reply-2'}, dispatchAction: vi.fn()});
+
+            expect(newState.comments[0].replies).toMatchObject([
+                {
+                    id: 'reply-1',
+                    status: 'hidden',
+                    html: '<p>Hidden admin-visible reply</p>'
+                }
+            ]);
+            expect(newState.comments[0].count).toMatchObject({
+                replies: 0,
+                direct_replies: 0
+            });
+        });
+
         it('does not remove unrelated tombstones without loaded descendants', async function () {
             const state = {
                 commentCount: 2,
