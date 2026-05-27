@@ -7,13 +7,15 @@ name: Renovate
 # schedule, and automergeSchedule.
 on:
   schedule:
-    # Hourly. The repo-level `schedule` / `automergeSchedule` blocks in
-    # renovate.json5 still gate when Renovate actually acts or merges, so
-    # extra wake-ups outside those windows are no-ops (~30s each). Hourly
-    # ticks during the 7h weeknight automerge window roughly match Ghost's
-    # CI duration, giving each merge a fresh rebase + green CI window
-    # before the next tick.
-    - cron: '0 * * * *'
+    # Hourly, offset to :17 past the hour. The repo-level `schedule` /
+    # `automergeSchedule` blocks in renovate.json5 still gate when Renovate
+    # actually acts or merges, so extra wake-ups outside those windows are
+    # no-ops (~30s each). Hourly ticks during the 7h weeknight automerge
+    # window roughly match Ghost's CI duration, giving each merge a fresh
+    # rebase + green CI window before the next tick.
+    # The :17 offset avoids top-of-hour GH Actions scheduler contention,
+    # which was dropping roughly every other tick on `0 * * * *`.
+    - cron: '17 * * * *'
   workflow_dispatch:
     inputs:
       ignoreSchedule:
@@ -32,7 +34,7 @@ permissions:
 jobs:
   renovate:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     steps:
       - name: Get GitHub App token
