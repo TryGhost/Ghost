@@ -255,7 +255,7 @@ Modes:
 You can force a full local fixture package reset by setting:
 
 ```bash
-E2E_FORCE_FIXTURE_RESET=1 yarn test
+E2E_FORCE_FIXTURE_RESET=1 pnpm test
 ```
 
 ### Best Practices

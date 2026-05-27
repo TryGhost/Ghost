@@ -2,7 +2,7 @@ import baseDebug from '@tryghost/debug';
 import logging from '@tryghost/logging';
 import {GhostInstance, MySQLManager} from './service-managers';
 import {GhostManager} from './service-managers/ghost-manager';
-import {getLatestMigrationFileName, getMissingAuthStateFiles, shouldForceFixtureReset} from '@/helpers/utils/fixture-cache';
+import {createFixtureCacheManifest, getLatestMigrationFileName, getMissingAuthStateFiles, isFixtureCacheManifestCurrent, shouldForceFixtureReset} from '@/helpers/utils/fixture-cache';
 import {randomUUID} from 'crypto';
 import type {GhostConfig} from '@/helpers/playwright/fixture';
 
@@ -18,7 +18,7 @@ export type EnvironmentMode = 'dev' | 'build';
 type GhostEnvOverrides = GhostConfig | Record<string, string>;
 type CacheStatus =
     | {isValid: true; reason: 'cache_hit'}
-    | {isValid: false; reason: 'ci_always_rebuild' | 'forced_fixture_reset' | 'missing_snapshot' | 'missing_auth_state' | 'missing_migration_files' | 'missing_migrations_table' | 'migration_mismatch'};
+    | {isValid: false; reason: 'ci_always_rebuild' | 'forced_fixture_reset' | 'missing_snapshot' | 'missing_auth_state' | 'missing_migration_files' | 'missing_migrations_table' | 'migration_mismatch' | 'missing_fixture_manifest' | 'fixture_manifest_mismatch'};
 type GlobalSetupResult = {baseUrl: string; cacheHit: boolean};
 
 /**
@@ -102,7 +102,11 @@ export class EnvironmentManager {
      * Persist a reusable DB snapshot after global user/role setup is complete.
      */
     async createSnapshot(): Promise<void> {
+        const latestMigrationFileName = await getLatestMigrationFileName();
+        const manifest = await createFixtureCacheManifest(latestMigrationFileName);
+
         await this.mysql.createSnapshot('ghost_e2e_base');
+        await this.mysql.writeSnapshotMetadata(manifest);
     }
 
     /**
@@ -219,6 +223,16 @@ export class EnvironmentManager {
 
         if (latestAppliedMigration !== latestMigrationFileName) {
             return {isValid: false, reason: 'migration_mismatch'};
+        }
+
+        const expectedManifest = await createFixtureCacheManifest(latestMigrationFileName);
+        const actualManifest = await this.mysql.getSnapshotMetadata();
+        if (!actualManifest) {
+            return {isValid: false, reason: 'missing_fixture_manifest'};
+        }
+
+        if (!isFixtureCacheManifestCurrent(actualManifest, expectedManifest)) {
+            return {isValid: false, reason: 'fixture_manifest_mismatch'};
         }
 
         return {isValid: true, reason: 'cache_hit'};

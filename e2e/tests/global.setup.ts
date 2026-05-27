@@ -1,3 +1,5 @@
+/* eslint-disable playwright/expect-expect, playwright/no-conditional-in-test, playwright/no-skipped-test */
+
 import logging from '@tryghost/logging';
 import {AUTH_STATE_BY_ROLE, AUTH_STATE_DIR, StaffFixtureRole} from '@/helpers/utils/fixture-cache';
 import {MailPit} from '@/helpers/services/email/mail-pit';
