@@ -339,7 +339,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
                         <FormItem>
                             <FormLabel>Handle</FormLabel>
                             <FormControl>
-                                <div className='relative flex items-center justify-stretch gap-1 rounded-md border border-transparent bg-gray-100 px-3 transition-colors focus-within:border-green focus-within:bg-transparent focus-within:shadow-[0_0_0_2px_rgba(48,207,67,.25)] focus-within:outline-hidden dark:bg-gray-900'>
+                                <div className='relative flex items-center justify-stretch gap-1 rounded-md border border-transparent bg-gray-100 px-3 transition-colors focus-within:border-(--color-focus-ring) focus-within:bg-transparent focus-within:shadow-[(--color-focus-ring)] focus-within:outline-hidden dark:bg-gray-950'>
                                     <LucideIcon.AtSign className='w-4 min-w-4 text-gray-700' size={16} />
                                     <Input className='w-auto grow border-none! bg-transparent px-0 shadow-none! outline-hidden!' placeholder="index" {...field} />
                                     <span className='max-w-[200px] truncate text-right whitespace-nowrap text-gray-700 max-sm:hidden' title={`@${handleDomain}`}>@{handleDomain}</span>
