@@ -785,7 +785,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
     return (
         <div className='relative flex-1 overflow-hidden bg-surface-page' data-testid='automation-canvas'>
             <ReactFlow
-                className='[--xy-background-color:var(--surface-page)] [--xy-background-pattern-color:var(--border-subtle)] [--xy-edge-stroke:var(--border-subtle)] dark:[--xy-background-pattern-color:var(--color-grey-900)] dark:[--xy-edge-stroke:var(--color-grey-800)]'
+                className='[--xy-background-color:var(--surface-page)] [--xy-background-pattern-color:var(--border-default)] [--xy-edge-stroke:var(--border-default)] dark:[--xy-background-pattern-color:var(--color-grey-900)] dark:[--xy-edge-stroke:var(--color-grey-800)]'
                 defaultViewport={initialViewport.current}
                 edges={graph.edges}
                 edgesFocusable={false}
