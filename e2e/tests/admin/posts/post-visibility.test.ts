@@ -4,6 +4,12 @@ import {PostPage} from '@/helpers/pages';
 import {expect, test} from '@/helpers/playwright';
 import {signInAsMember} from '@/helpers/playwright/flows/sign-in';
 
+interface PublicPostSession {
+    context: BrowserContext;
+    page: Page;
+    postPage: PostPage;
+}
+
 function buildLexicalWithBody(body: string): string {
     return JSON.stringify({
         root: {
@@ -32,7 +38,15 @@ function buildLexicalWithBody(body: string): string {
     });
 }
 
-async function createAuthenticatedPublicPage(browser: Browser, baseURL: string, member: Member): Promise<{context: BrowserContext; page: Page; postPage: PostPage}> {
+function getRequiredBaseURL(baseURL?: string): string {
+    if (!baseURL) {
+        throw new Error('baseURL is not defined');
+    }
+
+    return baseURL;
+}
+
+async function createPublicPostSession(browser: Browser, baseURL: string): Promise<PublicPostSession> {
     const context = await browser.newContext({
         baseURL,
         extraHTTPHeaders: {
@@ -40,13 +54,23 @@ async function createAuthenticatedPublicPage(browser: Browser, baseURL: string, 
         }
     });
     const page = await context.newPage();
-    await signInAsMember(page, member);
 
     return {
         context,
         page,
         postPage: new PostPage(page)
     };
+}
+
+async function createAuthenticatedPublicPage(browser: Browser, baseURL: string, member: Member): Promise<PublicPostSession> {
+    const session = await createPublicPostSession(browser, baseURL);
+    try {
+        await signInAsMember(session.page, member);
+        return session;
+    } catch (error) {
+        await session.context.close();
+        throw error;
+    }
 }
 
 test.describe('Ghost Admin - Post Visibility', () => {
@@ -87,7 +111,8 @@ test.describe('Ghost Admin - Post Visibility', () => {
     test.describe('specific tier visibility', () => {
         test.use({stripeEnabled: true});
 
-        test('only allows selected tier members', async ({page, browser}) => {
+        test('only allows selected tier members', async ({page, browser, baseURL}) => {
+            const siteURL = getRequiredBaseURL(baseURL);
             const timestamp = Date.now();
             const title = `gold-tier-post-${timestamp}`;
             const body = 'Only gold members can see this';
@@ -137,20 +162,22 @@ test.describe('Ghost Admin - Post Visibility', () => {
             const accessMessage = `on the ${allowedTier.name} tier only`;
             const slug = post.slug;
 
-            const anonymousPage = await page.context().newPage();
+            const anonymousSession = await createPublicPostSession(browser, siteURL);
             try {
-                const anonymousPostPage = new PostPage(anonymousPage);
-                await anonymousPostPage.gotoPost(slug);
-                await expect(anonymousPostPage.accessCtaHeading).toContainText(accessMessage);
+                await anonymousSession.postPage.gotoPost(slug);
+                await expect(anonymousSession.postPage.accessCtaHeading).toContainText(accessMessage);
             } finally {
-                await anonymousPage.close();
+                await anonymousSession.context.close();
             }
 
-            const baseURL = new URL(page.url()).origin;
-            const disallowedSession = await createAuthenticatedPublicPage(browser, baseURL, disallowedMember);
-            const allowedSession = await createAuthenticatedPublicPage(browser, baseURL, allowedMember);
-
+            const memberSessions: PublicPostSession[] = [];
             try {
+                const disallowedSession = await createAuthenticatedPublicPage(browser, siteURL, disallowedMember);
+                memberSessions.push(disallowedSession);
+
+                const allowedSession = await createAuthenticatedPublicPage(browser, siteURL, allowedMember);
+                memberSessions.push(allowedSession);
+
                 await disallowedSession.postPage.gotoPost(slug);
                 await expect(disallowedSession.postPage.accessCtaHeading).toContainText(accessMessage);
 
@@ -158,8 +185,9 @@ test.describe('Ghost Admin - Post Visibility', () => {
                 await expect(allowedSession.postPage.accessCtaContent).toBeHidden();
                 await expect(allowedSession.postPage.articleBody).toHaveText(body);
             } finally {
-                await disallowedSession.context.close();
-                await allowedSession.context.close();
+                await Promise.all(memberSessions.map(({context}) => {
+                    return context.close();
+                }));
             }
         });
     });
