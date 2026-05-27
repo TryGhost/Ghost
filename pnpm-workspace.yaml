@@ -161,3 +161,6 @@ packageExtensions:
   '@tryghost/nql@0.12.10':
     dependencies:
       lodash: ^4.18.0
+minimumReleaseAgeExclude:
+  # Renovate security update: @number-flow/react@0.6.0
+  - "@number-flow/react@0.6.0"
