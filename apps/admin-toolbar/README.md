@@ -1,29 +1,24 @@
 # Admin Toolbar
 
-Frontend staff toolbar for Ghost sites.
+Frontend staff toolbar for Ghost sites. Uses Preact (~3KB) instead of React
+(~40KB) since this is a lightweight public-facing widget that only needs basic
+rendering and hooks — the same rationale applies to any future small public
+scripts where bundle size matters more than ecosystem compatibility.
 
 ## Development
 
-### Pre-requisites
-
-- Run `pnpm` in the Ghost monorepo root.
-- Build the package with `pnpm build` from this directory.
-
-## Build
-
 ```bash
-pnpm build
+pnpm build    # one-off build
+pnpm dev      # build + preview with watch (started automatically by pnpm dev from root)
+pnpm test     # build + run tests against UMD bundle
 ```
 
-The package builds `umd/admin-toolbar.min.js`. Ghost core copies that artifact into `core/frontend/public/admin-toolbar.min.js` during `ghost/core`'s `pnpm build:assets:js`.
+## How it's served
 
-## Test
-
-```bash
-pnpm test
-```
-
-Tests run against the built UMD bundle so package behavior is verified through the same public artifact consumed by Ghost core.
+In production, the script is loaded from jsDelivr via the `adminToolbar` config
+in `defaults.json`, following the same CDN pattern as portal, comments-ui, and
+the other public apps. In development, the Docker Dockerfile overrides the URL
+to proxy through Caddy to the local vite preview server on port 4176.
 
 # Copyright & License
 
