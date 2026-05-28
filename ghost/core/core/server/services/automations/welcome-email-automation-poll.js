@@ -24,11 +24,11 @@ const {AutomatedEmailRecipient, Member, WelcomeEmailAutomationRun} = require('..
  * @prop {() => PromiseLike<unknown>} api.loadMemberWelcomeEmails
  * @prop {(options: {
  *     member: {
- *         name: string;
+ *         name: undefined | null | string;
  *         email: string;
  *         uuid: string;
  *     };
- *     memberStatus: string;
+ *     memberStatus: 'free' | 'paid';
  * }) => PromiseLike<unknown>} api.send
  */
 
@@ -38,8 +38,17 @@ const MAX_ATTEMPTS = 10;
 const RETRY_DELAY_MS = 10 * 60 * 1000;
 const LOCK_TIMEOUT = 30 * 60 * 1000;
 
+/**
+ * @internal
+ * @typedef {typeof MEMBER_WELCOME_EMAIL_SLUGS} Slugs
+ */
+
+/** @type {Map<string, keyof Slugs>} */
 const slugToMemberStatus = new Map(
-    Object.entries(MEMBER_WELCOME_EMAIL_SLUGS).map(([status, slug]) => [slug, status])
+    Object.entries(MEMBER_WELCOME_EMAIL_SLUGS).map(
+        /** @param {[keyof Slugs, Slugs[keyof Slugs]]} entry */
+        ([status, slug]) => [slug, status]
+    )
 );
 
 /**
@@ -264,13 +273,11 @@ async function processRun({
  *
  * @param {object} options
  * @param {MemberWelcomeEmailService} options.memberWelcomeEmailService
- * @param {() => unknown} options.enqueueAnotherPollNow
  * @param {(date: Readonly<Date>) => unknown} options.enqueueAnotherPollAt
  */
-async function poll(options) {
+async function welcomeEmailAutomationPoll(options) {
     const {
         memberWelcomeEmailService,
-        enqueueAnotherPollNow,
         enqueueAnotherPollAt
     } = options;
     const {runs, nextFutureReadyAt} = await fetchAndLockRuns();
@@ -290,10 +297,10 @@ async function poll(options) {
     // If the batch is full, we might have another batch to execute. (There's
     // no way to know without trying.)
     if (runs.length >= MAX_RUNS_PER_BATCH) {
-        enqueueAnotherPollNow();
+        enqueueAnotherPollAt(new Date());
     }
 }
 
 module.exports = {
-    poll
+    welcomeEmailAutomationPoll
 };

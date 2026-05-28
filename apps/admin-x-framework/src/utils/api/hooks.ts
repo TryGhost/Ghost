@@ -8,6 +8,9 @@ import {useFramework} from '../../providers/framework-provider';
 import {RequestOptions, apiUrl, useFetchApi} from './fetch-api';
 
 export interface Meta {
+    capabilities?: {
+        dislikes?: boolean;
+    };
     pagination: {
         page: number;
         limit: number | 'all';

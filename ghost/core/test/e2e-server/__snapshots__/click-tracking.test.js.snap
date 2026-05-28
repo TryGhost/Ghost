@@ -2,7 +2,7 @@
 
 exports[`Click Tracking Full test 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate, br",
+  "accept-encoding": "gzip, deflate, br, zstd",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,

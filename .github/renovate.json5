@@ -2,10 +2,13 @@
     "extends": [
         "github>tryghost/renovate-config"
     ],
-    // Limit concurrent branches to keep Renovate runs within the 30-minute
-    // Mend timeout and avoid overwhelming CI with dozens of queued jobs.
-    // The shared preset disables rate limiting, but Ghost's monorepo is
-    // large enough that unlimited branches cause timeouts during rebasing.
+    // Keep Renovate's own concurrency guardrails in place. The shared preset
+    // extends :disableRateLimiting (prConcurrentLimit: 0, prHourlyLimit: 0),
+    // so these override that unlimited default. The true "no more than 10
+    // open Renovate PRs" cap is enforced in .github/workflows/renovate.yml
+    // because Renovate's vulnerability-alert path can bypass these limits and
+    // because we need the cap to be based on the live GitHub PR count.
+    "prConcurrentLimit": 10,
     "branchConcurrentLimit": 10,
     // Keep manually-closed immortal/grouped PRs closed unless explicitly
     // reopened from the Dependency Dashboard.
@@ -28,6 +31,12 @@
     // We have to disable platform based automerge (forcing renovate to do it manually)
     // as otherwise renovate wont follow our schedule
     "platformAutomerge": false,
+    // Soak every dependency update for 72 hours before opening a PR. This guards
+    // against compromised publishes (malicious version yanked within a few hours)
+    // and against unstable releases that get hotfixed shortly after publish.
+    // Vulnerability-alert PRs require dashboard approval below so they do not
+    // bypass the live open-PR cap enforced by the workflow.
+    "minimumReleaseAge": "3 days",
     "timezone": "Etc/UTC",
     // Restrict Renovate runs to the automerge windows so branch updates
     // (rebasing, force-pushes) happen around the same times automerge
@@ -35,6 +44,16 @@
     // Each block starts one hour earlier than the matching automerge
     // window so Renovate has time to rebase and open/refresh PRs before
     // automerge is eligible to run.
+    //
+    // `schedule` alone only gates *new* PR creation — Renovate defaults to
+    // `updateNotScheduled: true`, which lets existing branches keep getting
+    // rebased and force-pushed any time the runner ticks. With the hourly
+    // self-hosted workflow that means a CI-storm of force-pushes across all
+    // open Renovate PRs during the workday. Setting `updateNotScheduled:
+    // false` keeps existing branch maintenance inside the same windows.
+    // Existing branches can still be maintained outside the normal creation
+    // schedule when the workflow switches Renovate into cap-reached mode.
+    "updateNotScheduled": false,
     "schedule": [
         // Run all weekend
         "* * * * 0,6",
@@ -55,6 +74,15 @@
         "* 22-23 * * 1-5",
         "* 0-4 * * 2-6"
     ],
+    // Vulnerability alerts normally bypass Renovate's PR concurrency, hourly
+    // PR, and schedule limits. Let them keep doing that so security fixes can
+    // still create PRs even when normal dependency updates are capped.
+    "vulnerabilityAlerts": {
+        "schedule": ["at any time"],
+        "rebaseWhen": "behind-base-branch",
+        "dependencyDashboardApproval": false,
+        "labels": ["dependencies", "security"]
+    },
     "ignoreDeps": [
         // https://github.com/TryGhost/Ghost/commit/2b9e494dfcb95c40f596ccf54ec3151c25d53601
         // `got` 10.x has a Node 10 bug that makes it pretty much unusable for now
@@ -230,6 +258,23 @@
             "matchUpdateTypes": [
                 "digest"
             ],
+            "automerge": true,
+            "automergeType": "pr"
+        },
+
+        // Security patches and minors automerge after CI passes regardless
+        // of any other automerge exclusion (e.g. the CSS preprocessor rule
+        // in the shared preset). Security majors are intentionally left
+        // for human merge — but the `vulnerabilityAlerts` block above
+        // still opens them without a dashboard-approval tick.
+        {
+            "description": "Automerge non-major security updates after CI passes",
+            "matchUpdateTypes": [
+                "patch",
+                "minor",
+                "digest"
+            ],
+            "isVulnerabilityAlert": true,
             "automerge": true,
             "automergeType": "pr"
         },
