@@ -8,7 +8,9 @@
         "sharedGlobals": [
             "{workspaceRoot}/.npmrc",
             "{workspaceRoot}/ghost/tsconfig.json",
-            "{workspaceRoot}/package.json",
+            "{workspaceRoot}/package.json"
+        ],
+        "dependencyGraph": [
             "{workspaceRoot}/pnpm-workspace.yaml",
             "{workspaceRoot}/pnpm-lock.yaml"
         ]

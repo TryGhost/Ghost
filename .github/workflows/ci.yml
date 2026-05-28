@@ -43,10 +43,7 @@ jobs:
     permissions:
       actions: read
       contents: read
-      # Required by dorny/paths-filter, which calls pulls.listFiles on
-      # pull_request events. Private forks of this repo don't grant this
-      # implicitly when an explicit permissions block is present, so it must
-      # be listed here for the Setup job to succeed on those forks.
+      # Required for PR metadata reads used by setup-time policy checks.
       pull-requests: read
     steps:
       - name: Checkout current commit
@@ -87,143 +84,45 @@ jobs:
             echo "is_member=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Determine changed packages
-        if: env.IS_TAG != 'true'
-        uses: AurorNZ/paths-filter@c9dd42e99db87803313ff6f4b1150cc9f6c836af # v5.0.0
-        id: changed
-        with:
-          base: ${{ env.NX_BASE }}
-          filters: |
-            shared: &shared
-              - '.github/**'
-              # Renovate config / workflow files have no Ghost
-              # runtime/test impact. Anchored as &renovate_only and
-              # referenced from every filter below so a PR touching
-              # only these files skips all downstream jobs; the
-              # rollup gate passes on skipped deps.
-              - &renovate_only
-                - '!.github/renovate.json5'
-                - '!.github/renovate-bot.cjs'
-                - '!.github/workflows/renovate.yml'
-              - '.npmrc'
-              - 'package.json'
-              - 'pnpm-lock.yaml'
-              - 'pnpm-workspace.yaml'
-            ci:
-              - '.github/workflows/**'
-              - *renovate_only
-              - '.github/actions/**'
-              - '.github/scripts/**'
-            core:
-              - *shared
-              - 'ghost/**'
-              - '!ghost/admin/**'
-              - '!ghost/core/core/server/data/tinybird/**'
-              # Unit tests + vitest config are exercised only by job_unit-tests;
-              # they never affect the acceptance / legacy / ghost-cli jobs.
-              - '!ghost/core/test/unit/**'
-              - '!ghost/core/vitest.config.ts'
-              - '!ghost/core/test/utils/vitest-setup.ts'
-            tinybird:
-              - '.github/workflows/ci.yml'
-              - 'compose.dev.analytics.yaml'
-              - 'ghost/core/core/server/data/tinybird/**'
-              - '!ghost/core/core/server/data/tinybird/**/*.md'
-            tinybird-datafiles:
-              - 'ghost/core/core/server/data/tinybird/**'
-              - '!ghost/core/core/server/data/tinybird/**/*.md'
-            unit-test-globals:
-              - 'vitest.config.mjs'
-            core-unit-test-globals:
-              - 'ghost/core/vitest.config.ts'
-              - 'ghost/core/test/utils/vitest-*.ts'
-            any-code:
-              - '!**/*.md'
-              - '!.devcontainer/**'
-              - '!.vscode/**'
-              - *renovate_only
-            # Drives the run_e2e output: matches any changed file that could
-            # affect a running Ghost instance. Test files, test config and
-            # docs are excluded — a change confined to them cannot alter
-            # product behaviour, so the build + E2E lane is skipped.
-            # ghost/core test paths are listed today; app test paths can be
-            # added here as their conventions are confirmed.
-            e2e:
-              - '!**/*.md'
-              - '!.devcontainer/**'
-              - '!.vscode/**'
-              - '!ghost/core/test/**'
-              - '!ghost/core/vitest.config.ts'
-              - *renovate_only
-
       - name: Define Node test matrix
         id: node_matrix
         run: |
-          echo 'matrix=["22.18.0"]' >> $GITHUB_OUTPUT
+          echo 'matrix=["22.18.0"]' >> "$GITHUB_OUTPUT"
 
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-      - name: Set up Node
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
-        env:
-          FORCE_COLOR: 0
+      - name: Setup pnpm workspace
+        uses: ./.github/actions/setup-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
+          install-command: pnpm install --frozen-lockfile --ignore-scripts
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile --ignore-scripts
-
-      - name: Determine Affected Projects
-        id: affected
+      - name: Generate CI execution plan
+        id: plan
         run: |
-          # if the ci files have changed or we're in a tag, ensure we don't just look at affected
-          # projects and we run the necessary jobs on all projects
-          AFFECTED_ARG="--affected"
-          if [[ "${{ steps.changed.outputs.ci }}" == 'true' || "${{ env.IS_TAG }}" == 'true' ]]; then
-            AFFECTED_ARG=""
-          fi
-
-          AFFECTED_PROJECTS=$(pnpm -s nx show projects ${AFFECTED_ARG} --json)
-          echo "affected_projects=$AFFECTED_PROJECTS" >> "$GITHUB_OUTPUT"
-          # string list for use in run-many commands
-          AFFECTED_PROJECTS_STR=$(pnpm -s nx show projects ${AFFECTED_ARG} --sep=, | tr -d '\n')
-          echo "affected_projects_str=$AFFECTED_PROJECTS_STR" >> "$GITHUB_OUTPUT"
-
-          UNIT_TEST_AFFECTED_ARG="$AFFECTED_ARG"
-          if [[ "${{ steps.changed.outputs.unit-test-globals }}" == 'true' ]]; then
-            UNIT_TEST_AFFECTED_ARG=""
-          fi
-          UNIT_TEST_PROJECTS_STR=$(pnpm -s nx show projects ${UNIT_TEST_AFFECTED_ARG} --withTarget test:unit --sep=, | tr -d '\n')
-          if [[ "${{ steps.changed.outputs.core-unit-test-globals }}" == 'true' ]]; then
-            UNIT_TEST_PROJECTS_STR=$(printf '%s\n%s\n' "$UNIT_TEST_PROJECTS_STR" "ghost" | awk 'NF && !seen[$0]++' | paste -sd, -)
-          fi
-          echo "unit_test_projects_str=$UNIT_TEST_PROJECTS_STR" >> "$GITHUB_OUTPUT"
-
-          # "i18n" tag = packages whose source is scanned by @tryghost/i18n's
-          # translate:* scripts (not packages that merely import @tryghost/i18n).
-          I18N_PROJECTS=$(pnpm -s nx show projects ${AFFECTED_ARG} --projects 'tag:i18n' --sep=, | tr -d '\n')
-          echo "affected_i18n_projects=${I18N_PROJECTS}" >> "$GITHUB_OUTPUT"
-
-          PLAYWRIGHT_PROJECTS=$(pnpm -s nx show projects ${AFFECTED_ARG} \
-            --withTarget test:acceptance \
-            --projects 'apps/*' \
-            --json)
-          echo "affected_playwright_projects=$PLAYWRIGHT_PROJECTS" >> "$GITHUB_OUTPUT"
+          node .github/scripts/ci-plan.js \
+            --base "${NX_BASE:-}" \
+            --head "${NX_HEAD:-${HEAD_COMMIT}}" \
+            --event "${{ github.event_name }}" \
+            --is-tag "${{ env.IS_TAG }}"
 
     outputs:
-      affected_projects: ${{ steps.affected.outputs.affected_projects }}
-      affected_projects_str: ${{ steps.affected.outputs.affected_projects_str }}
-      unit_test_projects_str: ${{ steps.affected.outputs.unit_test_projects_str }}
-      affected_playwright_projects: ${{ steps.affected.outputs.affected_playwright_projects }}
-      changed_i18n_apps: ${{ steps.affected.outputs.affected_i18n_projects != '' }}
-      changed_core: ${{ steps.changed.outputs.core }}
-      changed_tinybird: ${{ steps.changed.outputs.tinybird }}
-      changed_tinybird_datafiles: ${{ steps.changed.outputs.tinybird-datafiles }}
-      changed_any_code: ${{ steps.changed.outputs.any-code }}
-      # Single gate for the build + browser-E2E lane. True for tags, or when a
-      # changed file could affect a running Ghost instance (see the `e2e` path
-      # filter above). A test-only / docs-only change keeps this false.
-      run_e2e: ${{ env.IS_TAG == 'true' || steps.changed.outputs.e2e == 'true' }}
+      affected_projects: ${{ steps.plan.outputs.affected_projects }}
+      affected_projects_str: ${{ steps.plan.outputs.affected_projects_str }}
+      lint_projects_str: ${{ steps.plan.outputs.lint_projects_str }}
+      unit_test_projects_str: ${{ steps.plan.outputs.unit_test_projects_str }}
+      affected_playwright_projects: ${{ steps.plan.outputs.affected_playwright_projects }}
+      changed_ci: ${{ steps.plan.outputs.changed_ci }}
+      changed_i18n_apps: ${{ steps.plan.outputs.changed_i18n_apps }}
+      changed_core: ${{ steps.plan.outputs.changed_core }}
+      changed_tinybird: ${{ steps.plan.outputs.changed_tinybird }}
+      changed_tinybird_datafiles: ${{ steps.plan.outputs.changed_tinybird_datafiles }}
+      changed_any_code: ${{ steps.plan.outputs.changed_any_code }}
+      run_e2e: ${{ steps.plan.outputs.run_e2e }}
+      run_coverage: ${{ steps.plan.outputs.run_coverage }}
+      unit_test_matrix: ${{ steps.plan.outputs.unit_test_matrix }}
+      app_acceptance_matrix: ${{ steps.plan.outputs.app_acceptance_matrix }}
+      core_db_matrix: ${{ steps.plan.outputs.core_db_matrix }}
+      e2e_matrix: ${{ steps.plan.outputs.e2e_matrix }}
+      package_build_matrix: ${{ steps.plan.outputs.package_build_matrix }}
       is_main: ${{ env.IS_MAIN }}
       is_tag: ${{ env.IS_TAG }}
       is_development: ${{ env.IS_DEVELOPMENT }}
@@ -233,6 +132,26 @@ jobs:
       node_version: ${{ env.NODE_VERSION }}
       node_test_matrix: ${{ steps.node_matrix.outputs.matrix }}
       nx_base: ${{ env.NX_BASE }}
+
+  job_ci-config:
+    name: CI config
+    runs-on: ubuntu-latest
+    needs: [job_setup]
+    if: needs.job_setup.outputs.changed_ci == 'true'
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup pnpm workspace
+        uses: ./.github/actions/setup-pnpm
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          install-command: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Validate CI planner
+        run: node --test .github/scripts/ci-plan.test.js
+
+      - name: Validate workflow YAML
+        run: ruby -e "require 'yaml'; YAML.load_file('.github/workflows/ci.yml'); YAML.load_file('.github/workflows/renovate.yml'); YAML.load_file('.github/actions/setup-pnpm/action.yml')"
 
   job_app_version_bump_check:
     name: Check app version bump
@@ -279,22 +198,16 @@ jobs:
   job_lint:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.affected_projects_str != ''
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.lint_projects_str != ''
     name: Lint
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 1000
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
-        env:
-          FORCE_COLOR: 0
+      - name: Setup pnpm workspace
+        uses: ./.github/actions/setup-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
 
       - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
@@ -302,7 +215,7 @@ jobs:
           key: eslint-cache
 
       - name: Lint projects
-        run: pnpm nx run-many -t lint -p "${{ needs.job_setup.outputs.affected_projects_str }}"
+        run: pnpm nx run-many -t lint -p "${{ needs.job_setup.outputs.lint_projects_str }}"
         env:
           NX_BASE: ${{ needs.job_setup.outputs.nx_base }}
           NX_HEAD: ${{ env.HEAD_COMMIT }}
@@ -323,14 +236,11 @@ jobs:
       || needs.job_setup.outputs.changed_i18n_apps == 'true'
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+      - name: Setup pnpm workspace
+        uses: ./.github/actions/setup-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile --filter @tryghost/i18n... --ignore-scripts
+          install-command: pnpm install --frozen-lockfile --filter @tryghost/i18n... --ignore-scripts
 
       - name: Run i18n tests
         run: pnpm --filter @tryghost/i18n test
@@ -346,17 +256,13 @@ jobs:
       MOZ_HEADLESS: 1
       JOBS: 1
       CI: true
-      COVERAGE: true
+      COVERAGE: ${{ needs.job_setup.outputs.run_coverage }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+      - name: Setup pnpm workspace
+        uses: ./.github/actions/setup-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
 
       - run: pnpm nx run ghost-admin:test
         env:
@@ -364,9 +270,11 @@ jobs:
 
       # Merge coverage reports and upload
       - name: Merge Admin test coverage
+        if: needs.job_setup.outputs.run_coverage == 'true'
         run: pnpm ember coverage-merge
         working-directory: ghost/admin
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: needs.job_setup.outputs.run_coverage == 'true'
         with:
           name: admin-coverage
           path: ghost/*/coverage/cobertura-coverage.xml
@@ -383,27 +291,22 @@ jobs:
     needs: [job_setup]
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.unit_test_projects_str != ''
     strategy:
-      matrix:
-        node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
-    name: Unit tests (Node ${{ matrix.node }})
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.job_setup.outputs.unit_test_matrix) }}
+    name: Unit tests (${{ matrix.project }} ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 1000
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
-        env:
-          FORCE_COLOR: 0
+      - name: Setup pnpm workspace
+        uses: ./.github/actions/setup-pnpm
         with:
-          node-version: ${{ matrix.node }}
-          cache: pnpm
-
-      - name: Install dependencies
-        # sqlite3 is an optionalDependency. Without --force, pnpm may skip
-        # installing/linking it when restoring from a cached store. --force
-        # ensures all optional deps are installed regardless.
-        # (ghost core's test:unit job requires sqlite3)
-        run: pnpm install --frozen-lockfile --force
+          node-version: ${{ env.NODE_VERSION }}
+          # sqlite3 is an optionalDependency. Without --force, pnpm may skip
+          # installing/linking it when restoring from a cached store. --force
+          # ensures all optional deps are installed regardless.
+          # (ghost core's test:unit job requires sqlite3)
+          install-command: pnpm install --frozen-lockfile --force
 
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
@@ -420,8 +323,20 @@ jobs:
         # passed, so a retry only re-runs the crashed one. Interim stopgap
         # until the vitest worker/teardown issue is fixed.
         run: |
+          PROJECT="${{ matrix.project }}"
+          SHARD_INDEX="${{ matrix.shardIndex }}"
+          SHARD_TOTAL="${{ matrix.shardTotal }}"
+
+          if [ "$PROJECT" = "ghost" ]; then
+            pnpm nx run @tryghost/parse-email-address:build
+            pnpm nx run ghost:build:assets
+            TEST_CMD=(pnpm --dir ghost/core test:vitest -- --shard="${SHARD_INDEX}/${SHARD_TOTAL}")
+          else
+            TEST_CMD=(pnpm nx run "${PROJECT}:test:unit")
+          fi
+
           for attempt in 1 2 3; do
-            pnpm nx run-many -t test:unit -p "${{ needs.job_setup.outputs.unit_test_projects_str }}" && exit 0
+            "${TEST_CMD[@]}" && exit 0
             if [ "${attempt}" -lt 3 ]; then
               echo "::warning::Unit tests attempt ${attempt} failed — retrying"
             else
@@ -453,7 +368,7 @@ jobs:
   job_acceptance-tests:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_core == 'true'
+    if: needs.job_setup.outputs.core_db_matrix != '{"include":[]}'
     services:
       mysql:
         image: ${{ matrix.env.DB == 'mysql8' && 'mysql:8.0' || '' }}
@@ -478,40 +393,26 @@ jobs:
           --health-timeout=5s
           --health-retries=12
     strategy:
-      matrix:
-        node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
-        env:
-          - DB: mysql8
-            NODE_ENV: testing-mysql
-        include:
-          - node: ${{ needs.job_setup.outputs.node_version }}
-            env:
-              DB: sqlite3
-              NODE_ENV: testing
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.job_setup.outputs.core_db_matrix) }}
     env:
       DB: ${{ matrix.env.DB }}
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
-    name: Acceptance tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
+    name: Core ${{ matrix.suite }} tests (${{ matrix.env.DB }})
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
-        env:
-          FORCE_COLOR: 0
+      - name: Setup pnpm workspace
+        uses: ./.github/actions/setup-pnpm
         with:
-          node-version: ${{ matrix.node }}
-          cache: pnpm
+          node-version: ${{ env.NODE_VERSION }}
+          install-command: ${{ matrix.env.DB == 'sqlite3' && 'pnpm install --frozen-lockfile --force' || 'pnpm install --frozen-lockfile' }}
 
-      - name: Install dependencies
-        # sqlite3 is an optionalDependency. Without --force, pnpm may skip
-        # installing/linking it when restoring from a cached store. --force
-        # ensures all optional deps are installed regardless.
-        run: |
-          if [ "${{ matrix.env.DB }}" = "sqlite3" ]; then
-            pnpm install --frozen-lockfile --force
-          else
-            pnpm install --frozen-lockfile
-          fi
+      - name: Checkout default themes
+        if: matrix.suite == 'legacy'
+        run: git submodule update --init --depth=1 ghost/core/content/themes/casper ghost/core/content/themes/source
+
+      - name: Build core test dependencies
+        run: pnpm nx run @tryghost/parse-email-address:build
 
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
@@ -520,19 +421,23 @@ jobs:
 
       - name: Set env vars (SQLite)
         if: contains(matrix.env.DB, 'sqlite')
-        run: echo "database__connection__filename=/dev/shm/ghost-test.db" >> $GITHUB_ENV
+        run: echo "database__connection__filename=/dev/shm/ghost-test.db" >> "$GITHUB_ENV"
 
       - name: Set env vars (MySQL)
         if: contains(matrix.env.DB, 'mysql')
         run: |
-          echo "database__connection__host=127.0.0.1" >> $GITHUB_ENV
-          echo "database__connection__port=${{ job.services.mysql.ports['3306'] }}" >> $GITHUB_ENV
-          echo "database__connection__password=root" >> $GITHUB_ENV
+          {
+            echo "database__connection__host=127.0.0.1"
+            echo "database__connection__port=${{ job.services.mysql.ports['3306'] }}"
+            echo "database__connection__password=root"
+          } >> "$GITHUB_ENV"
 
       - name: E2E tests
-        run: pnpm nx run ghost:test:ci:e2e
+        if: matrix.suite == 'api'
+        run: pnpm --dir ghost/core test:e2e -b
 
       - name: Start MinIO for integration tests
+        if: matrix.suite == 'integration'
         run: |
           docker run -d --rm --name minio \
             -p 9000:9000 \
@@ -552,101 +457,12 @@ jobs:
           exit 1
 
       - name: Integration tests
-        run: pnpm nx run ghost:test:ci:integration
-
-      - name: Check for unexpected file changes
-        run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "Tests generated unexpected file changes. Commit them before merging:"
-            git status
-            git diff
-            exit 1
-          fi
-
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        if: matrix.node == env.NODE_VERSION && contains(matrix.env.DB, 'mysql')
-        with:
-          name: e2e-coverage
-          path: |
-            ghost/*/coverage-e2e/cobertura-coverage.xml
-            ghost/*/coverage-integration/cobertura-coverage.xml
-
-      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
-        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
-        with:
-          status: ${{ job.status }}
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
-  job_legacy-tests:
-    runs-on: ubuntu-latest
-    needs: [job_setup]
-    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_core == 'true'
-    services:
-      mysql:
-        image: ${{ matrix.env.DB == 'mysql8' && 'mysql:8.0' || '' }}
-        env:
-          MYSQL_DATABASE: ghost_testing
-          MYSQL_ROOT_PASSWORD: root
-        ports:
-          - 3306
-        options: >-
-          --tmpfs /var/lib/mysql
-          --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -proot"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=12
-    strategy:
-      matrix:
-        include:
-          - node: ${{ needs.job_setup.outputs.node_version }}
-            env:
-              DB: mysql8
-              NODE_ENV: testing-mysql
-          - node: ${{ needs.job_setup.outputs.node_version }}
-            env:
-              DB: sqlite3
-              NODE_ENV: testing
-    env:
-      DB: ${{ matrix.env.DB }}
-      NODE_ENV: ${{ matrix.env.NODE_ENV }}
-    name: Legacy tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          submodules: true
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
-        env:
-          FORCE_COLOR: 0
-        with:
-          node-version: ${{ matrix.node }}
-          cache: pnpm
-
-      - name: Install dependencies
-        # sqlite3 is an optionalDependency. Without --force, pnpm may skip
-        # installing/linking it when restoring from a cached store. --force
-        # ensures all optional deps are installed regardless.
-        run: |
-          if [ "${{ matrix.env.DB }}" = "sqlite3" ]; then
-            pnpm install --frozen-lockfile --force
-          else
-            pnpm install --frozen-lockfile
-          fi
-
-      - name: Set env vars (SQLite)
-        if: contains(matrix.env.DB, 'sqlite')
-        run: echo "database__connection__filename=/dev/shm/ghost-test.db" >> $GITHUB_ENV
-
-      - name: Set env vars (MySQL)
-        if: contains(matrix.env.DB, 'mysql')
-        run: |
-          echo "database__connection__host=127.0.0.1" >> $GITHUB_ENV
-          echo "database__connection__port=${{ job.services.mysql.ports['3306'] }}" >> $GITHUB_ENV
-          echo "database__connection__password=root" >> $GITHUB_ENV
+        if: matrix.suite == 'integration'
+        run: pnpm --dir ghost/core test:integration -b
 
       - name: Legacy tests
-        run: pnpm nx run ghost:test:ci:legacy
+        if: matrix.suite == 'legacy'
+        run: pnpm --dir ghost/core test:legacy -b
 
       - name: Check for unexpected file changes
         run: |
@@ -667,32 +483,25 @@ jobs:
   job_apps_acceptance-tests:
     runs-on: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.affected_playwright_projects != '[]'
+    if: needs.job_setup.outputs.app_acceptance_matrix != '{"include":[]}'
     name: App Playwright Acceptance Tests
     strategy:
       fail-fast: false
-      matrix:
-        app: ${{ fromJSON(needs.job_setup.outputs.affected_playwright_projects) }}
+      matrix: ${{ fromJSON(needs.job_setup.outputs.app_acceptance_matrix) }}
     env:
       CI: true
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
-        env:
-          FORCE_COLOR: 0
+      - name: Setup pnpm workspace
+        uses: ./.github/actions/setup-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
 
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
 
       - name: Run Playwright tests
-        run: pnpm nx run ${{ matrix.app }}:test:acceptance
+        run: pnpm nx run ${{ matrix.app }}:test:acceptance -- --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
       - name: Get App Name
         if: always()
@@ -700,13 +509,13 @@ jobs:
         # trim '@tryghost/' prefix for better readability in test report artifact names
         run: |
           APP_NAME="${{ matrix.app }}"
-          echo "name=${APP_NAME#@tryghost/}" >> $GITHUB_OUTPUT
+          echo "name=${APP_NAME#@tryghost/}" >> "$GITHUB_OUTPUT"
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: ${{ steps.app_name.outputs.name }}-playwright-report
+          name: ${{ steps.app_name.outputs.name }}-${{ matrix.shardIndex }}-playwright-report
           path: apps/${{ steps.app_name.outputs.name }}/playwright-report
           retention-days: 30
 
@@ -831,16 +640,10 @@ jobs:
         with:
           submodules: true
 
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
-        env:
-          FORCE_COLOR: 0
+      - name: Setup pnpm workspace
+        uses: ./.github/actions/setup-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
 
       - name: Build server and admin assets
         run: |
@@ -1095,17 +898,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
-        env:
-          FORCE_COLOR: 0
+      - name: Setup pnpm workspace
+        uses: ./.github/actions/setup-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
 
       - name: Build public apps for E2E
         run: pnpm --filter @tryghost/e2e build:apps
@@ -1247,68 +1043,7 @@ jobs:
     if: needs.job_build_e2e_image.result == 'success'
     strategy:
       fail-fast: true
-      matrix:
-        include:
-          - projectName: Main
-            projects: main
-            analytics: 'false'
-            shardIndex: 1
-            shardTotal: 10
-          - projectName: Main
-            projects: main
-            analytics: 'false'
-            shardIndex: 2
-            shardTotal: 10
-          - projectName: Main
-            projects: main
-            analytics: 'false'
-            shardIndex: 3
-            shardTotal: 10
-          - projectName: Main
-            projects: main
-            analytics: 'false'
-            shardIndex: 4
-            shardTotal: 10
-          - projectName: Main
-            projects: main
-            analytics: 'false'
-            shardIndex: 5
-            shardTotal: 10
-          - projectName: Main
-            projects: main
-            analytics: 'false'
-            shardIndex: 6
-            shardTotal: 10
-          - projectName: Main
-            projects: main
-            analytics: 'false'
-            shardIndex: 7
-            shardTotal: 10
-          - projectName: Main
-            projects: main
-            analytics: 'false'
-            shardIndex: 8
-            shardTotal: 10
-          - projectName: Main
-            projects: main
-            analytics: 'false'
-            shardIndex: 9
-            shardTotal: 10
-          - projectName: Main
-            projects: main
-            analytics: 'false'
-            shardIndex: 10
-            shardTotal: 10
-          - projectName: Analytics
-            projects: analytics
-            analytics: 'true'
-            shardIndex: 1
-            shardTotal: 2
-          - projectName: Analytics
-            projects: analytics
-            analytics: 'true'
-            shardIndex: 2
-            shardTotal: 2
+      matrix: ${{ fromJSON(needs.job_setup.outputs.e2e_matrix) }}
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -1340,14 +1075,10 @@ jobs:
           image-tags: ${{ needs.job_build_e2e_image.outputs.image-tags }}
           artifact-name: docker-image-e2e
 
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+      - name: Setup pnpm workspace
+        uses: ./.github/actions/setup-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
 
       - name: Prepare E2E CI job
         env:
@@ -1486,10 +1217,12 @@ jobs:
   job_coverage:
     name: Coverage
     needs: [
+      job_setup,
       job_admin-tests,
       job_acceptance-tests,
       job_unit-tests
     ]
+    if: needs.job_setup.outputs.run_coverage == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -1506,60 +1239,10 @@ jobs:
           rsync -av --remove-source-files admin/* ghost/admin
 
       - name: Upload Admin test coverage
+        if: contains(needs.job_admin-tests.result, 'success')
         uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5
         with:
           flags: admin-tests
-
-      - name: Restore E2E coverage
-        if: contains(needs.job_acceptance-tests.result, 'success')
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
-        with:
-          name: e2e-coverage
-
-      - name: Move coverage
-        if: contains(needs.job_acceptance-tests.result, 'success')
-        run: |
-          rsync -av --remove-source-files core/* ghost/core
-
-      - name: Upload E2E test coverage
-        if: contains(needs.job_acceptance-tests.result, 'success')
-        uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5
-        with:
-          flags: e2e-tests
-
-  job_required_tests:
-    name: All required tests passed or skipped
-    needs:
-      [
-        job_setup,
-        job_app_version_bump_check,
-        job_migration_integrity_check,
-        job_lint,
-        job_i18n,
-        job_build_artifacts,
-        job_ghost-cli,
-        job_admin-tests,
-        job_unit-tests,
-        job_acceptance-tests,
-        job_legacy-tests,
-        job_apps_acceptance-tests,
-        job_tinybird-tests,
-        job_build_e2e_public_apps,
-        job_build_e2e_image,
-        job_e2e_tests,
-        build_packages,
-        publish_packages
-      ]
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Output needs
-        run: echo "${{ toJson(needs) }}"
-
-      - name: Check if any required jobs failed or been cancelled
-        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
-        run: |
-          echo "One of the dependent jobs have failed or been cancelled. You may need to re-run it." && exit 1
 
   # Build verification for @tryghost/* public apps.
   # Runs on PRs and pushes. Intentionally has no `id-token: write` — PR-controlled
@@ -1577,33 +1260,15 @@ jobs:
     permissions:
       contents: read
     strategy:
-      matrix:
-        include:
-          - package_name: '@tryghost/activitypub'
-            package_path: 'apps/activitypub'
-          - package_name: '@tryghost/portal'
-            package_path: 'apps/portal'
-          - package_name: '@tryghost/sodo-search'
-            package_path: 'apps/sodo-search'
-          - package_name: '@tryghost/comments-ui'
-            package_path: 'apps/comments-ui'
-          - package_name: '@tryghost/signup-form'
-            package_path: 'apps/signup-form'
-          - package_name: '@tryghost/announcement-bar'
-            package_path: 'apps/announcement-bar'
+      matrix: ${{ fromJSON(needs.job_setup.outputs.package_build_matrix) }}
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
-      - name: Set up Node.js
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+      - name: Setup pnpm workspace
+        uses: ./.github/actions/setup-pnpm
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
 
       - name: Build the package
         run: pnpm nx build ${{ matrix.package_name }}
@@ -1943,3 +1608,56 @@ jobs:
           curl -sf -X POST -H 'Content-type: application/json' \
             --data "$PAYLOAD" \
             "$RELEASE_NOTIFICATION_URL" || echo "Slack notification failed (non-fatal)"
+
+  job_required_status:
+    name: All required tests passed or skipped
+    runs-on: ubuntu-latest
+    permissions: {}
+    if: always()
+    needs: [
+      job_setup,
+      job_ci-config,
+      job_app_version_bump_check,
+      job_migration_integrity_check,
+      job_lint,
+      job_i18n,
+      job_admin-tests,
+      job_unit-tests,
+      job_acceptance-tests,
+      job_apps_acceptance-tests,
+      job_tinybird-tests,
+      job_build_artifacts,
+      job_build_e2e_public_apps,
+      job_build_e2e_image,
+      job_e2e_tests,
+      job_merge_e2e_reports,
+      job_coverage,
+      build_packages,
+      publish_packages,
+      deploy_tinybird,
+      trigger_cd,
+      job_ghost-cli,
+      publish_ghost,
+      create_github_release,
+      notify_release_failure
+    ]
+    steps:
+      - name: Check required job results
+        env:
+          NEEDS_JSON: ${{ toJson(needs) }}
+        run: |
+          set -euo pipefail
+
+          echo "$NEEDS_JSON" | jq -r 'to_entries[] | "\(.key)=\(.value.result)"'
+
+          failed_jobs=$(echo "$NEEDS_JSON" | jq -r '
+            to_entries[]
+            | select(.value.result != "success" and .value.result != "skipped")
+            | "\(.key)=\(.value.result)"
+          ')
+
+          if [ -n "$failed_jobs" ]; then
+            echo "::error::Required CI jobs failed or were cancelled:"
+            echo "$failed_jobs"
+            exit 1
+          fi

@@ -1,0 +1,27 @@
+name: Setup pnpm workspace
+description: Setup pnpm, Node, and install workspace dependencies with one reusable CI step.
+
+inputs:
+  node-version:
+    description: Node.js version to install.
+    required: true
+  install-command:
+    description: pnpm install command to run after setup.
+    required: false
+    default: pnpm install --frozen-lockfile
+
+runs:
+  using: composite
+  steps:
+    - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+
+    - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+      env:
+        FORCE_COLOR: 0
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: pnpm
+
+    - name: Install dependencies
+      shell: bash
+      run: ${{ inputs.install-command }}
