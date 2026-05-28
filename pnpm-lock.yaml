@@ -2628,6 +2628,9 @@ importers:
       tiny-glob:
         specifier: 0.2.9
         version: 0.2.9
+      type-fest:
+        specifier: 'catalog:'
+        version: 4.41.0
       ua-parser-js:
         specifier: 1.0.41
         version: 1.0.41
