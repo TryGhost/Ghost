@@ -79,7 +79,7 @@
     }
   },
   "dependencies": {
-    "@hookform/resolvers": "5.2.2",
+    "@hookform/resolvers": "5.4.0",
     "@radix-ui/react-form": "0.1.8",
     "@tanstack/react-query": "catalog:",
     "@tryghost/admin-x-framework": "workspace:*",
