@@ -76,10 +76,12 @@ const MainContent: React.FC = () => {
     if (isEditorUser(currentUser)) {
         return (
             <Page>
-                <div className='flex-1 overflow-y-auto overscroll-y-contain bg-white dark:bg-grey-950' id="admin-x-settings-scroller">
-                    <div className='mx-auto max-w-5xl px-[5vmin] tablet:mt-16 xl:mt-10'>
-                        <Heading className='mb-[5vmin]'>Settings</Heading>
-                        <Users highlight={false} keywords={EMPTY_KEYWORDS} />
+                <div className='flex-1 bg-white dark:bg-grey-950'>
+                    <div className='h-full overflow-y-auto overscroll-y-contain' id="admin-x-settings-scroller">
+                        <div className='mx-auto max-w-5xl px-[5vmin] tablet:mt-16 xl:mt-10'>
+                            <Heading className='mb-[5vmin]'>Settings</Heading>
+                            <Users highlight={false} keywords={EMPTY_KEYWORDS} />
+                        </div>
                     </div>
                 </div>
             </Page>
@@ -94,8 +96,10 @@ const MainContent: React.FC = () => {
                     <Sidebar />
                 </div>
             </div>
-            <div className="relative h-full flex-1 overflow-y-scroll overscroll-y-contain bg-white pt-13 tablet:basis-[800px] dark:bg-grey-950 dark:tablet:bg-black" id="admin-x-settings-scroller">
-                <Settings />
+            <div className="h-full flex-1 bg-white tablet:basis-[800px] dark:bg-grey-950 dark:tablet:bg-black">
+                <div className="relative h-full overflow-y-scroll overscroll-y-contain pt-13" id="admin-x-settings-scroller">
+                    <Settings />
+                </div>
             </div>
         </Page>
     );
