@@ -257,7 +257,7 @@
     "@types/express": "catalog:",
     "@types/fs-extra": "11.0.4",
     "@types/js-yaml": "4.0.9",
-    "@types/jsdom": "28.0.1",
+    "@types/jsdom": "28.0.3",
     "@types/jsonwebtoken": "9.0.10",
     "@types/lodash": "4.17.24",
     "@types/lodash-es": "4.17.12",
