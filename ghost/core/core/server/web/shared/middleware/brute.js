@@ -175,5 +175,35 @@ module.exports = {
                 return _next('preview_email_blocked');
             }
         })(req, res, next);
+    },
+
+    /**
+     * Per-IP defense-in-depth limiter for the editor presence routes,
+     * applied BEFORE authentication so unauthenticated DoS attempts
+     * are bounded before they hit the auth layer.
+     */
+    presenceIpLimiter(req, res, next) {
+        return spamPrevention.presenceIpBlock().getMiddleware({
+            ignoreIP: false,
+            key(_req, _res, _next) {
+                return _next('presence_ip');
+            }
+        })(req, res, next);
+    },
+
+    /**
+     * Per-staff-user limiter for the editor presence routes, applied
+     * AFTER authentication so the key can use req.user.id. Generous
+     * limits so legitimate editor navigation never hits them; tight
+     * enough to bound a runaway authenticated client.
+     */
+    presenceLimiter(req, res, next) {
+        return spamPrevention.presenceBlock().getMiddleware({
+            ignoreIP: true,
+            key(_req, _res, _next) {
+                const userId = _req.user && _req.user.id;
+                return _next(userId ? `presence_${userId}` : 'presence_anon');
+            }
+        })(req, res, next);
     }
 };

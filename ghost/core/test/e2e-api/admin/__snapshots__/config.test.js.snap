@@ -18,6 +18,7 @@ Object {
       "customFonts": true,
       "dangerZoneResetAuth": true,
       "editorExcerpt": true,
+      "editorPresence": true,
       "emailCustomization": true,
       "emailUniqueid": true,
       "explore": true,

@@ -4,6 +4,9 @@ const {http} = require('@tryghost/api-framework');
 const auth = require('../../../../services/auth');
 const apiMw = require('../../middleware');
 const mw = require('./middleware');
+const presenceStream = require('./lib/presence-stream');
+const presenceEnter = require('./lib/presence-enter');
+const presenceLeave = require('./lib/presence-leave');
 
 const shared = require('../../../shared');
 
@@ -24,6 +27,14 @@ module.exports = function apiRoutes() {
 
     // ## Ghost Explore
     router.get('/explore', mw.authAdminApi, http(api.explore.read));
+
+    // ## Presence (editorPresence labs flag; handlers 404 when off)
+    // Two-stage rate limit: per-IP before auth (loose, defense in
+    // depth against unauthenticated DoS), per-user after auth (tight,
+    // catches a runaway authenticated client).
+    router.get('/presence/stream', shared.middleware.brute.presenceIpLimiter, mw.authAdminApi, shared.middleware.brute.presenceLimiter, presenceStream);
+    router.post('/presence/posts/:id/enter', shared.middleware.brute.presenceIpLimiter, mw.authAdminApi, shared.middleware.brute.presenceLimiter, presenceEnter);
+    router.post('/presence/posts/:id/leave', shared.middleware.brute.presenceIpLimiter, mw.authAdminApi, shared.middleware.brute.presenceLimiter, presenceLeave);
 
     // ## Posts
     router.get('/posts', mw.authAdminApi, http(api.posts.browse));
