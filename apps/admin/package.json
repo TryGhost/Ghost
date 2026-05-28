@@ -41,7 +41,7 @@
     "eslint-plugin-react-hooks": "5.2.0",
     "eslint-plugin-react-refresh": "catalog:",
     "eslint-plugin-tailwindcss": "4.0.0-beta.0",
-    "globals": "17.4.0",
+    "globals": "17.6.0",
     "jest-extended": "7.0.0",
     "jsdom": "catalog:",
     "msw": "catalog:",
