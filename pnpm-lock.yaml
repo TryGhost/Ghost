@@ -2420,8 +2420,8 @@ importers:
         specifier: 2.8.6
         version: 2.8.6
       countries-and-timezones:
-        specifier: 3.8.0
-        version: 3.8.0
+        specifier: 3.9.0
+        version: 3.9.0
       csso:
         specifier: 5.0.5
         version: 5.0.5
@@ -11887,8 +11887,8 @@ packages:
       typescript:
         optional: true
 
-  countries-and-timezones@3.8.0:
-    resolution: {integrity: sha512-+Ze9h5f4dQpUwbzTm0DEkiPiZyim9VHV4/mSnT4zNYJnrnfwsKjAZPtnp7J5VzejCDgySs+2SSc6MDdCnD43GA==}
+  countries-and-timezones@3.9.0:
+    resolution: {integrity: sha512-3upkVtUfZgdp5xOQI/Deg1ye73ae6bygJMO4UvtUi6wLjwcj7cBqx2PzSZ1VL8i5iveBbjhsQp2Judx7kPKivA==}
     engines: {node: '>=8.x', npm: '>=5.x'}
 
   cpu-features@0.0.10:
@@ -33030,7 +33030,7 @@ snapshots:
     optionalDependencies:
       typescript: 5.9.3
 
-  countries-and-timezones@3.8.0: {}
+  countries-and-timezones@3.9.0: {}
 
   cpu-features@0.0.10:
     dependencies:
