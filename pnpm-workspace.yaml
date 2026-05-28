@@ -55,7 +55,7 @@ catalog:
   '@types/validator': 13.15.10
   '@typescript-eslint/parser': 8.49.0
   '@vitejs/plugin-react': 4.7.0
-  '@vitest/coverage-v8': 4.1.5
+  '@vitest/coverage-v8': 4.1.7
   bson-objectid: 2.0.4
   c8: 10.1.3
   chai: 4.5.0
@@ -87,7 +87,7 @@ catalog:
   validator: 13.12.0
   vite: 7.3.2
   vite-plugin-svgr: 4.5.0
-  vitest: 4.1.5
+  vitest: 4.1.7
   zod: 4.1.12
 
 catalogs:
@@ -166,3 +166,7 @@ minimumReleaseAgeExclude:
   - "@number-flow/react@0.6.0"
   # Renovate security update: @aws-sdk/client-s3@3.1053.0
   - "@aws-sdk/client-s3@3.1053.0"
+  # Renovate security update: @vitest/coverage-v8@4.1.7
+  - "@vitest/coverage-v8@4.1.7"
+  # Renovate security update: vitest@4.1.7
+  - vitest@4.1.7
