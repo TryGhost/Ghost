@@ -76,9 +76,11 @@
     ],
     // Vulnerability alerts normally bypass Renovate's PR concurrency, hourly
     // PR, and schedule limits. Let them keep doing that so security fixes can
-    // still create PRs even when normal dependency updates are capped.
+    // still create PRs even when normal dependency updates are capped, but keep
+    // the same 72h release-age soak as every other dependency update.
     "vulnerabilityAlerts": {
         "schedule": ["at any time"],
+        "minimumReleaseAge": "3 days",
         "rebaseWhen": "behind-base-branch",
         "dependencyDashboardApproval": false,
         "labels": ["dependencies", "security"]
@@ -274,7 +276,9 @@
                 "minor",
                 "digest"
             ],
-            "isVulnerabilityAlert": true,
+            "matchJsonata": [
+                "isVulnerabilityAlert = true"
+            ],
             "automerge": true,
             "automergeType": "pr"
         },
