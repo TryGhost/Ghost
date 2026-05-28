@@ -23,12 +23,10 @@ on:
     # duration, giving each merge a fresh rebase + green CI window.
     #
     # Times are UTC; matches renovate.json5's `schedule` block.
-    # Monday morning window (Mon 00:00-12:59 UTC)
-    - cron: '17 0-12 * * 1'
-    # Weekday early-morning window (Tue-Sat 00:00-04:59 UTC)
-    - cron: '17 0-4 * * 2-6'
-    # Weekday evening window (Mon-Fri 21:00-23:59 UTC)
-    - cron: '17 21-23 * * 1-5'
+    # Weekday early-morning window (Mon-Sat 00:00-04:59 UTC)
+    - cron: '17 0-4 * * 1-6'
+    # Weekday evening window (Mon-Fri 23:00-23:59 UTC)
+    - cron: '17 23 * * 1-5'
     # Weekend - every 2h is plenty; no automerge urgency, just batch creation
     - cron: '17 */2 * * 0,6'
     # Weekday daytime CVE pickup tick (Mon-Fri 14:17 UTC)

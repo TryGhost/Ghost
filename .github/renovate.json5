@@ -41,9 +41,9 @@
     // Restrict Renovate runs to the automerge windows so branch updates
     // (rebasing, force-pushes) happen around the same times automerge
     // can actually complete, not during the working day when CI is busy.
-    // Each block starts one hour earlier than the matching automerge
-    // window so Renovate has time to rebase and open/refresh PRs before
-    // automerge is eligible to run.
+    // Weekday windows are intentionally narrow now that the self-hosted runner
+    // can tick hourly, leaving a larger shared quiet period across US and
+    // European core working hours.
     //
     // `schedule` alone only gates *new* PR creation — Renovate defaults to
     // `updateNotScheduled: true`, which lets existing branches keep getting
@@ -57,22 +57,18 @@
     "schedule": [
         // Run all weekend
         "* * * * 0,6",
-        // Run on Monday morning (Sun 23:00 is already covered by weekend)
-        "* 0-12 * * 1",
-        // Run on weekday evenings, starting 1 hour earlier than automerge
-        "* 21-23 * * 1-5",
+        // Run on weekday evenings
+        "* 23 * * 1-5",
         // Run on early weekday mornings (previous day 23:00 is already
-        // covered by the evening block above)
-        "* 0-4 * * 2-6"
+        // covered by the evening/weekend blocks above)
+        "* 0-4 * * 1-6"
     ],
     "automergeSchedule": [
         // Allow automerge all weekend
         "* * * * 0,6",
-        // Allow automerge on Monday morning
-        "* 0-12 * * 1",
-        // Allow automerge overnight on weekday evenings (10pm-4:59am UTC)
-        "* 22-23 * * 1-5",
-        "* 0-4 * * 2-6"
+        // Allow automerge overnight on weekday evenings (11pm-4:59am UTC)
+        "* 23 * * 1-5",
+        "* 0-4 * * 1-6"
     ],
     // Vulnerability alerts normally bypass Renovate's PR concurrency, hourly
     // PR, and schedule limits. Let them keep doing that so security fixes can
