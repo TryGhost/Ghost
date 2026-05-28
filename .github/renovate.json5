@@ -4,12 +4,12 @@
     ],
     // Keep Renovate's own concurrency guardrails in place. The shared preset
     // extends :disableRateLimiting (prConcurrentLimit: 0, prHourlyLimit: 0),
-    // so these override that unlimited default. The true "no more than 10
-    // open Renovate PRs" cap is enforced in .github/workflows/renovate.yml
-    // because Renovate's vulnerability-alert path can bypass these limits and
-    // because we need the cap to be based on the live GitHub PR count.
-    "prConcurrentLimit": 10,
-    "branchConcurrentLimit": 10,
+    // so these override that unlimited default. Dependency automation should
+    // feed CI at a sustainable rate instead of opening a branch storm that
+    // turns every lockfile refresh into dozens of competing workflow runs.
+    "prConcurrentLimit": 3,
+    "branchConcurrentLimit": 3,
+    "prHourlyLimit": 1,
     // Keep manually-closed immortal/grouped PRs closed unless explicitly
     // reopened from the Dependency Dashboard.
     "recreateWhen": "never",

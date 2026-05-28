@@ -6,7 +6,7 @@ name: Renovate
 # .github/renovate.json5 is still the source of truth for package rules,
 # schedule, and automergeSchedule. This workflow adds the live GitHub open-PR
 # cap because Renovate's config-level limits are not enough to express "run
-# maintenance, but create no more PRs once 10 are open."
+# maintenance, but create no more PRs once the configured live cap is reached."
 on:
   schedule:
     # Wake the runner only inside the windows where Renovate is actually
@@ -84,15 +84,15 @@ jobs:
       - name: Configure Renovate PR cap
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
-          PR_CAP: ${{ vars.RENOVATE_OPEN_PR_CAP || '10' }}
+          PR_CAP: ${{ vars.RENOVATE_OPEN_PR_CAP || '3' }}
           MAINTENANCE_ONLY: ${{ vars.RENOVATE_MAINTENANCE_ONLY || 'false' }}
           IGNORE_SCHEDULE: ${{ github.event_name == 'workflow_dispatch' && inputs.ignoreSchedule }}
         run: |
           set -euo pipefail
 
           if ! [[ "$PR_CAP" =~ ^[0-9]+$ ]]; then
-            echo "::warning::RENOVATE_OPEN_PR_CAP must be a non-negative integer; falling back to 10."
-            PR_CAP=10
+            echo "::warning::RENOVATE_OPEN_PR_CAP must be a non-negative integer; falling back to 3."
+            PR_CAP=3
           fi
 
           open_count=$(gh pr list \
