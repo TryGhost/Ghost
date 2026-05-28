@@ -60,7 +60,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
     const {mutate: updateAccount} = useUpdateAccountMutationForUser(account?.handle || '');
 
     const form = useForm<z.infer<typeof FormSchema>>({
-        resolver: zodResolver(FormSchema as never),
+        resolver: zodResolver(FormSchema),
         defaultValues: {
             profileImage: account.avatarUrl,
             coverImage: account.bannerImageUrl || '',
