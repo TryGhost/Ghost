@@ -2867,8 +2867,8 @@ importers:
         specifier: 'catalog:'
         version: 10.5.0
       i18next-parser:
-        specifier: 9.3.0
-        version: 9.3.0
+        specifier: 9.4.0
+        version: 9.4.0
       mocha:
         specifier: 'catalog:'
         version: 11.7.6
@@ -14829,8 +14829,8 @@ packages:
     resolution: {integrity: sha512-nXHJZYtNrfsi1UQbyRqm3Gou431elgLjKl//CYlnBGt5aTWdRPH1PiS2T/p/n8Q8LnqYqzQJik3Q7mkwvLokeg==}
     engines: {node: '>= 12'}
 
-  i18next-parser@9.3.0:
-    resolution: {integrity: sha512-VaQqk/6nLzTFx1MDiCZFtzZXKKyBV6Dv0cJMFM/hOt4/BWHWRgYafzYfVQRUzotwUwjqeNCprWnutzD/YAGczg==}
+  i18next-parser@9.4.0:
+    resolution: {integrity: sha512-SLQJGDj/baBIB9ALmJVXSOXWh3Zn9+wH7J2IuQ4rvx8yuQYpUWitmt8cHFjj6FExjgr8dHfd1SGeQgkowXDO1Q==}
     engines: {node: ^18.0.0 || ^20.0.0 || ^22.0.0, npm: '>=6', yarn: '>=1'}
     deprecated: Project is deprecated, use i18next-cli instead
     hasBin: true
@@ -37680,7 +37680,7 @@ snapshots:
     dependencies:
       diacritics: 1.3.0
 
-  i18next-parser@9.3.0:
+  i18next-parser@9.4.0:
     dependencies:
       '@babel/runtime': 7.29.2
       broccoli-plugin: 4.0.7

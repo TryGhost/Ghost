@@ -35,7 +35,7 @@
     "eslint": "catalog:",
     "fs-extra": "catalog:",
     "glob": "catalog:",
-    "i18next-parser": "9.3.0",
+    "i18next-parser": "9.4.0",
     "mocha": "catalog:"
   },
   "dependencies": {
