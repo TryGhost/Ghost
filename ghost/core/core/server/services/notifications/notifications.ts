@@ -50,38 +50,6 @@ export class Notifications {
                 const cleaned = semver.clean(notification.createdAtVersion);
                 return Boolean(cleaned && blogVersion && semver.gte(cleaned, blogVersion));
             }
-
-            // NOTE: Filtering by version below is just a patch for bigger problem - notifications are not removed
-            //       after Ghost update. Logic below should be removed when Ghost upgrade detection
-            //       is done (https://github.com/TryGhost/Ghost/issues/10236) and notifications are
-            //       be removed permanently on upgrade event.
-            // NOTE: this whole block can be removed with the first version after Ghost v5.0
-            //       as the "createdAtVersion" mechanism will be enough to detect major version updates.
-            const ghostMajorRegEx = /Ghost (?<major>\d).0 is now available/gi;
-            const ghostSec43 = /GHSA-9fgx-q25h-jxrg/gi;
-            const message = notification.message;
-
-            // CASE: do not return old release notification
-            if (message
-                && (!notification.custom || message.match(ghostMajorRegEx) || message.match(ghostSec43))) {
-                let notificationVersion: string | null = null;
-
-                const semverMatch = message.match(/(\d+\.\d+\.\d+)/);
-                if (semverMatch) {
-                    notificationVersion = semverMatch[0];
-                } else if (message.match(ghostSec43)) {
-                    // Treating "GHSA-9fgx-q25h-jxrg" as 4.3.3 because its message carries no version of its own.
-                    notificationVersion = '4.3.3';
-                }
-
-                const ghostMajorMatch = ghostMajorRegEx.exec(message);
-                if (ghostMajorMatch?.groups?.major) {
-                    notificationVersion = `${ghostMajorMatch.groups.major}.0.0`;
-                }
-
-                return Boolean(notificationVersion && blogVersion && semver.gt(notificationVersion, blogVersion));
-            }
-
             return !this.wasSeen(notification, user);
         });
     }
