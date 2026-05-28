@@ -76,7 +76,7 @@ catalog:
   mocha: 11.7.6
   msw: 2.14.6
   node-html-markdown: 2.0.0
-  postcss: 8.5.10
+  postcss: 8.5.15
   preact: ^10.29.2
   react-router: 7.14.0
   sinon: 21.1.2

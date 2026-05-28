@@ -40,7 +40,7 @@
         "@types/validator": "catalog:",
         "@typescript-eslint/parser": "catalog:",
         "@vitejs/plugin-react": "catalog:",
-        "autoprefixer": "10.4.21",
+        "autoprefixer": "10.5.0",
         "c8": "catalog:",
         "chai": "catalog:",
         "eslint": "catalog:",
