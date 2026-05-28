@@ -148,6 +148,16 @@
             }
         }
 
+        # Admin Toolbar
+        @admin-toolbar path /admin-toolbar/*
+        handle @admin-toolbar {
+            uri strip_prefix /admin-toolbar
+            reverse_proxy {env.ADMIN_TOOLBAR_DEV_SERVER} {
+                header_up Host {http.reverse_proxy.upstream.hostport}
+                header_up X-Forwarded-Host {host}
+            }
+        }
+
         # Everything else under /ghost/assets/* goes to admin dev server.
         # Vite serves admin/Ember assets under its dev base (/__admin-dev__/assets/),
         # so we rewrite the request before proxying.

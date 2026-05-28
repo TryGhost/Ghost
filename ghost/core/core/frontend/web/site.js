@@ -97,6 +97,9 @@ module.exports = function setupSiteApp(routerConfig) {
     // Serve IndexNow API key verification file (/{key}.txt)
     siteApp.use(mw.serveIndexNowKey);
 
+    // Activates the staff toolbar on the frontend domain and marks eligible requests
+    siteApp.use(mw.adminToolbar);
+
     // Theme static assets/files
     siteApp.use(mw.staticTheme());
 
