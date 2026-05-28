@@ -1,0 +1,19 @@
+{
+  "name": "@ghost-internal/i18n-review",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Internal CI tool that posts an advisory draft review on Ghost translation PRs.",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "review": "node index.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.98.0",
+    "@octokit/rest": "^21.0.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

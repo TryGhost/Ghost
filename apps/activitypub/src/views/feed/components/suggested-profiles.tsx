@@ -119,7 +119,7 @@ const SuggestedProfiles: React.FC = () => {
                         {(isLoadingSuggestedProfiles ? Array(10).fill(null) : (suggestedProfilesData || [])).map((profile, index) => (
                             <div
                                 key={profile?.id || `loading-${index}`}
-                                className='relative w-40 shrink-0 snap-start rounded-lg bg-gray-75 p-4 dark:bg-gray-925/30'
+                                className='relative w-40 shrink-0 snap-start rounded-lg bg-gray-100 p-4 dark:bg-gray-950/30'
                                 onClick={!isLoadingSuggestedProfiles && profile ? () => navigate(`/profile/${profile.handle}`) : undefined}
                             >
                                 <Button

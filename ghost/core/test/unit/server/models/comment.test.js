@@ -26,6 +26,29 @@ describe('Unit: models/comment', function () {
             assert.ok(options.withRelated.includes('count.disliked'));
             assert.ok(options.withRelated.includes('count.net_score'));
         });
+
+        it('scopes non-page reply tombstone filtering to the loaded comment', function () {
+            const options = {
+                id: 'root-comment-id'
+            };
+
+            models.Comment.defaultRelations('findOne', options);
+
+            const repliesRelation = options.withRelated.find((relation) => {
+                return typeof relation === 'object' && relation.replies;
+            });
+            let query;
+            const qb = {
+                whereIn(_column, rawQuery) {
+                    query = rawQuery.toSQL();
+                }
+            };
+
+            repliesRelation.replies(qb);
+
+            assert.match(query.sql, /comments\.parent_id IN \(\?\)/);
+            assert.equal(query.bindings.filter(binding => binding === 'root-comment-id').length, 2);
+        });
     });
 
     describe('orderAttributes', function () {

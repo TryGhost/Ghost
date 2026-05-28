@@ -2,7 +2,7 @@
 
 exports[`member.* events member.added event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate, br",
+  "accept-encoding": "gzip, deflate, br, zstd",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -55,7 +55,7 @@ Object {
 
 exports[`member.* events member.deleted event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate, br",
+  "accept-encoding": "gzip, deflate, br, zstd",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -102,7 +102,7 @@ Object {
 
 exports[`member.* events member.edited event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate, br",
+  "accept-encoding": "gzip, deflate, br, zstd",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,

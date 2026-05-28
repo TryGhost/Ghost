@@ -1,9 +1,10 @@
 import '@xyflow/react/dist/style.css';
 import AddStepEdge, {type AddStepEdgeData} from './add-step-edge';
+import EmailContentModal from './email-modal/email-content-modal';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import StepPicker, {type StepPickerType} from './step-picker';
-import {AutomationAction, AutomationDetail, AutomationSendEmailAction, AutomationWaitAction, InsertActionAnchor, MAX_AUTOMATION_ACTIONS, insertSendEmailAction, insertWaitAction, removeAction, updateWaitAction} from '@tryghost/admin-x-framework/api/automations';
-import {Background, Edge, Handle, Node, NodeProps, Position, ReactFlow} from '@xyflow/react';
+import {AutomationAction, AutomationDetail, AutomationSendEmailAction, AutomationWaitAction, InsertActionAnchor, MAX_AUTOMATION_ACTIONS, insertSendEmailAction, insertWaitAction, removeAction, updateSendEmailAction, updateWaitAction} from '@tryghost/admin-x-framework/api/automations';
+import {Background, BackgroundVariant, Edge, Handle, Node, NodeProps, Position, ReactFlow} from '@xyflow/react';
 import {Banner, Button, Checkbox, Input, Label, LoadingIndicator, Popover, PopoverContent, PopoverTrigger, Select, SelectTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 
@@ -70,8 +71,9 @@ const NodeShell: React.FC<React.PropsWithChildren<{className?: string; data: Ste
         aria-label={data.value ? `${data.label}: ${data.value}` : data.label}
         aria-pressed={data.selected}
         className={cn(
-            'flex w-64 items-center gap-3 rounded-lg border border-border-default bg-surface-elevated px-4 py-3 text-left text-sm text-foreground shadow-sm transition-colors hover:border-border-strong focus-visible:border-border-strong focus-visible:outline-none',
-            data.selected && 'border-blue-500 shadow-[inset_0_0_0_1px_var(--color-blue-500),0_1px_2px_0_rgb(0_0_0_/_0.05)]',
+            'flex w-64 items-center gap-3 rounded-lg border border-transparent bg-surface-elevated p-3 text-left text-sm text-foreground shadow-sm transition-all focus-visible:border-border-strong focus-visible:outline-none',
+            !data.selected && 'hover:border-border-strong',
+            data.selected && 'border-gray-700 shadow-[inset_0_0_0_1px_var(--color-gray-700),0_1px_2px_0_rgb(0_0_0_/_0.05)]',
             className
         )}
         type='button'
@@ -365,7 +367,10 @@ type WaitStepSidebarDetail = ActionStepSidebarDetail<AutomationWaitAction, 'Wait
     onUpdate: (waitHours: number) => void;
 };
 
-type SendEmailStepSidebarDetail = ActionStepSidebarDetail<AutomationSendEmailAction, 'Send email'>;
+type SendEmailStepSidebarDetail = ActionStepSidebarDetail<AutomationSendEmailAction, 'Send email'> & {
+    onUpdateSubject: (subject: string) => void;
+    onEditEmail: () => void;
+};
 
 type StepSidebarDetail = TriggerStepSidebarDetail | WaitStepSidebarDetail | SendEmailStepSidebarDetail;
 
@@ -380,10 +385,12 @@ type StepSidebarDetailOptions = {
     automation: AutomationDetail;
     onDelete: (actionId: string) => void;
     onUpdateWait: (actionId: string, waitHours: number) => void;
+    onUpdateSubject: (actionId: string, subject: string) => void;
+    onEditEmail: (actionId: string) => void;
     stepId: string | null;
 };
 
-const getStepSidebarDetail = ({automation, stepId, onDelete, onUpdateWait}: StepSidebarDetailOptions): StepSidebarDetail | null => {
+const getStepSidebarDetail = ({automation, stepId, onDelete, onUpdateWait, onUpdateSubject, onEditEmail}: StepSidebarDetailOptions): StepSidebarDetail | null => {
     if (!stepId) {
         return null;
     }
@@ -423,6 +430,8 @@ const getStepSidebarDetail = ({automation, stepId, onDelete, onUpdateWait}: Step
             title: action.data.email_subject || 'No subject',
             action,
             onDelete: () => onDelete(action.id),
+            onUpdateSubject: (subject: string) => onUpdateSubject(action.id, subject),
+            onEditEmail: () => onEditEmail(action.id),
             type: 'send_email'
         };
     default: {
@@ -445,17 +454,6 @@ const ReadOnlySelect: React.FC<{value: string}> = ({value}) => (
             <span>{value}</span>
         </SelectTrigger>
     </Select>
-);
-
-const DisabledPanelButton: React.FC<React.PropsWithChildren<{variant?: 'default' | 'destructive'}>> = ({children, variant = 'default'}) => (
-    <Button
-        className={cn('w-full', variant === 'destructive' && 'border-red text-red')}
-        type='button'
-        variant='outline'
-        disabled
-    >
-        {children}
-    </Button>
 );
 
 const TriggerSidebarBody: React.FC<{memberTiers: MemberTier[]}> = ({memberTiers}) => (
@@ -536,6 +534,7 @@ const WaitSidebarBody: React.FC<{
                 <div className='grid grid-cols-[6rem_1fr] gap-2'>
                     <Input
                         aria-invalid={!isValid}
+                        className='h-(--control-height)'
                         inputMode='numeric'
                         value={daysText}
                         onChange={handleChange}
@@ -555,15 +554,29 @@ const WaitSidebarBody: React.FC<{
     );
 };
 
-const SendEmailSidebarBody: React.FC<{action: AutomationSendEmailAction; onDelete: () => void}> = ({action, onDelete}) => (
+const SendEmailSidebarBody: React.FC<{
+    action: AutomationSendEmailAction;
+    onUpdateSubject: (subject: string) => void;
+    onEditEmail: () => void;
+    onDelete: () => void;
+}> = ({action, onUpdateSubject, onEditEmail, onDelete}) => (
     <div className='flex flex-1 flex-col gap-5'>
         <SidebarField label='Subject line'>
-            <Input value={action.data.email_subject || 'No subject'} readOnly />
+            <Input
+                placeholder='Subject line'
+                value={action.data.email_subject}
+                onChange={e => onUpdateSubject(e.target.value)}
+            />
         </SidebarField>
-        <DisabledPanelButton>
+        <Button
+            className='w-full'
+            type='button'
+            variant='outline'
+            onClick={onEditEmail}
+        >
             <LucideIcon.Pencil className='size-4' />
             Edit email
-        </DisabledPanelButton>
+        </Button>
         <div className='mt-auto pt-6'>
             <DeleteStepButton onClick={onDelete} />
         </div>
@@ -577,7 +590,7 @@ const StepSidebarBody: React.FC<{detail: StepSidebarDetail}> = ({detail}) => {
     case 'wait':
         return <WaitSidebarBody key={detail.action.id} action={detail.action} onDelete={detail.onDelete} onUpdate={detail.onUpdate} />;
     case 'send_email':
-        return <SendEmailSidebarBody action={detail.action} onDelete={detail.onDelete} />;
+        return <SendEmailSidebarBody key={detail.action.id} action={detail.action} onDelete={detail.onDelete} onEditEmail={detail.onEditEmail} onUpdateSubject={detail.onUpdateSubject} />;
     default: {
         const _exhaustive: never = detail;
         throw new Error(`Unknown sidebar type: ${_exhaustive}`);
@@ -607,7 +620,7 @@ const StepSidebarContent: React.FC<{detail: StepSidebarDetail}> = ({detail}) => 
     );
 };
 
-const StepSidebar: React.FC<{detail: StepSidebarDetail | null; onClose: () => void}> = ({detail, onClose}) => {
+const StepSidebar: React.FC<{detail: StepSidebarDetail | null; isEmailModalOpen: boolean; onClose: () => void}> = ({detail, isEmailModalOpen, onClose}) => {
     useEffect(() => {
         if (!detail) {
             return;
@@ -615,6 +628,9 @@ const StepSidebar: React.FC<{detail: StepSidebarDetail | null; onClose: () => vo
 
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
+                if (isEmailModalOpen) {
+                    return;
+                }
                 onClose();
             }
         };
@@ -623,14 +639,14 @@ const StepSidebar: React.FC<{detail: StepSidebarDetail | null; onClose: () => vo
         return () => {
             document.removeEventListener('keydown', handleKeyDown);
         };
-    }, [detail, onClose]);
+    }, [detail, isEmailModalOpen, onClose]);
 
     return (
         <aside
             aria-hidden={!detail}
             aria-label='Step details'
             className={cn(
-                'absolute inset-y-0 right-0 z-[1] flex w-[calc(100%-6rem)] max-w-none translate-x-full flex-col gap-6 overflow-y-auto border-l border-border-default bg-background p-6 shadow-lg transition-transform duration-200 ease-out sm:w-[36rem]',
+                'absolute inset-y-0 right-0 z-[1] flex w-[calc(100%-6rem)] max-w-none translate-x-full flex-col gap-6 overflow-y-auto bg-background p-6 shadow-sm transition-transform duration-200 ease-out sm:w-[36rem] dark:border-l dark:border-gray-950',
                 detail ? 'translate-x-0' : 'pointer-events-none'
             )}
             data-state={detail ? 'open' : 'closed'}
@@ -648,13 +664,19 @@ type AutomationCanvasProps = {
     onChange: (next: AutomationDetail) => void;
 };
 
+type SelectedStep = {
+    id: string;
+    isEditingEmail: boolean;
+};
+
 const insertActionByType = {
     wait: insertWaitAction,
     send_email: insertSendEmailAction
 };
 
 const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoading, isError, onChange}) => {
-    const [selectedStepId, setSelectedStepId] = useState<string | null>(null);
+    const [selectedStep, setSelectedStep] = useState<SelectedStep | null>(null);
+    const selectedStepId = selectedStep?.id ?? null;
 
     const handlePick = useCallback((type: StepPickerType, anchor: CanvasAnchor) => {
         if (!automation) {
@@ -674,7 +696,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
             return;
         }
         const next = removeAction({detail: automation, actionId});
-        setSelectedStepId(null);
+        setSelectedStep(null);
         onChange(next);
     }, [automation, onChange]);
 
@@ -684,6 +706,25 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
         }
         onChange(updateWaitAction({detail: automation, actionId, waitHours}));
     }, [automation, onChange]);
+
+    const handleUpdateSubject = useCallback((actionId: string, subject: string) => {
+        if (!automation) {
+            return;
+        }
+        const action = automation.actions.find((item): item is AutomationSendEmailAction => item.id === actionId && item.type === 'send_email');
+        if (!action) {
+            return;
+        }
+        onChange(updateSendEmailAction({detail: automation, actionId, emailSubject: subject, emailLexical: action.data.email_lexical}));
+    }, [automation, onChange]);
+
+    const handleEditEmail = (actionId: string) => {
+        setSelectedStep({id: actionId, isEditingEmail: true});
+    };
+
+    const emailModalAction = selectedStep?.isEditingEmail && automation
+        ? automation.actions.find((action): action is AutomationSendEmailAction => action.id === selectedStep.id && action.type === 'send_email')
+        : undefined;
 
     const initialViewport = useRef(getInitialViewport(window.innerWidth));
 
@@ -695,7 +736,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
             automation,
             disabled: automation.actions.length >= MAX_AUTOMATION_ACTIONS,
             onPick: handlePick,
-            onSelectStep: setSelectedStepId,
+            onSelectStep: id => setSelectedStep({id, isEditingEmail: false}),
             selectedStepId
         });
     }, [automation, handlePick, selectedStepId]);
@@ -704,11 +745,20 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
         automation,
         onDelete: handleDelete,
         onUpdateWait: handleUpdateWait,
+        onUpdateSubject: handleUpdateSubject,
+        onEditEmail: handleEditEmail,
         stepId: selectedStepId
     }) : null;
     const clearDetail = useCallback(() => {
-        setSelectedStepId(null);
+        setSelectedStep(null);
     }, []);
+
+    const closeEmailModal = () => {
+        if (!emailModalAction) {
+            return;
+        }
+        setSelectedStep({id: emailModalAction.id, isEditingEmail: false});
+    };
 
     if (isLoading) {
         return (
@@ -737,7 +787,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
     return (
         <div className='relative flex-1 overflow-hidden bg-surface-page' data-testid='automation-canvas'>
             <ReactFlow
-                className='[--xy-background-color:var(--surface-page)] [--xy-background-pattern-color:var(--border-subtle)] [--xy-edge-stroke:var(--border-subtle)] dark:[--xy-background-pattern-color:var(--color-grey-900)] dark:[--xy-edge-stroke:var(--color-grey-800)]'
+                className='[--xy-background-color:var(--color-grey-50)] [--xy-background-pattern-color:var(--color-grey-500)] [--xy-edge-stroke:var(--border-default)] dark:[--xy-background-color:var(--color-black)] dark:[--xy-background-pattern-color:var(--color-grey-900)] dark:[--xy-edge-stroke:var(--color-grey-800)]'
                 defaultViewport={initialViewport.current}
                 edges={graph.edges}
                 edgesFocusable={false}
@@ -752,14 +802,25 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
                 panOnScroll
                 onNodeClick={(_, node) => {
                     if (node.id !== TAIL_CANVAS_ID) {
-                        setSelectedStepId(node.id);
+                        setSelectedStep({id: node.id, isEditingEmail: false});
                     }
                 }}
                 onPaneClick={clearDetail}
             >
-                <Background />
+                <Background variant={BackgroundVariant.Dots} />
             </ReactFlow>
-            <StepSidebar detail={sidebarDetail} onClose={clearDetail} />
+            <StepSidebar detail={sidebarDetail} isEmailModalOpen={Boolean(emailModalAction)} onClose={clearDetail} />
+            {emailModalAction && automation && (
+                <EmailContentModal
+                    initialLexical={emailModalAction.data.email_lexical}
+                    initialSubject={emailModalAction.data.email_subject}
+                    onClose={closeEmailModal}
+                    onSave={({subject, lexical}) => {
+                        onChange(updateSendEmailAction({detail: automation, actionId: emailModalAction.id, emailSubject: subject, emailLexical: lexical}));
+                        setSelectedStep({id: emailModalAction.id, isEditingEmail: false});
+                    }}
+                />
+            )}
         </div>
     );
 };

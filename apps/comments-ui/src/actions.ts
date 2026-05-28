@@ -136,16 +136,21 @@ async function addReply({state, api, data: {reply, parent}}: {state: EditableApp
     const newComment = data.comments[0];
 
     const allReplies = await api.comments.replies({commentId: parent.id, limit: 'all'});
+    // Caching can serve a stale replies response immediately after creation, so
+    // keep the refetch for concurrent replies but preserve the POSTed reply.
+    const replies = allReplies.comments.some(replyComment => replyComment.id === newComment.id)
+        ? allReplies.comments
+        : [...allReplies.comments, newComment];
 
     return {
         comments: state.comments.map((c) => {
             if (c.id === parent.id) {
                 return {
                     ...c,
-                    replies: allReplies.comments,
+                    replies,
                     count: {
                         ...c.count,
-                        replies: allReplies.comments.length
+                        replies: replies.length
                     }
                 };
             }
@@ -513,6 +518,37 @@ async function reportComment({api, data: comment}: {api: GhostApi, data: {id: st
     return {};
 }
 
+function hasDescendantReply(replies: Comment[], commentId: string) {
+    return replies.some(reply => reply.in_reply_to_id === commentId);
+}
+
+function isTombstoneReply(reply: Comment, isAdmin: boolean) {
+    return reply.status === 'deleted' || (!isAdmin && reply.status === 'hidden');
+}
+
+function pruneOrphanTombstoneReplies(replies: Comment[], isAdmin: boolean) {
+    let prunedReplies = replies;
+    let removedReply = false;
+
+    do {
+        removedReply = false;
+        prunedReplies = prunedReplies.filter((reply) => {
+            if (!isTombstoneReply(reply, isAdmin) || hasDescendantReply(prunedReplies, reply.id)) {
+                return true;
+            }
+
+            removedReply = true;
+            return false;
+        });
+    } while (removedReply);
+
+    return prunedReplies;
+}
+
+function decrementCount(count: number | undefined) {
+    return Math.max((count || 0) - 1, 0);
+}
+
 async function deleteComment({state, api, data: comment, dispatchAction}: {state: EditableAppContext, api: GhostApi, data: {id: string}, dispatchAction: DispatchActionType}) {
     await api.comments.edit({
         comment: {
@@ -545,18 +581,40 @@ async function deleteComment({state, api, data: comment, dispatchAction}: {state
             }
 
             const originalLength = topLevelComment.replies.length;
-            const updatedReplies = topLevelComment.replies.filter(reply => reply.id !== comment.id);
-            const hasDeletedReply = originalLength !== updatedReplies.length;
+            const replyToDelete = topLevelComment.replies.find(reply => reply.id === comment.id);
+            const keepTombstone = replyToDelete ? hasDescendantReply(topLevelComment.replies, replyToDelete.id) : false;
+            const repliesAfterDelete = topLevelComment.replies.reduce<Comment[]>((replies, reply) => {
+                if (reply.id !== comment.id) {
+                    replies.push(reply);
+                    return replies;
+                }
+
+                if (keepTombstone) {
+                    replies.push({
+                        ...reply,
+                        status: 'deleted',
+                        html: null
+                    });
+                }
+
+                return replies;
+            }, []);
+            const updatedReplies = pruneOrphanTombstoneReplies(repliesAfterDelete, state.isAdmin);
+            const hasDeletedReply = originalLength !== updatedReplies.length || keepTombstone;
 
             const updatedTopLevelComment = {
                 ...topLevelComment,
                 replies: updatedReplies
             };
 
-            // When a reply is deleted we need to update the parent's count so
-            // pagination displays the correct number of replies still to load
-            if (hasDeletedReply && topLevelComment.count?.replies) {
-                topLevelComment.count.replies = topLevelComment.count.replies - 1;
+            if (hasDeletedReply && replyToDelete && !['hidden', 'deleted'].includes(replyToDelete.status)) {
+                const wasDirectReply = !replyToDelete.in_reply_to_id || replyToDelete.in_reply_to_id === topLevelComment.id;
+
+                updatedTopLevelComment.count = {
+                    ...updatedTopLevelComment.count,
+                    replies: decrementCount(updatedTopLevelComment.count?.replies),
+                    direct_replies: wasDirectReply ? decrementCount(updatedTopLevelComment.count?.direct_replies) : updatedTopLevelComment.count?.direct_replies
+                };
             }
 
             return updatedTopLevelComment;

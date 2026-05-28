@@ -22,8 +22,7 @@ describe('AutomationsList', () => {
     it('renders fetched automations with private beta copy and status labels', () => {
         renderWithRouter(<AutomationsList automations={automations} />);
 
-        expect(screen.getByRole('columnheader', {name: 'Automation'})).toBeInTheDocument();
-        expect(screen.getByRole('columnheader', {name: 'Status'})).toBeInTheDocument();
+        expect(screen.getAllByTestId('automation-list-row')).toHaveLength(2);
         expect(screen.getByText('Welcome Email (Free)')).toBeInTheDocument();
         expect(screen.getByText('Onboard new free members with a short welcome email.')).toBeInTheDocument();
         expect(screen.getByText('Welcome Email (Paid)')).toBeInTheDocument();
