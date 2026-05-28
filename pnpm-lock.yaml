@@ -2618,8 +2618,8 @@ importers:
         specifier: 0.9.1
         version: 0.9.1
       probe-image-size:
-        specifier: 7.2.3
-        version: 7.2.3
+        specifier: 7.3.0
+        version: 7.3.0
       rss:
         specifier: 1.2.2
         version: 1.2.2
@@ -18727,8 +18727,8 @@ packages:
   probability-distributions@0.9.1:
     resolution: {integrity: sha512-guES77A321GzcK6swYmxhBeYQ10UNyiG0Gf4Ks+3239BuS27EFH/rrlfBW/oYlPyiufdey/3OlVqKvlXFB9LTQ==}
 
-  probe-image-size@7.2.3:
-    resolution: {integrity: sha512-HubhG4Rb2UH8YtV4ba0Vp5bQ7L78RTONYu/ujmCu5nBI8wGv24s4E9xSKBi0N1MowRpxk76pFCpJtW0KPzOK0w==}
+  probe-image-size@7.3.0:
+    resolution: {integrity: sha512-7CaDeBwiAbh6ohXsvLbAZhO7wzsZAmaevfxe39qvCwRh8LyaZfDlBGGLU1CCTgrTLtCOdwBBhjOrIHaIIimHfQ==}
 
   proc-log@5.0.0:
     resolution: {integrity: sha512-Azwzvl90HaF0aCz1JrDdXQykFakSSNPaPoiZ9fm5qJIMHioDZEi7OAdRwSm6rSoPtY3Qutnm3L7ogmg3dc+wbQ==}
@@ -42648,7 +42648,7 @@ snapshots:
     dependencies:
       crypto: 0.0.3
 
-  probe-image-size@7.2.3:
+  probe-image-size@7.3.0:
     dependencies:
       lodash.merge: 4.6.2
       needle: 2.9.1
