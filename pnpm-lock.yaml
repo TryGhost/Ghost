@@ -493,8 +493,8 @@ importers:
         specifier: 4.0.0-beta.0
         version: 4.0.0-beta.0(tailwindcss@4.2.2)
       globals:
-        specifier: 17.4.0
-        version: 17.4.0
+        specifier: 17.6.0
+        version: 17.6.0
       jest-extended:
         specifier: 7.0.0
         version: 7.0.0(jest@29.7.0(@types/node@22.19.19)(babel-plugin-macros@3.1.0)(node-notifier@10.0.1))(typescript@5.9.3)
@@ -14435,8 +14435,8 @@ packages:
     resolution: {integrity: sha512-7ACyT3wmyp3I61S4fG682L0VA2RGD9otkqGJIwNUMF1SWUombIIk+af1unuDYgMm082aHYwD+mzJvv9Iu8dsgg==}
     engines: {node: '>=18'}
 
-  globals@17.4.0:
-    resolution: {integrity: sha512-hjrNztw/VajQwOLsMNT1cbJiH2muO3OROCHnbehc8eY5JyD2gqz4AcMHPqgaOR59DjgUjYAYLeH699g/eWi2jw==}
+  globals@17.6.0:
+    resolution: {integrity: sha512-sepffkT8stwnIYbsMBpoCHJuJM5l98FUF2AnE07hfvE0m/qp3R586hw4jF4uadbhvg1ooIdzuu7CsfD2jzCaNA==}
     engines: {node: '>=18'}
 
   globals@9.18.0:
@@ -35784,7 +35784,7 @@ snapshots:
   eslint-plugin-playwright@2.10.4(eslint@8.57.1):
     dependencies:
       eslint: 8.57.1
-      globals: 17.4.0
+      globals: 17.6.0
 
   eslint-plugin-react-hooks@4.6.2(eslint@8.57.1):
     dependencies:
@@ -37165,7 +37165,7 @@ snapshots:
 
   globals@15.15.0: {}
 
-  globals@17.4.0: {}
+  globals@17.6.0: {}
 
   globals@9.18.0: {}
 
