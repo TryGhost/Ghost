@@ -72,8 +72,8 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
             } else {
                 handleError(e);
             }
-            let title = 'Invalid Theme';
-            let prompt = <>This theme is invalid and cannot be activated. Fix the following errors and re-upload the theme</>;
+            let title = 'Theme not activated';
+            let prompt = <>This theme couldn&apos;t be activated because Ghost found a blocking validation error. Fix the issue below and try again.</>;
 
             if (fatalErrors) {
                 NiceModal.show(InvalidThemeModal, {

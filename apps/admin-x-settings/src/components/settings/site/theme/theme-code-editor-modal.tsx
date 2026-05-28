@@ -812,8 +812,7 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
             if (!response.ok) {
                 if (response.status === 422 && data?.errors) {
                     NiceModal.show(InvalidThemeModal, {
-                        title: 'Invalid Theme',
-                        prompt: <>Fix the validation errors below and try saving again.</>,
+                        title: 'Theme not saved',
                         fatalErrors: data.errors as FatalErrors
                     });
                     return;
