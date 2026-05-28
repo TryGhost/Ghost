@@ -16,7 +16,7 @@
   "dependencies": {
     "@tryghost/debug": "catalog:",
     "@tryghost/i18n": "workspace:*",
-    "flexsearch": "0.8.153",
+    "flexsearch": "0.8.212",
     "react": "17.0.2",
     "react-dom": "17.0.2"
   },
