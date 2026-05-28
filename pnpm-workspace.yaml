@@ -26,7 +26,7 @@ allowBuilds:
 
 catalog:
   '@eslint/js': 8.57.1
-  '@playwright/test': 1.59.1
+  '@playwright/test': 1.60.0
   '@sentry/react': 7.120.4
   '@storybook/addon-docs': 10.3.5
   '@storybook/addon-links': 10.3.5
@@ -176,3 +176,5 @@ minimumReleaseAgeExclude:
   - "@types/node@22.19.19"
   # Renovate security update: @types/react@18.3.29
   - "@types/react@18.3.29"
+  # Renovate security update: @playwright/test@1.60.0
+  - "@playwright/test@1.60.0"
