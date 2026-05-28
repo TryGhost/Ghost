@@ -13,6 +13,7 @@ import { NavMemberViews } from "./nav-member-views";
 import { useMemberSidebarViews } from "./member-sidebar-views";
 import { useCustomSidebarViews } from "./use-custom-sidebar-views";
 import { useIsActiveLink } from "./use-is-active-link";
+import {HideableSidebarItem} from "./sidebar-customization";
 import { useEmberRouting } from "@/ember-bridge";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
 
@@ -99,6 +100,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const postsRoute = routing.getRouteUrl('posts');
     const isPostsRouteActive = routing.isRouteActive('posts');
     const postsNavActive = isPostsRouteActive || (!postsExpanded && hasActivePostChild);
+
     return (
         <SidebarGroup {...props}>
             <SidebarGroupContent>
@@ -150,30 +152,34 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                         </NavMenuItem.CollapsibleMenu>
                     </NavMenuItem.Collapsible>
 
-                    <NavMenuItem>
-                        <NavMenuItem.Link
-                            to={routing.getRouteUrl('pages')}
-                            isActive={routing.isRouteActive('pages')}
-                        >
-                            <LucideIcon.File />
-                            <NavMenuItem.Label>Pages</NavMenuItem.Label>
-                        </NavMenuItem.Link>
-                    </NavMenuItem>
-
-                    {showTags && (
+                    <HideableSidebarItem id="pages" label="Pages">
                         <NavMenuItem>
                             <NavMenuItem.Link
-                                to="tags"
-                                activeOnSubpath
+                                to={routing.getRouteUrl('pages')}
+                                isActive={routing.isRouteActive('pages')}
                             >
-                                <LucideIcon.Tag />
-                                <NavMenuItem.Label>Tags</NavMenuItem.Label>
+                                <LucideIcon.File />
+                                <NavMenuItem.Label>Pages</NavMenuItem.Label>
                             </NavMenuItem.Link>
                         </NavMenuItem>
+                    </HideableSidebarItem>
+
+                    {showTags && (
+                        <HideableSidebarItem id="tags" label="Tags">
+                            <NavMenuItem>
+                                <NavMenuItem.Link
+                                    to="tags"
+                                    activeOnSubpath
+                                >
+                                    <LucideIcon.Tag />
+                                    <NavMenuItem.Label>Tags</NavMenuItem.Label>
+                                </NavMenuItem.Link>
+                            </NavMenuItem>
+                        </HideableSidebarItem>
                     )}
 
                     {showMembers && (
-                        <>
+                        <HideableSidebarItem id="members" label="Members">
                             {hasMemberViews ? (
                                 <NavMenuItem.Collapsible
                                     expanded={membersExpanded}
@@ -203,31 +209,35 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                                     />
                                 </NavMenuItem>
                             )}
-                        </>
+                        </HideableSidebarItem>
                     )}
 
                     {showComments && (
-                        <NavMenuItem>
-                            <NavMenuItem.Link
-                                to="comments"
-                                activeOnSubpath
-                            >
-                                <LucideIcon.MessagesSquare />
-                                <NavMenuItem.Label>Comments</NavMenuItem.Label>
-                            </NavMenuItem.Link>
-                        </NavMenuItem>
+                        <HideableSidebarItem id="comments" label="Comments">
+                            <NavMenuItem>
+                                <NavMenuItem.Link
+                                    to="comments"
+                                    activeOnSubpath
+                                >
+                                    <LucideIcon.MessagesSquare />
+                                    <NavMenuItem.Label>Comments</NavMenuItem.Label>
+                                </NavMenuItem.Link>
+                            </NavMenuItem>
+                        </HideableSidebarItem>
                     )}
 
                     {showMembers && automationsEnabled && (
-                        <NavMenuItem>
-                            <NavMenuItem.Link
-                                to="automations"
-                                activeOnSubpath
-                            >
-                                <LucideIcon.Zap />
-                                <NavMenuItem.Label>Automations</NavMenuItem.Label>
-                            </NavMenuItem.Link>
-                        </NavMenuItem>
+                        <HideableSidebarItem id="automations" label="Automations">
+                            <NavMenuItem>
+                                <NavMenuItem.Link
+                                    to="automations"
+                                    activeOnSubpath
+                                >
+                                    <LucideIcon.Zap />
+                                    <NavMenuItem.Label>Automations</NavMenuItem.Label>
+                                </NavMenuItem.Link>
+                            </NavMenuItem>
+                        </HideableSidebarItem>
                     )}
                 </SidebarMenu>
             </SidebarGroupContent>

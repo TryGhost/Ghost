@@ -52,3 +52,35 @@ export const useNavigationMenuVisibility = (): [boolean, (value: boolean) => Pro
 
     return [visible ?? true, setVisible];
 };
+
+export const useHiddenNavigationItems = (): [string[], (hiddenItems: string[]) => Promise<void>] => {
+    const { data: navigationPreferences } = useNavigationPreferences();
+    const { mutateAsync: editNavigationPreferences } = useEditNavigationPreferences();
+
+    const hiddenItems = navigationPreferences?.hiddenItems ?? DEFAULT_NAVIGATION_PREFERENCES.hiddenItems;
+
+    const setHiddenItems = async (nextHiddenItems: string[]) => {
+        return editNavigationPreferences({
+            hiddenItems: nextHiddenItems,
+        });
+    };
+
+    return [hiddenItems, setHiddenItems];
+};
+
+export const useNavigationItemVisibility = (itemId: string): boolean => {
+    const { data: navigationPreferences } = useNavigationPreferences();
+    return !(navigationPreferences?.hiddenItems ?? DEFAULT_NAVIGATION_PREFERENCES.hiddenItems).includes(itemId);
+};
+
+export const useToggleNavigationItemVisibility = (): ((itemId: string, visible: boolean) => Promise<void>) => {
+    const [hiddenItems, setHiddenItems] = useHiddenNavigationItems();
+
+    return async (itemId: string, visible: boolean) => {
+        const nextHiddenItems = visible
+            ? hiddenItems.filter(hiddenItemId => hiddenItemId !== itemId)
+            : [...hiddenItems.filter(hiddenItemId => hiddenItemId !== itemId), itemId];
+
+        return setHiddenItems(nextHiddenItems);
+    };
+};

@@ -25,6 +25,7 @@ export const OnboardingPreferencesSchema = z.looseObject({
 export const DEFAULT_NAVIGATION_PREFERENCES = {
     expanded: { posts: true, members: true },
     menu: { visible: true },
+    hiddenItems: [] as string[],
 } as const;
 
 export const NavigationPreferencesSchema = z.looseObject({
@@ -35,6 +36,7 @@ export const NavigationPreferencesSchema = z.looseObject({
     menu: z.object({
         visible: z.boolean(),
     }),
+    hiddenItems: z.array(z.string()).default(DEFAULT_NAVIGATION_PREFERENCES.hiddenItems).catch(DEFAULT_NAVIGATION_PREFERENCES.hiddenItems),
 });
 
 const PreferencesSchema = z.looseObject({
