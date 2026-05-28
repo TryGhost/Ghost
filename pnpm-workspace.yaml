@@ -33,7 +33,7 @@ catalog:
   '@storybook/react-vite': 10.3.5
   '@tailwindcss/postcss': 4.2.2
   '@tailwindcss/vite': 4.2.2
-  '@tanstack/react-query': 4.36.1
+  '@tanstack/react-query': 4.44.0
   '@tryghost/color-utils': 0.2.18
   '@tryghost/custom-fonts': 1.0.10
   '@tryghost/debug': 2.2.1

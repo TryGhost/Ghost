@@ -31,8 +31,8 @@ catalogs:
       specifier: 4.2.2
       version: 4.2.2
     '@tanstack/react-query':
-      specifier: 4.36.1
-      version: 4.36.1
+      specifier: 4.44.0
+      version: 4.44.0
     '@tryghost/color-utils':
       specifier: 0.2.18
       version: 0.2.18
@@ -333,7 +333,7 @@ importers:
         version: 0.1.8(@types/react-dom@18.3.7(@types/react@18.3.29))(@types/react@18.3.29)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tanstack/react-query':
         specifier: 'catalog:'
-        version: 4.36.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 4.44.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tryghost/admin-x-framework':
         specifier: workspace:*
         version: link:../admin-x-framework
@@ -461,7 +461,7 @@ importers:
         version: 4.2.2(vite@7.3.2(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))
       '@tanstack/react-query':
         specifier: 'catalog:'
-        version: 4.36.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 4.44.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@testing-library/jest-dom':
         specifier: 6.9.1
         version: 6.9.1
@@ -733,7 +733,7 @@ importers:
         version: 7.120.4(react@18.3.1)
       '@tanstack/react-query':
         specifier: 'catalog:'
-        version: 4.36.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 4.44.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tinybirdco/charts':
         specifier: 0.3.0
         version: 0.3.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -863,7 +863,7 @@ importers:
         version: 7.120.4(react@18.3.1)
       '@tanstack/react-query':
         specifier: 'catalog:'
-        version: 4.36.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 4.44.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tryghost/color-utils':
         specifier: 'catalog:'
         version: 0.2.18
@@ -1273,7 +1273,7 @@ importers:
         version: 1.60.0
       '@tanstack/react-query':
         specifier: 'catalog:'
-        version: 4.36.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 4.44.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tanstack/react-virtual':
         specifier: 3.13.25
         version: 3.13.25(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -8245,14 +8245,14 @@ packages:
     peerDependencies:
       vite: ^5.2.0 || ^6 || ^7 || ^8
 
-  '@tanstack/query-core@4.36.1':
-    resolution: {integrity: sha512-DJSilV5+ytBP1FbFcEJovv4rnnm/CokuVvrBEtW/Va9DvuJ3HksbXUJEpI0aV1KtuL4ZoO9AVE6PyNLzF7tLeA==}
+  '@tanstack/query-core@4.44.0':
+    resolution: {integrity: sha512-swSgb7OiPRR3UuIL7NuDrZNSMGmQD+wdtHxPD7j60SvBEnxbXurl5XOirtGEX2gm2hbK6mC8kMV1I+uO3l0UOw==}
 
-  '@tanstack/react-query@4.36.1':
-    resolution: {integrity: sha512-y7ySVHFyyQblPl3J3eQBWpXZkliroki3ARnBKsdJchlgt7yJLRDUcf4B8soufgiYt3pEQIkBWBx1N9/ZPIeUWw==}
+  '@tanstack/react-query@4.44.0':
+    resolution: {integrity: sha512-RuIqHYrS98LrK/8kJJOJMMSQ/BCpojwsXDh7p0fBmp38ZOz6dlk+uyFRRusH+V+t3POoCsDOQ2zhomEYOeReXw==}
     peerDependencies:
-      react: ^16.8.0 || ^17.0.0 || ^18.0.0
-      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-native: '*'
     peerDependenciesMeta:
       react-dom:
@@ -28005,11 +28005,11 @@ snapshots:
       tailwindcss: 4.2.2
       vite: 7.3.2(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0)
 
-  '@tanstack/query-core@4.36.1': {}
+  '@tanstack/query-core@4.44.0': {}
 
-  '@tanstack/react-query@4.36.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@tanstack/react-query@4.44.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
-      '@tanstack/query-core': 4.36.1
+      '@tanstack/query-core': 4.44.0
       react: 18.3.1
       use-sync-external-store: 1.6.0(react@18.3.1)
     optionalDependencies:
