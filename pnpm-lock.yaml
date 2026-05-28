@@ -42,6 +42,9 @@ catalogs:
     '@tryghost/debug':
       specifier: 2.2.1
       version: 2.2.1
+    '@tryghost/domain-events':
+      specifier: 3.2.3
+      version: 3.2.3
     '@tryghost/helpers':
       specifier: 1.1.105
       version: 1.1.105
@@ -2240,8 +2243,8 @@ importers:
         specifier: 'catalog:'
         version: 2.2.1
       '@tryghost/domain-events':
-        specifier: 1.0.8
-        version: 1.0.8
+        specifier: 'catalog:'
+        version: 3.2.3
       '@tryghost/email-mock-receiver':
         specifier: 2.1.0
         version: 2.1.0
@@ -8516,8 +8519,8 @@ packages:
   '@tryghost/debug@2.2.1':
     resolution: {integrity: sha512-DDBU8UA/23DENO4nFRZmiLAMu6XBxbtTmHJBYa/LbhIHIlwsdWSvnaiCDrSn+Fnasuw1kte5pk9mLBkXw0TPvA==}
 
-  '@tryghost/domain-events@1.0.8':
-    resolution: {integrity: sha512-4exHFUo4lRQO4f4l9FeNQEwCgfRtoUmnVBWr2WmDhVjZ09rQgW6ZrLe5f8CV7eMGQGllNjjz8780RZY9+UkONQ==}
+  '@tryghost/domain-events@3.2.3':
+    resolution: {integrity: sha512-jQEJXWXypY5ekrU8+l2tj9H9onfBfHNjcOd0pXlfmZ7GjXJA0/ijtL2iUcbE7OaPKgQkNK/3Eroh8uTf64ouxQ==}
 
   '@tryghost/elasticsearch@3.0.29':
     resolution: {integrity: sha512-WGfoGbPXzX7SYPKeD7naYyoF8Lc7KruQPixFSJGLciRQ3wkrZQANQIguD4nA71upp0dhsT4D4aWP296VfJxuPw==}
@@ -28533,7 +28536,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tryghost/domain-events@1.0.8': {}
+  '@tryghost/domain-events@3.2.3': {}
 
   '@tryghost/elasticsearch@3.0.29':
     dependencies:
@@ -30052,7 +30055,7 @@ snapshots:
       obug: 2.1.1
       std-env: 4.1.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.7)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@5.9.3))(vite@7.3.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))
+      vitest: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@22.19.19)(@vitest/coverage-v8@4.1.7)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.19.19)(typescript@5.9.3))(vite@7.3.2(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))
 
   '@vitest/expect@3.2.4':
     dependencies:
