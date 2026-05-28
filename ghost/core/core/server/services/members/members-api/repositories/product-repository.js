@@ -54,7 +54,7 @@ class ProductRepository {
      * @param {any} deps.Settings
      * @param {any} deps.StripeProduct
      * @param {any} deps.StripePrice
-     * @param {import('@tryghost/members-api/lib/services/stripe-api')} deps.stripeAPIService
+     * @param {import('../../../stripe/stripe-api')} deps.stripeAPIService
      */
     constructor({
         Product,

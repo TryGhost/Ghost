@@ -2,7 +2,10 @@
 // Usage:
 //   {{#social_accounts @site}}
 //       <a href="{{href}}" target="_blank" rel="noopener" aria-label="{{name}}">
-//           {{> (concat "icons/" type)}}
+//           {{#> (concat "icons/" type)}}
+//               {{!-- Fallback when no per-platform icon partial exists --}}
+//               <span class="icon icon-web">{{name}}</span>
+//           {{/undefined}}
 //       </a>
 //   {{/social_accounts}}
 //

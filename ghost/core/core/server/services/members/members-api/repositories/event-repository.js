@@ -589,7 +589,7 @@ module.exports = class EventRepository {
     async getCommentEvents(options = {}, filter) {
         options = {
             ...options,
-            withRelated: ['member', 'post', 'parent'],
+            withRelated: ['member', 'post', 'post.tags', 'post.authors', 'parent'],
             filter: 'member_id:-null+custom:true',
             useBasicCount: true,
             mongoTransformer: chainTransformers(
@@ -623,7 +623,7 @@ module.exports = class EventRepository {
     async getClickEvents(options = {}, filter) {
         options = {
             ...options,
-            withRelated: ['member', 'link', 'link.post'],
+            withRelated: ['member', 'link', 'link.post', 'link.post.tags', 'link.post.authors'],
             filter: 'custom:true',
             useBasicCount: true,
             mongoTransformer: chainTransformers(
@@ -777,7 +777,7 @@ module.exports = class EventRepository {
     async getFeedbackEvents(options = {}, filter) {
         options = {
             ...options,
-            withRelated: ['member', 'post'],
+            withRelated: ['member', 'post', 'post.tags', 'post.authors'],
             filter: 'custom:true',
             useBasicCount: true,
             mongoTransformer: chainTransformers(
@@ -1051,7 +1051,7 @@ module.exports = class EventRepository {
     async getAutomatedEmailSentEvents(options = {}, filter) {
         options = {
             ...options,
-            withRelated: ['member', 'automatedEmail.welcomeEmailAutomation'],
+            withRelated: ['member', 'automatedEmail.automation'],
             filter: 'custom:true',
             useBasicCount: true,
             mongoTransformer: chainTransformers(
@@ -1067,10 +1067,10 @@ module.exports = class EventRepository {
 
         const data = models.map((model) => {
             const automatedEmail = model.related('automatedEmail');
-            const automation = automatedEmail.related('welcomeEmailAutomation');
+            const automation = automatedEmail.related('automation');
             if (!automation || !automation.id) {
                 throw new errors.InternalServerError({
-                    message: `Automated email recipient ${model.id} has no associated welcome email automation`
+                    message: `Automated email recipient ${model.id} has no associated automation`
                 });
             }
 

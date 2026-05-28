@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/sodo-search",
-  "version": "1.8.20",
+  "version": "1.8.21",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -21,14 +21,12 @@
     "react-dom": "17.0.2"
   },
   "scripts": {
-    "dev": "concurrently \"vite preview -l silent\" \"pnpm build:watch\" \"pnpm tailwind\"",
+    "dev": "concurrently --kill-others --names preview,build,tailwind \"vite preview -l silent\" \"pnpm build:watch\" \"pnpm tailwind\"",
     "build": "vite build && pnpm tailwind:base",
     "build:watch": "vite build --watch",
     "tailwind": "pnpm tailwind:base --watch ",
     "tailwind:base": "tailwindcss -i ./src/index.css -o ./umd/main.css --minify",
     "test": "vitest run",
-    "test:ci": "pnpm test --coverage",
-    "test:unit": "pnpm test:ci",
     "lint": "eslint src --ext .js --cache",
     "preship": "pnpm lint",
     "ship": "node ../../.github/scripts/release-apps.js",
@@ -104,7 +102,7 @@
     "eslint": "catalog:",
     "jsdom": "catalog:",
     "nock": "13.5.6",
-    "tailwindcss": "3.4.18",
+    "tailwindcss": "catalog:tailwind3",
     "vite": "catalog:",
     "vite-plugin-svgr": "catalog:",
     "vitest": "catalog:"

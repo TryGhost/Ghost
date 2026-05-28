@@ -36,6 +36,23 @@ describe('buildCommentPermalink', function () {
     });
 });
 
+describe('buildCommentsRootPermalink', function () {
+    it('builds permalink with comments root hash', function () {
+        expect(helpers.buildCommentsRootPermalink('https://example.com/post'))
+            .toEqual('https://example.com/post#ghost-comments');
+    });
+
+    it('removes existing hash from base URL', function () {
+        expect(helpers.buildCommentsRootPermalink('https://example.com/post#existing'))
+            .toEqual('https://example.com/post#ghost-comments');
+    });
+
+    it('handles URL with query parameters', function () {
+        expect(helpers.buildCommentsRootPermalink('https://example.com/post?ref=twitter'))
+            .toEqual('https://example.com/post?ref=twitter#ghost-comments');
+    });
+});
+
 describe('parseCommentIdFromHash', function () {
     it('extracts comment ID from valid hash', function () {
         expect(helpers.parseCommentIdFromHash('#ghost-comments-abc123'))
@@ -84,37 +101,6 @@ describe('flattenComments', function () {
             {id: '2'},
             {id: '3', replies: []}
         ]);
-    });
-});
-
-describe('buildThreadedReplies', function () {
-    it('builds nested replies from a flat reply list', function () {
-        const threadParentComment = buildComment({
-            id: 'root',
-            replies: [
-                {id: 'reply-1', in_reply_to_id: null},
-                {id: 'reply-2', in_reply_to_id: 'reply-1'},
-                {id: 'reply-3', in_reply_to_id: 'reply-2'},
-                {id: 'reply-4', in_reply_to_id: null}
-            ]
-        });
-
-        const threadedReplies = helpers.buildThreadedReplies(threadParentComment);
-
-        expect(threadedReplies.map(reply => reply.id)).toEqual(['reply-1', 'reply-4']);
-        expect(threadedReplies[0].nestedReplies.map(reply => reply.id)).toEqual(['reply-2']);
-        expect(threadedReplies[0].nestedReplies[0].nestedReplies.map(reply => reply.id)).toEqual(['reply-3']);
-    });
-
-    it('keeps replies with missing parents at the root', function () {
-        const threadParentComment = buildComment({
-            id: 'root',
-            replies: [
-                {id: 'reply-1', in_reply_to_id: 'missing'}
-            ]
-        });
-
-        expect(helpers.buildThreadedReplies(threadParentComment).map(reply => reply.id)).toEqual(['reply-1']);
     });
 });
 

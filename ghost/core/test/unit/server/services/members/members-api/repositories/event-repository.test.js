@@ -7,7 +7,7 @@ describe('EventRepository', function () {
     describe('getNQLSubset', function () {
         let eventRepository;
 
-        before(function () {
+        beforeAll(function () {
             eventRepository = new EventRepository({
                 EmailRecipient: null,
                 MemberSubscribeEvent: null,
@@ -118,7 +118,7 @@ describe('EventRepository', function () {
     describe('getPostIdFromFilter', function () {
         let eventRepository;
 
-        before(function () {
+        beforeAll(function () {
             eventRepository = new EventRepository({
                 EmailRecipient: null,
                 MemberSubscribeEvent: null,
@@ -172,7 +172,7 @@ describe('EventRepository', function () {
         let eventRepository;
         let fake;
 
-        before(function () {
+        beforeAll(function () {
             fake = sinon.fake.returns({data: [{toJSON: () => {}}]});
             eventRepository = new EventRepository({
                 EmailRecipient: null,
@@ -231,7 +231,7 @@ describe('EventRepository', function () {
         let eventRepository;
         let fake;
 
-        before(function () {
+        beforeAll(function () {
             fake = sinon.fake.returns({data: [{get: () => {}, related: () => ({toJSON: () => {}})}]});
             eventRepository = new EventRepository({
                 EmailRecipient: {
@@ -299,7 +299,7 @@ describe('EventRepository', function () {
         let eventRepository;
         let fake;
 
-        before(function () {
+        beforeAll(function () {
             fake = sinon.fake.returns({data: [{
                 get: (key) => {
                     if (key === 'member_id') {
@@ -317,7 +317,7 @@ describe('EventRepository', function () {
                         return {
                             id: 'ae123',
                             related: (rel) => {
-                                if (rel === 'welcomeEmailAutomation') {
+                                if (rel === 'automation') {
                                     return {
                                         id: 'auto123',
                                         get: key => (key === 'slug' ? 'member-welcome-email-free' : undefined)
@@ -356,7 +356,7 @@ describe('EventRepository', function () {
             });
 
             sinon.assert.calledOnceWithMatch(fake, {
-                withRelated: ['member', 'automatedEmail.welcomeEmailAutomation'],
+                withRelated: ['member', 'automatedEmail.automation'],
                 filter: 'custom:true',
                 order: 'created_at desc, id desc'
             });
@@ -370,7 +370,7 @@ describe('EventRepository', function () {
             });
 
             sinon.assert.calledOnceWithMatch(fake, {
-                withRelated: ['member', 'automatedEmail.welcomeEmailAutomation'],
+                withRelated: ['member', 'automatedEmail.automation'],
                 filter: 'custom:true',
                 order: 'created_at desc, id desc'
             });
@@ -385,7 +385,7 @@ describe('EventRepository', function () {
             });
 
             sinon.assert.calledOnceWithMatch(fake, {
-                withRelated: ['member', 'automatedEmail.welcomeEmailAutomation'],
+                withRelated: ['member', 'automatedEmail.automation'],
                 filter: 'custom:true',
                 order: 'created_at desc, id desc'
             });
@@ -417,7 +417,7 @@ describe('EventRepository', function () {
         let eventRepository;
         let fake;
 
-        before(function () {
+        beforeAll(function () {
             fake = sinon.fake.returns({data: [{
                 toJSON: () => ({
                     id: 'gift123',
@@ -540,7 +540,7 @@ describe('EventRepository', function () {
         let eventRepository;
         let fake;
 
-        before(function () {
+        beforeAll(function () {
             fake = sinon.fake.returns({data: [{
                 toJSON: () => ({
                     id: 'gift123',
@@ -663,7 +663,7 @@ describe('EventRepository', function () {
         let eventRepository;
         let fake;
 
-        before(function () {
+        beforeAll(function () {
             fake = sinon.fake.returns({data: [{
                 toJSON: () => ({
                     id: 'status-event-1',

@@ -53,20 +53,19 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const handleSocialChange = (key: SocialPlatformKey, value: string) => {
         setUrls(current => ({...current, [key]: value}));
 
+        if (!isEditing) {
+            handleEditingChange(true);
+        }
+
         try {
             const {storedValue} = normalizeSocialInput(key, value);
             updateSetting(key, storedValue);
-
-            if (!isEditing) {
-                handleEditingChange(true);
-            }
 
             if (errors[key]) {
                 setErrors(current => ({...current, [key]: ''}));
             }
         } catch {
             setErrors(current => ({...current, [key]: getSocialValidationError(key, value)}));
-            updateSetting(key, null);
         }
     };
 

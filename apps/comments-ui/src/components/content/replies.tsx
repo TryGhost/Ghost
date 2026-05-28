@@ -6,10 +6,11 @@ import {useRef, useState} from 'react';
 const INITIAL_REPLIES_SHOWN = 3;
 
 export type RepliesProps = {
-    comment: Comment
+    comment: Comment;
+    useThreading?: boolean;
 };
-const Replies: React.FC<RepliesProps> = ({comment}) => {
-    const {dispatchAction, commentIdToScrollTo} = useAppContext();
+const Replies: React.FC<RepliesProps> = ({comment, useThreading = false}) => {
+    const {commentIdToScrollTo} = useAppContext();
     const initialReplyIds = useRef(new Set(comment.replies.map(reply => reply.id)));
 
     const [showAll, setShowAll] = useState(() => {
@@ -20,26 +21,26 @@ const Replies: React.FC<RepliesProps> = ({comment}) => {
     const hasNewReplies = comment.replies.some(reply => !initialReplyIds.current.has(reply.id));
     const expanded = showAll || hasNewReplies;
 
-    // The API may return fewer replies than count.replies (e.g. old API with LIMIT 3).
-    // When that happens, "Show more" fetches the rest from the server first.
-    const serverHasMore = comment.count.replies > comment.replies.length;
     const visibleReplies = expanded ? comment.replies : comment.replies.slice(0, INITIAL_REPLIES_SHOWN);
-    const clientHiddenCount = comment.replies.length - visibleReplies.length;
-    const totalHiddenCount = serverHasMore
-        ? comment.count.replies - visibleReplies.length
-        : clientHiddenCount;
+    const hiddenRepliesCount = comment.replies.length - visibleReplies.length;
 
     const loadMore = () => {
-        if (serverHasMore) {
-            dispatchAction('loadMoreReplies', {comment, limit: 'all'});
-        }
         setShowAll(true);
     };
 
     return (
         <div>
-            {visibleReplies.map((reply => <CommentComponent key={reply.id} comment={reply} parent={comment} />))}
-            {totalHiddenCount > 0 && <RepliesPagination count={totalHiddenCount} loadMore={loadMore}/>}
+            {visibleReplies.map((reply, idx) => (
+                <CommentComponent
+                    key={reply.id}
+                    comment={reply}
+                    isLastSibling={idx === visibleReplies.length - 1}
+                    layoutVariant={useThreading ? 'reply' : 'root'}
+                    parent={comment}
+                    useThreading={useThreading}
+                />
+            ))}
+            {hiddenRepliesCount > 0 && <RepliesPagination count={hiddenRepliesCount} loadMore={loadMore}/>}
         </div>
     );
 };

@@ -293,6 +293,6 @@
     "Your name": "",
     "Your subscription has been canceled and will expire on {expiryDate}.": "",
     "Your subscription will expire on {expiryDate}": "ඔබගේ subscription එක {expiryDate} වැනි දින කල් ඉකුත් වනු ඇත",
-    "Your subscription will renew on {renewalDate}": "ඔබගේ subscription එක {expiryDate} වැනි දින renew වනු ඇත",
-    "Your subscription will start on {subscriptionStart}": "ඔබගේ subscription එක {expiryDate} වැනි දින ආරම්භ වනු ඇත"
+    "Your subscription will renew on {renewalDate}": "ඔබගේ subscription එක {renewalDate} වැනි දින renew වනු ඇත",
+    "Your subscription will start on {subscriptionStart}": "ඔබගේ subscription එක {subscriptionStart} වැනි දින ආරම්භ වනු ඇත"
 }

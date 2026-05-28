@@ -16,6 +16,7 @@ class AdapterCacheRedis extends BaseCacheAdapter {
      * @param {Object} [config.cache] - caching instance compatible with cache-manager's redis store
      * @param {string} [config.host] - redis host used in case no cache instance provided
      * @param {number} [config.port] - redis port used in case no cache instance provided
+     * @param {string} [config.username] - redis username used in case no cache instance provided
      * @param {string} [config.password] - redis password used in case no cache instance provided
      * @param {Object} [config.clusterConfig] - redis cluster config used in case no cache instance provided
      * @param {Object} [config.storeConfig] - extra redis client config used in case no cache instance provided
@@ -50,7 +51,7 @@ class AdapterCacheRedis extends BaseCacheAdapter {
                 username: config.username,
                 password: config.password,
                 retryStrategy: () => {
-                    return (config.storeConfig.retryConnectSeconds || 10) * 1000;
+                    return (config.storeConfig?.retryConnectSeconds || 10) * 1000;
                 },
                 ...config.storeConfig,
                 clusterConfig: config.clusterConfig

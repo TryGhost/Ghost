@@ -1,8 +1,8 @@
 const logging = require('@tryghost/logging');
 
 /**
- * @typedef {import('./oembed').ICustomProvider} ICustomProvider
- * @typedef {import('./oembed').IExternalRequest} IExternalRequest
+ * @typedef {import('./oembed-service').ICustomProvider} ICustomProvider
+ * @typedef {import('./oembed-service').IExternalRequest} IExternalRequest
  */
 
 const TWITTER_PATH_REGEX = /\/status\/(\d+)/;

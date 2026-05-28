@@ -46,6 +46,7 @@ module.exports = function apiRoutes() {
     router.get('/comments/:id/replies', mw.authAdminApi, http(api.commentReplies.browse));
     router.get('/comments/:id/reports', mw.authAdminApi, http(api.commentReports.browse));
     router.get('/comments/:id/likes', mw.authAdminApi, http(api.commentLikes.browse));
+    router.get('/comments/:id/dislikes', mw.authAdminApi, http(api.commentDislikes.browse));
     router.get('/comments/post/:post_id', mw.authAdminApi, http(api.comments.browse));
     router.post('/comments', mw.authAdminApi, http(api.comments.add));
     router.put('/comments/:id', mw.authAdminApi, http(api.comments.edit));
@@ -87,6 +88,7 @@ module.exports = function apiRoutes() {
 
     router.get('/settings', mw.authAdminApi, http(api.settings.browse));
     router.put('/settings', mw.authAdminApi, http(api.settings.edit));
+    router.post('/settings/access_code/regenerate', mw.authAdminApi, http(api.settings.regenerateAccessCode));
     router.put('/settings/verifications/', mw.authAdminApi, http(api.settings.verifyKeyUpdate));
     router.delete('/settings/stripe/connect', mw.authAdminApi, http(api.settings.disconnectStripeConnectIntegration));
 
@@ -225,7 +227,7 @@ module.exports = function apiRoutes() {
 
     router.post('/themes/upload',
         mw.authAdminApi,
-        apiMw.upload.single('file'),
+        apiMw.upload.themeZip('file'),
         apiMw.upload.validation({type: 'themes'}),
         http(api.themes.upload)
     );
@@ -305,7 +307,7 @@ module.exports = function apiRoutes() {
     router.post('/authentication/setup', http(api.authentication.setup));
     router.put('/authentication/setup', mw.authAdminApi, http(api.authentication.updateSetup));
     router.get('/authentication/setup', http(api.authentication.isSetup));
-    router.post('/authentication/global_password_reset', mw.authAdminApi, http(api.authentication.resetAllPasswords));
+    router.post('/authentication/reset', mw.authAdminApi, http(api.authentication.reset));
 
     // ## Images
     router.post('/images/upload',

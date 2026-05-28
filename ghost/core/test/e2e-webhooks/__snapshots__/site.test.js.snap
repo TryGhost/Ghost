@@ -2,7 +2,7 @@
 
 exports[`site.* events site.changed event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate, br",
+  "accept-encoding": "gzip, deflate, br, zstd",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -14,7 +14,7 @@ exports[`site.* events site.changed event is triggered 2: [body] 1`] = `Object {
 
 exports[`site.* events site.changed event is triggered, custom integrations are limited but we have an internal webhook 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate, br",
+  "accept-encoding": "gzip, deflate, br, zstd",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,

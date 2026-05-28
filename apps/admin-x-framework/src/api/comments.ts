@@ -11,6 +11,9 @@ export type Comment = {
     id: string;
     html: string | null;
     status: 'published' | 'hidden' | 'deleted';
+    pinned: boolean;
+    liked?: boolean;
+    disliked?: boolean;
     created_at: string;
     updated_at: string;
     post_id: string;
@@ -31,6 +34,7 @@ export type Comment = {
         replies?: number;
         direct_replies?: number;
         likes?: number;
+        dislikes?: number;
         reports?: number;
     };
     // Optional nested replies for tree structures
@@ -50,6 +54,17 @@ export type CommentLike = {
     id: string;
     comment_id: string;
     member_id: string;
+    score: number;
+    created_at: string;
+    updated_at: string;
+    member?: Member;
+};
+
+export type CommentDislike = {
+    id: string;
+    comment_id: string;
+    member_id: string;
+    score: number;
     created_at: string;
     updated_at: string;
     member?: Member;
@@ -61,6 +76,42 @@ export interface CommentsResponseType {
 }
 
 const dataType = 'CommentsResponseType';
+const commentDislikeIncludes = 'count.dislikes';
+const commentDislikeMemberIncludes = 'count.dislikes,disliked';
+
+export const adminCommentIncludes = (dislikesEnabled: boolean) => [
+    'member',
+    'post',
+    'count.replies',
+    'count.direct_replies',
+    'count.likes',
+    ...(dislikesEnabled ? [commentDislikeIncludes] : []),
+    'count.reports',
+    'parent',
+    'in_reply_to'
+].join(',');
+
+export const memberCommentIncludes = (dislikesEnabled: boolean) => [
+    'member',
+    'post',
+    'count.replies',
+    'count.direct_replies',
+    'count.likes',
+    ...(dislikesEnabled ? [commentDislikeMemberIncludes] : []),
+    'parent',
+    'in_reply_to'
+].join(',');
+
+export const memberThreadCommentIncludes = (dislikesEnabled: boolean) => [
+    'member',
+    'post',
+    'count.direct_replies',
+    'count.likes',
+    ...(dislikesEnabled ? [commentDislikeIncludes] : []),
+    'count.reports',
+    'parent',
+    'in_reply_to'
+].join(',');
 
 const useBrowseCommentsQuery = createInfiniteQuery<CommentsResponseType>({
     dataType,
@@ -138,6 +189,34 @@ export const useDeleteComment = createMutation<CommentsResponseType, {id: string
     }
 });
 
+export const usePinComment = createMutation<CommentsResponseType, {id: string}>({
+    method: 'PUT',
+    path: ({id}) => `/comments/${id}/`,
+    body: ({id}) => ({
+        comments: [{
+            id,
+            pinned: true
+        }]
+    }),
+    invalidateQueries: {
+        dataType
+    }
+});
+
+export const useUnpinComment = createMutation<CommentsResponseType, {id: string}>({
+    method: 'PUT',
+    path: ({id}) => `/comments/${id}/`,
+    body: ({id}) => ({
+        comments: [{
+            id,
+            pinned: false
+        }]
+    }),
+    invalidateQueries: {
+        dataType
+    }
+});
+
 export const useCommentReplies = createQueryWithId<CommentsResponseType>({
     dataType,
     path: (id: string) => `/comments/${id}/replies/`,
@@ -147,13 +226,24 @@ export const useCommentReplies = createQueryWithId<CommentsResponseType>({
     }
 });
 
-export const useReadComment = createQueryWithId<CommentsResponseType>({
+const useReadCommentQuery = createQueryWithId<CommentsResponseType>({
     dataType,
     path: (id: string) => `/comments/${id}/`,
     defaultSearchParams: {
-        include: 'member,post,count.replies,count.direct_replies,count.likes,count.reports,parent,in_reply_to'
+        include: adminCommentIncludes(false)
     }
 });
+
+export const useReadComment = (commentId: string, options?: Parameters<typeof useReadCommentQuery>[1] & {dislikesEnabled?: boolean}) => {
+    const {dislikesEnabled = false, searchParams, ...queryOptions} = options || {};
+    return useReadCommentQuery(commentId, {
+        ...queryOptions,
+        searchParams: {
+            include: adminCommentIncludes(dislikesEnabled),
+            ...searchParams
+        }
+    });
+};
 
 export interface CommentReportsResponseType {
     meta?: Meta;
@@ -188,18 +278,39 @@ export const useBrowseCommentLikes = (commentId: string, options?: {enabled?: bo
     return useBrowseCommentLikesQuery(commentId, {...options});
 };
 
+export interface CommentDislikesResponseType {
+    meta?: Meta;
+    comment_dislikes: CommentDislike[];
+}
+
+const useBrowseCommentDislikesQuery = createQueryWithId<CommentDislikesResponseType>({
+    dataType: 'CommentDislikesResponseType',
+    path: id => `/comments/${id}/dislikes/`,
+    defaultSearchParams: {
+        include: 'member',
+        limit: '100',
+        order: 'created_at desc'
+    }
+});
+
+export const useBrowseCommentDislikes = (commentId: string, options?: {enabled?: boolean}) => {
+    return useBrowseCommentDislikesQuery(commentId, {...options});
+};
+
 /**
  * Fetches direct replies for a thread view.
  * - For top-level comments: returns comments where parent_id matches AND in_reply_to_id is null
  * - For nested comments: returns comments where in_reply_to_id matches
  */
-export const useThreadComments = (commentId: string, options?: {enabled?: boolean}) => {
+export const useThreadComments = (commentId: string, options?: {enabled?: boolean; dislikesEnabled?: boolean}) => {
+    const {dislikesEnabled = false, ...queryOptions} = options || {};
+
     return useBrowseComments({
-        ...options,
+        ...queryOptions,
         searchParams: {
             filter: `(parent_id:${commentId}+in_reply_to_id:null),in_reply_to_id:${commentId}`,
             order: 'created_at asc',
-            include: 'member,post,count.direct_replies,count.likes,count.reports,parent,in_reply_to',
+            include: memberThreadCommentIncludes(dislikesEnabled),
             limit: '100'
         }
     });

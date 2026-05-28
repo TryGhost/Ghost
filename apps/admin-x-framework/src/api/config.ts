@@ -67,6 +67,10 @@ export type Config = {
             limitSocialWeb?: {
                 disabled: boolean,
                 error?: string
+            },
+            publicSiteAccess?: {
+                disabled: boolean,
+                error?: string
             }
         }
         billing?: {

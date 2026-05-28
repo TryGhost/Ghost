@@ -40,7 +40,7 @@ describe('Automated Emails API', function () {
     beforeEach(async function () {
         await dbUtils.truncate('brute');
         await dbUtils.truncate('welcome_email_automated_emails');
-        await dbUtils.truncate('welcome_email_automations');
+        await dbUtils.truncate('automations');
     });
 
     describe('Browse', function () {

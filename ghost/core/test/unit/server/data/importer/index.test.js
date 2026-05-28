@@ -70,7 +70,7 @@ describe('Importer', function () {
 
         it('gets the correct types', function () {
             assert(Array.isArray(ImportManager.getContentTypes()));
-            assert.equal(ImportManager.getContentTypes().length, 23);
+            assert.equal(ImportManager.getContentTypes().length, 24);
             assert(ImportManager.getContentTypes().includes('image/jpeg'));
             assert(ImportManager.getContentTypes().includes('image/png'));
             assert(ImportManager.getContentTypes().includes('image/gif'));
@@ -89,6 +89,7 @@ describe('Importer', function () {
             assert(ImportManager.getContentTypes().includes('audio/wav'));
             assert(ImportManager.getContentTypes().includes('audio/x-wav'));
             assert(ImportManager.getContentTypes().includes('audio/ogg'));
+            assert(ImportManager.getContentTypes().includes('application/ogg'));
             assert(ImportManager.getContentTypes().includes('audio/x-m4a'));
 
             assert(ImportManager.getContentTypes().includes('application/octet-stream'));
@@ -124,7 +125,7 @@ describe('Importer', function () {
         });
 
         it('cleans up', async function () {
-            const file = path.resolve('test/utils/fixtures/import/zips/zip-with-base-dir');
+            const file = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-with-base-dir');
             ImportManager.fileToDelete = file;
             const removeStub = sinon.stub(fs, 'remove').withArgs(file).returns(Promise.resolve());
 
@@ -143,7 +144,7 @@ describe('Importer', function () {
 
         it('silently ignores clean up errors', async function () {
             const loggingStub = sinon.stub(logging, 'error');
-            const file = path.resolve('test/utils/fixtures/import/zips/zip-with-base-dir');
+            const file = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-with-base-dir');
             ImportManager.fileToDelete = file;
             const removeStub = sinon.stub(fs, 'remove').withArgs(file).returns(Promise.reject(new Error('Unknown file')));
 
@@ -217,61 +218,61 @@ describe('Importer', function () {
 
             describe('Validate Zip', function () {
                 it('accepts a zip with a base directory', function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-with-base-dir');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-with-base-dir');
 
                     assert(ImportManager.isValidZip(testDir));
                 });
 
                 it('accepts a zip without a base directory', function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-without-base-dir');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-without-base-dir');
 
                     assert(ImportManager.isValidZip(testDir));
                 });
 
                 it('accepts a zip with an image directory', function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-image-dir');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-image-dir');
 
                     assert(ImportManager.isValidZip(testDir));
                 });
 
                 it('accepts a zip with a content directory', function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-content-dir');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-content-dir');
 
                     assert(ImportManager.isValidZip(testDir));
                 });
 
                 it('accepts a zip with a content/images directory', function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-content-images-subdir');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-content-images-subdir');
 
                     assert(ImportManager.isValidZip(testDir));
                 });
 
                 it('accepts a zip with a media directory', function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-media-dir');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-media-dir');
 
                     assert(ImportManager.isValidZip(testDir));
                 });
 
                 it('accepts a zip with a files directory', function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-files-dir');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-files-dir');
 
                     assert(ImportManager.isValidZip(testDir));
                 });
 
                 it('accepts a zip with uppercase image extensions', function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-uppercase-extensions');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-uppercase-extensions');
 
                     assert(ImportManager.isValidZip(testDir));
                 });
 
                 it('fails a zip with two base directories', function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-with-double-base-dir');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-with-double-base-dir');
 
                     assert.throws(ImportManager.isValidZip.bind(ImportManager, testDir), errors.UnsupportedMediaTypeError);
                 });
 
                 it('fails a zip with no content', function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-invalid');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-invalid');
 
                     assert.throws(ImportManager.isValidZip.bind(ImportManager, testDir), errors.UnsupportedMediaTypeError);
                 });
@@ -280,7 +281,7 @@ describe('Importer', function () {
             describe('Process Zip', function () {
                 const testZip = {name: 'myFile.zip', path: '/my/path/myFile.zip'};
 
-                this.beforeEach(() => {
+                beforeEach(function () {
                     sinon.stub(JSONHandler, 'loadFile').returns(Promise.resolve({posts: []}));
                     sinon.stub(ImageHandler, 'loadFile');
                     sinon.stub(RevueHandler, 'loadFile');
@@ -288,7 +289,7 @@ describe('Importer', function () {
                 });
 
                 it('accepts a zip with a base directory', async function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-with-base-dir');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-with-base-dir');
                     const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
 
                     const zipResult = await ImportManager.processZip(testZip);
@@ -298,7 +299,7 @@ describe('Importer', function () {
                 });
 
                 it('accepts a zip without a base directory', async function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-without-base-dir');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-without-base-dir');
                     const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
 
                     const zipResult = await ImportManager.processZip(testZip);
@@ -308,7 +309,7 @@ describe('Importer', function () {
                 });
 
                 it('accepts a zip with an image directory', async function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-image-dir');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-image-dir');
                     const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
 
                     const zipResult = await ImportManager.processZip(testZip);
@@ -318,7 +319,7 @@ describe('Importer', function () {
                 });
 
                 it('accepts a zip with uppercase image extensions', async function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-uppercase-extensions');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-uppercase-extensions');
                     const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
 
                     const zipResult = await ImportManager.processZip(testZip);
@@ -328,7 +329,7 @@ describe('Importer', function () {
                 });
 
                 it('throws zipContainsMultipleDataFormats', async function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-multiple-data-formats');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-multiple-data-formats');
                     const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
 
                     await assert.rejects(ImportManager.processZip(testZip), /multiple data formats/);
@@ -336,7 +337,7 @@ describe('Importer', function () {
                 });
 
                 it('throws noContentToImport', async function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-empty');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-empty');
                     const extractSpy = sinon.stub(ImportManager, 'extractZip').returns(Promise.resolve(testDir));
 
                     await assert.rejects(ImportManager.processZip(testZip), /not include any content/);
@@ -346,31 +347,31 @@ describe('Importer', function () {
 
             describe('Get Base Dir', function () {
                 it('returns string for base directory', function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-with-base-dir');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-with-base-dir');
 
                     assert.equal(ImportManager.getBaseDirectory(testDir), 'basedir');
                 });
 
                 it('returns string for double base directory', function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-with-double-base-dir');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-with-double-base-dir');
 
                     assert.equal(ImportManager.getBaseDirectory(testDir), 'basedir');
                 });
 
                 it('returns empty for no base directory', function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-without-base-dir');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-without-base-dir');
 
                     assert.equal(ImportManager.getBaseDirectory(testDir), undefined);
                 });
 
                 it('returns empty for content handler directories', function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-image-dir');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-image-dir');
 
                     assert.equal(ImportManager.getBaseDirectory(testDir), undefined);
                 });
 
                 it('throws invalidZipFileBaseDirectory', function () {
-                    const testDir = path.resolve('test/utils/fixtures/import/zips/zip-empty');
+                    const testDir = path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-empty');
 
                     assert.throws(() => ImportManager.getBaseDirectory(testDir), /invalid zip file/i);
                 });
@@ -380,7 +381,7 @@ describe('Importer', function () {
                 it('can call extract and error correctly', async function () {
                     // Deliberately pass something that can't be extracted just to check this method signature is working
                     await assert.rejects(
-                        ImportManager.extractZip('test/utils/fixtures/import/zips/zip-with-base-dir'),
+                        ImportManager.extractZip(path.resolve(__dirname, '../../../../utils/fixtures/import/zips/zip-with-base-dir')),
                         (err) => {
                             assert.match(err.message, /EISDIR/);
                             assert.match(err.code, /EISDIR/);

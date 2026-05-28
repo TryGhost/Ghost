@@ -2,13 +2,14 @@ import CommentContent from './comment-content';
 import CommentThreadSidebar from './comment-thread-sidebar';
 import LoadMoreButton from '@components/virtual-table/load-more-button';
 import {Avatar, Button} from '@tryghost/shade/components';
-import {Comment, useHideComment, useShowComment} from '@tryghost/admin-x-framework/api/comments';
+import {Comment, useHideComment, useShowComment, useUnpinComment} from '@tryghost/admin-x-framework/api/comments';
 import {CommentHeader} from './comment-header';
 import {CommentMenu} from './comment-menu';
 import {CommentMetrics, buildThreadLink} from './comment-metrics';
 import {Link, useSearchParams} from '@tryghost/admin-x-framework';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {forwardRef, useEffect, useRef, useState} from 'react';
+import {useCommentsPinningEnabled} from '@src/hooks/use-comments-pinning-enabled';
 import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';
 import {useScrollRestoration} from '@components/virtual-table/use-scroll-restoration';
 import {useVirtualListWindow} from '@components/virtual-table/virtual-list-window';
@@ -46,7 +47,8 @@ function CommentsList({
     fetchNextPage,
     resetKey,
     onAddFilter,
-    isLoading
+    isLoading,
+    dislikesEnabled
 }: {
     items: Comment[];
     totalItems: number;
@@ -56,6 +58,7 @@ function CommentsList({
     resetKey: string;
     onAddFilter: (field: string, value: string, operator?: string) => void;
     isLoading?: boolean;
+    dislikesEnabled: boolean;
 }) {
     const parentRef = useRef<HTMLDivElement>(null);
     const {visibleItemCount, canLoadMore, loadMore} = useVirtualListWindow(totalItems, {resetKey});
@@ -65,6 +68,8 @@ function CommentsList({
 
     const {mutate: hideComment} = useHideComment();
     const {mutate: showComment} = useShowComment();
+    const {mutate: unpinComment} = useUnpinComment();
+    const commentsPinningEnabled = useCommentsPinningEnabled();
 
     const handleCloseSidebar = (open: boolean) => {
         setThreadSidebarOpen(open);
@@ -130,7 +135,7 @@ function CommentsList({
                             <div
                                 key={key}
                                 {...props}
-                                className="grid w-full grid-cols-1 items-start justify-between gap-4 border-b p-3 hover:bg-muted/50 md:p-5 lg:grid-cols-[minmax(0,1fr)_144px]"
+                                className='grid w-full grid-cols-1 items-start justify-between gap-4 border-b p-3 hover:bg-muted/50 md:p-5 lg:grid-cols-[minmax(0,1fr)_144px]'
                                 data-testid="comment-list-row"
                                 onClick={() => {
                                     // Close sidebar when clicking on a comment in the main list
@@ -152,11 +157,13 @@ function CommentsList({
                                             canComment={item.member?.can_comment}
                                             createdAt={item.created_at}
                                             isHidden={item.status === 'hidden'}
+                                            isPinned={commentsPinningEnabled && item.pinned}
                                             memberId={item.member?.id}
                                             memberName={item.member?.name}
                                             postTitle={item.post?.title}
                                             onAuthorClick={item.member?.id ? () => onAddFilter('author', item.member!.id) : undefined}
                                             onPostClick={item.post?.id ? () => onAddFilter('post', item.post!.id) : undefined}
+                                            onUnpinClick={commentsPinningEnabled ? () => unpinComment({id: item.id}) : undefined}
                                         />
 
                                         {item.in_reply_to_snippet && (
@@ -193,6 +200,7 @@ function CommentsList({
                                             <CommentMetrics
                                                 className="ml-2"
                                                 comment={item}
+                                                dislikesEnabled={dislikesEnabled}
                                             />
                                             <CommentMenu
                                                 comment={item}
@@ -223,6 +231,7 @@ function CommentsList({
 
             <CommentThreadSidebar
                 commentId={selectedThreadCommentId}
+                dislikesEnabled={dislikesEnabled}
                 open={threadSidebarOpen}
                 onOpenChange={handleCloseSidebar}
             />

@@ -16,14 +16,12 @@ export interface GiftPurchaseConfirmationData {
 }
 
 export function renderText(data: GiftPurchaseConfirmationData, t: Translate): string {
-    const intro = `${t('Thank you for supporting {siteTitle}.', {
+    const intro = t('Thank you for your support. Share the link below with whoever you\'d like to gift them a {cadenceLabel} {tierName} membership to {siteTitle}.', {
+        cadenceLabel: data.gift.cadenceLabel,
+        tierName: data.gift.tierName,
         siteTitle: data.siteTitle,
         interpolation: {escapeValue: false}
-    })} ${t('Share the link below to give someone access to {tierName} membership for {cadenceLabel}.', {
-        tierName: data.gift.tierName,
-        cadenceLabel: data.gift.cadenceLabel,
-        interpolation: {escapeValue: false}
-    })}`;
+    });
 
     return `${t('Your gift is ready')}
 
@@ -31,12 +29,10 @@ ${intro}
 
 ${data.gift.link}
 
-${t('The link can be redeemed once and expires on {expiresAt}.', {
+${t('The link expires on {expiresAt} and can only be redeemed once.', {
         expiresAt: data.gift.expiresAt,
         interpolation: {escapeValue: false}
     })}
-
-${t('Happy gifting.')}
 
 ---
 ${t('This message was sent from {siteDomain} to {email}.', {

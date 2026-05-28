@@ -1,4 +1,5 @@
 const sinon = require('sinon');
+const deferred = require('../../../../utils/deferred');
 const mail = require('../../../../../core/server/services/mail');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const configUtils = require('../../../../utils/config-utils');
@@ -42,7 +43,7 @@ const mailDataIncomplete = {
 const sandbox = sinon.createSandbox();
 
 describe('Mail: Ghostmailer', function () {
-    before(function () {
+    beforeAll(function () {
         emailAddress.init();
         sinon.restore();
     });
@@ -79,7 +80,8 @@ describe('Mail: Ghostmailer', function () {
         assert.equal(mailer.transport.transporter.options.direct, true);
     });
 
-    it('sends valid message successfully ', function (done) {
+    it('sends valid message successfully ', function () {
+        const {promise, done} = deferred();
         configUtils.set({mail: {transport: 'stub'}});
 
         mailer = new mail.GhostMailer();
@@ -93,9 +95,11 @@ describe('Mail: Ghostmailer', function () {
 
             done();
         }).catch(done);
+        return promise;
     });
 
-    it('handles failure', function (done) {
+    it('handles failure', function () {
+        const {promise, done} = deferred();
         configUtils.set({mail: {transport: 'stub', options: {error: 'Stub made a boo boo :('}}});
 
         mailer = new mail.GhostMailer();
@@ -108,6 +112,7 @@ describe('Mail: Ghostmailer', function () {
             assert(error.message.includes('Stub made a boo boo :('));
             done();
         }).catch(done);
+        return promise;
     });
 
     it('should fail to send messages when given insufficient data', async function () {

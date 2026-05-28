@@ -1,12 +1,13 @@
 import CommentContent from './comment-content';
 import React from 'react';
 import {Avatar, Button, LoadingIndicator} from '@tryghost/shade/components';
-import {Comment, useHideComment, useShowComment} from '@tryghost/admin-x-framework/api/comments';
+import {Comment, useHideComment, useShowComment, useUnpinComment} from '@tryghost/admin-x-framework/api/comments';
 import {CommentHeader} from './comment-header';
 import {CommentMenu} from './comment-menu';
 import {CommentMetrics, buildThreadLink} from './comment-metrics';
 import {Link, useSearchParams} from '@tryghost/admin-x-framework';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
+import {useCommentsPinningEnabled} from '@src/hooks/use-comments-pinning-enabled';
 
 function RepliesLine({hasReplies}: {hasReplies: boolean}) {
     if (!hasReplies) {
@@ -23,15 +24,18 @@ function RepliesLine({hasReplies}: {hasReplies: boolean}) {
 
 interface CommentRowProps {
     comment: Comment;
+    dislikesEnabled: boolean;
     isReply?: boolean;
     isSelectedComment?: boolean;
     selectedCommentId?: string;
 }
 
-function CommentRow({comment, isReply = false, isSelectedComment = false, selectedCommentId}: CommentRowProps) {
+function CommentRow({comment, dislikesEnabled, isReply = false, isSelectedComment = false, selectedCommentId}: CommentRowProps) {
     const [searchParams] = useSearchParams();
     const {mutate: hideComment} = useHideComment();
     const {mutate: showComment} = useShowComment();
+    const {mutate: unpinComment} = useUnpinComment();
+    const commentsPinningEnabled = useCommentsPinningEnabled();
 
     // Check replies array for loaded objects, or count.direct_replies for unloaded
     // TODO: remove count.replies fallback once backend is fully rolled out
@@ -59,8 +63,10 @@ function CommentRow({comment, isReply = false, isSelectedComment = false, select
                             canComment={comment.member?.can_comment}
                             createdAt={comment.created_at}
                             isHidden={comment.status === 'hidden'}
+                            isPinned={commentsPinningEnabled && comment.pinned}
                             memberId={comment.member?.id}
                             memberName={comment.member?.name}
+                            onUnpinClick={commentsPinningEnabled ? () => unpinComment({id: comment.id}) : undefined}
                         />
 
                         {comment.in_reply_to_snippet && isSelectedComment && (
@@ -96,6 +102,7 @@ function CommentRow({comment, isReply = false, isSelectedComment = false, select
                             )}
                             <CommentMetrics
                                 comment={comment}
+                                dislikesEnabled={dislikesEnabled}
                             />
                             <CommentMenu
                                 comment={comment}
@@ -110,6 +117,7 @@ function CommentRow({comment, isReply = false, isSelectedComment = false, select
                                 <CommentRow
                                     key={reply.id}
                                     comment={reply}
+                                    dislikesEnabled={dislikesEnabled}
                                     isReply={true}
                                     selectedCommentId={selectedCommentId}
                                 />
@@ -124,6 +132,7 @@ function CommentRow({comment, isReply = false, isSelectedComment = false, select
 
 interface CommentThreadListProps {
     selectedComment: Comment;
+    dislikesEnabled: boolean;
     replies: Comment[];
     selectedCommentId: string;
     fetchNextPage: () => void;
@@ -133,6 +142,7 @@ interface CommentThreadListProps {
 
 const CommentThreadList: React.FC<CommentThreadListProps> = ({
     selectedComment,
+    dislikesEnabled,
     replies,
     selectedCommentId,
     fetchNextPage,
@@ -146,6 +156,7 @@ const CommentThreadList: React.FC<CommentThreadListProps> = ({
         <div className="flex flex-col" data-testid="comment-thread-list">
             <CommentRow
                 comment={commentWithReplies}
+                dislikesEnabled={dislikesEnabled}
                 isSelectedComment={true}
                 selectedCommentId={selectedCommentId}
             />

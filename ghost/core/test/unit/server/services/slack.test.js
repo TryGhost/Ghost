@@ -194,7 +194,7 @@ describe('Slack', function () {
             assert.equal(requestData.unfurl_links, true);
         });
 
-        it('makes a request and errors', function (done) {
+        it('makes a request and errors', async function () {
             loggingStub = sinon.stub(logging, 'error');
             makeRequestStub.rejects();
             settingsCacheStub.withArgs('slack_url').returns(slackURL);
@@ -202,15 +202,17 @@ describe('Slack', function () {
             // execute code
             ping({});
 
-            (function retry() {
-                if (loggingStub.calledOnce) {
-                    sinon.assert.calledOnce(makeRequestStub);
-                    sinon.assert.calledOnce(loggingStub);
-                    return done();
-                }
-
-                setTimeout(retry, 50);
-            }());
+            const wait = ms => new Promise((resolve) => {
+                setTimeout(resolve, ms);
+            });
+            // Bound the poll so a regression fails with a clear assertion
+            // below rather than stalling until the suite-wide test timeout.
+            const deadline = Date.now() + 1000;
+            while (!loggingStub.calledOnce && Date.now() < deadline) {
+                await wait(50);
+            }
+            sinon.assert.calledOnce(makeRequestStub);
+            sinon.assert.calledOnce(loggingStub);
         });
 
         it('does not make a request if post is a page', function () {

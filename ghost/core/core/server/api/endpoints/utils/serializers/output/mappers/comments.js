@@ -51,8 +51,19 @@ const countFieldsAdmin = [
     'replies',
     'direct_replies',
     'likes',
+    'dislikes',
     'reports'
 ];
+
+function getRequestedFields(frame) {
+    const fields = frame?.original?.query?.fields;
+
+    if (!fields || typeof fields !== 'string') {
+        return null;
+    }
+
+    return new Set(fields.split(',').map(field => field.trim()).filter(Boolean));
+}
 
 const commentMapper = (model, frame) => {
     const jsonModel = model.toJSON ? model.toJSON(frame.options) : model;
@@ -78,7 +89,20 @@ const commentMapper = (model, frame) => {
         jsonModel.in_reply_to_id = null;
     }
 
-    const response = _.pick(jsonModel, commentFields);
+    const fields = getRequestedFields(frame);
+    const includesHtml = !fields || fields.has('html');
+    const response = _.pick(jsonModel, fields ? commentFields.filter(field => fields.has(field)) : commentFields);
+
+    if (!fields || fields.has('pinned')) {
+        if (Object.prototype.hasOwnProperty.call(jsonModel, 'pinned')) {
+            response.pinned = Boolean(jsonModel.pinned);
+        } else {
+            const canShowPinned = !jsonModel.parent_id && Boolean(jsonModel.pinned_at);
+            response.pinned = isPublicRequest
+                ? canShowPinned && jsonModel.status === 'published'
+                : canShowPinned;
+        }
+    }
 
     if (jsonModel.member) {
         response.member = _.pick(jsonModel.member, isPublicRequest ? memberFields : memberFieldsAdmin);
@@ -111,18 +135,21 @@ const commentMapper = (model, frame) => {
         response.liked = jsonModel.count.liked > 0;
     }
 
-    if (jsonModel.count) {
-        response.count = _.pick(jsonModel.count, isPublicRequest ? countFields : countFieldsAdmin);
+    if (jsonModel.count && jsonModel.count.disliked !== undefined) {
+        response.disliked = jsonModel.count.disliked > 0;
     }
 
-    if (isPublicRequest) {
-        if (jsonModel.status !== 'published') {
-            response.html = null;
-        }
+    if (jsonModel.count) {
+        const countFieldsForRequest = isPublicRequest ? countFields : countFieldsAdmin;
+        response.count = _.pick(jsonModel.count, countFieldsForRequest);
+    }
+
+    if (includesHtml && isPublicRequest && jsonModel.status !== 'published') {
+        response.html = null;
     }
 
     // Deleted comments should never expose their content
-    if (jsonModel.status === 'deleted') {
+    if (includesHtml && jsonModel.status === 'deleted') {
         response.html = null;
     }
 

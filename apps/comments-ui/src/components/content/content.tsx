@@ -2,169 +2,52 @@ import CTABox from './cta-box';
 import Comment from './comment';
 import CommentingDisabledBox from './commenting-disabled-box';
 import ContentTitle from './content-title';
+import FocusedThread from './focused-thread';
 import MainForm from './forms/main-form';
 import Pagination from './pagination';
-import {ROOT_DIV_ID} from '../../utils/constants';
+import {DESKTOP_MAX_THREAD_DEPTH, MOBILE_BREAKPOINT, MOBILE_MAX_THREAD_DEPTH} from '../../utils/helpers';
+import {NavActionsContext} from '../../utils/nav-actions';
 import {SortingForm} from './forms/sorting-form';
-import {parseCommentIdFromHash, scrollToElement} from '../../utils/helpers';
+import {ThreadingContext} from '../../utils/threading-context';
+import {getFocusedThread} from '../../utils/thread-graph';
 import {useAppContext, useLabs} from '../../app-context';
-import {useCallback, useEffect, useRef} from 'react';
+import {useCommentNavigation} from './hooks/use-comment-navigation';
+import {useEffect, useMemo, useRef, useState} from 'react';
 
-/**
- * Find the iframe element that contains the current window, if any.
- * Returns null if not in an iframe or cross-origin.
- */
-function findContainingIframe(doc: Document): HTMLIFrameElement | null {
-    const currentWindow = doc.defaultView;
-    if (!currentWindow?.parent || currentWindow.parent === currentWindow) {
-        return null;
+const MOBILE_MEDIA_QUERY = `(max-width: ${MOBILE_BREAKPOINT - 1}px)`;
+
+function getCurrentMaxThreadDepth() {
+    if (typeof window === 'undefined' || !window.matchMedia) {
+        return DESKTOP_MAX_THREAD_DEPTH;
     }
 
-    try {
-        const iframes = currentWindow.parent.document.getElementsByTagName('iframe');
-        for (const iframe of iframes) {
-            if (iframe.contentWindow === currentWindow) {
-                return iframe;
-            }
-        }
-    } catch {
-        // Cross-origin - can't access parent
-    }
-    return null;
-}
-
-// Fallback timeout if iframe height doesn't change (content fits exactly)
-const IFRAME_RESIZE_TIMEOUT_MS = 500;
-
-/**
- * Wait for iframe to resize then call callback (on initial load, iframe starts small).
- * Uses ResizeObserver with a fallback timeout.
- */
-function onIframeResize(
-    iframe: HTMLIFrameElement,
-    callback: () => void
-): () => void {
-    const initialHeight = iframe.clientHeight;
-    let triggered = false;
-
-    const trigger = () => {
-        if (triggered) {
-            return;
-        }
-        triggered = true;
-        observer.disconnect();
-        callback();
-    };
-
-    const observer = new ResizeObserver(() => {
-        if (iframe.clientHeight !== initialHeight) {
-            trigger();
-        }
-    });
-    observer.observe(iframe);
-
-    const timeout = setTimeout(trigger, IFRAME_RESIZE_TIMEOUT_MS);
-
-    return () => {
-        clearTimeout(timeout);
-        observer.disconnect();
-    };
+    return window.matchMedia(MOBILE_MEDIA_QUERY).matches ? MOBILE_MAX_THREAD_DEPTH : DESKTOP_MAX_THREAD_DEPTH;
 }
 
 const Content = () => {
     const labs = useLabs();
-    const {pagination, comments, commentCount, title, showCount, commentsIsLoading, t, dispatchAction, commentIdToScrollTo, showMissingCommentNotice, isMember, isPaidOnly, hasRequiredTier, isCommentingDisabled} = useAppContext();
+    const {pagination, comments, commentCount, title, showCount, commentsIsLoading, t, commentIdFromHash, showMissingCommentNotice, isMember, isPaidOnly, hasRequiredTier, isCommentingDisabled} = useAppContext();
     const containerRef = useRef<HTMLDivElement>(null);
-
-    const scrollToComment = useCallback((element: HTMLElement, commentId: string) => {
-        element.scrollIntoView({behavior: 'smooth', block: 'center'});
-        dispatchAction('highlightComment', {commentId});
-        dispatchAction('setScrollTarget', null);
-    }, [dispatchAction]);
+    const [maxThreadDepth, setMaxThreadDepth] = useState(() => getCurrentMaxThreadDepth());
 
     useEffect(() => {
-        const elem = document.getElementById(ROOT_DIV_ID);
-
-        // Check scroll position
-        if (elem && window.location.hash === `#ghost-comments`) {
-            // Only scroll if the user didn't scroll by the time we loaded the comments
-            // We could remove this, but if the network connection is slow, we risk having a page jump when the user already started scrolling
-            if (window.scrollY === 0) {
-                // This is a bit hacky, but one animation frame is not enough to wait for the iframe height to have changed and the DOM to be updated correctly before scrolling
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        elem.scrollIntoView();
-                    });
-                });
-            }
-        }
-    }, []);
-
-    useEffect(() => {
-        // Capture the parent window reference once so the handler and cleanup
-        // always use the same object. window.parent becomes null when the
-        // iframe is detached from the DOM, but the captured reference remains
-        // valid for removing the listener.
-        const parentWindow = window.parent;
-        if (!parentWindow) {
+        if (typeof window === 'undefined' || !window.matchMedia) {
             return;
         }
 
-        const handleHashChange = () => {
-            const commentId = parseCommentIdFromHash(parentWindow.location.hash);
-            if (commentId && containerRef.current) {
-                const doc = containerRef.current.ownerDocument;
-                const element = doc.getElementById(commentId);
-                if (element) {
-                    scrollToComment(element, commentId);
-                }
-            }
+        const mql = window.matchMedia(MOBILE_MEDIA_QUERY);
+        const updateMaxThreadDepth = () => {
+            setMaxThreadDepth(mql.matches ? MOBILE_MAX_THREAD_DEPTH : DESKTOP_MAX_THREAD_DEPTH);
         };
 
-        parentWindow.addEventListener('hashchange', handleHashChange);
-        return () => parentWindow.removeEventListener('hashchange', handleHashChange);
-    }, [scrollToComment]);
+        updateMaxThreadDepth();
+        mql.addEventListener('change', updateMaxThreadDepth);
+        return () => mql.removeEventListener('change', updateMaxThreadDepth);
+    }, []);
 
-    useEffect(() => {
-        if (!commentIdToScrollTo || commentsIsLoading || !containerRef.current) {
-            return;
-        }
-
-        const doc = containerRef.current.ownerDocument;
-        const element = doc.getElementById(commentIdToScrollTo);
-        if (!element) {
-            return;
-        }
-
-        const iframe = findContainingIframe(doc);
-        if (iframe) {
-            return onIframeResize(iframe, () => {
-                scrollToComment(element, commentIdToScrollTo);
-            });
-        }
-
-        scrollToComment(element, commentIdToScrollTo);
-    }, [commentIdToScrollTo, commentsIsLoading, comments, scrollToComment]);
-
-    useEffect(() => {
-        if (!showMissingCommentNotice || commentsIsLoading) {
-            return;
-        }
-
-        const root = document.getElementById(ROOT_DIV_ID);
-        if (!root) {
-            return;
-        }
-
-        const iframe = findContainingIframe(root.ownerDocument);
-        if (iframe) {
-            return onIframeResize(iframe, () => {
-                scrollToElement(root);
-            });
-        }
-
-        scrollToElement(root);
-    }, [showMissingCommentNotice, commentsIsLoading]);
+    const threadingContext = useMemo(() => ({
+        maxThreadDepth
+    }), [maxThreadDepth]);
 
     const isFirst = pagination?.total === 0;
     const canComment = isMember && hasRequiredTier && !isCommentingDisabled;
@@ -174,10 +57,25 @@ const Content = () => {
     const showDisabledBox = !canComment && isCommentingDisabled;
     const showCtaBox = !canComment && !isCommentingDisabled;
     const useThreading = !!labs.commentsThreads;
+    const focusedThread = useMemo(() => (
+        useThreading ? getFocusedThread(comments, commentIdFromHash, maxThreadDepth) : null
+    ), [comments, commentIdFromHash, maxThreadDepth, useThreading]);
+
+    const navActions = useCommentNavigation({
+        containerRef,
+        focusedThread
+    });
 
     const commentsComponents = comments.map(comment => <Comment key={comment.id} comment={comment} useThreading={useThreading} />);
 
-    return (
+    const content = focusedThread ? (
+        <>
+            <ContentTitle count={commentCount} showCount={showCount} title={title}/>
+            <div ref={containerRef} className={`z-10 transition-opacity duration-100 ${commentsIsLoading ? 'opacity-50' : ''}`} data-testid="comment-elements">
+                <FocusedThread focusedThread={focusedThread} />
+            </div>
+        </>
+    ) : (
         <>
             <ContentTitle count={commentCount} showCount={showCount} title={title}/>
             {showMissingCommentNotice && (
@@ -213,6 +111,14 @@ const Content = () => {
                 labs?.testFlag ? <div data-testid="this-comes-from-a-flag" style={{display: 'none'}}></div> : null
             }
         </>
+    );
+
+    return (
+        <NavActionsContext.Provider value={navActions}>
+            <ThreadingContext.Provider value={threadingContext}>
+                {content}
+            </ThreadingContext.Provider>
+        </NavActionsContext.Provider>
     );
 };
 

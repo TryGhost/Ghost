@@ -91,6 +91,7 @@ module.exports = {
     browse: serializeSettings,
     read: serializeSettings,
     edit: serializeSettings,
+    regenerateAccessCode: serializeSettings,
     verifyKeyUpdate: serializeSettings,
 
     download: serializeData,

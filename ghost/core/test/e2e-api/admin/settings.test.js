@@ -8,10 +8,11 @@ const {agentProvider, fixtureManager, mockManager, matchers, configUtils} = requ
 const {stringMatching, anyEtag, anyUuid, anyContentLength, anyContentVersion} = matchers;
 const models = require('../../../core/server/models');
 const membersService = require('../../../core/server/services/members');
+const limits = require('../../../core/server/services/limits');
 const {anyErrorId} = matchers;
 
 // Updated to reflect current total based on test output
-const CURRENT_SETTINGS_COUNT = 106;
+const CURRENT_SETTINGS_COUNT = 107;
 
 const settingsMatcher = {};
 
@@ -28,16 +29,16 @@ const labsSettingMatcher = {
 const matchSettingsArray = (length) => {
     const settingsArray = new Array(length).fill(settingsMatcher);
 
-    if (length > 33) {
+    if (length > 34) {
         // Added a setting that is alphabetically before 'public_hash'? then you need to increment this counter.
         // Item at index x is the public hash, which is always different
-        settingsArray[33] = publicHashSettingMatcher;
+        settingsArray[34] = publicHashSettingMatcher;
     }
 
-    if (length > 67) {
+    if (length > 68) {
         // Added a setting that is alphabetically before 'labs'? then you need to increment this counter.
         // Item at index x is the lab settings, which changes as we add and remove features
-        settingsArray[67] = labsSettingMatcher;
+        settingsArray[68] = labsSettingMatcher;
     }
 
     return settingsArray;
@@ -735,6 +736,91 @@ describe('Settings API', function () {
                 });
 
             emailMockReceiver.assertSentEmailCount(0);
+        });
+    });
+
+    describe('publicSiteAccess limit', function () {
+        function stubPublicSiteAccessDisabled(disabled) {
+            // Stub the singleton directly rather than driving the limit through configUtils +
+            // limits.init(). The hostSettings.limits config is registered once at boot from the
+            // `@tryghost/limit-service` allowlist; bumps of that package are owned by Renovate
+            // so this PR cannot rely on `publicSiteAccess` being a recognised name yet.
+            sinon.stub(limits, 'isDisabled').withArgs('publicSiteAccess').returns(disabled);
+        }
+
+        it('marks is_private and password as is_read_only when the limit is disabled', async function () {
+            stubPublicSiteAccessDisabled(true);
+
+            const response = await agent.get('settings/').expectStatus(200);
+            const byKey = Object.fromEntries(response.body.settings.map(s => [s.key, s]));
+
+            assert.equal(byKey.is_private.is_read_only, true);
+            assert.equal(byKey.password.is_read_only, true);
+        });
+
+        it('rejects external attempts to set is_private = false', async function () {
+            stubPublicSiteAccessDisabled(true);
+            sinon.stub(logging, 'error');
+
+            await agent.put('settings/')
+                .body({
+                    settings: [{key: 'is_private', value: false}]
+                })
+                .expectStatus(403)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                });
+        });
+
+        it('rejects external attempts to change the access code', async function () {
+            stubPublicSiteAccessDisabled(true);
+            sinon.stub(logging, 'error');
+
+            await agent.put('settings/')
+                .body({
+                    settings: [{key: 'password', value: 'attacker-chosen-code'}]
+                })
+                .expectStatus(403)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                });
+        });
+
+        it('regenerates the access code server-side when settings edits are locked', async function () {
+            stubPublicSiteAccessDisabled(true);
+            const passwordSetting = await models.Settings.findOne({key: 'password'}, {context: {internal: true}});
+
+            try {
+                const response = await agent.post('settings/access_code/regenerate/')
+                    .body({password: 'caller-chosen-code'})
+                    .expectStatus(200);
+
+                const byKey = Object.fromEntries(response.body.settings.map(s => [s.key, s]));
+                assert.equal(typeof byKey.password.value, 'string');
+                assert.match(byKey.password.value, /^[a-z]+\d{3}$/);
+                assert.notEqual(byKey.password.value, 'caller-chosen-code');
+                assert.equal(byKey.password.is_read_only, true);
+
+                emailMockReceiver.assertSentEmailCount(0);
+            } finally {
+                const originalPasswordSetting = passwordSetting.toJSON();
+                await models.Base.knex('settings').where({key: 'password'}).update({value: originalPasswordSetting.value});
+                settingsCache.set('password', originalPasswordSetting);
+            }
+        });
+
+        it('does not mark is_private or password as is_read_only when the limit is not disabled', async function () {
+            stubPublicSiteAccessDisabled(false);
+
+            const response = await agent.get('settings/').expectStatus(200);
+            const byKey = Object.fromEntries(response.body.settings.map(s => [s.key, s]));
+
+            assert.notEqual(byKey.is_private.is_read_only, true);
+            assert.notEqual(byKey.password.is_read_only, true);
         });
     });
 

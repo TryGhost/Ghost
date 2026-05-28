@@ -139,6 +139,27 @@ export const openLinksInNewTab = (content: string) => {
     return div.innerHTML;
 };
 
+export const enforceVideoCardInlinePlayback = (content: string) => {
+    const div = document.createElement('div');
+    div.innerHTML = content;
+
+    const videos = div.querySelectorAll('.kg-video-card video');
+
+    for (let i = 0; i < videos.length; i++) {
+        const video = videos[i] as HTMLVideoElement;
+        video.setAttribute('playsinline', '');
+        video.setAttribute('webkit-playsinline', '');
+        video.setAttribute('x5-playsinline', '');
+
+        if (video.hasAttribute('autoplay')) {
+            video.setAttribute('muted', '');
+            video.muted = true;
+        }
+    }
+
+    return div.innerHTML;
+};
+
 export const formatFollowNumber = (n: number) => {
     if (n < 10000) {
         return n.toLocaleString();

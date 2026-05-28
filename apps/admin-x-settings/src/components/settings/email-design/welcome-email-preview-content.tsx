@@ -1,3 +1,4 @@
+// NOTE: this has been copy-pasted into apps/posts/src/views/Automations/components/email-design/welcome-email-preview-content.tsx because we need to support the email design modal in both the settings app and the posts app until Automations GAs
 import CoverImage from '../../../assets/images/email-design-user-image.jpg';
 import React from 'react';
 import {cn} from '@tryghost/shade/utils';

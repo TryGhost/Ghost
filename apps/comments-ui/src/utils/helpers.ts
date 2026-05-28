@@ -8,6 +8,11 @@ export function buildCommentPermalink(baseUrl: string, commentId: string): strin
     return `${cleanUrl}#${COMMENT_HASH_PREFIX}${commentId}`;
 }
 
+export function buildCommentsRootPermalink(baseUrl: string): string {
+    const cleanUrl = baseUrl.replace(/#.*$/, '');
+    return `${cleanUrl}#ghost-comments`;
+}
+
 export function parseCommentIdFromHash(hash: string): string | null {
     const regex = new RegExp(`^#${COMMENT_HASH_PREFIX}([a-f0-9]+)$`, 'i');
     const match = hash.match(regex);
@@ -18,37 +23,10 @@ export function flattenComments(comments: Comment[]): Comment[] {
     return comments.flatMap(comment => [comment, ...(comment.replies || [])]);
 }
 
-export type ThreadedReply = Comment & {
-    nestedReplies: ThreadedReply[];
-};
-
-export function buildThreadedReplies(threadParentComment: Comment): ThreadedReply[] {
-    const replies = threadParentComment.replies || [];
-    const byId = new Map<string, ThreadedReply>();
-
-    replies.forEach((reply) => {
-        byId.set(reply.id, {...reply, nestedReplies: []});
-    });
-
-    const topLevelReplies: ThreadedReply[] = [];
-
-    replies.forEach((reply) => {
-        const threadedReply = byId.get(reply.id);
-        const parentReply = reply.in_reply_to_id ? byId.get(reply.in_reply_to_id) : null;
-
-        if (!threadedReply) {
-            return;
-        }
-
-        if (parentReply && parentReply.id !== threadedReply.id) {
-            parentReply.nestedReplies.push(threadedReply);
-        } else {
-            topLevelReplies.push(threadedReply);
-        }
-    });
-
-    return topLevelReplies;
-}
+export const MOBILE_MAX_THREAD_DEPTH = 3;
+export const DESKTOP_MAX_THREAD_DEPTH = 4;
+// Note, this should be the same as breakpoint defined in Tailwind config
+export const MOBILE_BREAKPOINT = 480;
 
 export function findCommentById(comments: Comment[], id: string): Comment | undefined {
     return comments.find(comment => comment?.id === id)
@@ -170,7 +148,7 @@ export function getMemberInitialsFromComment(comment: Comment, t: TranslationFun
 // Rudimentary check for screen width
 // Note, this should be the same as breakpoint defined in Tailwind config
 export function isMobile() {
-    return (Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) < 480);
+    return (Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) < MOBILE_BREAKPOINT);
 }
 
 export function isCommentPublished(comment: Comment) {
@@ -208,6 +186,14 @@ export const getScrollToPosition = (element: HTMLElement) => {
     return y;
 };
 
+const getCenterScrollPosition = (element: HTMLElement) => {
+    const yMin = getScrollToPosition(element);
+    const yMax = yMin + element.offsetHeight;
+    const yCenter = (yMin + yMax) / 2;
+
+    return yCenter - window.innerHeight / 2;
+};
+
 /**
  * Scroll to an element that is in an iframe, only if it is outside the current viewport
  */
@@ -230,14 +216,20 @@ export const scrollToElement = (element: HTMLElement) => {
 
     if (yMin - offset < viewPortYMin || yMax + offset > viewPortYMax) {
         // Center the form in the viewport
-        const yCenter = (yMin + yMax) / 2;
-
         window.scrollTo({
-            top: yCenter - viewportHeight / 2,
+            top: getCenterScrollPosition(element),
             left: 0,
             behavior: 'smooth'
         });
     }
+};
+
+export const scrollToElementInstantly = (element: HTMLElement) => {
+    window.scrollTo({
+        top: getCenterScrollPosition(element),
+        left: 0,
+        behavior: 'auto'
+    });
 };
 
 export function getCommentInReplyToSnippet(comment: {html?: string}): string {

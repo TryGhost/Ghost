@@ -14,7 +14,7 @@ const t = require('../../../../core/frontend/helpers/t');
 const {setupI18nTest, initLocale} = require('../../../utils/i18n-test-utils');
 
 describe('{{content}} helper', function () {
-    before(async function () {
+    beforeAll(async function () {
         hbs.express4({partialsDir: [configUtils.config.get('paths').helperTemplates]});
 
         const cachePartials = promisify(hbs.cachePartials.bind(hbs));
@@ -84,7 +84,7 @@ describe('{{content}} helper', function () {
 });
 
 describe('{{content}} helper with no access', function () {
-    before(async function () {
+    beforeAll(async function () {
         hbs.express4({partialsDir: [configUtils.config.get('paths').helperTemplates]});
 
         const cachePartials = promisify(hbs.cachePartials.bind(hbs));
@@ -106,7 +106,7 @@ describe('{{content}} helper with no access', function () {
             let optionsData;
             let i18nSetup;
 
-            before(function () {
+            beforeAll(function () {
                 i18nSetup = setupI18nTest({useNewTranslation, locale: 'en'});
             });
 
@@ -115,7 +115,7 @@ describe('{{content}} helper with no access', function () {
                 initLocale({useNewTranslation, locale: 'en'});
             });
 
-            after(function () {
+            afterAll(function () {
                 i18nSetup.teardown();
                 sinon.restore();
             });
@@ -221,7 +221,7 @@ describe('{{content}} helper with no access', function () {
 
 describe('{{content}} helper with custom template', function () {
     let optionsData;
-    before(async function () {
+    beforeAll(async function () {
         hbs.express4({partialsDir: [path.resolve(__dirname, './test_tpl')]});
 
         const cachePartials = promisify(hbs.cachePartials.bind(hbs));
