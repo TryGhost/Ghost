@@ -11,20 +11,7 @@ import { useNotificationsCountForUser } from "@tryghost/activitypub/api";
 import NetworkIcon from "./icons/network-icon";
 import { NavMenuItem } from "./nav-menu-item";
 import { useIsActiveLink } from "./use-is-active-link";
-
-function getAdminToolbarUrl(url?: string) {
-    if (!url) {
-        return undefined;
-    }
-
-    try {
-        const siteUrl = new URL(url);
-        siteUrl.searchParams.set("admin", "1");
-        return siteUrl.href;
-    } catch {
-        return url;
-    }
-}
+import { getAdminToolbarUrl } from "@/utils/admin-toolbar-url";
 
 function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const { data: currentUser } = useCurrentUser();

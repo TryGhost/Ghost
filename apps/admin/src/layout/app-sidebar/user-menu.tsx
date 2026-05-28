@@ -12,20 +12,7 @@ import { UserMenuItem } from "./user-menu-item";
 import { UserMenuAvatar } from "./user-menu-avatar";
 import { UserMenuHeader } from "./user-menu-header";
 import { Link } from "@tryghost/admin-x-framework";
-
-function getAdminToolbarUrl(url: string) {
-    if (!url) {
-        return "";
-    }
-
-    try {
-        const siteUrl = new URL(url);
-        siteUrl.searchParams.set("admin", "1");
-        return siteUrl.href;
-    } catch {
-        return url;
-    }
-}
+import { getAdminToolbarUrl } from "@/utils/admin-toolbar-url";
 
 function UserMenuProfile() {
     const currentUser = useCurrentUser();
