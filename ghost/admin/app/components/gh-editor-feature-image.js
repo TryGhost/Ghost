@@ -20,6 +20,8 @@ function isLexicalPlainTextSpan(element) {
 }
 
 function normalizeCaptionHtml(html) {
+    // Lexical wraps plain text in spans with `white-space: pre-wrap` on load.
+    // Ignore those wrappers so API-loaded captions do not mark the post as unsaved.
     const cleanedHtml = cleanCaptionHtml(html);
     const domParser = new DOMParser();
     const doc = domParser.parseFromString(cleanedHtml, 'text/html');
