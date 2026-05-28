@@ -54,7 +54,8 @@ const PRIVATE_FEATURES = [
     'indexnow',
     'pictureImageFormats',
     'smarterCounts',
-    'llmsTxt'
+    'llmsTxt',
+    'editorPresence'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

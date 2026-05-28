@@ -1,0 +1,101 @@
+/* Presence avatars — editor header (md) and post-list rows (sm). */
+
+.gh-presence-avatars {
+    display: inline-flex;
+    align-items: center;
+}
+
+.gh-presence-avatars--md {
+    align-self: center;
+    pointer-events: auto;
+}
+
+/* Right-hand cluster of the editor header: avatars + publish buttons
+   share a flex container so they wrap together. The small-screen
+   margin clears the absolutely-positioned settings menu toggle. */
+.gh-editor-header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    pointer-events: auto;
+}
+
+@media (max-width: 500px) {
+    .gh-editor-header-right {
+        margin-right: 76px;
+    }
+}
+
+.gh-presence-avatars--sm {
+    margin-right: 12px;
+    align-self: center;
+}
+
+.gh-presence-avatar {
+    position: relative;
+    border-radius: 50%;
+    background: #738a94;
+    color: #fff;
+    border: 2px solid #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    margin-left: -8px;
+    cursor: default;
+}
+
+.gh-presence-avatar:first-child {
+    margin-left: 0;
+}
+
+.gh-presence-avatars--md .gh-presence-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+}
+
+.gh-presence-avatars--sm .gh-presence-avatar {
+    width: 26px;
+    height: 26px;
+    font-size: 10px;
+}
+
+/* Idle: peer connected but not active. Dim the visual content only
+   (img/initials), not the whole avatar — CSS opacity propagates to
+   the subtree and would also dim the GhTooltip child. */
+.gh-presence-avatar--idle img,
+.gh-presence-avatar--idle .gh-presence-avatar-initials {
+    opacity: 0.45;
+    transition: opacity 200ms ease;
+}
+
+.gh-presence-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.gh-presence-avatar-initials {
+    line-height: 1;
+}
+
+/* Overflow chip — Notion-style "+N" after the visible stack. Plain
+   text rather than another circle so it doesn't compete with the
+   avatars visually. */
+.gh-presence-avatars-overflow {
+    position: relative;
+    margin-left: 6px;
+    color: var(--midgrey);
+    font-weight: 500;
+    cursor: default;
+}
+
+.gh-presence-avatars--md .gh-presence-avatars-overflow {
+    font-size: 13px;
+}
+
+.gh-presence-avatars--sm .gh-presence-avatars-overflow {
+    font-size: 11px;
+}

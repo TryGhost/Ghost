@@ -4,6 +4,9 @@ const {http} = require('@tryghost/api-framework');
 const auth = require('../../../../services/auth');
 const apiMw = require('../../middleware');
 const mw = require('./middleware');
+const presenceStream = require('./lib/presence-stream');
+const presenceEnter = require('./lib/presence-enter');
+const presenceLeave = require('./lib/presence-leave');
 
 const shared = require('../../../shared');
 
@@ -24,6 +27,11 @@ module.exports = function apiRoutes() {
 
     // ## Ghost Explore
     router.get('/explore', mw.authAdminApi, http(api.explore.read));
+
+    // ## Presence (editorPresence labs flag; handlers 404 when off)
+    router.get('/presence/stream', mw.authAdminApi, presenceStream);
+    router.post('/presence/posts/:id/enter', mw.authAdminApi, presenceEnter);
+    router.post('/presence/posts/:id/leave', mw.authAdminApi, presenceLeave);
 
     // ## Posts
     router.get('/posts', mw.authAdminApi, http(api.posts.browse));

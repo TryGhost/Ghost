@@ -67,6 +67,10 @@ const features: Feature[] = [{
     title: 'LLMs.txt',
     description: 'Serve llms.txt, per-entry markdown exports, and Accept: text/markdown content negotiation for AI and LLM tooling',
     flag: 'llmsTxt'
+}, {
+    title: 'Editor presence',
+    description: 'Show avatars in the editor header and the post list for staff currently editing a post.',
+    flag: 'editorPresence'
 }];
 
 const AlphaFeatures: React.FC = () => {

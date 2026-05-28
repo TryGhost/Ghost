@@ -997,7 +997,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     fill: var(--darkgrey);
 }
 
-@media (max-width: 500px) {
+@media (max-width: 768px) {
     .gh-editor-back-button span {
         display: none;
     }

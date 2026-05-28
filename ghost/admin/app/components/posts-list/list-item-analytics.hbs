@@ -330,6 +330,11 @@
             {{/if}}
         </div>
 
+        {{!-- Presence column --}}
+        {{#if (feature 'editorPresence')}}
+            <GhPresenceAvatars @postId={{@post.id}} @size="sm" />
+        {{/if}}
+
         {{!-- Button column --}}
         {{#if @post.hasAnalyticsPage }}
             <a href="#/posts/analytics/{{@post.id}}" class="permalink gh-list-data gh-post-list-button" title="">
