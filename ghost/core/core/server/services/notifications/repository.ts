@@ -47,9 +47,11 @@ export interface NotificationRepositoryDeps {
 }
 
 /**
- * Stores notifications in the `notifications` setting as a JSON array. Callers
- * work with individual notifications; the array representation never leaves
- * this class.
+ * Stores notifications in the `notifications` setting as a JSON array. Writes
+ * the whole collection at once; callers read it, build the desired final state
+ * in memory, and replace. Per-item write methods are deliberately absent so
+ * callers cannot accidentally loop one-at-a-time, which on this storage shape
+ * (one settings row holding all notifications) is N writes of an N-sized blob.
  */
 export class NotificationRepository {
     private readonly settingsCache: SettingsCache;
@@ -75,35 +77,16 @@ export class NotificationRepository {
         }));
     }
 
-    getById(id: string): StoredNotification | null {
-        return this.getAll().find(notification => notification.id === id) ?? null;
-    }
-
-    async add(notification: StoredNotification): Promise<void> {
-        await this.persist([...this.getAll(), notification]);
-    }
-
-    async edit(notification: StoredNotification): Promise<void> {
-        const next = this.getAll().map(
-            existing => (existing.id === notification.id ? notification : existing)
+    async replaceAll(notifications: StoredNotification[]): Promise<void> {
+        await this.getSettingsBREADService().edit(
+            [{key: SETTINGS_KEY, value: notifications}],
+            INTERNAL_CONTEXT
         );
-        await this.persist(next);
-    }
-
-    async deleteById(id: string): Promise<void> {
-        await this.persist(this.getAll().filter(notification => notification.id !== id));
     }
 
     async deleteAll(): Promise<void> {
         await this.settingsModel.edit(
             [{key: SETTINGS_KEY, value: '[]'}],
-            INTERNAL_CONTEXT
-        );
-    }
-
-    private async persist(notifications: StoredNotification[]): Promise<void> {
-        await this.getSettingsBREADService().edit(
-            [{key: SETTINGS_KEY, value: notifications}],
             INTERNAL_CONTEXT
         );
     }

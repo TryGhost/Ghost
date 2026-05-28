@@ -45,56 +45,26 @@ describe('NotificationRepository', function () {
         });
     });
 
-    describe('getById', function () {
-        it('returns the matching notification', function () {
-            const {repository} = build([{id: 'a'}, {id: 'b'}]);
-            assert.equal(repository.getById('b').id, 'b');
-        });
-
-        it('returns null when there is no match', function () {
-            const {repository} = build([{id: 'a'}]);
-            assert.equal(repository.getById('missing'), null);
-        });
-    });
-
-    describe('add', function () {
-        it('appends the notification and persists the full set', async function () {
+    describe('replaceAll', function () {
+        it('persists the supplied collection through the settings BREAD service', async function () {
             const {repository, breadEdit} = build([{id: 'a', addedAt: '2021-03-17T01:41:20.906Z'}]);
 
-            await repository.add({id: 'b'});
+            await repository.replaceAll([{id: 'b'}, {id: 'c'}]);
 
             sinon.assert.calledOnce(breadEdit);
-            const persisted = breadEdit.args[0][0][0].value;
-            assert.deepEqual(persisted.map((n: {id: string}) => n.id), ['a', 'b']);
+            assert.deepEqual(breadEdit.args[0][0], [{
+                key: 'notifications',
+                value: [{id: 'b'}, {id: 'c'}]
+            }]);
+            assert.deepEqual(breadEdit.args[0][1], {context: {internal: true}});
         });
-    });
 
-    describe('edit', function () {
-        it('replaces the matching notification by id', async function () {
-            const {repository, breadEdit} = build([
-                {id: 'a', seen: false, addedAt: '2021-03-17T01:41:20.906Z'},
-                {id: 'b', seen: false, addedAt: '2021-03-17T01:41:20.906Z'}
-            ]);
+        it('can persist an empty collection', async function () {
+            const {repository, breadEdit} = build([{id: 'a'}]);
 
-            await repository.edit({id: 'a', seen: true});
+            await repository.replaceAll([]);
 
-            const persisted = breadEdit.args[0][0][0].value;
-            assert.equal(persisted.find((n: {id: string}) => n.id === 'a').seen, true);
-            assert.equal(persisted.find((n: {id: string}) => n.id === 'b').seen, false);
-        });
-    });
-
-    describe('deleteById', function () {
-        it('removes the matching notification and persists the rest', async function () {
-            const {repository, breadEdit} = build([
-                {id: 'a', addedAt: '2021-03-17T01:41:20.906Z'},
-                {id: 'b', addedAt: '2021-03-17T01:41:20.906Z'}
-            ]);
-
-            await repository.deleteById('a');
-
-            const persisted = breadEdit.args[0][0][0].value;
-            assert.deepEqual(persisted.map((n: {id: string}) => n.id), ['b']);
+            assert.deepEqual(breadEdit.args[0][0][0].value, []);
         });
     });
 

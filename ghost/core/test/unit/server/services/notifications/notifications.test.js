@@ -7,22 +7,15 @@ const moment = require('moment');
 const {Notifications} = require('../../../../../core/server/services/notifications/notifications');
 const {owner} = require('../../../../utils/fixtures/context');
 
-// In-memory stand-in for NotificationRepository. getAll/getById read the
-// backing store; add/edit/deleteById are sinon stubs that also mutate it, so
-// call counts can be asserted while reads stay consistent.
+// In-memory stand-in for NotificationRepository. getAll reads the backing
+// store; replaceAll is a sinon stub that also overwrites it, so call counts
+// and arguments can be asserted while reads stay consistent.
 function fakeRepository(initial = []) {
     let store = initial.slice();
     return {
         getAll: () => store.map(notification => ({...notification})),
-        getById: id => store.find(notification => notification.id === id) ?? null,
-        add: sinon.stub().callsFake(async (notification) => {
-            store.push(notification);
-        }),
-        edit: sinon.stub().callsFake(async (notification) => {
-            store = store.map(existing => (existing.id === notification.id ? notification : existing));
-        }),
-        deleteById: sinon.stub().callsFake(async (id) => {
-            store = store.filter(notification => notification.id !== id);
+        replaceAll: sinon.stub().callsFake(async (notifications) => {
+            store = notifications.map(notification => ({...notification}));
         }),
         deleteAll: sinon.stub().resolves()
     };
@@ -52,7 +45,8 @@ describe('Notifications Service', function () {
             });
 
             assert.equal(notificationsToAdd.length, 1);
-            sinon.assert.calledOnce(repository.add);
+            sinon.assert.calledOnce(repository.replaceAll);
+            assert.equal(repository.replaceAll.args[0][0].length, 1);
 
             const createdNotification = notificationsToAdd[0];
             assertExists(createdNotification.id);
@@ -75,7 +69,7 @@ describe('Notifications Service', function () {
             });
 
             assert.equal(notificationsToAdd.length, 0);
-            sinon.assert.notCalled(repository.add);
+            sinon.assert.notCalled(repository.replaceAll);
         });
 
         it('removes existing release notifications when a new release arrives', async function () {
@@ -86,8 +80,11 @@ describe('Notifications Service', function () {
                 notifications: [{custom: false, message: 'new release'}]
             });
 
-            sinon.assert.calledOnceWithExactly(repository.deleteById, 'old-release');
-            sinon.assert.calledOnce(repository.add);
+            sinon.assert.calledOnce(repository.replaceAll);
+            const persisted = repository.replaceAll.args[0][0];
+            assert.equal(persisted.length, 1);
+            assert.equal(persisted[0].message, 'new release');
+            assert.equal(persisted[0].custom, false);
         });
     });
 
@@ -146,10 +143,11 @@ describe('Notifications Service', function () {
 
             await notificationSvc.destroy({notificationId: 'a', user: owner});
 
-            sinon.assert.calledOnce(repository.edit);
-            const edited = repository.edit.args[0][0];
-            assert.equal(edited.seen, true);
-            assert.ok(edited.seenBy.includes(owner.id));
+            sinon.assert.calledOnce(repository.replaceAll);
+            const persisted = repository.replaceAll.args[0][0];
+            assert.equal(persisted.length, 1);
+            assert.equal(persisted[0].seen, true);
+            assert.ok(persisted[0].seenBy.includes(owner.id));
         });
 
         it('rejects dismissal of a non-dismissible notification', async function () {
@@ -160,7 +158,7 @@ describe('Notifications Service', function () {
                 notificationSvc.destroy({notificationId: 'a', user: owner}),
                 /do not have permission/i
             );
-            sinon.assert.notCalled(repository.edit);
+            sinon.assert.notCalled(repository.replaceAll);
         });
 
         it('rejects dismissal of a notification that does not exist', async function () {
@@ -171,7 +169,33 @@ describe('Notifications Service', function () {
                 notificationSvc.destroy({notificationId: 'missing', user: owner}),
                 /does not exist/i
             );
-            sinon.assert.notCalled(repository.edit);
+            sinon.assert.notCalled(repository.replaceAll);
+        });
+    });
+
+    describe('destroyAll', function () {
+        it('marks every stored notification as seen in a single write', async function () {
+            const repository = fakeRepository([
+                {id: 'a', message: 'one'},
+                {id: 'b', message: 'two'}
+            ]);
+            const notificationSvc = new Notifications({repository});
+
+            await notificationSvc.destroyAll();
+
+            sinon.assert.calledOnce(repository.replaceAll);
+            const persisted = repository.replaceAll.args[0][0];
+            assert.equal(persisted.length, 2);
+            assert.ok(persisted.every(n => n.seen === true));
+        });
+
+        it('does nothing when there are no notifications', async function () {
+            const repository = fakeRepository([]);
+            const notificationSvc = new Notifications({repository});
+
+            await notificationSvc.destroyAll();
+
+            sinon.assert.notCalled(repository.replaceAll);
         });
     });
 });

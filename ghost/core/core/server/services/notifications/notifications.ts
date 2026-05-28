@@ -27,6 +27,14 @@ interface IncomingNotification {
     [key: string]: unknown;
 }
 
+function markAsSeenBy(notification: StoredNotification, user: NotificationUser): void {
+    notification.seen = true;
+    if (!notification.seenBy) {
+        notification.seenBy = [];
+    }
+    notification.seenBy.push(user.id);
+}
+
 export class Notifications {
     repository: NotificationRepository;
 
@@ -68,37 +76,36 @@ export class Notifications {
             addedAt: moment().toDate()
         };
 
-        let notificationsToAdd: StoredNotification[] = notifications
-            .filter(notification => !(notification.id && this.repository.getById(notification.id)))
-            .map(notification => Object.assign({}, defaults, notification, overrides));
+        const existing = this.repository.getAll();
+        const existingIds = new Set(existing.map(n => n.id));
 
-        // CASE: remove any existing release notifications if a new release notification comes in
-        if (notifications.some(notification => !notification.custom)) {
-            for (const release of this.repository.getAll().filter(n => !n.custom)) {
-                await this.repository.deleteById(release.id);
-            }
+        let toAdd: StoredNotification[] = notifications
+            .filter(n => !(n.id && existingIds.has(n.id)))
+            .map(n => Object.assign({}, defaults, n, overrides));
+
+        // CASE: only the most recent incoming release notification is kept
+        const incomingReleases = toAdd.filter(n => !n.custom);
+        if (incomingReleases.length > 1) {
+            toAdd = toAdd.filter(n => n.custom);
+            toAdd.push(_.orderBy(incomingReleases, 'created_at', 'desc')[0]);
         }
 
-        if (!notificationsToAdd.length) {
+        if (!toAdd.length) {
             return [];
         }
 
-        // CASE: only the most recent incoming release notification is kept
-        const releaseNotificationsToAdd = notificationsToAdd.filter(notification => !notification.custom);
-        if (releaseNotificationsToAdd.length > 1) {
-            notificationsToAdd = notificationsToAdd.filter(notification => notification.custom);
-            notificationsToAdd.push(_.orderBy(releaseNotificationsToAdd, 'created_at', 'desc')[0]);
-        }
+        // CASE: remove any existing release notifications if a new release notification comes in
+        const incomingHasRelease = notifications.some(n => !n.custom);
+        const kept = incomingHasRelease ? existing.filter(n => n.custom) : existing;
 
-        for (const notification of notificationsToAdd) {
-            await this.repository.add(notification);
-        }
+        await this.repository.replaceAll([...kept, ...toAdd]);
 
-        return notificationsToAdd;
+        return toAdd;
     }
 
     async destroy({notificationId, user}: {notificationId: string; user: NotificationUser}): Promise<void> {
-        const notification = this.repository.getById(notificationId);
+        const notifications = this.repository.getAll();
+        const notification = notifications.find(n => n.id === notificationId);
 
         if (!notification) {
             throw new errors.NotFoundError({
@@ -118,19 +125,19 @@ export class Notifications {
 
         // @NOTE: We mark as seen rather than remove, otherwise the notification
         //        would be served again on the next update check.
-        notification.seen = true;
-        if (!notification.seenBy) {
-            notification.seenBy = [];
-        }
-        notification.seenBy.push(user.id);
+        markAsSeenBy(notification, user);
 
-        await this.repository.edit(notification);
+        await this.repository.replaceAll(notifications);
     }
 
     async destroyAll(): Promise<void> {
-        for (const notification of this.repository.getAll()) {
-            notification.seen = true;
-            await this.repository.edit(notification);
+        const notifications = this.repository.getAll();
+        if (!notifications.length) {
+            return;
         }
+        for (const notification of notifications) {
+            notification.seen = true;
+        }
+        await this.repository.replaceAll(notifications);
     }
 }
