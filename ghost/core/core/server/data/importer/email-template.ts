@@ -1,4 +1,17 @@
-module.exports = ({result, siteUrl, postsUrl, emailRecipient}) => `
+import type {ReadonlyDeep} from 'type-fest';
+
+type EmailTemplateData = ReadonlyDeep<{
+    result: {
+        data?: {
+            errors?: unknown[];
+        };
+    };
+    siteUrl: URL;
+    postsUrl: URL;
+    emailRecipient: string;
+}>;
+
+export const emailTemplate = ({result, siteUrl, postsUrl, emailRecipient}: EmailTemplateData): string => `
 <!doctype html>
 <html>
   <head>
@@ -160,4 +173,3 @@ module.exports = ({result, siteUrl, postsUrl, emailRecipient}) => `
   </body>
 </html>
 `;
-
