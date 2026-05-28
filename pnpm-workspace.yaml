@@ -36,13 +36,13 @@ catalog:
   '@tanstack/react-query': 4.36.1
   '@tryghost/color-utils': 0.2.18
   '@tryghost/custom-fonts': 1.0.10
-  '@tryghost/debug': 2.2.0
+  '@tryghost/debug': 2.2.1
   '@tryghost/helpers': 1.1.105
   '@tryghost/kg-clean-basic-html': 4.3.1
   '@tryghost/kg-converters': 1.2.1
   '@tryghost/koenig-lexical': 1.8.1
   '@tryghost/limit-service': 1.5.5
-  '@tryghost/logging': 4.2.0
+  '@tryghost/logging': 4.2.1
   '@tryghost/nql': 0.12.10
   '@tryghost/nql-lang': 0.6.4
   '@tryghost/string': 0.3.4
