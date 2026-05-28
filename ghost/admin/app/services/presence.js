@@ -44,6 +44,18 @@ export default class PresenceService extends Service {
             return;
         }
         this._source.onmessage = event => this._handleMessage(event);
+        this._source.onopen = () => {
+            // Fires on initial connect AND after EventSource auto-reconnect.
+            // Re-send the current enter so peers see the user without
+            // waiting for the next autosave heartbeat.
+            if (this._connectingErrorLogged) {
+                this._connectingErrorLogged = false;
+            }
+            this._connectingErrorCount = 0;
+            if (this._currentPostId) {
+                this._sendEnter(this._currentPostId);
+            }
+        };
         this._source.onerror = () => {
             // EventSource auto-reconnects on transient errors. Terminal
             // closures (401/403/404) leave readyState === CLOSED; log
@@ -107,6 +119,10 @@ export default class PresenceService extends Service {
             this.leavePost(this._currentPostId);
         }
         this._currentPostId = postId;
+        this._sendEnter(postId);
+    }
+
+    _sendEnter(postId) {
         const enterUrl = this.ghostPaths.url.api('presence', 'posts', postId, 'enter');
         fetch(enterUrl, {method: 'POST', credentials: 'include', keepalive: true})
             .catch(err => console.warn('[presence] enter failed', err)); // eslint-disable-line no-console

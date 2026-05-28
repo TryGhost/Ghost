@@ -30,9 +30,13 @@ const postsService = getPostServiceInstance();
  * so a failure in labs lookup, the user model, or the presence cache
  * never breaks the post API response.
  *
+ * Skipped for staff API token contexts — automation (Zapier, Make,
+ * scripts) updating posts in bulk would otherwise show phantom
+ * "currently editing" avatars across the org.
+ *
  * @param {Object} frame API framework frame
- * @param {{id: string}} postDto DTO returned by postsService.editPost
- *     (model.toJSON output, not the Bookshelf model)
+ * @param {{id: string, authors?: Array<{id: string}>}} postDto
+ *     DTO returned by postsService.editPost (model.toJSON output)
  */
 function markPostPresence(frame, postDto) {
     try {
@@ -42,11 +46,21 @@ function markPostPresence(frame, postDto) {
         if (!frame || !frame.user || !postDto || !postDto.id) {
             return;
         }
-        postPresence.mark(postDto.id, {
-            id: frame.user.id,
-            name: frame.user.get('name'),
-            profileImage: frame.user.get('profile_image')
-        });
+        if (frame.options && frame.options.context && frame.options.context.api_key) {
+            return;
+        }
+        const authorIds = Array.isArray(postDto.authors)
+            ? postDto.authors.map(author => author && author.id).filter(Boolean)
+            : [];
+        postPresence.mark(
+            postDto.id,
+            {
+                id: frame.user.id,
+                name: frame.user.get('name'),
+                profileImage: frame.user.get('profile_image')
+            },
+            {authorIds}
+        );
     } catch (err) {
         logging.warn({err}, 'Failed to record post presence');
     }

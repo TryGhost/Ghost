@@ -11,15 +11,29 @@ export default class GhPresenceAvatars extends Component {
     @service presence;
 
     get _allUsers() {
-        return this.presence.usersForPost(this.args.postId).map((user) => {
+        const raw = this.presence.usersForPost(this.args.postId);
+
+        // Detect first-name collisions so we can disambiguate ("Alex S."
+        // / "Alex J.") rather than rendering two identical tooltips.
+        const firstNameCounts = new Map();
+        const parsed = raw.map((user) => {
             const name = user.name || 'Someone';
             const parts = name.split(/\s+/).filter(Boolean);
             const firstName = parts[0] || name;
-            const tooltip = firstName.length > 20 ? `${firstName.slice(0, 20)}…` : firstName;
+            firstNameCounts.set(firstName, (firstNameCounts.get(firstName) || 0) + 1);
+            return {user, name, parts, firstName};
+        });
+
+        return parsed.map(({user, name, parts, firstName}) => {
+            let display = firstName;
+            if (firstNameCounts.get(firstName) > 1 && parts.length > 1) {
+                display = `${firstName} ${parts[parts.length - 1][0].toUpperCase()}.`;
+            }
+            const tooltip = display.length > 20 ? `${display.slice(0, 20)}…` : display;
             return {
                 id: user.id,
                 name,
-                firstName,
+                firstName: display,
                 tooltipText: user.isIdle ? `${tooltip} (idle)` : tooltip,
                 profileImage: user.profileImage || null,
                 isIdle: Boolean(user.isIdle),
