@@ -111,6 +111,12 @@ const features: Feature[] = [
       'Let AI agents pay for access to paid-members markdown (.md) URLs via Stripe Machine Payments Protocol',
     flag: 'machinePayments',
   },
+  {
+    title: 'Editor presence',
+    description:
+      'Show avatars in the editor header and the post list for staff currently editing a post.',
+    flag: 'editorPresence',
+  },
 ];
 
 const AlphaFeatures: React.FC = () => {

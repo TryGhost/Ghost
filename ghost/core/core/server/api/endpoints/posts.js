@@ -1,5 +1,8 @@
 const urlUtils = require('../../../shared/url-utils').default;
+const labs = require('../../../shared/labs');
+const logging = require('@tryghost/logging');
 const models = require('../../models');
+const postPresence = require('../../services/post-presence');
 const { getCSVExportFileName } = require('./utils/csv-export-filename');
 const getPostServiceInstance = require('../../services/posts/posts-service-instance');
 const contentImportService = require('../../services/content-import');
@@ -24,6 +27,29 @@ const allowedIncludes = [
 const unsafeAttrs = ['status', 'authors', 'visibility'];
 
 const postsService = getPostServiceInstance();
+
+/**
+ * Best-effort presence heartbeat fired from edit autosaves. Wrapped
+ * so a failure in labs lookup, the user model, or the presence cache
+ * never breaks the post API response.
+ */
+function markPostPresence(frame, model) {
+    try {
+        if (!labs.isSet('editorPresence')) {
+            return;
+        }
+        if (!frame || !frame.user || !model || !model.id) {
+            return;
+        }
+        postPresence.mark(model.id, {
+            id: frame.user.id,
+            name: frame.user.get('name'),
+            profileImage: frame.user.get('profile_image')
+        });
+    } catch (err) {
+        logging.warn({err}, 'Failed to record post presence');
+    }
+}
 
 /**
  * @param {string} event
@@ -167,7 +193,7 @@ const controller = {
     permissions: {
       unsafeAttrs: unsafeAttrs,
     },
-    query(frame) {
+    async query(frame) {
       return postsService.readPost(frame);
     },
   },
@@ -247,6 +273,8 @@ const controller = {
           }
         },
       });
+
+      markPostPresence(frame, model);
 
       return model;
     },
