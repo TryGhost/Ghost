@@ -170,3 +170,5 @@ minimumReleaseAgeExclude:
   - "@vitest/coverage-v8@4.1.7"
   # Renovate security update: vitest@4.1.7
   - vitest@4.1.7
+  # Renovate security update: @hookform/resolvers@5.4.0
+  - "@hookform/resolvers@5.4.0"

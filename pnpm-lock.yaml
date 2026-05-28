@@ -320,8 +320,8 @@ importers:
   apps/activitypub:
     dependencies:
       '@hookform/resolvers':
-        specifier: 5.2.2
-        version: 5.2.2(react-hook-form@7.72.1(react@18.3.1))
+        specifier: 5.4.0
+        version: 5.4.0(react-hook-form@7.72.1(react@18.3.1))
       '@radix-ui/react-form':
         specifier: 0.1.8
         version: 0.1.8(@types/react-dom@18.3.7(@types/react@18.3.28))(@types/react@18.3.28)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1301,8 +1301,8 @@ importers:
   apps/shade:
     dependencies:
       '@hookform/resolvers':
-        specifier: 5.2.2
-        version: 5.2.2(react-hook-form@7.72.1(react@18.3.1))
+        specifier: 5.4.0
+        version: 5.4.0(react-hook-form@7.72.1(react@18.3.1))
       '@number-flow/react':
         specifier: 0.6.0
         version: 0.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -4887,8 +4887,8 @@ packages:
       react: ^16 || ^17 || ^18
       react-dom: ^16 || ^17 || ^18
 
-  '@hookform/resolvers@5.2.2':
-    resolution: {integrity: sha512-A/IxlMLShx3KjV/HeTcTfaMxdwy690+L/ZADoeaTltLx+CVuzkeVIPuybK3jrRfw7YZnmdKsVVHAlEPIAEUNlA==}
+  '@hookform/resolvers@5.4.0':
+    resolution: {integrity: sha512-EIsqr/t/qbinPIhGjMdtvutIN1Kk4uwbROE9/UQ93CAVGR7GkA7Y92+fX80OzXi/OB67jVFYwKGO1WzkxmkFZw==}
     peerDependencies:
       react-hook-form: ^7.55.0
 
@@ -24483,7 +24483,7 @@ snapshots:
       react: 17.0.2
       react-dom: 17.0.2(react@17.0.2)
 
-  '@hookform/resolvers@5.2.2(react-hook-form@7.72.1(react@18.3.1))':
+  '@hookform/resolvers@5.4.0(react-hook-form@7.72.1(react@18.3.1))':
     dependencies:
       '@standard-schema/utils': 0.3.0
       react-hook-form: 7.72.1(react@18.3.1)
