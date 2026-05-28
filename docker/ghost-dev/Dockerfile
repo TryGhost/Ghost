@@ -48,7 +48,8 @@ ENV portal__url=/ghost/assets/portal/portal.min.js \
     sodoSearch__url=/ghost/assets/sodo-search/sodo-search.min.js \
     sodoSearch__styles=/ghost/assets/sodo-search/main.css \
     signupForm__url=/ghost/assets/signup-form/signup-form.min.js \
-    announcementBar__url=/ghost/assets/announcement-bar/announcement-bar.min.js
+    announcementBar__url=/ghost/assets/announcement-bar/announcement-bar.min.js \
+    adminToolbar__url=/ghost/assets/admin-toolbar/admin-toolbar.min.js
 
 # Source code will be mounted from host at /home/ghost/ghost/core
 # This allows the Ghost dev script to pick up file changes for hot-reload

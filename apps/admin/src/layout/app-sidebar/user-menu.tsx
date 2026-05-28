@@ -12,6 +12,7 @@ import { UserMenuItem } from "./user-menu-item";
 import { UserMenuAvatar } from "./user-menu-avatar";
 import { UserMenuHeader } from "./user-menu-header";
 import { Link } from "@tryghost/admin-x-framework";
+import { getAdminToolbarUrl } from "@/utils/admin-toolbar-url";
 
 function UserMenuProfile() {
     const currentUser = useCurrentUser();
@@ -188,7 +189,7 @@ function UserMenu(props: UserMenuProps) {
 function ContributorUserMenu() {
     const currentUser = useCurrentUser();
     const site = useBrowseSite();
-    const siteUrl = site.data?.site.url ?? "";
+    const siteUrl = getAdminToolbarUrl(site.data?.site.url ?? "");
 
     return (
         <DropdownMenu>

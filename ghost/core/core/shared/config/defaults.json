@@ -269,6 +269,10 @@
         "url": "https://cdn.jsdelivr.net/ghost/comments-ui@~{version}/umd/comments-ui.min.js",
         "version": "1.5"
     },
+    "adminToolbar": {
+        "url": "https://cdn.jsdelivr.net/ghost/admin-toolbar@~{version}/umd/admin-toolbar.min.js",
+        "version": "0.1"
+    },
     "signupForm": {
         "url": "https://cdn.jsdelivr.net/ghost/signup-form@~{version}/umd/signup-form.min.js",
         "version": "0.3"
