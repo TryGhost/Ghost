@@ -1,4 +1,4 @@
-const {agentProvider, fixtureManager} = require('../../utils/e2e-framework');
+const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
 
 describe('Presence API', function () {
     let agent;
@@ -6,6 +6,10 @@ describe('Presence API', function () {
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users', 'posts');
+    });
+
+    afterEach(function () {
+        mockManager.restore();
     });
 
     describe('As Unauthorized User', function () {
@@ -73,6 +77,34 @@ describe('Presence API', function () {
             await agent
                 .post(`/presence/posts/${ownPostId}/leave/`)
                 .expectStatus(204);
+        });
+    });
+
+    describe('With editorPresence labs flag disabled', function () {
+        before(async function () {
+            await agent.loginAsOwner();
+        });
+
+        beforeEach(function () {
+            mockManager.mockLabsDisabled('editorPresence');
+        });
+
+        it('returns 404 from /presence/stream', async function () {
+            await agent.get('/presence/stream/').expectStatus(404);
+        });
+
+        it('returns 404 from /presence/posts/:id/enter', async function () {
+            const postId = fixtureManager.get('posts', 0).id;
+            await agent
+                .post(`/presence/posts/${postId}/enter/`)
+                .expectStatus(404);
+        });
+
+        it('returns 404 from /presence/posts/:id/leave', async function () {
+            const postId = fixtureManager.get('posts', 0).id;
+            await agent
+                .post(`/presence/posts/${postId}/leave/`)
+                .expectStatus(404);
         });
     });
 });
