@@ -246,8 +246,10 @@ describe('PostPresence security: per-subscriber filtering', function () {
     });
 
     describe('presence-enter handler authorizes via the Post model', function () {
-        it('returns 403 when Post.findOne throws (permission denied)', async function () {
-            sinon.stub(models.Post, 'findOne').rejects(new Error('No permissions to read post.'));
+        it('returns 403 when Post.findOne throws a permission error', async function () {
+            const permError = new Error('No permissions to read post.');
+            permError.errorType = 'NoPermissionError';
+            sinon.stub(models.Post, 'findOne').rejects(permError);
             const markSpy = sinon.spy(postPresence, 'mark');
             const res = {status: sinon.stub().returnsThis(), end: sinon.stub()};
 
@@ -257,6 +259,23 @@ describe('PostPresence security: per-subscriber filtering', function () {
             );
 
             sinon.assert.calledWith(res.status, 403);
+            sinon.assert.notCalled(markSpy);
+        });
+
+        it('returns 204 (best-effort, no mark) when Post.findOne throws a non-permission error', async function () {
+            // Transient errors (DB blip, etc.) must not be misreported
+            // as 403. The presence flow degrades silently — no avatar
+            // appears for the caller, but the editor continues normally.
+            sinon.stub(models.Post, 'findOne').rejects(new Error('Connection reset'));
+            const markSpy = sinon.spy(postPresence, 'mark');
+            const res = {status: sinon.stub().returnsThis(), end: sinon.stub()};
+
+            await presenceEnter(
+                {params: {id: 'p1'}, user: {id: 'u1', get: () => null}},
+                res
+            );
+
+            sinon.assert.calledWith(res.status, 204);
             sinon.assert.notCalled(markSpy);
         });
 

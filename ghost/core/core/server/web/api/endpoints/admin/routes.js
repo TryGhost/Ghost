@@ -29,9 +29,9 @@ module.exports = function apiRoutes() {
     router.get('/explore', mw.authAdminApi, http(api.explore.read));
 
     // ## Presence (editorPresence labs flag; handlers 404 when off)
-    router.get('/presence/stream', mw.authAdminApi, presenceStream);
-    router.post('/presence/posts/:id/enter', mw.authAdminApi, presenceEnter);
-    router.post('/presence/posts/:id/leave', mw.authAdminApi, presenceLeave);
+    router.get('/presence/stream', mw.authAdminApi, shared.middleware.brute.presenceLimiter, presenceStream);
+    router.post('/presence/posts/:id/enter', mw.authAdminApi, shared.middleware.brute.presenceLimiter, presenceEnter);
+    router.post('/presence/posts/:id/leave', mw.authAdminApi, shared.middleware.brute.presenceLimiter, presenceLeave);
 
     // ## Posts
     router.get('/posts', mw.authAdminApi, http(api.posts.browse));

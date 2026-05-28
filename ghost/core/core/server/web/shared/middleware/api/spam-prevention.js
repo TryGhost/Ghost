@@ -26,7 +26,8 @@ const messages = {
         context: 'Too many verification code attempts.'
     },
     webmentionsBlock: 'Too many mention attempts',
-    emailPreviewBlock: 'Only 10 test emails can be sent per hour'
+    emailPreviewBlock: 'Only 10 test emails can be sent per hour',
+    presenceBlock: 'Too many editor presence requests, please slow down'
 };
 let spamPrivateBlock = spam.private_block || {};
 let spamGlobalBlock = spam.global_block || {};
@@ -39,6 +40,7 @@ let spamMemberLogin = spam.member_login || {};
 let spamContentApiKey = spam.content_api_key || {};
 let spamWebmentionsBlock = spam.webmentions_block || {};
 let spamEmailPreviewBlock = spam.email_preview_block || {};
+let spamPresenceBlock = spam.presence_block || {};
 let spamOtcVerificationEnumeration = spam.otc_verification_enumeration || {};
 let spamOtcVerification = spam.otc_verification || {};
 
@@ -56,6 +58,7 @@ let sendVerificationCodeInstance;
 let userVerificationInstance;
 let contentApiKeyInstance;
 let emailPreviewBlockInstance;
+let presenceBlockInstance;
 let otcVerificationEnumerationInstance;
 let otcVerificationInstance;
 
@@ -165,6 +168,38 @@ const webmentionsBlock = () => {
     );
 
     return webmentionsBlockInstance;
+};
+
+// Per-staff-user limiter for editor presence POSTs (/enter, /leave).
+// Generous because legitimate use fires on every editor navigation:
+// 600 requests / hour / user is roughly 1 every 6s, comfortably above
+// expected editorial usage but tight enough to cap a runaway client.
+const presenceBlock = () => {
+    const ExpressBrute = require('express-brute');
+    const BruteKnex = require('brute-knex');
+    const db = require('../../../../data/db');
+
+    store = store || new BruteKnex({
+        tablename: 'brute',
+        createTable: false,
+        knex: db.knex
+    });
+
+    presenceBlockInstance = presenceBlockInstance || new ExpressBrute(store,
+        extend({
+            attachResetToRequest: false,
+            failCallback(req, res, next) {
+                return next(new errors.TooManyRequestsError({
+                    message: messages.presenceBlock
+                }));
+            },
+            handleStoreError: handleStoreError,
+            freeRetries: 600,
+            lifetime: 60 * 60
+        }, pick(spamPresenceBlock, spamConfigKeys))
+    );
+
+    return presenceBlockInstance;
 };
 
 const emailPreviewBlock = () => {
@@ -509,6 +544,7 @@ module.exports = {
     contentApiKey: contentApiKey,
     webmentionsBlock: webmentionsBlock,
     emailPreviewBlock: emailPreviewBlock,
+    presenceBlock: presenceBlock,
     reset: () => {
         store = undefined;
         memoryStore = undefined;
@@ -524,6 +560,8 @@ module.exports = {
         contentApiKeyInstance = undefined;
         otcVerificationEnumerationInstance = undefined;
         otcVerificationInstance = undefined;
+        emailPreviewBlockInstance = undefined;
+        presenceBlockInstance = undefined;
 
         spam = config.get('spam') || {};
         spamPrivateBlock = spam.private_block || {};

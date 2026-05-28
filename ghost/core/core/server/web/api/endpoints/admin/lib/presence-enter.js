@@ -34,8 +34,15 @@ module.exports = async function presenceEnter(req, res) {
                 }
             );
         } catch (err) {
-            // Permission denied or other lookup failure — don't mark.
-            res.status(403).end();
+            // Only permission failures should be reported as 403. Other
+            // failures (transient DB, etc.) are logged and treated as
+            // best-effort — never block the editor flow.
+            if (err && (err.errorType === 'NoPermissionError' || err.statusCode === 403)) {
+                res.status(403).end();
+                return;
+            }
+            logging.warn({err, postId, userId: user.id}, 'presence-enter: post lookup failed');
+            res.status(204).end();
             return;
         }
         if (!post) {
