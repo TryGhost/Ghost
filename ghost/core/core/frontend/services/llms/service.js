@@ -1,20 +1,49 @@
+<<<<<<< HEAD
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 
+=======
+const settingsCache = require('../../../shared/settings-cache');
+const config = require('../../../shared/config');
+const urlUtils = require('../../../shared/url-utils');
+const models = require('../../../server/models');
+const urlService = require('../../../server/services/url');
+const events = require('../../../server/lib/common/events');
+const htmlToPlaintext = require('@tryghost/html-to-plaintext');
+const routing = require('../routing');
+const {api} = require('../proxy');
+>>>>>>> de4e22fd52 (✨ Added premium markdown URLs to llms.txt)
 const {
     getMarkdownUrl,
     renderEntryMarkdownBody,
     truncateDescription
 } = require('./markdown');
 
+<<<<<<< HEAD
 const DEFAULT_BUDGET = 5 * 1024 * 1024;
 const FULL_PAGE_SIZE = 100;
+=======
+const FIVE_MIB = 5 * 1024 * 1024;
+>>>>>>> de4e22fd52 (✨ Added premium markdown URLs to llms.txt)
 const PAYWALL_MARKER = '<!--members-only-->';
 
 function createLlmsService({settingsCache, labs, config, urlServiceFacade, models, api, fullTxtBudget}) {
     const BUDGET = fullTxtBudget || DEFAULT_BUDGET;
 
+<<<<<<< HEAD
     function isEnabled() {
         return labs.isSet('llmsTxt') && !settingsCache.get('is_private') && settingsCache.get('llms_enabled') !== false;
+=======
+        this.events.on('site.changed', this.invalidate);
+        this.events.on('routers.reset', this.invalidate);
+        this.events.on('url.added', this.invalidate);
+        this.events.on('url.removed', this.invalidate);
+        this.events.on('settings.title.edited', this.invalidate);
+        this.events.on('settings.description.edited', this.invalidate);
+        this.events.on('settings.meta_description.edited', this.invalidate);
+        this.events.on('settings.llms_enabled.edited', this.invalidate);
+        this.events.on('settings.machine_payments_enabled.edited', this.invalidate);
+        this.events.on('settings.edited', this.handleSettingEdited);
+>>>>>>> de4e22fd52 (✨ Added premium markdown URLs to llms.txt)
     }
 
     function isMachinePaymentsEnabled() {
@@ -59,11 +88,40 @@ function createLlmsService({settingsCache, labs, config, urlServiceFacade, model
             return null;
         }
 
+<<<<<<< HEAD
         const posts = await fetchPostIndexEntries();
         const sections = [
             buildHeader({includeDescription: false}),
             buildIndexSection(posts)
         ].filter(Boolean);
+=======
+        if (this.cache.has(key)) {
+            return this.cache.get(key);
+        }
+
+        const content = await builder();
+        this.cache.set(key, content);
+        return content;
+    }
+
+    async #buildLlmsTxt() {
+        const [pages, posts] = await Promise.all([
+            this.#fetchPublicEntries('page'),
+            this.#fetchPostIndexEntries()
+        ]);
+
+        const sections = [
+            this.#buildHeader({includeDescription: false}),
+            '## Pages',
+            this.#buildIndexSection(pages),
+            '',
+            '## Posts',
+            this.#buildIndexSection(posts),
+            '',
+            '## Optional',
+            this.#buildOptionalSection()
+        ];
+>>>>>>> de4e22fd52 (✨ Added premium markdown URLs to llms.txt)
 
         return `${sections.join('\n\n').trim()}\n`;
     }
@@ -111,7 +169,11 @@ function createLlmsService({settingsCache, labs, config, urlServiceFacade, model
         return {output, wasTruncated};
     }
 
+<<<<<<< HEAD
     function buildHeader({includeDescription = true} = {}) {
+=======
+    #buildHeader({includeDescription = true} = {}) {
+>>>>>>> de4e22fd52 (✨ Added premium markdown URLs to llms.txt)
         const siteTitle = settingsCache.get('title') || new URL(config.get('url')).hostname;
         const siteDescription = settingsCache.get('meta_description') || settingsCache.get('description');
 
@@ -131,7 +193,11 @@ function createLlmsService({settingsCache, labs, config, urlServiceFacade, model
         }
 
         return entries.map((entry) => {
+<<<<<<< HEAD
             const description = buildIndexDescription(entry);
+=======
+            const description = this.#buildIndexDescription(entry);
+>>>>>>> de4e22fd52 (✨ Added premium markdown URLs to llms.txt)
             const linkLine = `- [${entry.title}](${getMarkdownUrl(entry.url)})`;
 
             if (!description) {
@@ -142,8 +208,38 @@ function createLlmsService({settingsCache, labs, config, urlServiceFacade, model
         }).join('\n');
     }
 
+<<<<<<< HEAD
     function buildIndexDescription(entry) {
         const description = entry.custom_excerpt || entry.excerpt || getIndexPlaintext(entry);
+=======
+    #buildIndexDescription(entry) {
+        const description = entry.custom_excerpt || entry.excerpt || this.#getIndexPlaintext(entry);
+
+        return truncateDescription(description);
+    }
+
+    #getIndexPlaintext(entry) {
+        if (!this.#isPaidMembersOnlyEntry(entry)) {
+            return entry.plaintext;
+        }
+
+        if (!entry.html) {
+            return null;
+        }
+
+        const paywallIndex = entry.html.indexOf(PAYWALL_MARKER);
+
+        if (paywallIndex === -1) {
+            return null;
+        }
+
+        return htmlToPlaintext.excerpt(entry.html.slice(0, paywallIndex));
+    }
+
+    #buildOptionalSection() {
+        const optionalLinks = [];
+        const rssUrl = routing.registry.getRssUrl({absolute: true});
+>>>>>>> de4e22fd52 (✨ Added premium markdown URLs to llms.txt)
 
         return truncateDescription(description);
     }
@@ -216,6 +312,7 @@ function createLlmsService({settingsCache, labs, config, urlServiceFacade, model
         return entries;
     }
 
+<<<<<<< HEAD
     async function fetchPostIndexEntries() {
         const publicEntries = await fetchPublicEntries('post');
 
@@ -231,10 +328,28 @@ function createLlmsService({settingsCache, labs, config, urlServiceFacade, model
     }
 
     async function fetchMachinePaymentPostEntries() {
+=======
+    async #fetchPostIndexEntries() {
+        const publicEntries = await this.#fetchPublicEntries('post');
+
+        if (settingsCache.get('machine_payments_enabled') !== true) {
+            return publicEntries;
+        }
+
+        const paidEntries = await this.#fetchMachinePaymentPostEntries();
+
+        return [...publicEntries, ...paidEntries].sort((left, right) => {
+            return this.#getPublishedOrderValue(right) - this.#getPublishedOrderValue(left);
+        });
+    }
+
+    async #fetchMachinePaymentPostEntries() {
+>>>>>>> de4e22fd52 (✨ Added premium markdown URLs to llms.txt)
         const page = await models.Post.findPage({
             limit: 'all',
             order: 'published_at desc',
             filter: 'status:published+visibility:[paid,tiers]+type:post',
+<<<<<<< HEAD
             columns: ['id', 'title', 'slug', 'html', 'custom_excerpt', 'visibility', 'published_at', 'type'],
             withRelated: ['tiers']
         });
@@ -247,10 +362,27 @@ function createLlmsService({settingsCache, labs, config, urlServiceFacade, model
     }
 
     function getPublishedOrderValue(entry) {
+=======
+            columns: ['id', 'title', 'html', 'custom_excerpt', 'visibility', 'published_at'],
+            withRelated: ['tiers']
+        });
+
+        const entries = page.data.map((model) => {
+            const entry = model.toJSON();
+            entry.url = urlService.getUrlByResourceId(entry.id, {absolute: true});
+            return entry;
+        }).filter(entry => this.#isPaidMembersOnlyEntry(entry) && entry.url && !entry.url.endsWith('/404/'));
+
+        return entries;
+    }
+
+    #getPublishedOrderValue(entry) {
+>>>>>>> de4e22fd52 (✨ Added premium markdown URLs to llms.txt)
         const publishedAt = entry.published_at ? new Date(entry.published_at).getTime() : 0;
         return Number.isNaN(publishedAt) ? 0 : publishedAt;
     }
 
+<<<<<<< HEAD
     async function fetchFullEntries(type, pageNum) {
         const result = await models.Post.findPage({
             limit: FULL_PAGE_SIZE,
@@ -273,6 +405,9 @@ function createLlmsService({settingsCache, labs, config, urlServiceFacade, model
     }
 
     function isPaidMembersOnlyEntry(entry) {
+=======
+    #isPaidMembersOnlyEntry(entry) {
+>>>>>>> de4e22fd52 (✨ Added premium markdown URLs to llms.txt)
         if (entry.visibility === 'paid') {
             return true;
         }
@@ -283,8 +418,11 @@ function createLlmsService({settingsCache, labs, config, urlServiceFacade, model
 
         return Array.isArray(entry.tiers) && entry.tiers.length > 0 && entry.tiers.every(tier => tier.type === 'paid');
     }
+<<<<<<< HEAD
 
     return {isEnabled, getLlmsTxt, getLlmsFullTxt, fetchPublicEntry, fetchPaidEntry};
+=======
+>>>>>>> de4e22fd52 (✨ Added premium markdown URLs to llms.txt)
 }
 
 module.exports = {createLlmsService};
