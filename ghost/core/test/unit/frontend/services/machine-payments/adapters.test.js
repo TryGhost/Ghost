@@ -75,4 +75,20 @@ describe('Unit: frontend/services/machine-payments/adapters', function () {
             network: 'tempo'
         }));
     });
+
+    it('uses the site theme session secret for MPP challenges when no MPP secret is configured', async function () {
+        const settingsCache = {
+            get: sinon.stub().withArgs('theme_session_secret').returns('test-theme-session-secret')
+        };
+        const addressProvider = {
+            getAddress: sinon.stub().resolves('0x0000000000000000000000000000000000000001')
+        };
+        const adapter = new MppAdapter({addressProvider, settingsCache});
+
+        const response = await adapter.handle(new Request('https://example.com/paid.md'), terms, paidResponse);
+
+        assert.equal(response.status, 402);
+        assert.match(response.headers.get('WWW-Authenticate'), /^Payment /);
+        sinon.assert.calledWith(settingsCache.get, 'theme_session_secret');
+    });
 });

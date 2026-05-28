@@ -1,4 +1,5 @@
 const config = require('../../../../shared/config');
+const settingsCache = require('../../../../shared/settings-cache');
 
 const TEMPO_USDC = '0x20c000000000000000000000b9537d11c60e8b50';
 
@@ -7,8 +8,9 @@ function formatAmount(amount) {
 }
 
 class MppAdapter {
-    constructor({addressProvider} = {}) {
+    constructor({addressProvider, settingsCache: settings = settingsCache} = {}) {
         this.addressProvider = addressProvider;
+        this.settingsCache = settings;
     }
 
     canHandle(request) {
@@ -32,7 +34,7 @@ class MppAdapter {
                     testnet: config.get('machinePayments:mpp:testnet') !== false
                 })
             ],
-            secretKey: config.get('machinePayments:mpp:secretKey')
+            secretKey: this.#getSecretKey()
         });
 
         const payment = await mppx.tempo.charge({
@@ -48,6 +50,10 @@ class MppAdapter {
             status: 200,
             headers: responseData.headers
         }));
+    }
+
+    #getSecretKey() {
+        return config.get('machinePayments:mpp:secretKey') || this.settingsCache.get('theme_session_secret');
     }
 }
 
