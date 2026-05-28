@@ -5,7 +5,7 @@ type Breakpoint = {name: string; cssVar: string};
 function BreakpointRow({breakpoint}: {breakpoint: Breakpoint}) {
     const value = useComputedValue(breakpoint.cssVar);
     return (
-        <tr className="border-b border-border-subtle last:border-b-0">
+        <tr className="border-b border-border-default last:border-b-0">
             <td className="py-2 pr-6"><code className="text-sm font-medium text-text-primary">{breakpoint.name}</code></td>
             <td className="py-2 pr-6"><code className="text-2xs text-text-secondary">{breakpoint.cssVar}</code></td>
             <td className="py-2"><code className="text-2xs text-text-tertiary">{value || '—'}</code></td>

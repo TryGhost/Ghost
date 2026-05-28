@@ -152,7 +152,7 @@ const ColorPickerField: React.FC<ColorPickerFieldProps> = ({title, value, onChan
                         )}
                         <button
                             aria-label="Pick color"
-                            className="relative size-6 cursor-pointer rounded-full border border-grey-250 dark:border-grey-800"
+                            className="relative size-6 cursor-pointer rounded-full border border-grey-200 dark:border-grey-800"
                             type="button"
                         >
                             <div className="absolute inset-0 rounded-full bg-[conic-gradient(hsl(360,100%,50%),hsl(315,100%,50%),hsl(270,100%,50%),hsl(225,100%,50%),hsl(180,100%,50%),hsl(135,100%,50%),hsl(90,100%,50%),hsl(45,100%,50%),hsl(0,100%,50%))]" />

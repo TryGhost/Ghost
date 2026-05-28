@@ -81,6 +81,382 @@ describe('Actions', function () {
         });
     });
 
+    describe('addReply', function () {
+        it('adds the created reply when the replies refetch is stale', async function () {
+            const newReply = makeComment({
+                id: 'new-reply',
+                html: '<p>New reply</p>',
+                parent_id: 'comment-1'
+            });
+            const existingReply = makeComment({
+                id: 'existing-reply',
+                html: '<p>Existing reply</p>',
+                parent_id: 'comment-1'
+            });
+            const state = {
+                commentCount: 1,
+                comments: [
+                    makeComment({
+                        id: 'comment-1',
+                        replies: [],
+                        count: {
+                            replies: 0,
+                            likes: 0
+                        }
+                    })
+                ]
+            };
+            const api = {
+                comments: {
+                    add: vi.fn(() => Promise.resolve({comments: [newReply]})),
+                    replies: vi.fn(() => Promise.resolve({comments: [existingReply]}))
+                }
+            };
+
+            const newState = await Actions.addReply({
+                state,
+                api,
+                data: {
+                    parent: state.comments[0],
+                    reply: {
+                        post_id: 'post-1',
+                        html: '<p>New reply</p>',
+                        status: 'published'
+                    }
+                }
+            });
+
+            expect(api.comments.add).toHaveBeenCalledWith({
+                comment: {
+                    post_id: 'post-1',
+                    html: '<p>New reply</p>',
+                    status: 'published',
+                    parent_id: 'comment-1'
+                }
+            });
+            expect(api.comments.replies).toHaveBeenCalledWith({commentId: 'comment-1', limit: 'all'});
+            expect(newState.comments[0].replies.map(reply => reply.id)).toEqual(['existing-reply', 'new-reply']);
+            expect(newState.comments[0].count.replies).toBe(2);
+            expect(newState.commentCount).toBe(2);
+            expect(newState.commentIdToScrollTo).toBe('new-reply');
+        });
+
+        it('does not duplicate the created reply when the replies refetch includes it', async function () {
+            const newReply = makeComment({
+                id: 'new-reply',
+                html: '<p>New reply</p>',
+                parent_id: 'comment-1'
+            });
+            const state = {
+                commentCount: 1,
+                comments: [
+                    makeComment({
+                        id: 'comment-1',
+                        replies: [],
+                        count: {
+                            replies: 0,
+                            likes: 0
+                        }
+                    })
+                ]
+            };
+            const api = {
+                comments: {
+                    add: vi.fn(() => Promise.resolve({comments: [newReply]})),
+                    replies: vi.fn(() => Promise.resolve({comments: [newReply]}))
+                }
+            };
+
+            const newState = await Actions.addReply({
+                state,
+                api,
+                data: {
+                    parent: state.comments[0],
+                    reply: {
+                        post_id: 'post-1',
+                        html: '<p>New reply</p>',
+                        status: 'published'
+                    }
+                }
+            });
+
+            expect(newState.comments[0].replies.map(reply => reply.id)).toEqual(['new-reply']);
+            expect(newState.comments[0].count.replies).toBe(1);
+        });
+    });
+
+    describe('deleteComment', function () {
+        it('keeps a deleted reply as a tombstone when it has descendants', async function () {
+            const state = {
+                commentCount: 3,
+                comments: [
+                    makeComment({
+                        id: 'root',
+                        count: {
+                            replies: 2,
+                            direct_replies: 1,
+                            likes: 0
+                        },
+                        replies: [
+                            makeComment({
+                                id: 'reply-1',
+                                status: 'published',
+                                html: '<p>Reply 1</p>',
+                                in_reply_to_id: null
+                            }),
+                            makeComment({
+                                id: 'reply-2',
+                                status: 'published',
+                                html: '<p>Reply 2</p>',
+                                in_reply_to_id: 'reply-1'
+                            })
+                        ]
+                    })
+                ]
+            };
+            const api = {
+                comments: {
+                    edit: vi.fn(() => Promise.resolve())
+                }
+            };
+
+            const newState = await Actions.deleteComment({state, api, data: {id: 'reply-1'}, dispatchAction: vi.fn()});
+
+            expect(api.comments.edit).toHaveBeenCalledWith({
+                comment: {
+                    id: 'reply-1',
+                    status: 'deleted'
+                }
+            });
+            expect(newState.comments[0].replies).toMatchObject([
+                {
+                    id: 'reply-1',
+                    status: 'deleted',
+                    html: null
+                },
+                {
+                    id: 'reply-2',
+                    status: 'published',
+                    in_reply_to_id: 'reply-1'
+                }
+            ]);
+            expect(newState.comments[0].count).toMatchObject({
+                replies: 1,
+                direct_replies: 0
+            });
+        });
+
+        it('removes a deleted reply when it has no descendants', async function () {
+            const state = {
+                commentCount: 2,
+                comments: [
+                    makeComment({
+                        id: 'root',
+                        count: {
+                            replies: 1,
+                            direct_replies: 1,
+                            likes: 0
+                        },
+                        replies: [
+                            makeComment({
+                                id: 'reply-1',
+                                status: 'published',
+                                html: '<p>Reply 1</p>',
+                                in_reply_to_id: null
+                            })
+                        ]
+                    })
+                ]
+            };
+            const api = {
+                comments: {
+                    edit: vi.fn(() => Promise.resolve())
+                }
+            };
+
+            const newState = await Actions.deleteComment({state, api, data: {id: 'reply-1'}, dispatchAction: vi.fn()});
+
+            expect(newState.comments[0].replies).toEqual([]);
+            expect(newState.comments[0].count).toMatchObject({
+                replies: 0,
+                direct_replies: 0
+            });
+        });
+
+        it('decrements direct_replies for direct replies that point to the top-level comment', async function () {
+            const state = {
+                commentCount: 2,
+                comments: [
+                    makeComment({
+                        id: 'root',
+                        count: {
+                            replies: 1,
+                            direct_replies: 1,
+                            likes: 0
+                        },
+                        replies: [
+                            makeComment({
+                                id: 'reply-1',
+                                status: 'published',
+                                html: '<p>Reply 1</p>',
+                                in_reply_to_id: 'root'
+                            })
+                        ]
+                    })
+                ]
+            };
+            const api = {
+                comments: {
+                    edit: vi.fn(() => Promise.resolve())
+                }
+            };
+
+            const newState = await Actions.deleteComment({state, api, data: {id: 'reply-1'}, dispatchAction: vi.fn()});
+
+            expect(newState.comments[0].replies).toEqual([]);
+            expect(newState.comments[0].count).toMatchObject({
+                replies: 0,
+                direct_replies: 0
+            });
+        });
+
+        it('removes ancestor tombstones that lose their visible descendants', async function () {
+            const state = {
+                commentCount: 2,
+                comments: [
+                    makeComment({
+                        id: 'root',
+                        count: {
+                            replies: 1,
+                            direct_replies: 0,
+                            likes: 0
+                        },
+                        replies: [
+                            makeComment({
+                                id: 'reply-1',
+                                status: 'deleted',
+                                html: null,
+                                in_reply_to_id: null
+                            }),
+                            makeComment({
+                                id: 'reply-2',
+                                status: 'published',
+                                html: '<p>Reply 2</p>',
+                                in_reply_to_id: 'reply-1'
+                            })
+                        ]
+                    })
+                ]
+            };
+            const api = {
+                comments: {
+                    edit: vi.fn(() => Promise.resolve())
+                }
+            };
+
+            const newState = await Actions.deleteComment({state, api, data: {id: 'reply-2'}, dispatchAction: vi.fn()});
+
+            expect(newState.comments[0].replies).toEqual([]);
+            expect(newState.comments[0].count).toMatchObject({
+                replies: 0,
+                direct_replies: 0
+            });
+        });
+
+        it('keeps hidden admin replies when their last descendant is deleted', async function () {
+            const state = {
+                isAdmin: true,
+                commentCount: 2,
+                comments: [
+                    makeComment({
+                        id: 'root',
+                        count: {
+                            replies: 1,
+                            direct_replies: 0,
+                            likes: 0
+                        },
+                        replies: [
+                            makeComment({
+                                id: 'reply-1',
+                                status: 'hidden',
+                                html: '<p>Hidden admin-visible reply</p>',
+                                in_reply_to_id: null
+                            }),
+                            makeComment({
+                                id: 'reply-2',
+                                status: 'published',
+                                html: '<p>Reply 2</p>',
+                                in_reply_to_id: 'reply-1'
+                            })
+                        ]
+                    })
+                ]
+            };
+            const api = {
+                comments: {
+                    edit: vi.fn(() => Promise.resolve())
+                }
+            };
+
+            const newState = await Actions.deleteComment({state, api, data: {id: 'reply-2'}, dispatchAction: vi.fn()});
+
+            expect(newState.comments[0].replies).toMatchObject([
+                {
+                    id: 'reply-1',
+                    status: 'hidden',
+                    html: '<p>Hidden admin-visible reply</p>'
+                }
+            ]);
+            expect(newState.comments[0].count).toMatchObject({
+                replies: 0,
+                direct_replies: 0
+            });
+        });
+
+        it('removes unrelated tombstones without loaded descendants', async function () {
+            const state = {
+                commentCount: 2,
+                comments: [
+                    makeComment({
+                        id: 'root',
+                        count: {
+                            replies: 1,
+                            direct_replies: 1,
+                            likes: 0
+                        },
+                        replies: [
+                            makeComment({
+                                id: 'reply-1',
+                                status: 'deleted',
+                                html: null,
+                                in_reply_to_id: null
+                            }),
+                            makeComment({
+                                id: 'reply-2',
+                                status: 'published',
+                                html: '<p>Reply 2</p>',
+                                in_reply_to_id: null
+                            })
+                        ]
+                    })
+                ]
+            };
+            const api = {
+                comments: {
+                    edit: vi.fn(() => Promise.resolve())
+                }
+            };
+
+            const newState = await Actions.deleteComment({state, api, data: {id: 'reply-2'}, dispatchAction: vi.fn()});
+
+            expect(newState.comments[0].replies).toEqual([]);
+            expect(newState.comments[0].count).toMatchObject({
+                replies: 0,
+                direct_replies: 0
+            });
+        });
+    });
+
     describe('updateCommentLikeState', function () {
         it('restores a previous dislike when a like swap is rolled back', async function () {
             const state = {
