@@ -86,6 +86,13 @@ class PostPresenceService {
         this.cleanupIntervalMs = cleanupIntervalMs || Math.max(1000, Math.floor(ttlMs / 6));
         /** @type {Map<string, Map<string, PresenceEntry>>} */
         this._byPostId = new Map();
+        /**
+         * Per-post context (currently just the post's author IDs).
+         * Carried alongside each event so the SSE handler can filter
+         * by subscriber permission without an extra DB hop.
+         * @type {Map<string, {authorIds: string[]}>}
+         */
+        this._postContexts = new Map();
         this._emitter = new EventEmitter();
         this._emitter.setMaxListeners(1000);
         this._cleanupTimer = null;
@@ -122,15 +129,26 @@ class PostPresenceService {
      * heartbeats are silent on the bus so autosaves don't fan out N×M
      * events to every connected admin tab.
      *
+     * `postContext.authorIds` is captured per post and carried on every
+     * event for that post, so the SSE handler can filter what each
+     * subscriber sees by their permission to read the post. Callers
+     * (markPostPresence on the edit path, presence-enter) are expected
+     * to pass it; if omitted we keep whatever was previously stored.
+     *
      * @param {string} postId
      * @param {PresenceUser} user
+     * @param {{authorIds?: string[]}} [postContext]
      */
-    mark(postId, user) {
+    mark(postId, user, postContext) {
         if (!postId || !user || !user.id) {
             return;
         }
         if (!this._cleanupTimer) {
             this.start();
+        }
+
+        if (postContext && Array.isArray(postContext.authorIds)) {
+            this._postContexts.set(postId, {authorIds: postContext.authorIds.slice()});
         }
 
         const now = Date.now();
@@ -165,16 +183,23 @@ class PostPresenceService {
             return;
         }
         entries.delete(userId);
+        // Publish BEFORE dropping the postContext: subscribers who can
+        // see this post need the "users: []" event to clear stale
+        // avatars, and the filter depends on authorIds still being
+        // available at emit time.
+        this._publish(postId, entries);
         if (entries.size === 0) {
             this._byPostId.delete(postId);
+            this._postContexts.delete(postId);
         }
-        this._publish(postId, entries);
     }
 
     /**
-     * Filters stale entries on the way out.
+     * Filters stale entries on the way out. Each post carries its
+     * authorIds so the SSE handler can filter the snapshot by the
+     * subscriber's permission.
      *
-     * @returns {Array<{postId: string, users: PresenceUserView[]}>}
+     * @returns {Array<{postId: string, authorIds: string[], users: PresenceUserView[]}>}
      */
     snapshot() {
         const now = Date.now();
@@ -187,10 +212,15 @@ class PostPresenceService {
                 }
             }
             if (users.length > 0) {
-                out.push({postId, users});
+                out.push({postId, authorIds: this._authorIdsFor(postId), users});
             }
         }
         return out;
+    }
+
+    _authorIdsFor(postId) {
+        const ctx = this._postContexts.get(postId);
+        return ctx && Array.isArray(ctx.authorIds) ? ctx.authorIds.slice() : [];
     }
 
     /**
@@ -213,6 +243,7 @@ class PostPresenceService {
         const event = {
             type: PRESENCE_EVENT_TYPES.POST,
             postId,
+            authorIds: this._authorIdsFor(postId),
             users: entries ? Array.from(entries.values()).map(entry => this._toWireUser(entry)) : []
         };
         try {
@@ -234,10 +265,14 @@ class PostPresenceService {
                 if (!changed) {
                     continue;
                 }
+                // Publish first (see leave() — authorIds must still be
+                // populated at emit time so non-elevated subscribers
+                // who had this post receive the clear).
+                this._publish(postId, entries);
                 if (entries.size === 0) {
                     this._byPostId.delete(postId);
+                    this._postContexts.delete(postId);
                 }
-                this._publish(postId, entries);
             } catch (err) {
                 logging.warn({err, postId}, 'Presence cleanup iteration failed');
             }
