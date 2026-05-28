@@ -1,3 +1,5 @@
+const crypto = require('crypto');
+
 const {combineTransactionalMigrations, addSetting} = require('../../utils');
 
 module.exports = combineTransactionalMigrations(
@@ -18,5 +20,11 @@ module.exports = combineTransactionalMigrations(
         value: 100,
         type: 'number',
         group: 'site'
+    }),
+    addSetting({
+        key: 'machine_payments_secret',
+        value: crypto.randomBytes(64).toString('hex'),
+        type: 'string',
+        group: 'core'
     })
 );

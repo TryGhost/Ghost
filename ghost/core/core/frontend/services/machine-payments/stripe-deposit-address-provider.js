@@ -20,7 +20,14 @@ class StripeDepositAddressProvider {
             return cachedAddress;
         }
 
-        return await this.#createAddress({amount, currency, network});
+        const cacheKey = this.#getDepositAddressCacheKey({amount, currency, network});
+        const pendingAddress = this.cache.get(cacheKey);
+
+        if (pendingAddress) {
+            return pendingAddress;
+        }
+
+        return await this.#createAddress({amount, currency, network, cacheKey});
     }
 
     async #getCachedAddressFromCredential({paymentHeader, request}) {
@@ -67,7 +74,7 @@ class StripeDepositAddressProvider {
         return credential.challenge?.request?.recipient || null;
     }
 
-    async #createAddress({amount, currency, network}) {
+    async #createAddress({amount, currency, network, cacheKey}) {
         const paymentIntent = await this.#getStripe().paymentIntents.create({
             amount,
             currency: currency.toLowerCase(),
@@ -96,7 +103,12 @@ class StripeDepositAddressProvider {
         }
 
         this.cache.set(address, true);
+        this.cache.set(cacheKey, address);
         return address;
+    }
+
+    #getDepositAddressCacheKey({amount, currency, network}) {
+        return `deposit-address:${amount}:${currency.toLowerCase()}:${network}`;
     }
 
     #getStripe() {

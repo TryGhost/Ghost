@@ -261,6 +261,40 @@ describe('Unit: models/settings', function () {
             });
         });
 
+        it('throws when machine payment amount is less than one cent', async function () {
+            await testInvalidSetting({
+                key: 'machine_payments_amount',
+                value: 0,
+                type: 'number',
+                group: 'site'
+            });
+        });
+
+        it('throws when machine payment currency is not a 3 letter ISO currency code', async function () {
+            await testInvalidSetting({
+                key: 'machine_payments_currency',
+                value: 'USDC',
+                type: 'string',
+                group: 'site'
+            });
+        });
+
+        it('does not throw when machine payment settings are valid', async function () {
+            await testValidSetting({
+                key: 'machine_payments_amount',
+                value: 100,
+                type: 'number',
+                group: 'site'
+            });
+
+            await testValidSetting({
+                key: 'machine_payments_currency',
+                value: 'USD',
+                type: 'string',
+                group: 'site'
+            });
+        });
+
         it('throws when stripe_plans has invalid name', async function () {
             await testInvalidSetting({
                 key: 'stripe_plans',

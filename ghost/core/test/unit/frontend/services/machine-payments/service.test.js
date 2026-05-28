@@ -99,6 +99,7 @@ describe('Unit: frontend/services/machine-payments/service', function () {
 
         assert.equal(response.status, 200);
         assert.equal(response.headers.get('payment-response'), 'x402-receipt');
+        assert.equal(response.headers.get('Cache-Control'), 'private, no-store');
         sinon.assert.calledOnce(x402Adapter.handle);
         sinon.assert.notCalled(mppAdapter.handle);
     });
@@ -115,8 +116,40 @@ describe('Unit: frontend/services/machine-payments/service', function () {
 
         assert.equal(response.status, 200);
         assert.equal(response.headers.get('receipt'), 'mpp-receipt');
+        assert.equal(response.headers.get('Cache-Control'), 'private, no-store');
         sinon.assert.notCalled(x402Adapter.handle);
         sinon.assert.calledOnce(mppAdapter.handle);
+    });
+
+    it('returns a partial challenge when one payment rail fails', async function () {
+        x402Adapter.handle.resolves(new Response('', {
+            status: 402,
+            headers: {'payment-required': 'x402-challenge'}
+        }));
+        mppAdapter.handle.rejects(new Error('MPP unavailable'));
+
+        const response = await service.handleRequest(new Request('https://example.com/paid.md'), {
+            body: '# Paid',
+            contentLocation: '/paid.md'
+        });
+
+        assert.equal(response.status, 402);
+        assert.equal(response.headers.get('payment-required'), 'x402-challenge');
+        assert.equal(response.headers.get('WWW-Authenticate'), null);
+    });
+
+    it('returns service unavailable when no payment rail can produce a challenge', async function () {
+        x402Adapter.handle.rejects(new Error('x402 unavailable'));
+        mppAdapter.handle.rejects(new Error('MPP unavailable'));
+
+        const response = await service.handleRequest(new Request('https://example.com/paid.md'), {
+            body: '# Paid',
+            contentLocation: '/paid.md'
+        });
+
+        assert.equal(response.status, 503);
+        assert.equal(response.headers.get('Cache-Control'), 'no-store');
+        assert.match(await response.text(), /Machine payment challenges are temporarily unavailable/);
     });
 
     it('fails closed when machine payments are disabled', async function () {

@@ -44,6 +44,47 @@ describe('Unit: frontend/services/machine-payments/stripe-deposit-address-provid
         sinon.assert.calledOnce(settingsHelpers.getActiveStripeKeys);
     });
 
+    it('reuses pending deposit addresses for the same amount, currency, and network', async function () {
+        sinon.stub(settingsHelpers, 'getActiveStripeKeys').returns({
+            publicKey: 'pk_test_active',
+            secretKey: 'sk_test_active'
+        });
+
+        const createPaymentIntent = sinon.stub().resolves({
+            next_action: {
+                crypto_display_details: {
+                    deposit_addresses: {
+                        base: {
+                            address: '0x0000000000000000000000000000000000000001'
+                        }
+                    }
+                }
+            }
+        });
+        const provider = new StripeDepositAddressProvider({
+            stripeFactory: sinon.stub().returns({
+                paymentIntents: {
+                    create: createPaymentIntent
+                }
+            })
+        });
+
+        const firstAddress = await provider.getAddress({
+            amount: 100,
+            currency: 'USD',
+            network: 'base'
+        });
+        const secondAddress = await provider.getAddress({
+            amount: 100,
+            currency: 'USD',
+            network: 'base'
+        });
+
+        assert.equal(firstAddress, '0x0000000000000000000000000000000000000001');
+        assert.equal(secondAddress, firstAddress);
+        sinon.assert.calledOnce(createPaymentIntent);
+    });
+
     it('throws when there are no active Stripe keys', async function () {
         sinon.stub(settingsHelpers, 'getActiveStripeKeys').returns(null);
         const provider = new StripeDepositAddressProvider({

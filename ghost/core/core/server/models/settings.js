@@ -58,6 +58,7 @@ function parseDefaultSettings() {
         members_private_key: () => getMembersKey('private'),
         members_email_auth_secret: () => crypto.randomBytes(64).toString('hex'),
         members_otc_secret: () => crypto.randomBytes(64).toString('hex'),
+        machine_payments_secret: () => crypto.randomBytes(64).toString('hex'),
         ghost_public_key: () => getGhostKey('public'),
         ghost_private_key: () => getGhostKey('private'),
         site_uuid: () => getOrGenerateSiteUuid(),
@@ -379,6 +380,24 @@ Settings = ghostBookshelf.Model.extend({
                         message: 'Plan interval must be one of: year, month, week or day'
                     });
                 }
+            }
+        },
+        async machine_payments_amount(model) {
+            const value = model.get('value');
+
+            if (!Number.isSafeInteger(value) || value < 1) {
+                throw new errors.ValidationError({
+                    message: 'Machine payments amount must be an integer greater than 0'
+                });
+            }
+        },
+        async machine_payments_currency(model) {
+            const value = model.get('value');
+
+            if (typeof value !== 'string' || !/^[A-Z]{3}$/i.test(value)) {
+                throw new errors.ValidationError({
+                    message: 'Machine payments currency must be a 3 letter ISO currency code'
+                });
             }
         },
         // @TODO: Maybe move some of the logic into the members service, exporting an isValidStripeKey

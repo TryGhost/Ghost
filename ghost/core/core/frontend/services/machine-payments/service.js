@@ -6,6 +6,7 @@ const X402Adapter = require('./adapters/x402-adapter');
 
 const DEFAULT_CURRENCY = 'USD';
 const DEFAULT_AMOUNT = 100;
+const PAID_MARKDOWN_CACHE_CONTROL = 'private, no-store';
 
 function cloneHeaders(headers = {}) {
     return Object.entries(headers).reduce((memo, [key, value]) => {
@@ -57,7 +58,8 @@ class MachinePaymentsService {
         });
         const headers = {
             'Content-Type': 'text/markdown; charset=utf-8',
-            ...cloneHeaders(responseData.headers)
+            ...cloneHeaders(responseData.headers),
+            'Cache-Control': PAID_MARKDOWN_CACHE_CONTROL
         };
         const paidResponse = {
             body: responseData.body,
@@ -65,28 +67,53 @@ class MachinePaymentsService {
         };
 
         if (this.x402Adapter.canHandle(request)) {
-            return await this.x402Adapter.handle(request, terms, paidResponse);
+            return this.#paidContentResponse(await this.x402Adapter.handle(request, terms, paidResponse));
         }
 
         if (this.mppAdapter.canHandle(request)) {
-            return await this.mppAdapter.handle(request, terms, paidResponse);
+            return this.#paidContentResponse(await this.mppAdapter.handle(request, terms, paidResponse));
         }
 
         return await this.#paymentRequiredResponse(request, terms, paidResponse);
     }
 
     async #paymentRequiredResponse(request, terms, paidResponse) {
-        const [x402Response, mppResponse] = await Promise.all([
+        const [x402Result, mppResult] = await Promise.allSettled([
             this.x402Adapter.handle(request, terms, paidResponse),
             this.mppAdapter.handle(request, terms, paidResponse)
         ]);
+        const x402Response = x402Result.status === 'fulfilled' ? x402Result.value : null;
+        const mppResponse = mppResult.status === 'fulfilled' ? mppResult.value : null;
+        const paymentRequired = x402Response?.headers?.get('payment-required');
+        const wwwAuthenticate = mppResponse?.headers?.get('WWW-Authenticate');
+
+        if (!paymentRequired && !wwwAuthenticate) {
+            return new Response(JSON.stringify({
+                type: 'https://paymentauth.org/problems/payment-unavailable',
+                title: 'Machine payment challenges unavailable',
+                status: 503,
+                detail: 'Machine payment challenges are temporarily unavailable.'
+            }), {
+                status: 503,
+                headers: {
+                    'Cache-Control': 'no-store',
+                    'Content-Type': 'application/problem+json'
+                }
+            });
+        }
+
         const headers = new Headers({
             'Cache-Control': 'no-store',
             'Content-Type': 'application/problem+json'
         });
 
-        copyHeader(x402Response.headers, headers, 'payment-required');
-        copyHeader(mppResponse.headers, headers, 'WWW-Authenticate');
+        if (paymentRequired) {
+            headers.set('payment-required', paymentRequired);
+        }
+
+        if (wwwAuthenticate) {
+            headers.set('WWW-Authenticate', wwwAuthenticate);
+        }
 
         return new Response(JSON.stringify({
             type: 'https://paymentauth.org/problems/payment-required',
@@ -98,13 +125,20 @@ class MachinePaymentsService {
             headers
         });
     }
-}
 
-function copyHeader(fromHeaders, toHeaders, headerName) {
-    const value = fromHeaders.get(headerName);
+    #paidContentResponse(response) {
+        if (response.status !== 200) {
+            return response;
+        }
 
-    if (value) {
-        toHeaders.set(headerName, value);
+        const headers = new Headers(response.headers);
+        headers.set('Cache-Control', PAID_MARKDOWN_CACHE_CONTROL);
+
+        return new Response(response.body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers
+        });
     }
 }
 

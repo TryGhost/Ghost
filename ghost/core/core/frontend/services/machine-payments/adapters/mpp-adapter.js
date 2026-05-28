@@ -53,7 +53,7 @@ class MppAdapter {
     }
 
     #getSecretKey() {
-        return config.get('machinePayments:mpp:secretKey') || this.settingsCache.get('theme_session_secret');
+        return config.get('machinePayments:mpp:secretKey') || this.settingsCache.get('machine_payments_secret');
     }
 }
 

@@ -4,6 +4,7 @@ const keyGroupMapping = {
     members_private_key: 'core',
     members_email_auth_secret: 'core',
     members_otc_secret: 'core',
+    machine_payments_secret: 'core',
     db_hash: 'core',
     next_update_check: 'core',
     notifications: 'core',

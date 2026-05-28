@@ -35,13 +35,13 @@ describe('Unit: frontend/services/machine-payments/adapters', function () {
                 kinds: [{
                     x402Version: 2,
                     scheme: 'exact',
-                    network: 'eip155:84532'
+                    network: 'eip155:8453'
                 }],
                 extensions: [],
                 signers: {}
             }),
             verify: sinon.stub().resolves({isValid: false}),
-            settle: sinon.stub().resolves({success: false, transaction: '0x0', network: 'eip155:84532'})
+            settle: sinon.stub().resolves({success: false, transaction: '0x0', network: 'eip155:8453'})
         };
         const adapter = new X402Adapter({addressProvider, facilitatorClient});
 
@@ -76,9 +76,9 @@ describe('Unit: frontend/services/machine-payments/adapters', function () {
         }));
     });
 
-    it('uses the site theme session secret for MPP challenges when no MPP secret is configured', async function () {
+    it('uses the machine payments secret for MPP challenges when no MPP secret is configured', async function () {
         const settingsCache = {
-            get: sinon.stub().withArgs('theme_session_secret').returns('test-theme-session-secret')
+            get: sinon.stub().withArgs('machine_payments_secret').returns('test-machine-payments-setting-secret')
         };
         const addressProvider = {
             getAddress: sinon.stub().resolves('0x0000000000000000000000000000000000000001')
@@ -89,6 +89,6 @@ describe('Unit: frontend/services/machine-payments/adapters', function () {
 
         assert.equal(response.status, 402);
         assert.match(response.headers.get('WWW-Authenticate'), /^Payment /);
-        sinon.assert.calledWith(settingsCache.get, 'theme_session_secret');
+        sinon.assert.calledWith(settingsCache.get, 'machine_payments_secret');
     });
 });
