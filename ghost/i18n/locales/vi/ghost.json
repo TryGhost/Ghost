@@ -1,6 +1,6 @@
 {
-    "{count} month_other": "{count} month_other",
-    "{count} year_other": "{count} year_other",
+    "{count} month_other": "{count} tháng",
+    "{count} year_other": "{count} năm",
     "{date}": "{date}",
     "{tierName} membership": "Thành viên {tierName}",
     "All the best!": "Chúc bạn mọi điều tốt đẹp nhất!",
