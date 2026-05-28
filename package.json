@@ -76,7 +76,7 @@
     "eslint-plugin-react": "7.37.5",
     "husky": "9.1.7",
     "jsonc-parser": "catalog:",
-    "knip": "6.12.0",
+    "knip": "6.14.2",
     "lint-staged": "16.4.0",
     "nx": "22.0.4",
     "rimraf": "6.1.3",
