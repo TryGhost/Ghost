@@ -75,6 +75,7 @@ catalog:
   lucide-react: 0.577.0
   mocha: 11.7.6
   msw: 2.14.6
+  node-html-markdown: 2.0.0
   postcss: 8.5.10
   preact: ^10.29.2
   react-router: 7.14.0

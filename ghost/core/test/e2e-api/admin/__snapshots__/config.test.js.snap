@@ -26,6 +26,7 @@ Object {
       "importMemberTier": true,
       "indexnow": true,
       "lexicalIndicators": true,
+      "llmsTxt": true,
       "members": true,
       "pictureImageFormats": true,
       "smarterCounts": true,

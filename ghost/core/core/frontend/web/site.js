@@ -68,6 +68,37 @@ module.exports = function setupSiteApp(routerConfig) {
     // Public files (sitemap.xsl, stylesheets, scripts, etc.)
     servePublicFiles(siteApp);
 
+    const settingsCache = require('../../shared/settings-cache');
+    const labs = require('../../shared/labs');
+    const urlService = require('../../server/services/url');
+    const models = require('../../server/models');
+    const routing = require('../services/routing');
+    const {api} = require('../services/proxy');
+    const {createLlmsService} = require('../services/llms/service');
+    const {createLlmsHandler} = require('../services/llms/handler');
+    const {createLlmsDiscovery} = require('./middleware/llms-discovery');
+
+    const llmsService = createLlmsService({
+        settingsCache,
+        labs,
+        config,
+        urlServiceFacade: urlService.facade,
+        urlUtils,
+        models,
+        routing,
+        api
+    });
+
+    siteApp.set('llmsService', llmsService);
+
+    const llmsHandler = createLlmsHandler({
+        llmsService,
+        config,
+        settingsCache
+    });
+
+    siteApp.use(createLlmsDiscovery({settingsCache, labs}));
+
     // Serve site images using the storage adapter
     siteApp.use(STATIC_IMAGE_URL_PREFIX, mw.handleImageSizes, storage.getStorage('images').serve());
     // Serve site media using the storage adapter
@@ -107,6 +138,8 @@ module.exports = function setupSiteApp(routerConfig) {
 
     // site map - this should probably be refactored to be an internal app
     sitemapHandler(siteApp);
+
+    llmsHandler.mountLlmsRoutes(siteApp);
 
     // Global handling for member session, ensures a member is logged in to the frontend
     siteApp.use(membersService.middleware.loadMemberSession);

@@ -216,6 +216,7 @@
     "mysql2": "3.18.1",
     "nconf": "0.13.0",
     "node-fetch": "2.7.0",
+    "node-html-markdown": "catalog:",
     "node-jose": "2.2.0",
     "nodemailer": "8.0.8",
     "on-headers": "1.1.0",
@@ -272,6 +273,7 @@
     "@types/sinon": "17.0.4",
     "@types/supertest": "6.0.3",
     "@typescript-eslint/parser": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
     "bunyan": "1.8.15",
     "c8": "catalog:",
     "chai": "catalog:",
@@ -302,8 +304,7 @@
     "tsx": "4.21.0",
     "typescript": "catalog:",
     "validator": "catalog:",
-    "vitest": "catalog:",
-    "@vitest/coverage-v8": "catalog:"
+    "vitest": "catalog:"
   },
   "nx": {
     "tags": [
