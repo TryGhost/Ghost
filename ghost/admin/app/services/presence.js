@@ -2,14 +2,17 @@ import Service, {inject as service} from '@ember/service';
 import fetch from 'fetch';
 import {tracked} from '@glimmer/tracking';
 
+// Wire-format event types. Must match PRESENCE_EVENT_TYPES in
+// ghost/core/core/server/services/post-presence/post-presence-service.js
+// (no shared module across the Node/Ember boundary).
 const EVENT_TYPE_SNAPSHOT = 'snapshot';
 const EVENT_TYPE_POST = 'post';
 
+const CONNECTING_ERROR_LOG_THRESHOLD = 3;
+
 /**
- * Subscribes to a long-lived SSE stream that pushes presence (who is
- * editing what) changes to all admin tabs. Holds a tracked map of
- * postId → users[]; components read via usersForPost(postId) and
- * re-render automatically.
+ * Subscribes to a long-lived SSE stream that pushes editor presence
+ * updates to the admin.
  */
 export default class PresenceService extends Service {
     @service feature;
@@ -21,6 +24,9 @@ export default class PresenceService extends Service {
     _source = null;
     _currentPostId = null;
     _beforeUnloadHandler = null;
+    _initFailed = false;
+    _connectingErrorCount = 0;
+    _connectingErrorLogged = false;
 
     start() {
         if (this._source || typeof window === 'undefined' || !window.EventSource) {
@@ -33,6 +39,7 @@ export default class PresenceService extends Service {
         try {
             this._source = new EventSource(streamUrl, {withCredentials: true});
         } catch (e) {
+            this._initFailed = true;
             console.warn('[presence] EventSource construction failed', e); // eslint-disable-line no-console
             return;
         }
@@ -41,8 +48,19 @@ export default class PresenceService extends Service {
             // EventSource auto-reconnects on transient errors. Terminal
             // closures (401/403/404) leave readyState === CLOSED; log
             // those so silent presence failures are debuggable.
-            if (this._source && this._source.readyState === EventSource.CLOSED) {
+            if (!this._source) {
+                return;
+            }
+            if (this._source.readyState === EventSource.CLOSED) {
                 console.warn('[presence] SSE stream closed; not reconnecting'); // eslint-disable-line no-console
+                return;
+            }
+            if (this._source.readyState === EventSource.CONNECTING) {
+                this._connectingErrorCount += 1;
+                if (this._connectingErrorCount >= CONNECTING_ERROR_LOG_THRESHOLD && !this._connectingErrorLogged) {
+                    this._connectingErrorLogged = true;
+                    console.warn('[presence] SSE reconnects are failing'); // eslint-disable-line no-console
+                }
             }
         };
 
@@ -74,12 +92,15 @@ export default class PresenceService extends Service {
 
     /**
      * The user opened a post in the editor. Sends an explicit enter so
-     * peers see the avatar within ~50ms (the read endpoint no longer
-     * marks presence — that would have lit up analytics views too).
-     * If the user was on a different post, leave that one first.
+     * peers see the avatar (the read endpoint deliberately does not mark
+     * presence — that would have lit up analytics views too).
      */
     enterPost(postId) {
         if (!postId) {
+            return;
+        }
+        if (this._initFailed) {
+            console.warn('[presence] skipping enter; SSE init failed earlier'); // eslint-disable-line no-console
             return;
         }
         if (this._currentPostId && this._currentPostId !== postId) {
@@ -129,11 +150,14 @@ export default class PresenceService extends Service {
     }
 
     _handleMessage(event) {
+        this._connectingErrorCount = 0;
+        this._connectingErrorLogged = false;
+
         let payload;
         try {
             payload = JSON.parse(event.data);
         } catch (e) {
-            console.warn('[presence] malformed event payload, dropping', event.data); // eslint-disable-line no-console
+            console.warn('[presence] malformed event payload, dropping', {err: e, data: event.data}); // eslint-disable-line no-console
             return;
         }
 

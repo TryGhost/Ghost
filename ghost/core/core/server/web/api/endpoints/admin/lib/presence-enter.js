@@ -3,9 +3,9 @@ const labs = require('../../../../../../shared/labs');
 const postPresence = require('../../../../../services/post-presence');
 
 /**
- * Explicit "I just opened this post in the editor" handler. Called by
- * the editor route on activation so opening a post in the editor (and
- * not, say, viewing analytics) is what registers presence. Best-effort.
+ * Explicit "I just opened this post in the editor" handler. Explicit
+ * enter so opening the editor (not, say, viewing analytics) is what
+ * registers presence. Best-effort.
  */
 module.exports = function presenceEnter(req, res) {
     try {

@@ -6,9 +6,7 @@ const {PRESENCE_EVENT_TYPES} = require('../../../../../services/post-presence/po
 const KEEPALIVE_MS = 30 * 1000;
 
 /**
- * SSE handler for live presence updates. Holds a long-lived HTTP
- * response open, writes the current snapshot, then forwards every
- * presence event to the client. Auth handled upstream by mw.authAdminApi.
+ * SSE handler that streams presence events to a single admin tab.
  */
 module.exports = function presenceStream(req, res) {
     if (!labs.isSet('editorPresence')) {
@@ -41,7 +39,7 @@ module.exports = function presenceStream(req, res) {
         try {
             res.write(`: ${text}\n\n`);
         } catch (err) {
-            // Stream closed mid-write; the close handler will clean up.
+            logging.warn({err, code: err && err.code}, 'presence-stream: keepalive write failed');
         }
     };
 
@@ -86,5 +84,6 @@ module.exports = function presenceStream(req, res) {
 
     req.on('close', cleanup);
     req.on('error', cleanup);
+    res.on('close', cleanup);
     res.on('error', cleanup);
 };

@@ -29,16 +29,20 @@ const postsService = getPostServiceInstance();
  * Best-effort presence heartbeat fired from edit autosaves. Wrapped
  * so a failure in labs lookup, the user model, or the presence cache
  * never breaks the post API response.
+ *
+ * @param {Object} frame API framework frame
+ * @param {{id: string}} postDto DTO returned by postsService.editPost
+ *     (model.toJSON output, not the Bookshelf model)
  */
-function markPostPresence(frame, model) {
+function markPostPresence(frame, postDto) {
     try {
         if (!labs.isSet('editorPresence')) {
             return;
         }
-        if (!frame || !frame.user || !model || !model.id) {
+        if (!frame || !frame.user || !postDto || !postDto.id) {
             return;
         }
-        postPresence.mark(model.id, {
+        postPresence.mark(postDto.id, {
             id: frame.user.id,
             name: frame.user.get('name'),
             profileImage: frame.user.get('profile_image')
