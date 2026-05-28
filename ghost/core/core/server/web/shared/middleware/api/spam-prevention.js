@@ -27,7 +27,8 @@ const messages = {
     },
     webmentionsBlock: 'Too many mention attempts',
     emailPreviewBlock: 'Only 10 test emails can be sent per hour',
-    presenceBlock: 'Too many editor presence requests, please slow down'
+    presenceBlock: 'Too many editor presence requests, please slow down',
+    presenceIpBlock: 'Too many editor presence requests from this IP, please slow down'
 };
 let spamPrivateBlock = spam.private_block || {};
 let spamGlobalBlock = spam.global_block || {};
@@ -41,6 +42,7 @@ let spamContentApiKey = spam.content_api_key || {};
 let spamWebmentionsBlock = spam.webmentions_block || {};
 let spamEmailPreviewBlock = spam.email_preview_block || {};
 let spamPresenceBlock = spam.presence_block || {};
+let spamPresenceIpBlock = spam.presence_ip_block || {};
 let spamOtcVerificationEnumeration = spam.otc_verification_enumeration || {};
 let spamOtcVerification = spam.otc_verification || {};
 
@@ -59,6 +61,7 @@ let userVerificationInstance;
 let contentApiKeyInstance;
 let emailPreviewBlockInstance;
 let presenceBlockInstance;
+let presenceIpBlockInstance;
 let otcVerificationEnumerationInstance;
 let otcVerificationInstance;
 
@@ -170,10 +173,45 @@ const webmentionsBlock = () => {
     return webmentionsBlockInstance;
 };
 
-// Per-staff-user limiter for editor presence POSTs (/enter, /leave).
-// Generous because legitimate use fires on every editor navigation:
-// 600 requests / hour / user is roughly 1 every 6s, comfortably above
-// expected editorial usage but tight enough to cap a runaway client.
+// Per-IP defense-in-depth limiter for the presence routes, applied
+// BEFORE authentication so unauthenticated DoS attempts are bounded
+// before they hit the auth layer. Loose (6000 / hour / IP ≈ 100 / min)
+// so a shared office IP with many staff never hits it under normal
+// use; tight enough to stop a runaway anon attacker.
+const presenceIpBlock = () => {
+    const ExpressBrute = require('express-brute');
+    const BruteKnex = require('brute-knex');
+    const db = require('../../../../data/db');
+
+    store = store || new BruteKnex({
+        tablename: 'brute',
+        createTable: false,
+        knex: db.knex
+    });
+
+    presenceIpBlockInstance = presenceIpBlockInstance || new ExpressBrute(store,
+        extend({
+            attachResetToRequest: false,
+            failCallback(req, res, next) {
+                return next(new errors.TooManyRequestsError({
+                    message: messages.presenceIpBlock
+                }));
+            },
+            handleStoreError: handleStoreError,
+            freeRetries: 6000,
+            lifetime: 60 * 60
+        }, pick(spamPresenceIpBlock, spamConfigKeys))
+    );
+
+    return presenceIpBlockInstance;
+};
+
+// Per-staff-user limiter for editor presence routes, applied AFTER
+// authentication so the key can use req.user.id. Generous because
+// legitimate use fires on every editor navigation: 600 requests /
+// hour / user is roughly 1 every 6s, comfortably above expected
+// editorial usage but tight enough to cap a runaway authenticated
+// client.
 const presenceBlock = () => {
     const ExpressBrute = require('express-brute');
     const BruteKnex = require('brute-knex');
@@ -545,6 +583,7 @@ module.exports = {
     webmentionsBlock: webmentionsBlock,
     emailPreviewBlock: emailPreviewBlock,
     presenceBlock: presenceBlock,
+    presenceIpBlock: presenceIpBlock,
     reset: () => {
         store = undefined;
         memoryStore = undefined;
@@ -562,6 +601,7 @@ module.exports = {
         otcVerificationInstance = undefined;
         emailPreviewBlockInstance = undefined;
         presenceBlockInstance = undefined;
+        presenceIpBlockInstance = undefined;
 
         spam = config.get('spam') || {};
         spamPrivateBlock = spam.private_block || {};

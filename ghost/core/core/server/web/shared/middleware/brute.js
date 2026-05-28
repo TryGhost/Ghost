@@ -178,18 +178,29 @@ module.exports = {
     },
 
     /**
-     * Per-staff-user limiter for the editor presence POST endpoints.
-     * Generous limits so legitimate editor navigation never hits them;
-     * tight enough to bound a runaway client.
+     * Per-IP defense-in-depth limiter for the editor presence routes,
+     * applied BEFORE authentication so unauthenticated DoS attempts
+     * are bounded before they hit the auth layer.
+     */
+    presenceIpLimiter(req, res, next) {
+        return spamPrevention.presenceIpBlock().getMiddleware({
+            ignoreIP: false,
+            key(_req, _res, _next) {
+                return _next('presence_ip');
+            }
+        })(req, res, next);
+    },
+
+    /**
+     * Per-staff-user limiter for the editor presence routes, applied
+     * AFTER authentication so the key can use req.user.id. Generous
+     * limits so legitimate editor navigation never hits them; tight
+     * enough to bound a runaway authenticated client.
      */
     presenceLimiter(req, res, next) {
         return spamPrevention.presenceBlock().getMiddleware({
             ignoreIP: true,
             key(_req, _res, _next) {
-                // Keyed by the authenticated staff user. Falls back to
-                // a static key for unauthenticated requests so the
-                // limiter still exists (those should be rejected by
-                // mw.authAdminApi before reaching this point).
                 const userId = _req.user && _req.user.id;
                 return _next(userId ? `presence_${userId}` : 'presence_anon');
             }
