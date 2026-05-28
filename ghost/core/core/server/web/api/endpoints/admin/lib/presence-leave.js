@@ -4,7 +4,7 @@ const postPresence = require('../../../../../services/post-presence');
 
 /**
  * Explicit "I'm leaving this post" handler. Best-effort; failures never
- * error to the client. Auth is handled upstream by mw.authAdminApi.
+ * error to the client.
  */
 module.exports = function presenceLeave(req, res) {
     try {

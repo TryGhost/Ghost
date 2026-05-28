@@ -2,6 +2,9 @@ const {EventEmitter} = require('events');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 
+// Wire-format event types. Must match EVENT_TYPE_* in
+// ghost/admin/app/services/presence.js (no shared module across the
+// Node/Ember boundary).
 const PRESENCE_EVENT_TYPES = Object.freeze({
     POST: 'post',
     SNAPSHOT: 'snapshot'
@@ -15,6 +18,9 @@ const PRESENCE_EVENT_TYPES = Object.freeze({
  */
 
 /**
+ * Internal record stored in `_byPostId`. `lastSeen` drives idle/TTL
+ * sweeps and is not sent over the wire (see PresenceUserView).
+ *
  * @typedef {Object} PresenceEntry
  * @property {string} id
  * @property {string} name
@@ -24,10 +30,27 @@ const PRESENCE_EVENT_TYPES = Object.freeze({
  */
 
 /**
+ * Shape sent to clients (snapshot + post events). Mirrors PresenceEntry
+ * without `lastSeen`.
+ *
+ * @typedef {Object} PresenceUserView
+ * @property {string} id
+ * @property {string} name
+ * @property {string | null} profileImage
+ * @property {boolean} isIdle
+ */
+
+/**
  * @typedef {Object} PresencePostEvent
  * @property {'post'} type
  * @property {string} postId
- * @property {PresenceEntry[]} users
+ * @property {PresenceUserView[]} users
+ */
+
+/**
+ * @typedef {Object} PresenceSnapshotEvent
+ * @property {'snapshot'} type
+ * @property {Array<{postId: string, users: PresenceUserView[]}>} posts
  */
 
 /**
@@ -38,9 +61,7 @@ const PRESENCE_EVENT_TYPES = Object.freeze({
  * entries through active → idle → removed so peers see stale tabs
  * fade and then disappear without polling.
  *
- * State is in-process. Ghost(Pro) runs one Node process per site;
- * see EDITOR-PRESENCE.md for the deployment context that makes this
- * sufficient.
+ * State is in-process. Ghost(Pro) runs one Node process per site.
  */
 class PostPresenceService {
     /**
@@ -71,7 +92,6 @@ class PostPresenceService {
     }
 
     /**
-     * Subscribe to presence events. Returns an unsubscribe function.
      * @param {(event: PresencePostEvent) => void} handler
      */
     subscribe(handler) {
@@ -133,9 +153,8 @@ class PostPresenceService {
     }
 
     /**
-     * Remove a user from a post and publish the new list. No-op if the
-     * user wasn't tracked, which keeps spurious beacons from triggering
-     * fan-out.
+     * No-op if the user wasn't tracked, which keeps spurious beacons
+     * from triggering fan-out.
      */
     leave(postId, userId) {
         if (!postId || !userId) {
@@ -153,11 +172,9 @@ class PostPresenceService {
     }
 
     /**
-     * Active posts and their users. Used by the SSE handler to send
-     * initial state to a freshly-connected admin tab. Filters stale
-     * entries on the way out.
+     * Filters stale entries on the way out.
      *
-     * @returns {Array<{postId: string, users: PresenceEntry[]}>}
+     * @returns {Array<{postId: string, users: PresenceUserView[]}>}
      */
     snapshot() {
         const now = Date.now();
@@ -166,7 +183,7 @@ class PostPresenceService {
             const users = [];
             for (const entry of entries.values()) {
                 if ((now - entry.lastSeen) < this.ttlMs) {
-                    users.push(entry);
+                    users.push(this._toWireUser(entry));
                 }
             }
             if (users.length > 0) {
@@ -176,22 +193,36 @@ class PostPresenceService {
         return out;
     }
 
+    /**
+     * Strips `lastSeen` (internal sweep timestamp) from an entry before
+     * it goes over the wire.
+     *
+     * @param {PresenceEntry} entry
+     * @returns {PresenceUserView}
+     */
+    _toWireUser(entry) {
+        return {
+            id: entry.id,
+            name: entry.name,
+            profileImage: entry.profileImage,
+            isIdle: Boolean(entry.isIdle)
+        };
+    }
+
     _publish(postId, entries) {
         const event = {
             type: PRESENCE_EVENT_TYPES.POST,
             postId,
-            users: entries ? Array.from(entries.values()) : []
+            users: entries ? Array.from(entries.values()).map(entry => this._toWireUser(entry)) : []
         };
         try {
             this._emitter.emit('presence', event);
         } catch (err) {
-            logging.warn({err}, 'Presence subscriber threw during emit');
+            logging.warn({err, postId}, 'Presence subscriber threw during emit');
         }
     }
 
     /**
-     * Sweep all posts: transition entries past idleMs to isIdle, drop
-     * entries past ttlMs, and publish per-post when state changed.
      * Each post is wrapped in try/catch so a single bad subscriber
      * doesn't abort the whole sweep.
      */
@@ -213,10 +244,6 @@ class PostPresenceService {
         }
     }
 
-    /**
-     * Mutates the entries map in place. Returns true if anything
-     * changed.
-     */
     _sweep(entries, now) {
         let changed = false;
         for (const [id, entry] of entries) {
