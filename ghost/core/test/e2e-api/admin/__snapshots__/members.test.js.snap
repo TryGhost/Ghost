@@ -3382,6 +3382,21 @@ Object {
 }
 `;
 
+exports[`Members API Can bulk edit members with active subscriptions across multiple Stripe customers filter 1: [body] 1`] = `
+Object {
+  "bulk": Object {
+    "meta": Object {
+      "errors": Array [],
+      "stats": Object {
+        "successful": 1,
+        "unsuccessful": 0,
+      },
+      "unsuccessfulData": Array [],
+    },
+  },
+}
+`;
+
 exports[`Members API Can create a comped member with labels via API 1: [body] 1`] = `
 Object {
   "members": Array [

@@ -78,6 +78,41 @@ async function createGiftMember(data) {
     return member;
 }
 
+async function createStripeCustomerWithSubscription(member, customerId, subscriptionId, status = 'active') {
+    const now = new Date();
+
+    await knex('members_stripe_customers').insert({
+        id: ObjectId().toHexString(),
+        member_id: member.id,
+        customer_id: customerId,
+        email: member.get('email'),
+        created_at: now,
+        updated_at: now
+    });
+
+    await knex('members_stripe_customers_subscriptions').insert({
+        id: ObjectId().toHexString(),
+        customer_id: customerId,
+        subscription_id: subscriptionId,
+        status,
+        current_period_end: now,
+        start_date: now,
+        created_at: now,
+        updated_at: now,
+        plan_id: 'plan_test',
+        plan_nickname: 'Test plan',
+        plan_interval: 'month',
+        plan_amount: 500,
+        plan_currency: 'usd'
+    });
+}
+
+async function deleteMembersWithStripeData(emails, customerIds) {
+    await knex('members_stripe_customers_subscriptions').whereIn('customer_id', customerIds).del();
+    await knex('members_stripe_customers').whereIn('customer_id', customerIds).del();
+    await knex('members').whereIn('email', emails).del();
+}
+
 const newsletterSnapshot = {
     id: anyObjectId
 };
@@ -649,6 +684,137 @@ describe('Members API', function () {
                 'content-version': anyContentVersion,
                 etag: anyEtag
             });
+    });
+
+    it('Can filter members with active subscriptions across multiple Stripe customers', async function () {
+        const emails = [
+            'multiple-active-stripe-customers@example.com',
+            'same-active-stripe-customer@example.com',
+            'trialing-stripe-customers@example.com'
+        ];
+        const customerIds = ['cus_matching_1', 'cus_matching_2', 'cus_same_1', 'cus_trialing_1', 'cus_trialing_2'];
+
+        try {
+            const matchingMember = await createMember({
+                email: emails[0],
+                status: 'free'
+            });
+            await createStripeCustomerWithSubscription(matchingMember, 'cus_matching_1', 'sub_matching_1');
+            await createStripeCustomerWithSubscription(matchingMember, 'cus_matching_2', 'sub_matching_2');
+
+            const sameCustomerMember = await createMember({
+                email: emails[1],
+                status: 'free'
+            });
+            await createStripeCustomerWithSubscription(sameCustomerMember, 'cus_same_1', 'sub_same_1');
+            await knex('members_stripe_customers_subscriptions').insert({
+                id: ObjectId().toHexString(),
+                customer_id: 'cus_same_1',
+                subscription_id: 'sub_same_2',
+                status: 'active',
+                current_period_end: new Date(),
+                start_date: new Date(),
+                created_at: new Date(),
+                updated_at: new Date(),
+                plan_id: 'plan_test',
+                plan_nickname: 'Test plan',
+                plan_interval: 'month',
+                plan_amount: 500,
+                plan_currency: 'usd'
+            });
+
+            const trialingMember = await createMember({
+                email: emails[2],
+                status: 'free'
+            });
+            await createStripeCustomerWithSubscription(trialingMember, 'cus_trialing_1', 'sub_trialing_1', 'trialing');
+            await createStripeCustomerWithSubscription(trialingMember, 'cus_trialing_2', 'sub_trialing_2', 'trialing');
+
+            const filter = encodeURIComponent('count.active_stripe_customers:>1');
+            const res = await agent
+                .get(`/members/?filter=${filter}&limit=1&fields=id,email&order=id`)
+                .expectStatus(200);
+
+            assert.equal(res.body.meta.pagination.total, 1);
+            assert.equal(res.body.members.length, 1);
+            assert.equal(res.body.members[0].email, emails[0]);
+        } finally {
+            await deleteMembersWithStripeData(emails, customerIds);
+        }
+    });
+
+    it('Can bulk edit members with active subscriptions across multiple Stripe customers filter', async function () {
+        const emails = [
+            'bulk-multiple-active-stripe-customers@example.com',
+            'bulk-single-active-stripe-customer@example.com'
+        ];
+        const customerIds = ['cus_bulk_matching_1', 'cus_bulk_matching_2', 'cus_bulk_single_1'];
+        const label = await models.Label.add({name: 'bulk-multiple-active-stripe-customers'});
+
+        try {
+            const matchingMember = await createMember({
+                email: emails[0],
+                status: 'free'
+            });
+            await createStripeCustomerWithSubscription(matchingMember, 'cus_bulk_matching_1', 'sub_bulk_matching_1');
+            await createStripeCustomerWithSubscription(matchingMember, 'cus_bulk_matching_2', 'sub_bulk_matching_2');
+
+            const singleCustomerMember = await createMember({
+                email: emails[1],
+                status: 'free'
+            });
+            await createStripeCustomerWithSubscription(singleCustomerMember, 'cus_bulk_single_1', 'sub_bulk_single_1');
+
+            const filter = encodeURIComponent('count.active_stripe_customers:>1');
+            await agent
+                .put(`/members/bulk/?filter=${filter}`)
+                .body({bulk: {
+                    action: 'addLabel',
+                    meta: {
+                        label: {
+                            id: label.id
+                        }
+                    }
+                }})
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    bulk: {
+                        meta: {
+                            stats: {
+                                successful: 1,
+                                unsuccessful: 0
+                            },
+                            unsuccessfulData: [],
+                            errors: []
+                        }
+                    }
+                });
+
+            const updatedMatchingMember = await models.Member.findOne({id: matchingMember.id}, {withRelated: 'labels'});
+            const updatedSingleCustomerMember = await models.Member.findOne({id: singleCustomerMember.id}, {withRelated: 'labels'});
+
+            assert(updatedMatchingMember.related('labels').models.some(model => model.id === label.id));
+            assert.equal(updatedSingleCustomerMember.related('labels').models.some(model => model.id === label.id), false);
+        } finally {
+            await deleteMembersWithStripeData(emails, customerIds);
+        }
+    });
+
+    it('Returns a bad request for unsupported active Stripe customer count filters', async function () {
+        const nullFilter = encodeURIComponent('count.active_stripe_customers:null');
+        await agent
+            .get(`/members/?filter=${nullFilter}`)
+            .expectStatus(400);
+
+        const combinedFilter = encodeURIComponent('count.active_stripe_customers:>1+name:~\'Combined\'');
+        await agent
+            .get(`/members/?filter=${combinedFilter}`)
+            .expectStatus(400);
+
+        const orFilter = encodeURIComponent('status:paid,count.active_stripe_customers:>1');
+        await agent
+            .get(`/members/?filter=${orFilter}`)
+            .expectStatus(400);
     });
 
     it('Can filter by signup attribution', async function () {

@@ -57,6 +57,52 @@ describe('useMembersFilterState', () => {
         expect(result.current.hasFilterOrSearch).toBe(false);
     });
 
+    it('preserves the multiple active Stripe customers raw filter', async () => {
+        const {result} = renderHook(() => {
+            const state = useMembersFilterState('UTC', {
+                preserveMultipleActiveSubscriptionsFilter: true
+            });
+            const [searchParams] = useSearchParams();
+
+            return {
+                ...state,
+                query: searchParams.toString()
+            };
+        }, {
+            wrapper: createWrapper('/?filter=count.active_stripe_customers%3A%3E1')
+        });
+
+        await waitFor(() => {
+            expect(result.current.nql).toBe('count.active_stripe_customers:>1');
+        });
+
+        expect(result.current.filters).toEqual([]);
+        expect(result.current.query).toBe('filter=count.active_stripe_customers%3A%3E1');
+        expect(result.current.hasFilterOrSearch).toBe(true);
+    });
+
+    it('drops the multiple active Stripe customers raw filter when preservation is disabled', async () => {
+        const {result} = renderHook(() => {
+            const state = useMembersFilterState('UTC');
+            const [searchParams] = useSearchParams();
+
+            return {
+                ...state,
+                query: searchParams.toString()
+            };
+        }, {
+            wrapper: createWrapper('/?filter=count.active_stripe_customers%3A%3E1')
+        });
+
+        await waitFor(() => {
+            expect(result.current.query).toBe('');
+        });
+
+        expect(result.current.filters).toEqual([]);
+        expect(result.current.nql).toBeUndefined();
+        expect(result.current.hasFilterOrSearch).toBe(false);
+    });
+
     it('retains supported filters and rewrites mixed URLs canonically', async () => {
         const {result} = renderHook(() => {
             const state = useMembersFilterState('UTC');
