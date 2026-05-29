@@ -47,17 +47,21 @@ describe('GiftLinkSection', () => {
         expect(trackEvent).toHaveBeenCalledWith('gift_link_copied', {surface: 'post-share-modal'});
     });
 
-    it('copies the existing active link without re-creating it, and shows the count + reset', async () => {
+    it('shows the count + reset when an active link exists, and copy ensures (idempotent) the current token', async () => {
         vi.mocked(useGiftLinkForPost).mockReturnValue({data: {gift_links: [mockLink({token: 'existing', redeemed_count: 5})]}} as never);
+        // Idempotent ensure returns the *current* active token from the server.
+        ensure.mockResolvedValue({gift_links: [mockLink({token: 'existing'})]});
 
         render(<GiftLinkSection postId="p1" postUrl="https://example.com/p/" />);
 
         expect(screen.getByTestId('gift-link-count')).toHaveTextContent('Opened 5 times');
+        expect(screen.getByTestId('gift-link-reset')).toBeInTheDocument();
 
         fireEvent.click(screen.getByTestId('gift-link-copy'));
 
-        await waitFor(() => expect(writeText).toHaveBeenCalledWith('https://example.com/p/?gift=existing&utm_campaign=gift-link'));
-        expect(ensure).not.toHaveBeenCalled();
+        // Always ensures (so it never copies a stale/just-reset token) then copies the returned token
+        await waitFor(() => expect(ensure).toHaveBeenCalledWith({id: 'p1'}));
+        expect(writeText).toHaveBeenCalledWith('https://example.com/p/?gift=existing&utm_campaign=gift-link');
     });
 
     it('resets the link and tracks the reset', async () => {

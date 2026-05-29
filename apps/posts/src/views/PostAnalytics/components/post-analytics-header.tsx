@@ -8,8 +8,13 @@ import {PostShareModal} from '@tryghost/shade/posts-stats';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
 import {hasBeenEmailed, isEmailOnly, isPublishedAndEmailed, isPublishedOnly, useActiveVisitors, useNavigate} from '@tryghost/admin-x-framework';
 import {useAppContext} from '@src/providers/posts-app-context';
+import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
 import {useDeletePost} from '@tryghost/admin-x-framework/api/posts';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+
+// Gift links can only be managed by Owner/Administrator/Editor (manage:gift_link);
+// Authors/Contributors can reach their own post analytics, so gate on role too.
+const GIFT_LINK_MANAGER_ROLES = ['Owner', 'Administrator', 'Editor'];
 
 interface PostAnalyticsHeaderProps {
     currentTab?: string;
@@ -27,7 +32,13 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [isShareOpen, setIsShareOpen] = useState(false);
     const {settings, site, statsConfig, post, isPostLoading, postId, data} = useGlobalData();
-    const giftLinksEnabled = data?.labs?.giftLinks === true;
+    const {data: currentUser} = useCurrentUser();
+    // Gift links apply only to published, gated (non-public) posts/pages — match
+    // the API's eligibility so we don't show controls that would 422.
+    const isGiftablePost = post?.status === 'published' && !!post?.visibility && post.visibility !== 'public';
+    const canManageGiftLinks = data?.labs?.giftLinks === true
+        && isGiftablePost
+        && (currentUser?.roles || []).some(role => GIFT_LINK_MANAGER_ROLES.includes(role.name));
 
     const siteTimezone = getSiteTimezone(settings);
 
@@ -137,7 +148,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                             description=''
                                             faviconURL={site?.icon || ''}
                                             featureImageURL={post?.feature_image}
-                                            giftLinkSlot={giftLinksEnabled && post?.id && post?.url
+                                            giftLinkSlot={canManageGiftLinks && post?.id && post?.url
                                                 ? <GiftLinkSection postId={post.id} postUrl={post.url} />
                                                 : undefined}
                                             open={isShareOpen}

@@ -33,8 +33,10 @@ const GiftLinkSection: React.FC<GiftLinkSectionProps> = ({postId, postUrl}) => {
 
     const handleCopy = async () => {
         try {
-            // Idempotent ensure: reuse the active link or mint one on first copy.
-            const response = activeLink ? {gift_links: [activeLink]} : await ensureGiftLink({id: postId});
+            // Always ensure (idempotent): returns the *current* active token from
+            // the server, so copy can't grab a stale/just-reset token from the
+            // read query before it refetches. Creates the link on first copy.
+            const response = await ensureGiftLink({id: postId});
             const link = response.gift_links[0];
             await navigator.clipboard.writeText(buildGiftLinkUrl(postUrl, link.token));
             setCopied(true);

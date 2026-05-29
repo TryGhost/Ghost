@@ -111,7 +111,7 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         title: `Reset ${count} gift ${count === 1 ? 'link' : 'links'}.`,
                         type: 'success'
                     });
-                    trackEvent('gift_link_reset_all');
+                    trackEvent('gift_link_reset_all', {surface: 'danger-zone'});
                     modal?.remove();
                 } catch (e) {
                     handleError(e);
