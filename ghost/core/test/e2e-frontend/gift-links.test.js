@@ -69,10 +69,12 @@ describe('Front-end gift links', function () {
     });
 
     it('paywalls the paid post for an anonymous visitor with no gift token', async function () {
-        await request
+        const res = await request
             .get('/gift-me-this-paid-post/')
             .expect(200)
             .expect(assertContentIsAbsent);
+        // No gift → no reader callout (the normal paywall CTA shows instead)
+        assert.ok(!res.text.includes('gh-gift-callout'));
     });
 
     it('unlocks the full post for an anonymous visitor with a valid gift token', async function () {
@@ -86,6 +88,10 @@ describe('Front-end gift links', function () {
         assert.match(res.headers['cache-control'], /no-store/);
         assert.equal(res.headers['x-robots-tag'], 'noindex');
         assert.equal(res.headers['referrer-policy'], 'no-referrer');
+
+        // The reader-facing conversion callout is rendered for the gift reader.
+        assert.ok(res.text.includes('gh-gift-callout'), 'renders the gift callout');
+        assert.ok(res.text.includes('This post was shared with you'), 'anonymous subscribe copy');
     });
 
     it('falls back to the paywall for an invalid gift token but still bypasses cache', async function () {

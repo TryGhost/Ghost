@@ -41,11 +41,16 @@ function updateLocalTemplateOptions(req, res, next) {
 
     const enableDeduplication = config.get('optimization:getHelper:deduplication');
 
+    // Expose the resolved gift link (if the request carried a valid `?gift=` token)
+    // so the {{content}} helper can render the reader-facing gift callout.
+    const gift = res.locals.giftLink ? {post_id: res.locals.giftLink.post_id} : null;
+
     hbs.updateLocalTemplateOptions(res.locals, _.merge({}, localTemplateOptions, {
         data: {
             member: member,
             site: siteData,
             custom: customData,
+            gift: gift,
             ...(enableDeduplication && {_queryCache: new Map()})
         }
     }));

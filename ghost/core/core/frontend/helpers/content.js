@@ -28,6 +28,21 @@ function restrictedCta(options) {
     return templates.execute('content-cta', this, {data});
 }
 
+// Renders the full content followed by a conversion callout for a gift reader.
+// The partial includes `{{{html}}}`, mirroring `content-cta`, so theme overrides
+// stay consistent.
+function giftCallout(options) {
+    options = options || {};
+    options.data = options.data || {};
+
+    _.merge(this, {
+        accentColor: (options.data.site && options.data.site.accent_color)
+    });
+
+    const data = createFrame(options.data);
+    return templates.execute('gift-callout', this, {data});
+}
+
 module.exports = function content(options = {}) {
     let self = this;
     let args = arguments;
@@ -55,6 +70,13 @@ module.exports = function content(options = {}) {
         return new SafeString(
             downsize(this.html, truncateOptions)
         );
+    }
+
+    // CASE: the reader is viewing THIS post via a gift link — append a
+    // conversion callout (theme-overridable via partials/gift-callout.hbs).
+    const gift = options.data && options.data.gift;
+    if (gift && gift.post_id && gift.post_id === this.id) {
+        return giftCallout.apply(self, args);
     }
 
     return new SafeString(this.html);
