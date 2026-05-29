@@ -47,15 +47,6 @@ const ChangeTheme: React.FC<{ keywords: string[] }> = ({keywords}) => {
             return;
         }
 
-        // The editor saves through POST /themes/upload/, where the server
-        // calls errorIfWouldGoOverLimit('customThemes', {value: '.'}) — a
-        // sentinel that's never in the allowlist, so every save by a limited
-        // customer is blocked regardless of which theme they're editing.
-        // Mirror that sentinel here so the launch gate is consistent with
-        // what happens at save time. Passing the theme name instead lets a
-        // limited customer enter the editor whenever the theme they're
-        // already on is in the allowlist, then surface a generic upload
-        // failure when they hit Save.
         const limitError = await checkThemeLimitError('.');
 
         if (limitError) {

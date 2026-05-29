@@ -127,9 +127,6 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
     };
 
     const handleEditCode = async () => {
-        // See change-theme.tsx for why this passes '.' rather than the
-        // theme name: every save in the editor uploads via POST /themes/upload/,
-        // and the server's upload-side limit check uses the same '.' sentinel.
         const limitError = await checkThemeLimitError('.');
 
         if (limitError) {
