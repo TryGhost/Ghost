@@ -21,11 +21,9 @@ class EmailServiceWrapper {
         const SendingService = require('./sending-service');
         const BatchSendingService = require('./batch-sending-service');
         const EmailSegmenter = require('./email-segmenter');
-        const MailgunEmailProvider = require('./mailgun-email-provider');
         const {DomainWarmingService} = require('./domain-warming-service');
 
         const {Post, Newsletter, Email, EmailBatch, EmailRecipient, Member} = require('../../models');
-        const MailgunClient = require('../lib/mailgun-client');
         const configService = require('../../../shared/config');
         const settingsCache = require('../../../shared/settings-cache');
         const settingsHelpers = require('../settings-helpers');
@@ -49,27 +47,52 @@ class EmailServiceWrapper {
         const emailAnalyticsJobs = require('../email-analytics/jobs');
         const {cachedImageSizeFromUrl} = require('../../lib/image');
 
-        // capture errors from mailgun client and log them in sentry
+        // Determine which email provider to use based on configuration
+        const bulkEmailConfig = configService.get('bulkEmail');
+        const emailProvider = bulkEmailConfig?.provider || 'mailgun';
+
+        // capture errors from email provider and log them in sentry
         const errorHandler = (error) => {
-            logging.info(`Capturing error for mailgun email provider service`);
+            logging.info(`Capturing error for ${emailProvider} email provider service`);
             sentry.captureException(error);
         };
 
-        // Mailgun client instance for email provider
-        const mailgunClient = new MailgunClient({
-            config: configService, settings: settingsCache, labs
-        });
+        let emailProviderInstance;
+
+        // Use adapter pattern for all email providers
+        logging.info(`Initializing ${emailProvider} email provider via adapter`);
+
+        const emailAdapter = require('../../adapters/email');
+
+        // Get adapter instance with injected dependencies
+        emailProviderInstance = emailAdapter.getEmailAdapter();
+
+        // Inject dependencies needed by the adapter
+        const AdapterClass = emailProviderInstance.constructor;
+        const adapterConfig = {
+            configService,
+            settingsCache,
+            errorHandler
+        };
+
+        // Add labs for Mailgun
+        if (emailProvider === 'mailgun') {
+            adapterConfig.labs = labs;
+        }
+
+        // Merge with provider-specific config
+        if (bulkEmailConfig[emailProvider]) {
+            Object.assign(adapterConfig, bulkEmailConfig[emailProvider]);
+        }
+
+        emailProviderInstance = new AdapterClass(adapterConfig);
+
         const i18nLanguage = settingsCache.get('locale') || 'en';
         const i18n = i18nLib(i18nLanguage, 'ghost');
 
         events.on('settings.locale.edited', (model) => {
             debug('locale changed, updating i18n to', model.get('value'));
             i18n.changeLanguage(model.get('value'));
-        });
-
-        const mailgunEmailProvider = new MailgunEmailProvider({
-            mailgunClient,
-            errorHandler
         });
 
         const emailRenderer = new EmailRenderer({
@@ -96,7 +119,7 @@ class EmailServiceWrapper {
         });
 
         const sendingService = new SendingService({
-            emailProvider: mailgunEmailProvider,
+            emailProvider: emailProviderInstance,
             emailRenderer,
             emailAddressService: emailAddressService.service
         });

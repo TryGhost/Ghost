@@ -13,7 +13,6 @@ class EmailAnalyticsServiceWrapper {
         const EmailAnalyticsService = require('./email-analytics-service');
         const EmailEventStorage = require('../email-service/email-event-storage');
         const EmailEventProcessor = require('../email-service/email-event-processor');
-        const MailgunProvider = require('./email-analytics-provider-mailgun');
         const {EmailRecipientFailure, EmailSpamComplaintEvent, Email} = require('../../models');
         const StartEmailAnalyticsJobEvent = require('./events/start-email-analytics-job-event');
         const domainEvents = require('@tryghost/domain-events');
@@ -47,13 +46,44 @@ class EmailAnalyticsServiceWrapper {
             prometheusClient
         });
 
+        // Use unified email adapter (handles both sending and analytics)
+        const bulkEmailConfig = config.get('bulkEmail');
+        const emailProvider = bulkEmailConfig?.provider || 'mailgun';
+
+        logging.info(`[EmailAnalytics] Initializing ${emailProvider} analytics via unified adapter`);
+
+        const emailAdapter = require('../../adapters/email');
+        const providers = [];
+
+        try {
+            // Get unified email adapter instance (same one used for email sending)
+            const adapterInstance = emailAdapter.getEmailAdapter();
+
+            // Inject dependencies needed by the adapter
+            const AdapterClass = adapterInstance.constructor;
+            const adapterConfig = {
+                configService: config,
+                settingsCache: settings
+            };
+
+            // Add labs for Mailgun
+            if (emailProvider === 'mailgun') {
+                adapterConfig.labs = labs;
+            }
+
+            // Create a new instance for analytics (the email service has its own instance)
+            providers.push(new AdapterClass(adapterConfig));
+        } catch (error) {
+            logging.error(`[EmailAnalytics] Failed to load ${emailProvider} adapter: ${error.message}`);
+            logging.error(error.stack);
+            throw error;
+        }
+
         this.service = new EmailAnalyticsService({
             config,
             settings,
             eventProcessor,
-            providers: [
-                new MailgunProvider({config, settings, labs})
-            ],
+            providers,
             queries,
             domainEvents,
             prometheusClient
