@@ -66,4 +66,9 @@ export interface AutomationsRepository {
     browse(): Promise<Page<AutomationSummary>>;
     getById(id: string): Promise<Automation | null>;
     edit(id: string, data: EditAutomationData): Promise<Automation | null>;
+    trigger(options: {
+        memberEmail: string;
+        memberId: string;
+        memberStatus: 'free' | 'paid';
+    }): Promise<void>;
 }

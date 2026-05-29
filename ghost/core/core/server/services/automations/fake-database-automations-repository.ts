@@ -2,6 +2,7 @@ import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import ObjectId from 'bson-objectid';
 import type {DatabaseSync} from 'node:sqlite';
+import {MEMBER_WELCOME_EMAIL_SLUGS} from '../member-welcome-emails/constants';
 import type {
     Automation,
     AutomationAction,
@@ -11,6 +12,8 @@ import type {
     EditAutomationData,
     Page
 } from './automations-repository';
+
+const HOUR_MS = 60 * 60 * 1000;
 
 const messages = {
     invalidAutomationActionRevision: 'Automation action "{actionId}" of type "{actionType}" is missing required revision field "{field}".',
@@ -43,6 +46,14 @@ interface EdgeRow {
     source_action_id: string;
     target_action_id: string;
 }
+
+type NextActionRevisionRow = {
+    automation_id: string;
+    action_id: string;
+    automation_action_revision_id: string;
+    type: 'wait' | 'send_email';
+    wait_hours: number | null;
+};
 
 export function createFakeDatabaseAutomationsRepository({
     getDatabase
@@ -98,6 +109,16 @@ export function createFakeDatabaseAutomationsRepository({
 
                 return buildAutomation(database, updatedAutomation);
             });
+        },
+
+        async trigger(options: {
+            memberEmail: string;
+            memberId: string;
+            memberStatus: 'free' | 'paid';
+        }): Promise<void> {
+            const database = getDatabase();
+
+            return withTransaction(database, () => trigger(database, options));
         }
     };
 }
@@ -112,6 +133,112 @@ function withTransaction<T>(database: DatabaseSync, operation: () => T): T {
     } catch (error) {
         database.exec('ROLLBACK');
         throw error;
+    }
+}
+
+function trigger(database: DatabaseSync, {
+    memberEmail,
+    memberId,
+    memberStatus
+}: Readonly<{
+    memberEmail: string;
+    memberId: string;
+    memberStatus: 'free' | 'paid';
+}>): void {
+    const firstAction = findFirstActionRevision(database, memberStatus);
+    if (!firstAction) {
+        return;
+    }
+
+    const now = new Date();
+    const nowString = now.toISOString();
+
+    const readyAt = getReadyAtForAction(firstAction, now);
+
+    const run = {
+        id: ObjectId().toHexString(),
+        created_at: nowString,
+        updated_at: nowString,
+        automation_id: firstAction.automation_id,
+        member_id: memberId,
+        member_email: memberEmail
+    };
+
+    database.prepare(`
+        INSERT INTO automation_runs
+        (id, created_at, updated_at, automation_id, member_id, member_email) VALUES
+        (:id, :created_at, :updated_at, :automation_id, :member_id, :member_email)
+    `).run(run);
+    database.prepare(`
+        INSERT INTO automation_run_steps
+        (id, created_at, updated_at, automation_run_id, automation_action_revision_id, ready_at) VALUES
+        (:id, :created_at, :updated_at, :automation_run_id, :automation_action_revision_id, :ready_at)
+    `).run({
+        id: ObjectId().toHexString(),
+        created_at: nowString,
+        updated_at: nowString,
+        automation_run_id: run.id,
+        automation_action_revision_id: firstAction.automation_action_revision_id,
+        ready_at: readyAt.toISOString()
+    });
+}
+
+function findFirstActionRevision(database: DatabaseSync, memberStatus: 'free' | 'paid'): NextActionRevisionRow | null {
+    const automationSlug: NonNullable<string> = MEMBER_WELCOME_EMAIL_SLUGS[memberStatus];
+
+    const row = database.prepare(`
+        SELECT
+            automation.id AS automation_id,
+            actions.id AS action_id,
+            revisions.id AS automation_action_revision_id,
+            actions.type AS type,
+            revisions.wait_hours AS wait_hours
+        FROM automations automation
+        INNER JOIN automation_actions actions ON actions.automation_id = automation.id
+        INNER JOIN automation_action_revisions revisions ON revisions.action_id = actions.id
+        WHERE automation.slug = ?
+            AND automation.status = 'active'
+            AND actions.deleted_at IS NULL
+            AND NOT EXISTS (
+                SELECT 1
+                FROM automation_action_edges edge
+                INNER JOIN automation_actions source_actions ON source_actions.id = edge.source_action_id
+                    AND source_actions.deleted_at IS NULL
+                WHERE edge.target_action_id = actions.id
+            )
+            AND revisions.created_at = (
+                SELECT MAX(created_at)
+                FROM automation_action_revisions
+                WHERE action_id = actions.id
+            )
+        ORDER BY actions.created_at, actions.id
+        LIMIT 1
+    `).get(automationSlug) as NextActionRevisionRow | undefined;
+
+    return row ?? null;
+}
+
+function getReadyAtForAction(
+    action: Pick<NextActionRevisionRow, 'action_id' | 'type' | 'wait_hours'>,
+    now: Readonly<Date>
+): Date {
+    switch (action.type) {
+    case 'wait': {
+        const waitHours = requireValue({
+            ...action,
+            id: action.action_id
+        }, 'wait_hours');
+        const waitMs = waitHours * HOUR_MS;
+        return new Date(now.getTime() + waitMs);
+    }
+    case 'send_email':
+        return now;
+    default: {
+        const _exhaustive: never = action.type;
+        throw new errors.IncorrectUsageError({
+            message: `Unexpected action type ${_exhaustive}`
+        });
+    }
     }
 }
 

@@ -10,16 +10,16 @@
  * migration once we're sure this schema is correct.
  */
 
-const errors = require('@tryghost/errors');
-const ObjectId = require('bson-objectid').default;
+import * as errors from '@tryghost/errors';
+import ObjectId from 'bson-objectid';
+import type {DatabaseSync} from 'node:sqlite';
 
-/**
- * @returns {import('node:sqlite').DatabaseSync}
- */
-function createTemporaryFakeAutomationsDatabase() {
-    const {DatabaseSync} = require('node:sqlite');
+export function createTemporaryFakeAutomationsDatabase(): DatabaseSync {
+    // We want to do this import dynamically.
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const sqlite = require('node:sqlite');
 
-    const database = new DatabaseSync(':memory:');
+    const database = new sqlite.DatabaseSync(':memory:');
     database.exec('PRAGMA foreign_keys = ON;');
 
     const id = () => ObjectId().toHexString();
@@ -98,10 +98,10 @@ CREATE TABLE automation_run_steps (
   automation_run_id TEXT NOT NULL REFERENCES automation_runs(id),
   automation_action_revision_id TEXT NOT NULL REFERENCES automation_action_revisions(id),
   ready_at TEXT NOT NULL,
-  step_attempts INTEGER NOT NULL,
+  step_attempts INTEGER NOT NULL DEFAULT 0,
   started_at TEXT,
   finished_at TEXT,
-  status TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pending',
   locked_by TEXT,
   locked_at TEXT
 ) STRICT;
@@ -312,13 +312,9 @@ CREATE TABLE automation_run_steps (
     return database;
 }
 
-/** @type {null | import('node:sqlite').DatabaseSync} */
-let cachedDatabase = null;
+let cachedDatabase: DatabaseSync | null = null;
 
-/**
- * @returns {import('node:sqlite').DatabaseSync}
- */
-function getTemporaryFakeAutomationsDatabase() {
+export function getTemporaryFakeAutomationsDatabase(): DatabaseSync {
     if (process.env.NODE_ENV !== 'development') {
         throw new errors.IncorrectUsageError({
             message: 'Fake automations database should only be used in development'
@@ -327,6 +323,3 @@ function getTemporaryFakeAutomationsDatabase() {
     cachedDatabase ??= createTemporaryFakeAutomationsDatabase();
     return cachedDatabase;
 }
-
-exports.createTemporaryFakeAutomationsDatabase = createTemporaryFakeAutomationsDatabase;
-exports.getTemporaryFakeAutomationsDatabase = getTemporaryFakeAutomationsDatabase;

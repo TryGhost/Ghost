@@ -19,6 +19,7 @@ const WellKnownController = require('./controllers/well-known-controller');
 const {EmailSuppressedEvent} = require('../../email-suppression-list/email-suppression-list');
 const MagicLink = require('../../lib/magic-link/magic-link');
 const DomainEvents = require('@tryghost/domain-events');
+const automationsApi = require('../../automations/automations-api');
 
 module.exports = function MembersAPI({
     tokenConfig: {
@@ -104,6 +105,7 @@ module.exports = function MembersAPI({
         tokenService,
         newslettersService,
         productRepository,
+        automationsApi,
         Automation,
         WelcomeEmailAutomationRun,
         Member,
