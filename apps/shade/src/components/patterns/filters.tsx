@@ -852,7 +852,7 @@ export function FilterDatePicker<T = unknown>({
                 </PopoverTrigger>
                 <PopoverContent align="center" className="w-auto overflow-hidden p-0" sideOffset={4}>
                     <Calendar
-                        captionLayout="dropdown"
+                        captionLayout="dropdown-months"
                         mode="single"
                         month={month}
                         selected={parsed}
