@@ -91,6 +91,16 @@ async function uploadCsv() {
     fireEvent.click(importButton);
 }
 
+function renderModal(props: Partial<Parameters<typeof ImportMembersModal>[0]> = {}) {
+    return render(
+        <ImportMembersModal
+            open
+            onOpenChange={() => {}}
+            {...props}
+        />
+    );
+}
+
 class MockFileReader {
     static LOADING = 1;
     onload: ((event: {target: {result: string}}) => void) | null = null;
@@ -155,12 +165,7 @@ describe('ImportMembersModal', () => {
     });
 
     it('uploads members through the members API mutation so member queries are invalidated', async () => {
-        render(
-            <ImportMembersModal
-                open
-                onOpenChange={() => {}}
-            />
-        );
+        renderModal();
 
         await uploadCsv();
 
@@ -180,13 +185,7 @@ describe('ImportMembersModal', () => {
 
     it('calls onComplete when the upload response is accepted for background processing', async () => {
         const onComplete = vi.fn();
-        render(
-            <ImportMembersModal
-                open
-                onComplete={onComplete}
-                onOpenChange={() => {}}
-            />
-        );
+        renderModal({onComplete});
 
         await uploadCsv();
 
@@ -212,13 +211,7 @@ describe('ImportMembersModal', () => {
             }
         });
 
-        render(
-            <ImportMembersModal
-                open
-                onComplete={onComplete}
-                onOpenChange={() => {}}
-            />
-        );
+        renderModal({onComplete});
 
         await uploadCsv();
 
@@ -236,12 +229,7 @@ describe('ImportMembersModal', () => {
     it('shows the file size error when the upload is too large', async () => {
         mockImportMembers.mockRejectedValueOnce(new RequestEntityTooLargeError(new Response(null, {status: 413}), 'too large'));
 
-        render(
-            <ImportMembersModal
-                open
-                onOpenChange={() => {}}
-            />
-        );
+        renderModal();
 
         await uploadCsv();
 
@@ -253,13 +241,7 @@ describe('ImportMembersModal', () => {
         const errorData = createApiError('HostLimitError', 'Please verify your email before importing this many members.', 'EMAIL_VERIFICATION_NEEDED');
         mockImportMembers.mockRejectedValueOnce(new HostLimitError(new Response(JSON.stringify(errorData), {status: 403}), errorData));
 
-        render(
-            <ImportMembersModal
-                open
-                onComplete={onComplete}
-                onOpenChange={() => {}}
-            />
-        );
+        renderModal({onComplete});
 
         await uploadCsv();
 
@@ -273,12 +255,7 @@ describe('ImportMembersModal', () => {
         const errorData = createApiError('ValidationError', 'Please map Email to one of the fields in the CSV.');
         mockImportMembers.mockRejectedValueOnce(new ValidationError(new Response(JSON.stringify(errorData), {status: 422}), errorData));
 
-        render(
-            <ImportMembersModal
-                open
-                onOpenChange={() => {}}
-            />
-        );
+        renderModal();
 
         await uploadCsv();
 
@@ -289,12 +266,7 @@ describe('ImportMembersModal', () => {
         const errorData = createApiError('DataImportError', 'Some rows could not be imported.');
         mockImportMembers.mockRejectedValueOnce(new JSONError(new Response(JSON.stringify(errorData), {status: 422}), errorData));
 
-        render(
-            <ImportMembersModal
-                open
-                onOpenChange={() => {}}
-            />
-        );
+        renderModal();
 
         await uploadCsv();
 
@@ -304,12 +276,7 @@ describe('ImportMembersModal', () => {
     it('shows a generic error for unexpected successful upload responses', async () => {
         mockImportMembers.mockResolvedValueOnce({meta: {}} as never);
 
-        render(
-            <ImportMembersModal
-                open
-                onOpenChange={() => {}}
-            />
-        );
+        renderModal();
 
         await uploadCsv();
 
@@ -319,12 +286,7 @@ describe('ImportMembersModal', () => {
     it('shows tier as a mapped field when importMemberTier is enabled', async () => {
         mockCsvContents = 'email,import_tier\nmember@example.com,Gold';
 
-        render(
-            <ImportMembersModal
-                open
-                onOpenChange={() => {}}
-            />
-        );
+        renderModal();
 
         const dropTarget = screen.getByRole('button', {name: /select or drop a csv file/i});
         const csvFile = createFile('members.csv', 'text/csv', mockCsvContents);

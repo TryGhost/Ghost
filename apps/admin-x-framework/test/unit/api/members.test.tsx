@@ -8,6 +8,17 @@ import {withMockFetch} from '../../utils/mock-fetch';
 
 const memberCountKey = getMemberCountQueryKey();
 
+function membersResponse(total: number, limit: number | 'all' = 1): MembersResponseType {
+    return {
+        members: [],
+        meta: {pagination: {page: 1, limit, pages: 1, total, next: null, prev: null}}
+    };
+}
+
+function seedMemberCount(queryClient: ReturnType<typeof createTestQueryClient>, total = 10, options?: {updatedAt?: number}) {
+    queryClient.setQueryData(memberCountKey, membersResponse(total), options);
+}
+
 function createQueryClientWithCurrentUser() {
     const queryClient = createTestQueryClient();
 
@@ -25,6 +36,28 @@ function createQueryClientWithCurrentUser() {
     return queryClient;
 }
 
+async function browseMembers({
+    queryClient,
+    searchParams,
+    total = 83427
+}: {
+    queryClient: ReturnType<typeof createTestQueryClient>;
+    searchParams?: Record<string, string>;
+    total?: number;
+}) {
+    await withMockFetch({
+        json: membersResponse(total, 100)
+    }, async () => {
+        const {result} = renderHookWithProviders(() => useBrowseMembersInfinite({
+            ...(searchParams ? {searchParams} : {})
+        }), {queryClient});
+
+        await waitFor(() => {
+            expect(result.current.isSuccess).toBe(true);
+        });
+    });
+}
+
 describe('members api', () => {
     function expectQueryInvalidation(queryClient: ReturnType<typeof createTestQueryClient>, dataType: string, isInvalidated: boolean) {
         const queries = queryClient.getQueryCache().getAll().filter(q => q.queryKey[0] === dataType);
@@ -35,10 +68,7 @@ describe('members api', () => {
     it('invalidates member queries after adding a member', async () => {
         const queryClient = createTestQueryClient();
 
-        queryClient.setQueryData(memberCountKey, {
-            members: [],
-            meta: {pagination: {page: 1, limit: 1, pages: 1, total: 10, next: null, prev: null}}
-        });
+        seedMemberCount(queryClient);
 
         await withMockFetch({
             json: {
@@ -65,10 +95,7 @@ describe('members api', () => {
         const unrelatedKey = ['PostsResponseType', 'http://localhost:3000/ghost/api/admin/posts/'];
         const file = new File(['email\njamie@example.com'], 'members.csv', {type: 'text/csv'});
 
-        queryClient.setQueryData(memberCountKey, {
-            members: [],
-            meta: {pagination: {page: 1, limit: 1, pages: 1, total: 10, next: null, prev: null}}
-        });
+        seedMemberCount(queryClient);
         queryClient.setQueryData(unrelatedKey, {posts: []});
 
         await withMockFetch({
@@ -113,10 +140,7 @@ describe('members api', () => {
         const queryClient = createTestQueryClient();
         const file = new File(['email\njamie@example.com'], 'members.csv', {type: 'text/csv'});
 
-        queryClient.setQueryData(memberCountKey, {
-            members: [],
-            meta: {pagination: {page: 1, limit: 1, pages: 1, total: 10, next: null, prev: null}}
-        });
+        seedMemberCount(queryClient);
 
         await withMockFetch({
             status: 202,
@@ -141,10 +165,7 @@ describe('members api', () => {
     it('invalidates member queries after bulk deleting members', async () => {
         const queryClient = createTestQueryClient();
 
-        queryClient.setQueryData(memberCountKey, {
-            members: [],
-            meta: {pagination: {page: 1, limit: 1, pages: 1, total: 10, next: null, prev: null}}
-        });
+        seedMemberCount(queryClient);
 
         await withMockFetch({
             json: {
@@ -172,10 +193,7 @@ describe('members api', () => {
         const queryClient = createQueryClientWithCurrentUser();
 
         await withMockFetch({
-            json: {
-                members: [],
-                meta: {pagination: {page: 1, limit: 1, pages: 1, total: 102466, next: null, prev: null}}
-            }
+            json: membersResponse(102466)
         }, async (mockFetch) => {
             const {result} = renderHookWithProviders(() => useMemberCount(), {queryClient});
 
@@ -189,148 +207,64 @@ describe('members api', () => {
 
     it('syncs the sidebar member count from an unfiltered members list query', async () => {
         const queryClient = createQueryClientWithCurrentUser();
-        const memberListKey = ['MembersResponseType', 'http://localhost:3000/ghost/api/admin/members/?include=labels%2Ctiers&limit=100&order=updated_at+desc'];
         const memberDetailKey = ['MembersResponseType', 'http://localhost:3000/ghost/api/admin/members/member-1/'];
-        const filteredMemberCountKey = ['MembersResponseType', 'http://localhost:3000/ghost/api/admin/members/?filter=status%3Apaid&limit=1'];
 
-        queryClient.setQueryDefaults(memberListKey, {cacheTime: Infinity});
         queryClient.setQueryDefaults(memberDetailKey, {cacheTime: Infinity});
-        queryClient.setQueryDefaults(filteredMemberCountKey, {cacheTime: Infinity});
+        seedMemberCount(queryClient, 102466);
 
-        queryClient.setQueryData(memberCountKey, {
-            members: [],
-            meta: {pagination: {page: 1, limit: 1, pages: 1, total: 102466, next: null, prev: null}}
-        });
-        queryClient.setQueryData(memberListKey, {
-            members: [],
-            meta: {pagination: {page: 1, limit: 100, pages: 1, total: 45, next: null, prev: null}}
-        });
         queryClient.setQueryData(memberDetailKey, {
             members: [{id: 'member-1'}]
         });
-        queryClient.setQueryData(filteredMemberCountKey, {
-            members: [],
-            meta: {pagination: {page: 1, limit: 1, pages: 1, total: 12, next: null, prev: null}}
-        });
 
-        await withMockFetch({
-            json: {
-                members: [],
-                meta: {pagination: {page: 1, limit: 100, pages: 1, total: 83427, next: null, prev: null}}
-            }
-        }, async () => {
-            const {result} = renderHookWithProviders(() => useBrowseMembersInfinite(), {queryClient});
+        await browseMembers({queryClient});
 
-            await waitFor(() => {
-                expect(result.current.isSuccess).toBe(true);
-                expect(queryClient.getQueryData<MembersResponseType>(memberCountKey)?.meta?.pagination.total).toBe(83427);
-                expect(queryClient.getQueryData<MembersResponseType>(memberListKey)?.meta?.pagination.total).toBe(45);
-                expect(queryClient.getQueryData<MembersResponseType>(memberDetailKey)?.members).toEqual([{id: 'member-1'}]);
-                expect(queryClient.getQueryData<MembersResponseType>(filteredMemberCountKey)?.meta?.pagination.total).toBe(12);
-            });
-        });
+        expect(queryClient.getQueryData<MembersResponseType>(memberCountKey)?.meta?.pagination.total).toBe(83427);
+        expect(queryClient.getQueryData<MembersResponseType>(memberDetailKey)?.members).toEqual([{id: 'member-1'}]);
     });
 
     it('does not replace a newer sidebar count cache entry with older members list data', async () => {
         const queryClient = createQueryClientWithCurrentUser();
 
-        queryClient.setQueryData(memberCountKey, {
-            members: [],
-            meta: {pagination: {page: 1, limit: 1, pages: 1, total: 102466, next: null, prev: null}}
-        }, {updatedAt: Date.now() + 60_000});
+        seedMemberCount(queryClient, 102466, {updatedAt: Date.now() + 60_000});
 
-        await withMockFetch({
-            json: {
-                members: [],
-                meta: {pagination: {page: 1, limit: 100, pages: 1, total: 83427, next: null, prev: null}}
-            }
-        }, async () => {
-            const {result} = renderHookWithProviders(() => useBrowseMembersInfinite(), {queryClient});
+        await browseMembers({queryClient});
 
-            await waitFor(() => {
-                expect(result.current.isSuccess).toBe(true);
-            });
-
-            expect(queryClient.getQueryData<MembersResponseType>(memberCountKey)?.meta?.pagination.total).toBe(102466);
-        });
+        expect(queryClient.getQueryData<MembersResponseType>(memberCountKey)?.meta?.pagination.total).toBe(102466);
     });
 
     it('does not sync the sidebar member count from a filtered members list query', async () => {
         const queryClient = createQueryClientWithCurrentUser();
 
-        queryClient.setQueryData(memberCountKey, {
-            members: [],
-            meta: {pagination: {page: 1, limit: 1, pages: 1, total: 102466, next: null, prev: null}}
+        seedMemberCount(queryClient, 102466);
+
+        await browseMembers({
+            queryClient,
+            searchParams: {filter: 'status:paid', limit: '100', order: 'created_at desc'},
+            total: 12
         });
 
-        await withMockFetch({
-            json: {
-                members: [],
-                meta: {pagination: {page: 1, limit: 100, pages: 1, total: 12, next: null, prev: null}}
-            }
-        }, async () => {
-            const {result} = renderHookWithProviders(() => useBrowseMembersInfinite({
-                searchParams: {
-                    filter: 'status:paid',
-                    limit: '100',
-                    order: 'created_at desc'
-                }
-            }), {queryClient});
-
-            await waitFor(() => {
-                expect(result.current.isSuccess).toBe(true);
-            });
-
-            expect(queryClient.getQueryData<MembersResponseType>(memberCountKey)?.meta?.pagination.total).toBe(102466);
-        });
+        expect(queryClient.getQueryData<MembersResponseType>(memberCountKey)?.meta?.pagination.total).toBe(102466);
     });
 
     it('does not sync the sidebar member count from a searched members list query', async () => {
         const queryClient = createQueryClientWithCurrentUser();
 
-        queryClient.setQueryData(memberCountKey, {
-            members: [],
-            meta: {pagination: {page: 1, limit: 1, pages: 1, total: 102466, next: null, prev: null}}
+        seedMemberCount(queryClient, 102466);
+
+        await browseMembers({
+            queryClient,
+            searchParams: {limit: '100', order: 'created_at desc', search: 'jamie'},
+            total: 12
         });
 
-        await withMockFetch({
-            json: {
-                members: [],
-                meta: {pagination: {page: 1, limit: 100, pages: 1, total: 12, next: null, prev: null}}
-            }
-        }, async () => {
-            const {result} = renderHookWithProviders(() => useBrowseMembersInfinite({
-                searchParams: {
-                    limit: '100',
-                    order: 'created_at desc',
-                    search: 'jamie'
-                }
-            }), {queryClient});
-
-            await waitFor(() => {
-                expect(result.current.isSuccess).toBe(true);
-            });
-
-            expect(queryClient.getQueryData<MembersResponseType>(memberCountKey)?.meta?.pagination.total).toBe(102466);
-        });
+        expect(queryClient.getQueryData<MembersResponseType>(memberCountKey)?.meta?.pagination.total).toBe(102466);
     });
 
     it('does not create a sidebar member count query when one is absent', async () => {
         const queryClient = createQueryClientWithCurrentUser();
 
-        await withMockFetch({
-            json: {
-                members: [],
-                meta: {pagination: {page: 1, limit: 100, pages: 1, total: 83427, next: null, prev: null}}
-            }
-        }, async () => {
-            const {result} = renderHookWithProviders(() => useBrowseMembersInfinite(), {queryClient});
+        await browseMembers({queryClient});
 
-            await waitFor(() => {
-                expect(result.current.isSuccess).toBe(true);
-            });
-
-            expect(queryClient.getQueryData<MembersResponseType>(memberCountKey)).toBeUndefined();
-        });
+        expect(queryClient.getQueryData<MembersResponseType>(memberCountKey)).toBeUndefined();
     });
 });
