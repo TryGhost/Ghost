@@ -2,6 +2,7 @@
  * @file Middleware to set the appropriate cache headers on the frontend
  */
 const config = require('../../../shared/config');
+const labs = require('../../../shared/labs');
 const shared = require('../../../server/web/shared');
 const {api} = require('../../services/proxy');
 const preview = require('../../services/theme-engine/preview');
@@ -66,6 +67,14 @@ const getMiddleware = async (getFreeTier = async () => {
 
         // CASE: Never cache preview routes
         if (req.path?.startsWith('/p/')) {
+            return shared.middleware.cacheControl('noCache')(req, res, next);
+        }
+
+        // CASE: Never cache gift-link requests. The response is the unlocked post,
+        // and query strings are not part of the cache key — caching it would leak
+        // the unlocked content to everyone hitting the clean URL. Mirrors the /p/
+        // preview behavior. Flag-gated so the param can't bust cache when off.
+        if (req.query?.gift && labs.isSet('giftLinks')) {
             return shared.middleware.cacheControl('noCache')(req, res, next);
         }
 

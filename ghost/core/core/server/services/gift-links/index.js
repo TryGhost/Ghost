@@ -16,6 +16,10 @@ class GiftLinksServiceWrapper {
 
         this.api = new GiftLinksService({models});
     }
+
+    get middleware() {
+        return require('./middleware');
+    }
 }
 
 module.exports = new GiftLinksServiceWrapper();

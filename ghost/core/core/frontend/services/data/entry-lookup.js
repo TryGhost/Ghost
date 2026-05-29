@@ -39,7 +39,9 @@ function entryLookup(postUrl, routerOptions, locals) {
         include: 'authors,tags,tiers'
     };
 
-    options.context = {member: locals.member};
+    // `giftLink` (resolved upstream from a `?gift=TOKEN` param) flows into the
+    // content-API gating serializer (forPost) to grant content-only access.
+    options.context = {member: locals.member, giftLink: locals.giftLink || null};
 
     return (api[routerOptions.query.controller] || api[routerOptions.query.resource])
         .read(_.extend(_.pick(params, 'slug', 'id'), options))
