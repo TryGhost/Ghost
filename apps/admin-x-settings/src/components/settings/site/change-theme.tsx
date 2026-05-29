@@ -2,7 +2,7 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
 import {Button, Heading, LimitModal, Menu, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design-system';
-import {type Theme, isDefaultOrLegacyTheme, useBrowseThemes} from '@tryghost/admin-x-framework/api/themes';
+import {type Theme, useBrowseThemes} from '@tryghost/admin-x-framework/api/themes';
 import {downloadFile, getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useCheckThemeLimitError} from '../../../hooks/use-check-theme-limit-error';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -47,7 +47,16 @@ const ChangeTheme: React.FC<{ keywords: string[] }> = ({keywords}) => {
             return;
         }
 
-        const limitError = await checkThemeLimitError(isDefaultOrLegacyTheme(activeTheme) ? '.' : activeTheme.name);
+        // The editor saves through POST /themes/upload/, where the server
+        // calls errorIfWouldGoOverLimit('customThemes', {value: '.'}) — a
+        // sentinel that's never in the allowlist, so every save by a limited
+        // customer is blocked regardless of which theme they're editing.
+        // Mirror that sentinel here so the launch gate is consistent with
+        // what happens at save time. Passing the theme name instead lets a
+        // limited customer enter the editor whenever the theme they're
+        // already on is in the allowlist, then surface a generic upload
+        // failure when they hit Save.
+        const limitError = await checkThemeLimitError('.');
 
         if (limitError) {
             NiceModal.show(LimitModal, {
