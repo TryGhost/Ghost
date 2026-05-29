@@ -2126,11 +2126,11 @@ importers:
         specifier: https://github.com/madrobby/keymaster.git
         version: https://codeload.github.com/madrobby/keymaster/tar.gz/f8f43ddafad663b505dc0908e72853bcf8daea49
       liquid-fire:
-        specifier: 0.34.0
-        version: 0.34.0(ember-source@3.24.0(@babel/core@7.29.7))
+        specifier: 0.37.1
+        version: 0.37.1(@babel/core@7.29.7)(ember-source@3.24.0(@babel/core@7.29.7))(velocity-animate@1.5.2)
       liquid-wormhole:
         specifier: 3.0.1
-        version: 3.0.1(@babel/core@7.29.7)(ember-source@3.24.0(@babel/core@7.29.7))(liquid-fire@0.34.0(ember-source@3.24.0(@babel/core@7.29.7)))
+        version: 3.0.1(@babel/core@7.29.7)(ember-source@3.24.0(@babel/core@7.29.7))(liquid-fire@0.37.1(@babel/core@7.29.7)(ember-source@3.24.0(@babel/core@7.29.7))(velocity-animate@1.5.2))
       loader.js:
         specifier: 4.7.0
         version: 4.7.0
@@ -10758,9 +10758,6 @@ packages:
     resolution: {integrity: sha512-NXfi+Vas24n3Ivo21GvENTI55qxKu7OwKRnCLWXld8MiLiQKQlWIq28eoARaFj0lTUFwUa4jKZeA7fW9PiWQeg==}
     engines: {node: 8.* || >= 10.*}
 
-  broccoli-string-replace@0.1.2:
-    resolution: {integrity: sha512-QHESTrrrPlKuXQNWsvXawSQbV2g34wCZ5oKgd6bntdOuN8VHxbg1BCBHqVY5HxXJhWelimgGxj3vI7ECkyij8g==}
-
   broccoli-svg-optimizer@2.1.0:
     resolution: {integrity: sha512-fGB4WUF8R9tHUf6M2t8F38ILLdVy+CQVaOFwHavaaXPD0kkoTsHjBE7erQZuk0PrioqLIoyA9dkeNMlGwohReA==}
     engines: {node: 12.* || 14.* || >= 16}
@@ -16257,11 +16254,10 @@ packages:
     engines: {node: '>=20.17'}
     hasBin: true
 
-  liquid-fire@0.34.0:
-    resolution: {integrity: sha512-IppYBxIUhv00+Hi2Lno9kG4pcBUHVJD2ROQA7o9r0bLuLDfXTG94C8m6dwfYlswQBGdJAuN6a9ItLxftj8DgSw==}
-    engines: {node: 12.* || 14.* || >= 16}
+  liquid-fire@0.37.1:
+    resolution: {integrity: sha512-ULu4OlcqSB1iJp+/NPPqJCi8XgiMDHuhjKLsazsQTb4xB15FI2HFV/DCfzvFxfUtoaeKlnmxsrUATBmPww0Kgg==}
     peerDependencies:
-      ember-source: '>= 3.8.0'
+      velocity-animate: ^1.5.2
 
   liquid-wormhole@3.0.1:
     resolution: {integrity: sha512-DBnUTuvekd1zC9xQMm7/IY1g6UmfhRYgZOVKhCwIMdeDsS82Bk7pz/Qhr/Bg4ulV3xSqzcET7LRa7D3BKztoMA==}
@@ -16685,9 +16681,6 @@ packages:
 
   markdown-table@3.0.4:
     resolution: {integrity: sha512-wiYz4+JrLyb/DqW2hkFJxP7Vd7JuTDm77fvbM8VfEQdmSMqcImWeeRbHwZjBjIFki/VaMK2BhFi7oUUZeM5bqw==}
-
-  match-media@0.2.0:
-    resolution: {integrity: sha512-EoLj8yVf95UNcZMbNJBlAA3E6XLzgMI6ZbnL90WnL2YCzOO4Nza1Ol6TH9ElbuUcDWxN7KxgVM2vYI6P5JqvKg==}
 
   matcher-collection@1.1.2:
     resolution: {integrity: sha512-YQ/teqaOIIfUHedRam08PB3NK7Mjct6BvzRnJmpGDm8uFXpNr1sbY4yuflI5JcEs6COpYA0FpRQhSDBf1tT95g==}
@@ -32175,13 +32168,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  broccoli-string-replace@0.1.2:
-    dependencies:
-      broccoli-persistent-filter: 2.3.1
-      minimatch: 3.1.5
-    transitivePeerDependencies:
-      - supports-color
-
   broccoli-svg-optimizer@2.1.0:
     dependencies:
       broccoli-persistent-filter: 2.3.1
@@ -39749,24 +39735,19 @@ snapshots:
       tinyexec: 1.2.2
       yaml: 2.9.0
 
-  liquid-fire@0.34.0(ember-source@3.24.0(@babel/core@7.29.7)):
+  liquid-fire@0.37.1(@babel/core@7.29.7)(ember-source@3.24.0(@babel/core@7.29.7))(velocity-animate@1.5.2):
     dependencies:
+      '@embroider/addon-shim': 1.10.2
       '@embroider/macros': 1.16.13
-      broccoli-funnel: 3.0.8
-      broccoli-merge-trees: 4.2.0
-      broccoli-stew: 3.0.0
-      broccoli-string-replace: 0.1.2
-      ember-cli-babel: 7.26.11
-      ember-cli-htmlbars: 6.3.0
-      ember-cli-version-checker: 5.1.2
-      ember-source: 3.24.0(@babel/core@7.29.7)
-      match-media: 0.2.0
+      ember-modifier: 4.2.0(@babel/core@7.29.7)(ember-source@3.24.0(@babel/core@7.29.7))
       velocity-animate: 1.5.2
     transitivePeerDependencies:
+      - '@babel/core'
       - '@glint/template'
+      - ember-source
       - supports-color
 
-  liquid-wormhole@3.0.1(@babel/core@7.29.7)(ember-source@3.24.0(@babel/core@7.29.7))(liquid-fire@0.34.0(ember-source@3.24.0(@babel/core@7.29.7))):
+  liquid-wormhole@3.0.1(@babel/core@7.29.7)(ember-source@3.24.0(@babel/core@7.29.7))(liquid-fire@0.37.1(@babel/core@7.29.7)(ember-source@3.24.0(@babel/core@7.29.7))(velocity-animate@1.5.2)):
     dependencies:
       '@ember/jquery': 2.0.0
       '@ember/render-modifiers': 2.1.0(@babel/core@7.29.7)(ember-source@3.24.0(@babel/core@7.29.7))
@@ -39776,7 +39757,7 @@ snapshots:
       ember-cli-babel: 7.26.11
       ember-cli-htmlbars: 6.3.0
       ember-decorators: 6.1.1
-      liquid-fire: 0.34.0(ember-source@3.24.0(@babel/core@7.29.7))
+      liquid-fire: 0.37.1(@babel/core@7.29.7)(ember-source@3.24.0(@babel/core@7.29.7))(velocity-animate@1.5.2)
       perf-primitives: 0.0.6(@babel/core@7.29.7)
     transitivePeerDependencies:
       - '@babel/core'
@@ -40228,8 +40209,6 @@ snapshots:
   markdown-table@1.1.3: {}
 
   markdown-table@3.0.4: {}
-
-  match-media@0.2.0: {}
 
   matcher-collection@1.1.2:
     dependencies:
