@@ -59,11 +59,52 @@ const PRIVATE_FEATURES = [
 module.exports.GA_KEYS = [...GA_FEATURES];
 module.exports.WRITABLE_KEYS_ALLOWLIST = [...PUBLIC_BETA_FEATURES, ...PRIVATE_FEATURES];
 
+// Resolved remote feature-flag overrides for this instance, pushed in by the
+// remote-flags service (Pro-only). A flat `{flag: boolean}` map; empty when the
+// feature is disabled or no manifest has been applied, which makes the overlay in
+// getAll() a no-op. The store lives here so getAll() stays synchronous and reads a
+// plain in-memory object on the hot path, and so this shared module never has to
+// depend on a server-side service.
+let remoteOverrides = {};
+
+/**
+ * Replace the active remote overrides. Called by the remote-flags service after it
+ * resolves a manifest for this site. A non-object payload is treated as "none".
+ * @param {Object<string, boolean>} overrides
+ */
+module.exports.setRemoteOverrides = function setRemoteOverrides(overrides) {
+    // Store a shallow copy so the caller cannot mutate live flag state by holding
+    // onto the passed object (values are primitive booleans, so this fully isolates).
+    remoteOverrides = (overrides && typeof overrides === 'object' && !Array.isArray(overrides)) ? {...overrides} : {};
+};
+
+/**
+ * Drop all remote overrides, returning to purely local flag state.
+ */
+module.exports.clearRemoteOverrides = function clearRemoteOverrides() {
+    remoteOverrides = {};
+};
+
+/**
+ * The currently applied remote overrides (read-only copy for visibility/tests).
+ * @returns {Object<string, boolean>}
+ */
+module.exports.getRemoteOverrides = function getRemoteOverrides() {
+    return {...remoteOverrides};
+};
+
 module.exports.getAll = () => {
     const labs = _.cloneDeep(settingsCache.get('labs')) || {};
 
     GA_FEATURES.forEach((gaKey) => {
         labs[gaKey] = true;
+    });
+
+    // Remote overrides sit above GA_FEATURES (so a remote entry can kill a GA flag
+    // fleet-wide) but below local config (so an explicit `config.labs` pin always
+    // wins): config.labs > remote > GA_FEATURES > DB settings.
+    Object.keys(remoteOverrides).forEach((key) => {
+        labs[key] = remoteOverrides[key];
     });
 
     const labsConfig = config.get('labs') || {};
