@@ -107,7 +107,7 @@ export interface MembersResponseType {
 const dataType = 'MembersResponseType';
 const membersPath = '/members/';
 
-export const memberCountSearchParams = {limit: '1'} as const;
+const memberCountSearchParams = {limit: '1'} as const;
 
 export const getMemberCountQueryKey = () => [dataType, apiUrl(membersPath, memberCountSearchParams)] as const;
 
@@ -115,6 +115,18 @@ export const useBrowseMembers = createQuery<MembersResponseType>({
     dataType,
     path: membersPath
 });
+
+const useBrowseMemberCount = createQuery<MembersResponseType>({
+    dataType,
+    path: membersPath,
+    defaultSearchParams: memberCountSearchParams
+});
+
+export function useMemberCount() {
+    const {data} = useBrowseMemberCount();
+
+    return data?.meta?.pagination.total;
+}
 
 export type NewMember = {
     email: string;

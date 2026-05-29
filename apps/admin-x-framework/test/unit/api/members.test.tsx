@@ -2,7 +2,7 @@ import {act, waitFor} from '@testing-library/react';
 import {describe, expect, it, vi} from 'vitest';
 import {currentUserQueryKey} from '../../../src/api/current-user';
 import {createTestQueryClient, renderHookWithProviders} from '../../../src/test/test-utils';
-import {getMemberCountQueryKey, useAddMember, useBrowseMembersInfinite, useBulkDeleteMembers, useImportMembers} from '../../../src/api/members';
+import {getMemberCountQueryKey, useAddMember, useBrowseMembersInfinite, useBulkDeleteMembers, useImportMembers, useMemberCount} from '../../../src/api/members';
 import type {MembersResponseType} from '../../../src/api/members';
 import {withMockFetch} from '../../utils/mock-fetch';
 
@@ -165,6 +165,25 @@ describe('members api', () => {
             await waitFor(() => {
                 expectQueryInvalidation(queryClient, 'MembersResponseType', true);
             });
+        });
+    });
+
+    it('fetches the member count with the dedicated count hook', async () => {
+        const queryClient = createQueryClientWithCurrentUser();
+
+        await withMockFetch({
+            json: {
+                members: [],
+                meta: {pagination: {page: 1, limit: 1, pages: 1, total: 102466, next: null, prev: null}}
+            }
+        }, async (mockFetch) => {
+            const {result} = renderHookWithProviders(() => useMemberCount(), {queryClient});
+
+            await waitFor(() => {
+                expect(result.current).toBe(102466);
+            });
+
+            expect(mockFetch.calls[0][0].toString()).toBe('http://localhost:3000/ghost/api/admin/members/?limit=1');
         });
     });
 
