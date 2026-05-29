@@ -11,6 +11,9 @@ interface PostShareModalProps extends React.ComponentPropsWithoutRef<typeof Dial
     emailOnly?: boolean;
     faviconURL?: string;
     featureImageURL?: string;
+    // Optional gift-link controls, owned by the consuming app (data + actions
+    // live there); shade just renders the slot to stay presentational.
+    giftLinkSlot?: React.ReactNode;
     onClose?: () => void;
     postExcerpt?: string;
     postTitle?: string;
@@ -27,6 +30,7 @@ const PostShareModal: React.FC<PostShareModalProps> = ({
     emailOnly = false,
     faviconURL = '',
     featureImageURL = '',
+    giftLinkSlot,
     onClose = () => {},
     postExcerpt = '',
     postTitle = '',
@@ -120,6 +124,7 @@ const PostShareModal: React.FC<PostShareModalProps> = ({
                         </>
                     )}
                 </ShareModal.Footer>
+                {giftLinkSlot}
             </ShareModal.Content>
         </ShareModal.Root>
     );

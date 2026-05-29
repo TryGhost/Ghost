@@ -1,3 +1,4 @@
+import GiftLinkSection from '@src/views/PostAnalytics/components/gift-link-section';
 import React, {useMemo, useState} from 'react';
 import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, Navbar, PageMenu, PageMenuItem} from '@tryghost/shade/components';
 import {H1} from '@tryghost/shade/primitives';
@@ -25,7 +26,8 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     const handleError = useHandleError();
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [isShareOpen, setIsShareOpen] = useState(false);
-    const {settings, site, statsConfig, post, isPostLoading, postId} = useGlobalData();
+    const {settings, site, statsConfig, post, isPostLoading, postId, data} = useGlobalData();
+    const giftLinksEnabled = data?.labs?.giftLinks === true;
 
     const siteTimezone = getSiteTimezone(settings);
 
@@ -135,6 +137,9 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                             description=''
                                             faviconURL={site?.icon || ''}
                                             featureImageURL={post?.feature_image}
+                                            giftLinkSlot={giftLinksEnabled && post?.id && post?.url
+                                                ? <GiftLinkSection postId={post.id} postUrl={post.url} />
+                                                : undefined}
                                             open={isShareOpen}
                                             postExcerpt={post?.excerpt || ''}
                                             postTitle={post?.title}
