@@ -1,5 +1,7 @@
-import {InfiniteData} from '@tanstack/react-query';
+import {InfiniteData, useQueryClient} from '@tanstack/react-query';
+import {useEffect} from 'react';
 import {Meta, createInfiniteQuery, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
+import {apiUrl} from '../utils/api/fetch-api';
 
 export type MemberLabel = {
     id: string;
@@ -103,10 +105,15 @@ export interface MembersResponseType {
 }
 
 const dataType = 'MembersResponseType';
+const membersPath = '/members/';
+
+export const memberCountSearchParams = {limit: '1'} as const;
+
+export const getMemberCountQueryKey = () => [dataType, apiUrl(membersPath, memberCountSearchParams)] as const;
 
 export const useBrowseMembers = createQuery<MembersResponseType>({
     dataType,
-    path: '/members/'
+    path: membersPath
 });
 
 export type NewMember = {
@@ -224,9 +231,9 @@ export interface MembersInfiniteResponseType extends MembersResponseType {
     isEnd: boolean;
 }
 
-export const useBrowseMembersInfinite = createInfiniteQuery<MembersInfiniteResponseType>({
+const useBrowseMembersInfiniteQuery = createInfiniteQuery<MembersInfiniteResponseType>({
     dataType,
-    path: '/members/',
+    path: membersPath,
     defaultSearchParams: {
         include: 'labels,tiers',
         limit: '100',
@@ -253,6 +260,51 @@ export const useBrowseMembersInfinite = createInfiniteQuery<MembersInfiniteRespo
         };
     }
 });
+
+type BrowseMembersInfiniteOptions = Parameters<typeof useBrowseMembersInfiniteQuery>[0];
+type BrowseMembersInfiniteResult = ReturnType<typeof useBrowseMembersInfiniteQuery>;
+
+function hasMemberFilterOrSearch(searchParams?: Record<string, string>) {
+    return Boolean(searchParams?.filter || searchParams?.search);
+}
+
+export function useBrowseMembersInfinite(options: BrowseMembersInfiniteOptions = {}): BrowseMembersInfiniteResult {
+    const queryClient = useQueryClient();
+    const result = useBrowseMembersInfiniteQuery(options);
+    const responseTotalMembers = result.data?.meta?.pagination?.total;
+
+    useEffect(() => {
+        if (hasMemberFilterOrSearch(options.searchParams) || result.isError || result.isPlaceholderData || result.isPreviousData || typeof responseTotalMembers !== 'number') {
+            return;
+        }
+
+        const memberCountQueryKey = getMemberCountQueryKey();
+        const memberCountQueryState = queryClient.getQueryState<MembersResponseType>(memberCountQueryKey);
+        const memberCountData = memberCountQueryState?.data;
+        const pagination = memberCountData?.meta?.pagination;
+
+        if (!memberCountData || !pagination || pagination.total === responseTotalMembers) {
+            return;
+        }
+
+        if (memberCountQueryState.dataUpdatedAt > result.dataUpdatedAt) {
+            return;
+        }
+
+        queryClient.setQueryData<MembersResponseType>(memberCountQueryKey, {
+            ...memberCountData,
+            meta: {
+                ...memberCountData.meta,
+                pagination: {
+                    ...pagination,
+                    total: responseTotalMembers
+                }
+            }
+        });
+    }, [options.searchParams, queryClient, responseTotalMembers, result.dataUpdatedAt, result.isError, result.isPlaceholderData, result.isPreviousData]);
+
+    return result;
+}
 
 // Bulk operations
 export interface BulkEditAction {

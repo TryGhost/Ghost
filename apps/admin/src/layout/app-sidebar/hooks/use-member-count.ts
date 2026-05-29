@@ -1,4 +1,4 @@
-import { useBrowseMembers } from "@tryghost/admin-x-framework/api/members";
+import { memberCountSearchParams, useBrowseMembers } from "@tryghost/admin-x-framework/api/members";
 
 /**
  * Hook to fetch the total member count efficiently.
@@ -7,9 +7,8 @@ import { useBrowseMembers } from "@tryghost/admin-x-framework/api/members";
  */
 export function useMemberCount() {
     const { data: membersData } = useBrowseMembers({
-        searchParams: { limit: '1' }
+        searchParams: memberCountSearchParams
     });
     
     return membersData?.meta?.pagination.total;
 }
-
