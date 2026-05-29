@@ -114,6 +114,30 @@ describe('GiftLinksService (integration)', function () {
         });
     });
 
+    describe('recordRead', function () {
+        it('increments redeemed_count and stamps last_redeemed_at', async function () {
+            const link = await service.ensure(postId, {context});
+            assert.equal(link.get('redeemed_count'), 0);
+            assert.equal(link.get('last_redeemed_at'), null);
+
+            const affected = await service.recordRead(link.get('id'));
+            assert.equal(affected, 1);
+
+            const reloaded = await models.GiftLink.findOne({id: link.get('id')}, {require: true});
+            assert.equal(reloaded.get('redeemed_count'), 1);
+            assert.notEqual(reloaded.get('last_redeemed_at'), null);
+
+            await service.recordRead(link.get('id'));
+            const again = await models.GiftLink.findOne({id: link.get('id')}, {require: true});
+            assert.equal(again.get('redeemed_count'), 2);
+        });
+
+        it('affects no rows for an unknown link id', async function () {
+            const affected = await service.recordRead('0123456789abcdef01234567');
+            assert.equal(affected, 0);
+        });
+    });
+
     describe('getActive / getActiveByToken', function () {
         it('getActive returns null when there is no active link', async function () {
             const active = await service.getActive(postId, {context});

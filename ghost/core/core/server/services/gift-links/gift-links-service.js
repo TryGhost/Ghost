@@ -140,6 +140,24 @@ class GiftLinksService {
     }
 
     /**
+     * Record a (human, de-duped) read against a gift link: bump the counter and
+     * stamp the last-read time. Atomic, model-layer-free. Bot filtering and
+     * client de-duplication happen before this is called (see middleware).
+     * @param {string} giftLinkId
+     * @returns {Promise<number>} rows affected (0 if the link no longer exists)
+     */
+    async recordRead(giftLinkId) {
+        const now = new Date();
+        return this.models.Base.knex('gift_links')
+            .where({id: giftLinkId})
+            .update({
+                redeemed_count: this.models.Base.knex.raw('redeemed_count + 1'),
+                last_redeemed_at: now,
+                updated_at: now
+            });
+    }
+
+    /**
      * Bulk-deactivate active links matching `where`. Bypasses the model layer
      * deliberately so it scales to many rows in a single UPDATE.
      * @param {object} where

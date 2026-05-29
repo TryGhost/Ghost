@@ -5,6 +5,23 @@ const moment = require('moment');
 const testUtils = require('../utils');
 const configUtils = require('../utils/config-utils');
 const settingsCache = require('../../core/shared/settings-cache');
+const models = require('../../core/server/models');
+
+const HUMAN_UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15';
+
+async function pollRedeemedCount(token, atLeast, tries = 30) {
+    for (let i = 0; i < tries; i += 1) {
+        const link = await models.GiftLink.findOne({token}, {require: false});
+        if (link && link.get('redeemed_count') >= atLeast) {
+            return link.get('redeemed_count');
+        }
+        await new Promise((resolve) => {
+            setTimeout(resolve, 50);
+        });
+    }
+    const link = await models.GiftLink.findOne({token}, {require: false});
+    return link ? link.get('redeemed_count') : -1;
+}
 
 function assertContentIsPresent(res) {
     assert(res.text.includes('<h2 id="markdown">markdown</h2>'), 'expected full post content to be present');
@@ -78,5 +95,28 @@ describe('Front-end gift links', function () {
             .expect(assertContentIsAbsent);
 
         assert.match(res.headers['cache-control'], /no-store/);
+    });
+
+    it('counts a human gift read once and de-dupes repeat views via the gift_seen cookie', async function () {
+        // Fresh client (no prior cookie) with a real browser UA so it isn't bot-filtered.
+        const humanAgent = supertest.agent(configUtils.config.get('url'));
+
+        const res = await humanAgent
+            .get(`/gift-me-this-paid-post/?gift=${token}`)
+            .set('User-Agent', HUMAN_UA)
+            .expect(200);
+
+        const setCookie = (res.headers['set-cookie'] || []).join(';');
+        assert.match(setCookie, /gift_seen_/, 'sets the per-post de-dup cookie');
+
+        // Count is incremented out-of-band (non-blocking), so poll briefly.
+        assert.equal(await pollRedeemedCount(token, 1), 1);
+
+        // A second view from the same client must NOT double-count (cookie matches token).
+        await humanAgent
+            .get(`/gift-me-this-paid-post/?gift=${token}`)
+            .set('User-Agent', HUMAN_UA)
+            .expect(200);
+        assert.equal(await pollRedeemedCount(token, 1), 1, 'repeat view from same client is de-duped');
     });
 });
