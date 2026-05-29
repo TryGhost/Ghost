@@ -10,6 +10,7 @@ import {action} from '@ember/object';
 import {capitalizeFirstLetter} from 'ghost-admin/helpers/capitalize-first-letter';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
+import {trackEvent} from 'ghost-admin/utils/analytics';
 
 /**
  * @tryghost/tpl doesn't work in admin yet (Safari)
@@ -55,6 +56,9 @@ const messages = {
     },
     copiedPreviewUrl: {
         single: 'Preview link copied'
+    },
+    copiedGiftLink: {
+        single: 'Gift link copied'
     }
 };
 
@@ -66,6 +70,20 @@ export default class PostsContextMenu extends Component {
     @service store;
     @service notifications;
     @service membersUtils;
+    @service feature;
+
+    // Gift links: only for a single published, gated (non-public) post/page, and
+    // only for users who can manage them (Owner/Administrator/Editor).
+    get canCopyGiftLink() {
+        if (!this.feature.giftLinks || !this.selectionList.isSingle) {
+            return false;
+        }
+        const user = this.session.user;
+        const canManage = user && (user.isAdmin || user.isEditor);
+        const post = this.selectionList.first;
+        const eligible = post && post.status === 'published' && post.visibility && post.visibility !== 'public';
+        return Boolean(canManage && eligible);
+    }
 
     get menu() {
         return this.args.menu;
@@ -94,6 +112,11 @@ export default class PostsContextMenu extends Component {
     @action
     async copyPreviewLink() {
         this.menu.performTask(this.copyPreviewLinkTask);
+    }
+
+    @action
+    async copyGiftLink() {
+        this.menu.performTask(this.copyGiftLinkTask);
     }
 
     @action
@@ -425,6 +448,22 @@ export default class PostsContextMenu extends Component {
     *copyPreviewLinkTask() {
         copyTextToClipboard(this.selectionList.availableModels[0].url);
         this.notifications.showNotification(this.#getToastMessage('copiedPreviewUrl'), {type: 'success'});
+        yield timeout(1000);
+        return true;
+    }
+
+    @task
+    *copyGiftLinkTask() {
+        const post = this.selectionList.availableModels[0];
+        // Idempotent ensure: returns the active gift link, creating it if absent.
+        const url = this.ghostPaths.url.api('gift_links', post.id);
+        const response = yield this.ajax.post(url);
+        const token = response.gift_links[0].token;
+        const separator = post.url.includes('?') ? '&' : '?';
+        const giftUrl = `${post.url}${separator}gift=${encodeURIComponent(token)}&utm_campaign=gift-link`;
+        copyTextToClipboard(giftUrl);
+        trackEvent('gift_link_copied', {surface: 'posts-list-context-menu'});
+        this.notifications.showNotification(this.#getToastMessage('copiedGiftLink'), {type: 'success'});
         yield timeout(1000);
         return true;
     }
