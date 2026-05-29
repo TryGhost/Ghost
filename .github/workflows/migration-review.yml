@@ -5,11 +5,16 @@ on:
     paths:
       - 'ghost/core/core/server/data/schema/**'
       - 'ghost/core/core/server/data/migrations/versions/**'
+permissions:
+  contents: read
 jobs:
   createComment:
     runs-on: ubuntu-latest
     if: github.repository_owner == 'TryGhost'
     name: Add migration review requirements
+    permissions:
+      issues: write          # github-script addLabels uses the issues API
+      pull-requests: write   # peter-evans/create-or-update-comment on a PR
     steps:
       - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
