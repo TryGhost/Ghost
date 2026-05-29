@@ -67,6 +67,10 @@ const features: Feature[] = [{
     title: 'LLMs.txt',
     description: 'Serve llms.txt, per-entry markdown exports, and Accept: text/markdown content negotiation for AI and LLM tooling',
     flag: 'llmsTxt'
+}, {
+    title: 'Gift links',
+    description: 'Always-on tokenized links that let anyone read a single gated post or page in full, no account required',
+    flag: 'giftLinks'
 }];
 
 const AlphaFeatures: React.FC = () => {

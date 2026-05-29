@@ -22,6 +22,7 @@ Object {
       "emailUniqueid": true,
       "explore": true,
       "featurebaseFeedback": true,
+      "giftLinks": true,
       "giftSubscriptions": true,
       "importMemberTier": true,
       "indexnow": true,
