@@ -14,7 +14,9 @@ export default class HomeRoute extends AuthenticatedRoute {
 
         if (transition.to?.queryParams?.firstStart === 'true') {
             transition.abort();
-            await this.onboarding.startChecklist();
+            if (this.session.user?.isOwnerOnly) {
+                await this.onboarding.startChecklist();
+            }
             window.location.hash = '/setup/onboarding?returnTo=/analytics';
             return;
         }
