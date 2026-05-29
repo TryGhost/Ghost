@@ -22,6 +22,10 @@ const MONITORED_APPS = {
     signupForm: {
         packageName: '@tryghost/signup-form',
         path: 'apps/signup-form'
+    },
+    adminToolbar: {
+        packageName: '@tryghost/admin-toolbar',
+        path: 'apps/admin-toolbar'
     }
 };
 
