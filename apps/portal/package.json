@@ -109,7 +109,7 @@
     ]
   },
   "devDependencies": {
-    "@doist/react-interpolate": "2.2.1",
+    "@doist/react-interpolate": "2.2.2",
     "@sentry/react": "catalog:",
     "@testing-library/jest-dom": "6.9.1",
     "@testing-library/react": "12.1.5",

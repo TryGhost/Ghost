@@ -1020,8 +1020,8 @@ importers:
   apps/comments-ui:
     dependencies:
       '@doist/react-interpolate':
-        specifier: 2.2.1
-        version: 2.2.1(prop-types@15.8.1)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+        specifier: 2.2.2
+        version: 2.2.2(prop-types@15.8.1)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@headlessui/react':
         specifier: 1.7.19
         version: 1.7.19(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
@@ -1142,8 +1142,8 @@ importers:
         version: 2.2.1
     devDependencies:
       '@doist/react-interpolate':
-        specifier: 2.2.1
-        version: 2.2.1(prop-types@15.8.1)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+        specifier: 2.2.2
+        version: 2.2.2(prop-types@15.8.1)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@sentry/react':
         specifier: 'catalog:'
         version: 7.120.4(react@17.0.2)
@@ -4002,8 +4002,8 @@ packages:
     peerDependencies:
       react: '>=16.8.0'
 
-  '@doist/react-interpolate@2.2.1':
-    resolution: {integrity: sha512-3qUQhXzAPL1YxYsNtZdBsrSyhFL1AyDHNQN8XZo2IiGZAibxCBT5QW+Ymfyf8hOKaSxb9v1fYiv3uWJfY0pwZw==}
+  '@doist/react-interpolate@2.2.2':
+    resolution: {integrity: sha512-Gu+E9WSn4LDpB3pB+X+6WDQzs0vFVGoRiUX3TsYMIRHbmS+Vf0dA1Ot7qk5WbK7uPOdXbUwKBA/IP+Hezo72og==}
     engines: {node: ^20.0.0 || ^21.0.0 || ^22.0.0, npm: ^10.0.0 || ^11.0.0}
     peerDependencies:
       prop-types: 15.8.1
@@ -9093,9 +9093,6 @@ packages:
 
   '@types/react-world-flags@1.6.0':
     resolution: {integrity: sha512-j/uVy2fnG8gX3Ckic4sccYm9XjieasUsJDMqBDtdPdcwe3aFfz+iBbds+wxOiTzfe5BErVGjdFu6NO1hCg/7lw==}
-
-  '@types/react@18.3.28':
-    resolution: {integrity: sha512-z9VXpC7MWrhfWipitjNdgCauoMLRdIILQsAEV+ZesIzBq/oUlxk0m3ApZuMFCXdnS4U7KrI+l3WRUEGQ8K1QKw==}
 
   '@types/react@18.3.29':
     resolution: {integrity: sha512-ch0qJdr2JY0r04NXSprbK6TXOgnaJ1Tz23fm5W+z0/CBah6BSBc3n96h7K9GOtwh0HrilNWHIBzE1Ko4Dcw/Wg==}
@@ -14500,10 +14497,6 @@ packages:
 
   globals@15.15.0:
     resolution: {integrity: sha512-7ACyT3wmyp3I61S4fG682L0VA2RGD9otkqGJIwNUMF1SWUombIIk+af1unuDYgMm082aHYwD+mzJvv9Iu8dsgg==}
-    engines: {node: '>=18'}
-
-  globals@17.4.0:
-    resolution: {integrity: sha512-hjrNztw/VajQwOLsMNT1cbJiH2muO3OROCHnbehc8eY5JyD2gqz4AcMHPqgaOR59DjgUjYAYLeH699g/eWi2jw==}
     engines: {node: '>=18'}
 
   globals@17.6.0:
@@ -23480,9 +23473,8 @@ snapshots:
       react: 18.3.1
       tslib: 2.8.1
 
-  '@doist/react-interpolate@2.2.1(prop-types@15.8.1)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)':
+  '@doist/react-interpolate@2.2.2(prop-types@15.8.1)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)':
     dependencies:
-      '@babel/runtime': 7.29.7
       prop-types: 15.8.1
       react: 17.0.2
       react-dom: 17.0.2(react@17.0.2)
@@ -29504,7 +29496,7 @@ snapshots:
 
   '@types/react-svg-map@2.1.4':
     dependencies:
-      '@types/react': 18.3.28
+      '@types/react': 18.3.29
 
   '@types/react-transition-group@4.4.12(@types/react@18.3.29)':
     dependencies:
@@ -29512,12 +29504,7 @@ snapshots:
 
   '@types/react-world-flags@1.6.0':
     dependencies:
-      '@types/react': 18.3.28
-
-  '@types/react@18.3.28':
-    dependencies:
-      '@types/prop-types': 15.7.15
-      csstype: 3.2.3
+      '@types/react': 18.3.29
 
   '@types/react@18.3.29':
     dependencies:
@@ -30055,7 +30042,7 @@ snapshots:
       obug: 2.1.1
       std-env: 4.1.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@22.19.19)(@vitest/coverage-v8@4.1.7)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.19.19)(typescript@5.9.3))(vite@7.3.2(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))
+      vitest: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.7)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@5.9.3))(vite@7.3.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))
 
   '@vitest/expect@3.2.4':
     dependencies:
@@ -35996,7 +35983,7 @@ snapshots:
   eslint-plugin-playwright@2.10.4(eslint@8.57.1):
     dependencies:
       eslint: 8.57.1
-      globals: 17.4.0
+      globals: 17.6.0
 
   eslint-plugin-react-hooks@4.6.2(eslint@8.57.1):
     dependencies:
@@ -37427,8 +37414,6 @@ snapshots:
   globals@14.0.0: {}
 
   globals@15.15.0: {}
-
-  globals@17.4.0: {}
 
   globals@17.6.0: {}
 
