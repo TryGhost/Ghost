@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "6.42.1-rc.0",
+  "version": "6.43.1-rc.0",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -163,7 +163,7 @@
     "dompurify": "catalog:",
     "downsize": "0.0.8",
     "entities": "4.5.0",
-    "express": "4.21.2",
+    "express": "4.22.2",
     "express-brute": "1.0.1",
     "express-hbs": "2.5.0",
     "express-jwt": "8.5.1",

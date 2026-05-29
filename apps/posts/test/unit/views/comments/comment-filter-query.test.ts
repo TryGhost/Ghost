@@ -46,6 +46,38 @@ describe('comment-filter-query', () => {
         );
     });
 
+    it('round-trips relative created_at filters', () => {
+        const parsed = parseCommentFilter('created_at:>=now-7d+status:published', 'UTC');
+
+        expect(stripIds(parsed)).toEqual([
+            {
+                field: 'created_at',
+                operator: 'in-the-last',
+                values: [7]
+            },
+            {
+                field: 'status',
+                operator: 'is',
+                values: ['published']
+            }
+        ]);
+
+        expect(serializeCommentFilters(parsed, 'UTC')).toBe('created_at:>=now-7d+status:published');
+    });
+
+    it('drops unsupported future relative created_at filters', () => {
+        const parsed = parseCommentFilter('created_at:<=now+14d+status:published', 'UTC');
+
+        expect(stripIds(parsed)).toEqual([
+            {
+                field: 'status',
+                operator: 'is',
+                values: ['published']
+            }
+        ]);
+        expect(serializeCommentFilters(parsed, 'UTC')).toBe('status:published');
+    });
+
     it('round-trips comment filters in a non-UTC site timezone', () => {
         const parsed = parseCommentFilter(
             'created_at:>=\'2024-01-01T05:00:00.000Z\'+created_at:<=\'2024-01-02T04:59:59.999Z\'+member_id:member_123+status:published',
