@@ -11,11 +11,10 @@ const TIMEZONE_SENSITIVE_MEMBER_FIELDS = getFieldKeysByType(memberFields, 'date'
 /**
  * Is this predicate's operator one the field currently advertises?
  *
- * Pass a flag-aware field set (from `getMemberFields(labs)`) and this returns
- * `false` for predicates the user can't reach in the UI right now — either
- * the field never declares the operator, or the labs-off variant omits it.
- * Hooks call this to drop unreachable predicates before serializing or after
- * parsing. The parser/serializer themselves stay pure.
+ * This returns `false` for predicates the user can't reach in the UI because
+ * the field never declares the operator. Hooks call this to drop unreachable
+ * predicates before serializing or after parsing. The parser/serializer
+ * themselves stay pure.
  */
 export function isPredicateEnabled(predicate: ParsedPredicate, fields: MemberFields): boolean {
     const resolved = resolveField(fields, predicate.field, 'UTC');
@@ -209,9 +208,8 @@ function parseMemberNode(node: AstNode, timezone: string): ParsedPredicate[] {
 }
 
 /**
- * Parses NQL into predicates. Pure: doesn't know about labs flags or
- * variants. Callers are responsible for filtering the output via
- * `isPredicateEnabled` against the variant they want to enforce.
+ * Parses NQL into predicates. Pure: callers are responsible for filtering the
+ * output via `isPredicateEnabled` against the field map they want to enforce.
  */
 export function parseMemberFilter(filter: string | undefined, timezone: string): FilterPredicate[] {
     const ast = parseFilterToAst(filter ?? '');
@@ -234,9 +232,9 @@ export function hasTimezoneSensitiveMemberFilter(filter: string | undefined): bo
 }
 
 /**
- * Serializes predicates back to NQL. Pure: doesn't filter by labs/variant.
- * Callers should pre-filter via `isPredicateEnabled` if they need to drop
- * predicates the current variant doesn't advertise.
+ * Serializes predicates back to NQL. Pure: callers should pre-filter via
+ * `isPredicateEnabled` if they need to drop predicates the field map doesn't
+ * advertise.
  */
 export function serializeMemberFilters(predicates: FilterPredicate[], timezone: string): string | undefined {
     return serializePredicates(predicates, memberFields, timezone);

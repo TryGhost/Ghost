@@ -7,7 +7,6 @@ import {RELATIVE_DATE_OPERATOR_LABELS, createRelativeDateRenderer, fieldHasRelat
 import {createOperatorOptions} from '../filters/filter-operator-options';
 import {getMemberFields} from './member-fields';
 import {getTodayInTimezone} from '../filters/filter-normalization';
-import type {Labs} from './member-fields';
 import type {Offer} from '@tryghost/admin-x-framework/api/offers';
 
 interface UseMemberFilterFieldsOptions {
@@ -26,7 +25,6 @@ interface UseMemberFilterFieldsOptions {
     emailTrackClicks?: boolean;
     siteTimezone?: string;
     giftSubscriptionsEnabled?: boolean;
-    labs?: Labs;
 }
 
 type OfferOption = FilterOption<string>;
@@ -257,11 +255,10 @@ export function useMemberFilterFields({
     emailTrackOpens = false,
     emailTrackClicks = false,
     siteTimezone = 'UTC',
-    giftSubscriptionsEnabled = false,
-    labs
+    giftSubscriptionsEnabled = false
 }: UseMemberFilterFieldsOptions): FilterFieldGroup[] {
     return useMemo(() => {
-        const fields = getMemberFields(labs);
+        const fields = getMemberFields();
         type MemberFieldKey = keyof typeof fields;
 
         function createFieldConfig(
@@ -462,7 +459,6 @@ export function useMemberFilterFields({
         paidMembersEnabled,
         postValueSource,
         siteTimezone,
-        tierValueSource,
-        labs
+        tierValueSource
     ]);
 }

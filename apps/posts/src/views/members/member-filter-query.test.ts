@@ -282,49 +282,32 @@ describe('member-filter-query', () => {
 });
 
 describe('isPredicateEnabled', () => {
-    const flagOnFields = getMemberFields({membersRelativeDateFilters: true});
-    const flagOffFields = getMemberFields();
+    const fields = getMemberFields();
 
-    it('returns true for predicates whose operator is declared by the variant', () => {
+    it('returns true for predicates whose operator is declared by the field map', () => {
         expect(isPredicateEnabled(
             {field: 'created_at', operator: 'in-the-last', values: [7]},
-            flagOnFields
+            fields
         )).toBe(true);
 
         expect(isPredicateEnabled(
             {field: 'status', operator: 'is', values: ['paid']},
-            flagOffFields
+            fields
         )).toBe(true);
     });
 
-    it('returns false for relative operators when the labs flag is off', () => {
-        // The flag-off variant doesn't declare in-the-last/in-the-next, so
-        // a relative predicate from a stored URL would be dropped before it
-        // reaches the UI or the rewritten URL.
-        expect(isPredicateEnabled(
-            {field: 'created_at', operator: 'in-the-last', values: [7]},
-            flagOffFields
-        )).toBe(false);
-
-        expect(isPredicateEnabled(
-            {field: 'subscriptions.current_period_end', operator: 'in-the-next', values: [14]},
-            flagOffFields
-        )).toBe(false);
-    });
-
     it('returns false for a relative operator on a field that does not advertise that direction', () => {
-        // `subscriptions.current_period_end` is future-only — its variant
-        // never includes `in-the-last`, regardless of labs state.
+        // `subscriptions.current_period_end` is future-only.
         expect(isPredicateEnabled(
             {field: 'subscriptions.current_period_end', operator: 'in-the-last', values: [7]},
-            flagOnFields
+            fields
         )).toBe(false);
     });
 
     it('returns false for unknown fields', () => {
         expect(isPredicateEnabled(
             {field: 'not_a_real_field', operator: 'is', values: ['anything']},
-            flagOnFields
+            fields
         )).toBe(false);
     });
 });

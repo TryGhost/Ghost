@@ -5,11 +5,6 @@ import {escapeNqlString} from '../filters/filter-normalization';
 import {withFutureRelativeOperator, withPastRelativeOperator} from '../filters/filter-relative-date';
 import type {FilterCodec} from '../filters/filter-types';
 
-/** Shape of the labs flags map (from `useBrowseConfig().config.labs`). */
-export type Labs = Record<string, boolean>;
-
-const MEMBERS_RELATIVE_DATE_FLAG = 'membersRelativeDateFilters';
-
 const TEXT_OPERATORS = ['is', 'contains', 'does-not-contain', 'starts-with', 'ends-with'] as const;
 const NUMBER_OPERATORS = ['is', 'is-greater', 'is-less'] as const;
 const SCALAR_OPERATORS = ['is', 'is-not'] as const;
@@ -405,31 +400,16 @@ const baseMemberFields = defineFields({
     }
 });
 
-export type MemberFields = typeof baseMemberFields;
+export const memberFields = defineFields({
+    ...baseMemberFields,
+    last_seen_at: withPastRelativeOperator(baseMemberFields.last_seen_at),
+    created_at: withPastRelativeOperator(baseMemberFields.created_at),
+    'subscriptions.start_date': withPastRelativeOperator(baseMemberFields['subscriptions.start_date']),
+    'subscriptions.current_period_end': withFutureRelativeOperator(baseMemberFields['subscriptions.current_period_end'])
+});
 
-/**
- * Returns the member field set under the current labs flags. The relative-date
- * operators are attached to date fields when `membersRelativeDateFilters` is
- * on. All consumers (parser, serializer, UI hook) call this with the current
- * labs so they agree on which operators are actually advertised.
- */
-export function getMemberFields(labs?: Labs): MemberFields {
-    if (!labs?.[MEMBERS_RELATIVE_DATE_FLAG]) {
-        return baseMemberFields;
-    }
+export type MemberFields = typeof memberFields;
 
-    return {
-        ...baseMemberFields,
-        last_seen_at: withPastRelativeOperator(baseMemberFields.last_seen_at),
-        created_at: withPastRelativeOperator(baseMemberFields.created_at),
-        'subscriptions.start_date': withPastRelativeOperator(baseMemberFields['subscriptions.start_date']),
-        'subscriptions.current_period_end': withFutureRelativeOperator(baseMemberFields['subscriptions.current_period_end'])
-    };
+export function getMemberFields(): MemberFields {
+    return memberFields;
 }
-
-/**
- * Flag-agnostic field set. Use this for static lookups (e.g. deriving the
- * set of date-typed field keys) where the operator list isn't relevant.
- * Use `getMemberFields(labs)` for anything that consults `.operators`.
- */
-export const memberFields = baseMemberFields;

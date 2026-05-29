@@ -1,15 +1,15 @@
 import React, {useEffect, useRef, useState} from 'react';
+import {type CustomRendererProps, FilterDatePicker, type FilterFieldConfig} from '@tryghost/shade/patterns';
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import {cn} from '@tryghost/shade/utils';
-import type {CustomRendererProps, FilterFieldConfig} from '@tryghost/shade/patterns';
 import type {FilterField} from './filter-types';
 
 /**
  * The relative-date operator family — "in the last N days" / "in the next N
  * days" — plus the bits any view needs to use them: labels, a type guard,
  * variant builders that attach them to a date field, and the day-count input
- * renderer. Domains decide when to attach them (typically gated on a labs
- * flag); this file just provides the pieces.
+ * renderer. Domains decide when to attach them; this file just provides the
+ * pieces.
  */
 
 export const RELATIVE_PAST_OPERATOR = 'in-the-last';
@@ -39,7 +39,7 @@ export function withFutureRelativeOperator<T extends FilterField>(field: T): T {
 }
 
 /** The day-count input shown when a relative-date operator is selected. */
-export function createRelativeDateRenderer(fallbackDate: string): FilterFieldConfig['customRenderer'] {
+export function createRelativeDateRenderer(fallbackDate: string): NonNullable<FilterFieldConfig['customRenderer']> {
     const renderer = (props: CustomRendererProps) => React.createElement(RelativeDateFilter, {
         ...props,
         fallbackDate
@@ -53,7 +53,6 @@ export function createRelativeDateRenderer(fallbackDate: string): FilterFieldCon
 // ---------------------------------------------------------------------------
 
 const DEFAULT_AMOUNT = 7;
-const MAX_AMOUNT = 365;
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 const inputClass = 'w-full bg-transparent outline-hidden dark:!bg-transparent';
@@ -71,8 +70,8 @@ const RelativeDateFilter: React.FC<RelativeDateFilterProps> = ({
 }) => {
     const isRelative = isRelativeDateOperator(operator);
     const rawAmount = values[0];
-    const amount = typeof rawAmount === 'number' && Number.isInteger(rawAmount) && rawAmount > 0
-        ? Math.min(rawAmount, MAX_AMOUNT)
+    const amount = typeof rawAmount === 'number' && Number.isSafeInteger(rawAmount) && rawAmount > 0
+        ? rawAmount
         : DEFAULT_AMOUNT;
     const dateValue = typeof rawAmount === 'string' && DATE_PATTERN.test(rawAmount) ? rawAmount : fallbackDate;
 
@@ -103,7 +102,7 @@ const RelativeDateFilter: React.FC<RelativeDateFilterProps> = ({
 
     if (isRelative) {
         const tooltipPrefix = operator === RELATIVE_PAST_OPERATOR ? 'Since' : 'Until';
-        const tooltipDate = shiftAndFormatDate(fallbackDate, operator === RELATIVE_PAST_OPERATOR ? -amount : amount);
+        const tooltipDate = formatRelativeDateTooltip(fallbackDate, operator === RELATIVE_PAST_OPERATOR ? -amount : amount);
 
         return (
             <TooltipProvider>
@@ -114,14 +113,13 @@ const RelativeDateFilter: React.FC<RelativeDateFilterProps> = ({
                                 aria-label="Relative date amount"
                                 className={cn(inputClass, 'min-w-[1ch] tabular-nums [field-sizing:content] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none')}
                                 data-slot="filters-input"
-                                max={MAX_AMOUNT}
                                 min={1}
                                 type="number"
                                 value={draft}
                                 onBlur={() => {
                                     const n = Number(draft);
 
-                                    if (!Number.isInteger(n) || n <= 0 || n > MAX_AMOUNT) {
+                                    if (!Number.isSafeInteger(n) || n <= 0) {
                                         setDraft(String(amount));
                                     }
                                 }}
@@ -130,7 +128,7 @@ const RelativeDateFilter: React.FC<RelativeDateFilterProps> = ({
                                     setDraft(next);
                                     const n = Number(next);
 
-                                    if (Number.isInteger(n) && n > 0 && n <= MAX_AMOUNT) {
+                                    if (Number.isSafeInteger(n) && n > 0) {
                                         onChange([n]);
                                     }
                                 }}
@@ -145,32 +143,37 @@ const RelativeDateFilter: React.FC<RelativeDateFilterProps> = ({
     }
 
     return (
-        <div className={cn('flex w-full items-center', field.className)} data-slot="filters-input-wrapper">
-            <input
-                aria-label={typeof field.label === 'string' ? field.label : 'Date'}
-                className={inputClass}
-                data-slot="filters-input"
-                type="date"
-                value={dateValue}
-                onChange={e => onChange([e.target.value])}
-            />
-        </div>
+        <FilterDatePicker
+            className={field.className}
+            embedded={true}
+            field={field}
+            value={dateValue}
+            onChange={value => onChange([value])}
+        />
     );
 };
 
 // `yyyymmdd` is a calendar date in the site's timezone. We construct a Date in the
 // browser's local zone purely to do calendar arithmetic — only the y/m/d fields are
 // read back via Intl, so the local-timezone Date is fine for display.
-function shiftAndFormatDate(yyyymmdd: string, dayOffset: number): string {
+export function formatRelativeDateTooltip(yyyymmdd: string, dayOffset: number): string {
     const [year, month, day] = yyyymmdd.split('-').map(Number);
     const date = new Date(year, month - 1, day);
     date.setDate(date.getDate() + dayOffset);
 
-    return new Intl.DateTimeFormat('en-US', {
+    return new Intl.DateTimeFormat(getPreferredLocale(), {
         month: 'short',
         day: 'numeric',
         year: 'numeric'
     }).format(date);
+}
+
+function getPreferredLocale(): string {
+    if (typeof navigator === 'undefined') {
+        return 'en-US';
+    }
+
+    return navigator.language || 'en-US';
 }
 
 function valuesMatch(actual: unknown[], expected: unknown[]): boolean {

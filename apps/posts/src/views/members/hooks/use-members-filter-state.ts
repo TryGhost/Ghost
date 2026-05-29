@@ -3,7 +3,7 @@ import {getMemberFields} from '../member-fields';
 import {hasTimezoneSensitiveMemberFilter, isPredicateEnabled, parseMemberFilter, serializeMemberFilters} from '../member-filter-query';
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useSearchParams} from 'react-router';
-import type {Labs, MemberFields} from '../member-fields';
+import type {MemberFields} from '../member-fields';
 
 interface SetFiltersOptions {
     replace?: boolean;
@@ -28,17 +28,12 @@ interface ToSearchParamsOptions {
     fields: MemberFields;
 }
 
-interface UseMembersFilterStateOptions {
-    labs?: Labs;
-}
-
 /**
  * Should the page hold off parsing the URL filter until more data is in?
  *
- * Parsing a date-sensitive filter needs the timezone (from settings) AND the
- * labs-flag state (from config) to be available. If we parse without them,
- * the writeback effect will rewrite the URL to an absolute date before the
- * flag arrives, losing `now-30d`-style relative forms.
+ * Parsing a date-sensitive filter needs the timezone from settings. If we parse
+ * before it resolves, the writeback effect can round-trip the date in UTC
+ * instead of site time.
  */
 export function shouldDelayMembersDateFilterHydration(
     filterParam: string | undefined,
@@ -67,9 +62,8 @@ function toSearchParams({baseSearchParams, filters, search, timezone, fields}: T
     return params;
 }
 
-export function useMembersFilterState(timezone: string, options: UseMembersFilterStateOptions = {}): UseMembersFilterStateReturn {
-    const {labs} = options;
-    const fields = useMemo(() => getMemberFields(labs), [labs]);
+export function useMembersFilterState(timezone: string): UseMembersFilterStateReturn {
+    const fields = useMemo(() => getMemberFields(), []);
     const [searchParams, setSearchParams] = useSearchParams();
     const lastWrittenQueryRef = useRef<string | null>(null);
     const filterParam = useMemo(() => searchParams.get('filter') ?? undefined, [searchParams]);

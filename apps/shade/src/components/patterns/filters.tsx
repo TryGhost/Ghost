@@ -689,21 +689,23 @@ const formatFilterDateValue = (date: Date | undefined): string => {
     return `${year}-${month}-${day}`;
 };
 
-interface FilterDatePickerProps<T = unknown> {
+export interface FilterDatePickerProps<T = unknown> {
     field?: FilterFieldConfig<T>;
     value: string;
     onChange: (value: string) => void;
     className?: string;
+    embedded?: boolean;
 }
 
 // Composes a text input for YYYY-MM-DD values with a Shade Calendar popover.
 // Avoid using <input type="date"> here: Safari opens its native date picker
 // from clicks inside the text area even when the calendar indicator is hidden.
-function FilterDatePicker<T = unknown>({
+export function FilterDatePicker<T = unknown>({
     field,
     value,
     onChange,
-    className
+    className,
+    embedded = false
 }: FilterDatePickerProps<T>) {
     const context = useFilterContext();
     const [open, setOpen] = useState(false);
@@ -804,8 +806,9 @@ function FilterDatePicker<T = unknown>({
     return (
         <div
             className={cn(
-                'w-32',
-                filterInputVariants({variant: context.variant, size: context.size, cursorPointer: false}),
+                embedded
+                    ? 'flex w-full min-w-0 items-center'
+                    : cn('w-32', filterInputVariants({variant: context.variant, size: context.size, cursorPointer: false})),
                 className
             )}
             data-slot="filters-input-wrapper"
