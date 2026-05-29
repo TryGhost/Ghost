@@ -7,7 +7,6 @@ import ThemeEditorInputModal from './theme-editor-input-modal';
 import ThemeEditorToolbar from './theme-editor-toolbar';
 import ThemeFileTree from './theme-file-tree';
 import ThemeInstalledModal from './theme-installed-modal';
-import ThemeReviewModal, {buildReviewItems} from './theme-review-modal';
 import {TextWrap, Undo2} from 'lucide-react';
 import {
     cloneThemeFiles,
@@ -249,7 +248,6 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [loadError, setLoadError] = useState<string | null>(null);
-    const [isReviewOpen, setIsReviewOpen] = useState(false);
     const [isTextWrapEnabled, setIsTextWrapEnabled] = useState(false);
     const [editorExtensions, setEditorExtensions] = useState<Array<ReturnType<typeof search> | typeof oneDark | typeof editorSelectionTheme | typeof EditorView.lineWrapping | Awaited<ReturnType<typeof getLanguageExtension>>>>([]);
 
@@ -329,7 +327,6 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
 
     const changes = useMemo(() => getThemeChanges({baseFiles, currentFiles}), [baseFiles, currentFiles]);
     const changesMap = useMemo(() => new Map(changes.map(change => [change.path, change.status])), [changes]);
-    const reviewItems = useMemo(() => buildReviewItems({baseFiles, currentFiles, changes}), [baseFiles, currentFiles, changes]);
     const selectedFile = selectedNode?.type === 'file' ? currentFiles[selectedNode.path] : null;
 
     useEffect(() => {
@@ -899,7 +896,6 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
                     currentThemeName={currentThemeName}
                     isSaving={isSaving}
                     onClose={closeEditor}
-                    onOpenReview={() => setIsReviewOpen(true)}
                     onSave={() => void handleSave()}
                 />
 
@@ -1008,17 +1004,6 @@ const ThemeCodeEditorModal: React.FC<{themeName: string}> = ({themeName}) => {
                     </section>
                 </div>
 
-                {isReviewOpen && (
-                    <ThemeReviewModal
-                        reviewItems={reviewItems}
-                        onClose={() => setIsReviewOpen(false)}
-                        onOpenInEditor={(path) => {
-                            openFile(path);
-                            setIsReviewOpen(false);
-                        }}
-                        onRevert={handleRevertPath}
-                    />
-                )}
             </div>
         </div>
     );
