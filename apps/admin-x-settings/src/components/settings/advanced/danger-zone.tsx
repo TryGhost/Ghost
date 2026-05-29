@@ -1,6 +1,7 @@
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
+import trackEvent from '../../../utils/analytics';
 import useStaffUsers from '../../../hooks/use-staff-users';
 import {Button, ConfirmationModal, ListItem, SettingGroupHeader, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
@@ -8,17 +9,20 @@ import {useDeleteAllContent} from '@tryghost/admin-x-framework/api/db';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useQueryClient} from '@tryghost/admin-x-framework';
+import {useResetAllGiftLinks} from '@tryghost/admin-x-framework/api/gift-links';
 import {useResetAuth} from '@tryghost/admin-x-framework/api/security';
 
 const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {mutateAsync: deleteAllContent} = useDeleteAllContent();
     const {mutateAsync: resetAuth} = useResetAuth();
+    const {mutateAsync: resetAllGiftLinks} = useResetAllGiftLinks();
     const client = useQueryClient();
     const handleError = useHandleError();
     const {config} = useGlobalData();
     const {totalUsers} = useStaffUsers();
 
     const resetAuthEnabled = Boolean(config?.labs?.dangerZoneResetAuth);
+    const giftLinksEnabled = Boolean(config?.labs?.giftLinks);
 
     const resetAuthStaffSentence = totalUsers === 1
         ? 'You will be signed out and must reset your password before signing back in.'
@@ -83,6 +87,39 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
         });
     };
 
+    const handleResetAllGiftLinks = () => {
+        NiceModal.show(ConfirmationModal, {
+            title: 'Reset all gift links?',
+            prompt: (
+                <>
+                    <p className='mb-4'>
+                        This immediately deactivates every gift link across your site. Anyone holding a shared link loses access, and any links you&apos;ve posted publicly stop working.
+                    </p>
+                    <p>
+                        A fresh link is created automatically the next time you copy one for a post. Use this if a link has leaked.
+                    </p>
+                </>
+            ),
+            okLabel: 'Reset all gift links',
+            okRunningLabel: 'Resetting...',
+            okColor: 'red',
+            onOk: async (modal) => {
+                try {
+                    const response = await resetAllGiftLinks(null);
+                    const count = response?.gift_links?.reset ?? 0;
+                    showToast({
+                        title: `Reset ${count} gift ${count === 1 ? 'link' : 'links'}.`,
+                        type: 'success'
+                    });
+                    trackEvent('gift_link_reset_all');
+                    modal?.remove();
+                } catch (e) {
+                    handleError(e);
+                }
+            }
+        });
+    };
+
     return (
         <TopLevelGroup
             customHeader={
@@ -107,6 +144,15 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         detail='Rotate every API key, sign out every staff user, and require a password reset. Use after a suspected credential compromise.'
                         testId='reset-all-authentication'
                         title='Reset all authentication'
+                    />
+                )}
+                {giftLinksEnabled && (
+                    <ListItem
+                        action={<Button aria-label='Reset all gift links' color='red' label='Reset' onClick={handleResetAllGiftLinks} />}
+                        bgOnHover={false}
+                        detail='Deactivate every gift link across your site. New links are created automatically on next copy. Use if a link has leaked.'
+                        testId='reset-all-gift-links'
+                        title='Reset all gift links'
                     />
                 )}
             </div>

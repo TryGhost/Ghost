@@ -50,7 +50,7 @@ export const useResetGiftLink = createMutation<GiftLinksResponseType, {id: strin
 });
 
 // PUT /gift_links/reset_all/ — site-wide kill switch (Owner/Admin), danger zone.
-export const useResetAllGiftLinks = createMutation<ResetAllGiftLinksResponseType, object>({
+export const useResetAllGiftLinks = createMutation<ResetAllGiftLinksResponseType, null>({
     method: 'PUT',
     path: () => '/gift_links/reset_all/',
     invalidateQueries: {
