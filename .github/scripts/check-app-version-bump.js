@@ -294,20 +294,16 @@ function main() {
         console.log(`${app.key} package version bump check passed (${prVersion} > ${mainVersion})`);
 
         const prMajorMinorVersion = getMajorMinorVersion(prVersion);
-        const mainMajorMinorVersion = getMajorMinorVersion(mainVersion);
+        const prDefaultsVersion = getPrDefaultsVersion(app);
 
-        if (prMajorMinorVersion !== mainMajorMinorVersion) {
-            const prDefaultsVersion = getPrDefaultsVersion(app);
-
-            if (prDefaultsVersion !== prMajorMinorVersion) {
-                failedApps.push(
-                    `${app.key} (${app.packageName}) was bumped from ${mainVersion} to ${prVersion}, but defaults.json still has ${app.key}.version set to ${prDefaultsVersion}. Please update ghost/core/core/shared/config/defaults.json to ${prMajorMinorVersion}.`
-                );
-                continue;
-            }
-
-            console.log(`${app.key} defaults.json version check passed (${app.key}.version = ${prDefaultsVersion})`);
+        if (prDefaultsVersion !== prMajorMinorVersion) {
+            failedApps.push(
+                `${app.key} (${app.packageName}) was bumped from ${mainVersion} to ${prVersion}, but defaults.json still has ${app.key}.version set to ${prDefaultsVersion}. Please update ghost/core/core/shared/config/defaults.json to ${prMajorMinorVersion}.`
+            );
+            continue;
         }
+
+        console.log(`${app.key} defaults.json version check passed (${app.key}.version = ${prDefaultsVersion})`);
     }
 
     if (failedApps.length) {
