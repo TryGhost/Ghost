@@ -54,7 +54,6 @@ catalog:
   '@types/react': 18.3.29
   '@types/react-dom': 18.3.7
   '@types/validator': 13.15.10
-  '@typescript-eslint/eslint-plugin': 8.49.0
   '@typescript-eslint/parser': 8.49.0
   '@vitejs/plugin-react': 4.7.0
   '@vitest/coverage-v8': 4.1.7
@@ -79,7 +78,6 @@ catalog:
   msw: 2.14.6
   node-html-markdown: 2.0.0
   postcss: 8.5.10
-  postcss-import: 16.1.1
   preact: ^10.29.2
   react-router: 7.14.0
   sinon: 21.1.2
