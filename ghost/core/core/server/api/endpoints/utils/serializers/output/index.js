@@ -141,6 +141,10 @@ module.exports = {
         return require('./links');
     },
 
+    get gift_links() {
+        return require('./gift-links');
+    },
+
     get search_index() {
         return require('./search-index');
     },

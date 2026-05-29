@@ -4,6 +4,7 @@ const {http} = require('@tryghost/api-framework');
 const auth = require('../../../../services/auth');
 const apiMw = require('../../middleware');
 const mw = require('./middleware');
+const labs = require('../../../../../shared/labs');
 
 const shared = require('../../../shared');
 
@@ -399,6 +400,13 @@ module.exports = function apiRoutes() {
 
     router.get('/links', mw.authAdminApi, http(api.links.browse));
     router.put('/links/bulk', mw.authAdminApi, http(api.links.bulkEdit));
+
+    // Gift links (gated behind the `giftLinks` private flag). `reset_all` is
+    // registered before the `:id` routes so the static path wins over the param.
+    router.put('/gift_links/reset_all', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.resetAll));
+    router.get('/gift_links/:id', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.read));
+    router.post('/gift_links/:id', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.ensure));
+    router.put('/gift_links/:id/reset', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.reset));
 
     // Recommendations
     router.get('/recommendations', mw.authAdminApi, http(api.recommendations.browse));
