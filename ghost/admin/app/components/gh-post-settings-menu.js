@@ -1,12 +1,14 @@
 import Component from '@ember/component';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import classic from 'ember-classic-decorator';
+import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import moment from 'moment-timezone';
 import {action, computed} from '@ember/object';
 import {alias, or} from '@ember/object/computed';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {tagName} from '@ember-decorators/component';
+import {trackEvent} from 'ghost-admin/utils/analytics';
 import {tracked} from '@glimmer/tracking';
 
 @classic
@@ -186,6 +188,36 @@ export default class GhPostSettingsMenu extends Component {
         }
 
         this.setSidebarWidthVariable(0);
+    }
+
+    // Gift links: only for a published, gated (non-public) post/page, and only
+    // for users who can manage them (Owner/Administrator/Editor).
+    @computed('feature.giftLinks', 'session.user.{isAdmin,isEditor}', 'post.{isPublished,visibility}')
+    get canCopyGiftLink() {
+        if (!this.feature.giftLinks || !this.post) {
+            return false;
+        }
+        const user = this.session.user;
+        const canManage = user && (user.isAdmin || user.isEditor);
+        const eligible = this.post.isPublished && this.post.visibility && this.post.visibility !== 'public';
+        return Boolean(canManage && eligible);
+    }
+
+    @action
+    async copyGiftLink() {
+        try {
+            // Idempotent ensure: returns the active gift link, creating it if absent.
+            const url = this.ghostPaths.url.api('gift_links', this.post.id);
+            const response = await this.ajax.post(url);
+            const token = response.gift_links[0].token;
+            const separator = this.post.url.includes('?') ? '&' : '?';
+            const giftUrl = `${this.post.url}${separator}gift=${encodeURIComponent(token)}&utm_campaign=gift-link`;
+            copyTextToClipboard(giftUrl);
+            trackEvent('gift_link_copied', {surface: 'editor-psm'});
+            this.notifications.showNotification('Gift link copied', {type: 'success'});
+        } catch (e) {
+            this.notifications.showAPIError(e, {key: 'gift-link.copy'});
+        }
     }
 
     @action

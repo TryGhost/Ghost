@@ -44,6 +44,15 @@
                             {{/if}}
                         </div>
 
+                        {{#if this.canCopyGiftLink}}
+                            <div class="form-group">
+                                <button type="button" class="gh-btn gh-btn-link gh-post-settings-gift-link" {{on "click" this.copyGiftLink}} data-test-button="copy-gift-link">
+                                    <span>{{svg-jar "link"}}Copy gift link</span>
+                                </button>
+                                <p class="description">Share a link that lets anyone read this gated post — no account needed.</p>
+                            </div>
+                        {{/if}}
+
                         <div class="form-group">
                             {{#if (or this.post.isDraft this.post.isPublished this.post.pastScheduledTime this.post.isSent)}}
                                 <label>Publish date</label>
