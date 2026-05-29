@@ -132,9 +132,12 @@ describe('remote-flags resolve', function () {
             assert.deepEqual(resolve({flagA: {value: true, percent: bucket - 0.5}}, {siteId, knownFlags: KNOWN}), {});
         });
 
-        it('clamps Infinity to all sites and -Infinity to no site', function () {
-            assert.deepEqual(resolve({flagA: {value: true, percent: Infinity}}, {siteId: 5, knownFlags: KNOWN}), {flagA: true});
+        it('skips entries whose percent is non-finite (Infinity/NaN are not valid numbers)', function () {
+            // The Zod schema rejects non-finite percents, so the entry is skipped
+            // (no opinion) rather than applied. These cannot occur in valid JSON.
+            assert.deepEqual(resolve({flagA: {value: true, percent: Infinity}}, {siteId: 5, knownFlags: KNOWN}), {});
             assert.deepEqual(resolve({flagA: {value: true, percent: -Infinity}}, {siteId: 5, knownFlags: KNOWN}), {});
+            assert.deepEqual(resolve({flagA: {value: true, percent: NaN}}, {siteId: 5, knownFlags: KNOWN}), {});
         });
 
         it('omits (does not set false) when a value:false ramp does not apply to this site', function () {

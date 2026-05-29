@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const {z} = require('zod');
 
 /**
  * Deterministic bucket in the range [0, 99] for a (flag, siteId) pair.
@@ -25,6 +26,21 @@ function bucketFor(flag, siteId) {
 }
 
 /**
+ * The shape of a single manifest entry: either a bare boolean (a full override) or
+ * a `{value, percent?}` ramp. Validation is delegated to Zod so the contract is
+ * declarative; note that `z.number()` rejects NaN/Infinity, so a non-finite or
+ * non-numeric percent is treated as a malformed entry and skipped (such values
+ * cannot occur in valid JSON anyway). Unknown keys inside a ramp object are stripped.
+ */
+const entrySchema = z.union([
+    z.boolean(),
+    z.object({
+        value: z.boolean(),
+        percent: z.number().optional()
+    })
+]);
+
+/**
  * Resolve a sparse remote manifest into a flat `{flag: boolean}` override map for
  * a single site.
  *
@@ -35,9 +51,11 @@ function bucketFor(flag, siteId) {
  *     >= 100) it is a full override; otherwise the override applies only to sites
  *     whose deterministic bucket falls below `percent`.
  *
- * Invalid or unknown entries are skipped individually (per-entry skip) so one bad
- * entry can never discard the rest of the manifest, and the manifest can never
- * introduce a flag that core does not already know about.
+ * Only keys present in `knownFlags` are honored, and each entry is validated and
+ * skipped individually (per-entry skip): one bad entry can never discard the rest
+ * of the manifest, and the manifest can never introduce a flag that core does not
+ * already define. The flag allowlist is supplied by the caller (the labs service),
+ * not duplicated here.
  *
  * @param {*} manifest - parsed manifest; anything that is not a plain object yields `{}`
  * @param {object} [options]
@@ -63,7 +81,12 @@ function resolve(manifest, options) {
             continue;
         }
 
-        const entry = manifest[flag];
+        const parsed = entrySchema.safeParse(manifest[flag]);
+        if (!parsed.success) {
+            // Malformed entry: skip it individually, keeping every valid sibling.
+            continue;
+        }
+        const entry = parsed.data;
 
         // Bare boolean: full override for every site.
         if (typeof entry === 'boolean') {
@@ -71,21 +94,9 @@ function resolve(manifest, options) {
             continue;
         }
 
-        // Anything other than a {value: boolean, ...} object is malformed.
-        if (!entry || typeof entry !== 'object' || Array.isArray(entry) || typeof entry.value !== 'boolean') {
-            continue;
-        }
-
-        let percent = entry.percent;
-        if (percent === undefined || percent === null) {
-            // {value} with no percent is a full override.
-            percent = 100;
-        }
-        if (typeof percent !== 'number' || Number.isNaN(percent)) {
-            continue;
-        }
-
-        // Clamp so a typo can never widen beyond the whole fleet or go negative.
+        // Ramp object. A missing percent is a full override; clamp so a typo can
+        // never widen beyond the whole fleet or go negative.
+        let percent = entry.percent === undefined ? 100 : entry.percent;
         percent = Math.max(0, Math.min(100, percent));
 
         if (percent <= 0) {

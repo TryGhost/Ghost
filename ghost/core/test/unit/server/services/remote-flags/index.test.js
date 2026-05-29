@@ -75,16 +75,6 @@ describe('remote-flags service index (gating)', function () {
         assert.deepEqual(instance.getKnownFlags(), labs.getAllFlags());
     });
 
-    it('passes through configured pollInterval and jitter', function () {
-        configUtils.set('remoteFlags', {enabled: true, url: URL, pollInterval: 123000, jitter: 4000});
-        configUtils.set('hostSettings', {siteId: 7});
-
-        const instance = remoteFlags.init();
-
-        assert.equal(instance.pollInterval, 123000);
-        assert.equal(instance.jitter, 4000);
-    });
-
     it('is idempotent: a second init returns the same instance and starts once', function () {
         configUtils.set('remoteFlags', {enabled: true, url: URL});
         configUtils.set('hostSettings', {siteId: 42});

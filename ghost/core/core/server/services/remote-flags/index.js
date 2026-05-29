@@ -49,9 +49,7 @@ module.exports.init = function init() {
         siteId,
         getKnownFlags: () => labs.getAllFlags(),
         applyOverrides: overrides => labs.setRemoteOverrides(overrides),
-        request,
-        pollInterval: remoteFlags.pollInterval,
-        jitter: remoteFlags.jitter
+        request
     });
 
     // Fire-and-forget: start() is fail-open and never rejects, so this neither
@@ -62,8 +60,8 @@ module.exports.init = function init() {
 };
 
 /**
- * Stop the poller and clear local overrides is intentionally NOT done here: stopping
- * only halts polling and leaves the last-applied overrides in place.
+ * Stop the poller. This only halts polling; it intentionally leaves the
+ * last-applied overrides in place rather than clearing them.
  */
 module.exports.stop = function stop() {
     if (instance) {
