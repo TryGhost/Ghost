@@ -399,6 +399,7 @@ test.describe('Theme settings', async () => {
         await page.keyboard.insertText('{"name":"edition","version":"1.0.0"}\n');
 
         await expect(editorModal).toContainText(/1 file modified/);
+        await expect(editorModal.getByRole('button', {name: /1 file modified/})).toHaveCount(0);
     });
 
     test('Saves built-in themes as a new theme name', async ({page}) => {
