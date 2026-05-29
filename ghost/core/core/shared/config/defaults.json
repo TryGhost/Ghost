@@ -10,7 +10,7 @@
         "redirects": true
     },
     "updateCheck": {
-        "url": "https://updates.ghost.org",
+        "url": "https://check.ghost.org",
         "forceUpdate": false
     },
     "privacy": false,
