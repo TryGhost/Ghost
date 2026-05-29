@@ -804,12 +804,6 @@ test.describe('Theme settings', async () => {
     });
 
     test('Prevents direct access to theme editor route even for an allowlisted theme', async ({page}) => {
-        // Regression cover for the launch gate: the editor saves via POST
-        // /themes/upload/, which the server enforces with a '.' sentinel —
-        // so any save by a limited customer is blocked regardless of
-        // allowlist. The launch gate must mirror that, otherwise editing
-        // an allowlisted theme opens the editor only to fail on save with
-        // a generic "something went wrong" toast.
         await mockApi({page, requests: {
             ...globalDataRequests,
             ...limitRequests,
