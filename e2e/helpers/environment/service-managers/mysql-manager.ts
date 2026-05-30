@@ -92,7 +92,8 @@ export class MySQLManager {
         try {
             debug('Finding all test databases to clean up...');
 
-            const query = `SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'ghost_%' AND schema_name NOT IN ('ghost_testing', 'ghost_e2e_base', '${DEV_PRIMARY_DATABASE}')`;
+            const escapedDevPrimaryDb = DEV_PRIMARY_DATABASE.replace(/'/g, "\\'");
+            const query = "SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'ghost_%' AND schema_name NOT IN ('ghost_testing', 'ghost_e2e_base', '" + escapedDevPrimaryDb + "')";
             const output = await this.exec(`mysql -uroot -proot -N -e "${query}"`);
 
             const databaseNames = this.parseDatabaseNames(output);
