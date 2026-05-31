@@ -1065,8 +1065,8 @@ importers:
         specifier: 17.0.2
         version: 17.0.2(react@17.0.2)
       react-string-replace:
-        specifier: 1.1.1
-        version: 1.1.1
+        specifier: 2.0.1
+        version: 2.0.1
     devDependencies:
       '@playwright/test':
         specifier: 'catalog:'
@@ -19213,9 +19213,8 @@ packages:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
-  react-string-replace@1.1.1:
-    resolution: {integrity: sha512-26TUbLzLfHQ5jO5N7y3Mx88eeKo0Ml0UjCQuX4BMfOd/JX+enQqlKpL1CZnmjeBRvQE8TR+ds9j1rqx9CxhKHQ==}
-    engines: {node: '>=0.12.0'}
+  react-string-replace@2.0.1:
+    resolution: {integrity: sha512-J7y/IxZkwhOgCexu6GtkNH2FIa9f/z6ykvK1YXS8VLIdvcP8Vyx3LAUFsfIFvq3aQbmin2d+clFR1J50LnR2yA==}
 
   react-style-singleton@2.2.3:
     resolution: {integrity: sha512-b6jSvxvVnyptAiLjbkWLE/lOnR4lfTtDAl+eUC7RZy+QQWc6wRzIV2CE6xBuMmDxc2qIihtDCZD5NPOFl7fRBQ==}
@@ -43482,7 +43481,7 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
       react-transition-group: 4.4.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
 
-  react-string-replace@1.1.1: {}
+  react-string-replace@2.0.1: {}
 
   react-style-singleton@2.2.3(@types/react@18.3.29)(react@18.3.1):
     dependencies:
