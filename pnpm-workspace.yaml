@@ -186,3 +186,5 @@ minimumReleaseAgeExclude:
   - "@types/react@18.3.29"
   # Renovate security update: @playwright/test@1.60.0
   - "@playwright/test@1.60.0"
+  # Renovate security update: tmp@0.2.6
+  - tmp@0.2.6
