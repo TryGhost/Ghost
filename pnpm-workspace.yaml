@@ -188,3 +188,5 @@ minimumReleaseAgeExclude:
   - "@playwright/test@1.60.0"
   # Renovate security update: tmp@0.2.6
   - tmp@0.2.6
+  # Renovate security update: jsonwebtoken@9.0.0
+  - jsonwebtoken@9.0.0
