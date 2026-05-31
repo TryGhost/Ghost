@@ -63,7 +63,7 @@ export class MySQLManager {
     async createDatabase(databaseName: string): Promise<void> {
         debug('Creating database:', databaseName);
 
-        await this.exec('mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS \\`' + databaseName + '\\`;"');
+        await this.exec('mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS \\`' + this.escapeSqlIdentifier(databaseName) + '\\`;"');
 
         debug('Database created:', databaseName);
     }
@@ -71,7 +71,7 @@ export class MySQLManager {
     async dropDatabase(database: string): Promise<void> {
         debug('Dropping database if exists:', database);
 
-        await this.exec('mysql -uroot -proot -e "DROP DATABASE IF EXISTS \\`' + database + '\\`;"');
+        await this.exec('mysql -uroot -proot -e "DROP DATABASE IF EXISTS \\`' + this.escapeSqlIdentifier(database) + '\\`;"');
 
         debug('Database dropped (if existed):', database);
     }
@@ -92,7 +92,7 @@ export class MySQLManager {
         try {
             debug('Finding all test databases to clean up...');
 
-            const escapedDevPrimaryDb = DEV_PRIMARY_DATABASE.replace(/'/g, "\\'");
+            const escapedDevPrimaryDb = this.escapeSqlString(DEV_PRIMARY_DATABASE);
             const query = "SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'ghost_%' AND schema_name NOT IN ('ghost_testing', 'ghost_e2e_base', '" + escapedDevPrimaryDb + "')";
             const output = await this.exec(`mysql -uroot -proot -N -e "${query}"`);
 
@@ -111,7 +111,7 @@ export class MySQLManager {
     async createSnapshot(sourceDatabase: string = 'ghost_testing', outputPath: string = '/tmp/dump.sql'): Promise<void> {
         logging.info('Creating database snapshot...');
 
-        await this.exec(`mysqldump -uroot -proot --opt --single-transaction ${sourceDatabase} > ${outputPath}`);
+        await this.exec('mysqldump -uroot -proot --opt --single-transaction ' + this.escapeShellArg(sourceDatabase) + ' > ' + this.escapeShellArg(outputPath));
 
         logging.info('Database snapshot created');
     }
@@ -120,7 +120,7 @@ export class MySQLManager {
         try {
             debug('Deleting MySQL snapshot:', snapshotPath);
 
-            await this.exec(`rm -f ${snapshotPath}`);
+            await this.exec('rm -f ' + this.escapeShellArg(snapshotPath));
 
             debug('MySQL snapshot deleted');
         } catch (error) {
@@ -132,7 +132,7 @@ export class MySQLManager {
     async restoreDatabaseFromSnapshot(database: string, snapshotPath: string = '/tmp/dump.sql'): Promise<void> {
         debug('Restoring database from snapshot:', database);
 
-        await this.exec('mysql -uroot -proot ' + database + ' < ' + snapshotPath);
+        await this.exec('mysql -uroot -proot ' + this.escapeShellArg(database) + ' < ' + this.escapeShellArg(snapshotPath));
 
         debug('Database restored from snapshot:', database);
     }
@@ -168,8 +168,8 @@ export class MySQLManager {
         debug('Updating site_uuid in database settings:', database, siteUuid);
 
         const command = 'mysql -uroot -proot -e "UPDATE \\`' +
-            database + '\\`.settings SET value=\'' +
-            siteUuid + '\' WHERE \\`key\\`=\'site_uuid\';"';
+            this.escapeSqlIdentifier(database) + '\\`.settings SET value=\'' +
+            this.escapeSqlString(siteUuid) + '\' WHERE \\`key\\`=\'site_uuid\';"';
 
         await this.exec(command);
 
@@ -179,13 +179,14 @@ export class MySQLManager {
     async updateStripeSettings(database: string, secretKey: string, publishableKey: string): Promise<void> {
         debug('Updating Stripe settings in database:', database);
 
-        const escapedSecretKey = secretKey.replace(/'/g, '\\\'');
-        const escapedPublishableKey = publishableKey.replace(/'/g, '\\\'');
+        const escapedSecretKey = this.escapeSqlString(secretKey);
+        const escapedPublishableKey = this.escapeSqlString(publishableKey);
+        const escapedDatabase = this.escapeSqlIdentifier(database);
 
         // Use INSERT ... ON DUPLICATE KEY UPDATE so this works whether or not
         // the settings rows already exist. In dev mode the base DB is empty
         // (only schema, no seeded rows), so a plain UPDATE would be a no-op.
-        const command = 'mysql -uroot -proot -e "INSERT INTO \\`' + database + '\\`.settings ' +
+        const command = 'mysql -uroot -proot -e "INSERT INTO \\`' + escapedDatabase + '\\`.settings ' +
             '(id, \\`group\\`, \\`key\\`, value, type, flags, created_at, updated_at) VALUES ' +
             '(SUBSTRING(REPLACE(UUID(), \'-\', \'\'), 1, 24), \'members\', \'stripe_secret_key\', \'' + escapedSecretKey + '\', \'string\', NULL, NOW(), NOW()), ' +
             '(SUBSTRING(REPLACE(UUID(), \'-\', \'\'), 1, 24), \'members\', \'stripe_publishable_key\', \'' + escapedPublishableKey + '\', \'string\', NULL, NOW(), NOW()) ' +
@@ -194,6 +195,35 @@ export class MySQLManager {
         await this.exec(command);
 
         debug('Stripe settings updated in database');
+    }
+
+    /**
+     * Validates and returns a safe SQL identifier (database/table/column name).
+     * Only allows alphanumeric characters, underscores, and hyphens to prevent
+     * SQL and shell injection through backtick-quoted identifiers.
+     */
+    private escapeSqlIdentifier(name: string): string {
+        if (!/^[a-zA-Z0-9_-]+$/.test(name)) {
+            throw new Error(`Unsafe SQL identifier contains invalid characters: ${name}`);
+        }
+        return name;
+    }
+
+    /**
+     * Escapes a SQL string value by doubling single quotes.
+     * This is the standard SQL escaping method and works regardless of
+     * the NO_BACKSLASH_ESCAPES SQL mode.
+     */
+    private escapeSqlString(value: string): string {
+        return value.replace(/'/g, "''");
+    }
+
+    /**
+     * Escapes a shell argument by wrapping it in single quotes.
+     * Any single quotes within the argument are properly escaped using the '\'' pattern.
+     */
+    private escapeShellArg(arg: string): string {
+        return "'" + arg.replace(/'/g, "'\\''") + "'";
     }
 
     private async exec(command: string) {
