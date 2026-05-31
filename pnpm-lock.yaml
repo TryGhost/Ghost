@@ -148,8 +148,8 @@ catalogs:
       specifier: 4.18.1
       version: 4.18.1
     lucide-react:
-      specifier: 0.577.0
-      version: 0.577.0
+      specifier: 1.17.0
+      version: 1.17.0
     mocha:
       specifier: 11.7.6
       version: 11.7.6
@@ -896,7 +896,7 @@ importers:
         version: 3.10.1
       lucide-react:
         specifier: 'catalog:'
-        version: 0.577.0(react@18.3.1)
+        version: 1.17.0(react@18.3.1)
       mingo:
         specifier: 2.5.3
         version: 2.5.3
@@ -1239,7 +1239,7 @@ importers:
         version: 7.14.0
       lucide-react:
         specifier: 'catalog:'
-        version: 0.577.0(react@18.3.1)
+        version: 1.17.0(react@18.3.1)
       moment-timezone:
         specifier: 0.5.45
         version: 0.5.45
@@ -1417,7 +1417,7 @@ importers:
         version: 4.1.0
       lucide-react:
         specifier: 'catalog:'
-        version: 0.577.0(react@18.3.1)
+        version: 1.17.0(react@18.3.1)
       moment-timezone:
         specifier: 0.5.45
         version: 0.5.45
@@ -8651,9 +8651,6 @@ packages:
   '@tryghost/mobiledoc-kit@0.12.4-ghost.1':
     resolution: {integrity: sha512-c4aheSWH2Y7x4uSkAx08gbtvuEgPGjlu6v+FeUdSJZ1blEd+knL3zTcUAfeSiM6rgLEHxlNWtt+KFwotdf6rTA==}
 
-  '@tryghost/mongo-knex@0.9.4':
-    resolution: {integrity: sha512-R5mqpuQ1nN4qWAii9Tvg5POZ0nLO7Voy7QaQF+95sseUpfe4XEUsr3+mm4HYPC8MNKginlUm/unLf5QFzFQl5w==}
-
   '@tryghost/mongo-knex@0.9.5':
     resolution: {integrity: sha512-etO6Kz8a1dgMV6yapD2C2JsoeLrUjkIoIUdXrkV9ELHQsMjMhtI2SAUnMV9AcLhxv0P7h8UWWD2rlNBwo8JJig==}
 
@@ -8671,9 +8668,6 @@ packages:
 
   '@tryghost/nodemailer@2.2.2':
     resolution: {integrity: sha512-8Eo6jl01Y3LE7XJMbQ8ui/qa4CdBwx+toL/IAC8aCAHnpcylIXKbU6XIoqCYW4S3idEioQ8khrADbAqIO3kA0g==}
-
-  '@tryghost/nql-lang@0.6.4':
-    resolution: {integrity: sha512-m984kPFEexS3N1j/LeG51ChTJCplN/+IWoBP6/vsBxz0cnneY87J7rwr96gTmNR+s1xDzuQOpj3heoFD9Dw+7A==}
 
   '@tryghost/nql-lang@0.6.5':
     resolution: {integrity: sha512-13Loz2yH7GCMAfpVawD6KNWNPIVTc4STnP+MeCwbrWg8htv/CPOB0u+i9Eap0qEi8h6TC2aoOvbQV0EvjidQaQ==}
@@ -16597,8 +16591,8 @@ packages:
     resolution: {integrity: sha512-DqC6n3QQ77zdFpCMASA1a3Jlb64Hv2N2DciFGkO/4L9+q/IpIAuRlKOvCXabtRW6cQf8usbmM6BE/TOPysCdIA==}
     engines: {bun: '>=1.0.0', deno: '>=1.30.0', node: '>=8.0.0'}
 
-  lucide-react@0.577.0:
-    resolution: {integrity: sha512-4LjoFv2eEPwYDPg/CUdBJQSDfPyzXCRrVW1X7jrx/trgxnxkHFjnVZINbzvzxjN70dxychOfg+FTYwBiS3pQ5A==}
+  lucide-react@1.17.0:
+    resolution: {integrity: sha512-9FA9evdox/JQL5PT57fdA1x/yg8T7knJ98+zjTL3UfKza6pflQUUh3XtaQIHKvnsJw1lmsEyHVlt5jchYxOQ5w==}
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
@@ -20786,10 +20780,6 @@ packages:
 
   tmp@0.2.4:
     resolution: {integrity: sha512-UdiSoX6ypifLmrfQ/XfiawN6hkjSBpCjhKxxZcWlUUmoXLaCKQU0bx4HF/tdDK2uzRuchf1txGvrWBzYREssoQ==}
-    engines: {node: '>=14.14'}
-
-  tmp@0.2.5:
-    resolution: {integrity: sha512-voyz6MApa1rQGUxT3E+BK7/ROe8itEx7vD8/HEvt4xwXucvQ5G5oeEiHkmHZJuBO21RpOf+YYm9MOivj709jow==}
     engines: {node: '>=14.14'}
 
   tmp@0.2.6:
@@ -28840,13 +28830,6 @@ snapshots:
       mobiledoc-text-renderer: 0.4.0
     optional: true
 
-  '@tryghost/mongo-knex@0.9.4':
-    dependencies:
-      debug: 4.4.3(supports-color@5.5.0)
-      lodash: 4.18.1
-    transitivePeerDependencies:
-      - supports-color
-
   '@tryghost/mongo-knex@0.9.5':
     dependencies:
       debug: 4.4.3(supports-color@5.5.0)
@@ -28939,19 +28922,15 @@ snapshots:
       - walrus
       - whiskers
 
-  '@tryghost/nql-lang@0.6.4':
-    dependencies:
-      date-fns: 2.30.0
-
   '@tryghost/nql-lang@0.6.5':
     dependencies:
       date-fns: 2.30.0
 
   '@tryghost/nql@0.12.10':
     dependencies:
-      '@tryghost/mongo-knex': 0.9.4
+      '@tryghost/mongo-knex': 0.9.5
       '@tryghost/mongo-utils': 0.6.3
-      '@tryghost/nql-lang': 0.6.4
+      '@tryghost/nql-lang': 0.6.5
       lodash: 4.18.1
       mingo: 2.5.3
     transitivePeerDependencies:
@@ -32273,7 +32252,7 @@ snapshots:
       resolve-path: 1.4.0
       rimraf: 3.0.2
       sane: 4.1.0
-      tmp: 0.2.5
+      tmp: 0.2.6
       tree-sync: 2.1.0
       underscore.string: 3.3.6
       watch-detector: 1.0.2
@@ -32579,7 +32558,7 @@ snapshots:
 
   can-symlink@1.0.0:
     dependencies:
-      tmp: 0.2.5
+      tmp: 0.2.6
 
   caniuse-api@3.0.0:
     dependencies:
@@ -35528,7 +35507,7 @@ snapshots:
       globby: 11.1.0
       ora: 5.4.1
       slash: 3.0.0
-      tmp: 0.2.5
+      tmp: 0.2.6
       workerpool: 6.5.1
     transitivePeerDependencies:
       - supports-color
@@ -36629,7 +36608,7 @@ snapshots:
     dependencies:
       chardet: 0.7.0
       iconv-lite: 0.4.24
-      tmp: 0.2.5
+      tmp: 0.2.6
 
   extract-stack@2.0.0: {}
 
@@ -36925,12 +36904,12 @@ snapshots:
   fixturify-project@1.10.0:
     dependencies:
       fixturify: 1.3.0
-      tmp: 0.2.5
+      tmp: 0.2.6
 
   fixturify-project@2.1.1:
     dependencies:
       fixturify: 2.1.1
-      tmp: 0.2.5
+      tmp: 0.2.6
       type-fest: 0.11.0
 
   fixturify@1.3.0:
@@ -40093,7 +40072,7 @@ snapshots:
 
   lru.min@1.1.4: {}
 
-  lucide-react@0.577.0(react@18.3.1):
+  lucide-react@1.17.0(react@18.3.1):
     dependencies:
       react: 18.3.1
 
@@ -45418,7 +45397,7 @@ snapshots:
       spawn-args: 0.2.0
       styled_string: 0.0.1
       tap-parser: 7.0.0
-      tmp: 0.2.5
+      tmp: 0.2.6
     transitivePeerDependencies:
       - '@babel/core'
       - arc-templates
@@ -45569,8 +45548,6 @@ snapshots:
       tldts-core: 7.4.0
 
   tmp@0.2.4: {}
-
-  tmp@0.2.5: {}
 
   tmp@0.2.6: {}
 
@@ -46511,7 +46488,7 @@ snapshots:
     dependencies:
       heimdalljs-logger: 0.1.10
       silent-error: 1.1.1
-      tmp: 0.2.5
+      tmp: 0.2.6
     transitivePeerDependencies:
       - supports-color
 
