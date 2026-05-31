@@ -112,8 +112,8 @@ catalogs:
       specifier: 2.1.1
       version: 2.1.1
     concurrently:
-      specifier: 8.2.2
-      version: 8.2.2
+      specifier: 10.0.0
+      version: 10.0.0
     cross-fetch:
       specifier: 4.1.0
       version: 4.1.0
@@ -540,7 +540,7 @@ importers:
     devDependencies:
       concurrently:
         specifier: 'catalog:'
-        version: 8.2.2
+        version: 10.0.0
       eslint:
         specifier: 'catalog:'
         version: 8.57.1
@@ -997,7 +997,7 @@ importers:
         version: 4.1.7(vitest@4.1.7)
       concurrently:
         specifier: 'catalog:'
-        version: 8.2.2
+        version: 10.0.0
       cross-fetch:
         specifier: 'catalog:'
         version: 4.1.0(encoding@0.1.13)
@@ -1097,7 +1097,7 @@ importers:
         version: 2.0.4
       concurrently:
         specifier: 'catalog:'
-        version: 8.2.2
+        version: 10.0.0
       eslint:
         specifier: 'catalog:'
         version: 8.57.1
@@ -1173,7 +1173,7 @@ importers:
         version: 4.1.7(vitest@4.1.7)
       concurrently:
         specifier: 'catalog:'
-        version: 8.2.2
+        version: 10.0.0
       cross-fetch:
         specifier: 'catalog:'
         version: 4.1.0(encoding@0.1.13)
@@ -1587,7 +1587,7 @@ importers:
         version: 10.4.21(postcss@8.5.10)
       concurrently:
         specifier: 'catalog:'
-        version: 8.2.2
+        version: 10.0.0
       eslint:
         specifier: 'catalog:'
         version: 8.57.1
@@ -1651,7 +1651,7 @@ importers:
         version: 4.1.7(vitest@4.1.7)
       concurrently:
         specifier: 'catalog:'
-        version: 8.2.2
+        version: 10.0.0
       cross-fetch:
         specifier: 'catalog:'
         version: 4.1.0(encoding@0.1.13)
@@ -8651,9 +8651,6 @@ packages:
   '@tryghost/mobiledoc-kit@0.12.4-ghost.1':
     resolution: {integrity: sha512-c4aheSWH2Y7x4uSkAx08gbtvuEgPGjlu6v+FeUdSJZ1blEd+knL3zTcUAfeSiM6rgLEHxlNWtt+KFwotdf6rTA==}
 
-  '@tryghost/mongo-knex@0.9.4':
-    resolution: {integrity: sha512-R5mqpuQ1nN4qWAii9Tvg5POZ0nLO7Voy7QaQF+95sseUpfe4XEUsr3+mm4HYPC8MNKginlUm/unLf5QFzFQl5w==}
-
   '@tryghost/mongo-knex@0.9.5':
     resolution: {integrity: sha512-etO6Kz8a1dgMV6yapD2C2JsoeLrUjkIoIUdXrkV9ELHQsMjMhtI2SAUnMV9AcLhxv0P7h8UWWD2rlNBwo8JJig==}
 
@@ -8671,9 +8668,6 @@ packages:
 
   '@tryghost/nodemailer@2.2.2':
     resolution: {integrity: sha512-8Eo6jl01Y3LE7XJMbQ8ui/qa4CdBwx+toL/IAC8aCAHnpcylIXKbU6XIoqCYW4S3idEioQ8khrADbAqIO3kA0g==}
-
-  '@tryghost/nql-lang@0.6.4':
-    resolution: {integrity: sha512-m984kPFEexS3N1j/LeG51ChTJCplN/+IWoBP6/vsBxz0cnneY87J7rwr96gTmNR+s1xDzuQOpj3heoFD9Dw+7A==}
 
   '@tryghost/nql-lang@0.6.5':
     resolution: {integrity: sha512-13Loz2yH7GCMAfpVawD6KNWNPIVTc4STnP+MeCwbrWg8htv/CPOB0u+i9Eap0qEi8h6TC2aoOvbQV0EvjidQaQ==}
@@ -11288,6 +11282,10 @@ packages:
     resolution: {integrity: sha512-BSeNnyus75C4//NQ9gQt1/csTXyo/8Sb+afLAkzAptFuMsod9HFokGNudZpi/oQV73hnVK+sR+5PVRMd+Dr7YQ==}
     engines: {node: '>=12'}
 
+  cliui@9.0.1:
+    resolution: {integrity: sha512-k7ndgKhwoQveBL+/1tqGJYNz097I7WOvwbmmU2AR5+magtbjPWQTS1C5vzGkBC8Ym8UWRzfKUzUUqFLypY4Q+w==}
+    engines: {node: '>=20'}
+
   clone-response@1.0.3:
     resolution: {integrity: sha512-ROoL94jJH2dUVML2Y/5PEDNaSHgeOdSDicUyS7izcF63G6sTc/FTjLub4b8Il9S8S0beOfYt0TaA5qvFK+w0wA==}
 
@@ -11511,9 +11509,9 @@ packages:
     resolution: {integrity: sha512-MWufYdFw53ccGjCA+Ol7XJYpAlW6/prSMzuPOTRnJGcGzuhLn4Scrz7qf6o8bROZ514ltazcIFJZevcfbo0x7A==}
     engines: {'0': node >= 6.0}
 
-  concurrently@8.2.2:
-    resolution: {integrity: sha512-1dP4gpXFhei8IOtlXRE/T/4H88ElHgTiUzh71YUmtjTEHMSRS2Z/fgOxHSxxusGHogsRfxNq1vyAwxSC+EVyDg==}
-    engines: {node: ^14.13.0 || >=16.0.0}
+  concurrently@10.0.0:
+    resolution: {integrity: sha512-DRrk10z3sVPpguNe8od2cGNqZGqbT15rwAnxD4dG3b78mdNNb/gJyr8T834Oj518WcBmTktrt4FhdwZn09ZWSg==}
+    engines: {node: '>=22'}
     hasBin: true
 
   condense-whitespace@2.0.0:
@@ -20112,9 +20110,6 @@ packages:
   spawn-args@0.2.0:
     resolution: {integrity: sha512-73BoniQDcRWgnLAf/suKH6V5H54gd1KLzwYN9FB6J/evqTV33htH9xwV/4BHek+++jzxpVlZQKKZkqstPQPmQg==}
 
-  spawn-command@0.0.2:
-    resolution: {integrity: sha512-zC8zGoGkmc8J9ndvml8Xksr1Amk9qBujgbF0JAIWO7kXr43w0h/0GJNM/Vustixu+YE8N/MTrQ7N31FvHUACxQ==}
-
   spdx-correct@3.2.0:
     resolution: {integrity: sha512-kN9dJbvnySHULIluDHy32WHRUu3Og7B9sbY7tsFLctQkIqnMh3hErYgdMjTYuqmcXX+lK5T1lnUt3G7zNswmZA==}
 
@@ -20786,10 +20781,6 @@ packages:
 
   tmp@0.2.4:
     resolution: {integrity: sha512-UdiSoX6ypifLmrfQ/XfiawN6hkjSBpCjhKxxZcWlUUmoXLaCKQU0bx4HF/tdDK2uzRuchf1txGvrWBzYREssoQ==}
-    engines: {node: '>=14.14'}
-
-  tmp@0.2.5:
-    resolution: {integrity: sha512-voyz6MApa1rQGUxT3E+BK7/ROe8itEx7vD8/HEvt4xwXucvQ5G5oeEiHkmHZJuBO21RpOf+YYm9MOivj709jow==}
     engines: {node: '>=14.14'}
 
   tmp@0.2.6:
@@ -21933,6 +21924,10 @@ packages:
     resolution: {integrity: sha512-tVpsJW7DdjecAiFpbIB1e3qxIQsE6NoPc5/eTdrbbIC4h0LVsWhnoa3g+m2HclBIujHzsxZ4VJVA+GUuc2/LBw==}
     engines: {node: '>=12'}
 
+  yargs-parser@22.0.0:
+    resolution: {integrity: sha512-rwu/ClNdSMpkSrUb+d6BRsSkLUq1fmfsY6TOpYzTwvwkg1/NRG85KBy3kq++A8LKQwX6lsu+aWad+2khvuXrqw==}
+    engines: {node: ^20.19.0 || ^22.12.0 || >=23}
+
   yargs-unparser@2.0.0:
     resolution: {integrity: sha512-7pRTIA9Qc1caZ0bZ6RYRGbHJthJWuakf+WmHK0rVeLkNrrGhfoabBNdue6kdINI6r4if7ocq9aD/n7xwKOdzOA==}
     engines: {node: '>=10'}
@@ -21944,6 +21939,10 @@ packages:
   yargs@17.7.2:
     resolution: {integrity: sha512-7dSzzRQ++CKnNI/krKnYRV7JKKPUXMEh61soaHKg9mrWEhzFWhFnxPxGl+69cD1Ou63C13NUPCnmIcrvqCuM6w==}
     engines: {node: '>=12'}
+
+  yargs@18.0.0:
+    resolution: {integrity: sha512-4UEqdc2RYGHZc7Doyqkrqiln3p9X2DZVxaGbwhn2pi7MrRagKaOcIKe8L3OxYcbhXLgLFUS3zAYuQjKBQgmuNg==}
+    engines: {node: ^20.19.0 || ^22.12.0 || >=23}
 
   yauzl@2.10.0:
     resolution: {integrity: sha512-p4a9I6X6nu6IhoGmBqAcbJy1mlC4j27vEPZX9F4L4/vZT3Lyq1VkFHw/V/PUcB9Buo+DG3iHkT0x3Qya58zc3g==}
@@ -28840,13 +28839,6 @@ snapshots:
       mobiledoc-text-renderer: 0.4.0
     optional: true
 
-  '@tryghost/mongo-knex@0.9.4':
-    dependencies:
-      debug: 4.4.3(supports-color@5.5.0)
-      lodash: 4.18.1
-    transitivePeerDependencies:
-      - supports-color
-
   '@tryghost/mongo-knex@0.9.5':
     dependencies:
       debug: 4.4.3(supports-color@5.5.0)
@@ -28939,19 +28931,15 @@ snapshots:
       - walrus
       - whiskers
 
-  '@tryghost/nql-lang@0.6.4':
-    dependencies:
-      date-fns: 2.30.0
-
   '@tryghost/nql-lang@0.6.5':
     dependencies:
       date-fns: 2.30.0
 
   '@tryghost/nql@0.12.10':
     dependencies:
-      '@tryghost/mongo-knex': 0.9.4
+      '@tryghost/mongo-knex': 0.9.5
       '@tryghost/mongo-utils': 0.6.3
-      '@tryghost/nql-lang': 0.6.4
+      '@tryghost/nql-lang': 0.6.5
       lodash: 4.18.1
       mingo: 2.5.3
     transitivePeerDependencies:
@@ -32273,7 +32261,7 @@ snapshots:
       resolve-path: 1.4.0
       rimraf: 3.0.2
       sane: 4.1.0
-      tmp: 0.2.5
+      tmp: 0.2.6
       tree-sync: 2.1.0
       underscore.string: 3.3.6
       watch-detector: 1.0.2
@@ -32579,7 +32567,7 @@ snapshots:
 
   can-symlink@1.0.0:
     dependencies:
-      tmp: 0.2.5
+      tmp: 0.2.6
 
   caniuse-api@3.0.0:
     dependencies:
@@ -32902,6 +32890,12 @@ snapshots:
       strip-ansi: 6.0.1
       wrap-ansi: 7.0.0
 
+  cliui@9.0.1:
+    dependencies:
+      string-width: 7.2.0
+      strip-ansi: 7.2.0
+      wrap-ansi: 9.0.2
+
   clone-response@1.0.3:
     dependencies:
       mimic-response: 1.0.1
@@ -33098,17 +33092,14 @@ snapshots:
       readable-stream: 3.6.2
       typedarray: 0.0.6
 
-  concurrently@8.2.2:
+  concurrently@10.0.0:
     dependencies:
-      chalk: 4.1.2
-      date-fns: 2.30.0
-      lodash: 4.18.1
+      chalk: 5.6.2
       rxjs: 7.8.2
       shell-quote: 1.8.4
-      spawn-command: 0.0.2
-      supports-color: 8.1.1
+      supports-color: 10.2.2
       tree-kill: 1.2.2
-      yargs: 17.7.2
+      yargs: 18.0.0
 
   condense-whitespace@2.0.0: {}
 
@@ -35528,7 +35519,7 @@ snapshots:
       globby: 11.1.0
       ora: 5.4.1
       slash: 3.0.0
-      tmp: 0.2.5
+      tmp: 0.2.6
       workerpool: 6.5.1
     transitivePeerDependencies:
       - supports-color
@@ -36629,7 +36620,7 @@ snapshots:
     dependencies:
       chardet: 0.7.0
       iconv-lite: 0.4.24
-      tmp: 0.2.5
+      tmp: 0.2.6
 
   extract-stack@2.0.0: {}
 
@@ -36925,12 +36916,12 @@ snapshots:
   fixturify-project@1.10.0:
     dependencies:
       fixturify: 1.3.0
-      tmp: 0.2.5
+      tmp: 0.2.6
 
   fixturify-project@2.1.1:
     dependencies:
       fixturify: 2.1.1
-      tmp: 0.2.5
+      tmp: 0.2.6
       type-fest: 0.11.0
 
   fixturify@1.3.0:
@@ -44670,8 +44661,6 @@ snapshots:
 
   spawn-args@0.2.0: {}
 
-  spawn-command@0.0.2: {}
-
   spdx-correct@3.2.0:
     dependencies:
       spdx-expression-parse: 3.0.1
@@ -45418,7 +45407,7 @@ snapshots:
       spawn-args: 0.2.0
       styled_string: 0.0.1
       tap-parser: 7.0.0
-      tmp: 0.2.5
+      tmp: 0.2.6
     transitivePeerDependencies:
       - '@babel/core'
       - arc-templates
@@ -45569,8 +45558,6 @@ snapshots:
       tldts-core: 7.4.0
 
   tmp@0.2.4: {}
-
-  tmp@0.2.5: {}
 
   tmp@0.2.6: {}
 
@@ -46511,7 +46498,7 @@ snapshots:
     dependencies:
       heimdalljs-logger: 0.1.10
       silent-error: 1.1.1
-      tmp: 0.2.5
+      tmp: 0.2.6
     transitivePeerDependencies:
       - supports-color
 
@@ -46918,6 +46905,8 @@ snapshots:
 
   yargs-parser@21.1.1: {}
 
+  yargs-parser@22.0.0: {}
+
   yargs-unparser@2.0.0:
     dependencies:
       camelcase: 6.3.0
@@ -46944,6 +46933,15 @@ snapshots:
       string-width: 4.2.3
       y18n: 5.0.8
       yargs-parser: 21.1.1
+
+  yargs@18.0.0:
+    dependencies:
+      cliui: 9.0.1
+      escalade: 3.2.0
+      get-caller-file: 2.0.5
+      string-width: 7.2.0
+      y18n: 5.0.8
+      yargs-parser: 22.0.0
 
   yauzl@2.10.0:
     dependencies:
