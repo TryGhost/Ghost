@@ -67,7 +67,7 @@ catalog:
   dompurify: 3.4.5
   dotenv: 17.4.2
   eslint: 8.57.1
-  eslint-plugin-react-refresh: 0.4.24
+  eslint-plugin-react-refresh: 0.5.2
   fs-extra: 11.3.5
   glob: 13.0.6
   jsdom: 29.1.1
