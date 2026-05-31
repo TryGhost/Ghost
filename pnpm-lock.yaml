@@ -1868,8 +1868,8 @@ importers:
         specifier: 1.1.2
         version: 1.1.2(@babel/core@7.29.7)
       '@html-next/vertical-collection':
-        specifier: 3.0.0
-        version: 3.0.0(@babel/core@7.29.7)
+        specifier: 3.1.0
+        version: 3.1.0(@babel/core@7.29.7)
       '@sentry/ember':
         specifier: 7.120.3
         version: 7.120.3(webpack@5.105.4(@swc/core@1.15.40(@swc/helpers@0.5.21))(cssnano@4.1.10)(lightningcss@1.32.0)(postcss@8.5.15))
@@ -4938,8 +4938,8 @@ packages:
     peerDependencies:
       react-hook-form: ^7.55.0
 
-  '@html-next/vertical-collection@3.0.0':
-    resolution: {integrity: sha512-kpLYZXr3tlYkrSiyhww+f1YkyLMEhCm9h55A+PWPzJXBTZkV12sC5mIbxVcWD7q5QNjy634m6MMvmxfFgDmGoQ==}
+  '@html-next/vertical-collection@3.1.0':
+    resolution: {integrity: sha512-7mzdEhPA0SzIAqZA/HUwmAYVxzbsKp4l8vB7oBc6A71IGusrNZQUMLl09Vi9wgHahvhBV89LST474cu9k2Iw1Q==}
     engines: {node: '>= 14.*'}
 
   '@html-validate/stylish@4.3.0':
@@ -24566,7 +24566,7 @@ snapshots:
       '@standard-schema/utils': 0.3.0
       react-hook-form: 7.72.1(react@18.3.1)
 
-  '@html-next/vertical-collection@3.0.0(@babel/core@7.29.7)':
+  '@html-next/vertical-collection@3.1.0(@babel/core@7.29.7)':
     dependencies:
       babel6-plugin-strip-class-callcheck: 6.0.0
       broccoli-funnel: 2.0.2
