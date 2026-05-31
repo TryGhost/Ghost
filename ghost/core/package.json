@@ -284,7 +284,7 @@
     "expect": "29.7.0",
     "form-data": "4.0.5",
     "html-minifier": "4.0.0",
-    "html-validate": "8.29.0",
+    "html-validate": "11.4.0",
     "inquirer": "8.2.7",
     "jwk-to-pem": "2.0.7",
     "jwks-rsa": "3.2.2",
