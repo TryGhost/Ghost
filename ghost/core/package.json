@@ -300,7 +300,7 @@
     "rewire": "9.0.1",
     "sinon": "catalog:",
     "supertest": "6.3.4",
-    "tmp": "0.2.5",
+    "tmp": "0.2.6",
     "tsx": "4.21.0",
     "typescript": "catalog:",
     "validator": "catalog:",
