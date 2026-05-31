@@ -292,7 +292,7 @@
     "mocha": "catalog:",
     "mocha-slow-test-reporter": "0.1.2",
     "mock-knex": "TryGhost/mock-knex#68948e11b0ea4fe63456098dfdc169bea7f62009",
-    "nock": "13.5.6",
+    "nock": "14.0.15",
     "nodemon": "3.1.14",
     "postcss": "catalog:",
     "postcss-cli": "11.0.1",

@@ -1662,8 +1662,8 @@ importers:
         specifier: 'catalog:'
         version: 29.1.1(@noble/hashes@1.8.0)
       nock:
-        specifier: 13.5.6
-        version: 13.5.6
+        specifier: 14.0.15
+        version: 14.0.15
       tailwindcss:
         specifier: catalog:tailwind3
         version: 3.4.18(tsx@4.21.0)(yaml@2.9.0)
@@ -2802,8 +2802,8 @@ importers:
         specifier: TryGhost/mock-knex#68948e11b0ea4fe63456098dfdc169bea7f62009
         version: https://codeload.github.com/TryGhost/mock-knex/tar.gz/68948e11b0ea4fe63456098dfdc169bea7f62009(knex@2.4.2(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7))
       nock:
-        specifier: 13.5.6
-        version: 13.5.6
+        specifier: 14.0.15
+        version: 14.0.15
       nodemon:
         specifier: 3.1.14
         version: 3.1.14
@@ -17354,9 +17354,9 @@ packages:
   no-case@3.0.4:
     resolution: {integrity: sha512-fgAN3jGAh+RoxUGZHTSOLJIqUc2wmoBwGR4tbpNAKmmovFoWq0OdRkb0VkldReO2a2iBT/OEulG9XSUc10r3zg==}
 
-  nock@13.5.6:
-    resolution: {integrity: sha512-o2zOYiCpzRqSzPj0Zt/dQ/DqZeYoaQ7TUonc/xUPjCGl9WeHpNbxgVvOquXYAaJzI0M9BXV3HTzG0p8IUAbBTQ==}
-    engines: {node: '>= 10.13'}
+  nock@14.0.15:
+    resolution: {integrity: sha512-S0a47C9pLvcYx/Ugf0H30BVBEcUgMMBDk9VJIDlJ8XGrfH2QDUD4Tgdp45qDIiHttokBG+IbsOtsvIjGR/j3bg==}
+    engines: {node: '>=18.20.0 <20 || >=20.12.1'}
 
   node-abi@3.92.0:
     resolution: {integrity: sha512-KdHvFWZjEKDf0cakgFjebl371GPsISX2oZHcuyKqM7DtogIsHrqKeLTo8wBHxaXRAQlY2PsPlZmfo+9ZCxEREQ==}
@@ -41202,13 +41202,11 @@ snapshots:
       lower-case: 2.0.2
       tslib: 2.8.1
 
-  nock@13.5.6:
+  nock@14.0.15:
     dependencies:
-      debug: 4.4.3(supports-color@5.5.0)
+      '@mswjs/interceptors': 0.41.9
       json-stringify-safe: 5.0.1
       propagate: 2.0.1
-    transitivePeerDependencies:
-      - supports-color
 
   node-abi@3.92.0:
     dependencies:
