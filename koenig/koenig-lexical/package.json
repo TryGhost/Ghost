@@ -127,6 +127,6 @@
     "vite-plugin-svgr": "5.2.0",
     "vitest": "4.1.7",
     "y-websocket": "3.0.0",
-    "yjs": "13.6.30"
+    "yjs": "13.6.31"
   }
 }
