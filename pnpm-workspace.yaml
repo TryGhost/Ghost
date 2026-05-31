@@ -143,7 +143,7 @@ overrides:
   'minimatch@>=9.0.0 <9.0.7': ^9.0.7
   'minimist@<0.2.4': ^0.2.4
   'nth-check@<2.0.1': ^2.0.1
-  'path-to-regexp@<0.1.13': ^0.1.13
+  'path-to-regexp@<0.1.13': ^0.2.0
   'protobufjs@<7.5.5': ^7.5.5
   'qs@<6.14.1': ^6.14.2
   'tar@<7.5.11': ^7.5.11
@@ -186,3 +186,5 @@ minimumReleaseAgeExclude:
   - "@types/react@18.3.29"
   # Renovate security update: @playwright/test@1.60.0
   - "@playwright/test@1.60.0"
+  # Renovate security update: path-to-regexp@0.2.5
+  - path-to-regexp@0.2.5
