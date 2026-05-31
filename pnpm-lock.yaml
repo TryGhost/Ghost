@@ -2177,8 +2177,8 @@ importers:
         specifier: 7.7.4
         version: 7.7.4
       sentry-testkit:
-        specifier: 5.0.10
-        version: 5.0.10
+        specifier: 6.4.1
+        version: 6.4.1
       sinon-chai:
         specifier: 4.0.1
         version: 4.0.1(chai@4.5.0)(sinon@21.1.2)
@@ -19827,8 +19827,8 @@ packages:
     resolution: {integrity: sha512-1gnZf7DFcoIcajTjTwjwuDjzuz4PPcY2StKPlsGAQ1+YH20IRVrBaXSWmdjowTJ6u8Rc01PoYOGHXfP1mYcZNQ==}
     engines: {node: '>= 18'}
 
-  sentry-testkit@5.0.10:
-    resolution: {integrity: sha512-wpvt29IIK+L1Pe02uc0y7rJkXQcnIk46hvB02Zqd4UNgP2lIhzv80GjR2lu8RtsbAmf7LJnGz8zLuV3rVa69ew==}
+  sentry-testkit@6.4.1:
+    resolution: {integrity: sha512-T0L4bHMEXoOdIT1O087VuZM1bJD9dtOWSf1QgOxst9J03nDsnvU0TuXYtBuwAwZ1MG17EmXjjxvpSa7z+mJoPg==}
 
   seq-queue@0.0.5:
     resolution: {integrity: sha512-hr3Wtp/GZIc/6DAGPDcV4/9WoZhjrkXsi5B/07QgX8tsdc6ilr7BFM6PM6rbdAX1kFSDYeZGLipIZZKyQP0O5Q==}
@@ -44287,7 +44287,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  sentry-testkit@5.0.10:
+  sentry-testkit@6.4.1:
     dependencies:
       body-parser: 1.20.5
       express: 4.22.2
