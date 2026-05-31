@@ -148,8 +148,8 @@ catalogs:
       specifier: 4.18.1
       version: 4.18.1
     lucide-react:
-      specifier: 0.577.0
-      version: 0.577.0
+      specifier: 1.17.0
+      version: 1.17.0
     mocha:
       specifier: 11.7.6
       version: 11.7.6
@@ -896,7 +896,7 @@ importers:
         version: 3.10.1
       lucide-react:
         specifier: 'catalog:'
-        version: 0.577.0(react@18.3.1)
+        version: 1.17.0(react@18.3.1)
       mingo:
         specifier: 2.5.3
         version: 2.5.3
@@ -1239,7 +1239,7 @@ importers:
         version: 7.14.0
       lucide-react:
         specifier: 'catalog:'
-        version: 0.577.0(react@18.3.1)
+        version: 1.17.0(react@18.3.1)
       moment-timezone:
         specifier: 0.5.45
         version: 0.5.45
@@ -1417,7 +1417,7 @@ importers:
         version: 4.1.0
       lucide-react:
         specifier: 'catalog:'
-        version: 0.577.0(react@18.3.1)
+        version: 1.17.0(react@18.3.1)
       moment-timezone:
         specifier: 0.5.45
         version: 0.5.45
@@ -16594,8 +16594,8 @@ packages:
     resolution: {integrity: sha512-DqC6n3QQ77zdFpCMASA1a3Jlb64Hv2N2DciFGkO/4L9+q/IpIAuRlKOvCXabtRW6cQf8usbmM6BE/TOPysCdIA==}
     engines: {bun: '>=1.0.0', deno: '>=1.30.0', node: '>=8.0.0'}
 
-  lucide-react@0.577.0:
-    resolution: {integrity: sha512-4LjoFv2eEPwYDPg/CUdBJQSDfPyzXCRrVW1X7jrx/trgxnxkHFjnVZINbzvzxjN70dxychOfg+FTYwBiS3pQ5A==}
+  lucide-react@1.17.0:
+    resolution: {integrity: sha512-9FA9evdox/JQL5PT57fdA1x/yg8T7knJ98+zjTL3UfKza6pflQUUh3XtaQIHKvnsJw1lmsEyHVlt5jchYxOQ5w==}
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
@@ -40071,7 +40071,7 @@ snapshots:
 
   lru.min@1.1.4: {}
 
-  lucide-react@0.577.0(react@18.3.1):
+  lucide-react@1.17.0(react@18.3.1):
     dependencies:
       react: 18.3.1
 
