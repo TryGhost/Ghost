@@ -37,7 +37,7 @@
         "preview": "vite preview"
     },
     "devDependencies": {
-        "@faker-js/faker": "9.9.0",
+        "@faker-js/faker": "10.4.0",
         "@testing-library/jest-dom": "6.9.1",
         "@testing-library/react": "14.3.1",
         "@types/jest": "catalog:",
