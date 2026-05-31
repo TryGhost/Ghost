@@ -136,8 +136,8 @@ catalogs:
       specifier: 11.3.5
       version: 11.3.5
     glob:
-      specifier: 10.5.0
-      version: 10.5.0
+      specifier: 13.0.6
+      version: 13.0.6
     jsdom:
       specifier: 29.1.1
       version: 29.1.1
@@ -682,7 +682,7 @@ importers:
         version: 4.0.0-beta.0(tailwindcss@4.2.2)
       glob:
         specifier: 'catalog:'
-        version: 10.5.0
+        version: 13.0.6
       jsdom:
         specifier: 'catalog:'
         version: 29.1.1(@noble/hashes@1.8.0)
@@ -803,7 +803,7 @@ importers:
         version: 4.0.0-beta.0(tailwindcss@4.2.2)
       glob:
         specifier: 'catalog:'
-        version: 10.5.0
+        version: 13.0.6
       jsdom:
         specifier: 'catalog:'
         version: 29.1.1(@noble/hashes@1.8.0)
@@ -1505,7 +1505,7 @@ importers:
         version: 4.0.0-beta.0(tailwindcss@4.2.2)
       glob:
         specifier: 'catalog:'
-        version: 10.5.0
+        version: 13.0.6
       jsdom:
         specifier: 'catalog:'
         version: 29.1.1(@noble/hashes@1.8.0)
@@ -2481,7 +2481,7 @@ importers:
         version: 1.1.2
       glob:
         specifier: 'catalog:'
-        version: 10.5.0
+        version: 13.0.6
       got:
         specifier: 13.0.0
         version: 13.0.0
@@ -2868,7 +2868,7 @@ importers:
         version: 11.3.5
       glob:
         specifier: 'catalog:'
-        version: 10.5.0
+        version: 13.0.6
       i18next-parser:
         specifier: 9.4.0
         version: 9.4.0
