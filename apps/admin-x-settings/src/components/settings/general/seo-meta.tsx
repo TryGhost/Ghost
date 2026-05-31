@@ -1,9 +1,10 @@
 import React, {useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
+import useFeatureFlag from '../../../hooks/use-feature-flag';
 import usePinturaEditor from '../../../hooks/use-pintura-editor';
 import useSettingGroup from '../../../hooks/use-setting-group';
 import {APIError} from '@tryghost/admin-x-framework/errors';
-import {FacebookLogo, GoogleLogo, Icon, ImageUpload, SettingGroupContent, TabView, TextField, XLogo, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {FacebookLogo, GoogleLogo, Icon, ImageUpload, SettingGroupContent, TabView, TextField, Toggle, XLogo, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -76,6 +77,7 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const handleError = useHandleError();
     const {mutateAsync: uploadImage} = useUploadImage();
     const editor = usePinturaEditor();
+    const hasLlmsTxt = useFeatureFlag('llmsTxt');
 
     // Get all settings needed for all tabs
     const [
@@ -101,6 +103,9 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
         'twitter_description',
         'twitter_image'
     ]).map(value => value || '') as string[];
+
+    const [llmsEnabledValue] = getSettingValues(localSettings, ['llms_enabled']);
+    const llmsEnabled = llmsEnabledValue !== false;
 
     // Tab management
     const [selectedTab, setSelectedTab] = useState('metadata');
@@ -136,6 +141,12 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     // Meta data handlers
+    const handleLlmsToggleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        updateSetting('llms_enabled', e.target.checked);
+        if (!isEditing) {
+            handleEditingChange(true);
+        }
+    };
     const handleMetaTitleChange = createSettingHandler('meta_title');
     const handleMetaDescriptionChange = createSettingHandler('meta_description');
 
@@ -155,6 +166,14 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const metadataTabContent = (
         <>
             <SettingGroupContent className="my-6 gap-3">
+                {hasLlmsTxt && (
+                    <Toggle
+                        checked={llmsEnabled}
+                        direction='rtl'
+                        label='Enable structured data for LLMs and AI search engines'
+                        onChange={handleLlmsToggleChange}
+                    />
+                )}
                 <TextField
                     hint="Recommended: 70 characters"
                     inputRef={focusRef}

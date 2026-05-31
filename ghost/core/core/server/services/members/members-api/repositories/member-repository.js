@@ -230,21 +230,17 @@ module.exports = class MemberRepository {
      * @returns {'import' | 'system' | 'api' | 'admin' | 'member'}
      */
     _resolveContextSource(context) {
-        let source;
-
         if (context.import || context.importer) {
-            source = 'import';
+            return 'import';
         } else if (context.internal) {
-            source = 'system';
+            return 'system';
         } else if (context.api_key) {
-            source = 'api';
+            return 'api';
         } else if (context.user) {
-            source = 'admin';
+            return 'admin';
         } else {
-            source = 'member';
+            return 'member';
         }
-
-        return source;
     }
 
     getMRR({interval, amount, status = null, canceled = false, discount = null}) {
@@ -1023,7 +1019,7 @@ module.exports = class MemberRepository {
      * @param {Object} data
      * @param {string} data.id - member ID
      * @param {Object} data.subscription
-     * @param {string} data.offerId
+     * @param {string | null} [data.offerId]
      * @param {import('../../../member-attribution/attribution-builder').AttributionResource} [data.attribution]
      * @param {*} options
      * @returns

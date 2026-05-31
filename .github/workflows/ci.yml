@@ -1117,7 +1117,8 @@ jobs:
             apps/comments-ui/umd \
             apps/sodo-search/umd \
             apps/signup-form/umd \
-            apps/announcement-bar/umd
+            apps/announcement-bar/umd \
+            apps/admin-toolbar/umd
           ls -lh e2e-public-apps.tar.gz
 
       - name: Upload public app artifacts
@@ -1591,6 +1592,8 @@ jobs:
             package_path: 'apps/signup-form'
           - package_name: '@tryghost/announcement-bar'
             package_path: 'apps/announcement-bar'
+          - package_name: '@tryghost/admin-toolbar'
+            package_path: 'apps/admin-toolbar'
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -1653,6 +1656,9 @@ jobs:
           - package_name: '@tryghost/announcement-bar'
             package_path: 'apps/announcement-bar'
             cdn_paths: 'https://cdn.jsdelivr.net/ghost/announcement-bar@~CURRENT_MINOR/umd/announcement-bar.min.js'
+          - package_name: '@tryghost/admin-toolbar'
+            package_path: 'apps/admin-toolbar'
+            cdn_paths: 'https://cdn.jsdelivr.net/ghost/admin-toolbar@~CURRENT_MINOR/umd/admin-toolbar.min.js'
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2

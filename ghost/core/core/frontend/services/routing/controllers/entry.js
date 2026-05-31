@@ -59,18 +59,18 @@ module.exports = function entryController(req, res, next) {
 
             // CASE: .md URL — serve entry as markdown for LLM consumption
             if (res.routerOptions.isMarkdownRequest) {
-                if (entry.visibility !== 'public') {
-                    return res.status(403).type('text/markdown').send(
-                        '# Members-only content\n\nThis post requires a subscription and is not available for public access.\n'
-                    );
-                }
-
                 const llmsService = getLlmsService(req);
                 if (!llmsService || !llmsService.isEnabled()) {
                     return res.redirect(302, url.format({
                         pathname: url.parse(entry.url).pathname,
                         search: url.parse(req.originalUrl).search
                     }));
+                }
+
+                if (entry.visibility !== 'public') {
+                    return res.status(403).type('text/markdown').send(
+                        '# Members-only content\n\nThis post requires a subscription and is not available for public access.\n'
+                    );
                 }
 
                 return serveMarkdown(res, entry);

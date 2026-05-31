@@ -1,5 +1,5 @@
-const assert = require('node:assert/strict');
-const getOgType = require('../../../../core/frontend/meta/og-type');
+import assert from 'node:assert/strict';
+import {getOgType} from '../../../../core/frontend/meta/og-type';
 
 describe('getOgType', function () {
     it('should return og type profile if context is type author', function () {

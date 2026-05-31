@@ -1,5 +1,6 @@
 import {describe, expect, it} from 'vitest';
-import {parseMemberFilter, serializeMemberFilters} from './member-filter-query';
+import {getMemberFields} from './member-fields';
+import {hasTimezoneSensitiveMemberFilter, isPredicateEnabled, parseMemberFilter, serializeMemberFilters} from './member-filter-query';
 import type {FilterPredicate} from '../filters/filter-types';
 
 function stripIds(predicates: FilterPredicate[]) {
@@ -188,5 +189,125 @@ describe('member-filter-query', () => {
 
     it('drops invalid member date values during parse', () => {
         expect(parseMemberFilter('created_at:<=\'not-a-date\'', 'UTC')).toEqual([]);
+    });
+
+    it('parses relative past-date filters into in-the-last predicates for every supported field', () => {
+        expect(stripIds(parseMemberFilter('created_at:>=now-7d', 'UTC'))).toEqual([
+            {field: 'created_at', operator: 'in-the-last', values: [7]}
+        ]);
+
+        expect(stripIds(parseMemberFilter('last_seen_at:>=now-30d', 'UTC'))).toEqual([
+            {field: 'last_seen_at', operator: 'in-the-last', values: [30]}
+        ]);
+
+        expect(stripIds(parseMemberFilter('subscriptions.start_date:>=now-90d', 'UTC'))).toEqual([
+            {field: 'subscriptions.start_date', operator: 'in-the-last', values: [90]}
+        ]);
+    });
+
+    it('parses relative future-date filters into in-the-next predicates', () => {
+        expect(stripIds(parseMemberFilter('subscriptions.current_period_end:<=now+14d', 'UTC'))).toEqual([
+            {field: 'subscriptions.current_period_end', operator: 'in-the-next', values: [14]}
+        ]);
+    });
+
+    it('serializes in-the-last and in-the-next predicates with the relative now token', () => {
+        expect(serializeMemberFilters(
+            [{id: '1', field: 'created_at', operator: 'in-the-last', values: [7]}],
+            'UTC'
+        )).toBe('created_at:>=now-7d');
+
+        expect(serializeMemberFilters(
+            [{id: '1', field: 'subscriptions.current_period_end', operator: 'in-the-next', values: [14]}],
+            'UTC'
+        )).toBe('subscriptions.current_period_end:<=now+14d');
+    });
+
+    it('round-trips relative created_at predicates alongside other clauses', () => {
+        const filter = 'created_at:>=now-30d+status:paid';
+        const parsed = parseMemberFilter(filter, 'UTC');
+
+        expect(stripIds(parsed)).toEqual([
+            {field: 'created_at', operator: 'in-the-last', values: [30]},
+            {field: 'status', operator: 'is', values: ['paid']}
+        ]);
+
+        expect(serializeMemberFilters(parsed, 'UTC')).toBe('created_at:>=now-30d+status:paid');
+    });
+
+    it('drops invalid relative date predicates on serialize', () => {
+        expect(serializeMemberFilters(
+            [{id: '1', field: 'created_at', operator: 'in-the-last', values: [0]}],
+            'UTC'
+        )).toBeUndefined();
+
+        expect(serializeMemberFilters(
+            [{id: '1', field: 'created_at', operator: 'in-the-last', values: ['7']}],
+            'UTC'
+        )).toBeUndefined();
+    });
+
+    it('drops the entire filter when a relative-date clause is mixed into a top-level OR', () => {
+        // Top-level OR isn't flattened by parseMemberNode, so every clause —
+        // including the non-relative `status:paid` — is dropped. Pinned to
+        // catch silent regressions if OR support is added later.
+        const parsed = parseMemberFilter('created_at:>=now-7d,status:paid', 'UTC');
+
+        expect(stripIds(parsed)).toEqual([]);
+    });
+
+    it('drops the degenerate now-0d form', () => {
+        // The codec only accepts a relative-day count > 0 — both directions
+        // (parse and serialize) defend the same predicate-shape invariant.
+        expect(parseMemberFilter('created_at:>=now-0d', 'UTC')).toEqual([]);
+    });
+
+    it('rejects relative day counts outside the safe-integer range on parse', () => {
+        expect(parseMemberFilter('created_at:>=now-9999999999999999d', 'UTC')).toEqual([]);
+    });
+
+    it('reports relative-date filters as timezone-sensitive', () => {
+        // `now` resolves in the user's timezone, so a relative-date clause
+        // must wait for timezone resolution just like an absolute date clause.
+        expect(hasTimezoneSensitiveMemberFilter('created_at:>=now-7d')).toBe(true);
+        expect(hasTimezoneSensitiveMemberFilter('subscriptions.current_period_end:<=now+14d')).toBe(true);
+        expect(hasTimezoneSensitiveMemberFilter('created_at:>=now-7d+status:paid')).toBe(true);
+    });
+
+    it('does not report non-date filters as timezone-sensitive', () => {
+        expect(hasTimezoneSensitiveMemberFilter('status:paid')).toBe(false);
+        expect(hasTimezoneSensitiveMemberFilter('')).toBe(false);
+        expect(hasTimezoneSensitiveMemberFilter(undefined)).toBe(false);
+    });
+});
+
+describe('isPredicateEnabled', () => {
+    const fields = getMemberFields();
+
+    it('returns true for predicates whose operator is declared by the field map', () => {
+        expect(isPredicateEnabled(
+            {field: 'created_at', operator: 'in-the-last', values: [7]},
+            fields
+        )).toBe(true);
+
+        expect(isPredicateEnabled(
+            {field: 'status', operator: 'is', values: ['paid']},
+            fields
+        )).toBe(true);
+    });
+
+    it('returns false for a relative operator on a field that does not advertise that direction', () => {
+        // `subscriptions.current_period_end` is future-only.
+        expect(isPredicateEnabled(
+            {field: 'subscriptions.current_period_end', operator: 'in-the-last', values: [7]},
+            fields
+        )).toBe(false);
+    });
+
+    it('returns false for unknown fields', () => {
+        expect(isPredicateEnabled(
+            {field: 'not_a_real_field', operator: 'is', values: ['anything']},
+            fields
+        )).toBe(false);
     });
 });
