@@ -103,8 +103,8 @@ catalogs:
       specifier: 2.0.4
       version: 2.0.4
     c8:
-      specifier: 10.1.3
-      version: 10.1.3
+      specifier: 11.0.0
+      version: 11.0.0
     chai:
       specifier: 4.5.0
       version: 4.5.0
@@ -664,7 +664,7 @@ importers:
         version: 10.4.21(postcss@8.5.10)
       c8:
         specifier: 'catalog:'
-        version: 10.1.3
+        version: 11.0.0
       chai:
         specifier: 'catalog:'
         version: 4.5.0
@@ -788,7 +788,7 @@ importers:
         version: 4.1.7(vitest@4.1.7)
       c8:
         specifier: 'catalog:'
-        version: 10.1.3
+        version: 11.0.0
       eslint:
         specifier: 'catalog:'
         version: 8.57.1
@@ -1487,7 +1487,7 @@ importers:
         version: 4.1.7(vitest@4.1.7)
       c8:
         specifier: 'catalog:'
-        version: 10.1.3
+        version: 11.0.0
       eslint:
         specifier: 'catalog:'
         version: 8.57.1
@@ -2755,7 +2755,7 @@ importers:
         version: 1.8.15
       c8:
         specifier: 'catalog:'
-        version: 10.1.3
+        version: 11.0.0
       chai:
         specifier: 'catalog:'
         version: 4.5.0
@@ -2859,7 +2859,7 @@ importers:
     devDependencies:
       c8:
         specifier: 'catalog:'
-        version: 10.1.3
+        version: 11.0.0
       eslint:
         specifier: 'catalog:'
         version: 8.57.1
@@ -2890,7 +2890,7 @@ importers:
         version: 8.49.0(eslint@8.57.1)(typescript@5.9.3)
       c8:
         specifier: 'catalog:'
-        version: 10.1.3
+        version: 11.0.0
       eslint:
         specifier: 'catalog:'
         version: 8.57.1
@@ -10917,9 +10917,9 @@ packages:
     resolution: {integrity: sha512-/Nf7TyzTx6S3yRJObOAV7956r8cr2+Oj8AC5dt8wSP3BQAoeX58NoHyCU8P8zGkNXStjTSi6fzO6F0pBdcYbEg==}
     engines: {node: '>= 0.8'}
 
-  c8@10.1.3:
-    resolution: {integrity: sha512-LvcyrOAaOnrrlMpW22n690PUvxiq4Uf9WMhQwNJ9vgagkL/ph1+D4uvjvDA5XCbykrc0sx+ay6pVi9YZ1GnhyA==}
-    engines: {node: '>=18'}
+  c8@11.0.0:
+    resolution: {integrity: sha512-e/uRViGHSVIJv7zsaDKM7VRn2390TgHXqUSvYwPHBQaU6L7E9L0n9JbdkwdYPvshDT0KymBmmlwSpms3yBaMNg==}
+    engines: {node: 20 || >=22}
     hasBin: true
     peerDependencies:
       monocart-coverage-reports: ^2
@@ -20670,9 +20670,9 @@ packages:
     resolution: {integrity: sha512-cAGWPIyOHU6zlmg88jwm7VRyXnMN7iV68OGAbYDk/Mh/xC/pzVPlQtY6ngoIH/5/tciuhGfvESU8GrHrcxD56w==}
     engines: {node: '>=8'}
 
-  test-exclude@7.0.2:
-    resolution: {integrity: sha512-u9E6A+ZDYdp7a4WnarkXPZOx8Ilz46+kby6p1yZ8zsGTz9gYa6FIS7lj2oezzNKmtdyyJNNmmXDppga5GB7kSw==}
-    engines: {node: '>=18'}
+  test-exclude@8.0.0:
+    resolution: {integrity: sha512-ZOffsNrXYggvU1mDGHk54I96r26P8SyMjO5slMKSc7+IWmtB/MQKnEC2fP51imB3/pT6YK5cT5E8f+Dd9KdyOQ==}
+    engines: {node: 20 || >=22}
 
   testem@3.19.1:
     resolution: {integrity: sha512-h9LKg7pAF3B0aqp3V3Kx8vFlB/ocB1xXvRY1YxZyIKvV/3ZUXqYadi8OD2T15VoFjUZlRrm39s9e7N8A+gYBfA==}
@@ -32408,7 +32408,7 @@ snapshots:
 
   bytes@3.1.2: {}
 
-  c8@10.1.3:
+  c8@11.0.0:
     dependencies:
       '@bcoe/v8-coverage': 1.0.2
       '@istanbuljs/schema': 0.1.6
@@ -32417,7 +32417,7 @@ snapshots:
       istanbul-lib-coverage: 3.2.2
       istanbul-lib-report: 3.0.1
       istanbul-reports: 3.2.0
-      test-exclude: 7.0.2
+      test-exclude: 8.0.0
       v8-to-istanbul: 9.3.0
       yargs: 17.7.2
       yargs-parser: 21.1.1
@@ -45365,10 +45365,10 @@ snapshots:
       glob: 7.2.3
       minimatch: 3.1.5
 
-  test-exclude@7.0.2:
+  test-exclude@8.0.0:
     dependencies:
       '@istanbuljs/schema': 0.1.6
-      glob: 10.5.0
+      glob: 13.0.6
       minimatch: 10.2.5
 
   testem@3.19.1(@babel/core@7.29.7)(handlebars@4.7.9)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(underscore@1.13.8):
