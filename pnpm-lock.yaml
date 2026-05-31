@@ -1680,8 +1680,8 @@ importers:
   apps/stats:
     dependencies:
       '@svg-maps/world':
-        specifier: 1.0.1
-        version: 1.0.1
+        specifier: 2.0.0
+        version: 2.0.0
       '@tryghost/admin-x-framework':
         specifier: workspace:*
         version: link:../admin-x-framework
@@ -8007,8 +8007,8 @@ packages:
       typescript:
         optional: true
 
-  '@svg-maps/world@1.0.1':
-    resolution: {integrity: sha512-Mawh/jEYBBHnug9S17PyePLYKJ+Xd0Bbh96mCePebpbvcbJu5YKpfKhpyMeLFmmdWPrSFxl0f0MTsJfXU0gSaQ==}
+  '@svg-maps/world@2.0.0':
+    resolution: {integrity: sha512-VmYYnyygJ5Zhr48xPqukFBoq4aCBgVNIjBzqBnWKXSdHhrRK3pntdvbCa8lMsxwVCFzEw9a+smIMEGI2sC1xcQ==}
 
   '@svgr/babel-plugin-add-jsx-attribute@8.0.0':
     resolution: {integrity: sha512-b9MIk7yhdS1pMCZM8VeNfUlSKVRhsHZNMl5O9SfaX0l0t5wjdgu4IDzGB8bpnGBBOjGST3rRFVsaaEtI4W6f7g==}
@@ -27947,7 +27947,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@svg-maps/world@1.0.1': {}
+  '@svg-maps/world@2.0.0': {}
 
   '@svgr/babel-plugin-add-jsx-attribute@8.0.0(@babel/core@7.29.7)':
     dependencies:
