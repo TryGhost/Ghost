@@ -184,8 +184,8 @@ catalogs:
       specifier: 1.4.0
       version: 1.4.0
     type-fest:
-      specifier: 4.41.0
-      version: 4.41.0
+      specifier: 5.6.0
+      version: 5.6.0
     typescript:
       specifier: 5.9.3
       version: 5.9.3
@@ -812,7 +812,7 @@ importers:
         version: 2.14.6(@types/node@25.9.1)(typescript@5.9.3)
       type-fest:
         specifier: 'catalog:'
-        version: 4.41.0
+        version: 5.6.0
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -2664,7 +2664,7 @@ importers:
         version: 0.2.9
       type-fest:
         specifier: 'catalog:'
-        version: 4.41.0
+        version: 5.6.0
       ua-parser-js:
         specifier: 1.0.41
         version: 1.0.41
