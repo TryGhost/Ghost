@@ -8,9 +8,9 @@ import {t} from '../../../../utils/i18n';
 
 const AccountWelcome = () => {
     const {member, site} = useContext(AppContext);
-    const {is_stripe_configured: isStripeConfigured} = site;
+    const {paid_members_enabled: paidMembersEnabled} = site;
 
-    if (!isStripeConfigured || hasOnlyFreePlan({site})) {
+    if (!paidMembersEnabled || hasOnlyFreePlan({site})) {
         return null;
     }
     const subscription = getMemberSubscription({member});

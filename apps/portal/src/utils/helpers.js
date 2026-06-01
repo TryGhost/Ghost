@@ -270,8 +270,8 @@ export function hasRecommendations({site}) {
     return site?.recommendations_enabled === true;
 }
 
-export function isStripeConfigured({site}) {
-    return site?.is_stripe_configured === true;
+export function arePaidMembersEnabled({site}) {
+    return site?.paid_members_enabled === true;
 }
 
 export function isSigninAllowed({site}) {
@@ -280,7 +280,7 @@ export function isSigninAllowed({site}) {
 
 export function isSignupAllowed({site}) {
     const hasSignupAccess = site?.members_signup_access === 'all' || site?.members_signup_access === 'paid';
-    const hasSignupConfigured = site?.is_stripe_configured || hasOnlyFreePlan({site});
+    const hasSignupConfigured = site?.paid_members_enabled || hasOnlyFreePlan({site});
 
     return hasSignupAccess && hasSignupConfigured;
 }
@@ -330,8 +330,6 @@ export function transformApiSiteData({site}) {
             };
         });
 
-        site.is_stripe_configured = !!site.paid_members_enabled;
-
         // Map tier visibility to old settings
         if (site.products?.[0]?.visibility) {
         // Map paid tier visibility to portal products
@@ -364,7 +362,7 @@ export function getAvailableProducts({site}) {
     }
 
     return products.filter(product => !!product).filter((product) => {
-        if (site.is_stripe_configured) {
+        if (site.paid_members_enabled) {
             return true;
         }
         return product.type !== 'paid';
@@ -607,7 +605,7 @@ export function getAvailablePrices({site, products = null}) {
         portal_plans: portalPlans = []
     } = site || {};
 
-    if (!isStripeConfigured({site})) {
+    if (!arePaidMembersEnabled({site})) {
         return [];
     }
 
