@@ -103,7 +103,7 @@ catalogs:
 overrides:
   '@tryghost/errors': ^1.3.7
   '@tryghost/logging': 'catalog:'
-  jackspeak: 2.3.6
+  jackspeak: 4.2.3
   moment: 2.30.1
   moment-timezone: 0.5.45
   nwsapi: 2.2.23
