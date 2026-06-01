@@ -1,14 +1,150 @@
 {{{html}}}
-<aside class="gh-gift-callout" data-gift-callout>
-    <div class="gh-gift-callout-content" style="background-color: {{@site.accent_color}}">
+<style>
+.gh-gift-callout-toggle {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+/*
+ * Pinned to the viewport. NOTE: the callout is injected into the post content,
+ * so a theme that puts transform/filter/perspective on an ancestor of the post
+ * body will make that ancestor the containing block and anchor the toast inside
+ * the article instead of the viewport. Themes can override this partial.
+ */
+.gh-gift-callout {
+    position: fixed !important;
+    z-index: 100000;
+    inset-block-end: 24px;
+    inset-inline: 0;
+    width: 440px;
+    max-width: calc(100vw - 48px);
+    margin: 0 auto;
+    box-sizing: border-box;
+    animation: gh-gift-callout-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.gh-gift-callout * {
+    box-sizing: border-box;
+}
+.gh-gift-callout-toggle:checked + .gh-gift-callout {
+    display: none !important;
+}
+.gh-gift-callout-content {
+    position: relative;
+    padding: 24px;
+    margin: 0;
+    background: #fff;
+    border: 0;
+    border-radius: 12px;
+    box-shadow: 0 0 1px rgba(0, 0, 0, 0.16), 0 10px 28px rgba(0, 0, 0, 0.16);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    text-align: start;
+}
+.gh-gift-callout-content h2 {
+    margin: 0 0 6px;
+    padding: 0;
+    font-size: 17px;
+    line-height: 1.3;
+    font-weight: 700;
+    color: #15171a;
+}
+.gh-gift-callout-content p {
+    margin: 0 0 16px;
+    padding: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #54595d;
+}
+.gh-gift-callout-content p:last-child {
+    margin-bottom: 0;
+}
+.gh-gift-callout-content .gh-gift-callout-btn {
+    display: inline-block;
+    padding: 9px 18px;
+    border: 0;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.4;
+    text-decoration: none;
+    color: #fff;
+    background-color: var(--gh-gift-accent, #15171a);
+}
+.gh-gift-callout-content small {
+    font-size: 13px;
+    color: #7c8289;
+}
+.gh-gift-callout-content small a {
+    color: var(--gh-gift-accent, #15171a);
+    text-decoration: underline;
+}
+.gh-gift-callout-close {
+    position: absolute;
+    inset-block-start: 12px;
+    inset-inline-end: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 20px;
+    line-height: 1;
+    color: #7c8289;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+.gh-gift-callout-close:hover {
+    background: rgba(0, 0, 0, 0.06);
+    color: #15171a;
+}
+.gh-gift-callout-toggle:focus-visible + .gh-gift-callout .gh-gift-callout-close {
+    outline: 2px solid var(--gh-gift-accent, #15171a);
+    outline-offset: 2px;
+    color: #15171a;
+}
+@keyframes gh-gift-callout-in {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+@media (max-width: 640px) {
+    .gh-gift-callout {
+        inset-block-end: 12px;
+        inset-inline-end: 12px;
+        inset-inline-start: 12px;
+        width: auto;
+        max-width: none;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .gh-gift-callout {
+        animation: none;
+    }
+}
+</style>
+<input type="checkbox" id="gh-gift-callout-dismiss" class="gh-gift-callout-toggle" aria-label="{{t "Dismiss"}}">
+<aside class="gh-gift-callout" data-gift-callout style="--gh-gift-accent: {{@site.accent_color}}">
+    <div class="gh-gift-callout-content">
+        <label class="gh-gift-callout-close" for="gh-gift-callout-dismiss" title="{{t "Dismiss"}}" aria-hidden="true">&times;</label>
         {{#if @member}}
             <h2>{{t "You're reading a gifted post"}}</h2>
             <p>{{t "Get full access to every post by upgrading your account."}}</p>
-            <a class="gh-btn" data-portal="account/plans" href="#/portal/account/plans" style="color:{{@site.accent_color}}">{{t "Upgrade your account"}}</a>
+            <a class="gh-gift-callout-btn" data-portal="account/plans" href="#/portal/account/plans">{{t "Upgrade your account"}}</a>
         {{else}}
             <h2>{{t "This post was shared with you"}}</h2>
             <p>{{t "Subscribe to get full access to every post."}}</p>
-            <a class="gh-btn" data-portal="signup" href="#/portal/signup" style="color:{{@site.accent_color}}">{{t "Subscribe now"}}</a>
+            <a class="gh-gift-callout-btn" data-portal="signup" href="#/portal/signup">{{t "Subscribe now"}}</a>
             <p><small>{{t "Already have an account?"}} <a data-portal="signin" href="#/portal/signin">{{t "Sign in"}}</a></small></p>
         {{/if}}
     </div>
