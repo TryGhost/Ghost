@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import copyToClipboard from '@src/utils/copy-to-clipboard';
 import trackEvent from '@src/utils/analytics';
 import {Button} from '@tryghost/shade/components';
 import {buildGiftLinkUrl} from '@src/utils/gift-link';
@@ -38,7 +39,7 @@ const GiftLinkSection: React.FC<GiftLinkSectionProps> = ({postId, postUrl}) => {
             // read query before it refetches. Creates the link on first copy.
             const response = await ensureGiftLink({id: postId});
             const link = response.gift_links[0];
-            await navigator.clipboard.writeText(buildGiftLinkUrl(postUrl, link.token));
+            await copyToClipboard(buildGiftLinkUrl(postUrl, link.token));
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
             trackEvent('gift_link_copied', {surface: SURFACE});
