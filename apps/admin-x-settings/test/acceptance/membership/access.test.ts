@@ -154,6 +154,28 @@ test.describe('Access settings', async () => {
         await expect(accessCode).toHaveValue('fake-456');
     });
 
+    test('Does not clip the Access card in pre-launch mode so dropdowns are not cut off', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseConfig: createConfigWithLimits({
+                publicSiteAccess: {
+                    disabled: true,
+                    error: 'This plan does not include public site access'
+                }
+            })
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('access');
+
+        await expect(section.getByText('Pre-launch mode')).toBeVisible();
+
+        const overflowY = await section.evaluate(el => getComputedStyle(el).overflowY);
+        expect(overflowY).not.toBe('hidden');
+        expect(overflowY).not.toBe('clip');
+    });
+
     test('Disables other sections when signup is disabled', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
