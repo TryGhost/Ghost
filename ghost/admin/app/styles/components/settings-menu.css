@@ -229,9 +229,9 @@
     align-items: center;
     gap: 6px;
     width: 100%;
-    /* Occupy an input's height so it keeps the same label-to-control rhythm as
-       the boxed fields around it, even though it's a plain link. */
-    min-height: 38px;
+    /* A touch of an input's height to keep a similar label-to-control rhythm as
+       the boxed fields around it, without feeling boxy. */
+    min-height: 30px;
     padding: 0;
     border: none;
     background: none;
