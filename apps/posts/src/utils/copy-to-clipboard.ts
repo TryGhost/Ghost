@@ -1,8 +1,8 @@
 /**
  * Copy text to the clipboard, with a fallback for contexts where the async
- * Clipboard API is unavailable or blocked — notably the embedded admin iframe,
- * which lacks the `clipboard-write` permission, so `navigator.clipboard` rejects.
- * Mirrors shade's share-modal copy helper.
+ * Clipboard API is unavailable or rejects — e.g. admin served over plain HTTP
+ * (non-secure context), where `navigator.clipboard` is undefined. Mirrors
+ * shade's share-modal copy helper.
  */
 export default async function copyToClipboard(text: string): Promise<void> {
     if (navigator.clipboard?.writeText) {

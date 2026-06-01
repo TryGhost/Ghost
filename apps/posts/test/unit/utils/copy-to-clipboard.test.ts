@@ -20,7 +20,7 @@ describe('copyToClipboard', () => {
         expect(writeText).toHaveBeenCalledWith('hello');
     });
 
-    it('falls back to execCommand when the async clipboard API is unavailable (embedded iframe)', async () => {
+    it('falls back to execCommand when the async clipboard API is unavailable (non-secure context)', async () => {
         setClipboard(undefined);
         const execCommand = vi.fn().mockReturnValue(true);
         document.execCommand = execCommand;
