@@ -332,7 +332,7 @@ const Notifications: React.FC = () => {
                                             }
                                             {group.actors.length > 1 && <NotificationItem.Avatars>
                                                 <div className='flex w-full flex-col'>
-                                                    <div className='relative flex items-center pl-2'>
+                                                    <div className='relative flex w-fit items-center pl-2'>
                                                         {!openStates[group.id || `${group.type}_${index}`] && group.actors.slice(0, maxAvatars).map((actor: ActorProperties) => (
                                                             <APAvatar
                                                                 key={actor.id}
