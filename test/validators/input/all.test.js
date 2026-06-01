@@ -216,6 +216,78 @@ describe('validators/input/all', function () {
                 });
         });
 
+        it('allows supported id values', async function () {
+            const ids = ['a'.repeat(24), '1', 'me', 'ME'];
+
+            for (const id of ids) {
+                const frame = {
+                    options: {
+                        context: {},
+                        id,
+                    },
+                };
+
+                await shared.validators.input.all.all({}, frame);
+            }
+        });
+
+        it('rejects id values that contain me as a substring', async function () {
+            const ids = [
+                "aaaaaaaaaaaaaaaaaaaaaaaa',member_id:'aaaaaaaaaaaaaaaaaaaaaaaa",
+                'member_id',
+                'not-me',
+                'me123',
+                '123me',
+            ];
+
+            for (const id of ids) {
+                const frame = {
+                    options: {
+                        context: {},
+                        id,
+                    },
+                };
+
+                await assert.rejects(shared.validators.input.all.all({}, frame), (err) => {
+                    assert.equal(err.message, 'Validation (matches) failed for id');
+                    return true;
+                });
+            }
+        });
+
+        it('allows supported limit values', async function () {
+            const limits = ['10', '0', 'all'];
+
+            for (const limit of limits) {
+                const frame = {
+                    options: {
+                        context: {},
+                        limit,
+                    },
+                };
+
+                await shared.validators.input.all.all({}, frame);
+            }
+        });
+
+        it('rejects limit values that only partially match supported values', async function () {
+            const limits = ['10junk', 'junkall', '10all'];
+
+            for (const limit of limits) {
+                const frame = {
+                    options: {
+                        context: {},
+                        limit,
+                    },
+                };
+
+                await assert.rejects(shared.validators.input.all.all({}, frame), (err) => {
+                    assert.equal(err.message, 'Validation (matches) failed for limit');
+                    return true;
+                });
+            }
+        });
+
         it('fails on invalid allowed values for non-include fields', function () {
             const frame = {
                 options: {
