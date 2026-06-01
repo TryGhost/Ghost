@@ -70,16 +70,18 @@ const GiftLinkManageModal: React.FC<GiftLinkManageModalProps> = ({open, onOpenCh
                         The URL wraps (break-all) so the changing token tail stays
                         visible after a reset. */}
                     <button
-                        className="group flex w-full flex-col gap-1.5 rounded-md border bg-muted p-3 text-left transition-colors hover:border-muted-foreground/30"
+                        className="group block w-full rounded-md border bg-muted p-3 text-left text-sm leading-relaxed transition-colors hover:border-muted-foreground/30"
                         data-testid="gift-link-copybox"
                         type="button"
                         onClick={handleCopy}
                     >
-                        <span className="flex items-center gap-1 self-end text-xs font-medium text-muted-foreground group-hover:text-foreground">
+                        {/* Float the Copy affordance so the URL wraps around and
+                            beneath it, keeping it in line with the first line. */}
+                        <span className="float-right ml-3 inline-flex items-center gap-1 text-xs font-medium text-muted-foreground group-hover:text-foreground">
                             {copied ? <LucideIcon.Check size={13} /> : <LucideIcon.Copy size={13} />}
                             {copied ? 'Copied' : 'Copy'}
                         </span>
-                        <span className="text-sm break-all" data-testid="gift-link-url">{url}</span>
+                        <span className="break-all" data-testid="gift-link-url">{url}</span>
                     </button>
                     <div className="flex items-center justify-between gap-2">
                         <span className="text-sm text-muted-foreground" data-testid="gift-link-count">
