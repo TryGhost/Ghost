@@ -28,6 +28,8 @@ export default class GhPostSettingsMenu extends Component {
     @inject config;
 
     @tracked showPostHistory = false;
+    @tracked giftLink = null;
+    @tracked giftLinkCopied = false;
 
     post = null;
     isViewingSubview = false;
@@ -203,20 +205,69 @@ export default class GhPostSettingsMenu extends Component {
         return Boolean(canManage && eligible);
     }
 
+    get giftLinkUrl() {
+        if (!this.giftLink || !this.post || !this.post.url) {
+            return '';
+        }
+        const separator = this.post.url.includes('?') ? '&' : '?';
+        return `${this.post.url}${separator}gift=${encodeURIComponent(this.giftLink.token)}&utm_campaign=gift-link`;
+    }
+
+    get giftLinkButtonText() {
+        if (this.giftLinkCopied) {
+            return 'Link copied';
+        }
+        return this.giftLink ? 'Copy gift link' : 'Generate gift link';
+    }
+
+    // Load the post's existing gift link (if any) when the control is shown, so
+    // the button reads "Copy"/"Generate" correctly and can preview the URL.
+    @action
+    async loadGiftLink() {
+        if (!this.canCopyGiftLink) {
+            return;
+        }
+        try {
+            const url = this.ghostPaths.url.api('gift_links', this.post.id);
+            const response = await this.ajax.request(url);
+            this.giftLink = response.gift_links[0] || null;
+        } catch (e) {
+            // Non-fatal: leave unset so the control offers to generate one.
+        }
+    }
+
     @action
     async copyGiftLink() {
         try {
-            // Idempotent ensure: returns the active gift link, creating it if absent.
-            const url = this.ghostPaths.url.api('gift_links', this.post.id);
-            const response = await this.ajax.post(url);
-            const token = response.gift_links[0].token;
-            const separator = this.post.url.includes('?') ? '&' : '?';
-            const giftUrl = `${this.post.url}${separator}gift=${encodeURIComponent(token)}&utm_campaign=gift-link`;
-            copyTextToClipboard(giftUrl);
+            if (!this.giftLink) {
+                // Idempotent ensure: creates (or returns) the active link.
+                const url = this.ghostPaths.url.api('gift_links', this.post.id);
+                const response = await this.ajax.post(url);
+                this.giftLink = response.gift_links[0];
+            }
+            // Link is already known here, so copy synchronously to keep the
+            // clipboard write inside the user-activation window.
+            copyTextToClipboard(this.giftLinkUrl);
             trackEvent('gift_link_copied', {surface: 'editor-psm'});
-            this.notifications.showNotification('Gift link copied', {type: 'success'});
+            this.giftLinkCopied = true;
+            setTimeout(() => {
+                this.giftLinkCopied = false;
+            }, 2000);
         } catch (e) {
             this.notifications.showAPIError(e, {key: 'gift-link.copy'});
+        }
+    }
+
+    @action
+    async resetGiftLink() {
+        try {
+            const url = this.ghostPaths.url.api('gift_links', this.post.id, 'reset');
+            const response = await this.ajax.put(url);
+            this.giftLink = response.gift_links[0];
+            trackEvent('gift_link_reset', {surface: 'editor-psm'});
+            this.notifications.showNotification('Gift link reset', {type: 'success'});
+        } catch (e) {
+            this.notifications.showAPIError(e, {key: 'gift-link.reset'});
         }
     }
 

@@ -214,6 +214,48 @@
     padding: 0 24px;
 }
 
+/* Gift link — a de-emphasised affordance under the post access setting */
+.gh-psm-gift-link {
+    margin-top: -8px;
+}
+
+.gh-psm-gift-link-button span {
+    font-size: 1.3rem;
+    font-weight: 500;
+}
+
+.gh-psm-gift-link-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.gh-psm-gift-link-url {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 1.2rem;
+    color: var(--midgrey);
+}
+
+.gh-psm-gift-link-reset {
+    flex: 0 0 auto;
+    padding: 0;
+    border: none;
+    background: none;
+    font-size: 1.2rem;
+    color: var(--midgrey);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.gh-psm-gift-link-reset:hover {
+    color: var(--darkgrey);
+}
+
 @media (max-width: 1024px) {
     .settings-menu-content {
         padding-top: 0;
