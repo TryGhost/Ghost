@@ -27,7 +27,7 @@
         "dev": "vite build --watch",
         "dev:start": "vite",
         "build": "tsc && vite build",
-        "test:unit": "vitest run test/unit",
+        "test:unit": "vitest run",
         "lint": "pnpm run lint:code && pnpm run lint:test",
         "lint:code": "eslint --ext .js,.ts,.cjs,.tsx --cache src",
         "lint:code:fix": "eslint --ext .js,.ts,.cjs,.tsx --cache --fix src",

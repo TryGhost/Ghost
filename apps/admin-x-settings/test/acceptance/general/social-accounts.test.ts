@@ -294,10 +294,46 @@ test.describe('Social account settings', async () => {
         const instagramInput = page.getByTestId('social-accounts').getByLabel('Instagram');
 
         await instagramInput.fill('ghostteam');
+        await instagramInput.blur();
         await expect(instagramInput).toHaveValue('https://www.instagram.com/ghostteam');
 
         await instagramInput.fill('https://www.instagram.com/ghostteam.');
         await expect(instagramInput).toHaveValue('https://www.instagram.com/ghostteam.');
         await expect(instagramInput.locator('xpath=../..')).toContainText('Your Username is not a valid Instagram Username');
+    });
+
+    test('Does not rewrite the Mastodon field while typing a handle', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests
+        }});
+
+        await page.goto('/');
+
+        const mastodonInput = page.getByTestId('social-accounts').getByLabel('Mastodon');
+
+        await mastodonInput.focus();
+        await mastodonInput.pressSequentially('@ghost@example.com');
+        await expect(mastodonInput).toHaveValue('@ghost@example.com');
+
+        await mastodonInput.blur();
+        await expect(mastodonInput).toHaveValue('https://example.com/@ghost');
+    });
+
+    test('Allows entering a federated Mastodon URL', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests
+        }});
+
+        await page.goto('/');
+
+        const mastodonInput = page.getByTestId('social-accounts').getByLabel('Mastodon');
+
+        await mastodonInput.focus();
+        await mastodonInput.pressSequentially('https://mastodon.social/@ghost@example.com');
+        await expect(mastodonInput).toHaveValue('https://mastodon.social/@ghost@example.com');
+
+        await mastodonInput.blur();
+        await expect(mastodonInput).toHaveValue('https://mastodon.social/@ghost@example.com');
+        await expect(mastodonInput.locator('xpath=../..')).not.toContainText('The URL must be in a format');
     });
 });
