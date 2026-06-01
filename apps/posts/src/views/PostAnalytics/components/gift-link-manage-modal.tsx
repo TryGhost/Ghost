@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import copyToClipboard from '@src/utils/copy-to-clipboard';
 import trackEvent from '@src/utils/analytics';
-import {Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from '@tryghost/shade/components';
+import {Button, Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {buildGiftLinkUrl} from '@src/utils/gift-link';
 import {toast} from 'sonner';
@@ -59,6 +59,13 @@ const GiftLinkManageModal: React.FC<GiftLinkManageModalProps> = ({open, onOpenCh
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-[480px]">
+                <DialogClose
+                    aria-label="Close"
+                    className="absolute top-4 right-4 rounded-sm text-muted-foreground outline-hidden transition-colors hover:text-foreground"
+                >
+                    <LucideIcon.X size={20} strokeWidth={1.5} />
+                    <span className="sr-only">Close</span>
+                </DialogClose>
                 <DialogHeader>
                     <DialogTitle>Gift link</DialogTitle>
                     <DialogDescription>
