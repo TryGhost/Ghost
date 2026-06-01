@@ -857,7 +857,9 @@ describe('StripeAPI', function () {
             assert.equal(args.customer_email, undefined);
         });
 
-        it('does not include invoice_creation or custom_fields', async function () {
+        it('enables invoice_creation and does not include custom_fields', async function () {
+            const metadata = {ghost_gift: 'true', gift_token: 'token-1'};
+
             await api.createGiftCheckoutSession({
                 amount: 5000,
                 currency: 'usd',
@@ -866,12 +868,15 @@ describe('StripeAPI', function () {
                 duration: 1,
                 successUrl: '/gift-success',
                 cancelUrl: '/gift-cancel',
-                metadata: {}
+                metadata
             });
 
             const args = mockStripe.checkout.sessions.create.firstCall.firstArg;
 
-            assert.equal(args.invoice_creation, undefined);
+            assert.deepEqual(args.invoice_creation, {
+                enabled: true,
+                invoice_data: {metadata}
+            });
             assert.equal(args.custom_fields, undefined);
         });
 
