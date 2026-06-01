@@ -33,6 +33,9 @@ catalogs:
     '@tanstack/react-query':
       specifier: 4.44.0
       version: 4.44.0
+    '@tryghost/api-framework':
+      specifier: 3.2.3
+      version: 3.2.3
     '@tryghost/color-utils':
       specifier: 0.2.18
       version: 0.2.18
@@ -2222,8 +2225,8 @@ importers:
         specifier: 4.7.4
         version: 4.7.4
       '@tryghost/api-framework':
-        specifier: 1.0.7
-        version: 1.0.7
+        specifier: 'catalog:'
+        version: 3.2.3
       '@tryghost/bookshelf-plugins':
         specifier: 2.2.2
         version: 2.2.2
@@ -8462,8 +8465,8 @@ packages:
   '@tryghost/admin-api-schema@4.7.4':
     resolution: {integrity: sha512-vSVVBTUOKLdsTwUkEXPyhi8yo/GC9EpStVbTk9YN1iC0cGDloFDQ3Kb3aXScLhxcLCMa8TOGBDS+o/kXON0b4A==}
 
-  '@tryghost/api-framework@1.0.7':
-    resolution: {integrity: sha512-V+C/nVE4sgPQ3Vdm0jBAd05Za02inv68ZeO5rE2zYHUGp/PL5MfOPdhynTeFzzHNrmD9vzs+675C5zo/nLJY7w==}
+  '@tryghost/api-framework@3.2.3':
+    resolution: {integrity: sha512-esFUvEI5z3i6khBLePa/av5GddK16FbArZL9d2EM8CNuNTPHir3lql/y+QE37D+a6Czx73GmgL0C86H3efbt/A==}
 
   '@tryghost/bookshelf-collision@2.2.2':
     resolution: {integrity: sha512-Muue6M2LIHHSr5U2b7ZfKB+pESTUUZtuh98wS2+loYvXIILIGgpkcC5lhFvjAn04XIw4oag0Yw157ohVWdgCRA==}
@@ -8527,6 +8530,9 @@ packages:
 
   '@tryghost/debug@2.2.1':
     resolution: {integrity: sha512-DDBU8UA/23DENO4nFRZmiLAMu6XBxbtTmHJBYa/LbhIHIlwsdWSvnaiCDrSn+Fnasuw1kte5pk9mLBkXw0TPvA==}
+
+  '@tryghost/debug@2.2.2':
+    resolution: {integrity: sha512-tt/3adfzn1V9VFgpcQBjkxBTzIHxjjp6Xv3J6QF9webTPaq1o3YdHE+hMCNuPDIJXBmVWVgiPZxrHgv71BkWuw==}
 
   '@tryghost/domain-events@3.2.3':
     resolution: {integrity: sha512-jQEJXWXypY5ekrU8+l2tj9H9onfBfHNjcOd0pXlfmZ7GjXJA0/ijtL2iUcbE7OaPKgQkNK/3Eroh8uTf64ouxQ==}
@@ -8689,14 +8695,14 @@ packages:
   '@tryghost/prometheus-metrics@1.0.8':
     resolution: {integrity: sha512-E1LRRwLgiWIN/P20uHgpTK+JVYYQ3+BarKCBszB6qmK5IBANJvQHI3LQV0wDWefVwFyl5FI6AqxLpOOpquvahA==}
 
-  '@tryghost/promise@0.3.20':
-    resolution: {integrity: sha512-afHCBoS72XabqRi7GmHdVAWC/UMsVPGlxnL/epNVp0c/C7tEn6+MgHABXNAW4wViZFhuOda3k7fk3i2K0FAZQg==}
-
   '@tryghost/promise@0.3.8':
     resolution: {integrity: sha512-ppcnLBWczpbo4sQcGWtjEA82kdZMv4NFF2MvZRi1MBP4lSOSgh9A636eUxlB1/FpIG+D5ixq84xlY4QJMqW2kA==}
 
   '@tryghost/promise@2.2.1':
     resolution: {integrity: sha512-4v4jjMvEQCc3IN/NU+CyH04p491D/ngTJhUmHl4CC03It+3jUDhOiv4X+hlSMnto79ye+Oc/SygXXoQRe9rM2A==}
+
+  '@tryghost/promise@2.2.2':
+    resolution: {integrity: sha512-n4kYcbH3nLfkJY3t4Y0irvr4/F4+H/NQykn5yygig0F6nXWXih+wCX7MgSXGeakGEky6kVBIrqdVf07wTfuYeA==}
 
   '@tryghost/referrer-parser@0.1.17':
     resolution: {integrity: sha512-CsAmY3bHnXxcAqC07ZK3CMvEgGmJjoKabMnuyeMlhPHidtGRfVc3JQ/hQZkjU0QFSt4hp7tKnV0h5rRZG+X0mQ==}
@@ -8716,6 +8722,9 @@ packages:
 
   '@tryghost/root-utils@2.2.1':
     resolution: {integrity: sha512-vMAS8fk9fOZL4JVSmDlwXkPr48n4ofEhDRq95GOCO8FMHod75JGdOBus08diAv97ca6VYcpT4LmkFecQZOub/A==}
+
+  '@tryghost/root-utils@2.2.2':
+    resolution: {integrity: sha512-bRly1o+Ve0rAbPM53zN6aRoC6trWymb/PYOXY4pqfdfvdFLZrS//CWoMC+qcjV7cU3FcmoFlZhnl7ZgHqqHVaA==}
 
   '@tryghost/security@1.0.6':
     resolution: {integrity: sha512-h4FiUK4ndHezlXeuRzfwTZrX/a8ZdCS/FRqmZWCHcMUiBH6lewHv8eIjsPemN6e6Gn9jtsWZsKnuYM2mD0meSQ==}
@@ -8747,6 +8756,9 @@ packages:
   '@tryghost/tpl@2.2.1':
     resolution: {integrity: sha512-QxMGABOsxAcWTs/pDn6jH6Bv2MJhrmqiBAGGf87Maz1whLv2VgjKY0wSZf7xEx8FoL5TZrUH1AgV//DjTGFSrA==}
 
+  '@tryghost/tpl@2.2.2':
+    resolution: {integrity: sha512-IC45KOZ6OdFrEMIxMGIS0RXFT8iQ70+8GchHmjbCj9g/VLy6NbT5j3gPejSZbbndKnd2ojCm1dJa8o0x5c15gw==}
+
   '@tryghost/url-utils@5.2.3':
     resolution: {integrity: sha512-1+1sUfJuXlD0OWYiM/N7mNp2BSNCKb0PVTBjER6bEq/owa8Et9W2MDMQ1H3/dIOvlSq+7swGCoKX/IrXNeaWmA==}
 
@@ -8758,6 +8770,9 @@ packages:
 
   '@tryghost/validator@3.1.1':
     resolution: {integrity: sha512-GIBONNQs7BP7FEKf8XxDk+roLVf86rQle3YWbe4IajqAcHoto952RAARwSAvYOhmqroBfX2++9BAyXEER+Ys9Q==}
+
+  '@tryghost/validator@3.1.3':
+    resolution: {integrity: sha512-vtOkD3DWRTmSqCpDuW2RzoaXap53qBFSK5D+1p8kXNjxyAXylqAYR+2J4uQPCqq6z58Wx11IfpT/GW9O5k6qPg==}
 
   '@tryghost/version@0.1.38':
     resolution: {integrity: sha512-kVaM7eijFRrBLZLDbmiFxHQ/shmAg5UQ9yM4s9GZN4M3OWY34UHNmjoSOniOHnA5E8fYNA8A3IFmS3FW910xYg==}
@@ -14539,7 +14554,7 @@ packages:
       csstype: ^3.0.10
 
   google-caja-bower@https://codeload.github.com/acburdine/google-caja-bower/tar.gz/275cb75249f038492094a499756a73719ae071fd:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/acburdine/google-caja-bower/tar.gz/275cb75249f038492094a499756a73719ae071fd}
+    resolution: {gitHosted: true, integrity: sha512-mmCXdxGKGKDznjgkNzVqzTslaldslk5KMb/A7l8rxWnqyxzwsdPhuBJ6oT1Kh/Y3k4jN54ISee/2AgjFyCBxYw==, tarball: https://codeload.github.com/acburdine/google-caja-bower/tar.gz/275cb75249f038492094a499756a73719ae071fd}
     version: 6011.0.0
 
   gopd@1.2.0:
@@ -15968,7 +15983,7 @@ packages:
     engines: {node: '>= 0.6'}
 
   keymaster@https://codeload.github.com/madrobby/keymaster/tar.gz/f8f43ddafad663b505dc0908e72853bcf8daea49:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/madrobby/keymaster/tar.gz/f8f43ddafad663b505dc0908e72853bcf8daea49}
+    resolution: {gitHosted: true, integrity: sha512-/WVovQslVEqPGNoD97TbqNHuCDPYu2v4/ggrZj0a+9PVPw3Rud4Ut2K7fOi0kMqzoJINkgP68e9m09Al/wFZ8g==, tarball: https://codeload.github.com/madrobby/keymaster/tar.gz/f8f43ddafad663b505dc0908e72853bcf8daea49}
     version: 1.6.3
 
   keypair@1.0.4:
@@ -17181,7 +17196,7 @@ packages:
     hasBin: true
 
   mock-knex@https://codeload.github.com/TryGhost/mock-knex/tar.gz/68948e11b0ea4fe63456098dfdc169bea7f62009:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/TryGhost/mock-knex/tar.gz/68948e11b0ea4fe63456098dfdc169bea7f62009}
+    resolution: {gitHosted: true, integrity: sha512-VVShGrOVsuUDz9ueLO/3hcMzwNGr/e/dvYoiXCJSs7hI8TWdSWsEXDURWp251+NZHEZG/CI+L78lBFv+piGfxg==, tarball: https://codeload.github.com/TryGhost/mock-knex/tar.gz/68948e11b0ea4fe63456098dfdc169bea7f62009}
     version: 0.4.13
     peerDependencies:
       knex: '> 0.8'
@@ -28389,14 +28404,13 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tryghost/api-framework@1.0.7':
+  '@tryghost/api-framework@3.2.3':
     dependencies:
-      '@tryghost/debug': 0.1.40
+      '@tryghost/debug': 2.2.2
       '@tryghost/errors': 1.3.13
-      '@tryghost/promise': 0.3.20
-      '@tryghost/tpl': 0.1.40
-      '@tryghost/validator': 0.2.22
-      json-stable-stringify: 1.3.0
+      '@tryghost/promise': 2.2.2
+      '@tryghost/tpl': 2.2.2
+      '@tryghost/validator': 3.1.3
       lodash: 4.18.1
     transitivePeerDependencies:
       - supports-color
@@ -28511,6 +28525,13 @@ snapshots:
   '@tryghost/debug@2.2.1':
     dependencies:
       '@tryghost/root-utils': 2.2.1
+      debug: 4.4.3(supports-color@5.5.0)
+    transitivePeerDependencies:
+      - supports-color
+
+  '@tryghost/debug@2.2.2':
+    dependencies:
+      '@tryghost/root-utils': 2.2.2
       debug: 4.4.3(supports-color@5.5.0)
     transitivePeerDependencies:
       - supports-color
@@ -28952,11 +28973,11 @@ snapshots:
       - '@75lb/nature'
       - supports-color
 
-  '@tryghost/promise@0.3.20': {}
-
   '@tryghost/promise@0.3.8': {}
 
   '@tryghost/promise@2.2.1': {}
+
+  '@tryghost/promise@2.2.2': {}
 
   '@tryghost/referrer-parser@0.1.17': {}
 
@@ -28993,6 +29014,11 @@ snapshots:
       find-root: 1.1.0
 
   '@tryghost/root-utils@2.2.1':
+    dependencies:
+      caller: 1.1.0
+      find-root: 1.1.0
+
+  '@tryghost/root-utils@2.2.2':
     dependencies:
       caller: 1.1.0
       find-root: 1.1.0
@@ -29034,6 +29060,8 @@ snapshots:
 
   '@tryghost/tpl@2.2.1': {}
 
+  '@tryghost/tpl@2.2.2': {}
+
   '@tryghost/url-utils@5.2.3':
     dependencies:
       cheerio: 1.2.0
@@ -29068,6 +29096,16 @@ snapshots:
     dependencies:
       '@tryghost/errors': 1.3.13
       '@tryghost/tpl': 2.2.0
+      lodash: 4.18.1
+      moment-timezone: 0.5.45
+      validator: 13.15.35
+    transitivePeerDependencies:
+      - supports-color
+
+  '@tryghost/validator@3.1.3':
+    dependencies:
+      '@tryghost/errors': 1.3.13
+      '@tryghost/tpl': 2.2.2
       lodash: 4.18.1
       moment-timezone: 0.5.45
       validator: 13.15.35
