@@ -64,10 +64,12 @@ const GiftLinkManageModal: React.FC<GiftLinkManageModalProps> = ({open, onOpenCh
                         Anyone with this link can read the full post — no account needed.
                     </DialogDescription>
                 </DialogHeader>
-                <div className="flex flex-col gap-4">
-                    <div className="flex items-center gap-2 rounded-md border bg-muted p-2">
-                        <span className="min-w-0 flex-1 truncate px-1 text-sm" data-testid="gift-link-url">{url}</span>
-                        <Button size="sm" onClick={handleCopy}>
+                <div className="flex min-w-0 flex-col gap-4">
+                    <div className="flex flex-col gap-2 rounded-md border bg-muted p-3">
+                        {/* Wrap (break-all) rather than truncate so the changing
+                            token tail stays visible after a reset. */}
+                        <span className="text-sm break-all" data-testid="gift-link-url">{url}</span>
+                        <Button className="self-end" size="sm" onClick={handleCopy}>
                             {copied ? 'Copied' : 'Copy'}
                         </Button>
                     </div>
