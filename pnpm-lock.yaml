@@ -169,8 +169,8 @@ catalogs:
       specifier: 7.14.0
       version: 7.14.0
     sinon:
-      specifier: 21.1.2
-      version: 21.1.2
+      specifier: 22.0.0
+      version: 22.0.0
     sonner:
       specifier: 2.0.7
       version: 2.0.7
@@ -703,7 +703,7 @@ importers:
         version: 18.3.1(react@18.3.1)
       sinon:
         specifier: 'catalog:'
-        version: 21.1.2
+        version: 22.0.0
       storybook:
         specifier: 'catalog:'
         version: 10.3.5(@testing-library/dom@9.3.4)(prettier@3.8.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1121,7 +1121,7 @@ importers:
         version: 16.1.1(postcss@8.5.10)
       sinon:
         specifier: 'catalog:'
-        version: 21.1.2
+        version: 22.0.0
       tailwindcss:
         specifier: catalog:tailwind3
         version: 3.4.18(tsx@4.21.0)(yaml@2.9.0)
@@ -2181,7 +2181,7 @@ importers:
         version: 5.0.10
       sinon-chai:
         specifier: 4.0.1
-        version: 4.0.1(chai@4.5.0)(sinon@21.1.2)
+        version: 4.0.1(chai@4.5.0)(sinon@22.0.0)
       testem:
         specifier: 3.19.1
         version: 3.19.1(@babel/core@7.29.7)(handlebars@4.7.9)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(underscore@1.13.8)
@@ -2821,7 +2821,7 @@ importers:
         version: 9.0.1(jiti@2.7.0)
       sinon:
         specifier: 'catalog:'
-        version: 21.1.2
+        version: 22.0.0
       supertest:
         specifier: 6.3.4
         version: 6.3.4
@@ -12564,6 +12564,10 @@ packages:
     resolution: {integrity: sha512-DPi0FmjiSU5EvQV0++GFDOJ9ASQUVFh5kD+OzOnYdi7n3Wpm9hWWGfB/O2blfHcMVTL5WkQXSnRiK9makhrcnw==}
     engines: {node: '>=0.3.1'}
 
+  diff@9.0.0:
+    resolution: {integrity: sha512-svtcdpS8CgJyqAjEQIXdb3OjhFVVYjzGAPO8WGCmRbrml64SPw/jJD4GoE98aR7r25A0XcgrK3F02yw9R/vhQw==}
+    engines: {node: '>=0.3.1'}
+
   diffie-hellman@5.0.3:
     resolution: {integrity: sha512-kqag/Nl+f3GwyK25fhUMYj81BUOrZ9IuJsjIcDE5icNM9FJHAVm3VcUDxdLPoQtTuUylWm6ZIknYJwwaPxsUzg==}
 
@@ -19952,8 +19956,8 @@ packages:
       chai: ^5.0.0 || ^6.0.0
       sinon: '>=4.0.0'
 
-  sinon@21.1.2:
-    resolution: {integrity: sha512-FS6mN+/bx7e2ajpXkEmOcWB6xBzWiuNoAQT18/+a20SS4U7FSYl8Ms7N6VTUxN/1JAjkx7aXp+THMC8xdpp0gA==}
+  sinon@22.0.0:
+    resolution: {integrity: sha512-sq/6DpdXOrLyfbKlXLg/Usc7xu8YXPeLkOFZRvA3bNUSA2lhbrZ06yuXbH1fkzBPCbz9O10+7hznzUsjaYNm0Q==}
 
   sinon@9.2.4:
     resolution: {integrity: sha512-zljcULZQsJxVra28qIAL6ow1Z9tpattkCTEJR4RBP3TGc00FcttsP5pK284Nas5WjMZU5Yzy3kAIp3B3KRf5Yg==}
@@ -33904,6 +33908,8 @@ snapshots:
 
   diff@8.0.4: {}
 
+  diff@9.0.0: {}
+
   diffie-hellman@5.0.3:
     dependencies:
       bn.js: 4.12.3
@@ -44439,17 +44445,17 @@ snapshots:
     dependencies:
       semver: 7.7.4
 
-  sinon-chai@4.0.1(chai@4.5.0)(sinon@21.1.2):
+  sinon-chai@4.0.1(chai@4.5.0)(sinon@22.0.0):
     dependencies:
       chai: 4.5.0
-      sinon: 21.1.2
+      sinon: 22.0.0
 
-  sinon@21.1.2:
+  sinon@22.0.0:
     dependencies:
       '@sinonjs/commons': 3.0.1
       '@sinonjs/fake-timers': 15.4.0
       '@sinonjs/samsam': 10.0.2
-      diff: 8.0.4
+      diff: 9.0.0
 
   sinon@9.2.4:
     dependencies:
