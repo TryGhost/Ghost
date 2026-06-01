@@ -50,7 +50,7 @@
     "typescript": "catalog:",
     "typescript-eslint": "8.58.0",
     "vite": "catalog:",
-    "vite-tsconfig-paths": "5.1.4",
+    "vite-tsconfig-paths": "6.1.1",
     "vitest": "catalog:"
   },
   "nx": {
