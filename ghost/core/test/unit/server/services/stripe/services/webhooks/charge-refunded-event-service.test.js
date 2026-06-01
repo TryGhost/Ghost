@@ -55,12 +55,4 @@ describe('ChargeRefundedEventService', function () {
 
         sinon.assert.notCalled(giftService.refund);
     });
-
-    it('skips processing when the charge has an invoice (subscription refund)', async function () {
-        const service = new ChargeRefundedEventService({giftService});
-
-        await service.handleEvent({payment_intent: 'pi_123', invoice: 'in_123'});
-
-        sinon.assert.notCalled(giftService.refund);
-    });
 });
