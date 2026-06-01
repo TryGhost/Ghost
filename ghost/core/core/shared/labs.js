@@ -24,6 +24,8 @@ const GA_FEATURES = [
     'customFonts',
     'explore',
     'commentModeration',
+    'commentsThreads',
+    'commentsPinning',
     'featurebaseFeedback',
     'giftSubscriptions',
     'dangerZoneResetAuth'
@@ -52,8 +54,8 @@ const PRIVATE_FEATURES = [
     'indexnow',
     'pictureImageFormats',
     'smarterCounts',
-    'commentsThreads',
-    'commentsPinning'
+    'llmsTxt',
+    'getHelperDeduplication'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

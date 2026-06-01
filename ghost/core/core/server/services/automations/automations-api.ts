@@ -82,11 +82,11 @@ const repository = createFakeDatabaseAutomationsRepository({
     }
 });
 
-async function browse() {
+export async function browse() {
     return await repository.browse();
 }
 
-async function read(automationId: string) {
+export async function read(automationId: string) {
     const automation = await repository.getById(automationId);
 
     if (!automation) {
@@ -98,7 +98,7 @@ async function read(automationId: string) {
     return automation;
 }
 
-async function edit(automationId: string, data: unknown) {
+export async function edit(automationId: string, data: unknown) {
     const parsedData = validateEditData(data);
 
     const automation = await repository.edit(automationId, parsedData);
@@ -234,20 +234,12 @@ function throwValidationError(message: string, property?: string): never {
     });
 }
 
-function requestPoll() {
+export function requestPoll() {
     domainEvents.dispatch(StartAutomationsPollEvent.create());
 }
 
-function _resetTestDatabase() {
+export function _resetTestDatabase() {
     if (process.env.NODE_ENV?.startsWith('testing')) {
         testDatabase = null;
     }
 }
-
-module.exports = {
-    _resetTestDatabase,
-    browse,
-    edit,
-    read,
-    requestPoll
-};

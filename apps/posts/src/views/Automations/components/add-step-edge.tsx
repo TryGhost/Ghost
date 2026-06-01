@@ -12,9 +12,9 @@ export type AddStepEdgeData = {
     onPick: (type: StepPickerType, anchor: {sourceId: string; targetId: string}) => void;
 };
 
-const INSERT_BUTTON_CLASSES = 'border-transparent bg-blue-500 text-white shadow-sm hover:bg-blue-600';
+const INSERT_BUTTON_CLASSES = 'border-transparent bg-green-500 text-white shadow-sm hover:bg-green-600';
 const DEFAULT_EDGE_STROKE = 'var(--xy-edge-stroke)';
-const HOVERED_EDGE_STROKE = 'var(--color-blue-500)';
+const HOVERED_EDGE_STROKE = 'var(--color-green-500)';
 
 const AddStepEdge: React.FC<EdgeProps> = ({
     id,

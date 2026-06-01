@@ -64,13 +64,13 @@ const features: Feature[] = [{
     description: 'Use optimized COUNT queries for API pagination when safe',
     flag: 'smarterCounts'
 }, {
-    title: 'Comments Threads',
-    description: 'Enable deeper threading view in Comments-UI',
-    flag: 'commentsThreads'
+    title: 'LLMs.txt',
+    description: 'Serve llms.txt, per-entry markdown exports, and Accept: text/markdown content negotiation for AI and LLM tooling',
+    flag: 'llmsTxt'
 }, {
-    title: 'Comments Pinning',
-    description: 'Allow staff to pin top-level comments in Comments-UI and Admin',
-    flag: 'commentsPinning'
+    title: 'Get helper deduplication',
+    description: 'Deduplicate identical {{#get}} helper queries within a single request to avoid redundant database calls',
+    flag: 'getHelperDeduplication'
 }];
 
 const AlphaFeatures: React.FC = () => {

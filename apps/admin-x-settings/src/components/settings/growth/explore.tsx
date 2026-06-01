@@ -85,7 +85,7 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     testId='explore-growth-toggle'
                     onChange={event => toggleSetting('explore_ping_growth', event)}
                 />
-                <div className='-mx-5 -mb-5 flex flex-col items-center bg-grey-75 px-7 py-10 md:-mx-7 md:-mb-7' data-testid='explore-preview'>
+                <div className='-mx-5 -mb-5 flex flex-col items-center bg-grey-50 px-7 py-10 md:-mx-7 md:-mb-7' data-testid='explore-preview'>
                     <div className='relative w-full max-w-[320px] rounded-lg bg-white p-6 text-black shadow-lg'>
                         <div className='absolute top-2.5 right-3 text-xs text-grey-300 uppercase'>Preview</div>
                         {icon ?

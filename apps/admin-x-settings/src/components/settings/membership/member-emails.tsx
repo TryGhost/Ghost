@@ -59,7 +59,7 @@ const EmailPreviewRow: React.FC<{
                     type='button'
                     onClick={onEdit}
                 >
-                    <div className='flex size-10 shrink-0 items-center justify-center rounded-full bg-grey-100 dark:bg-grey-925'>
+                    <div className='flex size-10 shrink-0 items-center justify-center rounded-full bg-grey-100 dark:bg-grey-900'>
                         <Icon colorClass='text-grey-700 dark:text-grey-600' name={icon} size='md' />
                     </div>
                     <div className='min-w-0 grow'>

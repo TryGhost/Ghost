@@ -34,6 +34,21 @@ async function testGhostHead(options) {
     const sodoSearchVersion = /sodo-search@~\d+\.\d+(\.\d+)?\//g;
     rendered = rendered.replace(sodoSearchVersion, 'sodo-search@~[[VERSION]]/');
 
+    const adminToolbarResourceId = /data-resource-id="[^"]+"/g;
+    rendered = rendered.replace(adminToolbarResourceId, 'data-resource-id="[[RESOURCE_ID]]"');
+
+    const adminToolbarTagMetadata = / data-resource-type="tag" data-resource-slug="[^"]+"/g;
+    rendered = rendered.replace(adminToolbarTagMetadata, '');
+
+    const adminToolbarPageContext = / data-page-context="home"/g;
+    rendered = rendered.replace(adminToolbarPageContext, '');
+
+    const adminToolbarHomepageFeatures = / data-(site-analytics|activitypub|members)-enabled="true"/g;
+    rendered = rendered.replace(adminToolbarHomepageFeatures, '');
+
+    const adminToolbarCommentsDisabled = / data-comments-enabled="false"/g;
+    rendered = rendered.replace(adminToolbarCommentsDisabled, '');
+
     assertExists(rendered);
     // Note: we need to convert the string to an object in order to use the snapshot feature
     assertMatchSnapshot({rendered});
@@ -1642,6 +1657,153 @@ describe('{{ghost_head}} helper', function () {
                 }
             })});
             assert.doesNotMatch(rendered, /comment-counts.min.js/);
+        });
+
+        it('does not load the admin toolbar script without the frontend marker', async function () {
+            const rendered = (await ghost_head(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '0.3'
+                }
+            }))).toString();
+
+            assert.doesNotMatch(rendered, /admin-toolbar\.min\.js/);
+        });
+
+        it('loads the admin toolbar script with public site and post metadata', async function () {
+            getStub.withArgs('comments_enabled').returns('all');
+
+            const rendered = (await ghost_head(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/welcome/',
+                    context: ['post'],
+                    safeVersion: '0.3',
+                    staffFrontendToolsEnabled: true
+                },
+                renderObject: {
+                    post: posts[2]
+                }
+            }))).toString();
+
+            assert.match(rendered, /admin-toolbar\.min\.js/);
+            assert.match(rendered, /data-ghost-admin-toolbar="http:\/\/(?:localhost:65530|127\.0\.0\.1:\d+)\/ghost\/"/);
+            assert.match(rendered, /data-site-title="Ghost"/);
+            assert.match(rendered, /data-resource-type="post"/);
+            assert.match(rendered, new RegExp(`data-resource-id="${posts[2].id}"`));
+            assert.doesNotMatch(rendered, /data-comments-enabled/);
+            assert.doesNotMatch(rendered, /Jane Staff/);
+            assert.doesNotMatch(rendered, /ghost-admin-api-session/);
+        });
+
+        it('marks the admin toolbar script when comments are disabled', async function () {
+            getStub.withArgs('comments_enabled').returns('off');
+
+            const rendered = (await ghost_head(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/welcome/',
+                    context: ['post'],
+                    safeVersion: '0.3',
+                    staffFrontendToolsEnabled: true
+                },
+                renderObject: {
+                    post: posts[2]
+                }
+            }))).toString();
+
+            assert.match(rendered, /admin-toolbar\.min\.js/);
+            assert.match(rendered, /data-comments-enabled="false"/);
+        });
+
+        it('loads the admin toolbar script with homepage feature metadata', async function () {
+            getStub.withArgs('web_analytics_enabled').returns(true);
+            getStub.withArgs('social_web_enabled').returns(true);
+            getStub.withArgs('members_enabled').returns(true);
+
+            const rendered = (await ghost_head(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '0.3',
+                    staffFrontendToolsEnabled: true
+                }
+            }))).toString();
+
+            assert.match(rendered, /admin-toolbar\.min\.js/);
+            assert.match(rendered, /data-page-context="home"/);
+            assert.match(rendered, /data-site-analytics-enabled="true"/);
+            assert.match(rendered, /data-activitypub-enabled="true"/);
+            assert.match(rendered, /data-members-enabled="true"/);
+        });
+
+        it('omits disabled homepage feature metadata', async function () {
+            getStub.withArgs('web_analytics_enabled').returns(false);
+            getStub.withArgs('social_web_enabled').returns(false);
+            getStub.withArgs('members_enabled').returns(false);
+
+            const rendered = (await ghost_head(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '0.3',
+                    staffFrontendToolsEnabled: true
+                }
+            }))).toString();
+
+            assert.match(rendered, /admin-toolbar\.min\.js/);
+            assert.match(rendered, /data-page-context="home"/);
+            assert.doesNotMatch(rendered, /data-site-analytics-enabled/);
+            assert.doesNotMatch(rendered, /data-activitypub-enabled/);
+            assert.doesNotMatch(rendered, /data-members-enabled/);
+        });
+
+        it('loads the admin toolbar script with tag metadata', async function () {
+            const rendered = (await ghost_head(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/tag/tagtitle/',
+                    context: ['tag'],
+                    safeVersion: '0.3',
+                    staffFrontendToolsEnabled: true
+                },
+                renderObject: {
+                    tag: tags[0]
+                }
+            }))).toString();
+
+            assert.match(rendered, /admin-toolbar\.min\.js/);
+            assert.match(rendered, /data-resource-type="tag"/);
+            assert.match(rendered, new RegExp(`data-resource-slug="${tags[0].slug}"`));
+        });
+
+        it('loads the admin toolbar script with page metadata', async function () {
+            const rendered = (await ghost_head(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/about/',
+                    context: ['page'],
+                    safeVersion: '0.3',
+                    staffFrontendToolsEnabled: true
+                },
+                renderObject: {
+                    post: posts[0]
+                }
+            }))).toString();
+
+            assert.match(rendered, /admin-toolbar\.min\.js/);
+            assert.match(rendered, /data-resource-type="page"/);
+            assert.match(rendered, new RegExp(`data-resource-id="${posts[0].id}"`));
+        });
+
+        it('can exclude the admin toolbar script', async function () {
+            const rendered = (await ghost_head({hash: {exclude: 'admin_toolbar'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '0.3',
+                    staffFrontendToolsEnabled: true
+                }
+            })})).toString();
+
+            assert.doesNotMatch(rendered, /admin-toolbar\.min\.js/);
         });
 
         it('loads card assets when not excluded', async function () {

@@ -2,7 +2,7 @@ name: ghost-dev
 
 services:
   mysql:
-    image: mysql:8.4.5@sha256:679e7e924f38a3cbb62a3d7df32924b83f7321a602d3f9f967c01b3df18495d6
+    image: mysql:8.4.9@sha256:c36050afdca850f23cef85703f84c7531a5ae155a11b5ee1c60acb09937c4084
     container_name: ghost-dev-mysql
     command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT
     ports:
@@ -61,6 +61,12 @@ services:
     command: ["pnpm", "dev"]
     volumes:
       - ./ghost:/home/ghost/ghost
+      # ghost/admin has workspace:* deps on apps/* (e.g. @tryghost/admin-x-framework).
+      # The dev Dockerfile only stages ghost/{core,i18n,parse-email-address}
+      # package.jsons at build time; mounting apps/ here makes the workspace
+      # graph complete at runtime. pnpm 10 tolerated the missing packages;
+      # pnpm 11 strict-validates and fails without this mount.
+      - ./apps:/home/ghost/apps
       # Mount specific content subdirectories to preserve themes/adapters from source
       - ghost-dev-data:/home/ghost/ghost/core/content/data
       - ghost-dev-images:/home/ghost/ghost/core/content/images
@@ -121,7 +127,7 @@ services:
         condition: service_healthy
 
   stripe:
-    image: stripe/stripe-cli:latest@sha256:c901c8503bc02f32566b785eb652420a66d68294eae4148b21ff9290203fa7c0
+    image: stripe/stripe-cli:latest@sha256:49adc22954b07ace90944d0c2816cd8d4c08f527548f150785aff7c4d1109d42
     container_name: ghost-dev-stripe
     entrypoint: ["/entrypoint.sh"]
     profiles: ["stripe"]

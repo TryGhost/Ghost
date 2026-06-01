@@ -30,12 +30,13 @@ Toggle light/dark from the Storybook toolbar to see semantic tokens flip.
 
 - `apps/shade/theme-variables.css` — semantic tokens + dark-mode overrides.
 - `apps/shade/tailwind.theme.css` — Tailwind `@theme` block: raw catalogue and bindings.
+- Semantic color variables should resolve directly to raw `--color-*` tokens, not to another semantic token. For example, prefer `--text-primary: var(--color-black)` over `--text-primary: var(--foreground)`.
 
 ## Rules of consumption
 
 - Prefer Tailwind utilities — `bg-background`, `text-foreground`, `rounded-md` — over inline styles.
-- Never hard-code hex or `hsl()` values. They don't theme and don't dark-mode.
-- Inside stylesheets, use `var(--token)` directly. Don't wrap in `hsl()` — the variables already contain `hsl(…)`.
+- Never hard-code hex or `hsl()` values for UI chrome. They don't theme and don't dark-mode. Chart tokens are the current exception until the chart palette has its own raw scale.
+- Inside stylesheets, use `var(--token)` directly. Don't wrap variables in color functions.
 - Don't write `dark:` variants for colour. The tokens do that. (Exceptions: assets like logos and illustrations.)
 
 </div>

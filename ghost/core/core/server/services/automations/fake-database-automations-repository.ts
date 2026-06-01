@@ -433,7 +433,7 @@ function buildActionPayload(row: ActionRow): AutomationAction {
             id: row.id,
             type: 'wait',
             data: {
-                wait_hours: requireValue(row.wait_hours, 'wait_hours', row)
+                wait_hours: requireValue(row, 'wait_hours')
             }
         };
     case 'send_email':
@@ -441,18 +441,22 @@ function buildActionPayload(row: ActionRow): AutomationAction {
             id: row.id,
             type: 'send_email',
             data: {
-                email_subject: requireValue(row.email_subject, 'email_subject', row),
-                email_lexical: requireValue(row.email_lexical, 'email_lexical', row),
+                email_subject: requireValue(row, 'email_subject'),
+                email_lexical: requireValue(row, 'email_lexical'),
                 email_sender_name: row.email_sender_name,
                 email_sender_email: row.email_sender_email,
                 email_sender_reply_to: row.email_sender_reply_to,
-                email_design_setting_id: requireValue(row.email_design_setting_id, 'email_design_setting_id', row)
+                email_design_setting_id: requireValue(row, 'email_design_setting_id')
             }
         };
     }
 }
 
-function requireValue<T>(value: T | null, field: string, row: ActionRow): T {
+function requireValue<FieldT extends keyof ActionRow>(
+    row: Pick<ActionRow, 'id' | 'type' | FieldT>,
+    field: FieldT
+): NonNullable<ActionRow[FieldT]> {
+    const value = row[field];
     if (value === null) {
         throw new errors.InternalServerError({
             message: tpl(messages.invalidAutomationActionRevision, {
@@ -462,7 +466,6 @@ function requireValue<T>(value: T | null, field: string, row: ActionRow): T {
             })
         });
     }
-
     return value;
 }
 

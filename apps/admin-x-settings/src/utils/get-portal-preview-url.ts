@@ -71,5 +71,7 @@ export const getPortalPreviewUrl = ({settings, config, tiers, siteData, selected
         }));
     }
 
+    settingsParam.append('admin_toolbar', '0');
+
     return `${baseUrl}${portalBase}?${settingsParam.toString()}`;
 };

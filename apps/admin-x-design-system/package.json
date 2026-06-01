@@ -78,7 +78,7 @@
         "@radix-ui/react-tooltip": "1.2.8",
         "@sentry/react": "catalog:",
         "@tryghost/shade": "workspace:*",
-        "@uiw/react-codemirror": "4.25.2",
+        "@uiw/react-codemirror": "4.25.10",
         "clsx": "catalog:",
         "react-colorful": "5.6.1",
         "react-hot-toast": "2.6.0",

@@ -6,7 +6,7 @@ function SpacingRow({step}: {step: Step}) {
     const baseValue = useComputedValue('--spacing');
     const widthValue = baseValue ? `calc(${baseValue} * ${step.multiplier})` : `calc(0.4rem * ${step.multiplier})`;
     return (
-        <div className="flex items-center gap-4 border-b border-border-subtle py-3 last:border-b-0">
+        <div className="flex items-center gap-4 border-b border-border-default py-3 last:border-b-0">
             <div className="flex w-32 shrink-0 flex-col gap-0.5">
                 <code className="text-sm font-medium text-text-primary">{step.name}</code>
                 <code className="text-2xs text-text-secondary">{`var(--spacing) * ${step.multiplier}`}</code>

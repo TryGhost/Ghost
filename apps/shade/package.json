@@ -113,8 +113,8 @@
         "vitest": "catalog:"
     },
     "dependencies": {
-        "@hookform/resolvers": "5.2.2",
-        "@number-flow/react": "0.5.10",
+        "@hookform/resolvers": "5.4.0",
+        "@number-flow/react": "0.6.0",
         "@radix-ui/react-accordion": "1.2.12",
         "@radix-ui/react-alert-dialog": "1.1.15",
         "@radix-ui/react-avatar": "1.1.11",
@@ -141,7 +141,7 @@
         "cmdk": "1.1.1",
         "color": "5.0.3",
         "date-fns": "4.1.0",
-        "lucide-react": "0.577.0",
+        "lucide-react": "catalog:",
         "moment-timezone": "^0.5.48",
         "react": "18.3.1",
         "react-day-picker": "9.14.0",
