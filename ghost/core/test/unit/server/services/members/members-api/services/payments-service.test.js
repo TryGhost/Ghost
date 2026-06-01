@@ -4,6 +4,12 @@ const knex = require('knex').default;
 
 const Tier = require('../../../../../../../core/server/services/tiers/tier');
 
+// Initialise i18n before requiring the service so its destructured `t` import
+// resolves to the live i18next instance. The init helper falls back to 'en'
+// when the locale setting isn't set.
+const i18n = require('../../../../../../../core/server/services/i18n');
+i18n.init();
+
 const PaymentsService = require('../../../../../../../core/server/services/members/members-api/services/payments-service');
 
 describe('PaymentsService', function () {
@@ -449,6 +455,46 @@ describe('PaymentsService', function () {
 
             assert.equal(getStripeArgs().customer, mockCustomer);
             assert.equal(getStripeArgs().customerEmail, null);
+        });
+    });
+
+    describe('getDonationPriceNickname', function () {
+        // i18n.init() reassigns module.exports to the live instance, so re-require to reach it.
+        const i18nInstance = require('../../../../../../../core/server/services/i18n');
+
+        function createService(title) {
+            return new PaymentsService({
+                settingsCache: {
+                    get(key) {
+                        return key === 'title' ? title : undefined;
+                    }
+                }
+            });
+        }
+
+        afterEach(function () {
+            i18nInstance.changeLanguage('en');
+        });
+
+        it('builds the nickname from the site title', function () {
+            const service = createService('My Site');
+            assert.equal(service.getDonationPriceNickname(), 'Support My Site');
+        });
+
+        it('localizes the prefix while keeping the site title interpolated', async function () {
+            await i18nInstance.changeLanguage('fr');
+            const service = createService('Mon Site');
+            assert.equal(service.getDonationPriceNickname(), 'Soutenir Mon Site');
+        });
+
+        it('does not HTML-escape the site title', function () {
+            const service = createService('Tom & Jerry');
+            assert.equal(service.getDonationPriceNickname(), 'Support Tom & Jerry');
+        });
+
+        it('truncates the nickname to 250 characters', function () {
+            const service = createService('a'.repeat(300));
+            assert.equal(service.getDonationPriceNickname().length, 250);
         });
     });
 });

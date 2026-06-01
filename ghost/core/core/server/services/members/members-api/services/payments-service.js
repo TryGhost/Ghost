@@ -359,7 +359,10 @@ class PaymentsService {
      * @returns {string}
      */
     getDonationPriceNickname() {
-        const nickname = `${t('Support')} ${this.settingsCache.get('title')}`;
+        const nickname = t('Support {siteTitle}', {
+            siteTitle: this.settingsCache.get('title'),
+            interpolation: {escapeValue: false}
+        });
         return nickname.substring(0, 250);
     }
 
