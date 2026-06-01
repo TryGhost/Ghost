@@ -664,7 +664,7 @@ module.exports = class RouterController {
      * @returns
      */
     async _createGiftCheckoutSession(options) {
-        if (!this._paymentsService.stripeAPIService.configured) {
+        if (!this._settingsHelpers.arePaidMembersEnabled()) {
             throw new DisabledFeatureError({
                 message: tpl(messages.notConfigured)
             });
