@@ -96,7 +96,7 @@
                         {{#if this.canCopyGiftLink}}
                             <div class="form-group gh-psm-gift-link" {{did-insert this.loadGiftLink}}>
                                 <label>Gift link</label>
-                                <p class="gh-psm-gift-link-description">Anyone with this link can read the full post. No account needed.</p>
+                                <p class="gh-psm-gift-link-description">Anyone with access to this link can view the full {{this.post.displayName}}.</p>
                                 {{#if this.giftLink}}
                                     <button type="button" class="gh-psm-gift-link-copy" title="Copy gift link" {{on "click" this.copyGiftLink}} data-test-button="copy-gift-link">
                                         <span class="gh-psm-gift-link-url">{{this.giftLinkUrl}}</span>

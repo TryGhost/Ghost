@@ -69,7 +69,7 @@ const GiftLinkManageModal: React.FC<GiftLinkManageModalProps> = ({open, onOpenCh
                 <DialogHeader>
                     <DialogTitle>Gift link</DialogTitle>
                     <DialogDescription>
-                        Anyone with this link can read the full post. No account needed.
+                        Anyone with access to this link can view the full post.
                     </DialogDescription>
                 </DialogHeader>
                 <div className="flex min-w-0 flex-col gap-4">
