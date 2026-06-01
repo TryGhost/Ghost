@@ -95,8 +95,9 @@
 
                         {{#if this.canCopyGiftLink}}
                             <div class="form-group gh-psm-gift-link" {{did-insert this.loadGiftLink}}>
+                                <label>Gift link</label>
+                                <p class="gh-psm-gift-link-description">Anyone with this link can read the full post. No account needed.</p>
                                 {{#if this.giftLink}}
-                                    <label>Gift link to paid post</label>
                                     <button type="button" class="gh-psm-gift-link-copy" title="Copy gift link" {{on "click" this.copyGiftLink}} data-test-button="copy-gift-link">
                                         <span class="gh-psm-gift-link-url">{{this.giftLinkUrl}}</span>
                                         {{#if this.giftLinkCopied}}{{svg-jar "check-circle"}}{{else}}{{svg-jar "link"}}{{/if}}
@@ -114,8 +115,7 @@
                                         {{/if}}
                                     </div>
                                 {{else}}
-                                    <label>Gift link to paid post</label>
-                                    <button type="button" class="gh-btn gh-btn-outline gh-psm-gift-link-generate" {{on "click" this.copyGiftLink}} data-test-button="generate-gift-link">
+                                    <button type="button" class="gh-btn-text inline blue gh-psm-gift-link-generate" {{on "click" this.copyGiftLink}} data-test-button="generate-gift-link">
                                         <span>Generate gift link</span>
                                     </button>
                                 {{/if}}
