@@ -11,7 +11,7 @@ module.exports = combineTransactionalMigrations(
     }),
     addSetting({
         key: 'machine_payments_currency',
-        value: 'USD',
+        value: null,
         type: 'string',
         group: 'site'
     }),

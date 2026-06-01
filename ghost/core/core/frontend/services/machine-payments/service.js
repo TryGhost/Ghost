@@ -1,4 +1,7 @@
 const settingsCache = require('../../../shared/settings-cache');
+const labs = require('../../../shared/labs');
+const models = require('../../../server/models');
+const logging = require('@tryghost/logging');
 
 const StripeDepositAddressProvider = require('./stripe-deposit-address-provider');
 const MppAdapter = require('./adapters/mpp-adapter');
@@ -18,24 +21,28 @@ function cloneHeaders(headers = {}) {
 class MachinePaymentsService {
     constructor({
         settingsCache: settings = settingsCache,
+        labsService = labs,
         x402Adapter,
         mppAdapter,
-        addressProvider = new StripeDepositAddressProvider()
+        addressProvider = new StripeDepositAddressProvider(),
+        defaultCurrencyProvider = getDefaultTierCurrency
     } = {}) {
         this.settingsCache = settings;
+        this.labs = labsService;
         this.x402Adapter = x402Adapter || new X402Adapter({addressProvider});
         this.mppAdapter = mppAdapter || new MppAdapter({addressProvider});
+        this.defaultCurrencyProvider = defaultCurrencyProvider;
     }
 
     isEnabled() {
-        return this.settingsCache.get('machine_payments_enabled') === true;
+        return this.labs.isSet('machinePayments') && this.settingsCache.get('machine_payments_enabled') === true;
     }
 
-    getTerms({url, description = 'Markdown content', method = 'GET', mimeType = 'text/markdown'}) {
+    async getTerms({url, description, method = 'GET', mimeType = 'text/markdown'}) {
         return {
             amount: Number(this.settingsCache.get('machine_payments_amount') || DEFAULT_AMOUNT),
-            currency: (this.settingsCache.get('machine_payments_currency') || DEFAULT_CURRENCY).toUpperCase(),
-            description,
+            currency: (await this.#getCurrency()).toUpperCase(),
+            description: description || new URL(url).pathname,
             method,
             mimeType,
             url
@@ -53,8 +60,9 @@ class MachinePaymentsService {
             return new Response('', {status: 404});
         }
 
-        const terms = this.getTerms({
-            url: request.url
+        const terms = await this.getTerms({
+            url: request.url,
+            description: responseData.description
         });
         const headers = {
             'Content-Type': 'text/markdown; charset=utf-8',
@@ -67,11 +75,11 @@ class MachinePaymentsService {
         };
 
         if (this.x402Adapter.canHandle(request)) {
-            return this.#paidContentResponse(await this.x402Adapter.handle(request, terms, paidResponse));
+            return await this.#handleCredentialedPayment(this.x402Adapter, request, terms, paidResponse);
         }
 
         if (this.mppAdapter.canHandle(request)) {
-            return this.#paidContentResponse(await this.mppAdapter.handle(request, terms, paidResponse));
+            return await this.#handleCredentialedPayment(this.mppAdapter, request, terms, paidResponse);
         }
 
         return await this.#paymentRequiredResponse(request, terms, paidResponse);
@@ -126,13 +134,52 @@ class MachinePaymentsService {
         });
     }
 
-    #paidContentResponse(response) {
-        if (response.status !== 200) {
-            return response;
+    async #handleCredentialedPayment(adapter, request, terms, paidResponse) {
+        try {
+            return this.#paidContentResponse(await adapter.handle(request, terms, paidResponse));
+        } catch (err) {
+            return this.#paymentCredentialErrorResponse(err);
+        }
+    }
+
+    #paymentCredentialErrorResponse(err) {
+        if (err?.statusCode === 403) {
+            return this.#problemResponse({
+                type: 'https://paymentauth.org/problems/payment-forbidden',
+                title: 'Payment credential rejected',
+                status: 403,
+                detail: 'The supplied machine payment credential could not be validated.'
+            });
         }
 
+        logging.warn(err);
+
+        return this.#problemResponse({
+            type: 'https://paymentauth.org/problems/payment-unavailable',
+            title: 'Machine payment temporarily unavailable',
+            status: 503,
+            detail: 'Machine payment verification is temporarily unavailable.'
+        });
+    }
+
+    #problemResponse({type, title, status, detail}) {
+        return new Response(JSON.stringify({
+            type,
+            title,
+            status,
+            detail
+        }), {
+            status,
+            headers: {
+                'Cache-Control': 'no-store',
+                'Content-Type': 'application/problem+json'
+            }
+        });
+    }
+
+    #paidContentResponse(response) {
         const headers = new Headers(response.headers);
-        headers.set('Cache-Control', PAID_MARKDOWN_CACHE_CONTROL);
+        headers.set('Cache-Control', response.status === 200 ? PAID_MARKDOWN_CACHE_CONTROL : 'no-store');
 
         return new Response(response.body, {
             status: response.status,
@@ -140,6 +187,28 @@ class MachinePaymentsService {
             headers
         });
     }
+
+    async #getCurrency() {
+        const configuredCurrency = this.settingsCache.get('machine_payments_currency');
+
+        if (configuredCurrency) {
+            return configuredCurrency;
+        }
+
+        return await this.defaultCurrencyProvider() || DEFAULT_CURRENCY;
+    }
+}
+
+async function getDefaultTierCurrency() {
+    const page = await models.Product.findPage({
+        filter: 'type:paid+active:true',
+        limit: 1,
+        order: 'monthly_price asc',
+        columns: ['currency']
+    });
+    const tier = page.data?.[0]?.toJSON?.() || page.data?.[0];
+
+    return tier?.currency || null;
 }
 
 function toFetchRequest(req) {
@@ -175,3 +244,4 @@ async function copyFetchResponse(fetchResponse, res) {
 module.exports = new MachinePaymentsService();
 module.exports.MachinePaymentsService = MachinePaymentsService;
 module.exports.toFetchRequest = toFetchRequest;
+module.exports.getDefaultTierCurrency = getDefaultTierCurrency;

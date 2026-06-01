@@ -33,21 +33,33 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {mutateAsync: editSettings} = useEditSettings();
     const activeTiers = getActiveTiers(tiers || []);
     const archivedTiers = getArchivedTiers(tiers || []);
+    const defaultPaidTierCurrency = activeTiers.find(tier => tier.type === 'paid' && tier.currency)?.currency || 'USD';
     const {updateRoute} = useRouting();
     const limiter = useLimiter();
     const handleError = useHandleError();
     const [
         machinePaymentsEnabledValue,
         machinePaymentsCurrencyValue,
-        machinePaymentsAmountValue
+        machinePaymentsAmountValue,
+        llmsEnabledValue
     ] = getSettingValues(settings, [
         'machine_payments_enabled',
         'machine_payments_currency',
-        'machine_payments_amount'
+        'machine_payments_amount',
+        'llms_enabled'
     ]);
+    const llmsEnabled = llmsEnabledValue !== false;
     const machinePaymentsEnabled = machinePaymentsEnabledValue === true;
-    const machinePaymentsCurrency = (machinePaymentsCurrencyValue || 'USD') as string;
+    const effectiveMachinePaymentsEnabled = llmsEnabled && machinePaymentsEnabled;
+    const hasMachinePaymentsLab = config?.labs?.machinePayments === true;
+    const machinePaymentsCurrency = (machinePaymentsCurrencyValue || defaultPaidTierCurrency) as string;
     const machinePaymentsAmount = Number(machinePaymentsAmountValue || 100);
+    const machinePaymentsHint = llmsEnabled ?
+        'Charge LLMs and AI agents for access to paid-members posts' :
+        <><a className='text-green' href="#/settings/metadata" onClick={(event) => {
+            event.preventDefault();
+            updateRoute('metadata');
+        }}>llms.txt</a> must be enabled to use agent payments</>;
 
     const openConnectModal = async () => {
         // Allow Stripe despite the limit when it's already connected, so it's
@@ -119,7 +131,7 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
         if (!validationError) {
             void saveMachinePaymentSettings([
-                {key: 'machine_payments_amount', value: cents.toString()}
+                {key: 'machine_payments_amount', value: cents}
             ]);
         }
     };
@@ -152,17 +164,18 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 link
                 onClick={() => fetchNextPage()}
             />}
-            <SettingGroupContent className='border-t border-grey-200 pt-6 dark:border-grey-900' columns={1}>
+            {hasMachinePaymentsLab && <SettingGroupContent className='border-t border-grey-200 pt-6 dark:border-grey-900' columns={1}>
                 <Toggle
                     align='center'
-                    checked={machinePaymentsEnabled}
+                    checked={effectiveMachinePaymentsEnabled}
                     direction='rtl'
+                    disabled={!llmsEnabled}
                     gap='gap-0'
-                    hint='Charge LLMs and AI agents for access to paid-members posts'
+                    hint={machinePaymentsHint}
                     label='Accept payments from AI agents'
                     onChange={handleMachinePaymentsToggleChange}
                 />
-                {machinePaymentsEnabled &&
+                {effectiveMachinePaymentsEnabled &&
                     <div className='mt-3 grid grid-cols-1 gap-5 md:grid-cols-[minmax(0,1fr)_180px] md:items-end'>
                         <p className='max-w-[720px] text-sm text-grey-700 dark:text-grey-600'>
                             By default, AI agents can&apos;t access content for paid members. When enabled, this setting offers agents a checkout flow to purchase access to individual posts.
@@ -194,7 +207,7 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         />
                     </div>
                 }
-            </SettingGroupContent>
+            </SettingGroupContent>}
         </TopLevelGroup>
     );
 };

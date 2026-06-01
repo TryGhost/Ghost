@@ -8,6 +8,7 @@ const urlUtils = require('../../../../../../core/shared/url-utils');
 const controllers = require('../../../../../../core/frontend/services/routing/controllers');
 const renderer = require('../../../../../../core/frontend/services/rendering');
 const dataService = require('../../../../../../core/frontend/services/data');
+const machinePaymentsService = require('../../../../../../core/frontend/services/machine-payments/service');
 const EDITOR_URL = `/#/editor/post/`;
 
 describe('Unit - services/routing/controllers/entry', function () {
@@ -210,8 +211,10 @@ describe('Unit - services/routing/controllers/entry', function () {
 
         beforeEach(function () {
             llmsService = {
-                isEnabled: sinon.stub()
+                isEnabled: sinon.stub(),
+                fetchPaidEntry: sinon.stub()
             };
+            sinon.stub(machinePaymentsService, 'handlePaidMarkdownRequest').resolves(true);
 
             req.app = {
                 get: sinon.stub()
@@ -287,6 +290,54 @@ describe('Unit - services/routing/controllers/entry', function () {
             sinon.assert.calledWith(res.type, 'text/markdown');
             sinon.assert.calledOnce(res.send);
             sinon.assert.notCalled(res.redirect);
+        });
+
+        it('serves a machine payment challenge for paid markdown posts', async function () {
+            post.url = 'http://127.0.0.1:2369/does-exist/';
+            post.visibility = 'paid';
+            llmsService.isEnabled.returns(true);
+            llmsService.fetchPaidEntry.resolves({
+                id: post.id,
+                title: 'Paid Post',
+                url: 'http://127.0.0.1:2369/does-exist/',
+                visibility: 'paid',
+                html: '<p>Paid body</p>'
+            });
+
+            entryLookUpStub.withArgs(req.path, res.routerOptions)
+                .resolves({entry: post});
+
+            await controllers.entry(req, res, sinon.stub());
+
+            sinon.assert.calledOnceWithExactly(llmsService.fetchPaidEntry, 'posts', post.id);
+            sinon.assert.calledOnce(machinePaymentsService.handlePaidMarkdownRequest);
+            sinon.assert.calledWith(machinePaymentsService.handlePaidMarkdownRequest, req, res, sinon.match({
+                description: 'Paid Post',
+                headers: {
+                    'Content-Location': '/does-exist.md'
+                }
+            }));
+            sinon.assert.notCalled(res.redirect);
+        });
+
+        it('returns 403 for tiered markdown posts that are not paid-members-only', async function () {
+            post.visibility = 'tiers';
+            llmsService.isEnabled.returns(true);
+            llmsService.fetchPaidEntry.resolves({
+                id: post.id,
+                title: 'Mixed Tier Post',
+                url: 'http://127.0.0.1:2369/does-exist/',
+                visibility: 'tiers',
+                tiers: [{type: 'free'}]
+            });
+
+            entryLookUpStub.withArgs(req.path, res.routerOptions)
+                .resolves({entry: post});
+
+            await controllers.entry(req, res, sinon.stub());
+
+            sinon.assert.calledWith(res.status, 403);
+            sinon.assert.notCalled(machinePaymentsService.handlePaidMarkdownRequest);
         });
     });
 });

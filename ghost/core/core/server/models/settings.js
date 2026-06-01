@@ -394,7 +394,7 @@ Settings = ghostBookshelf.Model.extend({
         async machine_payments_currency(model) {
             const value = model.get('value');
 
-            if (typeof value !== 'string' || !/^[A-Z]{3}$/i.test(value)) {
+            if (value !== null && (typeof value !== 'string' || !/^[A-Z]{3}$/i.test(value))) {
                 throw new errors.ValidationError({
                     message: 'Machine payments currency must be a 3 letter ISO currency code'
                 });

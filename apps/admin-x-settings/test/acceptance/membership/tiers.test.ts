@@ -2,11 +2,23 @@ import {expect, test} from '@playwright/test';
 import {expectExternalNavigate, globalDataRequests, limitRequests, mockApi, responseFixtures, settingsWithStripe, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Tier settings', async () => {
-    test('Supports enabling agent payments for premium content', async ({page}) => {
+    test('Supports enabling agent payments for paid members posts', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
             ...limitRequests,
             browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
+            browseConfig: {
+                ...globalDataRequests.browseConfig,
+                response: {
+                    config: {
+                        ...responseFixtures.config.config,
+                        labs: {
+                            ...responseFixtures.config.config.labs,
+                            machinePayments: true
+                        }
+                    }
+                }
+            },
             browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers},
             editSettings: {method: 'PUT', path: '/settings/', response: updatedSettingsResponse([
                 {key: 'machine_payments_enabled', value: true}
@@ -39,9 +51,69 @@ test.describe('Tier settings', async () => {
 
         await expect.poll(() => lastApiRequests.editSettings?.body).toEqual({
             settings: [
-                {key: 'machine_payments_amount', value: '250'}
+                {key: 'machine_payments_amount', value: 250}
             ]
         });
+    });
+
+    test('Hides agent payments when the machine payments labs flag is disabled', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            ...limitRequests,
+            browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
+            browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers}
+        }});
+
+        await page.goto('/#/settings/tiers');
+
+        const section = page.getByTestId('tiers');
+
+        await expect(section.getByLabel('Accept payments from AI agents')).not.toBeVisible();
+    });
+
+    test('Disables agent payments when llms.txt is disabled', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            ...limitRequests,
+            browseSettings: {...globalDataRequests.browseSettings, response: updatedSettingsResponse([
+                {key: 'stripe_connect_publishable_key', value: 'pk_test_123'},
+                {key: 'stripe_connect_secret_key', value: 'sk_test_123'},
+                {key: 'stripe_connect_display_name', value: 'Dummy'},
+                {key: 'stripe_connect_account_id', value: 'acct_123'},
+                {key: 'machine_payments_enabled', value: true},
+                {key: 'llms_enabled', value: false}
+            ])},
+            browseConfig: {
+                ...globalDataRequests.browseConfig,
+                response: {
+                    config: {
+                        ...responseFixtures.config.config,
+                        labs: {
+                            ...responseFixtures.config.config.labs,
+                            machinePayments: true
+                        }
+                    }
+                }
+            },
+            browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers}
+        }});
+
+        await page.goto('/#/settings/tiers');
+
+        const section = page.getByTestId('tiers');
+        const toggle = section.getByLabel('Accept payments from AI agents');
+
+        await expect(toggle).toBeVisible();
+        await expect(toggle).toBeDisabled();
+        await expect(toggle).not.toBeChecked();
+        await expect(section).toContainText('llms.txt must be enabled to use agent payments');
+
+        const llmsLink = section.getByRole('link', {name: 'llms.txt'});
+        await expect(llmsLink).toHaveAttribute('href', '#/settings/metadata');
+
+        await llmsLink.click();
+
+        await expect(page).toHaveURL(/#\/settings\/metadata/);
     });
 
     test('Supports creating a new tier', async ({page}) => {

@@ -9,7 +9,7 @@ describe('Unit: frontend/services/machine-payments/adapters', function () {
     const terms = {
         amount: 100,
         currency: 'USD',
-        description: 'Markdown content',
+        description: 'Paid post',
         method: 'GET',
         mimeType: 'text/markdown',
         url: 'https://example.com/paid.md'

@@ -1,6 +1,7 @@
 const TTLCache = require('@isaacs/ttlcache');
 const errors = require('@tryghost/errors');
 const {Stripe} = require('stripe');
+const crypto = require('crypto');
 
 const settingsHelpers = require('../../../server/services/settings-helpers');
 
@@ -11,23 +12,27 @@ class StripeDepositAddressProvider {
         this.cache = cache || new TTLCache({ttl: 300000});
         this.stripeFactory = stripeFactory;
         this.stripe = null;
+        this.stripeSecretKey = null;
+        this.stripeCacheNamespace = null;
     }
 
     async getAddress({amount, currency, network, paymentHeader, request}) {
+        const stripe = this.#getStripe();
+        const cacheNamespace = this.stripeCacheNamespace;
         const cachedAddress = await this.#getCachedAddressFromCredential({paymentHeader, request});
 
         if (cachedAddress) {
             return cachedAddress;
         }
 
-        const cacheKey = this.#getDepositAddressCacheKey({amount, currency, network});
+        const cacheKey = this.#getDepositAddressCacheKey({amount, currency, network, cacheNamespace});
         const pendingAddress = this.cache.get(cacheKey);
 
         if (pendingAddress) {
             return pendingAddress;
         }
 
-        return await this.#createAddress({amount, currency, network, cacheKey});
+        return await this.#createAddress({amount, currency, network, cacheKey, cacheNamespace, stripe});
     }
 
     async #getCachedAddressFromCredential({paymentHeader, request}) {
@@ -39,7 +44,7 @@ class StripeDepositAddressProvider {
             return null;
         }
 
-        if (!this.cache.has(address)) {
+        if (!this.cache.has(this.#getAddressCacheKey({address, cacheNamespace: this.stripeCacheNamespace}))) {
             throw new errors.NoPermissionError({
                 message: 'Invalid machine payment deposit address'
             });
@@ -74,8 +79,8 @@ class StripeDepositAddressProvider {
         return credential.challenge?.request?.recipient || null;
     }
 
-    async #createAddress({amount, currency, network, cacheKey}) {
-        const paymentIntent = await this.#getStripe().paymentIntents.create({
+    async #createAddress({amount, currency, network, cacheKey, cacheNamespace, stripe}) {
+        const paymentIntent = await stripe.paymentIntents.create({
             amount,
             currency: currency.toLowerCase(),
             payment_method_types: ['crypto'],
@@ -102,20 +107,20 @@ class StripeDepositAddressProvider {
             });
         }
 
-        this.cache.set(address, true);
+        this.cache.set(this.#getAddressCacheKey({address, cacheNamespace}), true);
         this.cache.set(cacheKey, address);
         return address;
     }
 
-    #getDepositAddressCacheKey({amount, currency, network}) {
-        return `deposit-address:${amount}:${currency.toLowerCase()}:${network}`;
+    #getDepositAddressCacheKey({amount, currency, network, cacheNamespace}) {
+        return `${cacheNamespace}:deposit-address:${amount}:${currency.toLowerCase()}:${network}`;
+    }
+
+    #getAddressCacheKey({address, cacheNamespace}) {
+        return `${cacheNamespace}:address:${address}`;
     }
 
     #getStripe() {
-        if (this.stripe) {
-            return this.stripe;
-        }
-
         const keys = settingsHelpers.getActiveStripeKeys();
         const secretKey = keys?.secretKey;
 
@@ -125,6 +130,12 @@ class StripeDepositAddressProvider {
             });
         }
 
+        if (this.stripe && this.stripeSecretKey === secretKey) {
+            return this.stripe;
+        }
+
+        this.stripeSecretKey = secretKey;
+        this.stripeCacheNamespace = crypto.createHash('sha256').update(secretKey).digest('hex').slice(0, 16);
         this.stripe = this.stripeFactory(secretKey);
         return this.stripe;
     }

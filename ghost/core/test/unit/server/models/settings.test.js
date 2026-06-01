@@ -293,6 +293,13 @@ describe('Unit: models/settings', function () {
                 type: 'string',
                 group: 'site'
             });
+
+            await testValidSetting({
+                key: 'machine_payments_currency',
+                value: null,
+                type: 'string',
+                group: 'site'
+            });
         });
 
         it('throws when stripe_plans has invalid name', async function () {

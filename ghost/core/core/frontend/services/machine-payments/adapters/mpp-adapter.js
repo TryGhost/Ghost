@@ -31,7 +31,7 @@ class MppAdapter {
                 tempo.charge({
                     currency: config.get('machinePayments:mpp:tempoCurrency') || TEMPO_USDC,
                     recipient,
-                    testnet: config.get('machinePayments:mpp:testnet') !== false
+                    testnet: config.get('machinePayments:mpp:testnet') === true
                 })
             ],
             secretKey: this.#getSecretKey()

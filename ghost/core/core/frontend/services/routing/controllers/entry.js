@@ -4,6 +4,7 @@ const config = require('../../../../shared/config');
 const urlUtils = require('../../../../shared/url-utils');
 const dataService = require('../../data');
 const renderer = require('../../rendering');
+const machinePaymentsService = require('../../machine-payments/service');
 const {getAcceptedMarkdownContentType, getMarkdownPath, renderEntryMarkdown} = require('../../llms/markdown');
 
 function getLlmsService(req) {
@@ -16,6 +17,40 @@ function serveMarkdown(res, entry) {
     res.set('Content-Location', getMarkdownPath(new URL(entry.url).pathname));
     res.type('text/markdown');
     return res.send(renderEntryMarkdown(entry, {llmsIndexUrl}));
+}
+
+async function servePaidMarkdown(req, res, entry, llmsService) {
+    const resourceType = res.routerOptions.resourceType || 'posts';
+    const paidEntry = await llmsService.fetchPaidEntry(resourceType, entry.id);
+
+    if (!paidEntry || !isPaidMembersOnlyEntry(entry.visibility, paidEntry)) {
+        return res.status(403).type('text/markdown').send(
+            '# Members-only content\n\nThis post requires a subscription and is not available for public access.\n'
+        );
+    }
+
+    const llmsIndexUrl = urlUtils.urlFor({relativeUrl: '/llms.txt'}, true);
+    const contentLocation = getMarkdownPath(new URL(paidEntry.url).pathname);
+
+    return await machinePaymentsService.handlePaidMarkdownRequest(req, res, {
+        body: renderEntryMarkdown(paidEntry, {llmsIndexUrl}),
+        description: paidEntry.title,
+        headers: {
+            'Content-Location': contentLocation
+        }
+    });
+}
+
+function isPaidMembersOnlyEntry(visibility, entry) {
+    if (visibility === 'paid') {
+        return true;
+    }
+
+    if (visibility !== 'tiers') {
+        return false;
+    }
+
+    return Array.isArray(entry.tiers) && entry.tiers.length > 0 && entry.tiers.every(tier => tier.type === 'paid');
 }
 
 /**
@@ -67,13 +102,17 @@ module.exports = function entryController(req, res, next) {
                     }));
                 }
 
-                if (entry.visibility !== 'public') {
+                if (entry.visibility === 'public') {
+                    return serveMarkdown(res, entry);
+                }
+
+                if (!['paid', 'tiers'].includes(entry.visibility)) {
                     return res.status(403).type('text/markdown').send(
                         '# Members-only content\n\nThis post requires a subscription and is not available for public access.\n'
                     );
                 }
 
-                return serveMarkdown(res, entry);
+                return servePaidMarkdown(req, res, entry, llmsService);
             }
 
             /**

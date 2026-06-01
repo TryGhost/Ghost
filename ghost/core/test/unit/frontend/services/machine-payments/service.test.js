@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 
+const logging = require('@tryghost/logging');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const {MachinePaymentsService} = require('../../../../../core/frontend/services/machine-payments/service');
 
@@ -8,8 +9,11 @@ describe('Unit: frontend/services/machine-payments/service', function () {
     let service;
     let x402Adapter;
     let mppAdapter;
+    let labsService;
 
     beforeEach(function () {
+        sinon.stub(logging, 'warn');
+
         x402Adapter = {
             canHandle: sinon.stub().returns(false),
             handle: sinon.stub().resolves(new Response('paid', {
@@ -24,6 +28,9 @@ describe('Unit: frontend/services/machine-payments/service', function () {
                 status: 200,
                 headers: {receipt: 'mpp-receipt'}
             }))
+        };
+        labsService = {
+            isSet: sinon.stub().withArgs('machinePayments').returns(true)
         };
 
         sinon.stub(settingsCache, 'get').callsFake((key) => {
@@ -44,8 +51,10 @@ describe('Unit: frontend/services/machine-payments/service', function () {
 
         service = new MachinePaymentsService({
             settingsCache,
+            labsService,
             x402Adapter,
-            mppAdapter
+            mppAdapter,
+            defaultCurrencyProvider: sinon.stub().resolves('EUR')
         });
     });
 
@@ -53,16 +62,43 @@ describe('Unit: frontend/services/machine-payments/service', function () {
         sinon.restore();
     });
 
-    it('reads enabled pricing in minor units from settings', function () {
+    it('reads enabled pricing in minor units from settings', async function () {
         assert.equal(service.isEnabled(), true);
-        assert.deepEqual(service.getTerms({url: 'https://example.com/paid.md'}), {
+        assert.deepEqual(await service.getTerms({url: 'https://example.com/paid.md', description: 'Paid post'}), {
             amount: 100,
             currency: 'USD',
-            description: 'Markdown content',
+            description: 'Paid post',
             method: 'GET',
             mimeType: 'text/markdown',
             url: 'https://example.com/paid.md'
         });
+    });
+
+    it('uses the default paid tier currency when no machine payment currency is configured', async function () {
+        settingsCache.get.restore();
+        sinon.stub(settingsCache, 'get').callsFake((key) => {
+            if (key === 'machine_payments_enabled') {
+                return true;
+            }
+
+            if (key === 'machine_payments_amount') {
+                return 100;
+            }
+
+            return null;
+        });
+
+        const defaultCurrencyProvider = sinon.stub().resolves('eur');
+        service = new MachinePaymentsService({
+            settingsCache,
+            labsService,
+            x402Adapter,
+            mppAdapter,
+            defaultCurrencyProvider
+        });
+
+        assert.equal((await service.getTerms({url: 'https://example.com/paid.md'})).currency, 'EUR');
+        sinon.assert.calledOnce(defaultCurrencyProvider);
     });
 
     it('returns a combined x402 and MPP challenge when no credential is supplied', async function () {
@@ -78,12 +114,14 @@ describe('Unit: frontend/services/machine-payments/service', function () {
 
         const response = await service.handleRequest(new Request('https://example.com/paid.md'), {
             body: '# Paid',
-            contentLocation: '/paid.md'
+            contentLocation: '/paid.md',
+            description: 'Paid post'
         });
 
         assert.equal(response.status, 402);
         assert.equal(response.headers.get('payment-required'), 'x402-challenge');
         assert.equal(response.headers.get('WWW-Authenticate'), 'Payment id="mpp", method="tempo"');
+        sinon.assert.calledWith(x402Adapter.handle, sinon.match.any, sinon.match({description: 'Paid post'}), sinon.match.any);
         assert.match(await response.text(), /Payment Required/);
     });
 
@@ -119,6 +157,62 @@ describe('Unit: frontend/services/machine-payments/service', function () {
         assert.equal(response.headers.get('Cache-Control'), 'private, no-store');
         sinon.assert.notCalled(x402Adapter.handle);
         sinon.assert.calledOnce(mppAdapter.handle);
+    });
+
+    it('sets no-store on non-200 credentialed payment responses', async function () {
+        x402Adapter.canHandle.returns(true);
+        x402Adapter.handle.resolves(new Response('payment required', {
+            status: 402,
+            headers: {'payment-required': 'x402-challenge'}
+        }));
+
+        const response = await service.handleRequest(new Request('https://example.com/paid.md', {
+            headers: {'x-payment': 'credential'}
+        }), {
+            body: '# Paid',
+            contentLocation: '/paid.md'
+        });
+
+        assert.equal(response.status, 402);
+        assert.equal(response.headers.get('payment-required'), 'x402-challenge');
+        assert.equal(response.headers.get('Cache-Control'), 'no-store');
+    });
+
+    it('returns a controlled problem response when x402 credential verification fails', async function () {
+        x402Adapter.canHandle.returns(true);
+        x402Adapter.handle.rejects(new Error('x402 verification unavailable'));
+
+        const response = await service.handleRequest(new Request('https://example.com/paid.md', {
+            headers: {'x-payment': 'credential'}
+        }), {
+            body: '# Paid',
+            contentLocation: '/paid.md'
+        });
+
+        assert.equal(response.status, 503);
+        assert.equal(response.headers.get('Cache-Control'), 'no-store');
+        assert.equal(response.headers.get('Content-Type'), 'application/problem+json');
+        assert.match(await response.text(), /Machine payment verification is temporarily unavailable/);
+        sinon.assert.calledOnce(logging.warn);
+    });
+
+    it('returns forbidden when a payment credential uses an unknown deposit address', async function () {
+        const error = new Error('Invalid machine payment deposit address');
+        error.statusCode = 403;
+        x402Adapter.canHandle.returns(true);
+        x402Adapter.handle.rejects(error);
+
+        const response = await service.handleRequest(new Request('https://example.com/paid.md', {
+            headers: {'x-payment': 'credential'}
+        }), {
+            body: '# Paid',
+            contentLocation: '/paid.md'
+        });
+
+        assert.equal(response.status, 403);
+        assert.equal(response.headers.get('Cache-Control'), 'no-store');
+        assert.match(await response.text(), /Payment credential rejected/);
+        sinon.assert.notCalled(logging.warn);
     });
 
     it('returns a partial challenge when one payment rail fails', async function () {
@@ -162,5 +256,18 @@ describe('Unit: frontend/services/machine-payments/service', function () {
         });
 
         assert.equal(response.status, 404);
+    });
+
+    it('fails closed when the machine payments labs flag is disabled', async function () {
+        labsService.isSet.withArgs('machinePayments').returns(false);
+
+        const response = await service.handleRequest(new Request('https://example.com/paid.md'), {
+            body: '# Paid',
+            contentLocation: '/paid.md'
+        });
+
+        assert.equal(response.status, 404);
+        sinon.assert.notCalled(x402Adapter.handle);
+        sinon.assert.notCalled(mppAdapter.handle);
     });
 });

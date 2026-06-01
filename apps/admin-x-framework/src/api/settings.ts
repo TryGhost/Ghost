@@ -3,7 +3,7 @@ import {Config} from './config';
 
 // Types
 
-export type SettingValue = string | boolean | null;
+export type SettingValue = string | number | boolean | null;
 
 export type Setting = {
     key: string;

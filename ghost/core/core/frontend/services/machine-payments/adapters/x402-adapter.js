@@ -26,7 +26,7 @@ class X402Adapter {
         const {HTTPFacilitatorClient} = require('@x402/core/server');
         const {ExactEvmScheme} = require('@x402/evm/exact/server');
 
-        const network = config.get('machinePayments:x402:network') || 'eip155:84532';
+        const network = config.get('machinePayments:x402:network') || 'eip155:8453';
         const stripeNetwork = config.get('machinePayments:x402:stripeNetwork') || 'base';
         const route = `${terms.method} ${new URL(terms.url).pathname}`;
         const facilitatorUrl = config.get('machinePayments:x402:facilitatorUrl');

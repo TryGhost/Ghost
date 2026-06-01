@@ -53,6 +53,24 @@ test.describe('SEO Meta settings', async () => {
         await expect(section.getByLabel('Enable structured data for LLMs and AI search engines')).toHaveCount(0);
     });
 
+    test('Keeps focus on the LLM structured data toggle when toggled', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseConfig: {...globalDataRequests.browseConfig, response: configWithLlmsTxt}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('seometa');
+        const toggle = section.getByLabel('Enable structured data for LLMs and AI search engines');
+
+        await toggle.uncheck();
+        await page.waitForTimeout(100);
+
+        await expect(section.getByLabel('Meta title')).not.toBeFocused();
+        await expect(toggle).toBeFocused();
+    });
+
     test('Supports editing metadata in Search tab', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
