@@ -1,6 +1,6 @@
 import {
     getActiveInterval,
-    isStripeConfigured,
+    arePaidMembersEnabled,
     hasAvailablePrices,
     getAllProductsForSite,
     getAvailableProducts,
@@ -707,7 +707,7 @@ describe('Helpers - ', () => {
             const actual = getAvailableProducts({
                 site: {
                     ...FixturesSite.multipleTiers.basic,
-                    is_stripe_configured: false
+                    paid_members_enabled: false
                 }
             });
 
@@ -918,21 +918,21 @@ describe('Helpers - ', () => {
         });
     });
 
-    describe('isStripeConfigured', () => {
-        test('returns true when is_stripe_configured is true', () => {
-            expect(isStripeConfigured({site: {is_stripe_configured: true}})).toBe(true);
+    describe('arePaidMembersEnabled', () => {
+        test('returns true when paid_members_enabled is true', () => {
+            expect(arePaidMembersEnabled({site: {paid_members_enabled: true}})).toBe(true);
         });
 
-        test('returns false when is_stripe_configured is false', () => {
-            expect(isStripeConfigured({site: {is_stripe_configured: false}})).toBe(false);
+        test('returns false when paid_members_enabled is false', () => {
+            expect(arePaidMembersEnabled({site: {paid_members_enabled: false}})).toBe(false);
         });
 
-        test('returns false when is_stripe_configured is missing', () => {
-            expect(isStripeConfigured({site: {}})).toBe(false);
+        test('returns false when paid_members_enabled is missing', () => {
+            expect(arePaidMembersEnabled({site: {}})).toBe(false);
         });
 
         test('returns false when site is undefined', () => {
-            expect(isStripeConfigured({})).toBe(false);
+            expect(arePaidMembersEnabled({})).toBe(false);
         });
     });
 
