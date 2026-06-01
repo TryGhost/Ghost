@@ -296,7 +296,7 @@ describe('{{content}} helper gift callout', function () {
         );
         assert(rendered.string.includes('<p>Full content</p>'), 'keeps the full content');
         assert(rendered.string.includes('gh-gift-callout'), 'renders the callout');
-        assert(rendered.string.includes('This post was shared with you'), 'anonymous subscribe copy');
+        assert(rendered.string.includes('This paid post was shared with you'), 'anonymous subscribe copy');
     });
 
     it('does not render the callout when there is no gift', function () {

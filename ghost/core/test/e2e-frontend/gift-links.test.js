@@ -91,7 +91,9 @@ describe('Front-end gift links', function () {
 
         // The reader-facing conversion callout is rendered for the gift reader.
         assert.ok(res.text.includes('gh-gift-callout'), 'renders the gift callout');
-        assert.ok(res.text.includes('This post was shared with you'), 'anonymous subscribe copy');
+        assert.ok(res.text.includes('This paid post was shared with you'), 'anonymous subscribe copy');
+        assert.ok(res.text.includes('data-portal="signup"'), 'renders the subscribe CTA');
+        assert.ok(res.text.includes('data-portal="signin"'), 'renders the sign-in CTA');
     });
 
     it('falls back to the paywall for an invalid gift token but still bypasses cache', async function () {

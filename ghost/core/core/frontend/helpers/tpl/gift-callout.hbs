@@ -63,10 +63,14 @@
 .gh-gift-callout-content p:last-child {
     margin-bottom: 0;
 }
+.gh-gift-callout-actions {
+    display: flex;
+    gap: 8px;
+}
 .gh-gift-callout-content .gh-gift-callout-btn {
     display: inline-block;
     padding: 8px 16px;
-    border: 0;
+    border: 1px solid var(--gh-gift-accent, #15171a);
     border-radius: 6px;
     font-size: 14px;
     font-weight: 600;
@@ -74,6 +78,11 @@
     text-decoration: none;
     color: #fff;
     background-color: var(--gh-gift-accent, #15171a);
+}
+.gh-gift-callout-content .gh-gift-callout-btn-secondary {
+    color: #15171a;
+    background-color: transparent;
+    border-color: rgba(0, 0, 0, 0.14);
 }
 .gh-gift-callout-close {
     position: absolute;
@@ -129,8 +138,11 @@
 <aside class="gh-gift-callout" data-gift-callout style="--gh-gift-accent: {{@site.accent_color}}">
     <div class="gh-gift-callout-content">
         <label class="gh-gift-callout-close" for="gh-gift-callout-dismiss" title="{{t "Dismiss"}}" aria-hidden="true">&times;</label>
-        <h2>{{t "This post was shared with you"}}</h2>
-        <p>{{t "Subscribe to get full access to every post."}}</p>
-        <a class="gh-gift-callout-btn" data-portal="signup" href="#/portal/signup">{{t "Subscribe now"}}</a>
+        <h2>{{t "This paid post was shared with you"}}</h2>
+        <p>{{t "You can read it in full today. Subscribe to go further."}}</p>
+        <div class="gh-gift-callout-actions">
+            <a class="gh-gift-callout-btn" data-portal="signup" href="#/portal/signup">{{t "Subscribe"}}</a>
+            <a class="gh-gift-callout-btn gh-gift-callout-btn-secondary" data-portal="signin" href="#/portal/signin">{{t "Sign in"}}</a>
+        </div>
     </div>
 </aside>
