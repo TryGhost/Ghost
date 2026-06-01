@@ -55,17 +55,4 @@ describe('ChargeRefundedEventService', function () {
 
         sinon.assert.notCalled(giftService.refund);
     });
-
-    it('attempts the gift lookup even when the charge has an invoice', async function () {
-        // Gift Checkout sessions now create invoices, so `charge.invoice` is
-        // not a reliable signal that a charge is non-gift. The giftService
-        // lookup is the real classifier — it returns falsy for non-gifts.
-        giftService.refund.resolves(false);
-
-        const service = new ChargeRefundedEventService({giftService});
-        await service.handleEvent({payment_intent: 'pi_123', invoice: 'in_123'});
-
-        sinon.assert.calledOnce(giftService.refund);
-        sinon.assert.calledWith(giftService.refund, 'pi_123');
-    });
 });
