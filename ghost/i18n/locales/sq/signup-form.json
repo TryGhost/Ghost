@@ -1,9 +1,9 @@
 {
-    "Email sent": "",
-    "Now check your email!": "",
-    "Please enter a valid email address": "",
-    "Something went wrong, please try again.": "",
-    "Subscribe": "",
-    "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "",
-    "Your email address": ""
+    "Email sent": "Emaili u dërgua",
+    "Now check your email!": "Tani kontrolloni emailin tuaj!",
+    "Please enter a valid email address": "Ju lutem vendosni një adresë emaili të vlefshme",
+    "Something went wrong, please try again.": "Diçka shkoi keq, ju lutem provoni përsëri.",
+    "Subscribe": "Abonohu",
+    "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "Për të përfunduar regjistrimin, klikoni lidhjen e konfirmimit në kutinë tuaj hyrëse. Nëse nuk mbërrin brenda 3 minutash, kontrolloni dosjen e spam-it!",
+    "Your email address": "Adresa juaj e emailit"
 }
