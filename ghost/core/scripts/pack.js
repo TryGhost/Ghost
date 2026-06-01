@@ -12,8 +12,8 @@
  * the output for Ghost-CLI compatibility:
  *
  *  1. Strip peer dep suffixes from version strings (pnpm deploy artifact)
- *  2. Pack private workspace packages as component tarballs
- *  3. Merge root pnpm overrides so standalone installs resolve correctly
+ *  2. Copy pnpm-workspace.yaml (carries overrides + catalogs for the install)
+ *  3. Pack private workspace packages as component tarballs
  *  4. Create a Ghost-CLI compatible tarball (package/ prefix, no node_modules)
  */
 
@@ -23,6 +23,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const {execFileSync} = require('node:child_process');
 const fsExtra = require('fs-extra');
+const yaml = require('js-yaml');
 
 const CORE_DIR = path.resolve(__dirname, '..');
 const ROOT_DIR = path.resolve(CORE_DIR, '../..');
@@ -64,6 +65,38 @@ for (const section of ['dependencies', 'devDependencies', 'optionalDependencies'
     }
 }
 
+// Write a trimmed pnpm-workspace.yaml into the deploy dir. We keep:
+//   - catalog + catalogs (lockfile records & validates these)
+//   - allowBuilds + strictDepBuilds (end-user installs need this to permit
+//     native module post-install scripts like sqlite3, sharp, re2)
+//   - overrides + packageExtensions (root dependency policy must apply to the
+//     standalone install as well as the source workspace)
+// We deliberately drop:
+//   - packages: relative paths that don't exist in the deployed dir.
+//   - minimumReleaseAge, blockExoticSubdeps, catalogMode: source-repo
+//     supply-chain policies that aren't meaningful at end-user install.
+// Written early (rather than after the pack loop) so workspace component
+// `pnpm pack` calls below have catalog context to resolve `catalog:` refs
+// in their devDependencies.
+const workspaceSrc = path.join(ROOT_DIR, 'pnpm-workspace.yaml');
+const workspaceDst = path.join(DEPLOY_DIR, 'pnpm-workspace.yaml');
+const rootWorkspace = yaml.load(fs.readFileSync(workspaceSrc, 'utf8'));
+const deployWorkspace = {};
+for (const key of ['catalog', 'catalogs', 'allowBuilds', 'strictDepBuilds', 'overrides', 'packageExtensions']) {
+    if (rootWorkspace[key] !== undefined) {
+        deployWorkspace[key] = rootWorkspace[key];
+    }
+}
+// Disable minimumReleaseAge in the published tarball. The source repo gates
+// fresh deps from entering the lockfile; the deployed package is itself a
+// release artifact, and its component tarballs (@tryghost/i18n,
+// @tryghost/parse-email-address) aren't on npm so the age check 404s and
+// fails the install.
+deployWorkspace.minimumReleaseAge = 0;
+fs.writeFileSync(workspaceDst, yaml.dump(deployWorkspace));
+
+console.log('Wrote trimmed pnpm-workspace.yaml (catalogs + overrides + allowBuilds, age check off)');
+
 // Pack private workspace packages as component tarballs.
 // These are not on npm, so ghost-cli can't install them from the registry.
 // pnpm deploy writes absolute file:// refs that won't work on another machine.
@@ -103,40 +136,35 @@ if (!rootPkg.packageManager) {
 pkg.packageManager = rootPkg.packageManager;
 console.log(`  Set packageManager: ${rootPkg.packageManager.split('+')[0]}`);
 
-// pnpm overrides — the root overrides apply globally in the workspace (e.g., forcing
-// moment to 2.24.0 so moment-timezone doesn't pull in a separate copy). pnpm deploy
-// creates a standalone context where these don't apply, so we merge them in.
-if (rootPkg.pnpm?.overrides || rootPkg.overrides) {
-    const rootOverrides = rootPkg.pnpm?.overrides || rootPkg.overrides;
-    pkg.pnpm = pkg.pnpm || {};
-    pkg.pnpm.overrides = {...rootOverrides, ...pkg.pnpm.overrides};
-    console.log(`  Merged ${Object.keys(rootOverrides).length} root overrides into package.json`);
-}
+// pnpm overrides live in the published pnpm-workspace.yaml (written above).
+// pnpm 11 only reads overrides from workspace.yaml, not from a package's
+// `pnpm.overrides`. We deliberately do NOT also write pnpm.overrides here:
+// pnpm 11 still hashes that field into its lockfile-overrides-config check,
+// even though it logs that it's ignoring it, which produces
+// ERR_PNPM_LOCKFILE_CONFIG_MISMATCH under frozen-lockfile (CI=true) installs.
 
 fsExtra.writeJsonSync(pkgPath, pkg, {spaces: 2});
 
-// Copy .npmrc and pnpm-workspace.yaml for ghost-cli installs.
-// The lockfile references catalogs from pnpm-workspace.yaml, and pnpm validates
-// this even without --frozen-lockfile when CI=true. frozen-lockfile=false prevents
-// the config mismatch error in CI environments.
-const npmrcSrc = path.join(ROOT_DIR, '.npmrc');
-const npmrcDst = path.join(DEPLOY_DIR, '.npmrc');
-let npmrc = fs.readFileSync(npmrcSrc, 'utf8');
-npmrc += '\nfrozen-lockfile=false\n';
-fs.writeFileSync(npmrcDst, npmrc);
-
-const workspaceSrc = path.join(ROOT_DIR, 'pnpm-workspace.yaml');
-const workspaceDst = path.join(DEPLOY_DIR, 'pnpm-workspace.yaml');
-fs.copyFileSync(workspaceSrc, workspaceDst);
-
-console.log('Copied .npmrc (with frozen-lockfile=false) and pnpm-workspace.yaml');
+// Regenerate the lockfile inside the deploy dir to match the post-processed
+// package.json. We've stripped peer suffixes and rewritten file: refs to
+// component tarballs; without this step, the lockfile retains the original
+// (unstripped, absolute-path) specifiers and end users hit
+// ERR_PNPM_OUTDATED_LOCKFILE under pnpm 11's frozen-lockfile (CI=true)
+// install. Previously masked by `frozen-lockfile=false` in the shipped
+// .npmrc, which pnpm 11 no longer honors.
+console.log('\nRegenerating lockfile against post-processed package.json...');
+execFileSync(
+    'pnpm',
+    ['install', '--lockfile-only', '--no-frozen-lockfile', '--ignore-scripts'],
+    {cwd: DEPLOY_DIR, stdio: 'inherit'}
+);
 
 // 3. Validate deploy output before tarring.
 // Guards against regressions in this script that would produce a valid-looking
 // but broken tarball (missing lockfile, missing overrides merge, empty components/).
 console.log('\nValidating deploy output...');
 const packagedPkg = fsExtra.readJsonSync(pkgPath);
-const requiredFiles = ['.npmrc', 'pnpm-workspace.yaml', 'pnpm-lock.yaml', 'package.json'];
+const requiredFiles = ['pnpm-workspace.yaml', 'pnpm-lock.yaml', 'package.json'];
 for (const rel of requiredFiles) {
     if (!fs.existsSync(path.join(DEPLOY_DIR, rel))) {
         throw new Error(`Required file missing from deploy output: ${rel}`);
@@ -149,8 +177,12 @@ if (componentTgzs.length === 0) {
 if (!packagedPkg.packageManager) {
     throw new Error('Packaged package.json is missing packageManager');
 }
-if (!packagedPkg.pnpm?.overrides || Object.keys(packagedPkg.pnpm.overrides).length === 0) {
-    throw new Error('Packaged package.json is missing pnpm.overrides');
+const packagedWorkspace = yaml.load(fs.readFileSync(workspaceDst, 'utf8'));
+if (!packagedWorkspace?.catalog || Object.keys(packagedWorkspace.catalog).length === 0) {
+    throw new Error('Packaged pnpm-workspace.yaml is missing the default catalog');
+}
+if (!packagedWorkspace?.overrides || Object.keys(packagedWorkspace.overrides).length === 0) {
+    throw new Error('Packaged pnpm-workspace.yaml is missing root overrides');
 }
 
 // 4. Create tarball

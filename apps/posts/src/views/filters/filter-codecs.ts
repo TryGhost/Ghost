@@ -332,13 +332,62 @@ export function numberCodec(config?: CodecConfig): FilterCodec {
     };
 }
 
+interface RelativeDateTag {
+    $relativeDate: {
+        op: 'sub' | 'add';
+        amount: number;
+        unit: string;
+    };
+}
+
+function isRelativeDateTag(value: unknown): value is RelativeDateTag {
+    if (!value || typeof value !== 'object') {
+        return false;
+    }
+
+    const tag = (value as Record<string, unknown>).$relativeDate;
+
+    if (!tag || typeof tag !== 'object') {
+        return false;
+    }
+
+    const {op, amount, unit} = tag as Record<string, unknown>;
+
+    return (op === 'sub' || op === 'add')
+        && typeof amount === 'number' && Number.isSafeInteger(amount) && amount > 0
+        && typeof unit === 'string';
+}
+
 export function dateCodec(config?: CodecConfig): FilterCodec {
     return {
         parse(node, ctx) {
             const comparator = extractComparator(node as Record<string, unknown>);
             const field = getCodecField(config, ctx.key);
 
-            if (!comparator || comparator.field !== field || typeof comparator.value !== 'string') {
+            if (!comparator || comparator.field !== field) {
+                return null;
+            }
+
+            // Relative dates flow through as `{$gte: {$relativeDate: ...}}`
+            // when the parse caller opted in via `preserveRelativeDates: true`
+            // — we currently only render relative day counts in the UI, so any
+            // other unit (weeks, months, ...) falls through to absolute-date
+            // handling below.
+            if (isRelativeDateTag(comparator.value) && comparator.value.$relativeDate.unit === 'days') {
+                const {op, amount} = comparator.value.$relativeDate;
+                const isPast = op === 'sub' && comparator.operator === '$gte';
+                const isFuture = op === 'add' && comparator.operator === '$lte';
+
+                if (isPast || isFuture) {
+                    return {
+                        field: ctx.key,
+                        operator: isPast ? 'in-the-last' : 'in-the-next',
+                        values: [amount]
+                    };
+                }
+            }
+
+            if (typeof comparator.value !== 'string') {
                 return null;
             }
 
@@ -356,8 +405,22 @@ export function dateCodec(config?: CodecConfig): FilterCodec {
             };
         },
         serialize(predicate, ctx) {
-            const rawValue = predicate.values[0];
             const field = getCodecField(config, ctx.key);
+
+            if (predicate.operator === 'in-the-last' || predicate.operator === 'in-the-next') {
+                const days = predicate.values[0];
+
+                if (typeof days !== 'number' || !Number.isSafeInteger(days) || days <= 0) {
+                    return null;
+                }
+
+                const sign = predicate.operator === 'in-the-last' ? '-' : '+';
+                const op = predicate.operator === 'in-the-last' ? '>=' : '<=';
+
+                return [`${field}:${op}now${sign}${days}d`];
+            }
+
+            const rawValue = predicate.values[0];
 
             if (typeof rawValue !== 'string' || rawValue === '') {
                 return null;

@@ -48,6 +48,14 @@ const getMiddleware = async (getFreeTier = async () => {
             return shared.middleware.cacheControl('noCache')(req, res, next);
         }
 
+        if (res.locals?.staffFrontendToolsEnabled) {
+            return shared.middleware.cacheControl('private')(req, res, next);
+        }
+
+        if (res.locals?.staffFrontendToolsCookieUpdated) {
+            return next();
+        }
+
         // Caching member's content is an experimental feature, enabled via config
         const shouldCacheMembersContent = config.get('cacheMembersContent:enabled');
         // CASE: Never cache if the blog is set to private

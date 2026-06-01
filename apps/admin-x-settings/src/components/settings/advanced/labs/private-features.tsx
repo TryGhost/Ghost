@@ -63,6 +63,14 @@ const features: Feature[] = [{
     title: 'Smarter Counts',
     description: 'Use optimized COUNT queries for API pagination when safe',
     flag: 'smarterCounts'
+}, {
+    title: 'LLMs.txt',
+    description: 'Serve llms.txt, per-entry markdown exports, and Accept: text/markdown content negotiation for AI and LLM tooling',
+    flag: 'llmsTxt'
+}, {
+    title: 'Get helper deduplication',
+    description: 'Deduplicate identical {{#get}} helper queries within a single request to avoid redundant database calls',
+    flag: 'getHelperDeduplication'
 }];
 
 const AlphaFeatures: React.FC = () => {

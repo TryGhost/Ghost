@@ -44,13 +44,16 @@ describe('automations service', function () {
 
         it('subscribes to StartAutomationsPollEvent', function () {
             automations.init(initOptions);
-            sinon.assert.calledOnceWithExactly(domainEvents.subscribe, StartAutomationsPollEvent, sinon.match.func);
+            sinon.assert.called(domainEvents.subscribe);
+            sinon.assert.alwaysCalledWith(domainEvents.subscribe, StartAutomationsPollEvent, sinon.match.func);
         });
 
-        it('subscribes only once when init is called multiple times', function () {
+        it('subscribes each poller only once when init is called multiple times', function () {
             automations.init(initOptions);
             automations.init(initOptions);
-            sinon.assert.calledOnce(domainEvents.subscribe);
+            automations.init(initOptions);
+            automations.init(initOptions);
+            sinon.assert.calledTwice(domainEvents.subscribe);
         });
     });
 

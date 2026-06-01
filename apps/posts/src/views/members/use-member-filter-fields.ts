@@ -3,9 +3,10 @@ import {DATE_OPERATOR_LABELS} from '../filters/filter-date';
 import {FilterFieldConfig, FilterFieldGroup, FilterOption, ValueSource} from '@tryghost/shade/patterns';
 import {LabelFilterRenderer} from '@src/components/label-picker';
 import {LucideIcon} from '@tryghost/shade/utils';
+import {RELATIVE_DATE_OPERATOR_LABELS, createRelativeDateRenderer, fieldHasRelativeOperator} from '../filters/filter-relative-date';
 import {createOperatorOptions} from '../filters/filter-operator-options';
+import {getMemberFields} from './member-fields';
 import {getTodayInTimezone} from '../filters/filter-normalization';
-import {memberFields} from './member-fields';
 import type {Offer} from '@tryghost/admin-x-framework/api/offers';
 
 interface UseMemberFilterFieldsOptions {
@@ -34,6 +35,7 @@ const MEMBER_OPERATOR_LABELS: Record<string, string> = {
     'is-not-any': 'is none of',
     'does-not-contain': 'does not contain',
     ...DATE_OPERATOR_LABELS,
+    ...RELATIVE_DATE_OPERATOR_LABELS,
     1: 'More like this',
     0: 'Less like this'
 };
@@ -92,29 +94,6 @@ function getFieldIcon(key: string) {
 
         return undefined;
     }
-}
-
-function createFieldConfig(
-    key: string,
-    overrides: Partial<FilterFieldConfig> = {},
-    operatorLabels: Record<string, string> = MEMBER_OPERATOR_LABELS
-): FilterFieldConfig {
-    const field = key.startsWith('newsletters.')
-        ? memberFields['newsletters.:slug']
-        : memberFields[key as keyof typeof memberFields];
-
-    return {
-        key,
-        ...field.ui,
-        icon: getFieldIcon(key),
-        operators: createOperatorOptions(field.operators, {labels: operatorLabels}),
-        ...('options' in field && field.options ? {options: field.options} : {}),
-        ...overrides
-    };
-}
-
-function createDateFieldConfig(key: string, defaultValue: string) {
-    return createFieldConfig(key, {defaultValue});
 }
 
 function createSearchableFieldOverrides(
@@ -279,6 +258,41 @@ export function useMemberFilterFields({
     giftSubscriptionsEnabled = false
 }: UseMemberFilterFieldsOptions): FilterFieldGroup[] {
     return useMemo(() => {
+        const fields = getMemberFields();
+        type MemberFieldKey = keyof typeof fields;
+
+        function createFieldConfig(
+            key: string,
+            overrides: Partial<FilterFieldConfig> = {},
+            operatorLabels: Record<string, string> = MEMBER_OPERATOR_LABELS
+        ): FilterFieldConfig {
+            const field = key.startsWith('newsletters.')
+                ? fields['newsletters.:slug']
+                : fields[key as MemberFieldKey];
+
+            return {
+                key,
+                ...field.ui,
+                icon: getFieldIcon(key),
+                operators: createOperatorOptions(field.operators, {labels: operatorLabels}),
+                ...('options' in field && field.options ? {options: field.options} : {}),
+                ...overrides
+            };
+        }
+
+        function createDateFieldConfig(
+            key: string,
+            today: string,
+            overrides: Partial<FilterFieldConfig> = {}
+        ): FilterFieldConfig {
+            const field = fields[key as MemberFieldKey];
+            const config = createFieldConfig(key, {defaultValue: today, ...overrides});
+
+            return fieldHasRelativeOperator(field)
+                ? {...config, customRenderer: createRelativeDateRenderer(today)}
+                : config;
+        }
+
         const groups: FilterFieldGroup[] = [];
         const activeNewsletters = newsletters.filter(newsletter => newsletter.status !== 'archived');
         const activeNewsletterSlugs = new Set(activeNewsletters.map(newsletter => newsletter.slug));
@@ -367,7 +381,7 @@ export function useMemberFilterFields({
 
             subscriptionFields.push(
                 createFieldConfig('status', giftSubscriptionsEnabled ? {
-                    options: [...memberFields.status.options, {value: 'gift', label: 'Gift subscription'}]
+                    options: [...fields.status.options, {value: 'gift', label: 'Gift subscription'}]
                 } : {}),
                 createFieldConfig('subscriptions.plan_interval'),
                 createFieldConfig('subscriptions.status'),

@@ -53,7 +53,9 @@ const PRIVATE_FEATURES = [
     'themeTranslation',
     'indexnow',
     'pictureImageFormats',
-    'smarterCounts'
+    'smarterCounts',
+    'llmsTxt',
+    'getHelperDeduplication'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

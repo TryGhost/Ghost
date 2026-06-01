@@ -1,0 +1,84 @@
+name: Translation Review
+
+# Posts an advisory (non-approving) review on translation PRs labelled `affects:i18n`.
+#
+# The job runs from `main` (NOT the PR head) and never executes any code
+# from the PR — it only reads the PR's locale-file changes via the GitHub
+# API and asks Claude to review them. This keeps the workflow safe to run
+# under `pull_request_target` with access to `secrets.ANTHROPIC_API_KEY`.
+#
+# Required secrets:
+#   - ANTHROPIC_API_KEY
+#
+# The bot uses a `COMMENT`-event review — it cannot approve a PR and the
+# review never blocks merge.
+
+on:
+  pull_request_target:
+    types: [labeled, synchronize]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to review (manual rerun)'
+        required: true
+        type: number
+      model:
+        description: 'Anthropic model to use (overrides default)'
+        required: false
+        type: choice
+        default: workflow-default
+        options:
+          - workflow-default
+          - claude-sonnet-4-6
+          - claude-haiku-4-5
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: translation-review-${{ github.event.pull_request.number || inputs.pr_number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    name: Review translations
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: |
+      github.repository_owner == 'TryGhost' && (
+        github.event_name == 'workflow_dispatch' ||
+        (github.event_name == 'pull_request_target' && github.event.action == 'labeled' && github.event.label.name == 'affects:i18n') ||
+        (github.event_name == 'pull_request_target' && github.event.action == 'synchronize' && contains(github.event.pull_request.labels.*.name, 'affects:i18n'))
+      )
+    steps:
+      - name: Checkout main (trusted ref — never the PR head)
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          ref: main
+          sparse-checkout: |
+            .github/scripts/i18n-review
+          sparse-checkout-cone-mode: false
+
+      - name: Set up Node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: .github/scripts/i18n-review
+        run: npm ci --no-audit --no-fund --omit=dev
+
+      - name: Run review
+        working-directory: .github/scripts/i18n-review
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          ANTHROPIC_MODEL: ${{ inputs.model == 'workflow-default' && '' || inputs.model }}
+          GITHUB_OWNER: ${{ github.repository_owner }}
+          GITHUB_REPO: ${{ github.event.repository.name }}
+        run: |
+          PR_NUMBER="${{ github.event.pull_request.number || inputs.pr_number }}"
+          echo "Reviewing PR #${PR_NUMBER}"
+          node index.js "${PR_NUMBER}"

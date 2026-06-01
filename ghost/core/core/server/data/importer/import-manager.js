@@ -25,7 +25,7 @@ const mediaStorage = require('../../adapters/storage').getStorage('media');
 const imageStorage = require('../../adapters/storage').getStorage('images');
 const fileStorage = require('../../adapters/storage').getStorage('files');
 
-const emailTemplate = require('./email-template');
+const {emailTemplate} = require('./email-template');
 const ghostMailer = new GhostMailer();
 
 const messages = {

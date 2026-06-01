@@ -41,9 +41,9 @@
     "eslint": "catalog:",
     "eslint-plugin-no-relative-import-paths": "1.6.1",
     "eslint-plugin-playwright": "2.10.4",
-    "express": "4.21.2",
+    "express": "4.22.2",
     "knex": "3.1.0",
-    "mysql2": "3.18.1",
+    "mysql2": "3.22.3",
     "stripe": "8.222.0",
     "typescript": "catalog:",
     "typescript-eslint": "8.58.0"

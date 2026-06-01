@@ -25,7 +25,7 @@ WORKDIR /home/ghost
 
 RUN corepack enable
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY components ./components
 
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store,id=pnpm-store \
