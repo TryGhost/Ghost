@@ -190,8 +190,8 @@ catalogs:
       specifier: 5.9.3
       version: 5.9.3
     validator:
-      specifier: 13.12.0
-      version: 13.12.0
+      specifier: 13.15.22
+      version: 13.15.22
     vite:
       specifier: 7.3.2
       version: 7.3.2
@@ -715,7 +715,7 @@ importers:
         version: 5.9.3
       validator:
         specifier: 'catalog:'
-        version: 13.12.0
+        version: 13.15.22
       vite:
         specifier: 'catalog:'
         version: 7.3.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0)
@@ -917,7 +917,7 @@ importers:
         version: 2.0.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       validator:
         specifier: 'catalog:'
-        version: 13.12.0
+        version: 13.15.22
     devDependencies:
       '@playwright/test':
         specifier: 'catalog:'
@@ -1266,7 +1266,7 @@ importers:
         version: 10.1.1(react@18.3.1)
       validator:
         specifier: 'catalog:'
-        version: 13.12.0
+        version: 13.15.22
       zod:
         specifier: 'catalog:'
         version: 4.1.12
@@ -1450,7 +1450,7 @@ importers:
         version: 3.5.0
       validator:
         specifier: 'catalog:'
-        version: 13.12.0
+        version: 13.15.22
       zod:
         specifier: 'catalog:'
         version: 4.1.12
@@ -2193,7 +2193,7 @@ importers:
         version: 0.12.5
       validator:
         specifier: 'catalog:'
-        version: 13.12.0
+        version: 13.15.22
       walk-sync:
         specifier: 3.0.0
         version: 3.0.0
@@ -2836,7 +2836,7 @@ importers:
         version: 5.9.3
       validator:
         specifier: 'catalog:'
-        version: 13.12.0
+        version: 13.15.22
       vitest:
         specifier: 'catalog:'
         version: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@22.19.19)(@vitest/coverage-v8@4.1.7)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.19.19)(typescript@5.9.3))(vite@7.3.2(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))
@@ -14543,7 +14543,7 @@ packages:
       csstype: ^3.0.10
 
   google-caja-bower@https://codeload.github.com/acburdine/google-caja-bower/tar.gz/275cb75249f038492094a499756a73719ae071fd:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/acburdine/google-caja-bower/tar.gz/275cb75249f038492094a499756a73719ae071fd}
+    resolution: {gitHosted: true, integrity: sha512-mmCXdxGKGKDznjgkNzVqzTslaldslk5KMb/A7l8rxWnqyxzwsdPhuBJ6oT1Kh/Y3k4jN54ISee/2AgjFyCBxYw==, tarball: https://codeload.github.com/acburdine/google-caja-bower/tar.gz/275cb75249f038492094a499756a73719ae071fd}
     version: 6011.0.0
 
   gopd@1.2.0:
@@ -15972,7 +15972,7 @@ packages:
     engines: {node: '>= 0.6'}
 
   keymaster@https://codeload.github.com/madrobby/keymaster/tar.gz/f8f43ddafad663b505dc0908e72853bcf8daea49:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/madrobby/keymaster/tar.gz/f8f43ddafad663b505dc0908e72853bcf8daea49}
+    resolution: {gitHosted: true, integrity: sha512-/WVovQslVEqPGNoD97TbqNHuCDPYu2v4/ggrZj0a+9PVPw3Rud4Ut2K7fOi0kMqzoJINkgP68e9m09Al/wFZ8g==, tarball: https://codeload.github.com/madrobby/keymaster/tar.gz/f8f43ddafad663b505dc0908e72853bcf8daea49}
     version: 1.6.3
 
   keypair@1.0.4:
@@ -17185,7 +17185,7 @@ packages:
     hasBin: true
 
   mock-knex@https://codeload.github.com/TryGhost/mock-knex/tar.gz/68948e11b0ea4fe63456098dfdc169bea7f62009:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/TryGhost/mock-knex/tar.gz/68948e11b0ea4fe63456098dfdc169bea7f62009}
+    resolution: {gitHosted: true, integrity: sha512-VVShGrOVsuUDz9ueLO/3hcMzwNGr/e/dvYoiXCJSs7hI8TWdSWsEXDURWp251+NZHEZG/CI+L78lBFv+piGfxg==, tarball: https://codeload.github.com/TryGhost/mock-knex/tar.gz/68948e11b0ea4fe63456098dfdc169bea7f62009}
     version: 0.4.13
     peerDependencies:
       knex: '> 0.8'
@@ -21370,8 +21370,8 @@ packages:
   validate-peer-dependencies@1.2.0:
     resolution: {integrity: sha512-nd2HUpKc6RWblPZQ2GDuI65sxJ2n/UqZwSBVtj64xlWjMx0m7ZB2m9b2JS3v1f+n9VWH/dd1CMhkHfP6pIdckA==}
 
-  validator@13.12.0:
-    resolution: {integrity: sha512-c1Q0mCiPlgdTVVVIJIrBuxNicYE+t/7oKeI9MWLj3fh/uq2Pxh/3eeWbVZ4OcGW1TUf53At0njHw5SMdA3tmMg==}
+  validator@13.15.22:
+    resolution: {integrity: sha512-uT/YQjiyLJP7HSrv/dPZqK9L28xf8hsNca01HSz1dfmI0DgMfjopp1rO/z13NeGF1tVystF0Ejx3y4rUKPw+bQ==}
     engines: {node: '>= 0.10'}
 
   validator@13.15.35:
@@ -46096,7 +46096,7 @@ snapshots:
       resolve-package-path: 3.1.0
       semver: 7.7.4
 
-  validator@13.12.0: {}
+  validator@13.15.22: {}
 
   validator@13.15.35: {}
 
