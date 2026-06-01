@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import copyToClipboard from '@src/utils/copy-to-clipboard';
 import trackEvent from '@src/utils/analytics';
 import {Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from '@tryghost/shade/components';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {buildGiftLinkUrl} from '@src/utils/gift-link';
 import {toast} from 'sonner';
 import {useGiftLinkForPost, useResetGiftLink} from '@tryghost/admin-x-framework/api/gift-links';
@@ -61,18 +62,25 @@ const GiftLinkManageModal: React.FC<GiftLinkManageModalProps> = ({open, onOpenCh
                 <DialogHeader>
                     <DialogTitle>Gift link</DialogTitle>
                     <DialogDescription>
-                        Anyone with this link can read the full post — no account needed.
+                        Anyone with this link can read the full post. No account needed.
                     </DialogDescription>
                 </DialogHeader>
                 <div className="flex min-w-0 flex-col gap-4">
-                    <div className="flex flex-col gap-2 rounded-md border bg-muted p-3">
-                        {/* Wrap (break-all) rather than truncate so the changing
-                            token tail stays visible after a reset. */}
-                        <span className="text-sm break-all" data-testid="gift-link-url">{url}</span>
-                        <Button className="self-end" size="sm" onClick={handleCopy}>
+                    {/* The whole box copies; the top-right label is just the affordance.
+                        The URL wraps (break-all) so the changing token tail stays
+                        visible after a reset. */}
+                    <button
+                        className="group flex w-full flex-col gap-1.5 rounded-md border bg-muted p-3 text-left transition-colors hover:border-muted-foreground/30"
+                        data-testid="gift-link-copybox"
+                        type="button"
+                        onClick={handleCopy}
+                    >
+                        <span className="flex items-center gap-1 self-end text-xs font-medium text-muted-foreground group-hover:text-foreground">
+                            {copied ? <LucideIcon.Check size={13} /> : <LucideIcon.Copy size={13} />}
                             {copied ? 'Copied' : 'Copy'}
-                        </Button>
-                    </div>
+                        </span>
+                        <span className="text-sm break-all" data-testid="gift-link-url">{url}</span>
+                    </button>
                     <div className="flex items-center justify-between gap-2">
                         <span className="text-sm text-muted-foreground" data-testid="gift-link-count">
                             Opened {count} {count === 1 ? 'time' : 'times'}
@@ -88,7 +96,7 @@ const GiftLinkManageModal: React.FC<GiftLinkManageModalProps> = ({open, onOpenCh
                         </Button>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                        Resetting invalidates the current link so it can no longer be opened, and creates a new one.
+                        Resetting turns off this link and creates a new one.
                     </p>
                 </div>
             </DialogContent>
