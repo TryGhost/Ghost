@@ -1,3 +1,5 @@
+const htmlToPlaintext = require('@tryghost/html-to-plaintext');
+
 const {
     getMarkdownUrl,
     renderEntryMarkdownBody,
@@ -5,13 +7,18 @@ const {
 } = require('./markdown');
 
 const DEFAULT_BUDGET = 5 * 1024 * 1024;
-const TRUNCATION_FOOTER = '\n_Truncated after 5 MiB. Use `/llms.txt` for the complete index of older public content._\n';
 const FULL_PAGE_SIZE = 100;
+const PAYWALL_MARKER = '<!--members-only-->';
 
-function createLlmsService({settingsCache, labs, config, urlServiceFacade, urlUtils, models, routing, api, fullTxtBudget}) {
-    const BUDGET = (fullTxtBudget || DEFAULT_BUDGET) - Buffer.byteLength(TRUNCATION_FOOTER, 'utf8');
+function createLlmsService({settingsCache, labs, config, urlServiceFacade, models, api, fullTxtBudget}) {
+    const BUDGET = fullTxtBudget || DEFAULT_BUDGET;
+
     function isEnabled() {
         return labs.isSet('llmsTxt') && !settingsCache.get('is_private') && settingsCache.get('llms_enabled') !== false;
+    }
+
+    function isMachinePaymentsEnabled() {
+        return labs.isSet('machinePayments') && settingsCache.get('machine_payments_enabled') === true;
     }
 
     async function fetchPublicEntry(resourceType, id, member = null) {
@@ -27,31 +34,38 @@ function createLlmsService({settingsCache, labs, config, urlServiceFacade, urlUt
         return response?.[responseKey]?.[0] || null;
     }
 
+    async function fetchPaidEntry(resourceType, id) {
+        const type = resourceType === 'pages' ? 'page' : 'post';
+        const model = await models.Post.findOne({
+            id,
+            type,
+            status: 'published'
+        }, {
+            withRelated: ['authors', 'tags', 'tiers']
+        });
+
+        if (!model) {
+            return null;
+        }
+
+        const entry = model.toJSON();
+        entry.type = entry.type || type;
+        entry.url = resolveEntryUrl(entry);
+        return entry.url ? entry : null;
+    }
+
     async function getLlmsTxt() {
         if (!isEnabled()) {
             return null;
         }
 
-        const [pages, posts] = await Promise.all([
-            fetchIndexEntries('page'),
-            fetchIndexEntries('post')
-        ]);
-
+        const posts = await fetchPostIndexEntries();
         const sections = [
-            buildHeader(),
-            'Public Ghost content for AI and LLM tooling. Use `/llms-full.txt` for consolidated page and post context.',
-            '',
-            '## Pages',
-            buildIndexSection(pages),
-            '',
-            '## Posts',
-            buildIndexSection(posts),
-            '',
-            '## Optional',
-            buildOptionalSection()
-        ];
+            buildHeader({includeDescription: false}),
+            buildIndexSection(posts)
+        ].filter(Boolean);
 
-        return `${sections.join('\n').trim()}\n`;
+        return `${sections.join('\n\n').trim()}\n`;
     }
 
     async function getLlmsFullTxt() {
@@ -59,64 +73,29 @@ function createLlmsService({settingsCache, labs, config, urlServiceFacade, urlUt
             return null;
         }
 
-        const header = [
-            buildHeader(),
-            'Public Ghost content for AI and LLM tooling. This file includes a bounded export of public pages first, then recent public posts.',
-            ''
-        ].join('\n');
-
-        let output = header;
-        let wasTruncated = false;
-
-        const pageResult = await appendBoundedSectionPaginated(output, 'Pages', 'page');
-        output = pageResult.output;
-        wasTruncated = pageResult.wasTruncated;
-
-        if (!wasTruncated) {
-            const postResult = await appendBoundedSectionPaginated(output, 'Posts', 'post');
-            output = postResult.output;
-            wasTruncated = postResult.wasTruncated;
-        }
-
-        if (wasTruncated) {
-            output += TRUNCATION_FOOTER;
-        }
+        let output = `${buildHeader()}\n\n`;
+        output = (await appendBoundedEntriesPaginated(output, 'post')).output;
 
         return output.trimEnd() + '\n';
     }
 
-    async function appendBoundedSectionPaginated(prefix, heading, type) {
-        const headingBlock = `${prefix}## ${heading}\n`;
-
-        if (Buffer.byteLength(headingBlock, 'utf8') > BUDGET) {
+    async function appendBoundedEntriesPaginated(prefix, type) {
+        if (Buffer.byteLength(prefix, 'utf8') > BUDGET) {
             return {output: prefix, wasTruncated: true};
         }
 
-        let output = headingBlock;
+        let output = prefix;
         let wasTruncated = false;
         let page = 1;
         let hasMore = true;
 
         while (hasMore && !wasTruncated) {
             const result = await fetchFullEntries(type, page);
-            const entries = result.entries;
             hasMore = result.hasMore;
 
-            if (!entries.length && page === 1) {
-                const emptySection = `${output}_No public content available._\n`;
-
-                if (Buffer.byteLength(emptySection, 'utf8') <= BUDGET) {
-                    output = emptySection;
-                } else {
-                    wasTruncated = true;
-                }
-
-                break;
-            }
-
-            for (const entry of entries) {
+            for (const entry of result.entries) {
                 const formattedEntry = buildFullEntry(entry);
-                const candidate = `${output}${formattedEntry}\n`;
+                const candidate = `${output}${formattedEntry}\n\n`;
 
                 if (Buffer.byteLength(candidate, 'utf8') > BUDGET) {
                     wasTruncated = true;
@@ -132,58 +111,79 @@ function createLlmsService({settingsCache, labs, config, urlServiceFacade, urlUt
         return {output, wasTruncated};
     }
 
-    function buildHeader() {
+    function buildHeader({includeDescription = true} = {}) {
         const siteTitle = settingsCache.get('title') || new URL(config.get('url')).hostname;
         const siteDescription = settingsCache.get('meta_description') || settingsCache.get('description');
 
+        if (!includeDescription) {
+            return `# ${siteTitle}`;
+        }
+
         return [
             `# ${siteTitle}`,
-            siteDescription ? `> ${siteDescription}` : '> Public Ghost publication content.'
-        ].join('\n');
+            siteDescription ? `> ${siteDescription}` : null
+        ].filter(Boolean).join('\n');
     }
 
     function buildIndexSection(entries) {
         if (!entries.length) {
-            return '_No public content available._';
+            return '';
         }
 
         return entries.map((entry) => {
-            const description = truncateDescription(entry.custom_excerpt || entry.plaintext);
+            const description = buildIndexDescription(entry);
             const linkLine = `- [${entry.title}](${getMarkdownUrl(entry.url)})`;
 
             if (!description) {
                 return linkLine;
             }
 
-            return `${linkLine} - ${description}`;
+            return `${linkLine}: ${description}`;
         }).join('\n');
     }
 
-    function buildOptionalSection() {
-        const optionalLinks = [];
-        const rssUrl = routing.registry.getRssUrl({absolute: true});
+    function buildIndexDescription(entry) {
+        const description = entry.custom_excerpt || entry.excerpt || getIndexPlaintext(entry);
 
-        if (rssUrl) {
-            optionalLinks.push(`- [RSS Feed](${rssUrl})`);
+        return truncateDescription(description);
+    }
+
+    function getIndexPlaintext(entry) {
+        if (!isPaidMembersOnlyEntry(entry)) {
+            return entry.plaintext;
         }
 
-        optionalLinks.push(`- [Sitemap](${urlUtils.urlFor({relativeUrl: '/sitemap.xml'}, true)})`);
+        if (!entry.html) {
+            return null;
+        }
 
-        return optionalLinks.join('\n');
+        const paywallIndex = entry.html.indexOf(PAYWALL_MARKER);
+
+        if (paywallIndex === -1) {
+            return null;
+        }
+
+        return htmlToPlaintext.excerpt(entry.html.slice(0, paywallIndex));
     }
 
     function buildFullEntry(entry) {
         const lastUpdated = entry.updated_at || entry.published_at || entry.created_at;
         const lastUpdatedLine = lastUpdated ? `Last updated: ${new Date(lastUpdated).toISOString()}` : null;
-        const markdownBody = renderEntryMarkdownBody(entry) || '_No content available._';
+        const markdownBody = renderEntryMarkdownBody(entry);
+        const metadataLines = [
+            entry.title ? `## ${entry.title}` : null,
+            `URL: ${entry.url}`
+        ].filter(Boolean);
 
-        return [
-            `### ${entry.title}`,
-            `URL: ${entry.url}`,
-            lastUpdatedLine,
+        if (lastUpdatedLine) {
+            metadataLines.push(lastUpdatedLine);
+        }
+
+        return markdownBody ? [
+            ...metadataLines,
             '',
             markdownBody
-        ].filter(Boolean).join('\n');
+        ].join('\n') : metadataLines.join('\n');
     }
 
     function resolveEntryUrl(entry) {
@@ -194,12 +194,12 @@ function createLlmsService({settingsCache, labs, config, urlServiceFacade, urlUt
         return url && !url.endsWith('/404/') ? url : null;
     }
 
-    async function fetchIndexEntries(type) {
+    async function fetchPublicEntries(type) {
         const page = await models.Post.findPage({
             limit: 'all',
             order: type === 'post' ? 'published_at desc' : 'id asc',
             filter: `status:published+visibility:public+type:${type}`,
-            columns: ['id', 'title', 'slug', 'custom_excerpt', 'plaintext', 'published_at', 'type'],
+            columns: ['id', 'title', 'slug', 'html', 'plaintext', 'custom_excerpt', 'updated_at', 'published_at', 'created_at', 'type'],
             withRelated: ['tags', 'authors']
         });
 
@@ -214,6 +214,41 @@ function createLlmsService({settingsCache, labs, config, urlServiceFacade, urlUt
         }
 
         return entries;
+    }
+
+    async function fetchPostIndexEntries() {
+        const publicEntries = await fetchPublicEntries('post');
+
+        if (!isMachinePaymentsEnabled()) {
+            return publicEntries;
+        }
+
+        const paidEntries = await fetchMachinePaymentPostEntries();
+
+        return [...publicEntries, ...paidEntries].sort((left, right) => {
+            return getPublishedOrderValue(right) - getPublishedOrderValue(left);
+        });
+    }
+
+    async function fetchMachinePaymentPostEntries() {
+        const page = await models.Post.findPage({
+            limit: 'all',
+            order: 'published_at desc',
+            filter: 'status:published+visibility:[paid,tiers]+type:post',
+            columns: ['id', 'title', 'slug', 'html', 'custom_excerpt', 'visibility', 'published_at', 'type'],
+            withRelated: ['tiers']
+        });
+
+        return page.data.map((model) => {
+            const entry = model.toJSON();
+            entry.url = resolveEntryUrl(entry);
+            return entry;
+        }).filter(entry => isPaidMembersOnlyEntry(entry) && entry.url);
+    }
+
+    function getPublishedOrderValue(entry) {
+        const publishedAt = entry.published_at ? new Date(entry.published_at).getTime() : 0;
+        return Number.isNaN(publishedAt) ? 0 : publishedAt;
     }
 
     async function fetchFullEntries(type, pageNum) {
@@ -237,7 +272,19 @@ function createLlmsService({settingsCache, labs, config, urlServiceFacade, urlUt
         return {entries, hasMore};
     }
 
-    return {isEnabled, getLlmsTxt, getLlmsFullTxt, fetchPublicEntry};
+    function isPaidMembersOnlyEntry(entry) {
+        if (entry.visibility === 'paid') {
+            return true;
+        }
+
+        if (entry.visibility !== 'tiers') {
+            return false;
+        }
+
+        return Array.isArray(entry.tiers) && entry.tiers.length > 0 && entry.tiers.every(tier => tier.type === 'paid');
+    }
+
+    return {isEnabled, getLlmsTxt, getLlmsFullTxt, fetchPublicEntry, fetchPaidEntry};
 }
 
 module.exports = {createLlmsService};

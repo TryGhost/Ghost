@@ -89,6 +89,18 @@
             "value": true
         },
         {
+            "key": "machine_payments_enabled",
+            "value": false
+        },
+        {
+            "key": "machine_payments_currency",
+            "value": null
+        },
+        {
+            "key": "machine_payments_amount",
+            "value": 100
+        },
+        {
             "key": "meta_title",
             "value": null
         },

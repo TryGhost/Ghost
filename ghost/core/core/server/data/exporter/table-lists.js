@@ -99,6 +99,7 @@ const SETTING_KEYS_BLOCKLIST = [
     'stripe_billing_portal_configuration_id',
     'members_stripe_webhook_id',
     'members_stripe_webhook_secret',
+    'machine_payments_secret',
     'email_verification_required',
     'indexnow_api_key'
 ];

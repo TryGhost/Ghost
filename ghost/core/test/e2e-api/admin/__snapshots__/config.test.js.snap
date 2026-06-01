@@ -28,6 +28,7 @@ Object {
       "indexnow": true,
       "lexicalIndicators": true,
       "llmsTxt": true,
+      "machinePayments": true,
       "members": true,
       "pictureImageFormats": true,
       "smarterCounts": true,

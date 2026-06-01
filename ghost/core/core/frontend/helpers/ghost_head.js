@@ -14,6 +14,8 @@ const _ = require('lodash');
 const debug = require('@tryghost/debug')('ghost_head');
 const templateStyles = require('./tpl/styles');
 const {getFrontendAppConfig, getDataAttributes} = require('../utils/frontend-apps');
+const labs = require('../../shared/labs');
+const {getMarkdownUrl} = require('../services/llms/markdown');
 
 /**
  * @typedef {import('@tryghost/custom-fonts').FontSelection} FontSelection
@@ -183,6 +185,47 @@ function getWebmentionDiscoveryLink() {
     }
 }
 
+function isMachinePaymentsEnabled() {
+    return labs.isSet('machinePayments') && settingsCache.get('machine_payments_enabled') === true;
+}
+
+function isPaidMembersOnlyPost(post) {
+    if (post.visibility === 'paid') {
+        return true;
+    }
+
+    if (post.visibility !== 'tiers') {
+        return false;
+    }
+
+    return Array.isArray(post.tiers) && post.tiers.length > 0 && post.tiers.every(tier => tier.type === 'paid');
+}
+
+function shouldOutputMarkdownAlternate({context, post}) {
+    if (!context || !_.includes(context, 'post') || !post || !labs.isSet('llmsTxt') || settingsCache.get('is_private') || settingsCache.get('llms_enabled') === false) {
+        return false;
+    }
+
+    if (post.visibility === 'public') {
+        return true;
+    }
+
+    return isPaidMembersOnlyPost(post) && isMachinePaymentsEnabled();
+}
+
+function getMarkdownAlternateLink({context, post, canonicalUrl}) {
+    if (!shouldOutputMarkdownAlternate({context, post}) || !canonicalUrl) {
+        return '';
+    }
+
+    try {
+        return '<link rel="alternate" type="text/markdown" href="' + escapeExpression(getMarkdownUrl(canonicalUrl)) + '">';
+    } catch (err) {
+        logging.warn(err);
+        return '';
+    }
+}
+
 function getTinybirdTrackerScript(dataRoot) {
     const preview = dataRoot?.context?.includes('preview');
     if (preview) {
@@ -296,6 +339,15 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
                 }
 
                 head.push('<link rel="canonical" href="' + escapeExpression(meta.canonicalUrl) + '">');
+                const markdownAlternateLink = getMarkdownAlternateLink({
+                    context,
+                    post: dataRoot.post,
+                    canonicalUrl: meta.canonicalUrl
+                });
+
+                if (markdownAlternateLink) {
+                    head.push(markdownAlternateLink);
+                }
 
                 if (_.includes(context, 'preview')) {
                     head.push(writeMetaTag('robots', 'noindex,nofollow', 'name'));

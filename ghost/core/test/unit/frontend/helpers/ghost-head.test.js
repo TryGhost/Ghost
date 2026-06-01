@@ -10,6 +10,7 @@ const configUtils = require('../../../utils/config-utils');
 const imageLib = require('../../../../core/server/lib/image');
 const routing = require('../../../../core/frontend/services/routing');
 const urlService = require('../../../../core/server/services/url');
+const labs = require('../../../../core/shared/labs');
 const {cardAssets} = require('../../../../core/frontend/services/assets-minification');
 const logging = require('@tryghost/logging');
 
@@ -398,6 +399,7 @@ describe('{{ghost_head}} helper', function () {
         getStub.withArgs('comments_enabled').returns('off');
         getStub.withArgs('members_track_sources').returns(true);
         getStub.withArgs('site_uuid').returns('77f09c60-5a34-4b4c-a3f6-e1b1d78f7412');
+        getStub.withArgs('llms_enabled').returns(false);
 
         // Force the usage of a fixed asset hash so we have reliable snapshots
         configUtils.set('assetHash', 'asset-hash');
@@ -544,6 +546,118 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
             assert.deepEqual(renderObject.post, postBk);
+        });
+
+        it('outputs markdown alternate link for public posts when llms.txt is enabled', async function () {
+            getStub.withArgs('llms_enabled').returns(true);
+            sinon.stub(labs, 'isSet').withArgs('llmsTxt').returns(true);
+
+            const rendered = await ghost_head(testUtils.createHbsResponse({
+                renderObject: {
+                    post: Object.assign({}, posts[2], {visibility: 'public'})
+                },
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            }));
+
+            assert.match(rendered.toString(), /<link rel="alternate" type="text\/markdown" href="http:\/\/localhost:\d+\/post\.md">/);
+        });
+
+        it('does not output markdown alternate link when the llms.txt labs flag is disabled', async function () {
+            getStub.withArgs('llms_enabled').returns(true);
+            sinon.stub(labs, 'isSet').withArgs('llmsTxt').returns(false);
+
+            const rendered = await ghost_head(testUtils.createHbsResponse({
+                renderObject: {
+                    post: Object.assign({}, posts[2], {visibility: 'public'})
+                },
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            }));
+
+            assert.doesNotMatch(rendered.toString(), /type="text\/markdown"/);
+        });
+
+        it('does not output markdown alternate link when llms.txt is disabled', async function () {
+            const rendered = await ghost_head(testUtils.createHbsResponse({
+                renderObject: {
+                    post: Object.assign({}, posts[2], {visibility: 'public'})
+                },
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            }));
+
+            assert.doesNotMatch(rendered.toString(), /type="text\/markdown"/);
+        });
+
+        it('does not output markdown alternate link for paid posts when machine payments are disabled', async function () {
+            getStub.withArgs('llms_enabled').returns(true);
+            getStub.withArgs('machine_payments_enabled').returns(false);
+            sinon.stub(labs, 'isSet').withArgs('llmsTxt').returns(true);
+
+            const rendered = await ghost_head(testUtils.createHbsResponse({
+                renderObject: {
+                    post: Object.assign({}, posts[2], {visibility: 'paid'})
+                },
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            }));
+
+            assert.doesNotMatch(rendered.toString(), /type="text\/markdown"/);
+        });
+
+        it('does not output markdown alternate link for paid posts when the machine payments labs flag is disabled', async function () {
+            getStub.withArgs('llms_enabled').returns(true);
+            getStub.withArgs('machine_payments_enabled').returns(true);
+            const labsIsSetStub = sinon.stub(labs, 'isSet');
+            labsIsSetStub.withArgs('llmsTxt').returns(true);
+            labsIsSetStub.withArgs('machinePayments').returns(false);
+
+            const rendered = await ghost_head(testUtils.createHbsResponse({
+                renderObject: {
+                    post: Object.assign({}, posts[2], {visibility: 'paid'})
+                },
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            }));
+
+            assert.doesNotMatch(rendered.toString(), /type="text\/markdown"/);
+        });
+
+        it('outputs markdown alternate link for paid posts when machine payments are enabled', async function () {
+            getStub.withArgs('llms_enabled').returns(true);
+            getStub.withArgs('machine_payments_enabled').returns(true);
+            const labsIsSetStub = sinon.stub(labs, 'isSet');
+            labsIsSetStub.withArgs('llmsTxt').returns(true);
+            labsIsSetStub.withArgs('machinePayments').returns(true);
+
+            const rendered = await ghost_head(testUtils.createHbsResponse({
+                renderObject: {
+                    post: Object.assign({}, posts[2], {visibility: 'paid'})
+                },
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            }));
+
+            assert.match(rendered.toString(), /<link rel="alternate" type="text\/markdown" href="http:\/\/localhost:\d+\/post\.md">/);
         });
 
         it('returns structured data on post page with custom excerpt for description and meta description', async function () {

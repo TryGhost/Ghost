@@ -66,7 +66,6 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
         localSettings,
         saveState,
         siteData,
-        focusRef,
         isEditing,
         handleSave,
         handleCancel,
@@ -176,7 +175,6 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 )}
                 <TextField
                     hint="Recommended: 70 characters"
-                    inputRef={focusRef}
                     maxLength={300}
                     placeholder={siteTitle}
                     title="Meta title"

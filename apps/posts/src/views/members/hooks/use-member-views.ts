@@ -5,7 +5,7 @@ import {
     buildViewsForSave,
     parseSharedViewsJSON
 } from '../member-views';
-import {getSettingValue, useBrowseSettings, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {type SettingsResponseType, getSettingValue, useBrowseSettings, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {parseAllSharedViewsJSON} from '../shared-views';
 import {useCallback, useEffect, useMemo, useRef} from 'react';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -21,7 +21,7 @@ export type {MemberView, SharedViewsParseResult} from '../member-views';
 
 const SHARED_VIEWS_INVALID_ERROR = 'Cannot modify saved views because shared_views is invalid';
 
-function getSharedViewsJSON(settingsData: {settings: Array<{key: string; value: string | boolean | null}>} | undefined): string {
+function getSharedViewsJSON(settingsData: SettingsResponseType | undefined): string {
     return getSettingValue<string>(settingsData?.settings ?? null, 'shared_views') ?? '[]';
 }
 

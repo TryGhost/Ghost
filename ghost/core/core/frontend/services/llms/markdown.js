@@ -131,6 +131,14 @@ function renderEntryMarkdownBody(entry) {
     return collapseWhitespace(htmlToPlaintext.excerpt(entry.html || ''));
 }
 
+function renderContentIndexBacklink(llmsIndexUrl) {
+    return [
+        '> ## Content Index',
+        `> Fetch the complete content index at: ${llmsIndexUrl}`,
+        '> Use this file to discover all available posts before exploring further.'
+    ];
+}
+
 function renderEntryMarkdown(entry, {llmsIndexUrl}) {
     const tags = getTagNames(entry);
     const metadata = [
@@ -143,24 +151,23 @@ function renderEntryMarkdown(entry, {llmsIndexUrl}) {
         tags.length ? `- Tags: ${tags.join(', ')}` : null
     ].filter(Boolean);
 
-    const body = renderEntryMarkdownBody(entry) || '_No content available._';
-    const lines = [
-        '> ## Content Index',
-        `> Fetch the complete content index at: ${llmsIndexUrl}`,
-        '> Use this file to discover other available public pages before exploring further.',
-        '',
-        `# ${entry.title || 'Untitled'}`
-    ];
+    const body = renderEntryMarkdownBody(entry);
+    const lines = renderContentIndexBacklink(llmsIndexUrl);
 
-    if (metadata.length) {
-        lines.push(...metadata, '');
-    } else {
-        lines.push('');
+    if (entry.title) {
+        lines.push('', `# ${entry.title}`);
     }
 
-    lines.push(body);
+    if (metadata.length) {
+        lines.push('');
+        lines.push(...metadata);
+    }
 
-    return lines.join('\n');
+    if (body) {
+        lines.push('', body);
+    }
+
+    return `${lines.join('\n').trim()}\n`;
 }
 
 module.exports = {
@@ -174,6 +181,7 @@ module.exports = {
     getTagNames,
     getResourcePathFromMarkdownPath,
     markdownFromHtml,
+    renderContentIndexBacklink,
     renderEntryMarkdown,
     renderEntryMarkdownBody,
     truncateDescription

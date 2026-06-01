@@ -64,6 +64,10 @@
             "defaultValue": null,
             "type": "string"
         },
+        "machine_payments_secret": {
+            "defaultValue": null,
+            "type": "string"
+        },
         "site_uuid": {
             "defaultValue": null,
             "type": "string",
@@ -197,6 +201,21 @@
             "defaultValue": "true",
             "validations": {},
             "type": "boolean"
+        },
+        "machine_payments_enabled": {
+            "defaultValue": false,
+            "type": "boolean"
+        },
+        "machine_payments_currency": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "machine_payments_amount": {
+            "defaultValue": 100,
+            "validations": {
+                "isEmpty": false
+            },
+            "type": "number"
         },
         "meta_title": {
             "defaultValue": null,
