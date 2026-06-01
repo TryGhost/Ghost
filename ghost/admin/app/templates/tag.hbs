@@ -6,11 +6,9 @@
                     <a href="#/tags" data-test-link="tags-back">
                         Tags
                     </a>
-                    {{svg-jar "arrow-right-small"}} {{if this.tag.isNew "New tag" "Edit tag"}}
+                    {{svg-jar "arrow-right-small"}}
+                    <span data-test-screen-title>{{if this.tag.isNew "New tag" this.tag.name}}</span>
                 </div>
-                <h2 class="gh-canvas-title" data-test-screen-title>
-                    {{if this.tag.isNew "New tag" this.tag.name}}
-                </h2>
             </div>
 
             <section class="view-actions">
