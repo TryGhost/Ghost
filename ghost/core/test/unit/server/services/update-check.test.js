@@ -462,6 +462,248 @@ describe('Update Check', function () {
         });
     });
 
+    describe('Channels dispatch', function () {
+        // Helper: build an UpdateCheckService wired with the stubs we want
+        // to inspect per test. Mirrors the setup in the surrounding suite
+        // but lets each test choose the response body shape via nock.
+        function makeService({notificationsAPIAddStub, emailSendStub, usersBrowseStub}) {
+            return new UpdateCheckService({
+                api: {
+                    settings: {
+                        read: settingsStub,
+                        edit: settingsStub
+                    },
+                    users: {
+                        browse: usersBrowseStub
+                    },
+                    posts: {
+                        browse: sinon.stub().resolves()
+                    },
+                    notifications: {
+                        add: notificationsAPIAddStub
+                    }
+                },
+                config: {
+                    checkEndpoint: 'https://updates.ghost.org',
+                    siteUrl: 'http://127.0.0.1:2369',
+                    isPrivacyDisabled: true,
+                    ghostVersion: '0.8.0'
+                },
+                request,
+                notificationEmailService: {send: emailSendStub}
+            });
+        }
+
+        function adminUsersStub(emails = ['admin@example.com']) {
+            return sinon.stub().resolves({
+                users: emails.map(email => ({
+                    email,
+                    roles: [{name: 'Owner'}]
+                }))
+            });
+        }
+
+        it('routes a banner+email channels notification to both surfaces with distinct content', async function () {
+            const notification = {
+                id: 'ghsa-XXX',
+                version: 'ghsa-XXX',
+                target: {ghost_versions: '<=6.19.0'},
+                channels: {
+                    banner: {
+                        content: '<strong>Critical Ghost security update available.</strong>',
+                        dismissible: false,
+                        top: true
+                    },
+                    email: {
+                        subject: 'Critical Ghost security update',
+                        content: '<p>Hi there,</p><p>Full advisory body...</p>'
+                    }
+                },
+                // Legacy shim from new UpdateChecker — dispatcher must
+                // ignore this when channels is present, because channels is
+                // first-party.
+                messages: [{
+                    id: 'legacy-msg',
+                    version: '<=6.19.0',
+                    content: '<p>Hi there,</p><p>Full advisory body...</p>',
+                    type: 'alert',
+                    top: true,
+                    dismissible: false
+                }]
+            };
+
+            nock('https://updates.ghost.org')
+                .get('/')
+                .query(true)
+                .reply(200, JSON.stringify([notification]), {'Content-Type': 'application/json'});
+
+            const notificationsAPIAddStub = sinon.stub().resolves();
+            const emailSendStub = sinon.stub().resolves();
+            const usersBrowseStub = adminUsersStub();
+
+            await makeService({notificationsAPIAddStub, emailSendStub, usersBrowseStub}).check();
+
+            // Banner: the short channel content, not the legacy shim
+            sinon.assert.calledOnce(notificationsAPIAddStub);
+            const banner = notificationsAPIAddStub.args[0][0].notifications[0];
+            assert.equal(banner.message, '<strong>Critical Ghost security update available.</strong>');
+            assert.equal(banner.dismissible, false);
+            assert.equal(banner.top, true);
+
+            // Email: the rich channel content + channel-supplied subject
+            sinon.assert.calledOnce(emailSendStub);
+            assert.deepEqual(emailSendStub.args[0][0].to, ['admin@example.com']);
+            assert.equal(emailSendStub.args[0][0].subject, 'Critical Ghost security update');
+            assert.equal(emailSendStub.args[0][0].content, '<p>Hi there,</p><p>Full advisory body...</p>');
+        });
+
+        it('routes a banner-only channels notification to the banner surface and sends no email', async function () {
+            const notification = {
+                id: 'release-6-42-1',
+                version: '6.42.1',
+                target: {ghost_versions: '^6'},
+                channels: {
+                    banner: {
+                        content: 'Ghost 6.42.1 is available',
+                        dismissible: true,
+                        top: false
+                    }
+                },
+                messages: [{
+                    id: 'legacy',
+                    version: '^6',
+                    content: 'Ghost 6.42.1 is available',
+                    type: 'info',
+                    top: false,
+                    dismissible: true
+                }]
+            };
+
+            nock('https://updates.ghost.org')
+                .get('/')
+                .query(true)
+                .reply(200, JSON.stringify([notification]), {'Content-Type': 'application/json'});
+
+            const notificationsAPIAddStub = sinon.stub().resolves();
+            const emailSendStub = sinon.stub().resolves();
+            const usersBrowseStub = adminUsersStub();
+
+            await makeService({notificationsAPIAddStub, emailSendStub, usersBrowseStub}).check();
+
+            sinon.assert.calledOnce(notificationsAPIAddStub);
+            assert.equal(notificationsAPIAddStub.args[0][0].notifications[0].message, 'Ghost 6.42.1 is available');
+            sinon.assert.notCalled(emailSendStub);
+        });
+
+        it('routes an email-only channels notification to the email surface and persists no banner', async function () {
+            const notification = {
+                id: 'email-only',
+                version: 'email-only',
+                target: {ghost_versions: '*'},
+                channels: {
+                    email: {
+                        subject: 'Email-only notice',
+                        content: '<p>Body</p>'
+                    }
+                },
+                messages: []
+            };
+
+            nock('https://updates.ghost.org')
+                .get('/')
+                .query(true)
+                .reply(200, JSON.stringify([notification]), {'Content-Type': 'application/json'});
+
+            const notificationsAPIAddStub = sinon.stub().resolves();
+            const emailSendStub = sinon.stub().resolves();
+            const usersBrowseStub = adminUsersStub();
+
+            await makeService({notificationsAPIAddStub, emailSendStub, usersBrowseStub}).check();
+
+            sinon.assert.calledOnce(emailSendStub);
+            assert.equal(emailSendStub.args[0][0].subject, 'Email-only notice');
+            assert.equal(emailSendStub.args[0][0].content, '<p>Body</p>');
+            sinon.assert.notCalled(notificationsAPIAddStub);
+        });
+
+        it('falls back to legacy messages handling when channels is absent', async function () {
+            // Same shape and assertions as the existing 'should send an
+            // email for critical notification' test; here we re-prove the
+            // legacy path explicitly within the channels dispatch suite so
+            // the fallback contract is its own pinned outcome.
+            const notification = {
+                id: 1,
+                messages: [{
+                    id: crypto.randomUUID(),
+                    version: 'custom1',
+                    content: '<p>Critical legacy message</p>',
+                    dismissible: false,
+                    top: true,
+                    type: 'alert'
+                }]
+            };
+
+            nock('https://updates.ghost.org')
+                .get('/')
+                .query(true)
+                .reply(200, JSON.stringify([notification]), {'Content-Type': 'application/json'});
+
+            const notificationsAPIAddStub = sinon.stub().resolves();
+            const emailSendStub = sinon.stub().resolves();
+            const usersBrowseStub = adminUsersStub();
+
+            await makeService({notificationsAPIAddStub, emailSendStub, usersBrowseStub}).check();
+
+            sinon.assert.calledOnce(notificationsAPIAddStub);
+            assert.equal(notificationsAPIAddStub.args[0][0].notifications[0].message, '<p>Critical legacy message</p>');
+            sinon.assert.calledOnce(emailSendStub);
+            assert.equal(emailSendStub.args[0][0].content, '<p>Critical legacy message</p>');
+        });
+
+        it('does not double-deliver when both channels and messages are present', async function () {
+            // The wire carries both for backwards-compat. Dispatcher must
+            // pick exactly one path per notification, not both, so an
+            // install never gets two banners or two emails for one event.
+            const notification = {
+                id: 'ghsa-YYY',
+                version: 'ghsa-YYY',
+                target: {ghost_versions: '*'},
+                channels: {
+                    banner: {content: 'banner from channels', dismissible: false, top: true},
+                    email: {subject: 'subj', content: 'email from channels'}
+                },
+                messages: [{
+                    id: 'legacy',
+                    version: '*',
+                    content: 'content from messages',
+                    type: 'alert',
+                    top: true,
+                    dismissible: false
+                }]
+            };
+
+            nock('https://updates.ghost.org')
+                .get('/')
+                .query(true)
+                .reply(200, JSON.stringify([notification]), {'Content-Type': 'application/json'});
+
+            const notificationsAPIAddStub = sinon.stub().resolves();
+            const emailSendStub = sinon.stub().resolves();
+            const usersBrowseStub = adminUsersStub();
+
+            await makeService({notificationsAPIAddStub, emailSendStub, usersBrowseStub}).check();
+
+            // Exactly one banner add, with channels content (not messages content)
+            sinon.assert.calledOnce(notificationsAPIAddStub);
+            assert.equal(notificationsAPIAddStub.args[0][0].notifications[0].message, 'banner from channels');
+
+            // Exactly one email send, with channels content + subject
+            sinon.assert.calledOnce(emailSendStub);
+            assert.equal(emailSendStub.args[0][0].content, 'email from channels');
+            assert.equal(emailSendStub.args[0][0].subject, 'subj');
+        });
+    });
+
     describe('Error handling', function () {
         it('logs an error when error', function () {
             const updateCheckService = new UpdateCheckService({

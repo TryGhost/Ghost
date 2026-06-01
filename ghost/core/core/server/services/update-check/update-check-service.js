@@ -303,20 +303,97 @@ class UpdateCheckService {
     }
 
     /**
-     * @description Create a Ghost notification and call the API controller.
+     * @description Dispatches a notification per its channels when present,
+     * falling back to legacy messages handling otherwise. Channels and
+     * messages may both be on the wire for backwards compatibility;
+     * channels wins to avoid double-delivery.
      *
      * @param {Object} notification
      * @return {Promise}
      */
     async createCustomNotification(notification) {
-        if (!notification || !notification.messages || notification.messages.length === 0) {
-            debug(`Skipping notification creation as there are no messages to process`);
+        if (!notification) {
             return;
         }
 
-        debug(`creating custom notifications for ${notification.messages.length} notifications`);
+        if (this.#hasChannels(notification)) {
+            debug('dispatching notification via channels', {id: notification.id});
+            return this.#dispatchChannels(notification);
+        }
 
+        if (!notification.messages || notification.messages.length === 0) {
+            debug('Skipping notification with no channels and no messages', {id: notification.id});
+            return;
+        }
+
+        debug('dispatching notification via legacy messages', {id: notification.id});
+        return this.#dispatchLegacyMessages(notification);
+    }
+
+    #hasChannels(notification) {
+        const channels = notification.channels;
+        return Boolean(channels && (channels.banner || channels.email));
+    }
+
+    async #dispatchChannels(notification) {
+        const {channels} = notification;
+        const delivered = [];
+
+        if (channels.banner) {
+            await this.api.notifications.add({
+                notifications: [{
+                    id: notification.id,
+                    custom: notification.custom,
+                    createdAt: moment(notification.created_at).toDate(),
+                    // status: 'alert' enables htmlSafe rendering for the
+                    // sanitised HTML content.
+                    status: 'alert',
+                    // type: 'info' — channel dispatch handles email
+                    // separately; type: 'alert' would trigger a duplicate
+                    // legacy email.
+                    type: 'info',
+                    dismissible: channels.banner.dismissible,
+                    top: !!channels.banner.top,
+                    message: channels.banner.content
+                }]
+            }, {context: {internal: true}});
+            delivered.push('banner');
+        }
+
+        if (channels.email) {
+            try {
+                const {users} = await this.api.users.browse({
+                    filter: 'status:active+roles.name:[Owner,Administrator]',
+                    ...internal
+                });
+                const to = users.map(user => user.email);
+                if (to.length > 0) {
+                    await this.notificationEmailService.send({
+                        to,
+                        subject: channels.email.subject,
+                        content: channels.email.content
+                    });
+                    delivered.push('email');
+                }
+            } catch (err) {
+                this.logging.error(err);
+                if (this.config.rethrowErrors) {
+                    throw err;
+                }
+            }
+        }
+
+        this.logging.info({
+            event: 'notification.dispatched',
+            notification_id: String(notification.id),
+            shape: 'channels',
+            channels: delivered
+        }, 'update-check notification dispatched via channels');
+    }
+
+    async #dispatchLegacyMessages(notification) {
         const siteUrl = this.config.siteUrl;
+        const delivered = [];
 
         for (const message of notification.messages) {
             const toAdd = {
@@ -342,6 +419,7 @@ class UpdateCheckService {
                         subject: `Action required: Critical alert from Ghost instance ${siteUrl}`,
                         content: toAdd.message
                     });
+                    delivered.push('email');
                 } catch (err) {
                     this.logging.error(err);
                     if (this.config.rethrowErrors) {
@@ -352,7 +430,15 @@ class UpdateCheckService {
 
             debug('Add Custom Notification', toAdd);
             await this.api.notifications.add({notifications: [toAdd]}, {context: {internal: true}});
+            delivered.push('banner');
         }
+
+        this.logging.info({
+            event: 'notification.dispatched',
+            notification_id: String(notification.id),
+            shape: 'messages',
+            channels: delivered
+        }, 'update-check notification dispatched via legacy messages');
     }
     /**
      * @description Entry point to trigger the update check unit.
