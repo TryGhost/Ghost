@@ -12,10 +12,96 @@ describe('Comments Service: CommentsService', function () {
         };
     }
 
-    function createClassInstance({labs = {}, commentsEnabled = 'all'} = {}) {
+    function buildCommentModel(attributes) {
+        return {
+            id: attributes.id,
+            get: sinon.stub().callsFake(key => attributes[key])
+        };
+    }
+
+    function createClassInstance({labs = {}, commentsEnabled = 'all', commentStatus = 'published'} = {}) {
+        let lastCommentColumns;
+        const commentFetchModels = [];
         const memberModel = {
             id: 'member-id',
-            get: sinon.stub().withArgs('status').returns('paid')
+            get: sinon.stub().withArgs('status').returns('paid'),
+            toJSON: sinon.stub().returns({status: 'paid'})
+        };
+        const postModel = {
+            id: 'post-id',
+            toJSON: sinon.stub().returns({id: 'post-id'})
+        };
+        const commentModel = {
+            id: 'comment-id',
+            get: sinon.stub().callsFake((key) => {
+                const values = {
+                    id: 'comment-id',
+                    post_id: 'post-id',
+                    parent_id: null,
+                    member_id: 'member-id',
+                    html: '<p>Comment</p>',
+                    created_at: new Date('2026-01-01T00:00:00.000Z'),
+                    status: commentStatus
+                };
+
+                if (lastCommentColumns && !lastCommentColumns.includes(key)) {
+                    return key === 'status' ? 'published' : undefined;
+                }
+
+                return values[key];
+            })
+        };
+        const commentLikeQuery = {
+            where: sinon.stub().returnsThis(),
+            orderBy: sinon.stub().returnsThis()
+        };
+        const commentLikeCollection = {
+            query: sinon.stub().callsFake((callback) => {
+                callback(commentLikeQuery);
+            }),
+            fetchAll: sinon.stub().resolves({models: []})
+        };
+        const createCommentFetchModel = () => {
+            const filters = {};
+            const commentFetchQuery = {
+                where: sinon.stub().callsFake((column, value) => {
+                    filters[column] = value;
+                    return commentFetchQuery;
+                }),
+                whereIn: sinon.stub().callsFake((column, value) => {
+                    filters[column] = value;
+                    return commentFetchQuery;
+                }),
+                forUpdate: sinon.stub().returnsThis()
+            };
+            const commentFetchModel = {
+                filters,
+                query: sinon.stub().callsFake((callback) => {
+                    callback(commentFetchQuery);
+                    return commentFetchModel;
+                }),
+                fetch: sinon.stub().callsFake(async (options = {}) => {
+                    lastCommentColumns = options.columns;
+                    const expectedId = filters['comments.id'];
+                    const expectedStatus = filters['comments.status'];
+
+                    if (expectedId && expectedId !== commentModel.id) {
+                        return null;
+                    }
+
+                    if (Array.isArray(expectedStatus) && !expectedStatus.includes(commentStatus)) {
+                        return null;
+                    }
+
+                    if (expectedStatus && !Array.isArray(expectedStatus) && expectedStatus !== commentStatus) {
+                        return null;
+                    }
+
+                    return commentModel;
+                })
+            };
+            commentFetchModels.push(commentFetchModel);
+            return commentFetchModel;
         };
         const models = {
             Base: {
@@ -27,13 +113,35 @@ describe('Comments Service: CommentsService', function () {
                 findOne: sinon.stub().resolves(memberModel)
             },
             Comment: {
-                findPage: sinon.stub().resolves({data: [], meta: {}})
+                findOne: sinon.stub().callsFake(async (data, options = {}) => {
+                    lastCommentColumns = options.columns;
+                    if (data.id && data.id !== commentModel.id) {
+                        return null;
+                    }
+
+                    if (data.status && data.status !== commentStatus) {
+                        return null;
+                    }
+
+                    return commentModel;
+                }),
+                forge: sinon.stub().callsFake(createCommentFetchModel),
+                findPage: sinon.stub().resolves({data: [], meta: {}}),
+                add: sinon.stub().resolves(commentModel),
+                edit: sinon.stub().resolves(commentModel)
+            },
+            Post: {
+                findOne: sinon.stub().resolves(postModel)
             },
             CommentLike: {
-                findAll: sinon.stub().resolves({models: []}),
+                forge: sinon.stub().returns(commentLikeCollection),
                 add: sinon.stub().resolves({id: 'like-id'}),
                 edit: sinon.stub().resolves({id: 'like-id'}),
                 destroy: sinon.stub().resolves()
+            },
+            CommentReport: {
+                findOne: sinon.stub().resolves(null),
+                add: sinon.stub().resolves({id: 'report-id'})
             }
         };
 
@@ -52,22 +160,26 @@ describe('Comments Service: CommentsService', function () {
             settingsHelpers: {},
             urlService: {},
             urlUtils: {},
-            contentGating: {},
+            contentGating: {
+                BLOCK_ACCESS: 'block',
+                checkPostAccess: sinon.stub().returns('allow')
+            },
             labs: labsStub
         });
+        instance.emails.notifyReport = sinon.stub().resolves();
 
-        return {instance, models, memberModel, labs: labsStub};
+        return {instance, models, memberModel, commentModel, commentFetchModels, commentLikeQuery, commentLikeCollection, labs: labsStub};
     }
 
     describe('likeComment', function () {
         it('adds a like score when there is no existing vote', async function () {
-            const {instance, models} = createClassInstance();
+            const {instance, models, commentLikeQuery} = createClassInstance();
 
             await instance.likeComment('comment-id', {id: 'member-id'}, {context: {member: {id: 'member-id'}}});
 
-            sinon.assert.calledWith(models.CommentLike.findAll, sinon.match({
-                filter: 'comment_id:\'comment-id\'+member_id:\'member-id\''
-            }));
+            sinon.assert.calledWith(commentLikeQuery.where, 'comment_likes.comment_id', 'comment-id');
+            sinon.assert.calledWith(commentLikeQuery.where, 'comment_likes.member_id', 'member-id');
+            sinon.assert.calledWith(commentLikeQuery.orderBy, 'comment_likes.created_at', 'asc');
             sinon.assert.calledWith(models.CommentLike.add, {
                 member_id: 'member-id',
                 comment_id: 'comment-id',
@@ -75,14 +187,28 @@ describe('Comments Service: CommentsService', function () {
             });
         });
 
+        it('checks comment status with a lean lookup inside the vote transaction', async function () {
+            const {instance, models, commentFetchModels} = createClassInstance();
+
+            await instance.likeComment('comment-id', {id: 'member-id'}, {context: {member: {id: 'member-id'}}});
+
+            sinon.assert.notCalled(models.Comment.findOne);
+            assert.equal(commentFetchModels[0].filters['comments.id'], 'comment-id');
+            assert.equal(commentFetchModels[0].filters['comments.status'], 'published');
+            sinon.assert.calledWith(commentFetchModels[0].fetch, sinon.match({
+                transacting: 'transaction',
+                columns: ['id']
+            }));
+        });
+
         it('replaces duplicate existing votes with one like score', async function () {
-            const {instance, models} = createClassInstance();
+            const {instance, models, commentLikeCollection} = createClassInstance();
             const votes = [
                 voteModel({id: 'vote-1', score: -1}),
                 voteModel({id: 'vote-2', score: -1}),
                 voteModel({id: 'vote-3', score: 1})
             ];
-            models.CommentLike.findAll.resolves({models: votes});
+            commentLikeCollection.fetchAll.resolves({models: votes});
 
             await instance.likeComment('comment-id', {id: 'member-id'}, {context: {member: {id: 'member-id'}}});
 
@@ -100,9 +226,9 @@ describe('Comments Service: CommentsService', function () {
         });
 
         it('rejects one existing like without rewriting the row', async function () {
-            const {instance, models} = createClassInstance();
+            const {instance, models, commentLikeCollection} = createClassInstance();
             const vote = voteModel({id: 'vote-1', score: 1});
-            models.CommentLike.findAll.resolves({models: [vote]});
+            commentLikeCollection.fetchAll.resolves({models: [vote]});
 
             await assert.rejects(
                 () => instance.likeComment('comment-id', {id: 'member-id'}, {context: {member: {id: 'member-id'}}}),
@@ -116,9 +242,9 @@ describe('Comments Service: CommentsService', function () {
 
     describe('dislikeComment', function () {
         it('replaces an existing like score with a dislike score', async function () {
-            const {instance, models} = createClassInstance();
+            const {instance, models, commentLikeCollection} = createClassInstance();
             const vote = voteModel({id: 'vote-id', score: 1});
-            models.CommentLike.findAll.resolves({models: [vote]});
+            commentLikeCollection.fetchAll.resolves({models: [vote]});
 
             await instance.dislikeComment('comment-id', {id: 'member-id'}, {context: {member: {id: 'member-id'}}});
 
@@ -146,39 +272,258 @@ describe('Comments Service: CommentsService', function () {
 
     describe('unlikeComment', function () {
         it('removes every positive duplicate vote', async function () {
-            const {instance, models} = createClassInstance();
+            const {instance, commentLikeCollection, commentLikeQuery} = createClassInstance();
             const positiveVotes = [
                 voteModel({id: 'vote-1', score: 1}),
                 voteModel({id: 'vote-2', score: 1})
             ];
-            const negativeVote = voteModel({id: 'vote-3', score: -1});
-            models.CommentLike.findAll.resolves({models: [...positiveVotes, negativeVote]});
+            commentLikeCollection.fetchAll.resolves({models: positiveVotes});
 
             await instance.unlikeComment('comment-id', {id: 'member-id'});
 
+            sinon.assert.calledWith(commentLikeQuery.where, 'comment_likes.comment_id', 'comment-id');
+            sinon.assert.calledWith(commentLikeQuery.where, 'comment_likes.member_id', 'member-id');
+            sinon.assert.calledWith(commentLikeQuery.where, 'comment_likes.score', 1);
             positiveVotes.forEach((vote) => {
                 sinon.assert.calledOnce(vote.destroy);
             });
-            sinon.assert.notCalled(negativeVote.destroy);
         });
     });
 
     describe('undislikeComment', function () {
         it('removes every negative duplicate vote', async function () {
-            const {instance, models} = createClassInstance();
-            const positiveVote = voteModel({id: 'vote-1', score: 1});
+            const {instance, commentLikeCollection, commentLikeQuery} = createClassInstance();
             const negativeVotes = [
                 voteModel({id: 'vote-2', score: -1}),
                 voteModel({id: 'vote-3', score: -1})
             ];
-            models.CommentLike.findAll.resolves({models: [positiveVote, ...negativeVotes]});
+            commentLikeCollection.fetchAll.resolves({models: negativeVotes});
 
             await instance.undislikeComment('comment-id', {id: 'member-id'});
 
-            sinon.assert.notCalled(positiveVote.destroy);
+            sinon.assert.calledWith(commentLikeQuery.where, 'comment_likes.score', -1);
             negativeVotes.forEach((vote) => {
                 sinon.assert.calledOnce(vote.destroy);
             });
+        });
+    });
+
+    describe('comment votes on non-public comments', function () {
+        async function assertVoteActionRejects(status, run) {
+            const {instance, models, commentLikeCollection} = createClassInstance({commentStatus: status});
+
+            await assert.rejects(
+                () => run(instance),
+                errors.NotFoundError
+            );
+
+            sinon.assert.notCalled(commentLikeCollection.fetchAll);
+            sinon.assert.notCalled(models.CommentLike.add);
+        }
+
+        it('does not add votes to hidden or deleted comments', async function () {
+            for (const status of ['hidden', 'deleted']) {
+                await assertVoteActionRejects(status, (instance) => {
+                    return instance.likeComment('comment-id', {id: 'member-id'}, {
+                        columns: ['id'],
+                        context: {member: {id: 'member-id'}}
+                    });
+                });
+            }
+        });
+
+        it('does not clear votes from hidden or deleted comments', async function () {
+            for (const status of ['hidden', 'deleted']) {
+                await assertVoteActionRejects(status, (instance) => {
+                    return instance.unlikeComment('comment-id', {id: 'member-id'}, {
+                        columns: ['id'],
+                        context: {member: {id: 'member-id'}}
+                    });
+                });
+            }
+        });
+    });
+
+    describe('reportComment', function () {
+        it('creates a report for a published comment', async function () {
+            const {instance, models, commentModel} = createClassInstance();
+            const reporter = {id: 'member-id'};
+            instance.emails.notifyReport.callsFake((comment) => {
+                assert.equal(comment.get('post_id'), 'post-id');
+                assert.equal(comment.get('member_id'), 'member-id');
+                assert.equal(comment.get('html'), '<p>Comment</p>');
+                assert.deepEqual(comment.get('created_at'), new Date('2026-01-01T00:00:00.000Z'));
+            });
+
+            await instance.reportComment('comment-id', reporter, {columns: ['id'], context: {member: reporter}});
+
+            sinon.assert.calledWith(models.CommentReport.findOne, {
+                comment_id: 'comment-id',
+                member_id: 'member-id'
+            });
+            sinon.assert.calledWith(models.CommentReport.add, {
+                comment_id: 'comment-id',
+                member_id: 'member-id'
+            });
+            sinon.assert.calledWith(instance.emails.notifyReport, commentModel, reporter);
+        });
+
+        it('does not report hidden or deleted comments', async function () {
+            for (const status of ['hidden', 'deleted']) {
+                const {instance, models} = createClassInstance({commentStatus: status});
+                const reporter = {id: 'member-id'};
+
+                await assert.rejects(
+                    () => instance.reportComment('comment-id', reporter, {columns: ['id'], context: {member: reporter}}),
+                    errors.NotFoundError
+                );
+
+                sinon.assert.notCalled(models.CommentReport.findOne);
+                sinon.assert.notCalled(models.CommentReport.add);
+                sinon.assert.notCalled(instance.emails.notifyReport);
+            }
+        });
+    });
+
+    describe('getCommentByID', function () {
+        it('uses an exact comment lookup for member-facing direct reads', async function () {
+            const {instance, models} = createClassInstance();
+            const id = 'missing\',id:\'comment-id';
+
+            await assert.rejects(
+                () => instance.getCommentByID(id, {context: {member: {id: 'member-id'}}}),
+                errors.NotFoundError
+            );
+
+            sinon.assert.calledWith(models.Comment.findOne, {
+                id,
+                status: 'published'
+            });
+            sinon.assert.notCalled(models.Comment.findPage);
+        });
+
+        it('returns hidden comments to member-facing direct reads', async function () {
+            const {instance, models, commentModel} = createClassInstance({commentStatus: 'hidden'});
+
+            const result = await instance.getCommentByID('comment-id', {columns: ['id'], context: {member: {id: 'member-id'}}});
+
+            assert.equal(result, commentModel);
+            sinon.assert.calledWith(models.Comment.findOne.firstCall, {
+                id: 'comment-id',
+                status: 'published'
+            });
+            sinon.assert.calledWith(models.Comment.findOne.secondCall, {
+                id: 'comment-id',
+                status: 'hidden'
+            });
+        });
+
+        it('does not return deleted comments to member-facing direct reads', async function () {
+            const {instance} = createClassInstance({commentStatus: 'deleted'});
+
+            await assert.rejects(
+                () => instance.getCommentByID('comment-id', {columns: ['id'], context: {member: {id: 'member-id'}}}),
+                errors.NotFoundError
+            );
+        });
+    });
+
+    describe('replyToComment', function () {
+        it('allows replies to hidden parent comments even when requested fields omit internal columns', async function () {
+            const {instance, models} = createClassInstance({commentStatus: 'hidden'});
+
+            await instance.replyToComment('comment-id', undefined, 'member-id', '<p>Reply</p>', {
+                columns: ['id'],
+                context: {
+                    internal: true,
+                    member: {id: 'member-id'}
+                }
+            });
+
+            sinon.assert.calledWith(models.Comment.add, sinon.match({
+                post_id: 'post-id',
+                member_id: 'member-id',
+                parent_id: 'comment-id',
+                html: '<p>Reply</p>',
+                status: 'published'
+            }));
+        });
+
+        it('keeps hidden in_reply_to links so live descendants stay threaded', async function () {
+            const {instance, models} = createClassInstance();
+            const parentComment = buildCommentModel({
+                id: 'parent-id',
+                post_id: 'post-id',
+                parent_id: null,
+                status: 'published'
+            });
+            const hiddenReply = buildCommentModel({
+                id: 'reply-id',
+                post_id: 'post-id',
+                parent_id: 'parent-id',
+                status: 'hidden'
+            });
+
+            models.Comment.findOne.callsFake(async (data) => {
+                if (data.id === 'parent-id' && (!data.status || data.status === 'published')) {
+                    return parentComment;
+                }
+
+                if (data.id === 'reply-id' && data.status === 'hidden') {
+                    return hiddenReply;
+                }
+
+                return null;
+            });
+
+            await instance.replyToComment('parent-id', 'reply-id', 'member-id', '<p>Reply</p>', {
+                columns: ['id'],
+                context: {
+                    internal: true,
+                    member: {id: 'member-id'}
+                }
+            });
+
+            sinon.assert.calledWith(models.Comment.add, sinon.match({
+                post_id: 'post-id',
+                member_id: 'member-id',
+                parent_id: 'parent-id',
+                in_reply_to_id: 'reply-id',
+                html: '<p>Reply</p>',
+                status: 'published'
+            }));
+            sinon.assert.calledWith(models.Comment.findOne.secondCall, {
+                id: 'reply-id',
+                status: 'published'
+            });
+            sinon.assert.calledWith(models.Comment.findOne.thirdCall, {
+                id: 'reply-id',
+                status: 'hidden'
+            });
+        });
+    });
+
+    describe('editCommentContent', function () {
+        it('checks ownership before returning an unchanged comment', async function () {
+            const {instance, commentModel} = createClassInstance();
+            commentModel.get.withArgs('member_id').returns('owner-id');
+
+            await assert.rejects(
+                () => instance.editCommentContent('comment-id', 'member-id', undefined, {context: {member: {id: 'member-id'}}}),
+                errors.NoPermissionError
+            );
+        });
+
+        it('selects member_id before checking ownership when requested fields omit it', async function () {
+            const {instance, models, commentModel} = createClassInstance();
+
+            const result = await instance.editCommentContent('comment-id', 'member-id', undefined, {
+                columns: ['id'],
+                context: {member: {id: 'member-id'}}
+            });
+
+            assert.equal(result, commentModel);
+            sinon.assert.notCalled(models.Comment.edit);
         });
     });
 
