@@ -270,16 +270,8 @@ export function hasRecommendations({site}) {
     return site?.recommendations_enabled === true;
 }
 
-export function hasGiftSubscriptions({site}) {
-    return site?.labs?.giftSubscriptions === true;
-}
-
 export function isStripeConfigured({site}) {
     return site?.is_stripe_configured === true;
-}
-
-export function canPurchaseGift({site}) {
-    return hasGiftSubscriptions({site}) && isStripeConfigured({site});
 }
 
 export function isSigninAllowed({site}) {

@@ -403,13 +403,13 @@ describe('Portal Data links:', () => {
     });
 
     describe('#/portal/gift', () => {
-        test('opens gift page when giftSubscriptions labs flag is enabled', async () => {
+        test('opens gift page', async () => {
             window.location.hash = '#/portal/gift';
 
             let {
                 popupFrame, triggerButtonFrame, ...utils
             } = await setup({
-                site: {...FixtureSite.singleTier.basic, labs: {giftSubscriptions: true}},
+                site: FixtureSite.singleTier.basic,
                 showPopup: false
             });
 
@@ -422,27 +422,13 @@ describe('Portal Data links:', () => {
             expect(giftSubtitle).toBeInTheDocument();
         });
 
-        test('does not open when giftSubscriptions labs flag is disabled', async () => {
-            window.location.hash = '#/portal/gift';
-
-            let {
-                popupFrame, triggerButtonFrame
-            } = await setup({
-                site: {...FixtureSite.singleTier.basic, labs: {}},
-                showPopup: false
-            });
-
-            expect(triggerButtonFrame).toBeInTheDocument();
-            expect(popupFrame).not.toBeInTheDocument();
-        });
-
         test('does not open when Stripe is disconnected', async () => {
             window.location.hash = '#/portal/gift';
 
             let {
                 popupFrame, triggerButtonFrame
             } = await setup({
-                site: {...FixtureSite.singleTier.withoutStripe, labs: {giftSubscriptions: true}},
+                site: FixtureSite.singleTier.withoutStripe,
                 showPopup: false
             });
 
@@ -458,7 +444,7 @@ describe('Portal Data links:', () => {
             window.location.hash = giftRedemptionHash;
 
             return setup({
-                site: {...FixtureSite.singleTier.basic, labs: {giftSubscriptions: true}},
+                site: FixtureSite.singleTier.basic,
                 member: FixtureMember.free,
                 showPopup: false,
                 giftError,
@@ -567,7 +553,7 @@ describe('Portal Data links:', () => {
             let {
                 ghostApi, popupFrame, triggerButtonFrame, ...utils
             } = await setup({
-                site: {...FixtureSite.singleTier.basic, labs: {giftSubscriptions: true}},
+                site: FixtureSite.singleTier.basic,
                 member: null,
                 showPopup: false
             });
@@ -582,26 +568,10 @@ describe('Portal Data links:', () => {
             expect(within(popupIframeDocument).getByLabelText(/your email/i)).toBeInTheDocument();
             expect(ghostApi.gift.fetchRedemptionData).toHaveBeenCalledWith({token: 'gift-token-123'});
         });
-
-        // TODO for GA: Remove test
-        test('does not open when giftSubscriptions labs flag is disabled', async () => {
-            window.location.hash = '#/portal/gift/redeem/gift-token-123';
-
-            let {
-                ghostApi, popupFrame, triggerButtonFrame
-            } = await setup({
-                site: {...FixtureSite.singleTier.basic, labs: {}},
-                showPopup: false
-            });
-
-            expect(triggerButtonFrame).toBeInTheDocument();
-            expect(popupFrame).not.toBeInTheDocument();
-            expect(ghostApi.gift.fetchRedemptionData).not.toHaveBeenCalled();
-        });
     });
 
     describe('?stripe=gift-purchase-success', () => {
-        test('opens gift success page when giftSubscriptions labs flag is enabled', async () => {
+        test('opens gift success page', async () => {
             window.location.href = 'https://portal.localhost/?stripe=gift-purchase-success&gift_token=abc123';
             window.location.search = '?stripe=gift-purchase-success&gift_token=abc123';
             window.location.hash = '';
@@ -610,7 +580,7 @@ describe('Portal Data links:', () => {
             let {
                 popupFrame, triggerButtonFrame, ...utils
             } = await setup({
-                site: {...FixtureSite.singleTier.basic, labs: {giftSubscriptions: true}},
+                site: FixtureSite.singleTier.basic,
                 showPopup: false
             });
 
@@ -635,7 +605,7 @@ describe('Portal Data links:', () => {
             let {
                 popupFrame, triggerButtonFrame
             } = await setup({
-                site: {...FixtureSite.singleTier.basic, labs: {giftSubscriptions: true}},
+                site: FixtureSite.singleTier.basic,
                 showPopup: false
             });
 

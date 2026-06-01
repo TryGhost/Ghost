@@ -26,7 +26,6 @@ const GA_FEATURES = [
     'commentsThreads',
     'commentsPinning',
     'featurebaseFeedback',
-    'giftSubscriptions',
     'dangerZoneResetAuth'
 ];
 

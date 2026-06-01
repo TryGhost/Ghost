@@ -301,7 +301,7 @@ export default class KoenigLexicalEditor extends Component {
             };
 
             const giftLink = () => {
-                if (this.feature.giftSubscriptions) {
+                if (this.membersUtils.paidMembersEnabled) {
                     return [{
                         label: 'Gift subscriptions',
                         value: '#/portal/gift'

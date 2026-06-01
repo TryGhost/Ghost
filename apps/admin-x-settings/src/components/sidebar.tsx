@@ -57,15 +57,14 @@ const Sidebar: React.FC = () => {
     const [hasTipsAndDonations, isPrivate] = getSettingValues(settings, ['donations_enabled', 'is_private']) as [string, boolean];
     const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
     const hasAutomations = useFeatureFlag('automations');
-    const hasGiftSubscriptions = useFeatureFlag('giftSubscriptions');
     const visibleMembershipSearchKeywords = React.useMemo(() => [
         membershipSearchKeywords.access,
         membershipSearchKeywords.tiers,
         membershipSearchKeywords.portal,
-        ...(hasGiftSubscriptions && hasStripeEnabled ? [membershipSearchKeywords.giftSubscriptions] : []),
+        ...(hasStripeEnabled ? [membershipSearchKeywords.giftSubscriptions] : []),
         ...(hasAutomations ? [] : [membershipSearchKeywords.memberEmails]),
         membershipSearchKeywords.tips
-    ].flat(), [hasAutomations, hasGiftSubscriptions, hasStripeEnabled]);
+    ].flat(), [hasAutomations, hasStripeEnabled]);
 
     // Focus in on search field when pressing "/"
     useEffect(() => {
@@ -220,7 +219,7 @@ const Sidebar: React.FC = () => {
                     />
                     <NavItem icon='bills' keywords={membershipSearchKeywords.tiers} navid='tiers' title="Tiers" onClick={handleSectionClick} />
                     <NavItem icon='portal' keywords={membershipSearchKeywords.portal} navid='portal' title="Signup portal" onClick={handleSectionClick} />
-                    {hasGiftSubscriptions && hasStripeEnabled && <NavItem icon='gift' keywords={membershipSearchKeywords.giftSubscriptions} navid='gift-subscriptions' title="Gift subscriptions" onClick={handleSectionClick} />}
+                    {hasStripeEnabled && <NavItem icon='gift' keywords={membershipSearchKeywords.giftSubscriptions} navid='gift-subscriptions' title="Gift subscriptions" onClick={handleSectionClick} />}
                     {!hasAutomations && <NavItem icon='mailplus' keywords={membershipSearchKeywords.memberEmails} navid='memberemails' title="Welcome emails" onClick={handleSectionClick} />}
                     {hasTipsAndDonations && hasStripeEnabled && <NavItem icon='piggybank' keywords={membershipSearchKeywords.tips} navid='tips-and-donations' title="Tips & donations" onClick={handleSectionClick} />}
                     <NavItem icon='email' keywords={emailSearchKeywords.newslettersNavMenu} navid={['enable-newsletters', 'default-recipients', 'newsletters', 'mailgun']} title="Newsletters" onClick={handleSectionClick} />

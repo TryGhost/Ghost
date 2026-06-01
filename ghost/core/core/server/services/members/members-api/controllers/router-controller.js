@@ -29,7 +29,6 @@ const messages = {
     memberNotFound: 'No member exists with this e-mail address.',
     invalidType: 'Invalid checkout type.',
     notConfigured: 'This site is not accepting payments at the moment.',
-    giftSubscriptionsNotEnabled: 'Gift subscriptions are not enabled on this site.',
     invalidNewsletters: 'Cannot subscribe to invalid newsletters {newsletters}',
     archivedNewsletters: 'Cannot subscribe to archived newsletters {newsletters}',
     otcNotSupported: 'OTC verification not supported.',
@@ -808,12 +807,6 @@ module.exports = class RouterController {
             options.personalNote = parsePersonalNote(req.body.personalNote);
             response = await this._createDonationCheckoutSession(options);
         } else if (type === 'gift') {
-            if (!this.labsService.isSet('giftSubscriptions')) {
-                throw new BadRequestError({
-                    message: tpl(messages.giftSubscriptionsNotEnabled)
-                });
-            }
-
             if (!membersEnabled) {
                 throw new BadRequestError({
                     message: tpl(messages.badRequest)

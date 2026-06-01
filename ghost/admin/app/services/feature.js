@@ -67,7 +67,7 @@ export default class FeatureService extends Service {
     @feature('lexicalIndicators') lexicalIndicators;
     @feature('editorExcerpt') editorExcerpt;
     @feature('tagsX') tagsX;
-    @feature('giftSubscriptions') giftSubscriptions;
+    @feature('commentModeration') commentModeration;
     _user = null;
 
     @computed('settings.labs')
