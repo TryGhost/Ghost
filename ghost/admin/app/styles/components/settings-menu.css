@@ -217,10 +217,15 @@
 /* Gift link control under the post access setting.
    Sits with the same .form-group rhythm as the fields around it. */
 
-/* Generate state: a de-emphasised link button */
-.gh-psm-gift-link-button span {
-    font-size: 1.3rem;
-    font-weight: 500;
+/* Generate state: a small outline button mirroring the modal's reset button */
+.gh-psm-gift-link-generate {
+    margin-top: 2px;
+}
+
+.gh-psm-gift-link-generate span {
+    height: 28px;
+    padding: 0 12px;
+    line-height: 28px;
 }
 
 /* The link itself is a plain, copyable link (not a text field) */
