@@ -36,8 +36,7 @@ module.exports = class ChargeRefundedEventService {
 
         // Gifts are identified by a payment_intent_id match in the gift
         // repository; non-matching charges (subscription renewals, donations,
-        // unrelated one-time payments) are no-ops. We can't filter by
-        // `charge.invoice` here — gift Checkout sessions create invoices too.
+        // unrelated one-time payments) are no-ops.
         await this.handleGiftRefundEvent(paymentIntentId);
     }
 
