@@ -316,12 +316,12 @@ describe('{{content}} helper gift callout', function () {
         assert(!rendered.string.includes('gh-gift-callout'));
     });
 
-    it('shows the upgrade CTA for a logged-in member reading via a gift', function () {
+    it('does not render the callout for a signed-in member reading via a gift', function () {
         const rendered = content.call(
             {id: 'post-1', html: '<p>Full content</p>', access: true},
             optionsFor({post_id: 'post-1'}, {uuid: 'm1'})
         );
-        assert(rendered.string.includes('gh-gift-callout'));
-        assert(rendered.string.includes('Upgrade your account'));
+        assert(rendered.string.includes('<p>Full content</p>'), 'keeps the full content');
+        assert(!rendered.string.includes('gh-gift-callout'), 'no callout for signed-in members');
     });
 });

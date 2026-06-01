@@ -129,14 +129,8 @@
 <aside class="gh-gift-callout" data-gift-callout style="--gh-gift-accent: {{@site.accent_color}}">
     <div class="gh-gift-callout-content">
         <label class="gh-gift-callout-close" for="gh-gift-callout-dismiss" title="{{t "Dismiss"}}" aria-hidden="true">&times;</label>
-        {{#if @member}}
-            <h2>{{t "You're reading a gifted post"}}</h2>
-            <p>{{t "Get full access to every post by upgrading your account."}}</p>
-            <a class="gh-gift-callout-btn" data-portal="account/plans" href="#/portal/account/plans">{{t "Upgrade your account"}}</a>
-        {{else}}
-            <h2>{{t "This post was shared with you"}}</h2>
-            <p>{{t "Subscribe to get full access to every post."}}</p>
-            <a class="gh-gift-callout-btn" data-portal="signup" href="#/portal/signup">{{t "Subscribe now"}}</a>
-        {{/if}}
+        <h2>{{t "This post was shared with you"}}</h2>
+        <p>{{t "Subscribe to get full access to every post."}}</p>
+        <a class="gh-gift-callout-btn" data-portal="signup" href="#/portal/signup">{{t "Subscribe now"}}</a>
     </div>
 </aside>

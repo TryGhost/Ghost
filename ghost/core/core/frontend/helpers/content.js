@@ -72,10 +72,13 @@ module.exports = function content(options = {}) {
         );
     }
 
-    // CASE: the reader is viewing THIS post via a gift link — append a
+    // CASE: a logged-out reader is viewing THIS post via a gift link — append a
     // conversion callout (theme-overridable via partials/gift-callout.hbs).
+    // Signed-in members are skipped: they already have account-level entry points
+    // (sign-in/upgrade) elsewhere, so the popover would just be noise for them.
+    const member = options.data && options.data.member;
     const gift = options.data && options.data.gift;
-    if (gift && gift.post_id && gift.post_id === this.id) {
+    if (!member && gift && gift.post_id && gift.post_id === this.id) {
         return giftCallout.apply(self, args);
     }
 
