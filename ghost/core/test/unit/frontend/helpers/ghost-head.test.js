@@ -550,6 +550,7 @@ describe('{{ghost_head}} helper', function () {
 
         it('outputs markdown alternate link for public posts when llms.txt is enabled', async function () {
             getStub.withArgs('llms_enabled').returns(true);
+            sinon.stub(labs, 'isSet').withArgs('llmsTxt').returns(true);
 
             const rendered = await ghost_head(testUtils.createHbsResponse({
                 renderObject: {
@@ -563,6 +564,24 @@ describe('{{ghost_head}} helper', function () {
             }));
 
             assert.match(rendered.toString(), /<link rel="alternate" type="text\/markdown" href="http:\/\/localhost:\d+\/post\.md">/);
+        });
+
+        it('does not output markdown alternate link when the llms.txt labs flag is disabled', async function () {
+            getStub.withArgs('llms_enabled').returns(true);
+            sinon.stub(labs, 'isSet').withArgs('llmsTxt').returns(false);
+
+            const rendered = await ghost_head(testUtils.createHbsResponse({
+                renderObject: {
+                    post: Object.assign({}, posts[2], {visibility: 'public'})
+                },
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            }));
+
+            assert.doesNotMatch(rendered.toString(), /type="text\/markdown"/);
         });
 
         it('does not output markdown alternate link when llms.txt is disabled', async function () {
@@ -583,6 +602,7 @@ describe('{{ghost_head}} helper', function () {
         it('does not output markdown alternate link for paid posts when machine payments are disabled', async function () {
             getStub.withArgs('llms_enabled').returns(true);
             getStub.withArgs('machine_payments_enabled').returns(false);
+            sinon.stub(labs, 'isSet').withArgs('llmsTxt').returns(true);
 
             const rendered = await ghost_head(testUtils.createHbsResponse({
                 renderObject: {
@@ -601,7 +621,9 @@ describe('{{ghost_head}} helper', function () {
         it('does not output markdown alternate link for paid posts when the machine payments labs flag is disabled', async function () {
             getStub.withArgs('llms_enabled').returns(true);
             getStub.withArgs('machine_payments_enabled').returns(true);
-            sinon.stub(labs, 'isSet').withArgs('machinePayments').returns(false);
+            const labsIsSetStub = sinon.stub(labs, 'isSet');
+            labsIsSetStub.withArgs('llmsTxt').returns(true);
+            labsIsSetStub.withArgs('machinePayments').returns(false);
 
             const rendered = await ghost_head(testUtils.createHbsResponse({
                 renderObject: {
@@ -620,7 +642,9 @@ describe('{{ghost_head}} helper', function () {
         it('outputs markdown alternate link for paid posts when machine payments are enabled', async function () {
             getStub.withArgs('llms_enabled').returns(true);
             getStub.withArgs('machine_payments_enabled').returns(true);
-            sinon.stub(labs, 'isSet').withArgs('machinePayments').returns(true);
+            const labsIsSetStub = sinon.stub(labs, 'isSet');
+            labsIsSetStub.withArgs('llmsTxt').returns(true);
+            labsIsSetStub.withArgs('machinePayments').returns(true);
 
             const rendered = await ghost_head(testUtils.createHbsResponse({
                 renderObject: {

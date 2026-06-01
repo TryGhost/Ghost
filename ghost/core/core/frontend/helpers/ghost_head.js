@@ -202,7 +202,7 @@ function isPaidMembersOnlyPost(post) {
 }
 
 function shouldOutputMarkdownAlternate({context, post}) {
-    if (!context || !_.includes(context, 'post') || !post || settingsCache.get('is_private') || settingsCache.get('llms_enabled') === false) {
+    if (!context || !_.includes(context, 'post') || !post || !labs.isSet('llmsTxt') || settingsCache.get('is_private') || settingsCache.get('llms_enabled') === false) {
         return false;
     }
 

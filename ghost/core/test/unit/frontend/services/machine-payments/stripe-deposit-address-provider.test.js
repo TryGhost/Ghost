@@ -85,6 +85,60 @@ describe('Unit: frontend/services/machine-payments/stripe-deposit-address-provid
         sinon.assert.calledOnce(createPaymentIntent);
     });
 
+    it('deduplicates concurrent deposit address creation for the same amount, currency, and network', async function () {
+        sinon.stub(settingsHelpers, 'getActiveStripeKeys').returns({
+            publicKey: 'pk_test_active',
+            secretKey: 'sk_test_active'
+        });
+
+        let resolvePaymentIntent;
+        const paymentIntentPromise = new Promise((resolve) => {
+            resolvePaymentIntent = resolve;
+        });
+        const createPaymentIntent = sinon.stub().returns(paymentIntentPromise);
+        const provider = new StripeDepositAddressProvider({
+            stripeFactory: sinon.stub().returns({
+                paymentIntents: {
+                    create: createPaymentIntent
+                }
+            })
+        });
+
+        const firstAddressPromise = provider.getAddress({
+            amount: 100,
+            currency: 'USD',
+            network: 'base'
+        });
+        const secondAddressPromise = provider.getAddress({
+            amount: 100,
+            currency: 'USD',
+            network: 'base'
+        });
+
+        await new Promise((resolve) => {
+            setImmediate(resolve);
+        });
+
+        sinon.assert.calledOnce(createPaymentIntent);
+
+        resolvePaymentIntent({
+            next_action: {
+                crypto_display_details: {
+                    deposit_addresses: {
+                        base: {
+                            address: '0x0000000000000000000000000000000000000001'
+                        }
+                    }
+                }
+            }
+        });
+
+        const [firstAddress, secondAddress] = await Promise.all([firstAddressPromise, secondAddressPromise]);
+
+        assert.equal(firstAddress, '0x0000000000000000000000000000000000000001');
+        assert.equal(secondAddress, firstAddress);
+    });
+
     it('rebuilds the Stripe client when the active secret key changes', async function () {
         const getActiveStripeKeys = sinon.stub(settingsHelpers, 'getActiveStripeKeys');
         getActiveStripeKeys.onFirstCall().returns({

@@ -29,10 +29,17 @@ class StripeDepositAddressProvider {
         const pendingAddress = this.cache.get(cacheKey);
 
         if (pendingAddress) {
-            return pendingAddress;
+            return await pendingAddress;
         }
 
-        return await this.#createAddress({amount, currency, network, cacheKey, cacheNamespace, stripe});
+        const addressPromise = this.#createAddress({amount, currency, network, cacheKey, cacheNamespace, stripe})
+            .catch((err) => {
+                this.cache.delete(cacheKey);
+                throw err;
+            });
+
+        this.cache.set(cacheKey, addressPromise);
+        return await addressPromise;
     }
 
     async #getCachedAddressFromCredential({paymentHeader, request}) {
