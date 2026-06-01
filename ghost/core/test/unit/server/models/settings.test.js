@@ -270,6 +270,15 @@ describe('Unit: models/settings', function () {
             });
         });
 
+        it('throws when machine payment amount is not an integer', async function () {
+            await testInvalidSetting({
+                key: 'machine_payments_amount',
+                value: '1.5',
+                type: 'number',
+                group: 'site'
+            });
+        });
+
         it('throws when machine payment currency is not a 3 letter ISO currency code', async function () {
             await testInvalidSetting({
                 key: 'machine_payments_currency',
@@ -283,6 +292,13 @@ describe('Unit: models/settings', function () {
             await testValidSetting({
                 key: 'machine_payments_amount',
                 value: 100,
+                type: 'number',
+                group: 'site'
+            });
+
+            await testValidSetting({
+                key: 'machine_payments_amount',
+                value: '100',
                 type: 'number',
                 group: 'site'
             });

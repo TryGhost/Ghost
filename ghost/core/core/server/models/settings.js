@@ -384,8 +384,9 @@ Settings = ghostBookshelf.Model.extend({
         },
         async machine_payments_amount(model) {
             const value = model.get('value');
+            const amount = typeof value === 'string' ? Number(value) : value;
 
-            if (!Number.isSafeInteger(value) || value < 1) {
+            if (!Number.isSafeInteger(amount) || amount < 1) {
                 throw new errors.ValidationError({
                     message: 'Machine payments amount must be an integer greater than 0'
                 });
