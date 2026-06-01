@@ -214,21 +214,29 @@
     padding: 0 24px;
 }
 
-/* Gift link — a de-emphasised affordance under the post access setting */
-.gh-psm-gift-link {
-    margin-top: -8px;
-}
+/* Gift link control under the post access setting.
+   Sits with the same .form-group rhythm as the fields around it. */
 
+/* Generate state: a de-emphasised link button */
 .gh-psm-gift-link-button span {
     font-size: 1.3rem;
     font-weight: 500;
 }
 
-.gh-psm-gift-link-meta {
+/* The link itself is a plain, copyable link (not a text field) */
+.gh-psm-gift-link-copy {
     display: flex;
     align-items: center;
-    gap: 8px;
-    margin-top: 6px;
+    gap: 6px;
+    width: 100%;
+    /* Occupy an input's height so it keeps the same label-to-control rhythm as
+       the boxed fields around it, even though it's a plain link. */
+    min-height: 38px;
+    padding: 0;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
 }
 
 .gh-psm-gift-link-url {
@@ -237,23 +245,54 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 1.2rem;
+    font-size: 1.4rem;
+    color: var(--darkgrey);
+}
+
+.gh-psm-gift-link-copy svg {
+    flex: 0 0 auto;
+    width: 1.4rem;
+    height: 1.4rem;
     color: var(--midgrey);
 }
 
-.gh-psm-gift-link-reset {
+.gh-psm-gift-link-copy:hover svg {
+    color: var(--darkgrey);
+}
+
+.gh-psm-gift-link-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 10px;
+    font-size: 1.3rem;
+    color: var(--midgrey);
+}
+
+.gh-psm-gift-link-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.gh-psm-gift-link-action {
     flex: 0 0 auto;
     padding: 0;
     border: none;
     background: none;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     color: var(--midgrey);
-    text-decoration: underline;
     cursor: pointer;
 }
 
-.gh-psm-gift-link-reset:hover {
+.gh-psm-gift-link-action:hover {
     color: var(--darkgrey);
+}
+
+.gh-psm-gift-link-confirm {
+    color: var(--darkgrey);
+    font-weight: 600;
 }
 
 @media (max-width: 1024px) {

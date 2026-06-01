@@ -30,6 +30,7 @@ export default class GhPostSettingsMenu extends Component {
     @tracked showPostHistory = false;
     @tracked giftLink = null;
     @tracked giftLinkCopied = false;
+    @tracked giftLinkResetConfirming = false;
 
     post = null;
     isViewingSubview = false;
@@ -213,11 +214,9 @@ export default class GhPostSettingsMenu extends Component {
         return `${this.post.url}${separator}gift=${encodeURIComponent(this.giftLink.token)}&utm_campaign=gift-link`;
     }
 
-    get giftLinkButtonText() {
-        if (this.giftLinkCopied) {
-            return 'Link copied';
-        }
-        return this.giftLink ? 'Copy gift link' : 'Generate gift link';
+    get giftLinkOpensLabel() {
+        const count = this.giftLink ? this.giftLink.redeemed_count : 0;
+        return `${count} ${count === 1 ? 'open' : 'opens'}`;
     }
 
     // Load the post's existing gift link (if any) when the control is shown, so
@@ -259,15 +258,26 @@ export default class GhPostSettingsMenu extends Component {
     }
 
     @action
-    async resetGiftLink() {
+    startResetGiftLink() {
+        this.giftLinkResetConfirming = true;
+    }
+
+    @action
+    cancelResetGiftLink() {
+        this.giftLinkResetConfirming = false;
+    }
+
+    @action
+    async confirmResetGiftLink() {
         try {
             const url = this.ghostPaths.url.api('gift_links', this.post.id, 'reset');
             const response = await this.ajax.put(url);
             this.giftLink = response.gift_links[0];
             trackEvent('gift_link_reset', {surface: 'editor-psm'});
-            this.notifications.showNotification('Gift link reset', {type: 'success'});
         } catch (e) {
             this.notifications.showAPIError(e, {key: 'gift-link.reset'});
+        } finally {
+            this.giftLinkResetConfirming = false;
         }
     }
 
