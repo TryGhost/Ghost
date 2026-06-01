@@ -78,14 +78,13 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const hasMemberViews = memberViews.length > 0;
     const memberCount = useMemberCount();
     const routing = useEmberRouting();
-    const commentModerationEnabled = useFeatureFlag('commentModeration');
     const automationsEnabled = useFeatureFlag('automations');
     const isMembersRouteActive = useIsActiveLink({path: 'members', activeOnSubpath: true});
 
     const showTags = currentUser && canManageTags(currentUser);
     const showMembers = currentUser && canManageMembers(currentUser);
     const commentsEnabled = getSettingValue<string>(settingsData?.settings, 'comments_enabled');
-    const showComments = !!showMembers && commentModerationEnabled && commentsEnabled !== 'off';
+    const showComments = !!showMembers && commentsEnabled !== 'off';
     const isDraftPostsRouteActive = routing.isRouteActive('posts', {type: 'draft'});
     const isScheduledPostsRouteActive = routing.isRouteActive('posts', {type: 'scheduled'});
     const isPublishedPostsRouteActive = routing.isRouteActive('posts', {type: 'published'});
