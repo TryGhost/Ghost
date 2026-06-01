@@ -121,7 +121,8 @@ async function ping(post) {
 
         if (response.statusCode !== 200 && response.statusCode !== 202) {
             throw new errors.InternalServerError({
-                message: `IndexNow returned unexpected status: ${response.statusCode}`
+                message: `IndexNow returned unexpected status: ${response.statusCode}`,
+                statusCode: response.statusCode
             });
         }
 
@@ -130,7 +131,8 @@ async function ping(post) {
                 event: 'indexnow.pinged',
                 post_id: post.id,
                 post_slug: post.slug,
-                url
+                url,
+                status_code: response.statusCode
             }
         }, `${INDEXNOW_LOG_KEY} Successfully pinged ${url}`);
     } catch (err) {

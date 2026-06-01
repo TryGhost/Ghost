@@ -263,6 +263,7 @@ describe('IndexNow', function () {
 
             sinon.assert.calledOnce(loggingStub);
             assert.equal(loggingStub.args[0][0].system.event, 'indexnow.pinged');
+            assert.equal(loggingStub.args[0][0].system.status_code, 200);
         });
 
         it('with default post should not execute ping', async function () {
@@ -346,6 +347,7 @@ describe('IndexNow', function () {
             assert.equal(pingRequest.isDone(), true);
             sinon.assert.calledOnce(loggingStub);
             assert.equal(loggingStub.args[0][0].system.event, 'indexnow.pinged');
+            assert.equal(loggingStub.args[0][0].system.status_code, 202);
         });
 
         it('captures && logs errors from 400 requests', async function () {
@@ -391,6 +393,23 @@ describe('IndexNow', function () {
             sinon.assert.calledOnce(loggingStub);
             assert.equal(loggingStub.args[0][0].system.event, 'indexnow.rate_limited');
             assert.equal(loggingStub.args[0][0].system.status_code, 429);
+        });
+
+        it('logs the real status code for an unexpected 2xx response', async function () {
+            loggingStub = sinon.stub(logging, 'warn');
+            // 204 is a 2xx that request() does not throw on, so it hits the
+            // manual unexpected-status check rather than an HTTP error
+            const pingRequest = nock('https://api.indexnow.org')
+                .get(/\/indexnow/)
+                .reply(204);
+            const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+
+            await ping(testPost);
+
+            assert.equal(pingRequest.isDone(), true);
+            sinon.assert.calledOnce(loggingStub);
+            assert.equal(loggingStub.args[0][0].system.event, 'indexnow.ping_failed');
+            assert.equal(loggingStub.args[0][0].system.status_code, 204);
         });
     });
 
