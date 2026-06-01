@@ -36,7 +36,7 @@
 }
 .gh-gift-callout-content {
     position: relative;
-    padding: 24px;
+    padding: 20px;
     margin: 0;
     background: #fff;
     border: 0;
@@ -46,18 +46,18 @@
     text-align: start;
 }
 .gh-gift-callout-content h2 {
-    margin: 0 0 6px;
+    margin: 0 0 3px;
     padding: 0;
-    font-size: 17px;
+    font-size: 16px;
     line-height: 1.3;
     font-weight: 700;
     color: #15171a;
 }
 .gh-gift-callout-content p {
-    margin: 0 0 16px;
+    margin: 0 0 14px;
     padding: 0;
     font-size: 14px;
-    line-height: 1.5;
+    line-height: 1.45;
     color: #54595d;
 }
 .gh-gift-callout-content p:last-child {
@@ -65,7 +65,7 @@
 }
 .gh-gift-callout-content .gh-gift-callout-btn {
     display: inline-block;
-    padding: 9px 18px;
+    padding: 8px 16px;
     border: 0;
     border-radius: 6px;
     font-size: 14px;
@@ -75,18 +75,10 @@
     color: #fff;
     background-color: var(--gh-gift-accent, #15171a);
 }
-.gh-gift-callout-content small {
-    font-size: 13px;
-    color: #7c8289;
-}
-.gh-gift-callout-content small a {
-    color: var(--gh-gift-accent, #15171a);
-    text-decoration: underline;
-}
 .gh-gift-callout-close {
     position: absolute;
-    inset-block-start: 12px;
-    inset-inline-end: 12px;
+    inset-block-start: 10px;
+    inset-inline-end: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -145,7 +137,6 @@
             <h2>{{t "This post was shared with you"}}</h2>
             <p>{{t "Subscribe to get full access to every post."}}</p>
             <a class="gh-gift-callout-btn" data-portal="signup" href="#/portal/signup">{{t "Subscribe now"}}</a>
-            <p><small>{{t "Already have an account?"}} <a data-portal="signin" href="#/portal/signin">{{t "Sign in"}}</a></small></p>
         {{/if}}
     </div>
 </aside>
