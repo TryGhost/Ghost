@@ -219,7 +219,7 @@
 
 /* Generate state: microcopy + a light text link */
 .gh-psm-gift-link-description {
-    margin: 0 0 6px;
+    margin: 0 0 9px;
     font-size: 1.3rem;
     line-height: 1.5;
     color: var(--midgrey);
@@ -272,7 +272,7 @@
     align-items: baseline;
     justify-content: space-between;
     gap: 8px;
-    margin-top: 10px;
+    margin-top: 6px;
     font-size: 1.3rem;
     line-height: 1.4;
     color: var(--midgrey);
