@@ -1,5 +1,5 @@
-import GiftLinkManageModal from '@src/views/PostAnalytics/components/gift-link-manage-modal';
-import GiftLinkMenuItem from '@src/views/PostAnalytics/components/gift-link-menu-item';
+import GiftLinkManageModal from '@src/components/gift-links/gift-link-manage-modal';
+import GiftLinkMenuItem from '@src/components/gift-links/gift-link-menu-item';
 import React, {useMemo, useState} from 'react';
 import copyToClipboard from '@src/utils/copy-to-clipboard';
 import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, Navbar, PageMenu, PageMenuItem} from '@tryghost/shade/components';

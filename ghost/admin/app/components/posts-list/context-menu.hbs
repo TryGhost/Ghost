@@ -14,6 +14,11 @@
                     <span>{{svg-jar "link"}}Copy gift link</span>
                 </button>
             </li>
+            <li>
+                <button class="mr2" type="button" {{on "click" this.manageGiftLink}} data-test-button="manage-gift-link">
+                    <span>{{svg-jar "settings"}}Manage gift link</span>
+                </button>
+            </li>
         {{/if}}
         <li>
             <button class="mr2" type="button" {{on "click" this.unpublishPosts}} data-test-button="unpublish">

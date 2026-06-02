@@ -5,6 +5,7 @@ import { FeatureFlagsProvider, routes as activityPubRoutes } from "@tryghost/act
 
 // Posts (aka tags and post analytics)
 import { PostsAppContextProvider, routes as postRoutes } from "@tryghost/posts/api";
+import { GiftLinkModalHost } from "@tryghost/posts/gift-links";
 
 // Stats (aka analytics)
 import { GlobalDataProvider, routes as statsRoutes } from "@tryghost/stats/api";
@@ -31,12 +32,9 @@ const EMBER_ROUTES: string[] = [
     "/signup/*",
     "/reset/*",
     "/pro/*",
-    "/posts",
     "/posts/analytics/:postId/mentions",
     "/posts/analytics/:postId/debug",
     "/restore",
-    "/pages",
-    "/editor/*",
     "/tags/new",
     "/explore/*",
     "/migrate/*",
@@ -52,6 +50,16 @@ const emberFallbackHandle = { allowInForceUpgrade: true } satisfies RouteHandle;
 const emberFallbackRoutes: RouteObject[] = EMBER_ROUTES.map(path => ({
     path,
     Component: EmberFallback,
+    handle: emberFallbackHandle,
+}));
+
+// Ember routes that also host the React-owned gift link modal. The post list,
+// pages list and editor live in Ember, so they signal the modal open over the
+// bridge; the GiftLinkModalHost mounted here renders it as an overlay on top of
+// Ember. Keep this in sync with the surfaces that call openGiftLinkModal.
+const emberWithGiftLinkModalRoutes: RouteObject[] = ["/posts", "/pages", "/editor/*"].map(path => ({
+    path,
+    element: <><EmberFallback /><GiftLinkModalHost /></>,
     handle: emberFallbackHandle,
 }));
 
@@ -135,6 +143,7 @@ export const routes: RouteObject[] = [
                 handle: { allowInForceUpgrade: true } satisfies RouteHandle,
             },
             // Ember-handled routes
+            ...emberWithGiftLinkModalRoutes,
             ...emberFallbackRoutes,
             {
                 // 404 catch-all for routes not handled by React or Ember

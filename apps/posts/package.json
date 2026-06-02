@@ -20,7 +20,8 @@
             "require": "./dist/posts.umd.cjs"
         },
         "./api": "./src/api.ts",
-        "./members": "./src/views/members/members.tsx"
+        "./members": "./src/views/members/members.tsx",
+        "./gift-links": "./src/components/gift-links/index.ts"
     },
     "private": true,
     "scripts": {

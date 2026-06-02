@@ -214,95 +214,32 @@
     padding: 0 24px;
 }
 
-/* Gift link control under the post access setting.
-   Sits with the same .form-group rhythm as the fields around it. */
-
-/* Generate state: microcopy + a light text link */
-.gh-psm-gift-link-description {
-    margin: 0 0 9px;
-    font-size: 1.3rem;
-    line-height: 1.5;
-    color: var(--midgrey);
+/* Gift link actions under the post access setting — no heading or microcopy,
+   just the light text link(s) pulled up tight beneath the access select. */
+.gh-psm-gift-link {
+    margin-top: -10px;
 }
 
-.gh-psm-gift-link-generate span {
+.gh-psm-gift-link-generate span,
+.gh-psm-gift-link-action span {
     font-size: 1.3rem;
     font-weight: 500;
 }
 
-/* The link itself is a plain, copyable link (not a text field) */
-.gh-psm-gift-link-copy {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    width: 100%;
-    /* A touch of an input's height to keep a similar label-to-control rhythm as
-       the boxed fields around it, without feeling boxy. */
-    min-height: 30px;
-    padding: 0;
-    border: none;
-    background: none;
-    text-align: left;
-    cursor: pointer;
-}
-
-.gh-psm-gift-link-url {
-    flex: 1 1 auto;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 1.4rem;
-    color: var(--darkgrey);
-}
-
-.gh-psm-gift-link-copy svg {
-    flex: 0 0 auto;
-    width: 1.4rem;
-    height: 1.4rem;
-    color: var(--midgrey);
-}
-
-.gh-psm-gift-link-copy:hover svg {
-    color: var(--darkgrey);
-}
-
-.gh-psm-gift-link-meta {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 8px;
-    margin-top: 3px;
-    font-size: 1.3rem;
-    line-height: 1.4;
-    color: var(--midgrey);
-}
-
+/* Active state: copy + manage sit together as two light text links */
 .gh-psm-gift-link-actions {
     display: flex;
     align-items: baseline;
-    gap: 14px;
+    gap: 16px;
 }
 
-.gh-psm-gift-link-action {
-    flex: 0 0 auto;
-    padding: 0;
-    border: none;
-    background: none;
-    font-family: inherit;
-    font-size: 1.3rem;
-    line-height: inherit;
+/* Manage is the secondary action, kept de-emphasized next to Copy */
+.gh-psm-gift-link-manage span {
     color: var(--midgrey);
-    cursor: pointer;
 }
 
-.gh-psm-gift-link-action:hover {
+.gh-psm-gift-link-manage:hover span {
     color: var(--darkgrey);
-}
-
-.gh-psm-gift-link-confirm {
-    color: var(--darkgrey);
-    font-weight: 600;
 }
 
 @media (max-width: 1024px) {

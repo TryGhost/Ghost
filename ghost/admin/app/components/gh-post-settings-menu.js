@@ -22,6 +22,7 @@ export default class GhPostSettingsMenu extends Component {
     @service slugGenerator;
     @service session;
     @service settings;
+    @service stateBridge;
     @service themeManagement;
     @service ui;
 
@@ -30,7 +31,6 @@ export default class GhPostSettingsMenu extends Component {
     @tracked showPostHistory = false;
     @tracked giftLink = null;
     @tracked giftLinkCopied = false;
-    @tracked giftLinkResetConfirming = false;
 
     post = null;
     isViewingSubview = false;
@@ -214,11 +214,6 @@ export default class GhPostSettingsMenu extends Component {
         return `${this.post.url}${separator}gift=${encodeURIComponent(this.giftLink.token)}&utm_campaign=gift-link`;
     }
 
-    get giftLinkOpensLabel() {
-        const count = this.giftLink ? this.giftLink.redeemed_count : 0;
-        return `${count} ${count === 1 ? 'open' : 'opens'}`;
-    }
-
     // Load the post's existing gift link (if any) when the control is shown, so
     // the button reads "Copy"/"Generate" correctly and can preview the URL.
     @action
@@ -238,14 +233,13 @@ export default class GhPostSettingsMenu extends Component {
     @action
     async copyGiftLink() {
         try {
-            if (!this.giftLink) {
-                // Idempotent ensure: creates (or returns) the active link.
-                const url = this.ghostPaths.url.api('gift_links', this.post.id);
-                const response = await this.ajax.post(url);
-                this.giftLink = response.gift_links[0];
-            }
-            // Link is already known here, so copy synchronously to keep the
-            // clipboard write inside the user-activation window.
+            // Always ensure: this idempotent POST creates the link when missing
+            // and otherwise returns the *current* active token. Re-fetching here
+            // keeps copy correct after a reset performed elsewhere (e.g. the
+            // React manage modal), where a cached token would be stale/dead.
+            const url = this.ghostPaths.url.api('gift_links', this.post.id);
+            const response = await this.ajax.post(url);
+            this.giftLink = response.gift_links[0];
             copyTextToClipboard(this.giftLinkUrl);
             trackEvent('gift_link_copied', {surface: 'editor-psm'});
             this.giftLinkCopied = true;
@@ -257,28 +251,15 @@ export default class GhPostSettingsMenu extends Component {
         }
     }
 
+    // Open the React-owned manage modal (full URL, open count, reset) via the
+    // Ember/React bridge. The modal is mounted alongside the editor by the admin
+    // shell router and reads the gift link itself, so we only pass identifiers.
     @action
-    startResetGiftLink() {
-        this.giftLinkResetConfirming = true;
-    }
-
-    @action
-    cancelResetGiftLink() {
-        this.giftLinkResetConfirming = false;
-    }
-
-    @action
-    async confirmResetGiftLink() {
-        try {
-            const url = this.ghostPaths.url.api('gift_links', this.post.id, 'reset');
-            const response = await this.ajax.put(url);
-            this.giftLink = response.gift_links[0];
-            trackEvent('gift_link_reset', {surface: 'editor-psm'});
-        } catch (e) {
-            this.notifications.showAPIError(e, {key: 'gift-link.reset'});
-        } finally {
-            this.giftLinkResetConfirming = false;
-        }
+    manageGiftLink() {
+        this.stateBridge.openGiftLinkModal({
+            postId: this.post.id,
+            postUrl: this.post.url
+        });
     }
 
     @action
