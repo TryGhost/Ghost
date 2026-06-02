@@ -44,8 +44,8 @@ catalog:
   '@tryghost/koenig-lexical': 1.8.1
   '@tryghost/limit-service': 1.5.5
   '@tryghost/logging': 4.2.1
-  '@tryghost/nql': 0.12.10
-  '@tryghost/nql-lang': 0.6.4
+  '@tryghost/nql': 0.12.11
+  '@tryghost/nql-lang': 0.6.5
   '@tryghost/string': 0.3.4
   '@tryghost/timezone-data': 0.4.20
   '@types/express': 4.17.25
@@ -165,6 +165,11 @@ packageExtensions:
     dependencies:
       lodash: ^4.18.0
 minimumReleaseAgeExclude:
+  # Intentional same-day NQL release required for relative date parsing
+  - "@tryghost/mongo-knex@0.9.5"
+  - "@tryghost/mongo-utils@0.6.4"
+  - "@tryghost/nql-lang@0.6.5"
+  - "@tryghost/nql@0.12.11"
   # Renovate security update: @number-flow/react@0.6.0
   - "@number-flow/react@0.6.0"
   # Renovate security update: @aws-sdk/client-s3@3.1053.0
