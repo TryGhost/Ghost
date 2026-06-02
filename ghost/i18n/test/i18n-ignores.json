@@ -89,11 +89,6 @@
                 "comment": "FIXME: This error was automatically ignored. Please update the translation, or explain why a variable is ignored"
             },
             {
-                "file": "sq/ghost.json",
-                "key": "Sign in to {siteTitle}",
-                "comment": "FIXME: This error was automatically ignored. Please update the translation, or explain why a variable is ignored"
-            },
-            {
                 "file": "sq/portal.json",
                 "key": "Expires {expiryDate}",
                 "comment": "FIXME: This error was automatically ignored. Please update the translation, or explain why a variable is ignored"

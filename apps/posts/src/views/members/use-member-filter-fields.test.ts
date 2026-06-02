@@ -159,22 +159,9 @@ describe('useMemberFilterFields', () => {
         });
     });
 
-    it('excludes the gift status option by default', () => {
+    it('includes the gift status option', () => {
         const {result} = renderHook(() => useMemberFilterFields({
             paidMembersEnabled: true,
-            siteTimezone: 'UTC'
-        }));
-
-        const subscriptionFields = result.current.find(group => group.group === 'Subscription')?.fields ?? [];
-        const statusField = subscriptionFields.find(field => field.key === 'status');
-
-        expect(statusField?.options?.map(o => o.value)).toEqual(['paid', 'free', 'comped']);
-    });
-
-    it('includes the gift status option when giftSubscriptionsEnabled is true', () => {
-        const {result} = renderHook(() => useMemberFilterFields({
-            paidMembersEnabled: true,
-            giftSubscriptionsEnabled: true,
             siteTimezone: 'UTC'
         }));
 

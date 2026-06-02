@@ -1,4 +1,3 @@
-import useFeatureFlag from '../../../../hooks/use-feature-flag';
 import {SettingGroup, SettingGroupContent, Toggle} from '@tryghost/admin-x-design-system';
 import {type User, hasAdminAccess} from '@tryghost/admin-x-framework/api/users';
 import {checkStripeEnabled} from '@tryghost/admin-x-framework/api/settings';
@@ -7,7 +6,6 @@ import {useGlobalData} from '../../../providers/global-data-provider';
 const EmailNotificationsInputs: React.FC<{ user: User; setUserData: (user: User) => void; }> = ({user, setUserData}) => {
     const {config, settings} = useGlobalData();
     const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
-    const hasGiftSubscriptions = useFeatureFlag('giftSubscriptions');
 
     return (
         <SettingGroupContent>
@@ -103,7 +101,7 @@ const EmailNotificationsInputs: React.FC<{ user: User; setUserData: (user: User)
                                 setUserData?.({...user, donation_notifications: e.target.checked});
                             }}
                         />}
-                        {hasStripeEnabled && hasGiftSubscriptions && <Toggle
+                        {hasStripeEnabled && <Toggle
                             align='center'
                             checked={user.gift_subscription_notifications}
                             direction='rtl'

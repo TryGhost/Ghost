@@ -3,6 +3,7 @@ const mappers = require('./mappers');
 const tiersService = require('../../../../../services/tiers');
 const {pipeline} = require('stream');
 const {createCSVTransform} = require('./posts-csv-transform');
+const {InternalServerError} = require('@tryghost/errors');
 
 module.exports = {
     async all(models, apiConfig, frame) {
@@ -56,11 +57,16 @@ module.exports = {
 
     exportCSV(models, apiConfig, frame) {
         frame.response = function streamResponse(req, res, next) {
+            if (!models.filename) {
+                return next(new InternalServerError({
+                    message: 'Missing CSV export filename'
+                }));
+            }
+
             const csvTransform = createCSVTransform();
 
-            const todayIsoDate = (new Date()).toJSON().substring(0, 10);
             res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-            res.setHeader('Content-Disposition', `Attachment; filename="post-analytics.${todayIsoDate}.csv"`);
+            res.setHeader('Content-Disposition', `Attachment; filename="${models.filename}"`);
             const cacheControl = res.getHeader('Cache-Control');
             const cacheControlDirectives = cacheControl ? String(cacheControl).split(',').map(value => value.trim().toLowerCase()) : [];
             if (!cacheControlDirectives.includes('no-transform')) {

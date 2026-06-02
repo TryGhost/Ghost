@@ -84,7 +84,8 @@ describe('RouterController', function () {
             get: sinon.stub().withArgs('all_blocked_email_domains').returns(['spam.xyz'])
         };
         settingsHelpers = {
-            getMembersSupportAddress: sinon.stub().returns('noreply@example.com')
+            getMembersSupportAddress: sinon.stub().returns('noreply@example.com'),
+            arePaidMembersEnabled: sinon.stub().returns(true)
         };
     });
 
@@ -790,21 +791,6 @@ describe('RouterController', function () {
                 }));
             });
 
-            it('rejects when giftSubscriptions labs flag is disabled', async function () {
-                labsService.isSet = sinon.stub().returns(false);
-                const controller = createGiftController();
-
-                try {
-                    await controller.createCheckoutSession({
-                        body: {type: 'gift', tierId: 'tier_123', cadence: 'month', metadata: {}}
-                    }, mockRes);
-
-                    assert.fail('Should have thrown');
-                } catch (error) {
-                    assert(error instanceof errors.BadRequestError);
-                }
-            });
-
             it('rejects when offerId is provided', async function () {
                 const controller = createGiftController();
 
@@ -816,6 +802,26 @@ describe('RouterController', function () {
                 } catch (error) {
                     assert(error instanceof errors.BadRequestError);
                     assert.equal(error.context, 'Offers cannot be applied to gift subscriptions');
+                }
+            });
+
+            it('throws DisabledFeatureError when paid members are not enabled', async function () {
+                const controller = createGiftController({
+                    tiersService: paidTierService(),
+                    settingsHelpers: {
+                        ...settingsHelpers,
+                        arePaidMembersEnabled: sinon.stub().returns(false)
+                    }
+                });
+
+                try {
+                    await controller.createCheckoutSession({
+                        body: {type: 'gift', tierId: 'tier_123', cadence: 'month', metadata: {}}
+                    }, mockRes);
+                    assert.fail('Should have thrown');
+                } catch (error) {
+                    assert(error instanceof errors.DisabledFeatureError);
+                    sinon.assert.notCalled(getGiftLinkSpy);
                 }
             });
 

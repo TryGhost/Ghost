@@ -35,6 +35,8 @@ const messages = {
     requestFailedHelp: 'If you get this error repeatedly, please seek help on {url}.'
 };
 
+const INDEXNOW_LOG_KEY = '[indexnow]';
+
 const defaultPostSlugs = [
     'welcome',
     'the-editor',
@@ -83,13 +85,20 @@ async function ping(post) {
         return;
     }
 
+    let url = null;
     try {
-        const url = urlService.facade.getUrlForResource({...post, type: 'posts'}, {absolute: true});
+        url = urlService.facade.getUrlForResource({...post, type: 'posts'}, {absolute: true});
 
         // Get the API key (auto-generated on boot by settings service)
         const key = getApiKey();
         if (!key) {
-            logging.warn('IndexNow: API key not available');
+            logging.warn({
+                system: {
+                    event: 'indexnow.api_key_missing',
+                    post_id: post.id,
+                    post_slug: post.slug
+                }
+            }, `${INDEXNOW_LOG_KEY} API key not available`);
             return;
         }
 
@@ -112,15 +121,27 @@ async function ping(post) {
 
         if (response.statusCode !== 200 && response.statusCode !== 202) {
             throw new errors.InternalServerError({
-                message: `IndexNow returned unexpected status: ${response.statusCode}`
+                message: `IndexNow returned unexpected status: ${response.statusCode}`,
+                statusCode: response.statusCode
             });
         }
 
-        logging.info(`IndexNow: Successfully pinged ${url}`);
+        logging.info({
+            system: {
+                event: 'indexnow.pinged',
+                post_id: post.id,
+                post_slug: post.slug,
+                url,
+                status_code: response.statusCode
+            }
+        }, `${INDEXNOW_LOG_KEY} Successfully pinged ${url}`);
     } catch (err) {
         // Log errors but don't throw - IndexNow failures shouldn't disrupt publishing
+        let eventName;
         let error;
         if (err.statusCode === 429) {
+            // Rate limited by IndexNow - we have no retry/backoff, so the ping is dropped
+            eventName = 'indexnow.rate_limited';
             error = new errors.TooManyRequestsError({
                 err,
                 message: err.message,
@@ -129,6 +150,7 @@ async function ping(post) {
             });
         } else if (err.statusCode === 422) {
             // 422 means the URL is invalid or key doesn't match
+            eventName = 'indexnow.key_validation_failed';
             error = new errors.ValidationError({
                 err,
                 message: 'IndexNow key validation failed',
@@ -136,6 +158,7 @@ async function ping(post) {
                 help: 'Ensure your IndexNow API key file is accessible at the correct URL'
             });
         } else {
+            eventName = 'indexnow.ping_failed';
             error = new errors.InternalServerError({
                 err: err,
                 message: err.message,
@@ -143,7 +166,17 @@ async function ping(post) {
                 help: tpl(messages.requestFailedHelp, {url: 'https://ghost.org/docs/'})
             });
         }
-        logging.warn(error);
+
+        logging.warn({
+            system: {
+                event: eventName,
+                post_id: post.id,
+                post_slug: post.slug,
+                url,
+                status_code: err.statusCode ?? null
+            },
+            err: error
+        }, `${INDEXNOW_LOG_KEY} ${error.message}`);
     }
 }
 

@@ -9,6 +9,12 @@
     "admin": {
         "redirects": true
     },
+    "externalRequest": {
+        "keepAlive": true,
+        "keepAliveMsecs": 60000,
+        "maxSockets": 256,
+        "maxFreeSockets": 256
+    },
     "updateCheck": {
         "url": "https://updates.ghost.org",
         "forceUpdate": false
