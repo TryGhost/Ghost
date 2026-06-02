@@ -1,6 +1,7 @@
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import ObjectId from 'bson-objectid';
+import {dequal} from 'dequal';
 import type {DatabaseSync} from 'node:sqlite';
 import type {
     Automation,
@@ -39,10 +40,30 @@ interface ActionRow {
     email_design_setting_id: string | null;
 }
 
+type ActionRevisionRow = {
+    action_id: string;
+    created_at: string;
+    wait_hours: number | null;
+    email_subject: string | null;
+    email_lexical: string | null;
+    email_sender_name: string | null;
+    email_sender_email: string | null;
+    email_sender_reply_to: string | null;
+    email_design_setting_id: string | null;
+};
+
 interface EdgeRow {
     source_action_id: string;
     target_action_id: string;
 }
+
+type WaitActionData = Extract<AutomationAction, {type: 'wait'}>['data'];
+type SendEmailActionData = Extract<AutomationAction, {type: 'send_email'}>['data'];
+type RevisionDataFor<ActionDataT> = {
+    [FieldT in keyof ActionDataT]: ActionRevisionRow[FieldT & keyof ActionRevisionRow];
+};
+type WaitRevisionData = RevisionDataFor<WaitActionData>;
+type SendEmailRevisionData = RevisionDataFor<SendEmailActionData>;
 
 export function createFakeDatabaseAutomationsRepository({
     getDatabase
@@ -185,8 +206,10 @@ function replaceAutomationGraph(database: DatabaseSync, automationId: string, ac
             });
         }
 
-        // TODO (NY-1283): Deduplicate revisions before inserting them.
-        insertActionRevision(database, action.id, action, now);
+        const latestRevision = loadLatestActionRevision(database, action.id);
+        if (shouldInsertActionRevision(action, latestRevision)) {
+            insertActionRevision(database, action.id, action, now, latestRevision);
+        }
     }
 
     for (const existingAction of existingActions) {
@@ -235,6 +258,64 @@ function insertAction(database: DatabaseSync, action: {
     `).run(action);
 }
 
+function shouldInsertActionRevision(action: AutomationAction, latestRevision: ActionRevisionRow | null): boolean {
+    if (!latestRevision) {
+        return true;
+    }
+
+    return !dequal(buildRevisionActionData(action, latestRevision), action.data);
+}
+
+function buildRevisionActionData(action: AutomationAction, revision: ActionRevisionRow): WaitRevisionData | SendEmailRevisionData {
+    switch (action.type) {
+    case 'wait': {
+        return {
+            wait_hours: revision.wait_hours
+        };
+    }
+    case 'send_email': {
+        return {
+            email_subject: revision.email_subject,
+            email_lexical: revision.email_lexical,
+            email_sender_name: revision.email_sender_name,
+            email_sender_email: revision.email_sender_email,
+            email_sender_reply_to: revision.email_sender_reply_to,
+            email_design_setting_id: revision.email_design_setting_id
+        };
+    }
+    default: {
+        const _exhaustive: never = action;
+        throw new errors.InternalServerError({
+            message: `Unhandled action type: ${_exhaustive}`
+        });
+    }
+    }
+}
+
+function loadLatestActionRevision(database: DatabaseSync, actionId: string): ActionRevisionRow | null {
+    const row = database.prepare(`
+        SELECT
+            action_id,
+            created_at,
+            wait_hours,
+            email_subject,
+            email_lexical,
+            email_sender_name,
+            email_sender_email,
+            email_sender_reply_to,
+            email_design_setting_id
+        FROM automation_action_revisions
+        WHERE action_id = ?
+            AND created_at = (
+                SELECT MAX(created_at)
+                FROM automation_action_revisions
+                WHERE action_id = ?
+            )
+    `).get(actionId, actionId) as ActionRevisionRow | undefined;
+
+    return row ?? null;
+}
+
 function softDeleteAction(database: DatabaseSync, actionId: string, deletedAt: string) {
     database.prepare(`
         UPDATE automation_actions
@@ -248,8 +329,8 @@ function softDeleteAction(database: DatabaseSync, actionId: string, deletedAt: s
     });
 }
 
-function insertActionRevision(database: DatabaseSync, actionId: string, action: AutomationAction, createdAt: string) {
-    const revision = buildActionRevision(actionId, action, getNextRevisionCreatedAt(database, actionId, createdAt));
+function insertActionRevision(database: DatabaseSync, actionId: string, action: AutomationAction, createdAt: string, latestRevision: ActionRevisionRow | null) {
+    const revision = buildActionRevision(actionId, action, getNextRevisionCreatedAt(latestRevision?.created_at ?? null, createdAt));
 
     database.prepare(`
         INSERT INTO automation_action_revisions
@@ -279,19 +360,13 @@ function insertActionRevision(database: DatabaseSync, actionId: string, action: 
     `).run(revision);
 }
 
-function getNextRevisionCreatedAt(database: DatabaseSync, actionId: string, requestedCreatedAt: string) {
-    const row = database.prepare(`
-        SELECT MAX(created_at) AS created_at
-        FROM automation_action_revisions
-        WHERE action_id = ?
-    `).get(actionId) as {created_at: string | null} | undefined;
-
-    if (!row?.created_at) {
+function getNextRevisionCreatedAt(latestCreatedAt: string | null, requestedCreatedAt: string) {
+    if (!latestCreatedAt) {
         return requestedCreatedAt;
     }
 
     const requestedTime = new Date(requestedCreatedAt).getTime();
-    const latestTime = new Date(row.created_at).getTime();
+    const latestTime = new Date(latestCreatedAt).getTime();
 
     if (requestedTime > latestTime) {
         return requestedCreatedAt;

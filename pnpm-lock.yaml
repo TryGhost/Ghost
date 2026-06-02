@@ -2510,6 +2510,9 @@ importers:
       date-fns:
         specifier: 2.30.0
         version: 2.30.0
+      dequal:
+        specifier: 'catalog:'
+        version: 2.0.3
       dompurify:
         specifier: 'catalog:'
         version: 3.4.5

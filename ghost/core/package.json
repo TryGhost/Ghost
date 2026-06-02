@@ -160,6 +160,7 @@
     "csso": "5.0.5",
     "csv-writer": "1.6.0",
     "date-fns": "2.30.0",
+    "dequal": "catalog:",
     "dompurify": "catalog:",
     "downsize": "0.0.8",
     "entities": "4.5.0",
