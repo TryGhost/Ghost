@@ -538,7 +538,7 @@ describe('AutomationEditor', () => {
         expect(waitStep).toHaveAttribute('aria-pressed', 'false');
         expect(emailStep).toHaveAttribute('aria-pressed', 'true');
         expect(within(sidebar).getByRole('heading', {name: 'Welcome to The Blueprint'})).toBeInTheDocument();
-        expect(within(sidebar).getByDisplayValue('Welcome to The Blueprint')).toBeInTheDocument();
+        expect(within(sidebar).getByDisplayValue('Welcome to The Blueprint')).toHaveFocus();
         expect(within(sidebar).queryByText('Sender')).not.toBeInTheDocument();
         expect(within(sidebar).queryByText('Reply-to')).not.toBeInTheDocument();
         expect(within(sidebar).getByRole('button', {name: 'Edit email'})).toBeEnabled();
