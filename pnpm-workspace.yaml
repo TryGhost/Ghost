@@ -40,9 +40,9 @@ catalog:
   '@tryghost/debug': 2.2.1
   '@tryghost/domain-events': 3.2.3
   '@tryghost/helpers': 1.1.105
-  '@tryghost/kg-clean-basic-html': 4.3.1
-  '@tryghost/kg-converters': 1.2.1
-  '@tryghost/koenig-lexical': 1.8.1
+  '@tryghost/kg-clean-basic-html': 4.3.2
+  '@tryghost/kg-converters': 1.2.2
+  '@tryghost/koenig-lexical': 1.8.2
   '@tryghost/limit-service': 1.5.5
   '@tryghost/logging': 4.2.1
   '@tryghost/nql': 0.12.11

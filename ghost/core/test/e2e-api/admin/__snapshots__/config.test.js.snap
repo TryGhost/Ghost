@@ -8,6 +8,10 @@ Object {
     "emailAnalytics": true,
     "enableDeveloperExperiments": false,
     "environment": StringMatching /\\^testing/,
+    "klipy": Object {
+      "apiKey": null,
+      "contentFilter": "off",
+    },
     "labs": Object {
       "additionalPaymentMethods": true,
       "adminUIRefresh": true,
