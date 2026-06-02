@@ -2678,7 +2678,7 @@ importers:
         specifier: 1.0.1
         version: 1.0.1
       zod:
-        specifier: 4.1.12
+        specifier: 'catalog:'
         version: 4.1.12
     devDependencies:
       '@actions/core':
