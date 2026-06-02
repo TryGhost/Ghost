@@ -201,6 +201,7 @@ function buildImportMembersFormData({file, labels = [], mapping = {}}: ImportMem
 
 export const useImportMembers = createMutation<ImportMembersResponseType, ImportMembersPayload>({
     method: 'POST',
+    retry: false,
     path: () => '/members/upload/',
     body: buildImportMembersFormData,
     invalidateQueries: {dataType}

@@ -16,6 +16,7 @@ function membersResponse(total: number, limit: number | 'all' = 1): MembersRespo
 }
 
 function seedMemberCount(queryClient: ReturnType<typeof createTestQueryClient>, total = 10, options?: {updatedAt?: number}) {
+    queryClient.setQueryDefaults(memberCountKey, {cacheTime: Infinity});
     queryClient.setQueryData(memberCountKey, membersResponse(total), options);
 }
 
@@ -134,6 +135,29 @@ describe('members api', () => {
             });
             expect(onInvalidate).toHaveBeenCalledWith('MembersResponseType');
         });
+    });
+
+    it('does not retry member import uploads after transient network failures', async () => {
+        const queryClient = createTestQueryClient();
+        const file = new File(['email\njamie@example.com'], 'members.csv', {type: 'text/csv'});
+        const originalFetch = globalThis.fetch;
+        const mockFetch = vi.fn<typeof globalThis.fetch>(() => Promise.reject(new TypeError('Network failed')));
+
+        vi.useFakeTimers();
+        globalThis.fetch = mockFetch as typeof globalThis.fetch;
+
+        try {
+            const {result} = renderHookWithProviders(() => useImportMembers(), {queryClient});
+            const importPromise = result.current.mutateAsync({file}).catch(error => error);
+
+            await vi.advanceTimersByTimeAsync(600);
+
+            expect(mockFetch).toHaveBeenCalledTimes(1);
+            await expect(importPromise).resolves.toBeInstanceOf(Error);
+        } finally {
+            globalThis.fetch = originalFetch;
+            vi.useRealTimers();
+        }
     });
 
     it('invalidates member queries after accepting a background member import', async () => {
