@@ -3,9 +3,9 @@ import AddStepEdge, {type AddStepEdgeData} from './add-step-edge';
 import EmailContentModal from './email-modal/email-content-modal';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import StepPicker, {type StepPickerType} from './step-picker';
+import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Banner, Button, Checkbox, Input, Label, LoadingIndicator, Popover, PopoverContent, PopoverTrigger, Select, SelectTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import {AutomationAction, AutomationDetail, AutomationSendEmailAction, AutomationWaitAction, InsertActionAnchor, MAX_AUTOMATION_ACTIONS, insertSendEmailAction, insertWaitAction, removeAction, updateSendEmailAction, updateWaitAction} from '@tryghost/admin-x-framework/api/automations';
 import {Background, BackgroundVariant, Edge, Handle, Node, NodeProps, Position, ReactFlow} from '@xyflow/react';
-import {Banner, Button, Checkbox, Input, Label, LoadingIndicator, Popover, PopoverContent, PopoverTrigger, Select, SelectTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 
 const MAX_WAIT_DAYS = 30;
@@ -676,6 +676,7 @@ const insertActionByType = {
 
 const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoading, isError, onChange}) => {
     const [selectedStep, setSelectedStep] = useState<SelectedStep | null>(null);
+    const [deleteConfirmationActionId, setDeleteConfirmationActionId] = useState<string | null>(null);
     const selectedStepId = selectedStep?.id ?? null;
 
     const handlePick = useCallback((type: StepPickerType, anchor: CanvasAnchor) => {
@@ -697,8 +698,23 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
         }
         const next = removeAction({detail: automation, actionId});
         setSelectedStep(null);
+        setDeleteConfirmationActionId(null);
         onChange(next);
     }, [automation, onChange]);
+
+    const handleRequestDelete = useCallback((actionId: string) => {
+        if (!automation) {
+            return;
+        }
+
+        const action = automation.actions.find(item => item.id === actionId);
+        if (action?.type === 'send_email') {
+            setDeleteConfirmationActionId(action.id);
+            return;
+        }
+
+        handleDelete(actionId);
+    }, [automation, handleDelete]);
 
     const handleUpdateWait = useCallback((actionId: string, waitHours: number) => {
         if (!automation) {
@@ -726,6 +742,10 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
         ? automation.actions.find((action): action is AutomationSendEmailAction => action.id === selectedStep.id && action.type === 'send_email')
         : undefined;
 
+    const deleteConfirmationAction = automation && deleteConfirmationActionId
+        ? automation.actions.find((action): action is AutomationSendEmailAction => action.id === deleteConfirmationActionId && action.type === 'send_email')
+        : undefined;
+
     const initialViewport = useRef(getInitialViewport(window.innerWidth));
 
     const graph = useMemo(() => {
@@ -743,7 +763,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
 
     const sidebarDetail = automation ? getStepSidebarDetail({
         automation,
-        onDelete: handleDelete,
+        onDelete: handleRequestDelete,
         onUpdateWait: handleUpdateWait,
         onUpdateSubject: handleUpdateSubject,
         onEditEmail: handleEditEmail,
@@ -809,7 +829,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
             >
                 <Background variant={BackgroundVariant.Dots} />
             </ReactFlow>
-            <StepSidebar detail={sidebarDetail} isEmailModalOpen={Boolean(emailModalAction)} onClose={clearDetail} />
+            <StepSidebar detail={sidebarDetail} isEmailModalOpen={Boolean(emailModalAction) || Boolean(deleteConfirmationAction)} onClose={clearDetail} />
             {emailModalAction && automation && (
                 <EmailContentModal
                     initialLexical={emailModalAction.data.email_lexical}
@@ -821,6 +841,36 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
                     }}
                 />
             )}
+            <AlertDialog
+                open={Boolean(deleteConfirmationAction)}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setDeleteConfirmationActionId(null);
+                    }
+                }}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete this email?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This email will be removed from the automation. Save or publish the automation to apply this change.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <Button
+                            variant='destructive'
+                            onClick={() => {
+                                if (deleteConfirmationAction) {
+                                    handleDelete(deleteConfirmationAction.id);
+                                }
+                            }}
+                        >
+                            Delete email
+                        </Button>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 };

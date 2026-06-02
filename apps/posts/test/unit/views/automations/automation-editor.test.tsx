@@ -969,7 +969,7 @@ describe('AutomationEditor', () => {
         expect(screen.getByRole('button', {name: 'Publish changes'})).toBeEnabled();
     });
 
-    it('deletes a send email step and keeps the wait step in place', () => {
+    it('asks for confirmation before deleting a send email step', () => {
         mockUseReadAutomation.mockReturnValue({
             data: {automations: [automationDetail]},
             isLoading: false,
@@ -981,6 +981,31 @@ describe('AutomationEditor', () => {
         fireEvent.click(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'}));
         const sidebar = screen.getByRole('complementary', {name: 'Step details'});
         fireEvent.click(within(sidebar).getByRole('button', {name: 'Delete step'}));
+
+        const dialog = screen.getByRole('alertdialog', {name: 'Delete this email?'});
+        expect(within(dialog).getByText('This email will be removed from the automation. Save or publish the automation to apply this change.')).toBeInTheDocument();
+
+        fireEvent.click(within(dialog).getByRole('button', {name: 'Cancel'}));
+
+        expect(screen.queryByRole('alertdialog', {name: 'Delete this email?'})).not.toBeInTheDocument();
+        expect(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'})).toBeInTheDocument();
+        expect(screen.getByRole('complementary', {name: 'Step details'})).toBeInTheDocument();
+    });
+
+    it('deletes a send email step after confirmation and keeps the wait step in place', () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        fireEvent.click(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'}));
+        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        fireEvent.click(within(sidebar).getByRole('button', {name: 'Delete step'}));
+        const dialog = screen.getByRole('alertdialog', {name: 'Delete this email?'});
+        fireEvent.click(within(dialog).getByRole('button', {name: 'Delete email'}));
 
         expect(screen.queryByRole('button', {name: 'Send email: Welcome to The Blueprint'})).not.toBeInTheDocument();
         expect(screen.getByRole('button', {name: 'Wait: 1 day'})).toBeInTheDocument();
