@@ -72,16 +72,12 @@ class EmailServiceWrapper {
         const adapterConfig = {
             configService,
             settingsCache,
-            errorHandler
+            errorHandler,
+            labs
         };
 
-        // Add labs for Mailgun
-        if (emailProvider === 'mailgun') {
-            adapterConfig.labs = labs;
-        }
-
         // Merge with provider-specific config
-        if (bulkEmailConfig[emailProvider]) {
+        if (bulkEmailConfig?.[emailProvider]) {
             Object.assign(adapterConfig, bulkEmailConfig[emailProvider]);
         }
 

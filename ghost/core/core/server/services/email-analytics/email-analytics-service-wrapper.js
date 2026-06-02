@@ -61,14 +61,24 @@ class EmailAnalyticsServiceWrapper {
 
             // Inject dependencies needed by the adapter
             const AdapterClass = adapterInstance.constructor;
-            const adapterConfig = {
-                configService: config,
-                settingsCache: settings
+
+            // Capture errors from email provider and log them in sentry
+            const sentry = require('../../../shared/sentry');
+            const errorHandler = (error) => {
+                logging.info(`Capturing error for ${emailProvider} email provider analytics`);
+                sentry.captureException(error);
             };
 
-            // Add labs for Mailgun
-            if (emailProvider === 'mailgun') {
-                adapterConfig.labs = labs;
+            const adapterConfig = {
+                configService: config,
+                settingsCache: settings,
+                labs,
+                errorHandler
+            };
+
+            // Merge with provider-specific config
+            if (bulkEmailConfig?.[emailProvider]) {
+                Object.assign(adapterConfig, bulkEmailConfig[emailProvider]);
             }
 
             // Create a new instance for analytics (the email service has its own instance)
