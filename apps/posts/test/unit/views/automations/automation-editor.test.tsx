@@ -767,7 +767,13 @@ describe('AutomationEditor', () => {
         const waitInput = within(sidebar).getByDisplayValue('1');
 
         for (const value of ['2e1', '+2']) {
+            fireEvent.focus(waitInput);
             fireEvent.change(waitInput, {target: {value}});
+
+            expect(waitInput).toHaveAttribute('aria-invalid', 'false');
+            expect(within(sidebar).queryByText('Enter a whole number between 1 and 30 days.')).not.toBeInTheDocument();
+
+            fireEvent.blur(waitInput);
 
             expect(waitInput).toHaveAttribute('aria-invalid', 'true');
             expect(waitInput).toHaveAttribute('aria-describedby', 'automation-wait-days-error');

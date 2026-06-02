@@ -762,9 +762,11 @@ const WaitSidebarBody: React.FC<{
     }
     const initialDays = action.data.wait_hours / 24;
     const [daysText, setDaysText] = useState<string>(String(initialDays));
+    const [hasBlurredDaysInput, setHasBlurredDaysInput] = useState(false);
 
     const days = Number(daysText);
     const isValid = getValidWaitDays(daysText) !== null;
+    const showValidationError = hasBlurredDaysInput && !isValid;
     const updateWaitDays = (nextDays: number) => {
         const nextHours = nextDays * 24;
         if (nextHours !== action.data.wait_hours) {
@@ -800,16 +802,18 @@ const WaitSidebarBody: React.FC<{
                 <InputGroup
                     aria-label='Wait duration in days'
                     className='h-(--control-height)'
-                    data-disabled={!isValid ? 'true' : undefined}
+                    data-disabled={showValidationError ? 'true' : undefined}
                 >
                     <InputGroupInput
-                        aria-describedby={!isValid ? 'automation-wait-days-error' : undefined}
-                        aria-invalid={!isValid}
+                        aria-describedby={showValidationError ? 'automation-wait-days-error' : undefined}
+                        aria-invalid={showValidationError}
                         className='w-10 min-w-10 flex-none pr-1 font-mono tabular-nums'
                         id='automation-wait-days'
                         inputMode='numeric'
                         value={daysText}
+                        onBlur={() => setHasBlurredDaysInput(true)}
                         onChange={handleChange}
+                        onFocus={() => setHasBlurredDaysInput(false)}
                     />
                     <InputGroupText className='mr-auto'>{days === 1 ? 'day' : 'days'}</InputGroupText>
                     <InputGroupAddon align='inline-end' className='gap-0.5 pr-2'>
@@ -833,7 +837,7 @@ const WaitSidebarBody: React.FC<{
                         </InputGroupButton>
                     </InputGroupAddon>
                 </InputGroup>
-                {!isValid && (
+                {showValidationError && (
                     <FieldError className='text-xs' id='automation-wait-days-error'>
                         Enter a whole number between 1 and {formatNumber(MAX_WAIT_DAYS)} days.
                     </FieldError>
