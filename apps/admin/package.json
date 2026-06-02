@@ -21,7 +21,7 @@
     "@tryghost/posts": "workspace:*",
     "@tryghost/shade": "workspace:*",
     "@tryghost/stats": "workspace:*",
-    "mingo": "2.5.3",
+    "mingo": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "zod": "catalog:"

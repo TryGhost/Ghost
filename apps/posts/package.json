@@ -58,7 +58,7 @@
         "vitest": "catalog:"
     },
     "dependencies": {
-        "@ebay/nice-modal-react": "1.2.13",
+        "@ebay/nice-modal-react": "catalog:",
         "@tryghost/color-utils": "catalog:",
         "@tryghost/admin-x-framework": "workspace:*",
         "@tryghost/koenig-lexical": "catalog:",
