@@ -912,7 +912,9 @@ describe('AutomationEditor', () => {
 
         // The new send_email step renders with the placeholder subject.
         const emailStep = screen.getByRole('button', {name: 'Send email: Untitled'});
+        expect(emailStep).toHaveClass('border-yellow-600');
         expect(within(emailStep).getByText('Untitled')).toHaveClass('opacity-50');
+        expect(within(emailStep).getByText('Empty email body')).toHaveClass('text-yellow-600');
         const sidebar = screen.getByRole('complementary', {name: 'Step details'});
         expect(within(sidebar).getByRole('heading', {name: 'Untitled'})).toHaveClass('opacity-50');
         expect(within(sidebar).getByPlaceholderText('Subject line')).toHaveFocus();
@@ -943,8 +945,11 @@ describe('AutomationEditor', () => {
         let emailStep = screen.getByRole('button', {name: 'Send email: Untitled'});
         expect(emailStep).toHaveAttribute('aria-invalid', 'true');
         expect(emailStep).toHaveClass('items-start');
+        expect(emailStep).toHaveClass('border-destructive');
+        expect(emailStep).not.toHaveClass('border-yellow-600');
         expect(within(emailStep).getByText('Add a subject line.').closest('div')?.previousElementSibling).toHaveClass('mt-[3px]');
         expect(within(emailStep).getByText('Add a subject line.')).toHaveClass('text-destructive');
+        expect(within(emailStep).queryByText('Empty email body')).not.toBeInTheDocument();
         expect(screen.getByRole('button', {name: 'Retry'})).toBeInTheDocument();
 
         const sidebar = screen.getByRole('complementary', {name: 'Step details'});
@@ -954,7 +959,9 @@ describe('AutomationEditor', () => {
 
         emailStep = screen.getByRole('button', {name: 'Send email: Welcome subject'});
         expect(emailStep).not.toHaveAttribute('aria-invalid', 'true');
+        expect(emailStep).toHaveClass('border-yellow-600');
         expect(within(emailStep).queryByText('Add a subject line.')).not.toBeInTheDocument();
+        expect(within(emailStep).getByText('Empty email body')).toHaveClass('text-yellow-600');
 
         fireEvent.click(screen.getByRole('button', {name: 'Save'}));
         expect(mockEditMutation.mutate).toHaveBeenCalledWith(

@@ -39,6 +39,7 @@ type StepNodeDisplayData = {
     label: string;
     isPlaceholderValue?: boolean;
     value?: string;
+    warningMessage?: string;
 };
 
 type StepNodeData = StepNodeDisplayData & {
@@ -75,10 +76,11 @@ const NodeShell: React.FC<React.PropsWithChildren<{className?: string; data: Ste
         aria-pressed={data.selected}
         className={cn(
             'flex w-64 items-center gap-3 rounded-lg border border-transparent bg-surface-elevated p-3 text-left text-sm text-foreground shadow-sm transition-all focus-visible:border-border-strong focus-visible:outline-none',
-            data.errorMessage && 'items-start',
+            (data.errorMessage || data.warningMessage) && 'items-start',
             !data.selected && 'hover:border-border-strong',
             data.selected && !data.errorMessage && 'border-gray-700 shadow-[inset_0_0_0_1px_var(--color-gray-700),0_1px_2px_0_rgb(0_0_0_/_0.05)]',
             data.errorMessage && 'border-destructive',
+            !data.errorMessage && data.warningMessage && 'border-yellow-600',
             className
         )}
         type='button'
@@ -90,15 +92,17 @@ const NodeShell: React.FC<React.PropsWithChildren<{className?: string; data: Ste
 
 const StepNodeContent: React.FC<{data: StepNodeData}> = ({data}) => {
     const Icon = data.icon;
+    const statusMessage = data.errorMessage || data.warningMessage;
     return (
         <>
-            <div className={cn('flex size-8 shrink-0 items-center justify-center rounded-md bg-muted text-text-secondary', data.errorMessage && 'mt-[3px]')}>
+            <div className={cn('flex size-8 shrink-0 items-center justify-center rounded-md bg-muted text-text-secondary', statusMessage && 'mt-[3px]')}>
                 <Icon className='size-4' />
             </div>
             <div className='flex min-w-0 flex-col text-left'>
                 <span className='text-xs text-text-secondary'>{data.label}</span>
                 {data.value && <span className={cn('truncate font-medium', data.isPlaceholderValue && 'opacity-50')}>{data.value}</span>}
                 {data.errorMessage && <span className='mt-1 text-xs text-destructive'>{data.errorMessage}</span>}
+                {!data.errorMessage && data.warningMessage && <span className='mt-1 text-xs text-yellow-600'>{data.warningMessage}</span>}
             </div>
         </>
     );
@@ -195,6 +199,25 @@ export const formatWait = (hours: number): string => {
     return hours === 1 ? '1 hour' : `${hours} hours`;
 };
 
+const isEmptyEmailLexical = (lexical: string | null | undefined): boolean => {
+    if (!lexical) {
+        return true;
+    }
+
+    try {
+        const parsed = JSON.parse(lexical);
+        const children = parsed?.root?.children;
+
+        if (!children || children.length === 0) {
+            return true;
+        }
+
+        return children.length === 1 && children[0].type === 'paragraph' && (!children[0].children || children[0].children.length === 0);
+    } catch {
+        return true;
+    }
+};
+
 const buildActionData = (action: AutomationAction): StepNodeDisplayData => {
     switch (action.type) {
     case 'wait':
@@ -204,7 +227,8 @@ const buildActionData = (action: AutomationAction): StepNodeDisplayData => {
             icon: LucideIcon.Mail,
             isPlaceholderValue: !action.data.email_subject,
             label: 'Send email',
-            value: action.data.email_subject || 'Untitled'
+            value: action.data.email_subject || 'Untitled',
+            warningMessage: isEmptyEmailLexical(action.data.email_lexical) ? 'Empty email body' : undefined
         };
     default: {
         const _exhaustive: never = action;
