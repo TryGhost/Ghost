@@ -73,7 +73,7 @@
     "concurrently": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-i18next": "6.1.4",
-    "eslint-plugin-tailwindcss": "3.18.2",
+    "eslint-plugin-tailwindcss": "catalog:tailwind3",
     "jsdom": "catalog:",
     "moment": "2.30.1",
     "postcss": "catalog:",
