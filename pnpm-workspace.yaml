@@ -34,6 +34,7 @@ catalog:
   '@tailwindcss/postcss': 4.2.2
   '@tailwindcss/vite': 4.2.2
   '@tanstack/react-query': 4.44.0
+  '@testing-library/jest-dom': 6.9.1
   '@tryghost/api-framework': 3.2.3
   '@tryghost/color-utils': 0.2.18
   '@tryghost/custom-fonts': 1.0.10

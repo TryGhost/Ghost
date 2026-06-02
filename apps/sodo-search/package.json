@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/sodo-search",
-  "version": "1.8.21",
+  "version": "1.8.22",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -93,7 +93,7 @@
     ]
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "5.17.0",
+    "@testing-library/jest-dom": "catalog:",
     "@testing-library/react": "12.1.5",
     "@vitejs/plugin-react": "catalog:",
     "@vitest/coverage-v8": "catalog:",

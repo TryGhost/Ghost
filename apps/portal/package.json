@@ -111,7 +111,7 @@
   "devDependencies": {
     "@doist/react-interpolate": "2.2.2",
     "@sentry/react": "catalog:",
-    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/jest-dom": "catalog:",
     "@testing-library/react": "12.1.5",
     "@testing-library/user-event": "14.6.1",
     "@tryghost/i18n": "workspace:*",

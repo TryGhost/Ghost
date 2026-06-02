@@ -38,7 +38,7 @@
     },
     "devDependencies": {
         "@faker-js/faker": "9.9.0",
-        "@testing-library/jest-dom": "6.9.1",
+        "@testing-library/jest-dom": "catalog:",
         "@testing-library/react": "14.3.1",
         "@types/jest": "catalog:",
         "@types/node": "catalog:",
