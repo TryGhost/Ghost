@@ -140,7 +140,6 @@
         "clsx": "catalog:",
         "cmdk": "1.1.1",
         "color": "5.0.3",
-        "date-fns": "4.1.0",
         "lucide-react": "catalog:",
         "moment-timezone": "^0.5.48",
         "react": "catalog:",

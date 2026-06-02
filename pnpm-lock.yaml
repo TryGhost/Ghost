@@ -1488,9 +1488,6 @@ importers:
       color:
         specifier: 5.0.3
         version: 5.0.3
-      date-fns:
-        specifier: 4.1.0
-        version: 4.1.0
       lucide-react:
         specifier: 'catalog:'
         version: 1.17.0(react@18.3.1)
