@@ -132,9 +132,15 @@ catalogs:
     eslint:
       specifier: 8.57.1
       version: 8.57.1
+    eslint-plugin-react-hooks:
+      specifier: 5.2.0
+      version: 5.2.0
     eslint-plugin-react-refresh:
       specifier: 0.5.2
       version: 0.5.2
+    eslint-plugin-tailwindcss:
+      specifier: 4.0.0-beta.0
+      version: 4.0.0-beta.0
     fs-extra:
       specifier: 11.3.5
       version: 11.3.5
@@ -215,6 +221,9 @@ catalogs:
       specifier: 9.37.0
       version: 9.37.0
   tailwind3:
+    eslint-plugin-tailwindcss:
+      specifier: 3.18.2
+      version: 3.18.2
     tailwindcss:
       specifier: 3.4.18
       version: 3.4.18
@@ -396,13 +405,13 @@ importers:
         specifier: 'catalog:'
         version: 8.57.1
       eslint-plugin-react-hooks:
-        specifier: 4.6.2
-        version: 4.6.2(eslint@8.57.1)
+        specifier: 'catalog:'
+        version: 5.2.0(eslint@8.57.1)
       eslint-plugin-react-refresh:
         specifier: 'catalog:'
         version: 0.5.2(eslint@8.57.1)
       eslint-plugin-tailwindcss:
-        specifier: 4.0.0-beta.0
+        specifier: 'catalog:'
         version: 4.0.0-beta.0(tailwindcss@4.2.2)
       jest:
         specifier: 29.7.0
@@ -493,13 +502,13 @@ importers:
         specifier: 1.6.1
         version: 1.6.1
       eslint-plugin-react-hooks:
-        specifier: 5.2.0
+        specifier: 'catalog:'
         version: 5.2.0(eslint@9.37.0(jiti@2.7.0))
       eslint-plugin-react-refresh:
         specifier: 'catalog:'
         version: 0.5.2(eslint@9.37.0(jiti@2.7.0))
       eslint-plugin-tailwindcss:
-        specifier: 4.0.0-beta.0
+        specifier: 'catalog:'
         version: 4.0.0-beta.0(tailwindcss@4.2.2)
       globals:
         specifier: 17.6.0
@@ -675,13 +684,13 @@ importers:
         specifier: 'catalog:'
         version: 8.57.1
       eslint-plugin-react-hooks:
-        specifier: 4.6.2
-        version: 4.6.2(eslint@8.57.1)
+        specifier: 'catalog:'
+        version: 5.2.0(eslint@8.57.1)
       eslint-plugin-react-refresh:
         specifier: 'catalog:'
         version: 0.5.2(eslint@8.57.1)
       eslint-plugin-tailwindcss:
-        specifier: 4.0.0-beta.0
+        specifier: 'catalog:'
         version: 4.0.0-beta.0(tailwindcss@4.2.2)
       glob:
         specifier: 'catalog:'
@@ -796,13 +805,13 @@ importers:
         specifier: 'catalog:'
         version: 8.57.1
       eslint-plugin-react-hooks:
-        specifier: 4.6.2
-        version: 4.6.2(eslint@8.57.1)
+        specifier: 'catalog:'
+        version: 5.2.0(eslint@8.57.1)
       eslint-plugin-react-refresh:
         specifier: 'catalog:'
         version: 0.5.2(eslint@8.57.1)
       eslint-plugin-tailwindcss:
-        specifier: 4.0.0-beta.0
+        specifier: 'catalog:'
         version: 4.0.0-beta.0(tailwindcss@4.2.2)
       glob:
         specifier: 'catalog:'
@@ -965,13 +974,13 @@ importers:
         specifier: 'catalog:'
         version: 8.57.1
       eslint-plugin-react-hooks:
-        specifier: 4.6.2
-        version: 4.6.2(eslint@8.57.1)
+        specifier: 'catalog:'
+        version: 5.2.0(eslint@8.57.1)
       eslint-plugin-react-refresh:
         specifier: 'catalog:'
         version: 0.5.2(eslint@8.57.1)
       eslint-plugin-tailwindcss:
-        specifier: 4.0.0-beta.0
+        specifier: 'catalog:'
         version: 4.0.0-beta.0(tailwindcss@4.2.2)
       jsdom:
         specifier: 'catalog:'
@@ -1111,7 +1120,7 @@ importers:
         specifier: 6.1.4
         version: 6.1.4
       eslint-plugin-tailwindcss:
-        specifier: 3.18.2
+        specifier: catalog:tailwind3
         version: 3.18.2(tailwindcss@3.4.18(tsx@4.21.0)(yaml@2.9.0))
       jsdom:
         specifier: 'catalog:'
@@ -1311,13 +1320,13 @@ importers:
         specifier: 'catalog:'
         version: 8.57.1
       eslint-plugin-react-hooks:
-        specifier: 4.6.2
-        version: 4.6.2(eslint@8.57.1)
+        specifier: 'catalog:'
+        version: 5.2.0(eslint@8.57.1)
       eslint-plugin-react-refresh:
         specifier: 'catalog:'
         version: 0.5.2(eslint@8.57.1)
       eslint-plugin-tailwindcss:
-        specifier: 4.0.0-beta.0
+        specifier: 'catalog:'
         version: 4.0.0-beta.0(tailwindcss@4.2.2)
       jsdom:
         specifier: 'catalog:'
@@ -1498,8 +1507,8 @@ importers:
         specifier: 'catalog:'
         version: 8.57.1
       eslint-plugin-react-hooks:
-        specifier: 4.6.2
-        version: 4.6.2(eslint@8.57.1)
+        specifier: 'catalog:'
+        version: 5.2.0(eslint@8.57.1)
       eslint-plugin-react-refresh:
         specifier: 'catalog:'
         version: 0.5.2(eslint@8.57.1)
@@ -1507,7 +1516,7 @@ importers:
         specifier: 10.3.5
         version: 10.3.5(eslint@8.57.1)(storybook@10.3.5(@testing-library/dom@9.3.4)(prettier@3.8.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)
       eslint-plugin-tailwindcss:
-        specifier: 4.0.0-beta.0
+        specifier: 'catalog:'
         version: 4.0.0-beta.0(tailwindcss@4.2.2)
       glob:
         specifier: 'catalog:'
@@ -1598,7 +1607,7 @@ importers:
         specifier: 'catalog:'
         version: 8.57.1
       eslint-plugin-tailwindcss:
-        specifier: 3.18.2
+        specifier: catalog:tailwind3
         version: 3.18.2(tailwindcss@3.4.18(tsx@4.21.0)(yaml@2.9.0))
       jsdom:
         specifier: 'catalog:'
@@ -1744,13 +1753,13 @@ importers:
         specifier: 'catalog:'
         version: 8.57.1
       eslint-plugin-react-hooks:
-        specifier: 4.6.2
-        version: 4.6.2(eslint@8.57.1)
+        specifier: 'catalog:'
+        version: 5.2.0(eslint@8.57.1)
       eslint-plugin-react-refresh:
         specifier: 'catalog:'
         version: 0.5.2(eslint@8.57.1)
       eslint-plugin-tailwindcss:
-        specifier: 4.0.0-beta.0
+        specifier: 'catalog:'
         version: 4.0.0-beta.0(tailwindcss@4.2.2)
       jsdom:
         specifier: 'catalog:'
@@ -13539,12 +13548,6 @@ packages:
     engines: {node: '>=16.9.0'}
     peerDependencies:
       eslint: '>=8.40.0'
-
-  eslint-plugin-react-hooks@4.6.2:
-    resolution: {integrity: sha512-QzliNJq4GinDBcD8gPB5v0wh6g8q3SUi6EFF0x8N/BL9PoVs0atuGc47ozMRyOWAKdwaZ5OnbOEa3WR+dSGKuQ==}
-    engines: {node: '>=10'}
-    peerDependencies:
-      eslint: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-0
 
   eslint-plugin-react-hooks@5.2.0:
     resolution: {integrity: sha512-+f15FfK64YQwZdJNELETdn5ibXEUQmW1DZL6KXhNnc2heoy/sg9VJJeT7n8TlMWouzWqSWavFkIhHyIbIAEapg==}
@@ -35989,7 +35992,7 @@ snapshots:
       eslint: 8.57.1
       globals: 17.6.0
 
-  eslint-plugin-react-hooks@4.6.2(eslint@8.57.1):
+  eslint-plugin-react-hooks@5.2.0(eslint@8.57.1):
     dependencies:
       eslint: 8.57.1
 
