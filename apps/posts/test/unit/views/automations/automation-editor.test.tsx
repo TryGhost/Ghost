@@ -5,6 +5,16 @@ import {RouterProvider, createMemoryRouter} from 'react-router';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {fireEvent, render, screen, waitFor, within} from '@testing-library/react';
 
+const {mockToastError} = vi.hoisted(() => ({
+    mockToastError: vi.fn()
+}));
+
+vi.mock('sonner', () => ({
+    toast: {
+        error: mockToastError
+    }
+}));
+
 // Stub the email content editor modal — its real internals (Koenig + email API
 // hooks) are out of scope here. The stub exposes the seed props and a save button
 // so we can assert the canvas wiring (open → seed → onSave → draft → publish).
@@ -162,6 +172,7 @@ describe('AutomationEditor', () => {
         mockEditMutation.mutate.mockReset();
         mockEditMutation.isLoading = false;
         mockEditMutation.variables = undefined;
+        mockToastError.mockReset();
     });
 
     it('renders the loading state while the automation is fetching', () => {
@@ -900,11 +911,91 @@ describe('AutomationEditor', () => {
         fireEvent.click(within(picker).getByText('Email'));
 
         // The new send_email step renders with the placeholder subject.
-        expect(screen.getByRole('button', {name: 'Send email: Untitled email'})).toBeInTheDocument();
+        const emailStep = screen.getByRole('button', {name: 'Send email: Untitled'});
+        expect(within(emailStep).getByText('Untitled')).toHaveClass('opacity-50');
         const sidebar = screen.getByRole('complementary', {name: 'Step details'});
-        expect(within(sidebar).getByRole('heading', {name: 'Untitled email'})).toBeInTheDocument();
-        expect(within(sidebar).getByDisplayValue('Untitled email')).toHaveFocus();
+        expect(within(sidebar).getByRole('heading', {name: 'Untitled'})).toHaveClass('opacity-50');
+        expect(within(sidebar).getByPlaceholderText('Subject line')).toHaveFocus();
+        expect(within(sidebar).getByPlaceholderText('Subject line')).toHaveValue('');
         expect(screen.getByRole('button', {name: 'Publish changes'})).toBeEnabled();
+    });
+
+    it('shows a toast and highlights email cards with missing subjects when saving fails validation', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [{...automationDetail, status: 'inactive'}]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        fireEvent.click(screen.getByTestId('add-step-tail-button'));
+        const picker = await screen.findByTestId('step-picker');
+        fireEvent.click(within(picker).getByText('Email'));
+
+        fireEvent.click(screen.getByRole('button', {name: 'Save'}));
+
+        expect(mockEditMutation.mutate).not.toHaveBeenCalled();
+        expect(mockToastError).toHaveBeenCalledWith('Could not save automation', {
+            description: 'Fix the highlighted steps and try again.'
+        });
+
+        let emailStep = screen.getByRole('button', {name: 'Send email: Untitled'});
+        expect(emailStep).toHaveAttribute('aria-invalid', 'true');
+        expect(emailStep).toHaveClass('items-start');
+        expect(within(emailStep).getByText('Add a subject line.').closest('div')?.previousElementSibling).toHaveClass('mt-[3px]');
+        expect(within(emailStep).getByText('Add a subject line.')).toHaveClass('text-destructive');
+        expect(screen.getByRole('button', {name: 'Retry'})).toBeInTheDocument();
+
+        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        fireEvent.change(within(sidebar).getByPlaceholderText('Subject line'), {
+            target: {value: 'Welcome subject'}
+        });
+
+        emailStep = screen.getByRole('button', {name: 'Send email: Welcome subject'});
+        expect(emailStep).not.toHaveAttribute('aria-invalid', 'true');
+        expect(within(emailStep).queryByText('Add a subject line.')).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', {name: 'Save'}));
+        expect(mockEditMutation.mutate).toHaveBeenCalledWith(
+            expect.objectContaining({
+                actions: expect.arrayContaining([
+                    expect.objectContaining({
+                        type: 'send_email',
+                        data: expect.objectContaining({email_subject: 'Welcome subject'})
+                    })
+                ])
+            }),
+            expect.any(Object)
+        );
+    });
+
+    it('does not show new missing-subject errors until the next save validation', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [{...automationDetail, status: 'inactive'}]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        fireEvent.click(screen.getByTestId('add-step-tail-button'));
+        const picker = await screen.findByTestId('step-picker');
+        fireEvent.click(within(picker).getByText('Email'));
+
+        fireEvent.click(screen.getByRole('button', {name: 'Save'}));
+        expect(within(screen.getByRole('button', {name: 'Send email: Untitled'})).getByText('Add a subject line.')).toBeInTheDocument();
+
+        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        const subjectInput = within(sidebar).getByPlaceholderText('Subject line');
+        fireEvent.change(subjectInput, {target: {value: 'Temporary subject'}});
+        expect(within(screen.getByRole('button', {name: 'Send email: Temporary subject'})).queryByText('Add a subject line.')).not.toBeInTheDocument();
+
+        fireEvent.change(subjectInput, {target: {value: ''}});
+        expect(within(screen.getByRole('button', {name: 'Send email: Untitled'})).queryByText('Add a subject line.')).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', {name: 'Save'}));
+        expect(within(screen.getByRole('button', {name: 'Send email: Untitled'})).getByText('Add a subject line.')).toBeInTheDocument();
     });
 
     it('inserts a step between two existing actions via the in-edge + button', async () => {
