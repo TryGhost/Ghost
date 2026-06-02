@@ -89,6 +89,18 @@ async function ping(post) {
     try {
         url = urlService.facade.getUrlForResource({...post, type: 'posts'}, {absolute: true});
 
+        if (!url || url.endsWith('/404/')) {
+            logging.warn({
+                system: {
+                    event: 'indexnow.unresolved_url',
+                    post_id: post.id,
+                    post_slug: post.slug,
+                    url
+                }
+            }, `${INDEXNOW_LOG_KEY} Skipped ping - post has no resolvable URL`);
+            return;
+        }
+
         // Get the API key (auto-generated on boot by settings service)
         const key = getApiKey();
         if (!key) {

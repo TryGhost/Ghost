@@ -251,6 +251,11 @@ describe('IndexNow', function () {
 
     describe('ping()', function () {
         const ping = indexnow.__get__('ping');
+        let urlStub;
+
+        beforeEach(function () {
+            urlStub = sinon.stub(urlService.facade, 'getUrlForResource').returns('https://example.com/my-post/');
+        });
 
         it('with a post should execute ping', async function () {
             loggingStub = sinon.stub(logging, 'info');
@@ -264,6 +269,25 @@ describe('IndexNow', function () {
             sinon.assert.calledOnce(loggingStub);
             assert.equal(loggingStub.args[0][0].system.event, 'indexnow.pinged');
             assert.equal(loggingStub.args[0][0].system.status_code, 200);
+        });
+
+        it('does not ping when the post has no resolvable URL (/404/)', async function () {
+            urlStub.returns('https://example.com/404/');
+            loggingStub = sinon.stub(logging, 'warn');
+            const pingRequest = nock('https://api.indexnow.org')
+                .get(/\/indexnow/)
+                .reply(200);
+            const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+
+            await ping(testPost);
+
+            assert.equal(pingRequest.isDone(), false);
+            sinon.assert.calledOnce(loggingStub);
+            const logged = loggingStub.args[0][0].system;
+            assert.equal(logged.event, 'indexnow.unresolved_url');
+            assert.equal(logged.url, 'https://example.com/404/');
+            assert.equal(logged.post_id, testPost.id);
+            assert.equal(logged.post_slug, testPost.slug);
         });
 
         it('with default post should not execute ping', async function () {
