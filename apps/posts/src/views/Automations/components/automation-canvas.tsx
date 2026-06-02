@@ -573,7 +573,7 @@ const WaitSidebarBody: React.FC<{
                 </div>
                 {showValidationError && (
                     <span className='text-xs text-red'>
-                        Enter a whole number between 1 and {formatNumber(MAX_WAIT_DAYS)} days.
+                        Enter a delay between 1 and {formatNumber(MAX_WAIT_DAYS)} days
                     </span>
                 )}
             </SidebarField>

@@ -128,7 +128,7 @@ const AutomationEditor: React.FC = () => {
         if (Object.keys(nextActionErrors).length > 0) {
             setActionErrors(nextActionErrors);
             setEditState(errorState);
-            toast.error('Could not save automation', {
+            toast.error('Automation couldn’t be saved', {
                 description: 'Fix the highlighted steps and try again.'
             });
             return false;
@@ -192,8 +192,8 @@ const AutomationEditor: React.FC = () => {
                 },
                 onError: () => {
                     setEditState(errorState);
-                    toast.error('Could not save automation', {
-                        description: 'Fix any highlighted steps and try again.'
+                    toast.error('Automation couldn’t be saved', {
+                        description: 'Fix the highlighted steps and try again.'
                     });
                 }
             }
