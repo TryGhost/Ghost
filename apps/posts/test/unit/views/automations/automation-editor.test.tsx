@@ -559,7 +559,7 @@ describe('AutomationEditor', () => {
         expect(within(sidebar).getByDisplayValue('Welcome to The Blueprint')).toHaveFocus();
         expect(within(sidebar).queryByText('Sender')).not.toBeInTheDocument();
         expect(within(sidebar).queryByText('Reply-to')).not.toBeInTheDocument();
-        expect(within(sidebar).getByRole('button', {name: 'Edit email'})).toBeEnabled();
+        expect(within(sidebar).getByRole('button', {name: 'Edit email content'})).toBeEnabled();
         expect(within(sidebar).getByRole('button', {name: 'Delete step'})).toBeEnabled();
     });
 
@@ -613,7 +613,7 @@ describe('AutomationEditor', () => {
 
         fireEvent.click(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'}));
         const sidebar = screen.getByRole('complementary', {name: 'Step details'});
-        fireEvent.click(within(sidebar).getByRole('button', {name: 'Edit email'}));
+        fireEvent.click(within(sidebar).getByRole('button', {name: 'Edit email content'}));
 
         // The modal opens, seeded from the step's current content.
         expect(screen.getByTestId('email-content-modal')).toBeInTheDocument();
@@ -660,7 +660,7 @@ describe('AutomationEditor', () => {
         const sidebar = screen.getByRole('complementary', {name: 'Step details'});
         expect(within(sidebar).getByDisplayValue('Welcome to The Blueprint')).toBeInTheDocument();
 
-        fireEvent.click(within(sidebar).getByRole('button', {name: 'Edit email'}));
+        fireEvent.click(within(sidebar).getByRole('button', {name: 'Edit email content'}));
         fireEvent.click(screen.getByTestId('modal-save'));
 
         expect(within(sidebar).getByDisplayValue('Edited via modal')).toBeInTheDocument();
@@ -1563,7 +1563,7 @@ describe('AutomationEditor', () => {
         expect(screen.getByRole('button', {name: 'Published'})).toBeDisabled();
     });
 
-    it('disables both + affordances when the action limit is reached', () => {
+    it('replaces the tail + affordance with limit text when the action limit is reached', () => {
         const filled: AutomationDetail = {
             ...automationDetail,
             actions: Array.from({length: MAX_AUTOMATION_ACTIONS}, (_, index) => ({
@@ -1585,8 +1585,12 @@ describe('AutomationEditor', () => {
 
         renderEditor();
 
-        // The tail is a div with role=button; check aria-disabled instead of the disabled attribute.
-        expect(screen.getByTestId('add-step-tail-button')).toHaveAttribute('aria-disabled', 'true');
+        expect(screen.queryByTestId('add-step-tail-button')).not.toBeInTheDocument();
+        const limitNode = screen.getByTestId('step-limit-tail-node');
+        expect(limitNode).toHaveClass('border-border-default');
+        expect(limitNode).toHaveClass('bg-[repeating-linear-gradient(135deg,var(--color-white)_0,var(--color-white)_18px,var(--color-gray-100)_18px,var(--color-gray-100)_34px)]');
+        expect(limitNode.querySelector('svg')).toBeInTheDocument();
+        expect(limitNode).toHaveTextContent(`Limit of ${MAX_AUTOMATION_ACTIONS} steps reached`);
         // The edge + uses a real <button> element.
         expect(screen.getByTestId('add-step-button-wait-0-wait-1')).toBeDisabled();
     });
