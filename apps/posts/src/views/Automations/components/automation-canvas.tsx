@@ -3,7 +3,7 @@ import AddStepEdge, {type AddStepEdgeData} from './add-step-edge';
 import EmailContentModal from './email-modal/email-content-modal';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import StepPicker, {type StepPickerType} from './step-picker';
-import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Banner, Button, Checkbox, Input, Label, LoadingIndicator, Popover, PopoverContent, PopoverTrigger, Select, SelectTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
+import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Banner, Button, Checkbox, Input, Label, LoadingIndicator, Popover, PopoverContent, PopoverTrigger, Select, SelectTrigger} from '@tryghost/shade/components';
 import {AutomationAction, AutomationDetail, AutomationSendEmailAction, AutomationWaitAction, InsertActionAnchor, MAX_AUTOMATION_ACTIONS, insertSendEmailAction, insertWaitAction, removeAction, updateSendEmailAction, updateWaitAction} from '@tryghost/admin-x-framework/api/automations';
 import {Background, BackgroundVariant, Edge, Handle, Node, NodeProps, Position, ReactFlow} from '@xyflow/react';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
@@ -136,28 +136,15 @@ const TailNode: React.FC<NodeProps<TailFlowNode>> = ({data}) => {
     const triggerClassName = 'flex h-12 w-64 items-center justify-center rounded-lg border border-dashed border-border-default bg-surface-page transition-colors hover:border-border-strong focus-visible:border-border-strong focus-visible:outline-none';
 
     if (data.disabled) {
-        const content = (
+        return (
             <div
-                aria-disabled='true'
-                className={cn(triggerClassName, 'cursor-not-allowed opacity-60')}
-                data-testid='add-step-tail-button'
+                className='flex h-12 w-64 items-center justify-center rounded-lg border border-border-default bg-[repeating-linear-gradient(135deg,var(--color-white)_0,var(--color-white)_18px,var(--color-gray-100)_18px,var(--color-gray-100)_34px)] text-sm font-medium text-text-secondary'
+                data-testid='step-limit-tail-node'
             >
                 <HiddenHandle position={Position.Top} type='target' />
-                <LucideIcon.Plus className='size-5 text-text-secondary' strokeWidth={1.5} />
+                <LucideIcon.Milestone className='mr-2 size-4' strokeWidth={1.5} />
+                {data.disabledReason}
             </div>
-        );
-        if (!data.disabledReason) {
-            return content;
-        }
-        return (
-            <TooltipProvider delayDuration={150}>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <span tabIndex={0}>{content}</span>
-                    </TooltipTrigger>
-                    <TooltipContent>{data.disabledReason}</TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
         );
     }
 
@@ -622,7 +609,7 @@ const SendEmailSidebarBody: React.FC<{
                 onClick={onEditEmail}
             >
                 <LucideIcon.Pencil className='size-4' />
-                Edit email
+                Edit email content
             </Button>
             <div className='mt-auto pt-6'>
                 <DeleteStepButton onClick={onDelete} />
