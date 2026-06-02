@@ -47,9 +47,9 @@ class EmailServiceWrapper {
         const emailAnalyticsJobs = require('../email-analytics/jobs');
         const {cachedImageSizeFromUrl} = require('../../lib/image');
 
-        // Determine which email provider to use based on configuration
-        const bulkEmailConfig = configService.get('bulkEmail');
-        const emailProvider = bulkEmailConfig?.provider || 'mailgun';
+        // Determine which email provider to use based on adapter configuration
+        const emailAdapterConfig = configService.get('adapters:email');
+        const emailProvider = emailAdapterConfig?.active?.toLowerCase() || 'mailgun';
 
         // capture errors from email provider and log them in sentry
         const errorHandler = (error) => {
@@ -76,9 +76,9 @@ class EmailServiceWrapper {
             labs
         };
 
-        // Merge with provider-specific config
-        if (bulkEmailConfig?.[emailProvider]) {
-            Object.assign(adapterConfig, bulkEmailConfig[emailProvider]);
+        // Merge with provider-specific config from adapters.email[provider]
+        if (emailAdapterConfig?.[emailProvider]) {
+            Object.assign(adapterConfig, emailAdapterConfig[emailProvider]);
         }
 
         emailProviderInstance = new AdapterClass(adapterConfig);

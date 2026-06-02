@@ -47,8 +47,8 @@ class EmailAnalyticsServiceWrapper {
         });
 
         // Use unified email adapter (handles both sending and analytics)
-        const bulkEmailConfig = config.get('bulkEmail');
-        const emailProvider = bulkEmailConfig?.provider || 'mailgun';
+        const emailAdapterConfig = config.get('adapters:email');
+        const emailProvider = emailAdapterConfig?.active?.toLowerCase() || 'mailgun';
 
         logging.info(`[EmailAnalytics] Initializing ${emailProvider} analytics via unified adapter`);
 
@@ -76,9 +76,9 @@ class EmailAnalyticsServiceWrapper {
                 errorHandler
             };
 
-            // Merge with provider-specific config
-            if (bulkEmailConfig?.[emailProvider]) {
-                Object.assign(adapterConfig, bulkEmailConfig[emailProvider]);
+            // Merge with provider-specific config from adapters.email[provider]
+            if (emailAdapterConfig?.[emailProvider]) {
+                Object.assign(adapterConfig, emailAdapterConfig[emailProvider]);
             }
 
             // Create a new instance for analytics (the email service has its own instance)
