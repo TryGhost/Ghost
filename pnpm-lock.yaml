@@ -2283,8 +2283,8 @@ importers:
         specifier: 3.2.1
         version: 3.2.1(encoding@0.1.13)
       '@faker-js/faker':
-        specifier: 7.6.0
-        version: 7.6.0
+        specifier: 'catalog:'
+        version: 9.9.0
       '@isaacs/ttlcache':
         specifier: 1.4.1
         version: 1.4.1
