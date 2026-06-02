@@ -2,11 +2,45 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const models = require('../../models');
+const memberWelcomeEmailService = require('../../services/member-welcome-emails/service');
 const {DEFAULT_EMAIL_DESIGN_SETTING_SLUG} = require('../../services/member-welcome-emails/constants');
 
 const messages = {
     defaultDesignNotFound: 'Default automated email design setting not found.'
 };
+
+// Sender fields live at the design tier (spike: in-memory shadow), not as
+// columns on email_design_settings, so they are routed to the welcome-email
+// service rather than persisted on the design model. See NY-1308.
+const SENDER_FIELDS = ['sender_name', 'sender_email', 'sender_reply_to'];
+
+function extractSenderAttrs(data) {
+    const attrs = {};
+    for (const field of SENDER_FIELDS) {
+        if (Object.prototype.hasOwnProperty.call(data, field)) {
+            attrs[field] = data[field];
+            delete data[field];
+        }
+    }
+    return attrs;
+}
+
+function rejectImmutableFields(data) {
+    if ('slug' in data) {
+        throw new errors.ValidationError({
+            message: 'The slug field cannot be modified.'
+        });
+    }
+}
+
+function buildEditResult(editedDesign, sender, meta) {
+    const result = {data: [{...editedDesign.toJSON(), ...sender}]};
+    const hasMeta = meta && Object.keys(meta).length > 0;
+    if (hasMeta) {
+        result.meta = meta;
+    }
+    return result;
+}
 
 /**
  * Resolves the shared default email design setting row.
@@ -44,7 +78,14 @@ const controller = {
             method: 'read'
         },
         async query(frame) {
-            return await resolveDefaultDesign(frame.options);
+            const defaultDesign = await resolveDefaultDesign(frame.options);
+
+            memberWelcomeEmailService.init();
+            const sender = await memberWelcomeEmailService.api.getResolvedDesignSender({
+                emailDesignSettingId: defaultDesign.get('id')
+            });
+
+            return {...defaultDesign.toJSON(), ...sender};
         }
     },
 
@@ -63,19 +104,29 @@ const controller = {
             // for the WHERE clause and a mismatched id causes "No Rows Updated"
             delete data.id;
 
-            // Reject slug changes — the slug is an immutable identifier
-            if ('slug' in data) {
-                throw new errors.ValidationError({
-                    message: 'The slug field cannot be modified.'
-                });
-            }
+            rejectImmutableFields(data);
+
+            // Sender fields are not design columns — route them to the design tier.
+            const senderAttrs = extractSenderAttrs(data);
 
             const defaultDesign = await resolveDefaultDesign(frame.options);
+            const emailDesignSettingId = defaultDesign.get('id');
 
-            return await models.EmailDesignSetting.edit(
+            const editedDesign = await models.EmailDesignSetting.edit(
                 data,
-                {...frame.options, id: defaultDesign.get('id')}
+                {...frame.options, id: emailDesignSettingId}
             );
+
+            memberWelcomeEmailService.init();
+            const {meta} = await memberWelcomeEmailService.api.editDesignSenderOptions({
+                emailDesignSettingId,
+                attrs: senderAttrs
+            });
+            const sender = await memberWelcomeEmailService.api.getResolvedDesignSender({
+                emailDesignSettingId
+            });
+
+            return buildEditResult(editedDesign, sender, meta);
         }
     }
 };

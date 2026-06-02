@@ -8,8 +8,8 @@ import {WELCOME_EMAIL_SLUGS} from './sender-details';
 import {getEmailValidationErrors} from './validation';
 import {useBrowseAutomatedEmails, usePreviewWelcomeEmail} from '@tryghost/admin-x-framework/api/automated-emails';
 import {useEmailPreview} from './use-email-preview';
-import {useEmailSenderDetails} from './use-sender-details';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useReadAutomatedEmailDesign} from '@tryghost/admin-x-framework/api/automated-email-design';
 import type {EmailModalMode} from '../types';
 
 interface EmailPreviewModalContentProps {
@@ -101,7 +101,16 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialMode = 'edi
     const hasEditorBeenFocused = useRef(false);
     const handleError = useHandleError();
     const automatedEmails = automatedEmailsData?.automated_emails || [];
-    const {resolvedSenderName, resolvedSenderEmail, resolvedReplyToEmail, hasDistinctReplyTo} = useEmailSenderDetails(automatedEmails);
+
+    // Sender identity is resolved by the backend through the design-tier cascade
+    // and returned on the design read payload, so the preview header matches what
+    // the email actually sends.
+    const {data: designData} = useReadAutomatedEmailDesign();
+    const design = designData?.automated_email_design?.[0];
+    const resolvedSenderName = design?.resolvedSenderName || '';
+    const resolvedSenderEmail = design?.resolvedSenderEmail || '';
+    const resolvedReplyToEmail = design?.resolvedReplyToEmail || '';
+    const hasDistinctReplyTo = design?.hasDistinctReplyTo ?? false;
 
     // Preview & test reuse the legacy welcome-email endpoints, which are keyed by
     // an automated-email id. Borrow the free welcome email's id (falling back to

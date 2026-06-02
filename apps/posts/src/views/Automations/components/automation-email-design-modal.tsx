@@ -22,21 +22,16 @@ import {
     LinkStyleField,
     SectionTitleColorField
 } from './email-design/design-fields';
-import {type Config} from '@tryghost/admin-x-framework/api/config';
 import {DEFAULT_EMAIL_DESIGN, type EmailDesignSettings} from './email-design/types';
 import {EmailDesignProvider} from './email-design/email-design-context';
 import {Input, LoadingIndicator, Separator, Switch, Tabs, TabsContent, TabsList, TabsTrigger, Textarea} from '@tryghost/shade/components';
 import {type Setting, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {type SiteData} from '@tryghost/admin-x-framework/api/site';
-import {WELCOME_EMAIL_SLUGS, type WelcomeEmailType, getDefaultWelcomeEmailValues} from '../utils/default-welcome-email-values';
 import {toast} from 'sonner';
-import {useAddAutomatedEmail, useBrowseAutomatedEmails, useEditAutomatedEmailSenders} from '@tryghost/admin-x-framework/api/automated-emails';
-import {useCallback, useEffect, useMemo, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useWelcomeEmailSenderDetails} from '../hooks/use-welcome-email-sender-details';
 
 type AutomationEmailDesignModalProps = {
-    config: Config;
     settings: Setting[];
     siteData: SiteData;
 };
@@ -276,22 +271,32 @@ const Sidebar: React.FC<SidebarProps> = ({
     </Tabs>
 );
 
+const DEFAULT_GENERAL_SETTINGS: GeneralSettings = {
+    senderName: '',
+    senderEmail: '',
+    replyToEmail: '',
+    headerImage: '',
+    showPublicationIcon: true,
+    showPublicationTitle: true,
+    showBadge: true,
+    emailFooter: ''
+};
+
 /**
- * Maps API response fields to the frontend GeneralSettings shape.
- * Note: senderName, senderEmail and replyToEmail are not part of the design endpoint.
+ * Maps the design read payload to the frontend GeneralSettings shape. Sender
+ * details now arrive on the same payload (resolved by the backend cascade), so
+ * the explicit design-tier inputs hydrate the editable sender fields.
  *
- * @param {Pick<AutomatedEmailDesign, 'header_image' | 'show_header_icon' | 'show_header_title' | 'show_badge' | 'footer_content'>} apiData - Subset of design fields used for general settings
- * @param {GeneralSettings} defaults - Carries forward sender fields, which are not part of the design API
+ * @param {Pick<AutomatedEmailDesign, 'header_image' | 'show_header_icon' | 'show_header_title' | 'show_badge' | 'footer_content' | 'senderNameInput' | 'senderEmailInput' | 'replyToEmailInput'>} apiData
  * @returns {GeneralSettings} General settings populated from the API response
  */
 function mapApiToGeneralSettings(
-    apiData: Pick<AutomatedEmailDesign, 'header_image' | 'show_header_icon' | 'show_header_title' | 'show_badge' | 'footer_content'>,
-    defaults: GeneralSettings
+    apiData: Pick<AutomatedEmailDesign, 'header_image' | 'show_header_icon' | 'show_header_title' | 'show_badge' | 'footer_content' | 'senderNameInput' | 'senderEmailInput' | 'replyToEmailInput'>
 ): GeneralSettings {
     return {
-        senderName: defaults.senderName,
-        senderEmail: defaults.senderEmail,
-        replyToEmail: defaults.replyToEmail,
+        senderName: apiData.senderNameInput || '',
+        senderEmail: apiData.senderEmailInput || '',
+        replyToEmail: apiData.replyToEmailInput || '',
         headerImage: apiData.header_image || '',
         showPublicationIcon: apiData.show_header_icon,
         showPublicationTitle: apiData.show_header_title,
@@ -340,71 +345,33 @@ const normalizeSenderValue = (value: string | null | undefined) => {
     return trimmed || null;
 };
 
-const AutomationEmailDesignModal = NiceModal.create<AutomationEmailDesignModalProps>(({config, settings: globalSettings, siteData}) => {
+const AutomationEmailDesignModal = NiceModal.create<AutomationEmailDesignModalProps>(({settings: globalSettings, siteData}) => {
     const modal = useModal();
-    const [siteTitle, defaultEmailAddress, icon, supportEmailAddress] = getSettingValues<string>(
+    const [siteTitle, defaultEmailAddress, icon] = getSettingValues<string>(
         globalSettings,
-        ['title', 'default_email_address', 'icon', 'support_email_address']
+        ['title', 'default_email_address', 'icon']
     );
 
     const handleError = useHandleError();
     const {data: designData, isLoading, isError} = useReadAutomatedEmailDesign();
-    const {data: automatedEmailsData} = useBrowseAutomatedEmails();
     const {mutateAsync: editDesign} = useEditAutomatedEmailDesign();
-    const {mutateAsync: addAutomatedEmail} = useAddAutomatedEmail();
-    const {mutateAsync: editAutomatedEmailSenders} = useEditAutomatedEmailSenders();
     const [hasSaveError, setHasSaveError] = useState(false);
-    const [senderInputsHydrated, setSenderInputsHydrated] = useState(false);
-    const automatedEmails = automatedEmailsData?.automated_emails || [];
+    const design = designData?.automated_email_design?.[0];
 
-    const {
-        senderNameInput,
-        senderEmailInput,
-        replyToEmailInput,
-        senderNamePlaceholder,
-        senderEmailPlaceholder,
-        replyToEmailPlaceholder,
-        showSenderEmailInput,
-        senderEmailDomain
-    } = useWelcomeEmailSenderDetails(automatedEmails, {
-        config,
-        defaultEmailAddress,
-        siteTitle,
-        supportEmailAddress
-    });
-
-    const defaultGeneralSettings = useMemo<GeneralSettings>(() => ({
-        senderName: senderNameInput,
-        senderEmail: senderEmailInput,
-        replyToEmail: replyToEmailInput,
-        headerImage: '',
-        showPublicationIcon: true,
-        showPublicationTitle: true,
-        showBadge: true,
-        emailFooter: ''
-    }), [replyToEmailInput, senderEmailInput, senderNameInput]);
-
-    const ensureWelcomeEmailRows = useCallback(async () => {
-        const existingBySlug = new Map((automatedEmailsData?.automated_emails || []).map(email => [email.slug, email]));
-
-        for (const emailType of ['free', 'paid'] as WelcomeEmailType[]) {
-            if (existingBySlug.has(WELCOME_EMAIL_SLUGS[emailType])) {
-                continue;
-            }
-
-            const defaults = getDefaultWelcomeEmailValues(emailType, siteTitle);
-            const created = await addAutomatedEmail({...defaults, status: 'inactive'});
-            const createdEmail = created.automated_emails?.[0];
-            if (createdEmail) {
-                existingBySlug.set(createdEmail.slug, createdEmail);
-            }
-        }
-    }, [addAutomatedEmail, automatedEmailsData?.automated_emails, siteTitle]);
+    // Sender details are resolved by the backend (cascade: per-action -> design
+    // -> newsletter -> site) and returned on the design read payload. The modal
+    // consumes them instead of re-deriving; sender saves to the design tier, so
+    // there is no longer any need to create welcome-email rows first.
+    const senderNamePlaceholder = design?.senderNamePlaceholder ?? '';
+    const senderEmailPlaceholder = design?.senderEmailPlaceholder ?? '';
+    const replyToEmailPlaceholder = design?.replyToEmailPlaceholder ?? '';
+    const showSenderEmailInput = design?.showSenderEmailInput ?? true;
+    const senderEmailDomain = design?.senderEmailDomain ?? null;
 
     const {formState, saveState, updateForm, setFormState, handleSave, okProps, errors} = useForm<WelcomeEmailCustomizeFormState>({
         initialState: {
             designSettings: {...DEFAULT_EMAIL_DESIGN},
-            generalSettings: defaultGeneralSettings
+            generalSettings: {...DEFAULT_GENERAL_SETTINGS}
         },
         savingDelay: 500,
         onSave: async (state) => {
@@ -416,7 +383,6 @@ const AutomationEmailDesignModal = NiceModal.create<AutomationEmailDesignModalPr
                 throw new Error('Unable to load email design settings');
             }
 
-            await ensureWelcomeEmailRows();
             const senderPayload = {
                 sender_name: normalizeSenderValue(state.generalSettings.senderName),
                 sender_reply_to: normalizeSenderValue(state.generalSettings.replyToEmail),
@@ -425,9 +391,10 @@ const AutomationEmailDesignModal = NiceModal.create<AutomationEmailDesignModalPr
                 } : {})
             };
 
-            const {meta: {sent_email_verification: sentEmailVerification = []} = {}} = await editAutomatedEmailSenders(senderPayload);
-
-            await editDesign(buildAutomatedEmailDesignPayload(state));
+            const {meta: {sent_email_verification: sentEmailVerification = []} = {}} = await editDesign({
+                ...buildAutomatedEmailDesignPayload(state),
+                ...senderPayload
+            });
 
             if (sentEmailVerification.length > 0) {
                 toast.info('We\u2019ve sent a confirmation email to the new address.');
@@ -463,37 +430,19 @@ const AutomationEmailDesignModal = NiceModal.create<AutomationEmailDesignModalPr
         }
     });
     const [hydratedDesignVersion, setHydratedDesignVersion] = useState<string | null>(null);
-    const design = designData?.automated_email_design?.[0];
     const designVersion = design ? `${design.id}:${design.updated_at ?? 'initial'}` : null;
     const {designSettings, generalSettings} = formState;
 
-    // Hydrate local state from API data on initial load only
+    // Hydrate local state (design + sender) from the API on initial load only.
     useEffect(() => {
         if (design && hydratedDesignVersion === null) {
-            setFormState(state => ({
+            setFormState(() => ({
                 designSettings: mapApiToDesignSettings(design),
-                generalSettings: mapApiToGeneralSettings(design, state.generalSettings)
+                generalSettings: mapApiToGeneralSettings(design)
             }));
             setHydratedDesignVersion(designVersion);
         }
     }, [design, designVersion, hydratedDesignVersion, setFormState]);
-
-    useEffect(() => {
-        if (senderInputsHydrated || automatedEmailsData === undefined) {
-            return;
-        }
-
-        setFormState(state => ({
-            ...state,
-            generalSettings: {
-                ...state.generalSettings,
-                senderName: senderNameInput,
-                senderEmail: senderEmailInput,
-                replyToEmail: replyToEmailInput
-            }
-        }));
-        setSenderInputsHydrated(true);
-    }, [automatedEmailsData, replyToEmailInput, senderEmailInput, senderInputsHydrated, senderNameInput, setFormState]);
 
     const handleDesignChange = useCallback((updates: Partial<EmailDesignSettings>) => {
         setHasSaveError(false);

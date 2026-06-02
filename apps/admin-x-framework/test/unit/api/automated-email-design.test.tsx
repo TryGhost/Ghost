@@ -32,7 +32,16 @@ describe('automated-email-design api', () => {
                 section_title_color: null,
                 show_badge: true,
                 created_at: '2024-01-01T00:00:00.000Z',
-                updated_at: null
+                updated_at: null,
+                senderNameInput: '',
+                senderEmailInput: '',
+                replyToEmailInput: '',
+                senderNamePlaceholder: 'Test Site',
+                senderEmailPlaceholder: 'noreply@example.com',
+                replyToEmailPlaceholder: 'noreply@example.com',
+                showSenderEmailInput: true,
+                senderEmailDomain: null,
+                hasDistinctReplyTo: false
             }]
         };
 

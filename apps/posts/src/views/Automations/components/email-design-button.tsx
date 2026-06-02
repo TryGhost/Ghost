@@ -31,7 +31,6 @@ const EmailDesignButton: React.FC = () => {
         }
 
         NiceModal.show(AutomationEmailDesignModal, {
-            config: config.data.config,
             settings: settings.data.settings,
             siteData: site.data.site
         });
