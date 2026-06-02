@@ -1173,6 +1173,9 @@ describe('AutomationEditor', () => {
         expect(insertedNode).toHaveClass('animate-in');
         expect(insertedNode).toHaveClass('zoom-in-90');
         expect(insertedNode).toHaveAttribute('aria-pressed', 'true');
+        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        expect(within(sidebar).getByRole('heading', {name: 'Untitled email'})).toBeInTheDocument();
+        expect(within(sidebar).getByDisplayValue('Untitled email')).toHaveFocus();
         expect(screen.getByRole('button', {name: 'Publish changes'})).toBeEnabled();
     });
 

@@ -597,6 +597,7 @@ type WaitStepSidebarDetail = ActionStepSidebarDetail<AutomationWaitAction, 'Wait
 };
 
 type SendEmailStepSidebarDetail = ActionStepSidebarDetail<AutomationSendEmailAction, 'Send email'> & {
+    autoFocusSubject: boolean;
     onUpdateSubject: (subject: string) => void;
     onEditEmail: () => void;
 };
@@ -612,6 +613,7 @@ const automationSlugMemberTiers: Record<string, MemberTier[]> = {
 
 type StepSidebarDetailOptions = {
     automation: AutomationDetail;
+    autoFocusSubject: boolean;
     onDelete: (actionId: string) => void;
     onUpdateWait: (actionId: string, waitHours: number) => void;
     onUpdateSubject: (actionId: string, subject: string) => void;
@@ -619,7 +621,7 @@ type StepSidebarDetailOptions = {
     stepId: string | null;
 };
 
-const getStepSidebarDetail = ({automation, stepId, onDelete, onUpdateWait, onUpdateSubject, onEditEmail}: StepSidebarDetailOptions): StepSidebarDetail | null => {
+const getStepSidebarDetail = ({automation, autoFocusSubject, stepId, onDelete, onUpdateWait, onUpdateSubject, onEditEmail}: StepSidebarDetailOptions): StepSidebarDetail | null => {
     if (!stepId) {
         return null;
     }
@@ -658,6 +660,7 @@ const getStepSidebarDetail = ({automation, stepId, onDelete, onUpdateWait, onUpd
             label: 'Send email',
             title: action.data.email_subject || 'No subject',
             action,
+            autoFocusSubject,
             onDelete: () => onDelete(action.id),
             onUpdateSubject: (subject: string) => onUpdateSubject(action.id, subject),
             onEditEmail: () => onEditEmail(action.id),
@@ -822,33 +825,44 @@ const WaitSidebarBody: React.FC<{
 
 const SendEmailSidebarBody: React.FC<{
     action: AutomationSendEmailAction;
+    autoFocusSubject: boolean;
     onUpdateSubject: (subject: string) => void;
     onEditEmail: () => void;
     onDelete: () => void;
-}> = ({action, onUpdateSubject, onEditEmail, onDelete}) => (
-    <div className='flex flex-1 flex-col gap-5'>
-        <SidebarField htmlFor='automation-email-subject' label='Subject line'>
-            <Input
-                id='automation-email-subject'
-                placeholder='Subject line'
-                value={action.data.email_subject}
-                onChange={e => onUpdateSubject(e.target.value)}
-            />
-        </SidebarField>
-        <Button
-            className='w-full'
-            type='button'
-            variant='outline'
-            onClick={onEditEmail}
-        >
-            <LucideIcon.Pencil className='size-4' />
-            Edit email
-        </Button>
-        <div className='mt-auto pt-6'>
-            <DeleteStepButton onClick={onDelete} />
+}> = ({action, autoFocusSubject, onUpdateSubject, onEditEmail, onDelete}) => {
+    const subjectInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (autoFocusSubject) {
+            subjectInputRef.current?.focus({preventScroll: true});
+        }
+    }, [action.id, autoFocusSubject]);
+
+    return (
+        <div className='flex flex-1 flex-col gap-5'>
+            <SidebarField label='Subject line'>
+                <Input
+                    ref={subjectInputRef}
+                    placeholder='Subject line'
+                    value={action.data.email_subject}
+                    onChange={e => onUpdateSubject(e.target.value)}
+                />
+            </SidebarField>
+            <Button
+                className='w-full'
+                type='button'
+                variant='outline'
+                onClick={onEditEmail}
+            >
+                <LucideIcon.Pencil className='size-4' />
+                Edit email
+            </Button>
+            <div className='mt-auto pt-6'>
+                <DeleteStepButton onClick={onDelete} />
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
 const StepSidebarBody: React.FC<{detail: StepSidebarDetail}> = ({detail}) => {
     switch (detail.type) {
@@ -857,7 +871,7 @@ const StepSidebarBody: React.FC<{detail: StepSidebarDetail}> = ({detail}) => {
     case 'wait':
         return <WaitSidebarBody key={detail.action.id} action={detail.action} onDelete={detail.onDelete} onUpdate={detail.onUpdate} />;
     case 'send_email':
-        return <SendEmailSidebarBody key={detail.action.id} action={detail.action} onDelete={detail.onDelete} onEditEmail={detail.onEditEmail} onUpdateSubject={detail.onUpdateSubject} />;
+        return <SendEmailSidebarBody key={detail.action.id} action={detail.action} autoFocusSubject={detail.autoFocusSubject} onDelete={detail.onDelete} onEditEmail={detail.onEditEmail} onUpdateSubject={detail.onUpdateSubject} />;
     default: {
         const _exhaustive: never = detail;
         throw new Error(`Unknown sidebar type: ${_exhaustive}`);
@@ -933,6 +947,7 @@ type AutomationCanvasProps = {
 
 type SelectedStep = {
     id: string;
+    shouldFocusSubject?: boolean;
 };
 
 const insertActionByType = {
@@ -961,7 +976,10 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
         const insertedAction = next.actions.find(action => !automation.actions.some(existingAction => existingAction.id === action.id));
         setNewStepId(insertedAction?.id ?? null);
         if (insertedAction) {
-            setSelectedStep({id: insertedAction.id});
+            setSelectedStep({
+                id: insertedAction.id,
+                shouldFocusSubject: insertedAction.type === 'send_email' ? true : undefined
+            });
         }
         onChange(next);
     }, [automation, onChange]);
@@ -1063,6 +1081,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
 
     const sidebarDetail = automation ? getStepSidebarDetail({
         automation,
+        autoFocusSubject: Boolean(selectedStep?.shouldFocusSubject),
         onDelete: handleRequestDelete,
         onUpdateWait: handleUpdateWait,
         onUpdateSubject: handleUpdateSubject,
