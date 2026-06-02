@@ -1,5 +1,5 @@
 import App from '../src/app.js';
-import {fireEvent, appRender, within} from './utils/test-utils';
+import {fireEvent, appRender, within, waitFor} from './utils/test-utils';
 import {offer as FixtureOffer, site as FixtureSite, member as FixtureMember} from './utils/test-fixtures';
 import setupGhostApi from '../src/utils/api.js';
 
@@ -33,6 +33,12 @@ const offerSetup = async ({site, member = null, offer}) => {
     const popupFrame = await utils.findByTitle(/portal-popup/i);
     const triggerButtonFrame = utils.queryByTitle(/portal-trigger/i);
     const popupIframeDocument = popupFrame.contentDocument;
+
+    // The offer page renders only after the async site.offer() request resolves, so wait for
+    // its content before capturing queries to avoid snapshotting the loading/empty popup.
+    await waitFor(() => {
+        expect(within(popupIframeDocument).queryByText(offer.display_title)).toBeInTheDocument();
+    });
 
     const emailInput = within(popupIframeDocument).queryByLabelText(/email/i);
     const nameInput = within(popupIframeDocument).queryByLabelText(/name/i);
@@ -295,7 +301,8 @@ describe('Logged-in free member', () => {
                 offerId,
                 plan: planId,
                 tierId: singleTierProduct.id,
-                cadence: 'month'
+                cadence: 'month',
+                metadata: {checkoutType: 'upgrade'}
             });
 
             window.location.hash = '';
@@ -322,22 +329,27 @@ describe('Logged-in free member', () => {
             let offerId = FixtureOffer.id;
             expect(popupFrame).toBeInTheDocument();
             expect(triggerButtonFrame).not.toBeInTheDocument();
-            expect(siteTitle).not.toBeInTheDocument();
-            expect(emailInput).not.toBeInTheDocument();
-            expect(nameInput).not.toBeInTheDocument();
+            expect(siteTitle).toBeInTheDocument();
+            expect(emailInput).toBeInTheDocument();
+            expect(nameInput).toBeInTheDocument();
             expect(signinButton).not.toBeInTheDocument();
-            expect(submitButton).not.toBeInTheDocument();
-            expect(offerName).not.toBeInTheDocument();
-            expect(offerDescription).not.toBeInTheDocument();
+            expect(submitButton).toBeInTheDocument();
+            expect(offerName).toBeInTheDocument();
+            expect(offerDescription).toBeInTheDocument();
+            expect(ghostApi.member.checkoutPlan).not.toHaveBeenCalled();
+
+            expect(emailInput).toHaveValue('jimmie@example.com');
+            expect(nameInput).toHaveValue('Jimmie Larson');
+            fireEvent.click(submitButton);
 
             expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
-                metadata: {
-                    checkoutType: 'upgrade'
-                },
-                offerId: offerId,
+                email: 'jimmie@example.com',
+                name: 'Jimmie Larson',
+                offerId,
                 plan: planId,
                 tierId: singleTierProduct.id,
-                cadence: 'month'
+                cadence: 'month',
+                metadata: {checkoutType: 'upgrade'}
             });
 
             window.location.hash = '';
@@ -417,7 +429,8 @@ describe('Logged-in free member', () => {
                 offerId,
                 plan: planId,
                 tierId: singleTierProduct.id,
-                cadence: 'month'
+                cadence: 'month',
+                metadata: {checkoutType: 'upgrade'}
             });
 
             window.location.hash = '';
@@ -585,7 +598,8 @@ describe('Logged-in complimentary member', () => {
                 offerId,
                 plan: planId,
                 tierId: singleTierProduct.id,
-                cadence: 'month'
+                cadence: 'month',
+                metadata: {checkoutType: 'upgrade'}
             });
 
             window.location.hash = '';
@@ -612,22 +626,27 @@ describe('Logged-in complimentary member', () => {
             let offerId = FixtureOffer.id;
             expect(popupFrame).toBeInTheDocument();
             expect(triggerButtonFrame).not.toBeInTheDocument();
-            expect(siteTitle).not.toBeInTheDocument();
-            expect(emailInput).not.toBeInTheDocument();
-            expect(nameInput).not.toBeInTheDocument();
+            expect(siteTitle).toBeInTheDocument();
+            expect(emailInput).toBeInTheDocument();
+            expect(nameInput).toBeInTheDocument();
             expect(signinButton).not.toBeInTheDocument();
-            expect(submitButton).not.toBeInTheDocument();
-            expect(offerName).not.toBeInTheDocument();
-            expect(offerDescription).not.toBeInTheDocument();
+            expect(submitButton).toBeInTheDocument();
+            expect(offerName).toBeInTheDocument();
+            expect(offerDescription).toBeInTheDocument();
+            expect(ghostApi.member.checkoutPlan).not.toHaveBeenCalled();
+
+            expect(emailInput).toHaveValue('jimmie@example.com');
+            expect(nameInput).toHaveValue('Jimmie Larson');
+            fireEvent.click(submitButton);
 
             expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
-                metadata: {
-                    checkoutType: 'upgrade'
-                },
-                offerId: offerId,
+                email: 'jimmie@example.com',
+                name: 'Jimmie Larson',
+                offerId,
                 plan: planId,
                 tierId: singleTierProduct.id,
-                cadence: 'month'
+                cadence: 'month',
+                metadata: {checkoutType: 'upgrade'}
             });
 
             window.location.hash = '';
@@ -751,11 +770,11 @@ describe('Logged-in complimentary member', () => {
                 offerId,
                 plan: planId,
                 tierId: singleTierProduct.id,
-                cadence: 'month'
+                cadence: 'month',
+                metadata: {checkoutType: 'upgrade'}
             });
 
             window.location.hash = '';
         });
     });
 });
-

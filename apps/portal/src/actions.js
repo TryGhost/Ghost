@@ -4,6 +4,8 @@ import {getGiftRedemptionErrorMessage, getGiftRedemptionSuccessMessage} from './
 import {createNotification, createPopupNotification, getMemberEmail, getMemberName, getProductCadenceFromPrice, removePortalLinkFromUrl, getRefDomain} from './utils/helpers';
 import {t} from './utils/i18n';
 
+const CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION = 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION';
+
 function switchPage({data, state}) {
     return {
         page: data.page,
@@ -186,12 +188,13 @@ async function signup({data, state, api}) {
             const integrityToken = await api.member.getIntegrityToken();
             ({inboxLinks} = await api.member.sendMagicLink({emailType: 'signup', integrityToken, ...data, name}));
         } else {
-            if (tierId && cadence) {
-                await api.member.checkoutPlan({plan, tierId, cadence, email, name, newsletters, offerId});
-            } else {
+            // An existing (logged-in) member starting a paid checkout is upgrading, not signing up,
+            // so flag it as an upgrade to suppress the signup email.
+            const metadata = state.member ? {checkoutType: 'upgrade'} : undefined;
+            if (!tierId || !cadence) {
                 ({tierId, cadence} = getProductCadenceFromPrice({site: state?.site, priceId: plan}));
-                await api.member.checkoutPlan({plan, tierId, cadence, email, name, newsletters, offerId});
             }
+            await api.member.checkoutPlan({plan, tierId, cadence, email, name, newsletters, offerId, metadata});
             return {
                 page: 'loading'
             };
@@ -206,6 +209,18 @@ async function signup({data, state, api}) {
             }
         };
     } catch (e) {
+        if (e.code === CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION) {
+            return {
+                page: 'magiclink',
+                lastPage: 'signin',
+                pageData: {
+                    ...(state.pageData || {}),
+                    email: (data?.email || '').trim()
+                },
+                popupNotification: null
+            };
+        }
+
         const message = chooseBestErrorMessage(e, t('Failed to sign up, please try again'));
         return {
             action: 'signup:failed',

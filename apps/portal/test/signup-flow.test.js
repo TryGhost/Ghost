@@ -44,6 +44,11 @@ const offerSetup = async ({site, member = null, offer}) => {
     let emailInput, nameInput, continueButton, chooseBtns, signinButton, siteTitle, offerName, offerDescription, freePlanTitle, monthlyPlanTitle, yearlyPlanTitle, fullAccessTitle;
 
     if (popupIframeDocument) {
+        // The offer page renders only after the async site.offer() request resolves, so wait for
+        // its content before capturing queries to avoid snapshotting the loading/empty popup.
+        await waitFor(() => {
+            expect(within(popupIframeDocument).queryByText(offer.display_title)).toBeInTheDocument();
+        });
         emailInput = within(popupIframeDocument).queryByLabelText(/email/i);
         nameInput = within(popupIframeDocument).queryByLabelText(/name/i);
         continueButton = within(popupIframeDocument).queryByRole('button', {name: 'Continue'});
@@ -634,18 +639,23 @@ describe('Signup', () => {
             let offerId = FixtureOffer.id;
             expect(popupFrame).toBeInTheDocument();
             expect(triggerButtonFrame).not.toBeInTheDocument();
-            expect(siteTitle).not.toBeInTheDocument();
-            expect(emailInput).not.toBeInTheDocument();
-            expect(nameInput).not.toBeInTheDocument();
-            expect(signinButton).not.toBeInTheDocument();
-            expect(submitButton).not.toBeInTheDocument();
-            expect(offerName).not.toBeInTheDocument();
-            expect(offerDescription).not.toBeInTheDocument();
+            expect(siteTitle).toBeInTheDocument();
+            expect(emailInput).toBeInTheDocument();
+            expect(nameInput).toBeInTheDocument();
+            expect(signinButton).toBeInTheDocument();
+            expect(submitButton).toBeInTheDocument();
+            expect(offerName).toBeInTheDocument();
+            expect(offerDescription).toBeInTheDocument();
+            expect(ghostApi.member.checkoutPlan).not.toHaveBeenCalled();
+
+            fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
+            fireEvent.change(nameInput, {target: {value: 'Jamie Larsen'}});
+            fireEvent.click(submitButton);
 
             expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
-                email: undefined,
-                name: undefined,
-                offerId: offerId,
+                email: 'jamie@example.com',
+                name: 'Jamie Larsen',
+                offerId,
                 plan: planId,
                 tierId: tier.id,
                 cadence: 'month'
@@ -892,18 +902,23 @@ describe('Signup', () => {
             let offerId = FixtureOffer.id;
             expect(popupFrame).toBeInTheDocument();
             expect(triggerButtonFrame).not.toBeInTheDocument();
-            expect(siteTitle).not.toBeInTheDocument();
-            expect(emailInput).not.toBeInTheDocument();
-            expect(nameInput).not.toBeInTheDocument();
-            expect(signinButton).not.toBeInTheDocument();
-            expect(submitButton).not.toBeInTheDocument();
-            expect(offerName).not.toBeInTheDocument();
-            expect(offerDescription).not.toBeInTheDocument();
+            expect(siteTitle).toBeInTheDocument();
+            expect(emailInput).toBeInTheDocument();
+            expect(nameInput).toBeInTheDocument();
+            expect(signinButton).toBeInTheDocument();
+            expect(submitButton).toBeInTheDocument();
+            expect(offerName).toBeInTheDocument();
+            expect(offerDescription).toBeInTheDocument();
+            expect(ghostApi.member.checkoutPlan).not.toHaveBeenCalled();
+
+            fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
+            fireEvent.change(nameInput, {target: {value: 'Jamie Larsen'}});
+            fireEvent.click(submitButton);
 
             expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
-                email: undefined,
-                name: undefined,
-                offerId: offerId,
+                email: 'jamie@example.com',
+                name: 'Jamie Larsen',
+                offerId,
                 plan: planId,
                 tierId: singleTier.id,
                 cadence: 'month'
