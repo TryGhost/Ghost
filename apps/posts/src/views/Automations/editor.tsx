@@ -4,9 +4,12 @@ import React from 'react';
 import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, type ButtonProps, LoadingIndicator} from '@tryghost/shade/components';
 import {AutomationDetail, AutomationStatus, useEditAutomation, useReadAutomation} from '@tryghost/admin-x-framework/api/automations';
 import {dequal} from 'dequal';
+import {toast} from 'sonner';
 import {useBlocker} from 'react-router';
 import {useConfirmUnload, useParams} from '@tryghost/admin-x-framework';
 import type {AutomationEditState} from './types';
+
+const SUBJECT_REQUIRED_MESSAGE = 'Add a subject line.';
 
 const editableSlice = (automation: AutomationDetail) => ({
     status: automation.status,
@@ -36,6 +39,18 @@ const isFailedEditState = (editState: AutomationEditState): boolean => {
     }
 };
 
+const getActionErrors = (automation: AutomationDetail): Record<string, string> => {
+    const errors: Record<string, string> = {};
+
+    for (const action of automation.actions) {
+        if (action.type === 'send_email' && !action.data.email_subject.trim()) {
+            errors[action.id] = SUBJECT_REQUIRED_MESSAGE;
+        }
+    }
+
+    return errors;
+};
+
 const AutomationEditor: React.FC = () => {
     const {id = ''} = useParams<{id: string}>();
 
@@ -46,6 +61,7 @@ const AutomationEditor: React.FC = () => {
 
     const editMutation = useEditAutomation();
     const [editState, setEditState] = React.useState<AutomationEditState>('idle');
+    const [actionErrors, setActionErrors] = React.useState<Record<string, string>>({});
 
     // Draft is the user-facing, locally mutable copy. The React Query cache stays as server truth;
     // staged edits (adding steps, etc.) live here until the user publishes. Seeded once when the
@@ -67,6 +83,16 @@ const AutomationEditor: React.FC = () => {
 
     const onDraftChange = (next: AutomationDetail) => {
         setDraft(next);
+        setActionErrors((oldErrors) => {
+            if (Object.keys(oldErrors).length === 0) {
+                return oldErrors;
+            }
+
+            const nextErrors = getActionErrors(next);
+            return Object.fromEntries(
+                Object.entries(oldErrors).filter(([actionId]) => nextErrors[actionId])
+            );
+        });
         setEditState(prev => (
             isFailedEditState(prev) ? 'idle' : prev
         ));
@@ -108,6 +134,16 @@ const AutomationEditor: React.FC = () => {
 
         setEditState(requestState);
 
+        const nextActionErrors = getActionErrors(draft);
+        if (Object.keys(nextActionErrors).length > 0) {
+            setActionErrors(nextActionErrors);
+            setEditState(errorState);
+            toast.error('Could not save automation', {
+                description: 'Fix the highlighted steps and try again.'
+            });
+            return;
+        }
+
         editMutation.mutate(
             {
                 id: draft.id,
@@ -118,9 +154,15 @@ const AutomationEditor: React.FC = () => {
             {
                 onSuccess: (response) => {
                     setDraft(response.automations[0]);
+                    setActionErrors({});
                     setEditState('idle');
                 },
-                onError: () => setEditState(errorState)
+                onError: () => {
+                    setEditState(errorState);
+                    toast.error('Could not save automation', {
+                        description: 'Fix any highlighted steps and try again.'
+                    });
+                }
             }
         );
     };
@@ -306,6 +348,7 @@ const AutomationEditor: React.FC = () => {
             />
 
             <AutomationCanvas
+                actionErrors={actionErrors}
                 automation={draft}
                 isError={isError}
                 isLoading={isLoadingAutomation}

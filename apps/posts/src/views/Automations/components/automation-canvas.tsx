@@ -38,8 +38,10 @@ const toApiAnchor = ({sourceId, targetId}: CanvasAnchor): InsertActionAnchor => 
 });
 
 type StepNodeDisplayData = {
+    errorMessage?: string;
     icon: React.ElementType;
     label: string;
+    isPlaceholderValue?: boolean;
     value?: string;
 };
 
@@ -102,12 +104,15 @@ const NodeShell: React.FC<React.PropsWithChildren<{className?: string; data: Ste
         }}>
             <ContextMenuTrigger asChild>
                 <button
+                    aria-invalid={Boolean(data.errorMessage)}
                     aria-label={data.value ? `${data.label}: ${data.value}` : data.label}
                     aria-pressed={data.selected}
                     className={cn(
                         'flex w-64 items-center gap-3 rounded-lg border border-transparent bg-surface-elevated p-3 text-left text-sm text-foreground shadow-sm transition-all focus-visible:border-border-strong focus-visible:outline-none',
+                        data.errorMessage && 'items-start',
                         !data.selected && 'hover:border-border-strong',
-                        data.selected && 'border-gray-700 shadow-[inset_0_0_0_1px_var(--color-gray-700),0_1px_2px_0_rgb(0_0_0_/_0.05)]',
+                        data.selected && !data.errorMessage && 'border-gray-700 shadow-[inset_0_0_0_1px_var(--color-gray-700),0_1px_2px_0_rgb(0_0_0_/_0.05)]',
+                        data.errorMessage && 'border-destructive',
                         data.isNew && 'animate-in fade-in-0 zoom-in-90 duration-250 ease-out motion-reduce:animate-none',
                         className
                     )}
@@ -159,12 +164,13 @@ const StepNodeContent: React.FC<{data: StepNodeData}> = ({data}) => {
     const Icon = data.icon;
     return (
         <>
-            <div className='flex size-8 shrink-0 items-center justify-center rounded-md bg-muted text-text-secondary'>
+            <div className={cn('flex size-8 shrink-0 items-center justify-center rounded-md bg-muted text-text-secondary', data.errorMessage && 'mt-[3px]')}>
                 <Icon className='size-4' />
             </div>
             <div className='flex min-w-0 flex-col text-left'>
                 <span className='text-xs text-text-secondary'>{data.label}</span>
-                {data.value && <span className='truncate font-medium'>{data.value}</span>}
+                {data.value && <span className={cn('truncate font-medium', data.isPlaceholderValue && 'opacity-50')}>{data.value}</span>}
+                {data.errorMessage && <span className='mt-1 text-xs text-destructive'>{data.errorMessage}</span>}
             </div>
         </>
     );
@@ -350,7 +356,12 @@ const buildActionData = (action: AutomationAction): StepNodeDisplayData => {
     case 'wait':
         return {icon: LucideIcon.Clock, label: 'Wait', value: formatWait(action.data.wait_hours)};
     case 'send_email':
-        return {icon: LucideIcon.Mail, label: 'Send email', value: action.data.email_subject};
+        return {
+            icon: LucideIcon.Mail,
+            isPlaceholderValue: !action.data.email_subject,
+            label: 'Send email',
+            value: action.data.email_subject || 'Untitled'
+        };
     default: {
         const _exhaustive: never = action;
         throw new Error(`Unknown automation action type: ${_exhaustive}`);
@@ -454,6 +465,7 @@ const getInitialActionOrder = (automation: AutomationDetail): AutomationAction[]
 };
 
 type BuildGraphParams = {
+    actionErrors: Record<string, string>;
     automation: AutomationDetail;
     disabled: boolean;
     onDelete: (stepId: string) => void;
@@ -465,7 +477,7 @@ type BuildGraphParams = {
     selectedStepId: string | null;
 }
 
-const buildGraph = ({automation, disabled, onDelete, onEditEmailBody, onPick, onPreviewEmail, onSelectStep, newStepId, selectedStepId}: BuildGraphParams): {nodes: AutomationFlowNode[]; edges: Edge[]} => {
+const buildGraph = ({actionErrors, automation, disabled, onDelete, onEditEmailBody, onPick, onPreviewEmail, onSelectStep, newStepId, selectedStepId}: BuildGraphParams): {nodes: AutomationFlowNode[]; edges: Edge[]} => {
     const ordered = getInitialActionOrder(automation);
     const baseNodeProps = {
         draggable: false,
@@ -518,6 +530,7 @@ const buildGraph = ({automation, disabled, onDelete, onEditEmailBody, onPick, on
                     onSelectStep,
                     stepId: action.id
                 }),
+                errorMessage: actionErrors[action.id],
                 isNew: newStepId === action.id,
                 selected: selectedStepId === action.id,
                 onSelect: () => onSelectStep(action.id)
@@ -578,6 +591,7 @@ const getInitialViewport = (canvasWidth: number): {x: number; y: number; zoom: n
 
 type BaseStepSidebarDetail<Type extends string, LabelText extends string> = {
     icon: React.ElementType;
+    isPlaceholderTitle?: boolean;
     title: string;
     label: LabelText;
     type: Type;
@@ -658,7 +672,8 @@ const getStepSidebarDetail = ({automation, autoFocusSubject, stepId, onDelete, o
         return {
             icon: LucideIcon.Mail,
             label: 'Send email',
-            title: action.data.email_subject || 'No subject',
+            isPlaceholderTitle: !action.data.email_subject,
+            title: action.data.email_subject || 'Untitled',
             action,
             autoFocusSubject,
             onDelete: () => onDelete(action.id),
@@ -891,7 +906,7 @@ const StepSidebarContent: React.FC<{detail: StepSidebarDetail}> = ({detail}) => 
                     </div>
                     <div className='min-w-0'>
                         <span className='block text-xs text-text-secondary'>{detail.label}</span>
-                        <h2 className='truncate text-base leading-tight font-medium text-foreground'>{detail.title}</h2>
+                        <h2 className={cn('truncate text-base leading-tight font-medium text-foreground', detail.isPlaceholderTitle && 'opacity-50')}>{detail.title}</h2>
                     </div>
                 </div>
             </div>
@@ -939,6 +954,7 @@ const StepSidebar: React.FC<{detail: StepSidebarDetail | null; isEmailModalOpen:
 };
 
 type AutomationCanvasProps = {
+    actionErrors?: Record<string, string>;
     automation?: AutomationDetail;
     isLoading: boolean;
     isError: boolean;
@@ -955,7 +971,7 @@ const insertActionByType = {
     send_email: insertSendEmailAction
 };
 
-const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoading, isError, onChange}) => {
+const AutomationCanvas: React.FC<AutomationCanvasProps> = ({actionErrors = {}, automation, isLoading, isError, onChange}) => {
     const [newStepId, setNewStepId] = useState<string | null>(null);
     const [emailModalMode, setEmailModalMode] = useState<EmailModalMode>('edit');
     const [emailModalStepId, setEmailModalStepId] = useState<string | null>(null);
@@ -1067,6 +1083,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
             return null;
         }
         return buildGraph({
+            actionErrors,
             automation,
             disabled: automation.actions.length >= MAX_AUTOMATION_ACTIONS,
             onDelete: handleDelete,
@@ -1077,7 +1094,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
             newStepId,
             selectedStepId
         });
-    }, [automation, handleContextMenuEditEmail, handleContextMenuPreviewEmail, handleDelete, handlePick, newStepId, selectedStepId]);
+    }, [actionErrors, automation, handleContextMenuEditEmail, handleContextMenuPreviewEmail, handleDelete, handlePick, newStepId, selectedStepId]);
 
     const sidebarDetail = automation ? getStepSidebarDetail({
         automation,
