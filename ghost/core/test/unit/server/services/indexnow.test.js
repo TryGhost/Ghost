@@ -267,8 +267,8 @@ describe('IndexNow', function () {
             await ping(testPost);
 
             sinon.assert.calledOnce(loggingStub);
-            assert.equal(loggingStub.args[0][0].system.event, 'indexnow.pinged');
-            assert.equal(loggingStub.args[0][0].system.status_code, 200);
+            assert.equal(loggingStub.args[0][0].event.name, 'indexnow.pinged');
+            assert.equal(loggingStub.args[0][0].http.response.status_code, 200);
         });
 
         it('does not ping when the post has no resolvable URL (/404/)', async function () {
@@ -283,11 +283,11 @@ describe('IndexNow', function () {
 
             assert.equal(pingRequest.isDone(), false);
             sinon.assert.calledOnce(loggingStub);
-            const logged = loggingStub.args[0][0].system;
-            assert.equal(logged.event, 'indexnow.unresolved_url');
-            assert.equal(logged.url, 'https://example.com/404/');
-            assert.equal(logged.post_id, testPost.id);
-            assert.equal(logged.post_slug, testPost.slug);
+            const logged = loggingStub.args[0][0];
+            assert.equal(logged.event.name, 'indexnow.unresolved_url');
+            assert.equal(logged.post.url, 'https://example.com/404/');
+            assert.equal(logged.post.id, testPost.id);
+            assert.equal(logged.post.slug, testPost.slug);
         });
 
         it('with default post should not execute ping', async function () {
@@ -355,7 +355,7 @@ describe('IndexNow', function () {
             assert.equal(pingRequest.isDone(), false);
             // Should have logged a warning with a structured event
             sinon.assert.calledOnce(loggingStub);
-            assert.equal(loggingStub.args[0][0].system.event, 'indexnow.api_key_missing');
+            assert.equal(loggingStub.args[0][0].event.name, 'indexnow.api_key_missing');
             assert(loggingStub.args[0][1].includes('API key not available'));
         });
 
@@ -370,8 +370,8 @@ describe('IndexNow', function () {
 
             assert.equal(pingRequest.isDone(), true);
             sinon.assert.calledOnce(loggingStub);
-            assert.equal(loggingStub.args[0][0].system.event, 'indexnow.pinged');
-            assert.equal(loggingStub.args[0][0].system.status_code, 202);
+            assert.equal(loggingStub.args[0][0].event.name, 'indexnow.pinged');
+            assert.equal(loggingStub.args[0][0].http.response.status_code, 202);
         });
 
         it('captures && logs errors from 400 requests', async function () {
@@ -385,8 +385,8 @@ describe('IndexNow', function () {
 
             assert.equal(pingRequest.isDone(), true);
             sinon.assert.calledOnce(loggingStub);
-            assert.equal(loggingStub.args[0][0].system.event, 'indexnow.ping_failed');
-            assert.equal(loggingStub.args[0][0].system.status_code, 400);
+            assert.equal(loggingStub.args[0][0].event.name, 'indexnow.ping_failed');
+            assert.equal(loggingStub.args[0][0].http.response.status_code, 400);
         });
 
         it('captures && logs validation errors from 422 requests', async function () {
@@ -400,8 +400,8 @@ describe('IndexNow', function () {
 
             assert.equal(pingRequest.isDone(), true);
             sinon.assert.calledOnce(loggingStub);
-            assert.equal(loggingStub.args[0][0].system.event, 'indexnow.key_validation_failed');
-            assert.equal(loggingStub.args[0][0].system.status_code, 422);
+            assert.equal(loggingStub.args[0][0].event.name, 'indexnow.key_validation_failed');
+            assert.equal(loggingStub.args[0][0].http.response.status_code, 422);
         });
 
         it('should behave correctly when getting a 429', async function () {
@@ -415,8 +415,8 @@ describe('IndexNow', function () {
 
             assert.equal(pingRequest.isDone(), true);
             sinon.assert.calledOnce(loggingStub);
-            assert.equal(loggingStub.args[0][0].system.event, 'indexnow.rate_limited');
-            assert.equal(loggingStub.args[0][0].system.status_code, 429);
+            assert.equal(loggingStub.args[0][0].event.name, 'indexnow.rate_limited');
+            assert.equal(loggingStub.args[0][0].http.response.status_code, 429);
         });
 
         it('logs the real status code for an unexpected 2xx response', async function () {
@@ -432,8 +432,8 @@ describe('IndexNow', function () {
 
             assert.equal(pingRequest.isDone(), true);
             sinon.assert.calledOnce(loggingStub);
-            assert.equal(loggingStub.args[0][0].system.event, 'indexnow.ping_failed');
-            assert.equal(loggingStub.args[0][0].system.status_code, 204);
+            assert.equal(loggingStub.args[0][0].event.name, 'indexnow.ping_failed');
+            assert.equal(loggingStub.args[0][0].http.response.status_code, 204);
         });
     });
 
