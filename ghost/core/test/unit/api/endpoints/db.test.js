@@ -5,10 +5,6 @@ const dbController = require('../../../../core/server/api/endpoints/db');
 describe('DB controller', function () {
     let settingsCache, importer;
 
-    before(function () {
-        models.init();
-    });
-
     beforeEach(function () {
         settingsCache = require('../../../../core/shared/settings-cache');
         importer = require('../../../../core/server/data/importer');

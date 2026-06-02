@@ -1,5 +1,7 @@
 const urlUtils = require('../../../shared/url-utils');
 const models = require('../../models');
+const settingsCache = require('../../../shared/settings-cache');
+const {slugify} = require('@tryghost/string');
 const getPostServiceInstance = require('../../services/posts/posts-service-instance');
 const allowedIncludes = [
     'tags',
@@ -21,6 +23,14 @@ const allowedIncludes = [
 const unsafeAttrs = ['status', 'authors', 'visibility'];
 
 const postsService = getPostServiceInstance();
+
+function getPostAnalyticsExportFileName() {
+    const datetime = (new Date()).toJSON().substring(0, 10);
+    const title = settingsCache.get('title');
+    const titlePrefix = title ? `${slugify(title)}.` : '';
+
+    return `${titlePrefix}ghost.analytics.${datetime}.csv`;
+}
 
 /**
  * @param {string} event
@@ -91,14 +101,14 @@ const controller = {
             disposition: {
                 type: 'csv',
                 value() {
-                    const datetime = (new Date()).toJSON().substring(0, 10);
-                    return `post-analytics.${datetime}.csv`;
+                    return getPostAnalyticsExportFileName();
                 }
             },
             cacheInvalidate: false
         },
         response: {
-            format: 'plain'
+            format: 'plain',
+            stream: true
         },
         permissions: {
             method: 'browse'
@@ -106,7 +116,8 @@ const controller = {
         validation: {},
         async query(frame) {
             return {
-                data: await postsService.export(frame)
+                data: await postsService.export(frame),
+                filename: getPostAnalyticsExportFileName()
             };
         }
     },

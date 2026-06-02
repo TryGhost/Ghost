@@ -1,6 +1,7 @@
 import React, {useEffect, useMemo, useState} from 'react';
-import {BarChartLoadingIndicator, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, GhAreaChartDataItem, KpiDropdownButton, KpiTabTrigger, KpiTabValue, Separator, Tabs, TabsList} from '@tryghost/shade/components';
+import {BarChartLoadingIndicator, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Separator, Tabs, TabsList} from '@tryghost/shade/components';
 import {DiffDirection} from '@hooks/use-growth-stats';
+import {GhAreaChart, GhAreaChartDataItem, KpiDropdownButton, KpiTabTrigger, KpiTabValue} from '@tryghost/shade/patterns';
 import {STATS_RANGES} from '@src/utils/constants';
 import {centsToDollars, formatDisplayDateWithRange} from '@tryghost/shade/app';
 import {formatNumber} from '@tryghost/shade/utils';
@@ -15,6 +16,7 @@ type ChartDataItem = {
     free: number;
     paid: number;
     comped: number;
+    gift: number;
     mrr: number;
     paid_subscribed?: number;
     paid_canceled?: number;
@@ -50,6 +52,7 @@ const isValidTab = (tab: string | null | undefined): tab is KpiTab => {
 // Extended data type for paid members chart with additional tooltip fields
 type PaidMembersChartDataItem = GhAreaChartDataItem & {
     comped: number;
+    gift: number;
     paid_subscribed?: number;
 };
 
@@ -66,8 +69,8 @@ const PaidMembersTooltipContent = ({active, payload, range, color, showBreakdown
     }
 
     const data = payload[0].payload;
-    const {date, formattedValue, label, comped} = data;
-    const paidSubscriptions = data.value - (comped || 0);
+    const {date, formattedValue, label, comped, gift} = data;
+    const paidSubscriptions = data.value - (comped || 0) - (gift || 0);
 
     return (
         <div className="min-w-[200px] rounded-lg border bg-background px-3 py-2 shadow-lg">
@@ -79,6 +82,12 @@ const PaidMembersTooltipContent = ({active, payload, range, color, showBreakdown
                             <div className='flex grow items-center justify-between gap-5'>
                                 <div className="text-sm text-muted-foreground">Paid subscriptions</div>
                                 <div className="font-mono text-xs">{formatNumber(paidSubscriptions)}</div>
+                            </div>
+                        </div>
+                        <div className='flex items-center gap-2'>
+                            <div className='flex grow items-center justify-between gap-5'>
+                                <div className="text-sm text-muted-foreground">Gift subscriptions</div>
+                                <div className="font-mono text-xs">{(gift !== undefined && gift > 0) ? (formatNumber(gift)) : '0'}</div>
                             </div>
                         </div>
                         <div className='flex items-center gap-2'>
@@ -185,6 +194,7 @@ const GrowthKPIs: React.FC<{
                     formattedValue: formatNumber(item.paid),
                     label: 'Paid members',
                     comped: item.comped,
+                    gift: item.gift,
                     paid_subscribed: item.paid_subscribed
                 };
             });

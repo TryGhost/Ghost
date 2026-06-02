@@ -1,5 +1,6 @@
 {
     "url": "http://localhost:2368",
+    "lazyRouting": false,
     "server": {
         "host": "127.0.0.1",
         "port": 2368,
@@ -7,6 +8,12 @@
     },
     "admin": {
         "redirects": true
+    },
+    "externalRequest": {
+        "keepAlive": true,
+        "keepAliveMsecs": 60000,
+        "maxSockets": 256,
+        "maxFreeSockets": 256
     },
     "updateCheck": {
         "url": "https://updates.ghost.org",
@@ -33,6 +40,11 @@
             "settings": {},
             "imageSizes": {},
             "gscan": {}
+        },
+        "redirects": {
+            "active": "FileStore",
+            "FileStore": {},
+            "S3RedirectsStore": {}
         }
     },
     "storage": {
@@ -167,6 +179,9 @@
         "sitemapXSL": {
             "maxAge": 86400
         },
+        "llms": {
+            "maxAge": 3600
+        },
         "robotstxt": {
             "maxAge": 3600
         },
@@ -212,6 +227,13 @@
             "skipBootChecks": false
         }
     },
+    "theme": {
+        "uploadLimits": {
+            "compressedBytes": 1073741824,
+            "entryUncompressedBytes": 536870912,
+            "totalUncompressedBytes": 4294967296
+        }
+    },
     "imageOptimization": {
         "resize": true,
         "srcsets": true
@@ -254,7 +276,11 @@
     },
     "comments": {
         "url": "https://cdn.jsdelivr.net/ghost/comments-ui@~{version}/umd/comments-ui.min.js",
-        "version": "1.4"
+        "version": "1.5"
+    },
+    "adminToolbar": {
+        "url": "https://cdn.jsdelivr.net/ghost/admin-toolbar@~{version}/umd/admin-toolbar.min.js",
+        "version": "0.1"
     },
     "signupForm": {
         "url": "https://cdn.jsdelivr.net/ghost/signup-form@~{version}/umd/signup-form.min.js",

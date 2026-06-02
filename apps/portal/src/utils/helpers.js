@@ -105,6 +105,18 @@ export function getSubscriptionExpiry({member}) {
     return '';
 }
 
+export function isArchivedTier({member, site}) {
+    const subscription = getMemberSubscription({member});
+    const tierId = subscription?.tier?.id;
+
+    if (!tierId) {
+        return false;
+    }
+
+    // Archived tiers are filtered out of site.products
+    return !getProductFromId({site, productId: tierId});
+}
+
 export function getUpgradeProducts({site, member}) {
     const activePrice = getMemberActivePrice({member});
     const activePriceCurrency = activePrice?.currency;
@@ -258,8 +270,8 @@ export function hasRecommendations({site}) {
     return site?.recommendations_enabled === true;
 }
 
-export function hasGiftSubscriptions({site}) {
-    return site?.labs?.giftSubscriptions === true;
+export function arePaidMembersEnabled({site}) {
+    return site?.paid_members_enabled === true;
 }
 
 export function isSigninAllowed({site}) {
@@ -268,7 +280,7 @@ export function isSigninAllowed({site}) {
 
 export function isSignupAllowed({site}) {
     const hasSignupAccess = site?.members_signup_access === 'all' || site?.members_signup_access === 'paid';
-    const hasSignupConfigured = site?.is_stripe_configured || hasOnlyFreePlan({site});
+    const hasSignupConfigured = site?.paid_members_enabled || hasOnlyFreePlan({site});
 
     return hasSignupAccess && hasSignupConfigured;
 }
@@ -318,8 +330,6 @@ export function transformApiSiteData({site}) {
             };
         });
 
-        site.is_stripe_configured = !!site.paid_members_enabled;
-
         // Map tier visibility to old settings
         if (site.products?.[0]?.visibility) {
         // Map paid tier visibility to portal products
@@ -352,7 +362,7 @@ export function getAvailableProducts({site}) {
     }
 
     return products.filter(product => !!product).filter((product) => {
-        if (site.is_stripe_configured) {
+        if (site.paid_members_enabled) {
             return true;
         }
         return product.type !== 'paid';
@@ -592,11 +602,10 @@ export function getProductCadenceFromPrice({site, priceId}) {
 
 export function getAvailablePrices({site, products = null}) {
     const {
-        portal_plans: portalPlans = [],
-        is_stripe_configured: isStripeConfigured
+        portal_plans: portalPlans = []
     } = site || {};
 
-    if (!isStripeConfigured) {
+    if (!arePaidMembersEnabled({site})) {
         return [];
     }
 

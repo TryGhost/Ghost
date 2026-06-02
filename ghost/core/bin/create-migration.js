@@ -3,6 +3,7 @@
 
 const path = require('path');
 const fs = require('fs');
+const {execSync} = require('child_process');
 const semver = require('semver');
 
 const MIGRATION_TEMPLATE = `const logging = require('@tryghost/logging');
@@ -21,40 +22,62 @@ module.exports = /**/;
 
 const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
-/**
- * Validates that a slug is kebab-case (lowercase alphanumeric with single hyphens).
- */
 function isValidSlug(slug) {
     return typeof slug === 'string' && SLUG_PATTERN.test(slug);
 }
 
 /**
- * Returns the migration version folder name for the given package version.
- *
- * semver.inc(v, 'minor') handles both cases:
- *   - Stable 6.18.0 → 6.19.0 (increments minor)
- *   - Prerelease 6.19.0-rc.0 → 6.19.0 (strips prerelease, keeps minor)
- *
- * Key invariant: 6.18.0 and 6.19.0-rc.0 both produce folder "6.19".
+ * Resolves the most recent stable tag (e.g. v6.34.0) from git.
+ * Excludes prerelease tags so the answer reflects what's actually shipped.
  */
-function getNextMigrationVersion(version) {
-    const next = semver.inc(version, 'minor');
-    if (!next) {
-        throw new Error(`Invalid version: ${version}`);
-    }
-    return `${semver.major(next)}.${semver.minor(next)}`;
+function readLastPublishedVersion(cwd) {
+    const tag = execSync(
+        `git describe --tags --abbrev=0 --match 'v[0-9]*.[0-9]*.[0-9]*' --exclude 'v*-*'`,
+        {cwd, encoding: 'utf8'}
+    ).trim();
+    return tag.replace(/^v/, '');
+}
+
+function minorOf(version) {
+    return `${semver.major(version)}.${semver.minor(version)}`;
 }
 
 /**
- * Creates a migration file and optionally bumps package versions to RC.
+ * Returns the migration version folder for a new migration.
+ *
+ * The folder is always the minor *after* the last published version. If the
+ * package version is already promoted to that minor (or beyond — second
+ * migration of a cycle), we stay there; otherwise the folder is the next
+ * minor and the package version needs to be promoted to match.
+ *
+ * Examples (last published = 6.34.0):
+ *   package 6.34.1-rc.0 → folder 6.35   (needs promote)
+ *   package 6.35.0-rc.0 → folder 6.35   (already promoted)
+ *   package 6.34.0      → folder 6.35   (needs promote, e.g. fresh checkout)
+ */
+function getTargetMigrationFolder(packageVersion, lastPublishedVersion) {
+    const packageMinor = minorOf(packageVersion);
+    const nextAfterPublished = minorOf(semver.inc(lastPublishedVersion, 'minor'));
+
+    return semver.gte(`${packageMinor}.0`, `${nextAfterPublished}.0`)
+        ? packageMinor
+        : nextAfterPublished;
+}
+
+/**
+ * Creates a migration file and promotes package.json to the target minor RC
+ * if needed. Promotion is required because knex-migrator filters out folders
+ * whose version > package.json's major.minor — without it, the new migration
+ * would be silently skipped on dev installs.
  *
  * @param {object} options
  * @param {string} options.slug - The migration name in kebab-case
  * @param {string} options.coreDir - Path to ghost/core directory
  * @param {Date}   [options.date] - Override the timestamp (for testing)
+ * @param {string} [options.lastPublishedVersion] - Override the last published version (for testing)
  * @returns {{migrationPath: string, rcVersion: string|null}}
  */
-function createMigration({slug, coreDir, date}) {
+function createMigration({slug, coreDir, date, lastPublishedVersion}) {
     if (!isValidSlug(slug)) {
         throw new Error(`Invalid slug: "${slug}". Use kebab-case (e.g. add-column-to-posts)`);
     }
@@ -65,8 +88,9 @@ function createMigration({slug, coreDir, date}) {
     const corePackage = JSON.parse(fs.readFileSync(corePackagePath, 'utf8'));
     const currentVersion = corePackage.version;
 
-    const nextVersion = getNextMigrationVersion(currentVersion);
-    const versionDir = path.join(migrationsDir, nextVersion);
+    const resolvedLastPublished = lastPublishedVersion || readLastPublishedVersion(coreDir);
+    const targetFolder = getTargetMigrationFolder(currentVersion, resolvedLastPublished);
+    const versionDir = path.join(migrationsDir, targetFolder);
 
     const timestamp = (date || new Date()).toISOString().slice(0, 19).replace('T', '-').replaceAll(':', '-');
     const filename = `${timestamp}-${slug}.js`;
@@ -82,10 +106,9 @@ function createMigration({slug, coreDir, date}) {
         throw err;
     }
 
-    // Auto-bump to RC if this is a stable version
     let rcVersion = null;
-    if (!semver.prerelease(currentVersion)) {
-        rcVersion = semver.inc(currentVersion, 'preminor', 'rc');
+    if (minorOf(currentVersion) !== targetFolder) {
+        rcVersion = `${targetFolder}.0-rc.0`;
 
         corePackage.version = rcVersion;
         fs.writeFileSync(corePackagePath, JSON.stringify(corePackage, null, 2) + '\n');
@@ -101,7 +124,6 @@ function createMigration({slug, coreDir, date}) {
     return {migrationPath, rcVersion};
 }
 
-// CLI entry point
 if (require.main === module) {
     const slug = process.argv[2];
 
@@ -125,4 +147,4 @@ if (require.main === module) {
     }
 }
 
-module.exports = {isValidSlug, getNextMigrationVersion, createMigration};
+module.exports = {isValidSlug, getTargetMigrationFolder, createMigration};

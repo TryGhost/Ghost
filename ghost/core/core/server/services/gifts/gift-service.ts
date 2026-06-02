@@ -3,19 +3,27 @@ import errors from '@tryghost/errors';
 import logging from '@tryghost/logging';
 import {Gift} from './gift';
 import type {GiftRepository} from './gift-repository';
+import type {GiftReminderScheduler} from './gift-reminder-scheduler';
 import tpl from '@tryghost/tpl';
 import {GIFT_REMINDER_FLOOR_DAYS, GIFT_REMINDER_LEAD_DAYS} from './constants';
+import {MEMBER_WELCOME_EMAIL_SLUGS} from '../member-welcome-emails/constants';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
+const GIFT_REMINDER_LEAD_MS = GIFT_REMINDER_LEAD_DAYS * MS_PER_DAY;
+const GIFT_REMINDER_FLOOR_MS = GIFT_REMINDER_FLOOR_DAYS * MS_PER_DAY;
 
 const errorMessages = {
-    giftSubscriptionsNotEnabled: 'Gift subscriptions are not enabled on this site.',
     giftNotFound: 'This gift does not exist.',
     giftAlreadyRedeemed: 'This gift has already been redeemed.',
     giftConsumed: 'This gift has already been consumed.',
     giftExpired: 'This gift has expired.',
     giftRefunded: 'This gift has been refunded.',
-    paidMember: 'You already have an active subscription.'
+    paidMember: 'You already have an active subscription.',
+    giftInvalidReassignStatus: 'This gift does not have a reassignable status.',
+    giftInvalidReassignMember: 'Member already has an active subscription.',
+    giftAlreadyAssigned: 'This gift is already assigned to another member.',
+    giftMissingConsumesAt: 'This gift is missing a "consumes at" date.',
+    giftMemberAlreadyHasGift: 'Member already has a different active gift attached.'
 };
 
 interface MemberModel {
@@ -30,6 +38,7 @@ interface MemberModel {
 interface MemberRepository {
     get(filter: Record<string, unknown>, options?: Record<string, unknown>): Promise<MemberModel | null>;
     update(data: Record<string, unknown>, options?: Record<string, unknown>): Promise<unknown>;
+    enqueueWelcomeEmailRun(memberId: string, slug: string, options?: Record<string, unknown>): Promise<unknown>;
 }
 
 type Tier = {
@@ -54,8 +63,6 @@ interface TiersService {
 interface GiftEmailService {
     sendPurchaseConfirmation(data: {
         buyerEmail: string;
-        amount: number;
-        currency: string;
         token: string;
         tierName: string;
         cadence: 'month' | 'year';
@@ -64,16 +71,14 @@ interface GiftEmailService {
     }): Promise<void>;
     sendReminder(data: {
         memberEmail: string;
+        memberName: string | null;
         tierName: string;
-        tierPrice: number;
-        tierCurrency: string;
-        cadence: 'month' | 'year';
         consumesAt: Date;
     }): Promise<void>;
 }
 
 interface StaffServiceEmails {
-    notifyGiftReceived(data: {
+    notifyGiftPurchased(data: {
         name: string | null;
         email: string;
         memberId: string | null;
@@ -113,11 +118,12 @@ interface GiftServiceDeps {
     tiersService: TiersService;
     giftEmailService: GiftEmailService;
     staffServiceEmails: StaffServiceEmails;
+    giftReminderScheduler: Pick<GiftReminderScheduler, 'scheduleFor'>;
 }
 
 interface ReminderSend {
     memberEmail: string;
-    cadence: 'month' | 'year';
+    memberName: string | null;
     consumesAt: Date;
 }
 
@@ -180,7 +186,7 @@ export class GiftService {
         }
 
         try {
-            await this.deps.staffServiceEmails.notifyGiftReceived({
+            await this.deps.staffServiceEmails.notifyGiftPurchased({
                 name: member?.get('name') ?? null,
                 email: member?.get('email') ?? data.buyerEmail,
                 memberId: member?.id ?? null,
@@ -197,8 +203,6 @@ export class GiftService {
         try {
             await this.deps.giftEmailService.sendPurchaseConfirmation({
                 buyerEmail: data.buyerEmail,
-                amount: data.amount,
-                currency: data.currency,
                 token: data.token,
                 tierName: tier.name,
                 cadence: data.cadence,
@@ -223,23 +227,28 @@ export class GiftService {
             switch (redeemableCheck.reason) {
             case 'redeemed':
                 throw new errors.BadRequestError({
-                    message: tpl(errorMessages.giftAlreadyRedeemed)
+                    message: tpl(errorMessages.giftAlreadyRedeemed),
+                    code: 'GIFT_REDEEMED'
                 });
             case 'consumed':
                 throw new errors.BadRequestError({
-                    message: tpl(errorMessages.giftConsumed)
+                    message: tpl(errorMessages.giftConsumed),
+                    code: 'GIFT_CONSUMED'
                 });
             case 'expired':
                 throw new errors.BadRequestError({
-                    message: tpl(errorMessages.giftExpired)
+                    message: tpl(errorMessages.giftExpired),
+                    code: 'GIFT_EXPIRED'
                 });
             case 'refunded':
                 throw new errors.BadRequestError({
-                    message: tpl(errorMessages.giftRefunded)
+                    message: tpl(errorMessages.giftRefunded),
+                    code: 'GIFT_REFUNDED'
                 });
             case 'paid-member':
                 throw new errors.BadRequestError({
-                    message: tpl(errorMessages.paidMember)
+                    message: tpl(errorMessages.paidMember),
+                    code: 'GIFT_PAID_MEMBER'
                 });
             default: {
                 const exhaustiveCheck: never = redeemableCheck.reason;
@@ -296,6 +305,9 @@ export class GiftService {
 
             await this.deps.giftRepository.update(redeemed, {transacting});
 
+            // Gift members receive the paid welcome email, as they receive access to paid content
+            await this.deps.memberRepository.enqueueWelcomeEmailRun(memberId, MEMBER_WELCOME_EMAIL_SLUGS.paid, {transacting});
+
             return {redeemed, member};
         };
 
@@ -323,6 +335,8 @@ export class GiftService {
             } catch (err) {
                 logging.error('Failed to notify staff of gift redemption', err);
             }
+
+            await this.deps.giftReminderScheduler.scheduleFor(redeemed);
         };
 
         if (options.transacting) {
@@ -335,11 +349,18 @@ export class GiftService {
         return redeemed;
     }
 
-    async getActiveByMember(memberId: string): Promise<Gift | null> {
+    async getActiveByMember(memberId: string, options: {transacting?: unknown} = {}): Promise<Gift | null> {
         if (!memberId) {
             return null;
         }
-        return this.deps.giftRepository.getActiveByMember(memberId);
+        return this.deps.giftRepository.getActiveByMember(memberId, options);
+    }
+
+    async getActiveByMembers(memberIds: string[], options: {transacting?: unknown} = {}): Promise<Map<string, Gift>> {
+        if (!memberIds || memberIds.length === 0) {
+            return new Map();
+        }
+        return this.deps.giftRepository.getActiveByMembers(memberIds, options);
     }
 
     getRemainingActiveDays(gift: Gift, now: Date = new Date()): number {
@@ -350,6 +371,84 @@ export class GiftService {
         const diffDays = Math.ceil((gift.consumesAt.getTime() - now.getTime()) / MS_PER_DAY);
 
         return Math.max(0, diffDays);
+    }
+
+    async reassignRedeemer(
+        giftId: string,
+        memberId: string,
+        options: {transacting?: unknown} = {}
+    ): Promise<Gift> {
+        const run = async (transacting: unknown): Promise<Gift> => {
+            const gift = await this.deps.giftRepository.getById(giftId, {transacting, forUpdate: true});
+
+            if (!gift) {
+                throw new errors.NotFoundError({message: tpl(errorMessages.giftNotFound)});
+            }
+
+            if (gift.redeemerMemberId === memberId) {
+                return gift;
+            }
+
+            const check = gift.checkReassignable();
+
+            if (!check.reassignable) {
+                switch (check.reason) {
+                case 'assigned':
+                    throw new errors.BadRequestError({message: tpl(errorMessages.giftAlreadyAssigned)});
+                case 'unredeemed':
+                case 'consumed':
+                case 'expired':
+                case 'refunded':
+                    throw new errors.BadRequestError({message: tpl(errorMessages.giftInvalidReassignStatus)});
+                case 'missing-consumes-at':
+                    throw new errors.BadRequestError({message: tpl(errorMessages.giftMissingConsumesAt)});
+                default: {
+                    const exhaustiveCheck: never = check.reason;
+
+                    throw new errors.InternalServerError({
+                        message: `Unhandled reassign failure reason: ${exhaustiveCheck}`
+                    });
+                }
+                }
+            }
+
+            const member = await this.deps.memberRepository.get(
+                {id: memberId},
+                {transacting, forUpdate: true}
+            );
+
+            if (!member) {
+                throw new errors.NotFoundError({message: `Member not found: ${memberId}`});
+            }
+
+            const memberStatus = member.get('status');
+            if (memberStatus !== 'free' && memberStatus !== 'gift') {
+                throw new errors.BadRequestError({message: tpl(errorMessages.giftInvalidReassignMember)});
+            }
+
+            const existingActiveGift = await this.deps.giftRepository.getActiveByMember(memberId, {transacting});
+            if (existingActiveGift && existingActiveGift.token !== gift.token) {
+                throw new errors.BadRequestError({message: tpl(errorMessages.giftMemberAlreadyHasGift)});
+            }
+
+            const reassignedGift = gift.reassignRedeemer(memberId);
+
+            await this.deps.memberRepository.update({
+                products: [{
+                    id: reassignedGift.tierId,
+                    expiry_at: reassignedGift.consumesAt
+                }],
+                status: 'gift'
+            }, {id: memberId, transacting});
+
+            await this.deps.giftRepository.update(reassignedGift, {transacting});
+
+            return reassignedGift;
+        };
+
+        return options.transacting
+            ? run(options.transacting)
+            : this.deps.giftRepository.transaction(run);
     }
 
     async refund(paymentIntentId: string): Promise<boolean> {
@@ -383,6 +482,31 @@ export class GiftService {
         return true;
     }
 
+    async consume(token: string, options: {transacting?: unknown} = {}): Promise<Gift | null> {
+        const run = async (transacting: unknown) => {
+            // Fetch with a row lock to prevent race conditions under concurrency
+            const gift = await this.deps.giftRepository.getByToken(token, {transacting, forUpdate: true});
+
+            if (!gift || gift.status !== 'redeemed') {
+                return null;
+            }
+
+            const consumed = gift.consume();
+
+            if (!consumed) {
+                return null;
+            }
+
+            await this.deps.giftRepository.update(consumed, {transacting});
+
+            return consumed;
+        };
+
+        return options.transacting
+            ? await run(options.transacting)
+            : await this.deps.giftRepository.transaction(run);
+    }
+
     async processConsumed(): Promise<{consumedCount: number; updatedMemberCount: number}> {
         const toConsume = await this.deps.giftRepository.findPendingConsumption();
 
@@ -395,31 +519,22 @@ export class GiftService {
 
         for (const gift of toConsume) {
             await this.deps.giftRepository.transaction(async (transacting) => {
-                // Re-fetch with a row lock to prevent races with concurrent refunds
-                const locked = await this.deps.giftRepository.getByToken(gift.token, {transacting, forUpdate: true});
-
-                if (locked?.status !== 'redeemed') {
-                    return;
-                }
-
-                const consumed = locked.consume();
+                const consumed = await this.consume(gift.token, {transacting});
 
                 if (!consumed) {
                     return;
                 }
 
-                const member = await this.deps.memberRepository.get({id: locked.redeemerMemberId}, {transacting, forUpdate: true});
+                const member = await this.deps.memberRepository.get({id: consumed.redeemerMemberId}, {transacting, forUpdate: true});
 
                 if (member && member.get('status') === 'gift') {
                     await this.deps.memberRepository.update({
                         products: [],
                         status: 'free'
-                    }, {id: locked.redeemerMemberId, transacting});
+                    }, {id: consumed.redeemerMemberId, transacting});
 
                     updatedMemberCount += 1;
                 }
-
-                await this.deps.giftRepository.update(consumed, {transacting});
 
                 consumedCount += 1;
             });
@@ -465,8 +580,8 @@ export class GiftService {
         const now = new Date();
         const toRemind = await this.deps.giftRepository.findPendingReminder({
             now,
-            reminderLeadMs: GIFT_REMINDER_LEAD_DAYS * MS_PER_DAY,
-            reminderFloorMs: GIFT_REMINDER_FLOOR_DAYS * MS_PER_DAY
+            reminderLeadMs: GIFT_REMINDER_LEAD_MS,
+            reminderFloorMs: GIFT_REMINDER_FLOOR_MS
         });
 
         if (toRemind.length === 0) {
@@ -507,16 +622,6 @@ export class GiftService {
 
         if (!tier) {
             throw new errors.NotFoundError({message: `Tier not found for gift: ${gift.tierId}`});
-        }
-
-        // Throw before the transaction so the gift isn't marked as reminded;
-        // the next run recovers after an admin restores pricing.
-        const tierPrice = gift.cadence === 'month' ? tier.monthlyPrice : tier.yearlyPrice;
-
-        if (tierPrice === null || tier.currency === null) {
-            throw new errors.NotFoundError({
-                message: `Tier missing ${gift.cadence}ly pricing for gift: ${gift.tierId}`
-            });
         }
 
         const result = await this.deps.giftRepository.transaction(async (transacting): Promise<ReminderSend | null> => {
@@ -565,7 +670,7 @@ export class GiftService {
 
             return {
                 memberEmail: member.get('email'),
-                cadence: locked.cadence,
+                memberName: member.get('name'),
                 consumesAt: locked.consumesAt
             };
         });
@@ -576,10 +681,8 @@ export class GiftService {
 
         await this.deps.giftEmailService.sendReminder({
             memberEmail: result.memberEmail,
+            memberName: result.memberName,
             tierName: tier.name,
-            tierPrice,
-            tierCurrency: tier.currency,
-            cadence: result.cadence,
             consumesAt: result.consumesAt
         });
 

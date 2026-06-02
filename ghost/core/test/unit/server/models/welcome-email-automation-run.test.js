@@ -2,10 +2,6 @@ const assert = require('node:assert/strict');
 const models = require('../../../../core/server/models');
 
 describe('Unit: models/welcome-email-automation-run', function () {
-    before(function () {
-        models.init();
-    });
-
     describe('tableName', function () {
         it('uses the correct table name', function () {
             const model = new models.WelcomeEmailAutomationRun();
@@ -28,9 +24,9 @@ describe('Unit: models/welcome-email-automation-run', function () {
     });
 
     describe('relationships', function () {
-        it('has a welcomeEmailAutomation relationship', function () {
+        it('has an automation relationship', function () {
             const model = new models.WelcomeEmailAutomationRun();
-            assert.equal(typeof model.welcomeEmailAutomation, 'function');
+            assert.equal(typeof model.automation, 'function');
         });
 
         it('has a member relationship', function () {

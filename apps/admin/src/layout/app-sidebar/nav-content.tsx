@@ -3,6 +3,7 @@ import React from "react"
 import {SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuBadge} from "@tryghost/shade/components"
 import {formatNumber, LucideIcon} from "@tryghost/shade/utils"
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
+import {getSettingValue, useBrowseSettings} from "@tryghost/admin-x-framework/api/settings";
 import { canManageMembers, canManageTags } from "@tryghost/admin-x-framework/api/users";
 import { NavMenuItem } from "./nav-menu-item";
 import { useMemberCount } from "./hooks/use-member-count";
@@ -69,6 +70,7 @@ function MembersNavItemContent({
 
 function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const { data: currentUser } = useCurrentUser();
+    const {data: settingsData} = useBrowseSettings();
     const [savedPostsExpanded, setPostsExpanded] = useNavigationExpanded('posts');
     const [savedMembersExpanded, setMembersExpanded] = useNavigationExpanded('members');
     const postCustomViews = useCustomSidebarViews('posts');
@@ -76,12 +78,13 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const hasMemberViews = memberViews.length > 0;
     const memberCount = useMemberCount();
     const routing = useEmberRouting();
-    const commentModerationEnabled = useFeatureFlag('commentModeration');
     const automationsEnabled = useFeatureFlag('automations');
     const isMembersRouteActive = useIsActiveLink({path: 'members', activeOnSubpath: true});
 
     const showTags = currentUser && canManageTags(currentUser);
     const showMembers = currentUser && canManageMembers(currentUser);
+    const commentsEnabled = getSettingValue<string>(settingsData?.settings, 'comments_enabled');
+    const showComments = !!showMembers && commentsEnabled !== 'off';
     const isDraftPostsRouteActive = routing.isRouteActive('posts', {type: 'draft'});
     const isScheduledPostsRouteActive = routing.isRouteActive('posts', {type: 'scheduled'});
     const isPublishedPostsRouteActive = routing.isRouteActive('posts', {type: 'published'});
@@ -202,7 +205,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                         </>
                     )}
 
-                    {showMembers && commentModerationEnabled && (
+                    {showComments && (
                         <NavMenuItem>
                             <NavMenuItem.Link
                                 to="comments"

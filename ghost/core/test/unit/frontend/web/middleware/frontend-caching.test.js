@@ -1,76 +1,151 @@
 const assert = require('node:assert').strict;
+const express = require('express');
+const request = require('supertest');
 const sinon = require('sinon');
 const testUtils = require('../../../../utils');
 const configUtils = require('../../../../utils/config-utils');
 
+const {api} = require('../../../../../core/frontend/services/proxy');
 const frontendCaching = require('../../../../../core/frontend/web/middleware/frontend-caching');
 
 const cacheMembersContentConfigKey = 'cacheMembersContent:enabled';
 
 describe('frontendCaching', function () {
-    let res;
-    let req;
-    let next;
-    let middleware;
     let freeTier;
     let premiumTier;
 
-    this.beforeEach(async function () {
-        res = {
-            set: sinon.spy(),
-            get: sinon.stub().returns(undefined)
-        };
-        req = sinon.spy();
-        next = sinon.spy();
+    beforeEach(async function () {
         freeTier = {id: 'freeTierId'};
         premiumTier = {id: 'premiumTierId'};
-        middleware = await frontendCaching.getMiddleware(async () => Promise.resolve(freeTier));
     });
 
-    this.afterEach(async function () {
+    afterEach(async function () {
         sinon.restore();
         await configUtils.restore();
     });
 
-    it('should set cache control to private if the blog is private', function () {
-        res.isPrivateBlog = true;
-        middleware(req, res, next);
-        sinon.assert.calledOnce(res.set);
-        sinon.assert.calledWith(res.set, {'Cache-Control': testUtils.cacheRules.private});
+    async function requestWithFrontendCaching({path = '/', member, isPrivateBlog, previewHeader, staffFrontendToolsEnabled, staffFrontendToolsCookieUpdated} = {}) {
+        const app = express();
+        const middleware = await frontendCaching.getMiddleware(async () => freeTier);
+
+        app.use((req, res, next) => {
+            req.member = member;
+            res.isPrivateBlog = isPrivateBlog;
+            res.locals.staffFrontendToolsEnabled = staffFrontendToolsEnabled;
+            res.locals.staffFrontendToolsCookieUpdated = staffFrontendToolsCookieUpdated;
+            if (staffFrontendToolsCookieUpdated) {
+                res.set('Cache-Control', 'no-store');
+            }
+            next();
+        });
+        app.use(middleware);
+        app.use((req, res) => {
+            res.sendStatus(204);
+        });
+
+        const frontendRequest = request(app).get(path);
+
+        if (previewHeader) {
+            frontendRequest.set('x-ghost-preview', previewHeader);
+        }
+
+        return frontendRequest.expect(204);
+    }
+
+    it('should set cache control to private if the blog is private', async function () {
+        const {headers} = await requestWithFrontendCaching({isPrivateBlog: true});
+        assert.equal(headers['cache-control'], testUtils.cacheRules.private);
     });
 
-    it('should set cache control to private if the request is made by a member', function () {
-        req.member = true;
-        middleware(req, res, next);
-        sinon.assert.calledOnce(res.set);
-        sinon.assert.calledWith(res.set, {'Cache-Control': testUtils.cacheRules.private});
+    it('should set cache control to private if the request is made by a member', async function () {
+        const {headers} = await requestWithFrontendCaching({member: true});
+        assert.equal(headers['cache-control'], testUtils.cacheRules.private);
     });
 
-    it('should set cache control to public if the site is public and the request is not made by a member', function () {
-        req.member = undefined;
-        res.isPrivateBlog = undefined;
-        middleware(req, res, next);
-        sinon.assert.calledOnce(res.set);
-        sinon.assert.calledWith(res.set, {'Cache-Control': testUtils.cacheRules.public});
+    it('should set cache control to public if the site is public and the request is not made by a member', async function () {
+        const {headers} = await requestWithFrontendCaching();
+        assert.equal(headers['cache-control'], testUtils.cacheRules.public);
     });
 
-    it('should set cache control to public if the request is made by a member and caching members content is enabled', function () {
+    it('should load the free tier when no free tier loader is passed', async function () {
+        const browse = sinon.stub(api.tiers, 'browse').resolves({
+            tiers: [
+                {id: 'paidTierId', type: 'paid'},
+                {id: 'freeTierId', type: 'free'}
+            ]
+        });
+        const middleware = await frontendCaching.getMiddleware();
+
+        assert.equal(browse.calledOnce, true);
+        assert.equal(typeof middleware, 'function');
+    });
+
+    it('should set cache control to private if the admin toolbar is enabled', async function () {
+        const {headers} = await requestWithFrontendCaching({staffFrontendToolsEnabled: true});
+        assert.equal(headers['cache-control'], testUtils.cacheRules.private);
+    });
+
+    it('should preserve cache control when the admin toolbar marker cookie is updated', async function () {
+        const {headers} = await requestWithFrontendCaching({staffFrontendToolsCookieUpdated: true});
+        assert.equal(headers['cache-control'], 'no-store');
+    });
+
+    it('should set cache control to public if the request is made by a member and caching members content is enabled', async function () {
         configUtils.set(cacheMembersContentConfigKey, true);
-        req.member = {
-            subscriptions: []
-        };
-        res.isPrivateBlog = undefined;
-        middleware(req, res, next);
-        sinon.assert.calledTwice(res.set);
-        sinon.assert.calledWith(res.set, {'Cache-Control': testUtils.cacheRules.public});
-        sinon.assert.calledWith(res.set, {'X-Member-Cache-Tier': 'freeTierId'});
+
+        const {headers} = await requestWithFrontendCaching({
+            member: {
+                subscriptions: []
+            }
+        });
+        assert.equal(headers['cache-control'], testUtils.cacheRules.public);
+        assert.equal(headers['x-member-cache-tier'], 'freeTierId');
     });
 
-    it('should set cache control to no-cache if the path starts with /p/', function () {
-        req.path = '/p/test';
-        middleware(req, res, next);
-        sinon.assert.calledOnce(res.set);
-        sinon.assert.calledWith(res.set, {'Cache-Control': testUtils.cacheRules.noCache});
+    it('should set cache control to no-cache if the path starts with /p/', async function () {
+        const {headers} = await requestWithFrontendCaching({path: '/p/test'});
+        assert.equal(headers['cache-control'], testUtils.cacheRules.noCache);
+    });
+
+    it('should set cache control to private if the member has more than one active subscription', async function () {
+        configUtils.set(cacheMembersContentConfigKey, true);
+
+        const {headers} = await requestWithFrontendCaching({
+            member: {
+                subscriptions: [{status: 'active'}, {status: 'active'}]
+            }
+        });
+        assert.equal(headers['cache-control'], testUtils.cacheRules.private);
+        assert.equal(headers['x-member-cache-tier'], undefined);
+    });
+
+    it('should set cache control to public for the member tier if the member has one active subscription', async function () {
+        configUtils.set(cacheMembersContentConfigKey, true);
+
+        const {headers} = await requestWithFrontendCaching({
+            member: {
+                subscriptions: [{status: 'active', tier: premiumTier}]
+            }
+        });
+        assert.equal(headers['cache-control'], testUtils.cacheRules.public);
+        assert.equal(headers['x-member-cache-tier'], 'premiumTierId');
+    });
+
+    it('should set cache control to public for the free tier if the member has no active subscriptions', async function () {
+        configUtils.set(cacheMembersContentConfigKey, true);
+
+        const {headers} = await requestWithFrontendCaching({
+            member: {
+                subscriptions: []
+            }
+        });
+        assert.equal(headers['cache-control'], testUtils.cacheRules.public);
+        assert.equal(headers['x-member-cache-tier'], 'freeTierId');
+    });
+
+    it('should set cache control to no-cache if the request includes preview data', async function () {
+        const {headers} = await requestWithFrontendCaching({previewHeader: 'c=%23ff0000'});
+        assert.equal(headers['cache-control'], testUtils.cacheRules.noCache);
     });
 
     describe('calculateMemberTier', function () {

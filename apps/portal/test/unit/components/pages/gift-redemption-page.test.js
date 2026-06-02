@@ -18,10 +18,7 @@ const renderGiftRedemptionPage = (overrideContext = {}) => {
         overrideContext: {
             site: {
                 ...testSite,
-                url: 'https://example.com/',
-                labs: {
-                    giftSubscriptions: true
-                }
+                url: 'https://example.com/'
             },
             pageData: {
                 token: 'gift-token-123',
@@ -46,7 +43,7 @@ describe('GiftRedemptionPage', () => {
         expect(queryByLabelText(/your name/i)).not.toBeInTheDocument();
         expect(queryByLabelText(/your email/i)).not.toBeInTheDocument();
 
-        fireEvent.click(getByRole('button', {name: 'Redeem gift membership'}));
+        fireEvent.click(getByRole('button', {name: 'Redeem your membership'}));
 
         expect(mockDoActionFn).toHaveBeenCalledWith('redeemGift', {
             giftToken: 'gift-token-123'
@@ -56,7 +53,7 @@ describe('GiftRedemptionPage', () => {
     test('shows validation errors for anonymous visitors and only submits once valid', async () => {
         const {getByLabelText, getByRole, mockDoActionFn, getByText} = renderGiftRedemptionPage();
         const emailInput = getByLabelText(/your email/i);
-        const submitButton = getByRole('button', {name: 'Redeem gift membership'});
+        const submitButton = getByRole('button', {name: 'Redeem your membership'});
 
         fireEvent.click(submitButton);
         expect(getByText('Enter your email address')).toBeInTheDocument();
@@ -112,27 +109,11 @@ describe('GiftRedemptionPage', () => {
                 closeable: true,
                 message: {
                     title: 'Gift could not be redeemed',
-                    subtitle: 'Gift link is not valid'
+                    subtitle: 'Something went wrong, please try again later.'
                 }
             });
         });
 
         expect(mockDoActionFn).toHaveBeenCalledWith('closePopup');
-    });
-
-    test('removes the portal link and closes the popup when gift subscriptions are disabled', async () => {
-        const pushStateSpy = vi.spyOn(window.history, 'pushState');
-        const {mockDoActionFn} = renderGiftRedemptionPage({
-            site: {
-                ...testSite,
-                url: 'https://example.com/',
-                labs: {}
-            }
-        });
-
-        await waitFor(() => {
-            expect(pushStateSpy).toHaveBeenCalled();
-            expect(mockDoActionFn).toHaveBeenCalledWith('closePopup');
-        });
     });
 });

@@ -2,6 +2,7 @@ import {createVitestConfig} from '@tryghost/admin-x-framework/test/vitest-config
 import {resolve} from 'path';
 
 export default createVitestConfig({
+    root: __dirname,
     aliases: {
         '@src': resolve(__dirname, './src'),
         '@assets': resolve(__dirname, './src/assets'),

@@ -7,12 +7,12 @@ const ChangelogEntrySchema = z
     .looseObject({
         slug: z.string(),
         title: z.string(),
-        custom_excerpt: z.string(),
+        custom_excerpt: z.string().nullish(),
         url: z.string().url(),
         published_at: isoDatetimeToDate,
         featured: z.stringbool(),
-        feature_image: z.string().url().optional(),
-        html: z.string().optional(),
+        feature_image: z.string().url().nullish(),
+        html: z.string().nullish(),
     })
     .transform((data) => ({
         slug: data.slug,

@@ -8,9 +8,9 @@ import {t} from '../../../../utils/i18n';
 
 const AccountWelcome = () => {
     const {member, site} = useContext(AppContext);
-    const {is_stripe_configured: isStripeConfigured} = site;
+    const {paid_members_enabled: paidMembersEnabled} = site;
 
-    if (!isStripeConfigured || hasOnlyFreePlan({site})) {
+    if (!paidMembersEnabled || hasOnlyFreePlan({site})) {
         return null;
     }
     const subscription = getMemberSubscription({member});
@@ -22,6 +22,13 @@ const AccountWelcome = () => {
         const currentPeriodEnd = subscription?.current_period_end;
         const subscriptionExpiry = getSubscriptionExpiry({member});
         if (isGiftMember({member})) {
+            if (subscriptionExpiry) {
+                return (
+                    <div className='gh-portal-section' style={{marginBottom: 24}}>
+                        <p className='gh-portal-text-center gh-portal-free-ctatext'>{t(`Your gift subscription will expire on {expiryDate}`, {expiryDate: subscriptionExpiry})}</p>
+                    </div>
+                );
+            }
             return null;
         }
         if (isComplimentary && subscriptionExpiry) {

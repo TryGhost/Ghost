@@ -38,6 +38,18 @@ test.describe('Ghost Admin - Members List', () => {
         await expect(membersPage.memberRows).toHaveCount(0);
     });
 
+    test('add yourself from empty state - creates a member for the current user', async ({page, ghostAccountOwner}) => {
+        const membersPage = new MembersListPage(page);
+        await membersPage.goto();
+
+        await expect(membersPage.emptyState).toBeVisible();
+        await membersPage.addYourselfButton.click();
+
+        await expect(membersPage.memberRows).toHaveCount(1);
+        await expect(membersPage.getMemberByName(ghostAccountOwner.name)).toBeVisible();
+        await expect(membersPage.getMemberByName(ghostAccountOwner.name)).toContainText(ghostAccountOwner.email);
+    });
+
     test('navigates to member detail when clicking a row', async ({page}) => {
         const member = await memberFactory.create({
             name: 'Detail Test Member',

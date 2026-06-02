@@ -11,13 +11,14 @@ import { useNotificationsCountForUser } from "@tryghost/activitypub/api";
 import NetworkIcon from "./icons/network-icon";
 import { NavMenuItem } from "./nav-menu-item";
 import { useIsActiveLink } from "./use-is-active-link";
+import { getAdminToolbarUrl } from "@/utils/admin-toolbar-url";
 
 function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const { data: currentUser } = useCurrentUser();
     const { data: settings } = useBrowseSettings();
     const networkEnabled = getSettingValue<boolean>(settings?.settings, 'social_web_enabled') ?? false;
     const site = useBrowseSite();
-    const url = site.data?.site.url;
+    const url = getAdminToolbarUrl(site.data?.site.url);
 
 
     // The network app has its own notification state, so we don't want to show

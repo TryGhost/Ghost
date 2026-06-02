@@ -33,61 +33,56 @@ describe('Serve Favicon', function () {
 
     describe('serveFavicon', function () {
         describe('serves', function () {
-            it('default favicon.ico', function (done) {
+            it('default favicon.ico', async function () {
                 localSettingsCache.icon = '';
 
-                request(blogApp)
+                await request(blogApp)
                     .get('/favicon.ico')
                     .expect(200)
                     .expect('Content-Type', /image\/x-icon/)
-                    .expect('Content-Length', '15406')
-                    .end(done);
+                    .expect('Content-Length', '15406');
             });
         });
 
         describe('redirects', function () {
-            it('custom uploaded favicon.png', function (done) {
+            it('custom uploaded favicon.png', async function () {
                 storage.getStorage().storagePath = path.join(__dirname, '../../../../utils/fixtures/images/');
                 localSettingsCache.icon = '/content/images/favicon.png';
 
-                request(blogApp)
+                await request(blogApp)
                     .get('/favicon.png')
                     .expect(302)
-                    .expect('Location', '/content/images/size/w256h256/favicon.png')
-                    .end(done);
+                    .expect('Location', '/content/images/size/w256h256/favicon.png');
             });
 
-            it('custom uploaded favicon.webp', function (done) {
+            it('custom uploaded favicon.webp', async function () {
                 storage.getStorage().storagePath = path.join(__dirname, '../../../../utils/fixtures/images/');
                 localSettingsCache.icon = '/content/images/favicon.webp';
 
-                request(blogApp)
+                await request(blogApp)
                     .get('/favicon.png')
                     .expect(302)
-                    .expect('Location', '/content/images/size/w256h256/format/png/favicon.webp')
-                    .end(done);
+                    .expect('Location', '/content/images/size/w256h256/format/png/favicon.webp');
             });
 
-            it('custom uploaded favicon.ico', function (done) {
+            it('custom uploaded favicon.ico', async function () {
                 storage.getStorage().storagePath = path.join(__dirname, '../../../../utils/fixtures/images/');
                 localSettingsCache.icon = '/content/images/favicon.ico';
 
-                request(blogApp)
+                await request(blogApp)
                     .get('/favicon.ico')
                     .expect(302)
-                    .expect('Location', '/content/images/favicon.ico')
-                    .end(done);
+                    .expect('Location', '/content/images/favicon.ico');
             });
 
-            it('to favicon.ico when favicon.png is requested', function (done) {
+            it('to favicon.ico when favicon.png is requested', async function () {
                 configUtils.set('paths:publicFilePath', path.join(__dirname, '../../../../test/utils/fixtures/'));
                 localSettingsCache.icon = null;
 
-                request(blogApp)
+                await request(blogApp)
                     .get('/favicon.png')
                     .expect(302)
-                    .expect('Location', '/favicon.ico')
-                    .end(done);
+                    .expect('Location', '/favicon.ico');
             });
         });
     });

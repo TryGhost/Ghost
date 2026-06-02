@@ -65,7 +65,7 @@ module.exports = function MembersAPI({
         Comment,
         MemberFeedback,
         Outbox,
-        WelcomeEmailAutomation,
+        Automation,
         WelcomeEmailAutomationRun,
         AutomatedEmailRecipient,
         Gift
@@ -104,7 +104,7 @@ module.exports = function MembersAPI({
         tokenService,
         newslettersService,
         productRepository,
-        WelcomeEmailAutomation,
+        Automation,
         WelcomeEmailAutomationRun,
         Member,
         MemberNewsletter,
@@ -164,7 +164,8 @@ module.exports = function MembersAPI({
         emailSuppressionList,
         settingsHelpers,
         nextPaymentCalculator,
-        commentsService
+        commentsService,
+        giftService
     });
 
     const geolocationService = new GeolocationService();
@@ -267,8 +268,6 @@ module.exports = function MembersAPI({
             return null;
         }
 
-        const giftSubscriptionsEnabled = labsService.isSet('giftSubscriptions');
-
         let member = oldEmail ? await getMemberIdentityData(oldEmail) : await getMemberIdentityData(email);
 
         if (member) {
@@ -279,7 +278,7 @@ module.exports = function MembersAPI({
                 return getMemberIdentityData(email);
             }
 
-            if (giftToken && giftSubscriptionsEnabled) {
+            if (giftToken) {
                 await giftService.service.redeem(giftToken, member.id);
             }
 
@@ -307,7 +306,7 @@ module.exports = function MembersAPI({
 
         let newMember;
 
-        if (giftToken && giftSubscriptionsEnabled) {
+        if (giftToken) {
             newMember = await Member.transaction(async (transacting) => {
                 const created = await users.create(
                     {name, email, labels, newsletters, attribution, geolocation, status: 'gift'},

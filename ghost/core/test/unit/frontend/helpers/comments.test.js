@@ -6,40 +6,33 @@ const {mockManager} = require('../../../utils/e2e-framework');
 
 const comments = require('../../../../core/frontend/helpers/comments');
 const proxy = require('../../../../core/frontend/services/proxy');
+const internalKeys = require('../../../../core/server/services/internal-keys').default;
 const {settingsCache} = proxy;
 
 describe('{{comments}} helper', function () {
-    let keyStub;
     let settingsCacheGetStub;
 
-    before(function () {
-        keyStub = sinon.stub().resolves('xyz');
-        const dataService = {
-            getFrontendKey: keyStub
-        };
-        proxy.init({dataService});
-    });
-
     beforeEach(function () {
+        internalKeys.clear();
+        internalKeys.set('ghost-internal-frontend', Promise.resolve({id: 'k', secret: 'xyz'}));
         mockManager.mockMail();
         settingsCacheGetStub = sinon.stub(settingsCache, 'get');
         configUtils.set('comments:version', 'test.version');
     });
 
     afterEach(async function () {
+        internalKeys.clear();
         mockManager.restore();
         sinon.restore();
         await configUtils.restore();
     });
 
-    it('returns undefined if not used withing post context', function (done) {
+    it('returns undefined if not used withing post context', async function () {
         settingsCacheGetStub.withArgs('members_enabled').returns(true);
         settingsCacheGetStub.withArgs('comments_enabled').returns('all');
 
-        comments({}).then(function (rendered) {
-            assert.equal(rendered, undefined);
-            done();
-        }).catch(done);
+        const rendered = await comments({});
+        assert.equal(rendered, undefined);
     });
 
     it('returns a script tag', async function () {

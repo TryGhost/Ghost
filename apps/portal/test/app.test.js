@@ -119,7 +119,8 @@ describe('App', function () {
 
         expect(popupFrame).toBeInTheDocument();
         expect(notificationFrame).toBeInTheDocument();
-        expect(within(notificationFrame.contentDocument).getByText('We couldn\'t redeem this gift for your account.')).toBeInTheDocument();
+        expect(within(notificationFrame.contentDocument).getByText('Gift could not be redeemed')).toBeInTheDocument();
+        expect(within(notificationFrame.contentDocument).getByText('Something went wrong, please try again later.')).toBeInTheDocument();
     });
 
     test('prefers locale prop over site locale for i18n language', async () => {
@@ -193,7 +194,7 @@ describe('App', function () {
         app.state = {
             ...app.state,
             initStatus: 'success',
-            site: {...FixtureSite.singleTier.basic, labs: {giftSubscriptions: true}}
+            site: FixtureSite.singleTier.basic
         };
 
         await app.clickHandler({
@@ -220,7 +221,7 @@ describe('App', function () {
         app.state = {
             ...app.state,
             initStatus: 'success',
-            site: {...FixtureSite.singleTier.basic, labs: {giftSubscriptions: true}}
+            site: FixtureSite.singleTier.basic
         };
         app.fetchGiftRedemptionData = vi.fn(({token}) => {
             return token === 'first-token' ? firstRequest.promise : secondRequest.promise;
@@ -273,7 +274,7 @@ describe('App', function () {
         });
         app.state = {
             ...app.state,
-            site: {...FixtureSite.singleTier.basic, labs: {giftSubscriptions: true}},
+            site: FixtureSite.singleTier.basic,
             member: FixtureMember.free
         };
         app.fetchGiftRedemptionData = vi.fn(({token}) => {

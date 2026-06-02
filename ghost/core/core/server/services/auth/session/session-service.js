@@ -56,9 +56,9 @@ const AUTH_CODE_CHALLENGE_BYTES = 16;
  * @param {(req: Req) => string} deps.getOriginOfRequest
  * @param {((key: 'require_email_mfa') => boolean) & ((key: 'admin_session_secret' | 'title') => string)} deps.getSettingsCache
  * @param {() => string} deps.getBlogLogo
- * @param {import('../../core/core/server/services/mail').GhostMailer} deps.mailer
- * @param {import('../../core/core/server/services/i18n').t} deps.t
- * @param {import('../../core/core/shared/url-utils')} deps.urlUtils
+ * @param {import('../../mail').GhostMailer} deps.mailer
+ * @param {import('../../i18n').t} deps.t
+ * @param {import('../../../../shared/url-utils')} deps.urlUtils
  * @param {() => boolean} deps.isStaffDeviceVerificationDisabled
  * @returns {SessionService}
  */
@@ -256,6 +256,34 @@ module.exports = function createSessionService({
 
         session.verified = true;
         invalidateAuthCodeChallenge(session);
+    }
+
+    /**
+     * rotateAndAssignVerifiedUserToSession
+     * Regenerates the Express session (issuing a new session_id) and then
+     * assigns the verified user to the new session. Used after a password
+     * change or reset so that any cloned or stolen copy of the pre-change
+     * cookie is rejected on its next request.
+     *
+     * @param {{req: Req, user: User, ip?: string}} options
+     * @returns {Promise<void>}
+     */
+    async function rotateAndAssignVerifiedUserToSession({req, user, ip}) {
+        await new Promise((resolve, reject) => {
+            req.session.regenerate((err) => {
+                if (err) {
+                    reject(err);
+                    return;
+                }
+                resolve();
+            });
+        });
+        await assignVerifiedUserToSession({
+            session: req.session,
+            user,
+            origin: getOriginOfRequest(req),
+            ip
+        });
     }
 
     /**
@@ -494,6 +522,7 @@ module.exports = function createSessionService({
         createSessionForUser,
         createVerifiedSessionForUser,
         assignVerifiedUserToSession,
+        rotateAndAssignVerifiedUserToSession,
         removeUserForSession,
         verifySession,
         isVerifiedSession,

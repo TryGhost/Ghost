@@ -1,15 +1,25 @@
-import {dispatchSimpleNodes, parseFilterToAst, serializePredicates, stampPredicates} from '../filters/filter-query-core';
+import {dispatchSimpleNodes, getFieldKeysByType, hasFieldKey, parseFilterToAst, serializePredicates, stampPredicates} from '../filters/filter-query-core';
 import {memberFields} from './member-fields';
+import {resolveField} from '../filters/resolve-field';
 import type {AstNode} from '../filters/filter-ast';
 import type {FilterPredicate, ParsedPredicate} from '../filters/filter-types';
+import type {MemberFields} from './member-fields';
 
 type CompoundMatcher = (node: AstNode) => ParsedPredicate | null;
-const TIMEZONE_SENSITIVE_MEMBER_FIELDS = new Set([
-    'last_seen_at',
-    'created_at',
-    'subscriptions.start_date',
-    'subscriptions.current_period_end'
-]);
+const TIMEZONE_SENSITIVE_MEMBER_FIELDS = getFieldKeysByType(memberFields, 'date');
+
+/**
+ * Is this predicate's operator one the field currently advertises?
+ *
+ * This returns `false` for predicates the user can't reach in the UI because
+ * the field never declares the operator. Hooks call this to drop unreachable
+ * predicates before serializing or after parsing. The parser/serializer
+ * themselves stay pure.
+ */
+export function isPredicateEnabled(predicate: ParsedPredicate, fields: MemberFields): boolean {
+    const resolved = resolveField(fields, predicate.field, 'UTC');
+    return resolved?.definition.operators.includes(predicate.operator) ?? false;
+}
 
 function getCompoundChildren(node: AstNode): {operator: '$and' | '$or'; children: AstNode[]} | null {
     if (Array.isArray(node.$and)) {
@@ -179,28 +189,6 @@ const MEMBER_COMPOUND_MATCHERS: CompoundMatcher[] = [
     matchFeedbackGroupedNode
 ];
 
-function hasTimezoneSensitiveMemberField(node: AstNode): boolean {
-    if (Object.keys(node).some(key => TIMEZONE_SENSITIVE_MEMBER_FIELDS.has(key))) {
-        return true;
-    }
-
-    const compound = getCompoundChildren(node);
-
-    if (compound) {
-        return compound.children.some(child => hasTimezoneSensitiveMemberField(child as AstNode));
-    }
-
-    return Object.values(node).some((value) => {
-        if (Array.isArray(value)) {
-            return value.some((child) => {
-                return child !== null && typeof child === 'object' && hasTimezoneSensitiveMemberField(child as AstNode);
-            });
-        }
-
-        return value !== null && typeof value === 'object' && hasTimezoneSensitiveMemberField(value as AstNode);
-    });
-}
-
 function parseMemberNode(node: AstNode, timezone: string): ParsedPredicate[] {
     for (const matcher of MEMBER_COMPOUND_MATCHERS) {
         const parsed = matcher(node);
@@ -219,6 +207,10 @@ function parseMemberNode(node: AstNode, timezone: string): ParsedPredicate[] {
     return dispatchSimpleNodes([node], memberFields, timezone);
 }
 
+/**
+ * Parses NQL into predicates. Pure: callers are responsible for filtering the
+ * output via `isPredicateEnabled` against the field map they want to enforce.
+ */
 export function parseMemberFilter(filter: string | undefined, timezone: string): FilterPredicate[] {
     const ast = parseFilterToAst(filter ?? '');
 
@@ -236,9 +228,14 @@ export function hasTimezoneSensitiveMemberFilter(filter: string | undefined): bo
         return false;
     }
 
-    return hasTimezoneSensitiveMemberField(ast);
+    return hasFieldKey(ast, TIMEZONE_SENSITIVE_MEMBER_FIELDS);
 }
 
+/**
+ * Serializes predicates back to NQL. Pure: callers should pre-filter via
+ * `isPredicateEnabled` if they need to drop predicates the field map doesn't
+ * advertise.
+ */
 export function serializeMemberFilters(predicates: FilterPredicate[], timezone: string): string | undefined {
     return serializePredicates(predicates, memberFields, timezone);
 }

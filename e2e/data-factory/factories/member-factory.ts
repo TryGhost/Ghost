@@ -21,7 +21,7 @@ export interface Member {
     email_count: number;
     email_opened_count: number;
     email_open_rate: number | null;
-    status: 'free' | 'paid' | 'comped';
+    status: 'free' | 'paid' | 'comped' | 'gift';
     last_seen_at: Date | null;
     last_commented_at: Date | null;
     newsletters: string[];

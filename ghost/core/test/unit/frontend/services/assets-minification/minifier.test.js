@@ -6,11 +6,20 @@ const fs = require('fs').promises;
 const os = require('os');
 const Minifier = require('../../../../../core/frontend/services/assets-minification/minifier');
 
+// minifier.getMatchingFiles() returns paths relative to process.cwd(); build
+// the expected paths the same way so assertions do not assume the test runs
+// with process.cwd() === ghost/core (the unified `pnpm test:watch` runs from
+// the repo root).
+const expectedFixturePath = file => path.relative(
+    process.cwd(),
+    path.join(__dirname, 'fixtures', 'basic-cards', 'css', file)
+);
+
 describe('Minifier', function () {
     let minifier;
     let testDir;
 
-    before(async function () {
+    beforeAll(async function () {
         testDir = await fs.mkdtemp(path.join(os.tmpdir(), 'minifier-tests-'));
 
         minifier = new Minifier({
@@ -19,7 +28,7 @@ describe('Minifier', function () {
         });
     });
 
-    after(async function () {
+    afterAll(async function () {
         await fs.rmdir(testDir, {recursive: true});
     });
 
@@ -29,9 +38,9 @@ describe('Minifier', function () {
 
             assert(Array.isArray(result));
             assert.equal(result.length, 3);
-            assert.equal(result[0], path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','bookmark.css'));
-            assert.equal(result[1], path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','empty.css'));
-            assert.equal(result[2], path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','gallery.css'));
+            assert.equal(result[0], expectedFixturePath('bookmark.css'));
+            assert.equal(result[1], expectedFixturePath('empty.css'));
+            assert.equal(result[2], expectedFixturePath('gallery.css'));
         });
 
         it('match glob range e.g. css/bookmark.css and css/empty.css (css/@(bookmark|empty).css)', async function () {
@@ -39,8 +48,8 @@ describe('Minifier', function () {
 
             assert(Array.isArray(result));
             assert.equal(result.length, 2);
-            assert.equal(result[0], path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','bookmark.css'));
-            assert.equal(result[1], path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','empty.css'));
+            assert.equal(result[0], expectedFixturePath('bookmark.css'));
+            assert.equal(result[1], expectedFixturePath('empty.css'));
         });
 
         it('reverse match glob e.g. css/!(bookmark).css', async function () {
@@ -48,15 +57,15 @@ describe('Minifier', function () {
 
             assert(Array.isArray(result));
             assert.equal(result.length, 2);
-            assert.equal(result[0], path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','empty.css'));
-            assert.equal(result[1], path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','gallery.css'));
+            assert.equal(result[0], expectedFixturePath('empty.css'));
+            assert.equal(result[1], expectedFixturePath('gallery.css'));
         });
         it('reverse match glob e.g. css/!(bookmark|gallery).css', async function () {
             let result = await minifier.getMatchingFiles('css/!(bookmark|gallery).css');
 
             assert(Array.isArray(result));
             assert.equal(result.length, 1);
-            assert.equal(result[0], path.join('test','unit','frontend','services','assets-minification','fixtures','basic-cards','css','empty.css'));
+            assert.equal(result[0], expectedFixturePath('empty.css'));
         });
     });
 

@@ -5,7 +5,7 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {renderHook, waitFor} from '@testing-library/react';
 import {useReplyChainForUser} from './use-activity-pub-queries';
 
-global.fetch = vi.fn().mockResolvedValue({
+globalThis.fetch = vi.fn().mockResolvedValue({
     json: vi.fn().mockResolvedValue({
         site: {url: 'https://test.com'}
     })
@@ -39,7 +39,7 @@ describe('useReplyChainForUser', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         
-        (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
+        (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
             json: vi.fn().mockResolvedValue({
                 site: {url: 'https://test.com'}
             })
@@ -50,7 +50,9 @@ describe('useReplyChainForUser', () => {
             getPost: vi.fn()
         };
         
-        (ActivityPubAPI as ReturnType<typeof vi.fn>).mockImplementation(() => mockApi);
+        (ActivityPubAPI as ReturnType<typeof vi.fn>).mockImplementation(function () {
+            return mockApi;
+        });
         (isApiError as unknown as ReturnType<typeof vi.fn>).mockReturnValue(true);
     });
 

@@ -1,6 +1,6 @@
 /**
- * @typedef {import('./oembed').ICustomProvider} ICustomProvider
- * @typedef {import('./oembed').IExternalRequest} IExternalRequest
+ * @typedef {import('./oembed-service').ICustomProvider} ICustomProvider
+ * @typedef {import('./oembed-service').IExternalRequest} IExternalRequest
  */
 
 const OPENSEA_ETH_PATH_REGEX = /^\/assets\/ethereum\/(0x[a-f0-9]+)\/(\d+)/;

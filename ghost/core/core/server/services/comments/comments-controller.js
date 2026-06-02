@@ -169,6 +169,47 @@ module.exports = class CommentsController {
         });
     }
 
+    async adminEdit(frame) {
+        const data = frame.data.comments[0];
+        const updates = {};
+        if (Object.prototype.hasOwnProperty.call(data, 'status')) {
+            updates.status = data.status;
+        }
+        if (Object.prototype.hasOwnProperty.call(data, 'pinned')) {
+            updates.pinned = data.pinned;
+        }
+
+        const result = await this.service.moderateComment(
+            frame.options.id,
+            updates,
+            frame.options
+        );
+
+        this.setCacheInvalidationHeaders(result, frame);
+
+        return result;
+    }
+
+    /**
+     * Sets the X-Cache-Invalidate response header so the public/member-facing
+     * comments endpoints get evicted when an admin mutates a comment. Shared
+     * with the comments endpoint module so both sites stay in sync.
+     */
+    setCacheInvalidationHeaders(model, frame) {
+        if (!model) {
+            return;
+        }
+
+        const postId = model.get('post_id');
+        const parentId = model.get('parent_id');
+        const pathsToInvalidate = [
+            postId ? `/api/members/comments/post/${postId}/` : null,
+            parentId ? `/api/members/comments/${parentId}/replies/` : null
+        ].filter(path => path !== null);
+
+        frame.setHeader('X-Cache-Invalidate', pathsToInvalidate.join(', '));
+    }
+
     /**
      * @param {Frame} frame
      */
@@ -369,6 +410,72 @@ module.exports = class CommentsController {
     async getCommentLikes(frame) {
         const commentId = frame.options.id;
         return await this.service.getCommentLikes(commentId, {
+            page: frame.options.page,
+            limit: frame.options.limit
+        });
+    }
+
+    /**
+     * @param {Frame} frame
+     */
+    async dislike(frame) {
+        this.#checkMember(frame);
+
+        const result = await this.service.dislikeComment(
+            frame.options.id,
+            frame.options?.context?.member,
+            frame.options
+        );
+
+        const comment = await this.service.getCommentByID(frame.options.id);
+
+        if (comment) {
+            const postId = comment.get('post_id');
+            const parentId = comment.get('parent_id');
+            const pathsToInvalidate = [
+                postId ? `/api/members/comments/post/${postId}/` : null,
+                parentId ? `/api/members/comments/${parentId}/replies/` : null
+            ].filter(path => path !== null);
+            frame.setHeader('X-Cache-Invalidate', pathsToInvalidate.join(', '));
+        }
+
+        return result;
+    }
+
+    /**
+     * @param {Frame} frame
+     */
+    async undislike(frame) {
+        this.#checkMember(frame);
+
+        const result = await this.service.undislikeComment(
+            frame.options.id,
+            frame.options?.context?.member,
+            frame.options
+        );
+
+        const comment = await this.service.getCommentByID(frame.options.id);
+
+        if (comment) {
+            const postId = comment.get('post_id');
+            const parentId = comment.get('parent_id');
+            const pathsToInvalidate = [
+                postId ? `/api/members/comments/post/${postId}/` : null,
+                parentId ? `/api/members/comments/${parentId}/replies/` : null
+            ].filter(path => path !== null);
+            frame.setHeader('X-Cache-Invalidate', pathsToInvalidate.join(', '));
+        }
+
+        return result;
+    }
+
+    /**
+     * Get dislikes for a specific comment (admin only)
+     * @param {Frame} frame
+     */
+    async getCommentDislikes(frame) {
+        const commentId = frame.options.id;
+        return await this.service.getCommentDislikes(commentId, {
             page: frame.options.page,
             limit: frame.options.limit
         });

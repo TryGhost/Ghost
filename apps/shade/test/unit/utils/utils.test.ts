@@ -6,6 +6,8 @@ import {
     formatQueryDate,
     formatDisplayDate,
     formatDisplayTime,
+    getRangeDates,
+    getRangeForStartDate,
     formatNumber,
     formatDuration,
     formatPercentage,
@@ -122,6 +124,41 @@ describe('utils', function () {
             const date = moment('2023-04-15');
             const formattedDate = formatQueryDate(date);
             assert.equal(formattedDate, '2023-04-15');
+        });
+    });
+
+    describe('getRangeForStartDate function', function () {
+        const currentTime = new Date('2026-05-28T09:00:00-04:00');
+        const publishedAt = '2026-05-26T12:00:00-04:00';
+
+        afterEach(function () {
+            vi.useRealTimers();
+        });
+
+        it('counts calendar days inclusively before the publish time-of-day has passed', function () {
+            vi.useFakeTimers();
+            vi.setSystemTime(currentTime);
+
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const expectedRange = moment(currentTime).tz(timezone).startOf('day')
+                .diff(moment(publishedAt).tz(timezone).startOf('day'), 'days') + 1;
+
+            const range = getRangeForStartDate(publishedAt);
+
+            assert.equal(range, expectedRange);
+        });
+
+        it('produces a date range that includes the publish calendar day', function () {
+            vi.useFakeTimers();
+            vi.setSystemTime(currentTime);
+
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const expectedStartDate = moment(publishedAt).tz(timezone).startOf('day');
+
+            const range = getRangeForStartDate(publishedAt);
+            const {startDate} = getRangeDates(range);
+
+            assert.equal(formatQueryDate(startDate), formatQueryDate(expectedStartDate));
         });
     });
 

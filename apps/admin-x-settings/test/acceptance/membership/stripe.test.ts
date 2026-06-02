@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
+import {globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse, waitForApiRequest} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Stripe settings', async () => {
     test('Supports the Stripe Connect flow', async ({page}) => {
@@ -39,7 +39,8 @@ test.describe('Stripe settings', async () => {
         await expect(section.getByText('Connected to Stripe')).toHaveCount(2);
 
         // We actually do two settings update requests here, this just checks the last one
-        expect(lastApiRequests.editSettings?.body).toEqual({
+        const editSettings = await waitForApiRequest(lastApiRequests, 'editSettings');
+        expect(editSettings.body).toEqual({
             settings: [{
                 key: 'portal_plans',
                 value: '["free","monthly","yearly"]'
@@ -78,7 +79,8 @@ test.describe('Stripe settings', async () => {
         // There's a mobile version of the same button in the DOM
         await expect(section.getByText('Connected to Stripe')).toHaveCount(2);
 
-        expect(lastApiRequests.editSettings?.body).toEqual({
+        const editSettings = await waitForApiRequest(lastApiRequests, 'editSettings');
+        expect(editSettings.body).toEqual({
             settings: [{
                 key: 'stripe_secret_key',
                 value: 'sk_test_123'

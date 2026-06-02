@@ -4,13 +4,19 @@ const knex = require('knex').default;
 
 const Tier = require('../../../../../../../core/server/services/tiers/tier');
 
+// Initialise i18n before requiring the service so its destructured `t` import
+// resolves to the live i18next instance. The init helper falls back to 'en'
+// when the locale setting isn't set.
+const i18n = require('../../../../../../../core/server/services/i18n');
+i18n.init();
+
 const PaymentsService = require('../../../../../../../core/server/services/members/members-api/services/payments-service');
 
 describe('PaymentsService', function () {
     let Bookshelf;
     let db;
 
-    before(async function () {
+    beforeAll(async function () {
         db = knex({
             client: 'sqlite3',
             useNullAsDefault: true,
@@ -57,7 +63,7 @@ describe('PaymentsService', function () {
         await db('stripe_customers').truncate();
     });
 
-    after(async function () {
+    afterAll(async function () {
         await db.destroy();
     });
 
@@ -368,7 +374,7 @@ describe('PaymentsService', function () {
             assert.equal(args.metadata.gift_token, 'AbCdEfGhIjKl');
         });
 
-        it('appends gift token to success URL', async function () {
+        it('appends gift token, tier and cadence to success URL', async function () {
             const tier = await createTier({monthlyPrice: 5000, yearlyPrice: 50000});
 
             await service.getGiftPaymentLink({...defaultGiftOptions, tier, cadence: 'year'});
@@ -378,6 +384,8 @@ describe('PaymentsService', function () {
 
             assert.equal(successUrl.searchParams.get('stripe'), 'gift-purchase-success');
             assert.equal(successUrl.searchParams.get('gift_token'), args.metadata.gift_token);
+            assert.equal(successUrl.searchParams.get('gift_tier'), tier.id.toHexString());
+            assert.equal(successUrl.searchParams.get('gift_cadence'), 'year');
         });
 
         it('prevents caller metadata from overwriting gift-specific keys', async function () {
@@ -414,6 +422,79 @@ describe('PaymentsService', function () {
             sinon.assert.calledOnce(service.getCustomerForMember);
             sinon.assert.calledWith(service.getCustomerForMember, mockMember);
             assert.equal(getStripeArgs().customer, mockCustomer);
+        });
+
+        it('passes customer email to Stripe for logged-out gift purchases', async function () {
+            const tier = await createTier();
+
+            await service.getGiftPaymentLink({
+                ...defaultGiftOptions,
+                tier,
+                cadence: 'month',
+                email: 'jamie@example.com'
+            });
+
+            assert.equal(getStripeArgs().customerEmail, 'jamie@example.com');
+        });
+
+        it('does not pass customer email when an authenticated customer is available', async function () {
+            const mockCustomer = {id: 'cus_123', email: 'member@example.com'};
+            sinon.stub(service, 'getCustomerForMember').resolves(mockCustomer);
+
+            const tier = await createTier();
+            const mockMember = {id: 'member_123', get: sinon.stub().returns('member@example.com')};
+
+            await service.getGiftPaymentLink({
+                ...defaultGiftOptions,
+                tier,
+                cadence: 'month',
+                member: mockMember,
+                isAuthenticated: true,
+                email: 'jamie@example.com'
+            });
+
+            assert.equal(getStripeArgs().customer, mockCustomer);
+            assert.equal(getStripeArgs().customerEmail, null);
+        });
+    });
+
+    describe('getDonationPriceNickname', function () {
+        // i18n.init() reassigns module.exports to the live instance, so re-require to reach it.
+        const i18nInstance = require('../../../../../../../core/server/services/i18n');
+
+        function createService(title) {
+            return new PaymentsService({
+                settingsCache: {
+                    get(key) {
+                        return key === 'title' ? title : undefined;
+                    }
+                }
+            });
+        }
+
+        afterEach(function () {
+            i18nInstance.changeLanguage('en');
+        });
+
+        it('builds the nickname from the site title', function () {
+            const service = createService('My Site');
+            assert.equal(service.getDonationPriceNickname(), 'Support My Site');
+        });
+
+        it('localizes the prefix while keeping the site title interpolated', async function () {
+            await i18nInstance.changeLanguage('fr');
+            const service = createService('Mon Site');
+            assert.equal(service.getDonationPriceNickname(), 'Soutenir Mon Site');
+        });
+
+        it('does not HTML-escape the site title', function () {
+            const service = createService('Tom & Jerry');
+            assert.equal(service.getDonationPriceNickname(), 'Support Tom & Jerry');
+        });
+
+        it('truncates the nickname to 250 characters', function () {
+            const service = createService('a'.repeat(300));
+            assert.equal(service.getDonationPriceNickname().length, 250);
         });
     });
 });

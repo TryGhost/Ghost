@@ -27,9 +27,6 @@
         "dev:start": "vite",
         "test": "pnpm test:unit --coverage",
         "test:unit": "vitest run test/unit",
-        "test:acceptance": "NODE_OPTIONS='--experimental-specifier-resolution=node --no-warnings' playwright test",
-        "test:acceptance:slowmo": "TIMEOUT=100000 PLAYWRIGHT_SLOWMO=100 pnpm test:acceptance --headed",
-        "test:acceptance:full": "ALL_BROWSERS=1 pnpm test:acceptance",
         "test:watch": "vitest",
         "test:coverage": "vitest run --coverage",
         "build": "tsc && vite build",
@@ -41,24 +38,26 @@
     },
     "devDependencies": {
         "@faker-js/faker": "9.9.0",
-        "@playwright/test": "1.59.1",
-        "@tanstack/react-query": "4.36.1",
         "@testing-library/jest-dom": "6.9.1",
         "@testing-library/react": "14.3.1",
-        "@types/jest": "29.5.14",
-        "@types/react": "18.3.28",
+        "@types/jest": "catalog:",
+        "@types/node": "catalog:",
+        "@types/react": "catalog:",
         "@types/react-svg-map": "2.1.4",
-        "@vitest/coverage-v8": "^1.6.1",
-        "@vitejs/plugin-react": "4.7.0",
-        "dotenv": "17.3.1",
-        "msw": "2.12.14",
-        "tailwindcss": "^4.2.2",
-        "vite": "5.4.21",
-        "vite-plugin-svgr": "4.5.0",
-        "vitest": "1.6.1"
+        "@vitest/coverage-v8": "catalog:",
+        "dotenv": "catalog:",
+        "eslint": "catalog:",
+        "eslint-plugin-react-hooks": "4.6.2",
+        "eslint-plugin-react-refresh": "catalog:",
+        "eslint-plugin-tailwindcss": "4.0.0-beta.0",
+        "jsdom": "catalog:",
+        "tailwindcss": "catalog:",
+        "vite": "catalog:",
+        "vite-plugin-svgr": "catalog:",
+        "vitest": "catalog:"
     },
     "dependencies": {
-        "@svg-maps/world": "1.0.1",
+        "@svg-maps/world": "2.0.0",
         "@tryghost/admin-x-framework": "workspace:*",
         "@tryghost/shade": "workspace:*",
         "i18n-iso-countries": "7.14.0",
@@ -76,11 +75,6 @@
                 ]
             },
             "test:unit": {
-                "dependsOn": [
-                    "^build"
-                ]
-            },
-            "test:acceptance": {
                 "dependsOn": [
                     "^build"
                 ]

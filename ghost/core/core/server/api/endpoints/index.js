@@ -229,6 +229,10 @@ module.exports = {
         return apiFramework.pipeline(require('./comment-likes'), localUtils);
     },
 
+    get commentDislikes() {
+        return apiFramework.pipeline(require('./comment-dislikes'), localUtils);
+    },
+
     get links() {
         return apiFramework.pipeline(require('./links'), localUtils);
     },
@@ -295,6 +299,10 @@ module.exports = {
 
     get giftsMembers() {
         return apiFramework.pipeline(require('./gifts-members'), localUtils, 'members');
+    },
+
+    get giftReminders() {
+        return apiFramework.pipeline(require('./gift-reminders'), localUtils);
     },
 
     get recommendationsPublic() {

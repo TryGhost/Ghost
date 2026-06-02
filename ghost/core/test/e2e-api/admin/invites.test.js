@@ -96,6 +96,31 @@ describe('Invites API', function () {
             assert.equal(new URL(res.headers.location).pathname, `/ghost/api/admin/invites/${res.body.invites[0].id}/`);
         });
 
+        it('Cannot invite an existing user', async function () {
+            await request
+                .post(localUtils.API.getApiQuery('invites/'))
+                .set('Origin', config.get('url'))
+                .send({
+                    invites: [{
+                        email: testUtils.getExistingData().users[1].email,
+                        role_id: testUtils.getExistingData().roles[1].id
+                    }]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(422)
+                .expect((res) => {
+                    const error = res.body.errors[0];
+
+                    assert.equal(error.message, 'Validation error, cannot save invite.');
+                    assert.equal(error.context, 'User is already registered.');
+                    assert.equal(error.code, 'USER_ALREADY_REGISTERED');
+                    assert.equal(error.property, 'email');
+                });
+
+            sinon.assert.notCalled(mailService.GhostMailer.prototype.send);
+        });
+
         it('Can destroy an existing invite', async function () {
             await request.del(localUtils.API.getApiQuery(`invites/${testUtils.DataGenerator.forKnex.invites[0].id}/`))
                 .set('Origin', config.get('url'))

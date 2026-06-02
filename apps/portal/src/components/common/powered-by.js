@@ -1,6 +1,6 @@
 import React from 'react';
 import AppContext from '../../app-context';
-import {ReactComponent as GhostLogo} from '../../images/ghost-logo-small.svg';
+import GhostLogo from '../../images/ghost-logo-small.svg?react';
 
 export default class PoweredBy extends React.Component {
     static contextType = AppContext;

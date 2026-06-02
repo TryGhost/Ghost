@@ -7,6 +7,46 @@ const messages = {
     emptyComment: 'The body of a comment cannot be empty'
 };
 
+function getDisplayableCommentIdsQuery(excludedStatuses, {parentId, parentIds, postId} = {}) {
+    const statusPlaceholders = excludedStatuses.map(() => '?').join(',');
+    const scopedParentIds = parentId ? [parentId] : parentIds;
+    const scopeFilter = {
+        sql: [
+            scopedParentIds?.length ? `AND comments.parent_id IN (${scopedParentIds.map(() => '?').join(',')})` : '',
+            postId ? 'AND comments.post_id = ?' : ''
+        ].filter(Boolean).join('\n              '),
+        bindings: [
+            ...(scopedParentIds?.length ? scopedParentIds : []),
+            ...(postId ? [postId] : [])
+        ]
+    };
+
+    return ghostBookshelf.knex.raw(`
+        WITH RECURSIVE displayable_comment_paths(visible_id, comment_id) AS (
+            SELECT comments.id, comments.id
+            FROM comments
+            WHERE comments.status NOT IN (${statusPlaceholders})
+              ${scopeFilter.sql}
+
+            UNION
+
+            SELECT displayable_comment_paths.visible_id,
+                CASE
+                    WHEN comments.in_reply_to_id IS NOT NULL THEN comments.in_reply_to_id
+                    ELSE comments.parent_id
+                END
+            FROM comments
+            INNER JOIN displayable_comment_paths ON comments.id = displayable_comment_paths.comment_id
+            WHERE (comments.in_reply_to_id IS NOT NULL OR comments.parent_id IS NOT NULL)
+              ${scopeFilter.sql}
+        )
+
+        SELECT comment_id AS id
+        FROM displayable_comment_paths
+        GROUP BY comment_id
+    `, [...excludedStatuses, ...scopeFilter.bindings, ...scopeFilter.bindings]);
+}
+
 /**
  * Remove empty paragraps from the start and end
  * + remove duplicate empty paragrapsh (only one empty line allowed)
@@ -64,22 +104,22 @@ const Comment = ghostBookshelf.Model.extend({
                 // Browse All: simply exclude statuses, no thread structure preservation
                 qb.whereNotIn('comments.status', excludedStatuses);
             } else {
-                // Default: preserve thread structure by including deleted parents with replies
-                qb.where(function () {
-                    this.whereNotIn('comments.status', excludedStatuses)
-                        .orWhereExists(function () {
-                            this.select(1)
-                                .from('comments as replies')
-                                .whereRaw('replies.parent_id = comments.id')
-                                .whereNotIn('replies.status', excludedStatuses);
-                        });
-                });
+                // Default: preserve thread structure by including tombstones with visible descendants
+                qb.whereIn('comments.id', getDisplayableCommentIdsQuery(excludedStatuses, {parentId: options.parentId, postId: options.post_id}));
             }
 
             // Filter by report count (extracted from filter in controller)
             if (options.reportCount !== undefined) {
                 const subquery = '(SELECT COUNT(*) FROM comment_reports WHERE comment_reports.comment_id = comments.id)';
                 qb.whereRaw(`${subquery} ${options.reportCount.op} ?`, [options.reportCount.value]);
+            }
+
+            if (options.pinnedFirst) {
+                if (options.isAdmin) {
+                    qb.orderBy('comments.pinned_at', 'DESC');
+                } else {
+                    qb.orderByRaw('CASE WHEN comments.status = ? THEN comments.pinned_at END DESC', ['published']);
+                }
             }
         });
     },
@@ -124,6 +164,7 @@ const Comment = ghostBookshelf.Model.extend({
     orderAttributes: function orderAttributes() {
         let keys = ghostBookshelf.Model.prototype.orderAttributes.call(this, arguments);
         keys.push('count__likes');
+        keys.push('count__net_score');
         keys.push('count__reports');
         return keys;
     },
@@ -164,19 +205,17 @@ const Comment = ghostBookshelf.Model.extend({
         return softDelete();
     },
 
-    applyRepliesWithRelatedOption(withRelated, isAdmin) {
+    applyRepliesWithRelatedOption(withRelated, isAdmin, parentIds) {
         // we want to apply filters when fetching replies so we don't expose data that should be hidden
         // - public requests never return hidden or deleted replies
         // - admin requests never return deleted replies but do return hidden replies
+        // - unpublished replies are returned as tombstones when they preserve the path to visible descendants
         const repliesOptionIndex = withRelated.indexOf('replies');
         if (repliesOptionIndex > -1) {
+            const excludedStatuses = isAdmin ? ['deleted'] : ['hidden', 'deleted'];
             withRelated[repliesOptionIndex] = {
                 replies: (qb) => {
-                    if (isAdmin) {
-                        qb.where('status', '!=', 'deleted');
-                    } else {
-                        qb.where('status', 'published');
-                    }
+                    qb.whereIn('comments.id', getDisplayableCommentIdsQuery(excludedStatuses, {parentIds}));
                 }
             };
         }
@@ -193,11 +232,19 @@ const Comment = ghostBookshelf.Model.extend({
         // our bookshelf eager-load plugin doesn't use the `withRelated` options
         if (['findAll', 'findPage', 'edit', 'findOne', 'destroy'].indexOf(methodName) !== -1) {
             if (!options.withRelated || options.withRelated.length === 0) {
+                const reactionRelations = ['count.likes', 'count.liked', 'count.disliked', 'count.net_score'];
+                const replyReactionRelations = ['replies.count.likes', 'replies.count.liked', 'replies.count.disliked'];
+
+                if (options.isAdmin) {
+                    reactionRelations.push('count.dislikes');
+                    replyReactionRelations.push('replies.count.dislikes');
+                }
+
                 if (options.parentId) {
                     // Do not include replies for replies
                     options.withRelated = [
                         // Relations
-                        'in_reply_to', 'member', 'count.direct_replies', 'count.likes', 'count.liked'
+                        'in_reply_to', 'member', 'count.direct_replies', ...reactionRelations
                     ];
 
                     // Add count.reports for admin requests only
@@ -207,9 +254,9 @@ const Comment = ghostBookshelf.Model.extend({
                 } else {
                     options.withRelated = [
                         // Relations
-                        'member', 'in_reply_to', 'count.replies', 'count.direct_replies', 'count.likes', 'count.liked',
+                        'member', 'in_reply_to', 'count.replies', 'count.direct_replies', ...reactionRelations,
                         'replies', 'replies.member', 'replies.in_reply_to',
-                        'replies.count.direct_replies', 'replies.count.likes', 'replies.count.liked'
+                        'replies.count.direct_replies', ...replyReactionRelations
                     ];
 
                     // Add count.reports for admin requests only
@@ -220,7 +267,10 @@ const Comment = ghostBookshelf.Model.extend({
                 }
             }
 
-            this.applyRepliesWithRelatedOption(options.withRelated, options.isAdmin);
+            if (methodName !== 'findPage') {
+                const parentIds = options.id ? [options.id] : undefined;
+                this.applyRepliesWithRelatedOption(options.withRelated, options.isAdmin, parentIds);
+            }
         }
 
         return options;
@@ -232,7 +282,7 @@ const Comment = ghostBookshelf.Model.extend({
         // Identify reply-related relations to load separately in batch
         const replyRelationKeys = [
             'replies', 'replies.member', 'replies.in_reply_to',
-            'replies.count.direct_replies', 'replies.count.likes', 'replies.count.liked'
+            'replies.count.direct_replies', 'replies.count.likes', 'replies.count.dislikes', 'replies.count.liked', 'replies.count.disliked'
         ];
         if (options.isAdmin) {
             replyRelationKeys.push('replies.count.reports');
@@ -253,17 +303,17 @@ const Comment = ghostBookshelf.Model.extend({
             return true;
         });
 
-        // Apply status filtering on the batch relations
-        this.applyRepliesWithRelatedOption(relationsToLoadInBatch, options.isAdmin);
-
         // Base findPage WITHOUT reply relations
         const result = await ghostBookshelf.Model.findPage.call(this, options);
 
         // Batch-load reply relations for ALL comments at once using Collection.load()
         // instead of the previous N+1 per-model model.load() loop
         if (result.data.length > 0 && relationsToLoadInBatch.length > 0) {
+            const parentIds = result.data.map(model => model.id);
+            this.applyRepliesWithRelatedOption(relationsToLoadInBatch, options.isAdmin, parentIds);
+
             const collection = ghostBookshelf.Collection.forge(result.data, {model: this});
-            await collection.load(relationsToLoadInBatch, _.omit(options, 'withRelated'));
+            await collection.load(relationsToLoadInBatch, _.omit(options, 'withRelated', 'columns', 'selectRaw'));
         }
 
         return result;
@@ -274,6 +324,8 @@ const Comment = ghostBookshelf.Model.extend({
             replies(modelOrCollection, options) {
                 const excludedCommentStatuses = options.isAdmin ? ['deleted'] : ['hidden', 'deleted'];
 
+                // Counts represent visible comment content, not structural tombstones. The API can still
+                // return hidden/deleted ancestors in `replies` when they preserve paths to visible descendants.
                 modelOrCollection.query('columns', 'comments.*', (qb) => {
                     qb.count('r.id')
                         .from('comments AS r')
@@ -286,6 +338,8 @@ const Comment = ghostBookshelf.Model.extend({
                 const excludedCommentStatuses = options.isAdmin ? ['deleted'] : ['hidden', 'deleted'];
                 const statusPlaceholders = excludedCommentStatuses.map(() => '?').join(',');
 
+                // Counts represent visible comment content, not structural tombstones. The API can still
+                // return hidden/deleted ancestors in `replies` when they preserve paths to visible descendants.
                 // Split into two separate indexed subqueries instead of a single OR-based query.
                 // An OR between parent_id and in_reply_to_id defeats MySQL index usage,
                 // causing full table scans. Two separate subqueries each use their own index.
@@ -305,6 +359,7 @@ const Comment = ghostBookshelf.Model.extend({
                     qb.count('comment_likes.id')
                         .from('comment_likes')
                         .whereRaw('comment_likes.comment_id = comments.id')
+                        .where('comment_likes.score', 1)
                         .as('count__likes');
                 });
             },
@@ -315,6 +370,7 @@ const Comment = ghostBookshelf.Model.extend({
                             .from('comment_likes')
                             .whereRaw('comment_likes.comment_id = comments.id')
                             .where('comment_likes.member_id', options.context.member.id)
+                            .where('comment_likes.score', 1)
                             .as('count__liked');
                         return;
                     }
@@ -322,6 +378,38 @@ const Comment = ghostBookshelf.Model.extend({
                     // Return zero
                     qb.select(ghostBookshelf.knex.raw('0')).as('count__liked');
                 });
+            },
+            dislikes(modelOrCollection) {
+                modelOrCollection.query('columns', 'comments.*', (qb) => {
+                    qb.count('comment_likes.id')
+                        .from('comment_likes')
+                        .whereRaw('comment_likes.comment_id = comments.id')
+                        .where('comment_likes.score', -1)
+                        .as('count__dislikes');
+                });
+            },
+            disliked(modelOrCollection, options) {
+                modelOrCollection.query('columns', 'comments.*', (qb) => {
+                    if (options.context && options.context.member && options.context.member.id) {
+                        qb.count('comment_likes.id')
+                            .from('comment_likes')
+                            .whereRaw('comment_likes.comment_id = comments.id')
+                            .where('comment_likes.member_id', options.context.member.id)
+                            .where('comment_likes.score', -1)
+                            .as('count__disliked');
+                        return;
+                    }
+
+                    // Return zero
+                    qb.select(ghostBookshelf.knex.raw('0')).as('count__disliked');
+                });
+            },
+            net_score(modelOrCollection) {
+                modelOrCollection.query('columns', 'comments.*', ghostBookshelf.knex.raw(`(
+                    SELECT COALESCE(SUM(comment_likes.score), 0)
+                    FROM comment_likes
+                    WHERE comment_likes.comment_id = comments.id
+                ) as count__net_score`));
             },
             reports(modelOrCollection) {
                 modelOrCollection.query('columns', 'comments.*', (qb) => {
@@ -345,6 +433,11 @@ const Comment = ghostBookshelf.Model.extend({
         options.push('isAdmin');
         options.push('browseAll');
         options.push('reportCount');
+        options.push('pinnedFirst');
+        if (methodName === 'findPage') {
+            options.push('post_id');
+        }
+        options.push('selectRaw');
 
         return options;
     }

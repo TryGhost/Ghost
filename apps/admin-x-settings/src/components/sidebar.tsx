@@ -1,7 +1,9 @@
 import GhostLogo from '../assets/images/orb-pink.png';
 import React, {useEffect, useRef} from 'react';
 import clsx from 'clsx';
+import {Badge} from '@tryghost/shade/components';
 import {Button, Icon, SettingNavItem, type SettingNavItemProps, SettingNavSection, TextField, useFocusContext} from '@tryghost/admin-x-design-system';
+import {LucideIcon} from '@tryghost/shade/utils';
 
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 
@@ -12,6 +14,7 @@ import {searchKeywords as growthSearchKeywords} from './settings/growth/growth-s
 import {searchKeywords as membershipSearchKeywords} from './settings/membership/membership-settings';
 import {searchKeywords as siteSearchKeywords} from './settings/site/site-settings';
 
+import useFeatureFlag from '../hooks/use-feature-flag';
 import {useGlobalData} from './providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {useScrollSectionContext, useScrollSectionNav} from '../hooks/use-scroll-section';
@@ -38,11 +41,30 @@ const NavItem: React.FC<Omit<SettingNavItemProps, 'isVisible' | 'isCurrent' | 'n
     />;
 };
 
+const PrivateBadge: React.FC = () => (
+    <Badge className="gap-1 border-transparent bg-orange-100 px-1.5 py-0 text-[11px] leading-5 font-semibold text-orange-700 shadow-[0_0_0_1px_rgba(255,255,255,0.55)] dark:bg-orange-500/20 dark:text-orange-300 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.12)]" variant="secondary">
+        <LucideIcon.Lock className="size-3" strokeWidth={2.25} />
+        Private
+    </Badge>
+);
+
 const Sidebar: React.FC = () => {
     const {filter, setFilter, checkVisible, noResult, setNoResult} = useSearch();
     const {updateRoute} = useRouting();
     const searchInputRef = useRef<HTMLInputElement | null>(null);
     const {isAnyTextFieldFocused} = useFocusContext();
+    const {settings, config} = useGlobalData();
+    const [hasTipsAndDonations, isPrivate, paidMembersEnabled] = getSettingValues(settings, ['donations_enabled', 'is_private', 'paid_members_enabled']) as [string, boolean, boolean];
+    const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
+    const hasAutomations = useFeatureFlag('automations');
+    const visibleMembershipSearchKeywords = React.useMemo(() => [
+        membershipSearchKeywords.access,
+        membershipSearchKeywords.tiers,
+        membershipSearchKeywords.portal,
+        ...(paidMembersEnabled ? [membershipSearchKeywords.giftSubscriptions] : []),
+        ...(hasAutomations ? [] : [membershipSearchKeywords.memberEmails]),
+        membershipSearchKeywords.tips
+    ].flat(), [hasAutomations, paidMembersEnabled]);
 
     // Focus in on search field when pressing "/"
     useEffect(() => {
@@ -75,7 +97,7 @@ const Sidebar: React.FC = () => {
     useEffect(() => {
         if (!checkVisible(Object.values(generalSearchKeywords).flat()) &&
             !checkVisible(Object.values(siteSearchKeywords).flat()) &&
-            !checkVisible(Object.values(membershipSearchKeywords).flat()) &&
+            !checkVisible(visibleMembershipSearchKeywords) &&
             !checkVisible(Object.values(growthSearchKeywords).flat()) &&
             !checkVisible(Object.values(emailSearchKeywords).flat()) &&
             !checkVisible(Object.values(advancedSearchKeywords).flat())) {
@@ -83,7 +105,7 @@ const Sidebar: React.FC = () => {
         } else {
             setNoResult(false);
         }
-    }, [checkVisible, setNoResult, filter]);
+    }, [checkVisible, setNoResult, filter, visibleMembershipSearchKeywords]);
 
     useEffect(() => {
         const searchInput = searchInputRef.current;
@@ -107,10 +129,6 @@ const Sidebar: React.FC = () => {
         };
     }, [filter]);
 
-    const {settings, config} = useGlobalData();
-    const [hasTipsAndDonations] = getSettingValues(settings, ['donations_enabled']) as [string];
-    const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
-
     const handleSectionClick = (e?: React.MouseEvent<HTMLAnchorElement>) => {
         if (e) {
             setFilter('');
@@ -133,13 +151,13 @@ const Sidebar: React.FC = () => {
 
     return (
         <div className='ml-auto flex w-full flex-col pt-0 tablet:max-w-[240px]' data-testid="sidebar">
-            <div className='sticky top-0 flex content-stretch items-end tablet:h-20 tablet:bg-grey-50 xl:h-20 dark:bg-grey-975 dark:tablet:bg-[#101114]'>
+            <div className='sticky top-0 flex content-stretch items-end tablet:h-20 tablet:bg-grey-50 xl:h-20 dark:bg-grey-950 dark:tablet:bg-[#101114]'>
                 <div className='relative w-full'>
                     <Icon className='absolute top-3 left-3 z-10' colorClass='text-grey-500' name='magnifying-glass' size='sm' />
                     <TextField
                         autoComplete="off"
                         autoCorrect="off"
-                        className='mr-8 flex h-10 w-full items-center rounded-lg border border-transparent bg-white px-[33px] py-1.5 text-[14px] shadow-[0_0_1px_rgba(21,23,26,0.25),0_1px_3px_rgba(0,0,0,0.03),0_8px_10px_-12px_rgba(0,0,0,.1)] transition-colors hover:shadow-sm focus:border-green focus:bg-white focus:shadow-[0_0_0_2px_rgba(48,207,67,0.25)] tablet:mr-0 dark:border-transparent dark:bg-grey-925 dark:text-white dark:placeholder:text-grey-800 dark:focus:border-green dark:focus:bg-grey-950'
+                        className='mr-8 flex h-10 w-full items-center rounded-lg border border-transparent bg-white px-[33px] py-1.5 text-[14px] shadow-[0_0_1px_rgba(21,23,26,0.25),0_1px_3px_rgba(0,0,0,0.03),0_8px_10px_-12px_rgba(0,0,0,.1)] transition-colors hover:shadow-sm focus:border-green focus:bg-white focus:shadow-[0_0_0_2px_rgba(48,207,67,0.25)] tablet:mr-0 dark:border-transparent dark:bg-grey-900 dark:text-white dark:placeholder:text-grey-800 dark:focus:border-green dark:focus:bg-grey-950'
                         containerClassName='w-100'
                         inputRef={searchInputRef}
                         placeholder="Search settings"
@@ -175,7 +193,6 @@ const Sidebar: React.FC = () => {
                     <NavItem icon='layer' keywords={generalSearchKeywords.metadata} navid='metadata' title="Meta data" onClick={handleSectionClick} />
                     <NavItem icon='like' keywords={generalSearchKeywords.socialAccounts} navid='social-accounts' title="Social accounts" onClick={handleSectionClick} />
                     <NavItem icon='baseline-chart' keywords={generalSearchKeywords.analytics} navid='analytics' title="Analytics" onClick={handleSectionClick} />
-                    <NavItem icon='lock-locked' keywords={generalSearchKeywords.lockSite} navid='locksite' title="Make this site private" onClick={handleSectionClick} />
                 </SettingNavSection>
 
                 {/* Site settings */}
@@ -187,11 +204,23 @@ const Sidebar: React.FC = () => {
                 </SettingNavSection>
 
                 {/* Membership settings */}
-                <SettingNavSection isVisible={checkVisible([...Object.values(membershipSearchKeywords).flat(), ...emailSearchKeywords.newslettersNavMenu])} title="Membership">
-                    <NavItem icon='key' keywords={membershipSearchKeywords.access} navid={['members', 'spam-filters']} title="Access" onClick={handleSectionClick} />
+                <SettingNavSection isVisible={checkVisible([...visibleMembershipSearchKeywords, ...emailSearchKeywords.newslettersNavMenu])} title="Membership">
+                    <NavItem
+                        icon='key'
+                        keywords={membershipSearchKeywords.access}
+                        navid={['members', 'spam-filters']}
+                        title={(
+                            <span className='flex min-w-0 flex-1 items-center justify-between gap-2'>
+                                <span className='min-w-0 truncate'>Access</span>
+                                {isPrivate && <PrivateBadge />}
+                            </span>
+                        )}
+                        onClick={handleSectionClick}
+                    />
                     <NavItem icon='bills' keywords={membershipSearchKeywords.tiers} navid='tiers' title="Tiers" onClick={handleSectionClick} />
                     <NavItem icon='portal' keywords={membershipSearchKeywords.portal} navid='portal' title="Signup portal" onClick={handleSectionClick} />
-                    <NavItem icon='mailplus' keywords={membershipSearchKeywords.memberEmails} navid='memberemails' title="Welcome emails" onClick={handleSectionClick} />
+                    {paidMembersEnabled && <NavItem icon='gift' keywords={membershipSearchKeywords.giftSubscriptions} navid='gift-subscriptions' title="Gift subscriptions" onClick={handleSectionClick} />}
+                    {!hasAutomations && <NavItem icon='mailplus' keywords={membershipSearchKeywords.memberEmails} navid='memberemails' title="Welcome emails" onClick={handleSectionClick} />}
                     {hasTipsAndDonations && hasStripeEnabled && <NavItem icon='piggybank' keywords={membershipSearchKeywords.tips} navid='tips-and-donations' title="Tips & donations" onClick={handleSectionClick} />}
                     <NavItem icon='email' keywords={emailSearchKeywords.newslettersNavMenu} navid={['enable-newsletters', 'default-recipients', 'newsletters', 'mailgun']} title="Newsletters" onClick={handleSectionClick} />
                 </SettingNavSection>
@@ -211,10 +240,11 @@ const Sidebar: React.FC = () => {
                     <NavItem icon='brackets' keywords={advancedSearchKeywords.codeInjection} navid='code-injection' title="Code injection" onClick={handleSectionClick} />
                     <NavItem icon='labs-flask' keywords={advancedSearchKeywords.labs} navid='labs' title="Labs" onClick={handleSectionClick} />
                     <NavItem icon='time-back' keywords={advancedSearchKeywords.history} navid='history' title="History" onClick={handleSectionClick} />
+                    <NavItem icon='warning' keywords={advancedSearchKeywords.dangerzone} navid='dangerzone' title="Danger zone" onClick={handleSectionClick} />
                 </SettingNavSection>
 
                 {!filter &&
-                <a className='mt-1 mb-10 flex h-[38px] w-100 cursor-pointer items-center rounded-lg px-3 py-2 text-left text-[14px] font-medium text-grey-800 transition-all hover:bg-grey-200 focus:bg-grey-100 dark:text-grey-600 dark:hover:bg-grey-950 dark:focus:bg-grey-925' onClick={() => {
+                <a className='mt-1 mb-10 flex h-[38px] w-100 cursor-pointer items-center rounded-lg px-3 py-2 text-left text-[14px] font-medium text-grey-800 transition-all hover:bg-grey-200 focus:bg-grey-100 dark:text-grey-600 dark:hover:bg-grey-950 dark:focus:bg-grey-900' onClick={() => {
                     updateRoute('about');
                 }}>
                     <img alt='Ghost Logo' className='mr-[7px] size-[18px]' src={GhostLogo} />

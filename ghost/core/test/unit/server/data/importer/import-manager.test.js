@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const fs = require('fs-extra');
 const path = require('path');
-const glob = require('glob');
+const {globSync} = require('glob');
 const importManager = require('../../../../../core/server/data/importer/import-manager');
 
 describe('Import Manager', function () {
@@ -10,7 +10,7 @@ describe('Import Manager', function () {
             const zipPath = path.join(__dirname, '/test.zip');
             const extractedPath = await importManager.extractZip(zipPath);
             try {
-                const files = glob.sync('**/*', {cwd: extractedPath, nodir: true});
+                const files = globSync('**/*', {cwd: extractedPath, nodir: true});
                 files.forEach((file) => {
                     const filePath = path.join(extractedPath, file);
                     const stats = fs.statSync(filePath);
