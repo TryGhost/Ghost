@@ -204,7 +204,7 @@ label.gh-tag-setting-codeheader {
 .input-color:after {
     content: "#";
     position: absolute;
-    top: 9px;
+    top: 6px;
     left: 43px;
     color: var(--black);
     font-family: "Consolas", monaco, monospace;
@@ -218,7 +218,7 @@ label.gh-tag-setting-codeheader {
 .input-color input {
     padding-left: 52px;
     width: 112px;
-    height: 38px;
+    height: 32px;
     padding-right: 8px;
     font-family: "Consolas", monaco, monospace;
     font-size: 13px;
@@ -259,8 +259,8 @@ label.gh-tag-setting-codeheader {
 }
 
 .gh-tag-settings-colorcontainer .color-box-container {
-    height: 32px;
-    width: 32px;
+    height: 26px;
+    width: 26px;
     position: absolute;
     overflow: hidden;
     top: 2px;

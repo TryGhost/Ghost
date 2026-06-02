@@ -490,9 +490,9 @@ body:not(.gh-body-fullscreen) .gh-viewport {
 }
 
 .gh-expandable-header .gh-expandable-title {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     letter-spacing: 0;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--black);
     margin: 0;
     padding: 0;
