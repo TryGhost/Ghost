@@ -3,6 +3,7 @@ const mappers = require('./mappers');
 const tiersService = require('../../../../../services/tiers');
 const {pipeline} = require('stream');
 const {createCSVTransform} = require('./posts-csv-transform');
+const {InternalServerError} = require('@tryghost/errors');
 
 module.exports = {
     async all(models, apiConfig, frame) {
@@ -56,6 +57,12 @@ module.exports = {
 
     exportCSV(models, apiConfig, frame) {
         frame.response = function streamResponse(req, res, next) {
+            if (!models.filename) {
+                return next(new InternalServerError({
+                    message: 'Missing CSV export filename'
+                }));
+            }
+
             const csvTransform = createCSVTransform();
 
             res.setHeader('Content-Type', 'text/csv; charset=utf-8');
