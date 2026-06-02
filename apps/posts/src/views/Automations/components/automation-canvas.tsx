@@ -16,7 +16,7 @@ const NODE_WIDTH = 256;
 const NODE_COLUMN_CENTER_X = NODE_X + (NODE_WIDTH / 2);
 const NODE_GAP_Y = 180;
 const INITIAL_VIEWPORT_Y = 40;
-const DISABLED_REASON = `Limit of ${formatNumber(MAX_AUTOMATION_ACTIONS)} steps reached`;
+const DISABLED_REASON = 'Maximum steps added';
 const DEFAULT_EDGE_STROKE = 'var(--xy-edge-stroke)';
 
 // React Flow node IDs for the trigger and tail nodes. The canvas builds the visual graph using
@@ -138,7 +138,7 @@ const TailNode: React.FC<NodeProps<TailFlowNode>> = ({data}) => {
     if (data.disabled) {
         return (
             <div
-                className='flex h-12 w-64 items-center justify-center rounded-lg border border-border-default bg-[repeating-linear-gradient(135deg,var(--color-white)_0,var(--color-white)_18px,var(--color-gray-100)_18px,var(--color-gray-100)_34px)] text-sm font-medium text-text-secondary'
+                className='flex h-12 w-64 items-center justify-center rounded-lg border border-border-default bg-[repeating-linear-gradient(135deg,var(--color-white)_0,var(--color-white)_12px,var(--color-gray-100)_12px,var(--color-gray-100)_24px)] text-sm font-medium text-text-secondary'
                 data-testid='step-limit-tail-node'
             >
                 <HiddenHandle position={Position.Top} type='target' />
