@@ -128,9 +128,9 @@ test.describe('User invitations', async () => {
                         message: 'Validation error, cannot save invite.',
                         context: 'User is already registered.',
                         details: null,
-                        property: null,
+                        property: 'email',
                         help: null,
-                        code: null,
+                        code: 'USER_ALREADY_REGISTERED',
                         ghostErrorCode: null
                     }]
                 }

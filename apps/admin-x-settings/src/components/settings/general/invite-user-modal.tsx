@@ -13,7 +13,7 @@ import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 type RoleType = 'administrator' | 'editor' | 'author' | 'contributor' | 'super editor';
 
-const USER_ALREADY_REGISTERED_VALIDATION = 'User is already registered.';
+const USER_ALREADY_REGISTERED_CODE = 'USER_ALREADY_REGISTERED';
 const USER_ALREADY_EXISTS_ERROR = 'A user with that email address already exists.';
 
 const InviteUserModal = NiceModal.create(() => {
@@ -138,7 +138,7 @@ const InviteUserModal = NiceModal.create(() => {
         } catch (e) {
             const validationError = e instanceof ValidationError ? e.data?.errors[0] : undefined;
 
-            if (validationError && (validationError.context || validationError.message) === USER_ALREADY_REGISTERED_VALIDATION) {
+            if (validationError?.code === USER_ALREADY_REGISTERED_CODE) {
                 setSaveState('');
                 setErrors({
                     email: USER_ALREADY_EXISTS_ERROR
