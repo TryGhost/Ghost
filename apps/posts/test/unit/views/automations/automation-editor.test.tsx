@@ -9,6 +9,9 @@ const {mockToastError} = vi.hoisted(() => ({
     mockToastError: vi.fn()
 }));
 
+const NON_EMPTY_EMAIL_LEXICAL = '{"root":{"children":[{"type":"paragraph","children":[{"type":"text","text":"Welcome email body"}]}]}}';
+const EMPTY_BODY_PUBLISH_CONFIRMATION_MESSAGE = 'One or more emails in this automation do not have a body. Are you sure you want to save and publish this automation?';
+
 vi.mock('sonner', () => ({
     toast: {
         error: mockToastError
@@ -28,7 +31,7 @@ vi.mock('@src/views/Automations/components/email-modal/email-content-modal', () 
         <div data-testid='email-content-modal'>
             <span data-testid='modal-initial-subject'>{initialSubject}</span>
             <span data-testid='modal-initial-lexical'>{initialLexical}</span>
-            <button data-testid='modal-save' type='button' onClick={() => onSave({subject: 'Edited via modal', lexical: '{"root":{"children":[{"type":"paragraph"}]}}'})}>save</button>
+            <button data-testid='modal-save' type='button' onClick={() => onSave({subject: 'Edited via modal', lexical: NON_EMPTY_EMAIL_LEXICAL})}>save</button>
             <button data-testid='modal-close' type='button' onClick={onClose}>close</button>
         </div>
     )
@@ -135,7 +138,7 @@ const automationDetail: AutomationDetail = {
             type: 'send_email',
             data: {
                 email_subject: 'Welcome to The Blueprint',
-                email_lexical: '{"root":{"children":[]}}',
+                email_lexical: NON_EMPTY_EMAIL_LEXICAL,
                 email_sender_name: null,
                 email_sender_email: null,
                 email_sender_reply_to: null,
@@ -165,6 +168,21 @@ const renderEditor = () => {
         ...render(<RouterProvider router={router} />)
     };
 };
+
+const withEmptyEmailBodies = (fixture: AutomationDetail): AutomationDetail => ({
+    ...fixture,
+    actions: fixture.actions.map(action => (
+        action.type === 'send_email'
+            ? {
+                ...action,
+                data: {
+                    ...action.data,
+                    email_lexical: '{"root":{"children":[]}}'
+                }
+            }
+            : action
+    ))
+});
 
 describe('AutomationEditor', () => {
     beforeEach(() => {
@@ -363,7 +381,7 @@ describe('AutomationEditor', () => {
         // The modal opens, seeded from the step's current content.
         expect(screen.getByTestId('email-content-modal')).toBeInTheDocument();
         expect(screen.getByTestId('modal-initial-subject')).toHaveTextContent('Welcome to The Blueprint');
-        expect(screen.getByTestId('modal-initial-lexical')).toHaveTextContent('{"root":{"children":[]}}');
+        expect(screen.getByTestId('modal-initial-lexical')).toHaveTextContent(NON_EMPTY_EMAIL_LEXICAL);
 
         // Saving in the modal commits to the local draft only — no API call.
         expect(mockEditMutation.mutate).not.toHaveBeenCalled();
@@ -383,7 +401,7 @@ describe('AutomationEditor', () => {
                         id: 'action-email',
                         data: expect.objectContaining({
                             email_subject: 'Edited via modal',
-                            email_lexical: '{"root":{"children":[{"type":"paragraph"}]}}'
+                            email_lexical: NON_EMPTY_EMAIL_LEXICAL
                         })
                     })
                 ])
@@ -573,6 +591,32 @@ describe('AutomationEditor', () => {
                 actions: automationDetail.actions,
                 edges: automationDetail.edges
             },
+            expect.any(Object)
+        );
+    });
+
+    it('confirms before publishing an inactive automation with empty email bodies', () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [withEmptyEmailBodies({...automationDetail, status: 'inactive'})]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        fireEvent.click(screen.getByRole('button', {name: 'Publish'}));
+
+        const dialog = screen.getByRole('alertdialog', {name: 'Publish automation with empty emails?'});
+        expect(within(dialog).getByText(EMPTY_BODY_PUBLISH_CONFIRMATION_MESSAGE)).toBeInTheDocument();
+        expect(mockEditMutation.mutate).not.toHaveBeenCalled();
+
+        fireEvent.click(within(dialog).getByRole('button', {name: 'Publish automation'}));
+
+        expect(mockEditMutation.mutate).toHaveBeenCalledWith(
+            expect.objectContaining({
+                id: 'automation-id-1',
+                status: 'active'
+            }),
             expect.any(Object)
         );
     });
@@ -1358,6 +1402,35 @@ describe('AutomationEditor', () => {
         const dialog = screen.getByRole('alertdialog', {name: 'Update automation?'});
         expect(within(dialog).getByText(/new runs of the automation/)).toBeInTheDocument();
         expect(within(dialog).getByText(/actively-running ones/)).toBeInTheDocument();
+        expect(mockEditMutation.mutate).not.toHaveBeenCalled();
+
+        fireEvent.click(within(dialog).getByRole('button', {name: 'Publish changes'}));
+
+        expect(mockEditMutation.mutate).toHaveBeenCalledWith(
+            {
+                id: 'automation-id-1',
+                status: 'active',
+                actions: expect.any(Array),
+                edges: expect.any(Array)
+            },
+            expect.any(Object)
+        );
+    });
+
+    it('warns before publishing changes to an active automation with empty email bodies', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [withEmptyEmailBodies(automationDetail)]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        await stageLocalEdit();
+        fireEvent.click(screen.getByRole('button', {name: 'Publish changes'}));
+
+        const dialog = screen.getByRole('alertdialog', {name: 'Update automation?'});
+        expect(within(dialog).getByText(new RegExp(EMPTY_BODY_PUBLISH_CONFIRMATION_MESSAGE.replace(/[.?]/g, '\\$&')))).toBeInTheDocument();
         expect(mockEditMutation.mutate).not.toHaveBeenCalled();
 
         fireEvent.click(within(dialog).getByRole('button', {name: 'Publish changes'}));

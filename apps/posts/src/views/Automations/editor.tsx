@@ -10,6 +10,26 @@ import {useConfirmUnload, useParams} from '@tryghost/admin-x-framework';
 import type {AutomationEditState} from './types';
 
 const SUBJECT_REQUIRED_MESSAGE = 'Add a subject line.';
+const EMPTY_BODY_PUBLISH_CONFIRMATION_MESSAGE = 'One or more emails in this automation do not have a body. Are you sure you want to save and publish this automation?';
+
+const isEmptyEmailLexical = (lexical: string | null | undefined): boolean => {
+    if (!lexical) {
+        return true;
+    }
+
+    try {
+        const parsed = JSON.parse(lexical);
+        const children = parsed?.root?.children;
+
+        if (!children || children.length === 0) {
+            return true;
+        }
+
+        return children.length === 1 && children[0].type === 'paragraph' && (!children[0].children || children[0].children.length === 0);
+    } catch {
+        return true;
+    }
+};
 
 const editableSlice = (automation: AutomationDetail) => ({
     status: automation.status,
@@ -24,6 +44,7 @@ const isFailedEditState = (editState: AutomationEditState): boolean => {
     case 'failed to save':
     case 'failed to unpublish':
         return true;
+    case 'confirming empty-body publish':
     case 'confirming re-publish':
     case 'confirming unpublish':
     case 'idle':
@@ -50,6 +71,10 @@ const getActionErrors = (automation: AutomationDetail): Record<string, string> =
 
     return errors;
 };
+
+const hasEmptyEmailBodies = (automation: AutomationDetail): boolean => (
+    automation.actions.some(action => action.type === 'send_email' && isEmptyEmailLexical(action.data.email_lexical))
+);
 
 const AutomationEditor: React.FC = () => {
     const {id = ''} = useParams<{id: string}>();
@@ -98,6 +123,20 @@ const AutomationEditor: React.FC = () => {
         ));
     };
 
+    const validateActionErrors = (automationToValidate: AutomationDetail, errorState: AutomationEditState): boolean => {
+        const nextActionErrors = getActionErrors(automationToValidate);
+        if (Object.keys(nextActionErrors).length > 0) {
+            setActionErrors(nextActionErrors);
+            setEditState(errorState);
+            toast.error('Could not save automation', {
+                description: 'Fix the highlighted steps and try again.'
+            });
+            return false;
+        }
+
+        return true;
+    };
+
     const save = (statusToSave?: AutomationStatus) => {
         if (!draft) {
             throw new Error('Cannot edit an automation that has not loaded.');
@@ -132,17 +171,11 @@ const AutomationEditor: React.FC = () => {
         }
         }
 
-        setEditState(requestState);
-
-        const nextActionErrors = getActionErrors(draft);
-        if (Object.keys(nextActionErrors).length > 0) {
-            setActionErrors(nextActionErrors);
-            setEditState(errorState);
-            toast.error('Could not save automation', {
-                description: 'Fix the highlighted steps and try again.'
-            });
+        if (!validateActionErrors(draft, errorState)) {
             return;
         }
+
+        setEditState(requestState);
 
         editMutation.mutate(
             {
@@ -167,6 +200,8 @@ const AutomationEditor: React.FC = () => {
         );
     };
 
+    const hasEmptyEmailBodyWarnings = draft ? hasEmptyEmailBodies(draft) : false;
+    let isConfirmEmptyBodyPublishAlertOpen = false;
     let isConfirmUnpublishAlertOpen = false;
     let isConfirmRepublishAlertOpen = false;
     let isEditRequestActive = false;
@@ -236,6 +271,12 @@ const AutomationEditor: React.FC = () => {
             </>
         );
         break;
+    case 'confirming empty-body publish':
+        isConfirmEmptyBodyPublishAlertOpen = true;
+        isSaveButtonEnabled = false;
+        isPublishButtonEnabled = false;
+        isTurnOffButtonEnabled = false;
+        break;
     case 'confirming unpublish':
         isConfirmUnpublishAlertOpen = true;
         isSaveButtonEnabled = false;
@@ -272,6 +313,19 @@ const AutomationEditor: React.FC = () => {
         throw new Error(`Unhandled edit state: ${_exhaustive}`);
     }
     }
+
+    const onConfirmEmptyBodyPublishOpenChange = (open: boolean): void => {
+        setEditState((oldEditState) => {
+            switch (oldEditState) {
+            case 'confirming empty-body publish':
+                return open ? oldEditState : 'idle';
+            case 'idle':
+                return open ? 'confirming empty-body publish' : oldEditState;
+            default:
+                return oldEditState;
+            }
+        });
+    };
 
     const onConfirmUnpublishOpenChange = (open: boolean): void => {
         setEditState((oldEditState) => {
@@ -310,6 +364,13 @@ const AutomationEditor: React.FC = () => {
             setEditState('confirming re-publish');
             break;
         case 'inactive':
+            if (!validateActionErrors(draft, 'failed to publish')) {
+                return;
+            }
+            if (hasEmptyEmailBodies(draft)) {
+                setEditState('confirming empty-body publish');
+                return;
+            }
             save('active');
             break;
         default: {
@@ -379,6 +440,26 @@ const AutomationEditor: React.FC = () => {
             </AlertDialog>
 
             <AlertDialog
+                open={isConfirmEmptyBodyPublishAlertOpen}
+                onOpenChange={onConfirmEmptyBodyPublishOpenChange}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Publish automation with empty emails?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {EMPTY_BODY_PUBLISH_CONFIRMATION_MESSAGE}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <Button onClick={() => save('active')}>
+                            Publish automation
+                        </Button>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            <AlertDialog
                 open={isConfirmUnpublishAlertOpen}
                 onOpenChange={onConfirmUnpublishOpenChange}
             >
@@ -410,7 +491,7 @@ const AutomationEditor: React.FC = () => {
                     <AlertDialogHeader>
                         <AlertDialogTitle>Update automation?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            This will update the automation for new runs of the automation, as well as any actively-running ones.
+                            {hasEmptyEmailBodyWarnings ? `${EMPTY_BODY_PUBLISH_CONFIRMATION_MESSAGE} This will update the automation for new runs of the automation, as well as any actively-running ones.` : 'This will update the automation for new runs of the automation, as well as any actively-running ones.'}
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

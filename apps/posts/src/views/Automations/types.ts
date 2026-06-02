@@ -4,6 +4,7 @@ export type AutomationEditState =
   | 'publishing'
   | 're-publishing'
   | 'unpublishing'
+  | 'confirming empty-body publish'
   | 'confirming unpublish'
   | 'confirming re-publish'
   | 'failed to save'
