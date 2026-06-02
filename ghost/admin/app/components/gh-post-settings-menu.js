@@ -22,7 +22,6 @@ export default class GhPostSettingsMenu extends Component {
     @service slugGenerator;
     @service session;
     @service settings;
-    @service stateBridge;
     @service themeManagement;
     @service ui;
 
@@ -31,6 +30,8 @@ export default class GhPostSettingsMenu extends Component {
     @tracked showPostHistory = false;
     @tracked giftLink = null;
     @tracked giftLinkCopied = false;
+    @tracked giftLinkResetConfirming = false;
+    @tracked giftLinkResetting = false;
 
     post = null;
     isViewingSubview = false;
@@ -207,22 +208,48 @@ export default class GhPostSettingsMenu extends Component {
     }
 
     get giftLinkUrl() {
-        if (!this.giftLink || !this.post || !this.post.url) {
+        if (!this.giftLink || !this.post || !this.post.slug || !this.config.blogUrl) {
             return '';
         }
-        const separator = this.post.url.includes('?') ? '&' : '?';
-        return `${this.post.url}${separator}gift=${encodeURIComponent(this.giftLink.token)}&utm_campaign=gift-link`;
+        // Gift links live at /g/<slug>/?key=TOKEN — a dedicated path prefix
+        // (not a `?gift=` param on the canonical URL) so Fastly's cache
+        // bypass is path-based and slug-change behaviour matches the rest of
+        // Ghost. Site URL carries any subdirectory; trailing slash on the
+        // slug matches Ghost's canonical post URLs.
+        const base = this.config.blogUrl.replace(/\/+$/, '');
+        return `${base}/g/${encodeURIComponent(this.post.slug)}/?key=${encodeURIComponent(this.giftLink.token)}&utm_campaign=gift-link`;
     }
 
-    // Both gift link actions are creation intents: the post may not have a link
-    // yet, so each one idempotently ensures it exists before acting.
+    get giftLinkUsesLabel() {
+        const count = this.giftLink ? this.giftLink.redeemed_count : 0;
+        if (count === 0) {
+            return 'Not used yet';
+        }
+        return `${count} ${count === 1 ? 'use' : 'uses'}`;
+    }
+
+    // Load the post's existing gift link (if any) when the control is shown, so
+    // the usage counter is populated without the author having to copy first.
+    @action
+    async loadGiftLink() {
+        if (!this.canCopyGiftLink) {
+            return;
+        }
+        try {
+            const url = this.ghostPaths.url.api('gift_links', this.post.id);
+            const response = await this.ajax.request(url);
+            this.giftLink = response.gift_links[0] || null;
+        } catch (e) {
+            // Non-fatal: leave unset so the counter reads "0 uses".
+        }
+    }
+
+    // Copy is a creation intent: the post may not have a link yet, so the
+    // idempotent POST creates it when missing and otherwise returns the current
+    // active token, which also refreshes the usage counter.
     @action
     async copyGiftLink() {
         try {
-            // The idempotent POST creates the link when missing and otherwise
-            // returns the *current* active token. Re-fetching here also keeps
-            // copy correct after a reset performed in the React manage modal,
-            // where a cached token would be stale/dead.
             const url = this.ghostPaths.url.api('gift_links', this.post.id);
             const response = await this.ajax.post(url);
             this.giftLink = response.gift_links[0];
@@ -230,6 +257,9 @@ export default class GhPostSettingsMenu extends Component {
             trackEvent('gift_link_copied', {surface: 'editor-psm'});
             this.giftLinkCopied = true;
             setTimeout(() => {
+                if (this.isDestroying || this.isDestroyed) {
+                    return;
+                }
                 this.giftLinkCopied = false;
             }, 2000);
         } catch (e) {
@@ -237,21 +267,32 @@ export default class GhPostSettingsMenu extends Component {
         }
     }
 
-    // Manage the gift link. Also a creation intent: ensure the link exists, then
-    // open the React-owned manage modal (full URL, open count, reset) via the
-    // Ember/React bridge. The modal is mounted alongside the editor by the admin
-    // shell router and loads the link itself, so we only pass identifiers.
     @action
-    async manageGiftLink() {
+    startResetGiftLink() {
+        this.giftLinkResetConfirming = true;
+    }
+
+    @action
+    cancelResetGiftLink() {
+        this.giftLinkResetConfirming = false;
+    }
+
+    @action
+    async confirmResetGiftLink() {
+        if (this.giftLinkResetting) {
+            return;
+        }
+        this.giftLinkResetting = true;
         try {
-            const url = this.ghostPaths.url.api('gift_links', this.post.id);
-            await this.ajax.post(url);
-            this.stateBridge.openGiftLinkModal({
-                postId: this.post.id,
-                postUrl: this.post.url
-            });
+            const url = this.ghostPaths.url.api('gift_links', this.post.id, 'reset');
+            const response = await this.ajax.put(url);
+            this.giftLink = response.gift_links[0];
+            trackEvent('gift_link_reset', {surface: 'editor-psm'});
         } catch (e) {
-            this.notifications.showAPIError(e, {key: 'gift-link.manage'});
+            this.notifications.showAPIError(e, {key: 'gift-link.reset'});
+        } finally {
+            this.giftLinkResetting = false;
+            this.giftLinkResetConfirming = false;
         }
     }
 

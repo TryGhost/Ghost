@@ -12,7 +12,6 @@ export type StateBridgeEventMap = {
     subscriptionChange: SubscriptionState;
     sidebarVisibilityChange: SidebarVisibilityChangeEvent;
     routeChange: RouteChangeEvent;
-    giftLinkModalOpen: GiftLinkModalOpenEvent;
 }
 
 export interface StateBridge {
@@ -58,11 +57,6 @@ export interface SidebarVisibilityChangeEvent {
 export interface RouteChangeEvent {
     routeName: string;
     queryParams: Record<string, unknown>;
-}
-
-export interface GiftLinkModalOpenEvent {
-    postId: string;
-    postUrl: string;
 }
 
 export type EmberRouting = Pick<StateBridge, 'getRouteUrl' | 'isRouteActive'>;

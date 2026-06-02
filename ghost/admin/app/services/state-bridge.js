@@ -224,14 +224,6 @@ export default class StateBridgeService extends Service.extend(Evented) {
         });
     }
 
-    // Ember surfaces (post settings menu, posts list context menu) trigger this
-    // to open the React-owned gift link modal, which is mounted alongside the
-    // Ember view via the admin shell router.
-    @action
-    openGiftLinkModal({postId, postUrl}) {
-        this.trigger('giftLinkModalOpen', {postId, postUrl});
-    }
-
     get sidebarVisible() {
         // Sidebar is visible when NOT in fullscreen mode
         return !this.ui.isFullScreen;

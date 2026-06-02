@@ -505,46 +505,6 @@ describe('Unit: Service: state-bridge', function () {
         });
     });
 
-    describe('#openGiftLinkModal', function () {
-        it('triggers giftLinkModalOpen event with the post id and url', function () {
-            const handler = sinon.spy();
-
-            service.on('giftLinkModalOpen', handler);
-
-            service.openGiftLinkModal({postId: 'abc123', postUrl: 'https://example.com/my-post/'});
-
-            expect(handler.calledOnce).to.be.true;
-            expect(handler.firstCall.args[0]).to.deep.equal({
-                postId: 'abc123',
-                postUrl: 'https://example.com/my-post/'
-            });
-        });
-
-        it('allows multiple handlers to be registered', function () {
-            const handler1 = sinon.spy();
-            const handler2 = sinon.spy();
-
-            service.on('giftLinkModalOpen', handler1);
-            service.on('giftLinkModalOpen', handler2);
-
-            service.openGiftLinkModal({postId: 'abc123', postUrl: 'https://example.com/my-post/'});
-
-            expect(handler1.calledOnce).to.be.true;
-            expect(handler2.calledOnce).to.be.true;
-        });
-
-        it('handlers can be removed with off', function () {
-            const handler = sinon.spy();
-
-            service.on('giftLinkModalOpen', handler);
-            service.off('giftLinkModalOpen', handler);
-
-            service.openGiftLinkModal({postId: 'abc123', postUrl: 'https://example.com/my-post/'});
-
-            expect(handler.called).to.be.false;
-        });
-    });
-
     describe('#sidebarVisible', function () {
         it('returns true when ui.isFullScreen is false', function () {
             ui.set('isFullScreen', false);
