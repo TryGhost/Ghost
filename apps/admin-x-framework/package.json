@@ -97,7 +97,7 @@
         "vitest": "catalog:"
     },
     "dependencies": {
-        "@ebay/nice-modal-react": "1.2.13",
+        "@ebay/nice-modal-react": "catalog:",
         "@sentry/react": "catalog:",
         "@tanstack/react-query": "catalog:",
         "@tinybirdco/charts": "0.3.0",
@@ -106,7 +106,7 @@
         "bson-objectid": "catalog:",
         "react": "catalog:",
         "react-dom": "catalog:",
-        "react-hot-toast": "2.6.0",
+        "react-hot-toast": "catalog:",
         "react-router": "catalog:"
     },
     "peerDependencies": {

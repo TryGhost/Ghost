@@ -6,12 +6,39 @@ settings:
 
 catalogs:
   default:
+    '@ebay/nice-modal-react':
+      specifier: 1.2.13
+      version: 1.2.13
     '@eslint/js':
       specifier: 8.57.1
       version: 8.57.1
     '@playwright/test':
       specifier: 1.60.0
       version: 1.60.0
+    '@radix-ui/react-avatar':
+      specifier: 1.1.11
+      version: 1.1.11
+    '@radix-ui/react-checkbox':
+      specifier: 1.3.3
+      version: 1.3.3
+    '@radix-ui/react-form':
+      specifier: 0.1.8
+      version: 0.1.8
+    '@radix-ui/react-popover':
+      specifier: 1.1.15
+      version: 1.1.15
+    '@radix-ui/react-separator':
+      specifier: 1.1.8
+      version: 1.1.8
+    '@radix-ui/react-switch':
+      specifier: 1.2.6
+      version: 1.2.6
+    '@radix-ui/react-tabs':
+      specifier: 1.1.13
+      version: 1.1.13
+    '@radix-ui/react-tooltip':
+      specifier: 1.2.8
+      version: 1.2.8
     '@sentry/react':
       specifier: 7.120.4
       version: 7.120.4
@@ -165,6 +192,9 @@ catalogs:
     lucide-react:
       specifier: 1.17.0
       version: 1.17.0
+    mingo:
+      specifier: 2.5.3
+      version: 2.5.3
     mocha:
       specifier: 11.7.6
       version: 11.7.6
@@ -186,6 +216,9 @@ catalogs:
     react-dom:
       specifier: 18.3.1
       version: 18.3.1
+    react-hot-toast:
+      specifier: 2.6.0
+      version: 2.6.0
     react-router:
       specifier: 7.14.0
       version: 7.14.0
@@ -201,6 +234,9 @@ catalogs:
     tailwindcss:
       specifier: 4.2.2
       version: 4.2.2
+    tsx:
+      specifier: 4.21.0
+      version: 4.21.0
     tw-animate-css:
       specifier: 1.4.0
       version: 1.4.0
@@ -366,7 +402,7 @@ importers:
         specifier: 5.4.0
         version: 5.4.0(react-hook-form@7.72.1(react@18.3.1))
       '@radix-ui/react-form':
-        specifier: 0.1.8
+        specifier: 'catalog:'
         version: 0.1.8(@types/react-dom@18.3.7(@types/react@18.3.29))(@types/react@18.3.29)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tanstack/react-query':
         specifier: 'catalog:'
@@ -478,7 +514,7 @@ importers:
         specifier: workspace:*
         version: link:../stats
       mingo:
-        specifier: 2.5.3
+        specifier: 'catalog:'
         version: 2.5.3
       react:
         specifier: 'catalog:'
@@ -597,34 +633,34 @@ importers:
         specifier: 7.0.2
         version: 7.0.2(@dnd-kit/core@6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
       '@ebay/nice-modal-react':
-        specifier: 1.2.13
+        specifier: 'catalog:'
         version: 1.2.13(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-avatar':
-        specifier: 1.1.11
+        specifier: 'catalog:'
         version: 1.1.11(@types/react-dom@18.3.7(@types/react@18.3.29))(@types/react@18.3.29)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-checkbox':
-        specifier: 1.3.3
+        specifier: 'catalog:'
         version: 1.3.3(@types/react-dom@18.3.7(@types/react@18.3.29))(@types/react@18.3.29)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-form':
-        specifier: 0.1.8
+        specifier: 'catalog:'
         version: 0.1.8(@types/react-dom@18.3.7(@types/react@18.3.29))(@types/react@18.3.29)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-popover':
-        specifier: 1.1.15
+        specifier: 'catalog:'
         version: 1.1.15(@types/react-dom@18.3.7(@types/react@18.3.29))(@types/react@18.3.29)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-radio-group':
         specifier: 1.3.8
         version: 1.3.8(@types/react-dom@18.3.7(@types/react@18.3.29))(@types/react@18.3.29)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-separator':
-        specifier: 1.1.8
+        specifier: 'catalog:'
         version: 1.1.8(@types/react-dom@18.3.7(@types/react@18.3.29))(@types/react@18.3.29)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-switch':
-        specifier: 1.2.6
+        specifier: 'catalog:'
         version: 1.2.6(@types/react-dom@18.3.7(@types/react@18.3.29))(@types/react@18.3.29)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-tabs':
-        specifier: 1.1.13
+        specifier: 'catalog:'
         version: 1.1.13(@types/react-dom@18.3.7(@types/react@18.3.29))(@types/react@18.3.29)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-tooltip':
-        specifier: 1.2.8
+        specifier: 'catalog:'
         version: 1.2.8(@types/react-dom@18.3.7(@types/react@18.3.29))(@types/react@18.3.29)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@sentry/react':
         specifier: 'catalog:'
@@ -642,7 +678,7 @@ importers:
         specifier: 5.6.1
         version: 5.6.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-hot-toast:
-        specifier: 2.6.0
+        specifier: 'catalog:'
         version: 2.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-select:
         specifier: 5.10.2
@@ -763,7 +799,7 @@ importers:
   apps/admin-x-framework:
     dependencies:
       '@ebay/nice-modal-react':
-        specifier: 1.2.13
+        specifier: 'catalog:'
         version: 1.2.13(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@sentry/react':
         specifier: 'catalog:'
@@ -790,7 +826,7 @@ importers:
         specifier: 'catalog:'
         version: 18.3.1(react@18.3.1)
       react-hot-toast:
-        specifier: 2.6.0
+        specifier: 'catalog:'
         version: 2.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-router:
         specifier: 'catalog:'
@@ -893,7 +929,7 @@ importers:
         specifier: 7.0.2
         version: 7.0.2(@dnd-kit/core@6.3.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
       '@ebay/nice-modal-react':
-        specifier: 1.2.13
+        specifier: 'catalog:'
         version: 1.2.13(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@sentry/react':
         specifier: 'catalog:'
@@ -935,7 +971,7 @@ importers:
         specifier: 'catalog:'
         version: 1.17.0(react@18.3.1)
       mingo:
-        specifier: 2.5.3
+        specifier: 'catalog:'
         version: 2.5.3
       react:
         specifier: 'catalog:'
@@ -944,7 +980,7 @@ importers:
         specifier: 'catalog:'
         version: 18.3.1(react@18.3.1)
       react-hot-toast:
-        specifier: 2.6.0
+        specifier: 'catalog:'
         version: 2.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-select:
         specifier: 5.10.2
@@ -1248,7 +1284,7 @@ importers:
   apps/posts:
     dependencies:
       '@ebay/nice-modal-react':
-        specifier: 1.2.13
+        specifier: 'catalog:'
         version: 1.2.13(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tryghost/admin-x-framework':
         specifier: workspace:*
@@ -1381,10 +1417,10 @@ importers:
         specifier: 1.1.15
         version: 1.1.15(@types/react-dom@18.3.7(@types/react@18.3.29))(@types/react@18.3.29)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-avatar':
-        specifier: 1.1.11
+        specifier: 'catalog:'
         version: 1.1.11(@types/react-dom@18.3.7(@types/react@18.3.29))(@types/react@18.3.29)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-checkbox':
-        specifier: 1.3.3
+        specifier: 'catalog:'
         version: 1.3.3(@types/react-dom@18.3.7(@types/react@18.3.29))(@types/react@18.3.29)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-dialog':
         specifier: 1.1.15
@@ -1399,13 +1435,13 @@ importers:
         specifier: 2.1.8
         version: 2.1.8(@types/react-dom@18.3.7(@types/react@18.3.29))(@types/react@18.3.29)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-popover':
-        specifier: 1.1.15
+        specifier: 'catalog:'
         version: 1.1.15(@types/react-dom@18.3.7(@types/react@18.3.29))(@types/react@18.3.29)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-select':
         specifier: 2.2.6
         version: 2.2.6(@types/react-dom@18.3.7(@types/react@18.3.29))(@types/react@18.3.29)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-separator':
-        specifier: 1.1.8
+        specifier: 'catalog:'
         version: 1.1.8(@types/react-dom@18.3.7(@types/react@18.3.29))(@types/react@18.3.29)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-slider':
         specifier: 1.3.6
@@ -1414,10 +1450,10 @@ importers:
         specifier: 1.2.4
         version: 1.2.4(@types/react@18.3.29)(react@18.3.1)
       '@radix-ui/react-switch':
-        specifier: 1.2.6
+        specifier: 'catalog:'
         version: 1.2.6(@types/react-dom@18.3.7(@types/react@18.3.29))(@types/react@18.3.29)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-tabs':
-        specifier: 1.1.13
+        specifier: 'catalog:'
         version: 1.1.13(@types/react-dom@18.3.7(@types/react@18.3.29))(@types/react@18.3.29)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-toggle':
         specifier: 1.1.10
@@ -1426,7 +1462,7 @@ importers:
         specifier: 1.1.11
         version: 1.1.11(@types/react-dom@18.3.7(@types/react@18.3.29))(@types/react@18.3.29)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@radix-ui/react-tooltip':
-        specifier: 1.2.8
+        specifier: 'catalog:'
         version: 1.2.8(@types/react-dom@18.3.7(@types/react@18.3.29))(@types/react@18.3.29)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@types/react':
         specifier: 'catalog:'
@@ -1562,7 +1598,7 @@ importers:
         specifier: 1.8.17
         version: 1.8.17
       tsx:
-        specifier: 4.21.0
+        specifier: 'catalog:'
         version: 4.21.0
       tw-animate-css:
         specifier: 'catalog:'
@@ -2619,7 +2655,7 @@ importers:
         specifier: 2.1.35
         version: 2.1.35
       mingo:
-        specifier: 2.5.3
+        specifier: 'catalog:'
         version: 2.5.3
       moment:
         specifier: 2.30.1
@@ -2866,7 +2902,7 @@ importers:
         specifier: 0.2.6
         version: 0.2.6
       tsx:
-        specifier: 4.21.0
+        specifier: 'catalog:'
         version: 4.21.0
       typescript:
         specifier: 'catalog:'
@@ -2935,7 +2971,7 @@ importers:
         specifier: 'catalog:'
         version: 11.7.6
       tsx:
-        specifier: 4.21.0
+        specifier: 'catalog:'
         version: 4.21.0
       typescript:
         specifier: 'catalog:'
