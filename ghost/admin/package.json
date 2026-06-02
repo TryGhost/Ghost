@@ -148,7 +148,7 @@
     "tracked-built-ins": "3.4.0",
     "util": "0.12.5",
     "validator": "catalog:",
-    "walk-sync": "3.0.0"
+    "walk-sync": "4.0.2"
   },
   "ember-addon": {
     "paths": [
