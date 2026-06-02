@@ -7,6 +7,7 @@ const setup = () => {
         name: 'test-input',
         label: 'Test Input',
         value: '',
+        list: 'data-list',
         placeholder: 'Test placeholder',
         onChange: mockOnChangeFn
     };

@@ -15,6 +15,7 @@ const setup = (overrides) => {
 
     let emailInput;
     let nameInput;
+    let datalist;
     let submitButton;
     let chooseButton;
     let signinButton;
@@ -113,6 +114,28 @@ describe('SignupPage', () => {
         expect(termsContent).toBeInTheDocument();
         expect(termsContent.innerHTML).toBe('');
         expect(termsContent.querySelector('img')).toBeNull();
+    });
+
+    test('autocompletes email addresses', () => {
+        const {nameInput, emailInput, chooseButton, mockDoActionFn} = setup();
+        const nameVal = 'J Smith';
+        const emailVal = 'jsmith@y';
+        const planVal = 'free';
+
+        fireEvent.change(nameInput, {target: {value: nameVal}});
+        fireEvent.change(emailInput, {target: {value: emailVal}});
+        expect(nameInput).toHaveValue(nameVal);
+        expect(emailInput).toHaveValue(emailVal);
+
+       expect(emailInput).toHaveAttribute('list', 'email-domains')
+
+       const datalist = document.getElementById('email-domains')
+       expect(datalist).toBeInTheDocument()
+
+       const options = datalist.querySelectorAll('option')
+       expect(options).toHaveLength(2)
+       expect(options[0]).toHaveAttribute('value', 'jsmith@yahoo.com')
+       expect(options[1]).toHaveAttribute('value', 'jsmith@yandex.com')
     });
 
     describe('when members are disabled', () => {

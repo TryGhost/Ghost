@@ -467,7 +467,48 @@ class SignupPage extends React.Component {
         this.setState({
             [fieldName]: value
         });
+        if (fieldName == "email"){
+            this.updateEmailAutocomplete(e);
+        }
     }
+
+    updateEmailAutocomplete(e) {
+        const value = e.target.value;
+        const inputDocument = e.target.ownerDocument;
+        const commonDomains = [
+                    'gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com',
+                    'protonmail.com', 'icloud.com', 'aol.com', 'yandex.com',
+                    'zoho.com', 'live.com', 'mail.com'
+            ];
+
+        const datalist = inputDocument.getElementById('email-domains');
+
+        if (value.includes('@')) {
+            const domainPart = value.split('@')[1] || '';
+
+            // Clear and rebuild datalist
+            datalist.innerHTML = '';
+
+            if (domainPart.length > 0) {
+                const matches = commonDomains.filter(domain =>
+                        domain.toLowerCase().startsWith(domainPart.toLowerCase())
+                        );
+
+                if (matches.length == 1 && matches[0]==domainPart.toLowerCase()) return;
+
+                const namePart = value.split('@')[0] || '';
+
+                matches.forEach(domain => {
+                        const option = inputDocument.createElement('option');
+                        option.value = namePart + '@' + domain;
+                        datalist.appendChild(option);
+                        });
+            }
+        } else {
+            datalist.innerHTML = '';
+        }
+    }
+
 
     handleSelectPlan = (e, priceId) => {
         e && e.preventDefault();
@@ -516,7 +557,8 @@ class SignupPage extends React.Component {
                 name: 'email',
                 required: true,
                 tabIndex: 2,
-                errorMessage: errors.email || ''
+                errorMessage: errors.email || '',
+                list: 'email-domains'
             },
             {
                 type: 'text',
@@ -744,7 +786,9 @@ class SignupPage extends React.Component {
                             fields={fields}
                             onChange={(e, field) => this.handleInputChange(e, field)}
                             onKeyDown={e => this.onKeyDown(e)}
+                            list="email-domains"
                         />
+                        <datalist id="email-domains"></datalist>
                     </div>
                     <div>
                         {(hasOnlyFree ?

@@ -90,6 +90,7 @@ function InputField({
     type,
     value,
     placeholder,
+    list,
     disabled = false,
     onChange = () => {},
     onBlur = () => {},
@@ -159,6 +160,7 @@ function InputField({
                 type={type}
                 name={name}
                 value={value}
+                list={list}
                 placeholder={placeholder}
                 onChange={e => onChange(e, name)}
                 onKeyDown={e => onKeyDown(e, name)}
