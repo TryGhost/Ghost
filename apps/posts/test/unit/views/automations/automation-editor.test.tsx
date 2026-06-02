@@ -1594,9 +1594,9 @@ describe('AutomationEditor', () => {
         expect(screen.queryByTestId('add-step-tail-button')).not.toBeInTheDocument();
         const limitNode = screen.getByTestId('step-limit-tail-node');
         expect(limitNode).toHaveClass('border-border-default');
-        expect(limitNode).toHaveClass('bg-[repeating-linear-gradient(135deg,var(--color-white)_0,var(--color-white)_18px,var(--color-gray-100)_18px,var(--color-gray-100)_34px)]');
+        expect(limitNode).toHaveClass('bg-[repeating-linear-gradient(135deg,var(--color-white)_0,var(--color-white)_12px,var(--color-gray-100)_12px,var(--color-gray-100)_24px)]');
         expect(limitNode.querySelector('svg')).toBeInTheDocument();
-        expect(limitNode).toHaveTextContent(`Limit of ${MAX_AUTOMATION_ACTIONS} steps reached`);
+        expect(limitNode).toHaveTextContent('Maximum steps added');
         // The edge + uses a real <button> element.
         expect(screen.getByTestId('add-step-button-wait-0-wait-1')).toBeDisabled();
     });
