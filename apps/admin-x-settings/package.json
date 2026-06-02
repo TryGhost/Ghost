@@ -73,7 +73,7 @@
   },
   "devDependencies": {
     "@playwright/test": "catalog:",
-    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/jest-dom": "catalog:",
     "@testing-library/react": "14.3.1",
     "@tryghost/admin-x-design-system": "workspace:*",
     "@tryghost/admin-x-framework": "workspace:*",
