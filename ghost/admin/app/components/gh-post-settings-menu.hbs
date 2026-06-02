@@ -94,21 +94,15 @@
                         {{/if}}
 
                         {{#if this.canCopyGiftLink}}
-                            <div class="form-group gh-psm-gift-link" {{did-insert this.loadGiftLink}}>
-                                {{#if this.giftLink}}
-                                    <div class="gh-psm-gift-link-actions">
-                                        <button type="button" class="gh-btn-text inline blue gh-psm-gift-link-action" {{on "click" this.copyGiftLink}} data-test-button="copy-gift-link">
-                                            <span>{{if this.giftLinkCopied "Link copied" "Copy gift link"}}</span>
-                                        </button>
-                                        <button type="button" class="gh-btn-text inline gh-psm-gift-link-action gh-psm-gift-link-manage" {{on "click" this.manageGiftLink}} data-test-button="manage-gift-link">
-                                            <span>Manage</span>
-                                        </button>
-                                    </div>
-                                {{else}}
-                                    <button type="button" class="gh-btn-text inline blue gh-psm-gift-link-generate" {{on "click" this.copyGiftLink}} data-test-button="generate-gift-link">
-                                        <span>Generate gift link</span>
+                            <div class="form-group gh-psm-gift-link">
+                                <div class="gh-psm-gift-link-actions">
+                                    <button type="button" class="gh-btn-text inline blue gh-psm-gift-link-action" {{on "click" this.copyGiftLink}} data-test-button="copy-gift-link">
+                                        <span>{{if this.giftLinkCopied "Link copied" "Copy gift link"}}</span>
                                     </button>
-                                {{/if}}
+                                    <button type="button" class="gh-btn-text inline gh-psm-gift-link-action gh-psm-gift-link-manage" {{on "click" this.manageGiftLink}} data-test-button="manage-gift-link">
+                                        <span>Manage</span>
+                                    </button>
+                                </div>
                             </div>
                         {{/if}}
 

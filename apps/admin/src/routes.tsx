@@ -32,9 +32,11 @@ const EMBER_ROUTES: string[] = [
     "/signup/*",
     "/reset/*",
     "/pro/*",
+    "/posts",
     "/posts/analytics/:postId/mentions",
     "/posts/analytics/:postId/debug",
     "/restore",
+    "/pages",
     "/tags/new",
     "/explore/*",
     "/migrate/*",
@@ -53,11 +55,11 @@ const emberFallbackRoutes: RouteObject[] = EMBER_ROUTES.map(path => ({
     handle: emberFallbackHandle,
 }));
 
-// Ember routes that also host the React-owned gift link modal. The post list,
-// pages list and editor live in Ember, so they signal the modal open over the
-// bridge; the GiftLinkModalHost mounted here renders it as an overlay on top of
-// Ember. Keep this in sync with the surfaces that call openGiftLinkModal.
-const emberWithGiftLinkModalRoutes: RouteObject[] = ["/posts", "/pages", "/editor/*"].map(path => ({
+// The editor lives in Ember and is the only surface that opens the React-owned
+// gift link modal, so it signals the modal open over the bridge and the
+// GiftLinkModalHost mounted here renders it as an overlay on top of Ember.
+// Keep this in sync with the surfaces that call openGiftLinkModal.
+const emberWithGiftLinkModalRoutes: RouteObject[] = ["/editor/*"].map(path => ({
     path,
     element: <><EmberFallback /><GiftLinkModalHost /></>,
     handle: emberFallbackHandle,

@@ -27,11 +27,14 @@ function getGiftLinkBridge(): GiftLinkBridge | undefined {
 }
 
 /**
- * Mounts the React-owned gift link manage modal alongside the Ember post list
- * and editor. Both of those surfaces live in Ember, so they can't render the
- * modal themselves — instead they fire the `giftLinkModalOpen` bridge signal,
- * and this host (mounted by the admin shell router on those routes) opens the
- * modal as an overlay for the signalled post.
+ * Mounts the React-owned gift link manage modal alongside the Ember editor. The
+ * editor lives in Ember and can't render the modal itself — instead it fires the
+ * `giftLinkModalOpen` bridge signal, and this host (mounted by the admin shell
+ * router on the editor route) opens the modal as an overlay for the signalled
+ * post.
+ *
+ * The modal has no generate path: callers must ensure the post's gift link
+ * exists before signalling, so the modal only ever loads and manages it.
  */
 const GiftLinkModalHost: React.FC = () => {
     const [open, setOpen] = useState(false);
@@ -57,7 +60,7 @@ const GiftLinkModalHost: React.FC = () => {
         };
 
         // The bridge global is set during Ember boot; on a cold load straight to
-        // /posts or /editor it may not be ready when this mounts, so poll briefly.
+        // /editor it may not be ready when this mounts, so poll briefly.
         let intervalId: ReturnType<typeof setInterval> | undefined;
         if (!tryAttach()) {
             intervalId = setInterval(() => {

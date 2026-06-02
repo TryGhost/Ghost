@@ -214,29 +214,15 @@ export default class GhPostSettingsMenu extends Component {
         return `${this.post.url}${separator}gift=${encodeURIComponent(this.giftLink.token)}&utm_campaign=gift-link`;
     }
 
-    // Load the post's existing gift link (if any) when the control is shown, so
-    // the button reads "Copy"/"Generate" correctly and can preview the URL.
-    @action
-    async loadGiftLink() {
-        if (!this.canCopyGiftLink) {
-            return;
-        }
-        try {
-            const url = this.ghostPaths.url.api('gift_links', this.post.id);
-            const response = await this.ajax.request(url);
-            this.giftLink = response.gift_links[0] || null;
-        } catch (e) {
-            // Non-fatal: leave unset so the control offers to generate one.
-        }
-    }
-
+    // Both gift link actions are creation intents: the post may not have a link
+    // yet, so each one idempotently ensures it exists before acting.
     @action
     async copyGiftLink() {
         try {
-            // Always ensure: this idempotent POST creates the link when missing
-            // and otherwise returns the *current* active token. Re-fetching here
-            // keeps copy correct after a reset performed elsewhere (e.g. the
-            // React manage modal), where a cached token would be stale/dead.
+            // The idempotent POST creates the link when missing and otherwise
+            // returns the *current* active token. Re-fetching here also keeps
+            // copy correct after a reset performed in the React manage modal,
+            // where a cached token would be stale/dead.
             const url = this.ghostPaths.url.api('gift_links', this.post.id);
             const response = await this.ajax.post(url);
             this.giftLink = response.gift_links[0];
@@ -251,15 +237,22 @@ export default class GhPostSettingsMenu extends Component {
         }
     }
 
-    // Open the React-owned manage modal (full URL, open count, reset) via the
+    // Manage the gift link. Also a creation intent: ensure the link exists, then
+    // open the React-owned manage modal (full URL, open count, reset) via the
     // Ember/React bridge. The modal is mounted alongside the editor by the admin
-    // shell router and reads the gift link itself, so we only pass identifiers.
+    // shell router and loads the link itself, so we only pass identifiers.
     @action
-    manageGiftLink() {
-        this.stateBridge.openGiftLinkModal({
-            postId: this.post.id,
-            postUrl: this.post.url
-        });
+    async manageGiftLink() {
+        try {
+            const url = this.ghostPaths.url.api('gift_links', this.post.id);
+            await this.ajax.post(url);
+            this.stateBridge.openGiftLinkModal({
+                postId: this.post.id,
+                postUrl: this.post.url
+            });
+        } catch (e) {
+            this.notifications.showAPIError(e, {key: 'gift-link.manage'});
+        }
     }
 
     @action

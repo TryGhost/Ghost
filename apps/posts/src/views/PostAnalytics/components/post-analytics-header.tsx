@@ -1,22 +1,14 @@
-import GiftLinkManageModal from '@src/components/gift-links/gift-link-manage-modal';
-import GiftLinkMenuItem from '@src/components/gift-links/gift-link-menu-item';
 import React, {useMemo, useState} from 'react';
-import copyToClipboard from '@src/utils/copy-to-clipboard';
 import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, Navbar, PageMenu, PageMenuItem} from '@tryghost/shade/components';
 import {H1} from '@tryghost/shade/primitives';
 import {LucideIcon, formatDisplayDate, formatDisplayTime, formatNumber} from '@tryghost/shade/utils';
 import {Post, useGlobalData} from '@src/providers/post-analytics-context';
+import {PostShareModal} from '@tryghost/shade/posts-stats';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
 import {hasBeenEmailed, isEmailOnly, isPublishedAndEmailed, isPublishedOnly, useActiveVisitors, useNavigate} from '@tryghost/admin-x-framework';
-import {toast} from 'sonner';
 import {useAppContext} from '@src/providers/posts-app-context';
-import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
 import {useDeletePost} from '@tryghost/admin-x-framework/api/posts';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-
-// Gift links can only be managed by Owner/Administrator/Editor (manage:gift_link);
-// Authors/Contributors can reach their own post analytics, so gate on role too.
-const GIFT_LINK_MANAGER_ROLES = ['Owner', 'Administrator', 'Editor'];
 
 interface PostAnalyticsHeaderProps {
     currentTab?: string;
@@ -33,39 +25,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     const handleError = useHandleError();
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [isShareOpen, setIsShareOpen] = useState(false);
-    const [isGiftManageOpen, setIsGiftManageOpen] = useState(false);
-    const {settings, statsConfig, post, isPostLoading, postId, data} = useGlobalData();
-    const {data: currentUser} = useCurrentUser();
-    // Gift links apply only to published, gated (non-public) posts/pages — match
-    // the API's eligibility so we don't show controls that would 422.
-    const isGiftablePost = post?.status === 'published' && !!post?.visibility && post.visibility !== 'public';
-    const canManageGiftLinks = data?.labs?.giftLinks === true
-        && isGiftablePost
-        && (currentUser?.roles || []).some(role => GIFT_LINK_MANAGER_ROLES.includes(role.name));
-
-    const shareLinks = useMemo(() => {
-        const url = encodeURIComponent(post?.url || '');
-        const title = encodeURIComponent(post?.title || '');
-        const titleAndUrl = encodeURIComponent(`${post?.title || ''} ${post?.url || ''}`);
-        return {
-            x: `https://twitter.com/intent/tweet?text=${title}%0A${url}`,
-            threads: `https://threads.net/intent/post?text=${titleAndUrl}`,
-            facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
-            linkedin: `https://www.linkedin.com/shareArticle?mini=true&title=${title}&url=${url}`
-        };
-    }, [post?.url, post?.title]);
-
-    const handleCopyLink = async () => {
-        if (!post?.url) {
-            return;
-        }
-        try {
-            await copyToClipboard(post.url);
-            toast.success('Link copied');
-        } catch (e) {
-            handleError(e);
-        }
-    };
+    const {settings, site, statsConfig, post, isPostLoading, postId} = useGlobalData();
 
     const siteTimezone = getSiteTimezone(settings);
 
@@ -170,57 +130,21 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                 {!isPostLoading &&
                                 <>
                                     {!post?.email_only && (
-                                        <DropdownMenu open={isShareOpen} onOpenChange={setIsShareOpen}>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant='outline'><LucideIcon.Share /> Share</Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align='end' className='w-56'>
-                                                <DropdownMenuGroup>
-                                                    <DropdownMenuItem onSelect={handleCopyLink}>
-                                                        <LucideIcon.Link />
-                                                        Copy link
-                                                    </DropdownMenuItem>
-                                                    {canManageGiftLinks && post?.id && post?.url && (
-                                                        <GiftLinkMenuItem
-                                                            postId={post.id}
-                                                            postUrl={post.url}
-                                                            onClose={() => setIsShareOpen(false)}
-                                                            onManage={() => {
-                                                                setIsShareOpen(false);
-                                                                setIsGiftManageOpen(true);
-                                                            }}
-                                                        />
-                                                    )}
-                                                </DropdownMenuGroup>
-                                                <DropdownMenuSeparator />
-                                                <DropdownMenuGroup>
-                                                    <DropdownMenuItem asChild>
-                                                        <a href={shareLinks.x} rel="noopener noreferrer" target="_blank">
-                                                            <LucideIcon.Twitter />
-                                                            Share on X
-                                                        </a>
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem asChild>
-                                                        <a href={shareLinks.threads} rel="noopener noreferrer" target="_blank">
-                                                            <LucideIcon.AtSign />
-                                                            Share on Threads
-                                                        </a>
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem asChild>
-                                                        <a href={shareLinks.facebook} rel="noopener noreferrer" target="_blank">
-                                                            <LucideIcon.Facebook />
-                                                            Share on Facebook
-                                                        </a>
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem asChild>
-                                                        <a href={shareLinks.linkedin} rel="noopener noreferrer" target="_blank">
-                                                            <LucideIcon.Linkedin />
-                                                            Share on LinkedIn
-                                                        </a>
-                                                    </DropdownMenuItem>
-                                                </DropdownMenuGroup>
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
+                                        <PostShareModal
+                                            author={post?.authors?.[0]?.name || ''}
+                                            description=''
+                                            faviconURL={site?.icon || ''}
+                                            featureImageURL={post?.feature_image}
+                                            open={isShareOpen}
+                                            postExcerpt={post?.excerpt || ''}
+                                            postTitle={post?.title}
+                                            postURL={post?.url}
+                                            siteTitle={site?.title || ''}
+                                            onClose={() => setIsShareOpen(false)}
+                                            onOpenChange={setIsShareOpen}
+                                        >
+                                            <Button variant='outline' onClick={() => setIsShareOpen(true)}><LucideIcon.Share /> Share</Button>
+                                        </PostShareModal>
                                     )}
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
@@ -344,15 +268,6 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
-
-            {canManageGiftLinks && post?.id && post?.url && (
-                <GiftLinkManageModal
-                    open={isGiftManageOpen}
-                    postId={post.id}
-                    postUrl={post.url}
-                    onOpenChange={setIsGiftManageOpen}
-                />
-            )}
         </>
     );
 };

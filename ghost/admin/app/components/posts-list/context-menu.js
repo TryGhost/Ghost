@@ -71,7 +71,6 @@ export default class PostsContextMenu extends Component {
     @service notifications;
     @service membersUtils;
     @service feature;
-    @service stateBridge;
 
     // Gift links: only for a single published, gated (non-public) post/page, and
     // only for users who can manage them (Owner/Administrator/Editor).
@@ -118,22 +117,6 @@ export default class PostsContextMenu extends Component {
     @action
     async copyGiftLink() {
         this.menu.performTask(this.copyGiftLinkTask);
-    }
-
-    // Open the React-owned manage modal (full URL, open count, reset) for the
-    // selected post via the Ember/React bridge. The modal is mounted alongside
-    // the posts list by the admin shell router.
-    @action
-    manageGiftLink() {
-        const post = this.selectionList.first;
-        if (!post) {
-            return;
-        }
-        this.stateBridge.openGiftLinkModal({
-            postId: post.id,
-            postUrl: post.url
-        });
-        this.menu.close();
     }
 
     @action

@@ -5,7 +5,7 @@ import {Button, Dialog, DialogClose, DialogContent, DialogDescription, DialogHea
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {buildGiftLinkUrl} from '@src/utils/gift-link';
 import {toast} from 'sonner';
-import {useEnsureGiftLink, useGiftLinkForPost, useResetGiftLink} from '@tryghost/admin-x-framework/api/gift-links';
+import {useGiftLinkForPost, useResetGiftLink} from '@tryghost/admin-x-framework/api/gift-links';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const SURFACE = 'post-share-manage';
@@ -22,14 +22,12 @@ interface GiftLinkManageModalProps {
  * distinct readers have opened it (a leak signal), and a reset action that
  * invalidates the current link and mints a fresh one.
  *
- * The modal is opened from surfaces that don't know whether a link exists yet
- * (e.g. the posts list context menu), so it handles the empty state explicitly
- * with a generate CTA rather than rendering an armed reset over an empty URL.
+ * The caller (the editor's "Manage" action) ensures a link exists before opening
+ * this, so the modal only needs to load and manage it — no generate path here.
  */
 const GiftLinkManageModal: React.FC<GiftLinkManageModalProps> = ({open, onOpenChange, postId, postUrl}) => {
     const handleError = useHandleError();
-    const {data, isLoading} = useGiftLinkForPost(postId);
-    const {mutateAsync: ensureGiftLink, isLoading: isGenerating} = useEnsureGiftLink();
+    const {data} = useGiftLinkForPost(postId);
     const {mutateAsync: resetGiftLink, isLoading: isResetting} = useResetGiftLink();
     const [copied, setCopied] = useState(false);
 
@@ -53,20 +51,6 @@ const GiftLinkManageModal: React.FC<GiftLinkManageModalProps> = ({open, onOpenCh
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
             trackEvent('gift_link_copied', {surface: SURFACE});
-        } catch (e) {
-            handleError(e);
-        }
-    };
-
-    const handleGenerate = async () => {
-        try {
-            // Generating mints the link and copies it (same as every other
-            // generate surface); the query then refetches and this modal swaps
-            // to the manage view for the new link.
-            const response = await ensureGiftLink({id: postId});
-            await copyToClipboard(buildGiftLinkUrl(postUrl, response.gift_links[0].token));
-            trackEvent('gift_link_copied', {surface: SURFACE});
-            toast.success('Gift link copied');
         } catch (e) {
             handleError(e);
         }
@@ -138,21 +122,9 @@ const GiftLinkManageModal: React.FC<GiftLinkManageModalProps> = ({open, onOpenCh
                         </div>
                     )
                     : (
-                        <div className="flex min-w-0 flex-col gap-4">
-                            <p className="text-sm text-muted-foreground" data-testid="gift-link-empty">
-                                {isLoading ? 'Loading…' : 'This post hasn’t been shared with a gift link yet.'}
-                            </p>
-                            <div>
-                                <Button
-                                    data-testid="gift-link-generate"
-                                    disabled={isLoading || isGenerating}
-                                    size="sm"
-                                    onClick={handleGenerate}
-                                >
-                                    Generate gift link
-                                </Button>
-                            </div>
-                        </div>
+                        <p className="text-sm text-muted-foreground" data-testid="gift-link-loading">
+                            Loading…
+                        </p>
                     )}
             </DialogContent>
         </Dialog>
