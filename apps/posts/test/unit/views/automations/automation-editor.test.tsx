@@ -771,13 +771,13 @@ describe('AutomationEditor', () => {
             fireEvent.change(waitInput, {target: {value}});
 
             expect(waitInput).toHaveAttribute('aria-invalid', 'false');
-            expect(within(sidebar).queryByText('Enter a whole number between 1 and 30 days.')).not.toBeInTheDocument();
+            expect(within(sidebar).queryByText('Enter a delay between 1 and 30 days')).not.toBeInTheDocument();
 
             fireEvent.blur(waitInput);
 
             expect(waitInput).toHaveAttribute('aria-invalid', 'true');
             expect(waitInput).toHaveAttribute('aria-describedby', 'automation-wait-days-error');
-            expect(within(sidebar).getByText('Enter a whole number between 1 and 30 days.')).toBeInTheDocument();
+            expect(within(sidebar).getByText('Enter a delay between 1 and 30 days')).toBeInTheDocument();
             expect(screen.getByRole('button', {name: 'Published'})).toBeDisabled();
         }
     });
@@ -1259,7 +1259,7 @@ describe('AutomationEditor', () => {
         fireEvent.click(screen.getByRole('button', {name: 'Save'}));
 
         expect(mockEditMutation.mutate).not.toHaveBeenCalled();
-        expect(mockToastError).toHaveBeenCalledWith('Could not save automation', {
+        expect(mockToastError).toHaveBeenCalledWith('Automation couldn’t be saved', {
             description: 'Fix the highlighted steps and try again.'
         });
 

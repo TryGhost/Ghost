@@ -839,7 +839,7 @@ const WaitSidebarBody: React.FC<{
                 </InputGroup>
                 {showValidationError && (
                     <FieldError className='text-xs' id='automation-wait-days-error'>
-                        Enter a whole number between 1 and {formatNumber(MAX_WAIT_DAYS)} days.
+                        Enter a delay between 1 and {formatNumber(MAX_WAIT_DAYS)} days
                     </FieldError>
                 )}
             </SidebarField>
