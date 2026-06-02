@@ -141,7 +141,7 @@ describe('Posts API', function () {
                 .expectStatus(200)
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
-                    'content-disposition': stringMatching(/^Attachment; filename="post-analytics.\d{4}-\d{2}-\d{2}.csv"$/)
+                    'content-disposition': stringMatching(/^Attachment; filename="(?:[a-z0-9-]+\.)?ghost\.analytics\.\d{4}-\d{2}-\d{2}\.csv"$/)
                 });
 
             // body snapshot doesn't work with text/csv
@@ -158,7 +158,7 @@ describe('Posts API', function () {
                 .expectStatus(200)
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
-                    'content-disposition': stringMatching(/^Attachment; filename="post-analytics.\d{4}-\d{2}-\d{2}.csv"$/)
+                    'content-disposition': stringMatching(/^Attachment; filename="(?:[a-z0-9-]+\.)?ghost\.analytics\.\d{4}-\d{2}-\d{2}\.csv"$/)
                 });
 
             // body snapshot doesn't work with text/csv
@@ -175,7 +175,7 @@ describe('Posts API', function () {
                 .expectStatus(200)
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
-                    'content-disposition': stringMatching(/^Attachment; filename="post-analytics.\d{4}-\d{2}-\d{2}.csv"$/)
+                    'content-disposition': stringMatching(/^Attachment; filename="(?:[a-z0-9-]+\.)?ghost\.analytics\.\d{4}-\d{2}-\d{2}\.csv"$/)
                 });
 
             // body snapshot doesn't work with text/csv
@@ -192,7 +192,7 @@ describe('Posts API', function () {
                 .expectStatus(200)
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
-                    'content-disposition': stringMatching(/^Attachment; filename="post-analytics.\d{4}-\d{2}-\d{2}.csv"$/)
+                    'content-disposition': stringMatching(/^Attachment; filename="(?:[a-z0-9-]+\.)?ghost\.analytics\.\d{4}-\d{2}-\d{2}\.csv"$/)
                 });
 
             // body snapshot doesn't work with text/csv
