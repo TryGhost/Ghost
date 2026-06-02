@@ -3,7 +3,7 @@ import {describe, expect, it, vi} from 'vitest';
 import {currentUserQueryKey} from '../../../src/api/current-user';
 import {createTestQueryClient, renderHookWithProviders} from '../../../src/test/test-utils';
 import {getMemberCountQueryKey, useAddMember, useBrowseMembersInfinite, useBulkDeleteMembers, useImportMembers, useMemberCount} from '../../../src/api/members';
-import type {MembersResponseType} from '../../../src/api/members';
+import type {MembersInfiniteResponseType, MembersResponseType} from '../../../src/api/members';
 import {withMockFetch} from '../../utils/mock-fetch';
 
 const memberCountKey = getMemberCountQueryKey();
@@ -12,6 +12,13 @@ function membersResponse(total: number, limit: number | 'all' = 1): MembersRespo
     return {
         members: [],
         meta: {pagination: {page: 1, limit, pages: 1, total, next: null, prev: null}}
+    };
+}
+
+function membersInfiniteResponse(total: number): MembersInfiniteResponseType {
+    return {
+        ...membersResponse(total, 100),
+        isEnd: true
     };
 }
 
@@ -254,6 +261,29 @@ describe('members api', () => {
         await browseMembers({queryClient});
 
         expect(queryClient.getQueryData<MembersResponseType>(memberCountKey)?.meta?.pagination.total).toBe(102466);
+    });
+
+    it('does not sync the sidebar member count from placeholder members list data', async () => {
+        const queryClient = createQueryClientWithCurrentUser();
+
+        seedMemberCount(queryClient, 102466);
+
+        await withMockFetch({
+            json: membersResponse(83427, 100)
+        }, async () => {
+            const {result} = renderHookWithProviders(() => useBrowseMembersInfinite({
+                placeholderData: {
+                    pages: [membersInfiniteResponse(12)],
+                    pageParams: []
+                }
+            }), {queryClient});
+
+            await waitFor(() => {
+                expect(result.current.isPlaceholderData).toBe(true);
+            });
+
+            expect(queryClient.getQueryData<MembersResponseType>(memberCountKey)?.meta?.pagination.total).toBe(102466);
+        });
     });
 
     it('does not sync the sidebar member count from a filtered members list query', async () => {
