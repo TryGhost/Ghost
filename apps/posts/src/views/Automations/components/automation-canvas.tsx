@@ -5,7 +5,7 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import StepPicker, {type StepPickerType} from './step-picker';
 import {AutomationAction, AutomationDetail, AutomationSendEmailAction, AutomationWaitAction, InsertActionAnchor, MAX_AUTOMATION_ACTIONS, insertSendEmailAction, insertWaitAction, removeAction, updateSendEmailAction, updateWaitAction} from '@tryghost/admin-x-framework/api/automations';
 import {Background, BackgroundVariant, Controls, Edge, Handle, Node, NodeProps, Position, ReactFlow, useReactFlow, useViewport} from '@xyflow/react';
-import {Banner, Button, Checkbox, ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger, Field, FieldError, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText, Label, LoadingIndicator, Popover, PopoverContent, PopoverTrigger, Select, SelectTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
+import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Banner, Button, Checkbox, ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger, Field, FieldError, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText, Label, LoadingIndicator, Popover, PopoverContent, PopoverTrigger, Select, SelectTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 import type {EmailModalMode} from './types';
 
@@ -945,6 +945,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
     const [emailModalMode, setEmailModalMode] = useState<EmailModalMode>('edit');
     const [emailModalStepId, setEmailModalStepId] = useState<string | null>(null);
     const [selectedStep, setSelectedStep] = useState<SelectedStep | null>(null);
+    const [deleteConfirmationActionId, setDeleteConfirmationActionId] = useState<string | null>(null);
     const selectedStepId = selectedStep?.id ?? null;
 
     const handlePick = useCallback((type: StepPickerType, anchor: CanvasAnchor) => {
@@ -982,8 +983,23 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
         const next = removeAction({detail: automation, actionId});
         setEmailModalStepId(currentId => (currentId === actionId ? null : currentId));
         setSelectedStep(null);
+        setDeleteConfirmationActionId(null);
         onChange(next);
     }, [automation, onChange]);
+
+    const handleRequestDelete = useCallback((actionId: string) => {
+        if (!automation) {
+            return;
+        }
+
+        const action = automation.actions.find(item => item.id === actionId);
+        if (action?.type === 'send_email') {
+            setDeleteConfirmationActionId(action.id);
+            return;
+        }
+
+        handleDelete(actionId);
+    }, [automation, handleDelete]);
 
     const handleUpdateWait = useCallback((actionId: string, waitHours: number) => {
         if (!automation) {
@@ -1022,6 +1038,10 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
         ? automation.actions.find((action): action is AutomationSendEmailAction => action.id === emailModalStepId && action.type === 'send_email')
         : undefined;
 
+    const deleteConfirmationAction = automation && deleteConfirmationActionId
+        ? automation.actions.find((action): action is AutomationSendEmailAction => action.id === deleteConfirmationActionId && action.type === 'send_email')
+        : undefined;
+
     const initialViewport = useRef(getInitialViewport(window.innerWidth));
 
     const graph = useMemo(() => {
@@ -1043,7 +1063,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
 
     const sidebarDetail = automation ? getStepSidebarDetail({
         automation,
-        onDelete: handleDelete,
+        onDelete: handleRequestDelete,
         onUpdateWait: handleUpdateWait,
         onUpdateSubject: handleUpdateSubject,
         onEditEmail: handleEditEmail,
@@ -1124,7 +1144,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
                 <Background variant={BackgroundVariant.Dots} />
                 <AutomationCanvasControls />
             </ReactFlow>
-            <StepSidebar detail={sidebarDetail} isEmailModalOpen={Boolean(emailModalAction)} onClose={clearDetail} />
+            <StepSidebar detail={sidebarDetail} isEmailModalOpen={Boolean(emailModalAction) || Boolean(deleteConfirmationAction)} onClose={clearDetail} />
             {emailModalAction && automation && (
                 <EmailContentModal
                     initialLexical={emailModalAction.data.email_lexical}
@@ -1137,6 +1157,36 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
                     }}
                 />
             )}
+            <AlertDialog
+                open={Boolean(deleteConfirmationAction)}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setDeleteConfirmationActionId(null);
+                    }
+                }}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete this email?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This email will be removed from the automation. Save or publish the automation to apply this change.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <Button
+                            variant='destructive'
+                            onClick={() => {
+                                if (deleteConfirmationAction) {
+                                    handleDelete(deleteConfirmationAction.id);
+                                }
+                            }}
+                        >
+                            Delete email
+                        </Button>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 };
