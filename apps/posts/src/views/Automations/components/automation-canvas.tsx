@@ -531,9 +531,11 @@ const WaitSidebarBody: React.FC<{
     }
     const initialDays = action.data.wait_hours / 24;
     const [daysText, setDaysText] = useState<string>(String(initialDays));
+    const [hasBlurredDaysInput, setHasBlurredDaysInput] = useState(false);
 
     const days = Number(daysText);
     const isValid = getValidWaitDays(daysText) !== null;
+    const showValidationError = hasBlurredDaysInput && !isValid;
     const unitLabel = days === 1 ? 'Day' : 'Days';
 
     const updateWaitDays = (nextDays: number) => {
@@ -559,15 +561,17 @@ const WaitSidebarBody: React.FC<{
             <SidebarField label='Wait for'>
                 <div className='grid grid-cols-[6rem_1fr] gap-2'>
                     <Input
-                        aria-invalid={!isValid}
+                        aria-invalid={showValidationError}
                         className='h-(--control-height)'
                         inputMode='numeric'
                         value={daysText}
+                        onBlur={() => setHasBlurredDaysInput(true)}
                         onChange={handleChange}
+                        onFocus={() => setHasBlurredDaysInput(false)}
                     />
                     <ReadOnlySelect value={unitLabel} />
                 </div>
-                {!isValid && (
+                {showValidationError && (
                     <span className='text-xs text-red'>
                         Enter a whole number between 1 and {formatNumber(MAX_WAIT_DAYS)} days.
                     </span>
