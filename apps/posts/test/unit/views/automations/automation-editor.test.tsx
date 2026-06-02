@@ -900,7 +900,10 @@ describe('AutomationEditor', () => {
         fireEvent.click(within(picker).getByText('Email'));
 
         // The new send_email step renders with the placeholder subject.
-        expect(screen.getByText('Untitled email')).toBeInTheDocument();
+        expect(screen.getByRole('button', {name: 'Send email: Untitled email'})).toBeInTheDocument();
+        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        expect(within(sidebar).getByRole('heading', {name: 'Untitled email'})).toBeInTheDocument();
+        expect(within(sidebar).getByDisplayValue('Untitled email')).toHaveFocus();
         expect(screen.getByRole('button', {name: 'Publish changes'})).toBeEnabled();
     });
 
