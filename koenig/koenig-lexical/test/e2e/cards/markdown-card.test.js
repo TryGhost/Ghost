@@ -21,7 +21,7 @@ async function focusMarkdownEditor(page) {
     await expect(page.locator('[data-kg-card="markdown"] .CodeMirror-focused')).toBeVisible();
 }
 
-async function pressMarkdownShortcut(page, key) {
+async function pressMarkdownShortcut(page, key, modifier) {
     const locator = '[data-kg-card="markdown"] [title^="Bold"]';
     const title = await page.locator(locator).getAttribute('title');
 
@@ -29,9 +29,7 @@ async function pressMarkdownShortcut(page, key) {
         throw new Error(`Unable to determine markdown shortcut modifier: missing title for locator "${locator}" while resolving toolbar shortcut intent.`);
     }
 
-    const modifier = title.includes('Ctrl-') ? 'Control' : 'Meta';
-
-    await page.keyboard.press(`${modifier}+${key}`);
+    await page.keyboard.press(`${modifier || (title.includes('Ctrl-') ? 'Control' : 'Meta')}+${key}`);
 }
 
 test.describe('Markdown card', async () => {
@@ -133,7 +131,7 @@ test.describe('Markdown card', async () => {
         await page.click('[data-kg-card-menu-item="Markdown"]');
         await focusMarkdownEditor(page);
 
-        await pressMarkdownShortcut(page, 'Alt+O');
+        await pressMarkdownShortcut(page, 'Alt+O', 'Control');
         await page.waitForSelector('[data-kg-modal="unsplash"]');
     });
 
@@ -142,7 +140,7 @@ test.describe('Markdown card', async () => {
         await insertCard(page, {cardName: 'markdown'});
 
         await expect(page.locator('[title*="Spellcheck"]')).not.toBeNull();
-        await pressMarkdownShortcut(page, 'Alt+S');
+        await pressMarkdownShortcut(page, 'Alt+S', 'Control');
         await expect(page.locator('[title*="Spellcheck"][class*="active"]')).toHaveCount(1);
     });
 
@@ -152,7 +150,7 @@ test.describe('Markdown card', async () => {
         await page.keyboard.type('/');
         await page.click('[data-kg-card-menu-item="Markdown"]');
         await focusMarkdownEditor(page);
-        await pressMarkdownShortcut(page, 'Alt+I');
+        await pressMarkdownShortcut(page, 'Alt+I', 'Control');
         await fileChooserPromise;
     });
 
@@ -214,7 +212,7 @@ test.describe('Markdown card', async () => {
         await page.keyboard.type('/');
         await page.click('[data-kg-card-menu-item="Markdown"]');
         await page.waitForSelector('[data-kg-card="markdown"] .editor-toolbar');
-        await pressMarkdownShortcut(page, 'Alt+I');
+        await pressMarkdownShortcut(page, 'Alt+I', 'Control');
 
         const fileChooser = await fileChooserPromise;
         await fileChooser.setFiles(filePath);
