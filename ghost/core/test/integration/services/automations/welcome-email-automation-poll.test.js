@@ -7,7 +7,7 @@ const testUtils = require('../../../utils');
 
 const {welcomeEmailAutomationPoll} = require('../../../../core/server/services/automations/welcome-email-automation-poll');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../../core/server/services/member-welcome-emails/constants');
-const {Member, WelcomeEmailAutomationRun} = require('../../../../core/server/models');
+const {Member} = require('../../../../core/server/models');
 
 const RETRY_DELAY_MS = 10 * 60 * 1000;
 const LOCK_TIMEOUT_MS = 30 * 60 * 1000;
@@ -215,6 +215,30 @@ describe('automations poll', function () {
         assert.deepEqual(await readTrackedRecipients(), []);
     });
 
+    it('ignores runs that have already exited', async function () {
+        const automation = await createAutomation();
+        const automatedEmail = await createAutomatedEmail({
+            welcome_email_automation_id: automation.id
+        });
+        const member = await createMember();
+
+        await createRun({
+            welcome_email_automation_id: automation.id,
+            member_id: member.id,
+            next_welcome_email_automated_email_id: automatedEmail.id,
+            ready_at: new Date(Date.now() - 60 * 1000),
+            exit_reason: 'member unsubscribed'
+        });
+
+        await welcomeEmailAutomationPoll(options);
+
+        sinon.assert.notCalled(options.memberWelcomeEmailService.init);
+        sinon.assert.notCalled(options.memberWelcomeEmailService.api.loadMemberWelcomeEmails);
+        sinon.assert.notCalled(options.memberWelcomeEmailService.api.send);
+        sinon.assert.notCalled(options.enqueueAnotherPollAt);
+        assert.deepEqual(await readTrackedRecipients(), []);
+    });
+
     it('loads and sends emails, then marks their jobs finished', async function () {
         const freeAutomation = await createAutomation({
             slug: MEMBER_WELCOME_EMAIL_SLUGS.free
@@ -294,6 +318,49 @@ describe('automations poll', function () {
         assert(memberEmails.includes('member2@example.com'));
     });
 
+    it('does not overwrite a member unsubscribe that happens while sending', async function () {
+        const automation = await createAutomation();
+        const automatedEmail = await createAutomatedEmail({
+            welcome_email_automation_id: automation.id
+        });
+        const member = await createMember();
+        const run = await createRun({
+            welcome_email_automation_id: automation.id,
+            member_id: member.id,
+            next_welcome_email_automated_email_id: automatedEmail.id,
+            ready_at: new Date(Date.now() - 1000)
+        });
+
+        options.memberWelcomeEmailService.api.send.callsFake(async () => {
+            await testUtils.knex('welcome_email_automation_runs')
+                .where({id: run.id})
+                .update({
+                    next_welcome_email_automated_email_id: null,
+                    ready_at: null,
+                    step_started_at: null,
+                    step_attempts: 0,
+                    exit_reason: 'member unsubscribed',
+                    updated_at: new Date()
+                });
+        });
+
+        await welcomeEmailAutomationPoll(options);
+
+        sinon.assert.calledOnce(options.memberWelcomeEmailService.api.send);
+        sinon.assert.calledWith(options.memberWelcomeEmailService.api.send, sinon.match({
+            runId: run.id
+        }));
+        sinon.assert.notCalled(options.enqueueAnotherPollAt);
+        assert.deepEqual(await readTrackedRecipients(), []);
+
+        const updatedRun = await readRun(run.id);
+        assert.equal(updatedRun.exit_reason, 'member unsubscribed');
+        assert.equal(updatedRun.next_welcome_email_automated_email_id, null);
+        assert.equal(updatedRun.ready_at, null);
+        assert.equal(updatedRun.step_started_at, null);
+        assert.equal(updatedRun.step_attempts, 0);
+    });
+
     it('requests retry if email send fails', async function () {
         const automation = await createAutomation({
             slug: MEMBER_WELCOME_EMAIL_SLUGS.paid
@@ -340,43 +407,6 @@ describe('automations poll', function () {
             Date.parse(updatedRun.ready_at.replace(' ', 'T') + 'Z');
         const readyAtDrift = Math.abs(readyAt - (pollStart + RETRY_DELAY_MS));
         assert.ok(readyAtDrift < 2000, `ready_at should be ~RETRY_DELAY_MS after pollStart (drift: ${readyAtDrift}ms)`);
-    });
-
-    it('rolls back tracked recipient if marking run finished fails', async function () {
-        const automation = await createAutomation();
-        const automatedEmail = await createAutomatedEmail({
-            welcome_email_automation_id: automation.id
-        });
-        const member = await createMember();
-        const run = await createRun({
-            welcome_email_automation_id: automation.id,
-            member_id: member.id,
-            next_welcome_email_automated_email_id: automatedEmail.id,
-            ready_at: new Date(Date.now() - 1000)
-        });
-
-        const originalEdit = WelcomeEmailAutomationRun.edit;
-        sinon.stub(WelcomeEmailAutomationRun, 'edit').callsFake(async function (attrs) {
-            if (attrs.exit_reason === 'finished') {
-                throw new Error('mark finished failed');
-            }
-            return originalEdit.apply(this, arguments);
-        });
-
-        const pollStart = Date.now();
-        await welcomeEmailAutomationPoll(options);
-
-        sinon.assert.calledOnce(options.memberWelcomeEmailService.api.send);
-        const enqueuedAt = options.enqueueAnotherPollAt.firstCall.args[0];
-        const enqueuedDrift = Math.abs(enqueuedAt.getTime() - (pollStart + RETRY_DELAY_MS));
-        assert.ok(enqueuedDrift < 2000, `enqueueAnotherPollAt should be ~RETRY_DELAY_MS after pollStart (drift: ${enqueuedDrift}ms)`);
-
-        const updatedRun = await readRun(run.id);
-        assert.equal(updatedRun.exit_reason, null);
-        assert.equal(updatedRun.step_started_at, null);
-        assert.equal(updatedRun.next_welcome_email_automated_email_id, automatedEmail.id);
-        assert.equal(updatedRun.step_attempts, 1);
-        assert.deepEqual(await readTrackedRecipients(), []);
     });
 
     it('marks a run permanently failed if on final attempt', async function () {

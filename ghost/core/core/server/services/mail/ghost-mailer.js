@@ -59,6 +59,8 @@ function getFromAddress(requestedFromAddress, requestedReplyToAddress) {
  * @param {boolean} [message.forceTextContent] - force text content
  * @param {string} [message.from] - sender email address
  * @param {string} [message.replyTo]
+ * @param {string} [message.listUnsubscribe]
+ * @param {string} [message.listUnsubscribePost]
  * @returns {Object}
  */
 function createMessage(message) {
@@ -67,17 +69,28 @@ function createMessage(message) {
     const cleanMessage = {...message};
     delete cleanMessage.tags;
     delete cleanMessage.forceTextContent;
+    delete cleanMessage.listUnsubscribe;
+    delete cleanMessage.listUnsubscribePost;
 
     const addresses = getFromAddress(message.from, message.replyTo);
+    const headers = {
+        Sender: addresses.from
+    };
+
+    if (message.listUnsubscribe) {
+        headers['List-Unsubscribe'] = message.listUnsubscribe;
+    }
+
+    if (message.listUnsubscribePost) {
+        headers['List-Unsubscribe-Post'] = message.listUnsubscribePost;
+    }
 
     return {
         ...cleanMessage,
         ...addresses,
         generateTextFromHTML,
         encoding,
-        headers: {
-            Sender: addresses.from
-        }
+        headers
     };
 }
 

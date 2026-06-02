@@ -10,6 +10,9 @@ const tiersService = require('../../../../../core/server/services/tiers/service'
 const membersService = require('../../../../../core/server/services/members');
 const membersMiddleware = require('../../../../../core/server/services/members/middleware');
 const models = require('../../../../../core/server/models');
+const labs = require('../../../../../core/shared/labs');
+const settingsHelpers = require('../../../../../core/server/services/settings-helpers');
+const logging = require('@tryghost/logging');
 
 describe('Members Service Middleware', function () {
     describe('createSessionFromMagicLink', function () {
@@ -287,6 +290,172 @@ describe('Members Service Middleware', function () {
             assert.equal(res.writeHead.firstCall.args[0], 400);
             sinon.assert.calledOnce(res.end);
             assert.equal(res.end.firstCall.args[0], 'Failed to update newsletters');
+        });
+    });
+
+    describe('automation run unsubscribe', function () {
+        let req;
+        let res;
+        let next;
+        let member;
+
+        beforeEach(function () {
+            member = {
+                id: 'member-id',
+                uuid: 'member-uuid',
+                email: 'member@example.com',
+                status: 'free'
+            };
+            req = {
+                query: {
+                    uuid: 'member-uuid',
+                    run: 'run-id',
+                    key: 'signed-key'
+                }
+            };
+            res = {
+                json: sinon.stub(),
+                writeHead: sinon.stub(),
+                end: sinon.stub()
+            };
+            next = sinon.stub();
+
+            sinon.stub(labs, 'isSet').returns(true);
+            sinon.stub(settingsHelpers, 'isValidAutomationRunUnsubscribeKey').returns(true);
+            sinon.stub(membersService, 'api').get(() => {
+                return {
+                    memberBREADService: {
+                        read: sinon.stub().resolves(member)
+                    }
+                };
+            });
+        });
+
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        it('authenticates newsletter preference requests with a matching automation run key', async function () {
+            res.locals = {};
+            settingsHelpers.isValidAutomationRunUnsubscribeKey.restore();
+            sinon.stub(settingsHelpers, 'getMembersValidationKey').returns('test-key');
+            req.query.key = settingsHelpers.createAutomationRunUnsubscribeKey(req.query.uuid, req.query.run);
+            sinon.stub(models.WelcomeEmailAutomationRun, 'findOne').resolves({
+                get(key) {
+                    return {
+                        member_id: 'member-id'
+                    }[key];
+                }
+            });
+
+            await membersMiddleware.authMemberByUuid(req, res, next);
+
+            sinon.assert.calledOnce(models.WelcomeEmailAutomationRun.findOne);
+            sinon.assert.calledOnce(next);
+            assert.equal(req.member, member);
+            assert.equal(res.locals.member, member);
+        });
+
+        it('exits a valid automation run for Portal requests', async function () {
+            sinon.stub(models.WelcomeEmailAutomationRun, 'findOne').resolves({
+                get(key) {
+                    return {
+                        member_id: 'member-id',
+                        exit_reason: null
+                    }[key];
+                }
+            });
+            sinon.stub(models.WelcomeEmailAutomationRun, 'edit').resolves();
+
+            await membersMiddleware.updateAutomationRunUnsubscribe(req, res, next);
+
+            sinon.assert.notCalled(next);
+            sinon.assert.calledOnce(models.WelcomeEmailAutomationRun.edit);
+            sinon.assert.calledWith(models.WelcomeEmailAutomationRun.edit, sinon.match({
+                next_welcome_email_automated_email_id: null,
+                ready_at: null,
+                step_started_at: null,
+                step_attempts: 0,
+                exit_reason: 'member unsubscribed'
+            }), {id: 'run-id'});
+            sinon.assert.calledOnceWithExactly(res.json, {
+                status: 'unsubscribed',
+                uuid: 'member-uuid',
+                email: 'member@example.com',
+                memberStatus: 'free',
+                run: 'run-id'
+            });
+        });
+
+        it('is idempotent when the run is already unsubscribed', async function () {
+            sinon.stub(models.WelcomeEmailAutomationRun, 'findOne').resolves({
+                get(key) {
+                    return {
+                        member_id: 'member-id',
+                        exit_reason: 'member unsubscribed'
+                    }[key];
+                }
+            });
+            sinon.stub(models.WelcomeEmailAutomationRun, 'edit').resolves();
+
+            await membersMiddleware.updateAutomationRunUnsubscribe(req, res, next);
+
+            sinon.assert.notCalled(models.WelcomeEmailAutomationRun.edit);
+            sinon.assert.calledOnce(res.json);
+        });
+
+        it('does not mutate when the automations flag is disabled', async function () {
+            labs.isSet.withArgs('automations').returns(false);
+            sinon.stub(models.WelcomeEmailAutomationRun, 'findOne').resolves();
+            sinon.stub(models.WelcomeEmailAutomationRun, 'edit').resolves();
+
+            await membersMiddleware.updateAutomationRunUnsubscribe(req, res, next);
+
+            sinon.assert.notCalled(models.WelcomeEmailAutomationRun.findOne);
+            sinon.assert.notCalled(models.WelcomeEmailAutomationRun.edit);
+            sinon.assert.calledOnceWithExactly(res.json, {status: 'ignored'});
+        });
+
+        it('fails Portal requests for a member/run mismatch', async function () {
+            sinon.stub(models.WelcomeEmailAutomationRun, 'findOne').resolves({
+                get(key) {
+                    return {
+                        member_id: 'different-member',
+                        exit_reason: null
+                    }[key];
+                }
+            });
+            sinon.stub(models.WelcomeEmailAutomationRun, 'edit').resolves();
+
+            await membersMiddleware.updateAutomationRunUnsubscribe(req, res, next);
+
+            sinon.assert.calledOnce(next);
+            sinon.assert.notCalled(models.WelcomeEmailAutomationRun.edit);
+        });
+
+        it('returns no content for one-click POST even when validation fails', async function () {
+            settingsHelpers.isValidAutomationRunUnsubscribeKey.returns(false);
+            sinon.stub(models.WelcomeEmailAutomationRun, 'findOne').resolves();
+            sinon.stub(models.WelcomeEmailAutomationRun, 'edit').resolves();
+
+            await membersMiddleware.oneClickAutomationRunUnsubscribe(req, res);
+
+            sinon.assert.notCalled(models.WelcomeEmailAutomationRun.findOne);
+            sinon.assert.notCalled(models.WelcomeEmailAutomationRun.edit);
+            sinon.assert.calledOnceWithExactly(res.writeHead, 204);
+            sinon.assert.calledOnce(res.end);
+        });
+
+        it('logs unexpected one-click POST failures without retrying the email client', async function () {
+            const dbError = new Error('Database unavailable');
+            sinon.stub(models.WelcomeEmailAutomationRun, 'findOne').rejects(dbError);
+            sinon.stub(logging, 'error');
+
+            await membersMiddleware.oneClickAutomationRunUnsubscribe(req, res);
+
+            sinon.assert.calledOnceWithExactly(logging.error, dbError);
+            sinon.assert.calledOnceWithExactly(res.writeHead, 204);
+            sinon.assert.calledOnce(res.end);
         });
     });
 

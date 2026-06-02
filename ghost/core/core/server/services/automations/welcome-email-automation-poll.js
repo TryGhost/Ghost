@@ -29,6 +29,7 @@ const {AutomatedEmailRecipient, Member, WelcomeEmailAutomationRun} = require('..
  *         uuid: string;
  *     };
  *     memberStatus: 'free' | 'paid';
+ *     runId?: string;
  * }) => PromiseLike<unknown>} api.send
  */
 
@@ -67,6 +68,7 @@ async function fetchAndLockRuns() {
             .join('automations as a', 'r.welcome_email_automation_id', 'a.id')
             .join('welcome_email_automated_emails as e', 'r.next_welcome_email_automated_email_id', 'e.id')
             .whereNotNull('r.next_welcome_email_automated_email_id')
+            .whereNull('r.exit_reason')
             .where('r.ready_at', '<=', now)
             .where(function () {
                 this.whereNull('r.step_started_at').orWhere('r.step_started_at', '<', lockCutoff);
@@ -77,6 +79,7 @@ async function fetchAndLockRuns() {
         if (runs.length === 0) {
             const result = await trx('welcome_email_automation_runs')
                 .whereNotNull('next_welcome_email_automated_email_id')
+                .whereNull('exit_reason')
                 .where('ready_at', '>', now)
                 .select(db.knex.raw('MIN(ready_at) as next_ready_at'))
                 .first();
@@ -126,6 +129,44 @@ async function markExited(runId, exitReason, transacting) {
         exit_reason: exitReason,
         updated_at: new Date()
     }, transacting);
+}
+
+/**
+ * @param {string} runId
+ * @param {'finished' | 'email send failed' | 'member changed status' | 'member unsubscribed' | 'automation disabled'} exitReason
+ * @param {Knex.Transaction} [transacting]
+ * @returns {Promise<boolean>}
+ */
+async function markExitedIfActive(runId, exitReason, transacting) {
+    const updatedRows = await (transacting || db.knex)('welcome_email_automation_runs')
+        .where({id: runId})
+        .whereNull('exit_reason')
+        .whereNotNull('next_welcome_email_automated_email_id')
+        .update({
+            next_welcome_email_automated_email_id: null,
+            ready_at: null,
+            step_started_at: null,
+            step_attempts: 0,
+            exit_reason: exitReason,
+            updated_at: new Date()
+        });
+
+    return updatedRows > 0;
+}
+
+/**
+ * @param {string} runId
+ * @param {Knex.Transaction} [transacting]
+ * @returns {Promise<boolean>}
+ */
+async function isRunActive(runId, transacting) {
+    const query = (transacting || db.knex)('welcome_email_automation_runs')
+        .where({id: runId})
+        .whereNull('exit_reason')
+        .whereNotNull('next_welcome_email_automated_email_id')
+        .first('id');
+
+    return Boolean(await query);
 }
 
 /**
@@ -227,10 +268,16 @@ async function processRun({
                 email: member.get('email'),
                 uuid: member.get('uuid')
             },
-            memberStatus
+            memberStatus,
+            runId: run.id
         });
 
         await db.knex.transaction(async (transacting) => {
+            const didExit = await markExitedIfActive(run.id, 'finished', transacting);
+            if (!didExit) {
+                return;
+            }
+
             await AutomatedEmailRecipient.add({
                 member_id: run.member_id,
                 automated_email_id: run.automated_email_id,
@@ -240,8 +287,6 @@ async function processRun({
             }, {transacting});
 
             // TODO(NY-1195): Advance to next email when there are additional ones
-
-            await markExited(run.id, 'finished', transacting);
         });
     } catch (err) {
         logging.error(
@@ -254,6 +299,10 @@ async function processRun({
             },
             `${LOG_KEY} Failed to send welcome email for run ${run.id}`
         );
+
+        if (!await isRunActive(run.id)) {
+            return;
+        }
 
         if (run.step_attempts < MAX_ATTEMPTS) {
             const retryAt = new Date(Date.now() + RETRY_DELAY_MS);

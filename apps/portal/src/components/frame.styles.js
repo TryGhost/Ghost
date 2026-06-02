@@ -1289,6 +1289,21 @@ const MultipleProductsGlobalStyles = `
     font-weight: 400;
 }
 
+.gh-portal-header-message-success {
+    margin: 0 0 24px;
+    padding: 14px 16px;
+    border: 1px solid rgba(48, 168, 98, 0.25);
+    border-radius: 6px;
+    background: rgba(48, 168, 98, 0.1);
+    color: var(--grey9);
+    text-align: center;
+}
+
+.gh-portal-header-message-title {
+    display: block;
+    margin-bottom: 4px;
+}
+
 .gh-portal-hide {
     display: none;
 }

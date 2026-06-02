@@ -177,14 +177,10 @@ class SettingsHelpers {
     createUnsubscribeUrl(uuid, options = {}) {
         const siteUrl = this.urlUtils.urlFor('home', true);
         const unsubscribeUrl = new URL(siteUrl);
-        const key = this.getMembersValidationKey();
         unsubscribeUrl.pathname = `${unsubscribeUrl.pathname}/unsubscribe/`.replace('//', '/');
         if (uuid) {
-            // hash key with member uuid for verification (and to not leak uuid) - it's possible to update member email prefs without logging in
-            // @ts-ignore
-            const hmac = crypto.createHmac('sha256', key).update(`${uuid}`).digest('hex');
             unsubscribeUrl.searchParams.set('uuid', uuid);
-            unsubscribeUrl.searchParams.set('key', hmac);
+            unsubscribeUrl.searchParams.set('key', this.createMemberUnsubscribeKey(uuid));
         } else {
             unsubscribeUrl.searchParams.set('preview', '1');
         }
@@ -193,6 +189,67 @@ class SettingsHelpers {
         }
         if (options.comments) {
             unsubscribeUrl.searchParams.set('comments', '1');
+        }
+
+        return unsubscribeUrl.href;
+    }
+
+    createMemberUnsubscribeKey(uuid) {
+        return crypto
+            .createHmac('sha256', this.getMembersValidationKey())
+            .update(`${uuid}`)
+            .digest('hex');
+    }
+
+    isValidMemberUnsubscribeKey(uuid, key) {
+        if (!uuid || !key) {
+            return false;
+        }
+
+        const expectedKey = this.createMemberUnsubscribeKey(uuid);
+        const expected = Buffer.from(expectedKey, 'hex');
+        const actual = Buffer.from(key, 'hex');
+
+        return expected.length === actual.length && crypto.timingSafeEqual(expected, actual);
+    }
+
+    createAutomationRunUnsubscribeKey(uuid, runId) {
+        return crypto
+            .createHmac('sha256', this.getMembersValidationKey())
+            .update(`automation-run:${uuid}:${runId}`)
+            .digest('hex');
+    }
+
+    isValidAutomationRunUnsubscribeKey(uuid, runId, key) {
+        if (!uuid || !runId || !key) {
+            return false;
+        }
+
+        const expectedKey = this.createAutomationRunUnsubscribeKey(uuid, runId);
+        const expected = Buffer.from(expectedKey, 'hex');
+        const actual = Buffer.from(key, 'hex');
+
+        return expected.length === actual.length && crypto.timingSafeEqual(expected, actual);
+    }
+
+    createAutomationRunUnsubscribeUrl(uuid, runId, options = {}) {
+        const siteUrl = this.urlUtils.urlFor('home', true);
+        const unsubscribeUrl = new URL(siteUrl);
+
+        if (options.target === 'api') {
+            unsubscribeUrl.pathname = `${unsubscribeUrl.pathname}/members/api/member/automations/unsubscribe/`.replace('//', '/');
+        } else {
+            unsubscribeUrl.pathname = `${unsubscribeUrl.pathname}/unsubscribe/`.replace('//', '/');
+            unsubscribeUrl.searchParams.set('action', 'unsubscribe');
+            unsubscribeUrl.searchParams.set('type', 'automation');
+        }
+
+        if (uuid && runId) {
+            unsubscribeUrl.searchParams.set('uuid', uuid);
+            unsubscribeUrl.searchParams.set('run', runId);
+            unsubscribeUrl.searchParams.set('key', this.createAutomationRunUnsubscribeKey(uuid, runId));
+        } else {
+            unsubscribeUrl.searchParams.set('preview', '1');
         }
 
         return unsubscribeUrl.href;

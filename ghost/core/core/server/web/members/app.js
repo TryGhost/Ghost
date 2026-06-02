@@ -49,6 +49,12 @@ module.exports = function setupMembersApp() {
         middleware.authMemberByUuid,
         middleware.updateMemberNewsletters
     );
+    membersApp.put('/api/member/automations/unsubscribe',
+        middleware.updateAutomationRunUnsubscribe
+    );
+    membersApp.post('/api/member/automations/unsubscribe',
+        middleware.oneClickAutomationRunUnsubscribe
+    );
 
     // Get and update member data
     // Caching members content is an experimental feature

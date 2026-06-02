@@ -5,6 +5,7 @@ const testUtils = require('../../utils');
 const models = require('../../../core/server/models');
 const {OUTBOX_STATUSES} = require('../../../core/server/models/outbox');
 const db = require('../../../core/server/data/db');
+const labs = require('../../../core/shared/labs');
 const mailService = require('../../../core/server/services/mail');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../core/server/services/member-welcome-emails/constants');
 const memberWelcomeEmailService = require('../../../core/server/services/member-welcome-emails/service');
@@ -561,6 +562,31 @@ describe('Member Welcome Emails Integration', function () {
             const sendCall = mailService.GhostMailer.prototype.send.firstCall;
             assert.equal(sendCall.args[0].html.includes('Fresh footer content</p>'), false);
             assert.equal(sendCall.args[0].html.includes('https://ghost.org/?via=pbg-newsletter'), true);
+        });
+
+        it('adds scoped unsubscribe footer and headers for real automation runs', async function () {
+            sinon.stub(labs, 'isSet').withArgs('automations').returns(true);
+            await memberWelcomeEmailService.api.loadMemberWelcomeEmails();
+
+            await memberWelcomeEmailService.api.send({
+                member: {
+                    email: 'unsubscribe-design@example.com',
+                    name: 'Unsubscribe Design',
+                    uuid: '99999999-9999-4999-8999-999999999999'
+                },
+                memberStatus: 'free',
+                runId: 'automationrun1234567890'
+            });
+
+            sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
+            const sendCall = mailService.GhostMailer.prototype.send.firstCall;
+            const message = sendCall.args[0];
+
+            assert.match(message.html, /Unsubscribe from these emails/);
+            assert.match(message.html, /type=automation/);
+            assert.match(message.html, /run=automationrun1234567890/);
+            assert.equal(message.listUnsubscribePost, 'List-Unsubscribe=One-Click');
+            assert.match(message.listUnsubscribe, /^<.*\/members\/api\/member\/automations\/unsubscribe\/\?.*run=automationrun1234567890.*>$/);
         });
     });
 });

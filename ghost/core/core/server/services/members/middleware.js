@@ -16,6 +16,7 @@ const onHeaders = require('on-headers');
 const tiersService = require('../tiers/service');
 const config = require('../../../shared/config');
 const settingsHelpers = require('../settings-helpers');
+const labs = require('../../../shared/labs');
 
 const messages = {
     missingUuid: 'Missing uuid.',
@@ -141,21 +142,24 @@ const authMemberByUuid = async function authMemberByUuid(req, res, next) {
             });
         }
 
-        // the request key is a hashed value from the member uuid and the members validation key so we can verify the source
-        //  (only Ghost should be able to generate the key)
-        const memberHmac = crypto.createHmac('sha256', settingsHelpers.getMembersValidationKey()).update(uuid).digest('hex');
-        if (memberHmac !== key) {
+        const runId = req.query.run;
+        let member;
+
+        if (settingsHelpers.isValidMemberUnsubscribeKey(uuid, key)) {
+            member = await membersService.api.memberBREADService.read({uuid});
+            if (!member) {
+                throw new errors.UnauthorizedError({
+                    message: tpl(messages.invalidUuid)
+                });
+            }
+        } else if (labs.isSet('automations') && runId) {
+            ({member} = await validateAutomationRunUnsubscribe({uuid, runId, key}));
+        } else {
             throw new errors.UnauthorizedError({
                 message: tpl(messages.invalidKey)
             });
         }
 
-        const member = await membersService.api.memberBREADService.read({uuid});
-        if (!member) {
-            throw new errors.UnauthorizedError({
-                message: tpl(messages.invalidUuid)
-            });
-        }
         Object.assign(req, {member});
         res.locals.member = req.member;
         next();
@@ -326,6 +330,93 @@ const updateMemberNewsletters = async function updateMemberNewsletters(req, res)
     }
 };
 
+async function validateAutomationRunUnsubscribe({uuid, runId, key}) {
+    if (!uuid || !runId || !key || !settingsHelpers.isValidAutomationRunUnsubscribeKey(uuid, runId, key)) {
+        throw new errors.UnauthorizedError({
+            message: tpl(messages.invalidKey)
+        });
+    }
+
+    const member = await membersService.api.memberBREADService.read({uuid});
+    if (!member) {
+        throw new errors.UnauthorizedError({
+            message: tpl(messages.invalidUuid)
+        });
+    }
+
+    const run = await models.WelcomeEmailAutomationRun.findOne({id: runId});
+    if (!run || run.get('member_id') !== member.id) {
+        throw new errors.UnauthorizedError({
+            message: tpl(messages.invalidKey)
+        });
+    }
+
+    return {member, run};
+}
+
+async function unsubscribeAutomationRun({uuid, runId, key}) {
+    const {member, run} = await validateAutomationRunUnsubscribe({uuid, runId, key});
+
+    if (run.get('exit_reason') !== 'member unsubscribed') {
+        await models.WelcomeEmailAutomationRun.edit({
+            next_welcome_email_automated_email_id: null,
+            ready_at: null,
+            step_started_at: null,
+            step_attempts: 0,
+            exit_reason: 'member unsubscribed',
+            updated_at: new Date()
+        }, {id: runId});
+    }
+
+    return {
+        uuid: member.uuid,
+        email: member.email,
+        memberStatus: member.status,
+        run: runId
+    };
+}
+
+function isUnauthorizedError(err) {
+    return err instanceof errors.UnauthorizedError || err?.statusCode === 401;
+}
+
+const updateAutomationRunUnsubscribe = async function updateAutomationRunUnsubscribe(req, res, next) {
+    try {
+        if (!labs.isSet('automations')) {
+            return res.json({status: 'ignored'});
+        }
+
+        const result = await unsubscribeAutomationRun({
+            uuid: req.query.uuid,
+            runId: req.query.run,
+            key: req.query.key
+        });
+
+        return res.json({status: 'unsubscribed', ...result});
+    } catch (err) {
+        next(err);
+    }
+};
+
+const oneClickAutomationRunUnsubscribe = async function oneClickAutomationRunUnsubscribe(req, res) {
+    try {
+        if (labs.isSet('automations')) {
+            await unsubscribeAutomationRun({
+                uuid: req.query.uuid,
+                runId: req.query.run,
+                key: req.query.key
+            });
+        }
+    } catch (err) {
+        if (!isUnauthorizedError(err)) {
+            logging.error(err);
+        }
+    }
+
+    res.writeHead(204);
+    res.end();
+};
+
 const updateMemberData = async function updateMemberData(req, res) {
     try {
         const data = _.pick(req.body, 'name', 'expertise', 'subscribed', 'newsletters', 'enable_comment_notifications');
@@ -466,6 +557,8 @@ module.exports = {
     getMemberData,
     updateMemberData,
     updateMemberNewsletters,
+    updateAutomationRunUnsubscribe,
+    oneClickAutomationRunUnsubscribe,
     deleteSession,
     accessInfoSession,
     deleteSuppression,

@@ -8,6 +8,9 @@ describe('member-created handler', function () {
     let memberWelcomeEmailServiceStub;
     let AutomationStub;
     let AutomatedEmailRecipientStub;
+    let MemberStub;
+    let WelcomeEmailAutomationRunStub;
+    let labsStub;
     let logCapture;
 
     beforeEach(function () {
@@ -34,11 +37,27 @@ describe('member-created handler', function () {
             add: sinon.stub().resolves()
         };
 
+        MemberStub = {
+            findOne: sinon.stub().resolves({id: 'member123'})
+        };
+
+        WelcomeEmailAutomationRunStub = {
+            add: sinon.stub().resolves({id: 'run123'}),
+            edit: sinon.stub().resolves()
+        };
+
+        labsStub = {
+            isSet: sinon.stub().withArgs('automations').returns(true)
+        };
+
         logCapture = captureLoggerOutput();
 
         handler.__set__('memberWelcomeEmailService', memberWelcomeEmailServiceStub);
         handler.__set__('Automation', AutomationStub);
         handler.__set__('AutomatedEmailRecipient', AutomatedEmailRecipientStub);
+        handler.__set__('Member', MemberStub);
+        handler.__set__('WelcomeEmailAutomationRun', WelcomeEmailAutomationRunStub);
+        handler.__set__('labs', labsStub);
     });
 
     afterEach(function () {
@@ -60,6 +79,43 @@ describe('member-created handler', function () {
         });
 
         sinon.assert.calledOnce(memberWelcomeEmailServiceStub.api.send);
+    });
+
+    it('passes an automation run id when sending welcome email', async function () {
+        await handler.handle({
+            payload: {
+                memberId: 'member123',
+                uuid: 'uuid-123',
+                email: 'test@example.com',
+                name: 'Test Member',
+                status: 'free'
+            }
+        });
+
+        sinon.assert.calledOnce(WelcomeEmailAutomationRunStub.add);
+        sinon.assert.calledWith(memberWelcomeEmailServiceStub.api.send, sinon.match({
+            runId: 'run123'
+        }));
+    });
+
+    it('marks the automation run finished after tracking the recipient', async function () {
+        await handler.handle({
+            payload: {
+                memberId: 'member123',
+                uuid: 'uuid-123',
+                email: 'test@example.com',
+                name: 'Test Member',
+                status: 'free'
+            }
+        });
+
+        sinon.assert.calledOnceWithExactly(WelcomeEmailAutomationRunStub.edit, sinon.match({
+            next_welcome_email_automated_email_id: null,
+            ready_at: null,
+            step_started_at: null,
+            step_attempts: 0,
+            exit_reason: 'finished'
+        }), {id: 'run123'});
     });
 
     it('logs error when tracking fails', async function () {

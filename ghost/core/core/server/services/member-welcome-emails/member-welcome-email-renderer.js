@@ -114,9 +114,10 @@ class MemberWelcomeEmailRenderer {
      * @param {undefined | null | Object} options.designSettings - Email design settings loaded from the database
      * @param {Object} options.member - Member data (name, email)
      * @param {Object} options.siteSettings - Site settings (title, url, accentColor)
+     * @param {string} [options.unsubscribeUrl] - Scoped unsubscribe URL for a real automation run
      * @returns {Promise<{html: string, text: string, subject: string}>}
      */
-    async render({lexical, subject, designSettings, member, siteSettings}) {
+    async render({lexical, subject, designSettings, member, siteSettings, unsubscribeUrl}) {
         designSettings = designSettings || {};
 
         const design = getEmailDesign({
@@ -191,6 +192,7 @@ class MemberWelcomeEmailRenderer {
             siteTitle: siteSettings.title,
             siteUrl: siteSettings.url,
             managePreferencesUrl,
+            unsubscribeUrl,
             year,
             ctaBgColors: [
                 'grey',

@@ -2,6 +2,7 @@ const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const urlUtils = require('../../../shared/url-utils');
 const settingsCache = require('../../../shared/settings-cache');
+const labs = require('../../../shared/labs');
 const verifyEmailTemplate = require('../newsletters/emails/verify-email');
 const MagicLink = require('../lib/magic-link/magic-link');
 const sentry = require('../../../shared/sentry');
@@ -373,9 +374,10 @@ class MemberWelcomeEmailService {
      * @param {string} options.member.email
      * @param {string} options.member.uuid
      * @param {'free' | 'paid'} options.memberStatus
+     * @param {string} [options.runId]
      * @returns {Promise<void>}
      */
-    async send({member, memberStatus}) {
+    async send({member, memberStatus, runId}) {
         if (!member.email) {
             throw new errors.IncorrectUsageError({
                 message: MESSAGES.MISSING_RECIPIENT_EMAIL
@@ -404,6 +406,10 @@ class MemberWelcomeEmailService {
             });
         }
 
+        const shouldIncludeUnsubscribe = Boolean(runId && labs.isSet('automations'));
+        const unsubscribeUrl = shouldIncludeUnsubscribe ? settingsHelpers.createAutomationRunUnsubscribeUrl(member.uuid, runId) : null;
+        const oneClickUnsubscribeUrl = shouldIncludeUnsubscribe ? settingsHelpers.createAutomationRunUnsubscribeUrl(member.uuid, runId, {target: 'api'}) : null;
+
         const {html, text, subject} = await this.#renderer.render({
             lexical: memberWelcomeEmail.lexical,
             subject: memberWelcomeEmail.subject,
@@ -413,10 +419,15 @@ class MemberWelcomeEmailService {
                 email: member.email,
                 uuid: member.uuid
             },
-            siteSettings: this.#getSiteSettings()
+            siteSettings: this.#getSiteSettings(),
+            unsubscribeUrl
         });
 
         const senderOptions = await this.#getEffectiveSenderOptions(memberWelcomeEmail);
+        const unsubscribeHeaderOptions = oneClickUnsubscribeUrl ? {
+            listUnsubscribe: `<${oneClickUnsubscribeUrl}>`,
+            listUnsubscribePost: 'List-Unsubscribe=One-Click'
+        } : {};
 
         await this.#mailer.send({
             to: member.email,
@@ -425,6 +436,7 @@ class MemberWelcomeEmailService {
             text,
             forceTextContent: true,
             tags: [MEMBER_WELCOME_EMAIL_TAG],
+            ...unsubscribeHeaderOptions,
             ...senderOptions
         });
     }

@@ -4,7 +4,7 @@ import {newsletters as Newsletters, site as FixtureSite, member as FixtureMember
 import setupGhostApi from '../src/utils/api.js';
 import userEvent from '@testing-library/user-event';
 
-const setup = async ({site, member = null, newsletters}, loggedOut = false) => {
+const setup = async ({site, member = null, newsletters, memberNewslettersResponse = undefined, memberNewslettersError = undefined}, loggedOut = false) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
     ghostApi.init = vi.fn(() => {
         return Promise.resolve({
@@ -22,8 +22,27 @@ const setup = async ({site, member = null, newsletters}, loggedOut = false) => {
     });
 
     ghostApi.member.newsletters = vi.fn(() => {
+        if (memberNewslettersError) {
+            return Promise.reject(memberNewslettersError);
+        }
+
+        if (memberNewslettersResponse !== undefined) {
+            return Promise.resolve(memberNewslettersResponse);
+        }
+
         return Promise.resolve({
+            email: member?.email,
+            status: member?.status,
             newsletters
+        });
+    });
+
+    ghostApi.member.unsubscribeAutomation = vi.fn(() => {
+        return Promise.resolve({
+            status: 'unsubscribed',
+            uuid: member?.uuid,
+            email: member?.email,
+            memberStatus: member?.status
         });
     });
 
@@ -258,6 +277,60 @@ describe('Newsletter Subscriptions', () => {
             newsletter2Checkbox = checkboxes[1];
             expect(newsletter1Checkbox).not.toBeChecked();
             expect(newsletter2Checkbox).toBeChecked();
+        });
+
+        test('unsubscribe from automation run shows confirmation above email preferences', async () => {
+            Object.defineProperty(window, 'location', {
+                value: new URL(`https://portal.localhost/?action=unsubscribe&type=automation&uuid=${FixtureMember.subbedToNewsletter.uuid}&run=automationrun123&key=hashedAutomationRun`),
+                writable: true
+            });
+
+            const {ghostApi, popupIframeDocument} = await setup({
+                site: FixtureSite.singleTier.onlyFreePlanWithoutStripe,
+                member: FixtureMember.subbedToNewsletter,
+                newsletters: Newsletters
+            }, true);
+
+            expect(ghostApi.member.unsubscribeAutomation).toHaveBeenLastCalledWith({
+                uuid: FixtureMember.subbedToNewsletter.uuid,
+                key: 'hashedAutomationRun',
+                run: 'automationrun123'
+            });
+            expect(ghostApi.member.newsletters).toHaveBeenLastCalledWith({
+                uuid: FixtureMember.subbedToNewsletter.uuid,
+                key: 'hashedAutomationRun',
+                run: 'automationrun123'
+            });
+            expect(ghostApi.member.unsubscribeAutomation.mock.invocationCallOrder[0]).toBeLessThan(ghostApi.member.newsletters.mock.invocationCallOrder[0]);
+            expect(ghostApi.member.updateNewsletters).not.toHaveBeenCalled();
+
+            expect(within(popupIframeDocument).getByText('You\'ve been unsubscribed from those emails.')).toBeInTheDocument();
+            expect(within(popupIframeDocument).getByText(/won't receive them anymore/)).toBeInTheDocument();
+            expect(within(popupIframeDocument).getByText('Email preferences')).toBeInTheDocument();
+
+            const checkboxes = within(popupIframeDocument).getAllByRole('checkbox');
+            expect(checkboxes[0]).toBeChecked();
+            expect(checkboxes[1]).toBeChecked();
+        });
+
+        test('unsubscribe from automation run still shows success when email preferences cannot be loaded', async () => {
+            Object.defineProperty(window, 'location', {
+                value: new URL(`https://portal.localhost/?action=unsubscribe&type=automation&uuid=${FixtureMember.subbedToNewsletter.uuid}&run=automationrun123&key=hashedAutomationRun`),
+                writable: true
+            });
+
+            const {ghostApi, popupIframeDocument} = await setup({
+                site: FixtureSite.singleTier.onlyFreePlanWithoutStripe,
+                member: FixtureMember.subbedToNewsletter,
+                newsletters: Newsletters,
+                memberNewslettersResponse: null
+            }, true);
+
+            expect(ghostApi.member.unsubscribeAutomation).toHaveBeenCalled();
+            expect(within(popupIframeDocument).getByText('You\'ve been unsubscribed from those emails.')).toBeInTheDocument();
+            expect(within(popupIframeDocument).getByText(/won't receive them anymore/)).toBeInTheDocument();
+            expect(within(popupIframeDocument).queryByText('That didn\'t go to plan')).not.toBeInTheDocument();
+            expect(within(popupIframeDocument).queryByText('Email preferences')).not.toBeInTheDocument();
         });
 
         test('unsubscribe link without a key param', async () => {

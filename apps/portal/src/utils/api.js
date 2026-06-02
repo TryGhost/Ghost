@@ -421,11 +421,16 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
         },
 
-        async newsletters({uuid, key}) {
-            let url = endpointFor({type: 'members', resource: `member/newsletters`});
-            url = url + `?uuid=${uuid}&key=${key}`;
+        async newsletters({uuid, key, run}) {
+            const url = new URL(endpointFor({type: 'members', resource: `member/newsletters`}));
+            url.searchParams.set('uuid', uuid);
+            url.searchParams.set('key', key);
+            if (run) {
+                url.searchParams.set('run', run);
+            }
+
             return makeRequest({
-                url,
+                url: url.href,
                 credentials: 'same-origin'
             }).then(function (res) {
                 if (!res.ok || res.status === 204) {
@@ -435,9 +440,14 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
         },
 
-        async updateNewsletters({uuid, newsletters, key, enableCommentNotifications}) {
-            let url = endpointFor({type: 'members', resource: `member/newsletters`});
-            url = url + `?uuid=${uuid}&key=${key}`;
+        async updateNewsletters({uuid, newsletters, key, run, enableCommentNotifications}) {
+            const url = new URL(endpointFor({type: 'members', resource: `member/newsletters`}));
+            url.searchParams.set('uuid', uuid);
+            url.searchParams.set('key', key);
+            if (run) {
+                url.searchParams.set('run', run);
+            }
+
             const body = {
                 newsletters
             };
@@ -447,7 +457,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             }
 
             return makeRequest({
-                url,
+                url: url.href,
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json'
@@ -458,6 +468,25 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                     return res.json();
                 } else {
                     throw new Error('Failed to update email preferences');
+                }
+            });
+        },
+
+        async unsubscribeAutomation({uuid, key, run}) {
+            const url = new URL(endpointFor({type: 'members', resource: `member/automations/unsubscribe`}));
+            url.searchParams.set('uuid', uuid);
+            url.searchParams.set('key', key);
+            url.searchParams.set('run', run);
+
+            return makeRequest({
+                url: url.href,
+                method: 'PUT',
+                credentials: 'same-origin'
+            }).then(function (res) {
+                if (res.ok) {
+                    return res.json();
+                } else {
+                    throw new Error('Failed to unsubscribe from automation');
                 }
             });
         },

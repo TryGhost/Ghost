@@ -610,6 +610,30 @@ export default class App extends React.Component {
         }
 
         if (qParams.get('action') === 'unsubscribe') {
+            if (qParams.get('type') === 'automation') {
+                if (qParams.get('key') && qParams.get('uuid') && qParams.get('run')) {
+                    return {
+                        showPopup: true,
+                        page: 'unsubscribe',
+                        pageData: {
+                            uuid: qParams.get('uuid'),
+                            key: qParams.get('key'),
+                            unsubscribeType: 'automation',
+                            automationRunId: qParams.get('run')
+                        }
+                    };
+                }
+
+                return {
+                    showPopup: true,
+                    page: 'accountEmail',
+                    pageData: {
+                        action: 'unsubscribe',
+                        redirect: site.url + '#/portal/account/newsletters'
+                    }
+                };
+            }
+
             // if the user is unsubscribing from a newsletter with an old unsubscribe link that we can't validate, push them to newsletter mgmt where they have to log in
             if (qParams.get('key') && qParams.get('uuid')) {
                 return {

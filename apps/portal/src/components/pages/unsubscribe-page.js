@@ -32,12 +32,16 @@ function AccountHeader() {
     );
 }
 
-async function updateMemberNewsletters({api, memberUuid, key, newsletters, enableCommentNotifications}) {
+async function updateMemberNewsletters({api, memberUuid, key, run, newsletters, enableCommentNotifications}) {
     try {
-        return await api.member.updateNewsletters({uuid: memberUuid, key, newsletters, enableCommentNotifications});
+        return await api.member.updateNewsletters({uuid: memberUuid, key, run, newsletters, enableCommentNotifications});
     } catch (e) {
         // ignore auto unsubscribe error
     }
+}
+
+async function unsubscribeAutomation({api, memberUuid, key, run}) {
+    return await api.member.unsubscribeAutomation({uuid: memberUuid, key, run});
 }
 
 // NOTE: This modal is available even if not logged in, but because it's possible to also be logged in while making modifications,
@@ -54,16 +58,18 @@ export default function UnsubscribePage() {
     const [hasInteracted, setHasInteracted] = useState(false);
     const [subscribedNewsletters, setSubscribedNewsletters] = useState(defaultNewsletters);
     const [showPrefs, setShowPrefs] = useState(false);
+    const [canManagePreferences, setCanManagePreferences] = useState(true);
     const {comments_enabled: commentsEnabled} = site;
     const {enable_comment_notifications: enableCommentNotifications = false} = member || {};
 
     const hasNewslettersEnabled = hasNewsletterSendingEnabled({site});
+    const isAutomationUnsubscribe = pageData.unsubscribeType === 'automation';
 
     const updateNewsletters = async (newsletters) => {
         if (loggedInMember) {
             doAction('updateNewsletterPreference', {newsletters});
         } else {
-            await updateMemberNewsletters({api, memberUuid: pageData.uuid, key: pageData.key, newsletters});
+            await updateMemberNewsletters({api, memberUuid: pageData.uuid, key: pageData.key, run: pageData.automationRunId, newsletters});
         }
         setSubscribedNewsletters(newsletters);
         const notification = {
@@ -80,7 +86,7 @@ export default function UnsubscribePage() {
             await doAction('updateNewsletterPreference', {enableCommentNotifications: enabled});
             updatedData = {...loggedInMember, enable_comment_notifications: enabled};
         } else {
-            updatedData = await updateMemberNewsletters({api, memberUuid: pageData.uuid, key: pageData.key, enableCommentNotifications: enabled});
+            updatedData = await updateMemberNewsletters({api, memberUuid: pageData.uuid, key: pageData.key, run: pageData.automationRunId, enableCommentNotifications: enabled});
         }
         setMember(updatedData);
         doAction('showPopupNotification', {
@@ -97,7 +103,7 @@ export default function UnsubscribePage() {
             updatedMember.newsletters = [];
             updatedMember.enable_comment_notifications = false;
         } else {
-            updatedMember = await api.member.updateNewsletters({uuid: pageData.uuid, key: pageData.key, newsletters: [], enableCommentNotifications: false});
+            updatedMember = await api.member.updateNewsletters({uuid: pageData.uuid, key: pageData.key, run: pageData.automationRunId, newsletters: [], enableCommentNotifications: false});
         }
         setSubscribedNewsletters([]);
         setMember(updatedMember);
@@ -111,8 +117,49 @@ export default function UnsubscribePage() {
     useEffect(() => {
         (async () => {
             let memberData;
+            let automationUnsubscribeData;
             try {
-                memberData = await api.member.newsletters({uuid: pageData.uuid, key: pageData.key});
+                if (isAutomationUnsubscribe) {
+                    // This mount effect can rerun after remounts; the server-side
+                    // unsubscribe operation must remain idempotent.
+                    automationUnsubscribeData = await unsubscribeAutomation({
+                        api,
+                        memberUuid: pageData.uuid,
+                        key: pageData.key,
+                        run: pageData.automationRunId
+                    });
+                }
+
+                try {
+                    memberData = await api.member.newsletters({uuid: pageData.uuid, key: pageData.key, run: pageData.automationRunId});
+                } catch (e) {
+                    if (!isAutomationUnsubscribe) {
+                        throw e;
+                    }
+
+                    // The unsubscribe already succeeded. Preferences are secondary,
+                    // so keep showing the success state if this follow-up request fails.
+                    // eslint-disable-next-line no-console
+                    console.error('[PORTAL] Error fetching member newsletters after automation unsubscribe', e);
+                    memberData = {
+                        uuid: automationUnsubscribeData?.uuid || pageData.uuid,
+                        email: automationUnsubscribeData?.email,
+                        status: automationUnsubscribeData?.memberStatus,
+                        newsletters: []
+                    };
+                    setCanManagePreferences(false);
+                }
+
+                if (memberData === null && isAutomationUnsubscribe) {
+                    memberData = {
+                        uuid: automationUnsubscribeData?.uuid || pageData.uuid,
+                        email: automationUnsubscribeData?.email,
+                        status: automationUnsubscribeData?.memberStatus,
+                        newsletters: []
+                    };
+                    setCanManagePreferences(false);
+                }
+
                 setMember(memberData ?? null);
                 setLoading(false);
             } catch (e) {
@@ -129,6 +176,9 @@ export default function UnsubscribePage() {
 
             const memberNewsletters = memberData?.newsletters || [];
             setSubscribedNewsletters(memberNewsletters);
+            if (isAutomationUnsubscribe) {
+                return;
+            }
             if (siteNewsletters?.length === 1 && !commentsEnabled && !pageData.newsletterUuid) {
                 // Unsubscribe from all the newsletters, because we only have one
                 await updateNewsletters([]);
@@ -142,7 +192,7 @@ export default function UnsubscribePage() {
                 await updateCommentNotifications(false);
             }
         })();
-    }, [commentsEnabled, pageData.uuid, pageData.newsletterUuid, pageData.comments, site.url, siteNewsletters?.length]);
+    }, [commentsEnabled, pageData.uuid, pageData.newsletterUuid, pageData.comments, isAutomationUnsubscribe, pageData.automationRunId, site.url, siteNewsletters?.length]);
 
     if (loading) {
         // Loading member data from the API based on the uuid
@@ -178,8 +228,45 @@ export default function UnsubscribePage() {
         );
     }
 
+    const AutomationUnsubscribeNotification = ({showManageCopy = true} = {}) => {
+        return (
+            <div className='gh-portal-header-message gh-portal-header-message-success'>
+                <strong className='gh-portal-header-message-title'>{t('You\'ve been unsubscribed from those emails.')}</strong>
+                <span>
+                    <Interpolate
+                        string={showManageCopy ? t('{memberEmail} won\'t receive them anymore. You can manage other email preferences below.') : t('{memberEmail} won\'t receive them anymore.')}
+                        mapping={{
+                            memberEmail: <strong>{member?.email}</strong>
+                        }}
+                    />
+                </span>
+            </div>
+        );
+    };
+
+    if (isAutomationUnsubscribe && !canManagePreferences) {
+        return (
+            <div className='gh-portal-content gh-portal-unsubscribe with-footer'>
+                <CloseButton />
+                <AccountHeader />
+                <AutomationUnsubscribeNotification showManageCopy={false} />
+                <ActionButton
+                    style={{width: '100%'}}
+                    retry={false}
+                    onClick = {() => doAction('closePopup')}
+                    disabled={false}
+                    brandColor='#000000'
+                    label={t('Close')}
+                    isRunning={false}
+                    tabIndex={3}
+                    classes={'sticky bottom'}
+                />
+            </div>
+        );
+    }
+
     // Case: Single active newsletter
-    if (siteNewsletters?.length === 1 && !commentsEnabled && !showPrefs) {
+    if (!isAutomationUnsubscribe && siteNewsletters?.length === 1 && !commentsEnabled && !showPrefs) {
         return (
             <div className='gh-portal-content gh-portal-unsubscribe with-footer'>
                 <CloseButton />
@@ -213,6 +300,10 @@ export default function UnsubscribePage() {
     }
 
     const HeaderNotification = () => {
+        if (isAutomationUnsubscribe) {
+            return <AutomationUnsubscribeNotification />;
+        }
+
         if (pageData.comments && commentsEnabled) {
             const hideClassName = hasInteracted ? 'gh-portal-hide' : '';
             return (
