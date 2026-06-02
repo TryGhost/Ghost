@@ -12,6 +12,9 @@ catalogs:
     '@eslint/js':
       specifier: 8.57.1
       version: 8.57.1
+    '@faker-js/faker':
+      specifier: 9.9.0
+      version: 9.9.0
     '@playwright/test':
       specifier: 1.60.0
       version: 1.60.0
@@ -1781,7 +1784,7 @@ importers:
         version: 2.2.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     devDependencies:
       '@faker-js/faker':
-        specifier: 9.9.0
+        specifier: 'catalog:'
         version: 9.9.0
       '@testing-library/jest-dom':
         specifier: 'catalog:'
@@ -1841,8 +1844,8 @@ importers:
         specifier: 'catalog:'
         version: 8.57.1
       '@faker-js/faker':
-        specifier: 8.4.1
-        version: 8.4.1
+        specifier: 'catalog:'
+        version: 9.9.0
       '@playwright/test':
         specifier: 'catalog:'
         version: 1.60.0
@@ -4863,10 +4866,6 @@ packages:
   '@faker-js/faker@7.6.0':
     resolution: {integrity: sha512-XK6BTq1NDMo9Xqw/YkYyGjSsg44fbNwYRx7QK2CuoQgyy+f1rrTDHoExVM5PsyXCtfl2vs2vVJ0MN0yN6LppRw==}
     engines: {node: '>=14.0.0', npm: '>=6.0.0'}
-
-  '@faker-js/faker@8.4.1':
-    resolution: {integrity: sha512-XQ3cU+Q8Uqmrbf2e0cIC/QN43sTBSC8KF12u29Mb47tWrt2hAgBXSgpZMj4Ao8Uk0iJcU99QsOCaIL8934obCg==}
-    engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0, npm: '>=6.14.13'}
 
   '@faker-js/faker@9.9.0':
     resolution: {integrity: sha512-OEl393iCOoo/z8bMezRlJu+GlRGlsKbUAN7jKB6LhnKoqKve5DXRpalbItIIcwnCjs1k/FOPjFzcA6Qn+H+YbA==}
@@ -24355,8 +24354,6 @@ snapshots:
       - encoding
 
   '@faker-js/faker@7.6.0': {}
-
-  '@faker-js/faker@8.4.1': {}
 
   '@faker-js/faker@9.9.0': {}
 
