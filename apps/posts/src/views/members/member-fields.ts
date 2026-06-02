@@ -2,6 +2,7 @@ import {DATE_FILTER_OPERATORS, DEFAULT_DATE_OPERATOR} from '../filters/filter-da
 import {dateCodec, numberCodec, scalarCodec, setCodec, textCodec} from '../filters/filter-codecs';
 import {defineFields} from '../filters/filter-types';
 import {escapeNqlString} from '../filters/filter-normalization';
+import {withFutureRelativeOperator, withPastRelativeOperator} from '../filters/filter-relative-date';
 import type {FilterCodec} from '../filters/filter-types';
 
 const TEXT_OPERATORS = ['is', 'contains', 'does-not-contain', 'starts-with', 'ends-with'] as const;
@@ -90,7 +91,7 @@ const feedbackCodec: FilterCodec = {
     }
 };
 
-export const memberFields = defineFields({
+const baseMemberFields = defineFields({
     name: {
         operators: TEXT_OPERATORS,
         ui: {
@@ -398,3 +399,17 @@ export const memberFields = defineFields({
         codec: setCodec({quoteStrings: true, serializeSingletonAsScalar: true})
     }
 });
+
+export const memberFields = defineFields({
+    ...baseMemberFields,
+    last_seen_at: withPastRelativeOperator(baseMemberFields.last_seen_at),
+    created_at: withPastRelativeOperator(baseMemberFields.created_at),
+    'subscriptions.start_date': withPastRelativeOperator(baseMemberFields['subscriptions.start_date']),
+    'subscriptions.current_period_end': withFutureRelativeOperator(baseMemberFields['subscriptions.current_period_end'])
+});
+
+export type MemberFields = typeof memberFields;
+
+export function getMemberFields(): MemberFields {
+    return memberFields;
+}

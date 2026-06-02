@@ -221,6 +221,35 @@ describe('useMemberFilterFields', () => {
 
         expect(offerField?.customValueRenderer?.(['offer_month_1'], offerField.options || [])).toBe('Retention A');
     });
+
+    it('includes relative operators and the renderer on date fields', () => {
+        const {result} = renderHook(() => useMemberFilterFields({
+            paidMembersEnabled: true,
+            siteTimezone: 'UTC'
+        }));
+
+        const basicFields = result.current.find(group => group.group === 'Basic')?.fields ?? [];
+        const subscriptionFields = result.current.find(group => group.group === 'Subscription')?.fields ?? [];
+        const dateFields = [
+            basicFields.find(field => field.key === 'created_at'),
+            basicFields.find(field => field.key === 'last_seen_at'),
+            subscriptionFields.find(field => field.key === 'subscriptions.start_date'),
+            subscriptionFields.find(field => field.key === 'subscriptions.current_period_end')
+        ];
+
+        for (const field of dateFields) {
+            expect(field).toBeDefined();
+            expect(field?.customRenderer).toBeTypeOf('function');
+        }
+
+        const createdAt = basicFields.find(field => field.key === 'created_at');
+        const periodEnd = subscriptionFields.find(field => field.key === 'subscriptions.current_period_end');
+        expect(createdAt?.customRenderer).toBeTypeOf('function');
+        expect(createdAt?.operators?.map(op => op.value)).toContain('in-the-last');
+
+        expect(periodEnd?.customRenderer).toBeTypeOf('function');
+        expect(periodEnd?.operators?.map(op => op.value)).toContain('in-the-next');
+    });
 });
 
 describe('retention offer helpers', () => {

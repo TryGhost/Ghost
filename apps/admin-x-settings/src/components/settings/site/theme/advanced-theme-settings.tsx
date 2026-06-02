@@ -4,7 +4,7 @@ import React from 'react';
 import useCustomFonts from '../../../../hooks/use-custom-fonts';
 import {Button, type ButtonProps, ConfirmationModal, LimitModal, List, ListItem, Menu, ModalPage, showToast} from '@tryghost/admin-x-design-system';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
-import {type Theme, isActiveTheme, isDefaultOrLegacyTheme, isDefaultTheme, isDeletableTheme, isLegacyTheme, useActivateTheme, useDeleteTheme} from '@tryghost/admin-x-framework/api/themes';
+import {type Theme, isActiveTheme, isDefaultTheme, isDeletableTheme, isLegacyTheme, useActivateTheme, useDeleteTheme} from '@tryghost/admin-x-framework/api/themes';
 import {downloadFile, getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useCheckThemeLimitError} from '../../../../hooks/use-check-theme-limit-error';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -127,7 +127,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
     };
 
     const handleEditCode = async () => {
-        const limitError = await checkThemeLimitError(isDefaultOrLegacyTheme(theme) ? '.' : theme.name);
+        const limitError = await checkThemeLimitError('.');
 
         if (limitError) {
             NiceModal.show(LimitModal, {

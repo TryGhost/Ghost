@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {memberFields} from './member-fields';
+import {getMemberFields, memberFields} from './member-fields';
 import type {CodecContext, FilterPredicate} from '../filters/filter-types';
 
 const dateContext: CodecContext = {
@@ -55,12 +55,22 @@ describe('memberFields', () => {
             'is-greater',
             'is-less'
         ]);
-        expect(memberFields.created_at.operators).toEqual([
-            'is-less',
-            'is-or-less',
-            'is-greater',
-            'is-or-greater'
-        ]);
+        const pastDateOperators = ['is-less', 'is-or-less', 'is-greater', 'is-or-greater', 'in-the-last'];
+        const futureDateOperators = ['is-less', 'is-or-less', 'is-greater', 'is-or-greater', 'in-the-next'];
+
+        expect(memberFields.created_at.operators).toEqual(pastDateOperators);
+        expect(memberFields.last_seen_at.operators).toEqual(pastDateOperators);
+        expect(memberFields['subscriptions.start_date'].operators).toEqual(pastDateOperators);
+        expect(memberFields['subscriptions.current_period_end'].operators).toEqual(futureDateOperators);
+    });
+
+    it('always appends the past/future relative operator to member date fields', () => {
+        const fields = getMemberFields();
+
+        expect(fields.created_at.operators).toContain('in-the-last');
+        expect(fields.last_seen_at.operators).toContain('in-the-last');
+        expect(fields['subscriptions.start_date'].operators).toContain('in-the-last');
+        expect(fields['subscriptions.current_period_end'].operators).toContain('in-the-next');
     });
 
     it('keeps the expected subscription status options', () => {

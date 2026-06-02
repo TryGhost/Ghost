@@ -42,7 +42,8 @@ describe('commentFields', () => {
             'is-less',
             'is-or-less',
             'is-greater',
-            'is-or-greater'
+            'is-or-greater',
+            'in-the-last'
         ]);
         expect(commentFields.body.operators).toEqual(['contains', 'does-not-contain']);
         expect(commentFields.post.operators).toEqual(['is', 'is-not']);
@@ -89,6 +90,19 @@ describe('commentFields', () => {
                 operator: 'is-greater',
                 values: ['2024-01-01']
             });
+        });
+
+        it('serializes relative date predicates with the relative now token', () => {
+            const predicate: FilterPredicate = {
+                id: '1',
+                field: 'created_at',
+                operator: 'in-the-last',
+                values: [7]
+            };
+
+            expect(commentFields.created_at.codec.serialize(predicate, createdAtContext)).toEqual([
+                'created_at:>=now-7d'
+            ]);
         });
     });
 

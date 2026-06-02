@@ -1019,7 +1019,7 @@ module.exports = class MemberRepository {
      * @param {Object} data
      * @param {string} data.id - member ID
      * @param {Object} data.subscription
-     * @param {string} data.offerId
+     * @param {string | null} [data.offerId]
      * @param {import('../../../member-attribution/attribution-builder').AttributionResource} [data.attribution]
      * @param {*} options
      * @returns
