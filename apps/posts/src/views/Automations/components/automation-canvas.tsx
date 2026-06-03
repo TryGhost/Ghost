@@ -60,10 +60,14 @@ type TailFlowNode = Node<TailNodeData, 'tail'>;
 type AutomationFlowNode = StepFlowNode | TailFlowNode;
 
 const HIDDEN_HANDLE_STYLE: React.CSSProperties = {
+    background: 'transparent',
+    border: 'none',
+    height: 0,
+    minHeight: 0,
+    minWidth: 0,
     opacity: 0,
     pointerEvents: 'none',
-    background: 'transparent',
-    border: 'none'
+    width: 0
 };
 
 const HiddenHandle: React.FC<{type: 'source' | 'target'; position: Position}> = ({type, position}) => (
