@@ -230,6 +230,46 @@ describe('Unit: frontend/services/llms/service', function () {
         assert.ok(callCount >= 4, `Expected at least 4 DB calls (2 per getLlmsTxt), got ${callCount}`);
     });
 
+    it('does not load post relations for llms.txt index entries', async function () {
+        const calls = [];
+        const models = {
+            Post: {
+                findPage: async function (options) {
+                    calls.push(options);
+                    return {data: []};
+                }
+            }
+        };
+
+        const service = createService({models, urlMap: {}});
+
+        await service.getLlmsTxt();
+
+        assert.equal(calls.length, 2);
+        assert.equal(calls[0].withRelated, undefined);
+        assert.equal(calls[1].withRelated, undefined);
+    });
+
+    it('does not load post relations for llms-full.txt entries', async function () {
+        const calls = [];
+        const models = {
+            Post: {
+                findPage: async function (options) {
+                    calls.push(options);
+                    return {data: []};
+                }
+            }
+        };
+
+        const service = createService({models, urlMap: {}});
+
+        await service.getLlmsFullTxt();
+
+        assert.equal(calls.length, 2);
+        assert.equal(calls[0].withRelated, undefined);
+        assert.equal(calls[1].withRelated, undefined);
+    });
+
     describe('fetchPublicEntry', function () {
         it('calls the correct controller for pages vs posts', async function () {
             const calls = [];

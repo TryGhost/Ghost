@@ -199,8 +199,7 @@ function createLlmsService({settingsCache, labs, config, urlServiceFacade, urlUt
             limit: 'all',
             order: type === 'post' ? 'published_at desc' : 'id asc',
             filter: `status:published+visibility:public+type:${type}`,
-            columns: ['id', 'title', 'slug', 'custom_excerpt', 'plaintext', 'published_at', 'type'],
-            withRelated: ['tags', 'authors']
+            columns: ['id', 'title', 'slug', 'custom_excerpt', 'plaintext', 'published_at', 'type']
         });
 
         const entries = page.data.map((model) => {
@@ -222,8 +221,7 @@ function createLlmsService({settingsCache, labs, config, urlServiceFacade, urlUt
             page: pageNum,
             order: type === 'post' ? 'published_at desc' : 'id asc',
             filter: `status:published+visibility:public+type:${type}`,
-            columns: ['id', 'title', 'slug', 'html', 'plaintext', 'custom_excerpt', 'updated_at', 'published_at', 'created_at', 'type'],
-            withRelated: ['tags', 'authors']
+            columns: ['id', 'title', 'slug', 'html', 'plaintext', 'custom_excerpt', 'updated_at', 'published_at', 'created_at', 'type']
         });
 
         const entries = result.data.map((model) => {
