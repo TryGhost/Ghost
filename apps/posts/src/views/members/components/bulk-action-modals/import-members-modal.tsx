@@ -6,7 +6,7 @@ import {MembersFieldMapping, detectFieldTypes, getFieldMappings} from './import-
 import {buildImportResponse} from './import-members/upload';
 import {cn} from '@tryghost/shade/utils';
 import {createInitialImportState, importReducer} from './import-members/reducer';
-import {isImportMembersAcceptedResponse, isImportMembersCompleteResponse, useImportMembers} from '@tryghost/admin-x-framework/api/members';
+import {isImportMembersCompleteResponse, useImportMembers} from '@tryghost/admin-x-framework/api/members';
 import {parseCSV} from './import-members/csv';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useCallback, useEffect, useMemo, useReducer, useRef} from 'react';
@@ -215,13 +215,11 @@ export function ImportMembersModal({
                 return;
             }
 
-            if (isImportMembersAcceptedResponse(importData)) {
-                dispatch({type: 'UPLOAD_ACCEPTED'});
-                onComplete?.();
-                return;
-            }
-
-            throw new Error('Unexpected members import response');
+            // Per the upload API contract a 2xx response is either complete (handled
+            // above) or accepted for background processing; importMembers() has already
+            // thrown for any error status.
+            dispatch({type: 'UPLOAD_ACCEPTED'});
+            onComplete?.();
         } catch (error) {
             if (error instanceof RequestEntityTooLargeError) {
                 dispatch({

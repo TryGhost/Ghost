@@ -145,13 +145,12 @@ export const useAddMember = createMutation<MembersResponseType, NewMember>({
 export type ImportMembersImportLabel = {
     name: string;
     slug: string;
-} | null;
+};
 
 export type ImportMembersAcceptedResponseType = {
     meta: {
         originalImportSize: number;
-        stats?: undefined;
-        import_label?: ImportMembersImportLabel;
+        import_label?: ImportMembersImportLabel | null;
     };
 };
 
@@ -162,18 +161,20 @@ export type ImportMembersCompleteResponseType = {
             imported: number;
             invalid?: Array<Record<string, string> & {error: string}>;
         };
-        import_label?: ImportMembersImportLabel;
+        import_label?: ImportMembersImportLabel | null;
     };
 };
 
 export type ImportMembersResponseType = ImportMembersAcceptedResponseType | ImportMembersCompleteResponseType;
 
-export function isImportMembersAcceptedResponse(response: ImportMembersResponseType): response is ImportMembersAcceptedResponseType {
-    return typeof response.meta?.originalImportSize === 'number' && response.meta.stats === undefined;
-}
-
+// The upload endpoint returns one of two success shapes (see the importCSV
+// controller): a "complete" response carrying meta.stats (inline import), or an
+// "accepted" response carrying only meta.originalImportSize (queued for background
+// processing). We discriminate on the presence of meta.stats. The optional chain
+// is deliberate - this guard validates an untrusted parsed response, so it returns
+// false on a malformed payload rather than throwing.
 export function isImportMembersCompleteResponse(response: ImportMembersResponseType): response is ImportMembersCompleteResponseType {
-    return typeof response.meta?.stats?.imported === 'number';
+    return typeof (response as ImportMembersCompleteResponseType).meta?.stats?.imported === 'number';
 }
 
 export type ImportMembersPayload = {
@@ -277,44 +278,77 @@ const useBrowseMembersInfiniteQuery = createInfiniteQuery<MembersInfiniteRespons
 type BrowseMembersInfiniteOptions = Parameters<typeof useBrowseMembersInfiniteQuery>[0];
 type BrowseMembersInfiniteResult = ReturnType<typeof useBrowseMembersInfiniteQuery>;
 
-function hasMemberFilterOrSearch(searchParams?: Record<string, string>) {
-    return Boolean(searchParams?.filter || searchParams?.search);
+// A members list response is a valid source for the *global* member total only
+// when it isn't narrowed by a filter or search - otherwise its `total` reflects
+// the filtered subset rather than every member.
+function isUnfilteredMemberList(searchParams?: Record<string, string>) {
+    return !searchParams?.filter && !searchParams?.search;
 }
 
-export function useBrowseMembersInfinite(options: BrowseMembersInfiniteOptions = {}): BrowseMembersInfiniteResult {
+/**
+ * Keeps the sidebar member-count cache consistent with the members list without
+ * an extra request. The list hook owns this reconciliation because it is the
+ * only place that knows both whether the query is filtered and how fresh its
+ * data is.
+ *
+ * It never *creates* the count entry (the sidebar may not be mounted) and never
+ * overwrites a count that was fetched more recently than the list.
+ */
+function useSyncMemberCountFromList(result: BrowseMembersInfiniteResult, searchParams?: Record<string, string>) {
     const queryClient = useQueryClient();
-    const result = useBrowseMembersInfiniteQuery(options);
-    const responseTotalMembers = result.data?.meta?.pagination?.total;
+    const listTotal = result.data?.meta?.pagination?.total;
+    // Derive a stable boolean so an inline `searchParams` object literal doesn't re-run the effect every render.
+    const listIsUnfiltered = isUnfilteredMemberList(searchParams);
 
     useEffect(() => {
-        if (hasMemberFilterOrSearch(options.searchParams) || result.isError || result.isPlaceholderData || result.isPreviousData || typeof responseTotalMembers !== 'number') {
+        const listTotalIsAuthoritative = listIsUnfiltered
+            && !result.isError
+            && !result.isPlaceholderData
+            && !result.isPreviousData
+            && typeof listTotal === 'number';
+
+        if (!listTotalIsAuthoritative) {
             return;
         }
 
         const memberCountQueryKey = getMemberCountQueryKey();
         const memberCountQueryState = queryClient.getQueryState<MembersResponseType>(memberCountQueryKey);
         const memberCountData = memberCountQueryState?.data;
-        const pagination = memberCountData?.meta?.pagination;
+        const cachedPagination = memberCountData?.meta?.pagination;
 
-        if (!memberCountData || !pagination || pagination.total === responseTotalMembers) {
+        // Only reconcile an existing sidebar count - never conjure one the sidebar didn't ask for.
+        if (!memberCountQueryState || !memberCountData || !cachedPagination) {
             return;
         }
 
-        if (memberCountQueryState.dataUpdatedAt > result.dataUpdatedAt) {
+        const sidebarCountMatchesList = cachedPagination.total === listTotal;
+        // A more recent dedicated count fetch wins over an older list read.
+        const listIsAtLeastAsFresh = memberCountQueryState.dataUpdatedAt <= result.dataUpdatedAt;
+
+        if (sidebarCountMatchesList || !listIsAtLeastAsFresh) {
             return;
         }
 
+        // Only `total` is read from the count query (via useMemberCount), so we patch just that and
+        // leave the rest of the pagination block untouched rather than synthesise values nobody reads.
+        // Stamp the entry with the list's fetch time so a genuinely newer count fetch still wins later.
         queryClient.setQueryData<MembersResponseType>(memberCountQueryKey, {
             ...memberCountData,
             meta: {
                 ...memberCountData.meta,
                 pagination: {
-                    ...pagination,
-                    total: responseTotalMembers
+                    ...cachedPagination,
+                    total: listTotal
                 }
             }
-        });
-    }, [options.searchParams, queryClient, responseTotalMembers, result.dataUpdatedAt, result.isError, result.isPlaceholderData, result.isPreviousData]);
+        }, {updatedAt: result.dataUpdatedAt});
+    }, [queryClient, listIsUnfiltered, listTotal, result.dataUpdatedAt, result.isError, result.isPlaceholderData, result.isPreviousData]);
+}
+
+export function useBrowseMembersInfinite(options: BrowseMembersInfiniteOptions = {}): BrowseMembersInfiniteResult {
+    const result = useBrowseMembersInfiniteQuery(options);
+
+    useSyncMemberCountFromList(result, options.searchParams);
 
     return result;
 }

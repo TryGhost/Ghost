@@ -20,17 +20,20 @@ const {mockImportMembers} = vi.hoisted(() => ({
     mockImportMembers: vi.fn()
 }));
 
-vi.mock('@tryghost/admin-x-framework/api/members', () => ({
-    isImportMembersAcceptedResponse: (response: {meta?: {originalImportSize?: number; stats?: unknown}}) => (
-        typeof response.meta?.originalImportSize === 'number' && response.meta.stats === undefined
-    ),
-    isImportMembersCompleteResponse: (response: {meta?: {stats?: {imported?: number}}}) => (
-        typeof response.meta?.stats?.imported === 'number'
-    ),
-    useImportMembers: () => ({
-        mutateAsync: mockImportMembers
-    })
-}));
+// Keep the real response type-guards (so this test exercises production logic);
+// only the network mutation is stubbed. admin-x-framework resolves to its built
+// `dist`, so run this after building the framework (CI gates it via Nx ^build).
+vi.mock('@tryghost/admin-x-framework/api/members', async () => {
+    const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/api/members')>(
+        '@tryghost/admin-x-framework/api/members'
+    );
+    return {
+        ...actual,
+        useImportMembers: () => ({
+            mutateAsync: mockImportMembers
+        })
+    };
+});
 
 vi.mock('@src/hooks/use-label-picker', () => ({
     useLabelPicker: () => ({
@@ -271,16 +274,6 @@ describe('ImportMembersModal', () => {
         await uploadCsv();
 
         expect(await screen.findByText('Some rows could not be imported.')).toBeInTheDocument();
-    });
-
-    it('shows a generic error for unexpected successful upload responses', async () => {
-        mockImportMembers.mockResolvedValueOnce({meta: {}} as never);
-
-        renderModal();
-
-        await uploadCsv();
-
-        expect(await screen.findByText('An unexpected error occurred, please try again')).toBeInTheDocument();
     });
 
     it('shows tier as a mapped field when importMemberTier is enabled', async () => {
