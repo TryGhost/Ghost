@@ -84,7 +84,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "3.1053.0",
     "@extractus/oembed-extractor": "3.2.1",
-    "@faker-js/faker": "7.6.0",
+    "@faker-js/faker": "catalog:",
     "@isaacs/ttlcache": "1.4.1",
     "@sentry/node": "7.120.4",
     "@tryghost/adapter-base-cache": "0.1.25",
@@ -209,7 +209,7 @@
     "metascraper-title": "5.45.10",
     "metascraper-url": "5.45.10",
     "mime-types": "2.1.35",
-    "mingo": "2.5.3",
+    "mingo": "catalog:",
     "moment": "2.24.0",
     "moment-timezone": "0.5.45",
     "multer": "2.1.1",
@@ -301,7 +301,7 @@
     "sinon": "catalog:",
     "supertest": "6.3.4",
     "tmp": "0.2.6",
-    "tsx": "4.21.0",
+    "tsx": "catalog:",
     "typescript": "catalog:",
     "validator": "catalog:",
     "vitest": "catalog:"

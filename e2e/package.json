@@ -29,7 +29,7 @@
   ],
   "devDependencies": {
     "@eslint/js": "catalog:",
-    "@faker-js/faker": "8.4.1",
+    "@faker-js/faker": "catalog:",
     "@playwright/test": "catalog:",
     "@tryghost/debug": "catalog:",
     "@tryghost/logging": "catalog:",

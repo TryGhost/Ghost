@@ -37,9 +37,9 @@
         "preview": "vite preview"
     },
     "devDependencies": {
-        "@faker-js/faker": "9.9.0",
-        "@testing-library/jest-dom": "6.9.1",
-        "@testing-library/react": "14.3.1",
+        "@faker-js/faker": "catalog:",
+        "@testing-library/jest-dom": "catalog:",
+        "@testing-library/react": "catalog:",
         "@types/jest": "catalog:",
         "@types/node": "catalog:",
         "@types/react": "catalog:",
@@ -47,9 +47,9 @@
         "@vitest/coverage-v8": "catalog:",
         "dotenv": "catalog:",
         "eslint": "catalog:",
-        "eslint-plugin-react-hooks": "4.6.2",
+        "eslint-plugin-react-hooks": "catalog:",
         "eslint-plugin-react-refresh": "catalog:",
-        "eslint-plugin-tailwindcss": "4.0.0-beta.0",
+        "eslint-plugin-tailwindcss": "catalog:",
         "jsdom": "catalog:",
         "tailwindcss": "catalog:",
         "vite": "catalog:",
@@ -63,8 +63,8 @@
         "i18n-iso-countries": "7.14.0",
         "moment": "2.24.0",
         "moment-timezone": "0.5.45",
-        "react": "18.3.1",
-        "react-dom": "18.3.1",
+        "react": "catalog:",
+        "react-dom": "catalog:",
         "react-svg-map": "2.2.0"
     },
     "nx": {

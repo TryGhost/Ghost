@@ -6,7 +6,7 @@ const dateToDatabaseString = require('../utils/database-date');
 class TagsImporter extends TableImporter {
     static table = 'tags';
     static dependencies = ['users'];
-    defaultQuantity = faker.datatype.number({
+    defaultQuantity = faker.number.int({
         min: 16,
         max: 24
     });
@@ -21,7 +21,7 @@ class TagsImporter extends TableImporter {
     }
 
     generate() {
-        let name = `${faker.color.human()} ${faker.name.jobType()} ${faker.random.numeric(10)}`;
+        let name = `${faker.color.human()} ${faker.person.jobType()} ${faker.string.numeric(10)}`;
         name = `${name[0].toUpperCase()}${name.slice(1)}`;
         const threeYearsAgo = new Date();
         threeYearsAgo.setFullYear(threeYearsAgo.getFullYear() - 3);
@@ -32,7 +32,7 @@ class TagsImporter extends TableImporter {
             name: name,
             slug: slugify(name),
             description: faker.lorem.sentence(),
-            created_at: dateToDatabaseString(faker.date.between(threeYearsAgo, twoYearsAgo))
+            created_at: dateToDatabaseString(faker.date.between({from: threeYearsAgo, to: twoYearsAgo}))
         };
     }
 }
