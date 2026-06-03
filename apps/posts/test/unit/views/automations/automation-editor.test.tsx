@@ -468,7 +468,7 @@ describe('AutomationEditor', () => {
         expect(emailStep).toHaveAttribute('aria-pressed', 'false');
         expect(screen.getByTestId('modal-initial-mode')).toHaveTextContent('edit');
         expect(screen.getByTestId('modal-initial-subject')).toHaveTextContent('Welcome to The Blueprint');
-        expect(screen.getByTestId('modal-initial-lexical')).toHaveTextContent('{"root":{"children":[]}}');
+        expect(screen.getByTestId('modal-initial-lexical')).toHaveTextContent(NON_EMPTY_EMAIL_LEXICAL);
     });
 
     it('opens the email editor preview from the send email node right-click menu', async () => {
