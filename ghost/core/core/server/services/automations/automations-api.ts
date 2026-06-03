@@ -264,6 +264,10 @@ export async function trigger(options: TriggerOptions) {
     requestPoll();
 }
 
+export async function fetchAndLockSteps(...args: Parameters<AutomationsRepository['fetchAndLockSteps']>) {
+    return await repository.fetchAndLockSteps(...args);
+}
+
 export function _resetTestDatabase() {
     if (process.env.NODE_ENV?.startsWith('testing')) {
         testDatabase = null;
