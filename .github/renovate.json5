@@ -119,7 +119,17 @@
         "ember-cli-code-coverage",
         // https://github.com/TryGhost/Ghost/commit/1382e34e42a513c201cb957b7f843369a2ce1b63
         // ember-cli-terser@4.0.2 has a regression that breaks our sourcemaps
-        "ember-cli-terser"
+        "ember-cli-terser",
+
+        // https://linear.app/ghost/issue/PLA-56
+        // Deprecated (per-method lodash packages are EOL); last real release is
+        // 4.5.0 (2019). The flagged "4.18.0 [SECURITY]" bump does not exist, so
+        // Renovate can't remediate it. It's transitive-only — we never call
+        // `_.template` ourselves — and only reachable via frozen Ember build
+        // tooling (broccoli-templater, sourcemap-validator) plus old @tryghost/*
+        // packages, so it can't be removed from the tree here. Ignore it to stop
+        // the unactionable dashboard noise.
+        "lodash.template"
     ],
     "ignorePaths": [
         "test",
