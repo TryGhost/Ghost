@@ -4,15 +4,12 @@ const logging = require('@tryghost/logging');
 
 const {RemoteFlagsService} = require('../../../../../core/server/services/remote-flags/remote-flags-service');
 
-const KNOWN = ['flagA', 'flagB', 'commentModeration'];
-
 function buildService(overrides = {}) {
     const request = overrides.request || sinon.stub();
     const applyOverrides = overrides.applyOverrides || sinon.stub();
     const service = new RemoteFlagsService({
         url: new URL('https://assets.example.com/platform/flags.json'),
         siteId: 42,
-        getKnownFlags: () => KNOWN,
         applyOverrides,
         request,
         pollInterval: 1000,
@@ -56,18 +53,18 @@ describe('RemoteFlagsService', function () {
             assert.deepEqual(appliedLog.args[0].system.flags, {flagA: true, commentModeration: false});
         });
 
-        it('only honors known flags and resolves percentage ramps via siteId', async function () {
+        it('passes arbitrary flags through and resolves percentage ramps via siteId', async function () {
             const {service, applyOverrides} = buildService({
                 request: sinon.stub().resolves(ok({
-                    flagA: {value: true, percent: 100},
-                    flagB: {value: true, percent: 0},
-                    unknownFlag: true
+                    flagA: {value: true, percent: 100}, // full -> on
+                    flagB: {value: true, percent: 0}, // 0% -> off
+                    frontendOnlyFlag: true // arbitrary key -> passes through
                 }))
             });
 
             await service.refresh();
 
-            assert.deepEqual(applyOverrides.firstCall.args[0], {flagA: true});
+            assert.deepEqual(applyOverrides.firstCall.args[0], {flagA: true, frontendOnlyFlag: true});
         });
 
         it('sends a conditional GET (If-None-Match) once an ETag is known', async function () {
@@ -218,18 +215,6 @@ describe('RemoteFlagsService', function () {
 
             assert.equal((request.secondCall.args[1].headers || {})['if-none-match'], undefined, 'must not send a stale ETag for an unapplied manifest');
             assert.equal(applyOverrides.callCount, 2);
-            assert.ok(logWarn.getCalls().some(c => c.args[0]?.system?.event === 'remote_flags.apply_failed'));
-        });
-
-        it('never throws and warns if getKnownFlags throws', async function () {
-            const {service} = buildService({
-                request: sinon.stub().resolves(ok({flagA: true})),
-                getKnownFlags: () => {
-                    throw new Error('nope');
-                }
-            });
-
-            await assert.doesNotReject(service.refresh());
             assert.ok(logWarn.getCalls().some(c => c.args[0]?.system?.event === 'remote_flags.apply_failed'));
         });
 

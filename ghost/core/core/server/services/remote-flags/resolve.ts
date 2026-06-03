@@ -1,14 +1,15 @@
 import crypto from 'crypto';
 import {z} from 'zod';
 
-type FlagOverrides = Record<string, boolean>;
-
 export interface ResolveOptions {
     /** this container's site id; required to resolve ramps */
     siteId?: number | string;
-    /** the only flag keys that may be overridden */
-    knownFlags?: string[];
 }
+
+// Keys that must never be written through from a parsed manifest. Entry values are
+// always booleans, so these cannot pollute Object.prototype, but skipping them
+// avoids shadowing built-ins like `constructor` on the resolved object.
+const DANGEROUS_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
 
 /**
  * Deterministic bucket in the range [0, 99] for a (flag, siteId) pair.
@@ -56,31 +57,30 @@ const entrySchema = z.union([
  *     >= 100) it is a full override; otherwise the override applies only to sites
  *     whose deterministic bucket falls below `percent`.
  *
- * Only keys present in `knownFlags` are honored, and each entry is validated and
- * skipped individually (per-entry skip): one bad entry can never discard the rest
- * of the manifest, and the manifest can never introduce a flag that core does not
- * already define. The flag allowlist is supplied by the caller (the labs service),
- * not duplicated here.
+ * Any flag key is honored, not just those the backend already defines. The
+ * frontend and backend ship on different cadences, so the manifest must be able to
+ * carry a flag that only the frontend knows about yet and still have it flow
+ * through `labs.getAll()`. The protections that remain are per-entry validation and
+ * skip (one bad entry can never discard the rest), the skip of prototype-dangerous
+ * keys, and the fact that values are always booleans.
  *
  * @param manifest - parsed manifest; anything that is not a plain object yields `{}`
  * @returns resolved overrides for this site
  */
-export function resolve(manifest: unknown, options?: ResolveOptions): FlagOverrides {
-    const result: FlagOverrides = {};
+export function resolve(manifest: unknown, options?: ResolveOptions): Record<string, boolean> {
+    const result: Record<string, boolean> = {};
 
     if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) {
         return result;
     }
 
     // Normalise options defensively: this function must never throw on bad input,
-    // so a null/omitted options object or a non-array knownFlags is tolerated.
-    const {siteId, knownFlags} = options || {};
-    const known = new Set(Array.isArray(knownFlags) ? knownFlags : []);
+    // so a null/omitted options object is tolerated.
+    const {siteId} = options || {};
 
     const entries = manifest as Record<string, unknown>;
     for (const flag of Object.keys(entries)) {
-        if (!known.has(flag)) {
-            // Unknown flag: never let the manifest invent a flag core doesn't define.
+        if (DANGEROUS_KEYS.has(flag)) {
             continue;
         }
 

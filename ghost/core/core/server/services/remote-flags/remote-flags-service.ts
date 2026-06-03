@@ -20,8 +20,6 @@ export interface RemoteFlagsServiceDeps {
     url: URL;
     /** this container's Pro site id */
     siteId: number | string;
-    /** returns the overridable flag keys */
-    getKnownFlags: () => string[];
     /** sink for resolved overrides (the shared override store's replace()) */
     applyOverrides: (overrides: FlagOverrides) => void;
     /** @tryghost/request-compatible client */
@@ -42,14 +40,12 @@ export interface RemoteFlagsServiceDeps {
  * either keeps the last-known-good overrides or clears them, and nothing here ever
  * throws out.
  *
- * The HTTP client, the known-flags source, and the override sink are all injected
- * so the polling/caching/fail-open logic can be unit-tested without real I/O or
- * timers.
+ * The HTTP client and the override sink are injected so the polling/caching/
+ * fail-open logic can be unit-tested without real I/O or timers.
  */
 export class RemoteFlagsService {
     url: URL;
     siteId: number | string;
-    getKnownFlags: () => string[];
     applyOverrides: (overrides: FlagOverrides) => void;
     request: RequestFn;
     pollInterval: number;
@@ -65,7 +61,6 @@ export class RemoteFlagsService {
     constructor(deps: RemoteFlagsServiceDeps) {
         this.url = deps.url;
         this.siteId = deps.siteId;
-        this.getKnownFlags = deps.getKnownFlags;
         this.applyOverrides = deps.applyOverrides;
         this.request = deps.request;
         this.pollInterval = deps.pollInterval || DEFAULT_POLL_INTERVAL_MS;
@@ -180,8 +175,7 @@ export class RemoteFlagsService {
      */
     _applyAndMaybeLog(manifest: unknown, etag: string | null): void {
         const resolved = resolve(manifest, {
-            siteId: this.siteId,
-            knownFlags: this.getKnownFlags()
+            siteId: this.siteId
         });
 
         this.applyOverrides(resolved);

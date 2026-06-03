@@ -21,7 +21,8 @@
     },
     "remoteFlags": {
         "enabled": false,
-        "url": null
+        "url": null,
+        "pollInterval": null
     },
     "privacy": false,
     "security": {

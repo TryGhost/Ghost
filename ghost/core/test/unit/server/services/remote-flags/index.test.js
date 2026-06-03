@@ -31,7 +31,7 @@ describe('remote-flags service index (gating)', function () {
         configUtils.set('remoteFlags', {enabled: false, url: URL_STRING});
         configUtils.set('hostSettings', {siteId: 42});
 
-        const instance = remoteFlags.init(config, labs);
+        const instance = remoteFlags.init(config);
 
         assert.equal(instance, null);
         assert.equal(startStub.called, false);
@@ -42,7 +42,7 @@ describe('remote-flags service index (gating)', function () {
         configUtils.set('remoteFlags', {enabled: true});
         configUtils.set('hostSettings', {siteId: 42});
 
-        assert.equal(remoteFlags.init(config, labs), null);
+        assert.equal(remoteFlags.init(config), null);
         assert.equal(startStub.called, false);
     });
 
@@ -50,7 +50,7 @@ describe('remote-flags service index (gating)', function () {
         configUtils.set('remoteFlags', {enabled: true, url: URL_STRING});
         // no hostSettings:siteId
 
-        assert.equal(remoteFlags.init(config, labs), null);
+        assert.equal(remoteFlags.init(config), null);
         assert.equal(startStub.called, false);
     });
 
@@ -59,7 +59,7 @@ describe('remote-flags service index (gating)', function () {
         configUtils.set('remoteFlags', {enabled: true, url: 'not-a-url'});
         configUtils.set('hostSettings', {siteId: 42});
 
-        assert.equal(remoteFlags.init(config, labs), null);
+        assert.equal(remoteFlags.init(config), null);
         assert.equal(startStub.called, false);
         assert.ok(warnStub.getCalls().some(c => c.args[0]?.system?.event === 'remote_flags.invalid_url'));
     });
@@ -68,7 +68,7 @@ describe('remote-flags service index (gating)', function () {
         configUtils.set('remoteFlags', {enabled: true, url: URL_STRING});
         configUtils.set('hostSettings', {siteId: 42});
 
-        const instance = remoteFlags.init(config, labs);
+        const instance = remoteFlags.init(config);
 
         assert.ok(instance instanceof RemoteFlagsService);
         // The service is handed a ready URL object, not a raw string.
@@ -76,16 +76,36 @@ describe('remote-flags service index (gating)', function () {
         assert.equal(instance.url.href, URL_STRING);
         assert.equal(instance.siteId, 42);
         assert.equal(startStub.calledOnce, true);
-        // wired to the injected labs flag set
-        assert.deepEqual(instance.getKnownFlags(), labs.getAllFlags());
+        // no poll interval configured -> service default (5 minutes)
+        assert.equal(instance.pollInterval, 5 * 60 * 1000);
+    });
+
+    it('uses a configured poll interval', function () {
+        configUtils.set('remoteFlags', {enabled: true, url: URL_STRING, pollInterval: 60000});
+        configUtils.set('hostSettings', {siteId: 42});
+
+        const instance = remoteFlags.init(config);
+
+        assert.equal(instance.pollInterval, 60000);
+    });
+
+    it('ignores an invalid poll interval, warns, and falls back to the default', function () {
+        const warnStub = sinon.stub(logging, 'warn');
+        configUtils.set('remoteFlags', {enabled: true, url: URL_STRING, pollInterval: -5});
+        configUtils.set('hostSettings', {siteId: 42});
+
+        const instance = remoteFlags.init(config);
+
+        assert.equal(instance.pollInterval, 5 * 60 * 1000);
+        assert.ok(warnStub.getCalls().some(c => c.args[0]?.system?.event === 'remote_flags.invalid_poll_interval'));
     });
 
     it('is idempotent: a second init returns the same instance and starts once', function () {
         configUtils.set('remoteFlags', {enabled: true, url: URL_STRING});
         configUtils.set('hostSettings', {siteId: 42});
 
-        const first = remoteFlags.init(config, labs);
-        const second = remoteFlags.init(config, labs);
+        const first = remoteFlags.init(config);
+        const second = remoteFlags.init(config);
 
         assert.equal(first, second);
         assert.equal(startStub.calledOnce, true);
@@ -96,13 +116,13 @@ describe('remote-flags service index (gating)', function () {
         configUtils.set('hostSettings', {siteId: 42});
 
         const stopStub = sinon.stub(RemoteFlagsService.prototype, 'stop');
-        const first = remoteFlags.init(config, labs);
+        const first = remoteFlags.init(config);
         remoteFlags.stop();
 
         assert.equal(stopStub.calledOnce, true);
         assert.equal(remoteFlags.getInstance(), null);
 
-        const second = remoteFlags.init(config, labs);
+        const second = remoteFlags.init(config);
         assert.notEqual(second, first);
         assert.equal(startStub.calledTwice, true);
     });
@@ -111,7 +131,7 @@ describe('remote-flags service index (gating)', function () {
         configUtils.set('remoteFlags', {enabled: true, url: URL_STRING});
         configUtils.set('hostSettings', {siteId: 42});
 
-        const instance = remoteFlags.init(config, labs);
+        const instance = remoteFlags.init(config);
         instance.applyOverrides({flagA: true});
 
         assert.deepEqual(flagOverrides.getAll(), {flagA: true});
@@ -130,11 +150,9 @@ describe('remote-flags integration: kill-switch through the real labs flag set',
         }
         const gaKey = labs.GA_KEYS[0];
 
-        // Guards against a future change that drops GA keys from getAllFlags(): if
-        // that happened, resolve() would skip the kill (unknown flag) and this fails.
         assert.equal(labs.isSet(gaKey), true);
 
-        const resolved = resolve({[gaKey]: false}, {siteId: 1, knownFlags: labs.getAllFlags()});
+        const resolved = resolve({[gaKey]: false}, {siteId: 1});
         assert.deepEqual(resolved, {[gaKey]: false}, 'resolver must honor a GA flag key');
 
         flagOverrides.replace(resolved);
@@ -150,7 +168,7 @@ describe('remote-flags integration: kill-switch through the real labs flag set',
 
         assert.equal(labs.isSet(flag), false);
 
-        const resolved = resolve({[flag]: {value: true, percent: 100}}, {siteId: 1, knownFlags: labs.getAllFlags()});
+        const resolved = resolve({[flag]: {value: true, percent: 100}}, {siteId: 1});
         assert.deepEqual(resolved, {[flag]: true});
 
         flagOverrides.replace(resolved);

@@ -437,9 +437,8 @@ async function initBackgroundServices({config}) {
     updateCheck.scheduleRecurringJobs();
 
     // Remote feature-flag overrides (Pro-only; inert unless explicitly configured).
-    const labs = require('./shared/labs');
     const remoteFlags = require('./server/services/remote-flags');
-    remoteFlags.init(config, labs);
+    remoteFlags.init(config);
 
     const milestonesService = require('./server/services/milestones');
     milestonesService.initAndRun();

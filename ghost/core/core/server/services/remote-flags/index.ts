@@ -15,17 +15,10 @@ interface ConfigLike {
     get(key: string): unknown;
 }
 
-/**
- * The slice of the labs service this module needs: the source of the overridable
- * flag allowlist.
- */
-interface LabsLike {
-    getAllFlags(): string[];
-}
-
 interface RemoteFlagsConfig {
     enabled?: boolean;
     url?: string | null;
+    pollInterval?: unknown;
 }
 
 let instance: RemoteFlagsService | null = null;
@@ -44,7 +37,7 @@ let instance: RemoteFlagsService | null = null;
  *
  * @returns the running service, or null when inert
  */
-export function init(config: ConfigLike, labs: LabsLike): RemoteFlagsService | null {
+export function init(config: ConfigLike): RemoteFlagsService | null {
     if (instance) {
         return instance;
     }
@@ -69,12 +62,27 @@ export function init(config: ConfigLike, labs: LabsLike): RemoteFlagsService | n
         return null;
     }
 
+    // Optional poll interval (ms). Fall back to the service default when unset; a
+    // non-positive or non-finite value is ignored with a warning so a typo can
+    // neither stop polling nor hammer the CDN.
+    let pollInterval: number | undefined;
+    const configuredInterval = remoteFlags.pollInterval;
+    if (configuredInterval !== undefined && configuredInterval !== null) {
+        if (typeof configuredInterval === 'number' && Number.isFinite(configuredInterval) && configuredInterval > 0) {
+            pollInterval = configuredInterval;
+        } else {
+            logging.warn({
+                system: {event: 'remote_flags.invalid_poll_interval', siteId}
+            }, `Remote feature flags pollInterval is not a positive number, using the default: ${configuredInterval}`);
+        }
+    }
+
     instance = new RemoteFlagsService({
         url,
         siteId,
-        getKnownFlags: () => labs.getAllFlags(),
         applyOverrides: overrides => flagOverrides.replace(overrides),
-        request
+        request,
+        pollInterval
     });
 
     // Fire-and-forget: start() is fail-open and never rejects, so this neither
