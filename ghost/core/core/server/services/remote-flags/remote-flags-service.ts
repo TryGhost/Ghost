@@ -1,33 +1,68 @@
-const logging = require('@tryghost/logging');
-const resolve = require('./resolve');
+import logging from '@tryghost/logging';
+import {resolve} from './resolve';
 
 const DEFAULT_POLL_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 const DEFAULT_JITTER_MS = 60 * 1000; // up to 1 minute of spread per poll
 const REQUEST_TIMEOUT_MS = 10 * 1000;
 
+type FlagOverrides = Record<string, boolean>;
+
+interface RequestResponse {
+    statusCode?: number;
+    body?: string;
+    headers?: Record<string, string | undefined>;
+}
+
+type RequestFn = (url: string | URL, options: Record<string, unknown>) => Promise<RequestResponse>;
+
+export interface RemoteFlagsServiceDeps {
+    /** canonical manifest URL (one per environment) */
+    url: URL;
+    /** this container's Pro site id */
+    siteId: number | string;
+    /** returns the overridable flag keys */
+    getKnownFlags: () => string[];
+    /** sink for resolved overrides (the shared override store's replace()) */
+    applyOverrides: (overrides: FlagOverrides) => void;
+    /** @tryghost/request-compatible client */
+    request: RequestFn;
+    /** base poll interval in ms */
+    pollInterval?: number;
+    /** max random extra delay per poll in ms */
+    jitter?: number;
+    /** returns 0..1 (injectable for tests) */
+    getRandom?: () => number;
+}
+
 /**
  * Polls a remote JSON manifest of feature-flag overrides, resolves it for this
- * site, and pushes the result into the labs service. Designed to be unconditionally
- * fail-open: a missing, broken, or unreachable manifest must never change live flag
- * state in a way that takes the site down, so every failure path either keeps the
- * last-known-good overrides or clears them, and nothing here ever throws out.
+ * site, and pushes the result into the shared override store. Designed to be
+ * unconditionally fail-open: a missing, broken, or unreachable manifest must never
+ * change live flag state in a way that takes the site down, so every failure path
+ * either keeps the last-known-good overrides or clears them, and nothing here ever
+ * throws out.
  *
- * The HTTP client, the known-flags source, and the override sink are all injected so
- * the polling/caching/fail-open logic can be unit-tested without real I/O or timers.
+ * The HTTP client, the known-flags source, and the override sink are all injected
+ * so the polling/caching/fail-open logic can be unit-tested without real I/O or
+ * timers.
  */
-class RemoteFlagsService {
-    /**
-     * @param {object} deps
-     * @param {string} deps.url - canonical manifest URL (one per environment)
-     * @param {number|string} deps.siteId - this container's Pro site id
-     * @param {function(): string[]} deps.getKnownFlags - returns the overridable flag keys
-     * @param {function(Object<string, boolean>): void} deps.applyOverrides - sink for resolved overrides (labs.setRemoteOverrides)
-     * @param {function(string, object): Promise} deps.request - @tryghost/request-compatible client
-     * @param {number} [deps.pollInterval] - base poll interval in ms
-     * @param {number} [deps.jitter] - max random extra delay per poll in ms
-     * @param {function(): number} [deps.getRandom] - returns 0..1 (injectable for tests)
-     */
-    constructor(deps) {
+export class RemoteFlagsService {
+    url: URL;
+    siteId: number | string;
+    getKnownFlags: () => string[];
+    applyOverrides: (overrides: FlagOverrides) => void;
+    request: RequestFn;
+    pollInterval: number;
+    jitter: number;
+    getRandom: () => number;
+
+    _etag: string | null;
+    _resolvedKey: string | null;
+    _timer: ReturnType<typeof setTimeout> | null;
+    _started: boolean;
+    _refreshing: boolean;
+
+    constructor(deps: RemoteFlagsServiceDeps) {
         this.url = deps.url;
         this.siteId = deps.siteId;
         this.getKnownFlags = deps.getKnownFlags;
@@ -48,9 +83,8 @@ class RemoteFlagsService {
      * Fetch the manifest once, resolve it for this site, and apply it. Always
      * fail-open; never rejects. Not re-entrant: overlapping calls are coalesced so
      * concurrent refreshes can never race the cached ETag.
-     * @returns {Promise<void>}
      */
-    async refresh() {
+    async refresh(): Promise<void> {
         if (this._refreshing) {
             return;
         }
@@ -63,10 +97,10 @@ class RemoteFlagsService {
     }
 
     /** @private */
-    async _doRefresh() {
-        let response;
+    async _doRefresh(): Promise<void> {
+        let response: RequestResponse;
         try {
-            const headers = {};
+            const headers: Record<string, string> = {};
             if (this._etag) {
                 headers['if-none-match'] = this._etag;
             }
@@ -110,9 +144,9 @@ class RemoteFlagsService {
                 return;
             }
 
-            let manifest;
+            let manifest: unknown;
             try {
-                manifest = JSON.parse(response.body);
+                manifest = JSON.parse(response.body as string);
             } catch (parseErr) {
                 logging.warn({
                     system: {event: 'remote_flags.parse_failed', siteId: this.siteId},
@@ -144,7 +178,7 @@ class RemoteFlagsService {
      * does not log on every poll).
      * @private
      */
-    _applyAndMaybeLog(manifest, etag) {
+    _applyAndMaybeLog(manifest: unknown, etag: string | null): void {
         const resolved = resolve(manifest, {
             siteId: this.siteId,
             knownFlags: this.getKnownFlags()
@@ -168,7 +202,7 @@ class RemoteFlagsService {
         }
     }
 
-    _scheduleNext() {
+    _scheduleNext(): void {
         if (!this._started) {
             return;
         }
@@ -192,9 +226,8 @@ class RemoteFlagsService {
     /**
      * Start polling: an immediate refresh (so boot reflects current flag state),
      * then a jittered recurring poll. Idempotent.
-     * @returns {Promise<void>}
      */
-    async start() {
+    async start(): Promise<void> {
         if (this._started) {
             return;
         }
@@ -206,7 +239,7 @@ class RemoteFlagsService {
     /**
      * Stop polling. Does not clear already-applied overrides.
      */
-    stop() {
+    stop(): void {
         this._started = false;
         if (this._timer) {
             clearTimeout(this._timer);
@@ -214,5 +247,3 @@ class RemoteFlagsService {
         }
     }
 }
-
-module.exports = RemoteFlagsService;

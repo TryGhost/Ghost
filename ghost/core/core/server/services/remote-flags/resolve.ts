@@ -1,5 +1,14 @@
-const crypto = require('crypto');
-const {z} = require('zod');
+import crypto from 'crypto';
+import {z} from 'zod';
+
+type FlagOverrides = Record<string, boolean>;
+
+export interface ResolveOptions {
+    /** this container's site id; required to resolve ramps */
+    siteId?: number | string;
+    /** the only flag keys that may be overridden */
+    knownFlags?: string[];
+}
 
 /**
  * Deterministic bucket in the range [0, 99] for a (flag, siteId) pair.
@@ -15,12 +24,8 @@ const {z} = require('zod');
  * in 43 million), which is immaterial at fleet scale. The mapping must stay
  * stable: changing the algorithm, byte offset, or separator would silently
  * re-bucket every in-flight ramp, so a golden value is pinned in the tests.
- *
- * @param {string} flag
- * @param {number|string} siteId
- * @returns {number} integer in [0, 99]
  */
-function bucketFor(flag, siteId) {
+export function bucketFor(flag: string, siteId: number | string): number {
     const digest = crypto.createHash('md5').update(`${flag}:${siteId}`).digest();
     return digest.readUInt32BE(0) % 100;
 }
@@ -57,14 +62,11 @@ const entrySchema = z.union([
  * already define. The flag allowlist is supplied by the caller (the labs service),
  * not duplicated here.
  *
- * @param {*} manifest - parsed manifest; anything that is not a plain object yields `{}`
- * @param {object} [options]
- * @param {number|string} [options.siteId] - this container's site id; required to resolve ramps
- * @param {string[]} [options.knownFlags] - the only flag keys that may be overridden
- * @returns {Object<string, boolean>} resolved overrides for this site
+ * @param manifest - parsed manifest; anything that is not a plain object yields `{}`
+ * @returns resolved overrides for this site
  */
-function resolve(manifest, options) {
-    const result = {};
+export function resolve(manifest: unknown, options?: ResolveOptions): FlagOverrides {
+    const result: FlagOverrides = {};
 
     if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) {
         return result;
@@ -75,13 +77,14 @@ function resolve(manifest, options) {
     const {siteId, knownFlags} = options || {};
     const known = new Set(Array.isArray(knownFlags) ? knownFlags : []);
 
-    for (const flag of Object.keys(manifest)) {
+    const entries = manifest as Record<string, unknown>;
+    for (const flag of Object.keys(entries)) {
         if (!known.has(flag)) {
             // Unknown flag: never let the manifest invent a flag core doesn't define.
             continue;
         }
 
-        const parsed = entrySchema.safeParse(manifest[flag]);
+        const parsed = entrySchema.safeParse(entries[flag]);
         if (!parsed.success) {
             // Malformed entry: skip it individually, keeping every valid sibling.
             continue;
@@ -119,13 +122,10 @@ function resolve(manifest, options) {
             continue;
         }
 
-        if (bucketFor(flag, siteId) < percent) {
+        if (bucketFor(flag, siteId!) < percent) {
             result[flag] = entry.value;
         }
     }
 
     return result;
 }
-
-module.exports = resolve;
-module.exports.bucketFor = bucketFor;

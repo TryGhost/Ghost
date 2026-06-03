@@ -3,6 +3,7 @@ const sinon = require('sinon');
 
 const configUtils = require('../../utils/config-utils');
 const labs = require('../../../core/shared/labs');
+const flagOverrides = require('../../../core/shared/labs-flag-overrides');
 const settingsCache = require('../../../core/shared/settings-cache');
 
 function expectedLabsObject(obj) {
@@ -130,7 +131,7 @@ describe('Labs Service', function () {
 
 describe('Labs Service - remote overrides', function () {
     afterEach(async function () {
-        labs.clearRemoteOverrides();
+        flagOverrides.clear();
         sinon.restore();
         await configUtils.restore();
     });
@@ -143,7 +144,7 @@ describe('Labs Service - remote overrides', function () {
         const flag = labs.WRITABLE_KEYS_ALLOWLIST[0];
 
         assert.equal(labs.isSet(flag), false);
-        labs.setRemoteOverrides({[flag]: true});
+        flagOverrides.replace({[flag]: true});
         assert.equal(labs.isSet(flag), true);
         assert.equal(labs.getAll()[flag], true);
     });
@@ -158,7 +159,7 @@ describe('Labs Service - remote overrides', function () {
         // GA forces the flag on by default.
         assert.equal(labs.isSet(gaKey), true);
 
-        labs.setRemoteOverrides({[gaKey]: false});
+        flagOverrides.replace({[gaKey]: false});
         assert.equal(labs.isSet(gaKey), false);
         assert.equal(labs.getAll()[gaKey], false);
     });
@@ -173,7 +174,7 @@ describe('Labs Service - remote overrides', function () {
         const getSpy = sinon.stub(settingsCache, 'get');
         getSpy.withArgs('labs').returns({[flag]: false});
 
-        labs.setRemoteOverrides({[flag]: true});
+        flagOverrides.replace({[flag]: true});
         assert.equal(labs.isSet(flag), true);
     });
 
@@ -186,7 +187,7 @@ describe('Labs Service - remote overrides', function () {
 
         // config pins the flag OFF; remote tries to turn it ON; config must win.
         configUtils.set('labs', {[flag]: false});
-        labs.setRemoteOverrides({[flag]: true});
+        flagOverrides.replace({[flag]: true});
         assert.equal(labs.isSet(flag), false);
     });
 
@@ -194,7 +195,7 @@ describe('Labs Service - remote overrides', function () {
         const getSpy = sinon.stub(settingsCache, 'get');
         getSpy.withArgs('members_signup_access').returns('all');
 
-        labs.setRemoteOverrides({members: false});
+        flagOverrides.replace({members: false});
 
         // members is always recomputed from settings after the remote overlay.
         assert.equal(labs.isSet('members'), true);
@@ -207,8 +208,8 @@ describe('Labs Service - remote overrides', function () {
         }
         const gaKey = labs.GA_KEYS[0];
 
-        labs.setRemoteOverrides({[gaKey]: false});
-        labs.clearRemoteOverrides();
+        flagOverrides.replace({[gaKey]: false});
+        flagOverrides.clear();
         assert.equal(labs.isSet(gaKey), true);
     });
 
@@ -219,10 +220,10 @@ describe('Labs Service - remote overrides', function () {
         }
         const gaKey = labs.GA_KEYS[0];
 
-        labs.setRemoteOverrides(null);
-        labs.setRemoteOverrides('nope');
-        labs.setRemoteOverrides(['x']);
-        labs.setRemoteOverrides(42);
+        flagOverrides.replace(null);
+        flagOverrides.replace('nope');
+        flagOverrides.replace(['x']);
+        flagOverrides.replace(42);
 
         assert.equal(labs.isSet(gaKey), true);
     });
@@ -237,7 +238,7 @@ describe('Labs Service - remote overrides', function () {
         // Without config, the remote `false` would kill this GA flag; the config
         // pin must override the remote entry and keep it on.
         configUtils.set('labs', {[gaKey]: true});
-        labs.setRemoteOverrides({[gaKey]: false});
+        flagOverrides.replace({[gaKey]: false});
         assert.equal(labs.isSet(gaKey), true);
     });
 
@@ -249,7 +250,7 @@ describe('Labs Service - remote overrides', function () {
         const gaKey = labs.GA_KEYS[0];
         const writable = labs.WRITABLE_KEYS_ALLOWLIST[0];
 
-        labs.setRemoteOverrides({[gaKey]: false, [writable]: true});
+        flagOverrides.replace({[gaKey]: false, [writable]: true});
         assert.equal(labs.isSet(gaKey), false);
         assert.equal(labs.isSet(writable), true);
     });
@@ -262,33 +263,13 @@ describe('Labs Service - remote overrides', function () {
         const gaKey = labs.GA_KEYS[0];
 
         const payload = {[gaKey]: false};
-        labs.setRemoteOverrides(payload);
+        flagOverrides.replace(payload);
         payload[gaKey] = true; // mutating the caller's object must not affect stored state
         assert.equal(labs.isSet(gaKey), false);
 
         const all = labs.getAll();
         all[gaKey] = true; // mutating getAll() output must not affect stored state
         assert.equal(labs.isSet(gaKey), false);
-    });
-
-    it('getRemoteOverrides returns a copy and reflects set/clear', function () {
-        if (labs.WRITABLE_KEYS_ALLOWLIST.length === 0) {
-            this.skip();
-            return;
-        }
-        const flag = labs.WRITABLE_KEYS_ALLOWLIST[0];
-
-        assert.deepEqual(labs.getRemoteOverrides(), {});
-
-        labs.setRemoteOverrides({[flag]: true});
-        assert.deepEqual(labs.getRemoteOverrides(), {[flag]: true});
-
-        const copy = labs.getRemoteOverrides();
-        copy[flag] = false; // mutating the returned copy must not affect stored state
-        assert.equal(labs.getRemoteOverrides()[flag], true);
-
-        labs.clearRemoteOverrides();
-        assert.deepEqual(labs.getRemoteOverrides(), {});
     });
 });
 

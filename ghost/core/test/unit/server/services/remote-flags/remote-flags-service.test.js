@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 
-const RemoteFlagsService = require('../../../../../core/server/services/remote-flags/remote-flags-service');
+const {RemoteFlagsService} = require('../../../../../core/server/services/remote-flags/remote-flags-service');
 
 const KNOWN = ['flagA', 'flagB', 'commentModeration'];
 
@@ -10,7 +10,7 @@ function buildService(overrides = {}) {
     const request = overrides.request || sinon.stub();
     const applyOverrides = overrides.applyOverrides || sinon.stub();
     const service = new RemoteFlagsService({
-        url: 'https://assets.example.com/platform/flags.json',
+        url: new URL('https://assets.example.com/platform/flags.json'),
         siteId: 42,
         getKnownFlags: () => KNOWN,
         applyOverrides,

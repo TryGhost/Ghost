@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 
-const resolve = require('../../../../../core/server/services/remote-flags/resolve');
+const {resolve, bucketFor} = require('../../../../../core/server/services/remote-flags/resolve');
 
 // A fixed, dependency-free set of "known" flags for these pure tests.
 const KNOWN = ['flagA', 'flagB', 'flagC', 'commentModeration'];
@@ -112,8 +112,8 @@ describe('remote-flags resolve', function () {
         });
 
         it('produces a stable, deterministic 0-99 bucket for a (flag, siteId) pair', function () {
-            const b1 = resolve.bucketFor('flagA', 42);
-            const b2 = resolve.bucketFor('flagA', 42);
+            const b1 = bucketFor('flagA', 42);
+            const b2 = bucketFor('flagA', 42);
             assert.equal(b1, b2);
             assert.ok(b1 >= 0 && b1 < 100, `bucket ${b1} out of range`);
         });
@@ -121,13 +121,13 @@ describe('remote-flags resolve', function () {
         it('pins the bucket mapping to a golden value (guards cross-deploy ramp stability)', function () {
             // If this fails, the hash changed and every in-flight ramp re-buckets:
             // sites mid-ramp could flip off. Only update with a deliberate decision.
-            assert.equal(resolve.bucketFor('flagA', 42), 53);
-            assert.equal(resolve.bucketFor('commentModeration', 1), 40);
+            assert.equal(bucketFor('flagA', 42), 53);
+            assert.equal(bucketFor('commentModeration', 1), 40);
         });
 
         it('honors a fractional percent at the bucket boundary', function () {
             const siteId = 99;
-            const bucket = resolve.bucketFor('flagA', siteId);
+            const bucket = bucketFor('flagA', siteId);
             assert.deepEqual(resolve({flagA: {value: true, percent: bucket + 0.5}}, {siteId, knownFlags: KNOWN}), {flagA: true});
             assert.deepEqual(resolve({flagA: {value: true, percent: bucket - 0.5}}, {siteId, knownFlags: KNOWN}), {});
         });
@@ -144,21 +144,21 @@ describe('remote-flags resolve', function () {
             // "no opinion" must mean the key is absent, not present-and-false.
             assert.deepEqual(resolve({flagA: {value: false, percent: 0}}, {siteId: 5, knownFlags: KNOWN}), {});
             const siteId = 5;
-            const bucket = resolve.bucketFor('flagA', siteId);
+            const bucket = bucketFor('flagA', siteId);
             // out-of-bucket value:false -> omitted
             assert.deepEqual(resolve({flagA: {value: false, percent: bucket}}, {siteId, knownFlags: KNOWN}), {});
         });
 
         it('decorrelates buckets across flags for the same site', function () {
             // Different flag names should not all map to the same bucket for one site.
-            const buckets = KNOWN.map(flag => resolve.bucketFor(flag, 42));
+            const buckets = KNOWN.map(flag => bucketFor(flag, 42));
             const unique = new Set(buckets);
             assert.ok(unique.size > 1, `expected varied buckets, got ${JSON.stringify(buckets)}`);
         });
 
         it('includes a site iff its bucket is below the percent threshold', function () {
             const siteId = 314;
-            const bucket = resolve.bucketFor('flagA', siteId);
+            const bucket = bucketFor('flagA', siteId);
 
             // Just above the bucket -> included.
             const included = resolve({flagA: {value: true, percent: bucket + 1}}, {siteId, knownFlags: KNOWN});
@@ -171,7 +171,7 @@ describe('remote-flags resolve', function () {
 
         it('is monotonic: a site enabled at a lower percent stays enabled at a higher percent', function () {
             const siteId = 2718;
-            const bucket = resolve.bucketFor('flagB', siteId);
+            const bucket = bucketFor('flagB', siteId);
             // Pick a percent that includes this site, then a strictly higher one.
             const low = bucket + 1;
             const high = Math.min(100, bucket + 5);
@@ -181,7 +181,7 @@ describe('remote-flags resolve', function () {
 
         it('supports ramped kill switches (value: false at a percent)', function () {
             const siteId = 555;
-            const bucket = resolve.bucketFor('commentModeration', siteId);
+            const bucket = bucketFor('commentModeration', siteId);
             const result = resolve({commentModeration: {value: false, percent: bucket + 1}}, {siteId, knownFlags: KNOWN});
             assert.deepEqual(result, {commentModeration: false});
         });
@@ -201,7 +201,7 @@ describe('remote-flags resolve', function () {
             // 0 is a finite number -> bucketable; '' -> not bucketable (ramp skipped).
             const withZero = resolve({flagA: {value: true, percent: 100}}, {siteId: 0, knownFlags: KNOWN});
             assert.deepEqual(withZero, {flagA: true});
-            const zeroBucket = resolve.bucketFor('flagA', 0);
+            const zeroBucket = bucketFor('flagA', 0);
             assert.deepEqual(resolve({flagA: {value: true, percent: zeroBucket + 1}}, {siteId: 0, knownFlags: KNOWN}), {flagA: true});
             assert.deepEqual(resolve({flagA: {value: true, percent: 50}}, {siteId: '', knownFlags: KNOWN}), {});
         });
@@ -234,7 +234,7 @@ describe('remote-flags resolve', function () {
     describe('mixed manifest', function () {
         it('resolves a realistic mix of entries', function () {
             const siteId = 4242;
-            const ramped = resolve.bucketFor('flagC', siteId);
+            const ramped = bucketFor('flagC', siteId);
             const manifest = {
                 commentModeration: false, // kill GA flag everywhere
                 flagA: {value: true, percent: 100}, // enable everywhere
