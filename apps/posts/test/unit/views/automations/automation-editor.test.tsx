@@ -986,7 +986,9 @@ describe('AutomationEditor', () => {
         fireEvent.click(within(picker).getByText('Wait'));
 
         // The new step renders with the default 24h wait ("1 day") at the end of the chain.
-        expect(screen.getByText('1 day')).toBeInTheDocument();
+        const insertedNode = screen.getByRole('button', {name: 'Wait: 1 day'});
+        expect(insertedNode).toHaveAttribute('aria-pressed', 'true');
+        expect(screen.getAllByText('1 day')).toHaveLength(2);
         // Adding a step flips the editor into a dirty state.
         expect(screen.getByRole('button', {name: 'Publish changes'})).toBeEnabled();
     });
@@ -1005,7 +1007,11 @@ describe('AutomationEditor', () => {
         fireEvent.click(within(picker).getByText('Email'));
 
         // The new send_email step renders with the placeholder subject.
-        expect(screen.getByText('Untitled email')).toBeInTheDocument();
+        const insertedNode = screen.getByRole('button', {name: 'Send email: Untitled email'});
+        expect(screen.getAllByText('Untitled email')).toHaveLength(2);
+        expect(insertedNode).toHaveClass('animate-in');
+        expect(insertedNode).toHaveClass('zoom-in-90');
+        expect(insertedNode).toHaveAttribute('aria-pressed', 'true');
         expect(screen.getByRole('button', {name: 'Publish changes'})).toBeEnabled();
     });
 

@@ -17,6 +17,7 @@ const NODE_COLUMN_CENTER_X = NODE_X + (NODE_WIDTH / 2);
 const NODE_GAP_Y = 180;
 const INITIAL_VIEWPORT_Y = 40;
 const VIEWPORT_ANIMATION_DURATION = 180;
+const NODE_ENTER_ANIMATION_DURATION = 250;
 const DISABLED_REASON = `Limit of ${formatNumber(MAX_AUTOMATION_ACTIONS)} steps reached`;
 const DEFAULT_EDGE_STROKE = 'var(--xy-edge-stroke)';
 const ZOOM_PRESETS = [1.5, 1, 0.75, 0.5, 0.25];
@@ -42,6 +43,7 @@ type StepNodeDisplayData = {
 };
 
 type StepNodeData = StepNodeDisplayData & {
+    isNew: boolean;
     selected: boolean;
     onSelect: () => void;
 };
@@ -76,6 +78,7 @@ const NodeShell: React.FC<React.PropsWithChildren<{className?: string; data: Ste
             'flex w-64 items-center gap-3 rounded-lg border border-transparent bg-surface-elevated p-3 text-left text-sm text-foreground shadow-sm transition-all focus-visible:border-border-strong focus-visible:outline-none',
             !data.selected && 'hover:border-border-strong',
             data.selected && 'border-gray-700 shadow-[inset_0_0_0_1px_var(--color-gray-700),0_1px_2px_0_rgb(0_0_0_/_0.05)]',
+            data.isNew && 'animate-in fade-in-0 zoom-in-90 duration-300 ease-out motion-reduce:animate-none',
             className
         )}
         type='button'
@@ -334,10 +337,11 @@ type BuildGraphParams = {
     disabled: boolean;
     onPick: (type: StepPickerType, anchor: CanvasAnchor) => void;
     onSelectStep: (stepId: string) => void;
+    newStepId: string | null;
     selectedStepId: string | null;
 }
 
-const buildGraph = ({automation, disabled, onPick, onSelectStep, selectedStepId}: BuildGraphParams): {nodes: AutomationFlowNode[]; edges: Edge[]} => {
+const buildGraph = ({automation, disabled, onPick, onSelectStep, newStepId, selectedStepId}: BuildGraphParams): {nodes: AutomationFlowNode[]; edges: Edge[]} => {
     const ordered = getInitialActionOrder(automation);
     const baseNodeProps = {
         draggable: false,
@@ -360,6 +364,7 @@ const buildGraph = ({automation, disabled, onPick, onSelectStep, selectedStepId}
             position: {x: NODE_X, y: 0},
             data: {
                 icon: LucideIcon.Zap,
+                isNew: false,
                 label: 'Trigger',
                 value: 'Member signs up',
                 selected: selectedStepId === TRIGGER_CANVAS_ID,
@@ -376,6 +381,7 @@ const buildGraph = ({automation, disabled, onPick, onSelectStep, selectedStepId}
             position: {x: NODE_X, y: NODE_GAP_Y * (index + 1)},
             data: {
                 ...buildActionData(action),
+                isNew: newStepId === action.id,
                 selected: selectedStepId === action.id,
                 onSelect: () => onSelectStep(action.id)
             },
@@ -761,6 +767,7 @@ const insertActionByType = {
 };
 
 const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoading, isError, onChange}) => {
+    const [newStepId, setNewStepId] = useState<string | null>(null);
     const [selectedStep, setSelectedStep] = useState<SelectedStep | null>(null);
     const selectedStepId = selectedStep?.id ?? null;
 
@@ -774,8 +781,23 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
         const apiAnchor = toApiAnchor(anchor);
         const insertAction = insertActionByType[type];
         const next = insertAction({detail: automation, anchor: apiAnchor});
+        const insertedAction = next.actions.find(action => !automation.actions.some(existingAction => existingAction.id === action.id));
+        setNewStepId(insertedAction?.id ?? null);
+        if (insertedAction) {
+            setSelectedStep({id: insertedAction.id, isEditingEmail: false});
+        }
         onChange(next);
     }, [automation, onChange]);
+
+    useEffect(() => {
+        if (!newStepId) {
+            return;
+        }
+        const timeout = window.setTimeout(() => {
+            setNewStepId(null);
+        }, NODE_ENTER_ANIMATION_DURATION);
+        return () => window.clearTimeout(timeout);
+    }, [newStepId]);
 
     const handleDelete = useCallback((actionId: string) => {
         if (!automation) {
@@ -823,9 +845,10 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
             disabled: automation.actions.length >= MAX_AUTOMATION_ACTIONS,
             onPick: handlePick,
             onSelectStep: id => setSelectedStep({id, isEditingEmail: false}),
+            newStepId,
             selectedStepId
         });
-    }, [automation, handlePick, selectedStepId]);
+    }, [automation, handlePick, newStepId, selectedStepId]);
 
     const sidebarDetail = automation ? getStepSidebarDetail({
         automation,
