@@ -4,8 +4,8 @@ import EmailContentModal from './email-modal/email-content-modal';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import StepPicker, {type StepPickerType} from './step-picker';
 import {AutomationAction, AutomationDetail, AutomationSendEmailAction, AutomationWaitAction, InsertActionAnchor, MAX_AUTOMATION_ACTIONS, insertSendEmailAction, insertWaitAction, removeAction, updateSendEmailAction, updateWaitAction} from '@tryghost/admin-x-framework/api/automations';
-import {Background, BackgroundVariant, Edge, Handle, Node, NodeProps, Position, ReactFlow} from '@xyflow/react';
-import {Banner, Button, Checkbox, Input, Label, LoadingIndicator, Popover, PopoverContent, PopoverTrigger, Select, SelectTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
+import {Background, BackgroundVariant, Controls, Edge, Handle, Node, NodeProps, Position, ReactFlow, useReactFlow, useViewport} from '@xyflow/react';
+import {Banner, Button, Checkbox, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger, Input, Label, LoadingIndicator, Popover, PopoverContent, PopoverTrigger, Select, SelectTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 
 const MAX_WAIT_DAYS = 30;
@@ -16,8 +16,10 @@ const NODE_WIDTH = 256;
 const NODE_COLUMN_CENTER_X = NODE_X + (NODE_WIDTH / 2);
 const NODE_GAP_Y = 180;
 const INITIAL_VIEWPORT_Y = 40;
+const VIEWPORT_ANIMATION_DURATION = 180;
 const DISABLED_REASON = `Limit of ${formatNumber(MAX_AUTOMATION_ACTIONS)} steps reached`;
 const DEFAULT_EDGE_STROKE = 'var(--xy-edge-stroke)';
+const ZOOM_PRESETS = [1.5, 1, 0.75, 0.5, 0.25];
 
 // React Flow node IDs for the trigger and tail nodes. The canvas builds the visual graph using
 // these; they are not action IDs and never reach the API.
@@ -176,6 +178,90 @@ const nodeTypes = {
 
 const edgeTypes = {
     'add-step-edge': AddStepEdge
+};
+
+const AutomationCanvasControls: React.FC = () => {
+    const [open, setOpen] = useState(false);
+    const {fitView, zoomIn, zoomOut, zoomTo} = useReactFlow();
+    const {zoom} = useViewport();
+    const animationOptions = {duration: VIEWPORT_ANIMATION_DURATION};
+    const zoomPercent = Math.round(zoom * 100);
+
+    const handleZoomTo = (nextZoom: number) => {
+        setOpen(false);
+        void zoomTo(nextZoom, animationOptions);
+    };
+
+    const handleFitView = () => {
+        setOpen(false);
+        void fitView(animationOptions);
+    };
+
+    return (
+        <Controls
+            className='gap-1 overflow-hidden rounded-md bg-surface-elevated p-0.5 text-foreground shadow-sm'
+            orientation='horizontal'
+            showFitView={false}
+            showInteractive={false}
+            showZoom={false}
+            style={{bottom: 24, left: 24}}
+        >
+            <Button
+                aria-label='Zoom out'
+                className='rounded-sm text-text-secondary hover:text-foreground'
+                size='icon'
+                title='Zoom out'
+                type='button'
+                variant='ghost'
+                onClick={() => void zoomOut(animationOptions)}
+            >
+                <LucideIcon.Minus className='size-5' strokeWidth={1.5} />
+            </Button>
+            <DropdownMenu open={open} onOpenChange={setOpen}>
+                <DropdownMenuTrigger asChild>
+                    <Button
+                        aria-label={`Zoom level ${formatNumber(zoomPercent)}%`}
+                        className='min-w-14 rounded-sm px-2 font-semibold'
+                        type='button'
+                        variant='ghost'
+                    >
+                        {formatNumber(zoomPercent)}%
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align='center' className='w-40' side='top' sideOffset={12}>
+                    {ZOOM_PRESETS.map((preset) => {
+                        const presetPercent = Math.round(preset * 100);
+                        const isSelected = Math.abs(zoom - preset) < 0.01;
+                        return (
+                            <DropdownMenuItem key={preset} onSelect={() => handleZoomTo(preset)}>
+                                {formatNumber(presetPercent)}%
+                                {isSelected && (
+                                    <DropdownMenuShortcut>
+                                        <LucideIcon.Check className='size-4 text-text-secondary' strokeWidth={1.5} />
+                                    </DropdownMenuShortcut>
+                                )}
+                            </DropdownMenuItem>
+                        );
+                    })}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onSelect={handleFitView}>
+                        Fit to view
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+            <Button
+                aria-label='Zoom in'
+                className='rounded-sm text-text-secondary hover:text-foreground'
+                size='icon'
+                title='Zoom in'
+                type='button'
+                variant='ghost'
+                onClick={() => void zoomIn(animationOptions)}
+            >
+                <LucideIcon.Plus className='size-5' strokeWidth={1.5} />
+            </Button>
+        </Controls>
+    );
 };
 
 export const formatWait = (hours: number): string => {
@@ -808,6 +894,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
                 onPaneClick={clearDetail}
             >
                 <Background variant={BackgroundVariant.Dots} />
+                <AutomationCanvasControls />
             </ReactFlow>
             <StepSidebar detail={sidebarDetail} isEmailModalOpen={Boolean(emailModalAction)} onClose={clearDetail} />
             {emailModalAction && automation && (

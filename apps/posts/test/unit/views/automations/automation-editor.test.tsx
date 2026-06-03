@@ -30,6 +30,13 @@ const mockEditMutation = {
     isLoading: false,
     variables: undefined as {id: string; status: 'active' | 'inactive'} | undefined
 };
+const mockReactFlow = {
+    fitView: vi.fn(),
+    zoomIn: vi.fn(),
+    zoomOut: vi.fn(),
+    zoomTo: vi.fn()
+};
+let mockViewportZoom = 1;
 
 vi.mock('@tryghost/admin-x-framework/api/automations', async () => {
     const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/api/automations')>(
@@ -48,6 +55,7 @@ type StubEdge = {id: string; source: string; target: string; type?: string; data
 type StubReactFlowProps = {
     nodes: StubNode[];
     edges?: StubEdge[];
+    children?: React.ReactNode;
     className?: string;
     nodeTypes?: Record<string, React.ComponentType<NodeRenderProps>>;
     edgeTypes?: Record<string, React.ComponentType<EdgeRenderProps>>;
@@ -61,7 +69,7 @@ vi.mock('@xyflow/react', async () => {
     const actual = await vi.importActual<typeof import('@xyflow/react')>('@xyflow/react');
     return {
         ...actual,
-        ReactFlow: ({nodes, edges, className, nodeTypes, edgeTypes, onNodeClick, onPaneClick}: StubReactFlowProps) => (
+        ReactFlow: ({nodes, edges, children, className, nodeTypes, edgeTypes, onNodeClick, onPaneClick}: StubReactFlowProps) => (
             <div className={className} data-testid='react-flow-mock' onClick={onPaneClick}>
                 {nodes.map((node) => {
                     const nodeType = node.type ?? 'default';
@@ -101,13 +109,28 @@ vi.mock('@xyflow/react', async () => {
                         );
                     })}
                 </ul>
+                {children}
             </div>
         ),
         Background: () => null,
+        Controls: ({children, className, showFitView, showInteractive, showZoom, style}: {children?: React.ReactNode; className?: string; showFitView?: boolean; showInteractive?: boolean; showZoom?: boolean; style?: React.CSSProperties}) => (
+            <div
+                className={className}
+                data-show-fit-view={String(showFitView)}
+                data-show-interactive={String(showInteractive)}
+                data-show-zoom={String(showZoom)}
+                data-testid='react-flow-controls'
+                style={style}
+            >
+                {children}
+            </div>
+        ),
         Handle: () => null,
         BaseEdge: () => null,
         EdgeLabelRenderer: ({children}: {children: React.ReactNode}) => <>{children}</>,
-        getSmoothStepPath: () => ['M 0 0', 0, 0]
+        getSmoothStepPath: () => ['M 0 0', 0, 0],
+        useReactFlow: () => mockReactFlow,
+        useViewport: () => ({x: 0, y: 0, zoom: mockViewportZoom})
     };
 });
 
@@ -160,6 +183,11 @@ describe('AutomationEditor', () => {
     beforeEach(() => {
         mockUseReadAutomation.mockReset();
         mockEditMutation.mutate.mockReset();
+        mockReactFlow.fitView.mockReset();
+        mockReactFlow.zoomIn.mockReset();
+        mockReactFlow.zoomOut.mockReset();
+        mockReactFlow.zoomTo.mockReset();
+        mockViewportZoom = 1;
         mockEditMutation.isLoading = false;
         mockEditMutation.variables = undefined;
     });
@@ -218,6 +246,83 @@ describe('AutomationEditor', () => {
             ['action-wait', 'action-email'],
             ['action-email', '__tail__']
         ]);
+    });
+
+    it('renders styled canvas zoom controls without the interaction toggle', () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        const controls = screen.getByTestId('react-flow-controls');
+        expect(controls).toHaveAttribute('data-show-interactive', 'false');
+        expect(controls).toHaveAttribute('data-show-fit-view', 'false');
+        expect(controls).toHaveAttribute('data-show-zoom', 'false');
+        expect(controls).toHaveStyle({bottom: '24px', left: '24px'});
+        expect(controls).toHaveClass('overflow-hidden', 'rounded-md');
+        expect(screen.getByRole('button', {name: 'Zoom out'})).toBeInTheDocument();
+        expect(screen.getByRole('button', {name: 'Zoom level 100%'})).toHaveTextContent('100%');
+        expect(screen.getByRole('button', {name: 'Zoom in'})).toBeInTheDocument();
+    });
+
+    it('animates viewport changes from the custom canvas controls', () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        fireEvent.click(screen.getByRole('button', {name: 'Zoom in'}));
+        fireEvent.click(screen.getByRole('button', {name: 'Zoom out'}));
+
+        expect(mockReactFlow.zoomIn).toHaveBeenCalledWith({duration: 180});
+        expect(mockReactFlow.zoomOut).toHaveBeenCalledWith({duration: 180});
+    });
+
+    it('opens a zoom preset menu from the canvas controls', () => {
+        mockViewportZoom = 0.75;
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        fireEvent.pointerDown(screen.getByRole('button', {name: 'Zoom level 75%'}), {button: 0, ctrlKey: false});
+
+        expect(screen.getByRole('menuitem', {name: '150%'})).toBeInTheDocument();
+        expect(screen.getByRole('menuitem', {name: '100%'})).toBeInTheDocument();
+        expect(screen.getByRole('menuitem', {name: '75%'})).toBeInTheDocument();
+        expect(screen.getByRole('menuitem', {name: '50%'})).toBeInTheDocument();
+        expect(screen.getByRole('menuitem', {name: '25%'})).toBeInTheDocument();
+        expect(screen.getByRole('menuitem', {name: 'Fit to view'})).toBeInTheDocument();
+        expect(screen.getByRole('menuitem', {name: '75%'}).querySelector('svg')).toBeInTheDocument();
+    });
+
+    it('animates zoom preset and fit view menu selections', () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        fireEvent.pointerDown(screen.getByRole('button', {name: 'Zoom level 100%'}), {button: 0, ctrlKey: false});
+        fireEvent.click(screen.getByRole('menuitem', {name: '150%'}));
+
+        expect(mockReactFlow.zoomTo).toHaveBeenCalledWith(1.5, {duration: 180});
+
+        fireEvent.pointerDown(screen.getByRole('button', {name: 'Zoom level 100%'}), {button: 0, ctrlKey: false});
+        fireEvent.click(screen.getByRole('menuitem', {name: 'Fit to view'}));
+
+        expect(mockReactFlow.fitView).toHaveBeenCalledWith({duration: 180});
     });
 
     it('opens a read-only sidebar for the trigger step', () => {
