@@ -631,7 +631,7 @@ module.exports = class RouterController {
      * @returns
      */
     async _createDonationCheckoutSession(options) {
-        if (!this._paymentsService.stripeAPIService.configured) {
+        if (!this._settingsHelpers.areDonationsEnabled()) {
             throw new DisabledFeatureError({
                 message: tpl(messages.notConfigured)
             });
