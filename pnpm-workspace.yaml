@@ -25,8 +25,19 @@ allowBuilds:
   ssh2: true
 
 catalog:
+  '@ebay/nice-modal-react': 1.2.13
   '@eslint/js': 8.57.1
+  '@faker-js/faker': 9.9.0
   '@playwright/test': 1.60.0
+  '@radix-ui/react-avatar': 1.1.11
+  '@radix-ui/react-checkbox': 1.3.3
+  '@radix-ui/react-context-menu': 2.2.16
+  '@radix-ui/react-form': 0.1.8
+  '@radix-ui/react-popover': 1.1.15
+  '@radix-ui/react-separator': 1.1.8
+  '@radix-ui/react-switch': 1.2.6
+  '@radix-ui/react-tabs': 1.1.13
+  '@radix-ui/react-tooltip': 1.2.8
   '@sentry/react': 7.120.4
   '@storybook/addon-docs': 10.3.5
   '@storybook/addon-links': 10.3.5
@@ -34,15 +45,17 @@ catalog:
   '@tailwindcss/postcss': 4.2.2
   '@tailwindcss/vite': 4.2.2
   '@tanstack/react-query': 4.44.0
+  '@testing-library/jest-dom': 6.9.1
+  '@testing-library/react': 14.3.1
   '@tryghost/api-framework': 3.2.3
   '@tryghost/color-utils': 0.2.18
   '@tryghost/custom-fonts': 1.0.10
   '@tryghost/debug': 2.2.1
   '@tryghost/domain-events': 3.2.3
   '@tryghost/helpers': 1.1.105
-  '@tryghost/kg-clean-basic-html': 4.3.1
-  '@tryghost/kg-converters': 1.2.1
-  '@tryghost/koenig-lexical': 1.8.1
+  '@tryghost/kg-clean-basic-html': 4.3.2
+  '@tryghost/kg-converters': 1.2.2
+  '@tryghost/koenig-lexical': 1.8.2
   '@tryghost/limit-service': 1.5.5
   '@tryghost/logging': 4.2.1
   '@tryghost/nql': 0.12.11
@@ -55,6 +68,7 @@ catalog:
   '@types/react': 18.3.29
   '@types/react-dom': 18.3.7
   '@types/validator': 13.15.10
+  '@typescript-eslint/eslint-plugin': 8.49.0
   '@typescript-eslint/parser': 8.49.0
   '@vitejs/plugin-react': 4.7.0
   '@vitest/coverage-v8': 4.1.7
@@ -68,23 +82,30 @@ catalog:
   dompurify: 3.4.5
   dotenv: 17.4.2
   eslint: 8.57.1
+  eslint-plugin-react-hooks: 5.2.0
   eslint-plugin-react-refresh: 0.5.2
+  eslint-plugin-tailwindcss: 4.0.0-beta.0
   fs-extra: 11.3.5
   glob: 13.0.6
   jsdom: 29.1.1
   jsonc-parser: 3.3.1
   lodash: 4.18.1
   lucide-react: 1.17.0
+  mingo: 2.5.3
   mocha: 11.7.6
   msw: 2.14.6
   node-html-markdown: 2.0.0
   postcss: 8.5.10
   preact: ^10.29.2
+  react: 18.3.1
+  react-dom: 18.3.1
+  react-hot-toast: 2.6.0
   react-router: 7.14.0
   sinon: 22.0.0
   sonner: 2.0.7
   storybook: 10.3.5
   tailwindcss: 4.2.2
+  tsx: 4.21.0
   tw-animate-css: 1.4.0
   type-fest: 5.6.0
   typescript: 5.9.3
@@ -98,8 +119,13 @@ catalogs:
   eslint9:
     '@eslint/js': 9.37.0
     eslint: 9.37.0
+  react17:
+    react: 17.0.2
+    react-dom: 17.0.2
+    '@testing-library/react': 12.1.5
   tailwind3:
     tailwindcss: 3.4.18
+    eslint-plugin-tailwindcss: 3.18.2
 
 overrides:
   '@tryghost/errors': ^1.3.7
@@ -166,33 +192,5 @@ packageExtensions:
     dependencies:
       lodash: ^4.18.0
 minimumReleaseAgeExclude:
-  # Intentional same-day NQL release required for relative date parsing
-  - "@tryghost/mongo-knex@0.9.5"
-  - "@tryghost/mongo-utils@0.6.4"
-  - "@tryghost/nql-lang@0.6.5"
-  - "@tryghost/nql@0.12.11"
-  # Framework release for api-framework update
-  - "@tryghost/api-framework@3.2.3"
-  - "@tryghost/debug@2.2.2"
-  - "@tryghost/promise@2.2.2"
-  - "@tryghost/root-utils@2.2.2"
-  - "@tryghost/tpl@2.2.2"
-  - "@tryghost/validator@3.1.3"
-  # Renovate security update: @number-flow/react@0.6.0
-  - "@number-flow/react@0.6.0"
-  # Renovate security update: @aws-sdk/client-s3@3.1053.0
-  - "@aws-sdk/client-s3@3.1053.0"
-  # Renovate security update: @vitest/coverage-v8@4.1.7
-  - "@vitest/coverage-v8@4.1.7"
-  # Renovate security update: vitest@4.1.7
-  - vitest@4.1.7
-  # Renovate security update: @hookform/resolvers@5.4.0
-  - "@hookform/resolvers@5.4.0"
-  # Renovate security update: @types/node@22.19.19
-  - "@types/node@22.19.19"
-  # Renovate security update: @types/react@18.3.29
-  - "@types/react@18.3.29"
-  # Renovate security update: @playwright/test@1.60.0
-  - "@playwright/test@1.60.0"
-  # Renovate security update: tmp@0.2.6
-  - tmp@0.2.6
+  # Our own packages are published by us, so the release-age delay doesn't apply
+  - "@tryghost/*"

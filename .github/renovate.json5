@@ -225,6 +225,37 @@
             ]
         },
 
+        // Group each pinned-version pnpm catalog into a single PR per catalog.
+        //
+        // The named catalogs in pnpm-workspace.yaml (react17, eslint9,
+        // tailwind3) each hold a version lane we deliberately keep separate
+        // from the main `catalog:` — e.g. eslint 9 lives in `eslint9` while the
+        // default catalog stays on eslint 8. Renovate tags every catalog dep
+        // with a depType of `pnpm.catalog.<name>`, so matching the depType
+        // groups the whole catalog without restating its package list and stays
+        // correct as entries are added or removed in pnpm-workspace.yaml.
+        //
+        // These also override the shared preset's `group:monorepos` rules,
+        // which would otherwise group e.g. eslint + @eslint/js *by name* and
+        // mix the default-catalog (v8) and eslint9-catalog (v9) bumps into one
+        // PR. Matching by depType keeps each lane in its own reviewable PR.
+        //
+        // The main `catalog:` is intentionally left ungrouped: its entries are
+        // independent, so grouping them would only couple unrelated bumps and
+        // let one risky update block the rest.
+        {
+            "groupName": "react17 catalog",
+            "matchDepTypes": ["pnpm.catalog.react17"]
+        },
+        {
+            "groupName": "eslint9 catalog",
+            "matchDepTypes": ["pnpm.catalog.eslint9"]
+        },
+        {
+            "groupName": "tailwind3 catalog",
+            "matchDepTypes": ["pnpm.catalog.tailwind3"]
+        },
+
         // Always automerge these packages:
         {
             "matchPackageNames": [
