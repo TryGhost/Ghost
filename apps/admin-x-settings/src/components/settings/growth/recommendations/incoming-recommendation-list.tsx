@@ -75,11 +75,11 @@ const IncomingRecommendationItem: React.FC<{incomingRecommendation: IncomingReco
             <TableCell className='hidden w-[1%] whitespace-nowrap md:visible! md:table-cell!' valign="middle" onClick={showDetails}>
                 {(signups === 0) ? (null) : (
                     <div className='-mt-px text-left'>
-                        <span className='-mb-px inline-block min-w-[60px] text-left text-sm whitespace-nowrap text-grey-700 lowercase'>{freeMembersLabel}</span>
+                        <span className='-mb-px inline-block min-w-[60px] text-left whitespace-nowrap text-grey-700 lowercase'>{freeMembersLabel}</span>
                     </div>
                 )}
             </TableCell>
-            {incomingRecommendation.recommending_back && <TableCell className='w-[1%] whitespace-nowrap group-hover/table-row:visible md:invisible'><div className='mt-1 text-right text-sm whitespace-nowrap text-grey-700'>Recommending</div></TableCell>}
+            {incomingRecommendation.recommending_back && <TableCell className='w-[1%] whitespace-nowrap group-hover/table-row:visible md:invisible'><div className='mt-1 text-right whitespace-nowrap text-grey-700'>Recommending</div></TableCell>}
         </TableRow>
     );
 };

@@ -468,6 +468,12 @@ importers:
       '@types/react-dom':
         specifier: 'catalog:'
         version: 18.3.7(@types/react@18.3.29)
+      '@typescript-eslint/eslint-plugin':
+        specifier: 'catalog:'
+        version: 8.49.0(@typescript-eslint/parser@8.49.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
+      '@typescript-eslint/parser':
+        specifier: 'catalog:'
+        version: 8.49.0(eslint@8.57.1)(typescript@5.9.3)
       eslint:
         specifier: 'catalog:'
         version: 8.57.1
@@ -1813,6 +1819,12 @@ importers:
       '@types/react-svg-map':
         specifier: 2.1.4
         version: 2.1.4
+      '@typescript-eslint/eslint-plugin':
+        specifier: 'catalog:'
+        version: 8.49.0(@typescript-eslint/parser@8.49.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
+      '@typescript-eslint/parser':
+        specifier: 'catalog:'
+        version: 8.49.0(eslint@8.57.1)(typescript@5.9.3)
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 4.1.7(vitest@4.1.7)

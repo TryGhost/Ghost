@@ -44,6 +44,8 @@
         "@types/node": "catalog:",
         "@types/react": "catalog:",
         "@types/react-svg-map": "2.1.4",
+        "@typescript-eslint/eslint-plugin": "catalog:",
+        "@typescript-eslint/parser": "catalog:",
         "@vitest/coverage-v8": "catalog:",
         "dotenv": "catalog:",
         "eslint": "catalog:",

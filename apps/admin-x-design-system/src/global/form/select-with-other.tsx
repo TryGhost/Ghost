@@ -117,7 +117,7 @@ const SelectWithOther: React.FC<SelectWithOtherProps> = ({
                 />
                 <div className="mt-2">
                     <button
-                        className="text-xs text-green-400 hover:text-green-500"
+                        className="text-sm text-green-400 hover:text-green-500"
                         type="button"
                         onClick={handleBackToList}
                     >

@@ -10,7 +10,7 @@ const EmailNotificationsInputs: React.FC<{ user: User; setUserData: (user: User)
     return (
         <SettingGroupContent>
             <div>
-                <span className='text-xs font-medium tracking-wide text-grey-700 uppercase'>Engagement</span>
+                <span className='text-sm font-medium tracking-wide text-grey-700 uppercase'>Engagement</span>
                 <div className='mt-3 flex flex-col gap-4'>
                     <Toggle
                         align='center'
@@ -38,7 +38,7 @@ const EmailNotificationsInputs: React.FC<{ user: User; setUserData: (user: User)
             </div>
             {hasAdminAccess(user) && <>
                 <div>
-                    <span className='text-xs font-medium tracking-wide text-grey-700 uppercase'>Members</span>
+                    <span className='text-sm font-medium tracking-wide text-grey-700 uppercase'>Members</span>
                     <div className='mt-3 flex flex-col gap-4'>
                         <Toggle
                             align='center'
@@ -75,7 +75,7 @@ const EmailNotificationsInputs: React.FC<{ user: User; setUserData: (user: User)
                     </div>
                 </div>
                 <div>
-                    <span className='text-xs font-medium tracking-wide text-grey-700 uppercase'>Revenue</span>
+                    <span className='text-sm font-medium tracking-wide text-grey-700 uppercase'>Revenue</span>
                     <div className='mt-3 flex flex-col gap-4'>
                         <Toggle
                             align='center'

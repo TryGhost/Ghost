@@ -126,7 +126,7 @@ const Connect: React.FC = () => {
                 <Toggle
                     direction='rtl'
                     label='Test mode'
-                    labelClasses={`text-sm translate-y-[1px] ${testMode ? 'text-[#EC6803]' : 'text-grey-800'}`}
+                    labelClasses={`translate-y-[1px] ${testMode ? 'text-[#EC6803]' : 'text-grey-800'}`}
                     toggleBg='stripetest'
                     onChange={e => setTestMode(e.target.checked)}
                 />
@@ -193,15 +193,13 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
             </div>
             <div className='flex flex-col items-center'>
                 <Heading level={6}>Read next</Heading>
-                <a className='mt-5 flex w-100 flex-col items-stretch justify-between rounded-sm border border-grey-200 transition-all hover:border-grey-400 md:flex-row dark:border-grey-900' href="https://ghost.org/resources/managing-your-stripe-account/?ref=admin" rel="noopener noreferrer" target="_blank">
+                <a className='mt-5 flex w-100 flex-col items-stretch justify-between overflow-hidden rounded-md border border-grey-200 transition-all hover:border-grey-400 md:flex-row dark:border-grey-900' href="https://ghost.org/resources/managing-your-stripe-account/?ref=admin" rel="noopener noreferrer" target="_blank">
                     <div className='order-2 p-4 md:order-1'>
-                        <div className='font-bold'>How to setup and manage your Stripe account</div>
-                        <div className='mt-1 text-sm text-grey-800 dark:text-grey-500'>Learn how to configure your Stripe account to work with Ghost, from custom branding to payment receipt emails.</div>
-                        <div className='mt-3 flex items-center gap-1 text-sm text-grey-800 dark:text-grey-500'>
+                        <div className='text-md font-semibold'>How to setup and manage your Stripe account</div>
+                        <div className='mt-2 text-grey-800 dark:text-grey-500'>Learn how to configure your Stripe account to work with Ghost, from custom branding to payment receipt emails.</div>
+                        <div className='mt-3 flex items-center gap-1 text-grey-800 dark:text-grey-500'>
                             <img alt='Ghost Logo' className='size-4' src={GhostLogoPink} />
-                            <strong>Ghost Resources</strong>
-                            <span>&middot;</span>
-                            <span>by Kym Ellis</span>
+                            <span className='font-semibold'>Ghost Resources</span>
                         </div>
                     </div>
                     <div className='order-1 hidden w-[200px] shrink-0 items-center justify-center overflow-hidden md:visible! md:order-2 md:flex!'>

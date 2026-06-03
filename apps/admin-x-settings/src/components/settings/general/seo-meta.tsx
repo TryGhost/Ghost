@@ -28,7 +28,7 @@ const SearchEnginePreview: React.FC<SearchEnginePreviewProps> = ({
     return (
         <div>
             <div className='-mx-5 -mb-5 overflow-hidden rounded-b-xl bg-grey-50 px-5 pt-2 md:-mx-7 md:-mb-7 md:px-7 md:pt-7 dark:bg-grey-950'>
-                <div className='-mt-4 mb-2 text-xs text-grey-500 uppercase dark:text-grey-800'>Preview</div>
+                <div className='-mt-4 mb-2 text-sm text-grey-500 uppercase dark:text-grey-800'>Preview</div>
                 <div className='rounded-t-sm bg-white px-5 py-3 shadow-lg dark:bg-grey-950'>
                     <div className='mt-3 flex items-center'>
                         <div>
@@ -46,14 +46,14 @@ const SearchEnginePreview: React.FC<SearchEnginePreviewProps> = ({
                             backgroundSize: 'contain'
                         }}>
                         </div>
-                        <div className='flex flex-col text-sm'>
+                        <div className='flex flex-col'>
                             <span>{siteDomain}</span>
-                            <span className='-mt-0.5 inline-block text-xs text-grey-600'>{siteUrl}</span>
+                            <span className='-mt-0.5 inline-block text-sm text-grey-600'>{siteUrl}</span>
                         </div>
                     </div>
                     <div className='mt-1 flex flex-col'>
                         <span className='text-lg text-[#1a0dab] dark:text-blue'>{title}</span>
-                        <span className='text-sm text-grey-900 dark:text-grey-700'>{description}</span>
+                        <span className='text-grey-900 dark:text-grey-700'>{description}</span>
                     </div>
                 </div>
             </div>
@@ -217,7 +217,7 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 <div className="mb-4 h-3 w-3/5 rounded bg-grey-200 dark:bg-grey-900"></div>
                 <SettingGroupContent className="overflow-hidden rounded-md border border-grey-300 dark:border-grey-900">
                     <ImageUpload
-                        fileUploadClassName='flex cursor-pointer items-center justify-center rounded rounded-b-none border border-grey-100 border-b-0 bg-grey-50 p-3 text-sm font-semibold text-grey-800 hover:text-black dark:border-grey-900'
+                        fileUploadClassName='flex cursor-pointer items-center justify-center rounded rounded-b-none border border-grey-100 border-b-0 bg-grey-50 p-3 font-semibold text-grey-800 hover:text-black dark:border-grey-900'
                         height='300px'
                         id='facebook-image'
                         imageURL={facebookImage}
@@ -273,7 +273,7 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 <div className="mb-4 h-3 w-3/5 rounded bg-grey-200 dark:bg-grey-900"></div>
                 <SettingGroupContent className="overflow-hidden rounded-md border border-grey-300 dark:border-grey-900">
                     <ImageUpload
-                        fileUploadClassName='flex cursor-pointer items-center justify-center rounded rounded-b-none border border-grey-100 border-b-0 bg-grey-50 p-3 text-sm font-semibold text-grey-800 hover:text-black dark:border-grey-900'
+                        fileUploadClassName='flex cursor-pointer items-center justify-center rounded rounded-b-none border border-grey-100 border-b-0 bg-grey-50 p-3 font-semibold text-grey-800 hover:text-black dark:border-grey-900'
                         height='300px'
                         id='twitter-image'
                         imageURL={twitterImage}
