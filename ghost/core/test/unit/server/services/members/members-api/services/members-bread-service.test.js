@@ -9,6 +9,38 @@ describe('MemberBreadService', function () {
         sinon.restore();
     });
 
+    describe('pickWelcomeEmailStatus', function () {
+        // pickWelcomeEmailStatus is the gate that decides whether a manual welcome
+        // email send is allowed for a given member status. Both the create-time
+        // toggle and the resend endpoint depend on it returning the right group key
+        // (which feeds memberRepository.triggerMemberSignupAutomation), and the
+        // resend endpoint surfaces a 400 when it returns null.
+        const service = new MemberBreadService({});
+
+        it('maps free members to the free status group', function () {
+            assert.equal(service.pickWelcomeEmailStatus('free'), 'free');
+        });
+
+        it('maps paid members to the paid status group', function () {
+            assert.equal(service.pickWelcomeEmailStatus('paid'), 'paid');
+        });
+
+        it('maps gift members to the paid status group', function () {
+            assert.equal(service.pickWelcomeEmailStatus('gift'), 'paid');
+        });
+
+        it('returns null for comped members (no eligible automation)', function () {
+            assert.equal(service.pickWelcomeEmailStatus('comped'), null);
+        });
+
+        it('returns null for unknown statuses', function () {
+            assert.equal(service.pickWelcomeEmailStatus('unknown'), null);
+            assert.equal(service.pickWelcomeEmailStatus(''), null);
+            assert.equal(service.pickWelcomeEmailStatus(undefined), null);
+            assert.equal(service.pickWelcomeEmailStatus(null), null);
+        });
+    });
+
     describe('add', function () {
         // Helper to create a mock member model
         function createMockMemberModel(overrides = {}) {

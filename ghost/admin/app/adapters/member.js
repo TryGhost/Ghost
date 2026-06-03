@@ -22,4 +22,16 @@ export default class Member extends ApplicationAdapter {
 
         return parsedUrl.toString();
     }
+
+    urlForCreateRecord(modelName, snapshot) {
+        let url = super.urlForCreateRecord(...arguments);
+
+        if (snapshot && snapshot.adapterOptions && snapshot.adapterOptions.sendWelcomeEmail) {
+            let parsedUrl = new URL(url);
+            parsedUrl.searchParams.set('send_welcome_email', 'true');
+            return parsedUrl.toString();
+        }
+
+        return url;
+    }
 }

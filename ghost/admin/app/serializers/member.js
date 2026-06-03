@@ -5,6 +5,7 @@ export default class MemberSerializer extends ApplicationSerializer.extend(Embed
     attrs = {
         createdAtUTC: {key: 'created_at'},
         lastSeenAtUTC: {key: 'last_seen_at'},
+        welcomeEmailSentAtUTC: {key: 'welcome_email_sent_at'},
         labels: {embedded: 'always'},
         newsletters: {embedded: 'always'}
     };
@@ -17,6 +18,7 @@ export default class MemberSerializer extends ApplicationSerializer.extend(Embed
         delete json.geolocation;
         delete json.status;
         delete json.last_seen_at;
+        delete json.welcome_email_sent_at;
         delete json.comped;
         // Tiers are managed via direct API calls in gh-member-settings-form.js
         // (removeComplimentaryTask) and modal-member-tier.js (addTier task),

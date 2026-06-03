@@ -3550,6 +3550,154 @@ describe('Members API', function () {
             })
         });
     });
+
+    describe('Welcome email', function () {
+        // Helper that hits the public Admin API to seed an active free welcome
+        // email automation. The automation's eligibility (active + valid lexical)
+        // is the gate enqueueWelcomeEmailRun checks before queueing a run.
+        async function seedActiveFreeWelcomeEmail() {
+            await agent
+                .post('automated_emails')
+                .body({automated_emails: [{
+                    name: 'Welcome Email (Free)',
+                    slug: 'member-welcome-email-free',
+                    status: 'active',
+                    subject: 'Welcome!',
+                    lexical: JSON.stringify({root: {children: []}})
+                }]})
+                .expectStatus(201);
+        }
+
+        async function clearWelcomeEmailAutomations() {
+            await knex('welcome_email_automation_runs').del();
+            await knex('welcome_email_automated_emails').del();
+            await knex('automations').del();
+        }
+
+        afterEach(async function () {
+            await clearWelcomeEmailAutomations();
+        });
+
+        describe('POST /members/:id/welcome_email', function () {
+            it('Enqueues a welcome email run for an eligible member', async function () {
+                await seedActiveFreeWelcomeEmail();
+                const memberId = testUtils.DataGenerator.Content.members[0].id;
+
+                const {body} = await agent
+                    .post(`/members/${memberId}/welcome_email`)
+                    .expectStatus(200);
+
+                // Output is shaped by the sendWelcomeEmail serializer entry
+                // (singleMember), so the response should match every other
+                // member endpoint: `{members: [{id, ...}]}`.
+                assert.ok(Array.isArray(body.members), 'response should have a members array');
+                assert.equal(body.members.length, 1);
+                assert.equal(body.members[0].id, memberId);
+
+                const runs = await knex('welcome_email_automation_runs').where({member_id: memberId});
+                assert.equal(runs.length, 1, 'one welcome email run should be enqueued');
+            });
+
+            it('Returns 404 when no welcome email automation is configured', async function () {
+                // No seedActiveFreeWelcomeEmail() — automation table is empty.
+                const memberId = testUtils.DataGenerator.Content.members[0].id;
+
+                await agent
+                    .post(`/members/${memberId}/welcome_email`)
+                    .expectStatus(404)
+                    .matchBodySnapshot({
+                        errors: [{id: anyUuid}]
+                    });
+
+                const runs = await knex('welcome_email_automation_runs').where({member_id: memberId});
+                assert.equal(runs.length, 0, 'no run should be enqueued when no automation exists');
+            });
+
+            it('Returns 400 when member status is not eligible (comped)', async function () {
+                await seedActiveFreeWelcomeEmail();
+                const memberId = testUtils.DataGenerator.Content.members[0].id;
+                // Force the member into the comped status, which is not eligible
+                // for either the free or paid welcome email automation.
+                await knex('members').where({id: memberId}).update({status: 'comped'});
+
+                try {
+                    await agent
+                        .post(`/members/${memberId}/welcome_email`)
+                        .expectStatus(400)
+                        .matchBodySnapshot({
+                            errors: [{id: anyUuid}]
+                        });
+
+                    const runs = await knex('welcome_email_automation_runs').where({member_id: memberId});
+                    assert.equal(runs.length, 0, 'no run should be enqueued for ineligible status');
+                } finally {
+                    await knex('members').where({id: memberId}).update({status: 'free'});
+                }
+            });
+
+            it('Returns 404 for an unknown member id', async function () {
+                await seedActiveFreeWelcomeEmail();
+
+                await agent
+                    .post('/members/abcd1234abcd1234abcd1234/welcome_email')
+                    .expectStatus(404)
+                    .matchBodySnapshot({
+                        errors: [{id: anyUuid}]
+                    });
+            });
+
+            it('Is blocked when host email verification is required', async function () {
+                await seedActiveFreeWelcomeEmail();
+                mockManager.mockSetting('email_verification_required', true);
+                const memberId = testUtils.DataGenerator.Content.members[0].id;
+
+                await agent
+                    .post(`/members/${memberId}/welcome_email`)
+                    .expectStatus(403)
+                    .matchBodySnapshot({
+                        errors: [{id: anyUuid}]
+                    });
+
+                const runs = await knex('welcome_email_automation_runs').where({member_id: memberId});
+                assert.equal(runs.length, 0, 'no run should be enqueued when verification is required');
+            });
+        });
+
+        describe('POST /members/?send_welcome_email=true', function () {
+            it('Enqueues a run for the new member when an automation is configured', async function () {
+                await seedActiveFreeWelcomeEmail();
+
+                const {body} = await agent
+                    .post('/members/?send_welcome_email=true')
+                    .body({members: [{
+                        name: 'Welcome Email Optin',
+                        email: 'welcome_email_optin@test.com'
+                    }]})
+                    .expectStatus(201);
+
+                const newMemberId = body.members[0].id;
+                const runs = await knex('welcome_email_automation_runs').where({member_id: newMemberId});
+                assert.equal(runs.length, 1, 'one welcome email run should be enqueued for the new member');
+            });
+
+            it('Suppresses the welcome email when verification is required', async function () {
+                await seedActiveFreeWelcomeEmail();
+                mockManager.mockSetting('email_verification_required', true);
+
+                const {body} = await agent
+                    .post('/members/?send_welcome_email=true')
+                    .body({members: [{
+                        name: 'Welcome Email Suppressed',
+                        email: 'welcome_email_suppressed@test.com'
+                    }]})
+                    .expectStatus(201);
+
+                const newMemberId = body.members[0].id;
+                const runs = await knex('welcome_email_automation_runs').where({member_id: newMemberId});
+                assert.equal(runs.length, 0, 'no run should be enqueued when verification is required');
+            });
+        });
+    });
 });
 
 describe('Members API Bulk operations', function () {

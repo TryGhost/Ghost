@@ -2,11 +2,14 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const moment = require('moment');
+const {MEMBER_WELCOME_EMAIL_SLUGS, MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES} = require('../../../member-welcome-emails/constants');
 
 const messages = {
     stripeNotConnected: 'Missing Stripe connection.',
     memberAlreadyExists: 'Member already exists.',
-    memberNotFound: 'Member not found.'
+    memberNotFound: 'Member not found.',
+    welcomeEmailNotEligible: 'Welcome email is not available for this member\'s status.',
+    welcomeEmailNotConfigured: 'No active welcome email is configured.'
 };
 
 /**
@@ -47,7 +50,7 @@ module.exports = class MemberBREADService {
      * @param {import('./next-payment-calculator')} deps.nextPaymentCalculator
      * @param {IGiftServiceWrapper} deps.giftService
      */
-    constructor({memberRepository, labsService, emailService, stripeService, offersAPI, memberAttributionService, emailSuppressionList, settingsHelpers, nextPaymentCalculator, commentsService, giftService}) {
+    constructor({memberRepository, labsService, emailService, stripeService, offersAPI, memberAttributionService, emailSuppressionList, settingsHelpers, nextPaymentCalculator, commentsService, giftService, AutomatedEmailRecipient, Automation}) {
         this.offersAPI = offersAPI;
         /** @private */
         this.memberRepository = memberRepository;
@@ -69,6 +72,118 @@ module.exports = class MemberBREADService {
         this.commentsService = commentsService;
         /** @private */
         this.giftService = giftService;
+        /** @private */
+        this.AutomatedEmailRecipient = AutomatedEmailRecipient;
+        /** @private */
+        this.Automation = Automation;
+    }
+
+    /**
+     * @private
+     * Returns the timestamp of the most recent welcome email sent to the member,
+     * or null if none has been sent. Reads from the automated_email_recipients
+     * table, which is the same source the member activity feed uses.
+     * @param {string} memberId
+     * @returns {Promise<Date|null>}
+     */
+    async fetchWelcomeEmailSentAt(memberId) {
+        if (!this.AutomatedEmailRecipient || !memberId) {
+            return null;
+        }
+
+        // automated_email_recipients.automated_email_id is FK'd to
+        // welcome_email_automated_emails.id, so every row is a welcome email
+        // send by construction. If that table is ever broadened to other
+        // automation types, this query (and fetchWelcomeEmailSentAtMap) will
+        // need a join filter on the welcome email automation slug.
+        try {
+            const latest = await this.AutomatedEmailRecipient.forge()
+                .query((qb) => {
+                    qb.where('member_id', memberId)
+                        .orderBy('created_at', 'desc')
+                        .limit(1);
+                })
+                .fetch({require: false});
+            return latest ? latest.get('created_at') : null;
+        } catch (err) {
+            logging.error(`Failed to load welcome email sent timestamp for member ${memberId}.`);
+            logging.error(err);
+            return null;
+        }
+    }
+
+    /**
+     * @private
+     * Bulk version of fetchWelcomeEmailSentAt. Returns a Map<memberId, Date> of
+     * the latest welcome email send per member; member ids with no sends are absent.
+     * @param {string[]} memberIds
+     * @returns {Promise<Map<string, Date>>}
+     */
+    async fetchWelcomeEmailSentAtMap(memberIds) {
+        const map = new Map();
+        if (!this.AutomatedEmailRecipient || !memberIds || memberIds.length === 0) {
+            return map;
+        }
+
+        try {
+            const rows = await this.AutomatedEmailRecipient.forge()
+                .query((qb) => {
+                    qb.whereIn('member_id', memberIds)
+                        .orderBy('created_at', 'desc');
+                })
+                .fetchAll();
+            for (const row of rows.models) {
+                const memberId = row.get('member_id');
+                if (!map.has(memberId)) {
+                    map.set(memberId, row.get('created_at'));
+                }
+            }
+        } catch (err) {
+            logging.error(`Failed to load welcome email sent timestamps for ${memberIds.length} members.`);
+            logging.error(err);
+        }
+
+        return map;
+    }
+
+    /**
+     * @private
+     * Maps a member's current status to the status group ('free' or 'paid')
+     * accepted by memberRepository.triggerMemberSignupAutomation. Returns null
+     * if the status is not eligible for any welcome email automation (e.g. comped).
+     * @param {string} memberStatus
+     * @returns {'free'|'paid'|null}
+     */
+    pickWelcomeEmailStatus(memberStatus) {
+        for (const [statusGroup, eligibleStatuses] of Object.entries(MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES)) {
+            if (eligibleStatuses.includes(memberStatus)) {
+                return statusGroup;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @private
+     * Returns true when there is an active welcome email automation with a
+     * lexical body for the given status group. Mirrors the eligibility check
+     * inside #triggerMemberSignupLegacyAutomation so the manual send endpoint
+     * can report 404 instead of silently no-op'ing.
+     * @param {'free'|'paid'} statusGroup
+     * @returns {Promise<boolean>}
+     */
+    async isWelcomeEmailAutomationActive(statusGroup) {
+        if (!this.Automation) {
+            return false;
+        }
+        const automation = await this.Automation.findOne(
+            {slug: MEMBER_WELCOME_EMAIL_SLUGS[statusGroup]},
+            {withRelated: ['welcomeEmailAutomatedEmail']}
+        );
+        const email = automation?.related('welcomeEmailAutomatedEmail');
+        return Boolean(
+            automation && email && email.get('lexical') && automation.get('status') === 'active'
+        );
     }
 
     /**
@@ -388,6 +503,8 @@ module.exports = class MemberBREADService {
         const unsubscribeUrl = this.settingsHelpers.createUnsubscribeUrl(member.uuid);
         member.unsubscribe_url = unsubscribeUrl;
 
+        member.welcome_email_sent_at = (await this.fetchWelcomeEmailSentAt(member.id)) ?? null;
+
         return member;
     }
 
@@ -468,7 +585,81 @@ module.exports = class MemberBREADService {
             await this.memberRepository.setComplimentarySubscription(model, sharedOptions);
         }
 
+        if (options.send_welcome_email) {
+            // memberRepository.create only auto-triggers the welcome email when source is 'member'
+            // (i.e. self-signup). Admin-created members are skipped, so trigger it explicitly here
+            // when the API caller has opted in.
+            //
+            // Re-fetch the member: linkStripeCustomer / setComplimentarySubscription above can
+            // mutate the persisted status (free → paid/comped) without refreshing the in-memory
+            // model, so model.get('status') here would be stale and pick the wrong automation
+            // (or none).
+            const persisted = await this.memberRepository.get({id: model.id}, sharedOptions);
+            const statusGroup = persisted && this.pickWelcomeEmailStatus(persisted.get('status'));
+            if (statusGroup) {
+                try {
+                    await this.memberRepository.triggerMemberSignupAutomation(
+                        model.id,
+                        model.get('email'),
+                        statusGroup,
+                        sharedOptions
+                    );
+                } catch (err) {
+                    logging.error(`Failed to trigger welcome email for member ${model.id}.`);
+                    logging.error(err);
+                }
+            }
+        }
+
         return this.read({id: model.id}, options);
+    }
+
+    /**
+     * Manually triggers the welcome email automation for an existing member.
+     * The poller will create an automated_email_recipients row when the email is
+     * actually sent, which surfaces in the member's activity feed.
+     * @param {string} memberId
+     * @param {Object} [options]
+     * @returns {Promise<Object>} the updated member, including welcome_email_sent_at
+     */
+    async sendWelcomeEmail(memberId, options = {}) {
+        const model = await this.memberRepository.get({id: memberId});
+
+        if (!model) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.memberNotFound)
+            });
+        }
+
+        const statusGroup = this.pickWelcomeEmailStatus(model.get('status'));
+        if (!statusGroup) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.welcomeEmailNotEligible)
+            });
+        }
+
+        // Check existence up front so the API can return 404 — the new public
+        // trigger method returns void and silently no-ops when no automation is
+        // configured, which we'd otherwise have no way to surface.
+        if (!(await this.isWelcomeEmailAutomationActive(statusGroup))) {
+            throw new errors.NotFoundError({
+                message: tpl(messages.welcomeEmailNotConfigured)
+            });
+        }
+
+        const sharedOptions = {
+            ...(options.transacting && {transacting: options.transacting}),
+            ...(options.context && {context: options.context})
+        };
+
+        await this.memberRepository.triggerMemberSignupAutomation(
+            memberId,
+            model.get('email'),
+            statusGroup,
+            sharedOptions
+        );
+
+        return this.read({id: memberId}, options);
     }
 
     async edit(data, options) {
@@ -619,10 +810,11 @@ module.exports = class MemberBREADService {
         }
 
         const subscriptions = page.data.flatMap(model => model.related('stripeSubscriptions').slice());
-        const [offerMap, offerRedemptionsMap, giftMap] = await Promise.all([
+        const [offerMap, offerRedemptionsMap, giftMap, welcomeEmailSentAtMap] = await Promise.all([
             this.fetchSubscriptionOffers(subscriptions),
             this.fetchSubscriptionOfferRedemptions(subscriptions),
-            this.fetchActiveGiftsForMembers(page.data)
+            this.fetchActiveGiftsForMembers(page.data),
+            this.fetchWelcomeEmailSentAtMap(page.data.map(model => model.id))
         ]);
 
         const bulkSuppressionData = await this.emailSuppressionList.getBulkSuppressionData(page.data.map(member => member.get('email')));
@@ -641,6 +833,7 @@ module.exports = class MemberBREADService {
                 info: bulkSuppressionData[index].info
             };
             member.unsubscribe_url = this.settingsHelpers.createUnsubscribeUrl(member.uuid);
+            member.welcome_email_sent_at = welcomeEmailSentAtMap.get(model.id) ?? null;
 
             return member;
         });

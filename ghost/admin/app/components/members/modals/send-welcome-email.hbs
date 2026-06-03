@@ -1,0 +1,36 @@
+<div class="modal-content" data-test-modal="send-welcome-email">
+    <header class="modal-header">
+        <h1>{{if this.hasBeenSent "Resend welcome email?" "Send welcome email?"}}</h1>
+    </header>
+    <button type="button" class="close" title="Close" {{on "click" (fn @close false)}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    <div class="modal-body">
+        {{#if this.hasBeenSent}}
+            <p class="mb6">
+                <strong>{{or @data.member.name @data.member.email}}</strong> already received a welcome email on {{moment-format @data.member.welcomeEmailSentAtUTC "D MMM YYYY"}}. Send another?
+            </p>
+        {{else}}
+            <p class="mb6">
+                Send the welcome email to <strong>{{or @data.member.name @data.member.email}}</strong>?
+            </p>
+        {{/if}}
+    </div>
+
+    <div class="modal-footer">
+        <button
+            type="button"
+            class="gh-btn"
+            {{on "click" (fn @close false)}}
+            data-test-button="cancel"
+        >
+            <span>Cancel</span>
+        </button>
+        <GhTaskButton
+            @buttonText={{if this.hasBeenSent "Resend" "Send"}}
+            @successText="Sent"
+            @task={{this.sendTask}}
+            @class="gh-btn gh-btn-primary gh-btn-icon"
+            data-test-button="confirm"
+        />
+    </div>
+</div>

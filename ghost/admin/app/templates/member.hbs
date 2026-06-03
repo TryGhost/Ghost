@@ -74,6 +74,16 @@
                                 </button>
                             </li>
                             <li>
+                                <button
+                                    type="button"
+                                    class="mr2"
+                                    {{on "click" this.confirmSendWelcomeEmail}}
+                                    data-test-button="send-welcome-email"
+                                >
+                                    <span>{{if this.member.welcomeEmailSentAtUTC "Resend welcome email" "Send welcome email"}}</span>
+                                </button>
+                            </li>
+                            <li>
                                 {{#if (not-eq this.member.canComment false)}}
                                     <button
                                         type="button"
@@ -123,6 +133,8 @@
                 @saveMember={{this.save}}
                 @isSaveRunning={{this.saveTask.isRunning}}
                 @isLoading={{this.isLoading}}
+                @sendWelcomeEmail={{this.sendWelcomeEmailOnCreate}}
+                @onSendWelcomeEmailToggle={{this.toggleSendWelcomeEmailOnCreate}}
                 @onEnableCommenting={{this.confirmEnableCommenting}} />
         </form>
     </div>

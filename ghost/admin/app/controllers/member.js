@@ -3,6 +3,7 @@ import DeleteMemberModal from '../components/members/modals/delete-member';
 import DisableCommentingModal from '../components/members/modals/disable-commenting';
 import EmberObject, {action, defineProperty} from '@ember/object';
 import LogoutMemberModal from '../components/members/modals/logout-member';
+import SendWelcomeEmailModal from '../components/members/modals/send-welcome-email';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import moment from 'moment-timezone';
 import {inject as service} from '@ember/service';
@@ -35,6 +36,7 @@ export default class MemberController extends Controller {
     @tracked showImpersonateMemberModal = false;
     @tracked modalLabel = null;
     @tracked showLabelModal = false;
+    @tracked sendWelcomeEmailOnCreate = false;
 
     _previousLabels = null;
     _previousNewsletters = null;
@@ -238,6 +240,21 @@ export default class MemberController extends Controller {
         return this.saveTask.perform();
     }
 
+    @action
+    toggleSendWelcomeEmailOnCreate(event) {
+        this.sendWelcomeEmailOnCreate = event.target.checked;
+    }
+
+    @action
+    confirmSendWelcomeEmail() {
+        this.modals.open(SendWelcomeEmailModal, {
+            member: this.member,
+            afterSend: () => {
+                this.invalidateMembersCache();
+            }
+        });
+    }
+
     // Tasks -------------------------------------------------------------------
 
     @task({drop: true})
@@ -251,13 +268,17 @@ export default class MemberController extends Controller {
 
         try {
             const clearCountCache = member.isNew; // clear cache for adding new members so the count is updated without waiting for a refresh
+            const saveOptions = member.isNew && this.sendWelcomeEmailOnCreate
+                ? {adapterOptions: {sendWelcomeEmail: true}}
+                : undefined;
 
-            yield member.save();
+            yield member.save(saveOptions);
             member.updateLabels();
             member.labels.forEach(label => this.labelsManager.addLabel(label));
             this.invalidateMembersCache();
 
             this.setInitialRelationshipValues();
+            this.sendWelcomeEmailOnCreate = false;
 
             if (clearCountCache) {
                 this.membersCountCache.clear();

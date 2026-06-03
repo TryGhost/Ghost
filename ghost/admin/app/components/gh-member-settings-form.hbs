@@ -79,6 +79,33 @@
                 />
             {{/if}}
 
+            {{#if this.member.isNew}}
+                <h4 class="gh-main-section-header small bn">Welcome email</h4>
+                <div class="gh-main-section-content bordered gh-member-newsletter-section">
+                    <div class="gh-member-newsletter-row" data-test-member-settings-switch>
+                        <div>
+                            <h4 class="gh-member-newsletter-title">Send welcome email</h4>
+                        </div>
+                        <div class="for-switch xs">
+                            <label class="switch" for="member-send-welcome-email">
+                                <Input
+                                    @checked={{@sendWelcomeEmail}}
+                                    @type="checkbox"
+                                    id="member-send-welcome-email"
+                                    name="send-welcome-email"
+                                    data-test-checkbox="send-welcome-email"
+                                    {{on "change" @onSendWelcomeEmailToggle}}
+                                />
+                                <span class="input-toggle-component"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="gh-member-newsletter-footer middarkgrey">
+                        If enabled, member will receive the welcome email when they're added.
+                    </div>
+                </div>
+            {{/if}}
+
             {{#if this.membersUtils.paidMembersEnabled}}
                 <h4 class="gh-main-section-header small bn">Subscriptions</h4>
 

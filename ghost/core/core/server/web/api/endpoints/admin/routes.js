@@ -160,6 +160,8 @@ module.exports = function apiRoutes() {
     router.post('/members/:id/commenting/disable', mw.authAdminApi, http(api.memberCommenting.disable));
     router.post('/members/:id/commenting/enable', mw.authAdminApi, http(api.memberCommenting.enable));
 
+    router.post('/members/:id/welcome_email', mw.authAdminApi, http(api.members.sendWelcomeEmail));
+
     // ## Stats
     router.get('/stats/member_count', mw.authAdminApi, http(api.stats.memberCountHistory));
     router.get('/stats/mrr', mw.authAdminApi, http(api.stats.mrr));

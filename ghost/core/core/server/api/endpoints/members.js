@@ -103,7 +103,8 @@ const controller = {
         },
         options: [
             'send_email',
-            'email_type'
+            'email_type',
+            'send_welcome_email'
         ],
         validation: {
             data: {
@@ -120,6 +121,7 @@ const controller = {
             if (await membersService.verificationTrigger.checkVerificationRequired()) {
                 logging.warn(tpl(messages.notSendingWelcomeEmail));
                 frame.options.send_email = false;
+                frame.options.send_welcome_email = false;
             }
             const member = await membersService.api.memberBREADService.add(frame.data.members[0], frame.options);
 
@@ -170,6 +172,36 @@ const controller = {
         },
         async query(frame) {
             const member = await membersService.api.memberBREADService.logout(frame.options);
+
+            return member;
+        }
+    },
+
+    sendWelcomeEmail: {
+        statusCode: 200,
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'id'
+        ],
+        validation: {
+            options: {
+                id: {
+                    required: true
+                }
+            }
+        },
+        permissions: {
+            method: 'edit'
+        },
+        async query(frame) {
+            if (await membersService.verificationTrigger.checkVerificationRequired()) {
+                throw new errors.HostLimitError({
+                    message: tpl(messages.notSendingWelcomeEmail)
+                });
+            }
+            const member = await membersService.api.memberBREADService.sendWelcomeEmail(frame.options.id, frame.options);
 
             return member;
         }

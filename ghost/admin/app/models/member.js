@@ -12,6 +12,7 @@ export default Model.extend(ValidationEngine, {
     status: attr('string'),
     createdAtUTC: attr('moment-utc'),
     lastSeenAtUTC: attr('moment-utc'),
+    welcomeEmailSentAtUTC: attr('moment-utc'),
     subscriptions: attr('member-subscription'),
     attribution: attr(),
     subscribed: attr('boolean', {defaultValue: true}),
@@ -32,6 +33,7 @@ export default Model.extend(ValidationEngine, {
 
     ghostPaths: service(),
     ajax: service(),
+    store: service(),
 
     // remove client-generated labels, which have `id: null`.
     // Ember Data won't recognize/update them automatically
@@ -56,5 +58,12 @@ export default Model.extend(ValidationEngine, {
     logoutAllDevices: task(function* () {
         let url = this.get('ghostPaths.url').api('members', this.id, 'signout');
         yield this.ajax.post(url);
+    }).drop(),
+
+    sendWelcomeEmail: task(function* () {
+        let url = this.get('ghostPaths.url').api('members', this.id, 'welcome_email');
+        let response = yield this.ajax.post(url);
+        this.store.pushPayload('member', response);
+        return response;
     }).drop()
 });

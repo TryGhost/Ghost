@@ -14,6 +14,7 @@ module.exports = {
 
     editSubscription: createSerializer('editSubscription', singleMember),
     createSubscription: createSerializer('createSubscription', singleMember),
+    sendWelcomeEmail: createSerializer('sendWelcomeEmail', singleMember),
     bulkDestroy: createSerializer('bulkDestroy', passthrough),
     bulkEdit: createSerializer('bulkEdit', bulkAction),
     exportCSV: createSerializer('exportCSV', exportCSV),
@@ -186,7 +187,8 @@ function serializeMember(member, options) {
         attribution: serializeAttribution(json.attribution),
         unsubscribe_url: json.unsubscribe_url,
         can_comment: json.can_comment,
-        commenting: json.commenting
+        commenting: json.commenting,
+        welcome_email_sent_at: json.welcome_email_sent_at
     };
 
     if (json.products) {
