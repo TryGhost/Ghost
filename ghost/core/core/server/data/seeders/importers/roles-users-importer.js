@@ -27,7 +27,7 @@ class RolesUsersImporter extends TableImporter {
 
     generate() {
         const userRoles = ['Editor', 'Contributor', 'Author'];
-        const userRole = userRoles[faker.datatype.number({
+        const userRole = userRoles[faker.number.int({
             min: 0,
             max: userRoles.length - 1
         })];

@@ -22,15 +22,14 @@ export const searchKeywords = {
 
 const MembershipSettings: React.FC = () => {
     const {config, settings} = useGlobalData();
-    const [hasTipsAndDonations] = getSettingValues(settings, ['donations_enabled']) as [boolean];
+    const [hasTipsAndDonations, paidMembersEnabled] = getSettingValues(settings, ['donations_enabled', 'paid_members_enabled']) as [boolean, boolean];
     const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
     const hasAutomations = useFeatureFlag('automations');
-    const hasGiftSubscriptions = useFeatureFlag('giftSubscriptions');
     const visibleSearchKeywords = [
         searchKeywords.access,
         searchKeywords.tiers,
         searchKeywords.portal,
-        ...(hasGiftSubscriptions && hasStripeEnabled ? [searchKeywords.giftSubscriptions] : []),
+        ...(paidMembersEnabled ? [searchKeywords.giftSubscriptions] : []),
         ...(hasAutomations ? [] : [searchKeywords.memberEmails]),
         searchKeywords.tips
     ].flat();
@@ -41,7 +40,7 @@ const MembershipSettings: React.FC = () => {
             <SpamFilters keywords={searchKeywords.access} />
             <Tiers keywords={searchKeywords.tiers} />
             <Portal keywords={searchKeywords.portal} />
-            {hasGiftSubscriptions && hasStripeEnabled && <GiftSubscriptions keywords={searchKeywords.giftSubscriptions} />}
+            {paidMembersEnabled && <GiftSubscriptions keywords={searchKeywords.giftSubscriptions} />}
             {!hasAutomations && <MemberEmails keywords={searchKeywords.memberEmails} />}
             {hasTipsAndDonations && hasStripeEnabled && <TipsAndDonations keywords={searchKeywords.tips} />}
         </SearchableSection>

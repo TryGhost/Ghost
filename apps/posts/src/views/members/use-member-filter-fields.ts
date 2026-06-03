@@ -24,7 +24,6 @@ interface UseMemberFilterFieldsOptions {
     emailTrackOpens?: boolean;
     emailTrackClicks?: boolean;
     siteTimezone?: string;
-    giftSubscriptionsEnabled?: boolean;
 }
 
 type OfferOption = FilterOption<string>;
@@ -254,8 +253,7 @@ export function useMemberFilterFields({
     membersTrackSources = false,
     emailTrackOpens = false,
     emailTrackClicks = false,
-    siteTimezone = 'UTC',
-    giftSubscriptionsEnabled = false
+    siteTimezone = 'UTC'
 }: UseMemberFilterFieldsOptions): FilterFieldGroup[] {
     return useMemo(() => {
         const fields = getMemberFields();
@@ -380,9 +378,9 @@ export function useMemberFilterFields({
             }
 
             subscriptionFields.push(
-                createFieldConfig('status', giftSubscriptionsEnabled ? {
+                createFieldConfig('status', {
                     options: [...fields.status.options, {value: 'gift', label: 'Gift subscription'}]
-                } : {}),
+                }),
                 createFieldConfig('subscriptions.plan_interval'),
                 createFieldConfig('subscriptions.status'),
                 createDateFieldConfig('subscriptions.start_date', today),
@@ -449,7 +447,6 @@ export function useMemberFilterFields({
         emailValueSource,
         emailTrackClicks,
         emailTrackOpens,
-        giftSubscriptionsEnabled,
         hasMultipleTiers,
         labelValueSource,
         membersTrackSources,

@@ -160,9 +160,8 @@ class OEmbedService {
         const baseName = ext ? path.basename(fileName, ext) : fileName;
         const name = store.getSanitizedFileName(baseName);
 
-        const hash = crypto.createHash('sha256').update(imageBuffer).digest('hex');
-        const hashedFileName = `${name}-${hash}${ext}`;
-        const targetPath = path.join(imageType, hashedFileName);
+        const uniqueFileName = `${name}-${crypto.randomUUID()}${ext}`;
+        const targetPath = path.join(imageType, uniqueFileName);
 
         return store.saveRaw(imageBuffer, targetPath);
     }

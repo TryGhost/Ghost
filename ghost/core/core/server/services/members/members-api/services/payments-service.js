@@ -5,6 +5,7 @@ const TierPriceChangeEvent = require('../../../tiers/tier-price-change-event');
 const TierNameChangeEvent = require('../../../tiers/tier-name-change-event');
 const OfferCreatedEvent = require('../../../offers/domain/events/offer-created-event');
 const {BadRequestError} = require('@tryghost/errors');
+const {t} = require('../../../i18n');
 
 class PaymentsService {
     /**
@@ -358,7 +359,10 @@ class PaymentsService {
      * @returns {string}
      */
     getDonationPriceNickname() {
-        const nickname = 'Support ' + this.settingsCache.get('title');
+        const nickname = t('Support {siteTitle}', {
+            siteTitle: this.settingsCache.get('title'),
+            interpolation: {escapeValue: false}
+        });
         return nickname.substring(0, 250);
     }
 

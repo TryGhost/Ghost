@@ -718,6 +718,9 @@ module.exports = class StripeAPI {
             customer: customer ? customer.id : undefined,
             customer_email: !customer && customerEmail ? customerEmail : undefined,
             submit_type: 'pay',
+            invoice_creation: {
+                enabled: true
+            },
             line_items: [{
                 price_data: {
                     currency,

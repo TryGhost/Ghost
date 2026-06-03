@@ -313,6 +313,7 @@
     "Success! Your account is fully activated, you now have access to all content.": "Notification text when a user has activated their email and can access content",
     "Success! Your email is updated.": "Notification text when a user has updated their email address",
     "Successfully unsubscribed": "A confirmation message when a member clicks an unsubscribe link",
+    "Support {siteTitle}": "Label used in the Stripe Checkout product title for site donations",
     "Tags": "Search results header",
     "Tap the link below to complete the signup process for {siteTitle}, and be automatically signed in:": "Magic link email",
     "Thank you for signing up to {siteTitle}!": "Magic link email",

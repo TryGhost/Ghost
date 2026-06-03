@@ -11,6 +11,7 @@ export * from './components/ui/card';
 export * from './components/ui/chart';
 export * from './components/ui/checkbox';
 export * from './components/ui/command';
+export * from './components/ui/context-menu';
 export * from './components/ui/data-list';
 export * from './components/ui/dialog';
 export * from './components/ui/dropdown-menu';
@@ -50,6 +51,7 @@ export * from './components/ui/tooltip';
 export * from './components/ui/trend-badge';
 
 export type {DropdownMenuCheckboxItemProps as DropdownMenuCheckboxItemProps} from '@radix-ui/react-dropdown-menu';
+export type {ContextMenuCheckboxItemProps as ContextMenuCheckboxItemProps} from '@radix-ui/react-context-menu';
 
 export {IconComponents as Icon} from './components/ui/icon';
 

@@ -31,7 +31,6 @@ describe('Gift reminder processing', function () {
     });
 
     beforeEach(async function () {
-        mockManager.mockLabsEnabled('giftSubscriptions');
         emailMockReceiver = mockManager.mockMail();
 
         redeemerMember = await models.Member.add({

@@ -44,7 +44,7 @@ const AdminContextMenu: React.FC<Props> = ({comment, close, showAuthorActions = 
 
     return (
         <div className="flex w-full flex-col gap-0.5">
-            {labs?.commentModeration && adminCommentUrl && (
+            {adminCommentUrl && (
                 <a
                     className={itemClassName}
                     data-testid="view-in-admin-button"
