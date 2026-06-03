@@ -12,9 +12,8 @@ export type AddStepEdgeData = {
     onPick: (type: StepPickerType, anchor: {sourceId: string; targetId: string}) => void;
 };
 
-const INSERT_BUTTON_CLASSES = 'border-transparent bg-green-500 text-white shadow-sm hover:bg-green-600';
+const INSERT_BUTTON_CLASSES = 'border-dashed border-border-default bg-surface-page text-text-secondary shadow-sm hover:border-border-strong';
 const DEFAULT_EDGE_STROKE = 'var(--xy-edge-stroke)';
-const HOVERED_EDGE_STROKE = 'var(--color-green-500)';
 
 const AddStepEdge: React.FC<EdgeProps> = ({
     id,
@@ -27,7 +26,8 @@ const AddStepEdge: React.FC<EdgeProps> = ({
     data
 }) => {
     const [open, setOpen] = useState(false);
-    const [hovered, setHovered] = useState(false);
+    const [edgeHovered, setEdgeHovered] = useState(false);
+    const [labelHovered, setLabelHovered] = useState(false);
     const edgeData = data as AddStepEdgeData | undefined;
 
     const [path, labelX, labelY] = getSmoothStepPath({
@@ -39,10 +39,6 @@ const AddStepEdge: React.FC<EdgeProps> = ({
         targetPosition
     });
 
-    const edgeStyle: React.CSSProperties = {
-        stroke: hovered || open ? HOVERED_EDGE_STROKE : DEFAULT_EDGE_STROKE
-    };
-
     if (!edgeData) {
         return <BaseEdge id={id} path={path} style={{stroke: DEFAULT_EDGE_STROKE}} />;
     }
@@ -52,12 +48,12 @@ const AddStepEdge: React.FC<EdgeProps> = ({
         edgeData.onPick(type, {sourceId: edgeData.sourceId, targetId: edgeData.targetId});
     };
 
-    const visible = open || hovered;
+    const visible = open || edgeHovered || labelHovered;
     const button = (
         <button
             aria-label='Insert step here'
             className={cn(
-                'flex size-7 items-center justify-center rounded-full border transition-opacity focus-visible:opacity-100 focus-visible:outline-none',
+                'flex size-8 items-center justify-center rounded-full border transition-opacity focus-visible:opacity-100 focus-visible:outline-none',
                 INSERT_BUTTON_CLASSES,
                 visible ? 'opacity-100' : 'opacity-0',
                 edgeData.disabled && 'cursor-not-allowed!'
@@ -66,7 +62,7 @@ const AddStepEdge: React.FC<EdgeProps> = ({
             disabled={edgeData.disabled}
             type='button'
         >
-            <LucideIcon.Plus className='size-4' strokeWidth={1.5} />
+            <LucideIcon.Plus className='size-5' strokeWidth={1.5} />
         </button>
     );
 
@@ -86,7 +82,7 @@ const AddStepEdge: React.FC<EdgeProps> = ({
         control = (
             <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>{button}</PopoverTrigger>
-                <PopoverContent align='center' className='p-0' side='right'>
+                <PopoverContent align='center' className='border-0 p-0 shadow-lg' side='top' sideOffset={12}>
                     <StepPicker onPick={handlePick} />
                 </PopoverContent>
             </Popover>
@@ -95,18 +91,18 @@ const AddStepEdge: React.FC<EdgeProps> = ({
 
     return (
         <g
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
+            onMouseEnter={() => setEdgeHovered(true)}
+            onMouseLeave={() => setEdgeHovered(false)}
         >
-            <BaseEdge id={id} interactionWidth={30} path={path} style={edgeStyle} />
+            <BaseEdge id={id} interactionWidth={30} path={path} style={{stroke: DEFAULT_EDGE_STROKE}} />
             <EdgeLabelRenderer>
                 <div
                     className='pointer-events-auto absolute'
                     style={{
                         transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`
                     }}
-                    onMouseEnter={() => setHovered(true)}
-                    onMouseLeave={() => setHovered(false)}
+                    onMouseEnter={() => setLabelHovered(true)}
+                    onMouseLeave={() => setLabelHovered(false)}
                 >
                     {/* Wider hit zone so the + becomes visible when the cursor is near the edge midpoint. */}
                     <div className='flex h-10 w-16 items-center justify-center'>
