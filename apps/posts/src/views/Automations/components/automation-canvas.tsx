@@ -5,7 +5,7 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import StepPicker, {type StepPickerType} from './step-picker';
 import {AutomationAction, AutomationDetail, AutomationSendEmailAction, AutomationWaitAction, InsertActionAnchor, MAX_AUTOMATION_ACTIONS, insertSendEmailAction, insertWaitAction, removeAction, updateSendEmailAction, updateWaitAction} from '@tryghost/admin-x-framework/api/automations';
 import {Background, BackgroundVariant, Controls, Edge, Handle, Node, NodeProps, Position, ReactFlow, useReactFlow, useViewport} from '@xyflow/react';
-import {Banner, Button, Checkbox, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger, Input, Label, LoadingIndicator, Popover, PopoverContent, PopoverTrigger, Select, SelectTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
+import {Banner, Button, Checkbox, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger, Input, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText, Label, LoadingIndicator, Popover, PopoverContent, PopoverTrigger, Select, SelectTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 
 const MAX_WAIT_DAYS = 30;
@@ -604,13 +604,22 @@ const WaitSidebarBody: React.FC<{
 
     const days = Number(daysText);
     const isValid = getValidWaitDays(daysText) !== null;
-    const unitLabel = days === 1 ? 'Day' : 'Days';
-
     const updateWaitDays = (nextDays: number) => {
         const nextHours = nextDays * 24;
         if (nextHours !== action.data.wait_hours) {
             onUpdate(nextHours);
         }
+    };
+
+    const stepWaitDays = (direction: -1 | 1) => {
+        const currentDays = getValidWaitDays(daysText);
+        if (currentDays === null) {
+            return;
+        }
+
+        const nextDays = Math.min(MAX_WAIT_DAYS, Math.max(1, currentDays + direction));
+        setDaysText(String(nextDays));
+        updateWaitDays(nextDays);
     };
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -627,16 +636,40 @@ const WaitSidebarBody: React.FC<{
     return (
         <div className='flex flex-1 flex-col gap-5'>
             <SidebarField label='Wait for'>
-                <div className='grid grid-cols-[6rem_1fr] gap-2'>
-                    <Input
+                <InputGroup
+                    aria-label='Wait duration in days'
+                    className='h-(--control-height)'
+                    data-disabled={!isValid ? 'true' : undefined}
+                >
+                    <InputGroupInput
                         aria-invalid={!isValid}
-                        className='h-(--control-height)'
+                        className='w-10 min-w-10 flex-none pr-1 font-mono tabular-nums'
                         inputMode='numeric'
                         value={daysText}
                         onChange={handleChange}
                     />
-                    <ReadOnlySelect value={unitLabel} />
-                </div>
+                    <InputGroupText className='mr-auto'>days</InputGroupText>
+                    <InputGroupAddon align='inline-end' className='gap-0.5 pr-2'>
+                        <InputGroupButton
+                            aria-label='Decrease wait by one day'
+                            disabled={!isValid || days <= 1}
+                            size='icon-xs'
+                            title='Decrease wait by one day'
+                            onClick={() => stepWaitDays(-1)}
+                        >
+                            <LucideIcon.Minus className='size-4' />
+                        </InputGroupButton>
+                        <InputGroupButton
+                            aria-label='Increase wait by one day'
+                            disabled={!isValid || days >= MAX_WAIT_DAYS}
+                            size='icon-xs'
+                            title='Increase wait by one day'
+                            onClick={() => stepWaitDays(1)}
+                        >
+                            <LucideIcon.Plus className='size-4' />
+                        </InputGroupButton>
+                    </InputGroupAddon>
+                </InputGroup>
                 {!isValid && (
                     <span className='text-xs text-red'>
                         Enter a whole number between 1 and {formatNumber(MAX_WAIT_DAYS)} days.

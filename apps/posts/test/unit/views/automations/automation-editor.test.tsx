@@ -564,6 +564,33 @@ describe('AutomationEditor', () => {
         expect(mutateCall.actions).toContainEqual({id: 'action-wait', type: 'wait', data: {wait_hours: 72}});
     });
 
+    it('increments and decrements the wait step from the day input group buttons', () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        fireEvent.click(screen.getByRole('button', {name: 'Wait: 1 day'}));
+        let sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        expect(within(sidebar).getByRole('button', {name: 'Decrease wait by one day'})).toBeDisabled();
+
+        fireEvent.click(within(sidebar).getByRole('button', {name: 'Increase wait by one day'}));
+
+        expect(screen.getByRole('button', {name: 'Wait: 2 days'})).toBeInTheDocument();
+        sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        expect(within(sidebar).getByDisplayValue('2')).toBeInTheDocument();
+
+        fireEvent.click(within(sidebar).getByRole('button', {name: 'Decrease wait by one day'}));
+
+        expect(screen.getByRole('button', {name: 'Wait: 1 day'})).toBeInTheDocument();
+        sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        expect(within(sidebar).getByDisplayValue('1')).toBeInTheDocument();
+        expect(within(sidebar).getByRole('button', {name: 'Decrease wait by one day'})).toBeDisabled();
+    });
+
     it('rejects non-decimal wait editor values', () => {
         mockUseReadAutomation.mockReturnValue({
             data: {automations: [automationDetail]},
