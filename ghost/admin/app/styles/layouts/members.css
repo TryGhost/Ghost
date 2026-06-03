@@ -104,6 +104,7 @@ label[for="member-description"] + p {
     padding: 0;
     font-size: 2.1rem;
     font-weight: 500;
+    letter-spacing: -0.03em;
 }
 
 .gh-member-details p {
