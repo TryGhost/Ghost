@@ -142,7 +142,6 @@ overrides:
   'eslint-plugin-ghost>@typescript-eslint/utils': 8.49.0
   'ember-svg-jar>cheerio': 1.2.0
   'juice>cheerio': 0.22.0
-  lodash.template: 4.5.0
   '@babel/runtime@<7.26.10': ^7.26.10
   '@tootallnate/once@<3.0.1': ^3.0.1
   'ansi-html@<0.0.8': ^0.0.9
