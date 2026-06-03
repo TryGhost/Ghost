@@ -1050,6 +1050,17 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
         setEmailModalMode('edit');
     };
 
+    const handleNodeDoubleClick = useCallback((event: React.MouseEvent, node: AutomationFlowNode) => {
+        event.stopPropagation();
+        if (!automation || node.id === TAIL_CANVAS_ID || node.id === TRIGGER_CANVAS_ID) {
+            return;
+        }
+        const action = automation.actions.find(item => item.id === node.id);
+        if (action?.type === 'send_email') {
+            handleEditEmail(action.id);
+        }
+    }, [automation, handleEditEmail]);
+
     if (isLoading) {
         return (
             <div className='flex flex-1 items-center justify-center bg-surface-page' data-testid='automation-canvas-loading'>
@@ -1088,6 +1099,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
                 nodesFocusable={false}
                 nodeTypes={nodeTypes}
                 proOptions={{hideAttribution: true}}
+                zoomOnDoubleClick={false}
                 zoomOnScroll={false}
                 panOnScroll
                 onNodeClick={(event, node) => {
@@ -1098,6 +1110,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
                         setSelectedStep({id: node.id});
                     }
                 }}
+                onNodeDoubleClick={handleNodeDoubleClick}
                 onPaneClick={clearDetail}
             >
                 <Background variant={BackgroundVariant.Dots} />

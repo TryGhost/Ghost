@@ -62,7 +62,9 @@ type StubReactFlowProps = {
     nodeTypes?: Record<string, React.ComponentType<NodeRenderProps>>;
     edgeTypes?: Record<string, React.ComponentType<EdgeRenderProps>>;
     onNodeClick?: (event: React.MouseEvent<HTMLDivElement>, node: StubNode) => void;
+    onNodeDoubleClick?: (event: React.MouseEvent<HTMLDivElement>, node: StubNode) => void;
     onPaneClick?: (event: React.MouseEvent<HTMLDivElement>) => void;
+    zoomOnDoubleClick?: boolean;
 };
 type NodeRenderProps = {id: string; data: Record<string, unknown>; type: string};
 type EdgeRenderProps = {id: string; data: Record<string, unknown>; sourceX: number; sourceY: number; targetX: number; targetY: number; sourcePosition: string; targetPosition: string};
@@ -71,8 +73,8 @@ vi.mock('@xyflow/react', async () => {
     const actual = await vi.importActual<typeof import('@xyflow/react')>('@xyflow/react');
     return {
         ...actual,
-        ReactFlow: ({nodes, edges, children, className, nodeTypes, edgeTypes, onNodeClick, onPaneClick}: StubReactFlowProps) => (
-            <div className={className} data-testid='react-flow-mock' onClick={onPaneClick}>
+        ReactFlow: ({nodes, edges, children, className, nodeTypes, edgeTypes, onNodeClick, onNodeDoubleClick, onPaneClick, zoomOnDoubleClick}: StubReactFlowProps) => (
+            <div className={className} data-testid='react-flow-mock' data-zoom-on-double-click={String(zoomOnDoubleClick)} onClick={onPaneClick}>
                 {nodes.map((node) => {
                     const nodeType = node.type ?? 'default';
                     const Custom = nodeTypes?.[nodeType];
@@ -84,6 +86,10 @@ vi.mock('@xyflow/react', async () => {
                             onClick={(event) => {
                                 event.stopPropagation();
                                 onNodeClick?.(event, node);
+                            }}
+                            onDoubleClick={(event) => {
+                                event.stopPropagation();
+                                onNodeDoubleClick?.(event, node);
                             }}
                         >
                             {Custom ? <Custom data={node.data ?? {}} id={node.id} type={nodeType} /> : null}
@@ -259,6 +265,7 @@ describe('AutomationEditor', () => {
 
         renderEditor();
 
+        expect(screen.getByTestId('react-flow-mock')).toHaveAttribute('data-zoom-on-double-click', 'false');
         const controls = screen.getByTestId('react-flow-controls');
         expect(controls).toHaveAttribute('data-show-interactive', 'false');
         expect(controls).toHaveAttribute('data-show-fit-view', 'false');
@@ -428,6 +435,24 @@ describe('AutomationEditor', () => {
         expect(screen.queryByRole('complementary', {name: 'Step details'})).not.toBeInTheDocument();
         expect(emailStep).toHaveAttribute('aria-pressed', 'false');
         expect(screen.getByTestId('modal-initial-mode')).toHaveTextContent('preview');
+    });
+
+    it('opens the email editor from an email node double-click without opening the sidebar', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        const emailStep = screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'});
+        fireEvent.doubleClick(emailStep);
+
+        expect(await screen.findByTestId('email-content-modal')).toBeInTheDocument();
+        expect(screen.queryByRole('complementary', {name: 'Step details'})).not.toBeInTheDocument();
+        expect(emailStep).toHaveAttribute('aria-pressed', 'false');
+        expect(screen.getByTestId('modal-initial-mode')).toHaveTextContent('edit');
     });
 
     it('shows paid member eligibility for the paid welcome automation trigger', () => {
