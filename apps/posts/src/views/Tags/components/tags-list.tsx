@@ -95,7 +95,7 @@ function TagsList({
                                         className="before:absolute before:top-0 before:left-0 before:z-10 before:h-full before:w-[100vw]"
                                         href={`#/tags/${item.slug}`}
                                     >
-                                        <span className="block truncate text-base font-medium">
+                                        <span className="block truncate text-base text-md font-semibold">
                                             {item.name}
                                         </span>
                                     </a>

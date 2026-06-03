@@ -20,6 +20,10 @@
     font-weight: 500;
 }
 
+.gh-member-details-identity .gh-member-avatar-label {
+    font-size: 2.1rem;
+}
+
 .gh-member-avatar-image {
     display: block;
     position: absolute;
@@ -97,20 +101,22 @@ label[for="member-description"] + p {
     top: 0px;
     left: 0;
     height: max-content;
+    margin-top: 20px;
+    max-width: 320px;
 }
 
 .gh-member-details h3 {
     margin: 0;
     padding: 0;
     font-size: 2.1rem;
-    font-weight: 500;
+    font-weight: 600;
     letter-spacing: -0.03em;
 }
 
 .gh-member-details p {
     margin: 0;
     padding: 0;
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     color: var(--darkgrey-l1);
 }
 

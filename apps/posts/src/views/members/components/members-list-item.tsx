@@ -91,7 +91,7 @@ function MembersListItemName({item, backPath, onClick}: { item: Member; backPath
                         onClick(item.id);
                     } : undefined}
                 >
-                    <span className="block truncate font-semibold">
+                    <span className="block truncate text-md font-semibold">
                         {item.name || item.email || 'Anonymous'}
                     </span>
                 </a>
