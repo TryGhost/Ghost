@@ -91,12 +91,8 @@ async function ping(post) {
 
         if (!url || url.endsWith('/404/')) {
             logging.warn({
-                system: {
-                    event: 'indexnow.unresolved_url',
-                    post_id: post.id,
-                    post_slug: post.slug,
-                    url
-                }
+                event: {name: 'indexnow.unresolved_url'},
+                post: {id: post.id, slug: post.slug, url}
             }, `${INDEXNOW_LOG_KEY} Skipped ping - post has no resolvable URL`);
             return;
         }
@@ -105,11 +101,8 @@ async function ping(post) {
         const key = getApiKey();
         if (!key) {
             logging.warn({
-                system: {
-                    event: 'indexnow.api_key_missing',
-                    post_id: post.id,
-                    post_slug: post.slug
-                }
+                event: {name: 'indexnow.api_key_missing'},
+                post: {id: post.id, slug: post.slug}
             }, `${INDEXNOW_LOG_KEY} API key not available`);
             return;
         }
@@ -139,13 +132,9 @@ async function ping(post) {
         }
 
         logging.info({
-            system: {
-                event: 'indexnow.pinged',
-                post_id: post.id,
-                post_slug: post.slug,
-                url,
-                status_code: response.statusCode
-            }
+            event: {name: 'indexnow.pinged'},
+            post: {id: post.id, slug: post.slug, url},
+            http: {response: {status_code: response.statusCode}}
         }, `${INDEXNOW_LOG_KEY} Successfully pinged ${url}`);
     } catch (err) {
         // Log errors but don't throw - IndexNow failures shouldn't disrupt publishing
@@ -180,13 +169,9 @@ async function ping(post) {
         }
 
         logging.warn({
-            system: {
-                event: eventName,
-                post_id: post.id,
-                post_slug: post.slug,
-                url,
-                status_code: err.statusCode ?? null
-            },
+            event: {name: eventName},
+            post: {id: post.id, slug: post.slug, url},
+            http: {response: {status_code: err.statusCode ?? null}},
             err: error
         }, `${INDEXNOW_LOG_KEY} ${error.message}`);
     }
