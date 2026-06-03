@@ -268,12 +268,11 @@ function shouldInsertActionRevision(action: AutomationAction, latestRevision: Ac
 
 function buildRevisionActionData(action: AutomationAction, revision: ActionRevisionRow): WaitRevisionData | SendEmailRevisionData {
     switch (action.type) {
-    case 'wait': {
+    case 'wait':
         return {
             wait_hours: revision.wait_hours
         };
-    }
-    case 'send_email': {
+    case 'send_email':
         return {
             email_subject: revision.email_subject,
             email_lexical: revision.email_lexical,
@@ -282,7 +281,6 @@ function buildRevisionActionData(action: AutomationAction, revision: ActionRevis
             email_sender_reply_to: revision.email_sender_reply_to,
             email_design_setting_id: revision.email_design_setting_id
         };
-    }
     default: {
         const _exhaustive: never = action;
         throw new errors.InternalServerError({
