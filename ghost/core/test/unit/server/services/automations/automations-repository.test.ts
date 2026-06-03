@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
-import {AutomationsRepository} from '../../../../../core/server/services/automations/automations-repository';
+import ObjectId from 'bson-objectid';
 import {createTemporaryFakeAutomationsDatabase} from '../../../../../core/server/services/automations/temporary-fake-database';
 import {createFakeDatabaseAutomationsRepository} from '../../../../../core/server/services/automations/fake-database-automations-repository';
+import type {AutomationAction, AutomationsRepository} from '../../../../../core/server/services/automations/automations-repository';
 import type {DatabaseSync, SQLInputValue} from 'node:sqlite';
 
 const addHours = (dateCol: unknown, hours: number): Date => {
@@ -59,6 +60,24 @@ describe('automations repository', function () {
             WHERE automation_id = ?
         `).get(automationId);
         return result?.count;
+    };
+
+    const getRevisionCount = (actionId?: string) => {
+        const row = actionId
+            ? database.prepare('SELECT COUNT(*) AS count FROM automation_action_revisions WHERE action_id = ?').get(actionId)
+            : database.prepare('SELECT COUNT(*) AS count FROM automation_action_revisions').get();
+
+        return Number((row as {count: number}).count);
+    };
+
+    const changeWaitHours = (action: AutomationAction, waitHours: number): AutomationAction => {
+        assert.equal(action.type, 'wait');
+        return {
+            ...action,
+            data: {
+                wait_hours: waitHours
+            }
+        };
     };
 
     beforeEach(function () {
@@ -200,6 +219,74 @@ describe('automations repository', function () {
 
             assert.equal(getRunByMemberEmail('free-no-actions@example.com'), undefined);
             assert.equal(getRunCountByAutomationId(freeAutomation.id), 0);
+        });
+    });
+
+    describe('edit', function () {
+        it('only inserts action revisions when action data changes', async function () {
+            const initialAutomation = await getAutomationBySlug('member-welcome-email-free');
+            const initialRevisionCount = getRevisionCount();
+            const waitAction = initialAutomation.actions.find(action => action.type === 'wait');
+            const unchangedEmailAction = initialAutomation.actions.find(action => action.type === 'send_email');
+
+            assert(waitAction);
+            assert(unchangedEmailAction);
+            assert.equal(getRevisionCount(waitAction.id), 1);
+            assert.equal(getRevisionCount(unchangedEmailAction.id), 1);
+
+            await repo.edit(initialAutomation.id, {
+                status: 'inactive',
+                actions: initialAutomation.actions,
+                edges: initialAutomation.edges
+            });
+
+            assert.equal(getRevisionCount(), initialRevisionCount);
+            assert.equal(getRevisionCount(waitAction.id), 1);
+            assert.equal(getRevisionCount(unchangedEmailAction.id), 1);
+
+            const changedWaitAction = changeWaitHours(waitAction, waitAction.data.wait_hours + 24);
+
+            await repo.edit(initialAutomation.id, {
+                status: 'inactive',
+                actions: [changedWaitAction, unchangedEmailAction],
+                edges: [{
+                    source_action_id: changedWaitAction.id,
+                    target_action_id: unchangedEmailAction.id
+                }]
+            });
+
+            assert.equal(getRevisionCount(), initialRevisionCount + 1);
+            assert.equal(getRevisionCount(waitAction.id), 2);
+            assert.equal(getRevisionCount(unchangedEmailAction.id), 1);
+
+            const addedActionId = ObjectId().toString();
+            const addedAction: AutomationAction = {
+                id: addedActionId,
+                type: 'wait',
+                data: {
+                    wait_hours: 72
+                }
+            };
+
+            await repo.edit(initialAutomation.id, {
+                status: 'inactive',
+                actions: [changedWaitAction, unchangedEmailAction, addedAction],
+                edges: [
+                    {
+                        source_action_id: changedWaitAction.id,
+                        target_action_id: unchangedEmailAction.id
+                    },
+                    {
+                        source_action_id: unchangedEmailAction.id,
+                        target_action_id: addedActionId
+                    }
+                ]
+            });
+
+            assert.equal(getRevisionCount(), initialRevisionCount + 2);
+            assert.equal(getRevisionCount(waitAction.id), 2);
+            assert.equal(getRevisionCount(unchangedEmailAction.id), 1);
+            assert.equal(getRevisionCount(addedActionId), 1);
         });
     });
 });
