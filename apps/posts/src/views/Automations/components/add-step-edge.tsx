@@ -26,7 +26,8 @@ const AddStepEdge: React.FC<EdgeProps> = ({
     data
 }) => {
     const [open, setOpen] = useState(false);
-    const [hovered, setHovered] = useState(false);
+    const [edgeHovered, setEdgeHovered] = useState(false);
+    const [labelHovered, setLabelHovered] = useState(false);
     const edgeData = data as AddStepEdgeData | undefined;
 
     const [path, labelX, labelY] = getSmoothStepPath({
@@ -47,7 +48,7 @@ const AddStepEdge: React.FC<EdgeProps> = ({
         edgeData.onPick(type, {sourceId: edgeData.sourceId, targetId: edgeData.targetId});
     };
 
-    const visible = open || hovered;
+    const visible = open || edgeHovered || labelHovered;
     const button = (
         <button
             aria-label='Insert step here'
@@ -81,7 +82,7 @@ const AddStepEdge: React.FC<EdgeProps> = ({
         control = (
             <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>{button}</PopoverTrigger>
-                <PopoverContent align='center' className='p-0' side='right'>
+                <PopoverContent align='center' className='border-0 p-0 shadow-lg' side='top' sideOffset={12}>
                     <StepPicker onPick={handlePick} />
                 </PopoverContent>
             </Popover>
@@ -90,8 +91,8 @@ const AddStepEdge: React.FC<EdgeProps> = ({
 
     return (
         <g
-            onMouseEnter={() => setHovered(true)}
-            onMouseLeave={() => setHovered(false)}
+            onMouseEnter={() => setEdgeHovered(true)}
+            onMouseLeave={() => setEdgeHovered(false)}
         >
             <BaseEdge id={id} interactionWidth={30} path={path} style={{stroke: DEFAULT_EDGE_STROKE}} />
             <EdgeLabelRenderer>
@@ -100,8 +101,8 @@ const AddStepEdge: React.FC<EdgeProps> = ({
                     style={{
                         transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`
                     }}
-                    onMouseEnter={() => setHovered(true)}
-                    onMouseLeave={() => setHovered(false)}
+                    onMouseEnter={() => setLabelHovered(true)}
+                    onMouseLeave={() => setLabelHovered(false)}
                 >
                     {/* Wider hit zone so the + becomes visible when the cursor is near the edge midpoint. */}
                     <div className='flex h-10 w-16 items-center justify-center'>

@@ -163,7 +163,7 @@ const TailNode: React.FC<NodeProps<TailFlowNode>> = ({data}) => {
                 <HiddenHandle position={Position.Top} type='target' />
                 <LucideIcon.Plus className='size-5 text-text-secondary' strokeWidth={1.5} />
             </PopoverTrigger>
-            <PopoverContent align='center' className='p-0' side='top'>
+            <PopoverContent align='center' className='border-0 p-0 shadow-lg' side='top' sideOffset={12}>
                 <StepPicker onPick={handlePick} />
             </PopoverContent>
         </Popover>
