@@ -9,9 +9,9 @@
 
 .gh-member-detail-avatar {
     box-shadow: none;
-    width: 80px;
-    height: 80px;
-    min-width: 80px;
+    width: 60px;
+    height: 60px;
+    min-width: 60px;
 }
 
 .gh-member-avatar-label {
