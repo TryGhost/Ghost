@@ -395,9 +395,10 @@ describe('Comments Service: CommentsService', function () {
                 errors.NotFoundError
             );
 
+            // Resolved with a single exact-id lookup, never a findPage/filter query.
+            sinon.assert.calledOnce(models.Comment.findOne);
             sinon.assert.calledWith(models.Comment.findOne, {
-                id,
-                status: 'published'
+                id
             });
             sinon.assert.notCalled(models.Comment.findPage);
         });
@@ -408,13 +409,11 @@ describe('Comments Service: CommentsService', function () {
             const result = await instance.getCommentByID('comment-id', {columns: ['id'], context: {member: {id: 'member-id'}}});
 
             assert.equal(result, commentModel);
-            sinon.assert.calledWith(models.Comment.findOne.firstCall, {
-                id: 'comment-id',
-                status: 'published'
-            });
-            sinon.assert.calledWith(models.Comment.findOne.secondCall, {
-                id: 'comment-id',
-                status: 'hidden'
+            // A single row is fetched and its status checked in memory, rather than
+            // one query per allowed status.
+            sinon.assert.calledOnce(models.Comment.findOne);
+            sinon.assert.calledWith(models.Comment.findOne, {
+                id: 'comment-id'
             });
         });
 
@@ -463,17 +462,44 @@ describe('Comments Service: CommentsService', function () {
                 parent_id: 'parent-id',
                 status: 'hidden'
             });
+            const commentsById = {'parent-id': parentComment, 'reply-id': hiddenReply};
 
-            models.Comment.findOne.callsFake(async (data) => {
-                if (data.id === 'parent-id' && (!data.status || data.status === 'published')) {
-                    return parentComment;
-                }
+            // Parent and in_reply_to are resolved through the lean lookup, which
+            // applies the allowed statuses in the query — so the fake filters on the
+            // captured `whereIn`/`where` values rather than returning blindly by id.
+            models.Comment.forge.callsFake(() => {
+                const filters = {};
+                const query = {
+                    where: sinon.stub().callsFake((column, value) => {
+                        filters[column] = value;
+                        return query;
+                    }),
+                    whereIn: sinon.stub().callsFake((column, value) => {
+                        filters[column] = value;
+                        return query;
+                    }),
+                    forUpdate: sinon.stub().returnsThis()
+                };
+                const model = {
+                    query: sinon.stub().callsFake((callback) => {
+                        callback(query);
+                        return model;
+                    }),
+                    fetch: sinon.stub().callsFake(async () => {
+                        const target = commentsById[filters['comments.id']];
+                        if (!target) {
+                            return null;
+                        }
 
-                if (data.id === 'reply-id' && data.status === 'hidden') {
-                    return hiddenReply;
-                }
+                        const statuses = filters['comments.status'];
+                        if (Array.isArray(statuses) && !statuses.includes(target.get('status'))) {
+                            return null;
+                        }
 
-                return null;
+                        return target;
+                    })
+                };
+                return model;
             });
 
             await instance.replyToComment('parent-id', 'reply-id', 'member-id', '<p>Reply</p>', {
@@ -492,14 +518,24 @@ describe('Comments Service: CommentsService', function () {
                 html: '<p>Reply</p>',
                 status: 'published'
             }));
-            sinon.assert.calledWith(models.Comment.findOne.secondCall, {
-                id: 'reply-id',
+        });
+
+        it('drops the in_reply_to link instead of rejecting when the target does not exist', async function () {
+            // The concession: a deleted/missing/cross-thread target is simply not a
+            // valid anchor, so the reply still posts without the reference rather than
+            // failing outright. (Deleted and missing now behave identically.)
+            const {instance, models} = createClassInstance();
+
+            await instance.replyToComment('comment-id', 'does-not-exist', 'member-id', '<p>Reply</p>', {
+                context: {internal: true, member: {id: 'member-id'}}
+            });
+
+            sinon.assert.calledWith(models.Comment.add, sinon.match({
+                parent_id: 'comment-id',
+                in_reply_to_id: null,
+                html: '<p>Reply</p>',
                 status: 'published'
-            });
-            sinon.assert.calledWith(models.Comment.findOne.thirdCall, {
-                id: 'reply-id',
-                status: 'hidden'
-            });
+            }));
         });
     });
 

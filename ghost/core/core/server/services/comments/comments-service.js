@@ -30,6 +30,15 @@ const COMMENT_STATUSES_READABLE = [COMMENT_STATUS_PUBLISHED, COMMENT_STATUS_HIDD
 const COMMENT_STATUSES_REPLY_PARENT = [COMMENT_STATUS_PUBLISHED, COMMENT_STATUS_HIDDEN, COMMENT_STATUS_DELETED];
 const COMMENT_STATUSES_IN_REPLY_TO = [COMMENT_STATUS_PUBLISHED, COMMENT_STATUS_HIDDEN];
 
+// Columns each action reads from the comment row beyond `id`/`status`, which the
+// lookup helpers always select. Keeping these lists together makes the coupling
+// between "fields read after the fetch" and "columns requested" explicit, so a
+// new `comment.get(...)` call has one obvious place to register its column.
+const REPLY_PARENT_REQUIRED_COLUMNS = ['parent_id', 'post_id'];
+const IN_REPLY_TO_REQUIRED_COLUMNS = ['parent_id'];
+const OWNERSHIP_REQUIRED_COLUMNS = ['member_id'];
+const REPORT_REQUIRED_COLUMNS = ['post_id', 'member_id', 'html', 'created_at'];
+
 function getColumnList(columns) {
     if (!columns) {
         return null;
@@ -51,7 +60,7 @@ function withRequiredColumns(options = {}, requiredColumns = []) {
 
     return {
         ...options,
-        columns: Array.from(new Set([...columns, ...requiredColumns]))
+        columns: Array.from(new Set(['id', ...columns, ...requiredColumns]))
     };
 }
 
@@ -166,34 +175,14 @@ class CommentsService {
         });
     }
 
-    /** @private */
-    async #findCommentByID(id, options = {}, {requiredColumns = [], status, includeHiddenPinned = false} = {}) {
-        const query = status ? {id, status} : {id};
-
-        return await this.models.Comment.findOne(
-            query,
-            withPinnedSelect(withRequiredColumns(options, requiredColumns), {includeHidden: includeHiddenPinned})
-        );
-    }
-
-    /** @private */
-    async #findCommentByIDWithStatuses(id, options = {}, statuses = [], requiredColumns = []) {
-        for (const status of statuses) {
-            const model = await this.#findCommentByID(id, options, {
-                requiredColumns,
-                status,
-                includeHiddenPinned: options.isAdmin
-            });
-
-            if (model) {
-                return model;
-            }
-        }
-
-        return null;
-    }
-
-    /** @private */
+    /**
+     * @private
+     * Primary comment lookup: a single keyed fetch with the allowed statuses
+     * applied in the query (`WHERE id = ? AND status IN (...)`), optionally locked
+     * with `FOR UPDATE` inside a transaction. It deliberately does not load the
+     * member-facing relation graph; the one read that needs those relations
+     * (#getReadableCommentByID, backing getCommentByID) uses `findOne` instead.
+     */
     async #fetchCommentByID(id, options = {}, {requiredColumns = [], statuses = [], forUpdate = false} = {}) {
         const model = this.models.Comment.forge();
         model.query((qb) => {
@@ -205,7 +194,7 @@ class CommentsService {
                 qb.whereIn('comments.status', statuses);
             }
 
-            if (forUpdate && options.transacting && qb.forUpdate) {
+            if (forUpdate && options.transacting) {
                 qb.forUpdate();
             }
         });
@@ -230,11 +219,22 @@ class CommentsService {
         return model;
     }
 
-    /** @private */
+    /**
+     * @private
+     * Member-facing read: goes through `findOne` so the serializer's default
+     * relation graph (member, counts, in_reply_to, replies) is loaded. The row is
+     * fetched regardless of status then rejected here if not readable; the check is
+     * in memory because the row (and its relations) is loaded for serialization
+     * either way, and `status` is always selected so it holds under field-limited
+     * requests.
+     */
     async #getReadableCommentByID(id, options = {}, requiredColumns = []) {
-        const model = await this.#findCommentByIDWithStatuses(id, options, COMMENT_STATUSES_READABLE, requiredColumns);
+        const model = await this.models.Comment.findOne(
+            {id},
+            withRequiredColumns(options, ['status', ...requiredColumns])
+        );
 
-        if (!model) {
+        if (!model || !COMMENT_STATUSES_READABLE.includes(model.get('status'))) {
             throw new errors.NotFoundError({
                 message: tpl(messages.commentNotFound)
             });
@@ -245,9 +245,12 @@ class CommentsService {
 
     /** @private */
     async #getReplyParentCommentByID(id, options = {}) {
-        // Deleted parent comments intentionally remain valid thread anchors when
-        // a reply races with deletion or an existing thread has live descendants.
-        const model = await this.#findCommentByIDWithStatuses(id, options, COMMENT_STATUSES_REPLY_PARENT, ['id', 'parent_id', 'post_id']);
+        // Deleted parent comments intentionally remain valid thread anchors: a reply
+        // can still be posted under a top-level comment whose root was removed.
+        const model = await this.#fetchCommentByID(id, options, {
+            requiredColumns: REPLY_PARENT_REQUIRED_COLUMNS,
+            statuses: COMMENT_STATUSES_REPLY_PARENT
+        });
 
         if (!model) {
             throw new errors.NotFoundError({
@@ -260,27 +263,35 @@ class CommentsService {
 
     /** @private */
     async #getInReplyToCommentByID(id, parent, options = {}) {
-        const model = await this.#findCommentByIDWithStatuses(id, options, COMMENT_STATUSES_IN_REPLY_TO, ['id', 'parent_id']);
-
-        if (model) {
-            if (model.get('parent_id') !== parent) {
-                return null;
-            }
-
-            return model;
-        }
-
-        const deletedModel = await this.#fetchCommentByID(id, options, {
-            statuses: [COMMENT_STATUS_DELETED]
+        const model = await this.#fetchCommentByID(id, options, {
+            requiredColumns: IN_REPLY_TO_REQUIRED_COLUMNS,
+            statuses: COMMENT_STATUSES_IN_REPLY_TO
         });
 
-        if (!deletedModel) {
+        // A target that is missing, deleted, or not a readable sibling is simply not
+        // a valid direct-reply anchor: drop the reference and let the reply post
+        // anyway (you can reply within the thread, just not "to" a dead comment). The
+        // query already excluded disallowed statuses, so only the cross-thread
+        // relationship check remains here. Hidden-target snippets are redacted
+        // downstream.
+        if (!model || model.get('parent_id') !== parent) {
+            return null;
+        }
+
+        return model;
+    }
+
+    /** @private */
+    async #assertCommentExists(commentId, options = {}) {
+        const model = await this.#fetchCommentByID(commentId, options, {
+            requiredColumns: ['id']
+        });
+
+        if (!model) {
             throw new errors.NotFoundError({
                 message: tpl(messages.commentNotFound)
             });
         }
-
-        return null;
     }
 
     /** @private */
@@ -403,7 +414,7 @@ class CommentsService {
 
     async reportComment(commentId, reporter, options = {}) {
         this.checkEnabled();
-        const comment = await this.#getPublishedCommentForAction(commentId, options, ['id', 'post_id', 'member_id', 'html', 'created_at']);
+        const comment = await this.#getPublishedCommentForAction(commentId, options, REPORT_REQUIRED_COLUMNS);
         const writeOptions = getSafeWriteOptions(options);
 
         // Check if this reporter already reported this comment (then don't send an email)?
@@ -494,7 +505,7 @@ class CommentsService {
         if (Object.prototype.hasOwnProperty.call(data, 'status')) {
             editData.status = data.status;
 
-            if (data.status === 'deleted') {
+            if (data.status === COMMENT_STATUS_DELETED) {
                 editData.pinned_at = null;
             }
         }
@@ -522,7 +533,7 @@ class CommentsService {
                     });
                 }
 
-                if (existingComment.get('status') === 'deleted' || data.status === 'deleted') {
+                if (existingComment.get('status') === COMMENT_STATUS_DELETED || data.status === COMMENT_STATUS_DELETED) {
                     throw new errors.BadRequestError({
                         message: tpl(messages.cannotPinDeletedComment)
                     });
@@ -563,12 +574,7 @@ class CommentsService {
      * @param {any} options - Query options (page, limit)
      */
     async getCommentReporters(commentId, options = {}) {
-        const comment = await this.models.Comment.findOne({id: commentId});
-        if (!comment) {
-            throw new errors.NotFoundError({
-                message: tpl(messages.commentNotFound)
-            });
-        }
+        await this.#assertCommentExists(commentId);
 
         const {page, limit} = options;
         const result = await this.models.CommentReport.findPage({
@@ -588,12 +594,7 @@ class CommentsService {
      * @param {any} options - Query options (page, limit)
      */
     async getCommentLikes(commentId, options = {}) {
-        const comment = await this.models.Comment.findOne({id: commentId});
-        if (!comment) {
-            throw new errors.NotFoundError({
-                message: tpl(messages.commentNotFound)
-            });
-        }
+        await this.#assertCommentExists(commentId);
 
         const {page, limit} = options;
         const result = await this.models.CommentLike.findPage({
@@ -613,12 +614,7 @@ class CommentsService {
      * @param {any} options - Query options (page, limit)
      */
     async getCommentDislikes(commentId, options = {}) {
-        const comment = await this.models.Comment.findOne({id: commentId});
-        if (!comment) {
-            throw new errors.NotFoundError({
-                message: tpl(messages.commentNotFound)
-            });
-        }
+        await this.#assertCommentExists(commentId);
 
         const {page, limit} = options;
         const result = await this.models.CommentLike.findPage({
@@ -635,7 +631,7 @@ class CommentsService {
     async getCommentByID(id, options = {}) {
         this.checkEnabled();
 
-        return await this.#getReadableCommentByID(id, options, ['status']);
+        return await this.#getReadableCommentByID(id, options);
     }
 
     /**
@@ -672,7 +668,7 @@ class CommentsService {
             member_id: member,
             parent_id: null,
             html: comment,
-            status: 'published'
+            status: COMMENT_STATUS_PUBLISHED
         };
 
         if (createdAt) {
@@ -744,7 +740,7 @@ class CommentsService {
             parent_id: parentComment.id,
             in_reply_to_id: inReplyToComment && inReplyToComment.get('id'),
             html: comment,
-            status: 'published'
+            status: COMMENT_STATUS_PUBLISHED
         };
 
         if (createdAt) {
@@ -774,7 +770,7 @@ class CommentsService {
      */
     async deleteComment(id, member, options) {
         this.checkEnabled();
-        const existingComment = await this.#getPublishedCommentForAction(id, options, ['member_id']);
+        const existingComment = await this.#getPublishedCommentForAction(id, options, OWNERSHIP_REQUIRED_COLUMNS);
 
         if (existingComment.get('member_id') !== member) {
             throw new errors.NoPermissionError({
@@ -784,7 +780,7 @@ class CommentsService {
         }
 
         const model = await this.models.Comment.edit({
-            status: 'deleted',
+            status: COMMENT_STATUS_DELETED,
             pinned_at: null
         }, {
             id,
@@ -803,7 +799,7 @@ class CommentsService {
      */
     async editCommentContent(id, member, comment, options) {
         this.checkEnabled();
-        const existingComment = await this.#getPublishedCommentForAction(id, options, ['member_id']);
+        const existingComment = await this.#getPublishedCommentForAction(id, options, OWNERSHIP_REQUIRED_COLUMNS);
 
         if (existingComment.get('member_id') !== member) {
             throw new errors.NoPermissionError({
