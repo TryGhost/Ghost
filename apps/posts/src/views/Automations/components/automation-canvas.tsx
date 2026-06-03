@@ -7,6 +7,7 @@ import {AutomationAction, AutomationDetail, AutomationSendEmailAction, Automatio
 import {Background, BackgroundVariant, Controls, Edge, Handle, Node, NodeProps, Position, ReactFlow, useReactFlow, useViewport} from '@xyflow/react';
 import {Banner, Button, Checkbox, ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger, Field, FieldError, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText, Label, LoadingIndicator, Popover, PopoverContent, PopoverTrigger, Select, SelectTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
+import type {EmailModalMode} from './types';
 
 const MAX_WAIT_DAYS = 30;
 const WHOLE_NUMBER_PATTERN = /^\d+$/;
@@ -56,8 +57,6 @@ type NodeContextMenuSeparator = {
 };
 
 type NodeContextMenuEntry = NodeContextMenuItem | NodeContextMenuSeparator;
-
-type EmailModalMode = 'edit' | 'preview';
 
 type StepNodeData = StepNodeDisplayData & {
     contextMenuItems: NodeContextMenuEntry[];
@@ -109,7 +108,7 @@ const NodeShell: React.FC<React.PropsWithChildren<{className?: string; data: Ste
                         'flex w-64 items-center gap-3 rounded-lg border border-transparent bg-surface-elevated p-3 text-left text-sm text-foreground shadow-sm transition-all focus-visible:border-border-strong focus-visible:outline-none',
                         !data.selected && 'hover:border-border-strong',
                         data.selected && 'border-gray-700 shadow-[inset_0_0_0_1px_var(--color-gray-700),0_1px_2px_0_rgb(0_0_0_/_0.05)]',
-                        data.isNew && 'animate-in fade-in-0 zoom-in-90 duration-300 ease-out motion-reduce:animate-none',
+                        data.isNew && 'animate-in fade-in-0 zoom-in-90 duration-250 ease-out motion-reduce:animate-none',
                         className
                     )}
                     type='button'
@@ -786,7 +785,7 @@ const WaitSidebarBody: React.FC<{
                         value={daysText}
                         onChange={handleChange}
                     />
-                    <InputGroupText className='mr-auto'>days</InputGroupText>
+                    <InputGroupText className='mr-auto'>{days === 1 ? 'day' : 'days'}</InputGroupText>
                     <InputGroupAddon align='inline-end' className='gap-0.5 pr-2'>
                         <InputGroupButton
                             aria-label='Decrease wait by one day'
@@ -1134,8 +1133,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
                     onClose={closeEmailModal}
                     onSave={({subject, lexical}) => {
                         onChange(updateSendEmailAction({detail: automation, actionId: emailModalAction.id, emailSubject: subject, emailLexical: lexical}));
-                        setEmailModalStepId(null);
-                        setEmailModalMode('edit');
+                        closeEmailModal();
                     }}
                 />
             )}
