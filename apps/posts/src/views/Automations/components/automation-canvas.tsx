@@ -5,7 +5,7 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import StepPicker, {type StepPickerType} from './step-picker';
 import {AutomationAction, AutomationDetail, AutomationSendEmailAction, AutomationWaitAction, InsertActionAnchor, MAX_AUTOMATION_ACTIONS, insertSendEmailAction, insertWaitAction, removeAction, updateSendEmailAction, updateWaitAction} from '@tryghost/admin-x-framework/api/automations';
 import {Background, BackgroundVariant, Controls, Edge, Handle, Node, NodeProps, Position, ReactFlow, useReactFlow, useViewport} from '@xyflow/react';
-import {Banner, Button, Checkbox, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger, Input, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText, Label, LoadingIndicator, Popover, PopoverContent, PopoverTrigger, Select, SelectTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
+import {Banner, Button, Checkbox, ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger, Input, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText, Label, LoadingIndicator, Popover, PopoverContent, PopoverTrigger, Select, SelectTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 
 const MAX_WAIT_DAYS = 30;
@@ -42,7 +42,15 @@ type StepNodeDisplayData = {
     value?: string;
 };
 
+type NodeContextMenuItem = {
+    icon?: React.ElementType;
+    label: string;
+    onSelect: () => void;
+    variant?: 'default' | 'destructive';
+};
+
 type StepNodeData = StepNodeDisplayData & {
+    contextMenuItems: NodeContextMenuItem[];
     isNew: boolean;
     selected: boolean;
     onSelect: () => void;
@@ -74,23 +82,62 @@ const HiddenHandle: React.FC<{type: 'source' | 'target'; position: Position}> = 
     <Handle isConnectable={false} position={position} style={HIDDEN_HANDLE_STYLE} type={type} />
 );
 
-const NodeShell: React.FC<React.PropsWithChildren<{className?: string; data: StepNodeData}>> = ({children, className, data}) => (
-    <button
-        aria-label={data.value ? `${data.label}: ${data.value}` : data.label}
-        aria-pressed={data.selected}
-        className={cn(
-            'flex w-64 items-center gap-3 rounded-lg border border-transparent bg-surface-elevated p-3 text-left text-sm text-foreground shadow-sm transition-all focus-visible:border-border-strong focus-visible:outline-none',
-            !data.selected && 'hover:border-border-strong',
-            data.selected && 'border-gray-700 shadow-[inset_0_0_0_1px_var(--color-gray-700),0_1px_2px_0_rgb(0_0_0_/_0.05)]',
-            data.isNew && 'animate-in fade-in-0 zoom-in-90 duration-300 ease-out motion-reduce:animate-none',
-            className
-        )}
-        type='button'
-        onClick={data.onSelect}
-    >
-        {children}
-    </button>
-);
+const NodeShell: React.FC<React.PropsWithChildren<{className?: string; data: StepNodeData}>> = ({children, className, data}) => {
+    const ignoreNextClickRef = useRef(false);
+
+    return (
+        <ContextMenu>
+            <ContextMenuTrigger asChild>
+                <button
+                    aria-label={data.value ? `${data.label}: ${data.value}` : data.label}
+                    aria-pressed={data.selected}
+                    className={cn(
+                        'flex w-64 items-center gap-3 rounded-lg border border-transparent bg-surface-elevated p-3 text-left text-sm text-foreground shadow-sm transition-all focus-visible:border-border-strong focus-visible:outline-none',
+                        !data.selected && 'hover:border-border-strong',
+                        data.selected && 'border-gray-700 shadow-[inset_0_0_0_1px_var(--color-gray-700),0_1px_2px_0_rgb(0_0_0_/_0.05)]',
+                        data.isNew && 'animate-in fade-in-0 zoom-in-90 duration-300 ease-out motion-reduce:animate-none',
+                        className
+                    )}
+                    type='button'
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        if (event.button !== 0 || ignoreNextClickRef.current) {
+                            ignoreNextClickRef.current = false;
+                            return;
+                        }
+                        data.onSelect();
+                    }}
+                    onContextMenu={(event) => {
+                        ignoreNextClickRef.current = true;
+                        event.stopPropagation();
+                    }}
+                    onPointerDown={(event) => {
+                        if (event.button === 2) {
+                            event.stopPropagation();
+                        }
+                    }}
+                >
+                    {children}
+                </button>
+            </ContextMenuTrigger>
+            <ContextMenuContent
+                className='w-44'
+                onClick={event => event.stopPropagation()}
+                onPointerDown={event => event.stopPropagation()}
+            >
+                {data.contextMenuItems.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                        <ContextMenuItem key={item.label} variant={item.variant} onSelect={item.onSelect}>
+                            {Icon && <Icon className='size-4' />}
+                            {item.label}
+                        </ContextMenuItem>
+                    );
+                })}
+            </ContextMenuContent>
+        </ContextMenu>
+    );
+};
 
 const StepNodeContent: React.FC<{data: StepNodeData}> = ({data}) => {
     const Icon = data.icon;
@@ -295,6 +342,47 @@ const buildActionData = (action: AutomationAction): StepNodeDisplayData => {
     }
 };
 
+const buildNodeContextMenuItems = ({
+    canDelete = false,
+    canEditEmailBody = false,
+    onDelete,
+    onEditEmailBody,
+    onSelectStep,
+    stepId
+}: {
+    canDelete?: boolean;
+    canEditEmailBody?: boolean;
+    onDelete?: (deleteStepId: string) => void;
+    onEditEmailBody?: (editEmailBodyStepId: string) => void;
+    onSelectStep: (nextStepId: string) => void;
+    stepId: string;
+}): NodeContextMenuItem[] => {
+    const items: NodeContextMenuItem[] = [{
+        icon: LucideIcon.Settings2,
+        label: 'Edit settings',
+        onSelect: () => onSelectStep(stepId)
+    }];
+
+    if (canEditEmailBody && onEditEmailBody) {
+        items.push({
+            icon: LucideIcon.Pencil,
+            label: 'Edit email body',
+            onSelect: () => onEditEmailBody(stepId)
+        });
+    }
+
+    if (canDelete && onDelete) {
+        items.push({
+            icon: LucideIcon.Trash2,
+            label: 'Delete',
+            onSelect: () => onDelete(stepId),
+            variant: 'destructive'
+        });
+    }
+
+    return items;
+};
+
 // Returns the actions of `automation` ordered along the chain from the head. Throws on malformed
 // data (cycle, branch, or disconnected nodes). The canvas wraps its render tree in an Error
 // Boundary that catches these and renders the same "Couldn't load automation" banner.
@@ -339,13 +427,15 @@ const getInitialActionOrder = (automation: AutomationDetail): AutomationAction[]
 type BuildGraphParams = {
     automation: AutomationDetail;
     disabled: boolean;
+    onDelete: (stepId: string) => void;
+    onEditEmailBody: (stepId: string) => void;
     onPick: (type: StepPickerType, anchor: CanvasAnchor) => void;
     onSelectStep: (stepId: string) => void;
     newStepId: string | null;
     selectedStepId: string | null;
 }
 
-const buildGraph = ({automation, disabled, onPick, onSelectStep, newStepId, selectedStepId}: BuildGraphParams): {nodes: AutomationFlowNode[]; edges: Edge[]} => {
+const buildGraph = ({automation, disabled, onDelete, onEditEmailBody, onPick, onSelectStep, newStepId, selectedStepId}: BuildGraphParams): {nodes: AutomationFlowNode[]; edges: Edge[]} => {
     const ordered = getInitialActionOrder(automation);
     const baseNodeProps = {
         draggable: false,
@@ -367,6 +457,10 @@ const buildGraph = ({automation, disabled, onPick, onSelectStep, newStepId, sele
             type: 'trigger',
             position: {x: NODE_X, y: 0},
             data: {
+                contextMenuItems: buildNodeContextMenuItems({
+                    onSelectStep,
+                    stepId: TRIGGER_CANVAS_ID
+                }),
                 icon: LucideIcon.Zap,
                 isNew: false,
                 label: 'Trigger',
@@ -385,6 +479,14 @@ const buildGraph = ({automation, disabled, onPick, onSelectStep, newStepId, sele
             position: {x: NODE_X, y: NODE_GAP_Y * (index + 1)},
             data: {
                 ...buildActionData(action),
+                contextMenuItems: buildNodeContextMenuItems({
+                    canDelete: true,
+                    canEditEmailBody: action.type === 'send_email',
+                    onDelete,
+                    onEditEmailBody,
+                    onSelectStep,
+                    stepId: action.id
+                }),
                 isNew: newStepId === action.id,
                 selected: selectedStepId === action.id,
                 onSelect: () => onSelectStep(action.id)
@@ -795,7 +897,6 @@ type AutomationCanvasProps = {
 
 type SelectedStep = {
     id: string;
-    isEditingEmail: boolean;
 };
 
 const insertActionByType = {
@@ -805,6 +906,7 @@ const insertActionByType = {
 
 const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoading, isError, onChange}) => {
     const [newStepId, setNewStepId] = useState<string | null>(null);
+    const [emailModalStepId, setEmailModalStepId] = useState<string | null>(null);
     const [selectedStep, setSelectedStep] = useState<SelectedStep | null>(null);
     const selectedStepId = selectedStep?.id ?? null;
 
@@ -821,7 +923,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
         const insertedAction = next.actions.find(action => !automation.actions.some(existingAction => existingAction.id === action.id));
         setNewStepId(insertedAction?.id ?? null);
         if (insertedAction) {
-            setSelectedStep({id: insertedAction.id, isEditingEmail: false});
+            setSelectedStep({id: insertedAction.id});
         }
         onChange(next);
     }, [automation, onChange]);
@@ -841,6 +943,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
             return;
         }
         const next = removeAction({detail: automation, actionId});
+        setEmailModalStepId(currentId => (currentId === actionId ? null : currentId));
         setSelectedStep(null);
         onChange(next);
     }, [automation, onChange]);
@@ -863,12 +966,17 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
         onChange(updateSendEmailAction({detail: automation, actionId, emailSubject: subject, emailLexical: action.data.email_lexical}));
     }, [automation, onChange]);
 
-    const handleEditEmail = (actionId: string) => {
-        setSelectedStep({id: actionId, isEditingEmail: true});
-    };
+    const handleEditEmail = useCallback((actionId: string) => {
+        setEmailModalStepId(actionId);
+    }, []);
 
-    const emailModalAction = selectedStep?.isEditingEmail && automation
-        ? automation.actions.find((action): action is AutomationSendEmailAction => action.id === selectedStep.id && action.type === 'send_email')
+    const handleContextMenuEditEmail = useCallback((actionId: string) => {
+        setSelectedStep(null);
+        setEmailModalStepId(actionId);
+    }, []);
+
+    const emailModalAction = emailModalStepId && automation
+        ? automation.actions.find((action): action is AutomationSendEmailAction => action.id === emailModalStepId && action.type === 'send_email')
         : undefined;
 
     const initialViewport = useRef(getInitialViewport(window.innerWidth));
@@ -880,12 +988,14 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
         return buildGraph({
             automation,
             disabled: automation.actions.length >= MAX_AUTOMATION_ACTIONS,
+            onDelete: handleDelete,
+            onEditEmailBody: handleContextMenuEditEmail,
             onPick: handlePick,
-            onSelectStep: id => setSelectedStep({id, isEditingEmail: false}),
+            onSelectStep: id => setSelectedStep({id}),
             newStepId,
             selectedStepId
         });
-    }, [automation, handlePick, newStepId, selectedStepId]);
+    }, [automation, handleContextMenuEditEmail, handleDelete, handlePick, newStepId, selectedStepId]);
 
     const sidebarDetail = automation ? getStepSidebarDetail({
         automation,
@@ -900,10 +1010,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
     }, []);
 
     const closeEmailModal = () => {
-        if (!emailModalAction) {
-            return;
-        }
-        setSelectedStep({id: emailModalAction.id, isEditingEmail: false});
+        setEmailModalStepId(null);
     };
 
     if (isLoading) {
@@ -946,9 +1053,12 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
                 proOptions={{hideAttribution: true}}
                 zoomOnScroll={false}
                 panOnScroll
-                onNodeClick={(_, node) => {
+                onNodeClick={(event, node) => {
+                    if (event.button !== 0) {
+                        return;
+                    }
                     if (node.id !== TAIL_CANVAS_ID) {
-                        setSelectedStep({id: node.id, isEditingEmail: false});
+                        setSelectedStep({id: node.id});
                     }
                 }}
                 onPaneClick={clearDetail}
@@ -964,7 +1074,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
                     onClose={closeEmailModal}
                     onSave={({subject, lexical}) => {
                         onChange(updateSendEmailAction({detail: automation, actionId: emailModalAction.id, emailSubject: subject, emailLexical: lexical}));
-                        setSelectedStep({id: emailModalAction.id, isEditingEmail: false});
+                        setEmailModalStepId(null);
                     }}
                 />
             )}

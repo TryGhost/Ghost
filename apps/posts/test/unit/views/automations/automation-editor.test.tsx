@@ -347,6 +347,67 @@ describe('AutomationEditor', () => {
         expect(within(sidebar).queryByRole('button', {name: /Edit/})).not.toBeInTheDocument();
     });
 
+    it('opens step properties from the node right-click menu', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        const waitStep = screen.getByRole('button', {name: 'Wait: 1 day'});
+        fireEvent.contextMenu(waitStep, {clientX: 12, clientY: 12});
+        fireEvent.click(await screen.findByRole('menuitem', {name: 'Edit settings'}));
+
+        expect(waitStep).toHaveAttribute('aria-pressed', 'true');
+        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        expect(within(sidebar).getByRole('heading', {name: '1 day'})).toBeInTheDocument();
+        expect(within(sidebar).getByText('Wait for')).toBeInTheDocument();
+    });
+
+    it('shows delete in action node menus but not the trigger node menu', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        fireEvent.contextMenu(screen.getByRole('button', {name: 'Trigger: Member signs up'}));
+        expect(await screen.findByRole('menuitem', {name: 'Edit settings'})).toBeInTheDocument();
+        expect(screen.queryByRole('menuitem', {name: 'Delete'})).not.toBeInTheDocument();
+        fireEvent.keyDown(document, {key: 'Escape'});
+
+        const waitStep = screen.getByRole('button', {name: 'Wait: 1 day'});
+        fireEvent.contextMenu(waitStep);
+        fireEvent.click(await screen.findByRole('menuitem', {name: 'Delete'}));
+
+        expect(screen.queryByRole('button', {name: 'Wait: 1 day'})).not.toBeInTheDocument();
+        expect(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'})).toBeInTheDocument();
+    });
+
+    it('opens the email editor from the send email node right-click menu', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        const emailStep = screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'});
+        fireEvent.contextMenu(emailStep);
+        fireEvent.click(await screen.findByRole('menuitem', {name: 'Edit email body'}));
+
+        expect(await screen.findByTestId('email-content-modal')).toBeInTheDocument();
+        expect(screen.queryByRole('complementary', {name: 'Step details'})).not.toBeInTheDocument();
+        expect(emailStep).toHaveAttribute('aria-pressed', 'false');
+        expect(screen.getByTestId('modal-initial-subject')).toHaveTextContent('Welcome to The Blueprint');
+        expect(screen.getByTestId('modal-initial-lexical')).toHaveTextContent('{"root":{"children":[]}}');
+    });
+
     it('shows paid member eligibility for the paid welcome automation trigger', () => {
         mockUseReadAutomation.mockReturnValue({
             data: {
