@@ -5,7 +5,7 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import StepPicker, {type StepPickerType} from './step-picker';
 import {AutomationAction, AutomationDetail, AutomationSendEmailAction, AutomationWaitAction, InsertActionAnchor, MAX_AUTOMATION_ACTIONS, insertSendEmailAction, insertWaitAction, removeAction, updateSendEmailAction, updateWaitAction} from '@tryghost/admin-x-framework/api/automations';
 import {Background, BackgroundVariant, Controls, Edge, Handle, Node, NodeProps, Position, ReactFlow, useReactFlow, useViewport} from '@xyflow/react';
-import {Banner, Button, Checkbox, ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger, Input, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText, Label, LoadingIndicator, Popover, PopoverContent, PopoverTrigger, Select, SelectTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
+import {Banner, Button, Checkbox, ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger, Field, FieldError, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText, Label, LoadingIndicator, Popover, PopoverContent, PopoverTrigger, Select, SelectTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 
 const MAX_WAIT_DAYS = 30;
@@ -96,7 +96,11 @@ const NodeShell: React.FC<React.PropsWithChildren<{className?: string; data: Ste
     const ignoreNextClickRef = useRef(false);
 
     return (
-        <ContextMenu>
+        <ContextMenu onOpenChange={(open) => {
+            if (!open) {
+                ignoreNextClickRef.current = false;
+            }
+        }}>
             <ContextMenuTrigger asChild>
                 <button
                     aria-label={data.value ? `${data.label}: ${data.value}` : data.label}
@@ -667,11 +671,13 @@ const getStepSidebarDetail = ({automation, stepId, onDelete, onUpdateWait, onUpd
     }
 };
 
-const SidebarField: React.FC<{label: string; children: React.ReactNode}> = ({label, children}) => (
-    <label className='flex flex-col gap-2'>
-        <span className='text-xs font-medium text-text-secondary'>{label}</span>
+const SidebarField: React.FC<{label: string; children: React.ReactNode; htmlFor?: string}> = ({children, htmlFor, label}) => (
+    <Field>
+        <FieldLabel className='text-xs font-medium text-text-secondary' htmlFor={htmlFor}>
+            {label}
+        </FieldLabel>
         {children}
-    </label>
+    </Field>
 );
 
 const ReadOnlySelect: React.FC<{value: string}> = ({value}) => (
@@ -765,15 +771,17 @@ const WaitSidebarBody: React.FC<{
 
     return (
         <div className='flex flex-1 flex-col gap-5'>
-            <SidebarField label='Wait for'>
+            <SidebarField htmlFor='automation-wait-days' label='Wait for'>
                 <InputGroup
                     aria-label='Wait duration in days'
                     className='h-(--control-height)'
                     data-disabled={!isValid ? 'true' : undefined}
                 >
                     <InputGroupInput
+                        aria-describedby={!isValid ? 'automation-wait-days-error' : undefined}
                         aria-invalid={!isValid}
                         className='w-10 min-w-10 flex-none pr-1 font-mono tabular-nums'
+                        id='automation-wait-days'
                         inputMode='numeric'
                         value={daysText}
                         onChange={handleChange}
@@ -801,9 +809,9 @@ const WaitSidebarBody: React.FC<{
                     </InputGroupAddon>
                 </InputGroup>
                 {!isValid && (
-                    <span className='text-xs text-red'>
+                    <FieldError className='text-xs' id='automation-wait-days-error'>
                         Enter a whole number between 1 and {formatNumber(MAX_WAIT_DAYS)} days.
-                    </span>
+                    </FieldError>
                 )}
             </SidebarField>
             <div className='mt-auto pt-6'>
@@ -820,8 +828,9 @@ const SendEmailSidebarBody: React.FC<{
     onDelete: () => void;
 }> = ({action, onUpdateSubject, onEditEmail, onDelete}) => (
     <div className='flex flex-1 flex-col gap-5'>
-        <SidebarField label='Subject line'>
+        <SidebarField htmlFor='automation-email-subject' label='Subject line'>
             <Input
+                id='automation-email-subject'
                 placeholder='Subject line'
                 value={action.data.email_subject}
                 onChange={e => onUpdateSubject(e.target.value)}

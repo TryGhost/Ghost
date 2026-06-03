@@ -375,6 +375,30 @@ describe('AutomationEditor', () => {
         expect(within(sidebar).getByText('Wait for')).toBeInTheDocument();
     });
 
+    it('selects a node after its context menu is dismissed', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        const waitStep = screen.getByRole('button', {name: 'Wait: 1 day'});
+        fireEvent.contextMenu(waitStep);
+        expect(await screen.findByRole('menuitem', {name: 'Edit settings'})).toBeInTheDocument();
+
+        fireEvent.keyDown(document, {key: 'Escape'});
+        await waitFor(() => {
+            expect(screen.queryByRole('menuitem', {name: 'Edit settings'})).not.toBeInTheDocument();
+        });
+
+        fireEvent.click(waitStep);
+
+        expect(waitStep).toHaveAttribute('aria-pressed', 'true');
+        expect(screen.getByRole('complementary', {name: 'Step details'})).toHaveAttribute('data-state', 'open');
+    });
+
     it('shows delete in action node menus but not the trigger node menu', async () => {
         mockUseReadAutomation.mockReturnValue({
             data: {automations: [automationDetail]},
@@ -683,6 +707,7 @@ describe('AutomationEditor', () => {
 
         fireEvent.click(screen.getByRole('button', {name: 'Wait: 1 day'}));
         let sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        expect(within(sidebar).getByLabelText('Wait for')).toHaveValue('1');
         expect(within(sidebar).getByRole('button', {name: 'Decrease wait by one day'})).toBeDisabled();
 
         fireEvent.click(within(sidebar).getByRole('button', {name: 'Increase wait by one day'}));
@@ -716,6 +741,7 @@ describe('AutomationEditor', () => {
             fireEvent.change(waitInput, {target: {value}});
 
             expect(waitInput).toHaveAttribute('aria-invalid', 'true');
+            expect(waitInput).toHaveAttribute('aria-describedby', 'automation-wait-days-error');
             expect(within(sidebar).getByText('Enter a whole number between 1 and 30 days.')).toBeInTheDocument();
             expect(screen.getByRole('button', {name: 'Published'})).toBeDisabled();
         }
