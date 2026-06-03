@@ -7,9 +7,13 @@ export interface ResolveOptions {
 }
 
 // Keys that must never be written through from a parsed manifest. Entry values are
-// always booleans, so these cannot pollute Object.prototype, but skipping them
-// avoids shadowing built-ins like `constructor` on the resolved object.
-const DANGEROUS_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+// always booleans, so these cannot pollute Object.prototype, but writing any of
+// these through would shadow a built-in on the resolved (and downstream `labs`)
+// object. e.g. a manifest `{"toString": true}` would make `labs.toString` a
+// boolean and throw `TypeError: labs.toString is not a function` for any caller.
+// Deriving the set from Object.prototype covers __proto__, constructor, toString,
+// valueOf, hasOwnProperty, etc. without having to enumerate them by hand.
+const UNSAFE_KEYS = new Set([...Object.getOwnPropertyNames(Object.prototype), 'prototype']);
 
 /**
  * Deterministic bucket in the range [0, 99] for a (flag, siteId) pair.
@@ -80,7 +84,7 @@ export function resolve(manifest: unknown, options?: ResolveOptions): Record<str
 
     const entries = manifest as Record<string, unknown>;
     for (const flag of Object.keys(entries)) {
-        if (DANGEROUS_KEYS.has(flag)) {
+        if (UNSAFE_KEYS.has(flag)) {
             continue;
         }
 

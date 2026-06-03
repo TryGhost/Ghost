@@ -13,7 +13,9 @@ interface RequestResponse {
     headers?: Record<string, string | undefined>;
 }
 
-type RequestFn = (url: string | URL, options: Record<string, unknown>) => Promise<RequestResponse>;
+// @tryghost/request validates with validator.isURL, which only accepts strings and
+// rejects a URL object outright, so the client is always called with a string.
+type RequestFn = (url: string, options: Record<string, unknown>) => Promise<RequestResponse>;
 
 export interface RemoteFlagsServiceDeps {
     /** canonical manifest URL (one per environment) */
@@ -99,7 +101,8 @@ export class RemoteFlagsService {
             if (this._etag) {
                 headers['if-none-match'] = this._etag;
             }
-            response = await this.request(this.url, {
+            // Pass the string form: @tryghost/request rejects a URL object.
+            response = await this.request(this.url.href, {
                 method: 'GET',
                 headers,
                 throwHttpErrors: false,
@@ -182,6 +185,9 @@ export class RemoteFlagsService {
 
         // Canonicalise with sorted keys so a manifest that only reorders its keys
         // does not look "changed" and emit a spurious applied log on every container.
+        // The second arg to JSON.stringify is a key allowlist (not a sort directive):
+        // passing the sorted own keys both restricts and orders the output. `resolved`
+        // is a flat {flag: boolean} map, so a flat key list fully canonicalises it.
         const key = JSON.stringify(resolved, Object.keys(resolved).sort());
         if (key !== this._resolvedKey) {
             this._resolvedKey = key;

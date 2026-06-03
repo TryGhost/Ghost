@@ -21,6 +21,11 @@ interface RemoteFlagsConfig {
     pollInterval?: unknown;
 }
 
+// Floor for the configured poll interval. A fleet of ~30k containers polling a
+// shared CDN must never be allowed to poll faster than this, so a too-small (or
+// units-confused, e.g. seconds-as-ms) value is rejected rather than honored.
+const MIN_POLL_INTERVAL_MS = 60 * 1000;
+
 let instance: RemoteFlagsService | null = null;
 
 /**
@@ -63,17 +68,18 @@ export function init(config: ConfigLike): RemoteFlagsService | null {
     }
 
     // Optional poll interval (ms). Fall back to the service default when unset; a
-    // non-positive or non-finite value is ignored with a warning so a typo can
-    // neither stop polling nor hammer the CDN.
+    // value that is not a finite number at or above the floor is rejected with a
+    // warning so a typo (or seconds mistaken for ms) can neither stop polling nor
+    // hammer the CDN across the fleet.
     let pollInterval: number | undefined;
     const configuredInterval = remoteFlags.pollInterval;
     if (configuredInterval !== undefined && configuredInterval !== null) {
-        if (typeof configuredInterval === 'number' && Number.isFinite(configuredInterval) && configuredInterval > 0) {
+        if (typeof configuredInterval === 'number' && Number.isFinite(configuredInterval) && configuredInterval >= MIN_POLL_INTERVAL_MS) {
             pollInterval = configuredInterval;
         } else {
             logging.warn({
                 system: {event: 'remote_flags.invalid_poll_interval', siteId}
-            }, `Remote feature flags pollInterval is not a positive number, using the default: ${configuredInterval}`);
+            }, `Remote feature flags pollInterval must be a number >= ${MIN_POLL_INTERVAL_MS}ms, using the default: ${configuredInterval}`);
         }
     }
 

@@ -44,6 +44,11 @@ describe('RemoteFlagsService', function () {
 
             await service.refresh();
 
+            // @tryghost/request rejects a URL object, so the client must be called
+            // with the string href, never the URL instance.
+            assert.equal(typeof request.firstCall.args[0], 'string');
+            assert.equal(request.firstCall.args[0], 'https://assets.example.com/platform/flags.json');
+
             assert.equal(applyOverrides.calledOnce, true);
             assert.deepEqual(applyOverrides.firstCall.args[0], {flagA: true, commentModeration: false});
 

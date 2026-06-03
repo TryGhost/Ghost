@@ -212,10 +212,10 @@ describe('remote-flags resolve', function () {
     });
 
     describe('security: dangerous manifest keys', function () {
-        it('skips __proto__/constructor/prototype keys and never pollutes Object.prototype', function () {
+        it('skips keys that collide with Object.prototype and never pollutes the prototype', function () {
             // A real manifest is JSON.parsed from the CDN; JSON.parse creates a real
             // own "__proto__" key (unlike an object literal). With no allowlist these
-            // dangerous keys are dropped explicitly, and because values are always
+            // unsafe keys are dropped explicitly, and because values are always
             // booleans nothing can leak onto the global prototype.
             const manifest = JSON.parse('{"__proto__": {"value": true}, "constructor": true, "prototype": true, "polluted": true, "flagA": true}');
             const result = resolve(manifest, {siteId: 1});
@@ -223,6 +223,17 @@ describe('remote-flags resolve', function () {
             assert.equal({}.polluted, undefined);
             assert.equal({}.value, undefined);
             assert.equal(Object.prototype.polluted, undefined);
+        });
+
+        it('skips built-in method names so they cannot shadow Object.prototype members', function () {
+            // {toString: true} must not flow through: writing it onto labs would make
+            // labs.toString a boolean and throw TypeError for any caller of it.
+            const manifest = {toString: true, valueOf: true, hasOwnProperty: false, flagA: true};
+            const result = resolve(manifest, {siteId: 1});
+            assert.deepEqual(result, {flagA: true});
+            // The resolved object's built-ins are intact.
+            assert.equal(typeof result.toString, 'function');
+            assert.equal(typeof result.hasOwnProperty, 'function');
         });
     });
 

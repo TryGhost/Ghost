@@ -80,18 +80,30 @@ describe('remote-flags service index (gating)', function () {
         assert.equal(instance.pollInterval, 5 * 60 * 1000);
     });
 
-    it('uses a configured poll interval', function () {
-        configUtils.set('remoteFlags', {enabled: true, url: URL_STRING, pollInterval: 60000});
+    it('uses a configured poll interval at or above the floor', function () {
+        configUtils.set('remoteFlags', {enabled: true, url: URL_STRING, pollInterval: 120000});
         configUtils.set('hostSettings', {siteId: 42});
 
         const instance = remoteFlags.init(config);
 
-        assert.equal(instance.pollInterval, 60000);
+        assert.equal(instance.pollInterval, 120000);
     });
 
     it('ignores an invalid poll interval, warns, and falls back to the default', function () {
         const warnStub = sinon.stub(logging, 'warn');
         configUtils.set('remoteFlags', {enabled: true, url: URL_STRING, pollInterval: -5});
+        configUtils.set('hostSettings', {siteId: 42});
+
+        const instance = remoteFlags.init(config);
+
+        assert.equal(instance.pollInterval, 5 * 60 * 1000);
+        assert.ok(warnStub.getCalls().some(c => c.args[0]?.system?.event === 'remote_flags.invalid_poll_interval'));
+    });
+
+    it('rejects a sub-floor poll interval (CDN-hammering guard) and uses the default', function () {
+        const warnStub = sinon.stub(logging, 'warn');
+        // 1ms across the fleet would be a self-inflicted DoS; must not be honored.
+        configUtils.set('remoteFlags', {enabled: true, url: URL_STRING, pollInterval: 1});
         configUtils.set('hostSettings', {siteId: 42});
 
         const instance = remoteFlags.init(config);
