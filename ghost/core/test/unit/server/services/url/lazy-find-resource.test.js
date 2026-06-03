@@ -1,13 +1,6 @@
-// Preserved as a parity spec for the LazyFindResource re-implementation (HKG-1817).
-// The implementation module was removed in the experimental revert (HKG-1816);
-// the suite is kept skipped (not deleted) so the behaviour contract stays visible
-// in-tree. `createFindResource` is stubbed to null because the module no longer
-// exists. To revive: restore the require, drop the eslint-disable, and switch
-// describe.skip back to describe.
-/* eslint-disable ghost/mocha/no-skipped-tests */
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const createFindResource = null; // ({createFindResource} = require('../../../../../core/server/services/url/lazy-find-resource'));
+const {createFindResource} = require('../../../../../core/server/services/url/lazy-find-resource');
 
 function fakeModel() {
     return {findOne: sinon.stub()};
@@ -17,7 +10,7 @@ function record(attrs) {
     return {toJSON: () => attrs};
 }
 
-describe.skip('createFindResource', function () {
+describe('createFindResource', function () {
     let models;
     let findResource;
 
@@ -51,11 +44,7 @@ describe.skip('createFindResource', function () {
     });
 
     it('asks Post.findOne to load the tags and authors relations on posts', async function () {
-        // Locks the contract that exposed HKG-1738: tag/author NQL filters
-        // (e.g. routes.yaml `filter: tag:news`) evaluate against
-        // `tags.slug` / `authors.slug` on the loaded record. Without
-        // withRelated the record has no `.tags` / `.authors`, every
-        // tag-filtered route silently 404s.
+        // Without these relations every tag-/author-filtered route 404s (HKG-1738).
         models.Post.findOne.resolves(record({id: 'p1'}));
 
         await findResource('posts', {slug: 'hello'});
@@ -67,16 +56,63 @@ describe.skip('createFindResource', function () {
         );
     });
 
-    it('asks Post.findOne to load tags and authors on pages too', async function () {
+    it('requests only routing-relevant post columns, omitting heavy body fields', async function () {
+        models.Post.findOne.resolves(record({id: 'p1', slug: 'hello'}));
+
+        await findResource('posts', {slug: 'hello'});
+
+        const options = models.Post.findOne.firstCall.args[1];
+        assert.ok(Array.isArray(options.columns), 'a columns projection should be set');
+        for (const heavy of ['mobiledoc', 'lexical', 'html', 'plaintext']) {
+            assert.ok(!options.columns.includes(heavy), `${heavy} must not be selected`);
+        }
+        assert.ok(options.columns.includes('slug'));
+        assert.ok(options.columns.includes('published_at'));
+    });
+
+    it('derives primary_tag from the first public tag (toJSON skips it under a columns projection)', async function () {
+        models.Post.findOne.resolves(record({
+            id: 'p1',
+            slug: 'hello',
+            tags: [{slug: 'news', visibility: 'public'}, {slug: 'misc', visibility: 'public'}]
+        }));
+
+        const result = await findResource('posts', {slug: 'hello'});
+
+        assert.deepEqual(result.primary_tag, {slug: 'news', visibility: 'public'});
+    });
+
+    it('sets primary_tag to null when the first tag is not public', async function () {
+        models.Post.findOne.resolves(record({
+            id: 'p1',
+            slug: 'hello',
+            tags: [{slug: 'secret', visibility: 'internal'}]
+        }));
+
+        const result = await findResource('posts', {slug: 'hello'});
+
+        assert.equal(result.primary_tag, null);
+    });
+
+    it('derives primary_author from the first author', async function () {
+        models.Post.findOne.resolves(record({
+            id: 'p1',
+            slug: 'hello',
+            authors: [{slug: 'jane'}, {slug: 'john'}]
+        }));
+
+        const result = await findResource('posts', {slug: 'hello'});
+
+        assert.deepEqual(result.primary_author, {slug: 'jane'});
+    });
+
+    it('does not load tags/authors for pages (the StaticPagesRouter is filterless)', async function () {
         models.Post.findOne.resolves(record({id: 'pg1'}));
 
         await findResource('pages', {slug: 'about'});
 
-        sinon.assert.calledWith(
-            models.Post.findOne,
-            sinon.match.any,
-            sinon.match({withRelated: sinon.match.array.contains(['tags', 'authors'])})
-        );
+        const options = models.Post.findOne.firstCall.args[1];
+        assert.equal(options.withRelated, undefined);
     });
 
     it('queries TagPublic with visibility:public for tags', async function () {
@@ -118,5 +154,39 @@ describe.skip('createFindResource', function () {
         sinon.assert.notCalled(models.Post.findOne);
         sinon.assert.notCalled(models.TagPublic.findOne);
         sinon.assert.notCalled(models.Author.findOne);
+    });
+
+    it('forwards multi-field query params (e.g. primary_tag + slug) to the model', async function () {
+        models.Post.findOne.resolves(record({id: 'p1', slug: 'hello'}));
+
+        await findResource('posts', {primary_tag: 'news', slug: 'hello'});
+
+        sinon.assert.calledWith(
+            models.Post.findOne,
+            sinon.match({primary_tag: 'news', slug: 'hello', type: 'post', status: 'published'}),
+            sinon.match.any
+        );
+    });
+
+    it('does not over-fetch tags/authors relations for tags lookups', async function () {
+        models.TagPublic.findOne.resolves(record({id: 't1', slug: 'news'}));
+
+        await findResource('tags', {slug: 'news'});
+
+        const options = models.TagPublic.findOne.firstCall.args[1];
+        assert.equal(options.withRelated, undefined);
+    });
+
+    it('always queries with require:false so a miss resolves to null rather than throwing', async function () {
+        models.Author.findOne.resolves(null);
+
+        const result = await findResource('authors', {slug: 'ghost'});
+
+        assert.equal(result, null);
+        sinon.assert.calledWith(
+            models.Author.findOne,
+            sinon.match.any,
+            sinon.match.has('require', false)
+        );
     });
 });
