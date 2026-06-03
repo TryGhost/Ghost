@@ -16,7 +16,7 @@ interface PickerOptionProps {
 
 const PickerOption: React.FC<PickerOptionProps> = ({icon: Icon, label, description, onClick}) => (
     <button
-        className='flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm hover:bg-accent focus-visible:bg-accent focus-visible:outline-none'
+        className='flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm hover:bg-grey-50 focus-visible:bg-grey-50 focus-visible:outline-none dark:hover:bg-grey-900 dark:focus-visible:bg-grey-900'
         type='button'
         onClick={onClick}
     >

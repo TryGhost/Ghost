@@ -12,9 +12,8 @@ export type AddStepEdgeData = {
     onPick: (type: StepPickerType, anchor: {sourceId: string; targetId: string}) => void;
 };
 
-const INSERT_BUTTON_CLASSES = 'border-transparent bg-green-500 text-white shadow-sm hover:bg-green-600';
+const INSERT_BUTTON_CLASSES = 'border-dashed border-border-default bg-surface-page text-text-secondary shadow-sm hover:border-border-strong';
 const DEFAULT_EDGE_STROKE = 'var(--xy-edge-stroke)';
-const HOVERED_EDGE_STROKE = 'var(--color-green-500)';
 
 const AddStepEdge: React.FC<EdgeProps> = ({
     id,
@@ -39,10 +38,6 @@ const AddStepEdge: React.FC<EdgeProps> = ({
         targetPosition
     });
 
-    const edgeStyle: React.CSSProperties = {
-        stroke: hovered || open ? HOVERED_EDGE_STROKE : DEFAULT_EDGE_STROKE
-    };
-
     if (!edgeData) {
         return <BaseEdge id={id} path={path} style={{stroke: DEFAULT_EDGE_STROKE}} />;
     }
@@ -57,7 +52,7 @@ const AddStepEdge: React.FC<EdgeProps> = ({
         <button
             aria-label='Insert step here'
             className={cn(
-                'flex size-7 items-center justify-center rounded-full border transition-opacity focus-visible:opacity-100 focus-visible:outline-none',
+                'flex size-8 items-center justify-center rounded-full border transition-opacity focus-visible:opacity-100 focus-visible:outline-none',
                 INSERT_BUTTON_CLASSES,
                 visible ? 'opacity-100' : 'opacity-0',
                 edgeData.disabled && 'cursor-not-allowed!'
@@ -66,7 +61,7 @@ const AddStepEdge: React.FC<EdgeProps> = ({
             disabled={edgeData.disabled}
             type='button'
         >
-            <LucideIcon.Plus className='size-4' strokeWidth={1.5} />
+            <LucideIcon.Plus className='size-5' strokeWidth={1.5} />
         </button>
     );
 
@@ -98,7 +93,7 @@ const AddStepEdge: React.FC<EdgeProps> = ({
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
         >
-            <BaseEdge id={id} interactionWidth={30} path={path} style={edgeStyle} />
+            <BaseEdge id={id} interactionWidth={30} path={path} style={{stroke: DEFAULT_EDGE_STROKE}} />
             <EdgeLabelRenderer>
                 <div
                     className='pointer-events-auto absolute'
