@@ -27,6 +27,7 @@ describe('InputField', () => {
     test('renders', () => {
         const {inputEl} = setup();
         expect(inputEl).toBeInTheDocument();
+        expect(inputEl).toHaveAttribute('list', 'data-list');
     });
 
     test('calls onChange on value', () => {

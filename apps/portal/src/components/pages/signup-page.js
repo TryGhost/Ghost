@@ -786,7 +786,6 @@ class SignupPage extends React.Component {
                             fields={fields}
                             onChange={(e, field) => this.handleInputChange(e, field)}
                             onKeyDown={e => this.onKeyDown(e)}
-                            list="email-domains"
                         />
                         <datalist id="email-domains"></datalist>
                     </div>
