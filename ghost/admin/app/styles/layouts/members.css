@@ -102,8 +102,8 @@ label[for="member-description"] + p {
 .gh-member-details h3 {
     margin: 0;
     padding: 0;
-    font-size: 1.6rem;
-    font-weight: 600;
+    font-size: 2.1rem;
+    font-weight: 500;
 }
 
 .gh-member-details p {
