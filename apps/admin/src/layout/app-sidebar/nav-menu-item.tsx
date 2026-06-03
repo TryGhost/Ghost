@@ -1,6 +1,6 @@
 import React from 'react';
 import {Button, SidebarMenuButton, SidebarMenuItem, useSidebar} from '@tryghost/shade/components';
-import {LucideIcon} from '@tryghost/shade/utils';
+import {cn, LucideIcon} from '@tryghost/shade/utils';
 import { useIsActiveLink } from './use-is-active-link';
 
 function NavMenuItem({ children, ...props }: React.ComponentProps<typeof SidebarMenuItem>) {
@@ -66,7 +66,7 @@ function NavMenuCollapsibleItem({ariaLabel, children}: NavMenuCollapsibleItemPro
                 aria-label={ariaLabel}
                 variant="ghost"
                 size="icon"
-                className="hover:text-gray-black absolute top-0 left-3 h-[34px]! w-auto p-0 text-sidebar-accent-foreground transition-all group-hover/menu-item:opacity-100 hover:bg-transparent focus-visible:opacity-100 sidebar:opacity-0"
+                className="hover:text-gray-black absolute top-0 left-3 h-(--control-height) w-auto p-0 text-md text-sidebar-accent-foreground transition-all group-hover/menu-item:opacity-100 hover:bg-transparent focus-visible:opacity-100 sidebar:opacity-0"
                 onClick={() => void onExpandedChange(!expanded)}
             >
                 <LucideIcon.ChevronRight
@@ -89,9 +89,9 @@ function NavMenuCollapsibleMenu({children}: NavMenuCollapsibleMenuProps) {
     return (
         <div
             id={id}
-            className={`grid transition-all duration-200 ease-out ${expanded ? 'mb-5 grid-rows-[1fr]' : 'mb-0 grid-rows-[0fr]'}`}
+            className={`grid transition-all duration-200 ease-out ${expanded ? 'grid-rows-[1fr]' : '-mb-px grid-rows-[0fr]'}`}
         >
-            <div className="overflow-hidden">
+            <div className="flex flex-col gap-px overflow-hidden">
                 {expanded ? children : null}
             </div>
         </div>
@@ -149,7 +149,32 @@ interface NavMenuLabelProps extends React.HTMLAttributes<HTMLSpanElement>
 }
 function NavMenuLabel({children, ...props}: NavMenuLabelProps) {
     return (
-        <span {...props}>{children}</span>
+        <span
+            {...props}
+            className={cn('min-w-0 truncate', props.className)}
+        >
+            {children}
+        </span>
+    );
+}
+
+type NavSubmenuItemProps = NavMenuLinkProps;
+function NavSubmenuItem({
+    children,
+    className,
+    ...props
+}: NavSubmenuItemProps) {
+    return (
+        <NavMenuItem className="before:absolute before:inset-y-0 before:left-5 before:z-10 before:w-px before:bg-sidebar-accent">
+            <div className="min-w-0 pl-7">
+                <NavMenuItem.Link
+                    className={cn('w-full min-w-0 pl-2 focus-visible:ring-inset', className)}
+                    {...props}
+                >
+                    {children}
+                </NavMenuItem.Link>
+            </div>
+        </NavMenuItem>
     );
 }
 
@@ -182,9 +207,10 @@ function NavMenuButton({
 
 NavMenuItem.Link = NavMenuLink;
 NavMenuItem.Label = NavMenuLabel;
+NavMenuItem.SubmenuItem = NavSubmenuItem;
 NavMenuItem.Button = NavMenuButton;
 NavMenuItem.Collapsible = NavMenuCollapsible;
 NavMenuItem.CollapsibleItem = NavMenuCollapsibleItem;
 NavMenuItem.CollapsibleMenu = NavMenuCollapsibleMenu;
 
-export { NavMenuItem, NavMenuLink, NavMenuLabel, NavMenuButton }
+export { NavMenuItem, NavMenuLink, NavMenuLabel, NavSubmenuItem, NavMenuButton }

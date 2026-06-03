@@ -4,9 +4,10 @@ import EmailContentModal from './email-modal/email-content-modal';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import StepPicker, {type StepPickerType} from './step-picker';
 import {AutomationAction, AutomationDetail, AutomationSendEmailAction, AutomationWaitAction, InsertActionAnchor, MAX_AUTOMATION_ACTIONS, insertSendEmailAction, insertWaitAction, removeAction, updateSendEmailAction, updateWaitAction} from '@tryghost/admin-x-framework/api/automations';
-import {Background, BackgroundVariant, Edge, Handle, Node, NodeProps, Position, ReactFlow} from '@xyflow/react';
-import {Banner, Button, Checkbox, Input, Label, LoadingIndicator, Popover, PopoverContent, PopoverTrigger, Select, SelectTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
+import {Background, BackgroundVariant, Controls, Edge, Handle, Node, NodeProps, Position, ReactFlow, useReactFlow, useViewport} from '@xyflow/react';
+import {Banner, Button, Checkbox, ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger, Field, FieldError, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText, Label, LoadingIndicator, Popover, PopoverContent, PopoverTrigger, Select, SelectTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
+import type {EmailModalMode} from './types';
 
 const MAX_WAIT_DAYS = 30;
 const WHOLE_NUMBER_PATTERN = /^\d+$/;
@@ -16,8 +17,11 @@ const NODE_WIDTH = 256;
 const NODE_COLUMN_CENTER_X = NODE_X + (NODE_WIDTH / 2);
 const NODE_GAP_Y = 180;
 const INITIAL_VIEWPORT_Y = 40;
+const VIEWPORT_ANIMATION_DURATION = 180;
+const NODE_ENTER_ANIMATION_DURATION = 250;
 const DISABLED_REASON = `Limit of ${formatNumber(MAX_AUTOMATION_ACTIONS)} steps reached`;
 const DEFAULT_EDGE_STROKE = 'var(--xy-edge-stroke)';
+const ZOOM_PRESETS = [1.5, 1, 0.75, 0.5, 0.25];
 
 // React Flow node IDs for the trigger and tail nodes. The canvas builds the visual graph using
 // these; they are not action IDs and never reach the API.
@@ -39,7 +43,24 @@ type StepNodeDisplayData = {
     value?: string;
 };
 
+type NodeContextMenuItem = {
+    icon?: React.ElementType;
+    label: string;
+    onSelect: () => void;
+    type?: 'item';
+    variant?: 'default' | 'destructive';
+};
+
+type NodeContextMenuSeparator = {
+    id: string;
+    type: 'separator';
+};
+
+type NodeContextMenuEntry = NodeContextMenuItem | NodeContextMenuSeparator;
+
 type StepNodeData = StepNodeDisplayData & {
+    contextMenuItems: NodeContextMenuEntry[];
+    isNew: boolean;
     selected: boolean;
     onSelect: () => void;
 };
@@ -56,32 +77,83 @@ type TailFlowNode = Node<TailNodeData, 'tail'>;
 type AutomationFlowNode = StepFlowNode | TailFlowNode;
 
 const HIDDEN_HANDLE_STYLE: React.CSSProperties = {
+    background: 'transparent',
+    border: 'none',
+    height: 0,
+    minHeight: 0,
+    minWidth: 0,
     opacity: 0,
     pointerEvents: 'none',
-    background: 'transparent',
-    border: 'none'
+    width: 0
 };
 
 const HiddenHandle: React.FC<{type: 'source' | 'target'; position: Position}> = ({type, position}) => (
     <Handle isConnectable={false} position={position} style={HIDDEN_HANDLE_STYLE} type={type} />
 );
 
-const NodeShell: React.FC<React.PropsWithChildren<{className?: string; data: StepNodeData}>> = ({children, className, data}) => (
-    <button
-        aria-label={data.value ? `${data.label}: ${data.value}` : data.label}
-        aria-pressed={data.selected}
-        className={cn(
-            'flex w-64 items-center gap-3 rounded-lg border border-transparent bg-surface-elevated p-3 text-left text-sm text-foreground shadow-sm transition-all focus-visible:border-border-strong focus-visible:outline-none',
-            !data.selected && 'hover:border-border-strong',
-            data.selected && 'border-gray-700 shadow-[inset_0_0_0_1px_var(--color-gray-700),0_1px_2px_0_rgb(0_0_0_/_0.05)]',
-            className
-        )}
-        type='button'
-        onClick={data.onSelect}
-    >
-        {children}
-    </button>
-);
+const NodeShell: React.FC<React.PropsWithChildren<{className?: string; data: StepNodeData}>> = ({children, className, data}) => {
+    const ignoreNextClickRef = useRef(false);
+
+    return (
+        <ContextMenu onOpenChange={(open) => {
+            if (!open) {
+                ignoreNextClickRef.current = false;
+            }
+        }}>
+            <ContextMenuTrigger asChild>
+                <button
+                    aria-label={data.value ? `${data.label}: ${data.value}` : data.label}
+                    aria-pressed={data.selected}
+                    className={cn(
+                        'flex w-64 items-center gap-3 rounded-lg border border-transparent bg-surface-elevated p-3 text-left text-sm text-foreground shadow-sm transition-all focus-visible:border-border-strong focus-visible:outline-none',
+                        !data.selected && 'hover:border-border-strong',
+                        data.selected && 'border-gray-700 shadow-[inset_0_0_0_1px_var(--color-gray-700),0_1px_2px_0_rgb(0_0_0_/_0.05)]',
+                        data.isNew && 'animate-in fade-in-0 zoom-in-90 duration-250 ease-out motion-reduce:animate-none',
+                        className
+                    )}
+                    type='button'
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        if (event.button !== 0 || ignoreNextClickRef.current) {
+                            ignoreNextClickRef.current = false;
+                            return;
+                        }
+                        data.onSelect();
+                    }}
+                    onContextMenu={(event) => {
+                        ignoreNextClickRef.current = true;
+                        event.stopPropagation();
+                    }}
+                    onPointerDown={(event) => {
+                        if (event.button === 2) {
+                            event.stopPropagation();
+                        }
+                    }}
+                >
+                    {children}
+                </button>
+            </ContextMenuTrigger>
+            <ContextMenuContent
+                className='w-44'
+                onClick={event => event.stopPropagation()}
+                onPointerDown={event => event.stopPropagation()}
+            >
+                {data.contextMenuItems.map((item) => {
+                    if (item.type === 'separator') {
+                        return <ContextMenuSeparator key={item.id} />;
+                    }
+                    const Icon = item.icon;
+                    return (
+                        <ContextMenuItem key={item.label} variant={item.variant} onSelect={item.onSelect}>
+                            {Icon && <Icon className='size-4' />}
+                            {item.label}
+                        </ContextMenuItem>
+                    );
+                })}
+            </ContextMenuContent>
+        </ContextMenu>
+    );
+};
 
 const StepNodeContent: React.FC<{data: StepNodeData}> = ({data}) => {
     const Icon = data.icon;
@@ -161,7 +233,7 @@ const TailNode: React.FC<NodeProps<TailFlowNode>> = ({data}) => {
                 <HiddenHandle position={Position.Top} type='target' />
                 <LucideIcon.Plus className='size-5 text-text-secondary' strokeWidth={1.5} />
             </PopoverTrigger>
-            <PopoverContent align='center' className='p-0' side='top'>
+            <PopoverContent align='center' className='border-0 p-0 shadow-lg' side='top' sideOffset={12}>
                 <StepPicker onPick={handlePick} />
             </PopoverContent>
         </Popover>
@@ -176,6 +248,90 @@ const nodeTypes = {
 
 const edgeTypes = {
     'add-step-edge': AddStepEdge
+};
+
+const AutomationCanvasControls: React.FC = () => {
+    const [open, setOpen] = useState(false);
+    const {fitView, zoomIn, zoomOut, zoomTo} = useReactFlow();
+    const {zoom} = useViewport();
+    const animationOptions = {duration: VIEWPORT_ANIMATION_DURATION};
+    const zoomPercent = Math.round(zoom * 100);
+
+    const handleZoomTo = (nextZoom: number) => {
+        setOpen(false);
+        void zoomTo(nextZoom, animationOptions);
+    };
+
+    const handleFitView = () => {
+        setOpen(false);
+        void fitView(animationOptions);
+    };
+
+    return (
+        <Controls
+            className='gap-1 overflow-hidden rounded-md bg-surface-elevated p-0.5 text-foreground shadow-sm'
+            orientation='horizontal'
+            showFitView={false}
+            showInteractive={false}
+            showZoom={false}
+            style={{bottom: 24, left: 24}}
+        >
+            <Button
+                aria-label='Zoom out'
+                className='rounded-sm text-text-secondary hover:text-foreground'
+                size='icon'
+                title='Zoom out'
+                type='button'
+                variant='ghost'
+                onClick={() => void zoomOut(animationOptions)}
+            >
+                <LucideIcon.Minus className='size-5' strokeWidth={1.5} />
+            </Button>
+            <DropdownMenu open={open} onOpenChange={setOpen}>
+                <DropdownMenuTrigger asChild>
+                    <Button
+                        aria-label={`Zoom level ${formatNumber(zoomPercent)}%`}
+                        className='min-w-14 rounded-sm px-2 font-semibold'
+                        type='button'
+                        variant='ghost'
+                    >
+                        {formatNumber(zoomPercent)}%
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align='center' className='w-40' side='top' sideOffset={12}>
+                    {ZOOM_PRESETS.map((preset) => {
+                        const presetPercent = Math.round(preset * 100);
+                        const isSelected = Math.abs(zoom - preset) < 0.01;
+                        return (
+                            <DropdownMenuItem key={preset} onSelect={() => handleZoomTo(preset)}>
+                                {formatNumber(presetPercent)}%
+                                {isSelected && (
+                                    <DropdownMenuShortcut>
+                                        <LucideIcon.Check className='size-4 text-text-secondary' strokeWidth={1.5} />
+                                    </DropdownMenuShortcut>
+                                )}
+                            </DropdownMenuItem>
+                        );
+                    })}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onSelect={handleFitView}>
+                        Fit to view
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+            <Button
+                aria-label='Zoom in'
+                className='rounded-sm text-text-secondary hover:text-foreground'
+                size='icon'
+                title='Zoom in'
+                type='button'
+                variant='ghost'
+                onClick={() => void zoomIn(animationOptions)}
+            >
+                <LucideIcon.Plus className='size-5' strokeWidth={1.5} />
+            </Button>
+        </Controls>
+    );
 };
 
 export const formatWait = (hours: number): string => {
@@ -200,6 +356,60 @@ const buildActionData = (action: AutomationAction): StepNodeDisplayData => {
         throw new Error(`Unknown automation action type: ${_exhaustive}`);
     }
     }
+};
+
+const buildNodeContextMenuItems = ({
+    canDelete = false,
+    canEditEmailBody = false,
+    onDelete,
+    onEditEmailBody,
+    onPreviewEmail,
+    onSelectStep,
+    stepId
+}: {
+    canDelete?: boolean;
+    canEditEmailBody?: boolean;
+    onDelete?: (deleteStepId: string) => void;
+    onEditEmailBody?: (editEmailBodyStepId: string, mode?: EmailModalMode) => void;
+    onPreviewEmail?: (previewEmailStepId: string) => void;
+    onSelectStep: (nextStepId: string) => void;
+    stepId: string;
+}): NodeContextMenuEntry[] => {
+    const items: NodeContextMenuEntry[] = [{
+        icon: LucideIcon.Settings2,
+        label: 'Edit settings',
+        onSelect: () => onSelectStep(stepId)
+    }];
+
+    if (canEditEmailBody && onEditEmailBody) {
+        items.push({
+            icon: LucideIcon.Pencil,
+            label: 'Edit email body',
+            onSelect: () => onEditEmailBody(stepId)
+        });
+    }
+
+    if (canEditEmailBody && onPreviewEmail) {
+        items.push({
+            icon: LucideIcon.Eye,
+            label: 'Preview',
+            onSelect: () => onPreviewEmail(stepId)
+        });
+    }
+
+    if (canDelete && onDelete) {
+        if (canEditEmailBody) {
+            items.push({id: 'before-delete', type: 'separator'});
+        }
+        items.push({
+            icon: LucideIcon.Trash2,
+            label: 'Delete',
+            onSelect: () => onDelete(stepId),
+            variant: 'destructive'
+        });
+    }
+
+    return items;
 };
 
 // Returns the actions of `automation` ordered along the chain from the head. Throws on malformed
@@ -246,12 +456,16 @@ const getInitialActionOrder = (automation: AutomationDetail): AutomationAction[]
 type BuildGraphParams = {
     automation: AutomationDetail;
     disabled: boolean;
+    onDelete: (stepId: string) => void;
+    onEditEmailBody: (stepId: string, mode?: EmailModalMode) => void;
+    onPreviewEmail: (stepId: string) => void;
     onPick: (type: StepPickerType, anchor: CanvasAnchor) => void;
     onSelectStep: (stepId: string) => void;
+    newStepId: string | null;
     selectedStepId: string | null;
 }
 
-const buildGraph = ({automation, disabled, onPick, onSelectStep, selectedStepId}: BuildGraphParams): {nodes: AutomationFlowNode[]; edges: Edge[]} => {
+const buildGraph = ({automation, disabled, onDelete, onEditEmailBody, onPick, onPreviewEmail, onSelectStep, newStepId, selectedStepId}: BuildGraphParams): {nodes: AutomationFlowNode[]; edges: Edge[]} => {
     const ordered = getInitialActionOrder(automation);
     const baseNodeProps = {
         draggable: false,
@@ -273,7 +487,12 @@ const buildGraph = ({automation, disabled, onPick, onSelectStep, selectedStepId}
             type: 'trigger',
             position: {x: NODE_X, y: 0},
             data: {
+                contextMenuItems: buildNodeContextMenuItems({
+                    onSelectStep,
+                    stepId: TRIGGER_CANVAS_ID
+                }),
                 icon: LucideIcon.Zap,
+                isNew: false,
                 label: 'Trigger',
                 value: 'Member signs up',
                 selected: selectedStepId === TRIGGER_CANVAS_ID,
@@ -290,6 +509,16 @@ const buildGraph = ({automation, disabled, onPick, onSelectStep, selectedStepId}
             position: {x: NODE_X, y: NODE_GAP_Y * (index + 1)},
             data: {
                 ...buildActionData(action),
+                contextMenuItems: buildNodeContextMenuItems({
+                    canDelete: true,
+                    canEditEmailBody: action.type === 'send_email',
+                    onDelete,
+                    onEditEmailBody,
+                    onPreviewEmail,
+                    onSelectStep,
+                    stepId: action.id
+                }),
+                isNew: newStepId === action.id,
                 selected: selectedStepId === action.id,
                 onSelect: () => onSelectStep(action.id)
             },
@@ -441,11 +670,13 @@ const getStepSidebarDetail = ({automation, stepId, onDelete, onUpdateWait, onUpd
     }
 };
 
-const SidebarField: React.FC<{label: string; children: React.ReactNode}> = ({label, children}) => (
-    <label className='flex flex-col gap-2'>
-        <span className='text-xs font-medium text-text-secondary'>{label}</span>
+const SidebarField: React.FC<{label: string; children: React.ReactNode; htmlFor?: string}> = ({children, htmlFor, label}) => (
+    <Field>
+        <FieldLabel className='text-xs font-medium text-text-secondary' htmlFor={htmlFor}>
+            {label}
+        </FieldLabel>
         {children}
-    </label>
+    </Field>
 );
 
 const ReadOnlySelect: React.FC<{value: string}> = ({value}) => (
@@ -508,13 +739,22 @@ const WaitSidebarBody: React.FC<{
 
     const days = Number(daysText);
     const isValid = getValidWaitDays(daysText) !== null;
-    const unitLabel = days === 1 ? 'Day' : 'Days';
-
     const updateWaitDays = (nextDays: number) => {
         const nextHours = nextDays * 24;
         if (nextHours !== action.data.wait_hours) {
             onUpdate(nextHours);
         }
+    };
+
+    const stepWaitDays = (direction: -1 | 1) => {
+        const currentDays = getValidWaitDays(daysText);
+        if (currentDays === null) {
+            return;
+        }
+
+        const nextDays = Math.min(MAX_WAIT_DAYS, Math.max(1, currentDays + direction));
+        setDaysText(String(nextDays));
+        updateWaitDays(nextDays);
     };
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -530,21 +770,47 @@ const WaitSidebarBody: React.FC<{
 
     return (
         <div className='flex flex-1 flex-col gap-5'>
-            <SidebarField label='Wait for'>
-                <div className='grid grid-cols-[6rem_1fr] gap-2'>
-                    <Input
+            <SidebarField htmlFor='automation-wait-days' label='Wait for'>
+                <InputGroup
+                    aria-label='Wait duration in days'
+                    className='h-(--control-height)'
+                    data-disabled={!isValid ? 'true' : undefined}
+                >
+                    <InputGroupInput
+                        aria-describedby={!isValid ? 'automation-wait-days-error' : undefined}
                         aria-invalid={!isValid}
-                        className='h-(--control-height)'
+                        className='w-10 min-w-10 flex-none pr-1 font-mono tabular-nums'
+                        id='automation-wait-days'
                         inputMode='numeric'
                         value={daysText}
                         onChange={handleChange}
                     />
-                    <ReadOnlySelect value={unitLabel} />
-                </div>
+                    <InputGroupText className='mr-auto'>{days === 1 ? 'day' : 'days'}</InputGroupText>
+                    <InputGroupAddon align='inline-end' className='gap-0.5 pr-2'>
+                        <InputGroupButton
+                            aria-label='Decrease wait by one day'
+                            disabled={!isValid || days <= 1}
+                            size='icon-xs'
+                            title='Decrease wait by one day'
+                            onClick={() => stepWaitDays(-1)}
+                        >
+                            <LucideIcon.Minus className='size-4' />
+                        </InputGroupButton>
+                        <InputGroupButton
+                            aria-label='Increase wait by one day'
+                            disabled={!isValid || days >= MAX_WAIT_DAYS}
+                            size='icon-xs'
+                            title='Increase wait by one day'
+                            onClick={() => stepWaitDays(1)}
+                        >
+                            <LucideIcon.Plus className='size-4' />
+                        </InputGroupButton>
+                    </InputGroupAddon>
+                </InputGroup>
                 {!isValid && (
-                    <span className='text-xs text-red'>
+                    <FieldError className='text-xs' id='automation-wait-days-error'>
                         Enter a whole number between 1 and {formatNumber(MAX_WAIT_DAYS)} days.
-                    </span>
+                    </FieldError>
                 )}
             </SidebarField>
             <div className='mt-auto pt-6'>
@@ -561,8 +827,9 @@ const SendEmailSidebarBody: React.FC<{
     onDelete: () => void;
 }> = ({action, onUpdateSubject, onEditEmail, onDelete}) => (
     <div className='flex flex-1 flex-col gap-5'>
-        <SidebarField label='Subject line'>
+        <SidebarField htmlFor='automation-email-subject' label='Subject line'>
             <Input
+                id='automation-email-subject'
                 placeholder='Subject line'
                 value={action.data.email_subject}
                 onChange={e => onUpdateSubject(e.target.value)}
@@ -610,7 +877,7 @@ const StepSidebarContent: React.FC<{detail: StepSidebarDetail}> = ({detail}) => 
                     </div>
                     <div className='min-w-0'>
                         <span className='block text-xs text-text-secondary'>{detail.label}</span>
-                        <h2 className='truncate text-base leading-tight font-semibold text-foreground'>{detail.title}</h2>
+                        <h2 className='truncate text-base leading-tight font-medium text-foreground'>{detail.title}</h2>
                     </div>
                 </div>
             </div>
@@ -666,7 +933,6 @@ type AutomationCanvasProps = {
 
 type SelectedStep = {
     id: string;
-    isEditingEmail: boolean;
 };
 
 const insertActionByType = {
@@ -675,6 +941,9 @@ const insertActionByType = {
 };
 
 const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoading, isError, onChange}) => {
+    const [newStepId, setNewStepId] = useState<string | null>(null);
+    const [emailModalMode, setEmailModalMode] = useState<EmailModalMode>('edit');
+    const [emailModalStepId, setEmailModalStepId] = useState<string | null>(null);
     const [selectedStep, setSelectedStep] = useState<SelectedStep | null>(null);
     const selectedStepId = selectedStep?.id ?? null;
 
@@ -688,14 +957,30 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
         const apiAnchor = toApiAnchor(anchor);
         const insertAction = insertActionByType[type];
         const next = insertAction({detail: automation, anchor: apiAnchor});
+        const insertedAction = next.actions.find(action => !automation.actions.some(existingAction => existingAction.id === action.id));
+        setNewStepId(insertedAction?.id ?? null);
+        if (insertedAction) {
+            setSelectedStep({id: insertedAction.id});
+        }
         onChange(next);
     }, [automation, onChange]);
+
+    useEffect(() => {
+        if (!newStepId) {
+            return;
+        }
+        const timeout = window.setTimeout(() => {
+            setNewStepId(null);
+        }, NODE_ENTER_ANIMATION_DURATION);
+        return () => window.clearTimeout(timeout);
+    }, [newStepId]);
 
     const handleDelete = useCallback((actionId: string) => {
         if (!automation) {
             return;
         }
         const next = removeAction({detail: automation, actionId});
+        setEmailModalStepId(currentId => (currentId === actionId ? null : currentId));
         setSelectedStep(null);
         onChange(next);
     }, [automation, onChange]);
@@ -718,12 +1003,23 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
         onChange(updateSendEmailAction({detail: automation, actionId, emailSubject: subject, emailLexical: action.data.email_lexical}));
     }, [automation, onChange]);
 
-    const handleEditEmail = (actionId: string) => {
-        setSelectedStep({id: actionId, isEditingEmail: true});
-    };
+    const handleEditEmail = useCallback((actionId: string, mode: EmailModalMode = 'edit') => {
+        setEmailModalMode(mode);
+        setEmailModalStepId(actionId);
+    }, []);
 
-    const emailModalAction = selectedStep?.isEditingEmail && automation
-        ? automation.actions.find((action): action is AutomationSendEmailAction => action.id === selectedStep.id && action.type === 'send_email')
+    const handleContextMenuEditEmail = useCallback((actionId: string, mode: EmailModalMode = 'edit') => {
+        setSelectedStep(null);
+        setEmailModalMode(mode);
+        setEmailModalStepId(actionId);
+    }, []);
+
+    const handleContextMenuPreviewEmail = useCallback((actionId: string) => {
+        handleContextMenuEditEmail(actionId, 'preview');
+    }, [handleContextMenuEditEmail]);
+
+    const emailModalAction = emailModalStepId && automation
+        ? automation.actions.find((action): action is AutomationSendEmailAction => action.id === emailModalStepId && action.type === 'send_email')
         : undefined;
 
     const initialViewport = useRef(getInitialViewport(window.innerWidth));
@@ -735,11 +1031,15 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
         return buildGraph({
             automation,
             disabled: automation.actions.length >= MAX_AUTOMATION_ACTIONS,
+            onDelete: handleDelete,
+            onEditEmailBody: handleContextMenuEditEmail,
             onPick: handlePick,
-            onSelectStep: id => setSelectedStep({id, isEditingEmail: false}),
+            onPreviewEmail: handleContextMenuPreviewEmail,
+            onSelectStep: id => setSelectedStep({id}),
+            newStepId,
             selectedStepId
         });
-    }, [automation, handlePick, selectedStepId]);
+    }, [automation, handleContextMenuEditEmail, handleContextMenuPreviewEmail, handleDelete, handlePick, newStepId, selectedStepId]);
 
     const sidebarDetail = automation ? getStepSidebarDetail({
         automation,
@@ -754,11 +1054,20 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
     }, []);
 
     const closeEmailModal = () => {
-        if (!emailModalAction) {
+        setEmailModalStepId(null);
+        setEmailModalMode('edit');
+    };
+
+    const handleNodeDoubleClick = useCallback((event: React.MouseEvent, node: AutomationFlowNode) => {
+        event.stopPropagation();
+        if (!automation || node.id === TAIL_CANVAS_ID || node.id === TRIGGER_CANVAS_ID) {
             return;
         }
-        setSelectedStep({id: emailModalAction.id, isEditingEmail: false});
-    };
+        const action = automation.actions.find(item => item.id === node.id);
+        if (action?.type === 'send_email') {
+            handleEditEmail(action.id);
+        }
+    }, [automation, handleEditEmail]);
 
     if (isLoading) {
         return (
@@ -787,7 +1096,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
     return (
         <div className='relative flex-1 overflow-hidden bg-surface-page' data-testid='automation-canvas'>
             <ReactFlow
-                className='[--xy-background-color:var(--color-grey-50)] [--xy-background-pattern-color:var(--color-grey-500)] [--xy-edge-stroke:var(--border-default)] dark:[--xy-background-color:var(--color-black)] dark:[--xy-background-pattern-color:var(--color-grey-900)] dark:[--xy-edge-stroke:var(--color-grey-800)]'
+                className='[--xy-background-color:var(--color-grey-50)] [--xy-background-pattern-color:var(--color-grey-500)] [--xy-edge-stroke:var(--color-grey-300)] dark:[--xy-background-color:var(--color-black)] dark:[--xy-background-pattern-color:var(--color-grey-900)] dark:[--xy-edge-stroke:var(--color-grey-800)]'
                 defaultViewport={initialViewport.current}
                 edges={graph.edges}
                 edgesFocusable={false}
@@ -798,26 +1107,33 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
                 nodesFocusable={false}
                 nodeTypes={nodeTypes}
                 proOptions={{hideAttribution: true}}
+                zoomOnDoubleClick={false}
                 zoomOnScroll={false}
                 panOnScroll
-                onNodeClick={(_, node) => {
+                onNodeClick={(event, node) => {
+                    if (event.button !== 0) {
+                        return;
+                    }
                     if (node.id !== TAIL_CANVAS_ID) {
-                        setSelectedStep({id: node.id, isEditingEmail: false});
+                        setSelectedStep({id: node.id});
                     }
                 }}
+                onNodeDoubleClick={handleNodeDoubleClick}
                 onPaneClick={clearDetail}
             >
                 <Background variant={BackgroundVariant.Dots} />
+                <AutomationCanvasControls />
             </ReactFlow>
             <StepSidebar detail={sidebarDetail} isEmailModalOpen={Boolean(emailModalAction)} onClose={clearDetail} />
             {emailModalAction && automation && (
                 <EmailContentModal
                     initialLexical={emailModalAction.data.email_lexical}
+                    initialMode={emailModalMode}
                     initialSubject={emailModalAction.data.email_subject}
                     onClose={closeEmailModal}
                     onSave={({subject, lexical}) => {
                         onChange(updateSendEmailAction({detail: automation, actionId: emailModalAction.id, emailSubject: subject, emailLexical: lexical}));
-                        setSelectedStep({id: emailModalAction.id, isEditingEmail: false});
+                        closeEmailModal();
                     }}
                 />
             )}

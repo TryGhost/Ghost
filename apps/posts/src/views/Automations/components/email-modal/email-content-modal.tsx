@@ -10,6 +10,7 @@ import {useBrowseAutomatedEmails, usePreviewWelcomeEmail} from '@tryghost/admin-
 import {useEmailPreview} from './use-email-preview';
 import {useEmailSenderDetails} from './use-sender-details';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
+import type {EmailModalMode} from '../types';
 
 interface EmailPreviewModalContentProps {
     title: string;
@@ -80,21 +81,21 @@ const EmailPreviewBody: React.FC<EmailPreviewBodyProps> = ({children, className}
 );
 
 export interface EmailContentModalProps {
-    initialSubject: string;
     initialLexical: string;
+    initialMode?: EmailModalMode;
+    initialSubject: string;
     onClose: () => void;
     onSave: (data: {subject: string; lexical: string}) => void;
 }
 
-type PreviewMode = 'edit' | 'preview';
-
-const EmailContentModal: React.FC<EmailContentModalProps> = ({initialSubject, initialLexical, onClose, onSave}) => {
+const EmailContentModal: React.FC<EmailContentModalProps> = ({initialMode = 'edit', initialSubject, initialLexical, onClose, onSave}) => {
     const {mutateAsync: previewWelcomeEmail} = usePreviewWelcomeEmail();
     const {data: automatedEmailsData} = useBrowseAutomatedEmails();
     const [showTestDropdown, setShowTestDropdown] = useState(false);
-    const [mode, setMode] = useState<PreviewMode>('edit');
+    const [mode, setMode] = useState<EmailModalMode>(initialMode);
     const [previewSubjectOverride, setPreviewSubjectOverride] = useState<string | null>(null);
     const [confirmDiscardOpen, setConfirmDiscardOpen] = useState(false);
+    const hasEnteredInitialPreview = useRef(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const normalizedLexical = useRef<string>(initialLexical || '');
     const hasEditorBeenFocused = useRef(false);
@@ -128,6 +129,14 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialSubject, in
         previewWelcomeEmail,
         setErrors
     });
+
+    useEffect(() => {
+        if (initialMode !== 'preview' || hasEnteredInitialPreview.current) {
+            return;
+        }
+        hasEnteredInitialPreview.current = true;
+        enterPreview(formState);
+    }, [enterPreview, formState, initialMode]);
 
     const isDirty = saveState === 'unsaved';
 
@@ -183,7 +192,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialSubject, in
         };
     }, []);
 
-    const handleModeChange = useCallback((nextMode: PreviewMode) => {
+    const handleModeChange = useCallback((nextMode: EmailModalMode) => {
         setMode(nextMode);
 
         if (nextMode === 'preview') {
@@ -241,7 +250,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialSubject, in
                                 data-testid='email-mode-toggle'
                                 value={mode}
                                 variant='segmented-sm'
-                                onValueChange={value => value && handleModeChange(value as PreviewMode)}
+                                onValueChange={value => value && handleModeChange(value as EmailModalMode)}
                             >
                                 <TabsList className='grid w-[240px] grid-cols-2 bg-gray-100 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.04)]'>
                                     <TabsTrigger className='w-full justify-center data-[state=active]:bg-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-black' data-testid='email-mode-edit' value='edit'>Email content</TabsTrigger>

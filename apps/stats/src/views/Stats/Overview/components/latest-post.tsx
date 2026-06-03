@@ -78,7 +78,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                 <Skeleton className='w-1/2' />
                             </div>
                         </div>
-                        <div className='flex flex-col items-stretch gap-2 px-6 text-sm'>
+                        <div className='flex flex-col items-stretch gap-2 px-6'>
                             <div className='grid grid-cols-2 gap-5'>
                                 <div>
                                     <Skeleton className='w-3/4' />
@@ -109,14 +109,14 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                     }}></div>
                             }
                             <div className='flex grow flex-col items-start justify-center self-stretch'>
-                                <div className='text-lg leading-tighter font-semibold tracking-tight hover:cursor-pointer hover:opacity-75' onClick={() => {
+                                <div className='text-md leading-tighter font-semibold tracking-tight hover:cursor-pointer hover:opacity-75' onClick={() => {
                                     if (!isLoading && latestPostStats) {
                                         navigate(postDestination, {crossApp: true});
                                     }
                                 }}>
                                     {latestPostStats.title}
                                 </div>
-                                <div className='mt-0.5 text-sm text-muted-foreground'>
+                                <div className='mt-1 text-muted-foreground'>
                                     {latestPostStats.authors && latestPostStats.authors.length > 0 && (
                                         <div>
                                             By {latestPostStats.authors.map(author => author.name).join(', ')} &ndash; {formatDisplayDate(latestPostStats.published_at, siteTimezone)}
@@ -169,7 +169,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                             </div>
                         </div>
 
-                        <div className='-ml-4 flex w-full flex-col items-stretch gap-2 pr-6 text-sm xl:h-full xl:max-w-none'>
+                        <div className='-ml-4 flex w-full flex-col items-stretch gap-2 pr-6 xl:h-full xl:max-w-none'>
                             <div className='grid grid-cols-2 gap-6 pl-10 lg:border-l xl:h-full'>
                                 {/* Web metrics - only for published posts */}
                                 {metricsToShow.showWebMetrics && webAnalytics &&
