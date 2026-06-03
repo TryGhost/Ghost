@@ -85,7 +85,8 @@ describe('RouterController', function () {
         };
         settingsHelpers = {
             getMembersSupportAddress: sinon.stub().returns('noreply@example.com'),
-            arePaidMembersEnabled: sinon.stub().returns(true)
+            arePaidMembersEnabled: sinon.stub().returns(true),
+            areDonationsEnabled: sinon.stub().returns(true)
         };
     });
 
@@ -695,6 +696,43 @@ describe('RouterController', function () {
                         test: 'hello'
                     }
                 }));
+            });
+
+            it('throws DisabledFeatureError when donations are not enabled', async function () {
+                const routerController = new RouterController({
+                    tiersService,
+                    paymentsService,
+                    offersAPI,
+                    stripeAPIService,
+                    labsService,
+                    settingsCache,
+                    settingsHelpers: {
+                        ...settingsHelpers,
+                        areDonationsEnabled: sinon.stub().returns(false)
+                    },
+                    urlUtils,
+                    memberAttributionService: {
+                        getAttribution: sinon.stub().resolves({})
+                    }
+                });
+
+                try {
+                    await routerController.createCheckoutSession({
+                        body: {
+                            type: 'donation',
+                            successUrl: 'https://example.com/?type=success',
+                            cancelUrl: 'https://example.com/?type=cancel',
+                            metadata: {}
+                        }
+                    }, {
+                        writeHead: () => {},
+                        end: () => {}
+                    });
+                    assert.fail('Should have thrown');
+                } catch (error) {
+                    assert(error instanceof errors.DisabledFeatureError);
+                    sinon.assert.notCalled(getDonationLinkSpy);
+                }
             });
         });
 
