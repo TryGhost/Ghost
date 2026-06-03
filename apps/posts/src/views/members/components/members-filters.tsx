@@ -93,8 +93,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const postValueSource = usePostResourceValueSource();
     const emailValueSource = useEmailPostValueSource();
     const labelValueSource = useLabelValueSource();
-    const tierValueSource = useTierValueSource();
-    const hasMultipleTiers = tierValueSource.hasMultipleTiers;
+    const {valueSource: tierValueSource, hasMultipleTiers} = useTierValueSource();
 
     const filterFields = useMemberFilterFields({
         newsletters,

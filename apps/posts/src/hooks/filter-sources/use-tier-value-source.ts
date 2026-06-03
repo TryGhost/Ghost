@@ -1,66 +1,54 @@
 import {createLocalValueSource} from './create-local-value-source';
-import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
-import {useEffect, useMemo} from 'react';
+import {getActiveTiers, getArchivedTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
+import {useMemo} from 'react';
 import type {FilterOption, ValueSource} from '@tryghost/shade/patterns';
 import type {Tier} from '@tryghost/admin-x-framework/api/tiers';
 
-const TIER_FILTER_PAGE_LIMIT = '100';
-const TIER_FILTER_TYPE = 'type:paid';
-const ARCHIVED_TIER_LABEL_SUFFIX = ' (archived)';
-const EMPTY_TIERS: Tier[] = [];
-
-type TierValueSource = ValueSource<string> & {
+interface TierValueSource {
+    valueSource: ValueSource<string>;
+    // True once more than one paid tier (active or archived) exists, i.e. when
+    // filtering members by tier is meaningful. Stays false until tiers load.
     hasMultipleTiers: boolean;
-};
+}
 
 function toTierFilterOption(tier: Tier): FilterOption<string> {
     return {
         value: tier.id,
-        label: tier.active ? tier.name : `${tier.name}${ARCHIVED_TIER_LABEL_SUFFIX}`,
+        label: tier.active ? tier.name : `${tier.name} (archived)`,
         detail: tier.slug
     };
 }
 
-function buildTierFilterOptions(tiers: Tier[] = []): FilterOption<string>[] {
-    const activeTiers = tiers.filter(tier => tier.active);
-    const archivedTiers = tiers.filter(tier => !tier.active);
-
+// Active tiers first, then archived; each group keeps the order returned by the API.
+function buildTierFilterOptions(tiers: Tier[]): FilterOption<string>[] {
     return [
-        ...activeTiers.map(toTierFilterOption),
-        ...archivedTiers.map(toTierFilterOption)
+        ...getActiveTiers(tiers).map(toTierFilterOption),
+        ...getArchivedTiers(tiers).map(toTierFilterOption)
     ];
 }
 
 export function useTierValueSource(): TierValueSource {
-    const {
-        data: tiersData,
-        fetchNextPage,
-        isFetchingNextPage,
-        isLoading
-    } = useBrowseTiers({searchParams: {filter: TIER_FILTER_TYPE, limit: TIER_FILTER_PAGE_LIMIT}});
+    // The tiers endpoint returns every match in a single response, so no paging or
+    // limit is needed; `type:paid` keeps free/complimentary tiers out of the filter.
+    const {data: tiersData, isLoading} = useBrowseTiers({
+        searchParams: {filter: 'type:paid'}
+    });
 
-    useEffect(() => {
-        if (tiersData?.isEnd === false && !isFetchingNextPage) {
-            void fetchNextPage();
-        }
-    }, [fetchNextPage, isFetchingNextPage, tiersData?.isEnd]);
-
-    const tiers = tiersData?.tiers ?? EMPTY_TIERS;
-    const isLoadingTierOptions = isLoading || isFetchingNextPage || tiersData?.isEnd === false;
+    const tiers = useMemo(() => tiersData?.tiers ?? [], [tiersData?.tiers]);
     const options = useMemo(() => buildTierFilterOptions(tiers), [tiers]);
-    const hasMultipleTiers = tiers.length > 1 || tiersData?.isEnd === false;
+    const hasMultipleTiers = tiers.length > 1;
 
     const useLocalTierValueSource = createLocalValueSource<FilterOption<string>, string>({
         id: 'posts.tiers.local',
         useItems: () => ({
-            data: isLoadingTierOptions ? undefined : options,
-            isLoading: isLoadingTierOptions
+            data: options,
+            isLoading
         }),
         toOption: option => option
     });
 
     return {
-        ...useLocalTierValueSource(),
+        valueSource: useLocalTierValueSource(),
         hasMultipleTiers
     };
 }
