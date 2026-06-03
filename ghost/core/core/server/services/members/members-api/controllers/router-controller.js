@@ -64,6 +64,26 @@ function extractGiftToken(input) {
     return input.trim();
 }
 
+const RESERVED_CHECKOUT_METADATA_KEYS = new Set([
+    'ghost_donation',
+    'ghost_gift',
+    'ghostSignupContext',
+    'gift_token',
+    'tier_id',
+    'cadence',
+    'duration'
+]);
+
+function removeReservedCheckoutMetadata(metadata) {
+    if (!metadata || typeof metadata !== 'object') {
+        return;
+    }
+
+    for (const key of RESERVED_CHECKOUT_METADATA_KEYS) {
+        delete metadata[key];
+    }
+}
+
 /**
  * Validate that a candidate return URL (e.g. Stripe Checkout success/cancel URL) points back
  * to the configured Ghost site. Returns `undefined` when the candidate is missing, malformed,
@@ -733,6 +753,8 @@ module.exports = class RouterController {
         if (metadata.newsletters) {
             metadata.newsletters = JSON.stringify(await this._validateNewsletters(JSON.parse(metadata.newsletters)));
         }
+
+        removeReservedCheckoutMetadata(metadata);
 
         const siteUrl = this._urlUtils.getSiteUrl();
         const successUrl = sanitizeReturnUrl(req.body.successUrl, siteUrl);
