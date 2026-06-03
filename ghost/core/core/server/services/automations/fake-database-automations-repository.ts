@@ -12,6 +12,7 @@ import type {
     EditAutomationData,
     Page
 } from './automations-repository';
+import type {ExclusifyUnion} from 'type-fest';
 
 const messages = {
     invalidAutomationActionRevision: 'Automation action "{actionId}" of type "{actionType}" is missing required revision field "{field}".',
@@ -266,7 +267,7 @@ function shouldInsertActionRevision(action: AutomationAction, latestRevision: Ac
     return !dequal(buildRevisionActionData(action, latestRevision), action.data);
 }
 
-function buildRevisionActionData(action: AutomationAction, revision: ActionRevisionRow): WaitRevisionData | SendEmailRevisionData {
+function buildRevisionActionData(action: AutomationAction, revision: ActionRevisionRow): ExclusifyUnion<WaitRevisionData | SendEmailRevisionData> {
     switch (action.type) {
     case 'wait':
         return {
