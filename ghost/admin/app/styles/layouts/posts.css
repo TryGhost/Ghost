@@ -372,10 +372,8 @@
 @media (max-width: 1500px) {
     .post-header .gh-canvas-header-content {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        grid-template-areas:
-            "title primary"
-            "filters filters";
+        grid-template-columns: minmax(0, 1fr) minmax(0, max-content) auto;
+        grid-template-areas: "title filters primary";
         align-items: center;
         gap: 12px;
         min-height: auto !important;
@@ -439,6 +437,15 @@
 
     .post-header .view-actions::before {
         display: none !important;
+    }
+}
+
+@media (max-width: 1300px) {
+    .post-header .gh-canvas-header-content {
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas:
+            "title primary"
+            "filters filters";
     }
 }
 
