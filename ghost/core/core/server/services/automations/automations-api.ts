@@ -11,6 +11,7 @@ import type {
 } from './automations-repository';
 
 const domainEvents = require('@tryghost/domain-events');
+const labs = require('../../../shared/labs');
 const StartAutomationsPollEvent = require('./events/start-automations-poll-event');
 const temporaryFakeAutomationsDatabase = require('./temporary-fake-database');
 
@@ -249,10 +250,11 @@ export async function trigger(options: TriggerOptions) {
         });
     }
 
-    const shouldTrigger = (
+    const isAllowedEnvironment = (
         process.env.NODE_ENV === 'development' ||
         process.env.NODE_ENV?.startsWith('testing')
     );
+    const shouldTrigger = isAllowedEnvironment && labs.isSet('automations');
     if (!shouldTrigger) {
         return;
     }
