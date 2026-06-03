@@ -869,7 +869,7 @@ const StepSidebarContent: React.FC<{detail: StepSidebarDetail}> = ({detail}) => 
                     </div>
                     <div className='min-w-0'>
                         <span className='block text-xs text-text-secondary'>{detail.label}</span>
-                        <h2 className='truncate text-base leading-tight font-semibold text-foreground'>{detail.title}</h2>
+                        <h2 className='truncate text-base leading-tight font-medium text-foreground'>{detail.title}</h2>
                     </div>
                 </div>
             </div>
