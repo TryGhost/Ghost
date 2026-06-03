@@ -5,7 +5,7 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import StepPicker, {type StepPickerType} from './step-picker';
 import {AutomationAction, AutomationDetail, AutomationSendEmailAction, AutomationWaitAction, InsertActionAnchor, MAX_AUTOMATION_ACTIONS, insertSendEmailAction, insertWaitAction, removeAction, updateSendEmailAction, updateWaitAction} from '@tryghost/admin-x-framework/api/automations';
 import {Background, BackgroundVariant, Controls, Edge, Handle, Node, NodeProps, Position, ReactFlow, useReactFlow, useViewport} from '@xyflow/react';
-import {Banner, Button, Checkbox, ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger, Input, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText, Label, LoadingIndicator, Popover, PopoverContent, PopoverTrigger, Select, SelectTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
+import {Banner, Button, Checkbox, ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger, Input, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText, Label, LoadingIndicator, Popover, PopoverContent, PopoverTrigger, Select, SelectTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 
 const MAX_WAIT_DAYS = 30;
@@ -46,11 +46,21 @@ type NodeContextMenuItem = {
     icon?: React.ElementType;
     label: string;
     onSelect: () => void;
+    type?: 'item';
     variant?: 'default' | 'destructive';
 };
 
+type NodeContextMenuSeparator = {
+    id: string;
+    type: 'separator';
+};
+
+type NodeContextMenuEntry = NodeContextMenuItem | NodeContextMenuSeparator;
+
+type EmailModalMode = 'edit' | 'preview';
+
 type StepNodeData = StepNodeDisplayData & {
-    contextMenuItems: NodeContextMenuItem[];
+    contextMenuItems: NodeContextMenuEntry[];
     isNew: boolean;
     selected: boolean;
     onSelect: () => void;
@@ -126,6 +136,9 @@ const NodeShell: React.FC<React.PropsWithChildren<{className?: string; data: Ste
                 onPointerDown={event => event.stopPropagation()}
             >
                 {data.contextMenuItems.map((item) => {
+                    if (item.type === 'separator') {
+                        return <ContextMenuSeparator key={item.id} />;
+                    }
                     const Icon = item.icon;
                     return (
                         <ContextMenuItem key={item.label} variant={item.variant} onSelect={item.onSelect}>
@@ -347,17 +360,19 @@ const buildNodeContextMenuItems = ({
     canEditEmailBody = false,
     onDelete,
     onEditEmailBody,
+    onPreviewEmail,
     onSelectStep,
     stepId
 }: {
     canDelete?: boolean;
     canEditEmailBody?: boolean;
     onDelete?: (deleteStepId: string) => void;
-    onEditEmailBody?: (editEmailBodyStepId: string) => void;
+    onEditEmailBody?: (editEmailBodyStepId: string, mode?: EmailModalMode) => void;
+    onPreviewEmail?: (previewEmailStepId: string) => void;
     onSelectStep: (nextStepId: string) => void;
     stepId: string;
-}): NodeContextMenuItem[] => {
-    const items: NodeContextMenuItem[] = [{
+}): NodeContextMenuEntry[] => {
+    const items: NodeContextMenuEntry[] = [{
         icon: LucideIcon.Settings2,
         label: 'Edit settings',
         onSelect: () => onSelectStep(stepId)
@@ -371,7 +386,18 @@ const buildNodeContextMenuItems = ({
         });
     }
 
+    if (canEditEmailBody && onPreviewEmail) {
+        items.push({
+            icon: LucideIcon.Eye,
+            label: 'Preview',
+            onSelect: () => onPreviewEmail(stepId)
+        });
+    }
+
     if (canDelete && onDelete) {
+        if (canEditEmailBody) {
+            items.push({id: 'before-delete', type: 'separator'});
+        }
         items.push({
             icon: LucideIcon.Trash2,
             label: 'Delete',
@@ -428,14 +454,15 @@ type BuildGraphParams = {
     automation: AutomationDetail;
     disabled: boolean;
     onDelete: (stepId: string) => void;
-    onEditEmailBody: (stepId: string) => void;
+    onEditEmailBody: (stepId: string, mode?: EmailModalMode) => void;
+    onPreviewEmail: (stepId: string) => void;
     onPick: (type: StepPickerType, anchor: CanvasAnchor) => void;
     onSelectStep: (stepId: string) => void;
     newStepId: string | null;
     selectedStepId: string | null;
 }
 
-const buildGraph = ({automation, disabled, onDelete, onEditEmailBody, onPick, onSelectStep, newStepId, selectedStepId}: BuildGraphParams): {nodes: AutomationFlowNode[]; edges: Edge[]} => {
+const buildGraph = ({automation, disabled, onDelete, onEditEmailBody, onPick, onPreviewEmail, onSelectStep, newStepId, selectedStepId}: BuildGraphParams): {nodes: AutomationFlowNode[]; edges: Edge[]} => {
     const ordered = getInitialActionOrder(automation);
     const baseNodeProps = {
         draggable: false,
@@ -484,6 +511,7 @@ const buildGraph = ({automation, disabled, onDelete, onEditEmailBody, onPick, on
                     canEditEmailBody: action.type === 'send_email',
                     onDelete,
                     onEditEmailBody,
+                    onPreviewEmail,
                     onSelectStep,
                     stepId: action.id
                 }),
@@ -906,6 +934,7 @@ const insertActionByType = {
 
 const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoading, isError, onChange}) => {
     const [newStepId, setNewStepId] = useState<string | null>(null);
+    const [emailModalMode, setEmailModalMode] = useState<EmailModalMode>('edit');
     const [emailModalStepId, setEmailModalStepId] = useState<string | null>(null);
     const [selectedStep, setSelectedStep] = useState<SelectedStep | null>(null);
     const selectedStepId = selectedStep?.id ?? null;
@@ -966,14 +995,20 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
         onChange(updateSendEmailAction({detail: automation, actionId, emailSubject: subject, emailLexical: action.data.email_lexical}));
     }, [automation, onChange]);
 
-    const handleEditEmail = useCallback((actionId: string) => {
+    const handleEditEmail = useCallback((actionId: string, mode: EmailModalMode = 'edit') => {
+        setEmailModalMode(mode);
         setEmailModalStepId(actionId);
     }, []);
 
-    const handleContextMenuEditEmail = useCallback((actionId: string) => {
+    const handleContextMenuEditEmail = useCallback((actionId: string, mode: EmailModalMode = 'edit') => {
         setSelectedStep(null);
+        setEmailModalMode(mode);
         setEmailModalStepId(actionId);
     }, []);
+
+    const handleContextMenuPreviewEmail = useCallback((actionId: string) => {
+        handleContextMenuEditEmail(actionId, 'preview');
+    }, [handleContextMenuEditEmail]);
 
     const emailModalAction = emailModalStepId && automation
         ? automation.actions.find((action): action is AutomationSendEmailAction => action.id === emailModalStepId && action.type === 'send_email')
@@ -991,11 +1026,12 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
             onDelete: handleDelete,
             onEditEmailBody: handleContextMenuEditEmail,
             onPick: handlePick,
+            onPreviewEmail: handleContextMenuPreviewEmail,
             onSelectStep: id => setSelectedStep({id}),
             newStepId,
             selectedStepId
         });
-    }, [automation, handleContextMenuEditEmail, handleDelete, handlePick, newStepId, selectedStepId]);
+    }, [automation, handleContextMenuEditEmail, handleContextMenuPreviewEmail, handleDelete, handlePick, newStepId, selectedStepId]);
 
     const sidebarDetail = automation ? getStepSidebarDetail({
         automation,
@@ -1011,6 +1047,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
 
     const closeEmailModal = () => {
         setEmailModalStepId(null);
+        setEmailModalMode('edit');
     };
 
     if (isLoading) {
@@ -1070,11 +1107,13 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
             {emailModalAction && automation && (
                 <EmailContentModal
                     initialLexical={emailModalAction.data.email_lexical}
+                    initialMode={emailModalMode}
                     initialSubject={emailModalAction.data.email_subject}
                     onClose={closeEmailModal}
                     onSave={({subject, lexical}) => {
                         onChange(updateSendEmailAction({detail: automation, actionId: emailModalAction.id, emailSubject: subject, emailLexical: lexical}));
                         setEmailModalStepId(null);
+                        setEmailModalMode('edit');
                     }}
                 />
             )}

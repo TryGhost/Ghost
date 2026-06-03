@@ -9,13 +9,15 @@ import {fireEvent, render, screen, waitFor, within} from '@testing-library/react
 // hooks) are out of scope here. The stub exposes the seed props and a save button
 // so we can assert the canvas wiring (open → seed → onSave → draft → publish).
 vi.mock('@src/views/Automations/components/email-modal/email-content-modal', () => ({
-    default: ({initialSubject, initialLexical, onClose, onSave}: {
+    default: ({initialMode, initialSubject, initialLexical, onClose, onSave}: {
+        initialMode?: 'edit' | 'preview';
         initialSubject: string;
         initialLexical: string;
         onClose: () => void;
         onSave: (data: {subject: string; lexical: string}) => void;
     }) => (
         <div data-testid='email-content-modal'>
+            <span data-testid='modal-initial-mode'>{initialMode ?? 'edit'}</span>
             <span data-testid='modal-initial-subject'>{initialSubject}</span>
             <span data-testid='modal-initial-lexical'>{initialLexical}</span>
             <button data-testid='modal-save' type='button' onClick={() => onSave({subject: 'Edited via modal', lexical: '{"root":{"children":[{"type":"paragraph"}]}}'})}>save</button>
@@ -404,8 +406,28 @@ describe('AutomationEditor', () => {
         expect(await screen.findByTestId('email-content-modal')).toBeInTheDocument();
         expect(screen.queryByRole('complementary', {name: 'Step details'})).not.toBeInTheDocument();
         expect(emailStep).toHaveAttribute('aria-pressed', 'false');
+        expect(screen.getByTestId('modal-initial-mode')).toHaveTextContent('edit');
         expect(screen.getByTestId('modal-initial-subject')).toHaveTextContent('Welcome to The Blueprint');
         expect(screen.getByTestId('modal-initial-lexical')).toHaveTextContent('{"root":{"children":[]}}');
+    });
+
+    it('opens the email editor preview from the send email node right-click menu', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        const emailStep = screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'});
+        fireEvent.contextMenu(emailStep);
+        fireEvent.click(await screen.findByRole('menuitem', {name: 'Preview'}));
+
+        expect(await screen.findByTestId('email-content-modal')).toBeInTheDocument();
+        expect(screen.queryByRole('complementary', {name: 'Step details'})).not.toBeInTheDocument();
+        expect(emailStep).toHaveAttribute('aria-pressed', 'false');
+        expect(screen.getByTestId('modal-initial-mode')).toHaveTextContent('preview');
     });
 
     it('shows paid member eligibility for the paid welcome automation trigger', () => {

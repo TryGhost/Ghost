@@ -79,22 +79,24 @@ const EmailPreviewBody: React.FC<EmailPreviewBodyProps> = ({children, className}
     </div>
 );
 
+type PreviewMode = 'edit' | 'preview';
+
 export interface EmailContentModalProps {
-    initialSubject: string;
     initialLexical: string;
+    initialMode?: PreviewMode;
+    initialSubject: string;
     onClose: () => void;
     onSave: (data: {subject: string; lexical: string}) => void;
 }
 
-type PreviewMode = 'edit' | 'preview';
-
-const EmailContentModal: React.FC<EmailContentModalProps> = ({initialSubject, initialLexical, onClose, onSave}) => {
+const EmailContentModal: React.FC<EmailContentModalProps> = ({initialMode = 'edit', initialSubject, initialLexical, onClose, onSave}) => {
     const {mutateAsync: previewWelcomeEmail} = usePreviewWelcomeEmail();
     const {data: automatedEmailsData} = useBrowseAutomatedEmails();
     const [showTestDropdown, setShowTestDropdown] = useState(false);
-    const [mode, setMode] = useState<PreviewMode>('edit');
+    const [mode, setMode] = useState<PreviewMode>(initialMode);
     const [previewSubjectOverride, setPreviewSubjectOverride] = useState<string | null>(null);
     const [confirmDiscardOpen, setConfirmDiscardOpen] = useState(false);
+    const hasEnteredInitialPreview = useRef(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const normalizedLexical = useRef<string>(initialLexical || '');
     const hasEditorBeenFocused = useRef(false);
@@ -128,6 +130,14 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialSubject, in
         previewWelcomeEmail,
         setErrors
     });
+
+    useEffect(() => {
+        if (initialMode !== 'preview' || hasEnteredInitialPreview.current) {
+            return;
+        }
+        hasEnteredInitialPreview.current = true;
+        enterPreview(formState);
+    }, [enterPreview, formState, initialMode]);
 
     const isDirty = saveState === 'unsaved';
 
