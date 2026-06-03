@@ -46,7 +46,7 @@
     "prettier": "3.8.3",
     "should": "13.2.3",
     "sinon": "22.0.0",
-    "tsx": "4.22.3",
+    "tsx": "4.22.4",
     "typescript": "5.9.3",
     "typescript-eslint": "8.60.0"
   },
