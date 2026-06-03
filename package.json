@@ -69,8 +69,8 @@
   },
   "devDependencies": {
     "@playwright/test": "catalog:",
-    "@secretlint/secretlint-rule-pattern": "12.3.1",
-    "@secretlint/secretlint-rule-preset-recommend": "12.3.1",
+    "@secretlint/secretlint-rule-pattern": "13.0.2",
+    "@secretlint/secretlint-rule-preset-recommend": "13.0.2",
     "eslint": "catalog:",
     "eslint-plugin-ghost": "3.5.0",
     "eslint-plugin-react": "7.37.5",
@@ -80,7 +80,7 @@
     "lint-staged": "17.0.5",
     "nx": "22.7.4",
     "rimraf": "6.1.3",
-    "secretlint": "12.3.1",
+    "secretlint": "13.0.2",
     "semver": "7.7.4",
     "typescript": "catalog:",
     "vitest": "catalog:"

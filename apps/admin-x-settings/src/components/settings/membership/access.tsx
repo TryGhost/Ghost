@@ -171,7 +171,7 @@ const Access: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 <Banner className='mb-2 flex w-full cursor-default flex-col gap-4 border-0 p-6 pt-5 transition-none hover:translate-y-0 hover:scale-100 hover:shadow-[-7px_-6px_42px_8px_rgb(75_225_226_/_28%),7px_6px_42px_8px_rgb(202_103_255_/_32%)] md:flex-row md:items-center md:justify-between dark:hover:shadow-[-7px_-6px_42px_8px_rgb(75_225_226_/_36%),7px_6px_42px_8px_rgb(202_103_255_/_38%)]' size='lg' variant='gradient'>
                     <div>
                         <div className='text-base font-semibold'>Pre-launch mode</div>
-                        <div className='mt-2 text-sm text-gray-700'>
+                        <div className='mt-2 text-gray-700'>
                             During your free trial, a private access code is required to browse your site. When you&apos;re ready to launch, pick a plan to upgrade your account and make everything public.
                         </div>
                     </div>

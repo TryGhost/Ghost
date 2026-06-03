@@ -171,6 +171,23 @@ describe('useMemberFilterFields', () => {
         expect(statusField?.options?.map(o => o.value)).toEqual(['paid', 'free', 'comped', 'gift']);
     });
 
+    it('includes the membership tier filter when multiple paid tiers are available', () => {
+        const {result} = renderHook(() => useMemberFilterFields({
+            paidMembersEnabled: true,
+            hasMultipleTiers: true,
+            tierValueSource,
+            siteTimezone: 'UTC'
+        }));
+
+        const subscriptionFields = result.current.find(group => group.group === 'Subscription')?.fields ?? [];
+        const tierField = subscriptionFields.find(field => field.key === 'tier_id');
+
+        expect(subscriptionFields.map(field => field.key)).toContain('tier_id');
+        expect(tierField).toMatchObject({
+            valueSource: tierValueSource
+        });
+    });
+
     it('hydrates grouped retention offers on the offer field', () => {
         const {result} = renderHook(() => useMemberFilterFields({
             paidMembersEnabled: true,

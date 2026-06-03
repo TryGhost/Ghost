@@ -10,7 +10,7 @@ interface RightSidebarButtonProps extends ButtonProps {
 const RightSidebarMenuLink = React.forwardRef<HTMLButtonElement, RightSidebarButtonProps>(
     ({active, children, ...props}, ref) => {
         const linkClass = cn(
-            'justify-start text-md font-medium text-text-secondary hover:bg-accent h-9 [&_svg]:size-[18px]',
+            'justify-start text-control font-medium text-text-secondary hover:bg-accent h-9 [&_svg]:size-[18px]',
             active && 'bg-accent text-text-primary font-semibold'
         );
 

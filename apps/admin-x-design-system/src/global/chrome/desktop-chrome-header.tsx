@@ -61,7 +61,7 @@ const DesktopChromeHeader: React.FC<DesktopChromeHeaderProps & React.HTMLAttribu
             }
             <div className='flex grow justify-center'>
                 {(typeof toolbarCenter === 'string') ?
-                    (<span className='text-sm font-bold'>{toolbarCenter}</span>)
+                    (<span className='font-semibold'>{toolbarCenter}</span>)
                     :
                     (<>{toolbarCenter}</>)
                 }

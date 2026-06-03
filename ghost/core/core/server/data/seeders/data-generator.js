@@ -246,7 +246,7 @@ class DataGenerator {
             crypto.randomBytes = (size) => {
                 const buffer = Buffer.alloc(size);
                 for (let i = 0; i < size; i++) {
-                    buffer[i] = Math.floor(faker.datatype.number({min: 0, max: 255}));
+                    buffer[i] = Math.floor(faker.number.int({min: 0, max: 255}));
                 }
                 return buffer;
             };

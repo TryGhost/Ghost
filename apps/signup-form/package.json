@@ -31,8 +31,8 @@
   },
   "dependencies": {
     "@tryghost/debug": "catalog:",
-    "react": "18.3.1",
-    "react-dom": "18.3.1"
+    "react": "catalog:",
+    "react-dom": "catalog:"
   },
   "devDependencies": {
     "@playwright/test": "catalog:",
@@ -47,7 +47,7 @@
     "autoprefixer": "10.4.21",
     "concurrently": "catalog:",
     "eslint": "catalog:",
-    "eslint-plugin-tailwindcss": "3.18.2",
+    "eslint-plugin-tailwindcss": "catalog:tailwind3",
     "jsdom": "catalog:",
     "postcss": "catalog:",
     "postcss-import": "16.1.1",

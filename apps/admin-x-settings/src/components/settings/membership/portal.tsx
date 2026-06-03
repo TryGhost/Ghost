@@ -66,7 +66,7 @@ const Portal: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         <div className='mt-1.5 font-space-grotesk text-lg font-bold'>
                             Sign up
                         </div>
-                        <div className='mt-1.5 flex h-6 w-1/2 items-center rounded border border-grey-200 p-2 text-xs text-grey-700'>
+                        <div className='mt-1.5 flex h-6 w-1/2 items-center rounded border border-grey-200 p-2 text-sm text-grey-700'>
                             jamie@example.com
                         </div>
                     </div>

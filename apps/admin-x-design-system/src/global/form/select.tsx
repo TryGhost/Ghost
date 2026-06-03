@@ -86,7 +86,7 @@ const ClearIndicator: React.FC<ClearIndicatorProps<SelectOption, false>> = props
 const Option: React.FC<OptionProps<SelectOption, false>> = ({children, ...optionProps}) => (
     <components.Option {...optionProps}>
         <span className={optionProps.isSelected ? 'relative flex w-full items-center justify-between gap-2' : ''} data-testid="select-option" data-value={optionProps.data.value}>{children}{optionProps.isSelected && <span><Icon name='check' size={14} /></span>}</span>
-        {optionProps.data.hint && <span className="block text-xs text-grey-700 dark:text-grey-300">{optionProps.data.hint}</span>}
+        {optionProps.data.hint && <span className="block text-sm text-grey-700 dark:text-grey-300">{optionProps.data.hint}</span>}
     </components.Option>
 );
 
@@ -162,8 +162,8 @@ const Select: React.FC<SelectProps> = ({
     const customClasses = {
         control: clsx(
             controlClasses?.control,
-            'h-9 min-h-[36px] w-full appearance-none rounded-lg border outline-hidden md:h-[38px] md:min-h-[38px]',
-            size === 'xs' ? 'py-0 pr-2 text-xs' : 'py-1 pr-4',
+            'h-[var(--control-height)] !min-h-[var(--control-height)] w-full appearance-none rounded-lg border outline-hidden',
+            size === 'xs' ? 'py-0 pr-2 text-sm' : 'py-1 pr-4',
             clearBg ? '' : 'bg-grey-100 px-3 dark:bg-grey-900',
             disabled && !clearBg && 'bg-grey-50 shadow-[0_0_0_1px_rgba(255,255,255,0.45)] hover:bg-grey-50 dark:bg-grey-950 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.18)] dark:hover:bg-grey-950',
             error ? 'border-red' : `border-transparent ${!clearBg && !disabled && 'hover:bg-grey-100 dark:hover:bg-grey-900'}`,
@@ -175,12 +175,12 @@ const Select: React.FC<SelectProps> = ({
         placeHolder: clsx('text-grey-700 dark:text-grey-800', controlClasses?.placeHolder),
         menu: clsx(
             '!z-[300] mt-0.5 overflow-hidden rounded-lg bg-white shadow-lg dark:border dark:border-grey-900 dark:bg-black',
-            size === 'xs' && 'text-xs',
+            size === 'xs' && 'text-sm',
             controlClasses?.menu
         ),
         option: clsx('group px-3 py-[7px] hover:cursor-pointer hover:bg-grey-100 dark:text-white dark:hover:bg-grey-900', controlClasses?.option),
         noOptionsMessage: clsx('nowrap p-3 text-grey-600', controlClasses?.noOptionsMessage),
-        groupHeading: clsx('px-3 py-[7px] text-2xs font-semibold tracking-wide text-grey-700 uppercase', controlClasses?.groupHeading),
+        groupHeading: clsx('px-3 py-[7px] text-xs font-semibold tracking-wide text-grey-700 uppercase', controlClasses?.groupHeading),
         clearIndicator: clsx('', controlClasses?.clearIndicator)
     };
 
