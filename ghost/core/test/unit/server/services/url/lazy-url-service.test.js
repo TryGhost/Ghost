@@ -1,21 +1,10 @@
-// Preserved as a parity spec for the LazyUrlService re-implementation (HKG-1817).
-// The implementation module was removed in the experimental revert (HKG-1816);
-// the suite is kept skipped (not deleted) so the behaviour contract stays visible
-// in-tree. `LazyUrlService` is stubbed to null because the module no longer
-// exists. To revive: restore the require, drop the eslint-disable, and switch
-// describe.skip back to describe.
-/* eslint-disable ghost/mocha/no-skipped-tests */
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const LazyUrlService = null; // require('../../../../../core/server/services/url/lazy-url-service');
+const LazyUrlService = require('../../../../../core/server/services/url/lazy-url-service');
 
 function makeUrlUtils() {
-    // Just enough of url-utils to satisfy the service. createUrl returns the
-    // path verbatim so tests can assert on the relative form; replacePermalink
-    // does the same substitution Ghost's url-utils does for our limited fields.
-    // Permalinks use the `:field` syntax that Ghost's RouteSettings validator
-    // rewrites all `{field}` placeholders into before they reach the URL
-    // service.
+    // Minimal url-utils stub: createUrl returns the path verbatim and
+    // replacePermalink substitutes the `:field` placeholders the service uses.
     return {
         replacePermalink(permalink, resource) {
             const datePart = resource.published_at ? new Date(resource.published_at) : null;
@@ -40,7 +29,7 @@ function makeUrlUtils() {
     };
 }
 
-describe.skip('LazyUrlService', function () {
+describe('LazyUrlService', function () {
     let urlUtils;
 
     beforeEach(function () {
@@ -105,14 +94,8 @@ describe.skip('LazyUrlService', function () {
         });
 
         it('matches page:false against the singular DB type field', function () {
-            // The legacy transformer rewrites `page:false` to `type:post` and
-            // evaluates it against the resource's singular DB-style `type`
-            // field. The negative half (a record whose `type` is 'page'
-            // failing the filter) is not directly expressible through this
-            // public API: `_routerTypeOf('page')` returns 'pages', so a
-            // type:'page' resource is routed to the pages collection rather
-            // than reaching this posts router's filter at all. That's why
-            // only the positive match is asserted here.
+            // Only the positive match is assertable: a type:'page' resource
+            // routes to the pages collection, never reaching this posts filter.
             const service = new LazyUrlService({urlUtils});
             service.onRouterAddedType('posts-only', 'page:false', 'posts', '/:slug/');
 
@@ -188,6 +171,22 @@ describe.skip('LazyUrlService', function () {
             assert.equal(service.ownsResource('featured', {type: 'posts', id: 'a', featured: true}), true);
             assert.equal(service.ownsResource('featured', {type: 'posts', id: 'b', featured: false}), false);
         });
+
+        it('grants exclusive ownership to the first matching router', function () {
+            // A featured collection ahead of a catch-all: the catch-all must
+            // not claim a featured post the higher-priority router owns.
+            const service = new LazyUrlService({urlUtils});
+            service.onRouterAddedType('featured', 'featured:true', 'posts', '/featured/:slug/');
+            service.onRouterAddedType('default', null, 'posts', '/:slug/');
+
+            const featured = {type: 'posts', id: 'f', slug: 'hot', featured: true};
+            assert.equal(service.ownsResource('featured', featured), true);
+            assert.equal(service.ownsResource('default', featured), false);
+
+            const ordinary = {type: 'posts', id: 'p', slug: 'meh', featured: false};
+            assert.equal(service.ownsResource('featured', ordinary), false);
+            assert.equal(service.ownsResource('default', ordinary), true);
+        });
     });
 
     describe('hasFinished', function () {
@@ -227,11 +226,8 @@ describe.skip('LazyUrlService', function () {
         });
 
         it('iterates routers in priority order, picking the first whose template matches', async function () {
-            // Two routers with overlapping templates: a single-segment posts
-            // collection at /:slug/ and a single-segment static-pages
-            // collection at /:slug/. Both can pattern-match `/hello/`. The
-            // posts collection is registered first, so it wins — and the
-            // static pages router is never consulted via findResource.
+            // Overlapping /:slug/ templates: the first-registered posts router
+            // wins, so the static-pages router is never consulted.
             const findResource = sinon.stub();
             findResource.withArgs('posts', {slug: 'hello'}).resolves({id: 'p1', slug: 'hello'});
 
@@ -259,10 +255,23 @@ describe.skip('LazyUrlService', function () {
             assert.equal(hot.id, 'p3');
         });
 
-        // The next two tests pin the contract for findResource: tag/author
-        // filters expand to `tags.slug` / `authors.slug` lookups via
-        // EXPANSIONS, and NQL evaluates them against the loaded record. If
-        // findResource returns posts without their tags/authors relations,
+        it('does not repeat an identical findResource lookup within one resolveUrl call', async function () {
+            const findResource = sinon.stub();
+            findResource.withArgs('posts', {slug: 'hello'}).resolves({id: 'p1', slug: 'hello', featured: false});
+
+            const service = new LazyUrlService({urlUtils, findResource});
+            // Two same-type routers share the /:slug/ shape: the higher-priority
+            // one filters the record out, so resolution falls through to the next.
+            service.onRouterAddedType('featured', 'featured:true', 'posts', '/:slug/');
+            service.onRouterAddedType('posts', 'featured:false', 'posts', '/:slug/');
+
+            const result = await service.resolveUrl('/hello/');
+
+            assert.equal(result.id, 'p1');
+            sinon.assert.calledOnce(findResource);
+        });
+
+        // tag/author filters need the loaded record's relations; without them
         // every tag- or author-filtered collection silently 404s.
         it('returns null for a tag-filtered router when findResource omits the tags relation', async function () {
             const findResource = sinon.stub();
@@ -309,14 +318,13 @@ describe.skip('LazyUrlService', function () {
             sinon.assert.notCalled(findResource);
         });
 
-        it('matches multi-segment permalinks (e.g. /:primary_tag/:slug/)', async function () {
+        it('matches multi-segment permalinks when the record is canonical (e.g. /:primary_tag/:slug/)', async function () {
             const findResource = sinon.stub();
-            // withArgs binds the resolve to the exact param shape, so a
-            // regression that drops one of the captures (e.g. forgets to
-            // pass `primary_tag`) fails on the resolve, not just on the spy.
+            // withArgs binds to the exact param shape, so a dropped capture
+            // fails the resolve, not just the spy.
             findResource
                 .withArgs('posts', {primary_tag: 'podcast', slug: 'hello'})
-                .resolves({id: 'p1', slug: 'hello'});
+                .resolves({id: 'p1', slug: 'hello', primary_tag: {slug: 'podcast'}});
 
             const service = new LazyUrlService({urlUtils, findResource});
             service.onRouterAddedType('default', null, 'posts', '/:primary_tag/:slug/');
@@ -326,17 +334,45 @@ describe.skip('LazyUrlService', function () {
             assert.equal(result.type, 'posts');
         });
 
-        it('matches date-based permalinks', async function () {
+        it('returns null when the primary_tag segment is not the record canonical tag', async function () {
+            const findResource = sinon.stub();
+            findResource
+                .withArgs('posts', {primary_tag: 'news', slug: 'hello'})
+                .resolves({id: 'p1', slug: 'hello', primary_tag: {slug: 'podcast'}});
+
+            const service = new LazyUrlService({urlUtils, findResource});
+            service.onRouterAddedType('default', null, 'posts', '/:primary_tag/:slug/');
+
+            // The post's canonical URL is /podcast/hello/, so /news/hello/ must
+            // 404 exactly as the eager service does.
+            assert.equal(await service.resolveUrl('/news/hello/'), null);
+        });
+
+        it('matches date-based permalinks when the date is canonical', async function () {
             const findResource = sinon.stub();
             findResource
                 .withArgs('posts', {year: '2026', month: '04', slug: 'hello'})
-                .resolves({id: 'p1', slug: 'hello'});
+                .resolves({id: 'p1', slug: 'hello', published_at: '2026-04-15T00:00:00.000Z'});
 
             const service = new LazyUrlService({urlUtils, findResource});
             service.onRouterAddedType('default', null, 'posts', '/:year/:month/:slug/');
 
             const result = await service.resolveUrl('/2026/04/hello/');
             assert.equal(result.id, 'p1');
+        });
+
+        it('returns null when the date segments do not match the record published date', async function () {
+            const findResource = sinon.stub();
+            findResource
+                .withArgs('posts', {year: '2026', month: '05', slug: 'hello'})
+                .resolves({id: 'p1', slug: 'hello', published_at: '2026-04-15T00:00:00.000Z'});
+
+            const service = new LazyUrlService({urlUtils, findResource});
+            service.onRouterAddedType('default', null, 'posts', '/:year/:month/:slug/');
+
+            // Post is published in 2026-04, so a 2026-05 URL is not its canonical
+            // URL and must 404, matching the eager service.
+            assert.equal(await service.resolveUrl('/2026/05/hello/'), null);
         });
 
         it('does not throw on malformed %-escapes; returns null instead', async function () {
@@ -367,9 +403,7 @@ describe.skip('LazyUrlService', function () {
             const service = new LazyUrlService({urlUtils, findResource});
             service.onRouterAddedType('default', null, 'posts', '/:slug/');
 
-            // Caller (e.g. the entry controller / RSS feed) hands the lazy
-            // service a raw DB record with type:'post'. The service should
-            // still match the posts collection.
+            // A raw DB record with singular type:'post' still matches posts.
             const url = service.getUrlForResource({type: 'post', id: 'p1', slug: 'hello'});
             assert.equal(url, '/hello/');
         });
