@@ -10,8 +10,6 @@ Docs: https://ghost.org/docs/config/#creating-a-custom-storage-adapter
 yarn add ghost-storage-base
 ```
 
-Requires Node.js `^22.13.1`.
-
 ## Usage
 
 Extend `StorageBase` and implement the five required methods. The base class supplies `getTargetDir`, `getSanitizedFileName`, `generateUnique`, and `getUniqueFileName` for you.
@@ -37,8 +35,6 @@ module.exports = MyStorage;
 ### Testing
 
 - `yarn test` to run tests
-
-Tests run on Vitest with a 100% coverage threshold on `BaseStorage.js`.
 
 ### Publish
 
