@@ -39,6 +39,9 @@ describe('Automated Emails API', function () {
 
     beforeEach(async function () {
         await dbUtils.truncate('brute');
+        await dbUtils.truncate('automation_action_revisions');
+        await dbUtils.truncate('automation_action_edges');
+        await dbUtils.truncate('automation_actions');
         await dbUtils.truncate('welcome_email_automated_emails');
         await dbUtils.truncate('automations');
     });
@@ -92,7 +95,7 @@ describe('Automated Emails API', function () {
 
     describe('Add', function () {
         it('Can add an automated email', async function () {
-            await agent
+            const {body} = await agent
                 .post('automated_emails')
                 .body({automated_emails: [{
                     name: 'Welcome Email (Free)',
@@ -110,6 +113,23 @@ describe('Automated Emails API', function () {
                     etag: anyEtag,
                     location: anyLocationFor('automated_emails')
                 });
+
+            const automatedEmail = body.automated_emails[0];
+            const legacyRows = await models.Base.knex('welcome_email_automated_emails');
+            const action = await models.Base.knex('automation_actions')
+                .where({automation_id: automatedEmail.id, type: 'send_email'})
+                .first();
+            const revision = await models.Base.knex('automation_action_revisions')
+                .where({action_id: action?.id})
+                .first();
+
+            assert.equal(legacyRows.length, 0);
+            assert.ok(action);
+            assert.equal(action.deleted_at, null);
+            assert.ok(revision);
+            assert.equal(revision.email_subject, 'Welcome to the site!');
+            assert.equal(revision.email_lexical, JSON.stringify({root: {children: []}}));
+            assert.equal(revision.wait_hours, null);
         });
 
         it('Validates status on add', async function () {
@@ -252,6 +272,19 @@ describe('Automated Emails API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 });
+
+            const legacyRows = await models.Base.knex('welcome_email_automated_emails');
+            const action = await models.Base.knex('automation_actions')
+                .where({automation_id: id, type: 'send_email'})
+                .first();
+            const revisions = await models.Base.knex('automation_action_revisions')
+                .where({action_id: action.id})
+                .orderBy('created_at', 'asc');
+
+            assert.equal(legacyRows.length, 0);
+            assert.equal(revisions.length, 2);
+            assert.equal(revisions[0].email_subject, 'Welcome to the site!');
+            assert.equal(revisions[1].email_subject, 'Updated subject');
         });
 
         it('Validates status on edit', async function () {

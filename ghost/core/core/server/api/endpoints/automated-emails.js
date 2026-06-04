@@ -3,35 +3,55 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
 const memberWelcomeEmailService = require('../../services/member-welcome-emails/service');
+const automatedEmailActions = require('../../services/member-welcome-emails/automated-email-actions');
 
 const messages = {
     automatedEmailNotFound: 'Automated email not found.'
 };
 
-// NOTE: This file is in a transitionary state. The `automated_emails` database table was split into
-// `automations` (automation metadata: status, name, slug) and
-// `welcome_email_automated_emails` (email content: subject, lexical, sender fields). This controller
-// acts as a facade that joins/splits data between those two models while preserving the original
-// `automated_emails` API shape externally.
+// NOTE: This file is in a transitionary state. The old welcome-email-specific
+// email table is kept for compatibility with existing installs, but new writes
+// go through the generic automation action tables. This controller still
+// exposes the original `automated_emails` API shape externally.
 const AUTOMATION_FIELDS = ['status', 'name', 'slug'];
 const EMAIL_FIELDS = ['subject', 'lexical', 'sender_name', 'sender_email', 'sender_reply_to', 'email_design_setting_id'];
 
-function flattenAutomation(automation, email = automation.related('welcomeEmailAutomatedEmail')) {
+function flattenAutomation(automation, email) {
     const result = {
         id: automation.id,
         status: automation.get('status'),
         name: automation.get('name'),
         slug: automation.get('slug'),
-        subject: email.get('subject'),
-        lexical: email.get('lexical'),
-        sender_name: email.get('sender_name'),
-        sender_email: email.get('sender_email'),
-        sender_reply_to: email.get('sender_reply_to'),
-        email_design_setting_id: email.get('email_design_setting_id'),
-        created_at: automation.get('created_at'),
-        updated_at: automation.get('updated_at')
+        subject: email.subject,
+        lexical: email.lexical,
+        sender_name: email.sender_name,
+        sender_email: email.sender_email,
+        sender_reply_to: email.sender_reply_to,
+        email_design_setting_id: email.email_design_setting_id,
+        created_at: email.created_at,
+        updated_at: email.updated_at
     };
     return result;
+}
+
+async function flattenAutomations(automations, options = {}) {
+    const emailMap = await automatedEmailActions.loadEmailMapForAutomations(automations, options);
+    return automations
+        .filter(automation => emailMap.has(automation.id))
+        .map(automation => flattenAutomation(automation, emailMap.get(automation.id)));
+}
+
+async function loadFlattenedAutomation(data, options = {}) {
+    const model = await models.Automation.findOne(data, options);
+    const email = model ? await automatedEmailActions.loadEmailForAutomationId(model.id, options) : null;
+
+    if (!model || !email) {
+        throw new errors.NotFoundError({
+            message: tpl(messages.automatedEmailNotFound)
+        });
+    }
+
+    return flattenAutomation(model, email);
 }
 
 /** @type {import('@tryghost/api-framework').Controller} */
@@ -52,12 +72,11 @@ const controller = {
         permissions: true,
         async query(frame) {
             const result = await models.Automation.findPage({
-                ...frame.options,
-                withRelated: ['welcomeEmailAutomatedEmail']
+                ...frame.options
             });
             return {
                 ...result,
-                data: result.data.map(automation => flattenAutomation(automation))
+                data: await flattenAutomations(result.data)
             };
         }
     },
@@ -75,17 +94,9 @@ const controller = {
         ],
         permissions: true,
         async query(frame) {
-            const model = await models.Automation.findOne(frame.data, {
-                ...frame.options,
-                withRelated: ['welcomeEmailAutomatedEmail']
+            return loadFlattenedAutomation(frame.data, {
+                ...frame.options
             });
-            if (!model) {
-                throw new errors.NotFoundError({
-                    message: tpl(messages.automatedEmailNotFound)
-                });
-            }
-
-            return flattenAutomation(model);
         }
     },
 
@@ -103,14 +114,7 @@ const controller = {
 
             return models.Base.transaction(async (transacting) => {
                 const automation = await models.Automation.add(automationData, {...frame.options, transacting});
-                const email = await models.WelcomeEmailAutomatedEmail.add(
-                    {
-                        ...emailData,
-                        welcome_email_automation_id: automation.id,
-                        delay_days: 0
-                    },
-                    {...frame.options, transacting}
-                );
+                const email = await automatedEmailActions.addEmailAction(automation, emailData, {...frame.options, transacting});
                 return flattenAutomation(automation, email);
             });
         }
@@ -140,22 +144,23 @@ const controller = {
 
             return models.Base.transaction(async (transacting) => {
                 let automation = await models.Automation.findOne({id: frame.options.id}, {
-                    transacting,
-                    withRelated: ['welcomeEmailAutomatedEmail']
+                    transacting
                 });
                 if (!automation) {
                     throw new errors.NotFoundError({
                         message: tpl(messages.automatedEmailNotFound)
                     });
                 }
-                let email = automation.related('welcomeEmailAutomatedEmail');
+                let email = await automatedEmailActions.loadEmailForAutomationId(automation.id, {transacting});
+
+                if (!email) {
+                    throw new errors.NotFoundError({
+                        message: tpl(messages.automatedEmailNotFound)
+                    });
+                }
 
                 if (Object.keys(emailData).length > 0) {
-                    email = await models.WelcomeEmailAutomatedEmail.edit(emailData, {
-                        ...frame.options,
-                        transacting,
-                        id: email.id
-                    });
+                    email = await automatedEmailActions.editEmailAction(automation.id, emailData, {...frame.options, transacting});
                 }
 
                 if (Object.keys(automationData).length > 0) {
@@ -187,7 +192,7 @@ const controller = {
             });
             return {
                 ...result,
-                data: result.data.map(automation => flattenAutomation(automation))
+                data: await flattenAutomations(result.data)
             };
         }
     },
@@ -207,7 +212,7 @@ const controller = {
             const result = await memberWelcomeEmailService.api.verifySenderPropertyUpdate(frame.data.token);
             return {
                 ...result,
-                data: result.data.map(automation => flattenAutomation(automation))
+                data: await flattenAutomations(result.data)
             };
         }
     },
