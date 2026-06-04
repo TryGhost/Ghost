@@ -1085,6 +1085,10 @@ describe('AutomationEditor', () => {
         const button = await screen.findByRole('button', {name: 'Retry'});
         expect(button).not.toBeDisabled();
         expect(button).toHaveClass('bg-destructive');
+        expect(mockToastError).toHaveBeenCalledWith('Automation couldn’t be saved');
+        expect(mockToastError).not.toHaveBeenCalledWith('Automation couldn’t be saved', {
+            description: 'Fix the highlighted steps and try again.'
+        });
         expect(screen.queryByText(/Couldn.t publish automation/)).not.toBeInTheDocument();
     });
 

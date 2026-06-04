@@ -197,11 +197,22 @@ const AutomationEditor: React.FC = () => {
                     setActionErrors({});
                     setEditState('idle');
                 },
-                onError: () => {
+                onError: (error) => {
+                    void error;
+                    const nextActionErrors = newStatus === 'active' ? getActionErrors(draft) : {};
+                    const hasActionErrors = Object.keys(nextActionErrors).length > 0;
+                    if (hasActionErrors) {
+                        setActionErrors(nextActionErrors);
+                    }
+
                     setEditState(errorState);
-                    toast.error('Automation couldn’t be saved', {
-                        description: 'Fix the highlighted steps and try again.'
-                    });
+                    if (hasActionErrors) {
+                        toast.error('Automation couldn’t be saved', {
+                            description: 'Fix the highlighted steps and try again.'
+                        });
+                    } else {
+                        toast.error('Automation couldn’t be saved');
+                    }
                 }
             }
         );
