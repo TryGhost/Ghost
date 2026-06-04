@@ -95,7 +95,7 @@
     "babel-loader": "10.1.1",
     "clsx": "2.1.1",
     "codemirror": "6.0.2",
-    "concurrently": "10.0.0",
+    "concurrently": "10.0.1",
     "cross-fetch": "4.1.0",
     "dompurify": "3.4.7",
     "dotenv": "17.4.2",
