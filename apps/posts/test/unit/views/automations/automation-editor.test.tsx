@@ -10,7 +10,6 @@ const {mockToastError} = vi.hoisted(() => ({
 }));
 
 const NON_EMPTY_EMAIL_LEXICAL = '{"root":{"children":[{"type":"paragraph","children":[{"type":"text","text":"Welcome email body"}]}]}}';
-const EMPTY_BODY_PUBLISH_CONFIRMATION_MESSAGE = 'One or more emails in this automation do not have a body. Are you sure you want to save and publish this automation?';
 
 vi.mock('sonner', () => ({
     toast: {
@@ -867,7 +866,7 @@ describe('AutomationEditor', () => {
         );
     });
 
-    it('confirms before publishing an inactive automation with empty email bodies', () => {
+    it('blocks publishing an inactive automation with an empty email body', () => {
         mockUseReadAutomation.mockReturnValue({
             data: {automations: [withEmptyEmailBodies({...automationDetail, status: 'inactive'})]},
             isLoading: false,
@@ -878,19 +877,16 @@ describe('AutomationEditor', () => {
 
         fireEvent.click(screen.getByRole('button', {name: 'Publish'}));
 
-        const dialog = screen.getByRole('alertdialog', {name: 'Publish automation with empty emails?'});
-        expect(within(dialog).getByText(EMPTY_BODY_PUBLISH_CONFIRMATION_MESSAGE)).toBeInTheDocument();
+        expect(screen.queryByRole('alertdialog', {name: 'Publish automation with empty emails?'})).not.toBeInTheDocument();
         expect(mockEditMutation.mutate).not.toHaveBeenCalled();
+        expect(mockToastError).toHaveBeenCalledWith('Automation couldn’t be saved', {
+            description: 'Fix the highlighted steps and try again.'
+        });
 
-        fireEvent.click(within(dialog).getByRole('button', {name: 'Publish automation'}));
-
-        expect(mockEditMutation.mutate).toHaveBeenCalledWith(
-            expect.objectContaining({
-                id: 'automation-id-1',
-                status: 'active'
-            }),
-            expect.any(Object)
-        );
+        const emailStep = screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'});
+        expect(emailStep).toHaveAttribute('aria-invalid', 'true');
+        expect(emailStep).toHaveClass('border-destructive');
+        expect(within(emailStep).getByText('Add an email body.')).toHaveClass('text-destructive');
     });
 
     it('saves an inactive automation without publishing it', async () => {
@@ -915,6 +911,28 @@ describe('AutomationEditor', () => {
         expect(mutateCall.status).toBe('inactive');
         expect(mutateCall.actions).toHaveLength(3);
         expect(mutateCall.edges).toHaveLength(2);
+    });
+
+    it('saves an inactive draft with an empty email subject and body', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [{...automationDetail, status: 'inactive'}]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        // A freshly added email step has an empty subject and body — saving a draft must still be allowed.
+        fireEvent.click(screen.getByTestId('add-step-tail-button'));
+        const picker = await screen.findByTestId('step-picker');
+        fireEvent.click(within(picker).getByText('Email'));
+
+        fireEvent.click(screen.getByRole('button', {name: 'Save'}));
+
+        expect(mockToastError).not.toHaveBeenCalled();
+        const mutateCall = mockEditMutation.mutate.mock.calls.at(-1)![0];
+        expect(mutateCall.status).toBe('inactive');
+        expect(screen.queryByText('Add a subject line and email body.')).not.toBeInTheDocument();
     });
 
     it('shows the dropdown for active automations', () => {
@@ -1243,7 +1261,7 @@ describe('AutomationEditor', () => {
         expect(screen.getByRole('button', {name: 'Publish changes'})).toBeEnabled();
     });
 
-    it('shows a toast and highlights email cards with missing subjects when saving fails validation', async () => {
+    it('shows a toast and highlights email steps with missing content when publishing fails validation', async () => {
         mockUseReadAutomation.mockReturnValue({
             data: {automations: [{...automationDetail, status: 'inactive'}]},
             isLoading: false,
@@ -1256,7 +1274,7 @@ describe('AutomationEditor', () => {
         const picker = await screen.findByTestId('step-picker');
         fireEvent.click(within(picker).getByText('Email'));
 
-        fireEvent.click(screen.getByRole('button', {name: 'Save'}));
+        fireEvent.click(screen.getByRole('button', {name: 'Publish'}));
 
         expect(mockEditMutation.mutate).not.toHaveBeenCalled();
         expect(mockToastError).toHaveBeenCalledWith('Automation couldn’t be saved', {
@@ -1268,29 +1286,37 @@ describe('AutomationEditor', () => {
         expect(emailStep).toHaveClass('items-start');
         expect(emailStep).toHaveClass('border-destructive');
         expect(emailStep).not.toHaveClass('border-yellow-600');
-        expect(within(emailStep).getByText('Add a subject line.').closest('div')?.previousElementSibling).toHaveClass('mt-[3px]');
-        expect(within(emailStep).getByText('Add a subject line.')).toHaveClass('text-destructive');
+        expect(within(emailStep).getByText('Add a subject line and email body.').closest('div')?.previousElementSibling).toHaveClass('mt-[3px]');
+        expect(within(emailStep).getByText('Add a subject line and email body.')).toHaveClass('text-destructive');
         expect(within(emailStep).queryByText('Empty email body')).not.toBeInTheDocument();
         expect(screen.getByRole('button', {name: 'Retry'})).toBeInTheDocument();
 
+        // Filling only the subject leaves the body invalid, so the step stays blocked.
         const sidebar = screen.getByRole('complementary', {name: 'Step details'});
         fireEvent.change(within(sidebar).getByPlaceholderText('Subject line'), {
             target: {value: 'Welcome subject'}
         });
 
         emailStep = screen.getByRole('button', {name: 'Send email: Welcome subject'});
-        expect(emailStep).not.toHaveAttribute('aria-invalid', 'true');
-        expect(emailStep).toHaveClass('border-yellow-600');
-        expect(within(emailStep).queryByText('Add a subject line.')).not.toBeInTheDocument();
-        expect(within(emailStep).getByText('Empty email body')).toHaveClass('text-yellow-600');
+        expect(emailStep).toHaveAttribute('aria-invalid', 'true');
+        expect(emailStep).toHaveClass('border-destructive');
 
-        fireEvent.click(screen.getByRole('button', {name: 'Save'}));
+        // Adding body content via the modal clears the error and lets the publish through.
+        fireEvent.click(within(sidebar).getByRole('button', {name: 'Edit email content'}));
+        fireEvent.click(await screen.findByTestId('modal-save'));
+
+        emailStep = screen.getByRole('button', {name: 'Send email: Edited via modal'});
+        expect(emailStep).not.toHaveAttribute('aria-invalid', 'true');
+        expect(within(emailStep).queryByText('Add an email body.')).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', {name: 'Publish'}));
         expect(mockEditMutation.mutate).toHaveBeenCalledWith(
             expect.objectContaining({
+                status: 'active',
                 actions: expect.arrayContaining([
                     expect.objectContaining({
                         type: 'send_email',
-                        data: expect.objectContaining({email_subject: 'Welcome subject'})
+                        data: expect.objectContaining({email_subject: 'Edited via modal'})
                     })
                 ])
             }),
@@ -1298,7 +1324,7 @@ describe('AutomationEditor', () => {
         );
     });
 
-    it('does not show new missing-subject errors until the next save validation', async () => {
+    it('does not surface new step errors until the next publish validation', () => {
         mockUseReadAutomation.mockReturnValue({
             data: {automations: [{...automationDetail, status: 'inactive'}]},
             isLoading: false,
@@ -1307,22 +1333,23 @@ describe('AutomationEditor', () => {
 
         renderEditor();
 
-        fireEvent.click(screen.getByTestId('add-step-tail-button'));
-        const picker = await screen.findByTestId('step-picker');
-        fireEvent.click(within(picker).getByText('Email'));
+        fireEvent.click(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'}));
+        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        const subjectInput = within(sidebar).getByDisplayValue('Welcome to The Blueprint');
 
-        fireEvent.click(screen.getByRole('button', {name: 'Save'}));
+        fireEvent.change(subjectInput, {target: {value: ''}});
+        expect(within(screen.getByRole('button', {name: 'Send email: Untitled'})).queryByText('Add a subject line.')).not.toBeInTheDocument();
+
+        fireEvent.click(screen.getByRole('button', {name: 'Publish'}));
         expect(within(screen.getByRole('button', {name: 'Send email: Untitled'})).getByText('Add a subject line.')).toBeInTheDocument();
 
-        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
-        const subjectInput = within(sidebar).getByPlaceholderText('Subject line');
         fireEvent.change(subjectInput, {target: {value: 'Temporary subject'}});
         expect(within(screen.getByRole('button', {name: 'Send email: Temporary subject'})).queryByText('Add a subject line.')).not.toBeInTheDocument();
 
         fireEvent.change(subjectInput, {target: {value: ''}});
         expect(within(screen.getByRole('button', {name: 'Send email: Untitled'})).queryByText('Add a subject line.')).not.toBeInTheDocument();
 
-        fireEvent.click(screen.getByRole('button', {name: 'Save'}));
+        fireEvent.click(screen.getByRole('button', {name: 'Publish'}));
         expect(within(screen.getByRole('button', {name: 'Send email: Untitled'})).getByText('Add a subject line.')).toBeInTheDocument();
     });
 
@@ -1726,7 +1753,7 @@ describe('AutomationEditor', () => {
         );
     });
 
-    it('warns before publishing changes to an active automation with empty email bodies', async () => {
+    it('blocks publishing changes to an active automation with an empty email body', async () => {
         mockUseReadAutomation.mockReturnValue({
             data: {automations: [withEmptyEmailBodies(automationDetail)]},
             isLoading: false,
@@ -1739,20 +1766,15 @@ describe('AutomationEditor', () => {
         fireEvent.click(screen.getByRole('button', {name: 'Publish changes'}));
 
         const dialog = screen.getByRole('alertdialog', {name: 'Update automation?'});
-        expect(within(dialog).getByText(new RegExp(EMPTY_BODY_PUBLISH_CONFIRMATION_MESSAGE.replace(/[.?]/g, '\\$&')))).toBeInTheDocument();
-        expect(mockEditMutation.mutate).not.toHaveBeenCalled();
+        expect(within(dialog).queryByText(/empty/i)).not.toBeInTheDocument();
 
         fireEvent.click(within(dialog).getByRole('button', {name: 'Publish changes'}));
 
-        expect(mockEditMutation.mutate).toHaveBeenCalledWith(
-            {
-                id: 'automation-id-1',
-                status: 'active',
-                actions: expect.any(Array),
-                edges: expect.any(Array)
-            },
-            expect.any(Object)
-        );
+        expect(mockEditMutation.mutate).not.toHaveBeenCalled();
+        expect(mockToastError).toHaveBeenCalledWith('Automation couldn’t be saved', {
+            description: 'Fix the highlighted steps and try again.'
+        });
+        expect(within(screen.getByRole('alertdialog', {name: 'Update automation?'})).getByRole('button', {name: 'Retry'})).toBeInTheDocument();
     });
 
     it('spins the modal button while publishing changes to an active automation', async () => {
