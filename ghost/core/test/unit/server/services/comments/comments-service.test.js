@@ -119,6 +119,13 @@ describe('Comments Service: CommentsService', function () {
                         return null;
                     }
 
+                    // Readable reads constrain status in the query via an NQL filter
+                    // (e.g. `status:[published,hidden]`); mirror that here so a
+                    // non-readable status is excluded just like the real query.
+                    if (options.filter && options.filter.includes('status:') && !options.filter.includes(commentStatus)) {
+                        return null;
+                    }
+
                     if (data.status && data.status !== commentStatus) {
                         return null;
                     }
@@ -395,7 +402,8 @@ describe('Comments Service: CommentsService', function () {
                 errors.NotFoundError
             );
 
-            // Resolved with a single exact-id lookup, never a findPage/filter query.
+            // The id is still matched via the data hash (not interpolated into the
+            // status filter), so a crafted id stays inert: one keyed findOne, no findPage.
             sinon.assert.calledOnce(models.Comment.findOne);
             sinon.assert.calledWith(models.Comment.findOne, {
                 id

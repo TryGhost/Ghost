@@ -221,20 +221,27 @@ class CommentsService {
 
     /**
      * @private
-     * Member-facing read: goes through `findOne` so the serializer's default
-     * relation graph (member, counts, in_reply_to, replies) is loaded. The row is
-     * fetched regardless of status then rejected here if not readable; the check is
-     * in memory because the row (and its relations) is loaded for serialization
-     * either way, and `status` is always selected so it holds under field-limited
-     * requests.
+     * Member-facing read: goes through `findOne` (not the lean primitive) so the
+     * serializer's default relation graph (member, counts, in_reply_to, replies)
+     * is loaded. Readable statuses are constrained in the query via an NQL filter,
+     * so a non-readable comment is never fetched and its relations never loaded — a
+     * missing or non-readable id is a 404. `status` stays selected for the
+     * serializer's hidden/deleted redaction.
      */
     async #getReadableCommentByID(id, options = {}, requiredColumns = []) {
+        const readableFilter = `status:[${COMMENT_STATUSES_READABLE.join(',')}]`;
         const model = await this.models.Comment.findOne(
             {id},
-            withRequiredColumns(options, ['status', ...requiredColumns])
+            withRequiredColumns(
+                {
+                    ...options,
+                    filter: options.filter ? `(${options.filter})+${readableFilter}` : readableFilter
+                },
+                ['status', ...requiredColumns]
+            )
         );
 
-        if (!model || !COMMENT_STATUSES_READABLE.includes(model.get('status'))) {
+        if (!model) {
             throw new errors.NotFoundError({
                 message: tpl(messages.commentNotFound)
             });
