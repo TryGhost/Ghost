@@ -291,8 +291,8 @@ function isUnfilteredMemberList(searchParams?: Record<string, string>) {
  * only place that knows both whether the query is filtered and how fresh its
  * data is.
  *
- * It never *creates* the count entry (the sidebar may not be mounted) and never
- * overwrites a count that was fetched more recently than the list.
+ * It only updates the count query if it already exists, and never overwrites a
+ * count that was fetched more recently than the list.
  */
 function useSyncMemberCountFromList(result: BrowseMembersInfiniteResult, searchParams?: Record<string, string>) {
     const queryClient = useQueryClient();
@@ -316,7 +316,7 @@ function useSyncMemberCountFromList(result: BrowseMembersInfiniteResult, searchP
         const memberCountData = memberCountQueryState?.data;
         const cachedPagination = memberCountData?.meta?.pagination;
 
-        // Only reconcile an existing sidebar count - never conjure one the sidebar didn't ask for.
+        // Only update the count query if it already exists.
         if (!memberCountQueryState || !memberCountData || !cachedPagination) {
             return;
         }
