@@ -2087,30 +2087,54 @@ describe('Comments API', function () {
                     });
                 });
 
-                ['deleted', 'hidden'].forEach((status) => {
-                    it(`cannot set in_reply_to_id to a ${status} comment`, async function () {
-                        const {replies: [reply]} = await dbFns.addCommentWithReplies({
-                            member_id: fixtureManager.get('members', 1).id,
-                            replies: [{
-                                member_id: fixtureManager.get('members', 2).id,
-                                status
-                            }]
-                        });
+                it('cannot set in_reply_to_id to a deleted comment', async function () {
+                    const {replies: [reply]} = await dbFns.addCommentWithReplies({
+                        member_id: fixtureManager.get('members', 1).id,
+                        replies: [{
+                            member_id: fixtureManager.get('members', 2).id,
+                            status: 'deleted'
+                        }]
+                    });
 
-                        const {body: {comments: [newComment]}} = await testPostComment({
+                    const {body: {comments: [newComment]}} = await testPostComment({
+                        post_id: postId,
+                        parent_id: reply.get('parent_id'),
+                        in_reply_to_id: reply.get('id'),
+                        html: '<p>This is a reply to a reply</p>'
+                    });
+
+                    // in_reply_to is not set
+                    assert.equal(newComment.in_reply_to_id, null);
+                    assert.equal(newComment.in_reply_to_snippet, null);
+
+                    // only author and parent email sent
+                    emailMockReceiver.assertSentEmailCount(2);
+                });
+
+                it('can set in_reply_to_id to a hidden comment with a redacted snippet', async function () {
+                    const {replies: [reply]} = await dbFns.addCommentWithReplies({
+                        member_id: fixtureManager.get('members', 1).id,
+                        replies: [{
+                            member_id: fixtureManager.get('members', 2).id,
+                            status: 'hidden'
+                        }]
+                    });
+
+                    const {body: {comments: [newComment]}} = await membersAgent
+                        .post(`/api/comments/`)
+                        .body({comments: [{
                             post_id: postId,
                             parent_id: reply.get('parent_id'),
                             in_reply_to_id: reply.get('id'),
                             html: '<p>This is a reply to a reply</p>'
-                        });
+                        }]})
+                        .expectStatus(201);
 
-                        // in_reply_to is not set
-                        assert.equal(newComment.in_reply_to_id, null);
-                        assert.equal(newComment.in_reply_to_snippet, null);
+                    assert.equal(newComment.in_reply_to_id, reply.get('id'));
+                    assert.equal(newComment.in_reply_to_snippet, '[removed]');
 
-                        // only author and parent email sent
-                        emailMockReceiver.assertSentEmailCount(2);
-                    });
+                    // only author and parent email sent
+                    emailMockReceiver.assertSentEmailCount(2);
                 });
 
                 it('in_reply_to_id is ignored when no parent specified', async function () {
