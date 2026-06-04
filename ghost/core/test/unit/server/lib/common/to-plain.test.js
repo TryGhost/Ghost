@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const toPlain = require('../../../../../core/server/lib/common/to-plain');
+const {toPlain} = require('../../../../../core/server/lib/common/to-plain');
 
 describe('toPlain', function () {
     it('returns a plain object unchanged', function () {
