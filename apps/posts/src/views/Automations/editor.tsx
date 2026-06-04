@@ -353,10 +353,11 @@ const AutomationEditor: React.FC = () => {
     };
 
     const onPublish = (): void => {
-        const draftStatus = draft?.status;
-        switch (draftStatus) {
-        case undefined:
+        if (!draft) {
             throw new Error('Cannot publish an automation that has not loaded.');
+        }
+
+        switch (draft.status) {
         case 'active':
             if (!validateActionErrors(draft, 'idle')) {
                 return;
@@ -367,7 +368,7 @@ const AutomationEditor: React.FC = () => {
             save('active');
             break;
         default: {
-            const _exhaustive: never = draftStatus;
+            const _exhaustive: never = draft.status;
             throw new Error(`Unhandled status: ${_exhaustive}`);
         }
         }
