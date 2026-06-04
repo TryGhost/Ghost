@@ -1,9 +1,9 @@
 const assert = require('node:assert/strict');
+const rewire = require('rewire');
 const sinon = require('sinon');
 
 const configUtils = require('../../utils/config-utils');
 const events = require('../../../core/server/lib/common/events');
-const bootstrapSocket = require('../../../core/server/lib/bootstrap-socket');
 
 describe('Notify', function () {
     describe('notifyServerStarted', function () {
@@ -14,13 +14,21 @@ describe('Notify', function () {
         beforeEach(function () {
             // Have to re-require each time to clear the internal flag
             delete require.cache[require.resolve('../../../core/server/notify')];
-            notify = require('../../../core/server/notify');
+
+            socketStub = sinon.stub();
+            notify = rewire('../../../core/server/notify');
+            notify.__set__('require', (path) => {
+                if (path === './lib/bootstrap-socket') {
+                    return {
+                        connectAndSend: socketStub
+                    };
+                }
+
+                return require(path);
+            });
 
             // process.send isn't set for tests, we can safely override;
             process.send = sinon.stub();
-
-            // stub socket connectAndSend method
-            socketStub = sinon.stub(bootstrapSocket, 'connectAndSend');
 
             // Spy for the events that get called
             eventSpy = sinon.spy(events, 'emit');
@@ -29,7 +37,6 @@ describe('Notify', function () {
         afterEach(async function () {
             process.send = undefined;
             await configUtils.restore();
-            socketStub.restore();
             eventSpy.restore();
         });
 
