@@ -1,7 +1,6 @@
-const assert = require('node:assert/strict');
-const {assertExists} = require('../../../utils/assertions');
-const {setIsRoles} = require('../../../../core/server/models/role-utils');
-const _ = require('lodash');
+import assert from 'node:assert/strict';
+import _ from 'lodash';
+import {setIsRoles} from '../../../../core/server/models/role-utils';
 
 describe('setIsRoles function behavior', function () {
     // create a fake 'loadedpermissions' object and then confirm the behavior of setIsRoles with it
@@ -61,7 +60,6 @@ describe('setIsRoles function behavior', function () {
 
     it('returns an object', function () {
         let result = setIsRoles(loadedPermissionsEditor);
-        assertExists(result);
         assert(_.isPlainObject(result));
     });
 

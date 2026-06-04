@@ -1,8 +1,29 @@
+import type {ReadonlyDeep} from 'type-fest';
+
+type LoadedPermissionsWithRoles = ReadonlyDeep<{
+    user?: {
+        roles?: Array<{name: string}>;
+    } | null;
+}>;
+
+type RoleFlags = {
+    isOwner: boolean;
+    isAdmin: boolean;
+    isEditor: boolean;
+    isAuthor: boolean;
+    isContributor: boolean;
+    isSuperEditor: boolean;
+    isEitherEditor: boolean;
+};
+
 // check if the user has an assigned role
 // so that we can stop writing this everywhere:
 //_.some(loadedPermissions.user.roles, {name: 'Administrator'})
 
-function checkUserPermissionsForRole(loadedPermissions, roleName) {
+export function checkUserPermissionsForRole(
+    loadedPermissions: LoadedPermissionsWithRoles | null | undefined,
+    roleName: string
+): boolean {
     if (!loadedPermissions?.user?.roles) {
         return false;
     }
@@ -10,9 +31,9 @@ function checkUserPermissionsForRole(loadedPermissions, roleName) {
     return loadedPermissions.user.roles.some(role => role.name === roleName);
 }
 
-function setIsRoles(loadedPermissions) {
+export function setIsRoles(loadedPermissions: LoadedPermissionsWithRoles | null | undefined): RoleFlags {
     // utility function to parse the permissions object and set up all the "is" variables.
-    let resultsObject = {
+    const resultsObject: RoleFlags = {
         isOwner: false,
         isAdmin: false,
         isEditor: false,
@@ -33,6 +54,3 @@ function setIsRoles(loadedPermissions) {
     resultsObject.isEitherEditor = resultsObject.isEditor || resultsObject.isSuperEditor;
     return resultsObject;
 }
-
-exports.setIsRoles = setIsRoles;
-exports.checkUserPermissionsForRole = checkUserPermissionsForRole;
