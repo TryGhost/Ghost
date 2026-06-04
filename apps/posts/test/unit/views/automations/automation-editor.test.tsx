@@ -489,6 +489,76 @@ describe('AutomationEditor', () => {
         expect(screen.getByTestId('modal-initial-mode')).toHaveTextContent('preview');
     });
 
+    it('asks for confirmation before deleting a send email step with a body from the node right-click menu', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        const emailStep = screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'});
+        fireEvent.contextMenu(emailStep);
+        fireEvent.click(await screen.findByRole('menuitem', {name: 'Delete'}));
+
+        const dialog = screen.getByRole('alertdialog', {name: 'Delete this email?'});
+        expect(within(dialog).getByText('This email will be removed from the automation. Save or publish the automation to apply this change.')).toBeInTheDocument();
+
+        fireEvent.click(within(dialog).getByRole('button', {name: 'Delete email'}));
+
+        expect(screen.queryByRole('button', {name: 'Send email: Welcome to The Blueprint'})).not.toBeInTheDocument();
+        expect(screen.getByRole('button', {name: 'Wait: 1 day'})).toBeInTheDocument();
+    });
+
+    it('asks for confirmation before deleting a send email step with only a body from the node right-click menu', async () => {
+        const bodyOnly: AutomationDetail = {
+            ...automationDetail,
+            actions: automationDetail.actions.map(action => (
+                action.type === 'send_email'
+                    ? {
+                        ...action,
+                        data: {
+                            ...action.data,
+                            email_subject: ''
+                        }
+                    }
+                    : action
+            ))
+        };
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [bodyOnly]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        const emailStep = screen.getByRole('button', {name: 'Send email: Untitled'});
+        fireEvent.contextMenu(emailStep);
+        fireEvent.click(await screen.findByRole('menuitem', {name: 'Delete'}));
+
+        expect(screen.getByRole('alertdialog', {name: 'Delete this email?'})).toBeInTheDocument();
+    });
+
+    it('deletes a send email step without confirmation from the node right-click menu when it has no body', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [withEmptyEmailBodies(automationDetail)]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        const emailStep = screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'});
+        fireEvent.contextMenu(emailStep);
+        fireEvent.click(await screen.findByRole('menuitem', {name: 'Delete'}));
+
+        expect(screen.queryByRole('alertdialog', {name: 'Delete this email?'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', {name: 'Send email: Welcome to The Blueprint'})).not.toBeInTheDocument();
+        expect(screen.getByRole('button', {name: 'Wait: 1 day'})).toBeInTheDocument();
+    });
+
     it('opens the email editor from an email node double-click without opening the sidebar', async () => {
         mockUseReadAutomation.mockReturnValue({
             data: {automations: [automationDetail]},
@@ -1467,6 +1537,24 @@ describe('AutomationEditor', () => {
         expect(screen.queryByRole('alertdialog', {name: 'Delete this email?'})).not.toBeInTheDocument();
         expect(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'})).toBeInTheDocument();
         expect(screen.getByRole('complementary', {name: 'Step details'})).toBeInTheDocument();
+    });
+
+    it('deletes a send email step without confirmation from the sidebar when it has no body', () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [withEmptyEmailBodies(automationDetail)]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        fireEvent.click(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'}));
+        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        fireEvent.click(within(sidebar).getByRole('button', {name: 'Delete step'}));
+
+        expect(screen.queryByRole('alertdialog', {name: 'Delete this email?'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', {name: 'Send email: Welcome to The Blueprint'})).not.toBeInTheDocument();
+        expect(screen.getByRole('button', {name: 'Wait: 1 day'})).toBeInTheDocument();
     });
 
     it('deletes a send email step after confirmation and keeps the wait step in place', () => {

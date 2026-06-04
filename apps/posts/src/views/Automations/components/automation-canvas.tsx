@@ -3,9 +3,9 @@ import AddStepEdge, {type AddStepEdgeData} from './add-step-edge';
 import EmailContentModal from './email-modal/email-content-modal';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import StepPicker, {type StepPickerType} from './step-picker';
+import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Banner, Button, Checkbox, ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger, Field, FieldError, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText, Label, LoadingIndicator, Popover, PopoverContent, PopoverTrigger, Select, SelectTrigger} from '@tryghost/shade/components';
 import {AutomationAction, AutomationDetail, AutomationSendEmailAction, AutomationWaitAction, InsertActionAnchor, MAX_AUTOMATION_ACTIONS, insertSendEmailAction, insertWaitAction, removeAction, updateSendEmailAction, updateWaitAction} from '@tryghost/admin-x-framework/api/automations';
 import {Background, BackgroundVariant, Controls, Edge, Handle, Node, NodeProps, Position, ReactFlow, useReactFlow, useViewport} from '@xyflow/react';
-import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Banner, Button, Checkbox, ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger, Field, FieldError, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText, Label, LoadingIndicator, Popover, PopoverContent, PopoverTrigger, Select, SelectTrigger} from '@tryghost/shade/components';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 import type {EmailModalMode} from './types';
 
@@ -1032,7 +1032,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({actionErrors = {}, a
         }
 
         const action = automation.actions.find(item => item.id === actionId);
-        if (action?.type === 'send_email') {
+        if (action?.type === 'send_email' && !isEmptyEmailLexical(action.data.email_lexical)) {
             setDeleteConfirmationActionId(action.id);
             return;
         }
@@ -1091,7 +1091,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({actionErrors = {}, a
             actionErrors,
             automation,
             disabled: automation.actions.length >= MAX_AUTOMATION_ACTIONS,
-            onDelete: handleDelete,
+            onDelete: handleRequestDelete,
             onEditEmailBody: handleContextMenuEditEmail,
             onPick: handlePick,
             onPreviewEmail: handleContextMenuPreviewEmail,
@@ -1099,7 +1099,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({actionErrors = {}, a
             newStepId,
             selectedStepId
         });
-    }, [actionErrors, automation, handleContextMenuEditEmail, handleContextMenuPreviewEmail, handleDelete, handlePick, newStepId, selectedStepId]);
+    }, [actionErrors, automation, handleContextMenuEditEmail, handleContextMenuPreviewEmail, handlePick, handleRequestDelete, newStepId, selectedStepId]);
 
     const sidebarDetail = automation ? getStepSidebarDetail({
         automation,
