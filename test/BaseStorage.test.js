@@ -9,12 +9,13 @@ describe('Storage Base', function () {
         vi.useRealTimers();
     });
 
-    it('defines the adapter methods required by Ghost storage', function () {
+    it('defines the adapter methods required by Ghost storage as a non-writable property', function () {
         const storage = new StorageBase();
-        const descriptor = Object.getOwnPropertyDescriptor(storage, 'requiredFns');
 
         assert.deepEqual(storage.requiredFns, ['exists', 'save', 'serve', 'delete', 'read']);
-        assert.equal(descriptor.writable, false);
+        assert.throws(() => {
+            storage.requiredFns = [];
+        }, TypeError);
     });
 
     it('getTargetDir: returns a year/month path', function () {
@@ -35,6 +36,18 @@ describe('Storage Base', function () {
         assert.equal(storage.getTargetDir('content/images'), path.join('content/images', '2026', '06'));
     });
 
+    it('getTargetDir: treats falsy base directories as no base directory', function () {
+        const storage = new StorageBase();
+
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-06-04T12:00:00Z'));
+
+        const expected = path.join('2026', '06');
+        assert.equal(storage.getTargetDir(''), expected);
+        assert.equal(storage.getTargetDir(null), expected);
+        assert.equal(storage.getTargetDir(undefined), expected);
+    });
+
     it('getSanitizedFileName: escapes non accepted characters in filenames', function () {
         const storage = new StorageBase();
 
@@ -45,6 +58,30 @@ describe('Storage Base', function () {
         const storage = new StorageBase();
 
         assert.equal(storage.getSanitizedFileName('город.zip'), '-----.zip');
+    });
+
+    it('getSanitizedFileName: returns an empty string when given an empty string', function () {
+        const storage = new StorageBase();
+
+        assert.equal(storage.getSanitizedFileName(''), '');
+    });
+
+    it('getSanitizedFileName: leaves clean ASCII filenames untouched', function () {
+        const storage = new StorageBase();
+
+        assert.equal(storage.getSanitizedFileName('photo.jpg'), 'photo.jpg');
+    });
+
+    it('getSanitizedFileName: preserves underscores and digits', function () {
+        const storage = new StorageBase();
+
+        assert.equal(storage.getSanitizedFileName('snake_case_2024.txt'), 'snake_case_2024.txt');
+    });
+
+    it('getSanitizedFileName: replaces whitespace with hyphens', function () {
+        const storage = new StorageBase();
+
+        assert.equal(storage.getSanitizedFileName('My Photo.jpg'), 'My-Photo.jpg');
     });
 
     it('generateUnique: returns the original filename when it does not exist', async function () {
@@ -160,6 +197,16 @@ describe('Storage Base', function () {
         };
 
         assert.equal(await storage.getUniqueFileName({name: 'something'}, 'target-dir'), path.join('target-dir', 'something'));
+    });
+
+    it('getUniqueFileName: treats leading-dot filenames as having no extension', async function () {
+        const storage = new StorageBase();
+
+        storage.exists = function () {
+            return Promise.resolve(false);
+        };
+
+        assert.equal(await storage.getUniqueFileName({name: '.env'}, 'target-dir'), path.join('target-dir', '.env'));
     });
 
     it('getUniqueFileName: denies numeric extensions', async function () {
