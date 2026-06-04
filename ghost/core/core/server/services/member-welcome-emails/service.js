@@ -605,8 +605,7 @@ class MemberWelcomeEmailServiceWrapper {
                 SingleUseTokenModel: models.SingleUseToken,
                 validityPeriod: 24 * 60 * 60 * 1000,
                 validityPeriodAfterUsage: 10 * 60 * 1000,
-                maxUsageCount: 7,
-                secret: settingsCache.get('members_otc_secret')
+                maxUsageCount: 7
             })
         });
     }

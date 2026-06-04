@@ -881,8 +881,8 @@ describe('sendMagicLink', function () {
         });
 
         it('Should gracefully handle OTC generation failures', async function () {
-            const {SingleUseTokenProvider} = require('../../../core/server/services/members/single-use-token-provider');
-            const deriveOTCStub = sinon.stub(SingleUseTokenProvider.prototype, 'deriveOTC').throws(new Error('OTC generation failed'));
+            const tokenProvider = require('../../../core/server/services/members/single-use-token-provider');
+            const deriveOTCStub = sinon.stub(tokenProvider.prototype, 'deriveOTC').throws(new Error('OTC generation failed'));
 
             try {
                 const response = await sendMagicLinkRequest('member1@test.com', 'signin', true)
