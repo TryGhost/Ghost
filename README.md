@@ -1,12 +1,44 @@
 # Ghost Storage Base
 
+Base class for [Ghost](https://ghost.org) storage adapters. Provides the shared helpers (target directory by year/month, filename sanitization, unique-filename generation) that custom storage adapters build on, and declares the interface (`exists`, `save`, `serve`, `delete`, `read`) that Ghost expects every adapter to implement.
+
 Docs: https://ghost.org/docs/config/#creating-a-custom-storage-adapter
+
+## Install
+
+```sh
+yarn add ghost-storage-base
+```
+
+Requires Node.js `^22.13.1`.
+
+## Usage
+
+Extend `StorageBase` and implement the five required methods. The base class supplies `getTargetDir`, `getSanitizedFileName`, `generateUnique`, and `getUniqueFileName` for you.
+
+```js
+const StorageBase = require('ghost-storage-base');
+
+class MyStorage extends StorageBase {
+    exists(filename, targetDir) { /* ... */ }
+    save(file, targetDir)       { /* ... */ }
+    serve()                     { /* ... */ }
+    delete(filename, targetDir) { /* ... */ }
+    read(options)               { /* ... */ }
+}
+
+module.exports = MyStorage;
+```
+
+`generateUnique` and `getUniqueFileName` call `this.exists(...)`, so `exists` must return a `Promise<boolean>` for them to work.
 
 ## Development
 
 ### Testing
 
 - `yarn test` to run tests
+
+Tests run on Vitest with a 100% coverage threshold on `BaseStorage.js`.
 
 ### Publish
 
