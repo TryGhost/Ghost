@@ -15,7 +15,8 @@
   },
   "bugs": "https://github.com/TryGhost/Ghost-Storage-Base/issues",
   "scripts": {
-    "test": "LEVEL=fatal _mocha --report lcovonly -- test/*.test.js",
+    "test": "yarn test:unit",
+    "test:unit": "vitest run --coverage",
     "preship": "yarn test",
     "ship": "STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then yarn publish && git push --follow-tags; fi"
   },
@@ -28,8 +29,8 @@
     "node": "^22.13.1"
   },
   "devDependencies": {
-    "bluebird": "3.7.2",
-    "mocha": "11.7.5",
-    "should": "13.2.3"
+    "@vitest/coverage-v8": "4.1.8",
+    "vite": "8.0.16",
+    "vitest": "4.1.8"
   }
 }
