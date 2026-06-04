@@ -2207,8 +2207,8 @@ importers:
         specifier: 5.3.1
         version: 5.3.1(eslint@8.57.1)
       flexsearch:
-        specifier: 0.8.212
-        version: 0.8.212
+        specifier: 0.7.43
+        version: 0.7.43
       fs-extra:
         specifier: 'catalog:'
         version: 11.3.5
@@ -14216,6 +14216,9 @@ packages:
   flatten@1.0.3:
     resolution: {integrity: sha512-dVsPA/UwQ8+2uoFe5GHtiBMu48dWLTdsuEd7CKGlZlD78r1TTWBvDuFaFGKCo/ZfEr95Uk56vZoX86OsHkUeIg==}
     deprecated: flatten is deprecated in favor of utility frameworks such as lodash.
+
+  flexsearch@0.7.43:
+    resolution: {integrity: sha512-c5o/+Um8aqCSOXGcZoqZOm+NqtVwNsvVpWv6lfmSclU954O3wvQKxxK8zj74fPaSJbXpSLTs4PRhh+wnoCXnKg==}
 
   flexsearch@0.8.212:
     resolution: {integrity: sha512-wSyJr1GUWoOOIISRu+X2IXiOcVfg9qqBRyCPRUdLMIGJqPzMo+jMRlvE83t14v1j0dRMEaBbER/adQjp6Du2pw==}
@@ -36941,6 +36944,8 @@ snapshots:
   flatted@3.4.2: {}
 
   flatten@1.0.3: {}
+
+  flexsearch@0.7.43: {}
 
   flexsearch@0.8.212: {}
 
