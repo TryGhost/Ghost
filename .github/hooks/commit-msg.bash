@@ -67,7 +67,7 @@ if [ ! -z "$third_line" ]; then
         # If fixed, the script will continue to the next checks
     fi
 
-    if ! [[ "$third_line" =~ ^(close|closes|closed|closing\ fix|fixes|fixed|fixing|resolve|resolves|resolved|resolving|complete|completes|completed|completing|ref|references|part\ of|related\ to|contributes\ to|towards)\ .*$ ]] \
+    if ! [[ "$third_line" =~ ^(close|closes|closed|closing|fix|fixes|fixed|fixing|resolve|resolves|resolved|resolving|complete|completes|completed|completing|ref|references|part\ of|related\ to|contributes\ to|towards)\ .*$ ]] \
        && ! [[ "$third_line" == "no ref" ]]; then
         echo -e "${yellow}Warning: Third line should start with a supported issue-link keyword (for example: 'ref', 'close', 'fixes', 'related to', or 'contributes to') or be 'no ref'${no_color}" >&2
     fi
