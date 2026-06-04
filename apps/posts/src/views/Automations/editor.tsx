@@ -4,9 +4,33 @@ import React from 'react';
 import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, type ButtonProps, LoadingIndicator} from '@tryghost/shade/components';
 import {AutomationDetail, AutomationStatus, useEditAutomation, useReadAutomation} from '@tryghost/admin-x-framework/api/automations';
 import {dequal} from 'dequal';
+import {toast} from 'sonner';
 import {useBlocker} from 'react-router';
 import {useConfirmUnload, useParams} from '@tryghost/admin-x-framework';
 import type {AutomationEditState} from './types';
+
+const SUBJECT_REQUIRED_MESSAGE = 'Add a subject line.';
+const BODY_REQUIRED_MESSAGE = 'Add an email body.';
+const SUBJECT_AND_BODY_REQUIRED_MESSAGE = 'Add a subject line and email body.';
+
+const isEmptyEmailLexical = (lexical: string | null | undefined): boolean => {
+    if (!lexical) {
+        return true;
+    }
+
+    try {
+        const parsed = JSON.parse(lexical);
+        const children = parsed?.root?.children;
+
+        if (!children || children.length === 0) {
+            return true;
+        }
+
+        return children.length === 1 && children[0].type === 'paragraph' && (!children[0].children || children[0].children.length === 0);
+    } catch {
+        return true;
+    }
+};
 
 const editableSlice = (automation: AutomationDetail) => ({
     status: automation.status,
@@ -36,6 +60,29 @@ const isFailedEditState = (editState: AutomationEditState): boolean => {
     }
 };
 
+const getActionErrors = (automation: AutomationDetail): Record<string, string> => {
+    const errors: Record<string, string> = {};
+
+    for (const action of automation.actions) {
+        if (action.type !== 'send_email') {
+            continue;
+        }
+
+        const missingSubject = !action.data.email_subject.trim();
+        const missingBody = isEmptyEmailLexical(action.data.email_lexical);
+
+        if (missingSubject && missingBody) {
+            errors[action.id] = SUBJECT_AND_BODY_REQUIRED_MESSAGE;
+        } else if (missingSubject) {
+            errors[action.id] = SUBJECT_REQUIRED_MESSAGE;
+        } else if (missingBody) {
+            errors[action.id] = BODY_REQUIRED_MESSAGE;
+        }
+    }
+
+    return errors;
+};
+
 const AutomationEditor: React.FC = () => {
     const {id = ''} = useParams<{id: string}>();
 
@@ -46,6 +93,7 @@ const AutomationEditor: React.FC = () => {
 
     const editMutation = useEditAutomation();
     const [editState, setEditState] = React.useState<AutomationEditState>('idle');
+    const [actionErrors, setActionErrors] = React.useState<Record<string, string>>({});
 
     // Draft is the user-facing, locally mutable copy. The React Query cache stays as server truth;
     // staged edits (adding steps, etc.) live here until the user publishes. Seeded once when the
@@ -67,9 +115,33 @@ const AutomationEditor: React.FC = () => {
 
     const onDraftChange = (next: AutomationDetail) => {
         setDraft(next);
+        setActionErrors((oldErrors) => {
+            if (Object.keys(oldErrors).length === 0) {
+                return oldErrors;
+            }
+
+            const nextErrors = getActionErrors(next);
+            return Object.fromEntries(
+                Object.entries(oldErrors).filter(([actionId]) => nextErrors[actionId])
+            );
+        });
         setEditState(prev => (
             isFailedEditState(prev) ? 'idle' : prev
         ));
+    };
+
+    const validateActionErrors = (automationToValidate: AutomationDetail, errorState: AutomationEditState): boolean => {
+        const nextActionErrors = getActionErrors(automationToValidate);
+        if (Object.keys(nextActionErrors).length > 0) {
+            setActionErrors(nextActionErrors);
+            setEditState(errorState);
+            toast.error('Automation couldn’t be saved', {
+                description: 'Fix the highlighted steps and try again.'
+            });
+            return false;
+        }
+
+        return true;
     };
 
     const save = (statusToSave?: AutomationStatus) => {
@@ -106,6 +178,10 @@ const AutomationEditor: React.FC = () => {
         }
         }
 
+        if (newStatus === 'active' && !validateActionErrors(draft, errorState)) {
+            return;
+        }
+
         setEditState(requestState);
 
         editMutation.mutate(
@@ -118,9 +194,26 @@ const AutomationEditor: React.FC = () => {
             {
                 onSuccess: (response) => {
                     setDraft(response.automations[0]);
+                    setActionErrors({});
                     setEditState('idle');
                 },
-                onError: () => setEditState(errorState)
+                onError: (error) => {
+                    void error;
+                    const nextActionErrors = newStatus === 'active' ? getActionErrors(draft) : {};
+                    const hasActionErrors = Object.keys(nextActionErrors).length > 0;
+                    if (hasActionErrors) {
+                        setActionErrors(nextActionErrors);
+                    }
+
+                    setEditState(errorState);
+                    if (hasActionErrors) {
+                        toast.error('Automation couldn’t be saved', {
+                            description: 'Fix the highlighted steps and try again.'
+                        });
+                    } else {
+                        toast.error('Automation couldn’t be saved');
+                    }
+                }
             }
         );
     };
@@ -260,18 +353,22 @@ const AutomationEditor: React.FC = () => {
     };
 
     const onPublish = (): void => {
-        const draftStatus = draft?.status;
-        switch (draftStatus) {
-        case undefined:
+        if (!draft) {
             throw new Error('Cannot publish an automation that has not loaded.');
+        }
+
+        switch (draft.status) {
         case 'active':
+            if (!validateActionErrors(draft, 'idle')) {
+                return;
+            }
             setEditState('confirming re-publish');
             break;
         case 'inactive':
             save('active');
             break;
         default: {
-            const _exhaustive: never = draftStatus;
+            const _exhaustive: never = draft.status;
             throw new Error(`Unhandled status: ${_exhaustive}`);
         }
         }
@@ -306,6 +403,7 @@ const AutomationEditor: React.FC = () => {
             />
 
             <AutomationCanvas
+                actionErrors={actionErrors}
                 automation={draft}
                 isError={isError}
                 isLoading={isLoadingAutomation}

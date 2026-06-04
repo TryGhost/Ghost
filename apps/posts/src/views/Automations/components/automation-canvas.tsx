@@ -3,9 +3,9 @@ import AddStepEdge, {type AddStepEdgeData} from './add-step-edge';
 import EmailContentModal from './email-modal/email-content-modal';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import StepPicker, {type StepPickerType} from './step-picker';
+import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Banner, Button, Checkbox, ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger, Field, FieldError, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText, Label, LoadingIndicator, Popover, PopoverContent, PopoverTrigger, Select, SelectTrigger} from '@tryghost/shade/components';
 import {AutomationAction, AutomationDetail, AutomationSendEmailAction, AutomationWaitAction, InsertActionAnchor, MAX_AUTOMATION_ACTIONS, insertSendEmailAction, insertWaitAction, removeAction, updateSendEmailAction, updateWaitAction} from '@tryghost/admin-x-framework/api/automations';
 import {Background, BackgroundVariant, Controls, Edge, Handle, Node, NodeProps, Position, ReactFlow, useReactFlow, useViewport} from '@xyflow/react';
-import {Banner, Button, Checkbox, ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuTrigger, Field, FieldError, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText, Label, LoadingIndicator, Popover, PopoverContent, PopoverTrigger, Select, SelectTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 import type {EmailModalMode} from './types';
 
@@ -19,7 +19,7 @@ const NODE_GAP_Y = 180;
 const INITIAL_VIEWPORT_Y = 40;
 const VIEWPORT_ANIMATION_DURATION = 180;
 const NODE_ENTER_ANIMATION_DURATION = 250;
-const DISABLED_REASON = `Limit of ${formatNumber(MAX_AUTOMATION_ACTIONS)} steps reached`;
+const DISABLED_REASON = 'Maximum steps added';
 const DEFAULT_EDGE_STROKE = 'var(--xy-edge-stroke)';
 const ZOOM_PRESETS = [1.5, 1, 0.75, 0.5, 0.25];
 
@@ -38,9 +38,12 @@ const toApiAnchor = ({sourceId, targetId}: CanvasAnchor): InsertActionAnchor => 
 });
 
 type StepNodeDisplayData = {
+    errorMessage?: string;
     icon: React.ElementType;
     label: string;
+    isPlaceholderValue?: boolean;
     value?: string;
+    warningMessage?: string;
 };
 
 type NodeContextMenuItem = {
@@ -102,12 +105,16 @@ const NodeShell: React.FC<React.PropsWithChildren<{className?: string; data: Ste
         }}>
             <ContextMenuTrigger asChild>
                 <button
+                    aria-invalid={Boolean(data.errorMessage)}
                     aria-label={data.value ? `${data.label}: ${data.value}` : data.label}
                     aria-pressed={data.selected}
                     className={cn(
                         'flex w-64 items-center gap-3 rounded-lg border border-transparent bg-surface-elevated p-3 text-left text-sm text-foreground shadow-sm transition-all focus-visible:border-border-strong focus-visible:outline-none',
+                        (data.errorMessage || data.warningMessage) && 'items-start',
                         !data.selected && 'hover:border-border-strong',
-                        data.selected && 'border-gray-700 shadow-[inset_0_0_0_1px_var(--color-gray-700),0_1px_2px_0_rgb(0_0_0_/_0.05)]',
+                        data.selected && !data.errorMessage && 'border-gray-700 shadow-[inset_0_0_0_1px_var(--color-gray-700),0_1px_2px_0_rgb(0_0_0_/_0.05)]',
+                        data.errorMessage && 'border-destructive',
+                        !data.errorMessage && data.warningMessage && 'border-yellow-600',
                         data.isNew && 'animate-in fade-in-0 zoom-in-90 duration-250 ease-out motion-reduce:animate-none',
                         className
                     )}
@@ -157,14 +164,17 @@ const NodeShell: React.FC<React.PropsWithChildren<{className?: string; data: Ste
 
 const StepNodeContent: React.FC<{data: StepNodeData}> = ({data}) => {
     const Icon = data.icon;
+    const statusMessage = data.errorMessage || data.warningMessage;
     return (
         <>
-            <div className='flex size-8 shrink-0 items-center justify-center rounded-md bg-muted text-text-secondary'>
+            <div className={cn('flex size-8 shrink-0 items-center justify-center rounded-md bg-muted text-text-secondary', statusMessage && 'mt-[3px]')}>
                 <Icon className='size-4' />
             </div>
             <div className='flex min-w-0 flex-col text-left'>
                 <span className='text-xs text-text-secondary'>{data.label}</span>
-                {data.value && <span className='truncate font-medium'>{data.value}</span>}
+                {data.value && <span className={cn('truncate font-medium', data.isPlaceholderValue && 'opacity-50')}>{data.value}</span>}
+                {data.errorMessage && <span className='mt-1 text-xs text-destructive'>{data.errorMessage}</span>}
+                {!data.errorMessage && data.warningMessage && <span className='mt-1 text-xs text-yellow-600'>{data.warningMessage}</span>}
             </div>
         </>
     );
@@ -198,28 +208,15 @@ const TailNode: React.FC<NodeProps<TailFlowNode>> = ({data}) => {
     const triggerClassName = 'flex h-12 w-64 items-center justify-center rounded-lg border border-dashed border-border-default bg-surface-page transition-colors hover:border-border-strong focus-visible:border-border-strong focus-visible:outline-none';
 
     if (data.disabled) {
-        const content = (
+        return (
             <div
-                aria-disabled='true'
-                className={cn(triggerClassName, 'cursor-not-allowed opacity-60')}
-                data-testid='add-step-tail-button'
+                className='flex h-12 w-64 items-center justify-center rounded-lg border border-border-default bg-[repeating-linear-gradient(135deg,var(--color-white)_0,var(--color-white)_12px,var(--color-gray-100)_12px,var(--color-gray-100)_24px)] text-sm font-medium text-text-secondary'
+                data-testid='step-limit-tail-node'
             >
                 <HiddenHandle position={Position.Top} type='target' />
-                <LucideIcon.Plus className='size-5 text-text-secondary' strokeWidth={1.5} />
+                <LucideIcon.Milestone className='mr-2 size-4' strokeWidth={1.5} />
+                {data.disabledReason}
             </div>
-        );
-        if (!data.disabledReason) {
-            return content;
-        }
-        return (
-            <TooltipProvider delayDuration={150}>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <span tabIndex={0}>{content}</span>
-                    </TooltipTrigger>
-                    <TooltipContent>{data.disabledReason}</TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
         );
     }
 
@@ -345,12 +342,37 @@ export const formatWait = (hours: number): string => {
     return hours === 1 ? '1 hour' : `${hours} hours`;
 };
 
+const isEmptyEmailLexical = (lexical: string | null | undefined): boolean => {
+    if (!lexical) {
+        return true;
+    }
+
+    try {
+        const parsed = JSON.parse(lexical);
+        const children = parsed?.root?.children;
+
+        if (!children || children.length === 0) {
+            return true;
+        }
+
+        return children.length === 1 && children[0].type === 'paragraph' && (!children[0].children || children[0].children.length === 0);
+    } catch {
+        return true;
+    }
+};
+
 const buildActionData = (action: AutomationAction): StepNodeDisplayData => {
     switch (action.type) {
     case 'wait':
         return {icon: LucideIcon.Clock, label: 'Wait', value: formatWait(action.data.wait_hours)};
     case 'send_email':
-        return {icon: LucideIcon.Mail, label: 'Send email', value: action.data.email_subject};
+        return {
+            icon: LucideIcon.Mail,
+            isPlaceholderValue: !action.data.email_subject,
+            label: 'Send email',
+            value: action.data.email_subject || 'Untitled',
+            warningMessage: isEmptyEmailLexical(action.data.email_lexical) ? 'Empty email body' : undefined
+        };
     default: {
         const _exhaustive: never = action;
         throw new Error(`Unknown automation action type: ${_exhaustive}`);
@@ -454,6 +476,7 @@ const getInitialActionOrder = (automation: AutomationDetail): AutomationAction[]
 };
 
 type BuildGraphParams = {
+    actionErrors: Record<string, string>;
     automation: AutomationDetail;
     disabled: boolean;
     onDelete: (stepId: string) => void;
@@ -465,7 +488,7 @@ type BuildGraphParams = {
     selectedStepId: string | null;
 }
 
-const buildGraph = ({automation, disabled, onDelete, onEditEmailBody, onPick, onPreviewEmail, onSelectStep, newStepId, selectedStepId}: BuildGraphParams): {nodes: AutomationFlowNode[]; edges: Edge[]} => {
+const buildGraph = ({actionErrors, automation, disabled, onDelete, onEditEmailBody, onPick, onPreviewEmail, onSelectStep, newStepId, selectedStepId}: BuildGraphParams): {nodes: AutomationFlowNode[]; edges: Edge[]} => {
     const ordered = getInitialActionOrder(automation);
     const baseNodeProps = {
         draggable: false,
@@ -518,6 +541,7 @@ const buildGraph = ({automation, disabled, onDelete, onEditEmailBody, onPick, on
                     onSelectStep,
                     stepId: action.id
                 }),
+                errorMessage: actionErrors[action.id],
                 isNew: newStepId === action.id,
                 selected: selectedStepId === action.id,
                 onSelect: () => onSelectStep(action.id)
@@ -578,6 +602,7 @@ const getInitialViewport = (canvasWidth: number): {x: number; y: number; zoom: n
 
 type BaseStepSidebarDetail<Type extends string, LabelText extends string> = {
     icon: React.ElementType;
+    isPlaceholderTitle?: boolean;
     title: string;
     label: LabelText;
     type: Type;
@@ -656,7 +681,8 @@ const getStepSidebarDetail = ({automation, stepId, onDelete, onUpdateWait, onUpd
         return {
             icon: LucideIcon.Mail,
             label: 'Send email',
-            title: action.data.email_subject || 'No subject',
+            isPlaceholderTitle: !action.data.email_subject,
+            title: action.data.email_subject || 'Untitled',
             action,
             onDelete: () => onDelete(action.id),
             onUpdateSubject: (subject: string) => onUpdateSubject(action.id, subject),
@@ -736,9 +762,11 @@ const WaitSidebarBody: React.FC<{
     }
     const initialDays = action.data.wait_hours / 24;
     const [daysText, setDaysText] = useState<string>(String(initialDays));
+    const [hasBlurredDaysInput, setHasBlurredDaysInput] = useState(false);
 
     const days = Number(daysText);
     const isValid = getValidWaitDays(daysText) !== null;
+    const showValidationError = hasBlurredDaysInput && !isValid;
     const updateWaitDays = (nextDays: number) => {
         const nextHours = nextDays * 24;
         if (nextHours !== action.data.wait_hours) {
@@ -774,16 +802,18 @@ const WaitSidebarBody: React.FC<{
                 <InputGroup
                     aria-label='Wait duration in days'
                     className='h-(--control-height)'
-                    data-disabled={!isValid ? 'true' : undefined}
+                    data-disabled={showValidationError ? 'true' : undefined}
                 >
                     <InputGroupInput
-                        aria-describedby={!isValid ? 'automation-wait-days-error' : undefined}
-                        aria-invalid={!isValid}
+                        aria-describedby={showValidationError ? 'automation-wait-days-error' : undefined}
+                        aria-invalid={showValidationError}
                         className='w-10 min-w-10 flex-none pr-1 font-mono tabular-nums'
                         id='automation-wait-days'
                         inputMode='numeric'
                         value={daysText}
+                        onBlur={() => setHasBlurredDaysInput(true)}
                         onChange={handleChange}
+                        onFocus={() => setHasBlurredDaysInput(false)}
                     />
                     <InputGroupText className='mr-auto'>{days === 1 ? 'day' : 'days'}</InputGroupText>
                     <InputGroupAddon align='inline-end' className='gap-0.5 pr-2'>
@@ -807,9 +837,9 @@ const WaitSidebarBody: React.FC<{
                         </InputGroupButton>
                     </InputGroupAddon>
                 </InputGroup>
-                {!isValid && (
+                {showValidationError && (
                     <FieldError className='text-xs' id='automation-wait-days-error'>
-                        Enter a whole number between 1 and {formatNumber(MAX_WAIT_DAYS)} days.
+                        Enter a delay between 1 and {formatNumber(MAX_WAIT_DAYS)} days
                     </FieldError>
                 )}
             </SidebarField>
@@ -825,30 +855,38 @@ const SendEmailSidebarBody: React.FC<{
     onUpdateSubject: (subject: string) => void;
     onEditEmail: () => void;
     onDelete: () => void;
-}> = ({action, onUpdateSubject, onEditEmail, onDelete}) => (
-    <div className='flex flex-1 flex-col gap-5'>
-        <SidebarField htmlFor='automation-email-subject' label='Subject line'>
-            <Input
-                id='automation-email-subject'
-                placeholder='Subject line'
-                value={action.data.email_subject}
-                onChange={e => onUpdateSubject(e.target.value)}
-            />
-        </SidebarField>
-        <Button
-            className='w-full'
-            type='button'
-            variant='outline'
-            onClick={onEditEmail}
-        >
-            <LucideIcon.Pencil className='size-4' />
-            Edit email
-        </Button>
-        <div className='mt-auto pt-6'>
-            <DeleteStepButton onClick={onDelete} />
+}> = ({action, onUpdateSubject, onEditEmail, onDelete}) => {
+    const subjectInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        subjectInputRef.current?.focus({preventScroll: true});
+    }, [action.id]);
+
+    return (
+        <div className='flex flex-1 flex-col gap-5'>
+            <SidebarField label='Subject line'>
+                <Input
+                    ref={subjectInputRef}
+                    placeholder='Subject line'
+                    value={action.data.email_subject}
+                    onChange={e => onUpdateSubject(e.target.value)}
+                />
+            </SidebarField>
+            <Button
+                className='w-full'
+                type='button'
+                variant='outline'
+                onClick={onEditEmail}
+            >
+                <LucideIcon.Pencil className='size-4' />
+                Edit email content
+            </Button>
+            <div className='mt-auto pt-6'>
+                <DeleteStepButton onClick={onDelete} />
+            </div>
         </div>
-    </div>
-);
+    );
+};
 
 const StepSidebarBody: React.FC<{detail: StepSidebarDetail}> = ({detail}) => {
     switch (detail.type) {
@@ -877,7 +915,7 @@ const StepSidebarContent: React.FC<{detail: StepSidebarDetail}> = ({detail}) => 
                     </div>
                     <div className='min-w-0'>
                         <span className='block text-xs text-text-secondary'>{detail.label}</span>
-                        <h2 className='truncate text-base leading-tight font-medium text-foreground'>{detail.title}</h2>
+                        <h2 className={cn('truncate text-base leading-tight font-medium text-foreground', detail.isPlaceholderTitle && 'opacity-50')}>{detail.title}</h2>
                     </div>
                 </div>
             </div>
@@ -925,6 +963,7 @@ const StepSidebar: React.FC<{detail: StepSidebarDetail | null; isEmailModalOpen:
 };
 
 type AutomationCanvasProps = {
+    actionErrors?: Record<string, string>;
     automation?: AutomationDetail;
     isLoading: boolean;
     isError: boolean;
@@ -940,11 +979,12 @@ const insertActionByType = {
     send_email: insertSendEmailAction
 };
 
-const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoading, isError, onChange}) => {
+const AutomationCanvas: React.FC<AutomationCanvasProps> = ({actionErrors = {}, automation, isLoading, isError, onChange}) => {
     const [newStepId, setNewStepId] = useState<string | null>(null);
     const [emailModalMode, setEmailModalMode] = useState<EmailModalMode>('edit');
     const [emailModalStepId, setEmailModalStepId] = useState<string | null>(null);
     const [selectedStep, setSelectedStep] = useState<SelectedStep | null>(null);
+    const [deleteConfirmationActionId, setDeleteConfirmationActionId] = useState<string | null>(null);
     const selectedStepId = selectedStep?.id ?? null;
 
     const handlePick = useCallback((type: StepPickerType, anchor: CanvasAnchor) => {
@@ -982,8 +1022,23 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
         const next = removeAction({detail: automation, actionId});
         setEmailModalStepId(currentId => (currentId === actionId ? null : currentId));
         setSelectedStep(null);
+        setDeleteConfirmationActionId(null);
         onChange(next);
     }, [automation, onChange]);
+
+    const handleRequestDelete = useCallback((actionId: string) => {
+        if (!automation) {
+            return;
+        }
+
+        const action = automation.actions.find(item => item.id === actionId);
+        if (action?.type === 'send_email' && !isEmptyEmailLexical(action.data.email_lexical)) {
+            setDeleteConfirmationActionId(action.id);
+            return;
+        }
+
+        handleDelete(actionId);
+    }, [automation, handleDelete]);
 
     const handleUpdateWait = useCallback((actionId: string, waitHours: number) => {
         if (!automation) {
@@ -1022,6 +1077,10 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
         ? automation.actions.find((action): action is AutomationSendEmailAction => action.id === emailModalStepId && action.type === 'send_email')
         : undefined;
 
+    const deleteConfirmationAction = automation && deleteConfirmationActionId
+        ? automation.actions.find((action): action is AutomationSendEmailAction => action.id === deleteConfirmationActionId && action.type === 'send_email')
+        : undefined;
+
     const initialViewport = useRef(getInitialViewport(window.innerWidth));
 
     const graph = useMemo(() => {
@@ -1029,9 +1088,10 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
             return null;
         }
         return buildGraph({
+            actionErrors,
             automation,
             disabled: automation.actions.length >= MAX_AUTOMATION_ACTIONS,
-            onDelete: handleDelete,
+            onDelete: handleRequestDelete,
             onEditEmailBody: handleContextMenuEditEmail,
             onPick: handlePick,
             onPreviewEmail: handleContextMenuPreviewEmail,
@@ -1039,11 +1099,11 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
             newStepId,
             selectedStepId
         });
-    }, [automation, handleContextMenuEditEmail, handleContextMenuPreviewEmail, handleDelete, handlePick, newStepId, selectedStepId]);
+    }, [actionErrors, automation, handleContextMenuEditEmail, handleContextMenuPreviewEmail, handlePick, handleRequestDelete, newStepId, selectedStepId]);
 
     const sidebarDetail = automation ? getStepSidebarDetail({
         automation,
-        onDelete: handleDelete,
+        onDelete: handleRequestDelete,
         onUpdateWait: handleUpdateWait,
         onUpdateSubject: handleUpdateSubject,
         onEditEmail: handleEditEmail,
@@ -1124,7 +1184,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
                 <Background variant={BackgroundVariant.Dots} />
                 <AutomationCanvasControls />
             </ReactFlow>
-            <StepSidebar detail={sidebarDetail} isEmailModalOpen={Boolean(emailModalAction)} onClose={clearDetail} />
+            <StepSidebar detail={sidebarDetail} isEmailModalOpen={Boolean(emailModalAction) || Boolean(deleteConfirmationAction)} onClose={clearDetail} />
             {emailModalAction && automation && (
                 <EmailContentModal
                     initialLexical={emailModalAction.data.email_lexical}
@@ -1137,6 +1197,36 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({automation, isLoadin
                     }}
                 />
             )}
+            <AlertDialog
+                open={Boolean(deleteConfirmationAction)}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setDeleteConfirmationActionId(null);
+                    }
+                }}
+            >
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete this email?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This email will be removed from the automation. Save or publish the automation to apply this change.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <Button
+                            variant='destructive'
+                            onClick={() => {
+                                if (deleteConfirmationAction) {
+                                    handleDelete(deleteConfirmationAction.id);
+                                }
+                            }}
+                        >
+                            Delete email
+                        </Button>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 };
