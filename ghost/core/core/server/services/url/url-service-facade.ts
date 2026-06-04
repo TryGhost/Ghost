@@ -72,17 +72,24 @@ export interface LazyUrlServiceBackend {
 export class UrlServiceFacade {
     private urlService: EagerUrlService;
     private lazyUrlService: LazyUrlServiceBackend | null;
+    private compare: boolean;
 
     constructor({
         urlService,
-        lazyUrlService = null
-    }: {urlService: EagerUrlService; lazyUrlService?: LazyUrlServiceBackend | null}) {
+        lazyUrlService = null,
+        compare = false
+    }: {urlService: EagerUrlService; lazyUrlService?: LazyUrlServiceBackend | null; compare?: boolean}) {
         this.urlService = urlService;
         this.lazyUrlService = lazyUrlService;
+        this.compare = compare;
     }
 
     isLazy(): boolean {
-        return !!this.lazyUrlService;
+        return !!this.lazyUrlService && !this.compare;
+    }
+
+    isComparing(): boolean {
+        return this.compare && !!this.lazyUrlService;
     }
 
     /**
@@ -90,15 +97,15 @@ export class UrlServiceFacade {
      * filters and applies permalink templates against it.
      */
     getUrlForResource(resource: Resource, options?: UrlOptions): string {
-        if (this.lazyUrlService) {
-            return this.lazyUrlService.getUrlForResource(resource, options);
+        if (this.isLazy()) {
+            return this.lazyUrlService!.getUrlForResource(resource, options);
         }
         return this.urlService.getUrlByResourceId(resource.id, options);
     }
 
     ownsResource(routerIdentifier: string, resource: Resource): boolean {
-        if (this.lazyUrlService) {
-            return this.lazyUrlService.ownsResource(routerIdentifier, resource);
+        if (this.isLazy()) {
+            return this.lazyUrlService!.ownsResource(routerIdentifier, resource);
         }
         return this.urlService.owns(routerIdentifier, resource.id);
     }
@@ -109,8 +116,8 @@ export class UrlServiceFacade {
      * match the lazy implementation's contract.
      */
     async resolveUrl(urlPath: string): Promise<Resource | null> {
-        if (this.lazyUrlService) {
-            return this.lazyUrlService.resolveUrl(urlPath);
+        if (this.isLazy()) {
+            return this.lazyUrlService!.resolveUrl(urlPath);
         }
         const resource = this.urlService.getResource(urlPath);
         if (!resource) {
@@ -123,13 +130,19 @@ export class UrlServiceFacade {
     }
 
     hasFinished(): boolean {
-        if (this.lazyUrlService) {
-            return this.lazyUrlService.hasFinished();
+        if (this.isLazy()) {
+            return this.lazyUrlService!.hasFinished();
         }
+        // Track eager when comparing: lazy always reports ready and would gate traffic in early.
         return this.urlService.hasFinished();
     }
 
+    // While comparing, register on both so lazy sees the same routers as eager.
     onRouterAddedType(...args: unknown[]): unknown {
+        if (this.isComparing()) {
+            this.lazyUrlService!.onRouterAddedType(...args);
+            return this.urlService.onRouterAddedType(...args);
+        }
         if (this.lazyUrlService) {
             return this.lazyUrlService.onRouterAddedType(...args);
         }
@@ -137,6 +150,10 @@ export class UrlServiceFacade {
     }
 
     onRouterUpdated(...args: unknown[]): unknown {
+        if (this.isComparing()) {
+            this.lazyUrlService!.onRouterUpdated(...args);
+            return this.urlService.onRouterUpdated(...args);
+        }
         if (this.lazyUrlService) {
             return this.lazyUrlService.onRouterUpdated(...args);
         }

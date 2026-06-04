@@ -149,4 +149,67 @@ describe('UrlServiceFacade', function () {
             sinon.assert.calledOnce(lazyUrlService.reset);
         });
     });
+
+    describe('compare mode (eager authoritative, lazy teed alongside)', function () {
+        let lazyUrlService;
+        let compareFacade;
+
+        beforeEach(function () {
+            lazyUrlService = {
+                getUrlForResource: sinon.stub().returns('/lazy/'),
+                ownsResource: sinon.stub().returns(false),
+                resolveUrl: sinon.stub().resolves({type: 'posts', id: 'lazy'}),
+                hasFinished: sinon.stub().returns(true),
+                onRouterAddedType: sinon.stub(),
+                onRouterUpdated: sinon.stub(),
+                reset: sinon.stub()
+            };
+            compareFacade = new UrlServiceFacade({urlService, lazyUrlService, compare: true});
+        });
+
+        it('isComparing() is true and isLazy() is false', function () {
+            assert.equal(compareFacade.isComparing(), true);
+            assert.equal(compareFacade.isLazy(), false);
+        });
+
+        it('getUrlForResource returns the eager answer, not lazy', function () {
+            const url = compareFacade.getUrlForResource({type: 'posts', id: 'a'}, {absolute: true});
+            sinon.assert.calledWith(urlService.getUrlByResourceId, 'a', {absolute: true});
+            assert.equal(url, '/hello-world/');
+        });
+
+        it('ownsResource returns the eager answer, not lazy', function () {
+            const owned = compareFacade.ownsResource('routerA', {type: 'posts', id: 'a'});
+            sinon.assert.calledWith(urlService.owns, 'routerA', 'a');
+            assert.equal(owned, true);
+        });
+
+        it('resolveUrl returns the eager answer, not lazy', async function () {
+            urlService.getResource.returns({config: {type: 'posts'}, data: {id: 'eager', slug: 's'}});
+            const result = await compareFacade.resolveUrl('/x/');
+            assert.deepEqual(result, {type: 'posts', id: 'eager', slug: 's'});
+        });
+
+        it('hasFinished tracks eager readiness, not the always-ready lazy backend', function () {
+            urlService.hasFinished.returns(false);
+            assert.equal(compareFacade.hasFinished(), false);
+        });
+
+        it('registers routers on both backends', function () {
+            compareFacade.onRouterAddedType('id', 'filter', 'posts', '/{slug}/');
+            sinon.assert.calledWith(urlService.onRouterAddedType, 'id', 'filter', 'posts', '/{slug}/');
+            sinon.assert.calledWith(lazyUrlService.onRouterAddedType, 'id', 'filter', 'posts', '/{slug}/');
+        });
+
+        it('forwards onRouterUpdated to both backends', function () {
+            compareFacade.onRouterUpdated('id');
+            sinon.assert.calledWith(urlService.onRouterUpdated, 'id');
+            sinon.assert.calledWith(lazyUrlService.onRouterUpdated, 'id');
+        });
+
+        it('reset() clears the lazy backend', function () {
+            compareFacade.reset();
+            sinon.assert.calledOnce(lazyUrlService.reset);
+        });
+    });
 });
