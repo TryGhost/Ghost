@@ -15,6 +15,12 @@
  * swapped in behind a config flag without touching individual callers.
  */
 
+/* eslint-disable @typescript-eslint/no-require-imports */
+const logging = require('@tryghost/logging');
+const errors = require('@tryghost/errors');
+const sentry = require('../../../shared/sentry');
+/* eslint-enable @typescript-eslint/no-require-imports */
+
 /**
  * Routing-level resource. `type` is one of the plural router keys
  * ('posts', 'pages', 'tags', 'authors'). Concrete records carry additional
@@ -100,14 +106,26 @@ export class UrlServiceFacade {
         if (this.isLazy()) {
             return this.lazyUrlService!.getUrlForResource(resource, options);
         }
-        return this.urlService.getUrlByResourceId(resource.id, options);
+        const url = this.urlService.getUrlByResourceId(resource.id, options);
+        if (this.isComparing()) {
+            this._compare('getUrlForResource', url,
+                () => this.lazyUrlService!.getUrlForResource(resource, options),
+                {type: resource.type, id: resource.id});
+        }
+        return url;
     }
 
     ownsResource(routerIdentifier: string, resource: Resource): boolean {
         if (this.isLazy()) {
             return this.lazyUrlService!.ownsResource(routerIdentifier, resource);
         }
-        return this.urlService.owns(routerIdentifier, resource.id);
+        const owns = this.urlService.owns(routerIdentifier, resource.id);
+        if (this.isComparing()) {
+            this._compare('ownsResource', owns,
+                () => this.lazyUrlService!.ownsResource(routerIdentifier, resource),
+                {type: resource.type, id: resource.id, routerIdentifier});
+        }
+        return owns;
     }
 
     /**
@@ -168,6 +186,41 @@ export class UrlServiceFacade {
         if (this.lazyUrlService) {
             this.lazyUrlService.reset();
         }
+    }
+
+    // Runs lazy alongside eager and logs any divergence; eager's value is always
+    // returned. Lazy errors are swallowed so a comparison can't break a request.
+    private _compare(
+        method: string,
+        eagerValue: unknown,
+        getLazyValue: () => unknown,
+        context: Record<string, unknown>,
+        isEqual: (a: unknown, b: unknown) => boolean = (a, b) => a === b
+    ): void {
+        let lazyValue: unknown;
+        try {
+            lazyValue = getLazyValue();
+        } catch (err) {
+            this._report(new errors.InternalServerError({
+                message: 'Lazy URL service threw during comparison',
+                code: 'LAZY_URL_COMPARE_ERROR',
+                err: err as Error,
+                errorDetails: {method, ...context}
+            }));
+            return;
+        }
+        if (!isEqual(eagerValue, lazyValue)) {
+            this._report(new errors.InternalServerError({
+                message: 'URL service parity mismatch',
+                code: 'LAZY_URL_PARITY_MISMATCH',
+                errorDetails: {method, eager: eagerValue, lazy: lazyValue, ...context}
+            }));
+        }
+    }
+
+    private _report(error: Error): void {
+        logging.error(error);
+        sentry.captureException(error);
     }
 }
 
