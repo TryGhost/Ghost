@@ -21,7 +21,7 @@
     "ship": "STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then yarn publish && git push --follow-tags; fi"
   },
   "license": "MIT",
-  "main": "./BaseStorage",
+  "main": "./lib/BaseStorage",
   "dependencies": {
     "moment": "2.29.4"
   },

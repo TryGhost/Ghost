@@ -8,7 +8,7 @@ Node 22 is required (`engines.node: ^22.13.1`). CI runs on Node 22 only via `try
 
 ## Architecture
 
-This is a published npm package (`ghost-storage-base`) consumed by Ghost storage adapters (e.g. S3, GCS, Azure adapters live in separate repos and extend this class). The entire public surface is a single class in `BaseStorage.js` exported via `main: "./BaseStorage"`.
+This is a published npm package (`ghost-storage-base`) consumed by Ghost storage adapters (e.g. S3, GCS, Azure adapters live in separate repos and extend this class). The entire public surface is a single class in `lib/BaseStorage.js` exported via `main: "./lib/BaseStorage"`.
 
 Key design points that are easy to miss:
 
@@ -19,7 +19,7 @@ Key design points that are easy to miss:
 
 ## Testing constraints
 
-`vitest.config.js` enforces **100% branches/functions/lines/statements coverage on `BaseStorage.js`**. Any new branch in the source must come with a test, or `yarn test` will fail on thresholds even if all assertions pass.
+`vitest.config.js` enforces **100% branches/functions/lines/statements coverage on `lib/BaseStorage.js`**. Any new branch in the source must come with a test, or `yarn test` will fail on thresholds even if all assertions pass.
 
 Tests use `node:assert/strict` and `vi.useFakeTimers()` for the date-dependent `getTargetDir` cases; the `afterEach` restores real timers.
 
