@@ -180,4 +180,77 @@ describe('AdapterManager', function () {
         const secondMailNewslettersAdapter = adapterManager.getAdapter('mail:newsletters', 'custom');
         assert.equal(mailNewslettersAdapter, secondMailNewslettersAdapter);
     });
+
+    // Builds a MODULE_NOT_FOUND error shaped like Node's, including the Require
+    // stack so we can assert the manager doesn't fall for the substring trap.
+    function moduleNotFoundError(specifier, requireStack = []) {
+        const stack = requireStack.map(p => `- ${p}`).join('\n');
+        const err = new Error(`Cannot find module '${specifier}'${stack ? `\nRequire stack:\n${stack}` : ''}`);
+        err.code = 'MODULE_NOT_FOUND';
+        if (requireStack.length) {
+            err.requireStack = requireStack;
+        }
+        return err;
+    }
+
+    it('surfaces the missing dependency when an adapter loads but one of its requires fails', function () {
+        // Regression: SchedulingPro requires `superagent`; when it's absent the
+        // MODULE_NOT_FOUND message embeds the adapter's own path in the require
+        // stack, which used to be misread as "adapter not found at this path".
+        const pathsToAdapters = ['/path'];
+
+        const loadAdapterFromPath = sinon.stub();
+        loadAdapterFromPath.withArgs('/path/scheduling/SchedulingPro')
+            .throws(moduleNotFoundError('superagent', ['/path/scheduling/SchedulingPro.js']));
+
+        const adapterManager = new AdapterManager({loadAdapterFromPath, pathsToAdapters});
+        adapterManager.registerAdapter('scheduling', BaseMailAdapter);
+
+        assert.throws(() => {
+            adapterManager.getAdapter('scheduling', 'SchedulingPro', {});
+        }, {
+            errorType: 'IncorrectUsageError',
+            message: `The scheduling adapter SchedulingPro is missing a dependency: 'superagent'. Install it where the adapter can resolve it (e.g. ghost/core).`
+        });
+    });
+
+    it('reports adapter-not-found (not missing dependency) when the adapter file itself is absent', function () {
+        const pathsToAdapters = ['/path'];
+
+        const loadAdapterFromPath = sinon.stub();
+        // The unresolved specifier IS the adapter path -> the file is genuinely missing.
+        loadAdapterFromPath.withArgs('/path/scheduling/SchedulingPro')
+            .throws(moduleNotFoundError('/path/scheduling/SchedulingPro'));
+
+        const adapterManager = new AdapterManager({loadAdapterFromPath, pathsToAdapters});
+        adapterManager.registerAdapter('scheduling', BaseMailAdapter);
+
+        assert.throws(() => {
+            adapterManager.getAdapter('scheduling', 'SchedulingPro', {});
+        }, {
+            errorType: 'IncorrectUsageError',
+            message: 'Unable to find scheduling adapter SchedulingPro in /path.'
+        });
+    });
+
+    it('falls back to reporting a missing dependency when the specifier cannot be parsed', function () {
+        const pathsToAdapters = ['/path'];
+
+        const loadAdapterFromPath = sinon.stub();
+        // An unusual MODULE_NOT_FOUND whose message has no parseable specifier
+        // and does not mention the adapter path -> treated as a missing dependency.
+        const err = new Error('module resolution failed for some transitive require');
+        err.code = 'MODULE_NOT_FOUND';
+        loadAdapterFromPath.withArgs('/path/scheduling/SchedulingPro').throws(err);
+
+        const adapterManager = new AdapterManager({loadAdapterFromPath, pathsToAdapters});
+        adapterManager.registerAdapter('scheduling', BaseMailAdapter);
+
+        assert.throws(() => {
+            adapterManager.getAdapter('scheduling', 'SchedulingPro', {});
+        }, {
+            errorType: 'IncorrectUsageError',
+            message: 'The scheduling adapter SchedulingPro is missing a dependency: a dependency. Install it where the adapter can resolve it (e.g. ghost/core).'
+        });
+    });
 });

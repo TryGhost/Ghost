@@ -18,6 +18,18 @@ const resolveAdapterExport = (moduleExport) => {
 };
 
 /**
+ * Extracts the unresolved module specifier from a Node MODULE_NOT_FOUND error,
+ * e.g. the message "Cannot find module 'superagent'" yields "superagent".
+ *
+ * @param {Error} err
+ * @returns {string|null} the specifier, or null if it can't be determined
+ */
+const getMissingModuleSpecifier = (err) => {
+    const match = /Cannot find module '([^']+)'/.exec(err.message || '');
+    return match ? match[1] : null;
+};
+
+/**
  * @typedef { function(new: Adapter, object) } AdapterConstructor
  */
 
@@ -135,10 +147,25 @@ module.exports = class AdapterManager {
                     throw new errors.IncorrectUsageError({err});
                 }
 
-                // Catch missing dependencies BUT NOT missing adapter
-                if (!err.message.includes(pathToAdapter)) {
+                // A MODULE_NOT_FOUND means one of two things:
+                //   1. the adapter itself doesn't exist at this path — try the next path
+                //   2. the adapter loaded but one of ITS own requires failed — a
+                //      genuine missing dependency we should surface clearly
+                // Discriminate on the actual unresolved specifier, NOT a substring
+                // match of the whole message: a missing dependency's error embeds the
+                // adapter's path in its require stack, so a naive includes(pathToAdapter)
+                // misclassifies case 2 as case 1 and hides the real cause (e.g. the
+                // SchedulingPro adapter requiring a missing `superagent` surfaced as the
+                // misleading "Unable to find scheduling adapter SchedulingPro").
+                const missingModule = getMissingModuleSpecifier(err);
+                const adapterItselfMissing = missingModule === null
+                    ? err.message.includes(pathToAdapter) // fallback to legacy heuristic
+                    : missingModule === pathToAdapter;
+
+                if (!adapterItselfMissing) {
+                    const missingDescription = missingModule ? `'${missingModule}'` : 'a dependency';
                     throw new errors.IncorrectUsageError({
-                        message: `You are missing dependencies in your adapter ${pathToAdapter}`,
+                        message: `The ${adapterType} adapter ${adapterClassName} is missing a dependency: ${missingDescription}. Install it where the adapter can resolve it (e.g. ghost/core).`,
                         err
                     });
                 }
