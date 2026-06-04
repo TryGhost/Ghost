@@ -5,10 +5,12 @@ import {createFakeDatabaseAutomationsRepository} from '../../../../../core/serve
 import type {AutomationAction, AutomationsRepository} from '../../../../../core/server/services/automations/automations-repository';
 import type {DatabaseSync, SQLInputValue} from 'node:sqlite';
 
+const HOUR_MS = 60 * 60 * 1000;
+
 const addHours = (dateCol: unknown, hours: number): Date => {
     assert(typeof dateCol === 'string', 'Expected date column to be a string');
     const start = new Date(dateCol).valueOf();
-    const delta = hours * 60 * 60 * 1000;
+    const delta = hours * HOUR_MS;
     return new Date(start + delta);
 };
 
