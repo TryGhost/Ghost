@@ -16,6 +16,7 @@
  */
 
 /* eslint-disable @typescript-eslint/no-require-imports */
+const _ = require('lodash');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const sentry = require('../../../shared/sentry');
@@ -138,13 +139,21 @@ export class UrlServiceFacade {
             return this.lazyUrlService!.resolveUrl(urlPath);
         }
         const resource = this.urlService.getResource(urlPath);
-        if (!resource) {
-            return null;
-        }
         // The routing-level type ('posts', 'pages', 'tags', 'authors') wins
         // over any DB type field on resource.data so the flat Resource is
         // unambiguous.
-        return Object.assign({}, resource.data, {type: resource.config.type}) as Resource;
+        const eagerResult = resource
+            ? Object.assign({}, resource.data, {type: resource.config.type}) as Resource
+            : null;
+        if (this.isComparing()) {
+            // Fire-and-forget: don't await lazy so the reverse lookup adds no
+            // latency for its callers; the lazy DB read runs in the background.
+            void this._compareAsync('resolveUrl', eagerResult,
+                () => this.lazyUrlService!.resolveUrl(urlPath),
+                {path: urlPath},
+                (a, b) => _.isEqual(a, b));
+        }
+        return eagerResult;
     }
 
     hasFinished(): boolean {
@@ -201,14 +210,36 @@ export class UrlServiceFacade {
         try {
             lazyValue = getLazyValue();
         } catch (err) {
-            this._report(new errors.InternalServerError({
-                message: 'Lazy URL service threw during comparison',
-                code: 'LAZY_URL_COMPARE_ERROR',
-                err: err as Error,
-                errorDetails: {method, ...context}
-            }));
+            this._reportLazyError(method, err as Error, context);
             return;
         }
+        this._reportMismatch(method, eagerValue, lazyValue, context, isEqual);
+    }
+
+    private async _compareAsync(
+        method: string,
+        eagerValue: unknown,
+        getLazyValue: () => Promise<unknown>,
+        context: Record<string, unknown>,
+        isEqual: (a: unknown, b: unknown) => boolean = (a, b) => a === b
+    ): Promise<void> {
+        let lazyValue: unknown;
+        try {
+            lazyValue = await getLazyValue();
+        } catch (err) {
+            this._reportLazyError(method, err as Error, context);
+            return;
+        }
+        this._reportMismatch(method, eagerValue, lazyValue, context, isEqual);
+    }
+
+    private _reportMismatch(
+        method: string,
+        eagerValue: unknown,
+        lazyValue: unknown,
+        context: Record<string, unknown>,
+        isEqual: (a: unknown, b: unknown) => boolean
+    ): void {
         if (!isEqual(eagerValue, lazyValue)) {
             this._report(new errors.InternalServerError({
                 message: 'URL service parity mismatch',
@@ -216,6 +247,15 @@ export class UrlServiceFacade {
                 errorDetails: {method, eager: eagerValue, lazy: lazyValue, ...context}
             }));
         }
+    }
+
+    private _reportLazyError(method: string, err: Error, context: Record<string, unknown>): void {
+        this._report(new errors.InternalServerError({
+            message: 'Lazy URL service threw during comparison',
+            code: 'LAZY_URL_COMPARE_ERROR',
+            err,
+            errorDetails: {method, ...context}
+        }));
     }
 
     private _report(error: Error): void {

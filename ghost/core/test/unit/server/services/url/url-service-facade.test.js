@@ -225,10 +225,67 @@ describe('UrlServiceFacade', function () {
             assert.equal(sentry.captureException.firstCall.args[0].code, 'LAZY_URL_COMPARE_ERROR');
         });
 
-        it('resolveUrl returns the eager answer, not lazy', async function () {
+        // resolveUrl tees lazy fire-and-forget, so flush the microtask queue
+        // before asserting on what the background comparison reported.
+        const flush = () => new Promise((resolve) => {
+            setImmediate(resolve);
+        });
+
+        it('resolveUrl returns the eager answer without awaiting lazy', async function () {
             urlService.getResource.returns({config: {type: 'posts'}, data: {id: 'eager', slug: 's'}});
+            lazyUrlService.resolveUrl.resolves({type: 'posts', id: 'lazy', slug: 's'});
+
             const result = await compareFacade.resolveUrl('/x/');
+
             assert.deepEqual(result, {type: 'posts', id: 'eager', slug: 's'});
+            await flush();
+        });
+
+        it('reports a parity mismatch when the lazy resource differs', async function () {
+            urlService.getResource.returns({config: {type: 'posts'}, data: {id: 'eager', slug: 's'}});
+            lazyUrlService.resolveUrl.resolves({type: 'posts', id: 'eager', slug: 'different'});
+
+            await compareFacade.resolveUrl('/x/');
+            await flush();
+
+            sinon.assert.calledOnce(logging.error);
+            sinon.assert.calledOnce(sentry.captureException);
+            assert.equal(sentry.captureException.firstCall.args[0].code, 'LAZY_URL_PARITY_MISMATCH');
+        });
+
+        it('does not report when eager and lazy resources are deep equal', async function () {
+            urlService.getResource.returns({config: {type: 'posts'}, data: {id: 'eager', slug: 's'}});
+            // Same fields, different key order — deep equality must treat as a match.
+            lazyUrlService.resolveUrl.resolves({slug: 's', id: 'eager', type: 'posts'});
+
+            await compareFacade.resolveUrl('/x/');
+            await flush();
+
+            sinon.assert.notCalled(logging.error);
+            sinon.assert.notCalled(sentry.captureException);
+        });
+
+        it('does not report when both eager and lazy miss (null)', async function () {
+            urlService.getResource.returns(null);
+            lazyUrlService.resolveUrl.resolves(null);
+
+            const result = await compareFacade.resolveUrl('/missing/');
+            await flush();
+
+            assert.equal(result, null);
+            sinon.assert.notCalled(sentry.captureException);
+        });
+
+        it('swallows a lazy rejection, reports it, and still returns the eager answer', async function () {
+            urlService.getResource.returns({config: {type: 'posts'}, data: {id: 'eager', slug: 's'}});
+            lazyUrlService.resolveUrl.rejects(new Error('boom'));
+
+            const result = await compareFacade.resolveUrl('/x/');
+            await flush();
+
+            assert.deepEqual(result, {type: 'posts', id: 'eager', slug: 's'});
+            sinon.assert.calledOnce(sentry.captureException);
+            assert.equal(sentry.captureException.firstCall.args[0].code, 'LAZY_URL_COMPARE_ERROR');
         });
 
         it('hasFinished tracks eager readiness, not the always-ready lazy backend', function () {
