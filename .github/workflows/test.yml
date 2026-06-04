@@ -9,6 +9,6 @@ jobs:
   test:
     uses: tryghost/actions/.github/workflows/test.yml@main
     with:
-      node-versions: '[22]'
+      node-versions: '[22, 24]'
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

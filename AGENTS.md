@@ -4,7 +4,7 @@
 - Run a single test: `yarn vitest run -t "<test name substring>"` (e.g. `yarn vitest run -t "generateUnique"`).
 - `yarn ship` — runs tests, then `yarn publish` and `git push --follow-tags`. Only succeeds with a clean working tree. Do not invoke unless the user explicitly asks to publish.
 
-Node 22 is required (`engines.node: ^22.13.1`). CI runs on Node 22 only via `tryghost/actions/.github/workflows/test.yml`.
+Node 22 or 24 is required (`engines.node: ^22.13.1 || ^24.0.0`). CI runs on Node 22 and 24 via `tryghost/actions/.github/workflows/test.yml`.
 
 ## Architecture
 

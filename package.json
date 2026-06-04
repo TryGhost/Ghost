@@ -26,7 +26,7 @@
     "moment": "2.29.4"
   },
   "engines": {
-    "node": "^22.13.1"
+    "node": "^22.13.1 || ^24.0.0"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "4.1.8",
