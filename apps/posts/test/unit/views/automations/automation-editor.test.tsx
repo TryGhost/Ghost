@@ -1857,16 +1857,16 @@ describe('AutomationEditor', () => {
         await stageLocalEdit();
         fireEvent.click(screen.getByRole('button', {name: 'Publish changes'}));
 
-        const dialog = screen.getByRole('alertdialog', {name: 'Update automation?'});
-        expect(within(dialog).queryByText(/empty/i)).not.toBeInTheDocument();
-
-        fireEvent.click(within(dialog).getByRole('button', {name: 'Publish changes'}));
-
+        expect(screen.queryByRole('alertdialog', {name: 'Update automation?'})).not.toBeInTheDocument();
         expect(mockEditMutation.mutate).not.toHaveBeenCalled();
         expect(mockToastError).toHaveBeenCalledWith('Automation couldn’t be saved', {
             description: 'Fix the highlighted steps and try again.'
         });
-        expect(within(screen.getByRole('alertdialog', {name: 'Update automation?'})).getByRole('button', {name: 'Retry'})).toBeInTheDocument();
+        expect(screen.getByRole('button', {name: 'Publish changes'})).toBeEnabled();
+
+        const emailStep = screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'});
+        expect(emailStep).toHaveAttribute('aria-invalid', 'true');
+        expect(within(emailStep).getByText('Add an email body.')).toHaveClass('text-destructive');
     });
 
     it('spins the modal button while publishing changes to an active automation', async () => {

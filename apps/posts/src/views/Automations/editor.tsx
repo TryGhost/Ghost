@@ -358,6 +358,9 @@ const AutomationEditor: React.FC = () => {
         case undefined:
             throw new Error('Cannot publish an automation that has not loaded.');
         case 'active':
+            if (!validateActionErrors(draft, 'idle')) {
+                return;
+            }
             setEditState('confirming re-publish');
             break;
         case 'inactive':
