@@ -125,7 +125,8 @@ describe('Settings API', function () {
                 {
                     key: 'navigation',
                     value: JSON.stringify([{
-                        label: 'label1'
+                        label: 'label1',
+                        url: '/'
                     }])
                 },
                 {

@@ -7,10 +7,11 @@ export default BaseValidator.create({
 
     label(model) {
         let label = model.label;
+        let icon = model.icon;
         let hasValidated = model.hasValidated;
 
-        if (isBlank(label)) {
-            model.errors.add('label', 'You must specify a label');
+        if (isBlank(label) && isBlank(icon)) {
+            model.errors.add('label', 'You must specify a label or icon');
             this.invalidate();
         }
 
