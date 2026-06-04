@@ -182,17 +182,30 @@ module.exports = class MemberRepository {
      * @param {string} memberId
      * @param {string} memberEmail
      * @param {'free' | 'paid'} memberStatus
+     * @param {object} bookshelfOptions
+     * @param {Knex.Transaction} [bookshelfOptions.transacting]
      * @returns {Promise<void>}
      */
-    async #triggerMemberSignupAutomation(memberId, memberEmail, memberStatus) {
-        // TODO(NY-1311) When moving to real tables, we should insert the new
-        // rows in a new transaction.
-        await this._automationsApi.trigger({
-            event: 'member_sign_up',
-            memberId,
-            memberEmail,
-            memberStatus
-        });
+    async #triggerMemberSignupAutomation(memberId, memberEmail, memberStatus, bookshelfOptions) {
+        const trigger = async () => {
+            await this._automationsApi.trigger({
+                event: 'member_sign_up',
+                memberId,
+                memberEmail,
+                memberStatus
+            });
+        };
+
+        if (bookshelfOptions?.transacting) {
+            bookshelfOptions.transacting.executionPromise.then(trigger).catch((err) => {
+                logging.error({
+                    err,
+                    message: `Error triggering automation for member ${memberId}`
+                });
+            });
+        } else {
+            await trigger();
+        }
     }
 
     /**
@@ -253,7 +266,7 @@ module.exports = class MemberRepository {
      */
     async triggerMemberSignupAutomation(memberId, memberEmail, memberStatus, bookshelfOptions) {
         await Promise.all([
-            this.#triggerMemberSignupAutomation(memberId, memberEmail, memberStatus),
+            this.#triggerMemberSignupAutomation(memberId, memberEmail, memberStatus, bookshelfOptions),
             this.#triggerMemberSignupLegacyAutomation(memberId, memberStatus, bookshelfOptions)
         ]);
     }
