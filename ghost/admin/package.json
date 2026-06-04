@@ -65,6 +65,7 @@
     "broccoli-terser-sourcemap": "4.1.1",
     "chai": "catalog:",
     "chai-dom": "1.12.1",
+    "chalk": "catalog:",
     "codemirror": "5.65.21",
     "cssnano": "4.1.10",
     "element-resize-detector": "1.2.4",

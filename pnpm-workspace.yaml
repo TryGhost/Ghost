@@ -76,6 +76,7 @@ catalog:
   bson-objectid: 2.0.4
   c8: 11.0.0
   chai: 4.5.0
+  chalk: 4.1.2
   clsx: 2.1.1
   concurrently: 10.0.0
   cross-fetch: 4.1.0
