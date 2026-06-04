@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
-const {SingleUseTokenProvider} = require('../../../core/server/services/members/single-use-token-provider');
+const SingleUseTokenProvider = require('../../../core/server/services/members/single-use-token-provider');
 const settingsCache = require('../../../core/shared/settings-cache');
 const config = require('../../../core/shared/config');
 const {agentProvider, fixtureManager, mockManager, matchers, configUtils} = require('../../utils/e2e-framework');
@@ -429,8 +429,7 @@ describe('Settings API', function () {
                 SingleUseTokenModel: models.SingleUseToken,
                 validityPeriod: 24 * 60 * 60 * 1000,
                 validityPeriodAfterUsage: 10 * 60 * 1000,
-                maxUsageCount: 1,
-                secret: '12345'
+                maxUsageCount: 1
             })).create({key: 'members_support_address', value: 'support@example.com'});
             await agent.put('settings/verifications/')
                 .body({
@@ -460,8 +459,7 @@ describe('Settings API', function () {
                 SingleUseTokenModel: models.SingleUseToken,
                 validityPeriod: 24 * 60 * 60 * 1000,
                 validityPeriodAfterUsage: 10 * 60 * 1000,
-                maxUsageCount: 1,
-                secret: '12345'
+                maxUsageCount: 1
             })).create({key: 'members_support_address_invalid', value: 'support@example.com'});
             await agent.put('settings/verifications/')
                 .body({
