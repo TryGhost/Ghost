@@ -1,11 +1,12 @@
 import {CompleteStep, ErrorStep, InitStep, MappingStep, ProcessingStep} from './import-members/components';
 import {Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle} from '@tryghost/shade/components';
+import {HostLimitError, JSONError, RequestEntityTooLargeError, ValidationError} from '@tryghost/admin-x-framework/errors';
 import {type ImportResponse} from './import-members/state';
 import {MembersFieldMapping, detectFieldTypes, getFieldMappings} from './import-members/mapping';
 import {buildImportResponse} from './import-members/upload';
 import {cn} from '@tryghost/shade/utils';
 import {createInitialImportState, importReducer} from './import-members/reducer';
-import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
+import {isImportMembersCompleteResponse, useImportMembers} from '@tryghost/admin-x-framework/api/members';
 import {parseCSV} from './import-members/csv';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useCallback, useEffect, useMemo, useReducer, useRef} from 'react';
@@ -27,6 +28,7 @@ export function ImportMembersModal({
     const [state, dispatch] = useReducer(importReducer, undefined, createInitialImportState);
     const errorCsvUrlRef = useRef<string | null>(null);
     const {data: configData} = useBrowseConfig();
+    const {mutateAsync: importMembers} = useImportMembers();
     const importMemberTier = configData?.config?.labs?.importMemberTier === true;
     const fieldMappings = useMemo(() => getFieldMappings({importMemberTier}), [importMemberTier]);
 
@@ -184,45 +186,41 @@ export function ImportMembersModal({
 
         dispatch({type: 'UPLOAD_START'});
 
-        const formData = new FormData();
-        formData.append('membersfile', state.file);
-
-        // Convert slugs to names for the upload API
+        const selectedLabelNames: string[] = [];
         for (const slug of state.selectedLabelSlugs) {
             const label = labelPicker.labels.find(l => l.slug === slug);
             if (label) {
-                formData.append('labels', label.name);
-            }
-        }
-
-        if (state.mapping) {
-            const mappingJSON = state.mapping.toJSON();
-            for (const [key, val] of Object.entries(mappingJSON)) {
-                if (val) {
-                    formData.append(`mapping[${key}]`, val);
-                }
+                selectedLabelNames.push(label.name);
             }
         }
 
         try {
-            const {apiRoot} = getGhostPaths();
-            const response = await fetch(`${apiRoot}/members/upload/`, {
-                method: 'POST',
-                body: formData,
-                credentials: 'include',
-                mode: 'cors',
-                headers: {
-                    'app-pragma': 'no-cache'
-                }
+            const importData = await importMembers({
+                file: state.file,
+                labels: selectedLabelNames,
+                mapping: state.mapping?.toJSON()
             });
 
-            if (response.status === 202) {
-                dispatch({type: 'UPLOAD_ACCEPTED'});
-                onComplete?.();
+            if (isImportMembersCompleteResponse(importData)) {
+                const importResponse = buildImportResponse(importData);
+                revokeErrorCsvUrl();
+                errorCsvUrlRef.current = importResponse.errorCsvUrl;
+
+                dispatch({
+                    type: 'UPLOAD_COMPLETE',
+                    importResponse
+                });
+                onComplete?.(importResponse);
                 return;
             }
 
-            if (response.status === 413) {
+            // Per the upload API contract a 2xx response is either complete (handled
+            // above) or accepted for background processing; importMembers() has already
+            // thrown for any error status.
+            dispatch({type: 'UPLOAD_ACCEPTED'});
+            onComplete?.();
+        } catch (error) {
+            if (error instanceof RequestEntityTooLargeError) {
                 dispatch({
                     type: 'UPLOAD_ERROR',
                     errorMessage: 'The file you uploaded was larger than the maximum file size your server allows.'
@@ -230,47 +228,27 @@ export function ImportMembersModal({
                 return;
             }
 
-            if (!response.ok) {
-                const data = await response.json();
-                const err = data?.errors?.[0];
+            const apiError = error instanceof JSONError ? error.data?.errors?.[0] : null;
 
-                if (err?.type === 'HostLimitError' && err?.code === 'EMAIL_VERIFICATION_NEEDED') {
-                    dispatch({
-                        type: 'UPLOAD_ERROR',
-                        errorMessage: err.message,
-                        errorHeader: 'Woah there cowboy, that\'s a big list',
-                        showTryAgainButton: false
-                    });
-                    onComplete?.();
-                    return;
-                }
-
-                if (err?.type === 'DataImportError' || err?.type === 'ValidationError') {
-                    dispatch({
-                        type: 'UPLOAD_ERROR',
-                        errorMessage: err.message
-                    });
-                    return;
-                }
-
+            if (error instanceof HostLimitError && apiError?.code === 'EMAIL_VERIFICATION_NEEDED') {
                 dispatch({
                     type: 'UPLOAD_ERROR',
-                    errorMessage: 'An unexpected error occurred, please try again'
+                    errorMessage: apiError.message,
+                    errorHeader: 'Woah there cowboy, that\'s a big list',
+                    showTryAgainButton: false
+                });
+                onComplete?.();
+                return;
+            }
+
+            if (error instanceof ValidationError || apiError?.type === 'DataImportError') {
+                dispatch({
+                    type: 'UPLOAD_ERROR',
+                    errorMessage: apiError?.message || (error instanceof Error ? error.message : 'An unexpected error occurred, please try again')
                 });
                 return;
             }
 
-            const importData = await response.json();
-            const importResponse = buildImportResponse(importData);
-            revokeErrorCsvUrl();
-            errorCsvUrlRef.current = importResponse.errorCsvUrl;
-
-            dispatch({
-                type: 'UPLOAD_COMPLETE',
-                importResponse
-            });
-            onComplete?.(importResponse);
-        } catch {
             dispatch({
                 type: 'UPLOAD_ERROR',
                 errorMessage: 'An unexpected error occurred, please try again'
@@ -282,6 +260,7 @@ export function ImportMembersModal({
         state.mappingError,
         state.selectedLabelSlugs,
         labelPicker.labels,
+        importMembers,
         revokeErrorCsvUrl,
         onComplete
     ]);
