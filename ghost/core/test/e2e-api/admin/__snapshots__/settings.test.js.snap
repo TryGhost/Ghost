@@ -592,7 +592,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
@@ -985,7 +985,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
@@ -1435,7 +1435,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
@@ -1803,7 +1803,7 @@ exports[`Settings API Edit can edit Stripe settings when Stripe Connect limit is
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "5431",
+  "content-length": "5445",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1930,7 +1930,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
@@ -2379,7 +2379,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
@@ -2833,7 +2833,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
@@ -3315,7 +3315,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
@@ -3765,7 +3765,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
@@ -4215,7 +4215,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
@@ -4669,7 +4669,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
@@ -5118,7 +5118,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
@@ -5572,7 +5572,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
@@ -6025,7 +6025,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
@@ -6414,7 +6414,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
@@ -6864,7 +6864,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
@@ -7314,7 +7314,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
@@ -7765,7 +7765,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
@@ -8315,7 +8315,7 @@ Object {
     },
     Object {
       "key": "navigation",
-      "value": "[{\\"label\\":\\"label1\\"}]",
+      "value": "[{\\"label\\":\\"label1\\",\\"url\\":\\"/\\"}]",
     },
     Object {
       "key": "secondary_navigation",

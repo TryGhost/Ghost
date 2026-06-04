@@ -61,11 +61,19 @@ describe('{{navigation}} helper', function () {
 
         // Test 3: invalid label
         optionsData.data.site.navigation = [{label: 1, url: 'bar'}];
-        assert.throws(runHelperThunk(optionsData), {message: 'Invalid value, Url and Label must be strings'});
+        assert.throws(runHelperThunk(optionsData), {message: 'Invalid value, Url, Label and Icon must be strings'});
 
         // Test 4: invalid url
         optionsData.data.site.navigation = [{label: 'foo', url: 1}];
-        assert.throws(runHelperThunk(optionsData), {message: 'Invalid value, Url and Label must be strings'});
+        assert.throws(runHelperThunk(optionsData), {message: 'Invalid value, Url, Label and Icon must be strings'});
+
+        // Test 5: invalid icon
+        optionsData.data.site.navigation = [{label: 'foo', url: '/foo', icon: 1}];
+        assert.throws(runHelperThunk(optionsData), {message: 'Invalid value, Url, Label and Icon must be strings'});
+
+        // Test 6: invalid visibility
+        optionsData.data.site.navigation = [{label: 'foo', url: '/foo', visibility: 'invalid'}];
+        assert.throws(runHelperThunk(optionsData), {message: 'Invalid navigation visibility value'});
     });
 
     it('can render empty nav', function () {
@@ -99,6 +107,41 @@ describe('{{navigation}} helper', function () {
         assert(rendered.string.includes('li'));
         assert(rendered.string.includes('nav-foo'));
         assert(rendered.string.includes(testUrl));
+    });
+
+    it('can render one item with an icon', function () {
+        const singleItem = {label: 'Foo', url: '/foo', icon: 'https://example.com/icon.svg'};
+        let rendered;
+
+        optionsData.data.site.navigation = [singleItem];
+        rendered = runHelper(optionsData);
+
+        assertExists(rendered);
+        assert(rendered.string.includes('class="nav-icon"'));
+        assert(rendered.string.includes('src="https://example.com/icon.svg"'));
+        assert(rendered.string.includes('alt=""'));
+        assert(!rendered.string.includes('alt="icon"'));
+        assert(!rendered.string.includes('aria-hidden'));
+        assert(!rendered.string.includes('loading='));
+        assert(rendered.string.includes('<span class="nav-label">Foo</span>'));
+    });
+
+    it('can render an icon-only item', function () {
+        const singleItem = {url: '/icon-only', icon: 'https://example.com/icons/Ambulance%20Truck.svg'};
+        let rendered;
+
+        optionsData.data.site.navigation = [singleItem];
+        rendered = runHelper(optionsData);
+
+        assertExists(rendered);
+        assert(rendered.string.includes('nav-ambulance-truck'));
+        assert(!rendered.string.includes('nav- '));
+        assert(rendered.string.includes('class="nav-icon"'));
+        assert(rendered.string.includes('src="https://example.com/icons/Ambulance%20Truck.svg"'));
+        assert(rendered.string.includes('alt="Ambulance Truck"'));
+        assert(!rendered.string.includes('aria-hidden'));
+        assert(!rendered.string.includes('loading='));
+        assert(!rendered.string.includes('class="nav-label"'));
     });
 
     it('can render multiple items', function () {
@@ -185,6 +228,61 @@ describe('{{navigation}} helper', function () {
 
         assertExists(rendered);
         assert(!rendered.string.includes('foo=space%2520bar'));
+    });
+
+    it('filters navigation items by member visibility', function () {
+        const hasLabel = (rendered, label) => rendered.string.includes(`<span class="nav-label">${label}</span>`);
+        optionsData.data.site.navigation = [
+            {label: 'Public', url: '/public'},
+            {label: 'Members', url: '/members', visibility: 'members'},
+            {label: 'Paid', url: '/paid', visibility: 'paid'},
+            {label: 'Public Free', url: '/public-free', visibility: 'public_free'},
+            {label: 'Public Paid', url: '/public-paid', visibility: 'public_paid'},
+            {label: 'Public Only', url: '/public-only', visibility: 'public_only'},
+            {label: 'Free Members', url: '/free-members', visibility: 'free_members'},
+            {label: 'Hidden', url: '/hidden', visibility: 'none'}
+        ];
+
+        let rendered = runHelper(optionsData);
+        assert(hasLabel(rendered, 'Public'));
+        assert(!hasLabel(rendered, 'Members'));
+        assert(!hasLabel(rendered, 'Paid'));
+        assert(hasLabel(rendered, 'Public Free'));
+        assert(hasLabel(rendered, 'Public Paid'));
+        assert(hasLabel(rendered, 'Public Only'));
+        assert(!hasLabel(rendered, 'Free Members'));
+        assert(!hasLabel(rendered, 'Hidden'));
+
+        optionsData.data.root.member = {status: 'free'};
+        rendered = runHelper(optionsData);
+        assert(hasLabel(rendered, 'Public'));
+        assert(hasLabel(rendered, 'Members'));
+        assert(!hasLabel(rendered, 'Paid'));
+        assert(hasLabel(rendered, 'Public Free'));
+        assert(!hasLabel(rendered, 'Public Paid'));
+        assert(!hasLabel(rendered, 'Public Only'));
+        assert(hasLabel(rendered, 'Free Members'));
+        assert(!hasLabel(rendered, 'Hidden'));
+
+        optionsData.data.root.member = {status: 'paid'};
+        rendered = runHelper(optionsData);
+        assert(hasLabel(rendered, 'Public'));
+        assert(hasLabel(rendered, 'Members'));
+        assert(hasLabel(rendered, 'Paid'));
+        assert(!hasLabel(rendered, 'Public Free'));
+        assert(hasLabel(rendered, 'Public Paid'));
+        assert(!hasLabel(rendered, 'Public Only'));
+        assert(!hasLabel(rendered, 'Free Members'));
+        assert(!hasLabel(rendered, 'Hidden'));
+    });
+
+    it('renders empty nav when all items are filtered out', function () {
+        optionsData.data.site.navigation = [{label: 'Paid', url: '/paid', visibility: 'paid'}];
+
+        const rendered = runHelper(optionsData);
+
+        assertExists(rendered);
+        assert.equal(rendered.string, '');
     });
 
     describe('type="secondary"', function () {

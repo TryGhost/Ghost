@@ -11,10 +11,27 @@ const _ = require('lodash');
 const messages = {
     invalidData: 'navigation data is not an object or is a function',
     valuesMustBeDefined: 'All values must be defined for label, url and current',
-    valuesMustBeString: 'Invalid value, Url and Label must be strings'
+    valuesMustBeString: 'Invalid value, Url, Label and Icon must be strings',
+    invalidVisibility: 'Invalid navigation visibility value'
 };
 
 const createFrame = hbs.handlebars.createFrame;
+const visibilityValues = ['public', 'members', 'paid', 'public_free', 'public_paid', 'public_only', 'free_members', 'none'];
+
+function getNavigationIconName(icon) {
+    if (!icon) {
+        return '';
+    }
+
+    const filename = icon.split(/[?#]/)[0].split('/').filter(Boolean).pop() || '';
+    const name = filename.replace(/\.[^.]+$/, '');
+
+    try {
+        return decodeURIComponent(name);
+    } catch (e) {
+        return name;
+    }
+}
 
 module.exports = function navigation(options) {
     options = options || {};
@@ -29,6 +46,7 @@ module.exports = function navigation(options) {
 
     const navigationData = options.data.site[key];
     const currentUrl = options.data.root.relativeUrl;
+    const member = options.data.member || options.data.root.member;
     let output;
 
     if (!_.isObject(navigationData) || _.isFunction(navigationData)) {
@@ -38,7 +56,7 @@ module.exports = function navigation(options) {
     }
 
     if (navigationData.filter(function (e) {
-        return (_.isUndefined(e.label) || _.isUndefined(e.url));
+        return (_.isUndefined(e.url) || (_.isUndefined(e.label) && _.isUndefined(e.icon)));
     }).length > 0) {
         throw new errors.IncorrectUsageError({
             message: tpl(messages.valuesMustBeDefined)
@@ -47,11 +65,20 @@ module.exports = function navigation(options) {
 
     // check for non-null string values
     if (navigationData.filter(function (e) {
-        return ((!_.isNull(e.label) && !_.isString(e.label)) ||
-            (!_.isNull(e.url) && !_.isString(e.url)));
+        return ((!_.isUndefined(e.label) && !_.isNull(e.label) && !_.isString(e.label)) ||
+            (!_.isNull(e.url) && !_.isString(e.url)) ||
+            (!_.isUndefined(e.icon) && !_.isNull(e.icon) && !_.isString(e.icon)));
     }).length > 0) {
         throw new errors.IncorrectUsageError({
             message: tpl(messages.valuesMustBeString)
+        });
+    }
+
+    if (navigationData.filter(function (e) {
+        return !_.isUndefined(e.visibility) && !visibilityValues.includes(e.visibility);
+    }).length > 0) {
+        throw new errors.IncorrectUsageError({
+            message: tpl(messages.invalidVisibility)
         });
     }
 
@@ -71,14 +98,60 @@ module.exports = function navigation(options) {
         return new SafeString('');
     }
 
-    output = navigationData.map(function (e) {
+    function _isVisible(item) {
+        const visibility = item.visibility || 'public';
+        const isMember = !!member;
+        const isFreeMember = isMember && member.status === 'free';
+        const isPaidMember = isMember && member.status !== 'free';
+
+        if (visibility === 'members') {
+            return isMember;
+        }
+
+        if (visibility === 'paid') {
+            return isPaidMember;
+        }
+
+        if (visibility === 'public_free') {
+            return !isMember || isFreeMember;
+        }
+
+        if (visibility === 'public_paid') {
+            return !isMember || isPaidMember;
+        }
+
+        if (visibility === 'public_only') {
+            return !isMember;
+        }
+
+        if (visibility === 'free_members') {
+            return isFreeMember;
+        }
+
+        if (visibility === 'none') {
+            return false;
+        }
+
+        return true;
+    }
+
+    output = navigationData.filter(_isVisible).map(function (e) {
         const out = {};
+        const iconName = getNavigationIconName(e.icon);
+        const hasLabel = _.isString(e.label) && e.label.trim().length > 0;
+
         out.current = _isCurrentUrl(e.url, currentUrl);
+        out.icon = e.icon || null;
+        out.iconAlt = hasLabel ? '' : iconName;
         out.label = e.label;
-        out.slug = slugify(e.label);
+        out.slug = slugify(hasLabel ? e.label : iconName);
         out.url = e.url;
         return out;
     });
+
+    if (output.length === 0) {
+        return new SafeString('');
+    }
 
     // CASE: The navigation helper should have access to the navigation items at the top level.
     this.navigation = output;

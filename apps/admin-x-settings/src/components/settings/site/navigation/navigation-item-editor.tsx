@@ -1,24 +1,40 @@
+import NavigationIconUpload from './navigation-icon-upload';
+import NavigationVisibilityDropdown from './navigation-visibility-dropdown';
 import React, {type ReactNode} from 'react';
 import clsx from 'clsx';
 import {type EditableItem, type NavigationItem, type NavigationItemErrors} from '../../../../hooks/site/use-navigation-editor';
 import {TextField, URLTextField, formatUrl} from '@tryghost/admin-x-design-system';
+import {navigationColumnClasses, navigationFieldOffsetClass, navigationRowClasses} from './navigation-layout';
 
 export type NavigationItemEditorProps = React.HTMLAttributes<HTMLDivElement> & {
     baseUrl: string;
+    idPrefix: string;
     item: EditableItem;
     clearError?: (key: keyof NavigationItemErrors) => void;
     updateItem?: (item: Partial<NavigationItem>) => void;
+    uploadIcon?: (file: File) => Promise<string | undefined>;
     labelPlaceholder?: string
     unstyled?: boolean
     textFieldClasses?: string
     action?: ReactNode
     addItem?: () => void
+    showPaidVisibility: boolean
+    showVisibility: boolean
 }
 
-const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, item, updateItem, addItem, clearError, labelPlaceholder, unstyled, textFieldClasses, action, className, ...props}) => {
+const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, idPrefix, item, updateItem, uploadIcon, addItem, clearError, labelPlaceholder, unstyled, textFieldClasses, action, showPaidVisibility, showVisibility, className, ...props}) => {
     return (
-        <div className={clsx('flex w-full items-start gap-3', className)} data-testid='navigation-item-editor' {...props}>
-            <div className="flex flex-1 pt-1">
+        <div className={clsx(navigationRowClasses, className)} data-testid='navigation-item-editor' {...props}>
+            <div className={clsx('flex flex-col', navigationColumnClasses.icon, navigationFieldOffsetClass)}>
+                <NavigationIconUpload
+                    clearError={clearError}
+                    idPrefix={idPrefix}
+                    item={item}
+                    updateItem={updateItem}
+                    uploadIcon={uploadIcon}
+                />
+            </div>
+            <div className={clsx('flex', navigationColumnClasses.label, navigationFieldOffsetClass)}>
                 <TextField
                     className={textFieldClasses}
                     containerClassName="grow"
@@ -41,7 +57,7 @@ const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, ite
                     }}
                 />
             </div>
-            <div className="flex flex-1 pt-1">
+            <div className={clsx('flex', navigationColumnClasses.url, navigationFieldOffsetClass)}>
                 <URLTextField
                     baseUrl={baseUrl}
                     className={textFieldClasses}
@@ -69,7 +85,18 @@ const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, ite
                     }}
                 />
             </div>
-            {action}
+            {showVisibility && (
+                <div className={clsx('flex flex-col', navigationColumnClasses.visibility, navigationFieldOffsetClass)}>
+                    <NavigationVisibilityDropdown
+                        clearError={clearError}
+                        idPrefix={idPrefix}
+                        item={item}
+                        showPaidVisibility={showPaidVisibility}
+                        updateItem={updateItem}
+                    />
+                </div>
+            )}
+            {action && <div className={clsx('mt-1 flex h-[38px] items-center justify-center', navigationColumnClasses.action)}>{action}</div>}
         </div>
     );
 };

@@ -9,8 +9,82 @@ const messages = {
     invalidEmailValueReceived: 'Please enter a valid email address.',
     invalidEmailTypeReceived: 'Invalid email type received',
     invalidAnnouncementVisibilityValueReceived: 'Please enter a valid announcement visibility value',
-    invalidAnnouncementBackgroundValueReceived: 'Please enter a valid announcement background value'
+    invalidAnnouncementBackgroundValueReceived: 'Please enter a valid announcement background value',
+    invalidNavigationItemValueReceived: 'Please enter a valid navigation item'
 };
+
+const navigationItemVisibilityValues = ['public', 'members', 'paid', 'public_free', 'public_paid', 'public_only', 'free_members', 'none'];
+const navUrlRegex = new RegExp(/^(\/|#|[a-zA-Z0-9-]+:)/);
+const iconUrlRegex = new RegExp(/^(\/|__GHOST_URL__\/)/);
+const iconUrlOptions = {require_protocol: true, protocols: ['http', 'https']};
+
+function parseArraySettingValue(value) {
+    if (_.isArray(value)) {
+        return value;
+    }
+
+    return JSON.parse(value);
+}
+
+function isValidNavigationUrl(value) {
+    return _.isString(value) && !value.match(/\s/) && (validator.isURL(value, {require_protocol: true}) || value.match(navUrlRegex));
+}
+
+function isValidNavigationIcon(value) {
+    return _.isString(value) && !value.match(/\s/) && (validator.isURL(value, iconUrlOptions) || value.match(iconUrlRegex));
+}
+
+function validateNavigationItems(setting, errors) {
+    const navigationItems = parseArraySettingValue(setting.value);
+
+    navigationItems.forEach((item) => {
+        if (!_.isObject(item) || _.isFunction(item)) {
+            errors.push(new ValidationError({
+                message: tpl(messages.invalidNavigationItemValueReceived),
+                property: setting.key
+            }));
+            return;
+        }
+
+        if (_.isUndefined(item.url) || !isValidNavigationUrl(item.url)) {
+            errors.push(new ValidationError({
+                message: tpl(messages.invalidNavigationItemValueReceived),
+                property: setting.key
+            }));
+        }
+
+        const hasLabel = _.isString(item.label) && !item.label.match(/^\s*$/);
+        const hasIcon = _.isString(item.icon) && !item.icon.match(/^\s*$/);
+
+        if (!_.isUndefined(item.label) && !_.isString(item.label)) {
+            errors.push(new ValidationError({
+                message: tpl(messages.invalidNavigationItemValueReceived),
+                property: setting.key
+            }));
+        }
+
+        if (!_.isUndefined(item.icon) && item.icon !== null && item.icon !== '' && !isValidNavigationIcon(item.icon)) {
+            errors.push(new ValidationError({
+                message: tpl(messages.invalidNavigationItemValueReceived),
+                property: setting.key
+            }));
+        }
+
+        if (!hasLabel && !hasIcon) {
+            errors.push(new ValidationError({
+                message: tpl(messages.invalidNavigationItemValueReceived),
+                property: setting.key
+            }));
+        }
+
+        if (!_.isUndefined(item.visibility) && !navigationItemVisibilityValues.includes(item.visibility)) {
+            errors.push(new ValidationError({
+                message: tpl(messages.invalidNavigationItemValueReceived),
+                property: setting.key
+            }));
+        }
+    });
+}
 
 module.exports = {
     edit(apiConfig, frame) {
@@ -49,6 +123,14 @@ module.exports = {
                     } catch (err) {
                         errors.push(typeError);
                     }
+                }
+            }
+
+            if (['navigation', 'secondary_navigation'].includes(setting.key)) {
+                try {
+                    validateNavigationItems(setting, errors);
+                } catch (err) {
+                    // Array type validation above will return the specific array error.
                 }
             }
 

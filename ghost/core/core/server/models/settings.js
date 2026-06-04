@@ -19,6 +19,8 @@ const messages = {
 const internalContext = {context: {internal: true}};
 let Settings;
 let defaultSettings;
+const imageSettingKeys = ['cover_image', 'logo', 'icon', 'portal_button_icon', 'og_image', 'twitter_image', 'pintura_js_url', 'pintura_css_url'];
+const navigationSettingKeys = ['navigation', 'secondary_navigation'];
 
 const doBlock = fn => fn();
 
@@ -93,6 +95,36 @@ function getDefaultSettings() {
     return defaultSettings;
 }
 
+function transformNavigationIconUrls(value, transformUrl) {
+    if (!value) {
+        return value;
+    }
+
+    let navigationItems;
+    try {
+        navigationItems = _.isString(value) ? JSON.parse(value) : value;
+    } catch (e) {
+        return value;
+    }
+
+    if (!_.isArray(navigationItems)) {
+        return value;
+    }
+
+    const transformed = navigationItems.map((item) => {
+        if (!_.isObject(item) || _.isFunction(item) || !item.icon) {
+            return item;
+        }
+
+        return {
+            ...item,
+            icon: transformUrl(item.icon)
+        };
+    });
+
+    return _.isString(value) ? JSON.stringify(transformed) : transformed;
+}
+
 // Each setting is saved as a separate row in the database,
 // but the overlying API treats them as a single key:value mapping
 Settings = ghostBookshelf.Model.extend({
@@ -163,8 +195,12 @@ Settings = ghostBookshelf.Model.extend({
     },
 
     formatOnWrite(attrs) {
-        if (attrs.value && ['cover_image', 'logo', 'icon', 'portal_button_icon', 'og_image', 'twitter_image', 'pintura_js_url', 'pintura_css_url'].includes(attrs.key)) {
+        if (attrs.value && imageSettingKeys.includes(attrs.key)) {
             attrs.value = urlUtils.toTransformReady(attrs.value);
+        }
+
+        if (attrs.value && navigationSettingKeys.includes(attrs.key)) {
+            attrs.value = transformNavigationIconUrls(attrs.value, urlUtils.toTransformReady.bind(urlUtils));
         }
 
         return attrs;
@@ -185,8 +221,12 @@ Settings = ghostBookshelf.Model.extend({
         }
 
         // transform URLs from __GHOST_URL__ to absolute
-        if (['cover_image', 'logo', 'icon', 'portal_button_icon', 'og_image', 'twitter_image', 'pintura_js_url', 'pintura_css_url'].includes(attrs.key)) {
+        if (imageSettingKeys.includes(attrs.key)) {
             attrs.value = urlUtils.transformReadyToAbsolute(attrs.value);
+        }
+
+        if (navigationSettingKeys.includes(attrs.key)) {
+            attrs.value = transformNavigationIconUrls(attrs.value, urlUtils.transformReadyToAbsolute.bind(urlUtils));
         }
 
         return attrs;
