@@ -503,6 +503,9 @@ function createTable(table, transaction = db.knex, tableSpec = schema[table]) {
         if (tableSpec['@@UNIQUE_CONSTRAINTS@@']) {
             tableSpec['@@UNIQUE_CONSTRAINTS@@'].forEach(unique => t.unique(unique));
         }
+        if (tableSpec['@@PRIMARY_KEY@@']) {
+            t.primary(tableSpec['@@PRIMARY_KEY@@']);
+        }
     });
 }
 
