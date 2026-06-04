@@ -125,9 +125,9 @@ const Toggle: React.FC<ToggleProps> = ({
                             labelStyle === 'heading' ?
                                 <span className={`${Heading6StylesGrey} mt-1`}>{label}</span>
                                 :
-                                <span>{label}</span>
+                                <span className='font-semibold'>{label}</span>
                         }
-                        {hint && <span className={`text-xs ${error ? 'text-red' : 'text-grey-700 dark:text-grey-600'}`}>{hint}</span>}
+                        {hint && <span className={`${error ? 'text-red' : 'text-grey-700 dark:text-grey-600'}`}>{hint}</span>}
                     </label>
                 }
             </div>

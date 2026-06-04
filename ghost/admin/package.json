@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "6.43.1-rc.0",
+  "version": "6.44.1-rc.0",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -65,6 +65,7 @@
     "broccoli-terser-sourcemap": "4.1.1",
     "chai": "catalog:",
     "chai-dom": "1.12.1",
+    "chalk": "catalog:",
     "codemirror": "5.65.21",
     "cssnano": "4.1.10",
     "element-resize-detector": "1.2.4",
@@ -120,7 +121,7 @@
     "ember-truth-helpers": "3.1.1",
     "eslint": "catalog:",
     "eslint-plugin-babel": "5.3.1",
-    "flexsearch": "0.8.212",
+    "flexsearch": "0.7.43",
     "fs-extra": "catalog:",
     "ghost": "workspace:*",
     "google-caja-bower": "https://github.com/acburdine/google-caja-bower#ghost",
@@ -138,8 +139,8 @@
     "postcss-import": "12.0.1",
     "pretender": "3.4.7",
     "process": "0.11.10",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
+    "react": "catalog:",
+    "react-dom": "catalog:",
     "reframe.js": "4.0.2",
     "semver": "7.7.4",
     "sentry-testkit": "5.0.10",
@@ -148,7 +149,7 @@
     "tracked-built-ins": "3.4.0",
     "util": "0.12.5",
     "validator": "catalog:",
-    "walk-sync": "3.0.0"
+    "walk-sync": "4.0.2"
   },
   "ember-addon": {
     "paths": [

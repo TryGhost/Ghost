@@ -617,7 +617,6 @@ describe('{{#get}} helper', function () {
         });
 
         it('should deduplicate identical queries when enabled', async function () {
-            configUtils.set('optimization:getHelper:deduplication', true);
             locals = {root: {_locals: {}}, _queryCache: new Map()};
 
             // First call
@@ -641,7 +640,6 @@ describe('{{#get}} helper', function () {
         });
 
         it('should make separate API calls for different queries when enabled', async function () {
-            configUtils.set('optimization:getHelper:deduplication', true);
             locals = {root: {_locals: {}}, _queryCache: new Map()};
 
             // First call
@@ -663,8 +661,6 @@ describe('{{#get}} helper', function () {
         });
 
         it('should include member uuid in cache key', async function () {
-            configUtils.set('optimization:getHelper:deduplication', true);
-
             // Call with member A
             const localsA = {root: {_locals: {}}, _queryCache: new Map(), member: {uuid: 'member-a'}};
             await get.call(
@@ -686,7 +682,6 @@ describe('{{#get}} helper', function () {
         });
 
         it('should not cache failed API requests', async function () {
-            configUtils.set('optimization:getHelper:deduplication', true);
             locals = {root: {_locals: {}}, _queryCache: new Map()};
 
             // Set up stub to fail first, then succeed
@@ -712,7 +707,6 @@ describe('{{#get}} helper', function () {
         });
 
         it('should work without _queryCache in data', async function () {
-            configUtils.set('optimization:getHelper:deduplication', true);
             // No _queryCache in locals
             locals = {root: {_locals: {}}};
 
@@ -728,7 +722,6 @@ describe('{{#get}} helper', function () {
         });
 
         it('should deduplicate queries with same parameters in different order', async function () {
-            configUtils.set('optimization:getHelper:deduplication', true);
             locals = {root: {_locals: {}}, _queryCache: new Map()};
 
             // First call
@@ -750,7 +743,6 @@ describe('{{#get}} helper', function () {
         });
 
         it('should handle concurrent identical requests', async function () {
-            configUtils.set('optimization:getHelper:deduplication', true);
             locals = {root: {_locals: {}}, _queryCache: new Map()};
 
             let resolveBrowse;
@@ -788,7 +780,6 @@ describe('{{#get}} helper', function () {
         });
 
         it('should not reuse the same response object instance across renders', async function () {
-            configUtils.set('optimization:getHelper:deduplication', true);
             locals = {root: {_locals: {}}, _queryCache: new Map()};
 
             await get.call(

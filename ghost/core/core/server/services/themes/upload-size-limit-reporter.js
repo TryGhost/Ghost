@@ -20,7 +20,7 @@ const reportThemeUploadSizeLimitError = (err, {themeName = null, zip = null} = {
     const eventName = `theme_upload.${SIZE_LIMIT_EVENTS_BY_CODE[err.code]}`;
     const errorDetails = err.errorDetails || {};
     const eventDetails = {
-        theme_name: themeName,
+        name: themeName,
         entry_name: errorDetails.entryName ?? null,
         observed_bytes: errorDetails.observedBytes,
         limit_bytes: errorDetails.limitBytes,
@@ -28,7 +28,8 @@ const reportThemeUploadSizeLimitError = (err, {themeName = null, zip = null} = {
     };
 
     logging.error({
-        system: {event: eventName, ...eventDetails},
+        event: {name: eventName},
+        theme: eventDetails,
         err
     }, `${THEME_UPLOAD_LOG_KEY} ${err.message}`);
 

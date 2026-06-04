@@ -41,7 +41,8 @@ function createLlmsHandler({llmsService, config, settingsCache}) {
             const eventDetails = {route: req.path};
 
             logging.error({
-                system: {event: eventName, ...eventDetails},
+                event: {name: eventName},
+                url: {path: req.path},
                 err
             }, `${LLMS_LOG_KEY} ${err.message}`);
 

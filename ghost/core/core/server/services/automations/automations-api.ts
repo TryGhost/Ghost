@@ -6,10 +6,12 @@ import type {DatabaseSync} from 'node:sqlite';
 import {z} from 'zod';
 import {createFakeDatabaseAutomationsRepository} from './fake-database-automations-repository';
 import type {
+    AutomationsRepository,
     EditAutomationData
 } from './automations-repository';
 
 const domainEvents = require('@tryghost/domain-events');
+const labs = require('../../../shared/labs');
 const StartAutomationsPollEvent = require('./events/start-automations-poll-event');
 const temporaryFakeAutomationsDatabase = require('./temporary-fake-database');
 
@@ -236,6 +238,30 @@ function throwValidationError(message: string, property?: string): never {
 
 export function requestPoll() {
     domainEvents.dispatch(StartAutomationsPollEvent.create());
+}
+
+type TriggerOptions = Parameters<AutomationsRepository['trigger']>[0] & {
+    event: 'member_sign_up';
+};
+export async function trigger(options: TriggerOptions) {
+    if (options.event !== 'member_sign_up') {
+        throw new errors.IncorrectUsageError({
+            message: 'Member signup is the only supported event right now. More may be added later'
+        });
+    }
+
+    const isAllowedEnvironment = (
+        process.env.NODE_ENV === 'development' ||
+        process.env.NODE_ENV?.startsWith('testing')
+    );
+    const shouldTrigger = isAllowedEnvironment && labs.isSet('automations');
+    if (!shouldTrigger) {
+        return;
+    }
+
+    await repository.trigger(options);
+
+    requestPoll();
 }
 
 export function _resetTestDatabase() {

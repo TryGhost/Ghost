@@ -290,17 +290,10 @@ describe('Update Check', function () {
             assert.equal(targetNotification.type, 'info');
             assert.equal(targetNotification.message, notification.messages[0].content);
 
-            sinon.assert.calledTwice(usersBrowseStub);
-
-            // Second (non statistical) call should be looking for admin users with an 'active' status only
-            assert.deepEqual(usersBrowseStub.args[1][0], {
-                limit: 'all',
-                include: ['roles'],
-                filter: 'status:active',
-                context: {
-                    internal: true
-                }
-            });
+            // users.browse is called once here, for stats reporting: this
+            // notification is non-alert, so the admin-lookup query in the
+            // alert branch never runs.
+            sinon.assert.calledOnce(usersBrowseStub);
         });
 
         it('preserves custom flag value from update check response', async function () {
@@ -364,7 +357,15 @@ describe('Update Check', function () {
                 });
 
             const notificationsAPIAddStub = sinon.stub().resolves();
-            const sendEmailStub = sinon.stub().resolves();
+            const emailSendStub = sinon.stub().resolves();
+            const usersBrowseStub = sinon.stub().resolves({
+                users: [{
+                    email: 'jbloggs@example.com',
+                    roles: [{
+                        name: 'Owner'
+                    }]
+                }]
+            });
 
             const updateCheckService = new UpdateCheckService({
                 api: {
@@ -373,14 +374,7 @@ describe('Update Check', function () {
                         edit: settingsStub
                     },
                     users: {
-                        browse: sinon.stub().resolves({
-                            users: [{
-                                email: 'jbloggs@example.com',
-                                roles: [{
-                                    name: 'Owner'
-                                }]
-                            }]
-                        })
+                        browse: usersBrowseStub
                     },
                     posts: {
                         browse: sinon.stub().resolves()
@@ -396,16 +390,24 @@ describe('Update Check', function () {
                     ghostVersion: '0.8.0'
                 },
                 request: request,
-                sendEmail: sendEmailStub
+                notificationEmailService: {send: emailSendStub}
             });
 
             await updateCheckService.check();
 
-            sinon.assert.called(sendEmailStub);
-            assert.equal(sendEmailStub.args[0][0].to, 'jbloggs@example.com');
-            assert.equal(sendEmailStub.args[0][0].subject, 'Action required: Critical alert from Ghost instance http://127.0.0.1:2369');
-            assert.equal(sendEmailStub.args[0][0].html, '<p>Critical message. Upgrade your site!</p>');
-            assert.equal(sendEmailStub.args[0][0].forceTextContent, true);
+            sinon.assert.calledOnce(emailSendStub);
+            assert.deepEqual(emailSendStub.args[0][0].to, ['jbloggs@example.com']);
+            assert.equal(emailSendStub.args[0][0].subject, 'Action required: Critical alert from Ghost instance http://127.0.0.1:2369');
+            assert.equal(emailSendStub.args[0][0].content, '<p>Critical message. Upgrade your site!</p>');
+
+            // users.browse is called twice: once for stats reporting, once for
+            // the admin lookup. The second call pushes the role filter into
+            // NQL so the DB returns only Owner/Administrator users.
+            sinon.assert.calledTwice(usersBrowseStub);
+            assert.deepEqual(usersBrowseStub.args[1][0], {
+                filter: 'status:active+roles.name:[Owner,Administrator]',
+                context: {internal: true}
+            });
 
             sinon.assert.calledOnce(notificationsAPIAddStub);
             assert.equal(notificationsAPIAddStub.args[0][0].notifications.length, 1);

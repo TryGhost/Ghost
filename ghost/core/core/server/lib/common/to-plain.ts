@@ -8,14 +8,18 @@
  *
  *   const data = toPlain(post);
  *   urlService.facade.getUrlForResource({...data, type: 'posts'}, ...)
- *
- * @template T
- * @param {T | {toJSON(): T}} modelOrObj
- * @returns {T}
  */
-module.exports = function toPlain(modelOrObj) {
-    if (modelOrObj && typeof modelOrObj.toJSON === 'function') {
-        return modelOrObj.toJSON();
-    }
-    return modelOrObj;
+type JsonSerializable<T> = {
+    toJSON(): T;
 };
+
+const isJsonSerializable = <T>(modelOrObj: T | JsonSerializable<T>): modelOrObj is JsonSerializable<T> => !!(
+    modelOrObj
+    && typeof modelOrObj === 'object'
+    && 'toJSON' in modelOrObj
+    && typeof modelOrObj.toJSON === 'function'
+);
+
+export const toPlain = <T>(modelOrObj: T | JsonSerializable<T>): T => (
+    isJsonSerializable(modelOrObj) ? modelOrObj.toJSON() : modelOrObj
+);

@@ -6,10 +6,16 @@ const {
 
 const DEFAULT_BUDGET = 5 * 1024 * 1024;
 const TRUNCATION_FOOTER = '\n_Truncated after 5 MiB. Use `/llms.txt` for the complete index of older public content._\n';
+const RECENT_POSTS_FOOTER = '\n_Includes the latest 500 public posts. Use `/llms.txt` for the complete index of older public content._\n';
 const FULL_PAGE_SIZE = 100;
+const FULL_POST_LIMIT = 500;
 
 function createLlmsService({settingsCache, labs, config, urlServiceFacade, urlUtils, models, routing, api, fullTxtBudget}) {
-    const BUDGET = (fullTxtBudget || DEFAULT_BUDGET) - Buffer.byteLength(TRUNCATION_FOOTER, 'utf8');
+    const footerBudget = Math.max(
+        Buffer.byteLength(TRUNCATION_FOOTER, 'utf8'),
+        Buffer.byteLength(RECENT_POSTS_FOOTER, 'utf8')
+    );
+    const BUDGET = (fullTxtBudget || DEFAULT_BUDGET) - footerBudget;
     function isEnabled() {
         return labs.isSet('llmsTxt') && !settingsCache.get('is_private') && settingsCache.get('llms_enabled') !== false;
     }
@@ -67,46 +73,55 @@ function createLlmsService({settingsCache, labs, config, urlServiceFacade, urlUt
 
         let output = header;
         let wasTruncated = false;
+        let wasLimited = false;
 
         const pageResult = await appendBoundedSectionPaginated(output, 'Pages', 'page');
         output = pageResult.output;
         wasTruncated = pageResult.wasTruncated;
 
         if (!wasTruncated) {
-            const postResult = await appendBoundedSectionPaginated(output, 'Posts', 'post');
+            const postResult = await appendBoundedSectionPaginated(output, 'Posts', 'post', {maxEntries: FULL_POST_LIMIT});
             output = postResult.output;
             wasTruncated = postResult.wasTruncated;
+            wasLimited = postResult.wasLimited;
         }
 
         if (wasTruncated) {
             output += TRUNCATION_FOOTER;
+        } else if (wasLimited) {
+            output += RECENT_POSTS_FOOTER;
         }
 
         return output.trimEnd() + '\n';
     }
 
-    async function appendBoundedSectionPaginated(prefix, heading, type) {
+    async function appendBoundedSectionPaginated(prefix, heading, type, {maxEntries = null} = {}) {
         const headingBlock = `${prefix}## ${heading}\n`;
 
         if (Buffer.byteLength(headingBlock, 'utf8') > BUDGET) {
-            return {output: prefix, wasTruncated: true};
+            return {output: prefix, wasTruncated: true, wasLimited: false};
         }
 
         let output = headingBlock;
+        let outputBytes = Buffer.byteLength(output, 'utf8');
         let wasTruncated = false;
+        let wasLimited = false;
         let page = 1;
         let hasMore = true;
+        let entriesRendered = 0;
 
-        while (hasMore && !wasTruncated) {
+        while (hasMore && !wasTruncated && !wasLimited) {
             const result = await fetchFullEntries(type, page);
             const entries = result.entries;
             hasMore = result.hasMore;
 
             if (!entries.length && page === 1) {
                 const emptySection = `${output}_No public content available._\n`;
+                const emptySectionBytes = Buffer.byteLength(emptySection, 'utf8');
 
-                if (Buffer.byteLength(emptySection, 'utf8') <= BUDGET) {
+                if (emptySectionBytes <= BUDGET) {
                     output = emptySection;
+                    outputBytes = emptySectionBytes;
                 } else {
                     wasTruncated = true;
                 }
@@ -115,21 +130,33 @@ function createLlmsService({settingsCache, labs, config, urlServiceFacade, urlUt
             }
 
             for (const entry of entries) {
-                const formattedEntry = buildFullEntry(entry);
-                const candidate = `${output}${formattedEntry}\n`;
+                if (maxEntries && entriesRendered >= maxEntries) {
+                    wasLimited = true;
+                    break;
+                }
 
-                if (Buffer.byteLength(candidate, 'utf8') > BUDGET) {
+                const formattedEntry = buildFullEntry(entry);
+                const entryBlock = `${formattedEntry}\n`;
+                const entryBytes = Buffer.byteLength(entryBlock, 'utf8');
+
+                if (outputBytes + entryBytes > BUDGET) {
                     wasTruncated = true;
                     break;
                 }
 
-                output = candidate;
+                output = `${output}${entryBlock}`;
+                outputBytes += entryBytes;
+                entriesRendered += 1;
+            }
+
+            if (maxEntries && entriesRendered >= maxEntries && hasMore) {
+                wasLimited = true;
             }
 
             page += 1;
         }
 
-        return {output, wasTruncated};
+        return {output, wasTruncated, wasLimited};
     }
 
     function buildHeader() {
@@ -199,8 +226,7 @@ function createLlmsService({settingsCache, labs, config, urlServiceFacade, urlUt
             limit: 'all',
             order: type === 'post' ? 'published_at desc' : 'id asc',
             filter: `status:published+visibility:public+type:${type}`,
-            columns: ['id', 'title', 'slug', 'custom_excerpt', 'plaintext', 'published_at', 'type'],
-            withRelated: ['tags', 'authors']
+            columns: ['id', 'title', 'slug', 'custom_excerpt', 'plaintext', 'published_at', 'type']
         });
 
         const entries = page.data.map((model) => {
@@ -222,8 +248,7 @@ function createLlmsService({settingsCache, labs, config, urlServiceFacade, urlUt
             page: pageNum,
             order: type === 'post' ? 'published_at desc' : 'id asc',
             filter: `status:published+visibility:public+type:${type}`,
-            columns: ['id', 'title', 'slug', 'html', 'plaintext', 'custom_excerpt', 'updated_at', 'published_at', 'created_at', 'type'],
-            withRelated: ['tags', 'authors']
+            columns: ['id', 'title', 'slug', 'html', 'plaintext', 'custom_excerpt', 'updated_at', 'published_at', 'created_at', 'type']
         });
 
         const entries = result.data.map((model) => {

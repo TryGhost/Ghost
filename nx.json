@@ -1,58 +1,59 @@
 {
-    "$schema": "./node_modules/nx/schemas/nx-schema.json",
-    "namedInputs": {
-        "default": [
-            "{projectRoot}/**/*",
-            "sharedGlobals"
-        ],
-        "sharedGlobals": [
-            "{workspaceRoot}/.npmrc",
-            "{workspaceRoot}/ghost/tsconfig.json",
-            "{workspaceRoot}/package.json",
-            "{workspaceRoot}/pnpm-workspace.yaml",
-            "{workspaceRoot}/pnpm-lock.yaml"
-        ]
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "namedInputs": {
+    "default": [
+      "{projectRoot}/**/*",
+      "sharedGlobals"
+    ],
+    "sharedGlobals": [
+      "{workspaceRoot}/.npmrc",
+      "{workspaceRoot}/ghost/tsconfig.json",
+      "{workspaceRoot}/package.json",
+      "{workspaceRoot}/pnpm-workspace.yaml",
+      "{workspaceRoot}/pnpm-lock.yaml"
+    ]
+  },
+  "parallel": 4,
+  "useDaemonProcess": false,
+  "targetDefaults": {
+    "build": {
+      "dependsOn": [
+        "^build"
+      ],
+      "inputs": [
+        {
+          "env": "GHOST_CDN_URL"
+        },
+        "default",
+        "^default"
+      ],
+      "outputs": [
+        "{projectRoot}/dist",
+        "{projectRoot}/es",
+        "{projectRoot}/types",
+        "{projectRoot}/umd"
+      ],
+      "cache": true
     },
-    "parallel": 4,
-    "useDaemonProcess": false,
-    "targetDefaults": {
-        "build": {
-            "dependsOn": [
-                "^build"
-            ],
-            "inputs": [
-                {
-                    "env": "GHOST_CDN_URL"
-                },
-                "default",
-                "^default"
-            ],
-            "outputs": [
-                "{projectRoot}/dist",
-                "{projectRoot}/es",
-                "{projectRoot}/types",
-                "{projectRoot}/umd"
-            ],
-            "cache": true
-        },
-        "lint": {
-            "cache": true
-        },
-        "test": {
-            "cache": true
-        },
-        "test:unit": {
-            "cache": true,
-            "dependsOn": [
-                "build"
-            ]
-        },
-        "dev": {
-            "dependsOn": [
-                "^dev"
-            ],
-            "continuous": true
-        }
+    "lint": {
+      "cache": true
     },
-    "cacheDirectory": ".nxcache"
+    "test": {
+      "cache": true
+    },
+    "test:unit": {
+      "cache": true,
+      "dependsOn": [
+        "build"
+      ]
+    },
+    "dev": {
+      "dependsOn": [
+        "^dev"
+      ],
+      "continuous": true
+    }
+  },
+  "cacheDirectory": ".nxcache",
+  "analytics": false
 }

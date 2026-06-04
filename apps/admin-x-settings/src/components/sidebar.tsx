@@ -54,18 +54,17 @@ const Sidebar: React.FC = () => {
     const searchInputRef = useRef<HTMLInputElement | null>(null);
     const {isAnyTextFieldFocused} = useFocusContext();
     const {settings, config} = useGlobalData();
-    const [hasTipsAndDonations, isPrivate] = getSettingValues(settings, ['donations_enabled', 'is_private']) as [string, boolean];
+    const [hasTipsAndDonations, isPrivate, paidMembersEnabled] = getSettingValues(settings, ['donations_enabled', 'is_private', 'paid_members_enabled']) as [string, boolean, boolean];
     const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
     const hasAutomations = useFeatureFlag('automations');
-    const hasGiftSubscriptions = useFeatureFlag('giftSubscriptions');
     const visibleMembershipSearchKeywords = React.useMemo(() => [
         membershipSearchKeywords.access,
         membershipSearchKeywords.tiers,
         membershipSearchKeywords.portal,
-        ...(hasGiftSubscriptions && hasStripeEnabled ? [membershipSearchKeywords.giftSubscriptions] : []),
+        ...(paidMembersEnabled ? [membershipSearchKeywords.giftSubscriptions] : []),
         ...(hasAutomations ? [] : [membershipSearchKeywords.memberEmails]),
         membershipSearchKeywords.tips
-    ].flat(), [hasAutomations, hasGiftSubscriptions, hasStripeEnabled]);
+    ].flat(), [hasAutomations, paidMembersEnabled]);
 
     // Focus in on search field when pressing "/"
     useEffect(() => {
@@ -154,11 +153,11 @@ const Sidebar: React.FC = () => {
         <div className='ml-auto flex w-full flex-col pt-0 tablet:max-w-[240px]' data-testid="sidebar">
             <div className='sticky top-0 flex content-stretch items-end tablet:h-20 tablet:bg-grey-50 xl:h-20 dark:bg-grey-950 dark:tablet:bg-[#101114]'>
                 <div className='relative w-full'>
-                    <Icon className='absolute top-3 left-3 z-10' colorClass='text-grey-500' name='magnifying-glass' size='sm' />
+                    <Icon className='absolute top-2.5 left-3 z-10' colorClass='text-grey-500' name='magnifying-glass' size='sm' />
                     <TextField
                         autoComplete="off"
                         autoCorrect="off"
-                        className='mr-8 flex h-10 w-full items-center rounded-lg border border-transparent bg-white px-[33px] py-1.5 text-[14px] shadow-[0_0_1px_rgba(21,23,26,0.25),0_1px_3px_rgba(0,0,0,0.03),0_8px_10px_-12px_rgba(0,0,0,.1)] transition-colors hover:shadow-sm focus:border-green focus:bg-white focus:shadow-[0_0_0_2px_rgba(48,207,67,0.25)] tablet:mr-0 dark:border-transparent dark:bg-grey-900 dark:text-white dark:placeholder:text-grey-800 dark:focus:border-green dark:focus:bg-grey-950'
+                        className='mr-8 flex h-9 w-full items-center rounded-full border border-transparent bg-white px-[33px] py-1.5 shadow-[0_0_1px_rgba(21,23,26,0.25),0_1px_3px_rgba(0,0,0,0.03),0_8px_10px_-12px_rgba(0,0,0,.1)] transition-colors hover:shadow-sm focus:border-green focus:bg-white focus:shadow-[0_0_0_2px_rgba(48,207,67,0.25)] tablet:mr-0 dark:border-transparent dark:bg-grey-900 dark:text-white dark:placeholder:text-grey-800 dark:focus:border-green dark:focus:bg-grey-950'
                         containerClassName='w-100'
                         inputRef={searchInputRef}
                         placeholder="Search settings"
@@ -172,7 +171,7 @@ const Sidebar: React.FC = () => {
                     {filter ? <Button className='absolute top-3 right-14 p-1 tablet:right-3' icon='close' iconColorClass='text-grey-700 w-[10px]! h-[10px]!' size='sm' unstyled onClick={() => {
                         setFilter('');
                         searchInputRef.current?.focus();
-                    }} /> : <div className='absolute top-[9px] -right-1/2 hidden rounded border border-grey-400 bg-white px-1.5 py-0.5 text-2xs font-semibold tracking-wider text-grey-600 uppercase shadow-[0px_1px_#CED4D9] tablet:visible! tablet:right-3 tablet:block! dark:border-grey-800 dark:bg-grey-900 dark:text-grey-500 dark:shadow-[0px_1px_#626D79]'>/</div>}
+                    }} /> : <div className='absolute top-[7px] -right-1/2 hidden rounded border border-grey-400 bg-white px-1.5 py-0.5 text-2xs font-semibold tracking-wider text-grey-600 uppercase shadow-[0px_1px_#CED4D9] tablet:visible! tablet:right-3 tablet:block! dark:border-grey-800 dark:bg-grey-900 dark:text-grey-500 dark:shadow-[0px_1px_#626D79]'>/</div>}
                 </div>
             </div>
             <nav className={navClasses} id='admin-x-settings-sidebar'>
@@ -220,7 +219,7 @@ const Sidebar: React.FC = () => {
                     />
                     <NavItem icon='bills' keywords={membershipSearchKeywords.tiers} navid='tiers' title="Tiers" onClick={handleSectionClick} />
                     <NavItem icon='portal' keywords={membershipSearchKeywords.portal} navid='portal' title="Signup portal" onClick={handleSectionClick} />
-                    {hasGiftSubscriptions && hasStripeEnabled && <NavItem icon='gift' keywords={membershipSearchKeywords.giftSubscriptions} navid='gift-subscriptions' title="Gift subscriptions" onClick={handleSectionClick} />}
+                    {paidMembersEnabled && <NavItem icon='gift' keywords={membershipSearchKeywords.giftSubscriptions} navid='gift-subscriptions' title="Gift subscriptions" onClick={handleSectionClick} />}
                     {!hasAutomations && <NavItem icon='mailplus' keywords={membershipSearchKeywords.memberEmails} navid='memberemails' title="Welcome emails" onClick={handleSectionClick} />}
                     {hasTipsAndDonations && hasStripeEnabled && <NavItem icon='piggybank' keywords={membershipSearchKeywords.tips} navid='tips-and-donations' title="Tips & donations" onClick={handleSectionClick} />}
                     <NavItem icon='email' keywords={emailSearchKeywords.newslettersNavMenu} navid={['enable-newsletters', 'default-recipients', 'newsletters', 'mailgun']} title="Newsletters" onClick={handleSectionClick} />

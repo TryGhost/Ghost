@@ -1,8 +1,7 @@
 const sinon = require('sinon');
 
 const StartAutomationsPollEvent = require('../../../../../core/server/services/automations/events/start-automations-poll-event');
-
-const automationsModulePath = require.resolve('../../../../../core/server/services/automations');
+const AutomationsService = require('../../../../../core/server/services/automations/service');
 
 describe('automations service', function () {
     let automations;
@@ -11,9 +10,7 @@ describe('automations service', function () {
     let initOptions;
 
     beforeEach(function () {
-        // Reset the module-level singleton between tests.
-        delete require.cache[automationsModulePath];
-        automations = require(automationsModulePath);
+        automations = new AutomationsService();
         domainEvents = {
             dispatch: sinon.stub(),
             subscribe: sinon.stub()

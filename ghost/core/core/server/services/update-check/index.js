@@ -11,6 +11,7 @@ const databaseInfo = require('../../data/db/info');
 const request = require('@tryghost/request');
 const ghostVersion = require('@tryghost/version');
 const UpdateCheckService = require('./update-check-service');
+const {NotificationEmailService} = require('../notifications/notification-email');
 
 /**
  * Initializes and triggers update check
@@ -34,8 +35,14 @@ module.exports = async ({
         }
     }
 
-    const {GhostMailer} = require('../mail');
-    const ghostMailer = new GhostMailer();
+    const mailService = require('../mail');
+    const ghostMailer = new mailService.GhostMailer();
+
+    const notificationEmailService = new NotificationEmailService({
+        mailer: ghostMailer,
+        generateEmailContent: mailService.utils.generateContent,
+        getSiteUrl: () => urlUtils.urlFor('home', true)
+    });
 
     const updateChecker = new UpdateCheckService({
         api: {
@@ -66,7 +73,7 @@ module.exports = async ({
             rethrowErrors
         },
         request,
-        sendEmail: ghostMailer.send.bind(ghostMailer)
+        notificationEmailService
     });
 
     await updateChecker.check();

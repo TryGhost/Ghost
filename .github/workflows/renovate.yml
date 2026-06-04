@@ -48,6 +48,11 @@ permissions:
 
 jobs:
   renovate:
+    # Never run on forks: both `schedule` and `workflow_dispatch` can fire on a
+    # fork that has Actions enabled, and this job mints the Renovate GitHub App
+    # token. Matches the fork guard used across the rest of the repo's
+    # privileged workflows.
+    if: github.repository == 'TryGhost/Ghost'
     runs-on: ubuntu-latest
     timeout-minutes: 45
 

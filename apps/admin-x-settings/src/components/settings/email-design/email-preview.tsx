@@ -43,7 +43,7 @@ const EnvelopeHeader: React.FC<{
     }
 
     return (
-        <div className="flex flex-col justify-center gap-1 border-b border-grey-200 bg-white p-6 text-sm text-grey-700">
+        <div className="flex flex-col justify-center gap-1 border-b border-grey-200 bg-white p-6 text-grey-700">
             {senderDisplay && (
                 <div>
                     <span className="font-semibold text-grey-900">From:</span> {senderDisplay}
@@ -139,7 +139,7 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({settings, accentColor, publi
             <EnvelopeHeader replyToEmail={replyToEmail} senderEmail={senderEmail} senderName={senderName} showRecipientLine={showRecipientLine} showSubjectLine={showSubjectLine} subject={subject} />
 
             <div
-                className="min-h-0 w-full flex-1 overflow-y-auto text-sm"
+                className="min-h-0 w-full flex-1 overflow-y-auto"
                 style={{backgroundColor: colors.backgroundColor}}
             >
                 <div className="px-[7rem]" style={{backgroundColor: colors.headerBackgroundColor === 'transparent' ? undefined : colors.headerBackgroundColor}}>
