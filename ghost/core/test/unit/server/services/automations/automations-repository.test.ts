@@ -173,6 +173,15 @@ describe('automations repository', function () {
         return result;
     };
 
+    const getStepsByRunId = (runId: SQLInputValue) => (
+        database!.prepare(`
+            SELECT *
+            FROM automation_run_steps
+            WHERE automation_run_id = ?
+            ORDER BY created_at, id
+        `).all(runId)
+    );
+
     const getLockedStep = async (stepId: SQLInputValue): Promise<AutomationStepToRun> => {
         const {steps} = await repo.fetchAndLockSteps(10);
         const step = steps.find(candidate => candidate.id === stepId);
@@ -656,7 +665,92 @@ describe('automations repository', function () {
     });
 
     describe('markStepTerminal', function () {
-        // TODO: Tests
+        it('marks a locked step with a terminal status and clears the lock', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const action = getActionByIndex(automation.id, 0);
+            const run = insertRun(automation.id);
+            const stepRow = insertStep(run.id, action.revision_id, {
+                ready_at: new Date(Date.now() - 1000).toISOString()
+            });
+            const step = await getLockedStep(stepRow.id);
+            const lockedStep = getStepById(step.id);
+            assert.equal(typeof lockedStep.started_at, 'string');
+
+            const beforeMark = Date.now();
+            const didMark = await repo.markStepTerminal(step, 'member unsubscribed');
+            const afterMark = Date.now();
+
+            assert.equal(didMark, true);
+
+            const marked = getStepById(step.id);
+            assert.equal(marked.status, 'member unsubscribed');
+            assert.equal(marked.locked_by, null);
+            assert.equal(marked.locked_at, null);
+            assert.equal(marked.started_at, lockedStep.started_at);
+            assert.equal(marked.ready_at, lockedStep.ready_at);
+            assert.equal(marked.step_attempts, 1);
+            assert.equal(getStepsByRunId(run.id).length, 1);
+            const markedFinishedAt = marked.finished_at;
+            assert(typeof markedFinishedAt === 'string');
+            assert(new Date(markedFinishedAt).getTime() >= beforeMark);
+            assert(new Date(markedFinishedAt).getTime() <= afterMark);
+        });
+
+        it('does not overwrite a step that is no longer pending', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const action = getActionByIndex(automation.id, 0);
+            const run = insertRun(automation.id);
+            const stepRow = insertStep(run.id, action.revision_id, {
+                ready_at: new Date(Date.now() - 1000).toISOString()
+            });
+            const step = await getLockedStep(stepRow.id);
+            const finishedAt = new Date(Date.now() - 500).toISOString();
+
+            database!.prepare(`
+                UPDATE automation_run_steps
+                SET status = 'finished',
+                    finished_at = ?,
+                    locked_at = NULL
+                WHERE id = ?
+            `).run(finishedAt, step.id);
+
+            const didMark = await repo.markStepTerminal(step, 'member unsubscribed');
+
+            assert.equal(didMark, false);
+
+            const unchanged = getStepById(step.id);
+            assert.equal(unchanged.status, 'finished');
+            assert.equal(unchanged.finished_at, finishedAt);
+            assert.equal(unchanged.locked_by, step.locked_by);
+            assert.equal(unchanged.locked_at, null);
+        });
+
+        it('does not mark a step terminal if the step lock has been taken by another runner', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const action = getActionByIndex(automation.id, 0);
+            const run = insertRun(automation.id);
+            const stepRow = insertStep(run.id, action.revision_id, {
+                ready_at: new Date(Date.now() - 1000).toISOString()
+            });
+            const step = await getLockedStep(stepRow.id);
+            const otherLockedAt = new Date().toISOString();
+
+            database.prepare(`
+                UPDATE automation_run_steps
+                SET locked_by = ?,
+                    locked_at = ?,
+                    updated_at = ?
+                WHERE id = ?
+            `).run('other-runner-lock', otherLockedAt, otherLockedAt, stepRow.id);
+
+            const beforeMark = getStepById(stepRow.id);
+            const didMark = await repo.markStepTerminal(step, 'member unsubscribed');
+
+            assert.equal(didMark, false);
+
+            const unchanged = getStepById(stepRow.id);
+            assert.deepEqual(unchanged, beforeMark);
+        });
     });
 
     describe('retryStep', function () {

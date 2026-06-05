@@ -460,8 +460,12 @@ function markStepTerminal(
     step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
     status: AutomationStepTerminalStatus
 ): boolean {
-    // TODO: Implement
-    return false;
+    const nowString = new Date().toISOString();
+    return updateStep(database, step, {
+        status,
+        finished_at: nowString,
+        updated_at: nowString
+    });
 }
 
 function retryStep(
