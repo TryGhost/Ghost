@@ -90,4 +90,18 @@ module.exports.scheduleRecurringJobs = () => {
         job: require('path').resolve(__dirname, 'run-update-check.js'),
         name: 'update-check'
     });
+
+    // CDN-fronted admin routes don't reach Ghost, so the admin-controller
+    // trigger path can't fire. Run a one-off through the same job-runner the
+    // daily cron uses — same worker code path, observable in the job system.
+    if (config.get('updateCheck:forceUpdate')) {
+        jobsService.addJob({
+            job: require('path').resolve(__dirname, 'run-update-check.js'),
+            name: 'update-check-boot',
+            data: {
+                forceUpdate: true,
+                updateCheckUrl: config.get('updateCheck:url')
+            }
+        });
+    }
 };
