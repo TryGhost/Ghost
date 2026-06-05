@@ -245,17 +245,10 @@ function trigger(database: DatabaseSync, {
         (id, created_at, updated_at, automation_id, member_id, member_email) VALUES
         (:id, :created_at, :updated_at, :automation_id, :member_id, :member_email)
     `).run(run);
-    database.prepare(`
-        INSERT INTO automation_run_steps
-        (id, created_at, updated_at, automation_run_id, automation_action_revision_id, ready_at) VALUES
-        (:id, :created_at, :updated_at, :automation_run_id, :automation_action_revision_id, :ready_at)
-    `).run({
-        id: ObjectId().toHexString(),
-        created_at: nowString,
-        updated_at: nowString,
-        automation_run_id: run.id,
-        automation_action_revision_id: firstAction.automation_action_revision_id,
-        ready_at: readyAt.toISOString()
+    insertRunStep(database, {
+        automationRunId: run.id,
+        automationActionRevisionId: firstAction.automation_action_revision_id,
+        readyAt
     });
 }
 
