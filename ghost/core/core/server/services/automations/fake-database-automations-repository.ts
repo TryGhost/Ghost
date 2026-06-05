@@ -259,6 +259,31 @@ function trigger(database: DatabaseSync, {
     });
 }
 
+function insertRunStep(database: DatabaseSync, {
+    automationRunId,
+    automationActionRevisionId,
+    readyAt
+}: Readonly<{
+    automationRunId: string;
+    automationActionRevisionId: string;
+    readyAt: Date;
+}>): void {
+    const nowString = new Date().toISOString();
+
+    database.prepare(`
+        INSERT INTO automation_run_steps
+        (id, created_at, updated_at, automation_run_id, automation_action_revision_id, ready_at) VALUES
+        (:id, :created_at, :updated_at, :automation_run_id, :automation_action_revision_id, :ready_at)
+    `).run({
+        id: ObjectId().toHexString(),
+        created_at: nowString,
+        updated_at: nowString,
+        automation_run_id: automationRunId,
+        automation_action_revision_id: automationActionRevisionId,
+        ready_at: readyAt.toISOString()
+    });
+}
+
 function fetchAndLockSteps(database: DatabaseSync, limit: number): {
     steps: AutomationStepToRun[],
     nextStepReadyAt: null | Date;
@@ -451,8 +476,51 @@ function finishStepAndEnqueueNext(
     database: DatabaseSync,
     step: Pick<AutomationStepToRun, 'id' | 'locked_by' | 'action_id' | 'automation_run_id'>
 ): Date | null {
-    // TODO: Implement
-    return null;
+    const didFinish = markStepTerminal(database, step, 'finished');
+    if (!didFinish) {
+        return null;
+    }
+
+    const next = findNextActionRevision(database, step.action_id);
+
+    if (!next) {
+        return null;
+    }
+
+    const now = new Date();
+    const nextReadyAt = getReadyAtForAction(next, now);
+
+    insertRunStep(database, {
+        automationRunId: step.automation_run_id,
+        automationActionRevisionId: next.automation_action_revision_id,
+        readyAt: nextReadyAt
+    });
+
+    return nextReadyAt;
+}
+
+function findNextActionRevision(database: DatabaseSync, sourceActionId: string): NextActionRevisionRow | null {
+    const row = database.prepare(`
+        SELECT
+            action.id AS action_id,
+            revision.id AS automation_action_revision_id,
+            action.type AS type,
+            revision.wait_hours AS wait_hours
+        FROM automation_action_edges edge
+        INNER JOIN automation_actions action ON action.id = edge.target_action_id
+        INNER JOIN automation_action_revisions revision ON revision.action_id = action.id
+        WHERE edge.source_action_id = ?
+            AND action.deleted_at IS NULL
+            AND revision.created_at = (
+                SELECT MAX(created_at)
+                FROM automation_action_revisions
+                WHERE action_id = action.id
+            )
+        ORDER BY revision.created_at DESC, revision.id DESC
+        LIMIT 1
+    `).get(sourceActionId) as NextActionRevisionRow | undefined;
+
+    return row ?? null;
 }
 
 function markStepTerminal(

@@ -91,6 +91,24 @@ describe('automations repository', function () {
         return result;
     };
 
+    const getLatestActionRevisionByActionId = (actionId: SQLInputValue) => {
+        const result = database!.prepare(`
+            SELECT
+                automation_actions.id AS action_id,
+                automation_actions.type AS action_type,
+                automation_action_revisions.id AS revision_id,
+                automation_action_revisions.wait_hours AS wait_hours
+            FROM automation_actions
+            INNER JOIN automation_action_revisions ON automation_action_revisions.action_id = automation_actions.id
+            WHERE automation_actions.id = ?
+                AND automation_actions.deleted_at IS NULL
+            ORDER BY automation_action_revisions.created_at DESC, automation_action_revisions.id DESC
+            LIMIT 1
+        `).get(actionId);
+        assert(result, 'Expected action revision to exist');
+        return result;
+    };
+
     const insertRun = (automationId: string) => {
         const now = new Date().toISOString();
         const run = {
@@ -661,7 +679,185 @@ describe('automations repository', function () {
     });
 
     describe('finishStepAndEnqueueNext', function () {
-        // TODO: Tests
+        it('finishes a locked step and enqueues the next action revision', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const action = getActionByIndex(automation.id, 0);
+            const run = insertRun(automation.id);
+            const stepRow = insertStep(run.id, action.revision_id, {
+                ready_at: new Date(Date.now() - 1000).toISOString()
+            });
+            const step = await getLockedStep(stepRow.id);
+            const lockedStep = getStepById(step.id);
+
+            const beforeFinish = Date.now();
+            const nextReadyAt = await repo.finishStepAndEnqueueNext(step);
+            const afterFinish = Date.now();
+
+            assert(nextReadyAt);
+            assert(nextReadyAt.getTime() >= beforeFinish);
+            assert(nextReadyAt.getTime() <= afterFinish);
+
+            const finished = getStepById(stepRow.id);
+            assert.equal(finished.status, 'finished');
+            assert.equal(finished.locked_by, null);
+            assert.equal(finished.locked_at, null);
+            assert.equal(finished.started_at, lockedStep.started_at);
+            assert.equal(finished.ready_at, stepRow.ready_at);
+            assert.equal(finished.step_attempts, 1);
+            assert.equal(typeof finished.finished_at, 'string');
+
+            const allSteps = getStepsByRunId(run.id);
+            assert.equal(allSteps.length, 2);
+            const nextStep = allSteps.find(candidate => candidate.id !== stepRow.id);
+            assert(nextStep);
+            const nextAction = getActionByIndex(automation.id, 1);
+            assert.equal(nextStep.automation_run_id, run.id);
+            assert.equal(nextStep.automation_action_revision_id, nextAction.revision_id);
+            assert.equal(nextStep.status, 'pending');
+            assert.equal(nextStep.ready_at, nextReadyAt.toISOString());
+        });
+
+        it('uses wait hours when the next action is a wait action', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const sendEmailAction = getActionByIndex(automation.id, 1);
+            assert.equal(sendEmailAction.action_type, 'send_email');
+            const run = insertRun(automation.id);
+            const stepRow = insertStep(run.id, sendEmailAction.revision_id, {
+                ready_at: new Date(Date.now() - 1000).toISOString()
+            });
+            const step = await getLockedStep(stepRow.id);
+
+            const beforeFinish = Date.now();
+            const nextReadyAt = await repo.finishStepAndEnqueueNext(step);
+            const afterFinish = Date.now();
+
+            assert(nextReadyAt);
+            assert(nextReadyAt.getTime() >= beforeFinish + (72 * HOUR_MS));
+            assert(nextReadyAt.getTime() <= afterFinish + (72 * HOUR_MS));
+        });
+
+        it('does not enqueue a duplicate next step when called again with the same locked step', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const action = getActionByIndex(automation.id, 0);
+            const run = insertRun(automation.id);
+            const stepRow = insertStep(run.id, action.revision_id, {
+                ready_at: new Date(Date.now() - 1000).toISOString()
+            });
+            const step = await getLockedStep(stepRow.id);
+
+            const firstNextReadyAt = await repo.finishStepAndEnqueueNext(step);
+            const secondNextReadyAt = await repo.finishStepAndEnqueueNext(step);
+
+            assert(firstNextReadyAt);
+            assert.equal(secondNextReadyAt, null);
+
+            const allSteps = getStepsByRunId(run.id);
+            assert.equal(allSteps.length, 2);
+
+            const finished = getStepById(stepRow.id);
+            assert.equal(finished.status, 'finished');
+            assert.equal(finished.locked_by, null);
+            assert.equal(finished.locked_at, null);
+        });
+
+        it('does not finish or enqueue if the step lock has been taken by another runner', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const action = getActionByIndex(automation.id, 0);
+            const run = insertRun(automation.id);
+            const stepRow = insertStep(run.id, action.revision_id, {
+                ready_at: new Date(Date.now() - 1000).toISOString()
+            });
+            const step = await getLockedStep(stepRow.id);
+            const otherLockedAt = new Date().toISOString();
+
+            database.prepare(`
+                UPDATE automation_run_steps
+                SET locked_by = ?,
+                    locked_at = ?,
+                    updated_at = ?
+                WHERE id = ?
+            `).run('other-runner-lock', otherLockedAt, otherLockedAt, stepRow.id);
+
+            const nextReadyAt = await repo.finishStepAndEnqueueNext(step);
+
+            assert.equal(nextReadyAt, null);
+
+            const unchanged = getStepById(stepRow.id);
+            assert.equal(unchanged.status, 'pending');
+            assert.equal(unchanged.locked_by, 'other-runner-lock');
+            assert.equal(unchanged.locked_at, otherLockedAt);
+            assert.equal(unchanged.finished_at, null);
+
+            const allSteps = getStepsByRunId(run.id);
+            assert.equal(allSteps.length, 1);
+        });
+
+        it('returns null and does not enqueue when there is no next action', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const lastAction = getActionByIndex(automation.id, 3);
+            const run = insertRun(automation.id);
+            const stepRow = insertStep(run.id, lastAction.revision_id, {
+                ready_at: new Date(Date.now() - 1000).toISOString()
+            });
+            const step = await getLockedStep(stepRow.id);
+
+            const nextReadyAt = await repo.finishStepAndEnqueueNext(step);
+
+            assert.equal(nextReadyAt, null);
+
+            const finished = getStepById(stepRow.id);
+            assert.equal(finished.status, 'finished');
+            assert.equal(finished.locked_by, null);
+            assert.equal(finished.locked_at, null);
+
+            const allSteps = getStepsByRunId(run.id);
+            assert.equal(allSteps.length, 1);
+        });
+
+        it('enqueues the latest revision of the next action', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const sendEmailAction = getActionByIndex(automation.id, 1);
+            const run = insertRun(automation.id);
+            const stepRow = insertStep(run.id, sendEmailAction.revision_id, {
+                ready_at: new Date(Date.now() - 1000).toISOString()
+            });
+            const step = await getLockedStep(stepRow.id);
+            const nextActionBeforeEdit = getActionByIndex(automation.id, 2);
+
+            const waitAction = automation.actions.find(action => action.id === nextActionBeforeEdit.action_id);
+            assert(waitAction);
+            const updatedWaitAction = changeWaitHours(waitAction, 96);
+
+            await repo.edit(automation.id, {
+                status: automation.status,
+                actions: automation.actions.map((action) => {
+                    if (action.id === updatedWaitAction.id) {
+                        return updatedWaitAction;
+                    }
+                    return action;
+                }),
+                edges: automation.edges
+            });
+
+            const updatedNextAction = getLatestActionRevisionByActionId(updatedWaitAction.id);
+            assert.equal(updatedNextAction.wait_hours, 96);
+
+            const beforeFinish = Date.now();
+            const nextReadyAt = await repo.finishStepAndEnqueueNext(step);
+            const afterFinish = Date.now();
+
+            assert(nextReadyAt);
+            assert(nextReadyAt.getTime() >= beforeFinish + (96 * HOUR_MS));
+            assert(nextReadyAt.getTime() <= afterFinish + (96 * HOUR_MS));
+
+            const allSteps = getStepsByRunId(run.id);
+            assert.equal(allSteps.length, 2);
+
+            const nextStep = allSteps.find(candidate => candidate.id !== stepRow.id);
+            assert(nextStep);
+            assert.equal(nextStep.automation_action_revision_id, updatedNextAction.revision_id);
+            assert.equal(nextStep.ready_at, nextReadyAt.toISOString());
+        });
     });
 
     describe('markStepTerminal', function () {
