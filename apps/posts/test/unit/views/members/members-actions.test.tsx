@@ -1,10 +1,11 @@
-import MembersActions from '@src/views/members/components/members-actions';
+import MembersActions, {exportMembers, getMembersExportFileName} from '@src/views/members/components/members-actions';
 import React from 'react';
-import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {render, screen} from '@testing-library/react';
 
 const importModalPropsRef: {current: Record<string, unknown> | null} = {current: null};
-const {mockUseLocation, mockUseNavigate} = vi.hoisted(() => ({
+const {mockBlobDownloadFromEndpoint, mockUseLocation, mockUseNavigate} = vi.hoisted(() => ({
+    mockBlobDownloadFromEndpoint: vi.fn(),
     mockUseLocation: vi.fn(),
     mockUseNavigate: vi.fn()
 }));
@@ -12,6 +13,10 @@ const {mockUseLocation, mockUseNavigate} = vi.hoisted(() => ({
 vi.mock('@tryghost/admin-x-framework', () => ({
     useLocation: mockUseLocation,
     useNavigate: mockUseNavigate
+}));
+
+vi.mock('@tryghost/admin-x-framework/helpers', () => ({
+    blobDownloadFromEndpoint: mockBlobDownloadFromEndpoint
 }));
 
 vi.mock('@src/views/members/components/bulk-action-modals', () => ({
@@ -64,10 +69,41 @@ const renderMembersActions = (props: Partial<React.ComponentProps<typeof Members
 };
 
 describe('MembersActions', () => {
+    afterEach(() => {
+        vi.useRealTimers();
+    });
+
     beforeEach(() => {
         importModalPropsRef.current = null;
+        mockBlobDownloadFromEndpoint.mockReset();
         setLocation('/members');
         mockUseNavigate.mockReturnValue(vi.fn());
+    });
+
+    it('builds a members export filename with the slugified site title', () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-06-02T12:00:00.000Z'));
+
+        expect(getMembersExportFileName('My Publication')).toBe('my-publication.ghost.members.2026-06-02.csv');
+    });
+
+    it('falls back to ghost when the members export site title is missing', () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-06-02T12:00:00.000Z'));
+
+        expect(getMembersExportFileName(null)).toBe('ghost.members.2026-06-02.csv');
+    });
+
+    it('exports members with the site title in the CSV filename', async () => {
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date('2026-06-02T12:00:00.000Z'));
+
+        await exportMembers(undefined, '', 'My Publication');
+
+        expect(mockBlobDownloadFromEndpoint).toHaveBeenCalledWith(
+            '/members/upload/?limit=all',
+            'my-publication.ghost.members.2026-06-02.csv'
+        );
     });
 
     it('opens the import modal on the import route', () => {
