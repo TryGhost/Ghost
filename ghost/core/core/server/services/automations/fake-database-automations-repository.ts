@@ -13,7 +13,7 @@ import type {
     EditAutomationData,
     Page
 } from './automations-repository';
-import type {ExclusifyUnion} from 'type-fest';
+import type {ExclusifyUnion, ReadonlyDeep} from 'type-fest';
 
 const HOUR_MS = 60 * 60 * 1000;
 
@@ -241,7 +241,7 @@ function findFirstActionRevision(database: DatabaseSync, memberStatus: 'free' | 
 }
 
 function getReadyAtForAction(
-    action: Pick<NextActionRevisionRow, 'action_id' | 'type' | 'wait_hours'>,
+    action: ReadonlyDeep<Pick<NextActionRevisionRow, 'action_id' | 'type' | 'wait_hours'>>,
     now: Readonly<Date>
 ): Date {
     switch (action.type) {
