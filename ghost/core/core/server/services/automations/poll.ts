@@ -1,5 +1,10 @@
-import type {AutomationsRepository} from './automations-repository';
-import {MAX_STEPS_PER_BATCH} from './constants';
+import type {AutomationStepToRun, AutomationsRepository} from './automations-repository';
+import logging from '@tryghost/logging';
+import errors from '@tryghost/errors';
+import {MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES, MEMBER_WELCOME_EMAIL_SLUGS} from '../member-welcome-emails/constants';
+import {MAX_ATTEMPTS, MAX_STEPS_PER_BATCH, RETRY_DELAY_MS} from './constants';
+// @ts-expect-error Models currently lack type definitions.
+import {Member} from '../../models';
 
 type MemberWelcomeEmailService = {
     init: () => unknown;
@@ -23,6 +28,11 @@ type MemberWelcomeEmailService = {
     };
 };
 
+type MemberModel = {
+    get(key: 'name'): string | null;
+    get(key: 'email' | 'status' | 'uuid'): string;
+};
+
 type PollOptions = {
     automationsApi: Pick<AutomationsRepository,
         'fetchAndLockSteps' |
@@ -32,6 +42,155 @@ type PollOptions = {
     >;
     enqueueAnotherPollAt: (date: Readonly<Date>) => unknown;
     memberWelcomeEmailService: MemberWelcomeEmailService;
+};
+
+const slugToMemberStatus = new Map<string, 'free' | 'paid'>(
+    Object.entries(MEMBER_WELCOME_EMAIL_SLUGS).map(([status, slug]) => [slug as string, status as 'free' | 'paid'])
+);
+
+const markMaxAttemptsExceeded = async (automationsApi: PollOptions['automationsApi'], step: AutomationStepToRun): Promise<void> => {
+    await automationsApi.markStepTerminal(step, 'failed');
+    logging.warn({
+        system: {
+            event: 'automations.poll.max_attempts',
+            step_id: step.id
+        }
+    }, `[AUTOMATIONS] Step ${step.id} exceeded max attempts`);
+};
+
+const handleStepExecutionFailure = async ({
+    automationsApi,
+    err,
+    step
+}: Readonly<{
+    automationsApi: PollOptions['automationsApi'];
+    err: unknown;
+    step: AutomationStepToRun;
+}>): Promise<Date | null> => {
+    logging.error({
+        err,
+        system: {
+            event: 'automations.poll.step_execution_failed',
+            step_id: step.id
+        }
+    }, `[AUTOMATIONS] Failed to execute automation step ${step.id}`);
+
+    if (step.step_attempts < MAX_ATTEMPTS) {
+        const retryAt = new Date(Date.now() + RETRY_DELAY_MS);
+        const didRetry = await automationsApi.retryStep(step, retryAt);
+        if (didRetry) {
+            return retryAt;
+        }
+    } else {
+        await markMaxAttemptsExceeded(automationsApi, step);
+    }
+
+    return null;
+};
+
+const processStep = async ({
+    automationsApi,
+    memberWelcomeEmailService,
+    step
+}: Readonly<Pick<PollOptions, 'automationsApi' | 'memberWelcomeEmailService'> & {
+    step: AutomationStepToRun;
+}>): Promise<Date | null> => {
+    if (step.automation_status !== 'active') {
+        await automationsApi.markStepTerminal(step, 'automation disabled');
+        return null;
+    }
+
+    if (step.step_attempts > MAX_ATTEMPTS) {
+        await markMaxAttemptsExceeded(automationsApi, step);
+        return null;
+    }
+
+    // NOTE: This will change once we support additional automation triggers.
+    const memberStatus = slugToMemberStatus.get(step.automation_slug);
+    if (!memberStatus) {
+        logging.error({
+            system: {
+                event: 'automations.poll.unknown_slug',
+                slug: step.automation_slug,
+                step_id: step.id
+            }
+        }, `[AUTOMATIONS] Unknown automation slug: ${step.automation_slug}`);
+        await automationsApi.markStepTerminal(step, 'failed');
+        return null;
+    }
+
+    if (!step.member_id) {
+        await automationsApi.markStepTerminal(step, 'member unsubscribed');
+        return null;
+    }
+
+    const member = await Member.findOne({id: step.member_id}) as MemberModel | null;
+
+    if (!member) {
+        // It's possible that the member was deleted between the time the step was fetched and now, though it's
+        // unlikely. That's why we log a warning, not an error.
+        logging.warn({
+            system: {
+                event: 'automations.poll.member_missing',
+                member_id: step.member_id,
+                step_id: step.id
+            }
+        }, `[AUTOMATIONS] Member ${step.member_id} for step ${step.id} doesn't exist`);
+        await automationsApi.markStepTerminal(step, 'member unsubscribed');
+        return null;
+    }
+
+    const eligibleStatuses = MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES[memberStatus] as readonly string[];
+    if (!eligibleStatuses.includes(member.get('status') ?? '')) {
+        await automationsApi.markStepTerminal(step, 'member changed status');
+        return null;
+    }
+
+    let nextReadyAt: Date | null = null;
+
+    try {
+        switch (step.type) {
+        case 'wait': {
+            nextReadyAt = await automationsApi.finishStepAndEnqueueNext(step);
+            break;
+        }
+        case 'send_email': {
+            memberWelcomeEmailService.init();
+            await memberWelcomeEmailService.api.sendAutomationEmail({
+                email: {
+                    designSettingId: step.email_design_setting_id,
+                    lexical: step.email_lexical,
+                    senderEmail: step.email_sender_email,
+                    senderName: step.email_sender_name,
+                    senderReplyTo: step.email_sender_reply_to,
+                    subject: step.email_subject
+                },
+                member: {
+                    email: member.get('email'),
+                    name: member.get('name'),
+                    uuid: member.get('uuid')
+                },
+                memberStatus
+            });
+            nextReadyAt = await automationsApi.finishStepAndEnqueueNext(step);
+            break;
+        }
+        default: {
+            const _exhaustive: never = step;
+            throw new errors.InternalServerError({
+                message: `Unexpected automation step type ${_exhaustive}`
+            });
+        }
+        }
+    } catch (err) {
+        return await handleStepExecutionFailure({
+            automationsApi,
+            err,
+            step
+        });
+    }
+
+    return nextReadyAt;
 };
 
 const dateMin = (a: Date | null, b: Date | null): Date | null => {
@@ -72,7 +231,24 @@ export const poll = async ({
         nextPollAt = dateMin(nextPollAt, new Date());
     }
 
-    // TODO(NY-1286) Implement polling. For now, this function is a skeleton.
+    await Promise.all(steps.map(async (step) => {
+        try {
+            const stepNextPollAt = await processStep({
+                automationsApi,
+                memberWelcomeEmailService,
+                step
+            });
+            nextPollAt = dateMin(nextPollAt, stepNextPollAt);
+        } catch (err) {
+            logging.error({
+                err,
+                system: {
+                    event: 'automations.poll.step_failed'
+                }
+            }, '[AUTOMATIONS] Failed to process automation step');
+            return;
+        }
+    }));
 
     if (nextPollAt) {
         enqueueAnotherPollAt(nextPollAt);
