@@ -1,11 +1,24 @@
 import sinon from 'sinon';
 
 import {poll} from '../../../../../core/server/services/automations/poll';
+import type {AutomationStepToRun} from '../../../../../core/server/services/automations/automations-repository';
+import {MEMBER_WELCOME_EMAIL_SLUGS} from '../../../../../core/server/services/member-welcome-emails/constants';
 // @ts-expect-error Models currently lack type definitions.
 import {Member} from '../../../../../core/server/models';
 
 const MAX_STEPS_PER_BATCH = 100;
 
+type WaitStep = Extract<AutomationStepToRun, {type: 'wait'}>;
+type StepSpecificField =
+    | 'type'
+    | 'wait_hours'
+    | 'email_subject'
+    | 'email_lexical'
+    | 'email_sender_name'
+    | 'email_sender_email'
+    | 'email_sender_reply_to'
+    | 'email_design_setting_id';
+type StepBase = Omit<AutomationStepToRun, StepSpecificField>;
 type PollOptions = Parameters<typeof poll>[0];
 type AutomationsApi = PollOptions['automationsApi'];
 
@@ -54,6 +67,33 @@ function buildMember(attrs: Partial<MemberFixture> = {}) {
             return values[key];
         }
     };
+}
+
+function buildStep(attrs: Partial<StepBase> = {}): StepBase {
+    return {
+        id: `step-${Math.random()}`,
+        locked_by: 'lock-id',
+        automation_run_id: 'run-id',
+        automation_id: 'automation-id',
+        automation_slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
+        automation_status: 'active',
+        member_id: 'member-id',
+        member_email: 'member@example.com',
+        action_id: 'action-id',
+        automation_action_revision_id: 'revision-id',
+        ready_at: new Date(),
+        step_attempts: 1,
+        ...attrs
+    } satisfies StepBase;
+}
+
+function buildWaitStep(attrs: Partial<WaitStep> = {}): WaitStep {
+    return {
+        ...buildStep(attrs),
+        type: 'wait',
+        wait_hours: 24,
+        ...attrs
+    } satisfies WaitStep;
 }
 
 describe('automations poll', function () {
@@ -119,5 +159,23 @@ describe('automations poll', function () {
 
         sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, nextStepReadyAt);
         sinon.assert.notCalled(memberWelcomeEmailService.init);
+    });
+
+    it('enqueues another immediate poll when the batch is full', async function () {
+        const beforePoll = new Date();
+        automationsApi.fetchAndLockSteps.resolves({
+            steps: Array.from({length: MAX_STEPS_PER_BATCH}, () => buildWaitStep()),
+            nextStepReadyAt: null
+        });
+
+        await poll(options);
+
+        const afterPoll = new Date();
+
+        sinon.assert.calledWith(options.enqueueAnotherPollAt, sinon.match(date => (
+            date instanceof Date &&
+            date >= beforePoll &&
+            date <= afterPoll
+        )));
     });
 });
