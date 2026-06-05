@@ -173,6 +173,13 @@ describe('automations repository', function () {
         return result;
     };
 
+    const getLockedStep = async (stepId: SQLInputValue): Promise<AutomationStepToRun> => {
+        const {steps} = await repo.fetchAndLockSteps(10);
+        const step = steps.find(candidate => candidate.id === stepId);
+        assert(step);
+        return step;
+    };
+
     const assertSingleBatchLock = (steps: AutomationStepToRun[]): string => {
         const lockId = steps[0]?.locked_by;
         assert.equal(typeof lockId, 'string');
@@ -653,6 +660,60 @@ describe('automations repository', function () {
     });
 
     describe('retryStep', function () {
-        // TODO: Tests
+        it('reschedules a locked step for retry and clears the lock', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const action = getActionByIndex(automation.id, 0);
+            const run = insertRun(automation.id);
+            const stepRow = insertStep(run.id, action.revision_id, {
+                ready_at: new Date(Date.now() - 1000).toISOString()
+            });
+            const step = await getLockedStep(stepRow.id);
+            const retryAt = new Date(Date.now() + 60 * 1000);
+
+            const beforeRetry = Date.now();
+            const didRetry = await repo.retryStep(step, retryAt);
+            const afterRetry = Date.now();
+
+            assert.equal(didRetry, true);
+
+            const retried = getStepById(step.id);
+            assert.equal(retried.status, 'pending');
+            assert.equal(retried.ready_at, retryAt.toISOString());
+            assert.equal(retried.started_at, null);
+            assert.equal(retried.finished_at, null);
+            assert.equal(retried.locked_by, null);
+            assert.equal(retried.locked_at, null);
+            assert.equal(retried.step_attempts, 1);
+            const retriedUpdatedAt = retried.updated_at;
+            assert(typeof retriedUpdatedAt === 'string');
+            assert(new Date(retriedUpdatedAt).getTime() >= beforeRetry);
+            assert(new Date(retriedUpdatedAt).getTime() <= afterRetry);
+        });
+
+        it('does not retry a locked step that is no longer pending', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const action = getActionByIndex(automation.id, 0);
+            const run = insertRun(automation.id);
+            const stepRow = insertStep(run.id, action.revision_id, {
+                ready_at: new Date(Date.now() - 1000).toISOString()
+            });
+            const step = await getLockedStep(stepRow.id);
+            const finishedAt = new Date(Date.now() - 500).toISOString();
+
+            database!.prepare(`
+                UPDATE automation_run_steps
+                SET status = 'finished',
+                    finished_at = ?
+                WHERE id = ?
+            `).run(finishedAt, step.id);
+
+            const beforeRetry = getStepById(step.id);
+            const didRetry = await repo.retryStep(step, new Date(Date.now() + 1000));
+
+            assert.equal(didRetry, false);
+
+            const unchanged = getStepById(step.id);
+            assert.deepEqual(unchanged, beforeRetry);
+        });
     });
 });

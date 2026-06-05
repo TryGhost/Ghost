@@ -469,8 +469,14 @@ function retryStep(
     step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
     retryAt: Readonly<Date>
 ): boolean {
-    // TODO: Implement
-    return false;
+    const nowString = new Date().toISOString();
+    return updateStep(database, step, {
+        status: 'pending',
+        started_at: null,
+        finished_at: null,
+        ready_at: retryAt.toISOString(),
+        updated_at: nowString
+    });
 }
 
 function getReadyAtForAction(
@@ -495,6 +501,56 @@ function getReadyAtForAction(
         });
     }
     }
+}
+
+/**
+ * Update a step. Returns whether the update succeeded.
+ *
+ * Should only update locked steps to avoid race conditions. Imagine the following scenario:
+ *
+ * 1. A step is locked by Worker A.
+ * 2. The lock expires.
+ * 3. The step is locked by Worker B.
+ * 4. Worker A finishes its work.
+ *
+ * Worker A has lost its lock, so it shouldn't be updating the step any more.
+ */
+function updateStep(
+    database: DatabaseSync,
+    step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
+    attrs: {
+        status: string;
+        started_at?: string | null;
+        finished_at?: string | null;
+        ready_at?: string;
+        updated_at: string;
+    }
+): boolean {
+    const result = database.prepare(`
+        UPDATE automation_run_steps
+        SET status = :status,
+            updated_at = :updated_at,
+            started_at = CASE WHEN :set_started_at THEN :started_at ELSE started_at END,
+            finished_at = CASE WHEN :set_finished_at THEN :finished_at ELSE finished_at END,
+            ready_at = CASE WHEN :set_ready_at THEN :ready_at ELSE ready_at END,
+            locked_by = NULL,
+            locked_at = NULL
+        WHERE id = :id
+            AND status = 'pending'
+            AND locked_by = :locked_by
+    `).run({
+        id: step.id,
+        locked_by: step.locked_by,
+        status: attrs.status,
+        updated_at: attrs.updated_at,
+        set_started_at: attrs.started_at === undefined ? 0 : 1,
+        started_at: attrs.started_at ?? null,
+        set_finished_at: attrs.finished_at === undefined ? 0 : 1,
+        finished_at: attrs.finished_at ?? null,
+        set_ready_at: attrs.ready_at === undefined ? 0 : 1,
+        ready_at: attrs.ready_at ?? null
+    }) as unknown as {changes: number};
+    return result.changes >= 1;
 }
 
 function loadAutomation(database: DatabaseSync, automationId: string): AutomationRow | null {
