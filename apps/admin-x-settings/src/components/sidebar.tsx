@@ -9,6 +9,7 @@ import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/
 
 import {searchKeywords as advancedSearchKeywords} from './settings/advanced/advanced-settings';
 import {searchKeywords as emailSearchKeywords} from './settings/email/email-settings';
+import {searchKeywords as emailsSearchKeywords} from './settings/email/emails';
 import {searchKeywords as generalSearchKeywords} from './settings/general/general-settings';
 import {searchKeywords as growthSearchKeywords} from './settings/growth/growth-settings';
 import {searchKeywords as membershipSearchKeywords} from './settings/membership/membership-settings';
@@ -204,7 +205,7 @@ const Sidebar: React.FC = () => {
                 </SettingNavSection>
 
                 {/* Membership settings */}
-                <SettingNavSection isVisible={checkVisible([...visibleMembershipSearchKeywords, ...emailSearchKeywords.newslettersNavMenu])} title="Membership">
+                <SettingNavSection isVisible={checkVisible([...visibleMembershipSearchKeywords, ...(hasAutomations ? emailsSearchKeywords.emailsNavMenu : emailSearchKeywords.newslettersNavMenu)])} title="Membership">
                     <NavItem
                         icon='key'
                         keywords={membershipSearchKeywords.access}
@@ -222,7 +223,10 @@ const Sidebar: React.FC = () => {
                     {paidMembersEnabled && <NavItem icon='gift' keywords={membershipSearchKeywords.giftSubscriptions} navid='gift-subscriptions' title="Gift subscriptions" onClick={handleSectionClick} />}
                     {!hasAutomations && <NavItem icon='mailplus' keywords={membershipSearchKeywords.memberEmails} navid='memberemails' title="Welcome emails" onClick={handleSectionClick} />}
                     {hasTipsAndDonations && hasStripeEnabled && <NavItem icon='piggybank' keywords={membershipSearchKeywords.tips} navid='tips-and-donations' title="Tips & donations" onClick={handleSectionClick} />}
-                    <NavItem icon='email' keywords={emailSearchKeywords.newslettersNavMenu} navid={['enable-newsletters', 'default-recipients', 'newsletters', 'mailgun']} title="Newsletters" onClick={handleSectionClick} />
+                    {hasAutomations
+                        ? <NavItem icon='email' keywords={emailsSearchKeywords.emailsNavMenu} navid={['enable-newsletters', 'default-recipients', 'emails', 'mailgun']} title="Emails" onClick={handleSectionClick} />
+                        : <NavItem icon='email' keywords={emailSearchKeywords.newslettersNavMenu} navid={['enable-newsletters', 'default-recipients', 'newsletters', 'mailgun']} title="Newsletters" onClick={handleSectionClick} />
+                    }
                 </SettingNavSection>
 
                 {/* Growth */}
