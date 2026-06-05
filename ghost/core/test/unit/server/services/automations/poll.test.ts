@@ -4,6 +4,8 @@ import {poll} from '../../../../../core/server/services/automations/poll';
 // @ts-expect-error Models currently lack type definitions.
 import {Member} from '../../../../../core/server/models';
 
+const MAX_STEPS_PER_BATCH = 100;
+
 type PollOptions = Parameters<typeof poll>[0];
 type AutomationsApi = PollOptions['automationsApi'];
 
@@ -98,6 +100,24 @@ describe('automations poll', function () {
 
         sinon.assert.notCalled(automationsApi.fetchAndLockSteps);
         sinon.assert.notCalled(options.enqueueAnotherPollAt);
+        sinon.assert.notCalled(memberWelcomeEmailService.init);
+    });
+
+    it('does nothing when no steps are ready', async function () {
+        await poll(options);
+
+        sinon.assert.calledOnceWithExactly(automationsApi.fetchAndLockSteps, MAX_STEPS_PER_BATCH);
+        sinon.assert.notCalled(options.enqueueAnotherPollAt);
+        sinon.assert.notCalled(memberWelcomeEmailService.init);
+    });
+
+    it('enqueues the next future poll when no steps are ready', async function () {
+        const nextStepReadyAt = new Date(Date.now() + 60 * 1000);
+        automationsApi.fetchAndLockSteps.resolves({steps: [], nextStepReadyAt});
+
+        await poll(options);
+
+        sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, nextStepReadyAt);
         sinon.assert.notCalled(memberWelcomeEmailService.init);
     });
 });

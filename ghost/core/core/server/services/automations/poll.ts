@@ -1,4 +1,5 @@
 import type {AutomationsRepository} from './automations-repository';
+import {MAX_STEPS_PER_BATCH} from './constants';
 
 type MemberWelcomeEmailService = {
     init: () => unknown;
@@ -46,5 +47,13 @@ export const poll = async ({
         return;
     }
 
+    const {steps, nextStepReadyAt} = await automationsApi.fetchAndLockSteps(MAX_STEPS_PER_BATCH);
+
+    let nextPollAt = nextStepReadyAt;
+
     // TODO(NY-1286) Implement polling. For now, this function is a skeleton.
+
+    if (nextPollAt) {
+        enqueueAnotherPollAt(nextPollAt);
+    }
 };
