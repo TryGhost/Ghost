@@ -25,28 +25,30 @@ const buildSendEmailAction = (dataOverrides = {}) => ({
     }
 });
 
-describe('automations API edit validation', function () {
-    const automationId = ObjectId().toHexString();
+describe('automations API', function () {
+    describe('edit', function () {
+        const automationId = ObjectId().toHexString();
 
-    it('rejects activating an automation with an empty email subject', async function () {
-        await assert.rejects(
-            automationsApi.edit(automationId, {
-                status: 'active',
-                actions: [buildSendEmailAction({email_subject: ''})],
-                edges: []
-            }),
-            /subject line/
-        );
-    });
+        it('rejects activating an automation with an empty email subject', async function () {
+            await assert.rejects(
+                automationsApi.edit(automationId, {
+                    status: 'active',
+                    actions: [buildSendEmailAction({email_subject: ''})],
+                    edges: []
+                }),
+                /subject line/
+            );
+        });
 
-    it('rejects activating an automation with an empty email body', async function () {
-        await assert.rejects(
-            automationsApi.edit(automationId, {
-                status: 'active',
-                actions: [buildSendEmailAction({email_lexical: EMPTY_EMAIL_LEXICAL})],
-                edges: []
-            }),
-            /body/
-        );
+        it('rejects activating an automation with an empty email body', async function () {
+            await assert.rejects(
+                automationsApi.edit(automationId, {
+                    status: 'active',
+                    actions: [buildSendEmailAction({email_lexical: EMPTY_EMAIL_LEXICAL})],
+                    edges: []
+                }),
+                /body/
+            );
+        });
     });
 });
