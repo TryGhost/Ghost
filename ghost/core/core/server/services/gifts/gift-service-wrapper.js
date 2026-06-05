@@ -32,7 +32,6 @@ class GiftServiceWrapper {
         const membersService = require('../members');
         const tiersService = require('../tiers');
         const staffService = require('../staff');
-        const labsService = require('../../../shared/labs');
         const DomainEvents = require('@tryghost/domain-events');
         const logging = require('@tryghost/logging');
         const {SubscriptionActivatedEvent} = require('../../../shared/events');
@@ -83,8 +82,7 @@ class GiftServiceWrapper {
 
         this.controller = new GiftController({
             service: this.service,
-            tiersService,
-            labsService: labsService
+            tiersService
         });
 
         DomainEvents.subscribe(SubscriptionActivatedEvent, async (event) => {
@@ -132,10 +130,8 @@ class GiftServiceWrapper {
             }
         });
 
-        if (labsService.isSet('giftSubscriptions')) {
-            jobs.scheduleGiftCleanupJob();
-            jobs.scheduleGiftReminderJob();
-        }
+        jobs.scheduleGiftCleanupJob();
+        jobs.scheduleGiftReminderJob();
 
         this.#initialized = true;
     }

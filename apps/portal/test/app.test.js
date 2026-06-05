@@ -194,7 +194,7 @@ describe('App', function () {
         app.state = {
             ...app.state,
             initStatus: 'success',
-            site: {...FixtureSite.singleTier.basic, labs: {giftSubscriptions: true}}
+            site: FixtureSite.singleTier.basic
         };
 
         await app.clickHandler({
@@ -221,7 +221,7 @@ describe('App', function () {
         app.state = {
             ...app.state,
             initStatus: 'success',
-            site: {...FixtureSite.singleTier.basic, labs: {giftSubscriptions: true}}
+            site: FixtureSite.singleTier.basic
         };
         app.fetchGiftRedemptionData = vi.fn(({token}) => {
             return token === 'first-token' ? firstRequest.promise : secondRequest.promise;
@@ -274,7 +274,7 @@ describe('App', function () {
         });
         app.state = {
             ...app.state,
-            site: {...FixtureSite.singleTier.basic, labs: {giftSubscriptions: true}},
+            site: FixtureSite.singleTier.basic,
             member: FixtureMember.free
         };
         app.fetchGiftRedemptionData = vi.fn(({token}) => {

@@ -9,13 +9,15 @@ import {fireEvent, render, screen, waitFor, within} from '@testing-library/react
 // hooks) are out of scope here. The stub exposes the seed props and a save button
 // so we can assert the canvas wiring (open → seed → onSave → draft → publish).
 vi.mock('@src/views/Automations/components/email-modal/email-content-modal', () => ({
-    default: ({initialSubject, initialLexical, onClose, onSave}: {
+    default: ({initialMode, initialSubject, initialLexical, onClose, onSave}: {
+        initialMode?: 'edit' | 'preview';
         initialSubject: string;
         initialLexical: string;
         onClose: () => void;
         onSave: (data: {subject: string; lexical: string}) => void;
     }) => (
         <div data-testid='email-content-modal'>
+            <span data-testid='modal-initial-mode'>{initialMode ?? 'edit'}</span>
             <span data-testid='modal-initial-subject'>{initialSubject}</span>
             <span data-testid='modal-initial-lexical'>{initialLexical}</span>
             <button data-testid='modal-save' type='button' onClick={() => onSave({subject: 'Edited via modal', lexical: '{"root":{"children":[{"type":"paragraph"}]}}'})}>save</button>
@@ -30,6 +32,13 @@ const mockEditMutation = {
     isLoading: false,
     variables: undefined as {id: string; status: 'active' | 'inactive'} | undefined
 };
+const mockReactFlow = {
+    fitView: vi.fn(),
+    zoomIn: vi.fn(),
+    zoomOut: vi.fn(),
+    zoomTo: vi.fn()
+};
+let mockViewportZoom = 1;
 
 vi.mock('@tryghost/admin-x-framework/api/automations', async () => {
     const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/api/automations')>(
@@ -48,11 +57,14 @@ type StubEdge = {id: string; source: string; target: string; type?: string; data
 type StubReactFlowProps = {
     nodes: StubNode[];
     edges?: StubEdge[];
+    children?: React.ReactNode;
     className?: string;
     nodeTypes?: Record<string, React.ComponentType<NodeRenderProps>>;
     edgeTypes?: Record<string, React.ComponentType<EdgeRenderProps>>;
     onNodeClick?: (event: React.MouseEvent<HTMLDivElement>, node: StubNode) => void;
+    onNodeDoubleClick?: (event: React.MouseEvent<HTMLDivElement>, node: StubNode) => void;
     onPaneClick?: (event: React.MouseEvent<HTMLDivElement>) => void;
+    zoomOnDoubleClick?: boolean;
 };
 type NodeRenderProps = {id: string; data: Record<string, unknown>; type: string};
 type EdgeRenderProps = {id: string; data: Record<string, unknown>; sourceX: number; sourceY: number; targetX: number; targetY: number; sourcePosition: string; targetPosition: string};
@@ -61,8 +73,8 @@ vi.mock('@xyflow/react', async () => {
     const actual = await vi.importActual<typeof import('@xyflow/react')>('@xyflow/react');
     return {
         ...actual,
-        ReactFlow: ({nodes, edges, className, nodeTypes, edgeTypes, onNodeClick, onPaneClick}: StubReactFlowProps) => (
-            <div className={className} data-testid='react-flow-mock' onClick={onPaneClick}>
+        ReactFlow: ({nodes, edges, children, className, nodeTypes, edgeTypes, onNodeClick, onNodeDoubleClick, onPaneClick, zoomOnDoubleClick}: StubReactFlowProps) => (
+            <div className={className} data-testid='react-flow-mock' data-zoom-on-double-click={String(zoomOnDoubleClick)} onClick={onPaneClick}>
                 {nodes.map((node) => {
                     const nodeType = node.type ?? 'default';
                     const Custom = nodeTypes?.[nodeType];
@@ -74,6 +86,10 @@ vi.mock('@xyflow/react', async () => {
                             onClick={(event) => {
                                 event.stopPropagation();
                                 onNodeClick?.(event, node);
+                            }}
+                            onDoubleClick={(event) => {
+                                event.stopPropagation();
+                                onNodeDoubleClick?.(event, node);
                             }}
                         >
                             {Custom ? <Custom data={node.data ?? {}} id={node.id} type={nodeType} /> : null}
@@ -101,13 +117,28 @@ vi.mock('@xyflow/react', async () => {
                         );
                     })}
                 </ul>
+                {children}
             </div>
         ),
         Background: () => null,
+        Controls: ({children, className, showFitView, showInteractive, showZoom, style}: {children?: React.ReactNode; className?: string; showFitView?: boolean; showInteractive?: boolean; showZoom?: boolean; style?: React.CSSProperties}) => (
+            <div
+                className={className}
+                data-show-fit-view={String(showFitView)}
+                data-show-interactive={String(showInteractive)}
+                data-show-zoom={String(showZoom)}
+                data-testid='react-flow-controls'
+                style={style}
+            >
+                {children}
+            </div>
+        ),
         Handle: () => null,
         BaseEdge: () => null,
         EdgeLabelRenderer: ({children}: {children: React.ReactNode}) => <>{children}</>,
-        getSmoothStepPath: () => ['M 0 0', 0, 0]
+        getSmoothStepPath: () => ['M 0 0', 0, 0],
+        useReactFlow: () => mockReactFlow,
+        useViewport: () => ({x: 0, y: 0, zoom: mockViewportZoom})
     };
 });
 
@@ -160,6 +191,11 @@ describe('AutomationEditor', () => {
     beforeEach(() => {
         mockUseReadAutomation.mockReset();
         mockEditMutation.mutate.mockReset();
+        mockReactFlow.fitView.mockReset();
+        mockReactFlow.zoomIn.mockReset();
+        mockReactFlow.zoomOut.mockReset();
+        mockReactFlow.zoomTo.mockReset();
+        mockViewportZoom = 1;
         mockEditMutation.isLoading = false;
         mockEditMutation.variables = undefined;
     });
@@ -220,6 +256,84 @@ describe('AutomationEditor', () => {
         ]);
     });
 
+    it('renders styled canvas zoom controls without the interaction toggle', () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        expect(screen.getByTestId('react-flow-mock')).toHaveAttribute('data-zoom-on-double-click', 'false');
+        const controls = screen.getByTestId('react-flow-controls');
+        expect(controls).toHaveAttribute('data-show-interactive', 'false');
+        expect(controls).toHaveAttribute('data-show-fit-view', 'false');
+        expect(controls).toHaveAttribute('data-show-zoom', 'false');
+        expect(controls).toHaveStyle({bottom: '24px', left: '24px'});
+        expect(controls).toHaveClass('overflow-hidden', 'rounded-md');
+        expect(screen.getByRole('button', {name: 'Zoom out'})).toBeInTheDocument();
+        expect(screen.getByRole('button', {name: 'Zoom level 100%'})).toHaveTextContent('100%');
+        expect(screen.getByRole('button', {name: 'Zoom in'})).toBeInTheDocument();
+    });
+
+    it('animates viewport changes from the custom canvas controls', () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        fireEvent.click(screen.getByRole('button', {name: 'Zoom in'}));
+        fireEvent.click(screen.getByRole('button', {name: 'Zoom out'}));
+
+        expect(mockReactFlow.zoomIn).toHaveBeenCalledWith({duration: 180});
+        expect(mockReactFlow.zoomOut).toHaveBeenCalledWith({duration: 180});
+    });
+
+    it('opens a zoom preset menu from the canvas controls', () => {
+        mockViewportZoom = 0.75;
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        fireEvent.pointerDown(screen.getByRole('button', {name: 'Zoom level 75%'}), {button: 0, ctrlKey: false});
+
+        expect(screen.getByRole('menuitem', {name: '150%'})).toBeInTheDocument();
+        expect(screen.getByRole('menuitem', {name: '100%'})).toBeInTheDocument();
+        expect(screen.getByRole('menuitem', {name: '75%'})).toBeInTheDocument();
+        expect(screen.getByRole('menuitem', {name: '50%'})).toBeInTheDocument();
+        expect(screen.getByRole('menuitem', {name: '25%'})).toBeInTheDocument();
+        expect(screen.getByRole('menuitem', {name: 'Fit to view'})).toBeInTheDocument();
+        expect(screen.getByRole('menuitem', {name: '75%'}).querySelector('svg')).toBeInTheDocument();
+    });
+
+    it('animates zoom preset and fit view menu selections', () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        fireEvent.pointerDown(screen.getByRole('button', {name: 'Zoom level 100%'}), {button: 0, ctrlKey: false});
+        fireEvent.click(screen.getByRole('menuitem', {name: '150%'}));
+
+        expect(mockReactFlow.zoomTo).toHaveBeenCalledWith(1.5, {duration: 180});
+
+        fireEvent.pointerDown(screen.getByRole('button', {name: 'Zoom level 100%'}), {button: 0, ctrlKey: false});
+        fireEvent.click(screen.getByRole('menuitem', {name: 'Fit to view'}));
+
+        expect(mockReactFlow.fitView).toHaveBeenCalledWith({duration: 180});
+    });
+
     it('opens a read-only sidebar for the trigger step', () => {
         mockUseReadAutomation.mockReturnValue({
             data: {automations: [automationDetail]},
@@ -240,6 +354,129 @@ describe('AutomationEditor', () => {
         expect(within(sidebar).getByRole('checkbox', {name: 'Paid'})).not.toBeChecked();
         expect(within(sidebar).queryByRole('button', {name: /Delete/})).not.toBeInTheDocument();
         expect(within(sidebar).queryByRole('button', {name: /Edit/})).not.toBeInTheDocument();
+    });
+
+    it('opens step properties from the node right-click menu', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        const waitStep = screen.getByRole('button', {name: 'Wait: 1 day'});
+        fireEvent.contextMenu(waitStep, {clientX: 12, clientY: 12});
+        fireEvent.click(await screen.findByRole('menuitem', {name: 'Edit settings'}));
+
+        expect(waitStep).toHaveAttribute('aria-pressed', 'true');
+        const sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        expect(within(sidebar).getByRole('heading', {name: '1 day'})).toBeInTheDocument();
+        expect(within(sidebar).getByText('Wait for')).toBeInTheDocument();
+    });
+
+    it('selects a node after its context menu is dismissed', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        const waitStep = screen.getByRole('button', {name: 'Wait: 1 day'});
+        fireEvent.contextMenu(waitStep);
+        expect(await screen.findByRole('menuitem', {name: 'Edit settings'})).toBeInTheDocument();
+
+        fireEvent.keyDown(document, {key: 'Escape'});
+        await waitFor(() => {
+            expect(screen.queryByRole('menuitem', {name: 'Edit settings'})).not.toBeInTheDocument();
+        });
+
+        fireEvent.click(waitStep);
+
+        expect(waitStep).toHaveAttribute('aria-pressed', 'true');
+        expect(screen.getByRole('complementary', {name: 'Step details'})).toHaveAttribute('data-state', 'open');
+    });
+
+    it('shows delete in action node menus but not the trigger node menu', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        fireEvent.contextMenu(screen.getByRole('button', {name: 'Trigger: Member signs up'}));
+        expect(await screen.findByRole('menuitem', {name: 'Edit settings'})).toBeInTheDocument();
+        expect(screen.queryByRole('menuitem', {name: 'Delete'})).not.toBeInTheDocument();
+        fireEvent.keyDown(document, {key: 'Escape'});
+
+        const waitStep = screen.getByRole('button', {name: 'Wait: 1 day'});
+        fireEvent.contextMenu(waitStep);
+        fireEvent.click(await screen.findByRole('menuitem', {name: 'Delete'}));
+
+        expect(screen.queryByRole('button', {name: 'Wait: 1 day'})).not.toBeInTheDocument();
+        expect(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'})).toBeInTheDocument();
+    });
+
+    it('opens the email editor from the send email node right-click menu', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        const emailStep = screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'});
+        fireEvent.contextMenu(emailStep);
+        fireEvent.click(await screen.findByRole('menuitem', {name: 'Edit email body'}));
+
+        expect(await screen.findByTestId('email-content-modal')).toBeInTheDocument();
+        expect(screen.queryByRole('complementary', {name: 'Step details'})).not.toBeInTheDocument();
+        expect(emailStep).toHaveAttribute('aria-pressed', 'false');
+        expect(screen.getByTestId('modal-initial-mode')).toHaveTextContent('edit');
+        expect(screen.getByTestId('modal-initial-subject')).toHaveTextContent('Welcome to The Blueprint');
+        expect(screen.getByTestId('modal-initial-lexical')).toHaveTextContent('{"root":{"children":[]}}');
+    });
+
+    it('opens the email editor preview from the send email node right-click menu', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        const emailStep = screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'});
+        fireEvent.contextMenu(emailStep);
+        fireEvent.click(await screen.findByRole('menuitem', {name: 'Preview'}));
+
+        expect(await screen.findByTestId('email-content-modal')).toBeInTheDocument();
+        expect(screen.queryByRole('complementary', {name: 'Step details'})).not.toBeInTheDocument();
+        expect(emailStep).toHaveAttribute('aria-pressed', 'false');
+        expect(screen.getByTestId('modal-initial-mode')).toHaveTextContent('preview');
+    });
+
+    it('opens the email editor from an email node double-click without opening the sidebar', async () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        const emailStep = screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'});
+        fireEvent.doubleClick(emailStep);
+
+        expect(await screen.findByTestId('email-content-modal')).toBeInTheDocument();
+        expect(screen.queryByRole('complementary', {name: 'Step details'})).not.toBeInTheDocument();
+        expect(emailStep).toHaveAttribute('aria-pressed', 'false');
+        expect(screen.getByTestId('modal-initial-mode')).toHaveTextContent('edit');
     });
 
     it('shows paid member eligibility for the paid welcome automation trigger', () => {
@@ -459,6 +696,34 @@ describe('AutomationEditor', () => {
         expect(mutateCall.actions).toContainEqual({id: 'action-wait', type: 'wait', data: {wait_hours: 72}});
     });
 
+    it('increments and decrements the wait step from the day input group buttons', () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        fireEvent.click(screen.getByRole('button', {name: 'Wait: 1 day'}));
+        let sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        expect(within(sidebar).getByLabelText('Wait for')).toHaveValue('1');
+        expect(within(sidebar).getByRole('button', {name: 'Decrease wait by one day'})).toBeDisabled();
+
+        fireEvent.click(within(sidebar).getByRole('button', {name: 'Increase wait by one day'}));
+
+        expect(screen.getByRole('button', {name: 'Wait: 2 days'})).toBeInTheDocument();
+        sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        expect(within(sidebar).getByDisplayValue('2')).toBeInTheDocument();
+
+        fireEvent.click(within(sidebar).getByRole('button', {name: 'Decrease wait by one day'}));
+
+        expect(screen.getByRole('button', {name: 'Wait: 1 day'})).toBeInTheDocument();
+        sidebar = screen.getByRole('complementary', {name: 'Step details'});
+        expect(within(sidebar).getByDisplayValue('1')).toBeInTheDocument();
+        expect(within(sidebar).getByRole('button', {name: 'Decrease wait by one day'})).toBeDisabled();
+    });
+
     it('rejects non-decimal wait editor values', () => {
         mockUseReadAutomation.mockReturnValue({
             data: {automations: [automationDetail]},
@@ -476,6 +741,7 @@ describe('AutomationEditor', () => {
             fireEvent.change(waitInput, {target: {value}});
 
             expect(waitInput).toHaveAttribute('aria-invalid', 'true');
+            expect(waitInput).toHaveAttribute('aria-describedby', 'automation-wait-days-error');
             expect(within(sidebar).getByText('Enter a whole number between 1 and 30 days.')).toBeInTheDocument();
             expect(screen.getByRole('button', {name: 'Published'})).toBeDisabled();
         }
@@ -881,7 +1147,9 @@ describe('AutomationEditor', () => {
         fireEvent.click(within(picker).getByText('Wait'));
 
         // The new step renders with the default 24h wait ("1 day") at the end of the chain.
-        expect(screen.getByText('1 day')).toBeInTheDocument();
+        const insertedNode = screen.getByRole('button', {name: 'Wait: 1 day'});
+        expect(insertedNode).toHaveAttribute('aria-pressed', 'true');
+        expect(screen.getAllByText('1 day')).toHaveLength(2);
         // Adding a step flips the editor into a dirty state.
         expect(screen.getByRole('button', {name: 'Publish changes'})).toBeEnabled();
     });
@@ -900,7 +1168,11 @@ describe('AutomationEditor', () => {
         fireEvent.click(within(picker).getByText('Email'));
 
         // The new send_email step renders with the placeholder subject.
-        expect(screen.getByText('Untitled email')).toBeInTheDocument();
+        const insertedNode = screen.getByRole('button', {name: 'Send email: Untitled email'});
+        expect(screen.getAllByText('Untitled email')).toHaveLength(2);
+        expect(insertedNode).toHaveClass('animate-in');
+        expect(insertedNode).toHaveClass('zoom-in-90');
+        expect(insertedNode).toHaveAttribute('aria-pressed', 'true');
         expect(screen.getByRole('button', {name: 'Publish changes'})).toBeEnabled();
     });
 
@@ -930,6 +1202,34 @@ describe('AutomationEditor', () => {
         const insertedId = edgePairs.find(([source]) => source === 'action-wait')?.[1];
         expect(insertedId).toBeTruthy();
         expect(edgePairs).toContainEqual([insertedId, 'action-email']);
+    });
+
+    it('keeps the in-edge + button visible after leaving the button while still hovering the edge', () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        renderEditor();
+
+        const edge = screen.getByTestId('react-flow-mock-edges').querySelector('[data-edge-id="e-action-wait-action-email"]');
+        const edgeGroup = edge?.querySelector('g');
+        const button = screen.getByTestId('add-step-button-action-wait-action-email');
+        const labelHitZone = button.closest('.pointer-events-auto');
+
+        expect(edgeGroup).toBeInTheDocument();
+        expect(labelHitZone).toBeInTheDocument();
+
+        fireEvent.mouseEnter(edgeGroup!);
+        expect(button).toHaveClass('opacity-100');
+
+        fireEvent.mouseEnter(labelHitZone!);
+        fireEvent.mouseLeave(labelHitZone!, {relatedTarget: edgeGroup});
+        expect(button).toHaveClass('opacity-100');
+
+        fireEvent.mouseLeave(edgeGroup!);
+        expect(button).toHaveClass('opacity-0');
     });
 
     it('deletes a wait step and reconnects the chain', () => {

@@ -1,13 +1,13 @@
 import AppContext from '../../../../app-context';
 import ActionButton from '../../../common/action-button';
-import {getSubscriptionExpiry, isArchivedTier, isGiftMember, isStripeConfigured} from '../../../../utils/helpers';
+import {getSubscriptionExpiry, isArchivedTier, isGiftMember, arePaidMembersEnabled} from '../../../../utils/helpers';
 import {t} from '../../../../utils/i18n';
 import {useContext} from 'react';
 
 const ContinueGiftSubscriptionBanner = () => {
     const {member, site, doAction, action, brandColor} = useContext(AppContext);
 
-    const canContinueGiftSubscription = isGiftMember({member}) && !isArchivedTier({member, site}) && isStripeConfigured({site});
+    const canContinueGiftSubscription = isGiftMember({member}) && !isArchivedTier({member, site}) && arePaidMembersEnabled({site});
     if (!canContinueGiftSubscription) {
         return null;
     }

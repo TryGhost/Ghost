@@ -1,5 +1,8 @@
 declare module '@tryghost/limit-service'
 declare module '@tryghost/nql'
+declare module '@tryghost/string' {
+    export function slugify(string: string, options?: {requiredChangesOnly?: boolean}): string;
+}
 
 declare module '*.svg' {
     // eslint-disable-next-line @typescript-eslint/no-require-imports

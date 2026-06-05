@@ -16,7 +16,7 @@ interface PickerOptionProps {
 
 const PickerOption: React.FC<PickerOptionProps> = ({icon: Icon, label, description, onClick}) => (
     <button
-        className='flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm hover:bg-accent focus-visible:bg-accent focus-visible:outline-none'
+        className='flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm hover:bg-grey-50 focus-visible:bg-grey-50 focus-visible:outline-none dark:hover:bg-grey-900 dark:focus-visible:bg-grey-900'
         type='button'
         onClick={onClick}
     >
@@ -31,7 +31,7 @@ const PickerOption: React.FC<PickerOptionProps> = ({icon: Icon, label, descripti
 );
 
 const StepPicker: React.FC<StepPickerProps> = ({onPick}) => (
-    <div className='flex w-64 flex-col gap-1 p-1' data-testid='step-picker'>
+    <div className='flex w-72 flex-col gap-1 p-1' data-testid='step-picker'>
         <PickerOption
             description='Send an email'
             icon={LucideIcon.Mail}

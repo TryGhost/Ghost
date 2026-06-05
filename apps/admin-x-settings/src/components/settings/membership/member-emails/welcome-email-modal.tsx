@@ -267,8 +267,8 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                         <EmailPreviewEmailHeader className='border-x-0 border-t-0 border-b'>
                             <div className='flex flex-col gap-2'>
                                 <div className='flex items-center py-1'>
-                                    <div className='w-20 shrink-0 text-sm font-semibold'>From:</div>
-                                    <div className='min-w-0 grow pr-4 text-sm'>
+                                    <div className='w-20 shrink-0 font-semibold'>From:</div>
+                                    <div className='min-w-0 grow pr-4'>
                                         <span className='flex gap-1 truncate whitespace-nowrap'>
                                             <span>{resolvedSenderName}</span>
                                             <span className='text-gray-500 dark:text-gray-400'>{`<${resolvedSenderEmail}>`}</span>
@@ -289,14 +289,14 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
                                 </div>
                                 {hasDistinctReplyTo && (
                                     <div className='flex items-center'>
-                                        <div className='w-20 shrink-0 text-sm font-semibold'>Reply-to:</div>
-                                        <div className='grow text-sm text-gray-500 dark:text-gray-400'>
+                                        <div className='w-20 shrink-0 font-semibold'>Reply-to:</div>
+                                        <div className='grow text-gray-500 dark:text-gray-400'>
                                             {resolvedReplyToEmail}
                                         </div>
                                     </div>
                                 )}
                                 <div className='flex items-center'>
-                                    <div className='w-20 shrink-0 text-sm font-semibold'>Subject:</div>
+                                    <div className='w-20 shrink-0 font-semibold'>Subject:</div>
                                     <div className='grow'>
                                         <TextField
                                             className='w-full'

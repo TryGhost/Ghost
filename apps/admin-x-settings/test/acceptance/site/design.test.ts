@@ -138,6 +138,7 @@ test.describe('Design settings', async () => {
 
         const matchingHeader = previewHeaders.headers()['x-ghost-preview'];
         expect(matchingHeader).toContain('cd5786');
+        expect(previewHeaders.headers().accept).toBe('text/html');
         await expect(modal.getByTestId('toggle-unsplash-button')).toBeVisible();
         await modal.getByRole('button', {name: 'Save'}).click();
 

@@ -266,8 +266,7 @@ const MembersActions: React.FC<MembersActionsProps> = ({
 
             {/* New Member Button - styled like Tags */}
             <Button asChild>
-                <a aria-label="New member" className="inline-flex items-center gap-2 font-bold" href={newMemberHref}>
-                    <LucideIcon.Plus className="size-4" />
+                <a aria-label="New member" className="inline-flex items-center" href={newMemberHref}>
                     <span className="hidden sm:inline">New member</span>
                 </a>
             </Button>

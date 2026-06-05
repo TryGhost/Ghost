@@ -22,6 +22,7 @@ const allowedKeys = [
     'emailAnalytics',
     'hostSettings',
     'tenor',
+    'klipy',
     'pintura',
     'signupForm',
     'security'
@@ -76,6 +77,20 @@ describe('Public-config Service', function () {
             let configProperties = getConfigProperties();
 
             assert.equal(configProperties.tenor.googleApiKey, 'TENOR_KEY');
+        });
+
+        it('should return null for klipy apikey when unset', function () {
+            let configProperties = getConfigProperties();
+
+            assert.equal(configProperties.klipy.apiKey, null);
+        });
+
+        it('should return klipy apikey when set', function () {
+            configUtils.set('klipy:apiKey', 'KLIPY_KEY');
+
+            let configProperties = getConfigProperties();
+
+            assert.equal(configProperties.klipy.apiKey, 'KLIPY_KEY');
         });
 
         it('should return true for mailgunIsConfigured when mailgun is configured', function () {

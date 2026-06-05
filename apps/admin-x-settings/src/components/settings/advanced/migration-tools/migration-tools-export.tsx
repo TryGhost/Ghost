@@ -1,11 +1,23 @@
 import React from 'react';
 import {Button} from '@tryghost/admin-x-design-system';
 import {downloadAllContent} from '@tryghost/admin-x-framework/api/db';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {slugify} from '@tryghost/string';
+import {useGlobalData} from '../../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {usePostsExports} from '@tryghost/admin-x-framework/api/posts';
 
+export const getPostAnalyticsExportFileName = (siteTitle?: string | null) => {
+    const titlePrefix = siteTitle ? `${slugify(siteTitle)}.` : '';
+    const today = new Date().toISOString().split('T')[0];
+
+    return `${titlePrefix}ghost.analytics.${today}.csv`;
+};
+
 const MigrationToolsExport: React.FC = () => {
     const [isExportingPosts, setIsExportingPosts] = React.useState(false);
+    const {settings} = useGlobalData();
+    const [siteTitle] = getSettingValues<string>(settings, ['title']);
     const {refetch: postsData} = usePostsExports({
         searchParams: {
             limit: '1000'
@@ -29,7 +41,7 @@ const MigrationToolsExport: React.FC = () => {
                 const a = document.createElement('a');
                 a.setAttribute('hidden', '');
                 a.setAttribute('href', url);
-                a.setAttribute('download', `post-analytics.${new Date().toISOString().split('T')[0]}.csv`);
+                a.setAttribute('download', getPostAnalyticsExportFileName(siteTitle));
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
