@@ -9,6 +9,8 @@ import type {
     AutomationAction,
     AutomationEdge,
     AutomationSummary,
+    AutomationStepTerminalStatus,
+    AutomationStepToRun,
     AutomationsRepository,
     EditAutomationData,
     Page
@@ -141,6 +143,33 @@ export function createFakeDatabaseAutomationsRepository({
             const database = getDatabase();
 
             return withTransaction(database, () => trigger(database, options));
+        },
+
+        async fetchAndLockSteps(limit: number): Promise<{
+            steps: AutomationStepToRun[],
+            nextStepReadyAt: null | Date;
+        }> {
+            const database = getDatabase();
+
+            return withTransaction(database, () => fetchAndLockSteps(database, limit));
+        },
+
+        async finishStepAndEnqueueNext(step: AutomationStepToRun): Promise<Date | null> {
+            const database = getDatabase();
+
+            return withTransaction(database, () => finishStepAndEnqueueNext(database, step));
+        },
+
+        async markStepTerminal(step: AutomationStepToRun, status: AutomationStepTerminalStatus): Promise<boolean> {
+            const database = getDatabase();
+
+            return withTransaction(database, () => markStepTerminal(database, step, status));
+        },
+
+        async retryStep(step: AutomationStepToRun, retryAt: Date): Promise<boolean> {
+            const database = getDatabase();
+
+            return withTransaction(database, () => retryStep(database, step, retryAt));
         }
     };
 }
@@ -205,6 +234,17 @@ function trigger(database: DatabaseSync, {
     });
 }
 
+function fetchAndLockSteps(database: DatabaseSync, limit: number): {
+    steps: AutomationStepToRun[],
+    nextStepReadyAt: null | Date;
+} {
+    // TODO: Implement
+    return {
+        steps: [],
+        nextStepReadyAt: null
+    };
+}
+
 function findFirstActionRevision(database: DatabaseSync, memberStatus: 'free' | 'paid'): NextActionRevisionRow | null {
     const automationSlug: NonNullable<string> = MEMBER_WELCOME_EMAIL_SLUGS[memberStatus];
 
@@ -238,6 +278,32 @@ function findFirstActionRevision(database: DatabaseSync, memberStatus: 'free' | 
     `).get(automationSlug) as NextActionRevisionRow | undefined;
 
     return row ?? null;
+}
+
+function finishStepAndEnqueueNext(
+    database: DatabaseSync,
+    step: Pick<AutomationStepToRun, 'id' | 'locked_by' | 'action_id' | 'automation_run_id'>
+): Date | null {
+    // TODO: Implement
+    return null;
+}
+
+function markStepTerminal(
+    database: DatabaseSync,
+    step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
+    status: AutomationStepTerminalStatus
+): boolean {
+    // TODO: Implement
+    return false;
+}
+
+function retryStep(
+    database: DatabaseSync,
+    step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
+    retryAt: Readonly<Date>
+): boolean {
+    // TODO: Implement
+    return false;
 }
 
 function getReadyAtForAction(

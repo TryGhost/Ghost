@@ -291,4 +291,20 @@ describe('automations repository', function () {
             assert.equal(getRevisionCount(addedActionId), 1);
         });
     });
+
+    describe('fetchAndLockSteps', function () {
+        // TODO: Tests
+    });
+
+    describe('finishStepAndEnqueueNext', function () {
+        // TODO: Tests
+    });
+
+    describe('markStepTerminal', function () {
+        // TODO: Tests
+    });
+
+    describe('retryStep', function () {
+        // TODO: Tests
+    });
 });
