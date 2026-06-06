@@ -28,8 +28,6 @@ export async function exportMembers(filter?: string, search?: string): Promise<v
     if (search) {
         params.set('search', search);
     }
-    // The API names the file via its Content-Disposition header; the fallback is
-    // only used if that header is ever missing.
     await blobDownloadFromEndpoint(`/members/upload/?${params}`, 'members.csv');
 }
 

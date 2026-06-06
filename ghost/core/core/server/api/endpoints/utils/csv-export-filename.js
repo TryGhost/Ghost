@@ -2,16 +2,12 @@ const {slugify} = require('@tryghost/string');
 const settingsCache = require('../../../../shared/settings-cache');
 
 /**
- * Builds the filename for a CSV export, prefixed with the slugified site title
- * so exports are identifiable across multiple Ghost instances, e.g.
- * `my-site.ghost.members.2024-01-01.csv`.
+ * Builds a CSV export filename prefixed with the slugified site title, e.g.
+ * `my-site.ghost.members.2024-01-01.csv` (falling back to `ghost.<type>.<date>.csv`
+ * when the title is empty or slugifies to nothing).
  *
- * This is the single source of truth for export filenames: the API sets it on
- * the `Content-Disposition` header and the admin client reads it back from that
- * header, so the convention only needs to live here.
- *
- * Falls back to `ghost.<type>.<date>.csv` when the site title is missing or
- * slugifies to an empty string.
+ * Single source of truth: the API sets this on `Content-Disposition` and the
+ * admin client reads it back, so the convention only lives here.
  *
  * @param {string} type - The export type, e.g. `members` or `analytics`.
  * @returns {string}

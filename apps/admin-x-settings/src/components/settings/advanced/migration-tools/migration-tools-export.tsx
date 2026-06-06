@@ -16,8 +16,6 @@ const MigrationToolsExport: React.FC = () => {
         setIsExportingPosts(true);
 
         try {
-            // The API names the file via its Content-Disposition header; the
-            // fallback is only used if that header is ever missing.
             await blobDownloadFromEndpoint('/posts/export/?limit=1000', 'posts.analytics.csv');
         } catch (e) {
             handleError(e);

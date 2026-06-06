@@ -12,15 +12,11 @@ interface CSVStreamResponseOptions {
 }
 
 /**
- * Builds the response handler for a streaming CSV download.
- *
- * Centralises the HTTP wiring shared by every CSV export endpoint: the
- * `Content-Type`/`Content-Disposition` headers, the `no-transform` cache
- * directive (so proxies don't recompress and corrupt the byte stream), and
- * `pipeline()` based piping that tears down every stream if any of them errors.
- *
- * The returned function is assigned to `frame.response` and invoked by the API
- * framework with the Express `(req, res, next)` arguments.
+ * Builds the `frame.response` handler for a streaming CSV download, centralising
+ * the wiring shared by every CSV export: the Content-Type/Content-Disposition
+ * headers, the `no-transform` cache directive (so proxies don't recompress and
+ * corrupt the byte stream), and `pipeline()` piping that tears down every stream
+ * on error.
  */
 export function createCSVStreamResponse({source, transform, filename}: CSVStreamResponseOptions) {
     return function streamResponse(req: IncomingMessage, res: ServerResponse, next: (err?: unknown) => void) {

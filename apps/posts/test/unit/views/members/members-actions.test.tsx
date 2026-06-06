@@ -79,8 +79,6 @@ describe('MembersActions', () => {
     it('exports members via the API, letting the server name the file', async () => {
         await exportMembers(undefined, '');
 
-        // The filename comes from the API's Content-Disposition header; the
-        // client only passes a fallback in case that header is missing.
         expect(mockBlobDownloadFromEndpoint).toHaveBeenCalledWith(
             '/members/upload/?limit=all',
             'members.csv'

@@ -34,21 +34,17 @@ export function downloadFromEndpoint(path: string) {
 }
 
 /**
- * Extracts the filename from a `Content-Disposition` response header.
- *
- * Supports the RFC 5987 extended form (`filename*=UTF-8''my%20file.csv`, which
- * takes precedence) as well as the basic quoted/unquoted form
- * (`filename="my file.csv"`). Returns `undefined` when no filename is present.
+ * Extracts the filename from a `Content-Disposition` header, preferring the
+ * RFC 5987 extended form (`filename*=`) over the basic `filename=` form.
+ * Returns `undefined` when neither is present.
  */
 export function getFilenameFromContentDisposition(header: string | null): string | undefined {
     if (!header) {
         return undefined;
     }
 
-    // RFC 5987 ext-value: charset "'" [ language ] "'" value-chars.
-    // Capture the ext-value with a single linear pattern (no nested quantifiers,
-    // to avoid polynomial backtracking), then strip the charset'language' prefix
-    // with plain string ops.
+    // RFC 5987 ext-value is charset'language'value; capture it with one linear
+    // pattern (no nested quantifiers — avoids ReDoS), then drop the prefix.
     const extendedMatch = header.match(/filename\*=([^;]+)/i);
     if (extendedMatch?.[1]) {
         const singleQuote = '\'';
@@ -81,9 +77,8 @@ export function getFilenameFromContentDisposition(header: string | null): string
  * Use this instead of downloadFile/downloadFromEndpoint for streaming responses
  * (e.g. large CSV exports) where the iframe approach may not work reliably.
  *
- * The downloaded filename is taken from the response's `Content-Disposition`
- * header (the API is the single source of truth). `fallbackFilename` is only
- * used when the server doesn't provide one.
+ * The filename comes from the response's `Content-Disposition` header;
+ * `fallbackFilename` is only used when the server omits it.
  */
 export async function blobDownload(url: string, fallbackFilename?: string): Promise<void> {
     const response = await fetch(url, {method: 'GET'});
