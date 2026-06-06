@@ -45,7 +45,8 @@ export function getFilenameFromContentDisposition(header: string | null): string
         return undefined;
     }
 
-    const extendedMatch = header.match(/filename\*=(?:UTF-8'')?([^;]+)/i);
+    // RFC 5987 ext-value: charset "'" [ language ] "'" value-chars
+    const extendedMatch = header.match(/filename\*=(?:[^';]*'[^';]*')?([^;]+)/i);
     if (extendedMatch?.[1]) {
         try {
             return decodeURIComponent(extendedMatch[1].trim().replace(/^["']|["']$/g, ''));

@@ -336,6 +336,13 @@ describe('helpers utils', () => {
                 .toBe('café.members.csv');
         });
 
+        it('handles a non-empty language tag and non-UTF-8 charset in the extended form', () => {
+            expect(getFilenameFromContentDisposition('attachment; filename*=UTF-8\'en\'caf%C3%A9.csv'))
+                .toBe('café.csv');
+            expect(getFilenameFromContentDisposition('attachment; filename*=ISO-8859-1\'\'file.csv'))
+                .toBe('file.csv');
+        });
+
         it('returns undefined when no filename parameter is present', () => {
             expect(getFilenameFromContentDisposition('attachment')).toBeUndefined();
         });
