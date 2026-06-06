@@ -1,5 +1,5 @@
 import {vi, type MockInstance} from 'vitest';
-import {getGhostPaths, downloadFile, downloadFromEndpoint, blobDownload, blobDownloadFromEndpoint} from '../../../src/utils/helpers';
+import {getGhostPaths, downloadFile, downloadFromEndpoint, blobDownload, blobDownloadFromEndpoint, getFilenameFromContentDisposition} from '../../../src/utils/helpers';
 
 describe('helpers utils', () => {
     // Store original values
@@ -179,6 +179,7 @@ describe('helpers utils', () => {
             const mockBlob = new Blob(['test,data'], {type: 'text/csv'});
             globalThis.fetch = vi.fn().mockResolvedValue({
                 ok: true,
+                headers: new Headers(),
                 blob: () => Promise.resolve(mockBlob)
             });
 
@@ -191,27 +192,43 @@ describe('helpers utils', () => {
             expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:http://localhost/fake-blob-url');
         });
 
-        it('sets the correct filename on the download link', async () => {
+        it('names the file from the Content-Disposition header', async () => {
             const mockBlob = new Blob(['test'], {type: 'text/csv'});
             globalThis.fetch = vi.fn().mockResolvedValue({
                 ok: true,
+                headers: new Headers({'content-disposition': 'Attachment; filename="my-site.ghost.members.2026-02-17.csv"'}),
                 blob: () => Promise.resolve(mockBlob)
             });
 
             let capturedElement: any;
             vi.spyOn(document, 'createElement').mockImplementation(() => {
-                capturedElement = {
-                    href: '',
-                    download: '',
-                    click: vi.fn(),
-                    remove: vi.fn()
-                };
+                capturedElement = {href: '', download: '', click: vi.fn(), remove: vi.fn()};
                 return capturedElement as unknown as HTMLElement;
             });
 
-            await blobDownload('https://example.com/export.csv', 'members.2026-02-17.csv');
+            // The header wins even when a fallback is supplied
+            await blobDownload('https://example.com/export.csv', 'fallback.csv');
 
-            expect(capturedElement.download).toBe('members.2026-02-17.csv');
+            expect(capturedElement.download).toBe('my-site.ghost.members.2026-02-17.csv');
+        });
+
+        it('falls back to the provided filename when no Content-Disposition header is present', async () => {
+            const mockBlob = new Blob(['test'], {type: 'text/csv'});
+            globalThis.fetch = vi.fn().mockResolvedValue({
+                ok: true,
+                headers: new Headers(),
+                blob: () => Promise.resolve(mockBlob)
+            });
+
+            let capturedElement: any;
+            vi.spyOn(document, 'createElement').mockImplementation(() => {
+                capturedElement = {href: '', download: '', click: vi.fn(), remove: vi.fn()};
+                return capturedElement as unknown as HTMLElement;
+            });
+
+            await blobDownload('https://example.com/export.csv', 'members.csv');
+
+            expect(capturedElement.download).toBe('members.csv');
         });
 
         it('throws on non-ok response', async () => {
@@ -268,6 +285,7 @@ describe('helpers utils', () => {
             const mockBlob = new Blob(['data'], {type: 'text/csv'});
             globalThis.fetch = vi.fn().mockResolvedValue({
                 ok: true,
+                headers: new Headers(),
                 blob: () => Promise.resolve(mockBlob)
             });
 
@@ -284,6 +302,7 @@ describe('helpers utils', () => {
             const mockBlob = new Blob(['data'], {type: 'text/csv'});
             globalThis.fetch = vi.fn().mockResolvedValue({
                 ok: true,
+                headers: new Headers(),
                 blob: () => Promise.resolve(mockBlob)
             });
 
@@ -293,6 +312,32 @@ describe('helpers utils', () => {
                 '/blog/ghost/api/admin/members/upload/?limit=all',
                 {method: 'GET'}
             );
+        });
+    });
+
+    describe('getFilenameFromContentDisposition', () => {
+        it('returns undefined for a missing header', () => {
+            expect(getFilenameFromContentDisposition(null)).toBeUndefined();
+            expect(getFilenameFromContentDisposition('')).toBeUndefined();
+        });
+
+        it('parses a quoted filename', () => {
+            expect(getFilenameFromContentDisposition('Attachment; filename="my-site.ghost.members.2026-02-17.csv"'))
+                .toBe('my-site.ghost.members.2026-02-17.csv');
+        });
+
+        it('parses an unquoted filename', () => {
+            expect(getFilenameFromContentDisposition('attachment; filename=members.csv'))
+                .toBe('members.csv');
+        });
+
+        it('prefers the RFC 5987 extended (filename*) form and decodes it', () => {
+            expect(getFilenameFromContentDisposition('attachment; filename="fallback.csv"; filename*=UTF-8\'\'caf%C3%A9.members.csv'))
+                .toBe('café.members.csv');
+        });
+
+        it('returns undefined when no filename parameter is present', () => {
+            expect(getFilenameFromContentDisposition('attachment')).toBeUndefined();
         });
     });
 });

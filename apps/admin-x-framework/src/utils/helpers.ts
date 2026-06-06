@@ -34,16 +34,58 @@ export function downloadFromEndpoint(path: string) {
 }
 
 /**
+ * Extracts the filename from a `Content-Disposition` response header.
+ *
+ * Supports the RFC 5987 extended form (`filename*=UTF-8''my%20file.csv`, which
+ * takes precedence) as well as the basic quoted/unquoted form
+ * (`filename="my file.csv"`). Returns `undefined` when no filename is present.
+ */
+export function getFilenameFromContentDisposition(header: string | null): string | undefined {
+    if (!header) {
+        return undefined;
+    }
+
+    const extendedMatch = header.match(/filename\*=(?:UTF-8'')?([^;]+)/i);
+    if (extendedMatch?.[1]) {
+        try {
+            return decodeURIComponent(extendedMatch[1].trim().replace(/^["']|["']$/g, ''));
+        } catch {
+            // Malformed encoding - fall through to the basic form
+        }
+    }
+
+    const quotedMatch = header.match(/filename="([^"]*)"/i);
+    if (quotedMatch?.[1]) {
+        return quotedMatch[1].trim();
+    }
+
+    const unquotedMatch = header.match(/filename=([^;]+)/i);
+    if (unquotedMatch?.[1]) {
+        return unquotedMatch[1].trim();
+    }
+
+    return undefined;
+}
+
+/**
  * Downloads a file by fetching it as a blob and triggering a browser download.
  * Use this instead of downloadFile/downloadFromEndpoint for streaming responses
  * (e.g. large CSV exports) where the iframe approach may not work reliably.
+ *
+ * The downloaded filename is taken from the response's `Content-Disposition`
+ * header (the API is the single source of truth). `fallbackFilename` is only
+ * used when the server doesn't provide one.
  */
-export async function blobDownload(url: string, filename: string): Promise<void> {
+export async function blobDownload(url: string, fallbackFilename?: string): Promise<void> {
     const response = await fetch(url, {method: 'GET'});
 
     if (!response.ok) {
         throw new Error(`Download failed: ${response.status} ${response.statusText}`);
     }
+
+    const filename = getFilenameFromContentDisposition(response.headers.get('content-disposition'))
+        ?? fallbackFilename
+        ?? 'download';
 
     const blob = await response.blob();
     const blobUrl = window.URL.createObjectURL(blob);
@@ -57,7 +99,7 @@ export async function blobDownload(url: string, filename: string): Promise<void>
     window.URL.revokeObjectURL(blobUrl);
 }
 
-export async function blobDownloadFromEndpoint(path: string, filename: string): Promise<void> {
+export async function blobDownloadFromEndpoint(path: string, fallbackFilename?: string): Promise<void> {
     const url = `${getGhostPaths().apiRoot}${path}`;
-    return blobDownload(url, filename);
+    return blobDownload(url, fallbackFilename);
 }

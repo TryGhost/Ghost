@@ -1,6 +1,6 @@
-import MembersActions, {exportMembers, getMembersExportFileName} from '@src/views/members/components/members-actions';
+import MembersActions, {exportMembers} from '@src/views/members/components/members-actions';
 import React from 'react';
-import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {render, screen} from '@testing-library/react';
 
 const importModalPropsRef: {current: Record<string, unknown> | null} = {current: null};
@@ -69,10 +69,6 @@ const renderMembersActions = (props: Partial<React.ComponentProps<typeof Members
 };
 
 describe('MembersActions', () => {
-    afterEach(() => {
-        vi.useRealTimers();
-    });
-
     beforeEach(() => {
         importModalPropsRef.current = null;
         mockBlobDownloadFromEndpoint.mockReset();
@@ -80,29 +76,23 @@ describe('MembersActions', () => {
         mockUseNavigate.mockReturnValue(vi.fn());
     });
 
-    it('builds a members export filename with the slugified site title', () => {
-        vi.useFakeTimers();
-        vi.setSystemTime(new Date('2026-06-02T12:00:00.000Z'));
+    it('exports members via the API, letting the server name the file', async () => {
+        await exportMembers(undefined, '');
 
-        expect(getMembersExportFileName('My Publication')).toBe('my-publication.ghost.members.2026-06-02.csv');
-    });
-
-    it('falls back to ghost when the members export site title is missing', () => {
-        vi.useFakeTimers();
-        vi.setSystemTime(new Date('2026-06-02T12:00:00.000Z'));
-
-        expect(getMembersExportFileName(null)).toBe('ghost.members.2026-06-02.csv');
-    });
-
-    it('exports members with the site title in the CSV filename', async () => {
-        vi.useFakeTimers();
-        vi.setSystemTime(new Date('2026-06-02T12:00:00.000Z'));
-
-        await exportMembers(undefined, '', 'My Publication');
-
+        // The filename comes from the API's Content-Disposition header; the
+        // client only passes a fallback in case that header is missing.
         expect(mockBlobDownloadFromEndpoint).toHaveBeenCalledWith(
             '/members/upload/?limit=all',
-            'my-publication.ghost.members.2026-06-02.csv'
+            'members.csv'
+        );
+    });
+
+    it('passes the active filter and search to the export endpoint', async () => {
+        await exportMembers('label:vip', 'alice');
+
+        expect(mockBlobDownloadFromEndpoint).toHaveBeenCalledWith(
+            '/members/upload/?limit=all&filter=label%3Avip&search=alice',
+            'members.csv'
         );
     });
 
