@@ -5,6 +5,7 @@ const {unparse} = require('@tryghost/members-csv');
 const mappers = require('./mappers');
 const {Transform} = require('stream');
 const papaparse = require('papaparse');
+const {createCSVStreamResponse} = require('./stream-csv-response');
 module.exports = {
     browse: createSerializer('browse', paginatedMembers),
     read: createSerializer('read', singleMember),
@@ -462,37 +463,28 @@ function createCSVTransform() {
 /**
  * @template PageMeta
  *
- * @param {{data: any[]|Object}} data
+ * @param {{data: any[]|Object, filename?: string}} data
  *
  * @returns {string|Function} - A CSV string or response handler function
  */
 function exportCSV(data) {
     debug('exportCSV');
-    
+
     // Check if data.data is a stream (has the pipe method)
     if (data.data && typeof data.data.pipe === 'function') {
-        // Return a function that will handle the response
-        return function streamResponse(req, res, next) {
-            debug('CSV stream response');
-            
-            // Create transform to convert objects to CSV
-            const csvTransform = createCSVTransform();
-            
-            // Handle stream errors
-            data.data.on('error', (err) => {
-                next(err);
-            });
-            
-            // Set required headers for CSV downloads
-            const datetime = (new Date()).toJSON().substring(0, 10);
-            res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-            res.setHeader('Content-Disposition', `attachment; filename="members.${datetime}.csv"`);
-            
-            // Pipe the data through the transform and to the response
-            data.data.pipe(csvTransform).pipe(res);
-        };
+        debug('CSV stream response');
+
+        // Fall back to the legacy filename if the endpoint didn't provide one
+        const datetime = (new Date()).toJSON().substring(0, 10);
+        const filename = data.filename || `members.${datetime}.csv`;
+
+        return createCSVStreamResponse({
+            source: data.data,
+            transform: createCSVTransform(),
+            filename
+        });
     }
-    
+
     // Otherwise use the unparse function for array data
     return unparse(data.data);
 }

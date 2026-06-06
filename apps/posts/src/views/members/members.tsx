@@ -24,7 +24,7 @@ import {useLocation, useSearchParams} from 'react-router';
 const SEARCH_DEBOUNCE_MS = 250;
 const MEMBERS_HELP_CARDS_LIMIT = 6;
 
-const MembersPage: React.FC<{timezone: string; membershipsEnabled: boolean; siteTitle?: string | null}> = ({timezone, membershipsEnabled, siteTitle}) => {
+const MembersPage: React.FC<{timezone: string; membershipsEnabled: boolean}> = ({timezone, membershipsEnabled}) => {
     const headerRef = useRef<HTMLDivElement | null>(null);
     const setHeaderContentRef = useCallback((node: HTMLDivElement | null) => {
         headerRef.current = node?.closest('[data-list-page="header"]') as HTMLDivElement | null;
@@ -155,7 +155,6 @@ const MembersPage: React.FC<{timezone: string; membershipsEnabled: boolean; site
                                         memberCount={totalMembers}
                                         nql={nql}
                                         search={search}
-                                        siteTitle={siteTitle}
                                         onImportComplete={() => {
                                             void refetch();
                                         }}
@@ -283,10 +282,9 @@ const Members: React.FC = () => {
 
     const timezone = getSiteTimezone(settingsData.settings);
     const membersSignupAccess = getSettingValue<string>(settingsData.settings, 'members_signup_access');
-    const siteTitle = getSettingValue<string>(settingsData.settings, 'title');
     const membershipsEnabled = membersSignupAccess !== 'none';
 
-    return <MembersPage membershipsEnabled={membershipsEnabled} siteTitle={siteTitle} timezone={timezone} />;
+    return <MembersPage membershipsEnabled={membershipsEnabled} timezone={timezone} />;
 };
 
 export default Members;
