@@ -20,6 +20,12 @@ describe('LinkedIn URLs', () => {
             assert.equal(validateLinkedInUrl('johnsmith'), 'https://www.linkedin.com/in/johnsmith');
         });
 
+        it('should accept LinkedIn URLs with a trailing slash and normalise them', () => {
+            assert.equal(validateLinkedInUrl('https://www.linkedin.com/in/johnsmith/'), 'https://www.linkedin.com/in/johnsmith');
+            assert.equal(validateLinkedInUrl('linkedin.com/in/johnsmith/'), 'https://www.linkedin.com/in/johnsmith');
+            assert.equal(validateLinkedInUrl('https://www.linkedin.com/company/ghost-foundation/'), 'https://www.linkedin.com/company/ghost-foundation');
+        });
+
         it('should reject URLs from other domains', () => {
             assert.throws(() => validateLinkedInUrl('https://twitter.com/johnsmith'), /The URL must be in a format like https:\/\/www\.linkedin\.com\/in\/yourUsername/);
             assert.throws(() => validateLinkedInUrl('http://example.com'), /The URL must be in a format like https:\/\/www\.linkedin\.com\/in\/yourUsername/);
@@ -65,6 +71,11 @@ describe('LinkedIn URLs', () => {
             assert.equal(linkedinUrlToHandle('https://www.linkedin.com/company/ghost-foundation'), 'company/ghost-foundation');
             assert.equal(linkedinUrlToHandle('linkedin.com/school/mit'), 'school/mit');
             assert.equal(linkedinUrlToHandle('linkedin.com/pub/johnsmith/12/34/567'), 'pub/johnsmith/12/34/567');
+        });
+
+        it('should strip trailing slash when extracting handle', () => {
+            assert.equal(linkedinUrlToHandle('https://www.linkedin.com/in/johnsmith/'), 'johnsmith');
+            assert.equal(linkedinUrlToHandle('https://www.linkedin.com/company/ghost-foundation/'), 'company/ghost-foundation');
         });
 
         it('should return null for invalid LinkedIn URLs', () => {

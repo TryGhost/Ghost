@@ -42,7 +42,7 @@ const extractInputParts = (input: string) => {
 
         // don't need protocol from match
         const [, regional, pathType, rawUsername] = match;
-        const username = formatUsername(rawUsername);
+        const username = formatUsername(rawUsername.replace(/\/$/, ''));
 
         // validate regional code is two letters if present
         // validator.js has isISO31661Alpha2, but on a later version than is currently installed
@@ -115,6 +115,6 @@ export const linkedinUrlToHandle = (url: string) => {
     }
     // don't need protocol or subdomain from match
     const [, , pathType, username] = match;
-    const formattedUsername = formatUsername(username);
+    const formattedUsername = formatUsername(username.replace(/\/$/, ''));
     return pathType === 'in' ? formattedUsername : `${pathType}/${formattedUsername}`;
 };
