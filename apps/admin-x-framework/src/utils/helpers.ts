@@ -45,11 +45,19 @@ export function getFilenameFromContentDisposition(header: string | null): string
         return undefined;
     }
 
-    // RFC 5987 ext-value: charset "'" [ language ] "'" value-chars
-    const extendedMatch = header.match(/filename\*=(?:[^';]*'[^';]*')?([^;]+)/i);
+    // RFC 5987 ext-value: charset "'" [ language ] "'" value-chars.
+    // Capture the ext-value with a single linear pattern (no nested quantifiers,
+    // to avoid polynomial backtracking), then strip the charset'language' prefix
+    // with plain string ops.
+    const extendedMatch = header.match(/filename\*=([^;]+)/i);
     if (extendedMatch?.[1]) {
+        const singleQuote = '\'';
+        const extValue = extendedMatch[1].trim();
+        const firstQuote = extValue.indexOf(singleQuote);
+        const secondQuote = firstQuote === -1 ? -1 : extValue.indexOf(singleQuote, firstQuote + 1);
+        const encoded = secondQuote === -1 ? extValue : extValue.slice(secondQuote + 1);
         try {
-            return decodeURIComponent(extendedMatch[1].trim().replace(/^["']|["']$/g, ''));
+            return decodeURIComponent(encoded.replace(/^["']|["']$/g, ''));
         } catch {
             // Malformed encoding - fall through to the basic form
         }
