@@ -81,7 +81,11 @@ fi
 # Check for emoji in user-facing changes
 if [[ "$subject" =~ ^[^[:space:]]*[[:space:]] ]]; then
     first_word="${subject%% *}"
-    if [[ ! "$first_word" =~ ^[[:punct:]] ]]; then
+    # Emoji are multi-byte (non-ASCII), so detect them by stripping every ASCII
+    # byte and seeing if anything is left. The previous check tested the first word
+    # against [[:punct:]], which never matches an emoji — so the warning fired on
+    # *every* correctly-prefixed commit (🐛, ✨, …) and passed on plain ASCII.
+    if [[ -z "$(printf '%s' "$first_word" | LC_ALL=C tr -d '\000-\177')" ]]; then
         echo -e "${yellow}Warning: User-facing changes should start with an emoji${no_color}"
         echo -e "Common emojis: ✨ (Feature), 🎨 (Improvement), 🐛 (Bug Fix), 🌐 (i18n), 💡 (User-facing)"
     fi
