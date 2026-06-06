@@ -62,7 +62,8 @@ if (parentPort) {
         updatedMembers = await db.knex('members')
             .whereIn('id', updateMemberIds)
             .update({
-                status: 'free'
+                status: 'free',
+                updated_at: db.knex.raw('CURRENT_TIMESTAMP')
             });
 
         const statusEvents = membersToUpdate.map((member) => {
