@@ -52,6 +52,11 @@ describe('LinkedIn URLs', () => {
             assert.equal(linkedinHandleToUrl('john-smith'), 'https://www.linkedin.com/in/john-smith');
         });
 
+        it('should strip a trailing slash from handles', () => {
+            assert.equal(linkedinHandleToUrl('johnsmith/'), 'https://www.linkedin.com/in/johnsmith');
+            assert.equal(linkedinHandleToUrl('company/ghost-foundation/'), 'https://www.linkedin.com/company/ghost-foundation');
+        });
+
         it('should reject invalid LinkedIn handles', () => {
             assert.throws(() => linkedinHandleToUrl('john@smith'), /Your Username is not a valid LinkedIn Username/);
             assert.throws(() => linkedinHandleToUrl('john#smith'), /Your Username is not a valid LinkedIn Username/);

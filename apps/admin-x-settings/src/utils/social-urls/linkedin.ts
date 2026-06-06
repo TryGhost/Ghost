@@ -24,8 +24,8 @@ const PUB_USERNAME_REGEX = /^[a-zA-Z0-9-]{3,100}(?:\/[a-zA-Z0-9-]*)*$/;
 */
 const LINKEDIN_URL_REGEX = /^(?:https?:\/\/)?(?:www\.)?(?:([a-z]{2})\.)?linkedin\.com\/(in|pub|company|school)\/([^?#]+)/i;
 
-// trims whitespace and removes leading @ if it exists
-const formatUsername = (value: string) => value.trim().replace(/^@/, '');
+// trims whitespace, removes a leading @, and removes a trailing slash if present
+const formatUsername = (value: string) => value.trim().replace(/^@/, '').replace(/\/$/, '');
 
 const extractInputParts = (input: string) => {
     // Detect full URL patterns first
@@ -42,7 +42,7 @@ const extractInputParts = (input: string) => {
 
         // don't need protocol from match
         const [, regional, pathType, rawUsername] = match;
-        const username = formatUsername(rawUsername.replace(/\/$/, ''));
+        const username = formatUsername(rawUsername);
 
         // validate regional code is two letters if present
         // validator.js has isISO31661Alpha2, but on a later version than is currently installed
@@ -115,6 +115,6 @@ export const linkedinUrlToHandle = (url: string) => {
     }
     // don't need protocol or subdomain from match
     const [, , pathType, username] = match;
-    const formattedUsername = formatUsername(username.replace(/\/$/, ''));
+    const formattedUsername = formatUsername(username);
     return pathType === 'in' ? formattedUsername : `${pathType}/${formattedUsername}`;
 };
