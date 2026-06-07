@@ -459,9 +459,6 @@ describe('PaymentsService', function () {
     });
 
     describe('getDonationPriceNickname', function () {
-        // i18n.init() reassigns module.exports to the live instance, so re-require to reach it.
-        const i18nInstance = require('../../../../../../../core/server/services/i18n');
-
         function createService(title) {
             return new PaymentsService({
                 settingsCache: {
@@ -473,7 +470,7 @@ describe('PaymentsService', function () {
         }
 
         afterEach(function () {
-            i18nInstance.changeLanguage('en');
+            i18n.changeLanguage('en');
         });
 
         it('builds the nickname from the site title', function () {
@@ -482,7 +479,7 @@ describe('PaymentsService', function () {
         });
 
         it('localizes the prefix while keeping the site title interpolated', async function () {
-            await i18nInstance.changeLanguage('fr');
+            await i18n.changeLanguage('fr');
             const service = createService('Mon Site');
             assert.equal(service.getDonationPriceNickname(), 'Soutenir Mon Site');
         });

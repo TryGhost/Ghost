@@ -1,9 +1,8 @@
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output:posts');
 const mappers = require('./mappers');
 const tiersService = require('../../../../../services/tiers');
-const {pipeline} = require('stream');
 const {createCSVTransform} = require('./posts-csv-transform');
-const {InternalServerError} = require('@tryghost/errors');
+const {createCSVStreamResponse} = require('./stream-csv-response');
 
 module.exports = {
     async all(models, apiConfig, frame) {
@@ -56,32 +55,11 @@ module.exports = {
     },
 
     exportCSV(models, apiConfig, frame) {
-        frame.response = function streamResponse(req, res, next) {
-            if (!models.filename) {
-                return next(new InternalServerError({
-                    message: 'Missing CSV export filename'
-                }));
-            }
-
-            const csvTransform = createCSVTransform();
-
-            res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-            res.setHeader('Content-Disposition', `Attachment; filename="${models.filename}"`);
-            const cacheControl = res.getHeader('Cache-Control');
-            const cacheControlDirectives = cacheControl ? String(cacheControl).split(',').map(value => value.trim().toLowerCase()) : [];
-            if (!cacheControlDirectives.includes('no-transform')) {
-                res.setHeader('Cache-Control', cacheControl ? `${cacheControl}, no-transform` : 'no-transform');
-            }
-
-            pipeline(models.data, csvTransform, res, (err) => {
-                // On success, pipeline has already ended the response and there's no
-                // downstream middleware waiting. Only forward errors so the framework's
-                // error handler can log them and (if possible) send a status to the client.
-                if (err) {
-                    next(err);
-                }
-            });
-        };
+        frame.response = createCSVStreamResponse({
+            source: models.data,
+            transform: createCSVTransform(),
+            filename: models.filename
+        });
     },
 
     bulkEdit(bulkActionResult, _apiConfig, frame) {

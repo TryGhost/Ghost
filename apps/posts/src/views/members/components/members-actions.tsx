@@ -16,23 +16,11 @@ interface MembersActionsProps {
     memberCount: number;
     nql?: string;
     search: string;
-    siteTitle?: string | null;
     canBulkDelete: boolean;
     onImportComplete?: (importResponse?: ImportResponse) => void;
 }
 
-export function getMembersExportFileName(siteTitle?: string | null): string {
-    const titleSlug = siteTitle
-        ?.toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, '');
-    const titlePrefix = titleSlug ? `${titleSlug}.` : '';
-    const datetime = new Date().toJSON().substring(0, 10);
-
-    return `${titlePrefix}ghost.members.${datetime}.csv`;
-}
-
-export async function exportMembers(filter?: string, search?: string, siteTitle?: string | null): Promise<void> {
+export async function exportMembers(filter?: string, search?: string): Promise<void> {
     const params = new URLSearchParams({limit: 'all'});
     if (filter) {
         params.set('filter', filter);
@@ -40,7 +28,7 @@ export async function exportMembers(filter?: string, search?: string, siteTitle?
     if (search) {
         params.set('search', search);
     }
-    await blobDownloadFromEndpoint(`/members/upload/?${params}`, getMembersExportFileName(siteTitle));
+    await blobDownloadFromEndpoint(`/members/upload/?${params}`, 'members.csv');
 }
 
 const MembersActions: React.FC<MembersActionsProps> = ({
@@ -48,7 +36,6 @@ const MembersActions: React.FC<MembersActionsProps> = ({
     memberCount,
     nql,
     search,
-    siteTitle,
     canBulkDelete,
     onImportComplete
 }) => {
@@ -74,14 +61,14 @@ const MembersActions: React.FC<MembersActionsProps> = ({
     const memberOperationParams = buildMemberOperationParams({nql, search});
     const handleExport = useCallback(async () => {
         try {
-            await exportMembers(nql, search, siteTitle);
+            await exportMembers(nql, search);
         } catch (e) {
             toast.error('Export failed', {
                 description: 'There was a problem downloading your member data. Please check your connection and try again.'
             });
             throw e;
         }
-    }, [nql, search, siteTitle]);
+    }, [nql, search]);
 
     const handleAddLabel = useCallback(async (labelIds: string[]) => {
         try {
