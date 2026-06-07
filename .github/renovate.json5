@@ -37,6 +37,19 @@
     // Vulnerability-alert PRs require dashboard approval below so they do not
     // bypass the live open-PR cap enforced by the workflow.
     "minimumReleaseAge": "3 days",
+    // Hold updates internally during the release-age soak instead of opening a
+    // PR immediately and gating it with a pending `renovate/stability-days`
+    // status. With the default "flexible" filter, a soaking PR is still an open
+    // PR, so it counts against the live 10-PR cap enforced in
+    // .github/workflows/renovate.yml even though it cannot merge for up to 72h —
+    // soakers were starving creation slots from updates that are actually ready.
+    // "strict" keeps soaking updates as branchless/PR-less internal state until
+    // the soak passes, so a slot is only ever held by a mergeable PR. Trade-off:
+    // we lose day-0 CI signal on an update (breakage now surfaces only once the
+    // PR opens post-soak) and security fixes also stay invisible until their
+    // 72h soak clears (see vulnerabilityAlerts below — the soak already applied,
+    // strict only changes when the PR becomes visible).
+    "internalChecksFilter": "strict",
     "timezone": "Etc/UTC",
     // Restrict Renovate runs to the automerge windows so branch updates
     // (rebasing, force-pushes) happen around the same times automerge
