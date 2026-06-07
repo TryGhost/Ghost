@@ -45,6 +45,6 @@
     "typescript-eslint": "8.60.1"
   },
   "dependencies": {
-    "semver": "7.8.1"
+    "semver": "7.8.2"
   }
 }
