@@ -7,7 +7,7 @@ on:
       - 'renovate/*'
 jobs:
   test:
-    uses: tryghost/actions/.github/workflows/test.yml@f61d9df46654402efc2269f6b06a0a09f0c45810 # main
+    uses: tryghost/actions/.github/workflows/test.yml@f5d907bc4e3e2193905b7e6e5af8bf3bf706b2ff # main
     with:
       node-versions: '[22, 24]'
     secrets:
