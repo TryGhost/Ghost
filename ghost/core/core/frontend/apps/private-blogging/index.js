@@ -1,4 +1,3 @@
-const path = require('path');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
@@ -43,7 +42,7 @@ module.exports = {
         checkSubdir();
 
         ghost.routeService.registerRouter(privateRoute, router);
-        ghost.helperService.registerDir(path.resolve(__dirname, './lib/helpers'));
+        ghost.helperService.registerHelper('input_password', require('./lib/helpers/input_password'));
     },
 
     setupMiddleware: function setupMiddleware(siteApp) {
