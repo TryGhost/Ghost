@@ -208,11 +208,11 @@ async function initServicesForFrontend({bootLogger}) {
 /**
  * Frontend is intended to be just Ghost's frontend
  */
-async function initFrontend() {
+function initFrontend() {
     debug('Begin: initFrontend');
 
     const helperService = require('./frontend/services/helpers');
-    await helperService.init();
+    helperService.init();
 
     debug('End: initFrontend');
 }
@@ -552,7 +552,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         await initServicesForFrontend({bootLogger});
 
         if (frontend) {
-            await initFrontend();
+            initFrontend();
         }
         const ghostApp = await initExpressApps({frontend, backend, config});
 
