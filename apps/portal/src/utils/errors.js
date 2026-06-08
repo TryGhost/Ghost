@@ -1,4 +1,11 @@
+import {t} from './i18n';
+
 export class HumanReadableError extends Error {
+    constructor(message, {code} = {}) {
+        super(message);
+        this.code = code ?? null;
+    }
+
     /**
      * Returns whether this response from the server is a human readable error and should be shown to the user.
      * @param {Response} res
@@ -10,16 +17,35 @@ export class HumanReadableError extends Error {
             try {
                 const json = await res.json();
                 if (json.errors && Array.isArray(json.errors) && json.errors.length > 0 && json.errors[0].message) {
-                    return new HumanReadableError(json.errors[0].message);
+                    return new HumanReadableError(json.errors[0].message, {code: json.errors[0].code});
                 }
             } catch (e) {
                 // Failed to decode: ignore
-                return false;
+                return undefined;
+            }
+        }
+        if (res.status === 404) {
+            const contentType = (res.headers.get('content-type') || '').toLowerCase();
+
+            if (!contentType.includes('application/json')) {
+                return undefined;
+            }
+
+            try {
+                const json = await res.json();
+                if (json.errors && Array.isArray(json.errors) && json.errors.length > 0 && json.errors[0].message) {
+                    return new HumanReadableError(json.errors[0].message, {code: json.errors[0].code});
+                }
+            } catch (e) {
+                // Failed to decode: ignore
+                return undefined;
             }
         }
         if (res.status === 500) {
             return new HumanReadableError('A server error occurred');
         }
+
+        return undefined;
     }
 }
 
@@ -31,7 +57,7 @@ export const specialMessages = [];
  * Many "alreadyTranslatedDefaultMessages" are pretty vague, so we want to replace them with a more specific message
  * whenever one is available.
  */
-export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage, t) {
+export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage) {
     const translateMessage = (message, number = null) => {
         if (number) {
             return t(message, {number});
@@ -46,7 +72,6 @@ export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage, t
         if (specialMessages.length === 0) {
             // This formatting is intentionally weird. It causes the i18n-parser to pick these strings up.
             // Do not redefine this t. It's a local function and needs to stay that way.
-            t('No member exists with this e-mail address. Please sign up first.');
             t('No member exists with this e-mail address.');
             t('This site is invite-only, contact the owner for access.');
             t('Unable to initiate checkout session');
@@ -62,6 +87,7 @@ export function chooseBestErrorMessage(error, alreadyTranslatedDefaultMessage, t
             t('Signups from this email domain are currently restricted.');
             t('Too many sign-up attempts, try again later');
             t('Memberships from this email domain are currently restricted.');
+            t('Invalid verification code');
         }
     };
 

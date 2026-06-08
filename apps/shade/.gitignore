@@ -3,3 +3,4 @@ types
 dist
 playwright-report
 test-results
+storybook-static

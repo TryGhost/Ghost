@@ -1,4 +1,5 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const supertest = require('supertest');
 const ObjectId = require('bson-objectid').default;
 const testUtils = require('../../../utils');
@@ -26,22 +27,18 @@ describe('User API', function () {
         });
 
         describe('Read', function () {
-            it('can\'t retrieve non existent user by id', function (done) {
-                request.get(localUtils.API.getApiQuery('users/' + ObjectId().toHexString() + '/'))
+            it('can\'t retrieve non existent user by id', async function () {
+                await request.get(localUtils.API.getApiQuery('users/' + ObjectId().toHexString() + '/'))
                     .set('Origin', config.get('url'))
                     .set('Accept', 'application/json')
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(404)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        should.not.exist(res.headers['x-cache-invalidate']);
+                    .expect(function (res) {
+                        assert.equal(res.headers['x-cache-invalidate'], undefined);
                         const jsonResponse = res.body;
-                        should.exist(jsonResponse);
-                        should.exist(jsonResponse.errors);
+                        assertExists(jsonResponse);
+                        assertExists(jsonResponse.errors);
                         testUtils.API.checkResponseValue(jsonResponse.errors[0], [
                             'message',
                             'context',
@@ -53,26 +50,21 @@ describe('User API', function () {
                             'id',
                             'ghostErrorCode'
                         ]);
-                        done();
                     });
             });
 
-            it('can\'t retrieve non existent user by slug', function (done) {
-                request.get(localUtils.API.getApiQuery('users/slug/blargh/'))
+            it('can\'t retrieve non existent user by slug', async function () {
+                await request.get(localUtils.API.getApiQuery('users/slug/blargh/'))
                     .set('Origin', config.get('url'))
                     .set('Accept', 'application/json')
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
                     .expect(404)
-                    .end(function (err, res) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        should.not.exist(res.headers['x-cache-invalidate']);
+                    .expect(function (res) {
+                        assert.equal(res.headers['x-cache-invalidate'], undefined);
                         const jsonResponse = res.body;
-                        should.exist(jsonResponse);
-                        should.exist(jsonResponse.errors);
+                        assertExists(jsonResponse);
+                        assertExists(jsonResponse.errors);
                         testUtils.API.checkResponseValue(jsonResponse.errors[0], [
                             'message',
                             'context',
@@ -84,14 +76,13 @@ describe('User API', function () {
                             'id',
                             'ghostErrorCode'
                         ]);
-                        done();
                     });
             });
         });
 
         describe('Edit', function () {
-            it('can change the other users password', function (done) {
-                request.put(localUtils.API.getApiQuery('users/password/'))
+            it('can change the other users password', async function () {
+                await request.put(localUtils.API.getApiQuery('users/password/'))
                     .set('Origin', config.get('url'))
                     .send({
                         password: [{
@@ -102,14 +93,7 @@ describe('User API', function () {
                     })
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(200)
-                    .end(function (err) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        done();
-                    });
+                    .expect(200);
             });
         });
 
@@ -120,8 +104,8 @@ describe('User API', function () {
                 await localUtils.doAuth(request);
             });
 
-            it('[failure] Destroy unknown user id', function () {
-                return request
+            it('[failure] Destroy unknown user id', async function () {
+                await request
                     .delete(localUtils.API.getApiQuery('users/' + ObjectId().toHexString()))
                     .set('Origin', config.get('url'))
                     .expect(404);
@@ -145,10 +129,10 @@ describe('User API', function () {
                     .expect(200);
 
                 const tags = await otherAuthorPost.related('tags').fetch();
-                should.equal(tags.length, 3);
+                assert.equal(tags.length, 3);
                 // user deletion results in a second tag being added with sort_order of 0, putting it at index 1 instead of at the end (index 2)
-                should.equal(tags.models[1].get('slug'), `hash-${otherAuthor.slug}`);
-                should.equal(tags.models[1].get('name'), `#${otherAuthor.slug}`);
+                assert.equal(tags.models[1].get('slug'), `hash-${otherAuthor.slug}`);
+                assert.equal(tags.models[1].get('name'), `#${otherAuthor.slug}`);
             });
         });
     });
@@ -171,28 +155,21 @@ describe('User API', function () {
         });
 
         describe('success cases', function () {
-            it('can edit himself', function (done) {
-                request.put(localUtils.API.getApiQuery('users/' + editor.id + '/'))
+            it('can edit himself', async function () {
+                await request.put(localUtils.API.getApiQuery('users/' + editor.id + '/'))
                     .set('Origin', config.get('url'))
                     .send({
                         users: [{id: editor.id, name: 'test'}]
                     })
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(200)
-                    .end(function (err) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        done();
-                    });
+                    .expect(200);
             });
         });
 
         describe('error cases', function () {
-            it('can\'t edit the owner', function (done) {
-                request.put(localUtils.API.getApiQuery('users/' + testUtils.DataGenerator.Content.users[0].id + '/'))
+            it('can\'t edit the owner', async function () {
+                await request.put(localUtils.API.getApiQuery('users/' + testUtils.DataGenerator.Content.users[0].id + '/'))
                     .set('Origin', config.get('url'))
                     .send({
                         users: [{
@@ -201,18 +178,11 @@ describe('User API', function () {
                     })
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(403)
-                    .end(function (err) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        done();
-                    });
+                    .expect(403);
             });
 
-            it('Cannot transfer ownership to any other user', function () {
-                return request
+            it('Cannot transfer ownership to any other user', async function () {
+                await request
                     .put(localUtils.API.getApiQuery('users/owner'))
                     .set('Origin', config.get('url'))
                     .send({
@@ -245,28 +215,21 @@ describe('User API', function () {
         });
 
         describe('success cases', function () {
-            it('can edit himself', function (done) {
-                request.put(localUtils.API.getApiQuery('users/' + author.id + '/'))
+            it('can edit himself', async function () {
+                await request.put(localUtils.API.getApiQuery('users/' + author.id + '/'))
                     .set('Origin', config.get('url'))
                     .send({
                         users: [{id: author.id, name: 'test'}]
                     })
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(200)
-                    .end(function (err) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        done();
-                    });
+                    .expect(200);
             });
         });
 
         describe('error cases', function () {
-            it('can\'t edit the owner', function (done) {
-                request.put(localUtils.API.getApiQuery('users/' + testUtils.DataGenerator.Content.users[0].id + '/'))
+            it('can\'t edit the owner', async function () {
+                await request.put(localUtils.API.getApiQuery('users/' + testUtils.DataGenerator.Content.users[0].id + '/'))
                     .set('Origin', config.get('url'))
                     .send({
                         users: [{
@@ -275,14 +238,7 @@ describe('User API', function () {
                     })
                     .expect('Content-Type', /json/)
                     .expect('Cache-Control', testUtils.cacheRules.private)
-                    .expect(403)
-                    .end(function (err) {
-                        if (err) {
-                            return done(err);
-                        }
-
-                        done();
-                    });
+                    .expect(403);
             });
         });
     });

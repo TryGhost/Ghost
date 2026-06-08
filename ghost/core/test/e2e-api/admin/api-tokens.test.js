@@ -1,5 +1,6 @@
 const {agentProvider, fixtureManager} = require('../../utils/e2e-framework');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
+const supertest = require('supertest');
 
 describe('Admin API', function () {
     let agent;
@@ -8,6 +9,14 @@ describe('Admin API', function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users');
     });
+
+    /**
+     * Make requests bypassing URL normalization which adds trailing slashes.
+     */
+    function rawRequest(method, path) {
+        return supertest(agent.app)[method.toLowerCase()](path)
+            .set(agent.defaults.headers);
+    }
 
     function assertMatchesFixture(fixtureId, response) {
         const user = response.users[0];
@@ -135,87 +144,64 @@ describe('Admin API', function () {
         });
     });
 
-    // Make sure that staff tokens are blocked from certain endpoints
+    // The blocklist contract: each (method, path) tuple must be rejected
+    // for any staff token, across lowercase, trailing-slash and mixed-case
+    // variants. The middleware's role isn't to evaluate permissions here —
+    // it short-circuits before that — so role doesn't change the outcome.
     describe('Staff Token Blocklist', function () {
-        describe('DELETE /db endpoint (delete all content)', function () {
-            it('Owner staff token should be blocked', async function () {
+        // Build path variants once so the parameter table reads as a contract:
+        // lowercase, trailing slash, and mixed-case in the endpoint segment all
+        // resolve to the same handler (Express matches case-insensitively) and
+        // so must be rejected the same. The `/ghost/api/admin` prefix stays
+        // lowercase because the API-key auth layer rejects mixed-case prefixes
+        // at 401 (JWT audience validation) before the blocklist runs.
+        const API_PREFIX = '/ghost/api/admin';
+        const pathVariants = (endpoint) => {
+            const base = `${API_PREFIX}${endpoint}`;
+            const mixedCase = `${API_PREFIX}${endpoint.replace(/(?<=\/)[a-z]/g, c => c.toUpperCase())}`;
+            return [base, `${base}/`, mixedCase];
+        };
+
+        const blockedRequests = [
+            ...pathVariants('/db').map(path => ({
+                label: `DELETE ${path}`,
+                method: 'DELETE',
+                path
+            })),
+            ...pathVariants('/users/owner').map(path => ({
+                label: `PUT ${path}`,
+                method: 'PUT',
+                path,
+                body: () => ({owner: [{id: fixtureManager.get('users', 1).id, email: fixtureManager.get('users', 1).email}]})
+            })),
+            ...pathVariants('/authentication/reset').map(path => ({
+                label: `POST ${path}`,
+                method: 'POST',
+                path
+            }))
+        ];
+
+        blockedRequests.forEach(({label, method, path, body}) => {
+            it(`blocks staff token: ${label}`, async function () {
                 await agent.useStaffTokenForOwner();
-                await agent
-                    .delete('db')
-                    .expectStatus(403);
-            });
-
-            it('Admin staff token should be blocked', async function () {
-                await agent.useStaffTokenForAdmin();
-                await agent
-                    .delete('db')
-                    .expectStatus(403);
-            });
-
-            it('Editor staff token should be blocked', async function () {
-                await agent.useStaffTokenForEditor();
-                await agent
-                    .delete('db')
-                    .expectStatus(403);
-            });
-
-            it('Regular user authentication should work (if user has permission)', async function () {
-                await agent.loginAsOwner();
-                // Owner actually has permission to delete all content, so this should succeed
-                // The important thing is that it's not blocked by the staff token check
-                await agent
-                    .delete('db')
-                    .expectStatus(204); // Success - owner can delete all content
+                const req = rawRequest(method, path);
+                if (body) {
+                    req.send(body());
+                }
+                const res = await req;
+                assert.equal(res.status, 403, `Expected 403 for ${method} ${path}`);
+                assert.equal(res.body.errors[0].type, 'NoPermissionError');
+                assert.equal(res.body.errors[0].message, 'Staff tokens are not allowed to access this endpoint');
             });
         });
 
-        describe('PUT /users/owner endpoint (transfer ownership)', function () {
-            it('Owner staff token should be blocked', async function () {
-                await agent.useStaffTokenForOwner();
-                await agent
-                    .put('users/owner')
-                    .body({
-                        owner: [{
-                            id: fixtureManager.get('users', 1).id,
-                            email: fixtureManager.get('users', 1).email
-                        }]
-                    })
-                    .expectStatus(403)
-                    .expect(({body}) => {
-                        assert.equal(body.errors[0].type, 'NoPermissionError');
-                        assert.equal(body.errors[0].message, 'Staff tokens are not allowed to access this endpoint');
-                    });
-            });
-
-            it('Admin staff token should be blocked', async function () {
-                await agent.useStaffTokenForAdmin();
-                await agent
-                    .put('users/owner')
-                    .body({
-                        owner: [{
-                            id: fixtureManager.get('users', 1).id,
-                            email: fixtureManager.get('users', 1).email
-                        }]
-                    })
-                    .expectStatus(403)
-                    .expect(({body}) => {
-                        assert.equal(body.errors[0].type, 'NoPermissionError');
-                        assert.equal(body.errors[0].message, 'Staff tokens are not allowed to access this endpoint');
-                    });
-            });
-
-            it('Regular user authentication should work (if user has permission)', async function () {
-                await agent.loginAsOwner();
-                await agent
-                    .put('users/owner')
-                    .body({
-                        owner: [{
-                            id: fixtureManager.get('users', 1).id,
-                            email: fixtureManager.get('users', 1).email
-                        }]
-                    })
-                    .expectStatus(200);
-            });
+        // Control: staff tokens on a non-blocked endpoint reach the permission
+        // system normally. Proves the blocklist is scoped, not global.
+        it('allows staff token on a non-blocked endpoint', async function () {
+            await agent.useStaffTokenForOwner();
+            await agent
+                .get('db')
+                .expectStatus(200);
         });
 
         describe('Everything else should get access according to their permissions', function () {

@@ -1,12 +1,8 @@
 const models = require('../../../../core/server/models');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
 
 describe('Unit: models/milestone', function () {
-    before(function () {
-        models.init();
-    });
-
     describe('validation', function () {
         describe('blank', function () {
             it('throws validation error for mandatory fields', function () {

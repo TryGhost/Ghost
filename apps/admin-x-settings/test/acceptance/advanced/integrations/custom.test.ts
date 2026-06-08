@@ -1,5 +1,5 @@
-import {Integration, IntegrationsResponseType} from '@tryghost/admin-x-framework/api/integrations';
-import {Webhook, WebhooksResponseType} from '@tryghost/admin-x-framework/api/webhooks';
+import {type Integration, type IntegrationsResponseType} from '@tryghost/admin-x-framework/api/integrations';
+import {type Webhook, type WebhooksResponseType} from '@tryghost/admin-x-framework/api/webhooks';
 import {chooseOptionInSelect, globalDataRequests, limitRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';
 
@@ -190,9 +190,11 @@ test.describe('Custom integrations', async () => {
 
         await modal.getByLabel('Description').fill('Test description');
         await modal.getByRole('button', {name: 'Save'}).click();
-        await modal.getByRole('button', {name: 'Close'}).click();
 
         await expect(integrationsSection).toHaveText(/Test description/);
+
+        await page.keyboard.press('Escape');
+        await expect(modal).toBeHidden();
 
         // Delete integration
 

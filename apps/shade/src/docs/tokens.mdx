@@ -1,0 +1,42 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Tokens / Tokens Guide" />
+
+<div className="sb-doc">
+
+# Tokens
+
+<p className="excerpt">Tokens are Shade's visual atoms — colours, type sizes, spacing, radii, shadows, motion. Every primitive, component, and pattern resolves down to these. Browse the live galleries in the sidebar; the rules for using them are short.</p>
+
+## The galleries
+
+- [**Colors**](?path=/docs/tokens-colors--docs) — surface, text, border, state, chart, and the raw palette.
+- [**Typography**](?path=/docs/tokens-typography--docs) — font families, size ramp, line-heights.
+- [**Spacing**](?path=/docs/tokens-spacing--docs) — the 0.4rem base unit and the semantic gap scale primitives use.
+- [**Radius**](?path=/docs/tokens-radius--docs) — numeric and semantic radii (`radius-control`, `radius-surface`, `radius-pill`).
+- [**Shadows**](?path=/docs/tokens-shadows--docs) — elevation tokens for cards, popovers, and modals.
+- [**Motion**](?path=/docs/tokens-motion--docs) — durations, easings, and named animations.
+- [**Breakpoints**](?path=/docs/tokens-breakpoints--docs) — responsive cut-offs backing Tailwind's `md:` / `lg:` variants.
+
+Toggle light/dark from the Storybook toolbar to see semantic tokens flip.
+
+## Two flavours
+
+**Semantic tokens** are named by purpose — `--background`, `--text-primary`, `--border-default`, `--surface-elevated`. They flip between light and dark mode automatically. Reach for these by default.
+
+**Raw tokens** are concrete values — `--color-gray-500`, `--text-base`, `--spacing`. They never change between modes. Use only when no semantic token fits (chart series, brand assets, illustrations).
+
+## Source files
+
+- `apps/shade/theme-variables.css` — semantic tokens + dark-mode overrides.
+- `apps/shade/tailwind.theme.css` — Tailwind `@theme` block: raw catalogue and bindings.
+- Semantic color variables should resolve directly to raw `--color-*` tokens, not to another semantic token. For example, prefer `--text-primary: var(--color-black)` over `--text-primary: var(--foreground)`.
+
+## Rules of consumption
+
+- Prefer Tailwind utilities — `bg-background`, `text-foreground`, `rounded-md` — over inline styles.
+- Never hard-code hex or `hsl()` values for UI chrome. They don't theme and don't dark-mode. Chart tokens are the current exception until the chart palette has its own raw scale.
+- Inside stylesheets, use `var(--token)` directly. Don't wrap variables in color functions.
+- Don't write `dark:` variants for colour. The tokens do that. (Exceptions: assets like logos and illustrations.)
+
+</div>

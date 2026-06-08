@@ -22,12 +22,12 @@ const path = require('path');
 const os = require('os');
 const crypto = require('crypto');
 
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 
 const fixtureUtils = require('./fixture-utils');
 const cacheRules = require('./fixtures/cache-rules');
 const redirectsUtils = require('./redirects');
-const configUtils = require('./configUtils');
+const configUtils = require('./config-utils');
 const urlServiceUtils = require('./url-service-utils');
 const mockManager = require('./e2e-framework-mock-manager');
 const mentionsJobsService = require('../../core/server/services/mentions-jobs');
@@ -53,9 +53,9 @@ let totalBoots = 0;
 
 /**
  * @param {Object} [options={}]
- * @param {Boolean} [options.backend] Boot the backend
- * @param {Boolean} [options.frontend] Boot the frontend
- * @param {Boolean} [options.server] Start a server
+ * @param {boolean} [options.backend] Boot the backend
+ * @param {boolean} [options.frontend] Boot the frontend
+ * @param {boolean} [options.server] Start a server
  * @returns {Promise<Express.Application>} ghost
  */
 const startGhost = async (options = {}) => {
@@ -221,7 +221,7 @@ const getContentAPIAgent = async () => {
  * agent.get('/posts/') without having to worry about URL paths
  *
  * @param {Object} [options={}]
- * @param {Boolean} [options.members] Include members in the boot process
+ * @param {boolean} [options.members] Include members in the boot process
  * @returns {Promise<InstanceType<AdminAPITestAgent>>} agent
  */
 const getAdminAPIAgent = async (options = {}) => {
@@ -533,7 +533,7 @@ module.exports = {
         // @NOTE: hack here! it's due to https://github.com/TryGhost/Toolbox/issues/341
         //        this matcher should be removed once the issue is solved - routing is redesigned
         //        An ideal solution would be removal of this matcher altogether.
-        anyLocalURL: stringMatching(/http:\/\/127.0.0.1:2369\/[A-Za-z0-9_-]+\//),
+        anyLocalURL: stringMatching(/http:\/\/127.0.0.1:\d+\/[A-Za-z0-9_-]+\//),
         stringMatching
     },
 
@@ -543,9 +543,9 @@ module.exports = {
     },
 
     // utilities
-    configUtils: require('./configUtils'),
+    configUtils: require('./config-utils'),
     dbUtils: require('./db-utils'),
-    urlUtils: require('./urlUtils'),
+    urlUtils: require('./url-utils'),
     resetRateLimits,
     cacheRules
 };

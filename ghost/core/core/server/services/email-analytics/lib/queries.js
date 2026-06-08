@@ -83,7 +83,7 @@ module.exports = {
      * @returns {Promise<Object|null>} The job data, or null if no job data is found.
      */
     async getJobData(jobName) {
-        return await db.knex('jobs').select('finished_at', 'started_at').where('name', jobName).first();
+        return await db.knex('jobs').select('finished_at', 'started_at', 'metadata').where('name', jobName).first();
     },
 
     /**
@@ -124,6 +124,49 @@ module.exports = {
             }
         } catch (err) {
             debug(`Error setting ${field} timestamp for job ${jobName}: ${err.message}`);
+        }
+    },
+
+    /**
+     * Retrieves and parses the metadata JSON for the specified job.
+     * @param {EmailAnalyticsJobName} jobName - The name of the job.
+     * @returns {Promise<Object|null>} The parsed metadata object, or null.
+     */
+    async getJobMetadata(jobName) {
+        try {
+            const row = await db.knex('jobs').select('metadata').where('name', jobName).first();
+            if (row && row.metadata) {
+                return JSON.parse(row.metadata);
+            }
+        } catch (err) {
+            logging.error(`Error reading metadata for job ${jobName}: ${err.message}`);
+        }
+        return null;
+    },
+
+    /**
+     * Writes metadata JSON for the specified job.
+     * @param {EmailAnalyticsJobName} jobName - The name of the job.
+     * @param {Object|null} metadata - The metadata to store, or null to clear.
+     * @returns {Promise<void>}
+     */
+    async setJobMetadata(jobName, metadata) {
+        try {
+            const value = metadata ? JSON.stringify(metadata) : null;
+            await db.knex.transaction(async (trx) => {
+                const result = await trx('jobs').update({metadata: value, updated_at: new Date()}).where('name', jobName);
+                if (result === 0 && metadata) {
+                    await trx('jobs').insert({
+                        id: new ObjectID().toHexString(),
+                        name: jobName,
+                        metadata: value,
+                        created_at: new Date(),
+                        status: 'queued'
+                    });
+                }
+            });
+        } catch (err) {
+            logging.error(`Error setting metadata for job ${jobName}: ${err.message}`);
         }
     },
 
@@ -201,5 +244,89 @@ module.exports = {
         await db.knex('members')
             .update(updateQuery)
             .where('id', memberId);
+    },
+
+    async aggregateMemberStatsBatch(memberIds) {
+        if (!memberIds || memberIds.length === 0) {
+            return;
+        }
+
+        // Batch query to get stats for all members at once
+        const stats = await db.knex('email_recipients')
+            .leftJoin('emails', 'emails.id', 'email_recipients.email_id')
+            .select(
+                'email_recipients.member_id',
+                db.knex.raw('COUNT(email_recipients.id) as email_count'),
+                db.knex.raw('SUM(CASE WHEN email_recipients.opened_at IS NOT NULL THEN 1 ELSE 0 END) as email_opened_count'),
+                db.knex.raw('SUM(CASE WHEN emails.track_opens = 1 THEN 1 ELSE 0 END) as tracked_count')
+            )
+            .whereIn('email_recipients.member_id', memberIds)
+            .groupBy('email_recipients.member_id');
+
+        // Build update data for each member
+        const memberStatsMap = new Map();
+        for (const stat of stats) {
+            const emailOpenRate = stat.tracked_count >= MIN_EMAIL_COUNT_FOR_OPEN_RATE
+                ? Math.round((stat.email_opened_count / stat.tracked_count) * 100)
+                : null;
+
+            memberStatsMap.set(stat.member_id, {
+                email_count: stat.email_count,
+                email_opened_count: stat.email_opened_count,
+                email_open_rate: emailOpenRate
+            });
+        }
+
+        // Build CASE statements for batch update
+        const emailCountCases = [];
+        const emailOpenedCountCases = [];
+        const emailOpenRateCases = [];
+        const emailCountBindings = [];
+        const emailOpenedCountBindings = [];
+        const emailOpenRateBindings = [];
+
+        for (const memberId of memberIds) {
+            const memberStats = memberStatsMap.get(memberId) || {
+                email_count: 0,
+                email_opened_count: 0,
+                email_open_rate: null
+            };
+
+            emailCountCases.push(`WHEN ? THEN ?`);
+            emailCountBindings.push(memberId, memberStats.email_count);
+
+            emailOpenedCountCases.push(`WHEN ? THEN ?`);
+            emailOpenedCountBindings.push(memberId, memberStats.email_opened_count);
+
+            if (memberStats.email_open_rate !== null) {
+                emailOpenRateCases.push(`WHEN ? THEN ?`);
+                emailOpenRateBindings.push(memberId, memberStats.email_open_rate);
+            } else {
+                emailOpenRateCases.push(`WHEN ? THEN NULL`);
+                emailOpenRateBindings.push(memberId);
+            }
+        }
+
+        // Combine bindings in the order they appear in the SQL statement:
+        // 1. All bindings for email_count CASE statement
+        // 2. All bindings for email_opened_count CASE statement
+        // 3. All bindings for email_open_rate CASE statement
+        // 4. Member IDs for the WHERE IN clause
+        const bindings = [
+            ...emailCountBindings,
+            ...emailOpenedCountBindings,
+            ...emailOpenRateBindings,
+            ...memberIds
+        ];
+
+        // Execute batched update with CASE statements
+        await db.knex.raw(`
+            UPDATE members
+            SET
+                email_count = CASE id ${emailCountCases.join(' ')} END,
+                email_opened_count = CASE id ${emailOpenedCountCases.join(' ')} END,
+                email_open_rate = CASE id ${emailOpenRateCases.join(' ')} END
+            WHERE id IN (${memberIds.map(() => '?').join(',')})
+        `, bindings);
     }
 };

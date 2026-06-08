@@ -4,10 +4,12 @@
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "module": "ESNext",
     "skipLibCheck": true,
+    "types": ["node", "vitest/globals", "@testing-library/jest-dom/vitest"],
 
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
@@ -23,6 +25,7 @@
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
+    "erasableSyntaxOnly": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },

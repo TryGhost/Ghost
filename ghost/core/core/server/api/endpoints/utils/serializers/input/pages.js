@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const config = require('../../../../../../shared/config');
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:input:pages');
 const {ValidationError} = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
@@ -10,7 +11,6 @@ const postsMetaSchema = require('../../../../../data/schema').tables.posts_meta;
 const postsSchema = require('../../../../../data/schema').tables.posts;
 const clean = require('./utils/clean');
 const lexical = require('../../../../../lib/lexical');
-const sentry = require('../../../../../../shared/sentry');
 
 const messages = {
     failedHtmlToMobiledoc: 'Failed to convert HTML to Mobiledoc',
@@ -52,12 +52,23 @@ function selectAllAllowedColumns(frame) {
     }
 }
 
+// Mirror of input/posts.js. See the comment there.
+function forceUrlRelationsWhenLazy(frame) {
+    if (config.get('lazyRouting')
+        && Array.isArray(frame.options.columns)
+        && frame.options.columns.includes('url')) {
+        frame.options.withRelated = _.union(frame.options.withRelated || [], ['tags', 'authors']);
+    }
+}
+
 function defaultRelations(frame) {
+    forceUrlRelationsWhenLazy(frame);
+
     if (frame.options.withRelated) {
         return;
     }
 
-    if (frame.options.columns && !frame.options.withRelated) {
+    if (frame.options.columns) {
         return false;
     }
 
@@ -127,10 +138,11 @@ module.exports = {
         if (localUtils.isContentAPI(frame)) {
             // CASE: the content api endpoint for posts should not return mobiledoc or lexical
             removeSourceFormats(frame); // remove from the format field
-            selectAllAllowedColumns(frame); // remove from any specified column or selectRaw options            
+            selectAllAllowedColumns(frame); // remove from any specified column or selectRaw options
 
             setDefaultOrder(frame);
             forceVisibilityColumn(frame);
+            forceUrlRelationsWhenLazy(frame);
         }
 
         if (!localUtils.isContentAPI(frame)) {
@@ -149,6 +161,7 @@ module.exports = {
             removeSourceFormats(frame);
             setDefaultOrder(frame);
             forceVisibilityColumn(frame);
+            forceUrlRelationsWhenLazy(frame);
         }
 
         if (!localUtils.isContentAPI(frame)) {
@@ -172,7 +185,6 @@ module.exports = {
                 try {
                     frame.data.pages[0].mobiledoc = JSON.stringify(mobiledoc.htmlToMobiledocConverter(html));
                 } catch (err) {
-                    sentry.captureException(err);
                     throw new ValidationError({
                         message: tpl(messages.failedHtmlToMobiledoc),
                         err
@@ -192,7 +204,6 @@ module.exports = {
                 try {
                     frame.data.pages[0].lexical = JSON.stringify(lexical.htmlToLexicalConverter(html));
                 } catch (err) {
-                    sentry.captureException(err);
                     throw new ValidationError({
                         message: tpl(messages.failedHtmlToLexical),
                         err

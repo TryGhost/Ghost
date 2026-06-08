@@ -22,46 +22,58 @@ By default, the script adds a default floating trigger button on the bottom righ
 
 Its possible to add custom trigger button of your own by adding data attribute `data-portal` to any HTML tag on page, and also specify a specific [page](https://github.com/TryGhost/Ghost/blob/main/ghost/portal/src/pages.js#L13-L22) to open from it by using it as `data-portal=signup`.
 
+Share modal can be opened with `data-portal="share"` (or `#/share`).
+
+Default (zero-config) usage:
+```html
+<button type="button" data-portal="share">Share</button>
+```
+
+On pages where `{{ghost_head}}` is rendered, Portal will auto-resolve metadata from DOM tags:
+- URL: canonical URL (or current URL fallback)
+- Title: Open Graph title (or document title fallback)
+- Image: Open Graph image (or Twitter image fallback)
+
+Troubleshooting missing preview metadata:
+1. Verify the template includes `{{ghost_head}}`.
+2. Verify rendered HTML contains canonical + OG/Twitter tags.
+
 The script also adds custom class names to this element for open and close state of popup - `gh-portal-open` and `gh-portal-close`, allowing devs to update its UI based on popup state.
 
 Refer the [docs](https://ghost.org/help/setup-members/#customize-portal-settings) to read about ways in which Portal can be customized for your site.
 
 ## Develop
 
-Run Portal within the Ghost monorepo with:
+Portal runs automatically when using Ghost's development command from the monorepo root:
 ```
-yarn dev --portal
+pnpm dev
 ```
 
-Alternatively, use  `yarn dev --all` to load Portal and other supported apps/services, see [dev.js](https://github.com/TryGhost/Ghost/blob/main/.github/scripts/dev.js) for more information.
-
+This starts all frontend apps (including Portal.)
 ---
 
-To run Portal in a standalone fashion, use `yarn start` and open [http://localhost:3000](http://localhost:3000).
+To run Portal in a standalone fashion, use `pnpm preview` and open [http://localhost:3000](http://localhost:3000).
 
 ## Build
 
 To create a production minified bundle in `umd/portal.min.js`:
 ```
-yarn build
+pnpm build
 ```
 
 ## Test
 
 To run tests in watch mode:
 ```
-yarn test
+pnpm test
 ```
 
-### Ghost e2e browser tests
+### Ghost e2e tests
 
-Portal is primarily tested via Ghost's e2e browser tests. In order to test against your local changes rather than the last published package on npm you need to have the local portal build being served and to configure Ghost to use the local URL.
-
-1. Run `yarn dev` in `ghost/apps/portal` to serve the local portal build on http://localhost:4175/portal.min.js
-2. Run the Ghost e2e tests in `ghost/core`, providing an ENV variable to override the portal URL:
-   ```
-   portal__url=http://localhost:4175/portal.min.js STRIPE_ACCOUNT_ID=acct_xxx STRIPE_PUBLISHABLE_KEY=pk_test_xxx STRIPE_SECRET_KEY=sk_test_xxx yarn test:browser:portal
-   ```
+Portal is primarily tested via Ghost's e2e Playwright tests in the `e2e/` directory. Run them from the monorepo root:
+```
+pnpm test:e2e
+```
 
 ## Release
 
@@ -73,12 +85,12 @@ In order to have Ghost's e2e tests run against the new code on CI or to test the
 
 ### Patch release
 
-1. Run `yarn ship` and select a patch version when prompted
+1. Run `pnpm ship` and select a patch version when prompted
 2. Merge the release commit to `main`
 
 ### Minor / major release
 
-1. Run `yarn ship` and select a minor or major version when prompted
+1. Run `pnpm ship` and select a minor or major version when prompted
 2. Merge the release commit to `main`
 3. Wait until a new version of Ghost is released
 
@@ -88,4 +100,4 @@ If the CI doesn't clear JsDelivr cache to get the new version out instantly, you
 
 # Copyright & License
 
-Copyright (c) 2013-2025 Ghost Foundation - Released under the [MIT license](LICENSE).
+Copyright (c) 2013-2026 Ghost Foundation - Released under the [MIT license](LICENSE).

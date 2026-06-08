@@ -1,0 +1,51 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Primitives / Primitives Guide" />
+
+<div className="sb-doc">
+
+# Primitives
+
+<p className="excerpt">Layout vocabulary. `Stack`, `Inline`, `Box`, `Grid`, `Container`, `Text`. Use these instead of writing `flex flex-col gap-4` so layouts read by intent.</p>
+
+## Use a primitive when
+
+- You need a column of children → `Stack`
+- You need a row → `Inline`
+- You need padding or a radius around content → `Box`
+- You need a width-constrained shell → `Container`
+- You need a two-dimensional layout → `Grid`
+- You're rendering text with a size/tone/weight → `Text`
+
+Use semantic gaps (`gap="md"`), not raw numbers (`gap-4`). Map: see [Tokens / Spacing](?path=/docs/tokens-spacing--docs).
+
+## Don't
+
+- Reach for a pattern first if one exists. Building a page header? Use `PageHeader`. Building a list page? Use `ListPage`.
+- Put product logic inside a primitive. If a wrapper is starting to know about Ghost data, it's a Pattern.
+- Wrap content in a bare `<div>` carrying only `flex / grid / gap` utilities — that's exactly what primitives replace.
+
+Full rules and decision flow: [Layers](?path=/docs/overview-layers--docs). Agent rules: `apps/shade/AGENTS.md`.
+
+## Example
+
+A settings row — label and description on the left, control on the right:
+
+```tsx
+import {Switch} from '@tryghost/shade/components';
+import {Box, Inline, Stack, Text} from '@tryghost/shade/primitives';
+
+<Box padding="lg" radius="md" className="border border-border-default">
+    <Inline align="center" gap="md" justify="between">
+        <Stack gap="xs">
+            <Text weight="semibold">Email notifications</Text>
+            <Text size="sm" tone="secondary">Get notified when your posts get engagement.</Text>
+        </Stack>
+        <Switch />
+    </Inline>
+</Box>
+```
+
+Browse the sidebar for each primitive's props and live stories.
+
+</div>

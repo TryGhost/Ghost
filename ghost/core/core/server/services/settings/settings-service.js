@@ -9,10 +9,11 @@ const limits = require('../limits');
 const config = require('../../../shared/config');
 const adapterManager = require('../adapter-manager');
 const SettingsCache = require('../../../shared/settings-cache');
-const SettingsBREADService = require('./SettingsBREADService');
+const SettingsBREADService = require('./settings-bread-service');
+const {generatePrivateSiteAccessCode} = require('./private-site-access-code');
 const {obfuscatedSetting, isSecretSetting, hideValueIfSecret} = require('./settings-utils');
 const mail = require('../mail');
-const SingleUseTokenProvider = require('../members/SingleUseTokenProvider');
+const SingleUseTokenProvider = require('../members/single-use-token-provider');
 const urlUtils = require('../../../shared/url-utils');
 
 const ObjectId = require('bson-objectid').default;
@@ -22,6 +23,18 @@ const emailAddressService = require('../email-address');
 const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
 const MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE = 10 * 60 * 1000;
 const MAGIC_LINK_TOKEN_MAX_USAGE_COUNT = 7;
+
+const getSettingsOverrides = () => {
+    const settingsOverrides = config.get('hostSettings:settingsOverrides') || {};
+    const limitOverrides = {};
+
+    // Transistor.fm's Ghost-based features should be treated as off if the webhooks functionality is limited by the host
+    if (config.get('hostSettings:limits:customIntegrations:disabled') === true) {
+        limitOverrides.transistor = false;
+    }
+
+    return Object.assign({}, settingsOverrides, limitOverrides);
+};
 
 /**
  * @returns {SettingsBREADService} instance of the PostsService
@@ -73,12 +86,64 @@ module.exports = {
      */
     async init() {
         const cacheStore = adapterManager.getAdapter('cache:settings');
-        const settingsCollection = await models.Settings.populateDefaults();
-        const settingsOverrides = config.get('hostSettings:settingsOverrides') || {};
+        await models.Settings.populateDefaults();
+        await this.enforcePublicSiteAccessLimit();
+        const settingsCollection = await models.Settings.findAll({context: {internal: true}});
+        const settingsOverrides = getSettingsOverrides();
         SettingsCache.init(events, settingsCollection, this.getCalculatedFields(), cacheStore, settingsOverrides);
 
         // Validate site_uuid matches config
-        await this.validateSiteUuid();
+        this.validateSiteUuid();
+    },
+
+    /**
+     * When the `publicSiteAccess` flag limit is disabled, ensure the site
+     * is private and has an access code before the cache is built.
+     *
+     * @private
+     */
+    async enforcePublicSiteAccessLimit() {
+        if (!limits.isDisabled('publicSiteAccess')) {
+            return;
+        }
+
+        const isPrivateSetting = await models.Settings.findOne({key: 'is_private'}, {context: {internal: true}});
+        // Note: the `password` setting is the storage key for what we call the
+        // access code; the underlying setting is staying named for compatibility
+        // and will be renamed in a separate follow-up.
+        const accessCodeSetting = await models.Settings.findOne({key: 'password'}, {context: {internal: true}});
+        const writes = [];
+
+        if (!isPrivateSetting || isPrivateSetting.get('value') !== true) {
+            writes.push({key: 'is_private', value: true});
+        }
+
+        const currentAccessCode = accessCodeSetting && accessCodeSetting.get('value');
+        if (typeof currentAccessCode !== 'string' || currentAccessCode.trim() === '') {
+            writes.push({key: 'password', value: generatePrivateSiteAccessCode()});
+        }
+
+        if (writes.length === 0) {
+            return;
+        }
+
+        await models.Settings.edit(writes, {context: {internal: true}});
+    },
+
+    /**
+     * Generate and persist a new private site access code.
+     *
+     * The code is always generated server-side. Callers cannot provide their
+     * own value, and the write runs with internal context so it can regenerate
+     * a read-only access code without opening up generic settings edits.
+     *
+     * @returns {Promise<*>}
+     */
+    async regeneratePrivateSiteAccessCode() {
+        return await models.Settings.edit([{
+            key: 'password',
+            value: generatePrivateSiteAccessCode()
+        }], {context: {internal: true}});
     },
 
     /**
@@ -109,7 +174,7 @@ module.exports = {
         fields.push(new CalculatedField({key: 'all_blocked_email_domains', type: 'string', group: 'members', fn: settingsHelpers.getAllBlockedEmailDomains.bind(settingsHelpers), dependents: ['blocked_email_domains']}));
 
         // Social web (ActivityPub)
-        fields.push(new CalculatedField({key: 'social_web_enabled', type: 'boolean', group: 'social_web', fn: settingsHelpers.isSocialWebEnabled.bind(settingsHelpers), dependents: ['social_web', 'labs']}));
+        fields.push(new CalculatedField({key: 'social_web_enabled', type: 'boolean', group: 'social_web', fn: settingsHelpers.isSocialWebEnabled.bind(settingsHelpers), dependents: ['social_web', 'labs', 'is_private']}));
 
         // Web analytics
         fields.push(new CalculatedField({key: 'web_analytics_enabled', type: 'boolean', group: 'analytics', fn: settingsHelpers.isWebAnalyticsEnabled.bind(settingsHelpers), dependents: ['web_analytics']}));
@@ -158,7 +223,7 @@ module.exports = {
      * The configured site_uuid is only used once when the site_uuid setting is set in a migration
      * Exits with an error if they differ
      */
-    async validateSiteUuid() {
+    validateSiteUuid() {
         const configSiteUuid = config.get('site_uuid');
         const settingSiteUuid = SettingsCache.get('site_uuid');
 

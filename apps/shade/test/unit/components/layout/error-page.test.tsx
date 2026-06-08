@@ -34,8 +34,8 @@ describe('ErrorPage Component', () => {
         const handleBackToDashboard = vi.fn();
         render(
             <ErrorPage 
-                onBackToDashboard={handleBackToDashboard} 
                 data-testid="error-page" 
+                onBackToDashboard={handleBackToDashboard} 
             />
         );
         
@@ -46,7 +46,7 @@ describe('ErrorPage Component', () => {
     });
 
     it('passes additional props to the outer div', () => {
-        render(<ErrorPage id="custom-id" aria-label="Error message" data-testid="error-page" />);
+        render(<ErrorPage aria-label="Error message" data-testid="error-page" id="custom-id" />);
         const errorPage = screen.getByTestId('error-page');
         
         assert.equal(errorPage.id, 'custom-id', 'Should have custom id attribute');

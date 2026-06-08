@@ -58,7 +58,11 @@ const check = async function check(themeName, theme, options = {}) {
             keepExtractedDir: true,
             checkVersion: checkedVersion,
             labs: labs.getAll(),
-            skipChecks: options.skipChecks || false
+            skipChecks: options.skipChecks || false,
+            limits: {
+                perEntryUncompressedBytes: config.get('theme:uploadLimits:entryUncompressedBytes'),
+                totalUncompressedBytes: config.get('theme:uploadLimits:totalUncompressedBytes')
+            }
         });
     } else {
         debug('non-zip mode');

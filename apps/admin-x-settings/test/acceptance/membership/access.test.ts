@@ -1,7 +1,71 @@
-import {chooseOptionInSelect, getOptionsFromSelect, globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
+import {chooseOptionInSelect, getOptionsFromSelect, globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse, waitForApiRequest} from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';
 
+const createConfigWithLimits = (limits: Record<string, unknown>) => ({
+    ...globalDataRequests.browseConfig,
+    response: {
+        config: {
+            ...responseFixtures.config.config,
+            hostSettings: {
+                ...responseFixtures.config.config.hostSettings,
+                limits
+            }
+        }
+    }
+});
+
 test.describe('Access settings', async () => {
+    test('Supports switching site visibility between public and private', async ({page}) => {
+        const mockLock = await mockApi({page, requests: {
+            ...globalDataRequests,
+            editSettings: {method: 'PUT', path: '/settings/', response: updatedSettingsResponse([
+                {key: 'is_private', value: true},
+                {key: 'password', value: 'secret'}
+            ])}
+        }});
+
+        await page.goto('/');
+
+        const accessSection = page.getByTestId('access');
+        const siteVisibilitySelect = accessSection.getByTestId('site-visibility-select');
+
+        await expect(accessSection).toBeVisible();
+        await expect(siteVisibilitySelect).toContainText('Public');
+
+        await chooseOptionInSelect(siteVisibilitySelect, 'Private');
+        await accessSection.getByTestId('site-access-code').fill('secret');
+        await expect(accessSection.getByText('A private RSS feed is available here')).toHaveCount(0);
+        await accessSection.getByRole('button', {name: 'Save'}).click();
+
+        await expect(siteVisibilitySelect).toContainText('Private');
+        await expect(accessSection.getByText('A private RSS feed is available here')).toHaveCount(1);
+
+        expect(mockLock.lastApiRequests.editSettings?.body).toEqual({
+            settings: [
+                {key: 'is_private', value: true},
+                {key: 'password', value: 'secret'}
+            ]
+        });
+
+        const mockUnlock = await mockApi({page, requests: {
+            ...globalDataRequests,
+            editSettings: {method: 'PUT', path: '/settings/', response: updatedSettingsResponse([
+                {key: 'is_private', value: false}
+            ])}
+        }});
+
+        await chooseOptionInSelect(siteVisibilitySelect, 'Public');
+        await accessSection.getByRole('button', {name: 'Save'}).click();
+
+        await expect(siteVisibilitySelect).toContainText('Public');
+
+        expect(mockUnlock.lastApiRequests.editSettings?.body).toEqual({
+            settings: [
+                {key: 'is_private', value: false}
+            ]
+        });
+    });
+
     test('Supports editing access', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
@@ -16,17 +80,17 @@ test.describe('Access settings', async () => {
 
         const section = page.getByTestId('access');
 
-        // Check current selected values
-        await expect(section.getByText('Anyone can sign up')).toHaveCount(1);
-        await expect(section.getByText('Public')).toHaveCount(1);
-        await expect(section.getByText('Nobody')).toHaveCount(1);
-
         const subscriptionAccessSelect = section.getByTestId('subscription-access-select');
         const defaultPostAccessSelect = section.getByTestId('default-post-access-select');
         const commentingSelect = section.getByTestId('commenting-select');
 
+        // Check current selected values
+        await expect(subscriptionAccessSelect).toContainText('Public');
+        await expect(defaultPostAccessSelect).toContainText('Public');
+        await expect(commentingSelect).toContainText('Nobody');
+
         // Check available options
-        await expect(getOptionsFromSelect(subscriptionAccessSelect)).resolves.toEqual(['Anyone can sign up', 'Paid-members only', 'Invite-only', 'Nobody']);
+        await expect(getOptionsFromSelect(subscriptionAccessSelect)).resolves.toEqual(['Public', 'Paid-members only', 'Invite-only', 'Nobody']);
         await expect(getOptionsFromSelect(defaultPostAccessSelect)).resolves.toEqual(['Public', 'Members only', 'Paid-members only', 'Specific tiers']);
         await expect(getOptionsFromSelect(commentingSelect)).resolves.toEqual(['All members', 'Paid-members only', 'Nobody']);
 
@@ -49,6 +113,78 @@ test.describe('Access settings', async () => {
                 {key: 'comments_enabled', value: 'all'}
             ]
         });
+    });
+
+    test('Regenerates locked private-site access code server-side', async ({page}) => {
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseConfig: createConfigWithLimits({
+                publicSiteAccess: {
+                    disabled: true,
+                    error: 'This plan does not include public site access'
+                }
+            }),
+            browseSettings: {
+                ...globalDataRequests.browseSettings,
+                response: updatedSettingsResponse([
+                    {key: 'is_private', value: true, is_read_only: true},
+                    {key: 'password', value: 'fake-123', is_read_only: true}
+                ])
+            },
+            regenerateAccessCode: {
+                method: 'POST',
+                path: '/settings/access_code/regenerate/',
+                response: updatedSettingsResponse([
+                    {key: 'is_private', value: true, is_read_only: true},
+                    {key: 'password', value: 'fake-456', is_read_only: true}
+                ])
+            }
+        }});
+
+        await page.goto('/');
+
+        const accessSection = page.getByTestId('access');
+        const accessCode = accessSection.getByTestId('site-access-code');
+
+        await expect(accessCode).toHaveValue('fake-123');
+        await accessSection.getByTestId('regenerate-access-code').click();
+
+        const request = await waitForApiRequest(lastApiRequests, 'regenerateAccessCode');
+        expect(request.body).toBeNull();
+        await expect(accessCode).toHaveValue('fake-456');
+    });
+
+    test('Does not clip dropdown options off the Access card in pre-launch mode', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseConfig: createConfigWithLimits({
+                publicSiteAccess: {
+                    disabled: true,
+                    error: 'This plan does not include public site access'
+                }
+            })
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('access');
+
+        await expect(section.getByText('Pre-launch mode')).toBeVisible();
+
+        await section.getByTestId('commenting-select').click();
+
+        const lastOption = page.locator('[data-testid="select-option"]', {hasText: 'Nobody'});
+        await expect(lastOption).toBeVisible();
+
+        const box = await lastOption.boundingBox();
+        expect(box).not.toBeNull();
+
+        const optionIsActuallyPainted = await page.evaluate(({x, y, width, height}) => {
+            const el = document.elementFromPoint(x + width / 2, y + height / 2);
+            return Boolean(el?.closest('[data-testid="select-option"]'));
+        }, box!);
+
+        expect(optionIsActuallyPainted).toBe(true);
     });
 
     test('Disables other sections when signup is disabled', async ({page}) => {
@@ -76,7 +212,7 @@ test.describe('Access settings', async () => {
         await expect(section.getByTestId('subscription-access-select')).toContainText('Nobody');
 
         await expect(page.getByTestId('portal').getByRole('button', {name: 'Customize'})).toBeDisabled();
-        await expect(page.getByTestId('enable-newsletters')).toContainText('only existing members will receive newsletters');
+        await expect(page.getByTestId('enable-newsletters')).toContainText('which disables all newsletter sending');
     });
 
     test('Supports selecting specific tiers', async ({page}) => {

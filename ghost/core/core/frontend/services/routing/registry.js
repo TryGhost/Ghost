@@ -8,8 +8,8 @@ let routers = {};
 module.exports = {
     /**
      * @description Get's called if you register a url pattern in express.
-     * @param {String} routerName
-     * @param {String} route
+     * @param {string} routerName
+     * @param {string} route
      */
     setRoute(routerName, route) {
         routes.push({route: route, from: routerName});
@@ -61,6 +61,7 @@ module.exports = {
      *
      * - index collection (/)
      * - if you only have one collection, we take this rss url
+     * - if you have multiple collections without index, take the first one with RSS enabled
      */
     /**
      * @description Helper to figure out the primary rss url.
@@ -71,7 +72,7 @@ module.exports = {
      * More context: https://github.com/TryGhost/Team/issues/65#issuecomment-393622816
      *
      * @param {Object} options
-     * @returns {String}
+     * @returns {string}
      */
     getRssUrl(options) {
         let rssUrl = null;
@@ -96,6 +97,14 @@ module.exports = {
             if (rssUrl) {
                 return rssUrl;
             }
+        } else if (collectionRouters && collectionRouters.length > 1) {
+            // CASE: multiple collections without index - return first one with RSS enabled
+            for (const router of collectionRouters) {
+                rssUrl = router.getRssUrl(options);
+                if (rssUrl) {
+                    return rssUrl;
+                }
+            }
         }
 
         return rssUrl;
@@ -113,9 +122,18 @@ module.exports = {
      */
     resetAllRouters() {
         _.each(routers, (value) => {
-            value.reset();
+            if (value && typeof value.reset === 'function') {
+                value.reset();
+            }
         });
 
+        routers = {};
+    },
+
+    /**
+     * @description Clear all routers (for testing).
+     */
+    clearAllRouters() {
         routers = {};
     }
 };

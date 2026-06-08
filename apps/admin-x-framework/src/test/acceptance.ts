@@ -25,7 +25,7 @@ import postReferrersFixture from './responses/post_referrers.json';
 
 import {ActionsResponseType} from '../api/actions';
 import {ConfigResponseType} from '../api/config';
-import {CustomThemeSettingsResponseType} from '../api/customThemeSettings';
+import {CustomThemeSettingsResponseType} from '../api/custom-theme-settings';
 import {InvitesResponseType} from '../api/invites';
 import {LabelsResponseType} from '../api/labels';
 import {NewslettersResponseType} from '../api/newsletters';
@@ -44,6 +44,7 @@ interface MockRequestConfig {
     method: string;
     path: string | RegExp;
     response: unknown;
+    rawResponse?: string | ArrayBuffer | Uint8Array | Buffer;
     responseStatus?: number;
     responseHeaders?: {[key: string]: string};
 }
@@ -81,11 +82,8 @@ export const responseFixtures = {
 };
 
 const defaultLabFlags = {
-    audienceFeedback: false,
     collections: false,
-    themeErrorsNotification: false,
     outboundLinkTagging: false,
-    announcementBar: false,
     members: false
 };
 
@@ -127,7 +125,7 @@ export function toggleLabsFlag(flag: string, value: boolean) {
     let labs: LabsSettings;
     try {
         labs = JSON.parse(labsSetting.value);
-    } catch (e) {
+    } catch {
         throw new Error('Failed to parse labs settings');
     }
 
@@ -153,7 +151,7 @@ export const settingsWithStripe = updatedSettingsResponse([
 
 export const limitRequests = {
     browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
-    browseInvites: {method: 'GET', path: '/invites/', response: responseFixtures.invites},
+    browseInvites: {method: 'GET', path: '/invites/?limit=100&include=roles', response: responseFixtures.invites},
     browseRoles: {method: 'GET', path: '/roles/?limit=100', response: responseFixtures.roles},
     browseNewslettersLimit: {method: 'GET', path: '/newsletters/?filter=status%3Aactive&limit=1', response: responseFixtures.newsletters}
 };
@@ -211,6 +209,22 @@ export function createMockRequests(overrides: Record<string, MockRequestConfig> 
 export async function mockApi<Requests extends Record<string, MockRequestConfig>>({page, requests, options = {}}: {page: Page, requests: Requests, options?: {useActivityPub?: boolean}}) {
     const lastApiRequests: {[key in keyof Requests]?: RequestRecord} = {};
 
+    const getResponseBody = (matchingMock: MockRequestConfig) => {
+        if (typeof matchingMock.rawResponse === 'string' || Buffer.isBuffer(matchingMock.rawResponse)) {
+            return matchingMock.rawResponse;
+        }
+
+        if (matchingMock.rawResponse instanceof ArrayBuffer) {
+            return Buffer.from(matchingMock.rawResponse);
+        }
+
+        if (matchingMock.rawResponse instanceof Uint8Array) {
+            return Buffer.from(matchingMock.rawResponse);
+        }
+
+        return typeof matchingMock.response === 'string' ? matchingMock.response : JSON.stringify(matchingMock.response);
+    };
+
     const namedRequests = Object.entries(requests).reduce(
         (array, [key, value]) => array.concat({name: key, ...value}),
         [] as Array<MockRequestConfig & {name: keyof Requests}>
@@ -263,12 +277,18 @@ export async function mockApi<Requests extends Record<string, MockRequestConfig>
 
         await route.fulfill({
             status: matchingMock.responseStatus || 200,
-            body: typeof matchingMock.response === 'string' ? matchingMock.response : JSON.stringify(matchingMock.response),
+            body: getResponseBody(matchingMock),
             headers: matchingMock.responseHeaders || {}
         });
     });
 
     return {lastApiRequests};
+}
+
+export async function waitForApiRequest<Requests extends Record<string, MockRequestConfig>>(lastApiRequests: {[key in keyof Requests]?: RequestRecord}, requestName: keyof Requests) {
+    await expect.poll(() => lastApiRequests[requestName]).toBeTruthy();
+
+    return lastApiRequests[requestName]!;
 }
 
 export function updatedSettingsResponse(newSettings: Array<{ key: string, value: string | boolean | null, is_read_only?: boolean }>) {
@@ -302,7 +322,7 @@ export async function mockSitePreview({page, url, response}: {page: Page, url: s
     const lastRequest: {previewHeader?: string} = {};
     const previewRequests: string[] = [];
 
-    await page.route(url, async (route) => {
+    await page.route(`${url}**`, async (route) => {
         if (route.request().method() !== 'POST') {
             return route.continue();
         }
@@ -351,7 +371,7 @@ export async function testUrlValidation(input: Locator, textToEnter: string, exp
     await input.fill(textToEnter);
     await input.blur();
 
-    expect(input).toHaveValue(expectedResult);
+    await expect(input).toHaveValue(expectedResult);
 
     if (expectedError) {
         await expect(input.locator('xpath=../..')).toContainText(expectedError);
@@ -359,5 +379,7 @@ export async function testUrlValidation(input: Locator, textToEnter: string, exp
 };
 
 export async function expectExternalNavigate(page: Page, link: Partial<ExternalLink>) {
-    await page.waitForURL(`/external/${encodeURIComponent(JSON.stringify({isExternal: true, ...link}))}`);
+    const expected = {isExternal: true, ...link};
+    await expect.poll(() => page.locator('body').getAttribute('data-external-navigate').then(v => v && JSON.parse(v))).toEqual(expected);
+    await page.locator('body').evaluate(el => delete el.dataset.externalNavigate);
 };

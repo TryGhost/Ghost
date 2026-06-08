@@ -31,7 +31,7 @@ export const useBrowseSettings = createQuery<SettingsResponseType>({
     dataType,
     path: '/settings/',
     defaultSearchParams: {
-        group: 'site,theme,private,members,portal,newsletter,email,labs,slack,unsplash,views,firstpromoter,editor,comments,analytics,announcement,pintura,donations,security,social_web,explore'
+        group: 'site,theme,private,members,portal,newsletter,email,labs,slack,unsplash,views,firstpromoter,editor,comments,analytics,announcement,pintura,donations,security,social_web,explore,transistor'
     }
 });
 
@@ -46,6 +46,37 @@ export const useEditSettings = createMutation<SettingsResponseType, Setting[]>({
             ...newData,
             settings: newData.settings
         })
+    },
+    // Whenever we update the settings, we want to make sure we invalidate all
+    // other queries to ensure any ripple effects are reflected in the UI. The
+    // updated settings themselves will have been returned in the settings
+    // response, so we don't need to refetch them.
+    invalidateQueries: {
+        filters: {
+            predicate(query) {
+                return query.queryKey[0] !== dataType;
+            }
+        }
+    }
+});
+
+export const useRegenerateAccessCode = createMutation<SettingsResponseType, null>({
+    method: 'POST',
+    path: () => '/settings/access_code/regenerate/',
+    updateQueries: {
+        dataType,
+        emberUpdateType: 'createOrUpdate',
+        update: newData => ({
+            ...newData,
+            settings: newData.settings
+        })
+    },
+    invalidateQueries: {
+        filters: {
+            predicate(query) {
+                return query.queryKey[0] !== dataType;
+            }
+        }
     }
 });
 

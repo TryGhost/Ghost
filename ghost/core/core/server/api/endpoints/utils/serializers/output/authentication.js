@@ -40,10 +40,16 @@ module.exports = {
     },
 
     resetPassword(data, apiConfig, frame) {
+        const resetResponse = {
+            message: tpl(messages.passwordChanged)
+        };
+
+        if (data.emailVerificationToken) {
+            resetResponse.emailVerificationToken = data.emailVerificationToken;
+        }
+
         frame.response = {
-            password_reset: [{
-                message: tpl(messages.passwordChanged)
-            }]
+            password_reset: [resetResponse]
         };
     },
 
@@ -63,6 +69,16 @@ module.exports = {
         frame.response = {
             invitation: [{
                 valid: !!data
+            }]
+        };
+    },
+
+    reset(data, apiConfig, frame) {
+        frame.response = {
+            security_action: [{
+                action: 'reset_authentication',
+                api_keys_rotated: data?.apiKeysRotated ?? 0,
+                users_locked: data?.usersLocked ?? 0
             }]
         };
     }

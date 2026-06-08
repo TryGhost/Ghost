@@ -1,6 +1,6 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const configUtils = require('../../utils/configUtils');
+const configUtils = require('../../utils/config-utils');
 const errors = require('@tryghost/errors');
 
 const Sentry = require('@sentry/node');
@@ -69,7 +69,7 @@ describe('UNIT: sentry', function () {
     });
 
     describe('beforeSend', function () {
-        this.beforeEach(function () {
+        beforeEach(function () {
             configUtils.set({sentry: {disabled: false, dsn: fakeDSN}});
             delete require.cache[require.resolve('../../../core/shared/sentry')];
 

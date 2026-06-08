@@ -2,7 +2,7 @@
  * Resolves full configuration for an adapter. Combining base class configurations
  * along with feature-specific ones
  * 
- * @param {String} name
+ * @param {string} name
  * @param {Object} adapterServiceConfig
  * 
  * @returns {{adapterClassName: String, adapterConfig: Object}} 

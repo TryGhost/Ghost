@@ -207,7 +207,8 @@
 
 .ember-power-select-group .ember-power-select-option .highlight {
     display: inline;
-    background: #fff6b8;
+    font-weight: 600;
+    text-decoration: underline;
     border-radius: 1px;
     color: color-mod(var(--darkgrey) l(-10%));
     pointer-events: none;
@@ -318,7 +319,7 @@
     position: relative;
     display: flex;
     align-items: center;
-    min-height: 33px;
+    min-height: 32px;
 }
 
 .ember-power-select-status-icon {

@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const emailButton = require('../../../../../../core/server/services/koenig/render-partials/email-button');
 
 describe('koenig/services/render-partials/email-button', function () {

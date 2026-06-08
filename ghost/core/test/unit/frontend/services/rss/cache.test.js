@@ -1,7 +1,7 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const rewire = require('rewire');
-const configUtils = require('../../../../utils/configUtils');
+const configUtils = require('../../../../utils/config-utils');
 const rssCache = rewire('../../../../../core/frontend/services/rss/cache');
 
 describe('RSS: Cache', function () {
@@ -21,7 +21,7 @@ describe('RSS: Cache', function () {
         generateFeedReset = rssCache.__set__('generateFeed', generateSpy);
     });
 
-    it('should not rebuild xml for same data and url', function (done) {
+    it('should not rebuild xml for same data and url', async function () {
         const data = {
             title: 'Test Title',
             description: 'Testing Desc',
@@ -30,27 +30,22 @@ describe('RSS: Cache', function () {
         };
         let xmlData1;
 
-        rssCache.getXML('/rss/', data)
-            .then(function (_xmlData) {
-                xmlData1 = _xmlData;
+        const _xmlData = await rssCache.getXML('/rss/', data);
 
-                // We should have called generateFeed
-                generateSpy.callCount.should.eql(1);
+        xmlData1 = _xmlData;
 
-                // Call RSS again to check that we didn't rebuild
-                return rssCache.getXML('/rss/', data);
-            })
-            .then(function (xmlData2) {
-                // Assertions
+        // We should have called generateFeed
+        sinon.assert.calledOnce(generateSpy);
 
-                // We should not have called generateFeed again
-                generateSpy.callCount.should.eql(1);
+        // Call RSS again to check that we didn't rebuild
+        const xmlData2 = await rssCache.getXML('/rss/', data);
 
-                // The data should be identical, no changing lastBuildDate
-                xmlData1.should.equal(xmlData2);
+        // Assertions
 
-                done();
-            })
-            .catch(done);
+        // We should not have called generateFeed again
+        sinon.assert.calledOnce(generateSpy);
+
+        // The data should be identical, no changing lastBuildDate
+        assert.equal(xmlData1, xmlData2);
     });
 });

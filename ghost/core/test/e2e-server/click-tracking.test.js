@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const fetch = require('node-fetch').default;
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../utils/e2e-framework');
 const urlUtils = require('../../core/shared/url-utils');
@@ -39,7 +39,7 @@ describe('Click Tracking', function () {
             body: {
                 posts: [{
                     title: 'My Newsletter',
-                    html: `<p>External link <a href="https://example.com/a">https://example.com/a</a>; Internal link <a href=${siteUrl.href}/about">${siteUrl.href}/about</a>;Ghost homepage <a href="https://ghost.org">https://ghost.org</a></p>`
+                    html: `<p>External link <a href="https://example.com/a">https://example.com/a</a>; Internal link <a href="${siteUrl.href}/about">${siteUrl.href}/about</a>;Ghost homepage <a href="https://ghost.org">https://ghost.org</a></p>`
                 }]
             }
         });
@@ -162,7 +162,14 @@ describe('Click Tracking', function () {
                         created_at: anyISODateTime,
                         id: anyObjectId,
                         last_seen_at: anyISODateTime,
-                        updated_at: anyISODateTime
+                        updated_at: anyISODateTime,
+                        tiers: [{
+                            id: anyObjectId,
+                            created_at: anyISODateTime,
+                            updated_at: anyISODateTime,
+                            monthly_price_id: anyObjectId,
+                            yearly_price_id: anyObjectId
+                        }]
                     },
                     previous: {
                         last_seen_at: null,

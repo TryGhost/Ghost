@@ -1,6 +1,6 @@
-const MembersStatsService = require('../../../../../core/server/services/stats/MembersStatsService');
+const MembersStatsService = require('../../../../../core/server/services/stats/members-stats-service');
 const knex = require('knex').default;
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const moment = require('moment');
 const sinon = require('sinon');
 
@@ -12,7 +12,7 @@ describe('MembersStatsService', function () {
         /**
          * @type {MembersStatsService.TotalMembersByStatus}
          */
-        const currentCounts = {paid: 0, free: 0, comped: 0};
+        const currentCounts = {paid: 0, free: 0, comped: 0, gift: 0};
         /**
          * @type {MembersStatsService.MemberStatusDelta[]}
          */
@@ -33,14 +33,14 @@ describe('MembersStatsService', function () {
         /** @type {Date} */
         let dayBeforeYesterdayDate;
 
-        after(function () {
+        afterAll(function () {
             sinon.restore();
         });
 
         /** @type {import('knex').Knex} */
         let db;
 
-        before(function () {
+        beforeAll(function () {
             todayDate = moment.utc(today).toDate();
             tomorrowDate = moment.utc(tomorrow).toDate();
             yesterdayDate = moment.utc(yesterday).toDate();
@@ -49,6 +49,11 @@ describe('MembersStatsService', function () {
         });
 
         beforeEach(async function () {
+            currentCounts.paid = 0;
+            currentCounts.free = 0;
+            currentCounts.comped = 0;
+            currentCounts.gift = 0;
+
             db = knex({client: 'sqlite3', connection: {filename: ':memory:'}, useNullAsDefault: true});
             membersStatsService = new MembersStatsService({knex: db});
 
@@ -81,8 +86,12 @@ describe('MembersStatsService', function () {
                 id: 'id',
                 status: 'comped'
             }));
+            const giftMembers = Array.from({length: currentCounts.gift}).map(() => ({
+                id: 'id',
+                status: 'gift'
+            }));
 
-            await db('members').insert(paidMembers.concat(freeMembers, compedMembers));
+            await db('members').insert(paidMembers.concat(freeMembers, compedMembers, giftMembers));
 
             /**
              * @typedef {object} StatusEvent
@@ -111,7 +120,8 @@ describe('MembersStatsService', function () {
                 const paidCanceled = generateEvents('paid', -event.paid_canceled, event.date);
                 const freeSubscribed = generateEvents('free', event.free_delta, event.date);
                 const compedSubscribed = generateEvents('comped', event.comped_delta, event.date);
-                return memo.concat(paidSubscribed, paidCanceled, freeSubscribed, compedSubscribed);
+                const giftSubscribed = generateEvents('gift', event.gift_delta || 0, event.date);
+                return memo.concat(paidSubscribed, paidCanceled, freeSubscribed, compedSubscribed, giftSubscribed);
             }, []);
 
             if (toInsert.length) {
@@ -125,6 +135,7 @@ describe('MembersStatsService', function () {
             currentCounts.paid = 1;
             currentCounts.free = 2;
             currentCounts.comped = 3;
+            currentCounts.gift = 4;
 
             await setupDB();
 
@@ -135,6 +146,7 @@ describe('MembersStatsService', function () {
                 paid: 1,
                 free: 2,
                 comped: 3,
+                gift: 4,
                 paid_subscribed: 0,
                 paid_canceled: 0
             });
@@ -149,7 +161,8 @@ describe('MembersStatsService', function () {
                     paid_subscribed: 4,
                     paid_canceled: 3,
                     free_delta: 2,
-                    comped_delta: 3
+                    comped_delta: 3,
+                    gift_delta: 2
                 }
             ];
 
@@ -157,6 +170,7 @@ describe('MembersStatsService', function () {
             currentCounts.paid = 1;
             currentCounts.free = 2;
             currentCounts.comped = 3;
+            currentCounts.gift = 2;
 
             await setupDB();
 
@@ -167,6 +181,7 @@ describe('MembersStatsService', function () {
                     paid: 0,
                     free: 0,
                     comped: 0,
+                    gift: 0,
                     paid_subscribed: 0,
                     paid_canceled: 0
                 },
@@ -175,6 +190,7 @@ describe('MembersStatsService', function () {
                     paid: 1,
                     free: 2,
                     comped: 3,
+                    gift: 2,
                     paid_subscribed: 4,
                     paid_canceled: 3
                 }
@@ -190,14 +206,16 @@ describe('MembersStatsService', function () {
                     paid_subscribed: 2,
                     paid_canceled: 1,
                     free_delta: 0,
-                    comped_delta: 0
+                    comped_delta: 0,
+                    gift_delta: 1
                 },
                 {
                     date: todayDate,
                     paid_subscribed: 4,
                     paid_canceled: 3,
                     free_delta: 2,
-                    comped_delta: 3
+                    comped_delta: 3,
+                    gift_delta: 2
                 }
             ];
 
@@ -205,6 +223,7 @@ describe('MembersStatsService', function () {
             currentCounts.paid = 2;
             currentCounts.free = 3;
             currentCounts.comped = 4;
+            currentCounts.gift = 3;
 
             await setupDB();
 
@@ -215,6 +234,7 @@ describe('MembersStatsService', function () {
                     paid: 0,
                     free: 1,
                     comped: 1,
+                    gift: 0,
                     paid_subscribed: 0,
                     paid_canceled: 0
                 },
@@ -223,6 +243,7 @@ describe('MembersStatsService', function () {
                     paid: 1,
                     free: 1,
                     comped: 1,
+                    gift: 1,
                     paid_subscribed: 2,
                     paid_canceled: 1
                 },
@@ -231,6 +252,7 @@ describe('MembersStatsService', function () {
                     paid: 2,
                     free: 3,
                     comped: 4,
+                    gift: 3,
                     paid_subscribed: 4,
                     paid_canceled: 3
                 }
@@ -246,21 +268,24 @@ describe('MembersStatsService', function () {
                     paid_subscribed: 2,
                     paid_canceled: 1,
                     free_delta: 2,
-                    comped_delta: 10
+                    comped_delta: 10,
+                    gift_delta: 0
                 },
                 {
                     date: yesterdayDate,
                     paid_subscribed: 2,
                     paid_canceled: 1,
                     free_delta: -100,
-                    comped_delta: 0
+                    comped_delta: 0,
+                    gift_delta: 0
                 },
                 {
                     date: todayDate,
                     paid_subscribed: 4,
                     paid_canceled: 3,
                     free_delta: 100,
-                    comped_delta: 3
+                    comped_delta: 3,
+                    gift_delta: 0
                 }
             ];
 
@@ -268,6 +293,7 @@ describe('MembersStatsService', function () {
             currentCounts.paid = 2;
             currentCounts.free = 3;
             currentCounts.comped = 4;
+            currentCounts.gift = 0;
 
             await setupDB();
 
@@ -278,6 +304,7 @@ describe('MembersStatsService', function () {
                     paid: 0,
                     free: 1,
                     comped: 0,
+                    gift: 0,
                     paid_subscribed: 0,
                     paid_canceled: 0
                 },
@@ -287,6 +314,7 @@ describe('MembersStatsService', function () {
                     // note that this shouldn't be 100 (which is also what we test here):
                     free: 3,
                     comped: 1,
+                    gift: 0,
                     paid_subscribed: 2,
                     paid_canceled: 1
                 },
@@ -296,6 +324,7 @@ describe('MembersStatsService', function () {
                     // never return negative numbers, this is in fact -997:
                     free: 0,
                     comped: 1,
+                    gift: 0,
                     paid_subscribed: 2,
                     paid_canceled: 1
                 },
@@ -304,6 +333,7 @@ describe('MembersStatsService', function () {
                     paid: 2,
                     free: 3,
                     comped: 4,
+                    gift: 0,
                     paid_subscribed: 4,
                     paid_canceled: 3
                 }
@@ -319,21 +349,24 @@ describe('MembersStatsService', function () {
                     paid_subscribed: 1,
                     paid_canceled: 0,
                     free_delta: 1,
-                    comped_delta: 0
+                    comped_delta: 0,
+                    gift_delta: 0
                 },
                 {
                     date: todayDate,
                     paid_subscribed: 4,
                     paid_canceled: 3,
                     free_delta: 2,
-                    comped_delta: 3
+                    comped_delta: 3,
+                    gift_delta: 1
                 },
                 {
                     date: tomorrowDate,
                     paid_subscribed: 10,
                     paid_canceled: 5,
                     free_delta: 8,
-                    comped_delta: 9
+                    comped_delta: 9,
+                    gift_delta: 7
                 }
             ];
 
@@ -341,6 +374,7 @@ describe('MembersStatsService', function () {
             currentCounts.paid = 1;
             currentCounts.free = 2;
             currentCounts.comped = 3;
+            currentCounts.gift = 1;
 
             await setupDB();
 
@@ -351,6 +385,7 @@ describe('MembersStatsService', function () {
                     paid: 0,
                     free: 0,
                     comped: 0,
+                    gift: 0,
                     paid_subscribed: 0,
                     paid_canceled: 0
                 },
@@ -359,6 +394,7 @@ describe('MembersStatsService', function () {
                     paid: 0,
                     free: 0,
                     comped: 0,
+                    gift: 0,
                     paid_subscribed: 1,
                     paid_canceled: 0
                 },
@@ -367,6 +403,7 @@ describe('MembersStatsService', function () {
                     paid: 1,
                     free: 2,
                     comped: 3,
+                    gift: 1,
                     paid_subscribed: 4,
                     paid_canceled: 3
                 }
@@ -382,21 +419,24 @@ describe('MembersStatsService', function () {
                     paid_subscribed: 2,
                     paid_canceled: 1,
                     free_delta: 2,
-                    comped_delta: 1
+                    comped_delta: 1,
+                    gift_delta: 1
                 },
                 {
                     date: yesterdayDate,
                     paid_subscribed: 1,
                     paid_canceled: 0,
                     free_delta: 1,
-                    comped_delta: 0
+                    comped_delta: 0,
+                    gift_delta: 2
                 },
                 {
                     date: todayDate,
                     paid_subscribed: 4,
                     paid_canceled: 3,
                     free_delta: 2,
-                    comped_delta: 3
+                    comped_delta: 3,
+                    gift_delta: 0
                 }
             ];
 
@@ -404,6 +444,7 @@ describe('MembersStatsService', function () {
             currentCounts.paid = 3;
             currentCounts.free = 5;
             currentCounts.comped = 4;
+            currentCounts.gift = 3;
 
             await setupDB();
 
@@ -413,7 +454,7 @@ describe('MembersStatsService', function () {
             const {data: results, meta} = await membersStatsService.getCountHistory({
                 startDate: yesterdayDate
             });
-            
+
             assert.equal(results.length, 2);
             assert.deepEqual(results, [
                 {
@@ -421,6 +462,7 @@ describe('MembersStatsService', function () {
                     paid: 2,
                     free: 3,
                     comped: 1,
+                    gift: 3,
                     paid_subscribed: 1,
                     paid_canceled: 0
                 },
@@ -429,6 +471,7 @@ describe('MembersStatsService', function () {
                     paid: 3,
                     free: 5,
                     comped: 4,
+                    gift: 3,
                     paid_subscribed: 4,
                     paid_canceled: 3
                 }
@@ -447,14 +490,16 @@ describe('MembersStatsService', function () {
                     paid_subscribed: 1,
                     paid_canceled: 0,
                     free_delta: 1,
-                    comped_delta: 0
+                    comped_delta: 0,
+                    gift_delta: 0
                 },
                 {
                     date: oneDayAgoDate,
                     paid_subscribed: 1,
                     paid_canceled: 0,
                     free_delta: 1,
-                    comped_delta: 0
+                    comped_delta: 0,
+                    gift_delta: 1
                 }
                 // Note: No events on 2 days ago - should be forward-filled
             ];
@@ -462,6 +507,7 @@ describe('MembersStatsService', function () {
             currentCounts.paid = 2;
             currentCounts.free = 2;
             currentCounts.comped = 0;
+            currentCounts.gift = 1;
 
             await setupDB();
 
@@ -473,7 +519,7 @@ describe('MembersStatsService', function () {
 
             // Should get 3 days: baseline (3 days ago) + yesterday + today
             assert.equal(results.length, 3);
-            
+
             // Verify all dates are present (no gaps)
             const dates = results.map(r => r.date).sort();
             const expectedDates = [
@@ -489,6 +535,56 @@ describe('MembersStatsService', function () {
             assert.equal(gapDay.paid_subscribed, 0); // No events on this day
             assert.equal(gapDay.paid_canceled, 0); // No events on this day
             assert.ok(typeof gapDay.paid === 'number'); // But has member counts (forward-filled)
+            // Gift count is forward-filled from the most recent prior day (three days ago: 0)
+            assert.equal(gapDay.gift, 0);
+        });
+
+        it('Replays gift_delta to build per-day gift counts', async function () {
+            events = [
+                {
+                    date: dayBeforeYesterdayDate,
+                    paid_subscribed: 0,
+                    paid_canceled: 0,
+                    free_delta: 0,
+                    comped_delta: 0,
+                    gift_delta: 2
+                },
+                {
+                    date: yesterdayDate,
+                    paid_subscribed: 0,
+                    paid_canceled: 0,
+                    free_delta: 0,
+                    comped_delta: 0,
+                    gift_delta: 3
+                },
+                {
+                    date: todayDate,
+                    paid_subscribed: 0,
+                    paid_canceled: 0,
+                    free_delta: 0,
+                    comped_delta: 0,
+                    gift_delta: -1
+                }
+            ];
+
+            currentCounts.paid = 0;
+            currentCounts.free = 0;
+            currentCounts.comped = 0;
+            currentCounts.gift = 4; // 2 + 3 - 1
+
+            await setupDB();
+
+            const {data: results, meta} = await membersStatsService.getCountHistory();
+
+            // Should have 4 rows: baseline (one day before oldest event) + 3 event days
+            assert.equal(results.length, 4);
+
+            const byDate = Object.fromEntries(results.map(r => [r.date, r]));
+            assert.equal(byDate[twoDaysBeforeYesterday].gift, 0); // Baseline before first event
+            assert.equal(byDate[dayBeforeYesterday].gift, 2);
+            assert.equal(byDate[yesterday].gift, 5);
+            assert.equal(byDate[today].gift, 4);
+            assert.equal(meta.totals.gift, 4);
         });
     });
 });

@@ -1,11 +1,12 @@
-require('should');
 const sinon = require('sinon');
+const nock = require('nock');
 const moment = require('moment');
 const crypto = require('crypto');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const util = require('util');
 const logging = require('@tryghost/logging');
-const UpdateCheckService = require('../../../../core/server/services/update-check/UpdateCheckService');
+const request = require('@tryghost/request');
+const UpdateCheckService = require('../../../../core/server/services/update-check/update-check-service');
 
 describe('Update Check', function () {
     const internal = {context: {internal: true}};
@@ -32,16 +33,28 @@ describe('Update Check', function () {
         }));
 
         sinon.stub(logging, 'error');
+        sinon.stub(logging, 'warn');
 
         requestStub = sinon.stub();
     });
 
     afterEach(function () {
         sinon.restore();
+        nock.cleanAll();
     });
 
     describe('UpdateCheck execution', function () {
         it('update check was executed', async function () {
+            const scope = nock('https://updates.ghost.org')
+                .get('/')
+                .query(query => query.ghost_version === '0.8.0')
+                .reply(200, JSON.stringify({
+                    notifications: [],
+                    next_check: moment().add(1, 'day').unix()
+                }), {
+                    'Content-Type': 'application/json'
+                });
+
             const updateCheckService = new UpdateCheckService({
                 api: {
                     settings: {
@@ -61,15 +74,12 @@ describe('Update Check', function () {
                     isPrivacyDisabled: true,
                     ghostVersion: '0.8.0'
                 },
-                request: requestStub
+                request: request
             });
 
             await updateCheckService.check();
 
-            requestStub.calledOnce.should.equal(true);
-
-            requestStub.args[0][0].should.equal('https://updates.ghost.org');
-            requestStub.args[0][1].searchParams.ghost_version.should.equal('0.8.0');
+            assert.equal(scope.isDone(), true);
         });
 
         it('update check won\'t happen if it\'s too early', async function () {
@@ -91,7 +101,7 @@ describe('Update Check', function () {
 
             await updateCheckService.check();
 
-            requestStub.called.should.equal(false);
+            sinon.assert.notCalled(requestStub);
         });
 
         it('update check will happen if it\'s time to check', async function () {
@@ -100,6 +110,16 @@ describe('Update Check', function () {
                     value: moment().subtract('10', 'minutes').unix()
                 }]
             });
+
+            const scope = nock('https://updates.ghost.org')
+                .get('/')
+                .query(query => query.ghost_version === '5.3.4')
+                .reply(200, JSON.stringify({
+                    notifications: [],
+                    next_check: moment().add(1, 'day').unix()
+                }), {
+                    'Content-Type': 'application/json'
+                });
 
             const updateCheckService = new UpdateCheckService({
                 api: {
@@ -120,20 +140,30 @@ describe('Update Check', function () {
                     isPrivacyDisabled: true,
                     ghostVersion: '5.3.4'
                 },
-                request: requestStub
+                request: request
             });
 
             await updateCheckService.check();
 
-            requestStub.calledOnce.should.equal(true);
-
-            requestStub.args[0][0].should.equal('https://updates.ghost.org');
-            requestStub.args[0][1].searchParams.ghost_version.should.equal('5.3.4');
+            assert.equal(scope.isDone(), true);
         });
     });
 
     describe('Data sent with the POST request', function () {
         it('should report the correct data', async function () {
+            let capturedData;
+            const scope = nock('https://updates.ghost.org')
+                .post('/', (body) => {
+                    capturedData = body;
+                    return true;
+                })
+                .reply(200, JSON.stringify({
+                    notifications: [],
+                    next_check: moment().add(1, 'day').unix()
+                }), {
+                    'Content-Type': 'application/json'
+                });
+
             const updateCheckService = new UpdateCheckService({
                 api: {
                     settings: {
@@ -168,7 +198,7 @@ describe('Update Check', function () {
                     databaseType: 'mysql',
                     ghostVersion: '4.0.0'
                 },
-                request: requestStub,
+                request: request,
                 ghostMailer: {
                     send: sinon.stub().resolves()
                 }
@@ -176,22 +206,155 @@ describe('Update Check', function () {
 
             await updateCheckService.check();
 
-            requestStub.calledOnce.should.equal(true);
+            assert.equal(scope.isDone(), true);
 
-            requestStub.args[0][0].should.equal('https://updates.ghost.org');
+            assert.equal(capturedData.ghost_version, '4.0.0');
+            assert.equal(capturedData.node_version, process.versions.node);
+            assert.equal(capturedData.env, process.env.NODE_ENV);
+            assert.match(capturedData.database_type, /sqlite3|mysql/);
+            assert.equal(typeof capturedData.blog_id, 'string');
+            assert(capturedData.blog_id);
+            assert.equal(capturedData.theme, 'casperito');
+            assert.equal(capturedData.blog_created_at, 819846900);
+            assert.equal(capturedData.user_count, 2);
+            assert.equal(capturedData.post_count, 13);
+            assert.equal(capturedData.npm_version, '10.8.2');
+        });
 
-            const data = requestStub.args[0][1].json;
-            data.ghost_version.should.equal('4.0.0');
-            data.node_version.should.equal(process.versions.node);
-            data.env.should.equal(process.env.NODE_ENV);
-            data.database_type.should.match(/sqlite3|mysql/);
-            data.blog_id.should.be.a.String();
-            data.blog_id.should.not.be.empty();
-            data.theme.should.be.equal('casperito');
-            data.blog_created_at.should.equal(819846900);
-            data.user_count.should.be.equal(2);
-            data.post_count.should.be.equal(13);
-            data.npm_version.should.be.equal('10.8.2');
+        it('still sends the request when a telemetry query fails', async function () {
+            // This reproduces the staging condition where posts.browse fails
+            // with a model-layer SQL error (errno 1054). The update check
+            // should keep going: collect what it can, log what it couldn't,
+            // and send the request anyway so the notification flow still runs.
+            let capturedData;
+            const scope = nock('https://updates.ghost.org')
+                .post('/', (body) => {
+                    capturedData = body;
+                    return true;
+                })
+                .reply(200, JSON.stringify({notifications: []}), {
+                    'Content-Type': 'application/json'
+                });
+
+            const postsBrowseError = Object.assign(
+                new Error('Could not understand request.'),
+                {errno: 1054}
+            );
+
+            const updateCheckService = new UpdateCheckService({
+                api: {
+                    settings: {
+                        read: settingsStub,
+                        edit: settingsStub
+                    },
+                    users: {
+                        browse: sinon.stub().resolves({
+                            users: [{
+                                created_at: '1995-12-24T23:15:00Z',
+                                roles: [{name: 'Owner'}]
+                            }]
+                        })
+                    },
+                    posts: {
+                        browse: sinon.stub().rejects(postsBrowseError)
+                    }
+                },
+                config: {
+                    checkEndpoint: 'https://updates.ghost.org',
+                    siteUrl: 'https://localhost:2368/test',
+                    isPrivacyDisabled: false,
+                    env: process.env.NODE_ENV,
+                    databaseType: 'mysql',
+                    ghostVersion: '4.0.0'
+                },
+                request: request,
+                ghostMailer: {send: sinon.stub().resolves()}
+            });
+
+            await updateCheckService.check();
+
+            // The check sent its request despite posts.browse failing
+            assert.equal(scope.isDone(), true);
+
+            // Telemetry that didn't depend on posts.browse is intact
+            assert.equal(capturedData.ghost_version, '4.0.0');
+            assert.equal(capturedData.user_count, 1);
+            assert.equal(capturedData.blog_created_at, 819846900);
+
+            // post_count gracefully degrades to 0
+            assert.equal(capturedData.post_count, 0);
+
+            // The underlying error is still surfaced — with the source so we
+            // know which telemetry call failed
+            sinon.assert.calledWith(logging.error, sinon.match({
+                event: {name: 'update-check.telemetry.error'},
+                source: 'posts',
+                err: sinon.match({errno: 1054})
+            }));
+
+            // The partial-summary log surfaces which sources failed in one place
+            sinon.assert.calledWith(logging.warn, sinon.match({
+                event: {name: 'update-check.telemetry.partial'},
+                failures: ['posts'],
+                attemptedCount: 5,
+                failedCount: 1
+            }));
+        });
+
+        it('emits structured logs around the request lifecycle', async function () {
+            nock('https://updates.ghost.org')
+                .post('/')
+                .reply(200, JSON.stringify({
+                    notifications: [],
+                    next_check: moment().add(1, 'day').unix()
+                }), {
+                    'Content-Type': 'application/json'
+                });
+
+            sinon.stub(logging, 'info');
+
+            const updateCheckService = new UpdateCheckService({
+                api: {
+                    settings: {read: settingsStub, edit: settingsStub},
+                    users: {browse: sinon.stub().resolves({users: []})},
+                    posts: {browse: sinon.stub().resolves({meta: {pagination: {total: 0}}})}
+                },
+                config: {
+                    checkEndpoint: 'https://updates.ghost.org',
+                    siteUrl: 'https://localhost:2368/test',
+                    isPrivacyDisabled: false,
+                    env: 'testing',
+                    databaseType: 'mysql',
+                    ghostVersion: '4.0.0',
+                    forceUpdate: true
+                },
+                request: request,
+                ghostMailer: {send: sinon.stub().resolves()}
+            });
+
+            await updateCheckService.check();
+
+            sinon.assert.calledWith(logging.info, sinon.match({
+                event: {name: 'update-check.check.start'},
+                ghostVersion: '4.0.0',
+                forceUpdate: true
+            }));
+            sinon.assert.calledWith(logging.info, sinon.match({
+                event: {name: 'update-check.request.start'},
+                endpoint: 'https://updates.ghost.org',
+                method: 'POST'
+            }));
+            sinon.assert.calledWith(logging.info, sinon.match({
+                event: {name: 'update-check.request.complete'},
+                statusCode: 200
+            }));
+            sinon.assert.calledWith(logging.info, sinon.match({
+                event: {name: 'update-check.response.received'},
+                notificationCount: 0
+            }));
+            sinon.assert.calledWith(logging.info, sinon.match({
+                event: {name: 'update-check.check.complete'}
+            }));
         });
     });
 
@@ -208,6 +371,15 @@ describe('Update Check', function () {
                     top: true
                 }]
             };
+
+            nock('https://updates.ghost.org')
+                .get('/')
+                .query(true)
+                .reply(200, JSON.stringify({
+                    notifications: [notification]
+                }), {
+                    'Content-Type': 'application/json'
+                });
 
             const notificationsAPIAddStub = sinon.stub().resolves();
             const usersBrowseStub = sinon.stub().resolves({
@@ -235,38 +407,70 @@ describe('Update Check', function () {
                     }
                 },
                 config: {
-                    siteUrl: 'https://localhost:2368/test'
+                    checkEndpoint: 'https://updates.ghost.org',
+                    siteUrl: 'https://localhost:2368/test',
+                    isPrivacyDisabled: true,
+                    ghostVersion: '0.8.0'
                 },
-                request: sinon.stub().resolves({
-                    body: {
-                        notifications: [notification]
-                    }
-                })
+                request: request
             });
 
             await updateCheckService.check();
 
-            notificationsAPIAddStub.calledOnce.should.equal(true);
-            notificationsAPIAddStub.args[0][0].notifications.length.should.equal(1);
+            sinon.assert.calledOnce(notificationsAPIAddStub);
+            assert.equal(notificationsAPIAddStub.args[0][0].notifications.length, 1);
 
             const targetNotification = notificationsAPIAddStub.args[0][0].notifications[0];
-            targetNotification.dismissible.should.eql(notification.messages[0].dismissible);
-            targetNotification.id.should.eql(notification.messages[0].id);
-            targetNotification.top.should.eql(notification.messages[0].top);
-            targetNotification.type.should.eql('info');
-            targetNotification.message.should.eql(notification.messages[0].content);
+            assert.equal(targetNotification.dismissible, notification.messages[0].dismissible);
+            assert.equal(targetNotification.id, notification.messages[0].id);
+            assert.equal(targetNotification.top, notification.messages[0].top);
+            assert.equal(targetNotification.type, 'info');
+            assert.equal(targetNotification.message, notification.messages[0].content);
 
-            usersBrowseStub.calledTwice.should.eql(true);
+            // users.browse is called once here, for stats reporting: this
+            // notification is non-alert, so the admin-lookup query in the
+            // alert branch never runs.
+            sinon.assert.calledOnce(usersBrowseStub);
+        });
 
-            // Second (non statistical) call should be looking for admin users with an 'active' status only
-            usersBrowseStub.args[1][0].should.eql({
-                limit: 'all',
-                include: ['roles'],
-                filter: 'status:active',
-                context: {
-                    internal: true
-                }
+        it('preserves custom flag value from update check response', async function () {
+            const notificationsAPIAddStub = sinon.stub().resolves();
+            const usersBrowseStub = sinon.stub().resolves({
+                users: [{
+                    roles: [{
+                        name: 'Owner'
+                    }]
+                }]
             });
+
+            const updateCheckService = new UpdateCheckService({
+                api: {
+                    users: {
+                        browse: usersBrowseStub
+                    },
+                    notifications: {
+                        add: notificationsAPIAddStub
+                    }
+                },
+                config: {
+                    siteUrl: 'https://localhost:2368/test'
+                },
+                request: requestStub
+            });
+
+            await updateCheckService.createCustomNotification({
+                custom: 0,
+                messages: [{
+                    id: crypto.randomUUID(),
+                    content: '<p>hello</p>',
+                    dismissible: true,
+                    top: true
+                }]
+            });
+
+            assert.equal(notificationsAPIAddStub.callCount, 1);
+            const targetNotification = notificationsAPIAddStub.args[0][0].notifications[0];
+            assert.equal(targetNotification.custom, 0);
         });
 
         it('should send an email for critical notification', async function () {
@@ -282,8 +486,23 @@ describe('Update Check', function () {
                 }]
             };
 
+            nock('https://updates.ghost.org')
+                .get('/')
+                .query(true)
+                .reply(200, JSON.stringify({notifications: [notification]}), {
+                    'Content-Type': 'application/json'
+                });
+
             const notificationsAPIAddStub = sinon.stub().resolves();
-            const sendEmailStub = sinon.stub().resolves();
+            const emailSendStub = sinon.stub().resolves();
+            const usersBrowseStub = sinon.stub().resolves({
+                users: [{
+                    email: 'jbloggs@example.com',
+                    roles: [{
+                        name: 'Owner'
+                    }]
+                }]
+            });
 
             const updateCheckService = new UpdateCheckService({
                 api: {
@@ -292,14 +511,7 @@ describe('Update Check', function () {
                         edit: settingsStub
                     },
                     users: {
-                        browse: sinon.stub().resolves({
-                            users: [{
-                                email: 'jbloggs@example.com',
-                                roles: [{
-                                    name: 'Owner'
-                                }]
-                            }]
-                        })
+                        browse: usersBrowseStub
                     },
                     posts: {
                         browse: sinon.stub().resolves()
@@ -309,27 +521,38 @@ describe('Update Check', function () {
                     }
                 },
                 config: {
-                    siteUrl: 'http://127.0.0.1:2369'
+                    checkEndpoint: 'https://updates.ghost.org',
+                    siteUrl: 'http://127.0.0.1:2369',
+                    isPrivacyDisabled: true,
+                    ghostVersion: '0.8.0'
                 },
-                request: sinon.stub().resolves({
-                    body: [notification]
-                }),
-                sendEmail: sendEmailStub
+                request: request,
+                notificationEmailService: {send: emailSendStub}
             });
 
             await updateCheckService.check();
 
-            sendEmailStub.called.should.be.true();
-            sendEmailStub.args[0][0].to.should.equal('jbloggs@example.com');
-            sendEmailStub.args[0][0].subject.should.equal('Action required: Critical alert from Ghost instance http://127.0.0.1:2369');
-            sendEmailStub.args[0][0].html.should.equal('<p>Critical message. Upgrade your site!</p>');
-            sendEmailStub.args[0][0].forceTextContent.should.equal(true);
+            sinon.assert.calledOnce(emailSendStub);
+            assert.deepEqual(emailSendStub.args[0][0].to, ['jbloggs@example.com']);
+            assert.equal(emailSendStub.args[0][0].subject, 'Action required: Critical alert from Ghost instance http://127.0.0.1:2369');
+            assert.equal(emailSendStub.args[0][0].content, '<p>Critical message. Upgrade your site!</p>');
 
-            notificationsAPIAddStub.calledOnce.should.equal(true);
-            notificationsAPIAddStub.args[0][0].notifications.length.should.equal(1);
+            sinon.assert.calledOnce(notificationsAPIAddStub);
+            const addedNotification = notificationsAPIAddStub.args[0][0].notifications[0];
+            assert.equal(addedNotification.type, 'alert');
+            assert.equal(addedNotification.message, '<p>Critical message. Upgrade your site!</p>');
         });
 
         it('not create a notification if the check response has no messages', async function () {
+            nock('https://updates.ghost.org')
+                .get('/')
+                .query(true)
+                .reply(200, JSON.stringify({
+                    notifications: []
+                }), {
+                    'Content-Type': 'application/json'
+                });
+
             const notificationsAPIAddStub = sinon.stub().resolves();
 
             const updateCheckService = new UpdateCheckService({
@@ -355,18 +578,111 @@ describe('Update Check', function () {
                     }
                 },
                 config: {
-                    siteUrl: 'https://localhost:2368/test'
+                    checkEndpoint: 'https://updates.ghost.org',
+                    siteUrl: 'https://localhost:2368/test',
+                    isPrivacyDisabled: true,
+                    ghostVersion: '0.8.0'
                 },
-                request: sinon.stub().resolves({
-                    body: {
-                        notifications: []
-                    }
-                })
+                request: request
             });
 
             await updateCheckService.check();
 
-            notificationsAPIAddStub.calledOnce.should.equal(false);
+            sinon.assert.notCalled(notificationsAPIAddStub);
+        });
+    });
+
+    describe('Response shapes', function () {
+        const releaseNotification = {
+            id: 1312,
+            version: 'v6.44.1',
+            messages: [{
+                id: '0f17c191-87ab-46ad-8884-5d99aa3fdee8',
+                version: '^6',
+                content: 'Ghost v6.44.1 has been released.',
+                top: false,
+                dismissible: true,
+                type: 'info'
+            }],
+            created_at: '2026-06-05T16:53:08.000Z',
+            custom: false,
+            next_check: 1781018713
+        };
+
+        const customNotification = {
+            version: 'all-test',
+            messages: [{
+                id: 'all-test-msg',
+                version: '^6',
+                content: 'Critical security update.',
+                top: true,
+                dismissible: false,
+                type: 'alert'
+            }],
+            created_at: '2026-06-04T21:15:00.000Z',
+            custom: true,
+            next_check: 1781018713
+        };
+
+        function makeService(notificationsAddStub) {
+            return new UpdateCheckService({
+                api: {
+                    settings: {read: settingsStub, edit: settingsStub},
+                    users: {
+                        browse: sinon.stub().resolves({
+                            users: [{email: 'a@b.c', roles: [{name: 'Owner'}]}]
+                        })
+                    },
+                    notifications: {add: notificationsAddStub}
+                },
+                config: {
+                    checkEndpoint: 'https://updates.ghost.org',
+                    siteUrl: 'https://localhost:2368/test',
+                    isPrivacyDisabled: false,
+                    ghostVersion: '6.44.0'
+                },
+                request: request,
+                notificationEmailService: {send: sinon.stub().resolves()}
+            });
+        }
+
+        it('handles a bare-object response with messages at the top level', async function () {
+            nock('https://updates.ghost.org')
+                .post('/')
+                .reply(200, JSON.stringify(releaseNotification), {'Content-Type': 'application/json'});
+
+            const addStub = sinon.stub().resolves();
+            await makeService(addStub).check();
+
+            sinon.assert.calledOnce(addStub);
+            const added = addStub.firstCall.args[0].notifications[0];
+            assert.equal(added.id, releaseNotification.messages[0].id);
+            assert.equal(added.message, releaseNotification.messages[0].content);
+        });
+
+        it('handles a wrapped {notifications:[...]} response', async function () {
+            nock('https://updates.ghost.org')
+                .post('/')
+                .reply(200, JSON.stringify({
+                    notifications: [releaseNotification, customNotification],
+                    next_check: 1781018713
+                }), {'Content-Type': 'application/json'});
+
+            const addStub = sinon.stub().resolves();
+            await makeService(addStub).check();
+
+            sinon.assert.calledTwice(addStub);
+        });
+
+        it('handles a bare-array response', async function () {
+            nock('https://updates.ghost.org')
+                .post('/')
+                .reply(200, JSON.stringify([releaseNotification, customNotification]), {'Content-Type': 'application/json'});
+
+            const addStub = sinon.stub().resolves();
+            await makeService(addStub).check();
+
+            sinon.assert.calledTwice(addStub);
         });
     });
 
@@ -383,10 +699,10 @@ describe('Update Check', function () {
 
             updateCheckService.updateCheckError({});
 
-            settingsStub.called.should.be.true();
-            logging.error.called.should.be.true();
-            logging.error.args[0][0].context.should.equal('Checking for updates failed, your site will continue to function.');
-            logging.error.args[0][0].help.should.equal('If you get this error repeatedly, please seek help from https://ghost.org/docs/');
+            sinon.assert.called(settingsStub);
+            sinon.assert.called(logging.error);
+            assert.equal(logging.error.args[0][0].err.context, 'Checking for updates failed, your site will continue to function.');
+            assert.equal(logging.error.args[0][0].err.help, 'If you get this error repeatedly, please seek help from https://ghost.org/docs/');
         });
 
         it('logs and rethrows an error when error with rethrow configuration', function () {
@@ -405,12 +721,12 @@ describe('Update Check', function () {
                 updateCheckService.updateCheckError({});
                 assert.fail('should have thrown');
             } catch (e) {
-                settingsStub.called.should.be.true();
-                logging.error.called.should.be.true();
-                logging.error.args[0][0].context.should.equal('Checking for updates failed, your site will continue to function.');
-                logging.error.args[0][0].help.should.equal('If you get this error repeatedly, please seek help from https://ghost.org/docs/');
+                sinon.assert.called(settingsStub);
+                sinon.assert.called(logging.error);
+                assert.equal(logging.error.args[0][0].err.context, 'Checking for updates failed, your site will continue to function.');
+                assert.equal(logging.error.args[0][0].err.help, 'If you get this error repeatedly, please seek help from https://ghost.org/docs/');
 
-                e.context.should.equal('Checking for updates failed, your site will continue to function.');
+                assert.equal(e.context, 'Checking for updates failed, your site will continue to function.');
             }
         });
     });

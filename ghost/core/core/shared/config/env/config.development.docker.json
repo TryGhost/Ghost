@@ -12,7 +12,7 @@
         "from": "test@example.com",
         "transport": "SMTP",
         "options": {
-            "host": "mailhog",
+            "host": "mailpit",
             "port": 1025
         }
     },

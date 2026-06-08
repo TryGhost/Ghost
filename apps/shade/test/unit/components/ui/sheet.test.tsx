@@ -24,8 +24,8 @@ describe('Sheet Components', () => {
                     </SheetHeader>
                     <p>Sheet Content</p>
                     <SheetFooter>
-                        <button>Cancel</button>
-                        <button>Submit</button>
+                        <button type="button">Cancel</button>
+                        <button type="button">Submit</button>
                     </SheetFooter>
                 </SheetContent>
             </Sheet>
@@ -61,7 +61,7 @@ describe('Sheet Components', () => {
                     <SheetTitle>Required Title</SheetTitle>
                     <SheetDescription>Required Description</SheetDescription>
                     <SheetFooter className="custom-footer-class" data-testid="sheet-footer">
-                        <button>Button</button>
+                        <button type="button">Button</button>
                     </SheetFooter>
                 </SheetContent>
             </Sheet>
@@ -115,7 +115,7 @@ describe('Sheet Components', () => {
                     </SheetHeader>
                     <div>Main Content</div>
                     <SheetFooter data-testid="sheet-footer">
-                        <button>Footer Button</button>
+                        <button type="button">Footer Button</button>
                     </SheetFooter>
                 </SheetContent>
             </Sheet>

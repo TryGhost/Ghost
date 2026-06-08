@@ -37,16 +37,16 @@ This app is part of the Ghost monorepo. After cloning the Ghost repository:
 
 ```bash
 # Install dependencies from the root directory
-yarn
+pnpm
 
-# Run yarn dev in the root of the repo
-yarn dev
+# Run pnpm dev in the root of the repo
+pnpm dev
 ```
 
 ### Build
 
 ```bash
-yarn build
+pnpm build
 ```
 
 This will create a production build in the `dist` directory.
@@ -55,29 +55,29 @@ This will create a production build in the `dist` directory.
 
 ```bash
 # Run all tests
-yarn test
+pnpm test
 
 # Run only unit tests
-yarn test:unit
+pnpm test:unit
 
 # Run tests in watch mode during development
-yarn test:watch
+pnpm test:watch
 
 # Run tests with coverage report
-yarn test:coverage
+pnpm test:coverage
 ```
 
 ### Linting
 
 ```bash
 # Lint all files
-yarn lint
+pnpm lint
 
 # Lint only source code
-yarn lint:code
+pnpm lint:code
 
 # Lint only test files
-yarn lint:test
+pnpm lint:test
 ```
 
 ## License

@@ -1,5 +1,5 @@
 import {createMutation, createQuery} from '../utils/api/hooks';
-import {customThemeSettingsDataType} from './customThemeSettings';
+import {customThemeSettingsDataType} from './custom-theme-settings';
 
 // Types
 
@@ -18,7 +18,7 @@ export type Theme = {
 }
 
 export type InstalledTheme = Theme & {
-    gscan_errors?: ThemeProblem<'error'>[];
+    errors?: ThemeProblem<'error'>[];
     warnings?: ThemeProblem<'warning'>[];
 }
 

@@ -19,11 +19,13 @@ module.exports = {
             'emailAnalytics',
             'hostSettings',
             'tenor',
+            'klipy',
             'pintura',
             'signupForm',
             'stats',
             'security',
-            'exploreTestimonialsUrl'
+            'exploreTestimonialsUrl',
+            'featurebase'
         ];
 
         frame.response = {

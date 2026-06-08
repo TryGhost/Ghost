@@ -1,7 +1,7 @@
 import React, {ReactElement, ReactNode} from 'react';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {render, renderHook, RenderOptions, RenderHookOptions, RenderResult} from '@testing-library/react';
-import {FrameworkProvider, TopLevelFrameworkProps} from '../providers/FrameworkProvider';
+import {FrameworkProvider, TopLevelFrameworkProps} from '../providers/framework-provider';
 
 /**
  * Creates a test QueryClient with sensible defaults for testing
@@ -127,7 +127,7 @@ export function renderHookWithProviders<TResult, TProps>(
 /**
  * Utility to wait for API calls to complete
  */
-export async function waitForApiCall(mockFn: jest.MockedFunction<(...args: unknown[]) => unknown>, timeout = 1000) {
+export async function waitForApiCall(mockFn: import('vitest').Mock, timeout = 1000) {
     const {waitFor} = await import('@testing-library/react');
     return waitFor(() => expect(mockFn).toHaveBeenCalled(), {timeout});
 }
@@ -135,7 +135,7 @@ export async function waitForApiCall(mockFn: jest.MockedFunction<(...args: unkno
 /**
  * Utility to wait for multiple API calls
  */
-export async function waitForApiCalls(mockFn: jest.MockedFunction<(...args: unknown[]) => unknown>, count: number, timeout = 1000) {
+export async function waitForApiCalls(mockFn: import('vitest').Mock, count: number, timeout = 1000) {
     const {waitFor} = await import('@testing-library/react');
     return waitFor(() => expect(mockFn).toHaveBeenCalledTimes(count), {timeout});
 }
@@ -176,11 +176,11 @@ export function setupConsoleFiltering(options: ConsoleFilterOptions = {}) {
     // eslint-disable-next-line no-console
     console.error = (...args) => {
         const message = args[0]?.toString() || '';
-        
+
         if (defaultSuppressedMessages.some(suppressedMessage => message.includes(suppressedMessage))) {
             return;
         }
-        
+
         originalConsoleError(...args);
     };
 
@@ -236,13 +236,13 @@ export const testDataFactories = {
  * Mock timer utilities
  */
 export function mockTimers() {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const vitest = require('vitest');
     vitest.vi.useFakeTimers();
-    
+
     return {
         advanceTime: (ms: number) => vitest.vi.advanceTimersByTime(ms),
         cleanup: () => vitest.vi.useRealTimers(),
         runAllTimers: () => vitest.vi.runAllTimers()
     };
-} 
+}

@@ -1,5 +1,5 @@
+const assert = require('node:assert/strict');
 const {agentProvider, fixtureManager} = require('../../utils/e2e-framework');
-const should = require('should');
 const sinon = require('sinon');
 const sharedMiddleware = require('../../../core/server/web/shared/middleware');
 
@@ -32,10 +32,10 @@ describe('Content API - Max Limit Cap', function () {
             .expectStatus(200);
 
         // Verify the middleware was called
-        middlewareSpy.called.should.be.true();
+        sinon.assert.called(middlewareSpy);
 
         // Verify it modified the req.query param by reference
         const req = middlewareSpy.firstCall.args[0];
-        req.query.limit.should.equal(100);
+        assert.equal(req.query.limit, 100);
     });
 });

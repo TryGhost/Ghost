@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 
 const {validate} = require('../../../../../core/server/services/custom-redirects/validation');
 
@@ -19,12 +19,9 @@ describe('UNIT: custom redirects validation', function () {
             to: '/'
         }];
 
-        try {
-            validate(config);
-            should.fail('should have thrown');
-        } catch (err) {
-            err.message.should.equal('Incorrect redirects file format.');
-        }
+        assert.throws(() => {
+            validate(/** @type {any} */ (config));
+        }, {message: 'Incorrect redirects file format.'});
     });
 
     it('throws for an invalid redirects config having invalid RegExp in from field', function () {
@@ -34,12 +31,9 @@ describe('UNIT: custom redirects validation', function () {
             to: '/'
         }];
 
-        try {
+        assert.throws(() => {
             validate(config);
-            should.fail('should have thrown');
-        } catch (err) {
-            err.message.should.equal('Incorrect RegEx in redirects file.');
-        }
+        }, {message: 'Incorrect RegEx in redirects file.'});
     });
 
     it('throws when setting a file with wrong format: no array', function () {
@@ -48,11 +42,40 @@ describe('UNIT: custom redirects validation', function () {
             to: 'd'
         };
 
-        try {
-            validate(config);
-            should.fail('should have thrown');
-        } catch (err) {
-            err.message.should.equal('Incorrect redirects file format.');
-        }
+        assert.throws(() => {
+            validate(/** @type {any} */ (config));
+        }, {message: 'Incorrect redirects file format.'});
+    });
+
+    it('throws when from is not a string', function () {
+        // RegExp coerces an object to "[object Object]" so without an
+        // explicit type check this would silently pass validation.
+        assert.throws(() => {
+            validate(/** @type {any} */ ([{from: {}, to: '/x'}]));
+        }, {message: 'Incorrect redirects file format.'});
+    });
+
+    it('throws when to is not a string', function () {
+        assert.throws(() => {
+            validate(/** @type {any} */ ([{from: '/a', to: {nested: '/b'}}]));
+        }, {message: 'Incorrect redirects file format.'});
+    });
+
+    it('throws when from is a whitespace-only string', function () {
+        assert.throws(() => {
+            validate(/** @type {any} */ ([{from: '   ', to: '/x'}]));
+        }, {message: 'Incorrect redirects file format.'});
+    });
+
+    it('throws ValidationError (not TypeError) when an entry is null', function () {
+        assert.throws(() => {
+            validate(/** @type {any} */ ([null]));
+        }, {message: 'Incorrect redirects file format.'});
+    });
+
+    it('throws ValidationError when an entry is a primitive', function () {
+        assert.throws(() => {
+            validate(/** @type {any} */ (['a string entry']));
+        }, {message: 'Incorrect redirects file format.'});
     });
 });

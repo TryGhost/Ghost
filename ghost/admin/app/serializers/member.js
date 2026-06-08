@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import ApplicationSerializer from './application';
 import {EmbeddedRecordsMixin} from '@ember-data/serializer/rest';
 
@@ -19,6 +18,10 @@ export default class MemberSerializer extends ApplicationSerializer.extend(Embed
         delete json.status;
         delete json.last_seen_at;
         delete json.comped;
+        // Tiers are managed via direct API calls in gh-member-settings-form.js
+        // (removeComplimentaryTask) and modal-member-tier.js (addTier task),
+        // not through the normal member save flow
+        delete json.tiers;
 
         // Normalize properties
         json.name = json.name || '';

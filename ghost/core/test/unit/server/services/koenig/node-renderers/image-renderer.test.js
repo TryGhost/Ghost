@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {callRenderer, html, assertPrettifiesTo} = require('../test-utils');
 
 describe('services/koenig/node-renderers/image-renderer', function () {
@@ -25,6 +25,9 @@ describe('services/koenig/node-renderers/image-renderer', function () {
                     w2400: {width: 2400}
                 }
             },
+            feature: {
+                pictureImageFormats: true
+            },
             canTransformImage: () => true
         };
     }
@@ -45,21 +48,41 @@ describe('services/koenig/node-renderers/image-renderer', function () {
 
             assertPrettifiesTo(result.html, html`
                 <figure class="kg-card kg-image-card kg-width-undefined kg-card-hascaption">
-                    <img
-                        src="/content/images/2022/11/koenig-lexical.jpg"
-                        class="kg-image"
-                        alt="This is some alt text"
-                        loading="lazy"
-                        title="This is a title"
-                        width="3840"
-                        height="2160"
-                        srcset="
-                            /content/images/size/w600/2022/11/koenig-lexical.jpg   600w,
-                            /content/images/size/w1000/2022/11/koenig-lexical.jpg 1000w,
-                            /content/images/size/w1600/2022/11/koenig-lexical.jpg 1600w,
-                            /content/images/size/w2400/2022/11/koenig-lexical.jpg 2400w
-                        "
-                        sizes="(min-width: 720px) 720px" />
+                    <picture>
+                        <source
+                            srcset="
+                                /content/images/size/w600/format/avif/2022/11/koenig-lexical.jpg   600w,
+                                /content/images/size/w1000/format/avif/2022/11/koenig-lexical.jpg 1000w,
+                                /content/images/size/w1600/format/avif/2022/11/koenig-lexical.jpg 1600w,
+                                /content/images/size/w2400/format/avif/2022/11/koenig-lexical.jpg 2400w
+                            "
+                            type="image/avif"
+                            sizes="(min-width: 720px) 720px" />
+                        <source
+                            srcset="
+                                /content/images/size/w600/format/webp/2022/11/koenig-lexical.jpg   600w,
+                                /content/images/size/w1000/format/webp/2022/11/koenig-lexical.jpg 1000w,
+                                /content/images/size/w1600/format/webp/2022/11/koenig-lexical.jpg 1600w,
+                                /content/images/size/w2400/format/webp/2022/11/koenig-lexical.jpg 2400w
+                            "
+                            type="image/webp"
+                            sizes="(min-width: 720px) 720px" />
+                        <img
+                            src="/content/images/2022/11/koenig-lexical.jpg"
+                            class="kg-image"
+                            alt="This is some alt text"
+                            loading="lazy"
+                            title="This is a title"
+                            width="3840"
+                            height="2160"
+                            srcset="
+                                /content/images/size/w600/2022/11/koenig-lexical.jpg   600w,
+                                /content/images/size/w1000/2022/11/koenig-lexical.jpg 1000w,
+                                /content/images/size/w1600/2022/11/koenig-lexical.jpg 1600w,
+                                /content/images/size/w2400/2022/11/koenig-lexical.jpg 2400w
+                            "
+                            sizes="(min-width: 720px) 720px" />
+                    </picture>
                     <figcaption>This is a<b>caption</b></figcaption>
                 </figure>
             `);
@@ -68,6 +91,83 @@ describe('services/koenig/node-renderers/image-renderer', function () {
         it('renders with href', function () {
             const result = renderForWeb(getTestData({href: 'https://example.com'}));
             assert.ok(result.html.includes('<a href="https://example.com"'));
+        });
+
+        it('generates srcset for CDN image URLs when imageBaseUrl is configured', function () {
+            const cdnUrl = 'https://cdn.example.com/c/uuid';
+            const result = renderForWeb(
+                getTestData({src: `${cdnUrl}/content/images/2022/11/koenig-lexical.jpg`}),
+                {imageBaseUrl: cdnUrl}
+            );
+
+            assert.ok(result.html);
+
+            assertPrettifiesTo(result.html, html`
+                <figure class="kg-card kg-image-card kg-width-undefined kg-card-hascaption">
+                    <picture>
+                        <source
+                            srcset="
+                                ${cdnUrl}/content/images/size/w600/format/avif/2022/11/koenig-lexical.jpg   600w,
+                                ${cdnUrl}/content/images/size/w1000/format/avif/2022/11/koenig-lexical.jpg 1000w,
+                                ${cdnUrl}/content/images/size/w1600/format/avif/2022/11/koenig-lexical.jpg 1600w,
+                                ${cdnUrl}/content/images/size/w2400/format/avif/2022/11/koenig-lexical.jpg 2400w
+                            "
+                            type="image/avif"
+                            sizes="(min-width: 720px) 720px" />
+                        <source
+                            srcset="
+                                ${cdnUrl}/content/images/size/w600/format/webp/2022/11/koenig-lexical.jpg   600w,
+                                ${cdnUrl}/content/images/size/w1000/format/webp/2022/11/koenig-lexical.jpg 1000w,
+                                ${cdnUrl}/content/images/size/w1600/format/webp/2022/11/koenig-lexical.jpg 1600w,
+                                ${cdnUrl}/content/images/size/w2400/format/webp/2022/11/koenig-lexical.jpg 2400w
+                            "
+                            type="image/webp"
+                            sizes="(min-width: 720px) 720px" />
+                        <img
+                            src="${cdnUrl}/content/images/2022/11/koenig-lexical.jpg"
+                            class="kg-image"
+                            alt="This is some alt text"
+                            loading="lazy"
+                            title="This is a title"
+                            width="3840"
+                            height="2160"
+                            srcset="
+                                ${cdnUrl}/content/images/size/w600/2022/11/koenig-lexical.jpg   600w,
+                                ${cdnUrl}/content/images/size/w1000/2022/11/koenig-lexical.jpg 1000w,
+                                ${cdnUrl}/content/images/size/w1600/2022/11/koenig-lexical.jpg 1600w,
+                                ${cdnUrl}/content/images/size/w2400/2022/11/koenig-lexical.jpg 2400w
+                            "
+                            sizes="(min-width: 720px) 720px" />
+                    </picture>
+                    <figcaption>This is a<b>caption</b></figcaption>
+                </figure>
+            `);
+        });
+
+        it('does not generate srcset for CDN image URLs when imageBaseUrl is not configured', function () {
+            const cdnUrl = 'https://cdn.example.com/c/uuid';
+            const result = renderForWeb(
+                getTestData({src: `${cdnUrl}/content/images/2022/11/koenig-lexical.jpg`})
+            );
+
+            assert.ok(result.html);
+            assert.ok(!result.html.includes('srcset'));
+        });
+
+        it('does not render picture markup when labs flag is off', function () {
+            const result = renderForWeb(getTestData(), {feature: {pictureImageFormats: false}});
+
+            assert.ok(result.html);
+            assert.ok(!result.html.includes('<picture>'));
+            assert.ok(result.html.includes('<img'));
+        });
+
+        it('does not render picture markup for GIF images', function () {
+            const result = renderForWeb(getTestData({src: '/content/images/2022/11/animated.gif'}));
+
+            assert.ok(result.html);
+            assert.ok(!result.html.includes('<picture>'));
+            assert.ok(result.html.includes('<img'));
         });
     });
 
@@ -95,6 +195,17 @@ describe('services/koenig/node-renderers/image-renderer', function () {
         it('renders with href', function () {
             const result = renderForEmail(getTestData({href: 'https://example.com'}));
             assert.ok(result.html.includes('<a href="https://example.com"'));
+        });
+
+        it('uses retina src for CDN images in email', function () {
+            const cdnUrl = 'https://cdn.example.com/c/uuid';
+            const result = renderForEmail(
+                getTestData({src: `${cdnUrl}/content/images/2022/11/koenig-lexical.jpg`}),
+                {imageBaseUrl: cdnUrl}
+            );
+
+            assert.ok(result.html);
+            assert.ok(result.html.includes(`${cdnUrl}/content/images/size/w1600/2022/11/koenig-lexical.jpg`));
         });
     });
 });

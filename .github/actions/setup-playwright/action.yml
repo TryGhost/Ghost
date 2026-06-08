@@ -1,33 +1,40 @@
 name: "Setup Playwright"
-description: "Setup Playwright."
+description: "Download Playwright browser binaries with no apt-get involvement."
+
+# NOTE: This action deliberately does NOT call `playwright install --with-deps`
+# or `playwright install-deps`. Both go through apt-get, which has been
+# intermittently hanging GitHub-hosted runners for the full job timeout (see
+# e.g. https://github.com/TryGhost/Ghost/actions/runs/24159541042/job/70507436257
+# where Setup Playwright sat for ~33 minutes before being cancelled).
+#
+# GitHub's `ubuntu-latest` runner images are pre-provisioned with all of the
+# OS dependencies Playwright's bundled browsers need (see
+# https://github.com/actions/runner-images/blob/main/images/ubuntu/scripts/build/install-pipx-packages.sh
+# and the Playwright section of the Ubuntu runner readme), so the only thing
+# we actually need to do is download the browser binaries themselves. That
+# step does not call apt-get and is reliably fast.
 
 runs:
   using: "composite"
   steps:
-    - name: Disable man-db trigger refreshes (https://github.com/actions/runner-images/issues/10977)
-      shell: bash
-      run: |
-        echo 'set man-db/auto-update false' | sudo debconf-communicate >/dev/null
-        sudo dpkg-reconfigure man-db
-
     - name: Get Playwright version
       id: playwright-version
       shell: bash
-      run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> $GITHUB_OUTPUT
+      run: |
+        version="$(node -p "require('@playwright/test/package.json').version")"
+        echo "version=${version}" >> "$GITHUB_OUTPUT"
 
-    - uses: actions/cache@v4
-      name: Check if Playwright browser is cached
+    - name: Check if Playwright browser is cached
       id: playwright-cache
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
       with:
         path: ~/.cache/ms-playwright
-        key: ${{ runner.os }}-Playwright-${{steps.playwright-version.outputs.version}}
+        key: ${{ runner.os }}-Playwright-${{ steps.playwright-version.outputs.version }}
 
-    - name: Install Playwright browser if not cached
+    - name: Install Playwright browsers if not cached
       if: steps.playwright-cache.outputs.cache-hit != 'true'
       shell: bash
-      run: npx playwright install --with-deps
-
-    - name: Install OS dependencies of Playwright if cache hit
-      if: steps.playwright-cache.outputs.cache-hit == 'true'
-      shell: bash
-      run: npx playwright install-deps
+      # Intentionally no --with-deps: system libs are already on the runner
+      # image and --with-deps calls apt-get, which has been hanging for
+      # ~30 minutes on random runs.
+      run: npx playwright install

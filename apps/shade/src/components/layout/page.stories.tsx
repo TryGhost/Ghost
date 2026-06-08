@@ -1,8 +1,8 @@
-import type {Meta, StoryObj} from '@storybook/react';
+import type {Meta, StoryObj} from '@storybook/react-vite';
 import {Page} from './page';
 
 const meta = {
-    title: 'Layout / Page',
+    title: 'Deprecated / Page',
     component: Page,
     tags: ['autodocs']
 } satisfies Meta<typeof Page>;

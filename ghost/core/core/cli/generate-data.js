@@ -1,6 +1,5 @@
-/* eslint-disable ghost/filenames/match-exported-class */
 const Command = require('./command');
-const DataGenerator = require('../server/data/seeders/DataGenerator');
+const DataGenerator = require('../server/data/seeders/data-generator');
 const config = require('../shared/config');
 
 const schemaTables = require('../server/data/schema').tables;
@@ -20,8 +19,6 @@ module.exports = class DataGeneratorCommand extends Command {
     initializeContext(context) {
         const models = require('../server/models');
         const knex = require('../server/data/db/connection');
-
-        models.init();
 
         context.models = models;
         context.m = models;
