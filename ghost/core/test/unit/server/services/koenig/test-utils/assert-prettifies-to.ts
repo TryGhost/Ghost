@@ -1,12 +1,10 @@
-const assert = require('node:assert/strict');
-const prettifyHTML = require('./prettify-html');
+import assert from 'node:assert/strict';
+import {prettifyHTML} from './prettify-html';
 
 /**
  * Asserts that the given HTML string prettifies to match the expected string
- * @param {string} actual - The actual HTML string to test
- * @param {string} expected - The expected HTML string
  */
-function assertPrettifiesTo(actual, expected) {
+export function assertPrettifiesTo(actual: string, expected: string): void {
     assert.equal(typeof actual, 'string', 'First argument must be a string');
     assert.equal(typeof expected, 'string', 'Second argument must be a string');
 
@@ -15,5 +13,3 @@ function assertPrettifiesTo(actual, expected) {
 
     assert.equal(actualStr, expectedStr);
 }
-
-module.exports = assertPrettifiesTo;

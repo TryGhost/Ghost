@@ -255,6 +255,7 @@
     "@types/common-tags": "1.8.4",
     "@types/express": "catalog:",
     "@types/fs-extra": "11.0.4",
+    "@types/html-minifier": "catalog:",
     "@types/js-yaml": "4.0.9",
     "@types/jsdom": "28.0.3",
     "@types/jsonwebtoken": "9.0.10",

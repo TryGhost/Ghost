@@ -1,5 +1,5 @@
-const assert = require('node:assert/strict');
-const assertPrettifiedIncludes = require('./assert-prettified-includes');
+import assert from 'node:assert/strict';
+import {assertPrettifiedIncludes} from './assert-prettified-includes';
 
 describe('assertPrettifiedIncludes', function () {
     it('passes when HTML includes expected content', function () {
@@ -44,6 +44,7 @@ describe('assertPrettifiedIncludes', function () {
         try {
             assertPrettifiedIncludes(actual, expected);
         } catch (error) {
+            assert(error instanceof Error);
             assert.ok(error.message.includes('Received:'));
             assert.ok(error.message.includes('Expected:'));
             assert.ok(error.message.includes(actual));
