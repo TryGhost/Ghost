@@ -10,7 +10,7 @@ const RECENT_POSTS_FOOTER = '\n_Includes the latest 500 public posts. Use `/llms
 const FULL_PAGE_SIZE = 100;
 const FULL_POST_LIMIT = 500;
 
-function createLlmsService({settingsCache, labs, config, urlServiceFacade, urlUtils, models, routing, api, fullTxtBudget}) {
+function createLlmsService({settingsCache, labs, config, urlUtils, routing, api, fullTxtBudget}) {
     const footerBudget = Math.max(
         Buffer.byteLength(TRUNCATION_FOOTER, 'utf8'),
         Buffer.byteLength(RECENT_POSTS_FOOTER, 'utf8')
@@ -213,27 +213,31 @@ function createLlmsService({settingsCache, labs, config, urlServiceFacade, urlUt
         ].filter(Boolean).join('\n');
     }
 
-    function resolveEntryUrl(entry) {
-        const url = urlServiceFacade.getUrlForResource(
-            {...entry, type: entry.type, id: entry.id},
-            {absolute: true}
-        );
-        return url && !url.endsWith('/404/') ? url : null;
+    // All content fetching goes through the public Posts/Pages API rather than
+    // the model layer directly, so the llms service inherits the same caching,
+    // permissions, visibility gating and URL resolution as the Content API.
+    // The `type:post`/`type:page` filter is enforced by the public endpoints.
+    async function browsePublicEntries(type, options) {
+        const controller = type === 'page' ? api.pagesPublic : api.postsPublic;
+        const responseKey = type === 'page' ? 'pages' : 'posts';
+
+        const response = await controller.browse({
+            filter: 'status:published+visibility:public',
+            order: type === 'post' ? 'published_at desc' : 'id asc',
+            ...options
+        });
+
+        const entries = (response?.[responseKey] || [])
+            .filter(entry => entry.url && !entry.url.endsWith('/404/'));
+
+        return {entries, pagination: response?.meta?.pagination};
     }
 
     async function fetchIndexEntries(type) {
-        const page = await models.Post.findPage({
+        const {entries} = await browsePublicEntries(type, {
             limit: 'all',
-            order: type === 'post' ? 'published_at desc' : 'id asc',
-            filter: `status:published+visibility:public+type:${type}`,
-            columns: ['id', 'title', 'slug', 'custom_excerpt', 'plaintext', 'published_at', 'type']
+            formats: 'plaintext'
         });
-
-        const entries = page.data.map((model) => {
-            const entry = model.toJSON();
-            entry.url = resolveEntryUrl(entry);
-            return entry;
-        }).filter(entry => entry.url);
 
         if (type === 'page') {
             entries.sort((left, right) => left.url.localeCompare(right.url));
@@ -243,23 +247,13 @@ function createLlmsService({settingsCache, labs, config, urlServiceFacade, urlUt
     }
 
     async function fetchFullEntries(type, pageNum) {
-        const result = await models.Post.findPage({
+        const {entries, pagination} = await browsePublicEntries(type, {
             limit: FULL_PAGE_SIZE,
             page: pageNum,
-            order: type === 'post' ? 'published_at desc' : 'id asc',
-            filter: `status:published+visibility:public+type:${type}`,
-            columns: ['id', 'title', 'slug', 'html', 'plaintext', 'custom_excerpt', 'updated_at', 'published_at', 'created_at', 'type']
+            formats: 'html,plaintext'
         });
 
-        const entries = result.data.map((model) => {
-            const entry = model.toJSON();
-            entry.url = resolveEntryUrl(entry);
-            return entry;
-        }).filter(entry => entry.url);
-
-        const hasMore = result.data.length === FULL_PAGE_SIZE;
-
-        return {entries, hasMore};
+        return {entries, hasMore: Boolean(pagination && pagination.next)};
     }
 
     return {isEnabled, getLlmsTxt, getLlmsFullTxt, fetchPublicEntry};

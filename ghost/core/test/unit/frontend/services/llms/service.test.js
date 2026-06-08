@@ -30,24 +30,46 @@ describe('Unit: frontend/services/llms/service', function () {
         };
     }
 
-    function createFakeUrlServiceFacade(urlMap) {
-        return {
-            getUrlForResource(resource) {
-                return urlMap[resource.id] || null;
-            }
-        };
-    }
+    // Mimics the public Posts/Pages API: each browse response is keyed by
+    // resource type, entries carry a resolved `url`, and pagination meta drives
+    // the `hasMore` logic in the service.
+    function createFakeApi(pageData, postData, urlMap) {
+        function browse(responseKey, data) {
+            return async function (options) {
+                const entries = data.map(item => ({...item, url: urlMap[item.id]}));
+                const limit = options.limit;
+                const page = options.page || 1;
 
-    function createFakeModels(pageData, postData) {
-        return {
-            Post: {
-                findPage: async function (options) {
-                    if (options.filter.includes('type:page')) {
-                        return {data: pageData.map(p => ({toJSON: () => p}))};
-                    }
-                    return {data: postData.map(p => ({toJSON: () => p}))};
+                if (limit === 'all' || limit === undefined) {
+                    return {
+                        [responseKey]: entries,
+                        meta: {pagination: {page: 1, pages: 1, limit: 'all', total: entries.length, prev: null, next: null}}
+                    };
                 }
-            }
+
+                const start = (page - 1) * limit;
+                const slice = entries.slice(start, start + limit);
+                const hasNext = start + limit < entries.length;
+
+                return {
+                    [responseKey]: slice,
+                    meta: {
+                        pagination: {
+                            page,
+                            pages: Math.ceil(entries.length / limit) || 1,
+                            limit,
+                            total: entries.length,
+                            prev: page > 1 ? page - 1 : null,
+                            next: hasNext ? page + 1 : null
+                        }
+                    }
+                };
+            };
+        }
+
+        return {
+            pagesPublic: {browse: browse('pages', pageData)},
+            postsPublic: {browse: browse('posts', postData)}
         };
     }
 
@@ -87,11 +109,9 @@ describe('Unit: frontend/services/llms/service', function () {
             settingsCache: opts.settingsCache || createFakeSettingsCache(opts.settingsOverrides),
             labs: opts.labs || createFakeLabs(opts.labsFlags),
             config: opts.config || createFakeConfig(),
-            urlServiceFacade: opts.urlServiceFacade || createFakeUrlServiceFacade(urlMap),
             urlUtils: opts.urlUtils || createFakeUrlUtils(),
-            models: opts.models || createFakeModels(pages, posts),
             routing: opts.routing || createFakeRouting(),
-            api: opts.api || {},
+            api: opts.api || createFakeApi(pages, posts, urlMap),
             fullTxtBudget: opts.fullTxtBudget
         });
     }
@@ -183,19 +203,9 @@ describe('Unit: frontend/services/llms/service', function () {
             type: 'post'
         }];
 
-        const models = {
-            Post: {
-                findPage: async function (options) {
-                    if (options.filter.includes('type:page')) {
-                        return {data: largePageData.map(p => ({toJSON: () => p}))};
-                    }
-                    return {data: postData.map(p => ({toJSON: () => p}))};
-                }
-            }
-        };
-
         const service = createService({
-            models,
+            pages: largePageData,
+            posts: postData,
             fullTxtBudget: 1024,
             urlMap: {
                 'page-a': 'https://example.com/about/',
@@ -211,44 +221,32 @@ describe('Unit: frontend/services/llms/service', function () {
     });
 
     it('limits llms-full.txt to the latest 500 posts', async function () {
-        const calls = [];
-        const models = {
-            Post: {
-                findPage: async function (options) {
-                    calls.push(options);
-
-                    if (options.filter.includes('type:page')) {
-                        return {data: []};
-                    }
-
-                    const pageStart = (options.page - 1) * 100;
-                    return {
-                        data: Array.from({length: 100}, (_, index) => {
-                            const postIndex = pageStart + index;
-                            return {
-                                toJSON: () => ({
-                                    id: `post-${postIndex}`,
-                                    title: `Post ${postIndex}`,
-                                    slug: `post-${postIndex}`,
-                                    plaintext: `Post ${postIndex} body`,
-                                    type: 'post'
-                                })
-                            };
-                        })
-                    };
-                }
-            }
-        };
-        const urlMap = Object.fromEntries(Array.from({length: 600}, (_, index) => [
-            `post-${index}`,
-            `https://example.com/post-${index}/`
+        const posts = Array.from({length: 600}, (_, index) => ({
+            id: `post-${index}`,
+            title: `Post ${index}`,
+            slug: `post-${index}`,
+            plaintext: `Post ${index} body`,
+            type: 'post'
+        }));
+        const urlMap = Object.fromEntries(posts.map(post => [
+            post.id,
+            `https://example.com/${post.slug}/`
         ]));
-        const service = createService({models, urlMap});
+
+        const api = createFakeApi([], posts, urlMap);
+        const postBrowseCalls = [];
+        const browsePosts = api.postsPublic.browse;
+        api.postsPublic.browse = (options) => {
+            postBrowseCalls.push(options);
+            return browsePosts(options);
+        };
+
+        const service = createService({api});
 
         const llmsFullTxt = await service.getLlmsFullTxt();
 
-        const postCalls = calls.filter(call => call.filter.includes('type:post'));
-        assert.equal(postCalls.length, 5);
+        // Stops paginating once the 500-post cap is reached (5 pages of 100).
+        assert.equal(postBrowseCalls.length, 5);
         assert.match(llmsFullTxt, /### Post 499/);
         assert.doesNotMatch(llmsFullTxt, /### Post 500/);
         assert.match(llmsFullTxt, /Includes the latest 500 public posts/);
@@ -257,62 +255,61 @@ describe('Unit: frontend/services/llms/service', function () {
 
     it('computes fresh output on every call (no cache)', async function () {
         let callCount = 0;
-
-        const models = {
-            Post: {
-                findPage: async function () {
-                    callCount += 1;
-                    return {data: []};
-                }
-            }
+        const countingBrowse = async () => {
+            callCount += 1;
+            return {posts: [], pages: [], meta: {pagination: {next: null}}};
+        };
+        const api = {
+            pagesPublic: {browse: countingBrowse},
+            postsPublic: {browse: countingBrowse}
         };
 
-        const service = createService({models, urlMap: {}});
+        const service = createService({api});
 
         await service.getLlmsTxt();
         await service.getLlmsTxt();
 
-        assert.ok(callCount >= 4, `Expected at least 4 DB calls (2 per getLlmsTxt), got ${callCount}`);
+        assert.ok(callCount >= 4, `Expected at least 4 browse calls (2 per getLlmsTxt), got ${callCount}`);
     });
 
-    it('does not load post relations for llms.txt index entries', async function () {
+    it('does not request relations for llms.txt index entries', async function () {
         const calls = [];
-        const models = {
-            Post: {
-                findPage: async function (options) {
-                    calls.push(options);
-                    return {data: []};
-                }
-            }
+        const recordingBrowse = async (options) => {
+            calls.push(options);
+            return {posts: [], pages: [], meta: {pagination: {next: null}}};
+        };
+        const api = {
+            pagesPublic: {browse: recordingBrowse},
+            postsPublic: {browse: recordingBrowse}
         };
 
-        const service = createService({models, urlMap: {}});
+        const service = createService({api});
 
         await service.getLlmsTxt();
 
         assert.equal(calls.length, 2);
-        assert.equal(calls[0].withRelated, undefined);
-        assert.equal(calls[1].withRelated, undefined);
+        assert.equal(calls[0].include, undefined);
+        assert.equal(calls[1].include, undefined);
     });
 
-    it('does not load post relations for llms-full.txt entries', async function () {
+    it('does not request relations for llms-full.txt entries', async function () {
         const calls = [];
-        const models = {
-            Post: {
-                findPage: async function (options) {
-                    calls.push(options);
-                    return {data: []};
-                }
-            }
+        const recordingBrowse = async (options) => {
+            calls.push(options);
+            return {posts: [], pages: [], meta: {pagination: {next: null}}};
+        };
+        const api = {
+            pagesPublic: {browse: recordingBrowse},
+            postsPublic: {browse: recordingBrowse}
         };
 
-        const service = createService({models, urlMap: {}});
+        const service = createService({api});
 
         await service.getLlmsFullTxt();
 
         assert.equal(calls.length, 2);
-        assert.equal(calls[0].withRelated, undefined);
-        assert.equal(calls[1].withRelated, undefined);
+        assert.equal(calls[0].include, undefined);
+        assert.equal(calls[1].include, undefined);
     });
 
     describe('fetchPublicEntry', function () {
@@ -395,5 +392,30 @@ describe('Unit: frontend/services/llms/service', function () {
 
         assert.match(llmsTxt, /Good Post/);
         assert.doesNotMatch(llmsTxt, /Bad Post/);
+    });
+
+    it('fetches index content through the public Posts/Pages API, not the model layer', async function () {
+        const calls = [];
+        const recordingBrowse = key => async (options) => {
+            calls.push({key, options});
+            return {[key]: [], meta: {pagination: {next: null}}};
+        };
+        const api = {
+            pagesPublic: {browse: recordingBrowse('pages')},
+            postsPublic: {browse: recordingBrowse('posts')}
+        };
+
+        const service = createService({api});
+
+        await service.getLlmsTxt();
+
+        const pageCall = calls.find(call => call.key === 'pages');
+        const postCall = calls.find(call => call.key === 'posts');
+
+        assert.ok(pageCall, 'expected pagesPublic.browse to be called');
+        assert.ok(postCall, 'expected postsPublic.browse to be called');
+        assert.equal(pageCall.options.filter, 'status:published+visibility:public');
+        assert.equal(postCall.options.filter, 'status:published+visibility:public');
+        assert.equal(postCall.options.limit, 'all');
     });
 });
