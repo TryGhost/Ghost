@@ -66,6 +66,9 @@ const Sidebar: React.FC = () => {
         ...(hasAutomations ? [] : [membershipSearchKeywords.memberEmails]),
         membershipSearchKeywords.tips
     ].flat(), [hasAutomations, paidMembersEnabled]);
+    const visibleEmailSearchKeywords = React.useMemo(() => (
+        Object.values(hasAutomations ? emailsSearchKeywords : emailSearchKeywords).flat()
+    ), [hasAutomations]);
 
     // Focus in on search field when pressing "/"
     useEffect(() => {
@@ -100,13 +103,13 @@ const Sidebar: React.FC = () => {
             !checkVisible(Object.values(siteSearchKeywords).flat()) &&
             !checkVisible(visibleMembershipSearchKeywords) &&
             !checkVisible(Object.values(growthSearchKeywords).flat()) &&
-            !checkVisible(Object.values(emailSearchKeywords).flat()) &&
+            !checkVisible(visibleEmailSearchKeywords) &&
             !checkVisible(Object.values(advancedSearchKeywords).flat())) {
             setNoResult(true);
         } else {
             setNoResult(false);
         }
-    }, [checkVisible, setNoResult, filter, visibleMembershipSearchKeywords]);
+    }, [checkVisible, setNoResult, filter, visibleEmailSearchKeywords, visibleMembershipSearchKeywords]);
 
     useEffect(() => {
         const searchInput = searchInputRef.current;
