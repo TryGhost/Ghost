@@ -336,6 +336,7 @@ async function initServices() {
     const donationService = require('./server/services/donations');
     const giftService = require('./server/services/gifts');
     const recommendationsService = require('./server/services/recommendations');
+    const imageDimensionsPrecompute = require('./server/services/image-dimensions-precompute');
     const emailAddressService = require('./server/services/email-address');
     const statsService = require('./server/services/stats');
     const explorePingService = require('./server/services/explore-ping');
@@ -377,6 +378,7 @@ async function initServices() {
         mediaInliner.init(),
         donationService.init(),
         recommendationsService.init(),
+        imageDimensionsPrecompute.init(),
         statsService.init(),
         explorePingService.init(),
         giftService.init({
