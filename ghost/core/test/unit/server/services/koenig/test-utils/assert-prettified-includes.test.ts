@@ -41,15 +41,17 @@ describe('assertPrettifiedIncludes', function () {
         const actual = '<div><p>Hello World</p></div>';
         const expected = '<p>Goodbye World</p>';
 
-        try {
-            assertPrettifiedIncludes(actual, expected);
-        } catch (error) {
-            assert(error instanceof Error);
-            assert.ok(error.message.includes('Received:'));
-            assert.ok(error.message.includes('Expected:'));
-            assert.ok(error.message.includes(actual));
-            assert.ok(error.message.includes(expected));
-        }
+        assert.throws(
+            () => assertPrettifiedIncludes(actual, expected),
+            (error) => {
+                assert(error instanceof Error);
+                assert.ok(error.message.includes('Received:'));
+                assert.ok(error.message.includes('Expected:'));
+                assert.ok(error.message.includes(actual));
+                assert.ok(error.message.includes(expected));
+                return true;
+            }
+        );
     });
 
     it('handles empty strings', function () {
