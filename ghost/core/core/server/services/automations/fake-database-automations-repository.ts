@@ -258,7 +258,7 @@ function insertRunStep(database: DatabaseSync, {
     automationActionRevisionId,
     now,
     readyAt
-}: Readonly<{
+}: ReadonlyDeep<{
     automationRunId: string;
     automationActionRevisionId: string;
     now: Date;
