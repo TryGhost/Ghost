@@ -95,7 +95,7 @@ export function CommentMetrics({
     const [reportsModalOpen, setReportsModalOpen] = useState(false);
     const repliesLink = buildThreadLink(searchParams, comment.id);
 
-    const repliesCount = comment.count?.direct_replies ?? comment.count?.replies ?? comment.replies?.length ?? 0; // TODO: remove replies fallback once backend is fully rolled out
+    const repliesCount = comment.count?.direct_replies ?? comment.replies?.length ?? 0;
     const likesCount = comment.count?.likes ?? 0;
     const dislikesCount = dislikesEnabled ? (comment.count?.dislikes ?? 0) : 0;
     const reportsCount = comment.count?.reports ?? 0;
