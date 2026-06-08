@@ -8,6 +8,7 @@ const testUtils = require('../../../utils');
 const indexnow = rewire('../../../../core/server/services/indexnow');
 const events = require('../../../../core/server/lib/common/events');
 const settingsCache = require('../../../../core/shared/settings-cache');
+const config = require('../../../../core/shared/config');
 const labs = require('../../../../core/shared/labs');
 const logging = require('@tryghost/logging');
 const urlService = require('../../../../core/server/services/url');
@@ -17,16 +18,19 @@ describe('IndexNow', function () {
     let loggingStub;
     let settingsCacheStub;
     let labsStub;
+    let privacyDisabledStub;
 
     beforeEach(function () {
         eventStub = sinon.stub(events, 'on');
         settingsCacheStub = sinon.stub(settingsCache, 'get');
         labsStub = sinon.stub(labs, 'isSet');
+        privacyDisabledStub = sinon.stub(config, 'isPrivacyDisabled');
 
-        // Default: IndexNow enabled, site not private, API key set
+        // Default: IndexNow enabled, site not private, API key set, privacy not disabled
         labsStub.withArgs('indexnow').returns(true);
         settingsCacheStub.withArgs('is_private').returns(false);
         settingsCacheStub.withArgs('indexnow_api_key').returns('a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4');
+        privacyDisabledStub.withArgs('useIndexNow').returns(false);
     });
 
     afterEach(function () {
@@ -317,6 +321,19 @@ describe('IndexNow', function () {
 
         it('when labs.indexnow is false should not execute ping', async function () {
             labsStub.withArgs('indexnow').returns(false);
+
+            const pingRequest = nock('https://api.indexnow.org')
+                .get(/\/indexnow/)
+                .reply(200);
+            const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+
+            await ping(testPost);
+
+            assert.equal(pingRequest.isDone(), false);
+        });
+
+        it('when privacy.useIndexNow is disabled should not execute ping', async function () {
+            privacyDisabledStub.withArgs('useIndexNow').returns(true);
 
             const pingRequest = nock('https://api.indexnow.org')
                 .get(/\/indexnow/)
