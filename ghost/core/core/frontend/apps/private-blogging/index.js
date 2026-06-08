@@ -17,10 +17,8 @@ const messages = {
 const PRIVATE_KEYWORD = 'private';
 
 let checkSubdir = function checkSubdir() {
-    let paths = '';
-
     if (urlUtils.getSubdir()) {
-        paths = urlUtils.getSubdir().split('/');
+        const paths = urlUtils.getSubdir().split('/');
 
         if (paths.pop() === PRIVATE_KEYWORD) {
             logging.error(new errors.InternalServerError({
