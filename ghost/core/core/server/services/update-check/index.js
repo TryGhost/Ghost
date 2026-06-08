@@ -91,3 +91,10 @@ module.exports.scheduleRecurringJobs = () => {
         name: 'update-check'
     });
 };
+
+module.exports.scheduleBootJob = () => {
+    jobsService.addJob({
+        job: require('path').resolve(__dirname, 'run-update-check.js'),
+        name: 'update-check-boot'
+    });
+};
