@@ -111,13 +111,9 @@ const Emails: React.FC = () => {
     return (
         <SearchableSection keywords={Object.values(searchKeywords).flat()} title='Emails'>
             <EnableNewsletters keywords={searchKeywords.enableNewsletters} />
-            {newslettersEnabled !== 'disabled' && (
-                <>
-                    <DefaultRecipients keywords={searchKeywords.defaultRecipients} />
-                    <EmailsGroup keywords={searchKeywords.emails} />
-                    {!config.mailgunIsConfigured && <MailGun keywords={searchKeywords.mailgun} />}
-                </>
-            )}
+            {newslettersEnabled !== 'disabled' && <DefaultRecipients keywords={searchKeywords.defaultRecipients} />}
+            <EmailsGroup keywords={searchKeywords.emails} />
+            {newslettersEnabled !== 'disabled' && !config.mailgunIsConfigured && <MailGun keywords={searchKeywords.mailgun} />}
         </SearchableSection>
     );
 };
