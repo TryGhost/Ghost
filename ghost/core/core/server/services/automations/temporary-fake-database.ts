@@ -41,6 +41,9 @@ export function createTemporaryFakeAutomationsDatabase(): DatabaseSync {
             version: 1
         }
     });
+    const fakeEmailSenderName = 'Ghost';
+    const fakeEmailSenderEmail = 'hello@example.com';
+    const fakeEmailSenderReplyTo = 'support@example.com';
     const fakeEmailDesignSettingId = id();
 
     database.exec(`
@@ -203,8 +206,8 @@ CREATE TABLE automation_run_steps (
 
     const insertActionRevision = database.prepare(`
         INSERT INTO automation_action_revisions
-        (id, created_at, action_id, wait_hours, email_subject, email_lexical, email_design_setting_id) VALUES
-        (:id, :created_at, :action_id, :wait_hours, :email_subject, :email_lexical, :email_design_setting_id)
+        (id, created_at, action_id, wait_hours, email_subject, email_lexical, email_sender_name, email_sender_email, email_sender_reply_to, email_design_setting_id) VALUES
+        (:id, :created_at, :action_id, :wait_hours, :email_subject, :email_lexical, :email_sender_name, :email_sender_email, :email_sender_reply_to, :email_design_setting_id)
     `);
     insertActionRevision.run({
         id: id(),
@@ -213,6 +216,9 @@ CREATE TABLE automation_run_steps (
         wait_hours: 48,
         email_subject: null,
         email_lexical: null,
+        email_sender_name: null,
+        email_sender_email: null,
+        email_sender_reply_to: null,
         email_design_setting_id: null
     });
     insertActionRevision.run({
@@ -222,6 +228,9 @@ CREATE TABLE automation_run_steps (
         wait_hours: null,
         email_subject: 'Welcome!',
         email_lexical: fakeLexical,
+        email_sender_name: fakeEmailSenderName,
+        email_sender_email: fakeEmailSenderEmail,
+        email_sender_reply_to: fakeEmailSenderReplyTo,
         email_design_setting_id: fakeEmailDesignSettingId
     });
     insertActionRevision.run({
@@ -231,6 +240,9 @@ CREATE TABLE automation_run_steps (
         wait_hours: 72,
         email_subject: null,
         email_lexical: null,
+        email_sender_name: null,
+        email_sender_email: null,
+        email_sender_reply_to: null,
         email_design_setting_id: null
     });
     insertActionRevision.run({
@@ -240,6 +252,9 @@ CREATE TABLE automation_run_steps (
         wait_hours: null,
         email_subject: 'Follow up',
         email_lexical: fakeLexical,
+        email_sender_name: fakeEmailSenderName,
+        email_sender_email: fakeEmailSenderEmail,
+        email_sender_reply_to: fakeEmailSenderReplyTo,
         email_design_setting_id: fakeEmailDesignSettingId
     });
     insertActionRevision.run({
@@ -249,6 +264,9 @@ CREATE TABLE automation_run_steps (
         wait_hours: 48,
         email_subject: null,
         email_lexical: null,
+        email_sender_name: null,
+        email_sender_email: null,
+        email_sender_reply_to: null,
         email_design_setting_id: null
     });
     insertActionRevision.run({
@@ -258,6 +276,9 @@ CREATE TABLE automation_run_steps (
         wait_hours: null,
         email_subject: 'Welcome to Paid!',
         email_lexical: fakeLexical,
+        email_sender_name: fakeEmailSenderName,
+        email_sender_email: fakeEmailSenderEmail,
+        email_sender_reply_to: fakeEmailSenderReplyTo,
         email_design_setting_id: fakeEmailDesignSettingId
     });
     insertActionRevision.run({
@@ -267,6 +288,9 @@ CREATE TABLE automation_run_steps (
         wait_hours: 72,
         email_subject: null,
         email_lexical: null,
+        email_sender_name: null,
+        email_sender_email: null,
+        email_sender_reply_to: null,
         email_design_setting_id: null
     });
     insertActionRevision.run({
@@ -276,6 +300,9 @@ CREATE TABLE automation_run_steps (
         wait_hours: null,
         email_subject: 'Exclusive Insights',
         email_lexical: fakeLexical,
+        email_sender_name: fakeEmailSenderName,
+        email_sender_email: fakeEmailSenderEmail,
+        email_sender_reply_to: fakeEmailSenderReplyTo,
         email_design_setting_id: fakeEmailDesignSettingId
     });
 
