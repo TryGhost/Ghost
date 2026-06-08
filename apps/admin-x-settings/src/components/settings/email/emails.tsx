@@ -3,15 +3,19 @@ import EnableNewsletters from './enable-newsletters';
 import MailGun from './mailgun';
 import NewslettersTabContent, {type NewslettersFilter} from './newsletters/newsletters-tab-content';
 import NiceModal from '@ebay/nice-modal-react';
-import React, {useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import SearchableSection from '../../searchable-section';
 import TopLevelGroup from '../../top-level-group';
 import WelcomeEmailCustomizeModal from '../membership/member-emails/welcome-email-customize-modal';
-import {Button, Icon, Table, TableRow} from '@tryghost/admin-x-design-system';
+import useQueryParams from '../../../hooks/use-query-params';
+import {APIError} from '@tryghost/admin-x-framework/errors';
+import {Button, ConfirmationModal, Icon, Table, TableRow} from '@tryghost/admin-x-design-system';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/global-data-provider';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
+import {useVerifyAutomatedEmailSender} from '@tryghost/admin-x-framework/api/automated-emails';
 
 export const searchKeywords = {
     enableNewsletters: ['emails', 'newsletters', 'newsletter sending', 'enable', 'disable', 'turn on', 'turn off'],
@@ -53,16 +57,86 @@ const TransactionalTabContent: React.FC = () => {
     );
 };
 
-const EmailsGroup: React.FC<{ keywords: string[] }> = ({keywords}) => {
+const isAutomatedEmailVerificationRoute = () => {
+    const hash = window.location.hash.slice(1);
+    const pathname = new URL(hash || '/', window.location.origin).pathname;
+
+    return pathname.startsWith('/settings/memberemails');
+};
+
+const EmailsGroup: React.FC<{ keywords: string[]; newslettersEnabled: boolean }> = ({keywords, newslettersEnabled}) => {
     const {updateRoute} = useRouting();
-    const [selectedTab, setSelectedTab] = useState<'newsletters' | 'transactional'>('newsletters');
+    const verifyEmailToken = useQueryParams().getParam('verifyEmail');
+    const {mutateAsync: verifySenderUpdate} = useVerifyAutomatedEmailSender();
+    const handleError = useHandleError();
+    const submittedTokenRef = useRef<string | null>(null);
+    const [selectedTab, setSelectedTab] = useState<'newsletters' | 'transactional'>(newslettersEnabled ? 'newsletters' : 'transactional');
     const [newslettersFilter, setNewslettersFilter] = useState<NewslettersFilter>('active');
+
+    useEffect(() => {
+        if (!newslettersEnabled && selectedTab === 'newsletters') {
+            setSelectedTab('transactional');
+        }
+    }, [newslettersEnabled, selectedTab]);
+
+    useEffect(() => {
+        if (!verifyEmailToken || !isAutomatedEmailVerificationRoute()) {
+            return;
+        }
+
+        if (submittedTokenRef.current === verifyEmailToken) {
+            return;
+        }
+        submittedTokenRef.current = verifyEmailToken;
+        setSelectedTab('transactional');
+
+        const verify = async () => {
+            try {
+                const {meta: {email_verified: emailVerified} = {}} = await verifySenderUpdate({token: verifyEmailToken});
+
+                let title = 'Sender email verified';
+                let prompt = <>Automation email sender settings have been updated.</>;
+
+                if (emailVerified === 'sender_reply_to') {
+                    title = 'Reply-to address verified';
+                    prompt = <>Automation email reply-to address has been verified and updated.</>;
+                }
+
+                updateRoute('emails');
+                NiceModal.show(ConfirmationModal, {
+                    title,
+                    prompt,
+                    okLabel: 'Close',
+                    cancelLabel: '',
+                    onOk: confirmModal => confirmModal?.remove()
+                });
+            } catch (e) {
+                let prompt = 'There was an error verifying your email address. Try again later.';
+
+                if (e instanceof APIError && e.message === 'Token expired') {
+                    prompt = 'Verification link has expired.';
+                }
+
+                updateRoute('emails');
+                NiceModal.show(ConfirmationModal, {
+                    title: 'Error verifying email address',
+                    prompt,
+                    okLabel: 'Close',
+                    cancelLabel: '',
+                    onOk: confirmModal => confirmModal?.remove()
+                });
+                handleError(e, {withToast: false});
+            }
+        };
+
+        verify();
+    }, [handleError, updateRoute, verifyEmailToken, verifySenderUpdate]);
 
     const openNewNewsletter = () => {
         updateRoute('newsletters/new');
     };
 
-    const customButtons = selectedTab === 'newsletters' ? (
+    const customButtons = newslettersEnabled && selectedTab === 'newsletters' ? (
         <Button className='mt-[-5px]' color='clear' label='Add newsletter' size='sm' onClick={openNewNewsletter} />
     ) : undefined;
 
@@ -78,10 +152,10 @@ const EmailsGroup: React.FC<{ keywords: string[] }> = ({keywords}) => {
             <Tabs value={selectedTab} variant='underline' onValueChange={value => setSelectedTab(value as 'newsletters' | 'transactional')}>
                 <div className='flex items-center justify-between border-b border-grey-200 dark:border-grey-900'>
                     <TabsList className='border-b-0'>
-                        <TabsTrigger value='newsletters'>Newsletters</TabsTrigger>
+                        {newslettersEnabled && <TabsTrigger value='newsletters'>Newsletters</TabsTrigger>}
                         <TabsTrigger value='transactional'>Transactional</TabsTrigger>
                     </TabsList>
-                    {selectedTab === 'newsletters' && (
+                    {newslettersEnabled && selectedTab === 'newsletters' && (
                         <Select value={newslettersFilter} onValueChange={value => setNewslettersFilter(value as NewslettersFilter)}>
                             <SelectTrigger className='h-7 w-auto gap-1 border-0 bg-transparent px-2 text-sm shadow-none hover:bg-muted focus:ring-0 focus:ring-offset-0' data-testid='newsletters-filter'>
                                 <SelectValue />
@@ -93,9 +167,11 @@ const EmailsGroup: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         </Select>
                     )}
                 </div>
-                <TabsContent value='newsletters'>
-                    <NewslettersTabContent filter={newslettersFilter} />
-                </TabsContent>
+                {newslettersEnabled && (
+                    <TabsContent value='newsletters'>
+                        <NewslettersTabContent filter={newslettersFilter} />
+                    </TabsContent>
+                )}
                 <TabsContent value='transactional'>
                     <TransactionalTabContent />
                 </TabsContent>
@@ -107,13 +183,14 @@ const EmailsGroup: React.FC<{ keywords: string[] }> = ({keywords}) => {
 const Emails: React.FC = () => {
     const {settings, config} = useGlobalData();
     const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [string];
+    const hasNewslettersEnabled = newslettersEnabled !== 'disabled';
 
     return (
         <SearchableSection keywords={Object.values(searchKeywords).flat()} title='Email'>
             <EnableNewsletters keywords={searchKeywords.enableNewsletters} />
-            {newslettersEnabled !== 'disabled' && <DefaultRecipients keywords={searchKeywords.defaultRecipients} />}
-            <EmailsGroup keywords={searchKeywords.emails} />
-            {newslettersEnabled !== 'disabled' && !config.mailgunIsConfigured && <MailGun keywords={searchKeywords.mailgun} />}
+            {hasNewslettersEnabled && <DefaultRecipients keywords={searchKeywords.defaultRecipients} />}
+            <EmailsGroup keywords={searchKeywords.emails} newslettersEnabled={hasNewslettersEnabled} />
+            {hasNewslettersEnabled && !config.mailgunIsConfigured && <MailGun keywords={searchKeywords.mailgun} />}
         </SearchableSection>
     );
 };
