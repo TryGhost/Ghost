@@ -69,11 +69,11 @@ const EmailsGroup: React.FC<{ keywords: string[] }> = ({keywords}) => {
     return (
         <TopLevelGroup
             customButtons={customButtons}
-            description='Edit details and customize email design'
+            description='Manage newsletters and customize transactional emails.'
             keywords={keywords}
             navid='emails'
             testId='emails'
-            title='Emails'
+            title='Newsletters & transactional emails'
         >
             <Tabs value={selectedTab} variant='underline' onValueChange={value => setSelectedTab(value as 'newsletters' | 'transactional')}>
                 <div className='flex items-center justify-between border-b border-grey-200 dark:border-grey-900'>
@@ -109,7 +109,7 @@ const Emails: React.FC = () => {
     const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [string];
 
     return (
-        <SearchableSection keywords={Object.values(searchKeywords).flat()} title='Emails'>
+        <SearchableSection keywords={Object.values(searchKeywords).flat()} title='Email'>
             <EnableNewsletters keywords={searchKeywords.enableNewsletters} />
             {newslettersEnabled !== 'disabled' && <DefaultRecipients keywords={searchKeywords.defaultRecipients} />}
             <EmailsGroup keywords={searchKeywords.emails} />
