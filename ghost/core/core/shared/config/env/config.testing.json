@@ -58,7 +58,7 @@
             "minWait": 3600000,
             "maxWait": 3600000,
             "lifetime": 3600,
-            "freeRetries":4
+            "freeRetries": 99
         },
         "private_block": {
             "minWait": 3600000,
