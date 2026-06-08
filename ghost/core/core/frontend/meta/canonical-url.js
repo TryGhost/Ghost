@@ -12,13 +12,7 @@ function getCanonicalUrl(data) {
         return data.tag.canonical_url;
     }
 
-    let url = urlUtils.urlJoin(urlUtils.urlFor('home', true), getUrl(data, false));
-
-    if (url.indexOf('/amp/')) {
-        url = url.replace(/\/amp\/$/i, '/');
-    }
-
-    return url;
+    return urlUtils.urlJoin(urlUtils.urlFor('home', true), getUrl(data, false));
 }
 
 module.exports = getCanonicalUrl;

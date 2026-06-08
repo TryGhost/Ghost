@@ -3,7 +3,6 @@ import Model, {attr, belongsTo, hasMany} from '@ember-data/model';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import moment from 'moment-timezone';
-import {BLANK_DOC as BLANK_MOBILEDOC} from 'koenig-editor/components/koenig-editor';
 import {compare, isBlank} from '@ember/utils';
 import {computed, observer} from '@ember/object';
 import {equal, filterBy, reads} from '@ember/object/computed';
@@ -12,6 +11,7 @@ import {on} from '@ember/object/evented';
 import {inject as service} from '@ember/service';
 
 const BLANK_LEXICAL = '{"root":{"children":[{"children":[],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}';
+const SEARCH_INDEXED_FIELDS = ['title', 'slug', 'status', 'visibility', 'publishedAtUTC'];
 
 // ember-cli-shims doesn't export these so we must get them manually
 const {Comparable} = Ember;
@@ -72,6 +72,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     feature: service(),
     ghostPaths: service(),
     clock: service(),
+    search: service(),
     settings: service(),
     membersUtils: service(),
 
@@ -101,20 +102,9 @@ export default Model.extend(Comparable, ValidationEngine, {
     visibility: attr('string'),
     metaDescription: attr('string'),
     metaTitle: attr('string'),
-    mobiledoc: attr('json-string', {defaultValue: (modelInstance) => {
-        if (modelInstance.feature.lexicalEditor) {
-            return null;
-        }
-
-        // avoid modifying any references in the original blank doc object
-        return JSON.parse(JSON.stringify(BLANK_MOBILEDOC));
-    }}),
-    lexical: attr('string', {defaultValue: (modelInstance) => {
-        if (modelInstance.feature.lexicalEditor) {
-            return BLANK_LEXICAL;
-        }
-
-        return null;
+    mobiledoc: attr('json-string'),
+    lexical: attr('string', {defaultValue: () => {
+        return BLANK_LEXICAL;
     }}),
     plaintext: attr('string'),
     publishedAtUTC: attr('moment-utc'),
@@ -122,7 +112,6 @@ export default Model.extend(Comparable, ValidationEngine, {
     status: attr('string', {defaultValue: 'draft'}),
     title: attr('string', {defaultValue: ''}),
     updatedAtUTC: attr('moment-utc'),
-    updatedBy: attr('number'),
     url: attr('string'),
     uuid: attr('string'),
     emailSegment: attr('members-segment-string', {defaultValue: null}),
@@ -134,7 +123,6 @@ export default Model.extend(Comparable, ValidationEngine, {
     showTitleAndFeatureImage: attr('boolean', {defaultValue: true}),
 
     authors: hasMany('user', {embedded: 'always', async: false}),
-    createdBy: belongsTo('user', {async: true}),
     email: belongsTo('email', {async: false}),
     newsletter: belongsTo('newsletter', {embedded: 'always', async: false}),
     publishedBy: belongsTo('user', {async: true}),
@@ -147,10 +135,9 @@ export default Model.extend(Comparable, ValidationEngine, {
     scratch: null,
     lexicalScratch: null,
     titleScratch: null,
-
-    // HACK: used for validation so that date/time can be validated based on
-    // eventual status rather than current status
-    statusScratch: null,
+    //This is used to store the initial lexical state from the
+    // secondary editor to get the schema up to date in case its outdated
+    secondaryLexicalState: null,
 
     // For use by date/time pickers - will be validated then converted to UTC
     // on save. Updated by an observer whenever publishedAtUTC changes.
@@ -201,15 +188,13 @@ export default Model.extend(Comparable, ValidationEngine, {
     }),
 
     showAudienceFeedback: computed('sentiment', function () {
-        return this.feature.get('audienceFeedback') && this.sentiment !== undefined;
+        return this.sentiment !== undefined;
     }),
 
     showEmailOpenAnalytics: computed('hasBeenEmailed', 'isSent', 'isPublished', function () {
         return this.hasBeenEmailed
             && !this.session.user.isContributor
             && this.settings.membersSignupAccess !== 'none'
-            && this.settings.editorDefaultEmailRecipients !== 'disabled'
-            && this.hasBeenEmailed
             && this.email.trackOpens
             && this.settings.emailTrackOpens;
     }),
@@ -218,7 +203,6 @@ export default Model.extend(Comparable, ValidationEngine, {
         return this.hasBeenEmailed
             && !this.session.user.isContributor
             && this.settings.membersSignupAccess !== 'none'
-            && this.settings.editorDefaultEmailRecipients !== 'disabled'
             && (this.isSent || this.isPublished)
             && this.email.trackClicks
             && this.settings.emailTrackClicks;
@@ -455,5 +439,24 @@ export default Model.extend(Comparable, ValidationEngine, {
         let publishedAtBlogTZ = this.publishedAtBlogTZ;
         let publishedAtUTC = publishedAtBlogTZ ? publishedAtBlogTZ.utc() : null;
         this.set('publishedAtUTC', publishedAtUTC);
+    },
+
+    // when indexed post fields are updated or deleted we expire the search content cache
+    save() {
+        const changedAttributes = this.changedAttributes();
+        const previousUrl = this.url;
+        const previousPublishedAtUTC = this.publishedAtUTC?.valueOf();
+        const searchIndexedFieldChanged = SEARCH_INDEXED_FIELDS.some(field => changedAttributes[field]);
+
+        return this._super(...arguments).then((res) => {
+            const urlChanged = previousUrl !== this.url;
+            const publishedAtUTCChanged = previousPublishedAtUTC !== this.publishedAtUTC?.valueOf();
+
+            if (this.isDeleted || searchIndexedFieldChanged || urlChanged || publishedAtUTCChanged) {
+                this.search.expireContent();
+            }
+
+            return res;
+        });
     }
 });

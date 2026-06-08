@@ -9,5 +9,9 @@ export default {
 
     replaceState(params, title, url) {
         window.history.replaceState(params, title, url);
+    },
+
+    reload() {
+        window.location.reload();
     }
 };

@@ -1,4 +1,4 @@
-const ObjectId = require('bson-objectid').default;
+import ObjectId from 'bson-objectid';
 let memberCounter = 0;
 
 export function buildMember(override: any = {}) {
@@ -16,22 +16,40 @@ export function buildMember(override: any = {}) {
     };
 }
 
+export function buildDeletedMember() {
+    return null;
+}
+
+export function buildAnonymousMember(override: any = {}) {
+    return buildMember({...override, name: ''});
+}
+
+export function buildSettings(override: any = {}) {
+    return {
+        meta: {},
+        settings: {},
+        ...override
+    };
+}
+
 export function buildComment(override: any = {}) {
     return {
         id: ObjectId().toString(),
         html: '<p>Empty</p>',
         replies: [],
         liked: false,
+        disliked: false,
         created_at: '2022-08-11T09:26:34.000Z',
         edited_at: null,
         member: buildMember(),
         status: 'published',
+        pinned: false,
         ...override,
         count: {
             replies: 0,
             likes: 0,
             ...override.count
-        },
+        }
     };
 }
 
@@ -43,6 +61,7 @@ export function buildReply(override: any = {}) {
             likes: 0
         },
         liked: false,
+        disliked: false,
         created_at: '2022-08-11T09:26:34.000Z',
         edited_at: null,
         member: buildMember(),
@@ -51,7 +70,7 @@ export function buildReply(override: any = {}) {
     };
 }
 
-export function buildCommentsReply(override: any = {}) {
+export function buildCommentsReply() {
     return {
         comments: [],
         meta: {

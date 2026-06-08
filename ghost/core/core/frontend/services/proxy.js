@@ -1,15 +1,25 @@
 // This file contains everything that the helpers and frontend apps require from the core of Ghost
 const settingsCache = require('../../shared/settings-cache');
 const config = require('../../shared/config');
+const settingsHelpers = require('../../server/services/settings-helpers');
+const internalKeys = require('../../server/services/internal-keys').default;
+const logging = require('@tryghost/logging');
 
 // Require from the handlebars framework
 const {SafeString} = require('./handlebars');
 
-let _dataService = {};
-
 module.exports = {
-    getFrontendKey: () => {
-        return _dataService.getFrontendKey();
+    getFrontendKey: async () => {
+        try {
+            const key = await internalKeys.get('ghost-internal-frontend');
+            return key.secret;
+        } catch (err) {
+            logging.error({
+                event: {name: 'frontend.load-internal-key.error'},
+                err
+            }, 'Unable to find the internal frontend key');
+            return null;
+        }
     },
 
     /**
@@ -47,6 +57,11 @@ module.exports = {
     // TODO: Only expose "get"
     settingsCache: settingsCache,
 
+    // Settings helpers for calculated settings
+    settingsHelpers: {
+        isWebAnalyticsEnabled: settingsHelpers.isWebAnalyticsEnabled.bind(settingsHelpers)
+    },
+
     // TODO: Expose less of the API to make this safe
     api: require('../../server/api').endpoints,
 
@@ -55,8 +70,4 @@ module.exports = {
     // URGH... Yuk (unhelpful comment :D)
     urlService: require('../../server/services/url'),
     urlUtils: require('../../shared/url-utils')
-};
-
-module.exports.init = ({dataService}) => {
-    _dataService = dataService;
 };

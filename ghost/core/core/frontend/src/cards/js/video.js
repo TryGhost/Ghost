@@ -224,9 +224,19 @@
         });
     }
 
+    const setVideoContainerAspectRatio = function(videoCard) {
+        const container = videoCard.querySelector('.kg-video-container');
+        const video = container.querySelector('video');
+        if (container && video.width && video.height) {
+            const aspectRatio = (video.height / video.width * 100).toFixed(3);
+            container.style.paddingBottom = `${aspectRatio}%`;
+        }
+    };
+
     const videoCardElements = document.querySelectorAll('.kg-video-card');
 
     for (let i = 0; i < videoCardElements.length; i++) {
+        setVideoContainerAspectRatio(videoCardElements[i]);
         handleVideoPlayer(videoCardElements[i]);
     }
 })();

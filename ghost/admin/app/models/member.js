@@ -6,7 +6,7 @@ import {task} from 'ember-concurrency';
 export default Model.extend(ValidationEngine, {
     validationType: 'member',
 
-    name: attr('string'),
+    name: attr('trimmed-string'),
     email: attr('string'),
     note: attr('string'),
     status: attr('string'),
@@ -25,6 +25,8 @@ export default Model.extend(ValidationEngine, {
     tiers: attr('member-tier'),
     newsletters: hasMany('newsletter', {embedded: 'always', async: false}),
     emailSuppression: attr(),
+    canComment: attr('boolean'),
+    commenting: attr(),
 
     labels: hasMany('label', {embedded: 'always', async: false}),
 
@@ -49,5 +51,10 @@ export default Model.extend(ValidationEngine, {
         let response = yield this.ajax.request(url);
 
         return response.member_signin_urls[0];
+    }).drop(),
+
+    logoutAllDevices: task(function* () {
+        let url = this.get('ghostPaths.url').api('members', this.id, 'signout');
+        yield this.ajax.post(url);
     }).drop()
 });

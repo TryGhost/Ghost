@@ -1,6 +1,6 @@
 const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
 const nock = require('nock');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const markdownToMobiledoc = require('../../utils/fixtures/data-generator').markdownToMobiledoc;
 const jobsService = require('../../../core/server/services/mentions-jobs');
 
@@ -368,7 +368,7 @@ describe('Mentions Service', function () {
                 assert.equal(endpointMock.isDone(), true);
             });
 
-            it('Unpublished post (post.unpublished)', async function () {
+            it('Unpublished page (page.unpublished)', async function () {
                 const publishedPage = {status: 'published', ...mentionsPost};
                 const res = await agent
                     .post('pages/')

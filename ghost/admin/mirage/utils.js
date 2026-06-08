@@ -1,4 +1,3 @@
-/* eslint-disable max-statements-per-line */
 import {Response} from 'miragejs';
 import {isArray} from '@ember/array';
 
@@ -18,6 +17,9 @@ export function paginatedResponse(modelName) {
 
 export function paginateModelCollection(modelName, collection, page, limit) {
     let pages, next, prev, models;
+
+    page = parseInt(page, 10);
+    limit = parseInt(limit, 10);
 
     if (limit === 'all') {
         pages = 1;
@@ -116,6 +118,8 @@ export function extractFilterParam(param, filter = '') {
 
     if (result.startsWith('[')) {
         match = result.replace(/^\[|\]$/g, '').split(',');
+    } else if (result.startsWith('~')) {
+        match = result.replace(/^~/, '').replace(/\\'/g, `'`).replace(/^'|'$/g, '');
     } else {
         match = [result];
     }

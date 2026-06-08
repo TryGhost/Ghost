@@ -1,11 +1,11 @@
 import {Factory} from 'miragejs';
+import {dasherize} from '@ember/string';
 import {isEmpty} from '@ember/utils';
 
 export default Factory.extend({
     codeinjectionFoot: null,
     codeinjectionHead: null,
     createdAt: '2015-09-11T09:44:29.871Z',
-    createdBy: 1,
     customExcerpt: null,
     customTemplate: null,
     description(i) { return `Title for post ${i}.`; },
@@ -27,12 +27,12 @@ export default Factory.extend({
         return statuses[i % statuses.length];
     },
     title(i) { return `Post ${i}`; },
+    slug: null,
     twitterDescription: null,
     twitterImage: null,
     twitterTitle: null,
     emailSubject: null,
     updatedAt: '2015-10-19T16:25:07.756Z',
-    updatedBy: 1,
     uuid(i) { return `post-${i}`; },
 
     authors() { return []; },
@@ -48,6 +48,11 @@ export default Factory.extend({
             }
 
             post.authors = [user];
+            post.save();
+        }
+
+        if (isEmpty(post.slug)) {
+            post.slug = dasherize(post.title);
             post.save();
         }
     }

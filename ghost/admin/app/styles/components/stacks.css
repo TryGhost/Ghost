@@ -1,4 +1,4 @@
-/* Lists that are open on the sides 
+/* Lists that are open on the sides
 /* ------------------------------------------------- */
 .gh-stack {
     display: flex;
@@ -17,10 +17,6 @@
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-}
-
-.gh-stack-item .gh-setting-content {
-    margin-right: 24px;
 }
 
 .gh-stack-item.row label {

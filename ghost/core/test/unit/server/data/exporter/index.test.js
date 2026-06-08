@@ -1,4 +1,5 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 const db = require('../../../../../core/server/data/db');
@@ -12,10 +13,6 @@ describe('Exporter', function () {
     let tablesStub;
     let queryMock;
     let knexMock;
-
-    before(function () {
-        models.init();
-    });
 
     afterEach(function () {
         sinon.restore();
@@ -37,125 +34,105 @@ describe('Exporter', function () {
             });
         });
 
-        it('should try to export all the correct tables (without excluded)', function (done) {
-            exporter.doExport().then(function (exportData) {
-                // NOTE: 15 default tables
-                const expectedCallCount = exporter.TABLES_ALLOWLIST.length;
+        it('should try to export all the correct tables (without excluded)', async function () {
+            const exportData = await exporter.doExport();
+            // NOTE: 15 default tables
+            const expectedCallCount = exporter.TABLES_ALLOWLIST.length;
 
-                should.exist(exportData);
+            assertExists(exportData);
 
-                exportData.meta.version.should.match(/\d+.\d+.\d+/gi);
+            assert.match(exportData.meta.version, /\d+.\d+.\d+/gi);
 
-                tablesStub.calledOnce.should.be.true();
-                db.knex.called.should.be.true();
+            sinon.assert.calledOnce(tablesStub);
+            sinon.assert.called(db.knex);
 
-                knexMock.callCount.should.eql(expectedCallCount);
-                queryMock.select.callCount.should.have.eql(expectedCallCount);
+            sinon.assert.callCount(knexMock, expectedCallCount);
+            sinon.assert.callCount(queryMock.select, expectedCallCount);
 
-                let expectedTables = [
-                    'posts',
-                    'posts_authors',
-                    'posts_meta',
-                    'posts_tags',
-                    'roles',
-                    'roles_users',
-                    'settings',
-                    'custom_theme_settings',
-                    'tags',
-                    'users',
-                    'products',
-                    'stripe_products',
-                    'stripe_prices',
-                    'posts_products',
-                    'newsletters',
-                    'benefits',
-                    'products_benefits',
-                    'offers',
-                    'offer_redemptions',
-                    'snippets'
-                ];
-
-                for (let call = 0; call < expectedCallCount; call++) {
-                    const arg = knexMock.getCall(call).args[0];
-                    arg.should.be.equalOneOf(expectedTables);
-                    expectedTables = expectedTables.filter(item => item !== arg);
-                }
-                expectedTables.should.be.empty();
-
-                done();
-            }).catch(done);
+            const expectedTables = new Set([
+                'posts',
+                'posts_authors',
+                'posts_meta',
+                'posts_tags',
+                'roles',
+                'roles_users',
+                'settings',
+                'custom_theme_settings',
+                'tags',
+                'users',
+                'products',
+                'stripe_products',
+                'stripe_prices',
+                'posts_products',
+                'newsletters',
+                'benefits',
+                'products_benefits',
+                'offers',
+                'offer_redemptions',
+                'snippets'
+            ]);
+            const actualTables = new Set(knexMock.getCalls().map(call => call.args[0]));
+            assert.deepEqual(actualTables, expectedTables);
         });
 
-        it('should try to export all the correct tables with extra tables', function (done) {
+        it('should try to export all the correct tables with extra tables', async function () {
             const include = ['mobiledoc_revisions', 'email_recipients'];
 
-            exporter.doExport({include}).then(function (exportData) {
-                // NOTE: 15 default tables + 2 includes
-                const expectedCallCount = exporter.TABLES_ALLOWLIST.length + 2;
+            const exportData = await exporter.doExport({include});
+            // NOTE: 15 default tables + 2 includes
+            const expectedCallCount = exporter.TABLES_ALLOWLIST.length + 2;
 
-                should.exist(exportData);
+            assertExists(exportData);
 
-                exportData.meta.version.should.match(/\d+.\d+.\d+/gi);
+            assert.match(exportData.meta.version, /\d+.\d+.\d+/gi);
 
-                tablesStub.calledOnce.should.be.true();
-                db.knex.called.should.be.true();
-                queryMock.select.called.should.be.true();
+            sinon.assert.calledOnce(tablesStub);
+            sinon.assert.called(db.knex);
+            sinon.assert.called(queryMock.select);
 
-                knexMock.callCount.should.eql(expectedCallCount);
-                queryMock.select.callCount.should.have.eql(expectedCallCount);
+            sinon.assert.callCount(knexMock, expectedCallCount);
+            sinon.assert.callCount(queryMock.select, expectedCallCount);
 
-                let expectedTables = [
-                    'posts',
-                    'posts_authors',
-                    'posts_meta',
-                    'posts_tags',
-                    'roles',
-                    'roles_users',
-                    'settings',
-                    'custom_theme_settings',
-                    'tags',
-                    'users',
-                    'products',
-                    'stripe_products',
-                    'stripe_prices',
-                    'posts_products',
-                    'newsletters',
-                    'benefits',
-                    'products_benefits',
-                    'offers',
-                    'offer_redemptions',
-                    'snippets'
-                ].concat(include);
-
-                for (let call = 0; call < expectedCallCount; call++) {
-                    const arg = knexMock.getCall(call).args[0];
-                    arg.should.be.equalOneOf(expectedTables);
-                    expectedTables = expectedTables.filter(item => item !== arg);
-                }
-                expectedTables.should.be.empty();
-
-                done();
-            }).catch(done);
+            const expectedTables = new Set([
+                'posts',
+                'posts_authors',
+                'posts_meta',
+                'posts_tags',
+                'roles',
+                'roles_users',
+                'settings',
+                'custom_theme_settings',
+                'tags',
+                'users',
+                'products',
+                'stripe_products',
+                'stripe_prices',
+                'posts_products',
+                'newsletters',
+                'benefits',
+                'products_benefits',
+                'offers',
+                'offer_redemptions',
+                'snippets',
+                ...include
+            ]);
+            const actualTables = new Set(knexMock.getCalls().map(call => call.args[0]));
+            assert.deepEqual(actualTables, expectedTables);
         });
 
-        it('should catch and log any errors', function (done) {
+        it('should catch and log any errors', async function () {
             // Setup for failure
             queryMock.select.returns(Promise.reject({}));
 
             // Execute
-            exporter.doExport()
-                .then(function () {
-                    done(new Error('expected error for export'));
-                })
-                .catch(function (err) {
-                    (err instanceof errors.DataExportError).should.eql(true);
-                    done();
-                });
+            await assert.rejects(async () => {
+                await exporter.doExport();
+            }, errors.DataExportError);
         });
     });
 
     describe('exportFileName', function () {
-        it('should return a correctly structured filename', function (done) {
+        it('should return a correctly structured filename', async function () {
             const settingsStub = sinon.stub(models.Settings, 'findOne').returns(
                 Promise.resolve({
                     get: function () {
@@ -164,43 +141,34 @@ describe('Exporter', function () {
                 })
             );
 
-            exporter.fileName().then(function (result) {
-                should.exist(result);
-                settingsStub.calledOnce.should.be.true();
-                result.should.match(/^testblog\.ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.json$/);
-
-                done();
-            }).catch(done);
+            const result = await exporter.fileName();
+            assertExists(result);
+            sinon.assert.calledOnce(settingsStub);
+            assert.match(result, /^testblog\.ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.json$/);
         });
 
-        it('should return a correctly structured filename if settings is empty', function (done) {
+        it('should return a correctly structured filename if settings is empty', async function () {
             const settingsStub = sinon.stub(models.Settings, 'findOne').returns(
                 Promise.resolve()
             );
 
-            exporter.fileName().then(function (result) {
-                should.exist(result);
-                settingsStub.calledOnce.should.be.true();
-                result.should.match(/^ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.json$/);
-
-                done();
-            }).catch(done);
+            const result = await exporter.fileName();
+            assertExists(result);
+            sinon.assert.calledOnce(settingsStub);
+            assert.match(result, /^ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.json$/);
         });
 
-        it('should return a correctly structured filename if settings errors', function (done) {
+        it('should return a correctly structured filename if settings errors', async function () {
             const settingsStub = sinon.stub(models.Settings, 'findOne').returns(
                 Promise.reject()
             );
             const loggingStub = sinon.stub(logging, 'error');
 
-            exporter.fileName().then(function (result) {
-                should.exist(result);
-                settingsStub.calledOnce.should.be.true();
-                loggingStub.calledOnce.should.be.true();
-                result.should.match(/^ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.json$/);
-
-                done();
-            }).catch(done);
+            const result = await exporter.fileName();
+            assertExists(result);
+            sinon.assert.calledOnce(settingsStub);
+            sinon.assert.calledOnce(loggingStub);
+            assert.match(result, /^ghost\.[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{2}\.json$/);
         });
     });
 
@@ -214,14 +182,14 @@ describe('Exporter', function () {
             const nonSchemaTables = ['migrations', 'migrations_lock'];
             const requiredTables = schemaTables.concat(nonSchemaTables);
             // NOTE: You should not add tables to this list unless they are temporary
-            const ignoredTables = ['temp_member_analytic_events', 'temp_mail_events'];
+            const ignoredTables = ['temp_member_analytic_events'];
 
             const expectedTables = requiredTables.filter(table => !ignoredTables.includes(table)).sort();
             const actualTables = BACKUP_TABLES.concat(TABLES_ALLOWLIST).sort();
 
             // NOTE: this test is serving a role of a reminder to have a look into exported tables allowlists
             //       if it failed you probably need to add or remove a table entry from table-lists module
-            should.deepEqual(actualTables, expectedTables);
+            assert.deepEqual(actualTables, expectedTables);
         });
 
         it('should be fixed when default settings is changed', function () {
@@ -236,8 +204,8 @@ describe('Exporter', function () {
 
             // NOTE: if default settings changed either modify the settings keys blocklist or increase allowedKeysLength
             //       This is a reminder to think about the importer/exporter scenarios ;)
-            const allowedKeysLength = 85;
-            totalKeysLength.should.eql(SETTING_KEYS_BLOCKLIST.length + allowedKeysLength);
+            const allowedKeysLength = 108;
+            assert.equal(totalKeysLength, SETTING_KEYS_BLOCKLIST.length + allowedKeysLength);
         });
     });
 });

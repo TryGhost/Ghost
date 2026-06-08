@@ -1,6 +1,9 @@
 const path = require('path');
-const escapeRegExp = require('lodash/escapeRegExp');
 const {URL} = require('url');
+
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
 const DEFAULT_HOST_ARG = /.*/;
 

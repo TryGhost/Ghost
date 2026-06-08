@@ -4,6 +4,9 @@ const express = require('../../../shared/express');
 const compress = require('compression');
 const mw = require('./middleware');
 
+/**
+ * @returns {import('express').Application}
+ */
 module.exports = function setupParentApp() {
     debug('ParentApp setup start');
     const parentApp = express('parent');
@@ -22,6 +25,13 @@ module.exports = function setupParentApp() {
     // This sets global res.locals which are needed everywhere
     // @TODO: figure out if this is really needed everywhere? Is it not frontend only...
     parentApp.use(mw.ghostLocals);
+
+    // Enable request queuing if configured
+    const queueConfig = config.get('optimization:requestQueue');
+
+    if (queueConfig) {
+        parentApp.use(mw.queueRequest(queueConfig));
+    }
 
     debug('ParentApp setup end');
 

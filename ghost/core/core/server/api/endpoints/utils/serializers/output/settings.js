@@ -2,11 +2,13 @@ const _ = require('lodash');
 const utils = require('../../index');
 const mappers = require('./mappers');
 
+/** @typedef {import('@tryghost/api-framework').Frame} Frame */
+
 /**
  * Filters an object based on a given filter object
  * @private
  * @param {Object} settings
- * @param {String} filter
+ * @param {string} filter
  * @returns {*}
  */
 function settingsFilter(settings, filter) {
@@ -25,7 +27,7 @@ function settingsFilter(settings, filter) {
  *
  * @param {Object} models
  * @param {Object} apiConfig
- * @param {Object} frame
+ * @param {Frame} frame
  */
 function serializeSettings(models, apiConfig, frame) {
     let filteredSettings;
@@ -79,7 +81,7 @@ function passthrough(data) {
  * @template Data
  * @param {Data} data
  * @param {Object} apiConfig
- * @param {Object} frame
+ * @param {Frame} frame
  */
 function serializeData(data, apiConfig, frame) {
     frame.response = data;
@@ -89,6 +91,7 @@ module.exports = {
     browse: serializeSettings,
     read: serializeSettings,
     edit: serializeSettings,
+    regenerateAccessCode: serializeSettings,
     verifyKeyUpdate: serializeSettings,
 
     download: serializeData,

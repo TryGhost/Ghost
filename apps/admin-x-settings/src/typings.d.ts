@@ -1,8 +1,11 @@
-declare module '@tryghost/timezone-data'
 declare module '@tryghost/limit-service'
-declare module '@tryghost/color-utils'
+declare module '@tryghost/nql'
+declare module '@tryghost/string' {
+    export function slugify(string: string, options?: {requiredChangesOnly?: boolean}): string;
+}
 
 declare module '*.svg' {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     import React = require('react');
     export const ReactComponent: React.FC<React.SVGProps<SVGSVGElement>>;
     const src: string;

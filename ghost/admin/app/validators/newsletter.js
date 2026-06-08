@@ -11,7 +11,7 @@ export default BaseValidator.create({
             this.invalidate();
         }
 
-        if (!validator.isLength(model.name || '', 0, 191)) {
+        if (!validator.isLength(model.name || '', {max: 191})) {
             model.errors.add('name', 'Cannot be longer than 191 characters.');
             this.invalidate();
         }
@@ -20,7 +20,7 @@ export default BaseValidator.create({
     },
 
     senderName(model) {
-        if (!validator.isLength(model.senderName || '', 0, 191)) {
+        if (!validator.isLength(model.senderName || '', {max: 191})) {
             model.errors.add('senderName', 'Cannot be longer than 191 characters.');
             this.invalidate();
         }
@@ -34,7 +34,7 @@ export default BaseValidator.create({
             this.invalidate();
         }
 
-        if (!validator.isLength(model.senderEmail || '', 0, 191)) {
+        if (!validator.isLength(model.senderEmail || '', {max: 191})) {
             model.errors.add('senderEmail', 'Cannot be longer than 191 characters.');
             this.invalidate();
         }

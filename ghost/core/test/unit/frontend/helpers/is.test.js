@@ -18,8 +18,8 @@ describe('{{#is}} helper', function () {
             {fn: fn, inverse: inverse, data: {root: {context: ['home', 'index']}}}
         );
 
-        fn.called.should.be.true();
-        inverse.called.should.be.false();
+        sinon.assert.called(fn);
+        sinon.assert.notCalled(inverse);
     });
 
     it('should match OR context "index, paged"', function () {
@@ -32,8 +32,8 @@ describe('{{#is}} helper', function () {
             {fn: fn, inverse: inverse, data: {root: {context: ['tag', 'paged']}}}
         );
 
-        fn.called.should.be.true();
-        inverse.called.should.be.false();
+        sinon.assert.called(fn);
+        sinon.assert.notCalled(inverse);
     });
 
     it('should not match "paged"', function () {
@@ -46,8 +46,8 @@ describe('{{#is}} helper', function () {
             {fn: fn, inverse: inverse, data: {root: {context: ['index', 'home']}}}
         );
 
-        fn.called.should.be.false();
-        inverse.called.should.be.true();
+        sinon.assert.notCalled(fn);
+        sinon.assert.called(inverse);
     });
 
     it('should log warning with no args', function () {
@@ -61,8 +61,8 @@ describe('{{#is}} helper', function () {
             {fn: fn, inverse: inverse, data: {root: {context: ['index', 'home']}}}
         );
 
-        logWarn.called.should.be.true();
-        fn.called.should.be.false();
-        inverse.called.should.be.false();
+        sinon.assert.called(logWarn);
+        sinon.assert.notCalled(fn);
+        sinon.assert.notCalled(inverse);
     });
 });

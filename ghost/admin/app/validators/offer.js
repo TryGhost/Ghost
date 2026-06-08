@@ -9,7 +9,7 @@ export default BaseValidator.create({
             model.errors.add('name', 'Please enter a name.');
             this.invalidate();
         }
-        if (!validator.isLength(model.name || '', 0, 40)) {
+        if (!validator.isLength(model.name || '', {max: 40})) {
             model.errors.add('name', 'Name cannot be longer than 40 characters.');
             this.invalidate();
         }
@@ -55,7 +55,7 @@ export default BaseValidator.create({
     },
 
     displayDescription(model) {
-        if (!validator.isLength(model.displayDescription || '', 0, 191)) {
+        if (!validator.isLength(model.displayDescription || '', {max: 191})) {
             model.errors.add('displayDescription', 'Display description cannot be longer than 191 characters.');
             this.invalidate();
         }

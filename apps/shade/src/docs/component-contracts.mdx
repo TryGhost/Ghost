@@ -1,0 +1,40 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Components / Components Guide" />
+
+<div className="sb-doc">
+
+# Components
+
+<p className="excerpt">Generic, reusable UI controls — `Button`, `Input`, `Dialog`, `Tabs`, `Card`, and so on. Same on every page, no Ghost-specific knowledge.</p>
+
+## What makes a component "done"
+
+- Works in all four states: default, hover, focus-visible, disabled.
+- Drives appearance through semantic tokens (`bg-background`, `border-border-default`, `ring-focus-ring`) — no hex values, no `bg-gray-200`-style raw palette utilities.
+- Props express visual or interactive intent (`variant`, `size`, `loading`), not workflow (`isMembersPage`, `layoutMode`).
+- Forwards `className` and merges with `cn(...)`.
+- Has stories covering variants and states.
+
+If a component starts collecting workflow-specific props, **stop and extract a Pattern** — don't grow the API.
+
+## Use a component when
+
+- The control is generic enough to live on any page (Members, Settings, Stats, the post editor).
+- The name sounds like the open web, not Ghost. `Button`, `Dialog`, `Tabs` — yes. `MembersList`, `PostHeader` — no, that's a Pattern.
+
+Browse the sidebar for the live inventory and APIs. Full rules: [Layers](?path=/docs/overview-layers--docs). Agent rules: `apps/shade/AGENTS.md`.
+
+## Example: good vs. bad props
+
+```tsx
+// Good — visual intent, works in any context
+<Button loading={isPending} size="sm" variant="destructive">Delete</Button>
+
+// Bad — leaks product knowledge into a generic control
+<Button isMembersPage layoutMode="toolbarWithFilterAndStats">Add</Button>
+```
+
+When you catch yourself reaching for the second kind, that's a Pattern trying to hide as a Button.
+
+</div>

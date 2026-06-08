@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import ApplicationSerializer from 'ghost-admin/serializers/application';
 import {EmbeddedRecordsMixin} from '@ember-data/serializer/rest';
 
@@ -27,6 +26,7 @@ export default class PostSerializer extends ApplicationSerializer.extend(Embedde
         delete json.email_recipient_filter;
         delete json.email;
         delete json.newsletter;
+        delete json.post_revisions;
         // Deprecated property (replaced with data.authors)
         delete json.author;
         // Page-only properties

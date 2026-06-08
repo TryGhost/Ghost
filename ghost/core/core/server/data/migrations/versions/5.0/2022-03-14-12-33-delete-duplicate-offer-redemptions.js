@@ -1,4 +1,4 @@
-const DatabaseInfo = require('@tryghost/database-info/lib/database-info');
+const DatabaseInfo = require('@tryghost/database-info');
 const logging = require('@tryghost/logging');
 
 const {createTransactionalMigration} = require('../../utils');

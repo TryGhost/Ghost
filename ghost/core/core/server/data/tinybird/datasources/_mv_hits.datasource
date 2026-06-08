@@ -1,0 +1,29 @@
+SCHEMA >
+    `site_uuid` LowCardinality(String),
+    `timestamp` DateTime,
+    `received_at` DateTime64(3),
+    `inserted_at` DateTime64(3),
+    `ingestion_latency_ms` Int64,
+    `action` LowCardinality(String),
+    `version` LowCardinality(String),
+    `session_id` String,
+    `member_uuid` String,
+    `member_status` String,
+    `post_uuid` String,
+    `post_type` String,
+    `location` String,
+    `source` String,
+    `pathname` String,
+    `href` String,
+    `device` String,
+    `os` String,
+    `browser` String,
+    `utm_source` String,
+    `utm_medium` String,
+    `utm_campaign` String,
+    `utm_term` String,
+    `utm_content` String
+
+ENGINE "MergeTree"
+ENGINE_PARTITION_KEY "toYYYYMM(timestamp)"
+ENGINE_SORTING_KEY "site_uuid, timestamp, session_id"

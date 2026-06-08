@@ -1,0 +1,93 @@
+{{#> emailWrapper}}
+                            <tr>
+                                <td class="wrapper">
+                                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" data-testid="email-preview-content">
+                                        <tr class="post-content-row">
+                                            <td class="{{classes.body}}">
+                                                <!-- POST CONTENT START -->
+                                                {{{html}}}
+                                                <!-- POST CONTENT END -->
+
+                                                {{#if paywall}}
+                                                    {{>paywall}}
+                                                {{/if}}
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+
+                            <!-- END MAIN CONTENT AREA -->
+
+                            {{#if (or feedbackButtons newsletter.showCommentCta post.shareUrl) }}
+                                <tr>
+                                    <td class="feedback-buttons-container" dir="{{site.direction}}" width="100%" align="center">
+                                        <table class="feedback-buttons" role="presentation" border="0" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                {{#if feedbackButtons }}
+                                                    {{> feedbackButton feedbackButtons href=feedbackButtons.likeHref buttonText='More like this' iconUrl="https://static.ghost.org/v5.0.0/images/more-like-this-mobile.png" width="42" height="42" cellWidth=feedbackButtonCellWidth }}
+                                                    {{> feedbackButton feedbackButtons href=feedbackButtons.dislikeHref buttonText='Less like this' iconUrl="https://static.ghost.org/v5.0.0/images/less-like-this-mobile.png" width="42" height="42" cellWidth=feedbackButtonCellWidth }}
+                                                {{/if}}
+                                                {{#if newsletter.showCommentCta}}
+                                                    {{> feedbackButton href=post.commentUrl buttonText='Comment' iconUrl="https://static.ghost.org/v5.0.0/images/comment-mobile.png" width="42" height="42" cellWidth=feedbackButtonCellWidth }}
+                                                {{/if}}
+                                                {{#if post.shareUrl}}
+                                                    {{> feedbackButton href=post.shareUrl buttonText='Share' iconUrl="https://static.ghost.org/v6.0.0/images/share-mobile.png" width="42" height="42" cellWidth=feedbackButtonCellWidth}}
+                                                {{/if}}
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            {{/if}}
+
+                             {{#if latestPosts.length}}
+                                <tr>
+                                    <td class="latest-posts-container">
+                                        <h3 class="latest-posts-header">{{t 'Keep reading'}}</h3>
+                                        {{> latestPosts}}
+                                    </td>
+                                </tr>
+                            {{/if}}
+
+                            {{#if newsletter.showSubscriptionDetails}}
+                                <tr>
+                                    <td class="subscription-box">
+                                        <h3>{{t 'Subscription details'}}</h3>
+                                        <p style="margin-bottom: 16px;">
+                                            <span>{{{t "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}." site=site.title }}}</span> %%{status_text}%%
+                                        </p>
+                                        <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                                            <tr>
+                                                <td class="subscription-details">
+                                                    <p class="%%{name_class}%%">{{t 'Name'}}: %%{name, "not provided"}%%</p>
+                                                    <p>{{t 'Email'}}: <a href="#">%%{email}%%</a></p>
+                                                    <p>{{t 'Member since'}}: %%{created_at}%%</p>
+                                                </td>
+                                                <td align="{{#if (eq site.direction "rtl")}}left{{else}}right{{/if}}" valign="bottom" class="manage-subscription">
+                                                    <a href="%%{manage_account_url}%%"> {{t 'Manage subscription'}}</a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            {{/if}}
+
+                            <tr>
+                                <td class="wrapper" align="center">
+                                    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="padding-top: 40px; padding-bottom: 30px;">
+                                        {{#if footerContent }}
+                                            <tr><td class="footer">{{{footerContent}}}</td></tr>
+                                        {{/if}}
+                                        <tr>
+                                            <td class="footer">{{site.title}} &copy; {{year}} – <a href="%%{unsubscribe_url}%%">{{t 'Unsubscribe'}}</a></td>
+                                        </tr>
+
+                                        {{#if showBadge }}
+                                            <tr>
+                                                <td class="footer-powered"><a href="https://ghost.org/?via=pbg-newsletter"><img src="https://static.ghost.org/v4.0.0/images/powered.png" border="0" width="142" height="30" class="gh-powered" alt="Powered by Ghost"></a></td>
+                                            </tr>
+                                        {{/if}}
+                                    </table>
+                                </td>
+                            </tr>
+{{/emailWrapper}}

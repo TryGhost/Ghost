@@ -1,4 +1,4 @@
-import {AddComment, Comment} from '../AppContext';
+import {AddComment, Comment, LabsContextType} from '../app-context';
 
 function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {siteUrl: string, apiUrl: string, apiKey: string}) {
     const apiPath = 'members/api';
@@ -10,9 +10,13 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
         return '';
     }
 
-    function contentEndpointFor({resource, params = ''}: {resource: string, params?: string}) {
+    function contentEndpointFor({resource, params = {}}: {resource: string, params?: Record<string, string | number>}) {
         if (apiUrl && apiKey) {
-            return `${apiUrl.replace(/\/$/, '')}/${resource}/?key=${apiKey}&limit=all${params}`;
+            const searchParams = new URLSearchParams({
+                ...params,
+                key: apiKey
+            });
+            return `${apiUrl.replace(/\/$/, '')}/${resource}/?${searchParams.toString()}`;
         }
         return '';
     }
@@ -27,8 +31,9 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
         return fetch(url, options);
     }
 
-    // To fix pagination when we create new comments (or people post comments after you loaded the page, we need to only load comments creatd AFTER the page load)
-    let firstCommentsLoadedAt: null | string = null;
+    // To fix pagination when we create new comments (or people post comments
+    // after you loaded the page), we need to only load comments created AFTER the page load
+    let firstCommentCreatedAt: null | string = null;
 
     const api = {
         site: {
@@ -121,14 +126,24 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
 
                 return json;
             },
-            browse({page, postId}: {page: number, postId: string}) {
-                firstCommentsLoadedAt = firstCommentsLoadedAt ?? new Date().toISOString();
+            browse({page, postId, order}: {page: number, postId: string, order?: string}) {
+                let filter = null;
+                if (firstCommentCreatedAt && !order) {
+                    filter = `created_at:<=${firstCommentCreatedAt}`;
+                }
 
-                const filter = encodeURIComponent(`post_id:${postId}+created_at:<=${firstCommentsLoadedAt}`);
-                const order = encodeURIComponent('created_at DESC, id DESC');
+                const params = new URLSearchParams();
 
-                const url = endpointFor({type: 'members', resource: 'comments', params: `?limit=5&order=${order}&filter=${filter}&page=${page}`});
-                return makeRequest({
+                params.set('limit', '20');
+                if (filter) {
+                    params.set('filter', filter);
+                }
+                params.set('page', page.toString());
+                if (order) {
+                    params.set('order', order);
+                }
+                const url = endpointFor({type: 'members', resource: `comments/post/${postId}`, params: `?${params.toString()}`});
+                const response = makeRequest({
                     url,
                     method: 'GET',
                     headers: {
@@ -142,12 +157,44 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                         throw new Error('Failed to fetch comments');
                     }
                 });
-            },
-            async replies({commentId, afterReplyId, limit}: {commentId: string; afterReplyId: string; limit?: number | 'all'}) {
-                const filter = encodeURIComponent(`id:>${afterReplyId}`);
-                const order = encodeURIComponent('created_at ASC, id ASC');
 
-                const url = endpointFor({type: 'members', resource: `comments/${commentId}/replies`, params: `?limit=${limit ?? 5}&order=${order}&filter=${filter}`});
+                if (!firstCommentCreatedAt) {
+                    response.then((body) => {
+                        const firstComment = body.comments[0];
+                        if (firstComment) {
+                            firstCommentCreatedAt = firstComment.created_at;
+                        }
+                    });
+                }
+
+                return response;
+            },
+            async replies({commentId, afterReplyId, limit}: {commentId: string; afterReplyId?: string; limit?: number | 'all'}) {
+                if (limit === 'all') {
+                    const all: Comment[] = [];
+                    let cursor: string | undefined = afterReplyId;
+                    let hasMore = true;
+
+                    while (hasMore) {
+                        const data = await this.replies({commentId, afterReplyId: cursor, limit: 100});
+                        all.push(...data.comments);
+                        hasMore = !!data.meta?.pagination?.next && data.comments.length > 0;
+                        if (data.comments.length > 0) {
+                            cursor = data.comments[data.comments.length - 1]?.id;
+                        }
+                    }
+
+                    return {comments: all, meta: {pagination: {next: false}}};
+                }
+
+                const params = new URLSearchParams();
+                params.set('limit', (limit ?? 5).toString());
+
+                if (afterReplyId) {
+                    params.set('filter', `id:>'${afterReplyId}'`);
+                }
+
+                const url = endpointFor({type: 'members', resource: `comments/${commentId}/replies`, params: `?${params.toString()}`});
                 const res = await makeRequest({
                     url,
                     method: 'GET',
@@ -252,6 +299,42 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                     }
                 });
             },
+            dislike({comment}: {comment: {id: string}}) {
+                const url = endpointFor({type: 'members', resource: `comments/${comment.id}/dislike`});
+                return makeRequest({
+                    url,
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).then(function (res) {
+                    if (res.ok) {
+                        return 'Success';
+                    } else {
+                        throw new Error('Failed to dislike comment');
+                    }
+                });
+            },
+            undislike({comment}: {comment: {id: string}}) {
+                const body = {
+                    comments: [comment]
+                };
+                const url = endpointFor({type: 'members', resource: `comments/${comment.id}/dislike`});
+                return makeRequest({
+                    url,
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(body)
+                }).then(function (res) {
+                    if (res.ok) {
+                        return 'Success';
+                    } else {
+                        throw new Error('Failed to undislike comment');
+                    }
+                });
+            },
             report({comment}: {comment: {id: string}}) {
                 const url = endpointFor({type: 'members', resource: `comments/${comment.id}/report`});
                 return makeRequest({
@@ -269,7 +352,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                 });
             }
         },
-        init: (() => {}) as () => Promise<{ member: any; }>
+        init: (() => {}) as () => Promise<{ member: any; labs: any; supportEmail: string | null}>
     };
 
     api.init = async () => {
@@ -277,7 +360,20 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
             api.member.sessionData()
         ]);
 
-        return {member};
+        let labs = {};
+        let supportEmail: string | null = null;
+
+        try {
+            const settings = await api.site.settings();
+            if (settings.settings.labs) {
+                Object.assign(labs, settings.settings.labs);
+            }
+            supportEmail = settings.settings.support_email_address || null;
+        } catch {
+            labs = {};
+        }
+
+        return {member, labs, supportEmail};
     };
 
     return api;
@@ -285,3 +381,4 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
 
 export default setupGhostApi;
 export type GhostApi = ReturnType<typeof setupGhostApi>;
+export type LabsType = LabsContextType;

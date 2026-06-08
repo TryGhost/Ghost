@@ -10,7 +10,8 @@ const messages = {
     inviteNotFound: 'Invite not found.'
 };
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'invites',
 
     browse: {
@@ -54,17 +55,15 @@ module.exports = {
             }
         },
         permissions: true,
-        query(frame) {
-            return models.Invite.findOne(frame.data, frame.options)
-                .then((model) => {
-                    if (!model) {
-                        return Promise.reject(new errors.NotFoundError({
-                            message: tpl(messages.inviteNotFound)
-                        }));
-                    }
-
-                    return model;
+        async query(frame) {
+            const model = await models.Invite.findOne(frame.data, frame.options);
+            if (!model) {
+                throw new errors.NotFoundError({
+                    message: tpl(messages.inviteNotFound)
                 });
+            }
+
+            return model;
         }
     },
 
@@ -127,3 +126,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

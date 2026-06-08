@@ -1,4 +1,4 @@
-const {Service: CustomThemeSettingsService} = require('@tryghost/custom-theme-settings-service');
+const CustomThemeSettingsService = require('../../shared/custom-theme-settings-cache/custom-theme-settings-service');
 const customThemeSettingsCache = require('../../shared/custom-theme-settings-cache');
 const models = require('../models');
 

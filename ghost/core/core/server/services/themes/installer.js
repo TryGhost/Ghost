@@ -3,7 +3,7 @@ const os = require('os');
 const path = require('path');
 const security = require('@tryghost/security');
 const request = require('@tryghost/request');
-const errors = require('@tryghost/errors/lib/errors');
+const errors = require('@tryghost/errors');
 const limitService = require('../../services/limits');
 const {setFromZip} = require('./storage');
 
@@ -13,15 +13,24 @@ const messages = {
 
 /**
  *
- * @param {String} ref - theme reference in "Org/RepoName" format
+ * @param {string} ref - theme reference in "Org/RepoName" format
  * @returns {Promise<any>}
  */
 const installFromGithub = async (ref) => {
     const [org, repo] = ref.toLowerCase().split('/');
 
-    //TODO: move the organization check to config
-    if (limitService.isLimited('customThemes') && org.toLowerCase() !== 'tryghost') {
-        await limitService.errorIfWouldGoOverLimit('customThemes', {value: repo.toLowerCase()});
+    if (limitService.isLimited('customThemes')) {
+        // The custom theme limit might consist of only one single theme, so we can't rely on
+        // the org alone to determine if the request is allowed or not.
+        const noOtherThemesAllowed = limitService.limits.customThemes?.allowlist?.length === 1;
+        //TODO: move the organization check to config
+        const isNotOfficialThemeRequest = org.toLowerCase() !== 'tryghost';
+
+        const checkThemeLimit = noOtherThemesAllowed || isNotOfficialThemeRequest;
+
+        if (checkThemeLimit) {
+            await limitService.errorIfWouldGoOverLimit('customThemes', {value: repo.toLowerCase()});
+        }
     }
 
     // omit /:ref so we fetch the default branch
@@ -41,7 +50,7 @@ const installFromGithub = async (ref) => {
             headers: {
                 accept: 'application/vnd.github.v3+json'
             },
-            encoding: null
+            responseType: 'buffer'
         });
 
         await fs.writeFile(downloadPath, response.body);
@@ -60,6 +69,11 @@ const installFromGithub = async (ref) => {
                 message: messages.repoDoesNotExist,
                 context: zipUrl
             }));
+        }
+
+        if (e instanceof errors.HostLimitError) {
+            // If the error is a HostLimitError, we can assume that the theme name is not allowed
+            return Promise.reject(e);
         }
 
         throw e;

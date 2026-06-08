@@ -1,7 +1,14 @@
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, stringMatching, anyContentLength} = matchers;
-const assert = require('assert/strict');
+const {anyEtag, stringMatching, anyContentLength, anyUuid} = matchers;
+const assert = require('node:assert/strict');
 const models = require('../../../core/server/models');
+
+const siteMatcherObject = {
+    site: {
+        version: stringMatching(/\d+\.\d+/),
+        site_uuid: anyUuid
+    }
+};
 
 describe('Site Public Settings', function () {
     let membersAgent;
@@ -12,7 +19,7 @@ describe('Site Public Settings', function () {
     });
 
     afterEach(async function () {
-        await await models.Settings.edit({
+        await models.Settings.edit({
             key: 'members_signup_access',
             value: 'all'
         }, {context: {internal: true}});
@@ -21,11 +28,7 @@ describe('Site Public Settings', function () {
     it('Can retrieve site pubic config', async function () {
         const {body} = await membersAgent
             .get('/api/site')
-            .matchBodySnapshot({
-                site: {
-                    version: stringMatching(/\d+\.\d+/)
-                }
-            })
+            .matchBodySnapshot(siteMatcherObject)
             .matchHeaderSnapshot({
                 etag: anyEtag,
                 'content-length': anyContentLength
@@ -34,18 +37,14 @@ describe('Site Public Settings', function () {
     });
 
     it('Sets allow_external_signup to false when members are invite only', async function () {
-        await await models.Settings.edit({
+        await models.Settings.edit({
             key: 'members_signup_access',
             value: 'invite'
         }, {context: {internal: true}});
 
         const {body} = await membersAgent
             .get('/api/site')
-            .matchBodySnapshot({
-                site: {
-                    version: stringMatching(/\d+\.\d+/)
-                }
-            })
+            .matchBodySnapshot(siteMatcherObject)
             .matchHeaderSnapshot({
                 etag: anyEtag,
                 'content-length': anyContentLength
@@ -58,23 +57,19 @@ describe('Site Public Settings', function () {
             .get('/api/site');
         assert.equal(initialBody.site.allow_external_signup, true, 'This test requires the initial state to allow external signups');
 
-        await await models.Settings.edit({
+        await models.Settings.edit({
             key: 'portal_signup_checkbox_required',
             value: true
         }, {context: {internal: true}});
 
-        await await models.Settings.edit({
+        await models.Settings.edit({
             key: 'portal_signup_terms_html',
             value: 'I agree to the terms and conditions'
         }, {context: {internal: true}});
 
         const {body} = await membersAgent
             .get('/api/site')
-            .matchBodySnapshot({
-                site: {
-                    version: stringMatching(/\d+\.\d+/)
-                }
-            })
+            .matchBodySnapshot(siteMatcherObject)
             .matchHeaderSnapshot({
                 etag: anyEtag,
                 'content-length': anyContentLength

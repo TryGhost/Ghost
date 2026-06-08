@@ -18,6 +18,18 @@
             "lifetime": 3600,
             "freeRetries": 4
         },
+        "user_verification": {
+            "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600,
+            "freeRetries": 4
+        },
+        "send_verification_code": {
+            "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600,
+            "freeRetries": 4
+        },
         "global_reset": {
             "minWait": 3600000,
             "maxWait": 3600000,
@@ -50,6 +62,18 @@
         },
         "webmentions_block": {
             "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600,
+            "freeRetries": 4
+        },
+        "otc_verification_enumeration": {
+            "minWait": 600000,
+            "maxWait": 43200000,
+            "lifetime": 43200,
+            "freeRetries": 8
+        },
+        "otc_verification": {
+            "minWait": 300000,
             "maxWait": 3600000,
             "lifetime": 3600,
             "freeRetries": 4

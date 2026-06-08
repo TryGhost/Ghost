@@ -1,8 +1,18 @@
 const commentsService = require('../../services/comments');
-const ALLOWED_INCLUDES = ['member', 'replies', 'replies.member', 'replies.count.likes', 'replies.liked', 'count.replies', 'count.likes', 'liked', 'post', 'parent'];
-const UNSAFE_ATTRS = ['status'];
+const ALLOWED_INCLUDES = ['member', 'replies', 'replies.member', 'replies.count.likes', 'replies.liked', 'replies.disliked', 'count.replies', 'count.direct_replies', 'count.likes', 'liked', 'disliked', 'post', 'parent'];
 
-module.exports = {
+function withDislikesCapability(response) {
+    response.meta = response.meta || {};
+    response.meta.capabilities = {
+        ...response.meta.capabilities,
+        dislikes: true
+    };
+
+    return response;
+}
+
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'comments',
 
     browse: {
@@ -10,6 +20,7 @@ module.exports = {
             cacheInvalidate: false
         },
         options: [
+            'post_id',
             'include',
             'page',
             'limit',
@@ -23,9 +34,10 @@ module.exports = {
                 include: ALLOWED_INCLUDES
             }
         },
-        permissions: true,
-        query(frame) {
-            return commentsService.controller.browse(frame);
+        permissions: false,
+        async query(frame) {
+            const response = await commentsService.controller.browse(frame);
+            return withDislikesCapability(response);
         }
     },
 
@@ -48,7 +60,7 @@ module.exports = {
                 include: ALLOWED_INCLUDES
             }
         },
-        permissions: 'browse',
+        permissions: false,
         query(frame) {
             return commentsService.controller.replies(frame);
         }
@@ -59,7 +71,8 @@ module.exports = {
             cacheInvalidate: false
         },
         options: [
-            'include'
+            'include',
+            'fields'
         ],
         data: [
             'id',
@@ -70,7 +83,7 @@ module.exports = {
                 include: ALLOWED_INCLUDES
             }
         },
-        permissions: true,
+        permissions: false,
         query(frame) {
             return commentsService.controller.read(frame);
         }
@@ -94,7 +107,7 @@ module.exports = {
                 }
             }
         },
-        permissions: true,
+        permissions: false,
         query(frame) {
             return commentsService.controller.edit(frame);
         }
@@ -107,7 +120,6 @@ module.exports = {
         },
         options: [
             'include'
-
         ],
         validation: {
             options: {
@@ -119,9 +131,7 @@ module.exports = {
                 }
             }
         },
-        permissions: {
-            unsafeAttrs: UNSAFE_ATTRS
-        },
+        permissions: false,
         query(frame) {
             return commentsService.controller.add(frame);
         }
@@ -141,9 +151,9 @@ module.exports = {
                 include: ALLOWED_INCLUDES
             }
         },
-        permissions: true,
-        query(frame) {
-            return commentsService.controller.destroy(frame);
+        permissions: false,
+        query() {
+            return commentsService.controller.destroy();
         }
     },
 
@@ -170,7 +180,7 @@ module.exports = {
         ],
         validation: {
         },
-        permissions: true,
+        permissions: false,
         async query(frame) {
             return await commentsService.controller.like(frame);
         }
@@ -185,9 +195,40 @@ module.exports = {
             'id'
         ],
         validation: {},
-        permissions: true,
+        permissions: false,
         async query(frame) {
             return await commentsService.controller.unlike(frame);
+        }
+    },
+
+    dislike: {
+        statusCode: 204,
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'id'
+        ],
+        validation: {
+        },
+        permissions: false,
+        async query(frame) {
+            return await commentsService.controller.dislike(frame);
+        }
+    },
+
+    undislike: {
+        statusCode: 204,
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'id'
+        ],
+        validation: {},
+        permissions: false,
+        async query(frame) {
+            return await commentsService.controller.undislike(frame);
         }
     },
 
@@ -200,9 +241,11 @@ module.exports = {
             'id'
         ],
         validation: {},
-        permissions: true,
+        permissions: false,
         async query(frame) {
             await commentsService.controller.report(frame);
         }
     }
 };
+
+module.exports = controller;

@@ -9,7 +9,8 @@ const messages = {
     tagNotFound: 'Tag not found.'
 };
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'tags',
 
     browse: {
@@ -62,17 +63,17 @@ module.exports = {
             }
         },
         permissions: true,
-        query(frame) {
-            return models.TagPublic.findOne(frame.data, frame.options)
-                .then((model) => {
-                    if (!model) {
-                        return Promise.reject(new errors.NotFoundError({
-                            message: tpl(messages.tagNotFound)
-                        }));
-                    }
-
-                    return model;
+        async query(frame) {
+            const model = await models.TagPublic.findOne(frame.data, frame.options);
+            if (!model) {
+                throw new errors.NotFoundError({
+                    message: tpl(messages.tagNotFound)
                 });
+            }
+
+            return model;
         }
     }
 };
+
+module.exports = controller;

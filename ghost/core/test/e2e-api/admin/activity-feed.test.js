@@ -1,7 +1,7 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyEtag, anyErrorId, anyObjectId, anyContentLength, anyContentVersion, anyUuid, anyISODate, anyString, anyObject, anyNumber} = matchers;
 
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const moment = require('moment');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
@@ -9,7 +9,7 @@ const logging = require('@tryghost/logging');
 let agent;
 
 async function testPagination(skippedTypes, postId, totalExpected, limit) {
-    const postFilter = postId ? `+data.post_id:${postId}` : '';
+    const postFilter = postId ? `+data.post_id:'${postId}'` : '';
 
     // To make the test cover more edge cases, we test different limit configurations
     const {body: firstPage} = await agent
@@ -49,7 +49,7 @@ async function testPagination(skippedTypes, postId, totalExpected, limit) {
         const remaining = totalExpected - (page - 1) * limit;
 
         const {body: secondPage} = await agent
-            .get(`/members/events?filter=${encodeURIComponent(`type:-[${skippedTypes.join(',')}]${postFilter}+(data.created_at:<'${lastCreatedAt}',(data.created_at:'${lastCreatedAt}'+id:<${lastId}))`)}&limit=${limit}`)
+            .get(`/members/events?filter=${encodeURIComponent(`type:-[${skippedTypes.join(',')}]${postFilter}+(data.created_at:<'${lastCreatedAt}',(data.created_at:'${lastCreatedAt}'+id:<'${lastId}'))`)}&limit=${limit}`)
             .expectStatus(200)
             .matchHeaderSnapshot({
                 etag: anyEtag,
@@ -162,7 +162,7 @@ describe('Activity Feed API', function () {
             const memberId = fixtureManager.get('members', 0).id;
 
             await agent
-                .get(`/members/events?filter=${encodeURIComponent(`data.post_id:${postId},data.member_id:${memberId}`)}`)
+                .get(`/members/events?filter=${encodeURIComponent(`data.post_id:'${postId}',data.member_id:'${memberId}'`)}`)
                 .expectStatus(200)
                 .matchBodySnapshot({
                     events: new Array(10).fill({
@@ -180,10 +180,10 @@ describe('Activity Feed API', function () {
             const memberId = fixtureManager.get('members', 0).id;
 
             await agent
-                .get(`/members/events?filter=${encodeURIComponent(`(type:comment_event,type:click_event)+(data.post_id:${postId},data.member_id:${memberId})`)}`)
+                .get(`/members/events?filter=${encodeURIComponent(`(type:comment_event,type:click_event)+(data.post_id:'${postId}',data.member_id:'${memberId}')`)}`)
                 .expectStatus(200)
                 .matchBodySnapshot({
-                    events: new Array(3).fill({
+                    events: new Array(4).fill({
                         type: anyString,
                         data: anyObject
                     })
@@ -201,7 +201,7 @@ describe('Activity Feed API', function () {
             // If that is ever fixed (it is difficult) we can update this test to not use a filter
             // Same for click_event and aggregated_click_event (use same id)
             const skippedTypes = ['email_opened_event', 'email_failed_event', 'email_delivered_event', 'aggregated_click_event'];
-            await testPagination(skippedTypes, null, 36, 36);
+            await testPagination(skippedTypes, null, 40, 36);
         });
 
         it('Can do filter based pagination for one post', async function () {
@@ -226,7 +226,7 @@ describe('Activity Feed API', function () {
         it('Can do filter based pagination for aggregated clicks for all posts', async function () {
             // Same as previous but with aggregated clicks instead of normal click events + email_delivered_events instead of sent events
             const skippedTypes = ['email_opened_event', 'email_failed_event', 'email_sent_event', 'click_event'];
-            await testPagination(skippedTypes, null, 33, 32);
+            await testPagination(skippedTypes, null, 35, 32);
         });
     });
 
@@ -262,7 +262,7 @@ describe('Activity Feed API', function () {
                 'content-version': anyContentVersion
             })
             .matchBodySnapshot({
-                events: new Array(8).fill({
+                events: new Array(10).fill({
                     type: anyString,
                     data: {
                         id: anyObjectId,
@@ -295,7 +295,7 @@ describe('Activity Feed API', function () {
                 'content-version': anyContentVersion
             })
             .matchBodySnapshot({
-                events: new Array(8).fill({
+                events: new Array(10).fill({
                     type: anyString,
                     data: {
                         created_at: anyISODate,
@@ -316,6 +316,48 @@ describe('Activity Feed API', function () {
             .expect(({body}) => {
                 assert(body.events.find(e => e.type === 'feedback_event'), 'Expected a feedback event');
                 assert(!body.events.find(e => e.type !== 'feedback_event'), 'Expected only feedback events');
+            });
+    });
+
+    it('Returns aggregated_click events in activity feed', async function () {
+        // Check activity feed
+        await agent
+            .get(`/members/events?filter=type:aggregated_click_event`)
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                etag: anyEtag,
+                'content-version': anyContentVersion
+            })
+            .matchBodySnapshot({
+                events: new Array(8).fill({
+                    type: 'aggregated_click_event',
+                    data: anyObject
+                })
+            })
+            .expect(({body}) => {
+                assert(body.events.find(e => e.type === 'aggregated_click_event'), 'Expected a aggregated_click event');
+                assert(!body.events.find(e => e.type !== 'aggregated_click_event'), 'Expected only aggregated_click events');
+            });
+    });
+
+    it('Returns aggregated_click events in activity feed with post_id filter', async function () {
+        const postId = fixtureManager.get('posts', 0).id;
+        await agent
+            .get(`/members/events?filter=type:aggregated_click_event${encodeURIComponent(`+data.post_id:'${postId}'`)}`)
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                etag: anyEtag,
+                'content-version': anyContentVersion
+            })
+            .matchBodySnapshot({
+                events: new Array(1).fill({
+                    type: 'aggregated_click_event',
+                    data: anyObject
+                })
+            })
+            .expect(({body}) => {
+                assert(body.events.find(e => e.type === 'aggregated_click_event'), 'Expected a aggregated_click event');
+                assert(!body.events.find(e => e.type !== 'aggregated_click_event'), 'Expected only aggregated_click events');
             });
     });
 
@@ -407,11 +449,12 @@ describe('Activity Feed API', function () {
         const postId = fixtureManager.get('posts', 0).id;
 
         await agent
-            .get(`/members/events?filter=data.post_id:${postId}&limit=20`)
+            .get(`/members/events?filter=data.post_id:'${postId}'&limit=20`)
             .expectStatus(200)
             .matchHeaderSnapshot({
                 etag: anyEtag,
-                'content-version': anyContentVersion
+                'content-version': anyContentVersion,
+                'content-length': anyContentLength // Depending on random conditions (ID generation) the order of events can change
             })
             .matchBodySnapshot({
                 events: new Array(15).fill({
@@ -441,7 +484,7 @@ describe('Activity Feed API', function () {
     it('Can limit events', async function () {
         const postId = fixtureManager.get('posts', 0).id;
         await agent
-            .get(`/members/events?filter=data.post_id:${postId}&limit=2`)
+            .get(`/members/events?filter=data.post_id:'${postId}'&limit=2`)
             .expectStatus(200)
             .matchHeaderSnapshot({
                 etag: anyEtag,

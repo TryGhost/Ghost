@@ -12,7 +12,8 @@ const messages = {
 const allowedBatchIncludes = ['count.recipients'];
 const allowedFailureIncludes = ['member', 'email_recipient'];
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'emails',
 
     browse: {
@@ -48,17 +49,15 @@ module.exports = {
             'id'
         ],
         permissions: true,
-        query(frame) {
-            return models.Email.findOne(frame.data, frame.options)
-                .then((model) => {
-                    if (!model) {
-                        throw new errors.NotFoundError({
-                            message: tpl(messages.emailNotFound)
-                        });
-                    }
-
-                    return model;
+        async query(frame) {
+            const model = await models.Email.findOne(frame.data, frame.options);
+            if (!model) {
+                throw new errors.NotFoundError({
+                    message: tpl(messages.emailNotFound)
                 });
+            }
+
+            return model;
         }
     },
 
@@ -159,12 +158,22 @@ module.exports = {
         data: [
             'id'
         ],
+        options: [
+            'begin',
+            'end'
+        ],
         async query(frame) {
-            const model = await models.Email.findOne(frame.data, frame.options);
-            return emailAnalytics.service.schedule({
-                begin: model.get('created_at'),
-                end: new Date(Math.min(Date.now() - 60 * 60 * 1000, model.get('created_at').getTime() + 24 * 60 * 60 * 1000 * 7))
-            });
+            const {begin: beginParam, end: endParam, ...findOptions} = frame.options;
+            const model = await models.Email.findOne(frame.data, findOptions);
+
+            const begin = beginParam
+                ? new Date(beginParam)
+                : model.get('created_at');
+            const end = endParam
+                ? new Date(endParam)
+                : new Date(Math.min(Date.now() - 60 * 60 * 1000, model.get('created_at').getTime() + 24 * 60 * 60 * 1000 * 7));
+
+            return emailAnalytics.service.schedule({begin, end});
         }
     },
 
@@ -180,3 +189,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

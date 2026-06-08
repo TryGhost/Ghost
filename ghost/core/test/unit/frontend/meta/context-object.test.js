@@ -1,4 +1,5 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const sinon = require('sinon');
 const getContextObject = require('../../../../core/frontend/meta/context-object.js');
 const settingsCache = require('../../../../core/shared/settings-cache');
@@ -9,7 +10,7 @@ describe('getContextObject', function () {
     let contextObject;
 
     it('should be a function', function () {
-        should.exist(getContextObject);
+        assertExists(getContextObject);
     });
 
     it('should return post context object for a post', function () {
@@ -17,8 +18,8 @@ describe('getContextObject', function () {
         context = ['post'];
         contextObject = getContextObject(data, context);
 
-        should.exist(contextObject);
-        contextObject.should.eql(data.post);
+        assertExists(contextObject);
+        assert.equal(contextObject, data.post);
     });
 
     it('should return post context object for a static page', function () {
@@ -26,26 +27,8 @@ describe('getContextObject', function () {
         context = ['page'];
         contextObject = getContextObject(data, context);
 
-        should.exist(contextObject);
-        contextObject.should.eql(data.post);
-    });
-
-    it('should return post context object for an AMP post', function () {
-        data = {post: {id: 2}};
-        context = ['amp', 'post'];
-        contextObject = getContextObject(data, context);
-
-        should.exist(contextObject);
-        contextObject.should.eql(data.post);
-    });
-
-    it('should return post context object for a static page with amp context', function () {
-        data = {post: {id: 2}};
-        context = ['amp', 'page'];
-        contextObject = getContextObject(data, context);
-
-        should.exist(contextObject);
-        contextObject.should.eql(data.post);
+        assertExists(contextObject);
+        assert.equal(contextObject, data.post);
     });
 
     it('should return page', function () {
@@ -53,12 +36,12 @@ describe('getContextObject', function () {
         context = ['news', 'page'];
         contextObject = getContextObject(data, context);
 
-        should.exist(contextObject);
-        contextObject.should.eql(data.page);
+        assertExists(contextObject);
+        assert.equal(contextObject, data.page);
     });
 
     describe('override blog', function () {
-        before(function () {
+        beforeAll(function () {
             sinon.stub(settingsCache, 'get').callsFake(function (key) {
                 return {
                     cover_image: 'test.png'
@@ -66,7 +49,7 @@ describe('getContextObject', function () {
             });
         });
 
-        after(function () {
+        afterAll(function () {
             sinon.restore();
         });
 
@@ -75,8 +58,8 @@ describe('getContextObject', function () {
             context = ['unknown'];
             contextObject = getContextObject(data, context);
 
-            should.exist(contextObject);
-            contextObject.should.have.property('cover_image', 'test.png');
+            assertExists(contextObject);
+            assert.equal(contextObject.cover_image, 'test.png');
         });
     });
 });

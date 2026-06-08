@@ -17,6 +17,13 @@ const keyTypeMapping = {
     codeinjection_foot: 'string',
     facebook: 'string',
     twitter: 'string',
+    threads: 'string',
+    bluesky: 'string',
+    mastodon: 'string',
+    tiktok: 'string',
+    youtube: 'string',
+    instagram: 'string',
+    linkedin: 'string',
     meta_title: 'string',
     meta_description: 'string',
     og_image: 'string',
@@ -31,6 +38,7 @@ const keyTypeMapping = {
     members_public_key: 'string',
     members_private_key: 'string',
     members_email_auth_secret: 'string',
+    members_otc_secret: 'string',
     default_content_visibility: 'string',
     stripe_secret_key: 'string',
     stripe_publishable_key: 'string',
@@ -46,7 +54,6 @@ const keyTypeMapping = {
     portal_plans: 'array',
     stripe_plans: 'array',
     next_update_check: 'number',
-    amp: 'boolean',
     is_private: 'boolean',
     members_allow_free_signup: 'boolean',
     portal_name: 'boolean',
@@ -54,7 +61,10 @@ const keyTypeMapping = {
     stripe_connect_livemode: 'boolean',
     labs: 'object',
     unsplash: 'object',
-    bulk_email_settings: 'object'
+    bulk_email_settings: 'object',
+    require_email_mfa: 'boolean',
+    explore_ping: 'boolean',
+    explore_ping_growth: 'boolean'
 };
 
 const mapKeyToType = (key) => {

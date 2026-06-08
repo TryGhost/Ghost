@@ -9,9 +9,7 @@ export default Factory.extend({
     type: 'custom',
 
     createdAt() { return moment.utc().format(); },
-    createdBy: 1,
     updatedAt() { return moment.utc().format(); },
-    updatedBy: 1,
 
     afterCreate(integration, server) {
         let contentKey = server.create('api-key', {type: 'content', integration});

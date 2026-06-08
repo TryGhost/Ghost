@@ -2,8 +2,9 @@
 {{!-- The tag above means: insert everything in this file
 into the {body} of the default.hbs template --}}
 
-{{#match @custom.publication_cover_style "!=" "None"}}
-    <div class="site-header-content{{#match @custom.publication_cover_style "Large"}} large{{/match}}">
+<div class="site-header-content outer{{#match @custom.header_style "Left aligned"}} left-aligned{{/match}}{{#unless @custom.show_publication_cover}}{{#match @custom.header_style "Hidden"}} no-content{{/match}}{{/unless}}">
+
+    {{#if @custom.show_publication_cover}}
         {{#if @site.cover_image}}
             {{!-- This is a responsive image, it loads different sizes depending on device
             https://medium.freecodecamp.org/a-guide-to-responsive-images-with-ready-to-use-templates-c400bd65c433 --}}
@@ -14,32 +15,40 @@ into the {body} of the default.hbs template --}}
                         {{img_url @site.cover_image size="xl"}} 2000w"
                 sizes="100vw"
                 src="{{img_url @site.cover_image size="xl"}}"
-                alt=""
+                alt="{{@site.title}}"
             />
         {{/if}}
-        <h1 class="site-title">
-            {{#if @site.logo}}
-                <img class="site-logo" src="{{img_url @site.logo size="m"}}" alt="{{@site.title}}" />
-            {{else}}
-                {{@site.title}}
+    {{/if}}
+
+    {{#match @custom.header_style "!=" "Hidden"}}
+        <div class="site-header-inner inner">
+            {{#match @custom.navigation_layout "Logo on cover"}}
+                {{#if @site.logo}}
+                    <img class="site-logo" src="{{@site.logo}}" alt="{{@site.title}}">
+                {{else}}
+                    <h1 class="site-title">{{@site.title}}</h1>
+                {{/if}}
+            {{/match}}
+            {{#if @site.description}}
+                <p class="site-description">{{@site.description}}</p>
             {{/if}}
-        </h1>
-        <p class="site-description">{{@site.description}}</p>
-    </div>
-{{/match}}
+        </div>
+    {{/match}}
+
+</div>
 
 {{!-- The main content area --}}
 <main id="site-main" class="site-main outer">
-    <div class="inner posts">
+<div class="inner posts">
 
-        <div class="post-feed{{#match @custom.feed_layout "List"}} list{{/match}}">
-            {{#foreach posts}}
-
-                {{!-- The tag below includes the markup for each post - partials/post-card.hbs --}}
-                {{> "post-card"}}
-
-            {{/foreach}}
-        </div>
-
+    <div class="post-feed">
+        {{#foreach posts}}
+            {{!-- The tag below includes the markup for each post - partials/post-card.hbs --}}
+            {{> "post-card"}}
+        {{/foreach}}
     </div>
+
+    {{pagination}}
+
+</div>
 </main>

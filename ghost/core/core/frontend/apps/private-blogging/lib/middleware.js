@@ -4,7 +4,6 @@ const crypto = require('crypto');
 const path = require('path');
 const config = require('../../../../shared/config');
 const urlUtils = require('../../../../shared/url-utils');
-const constants = require('@tryghost/constants');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const settingsCache = require('../../../../shared/settings-cache');
@@ -13,30 +12,62 @@ const privateRoute = '/private/';
 
 const messages = {
     pageNotFound: 'Page not found.',
-    wrongPassword: 'Incorrect password.'
+    wrongAccessCode: 'Incorrect access code.'
 };
 
+function getAccessCode() {
+    const accessCode = settingsCache.get('password');
+    return typeof accessCode === 'string' ? accessCode : '';
+}
+
+function hasAccessCode(accessCode) {
+    return typeof accessCode === 'string' && accessCode.trim().length > 0;
+}
+
 function verifySessionHash(salt, hash) {
-    if (!salt || !hash) {
+    const accessCode = getAccessCode();
+
+    if (!salt || !hash || !hasAccessCode(accessCode)) {
         return false;
     }
 
     let hasher = crypto.createHash('sha256');
-    hasher.update(settingsCache.get('password') + salt, 'utf8');
+    hasher.update(accessCode + salt, 'utf8');
     return hasher.digest('hex') === hash;
 }
 
 function getRedirectUrl(query) {
     try {
         const redirect = decodeURIComponent(query.r || '/');
-        const pathname = new URL(redirect, config.get('url')).pathname;
+        const parsedUrl = new URL(redirect, config.get('url'));
+        const pathname = parsedUrl.pathname;
+        const search = parsedUrl.search;
 
         const base = new URL(config.get('url'));
         const target = new URL(pathname, config.get('url'));
         // Make sure we don't redirect outside of the instance
-        return target.host === base.host ? pathname : '/';
+        if (target.host !== base.host) {
+            return '/';
+        }
+        // Preserve query string (e.g., UTM parameters)
+        return pathname + search;
     } catch (e) {
         return '/';
+    }
+}
+
+function authenticatePrivateSession(req, res, next) {
+    const hash = req.session.token || '';
+    const salt = req.session.salt || '';
+    const isVerified = verifySessionHash(salt, hash);
+
+    if (isVerified) {
+        return next();
+    } else {
+        let redirectUrl = urlUtils.urlFor({relativeUrl: privateRoute});
+        redirectUrl += '?r=' + encodeURIComponent(req.url);
+
+        return res.redirect(redirectUrl);
     }
 }
 
@@ -53,7 +84,7 @@ const privateBlogging = {
 
         return session({
             name: 'ghost-private',
-            maxAge: constants.ONE_MONTH_MS,
+            maxAge: (30 * 24 * 60 * 60 * 1000), // 30 days in ms
             signed: false,
             sameSite: 'none'
         })(req, res, next);
@@ -96,7 +127,7 @@ const privateBlogging = {
         }
 
         // NOTE: Redirect to /private if the session does not exist.
-        privateBlogging.authenticatePrivateSession(req, res, function onSessionVerified() {
+        authenticatePrivateSession(req, res, function onSessionVerified() {
             // CASE: RSS is disabled for private blogging e.g. they create overhead
             if (req.path.match(/\/rss\/$/)) {
                 return next(new errors.NotFoundError({
@@ -106,21 +137,6 @@ const privateBlogging = {
 
             next();
         });
-    },
-
-    authenticatePrivateSession: function authenticatePrivateSession(req, res, next) {
-        const hash = req.session.token || '';
-        const salt = req.session.salt || '';
-        const isVerified = verifySessionHash(salt, hash);
-
-        if (isVerified) {
-            return next();
-        } else {
-            let redirectUrl = urlUtils.urlFor({relativeUrl: privateRoute});
-            redirectUrl += '?r=' + encodeURIComponent(req.url);
-
-            return res.redirect(redirectUrl);
-        }
     },
 
     // This is here so a call to /private/ after a session is verified will redirect to home;
@@ -147,21 +163,21 @@ const privateBlogging = {
             return next();
         }
 
-        const bodyPass = req.body.password;
-        const pass = settingsCache.get('password');
+        const submittedAccessCode = req.body && req.body.password;
+        const accessCode = getAccessCode();
         const hasher = crypto.createHash('sha256');
         const salt = Date.now().toString();
         const forward = getRedirectUrl(req.query);
 
-        if (pass === bodyPass) {
-            hasher.update(bodyPass + salt, 'utf8');
+        if (hasAccessCode(accessCode) && hasAccessCode(submittedAccessCode) && accessCode === submittedAccessCode) {
+            hasher.update(submittedAccessCode + salt, 'utf8');
             req.session.token = hasher.digest('hex');
             req.session.salt = salt;
 
             return res.redirect(urlUtils.urlFor({relativeUrl: forward}));
         } else {
             res.error = {
-                message: tpl(messages.wrongPassword)
+                message: tpl(messages.wrongAccessCode)
             };
             return next();
         }
@@ -182,7 +198,7 @@ const privateBlogging = {
         }
 
         // CASE: 404 - redirect this page back to /private/ if the user isn't verified
-        return privateBlogging.authenticatePrivateSession(req, res, function onSessionVerified() {
+        return authenticatePrivateSession(req, res, function onSessionVerified() {
             // CASE: User is logged in, render an error
             return next(err);
         });

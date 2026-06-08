@@ -1,6 +1,7 @@
 const TestAgent = require('./test-agent');
 const errors = require('@tryghost/errors');
 const DataGenerator = require('../fixtures/data-generator');
+const jwt = require('jsonwebtoken');
 
 const roleMap = {
     owner: 0,
@@ -15,12 +16,40 @@ const getRoleUserFromFixtures = (role) => {
     return {email, password};
 };
 
+const getUserApiKeyForRole = (role) => {
+    const roleIndex = Object.keys(roleMap).indexOf(role);
+    const {id: apiKeyId, secret: apiKeySecret} = DataGenerator.forKnex.user_api_keys[roleIndex];
+    return {apiKeyId, apiKeySecret};
+};
+
+const findIntegrationKey = async (slug) => {
+    const models = require('../../../core/server/models');
+    const integration = await models.Integration.findOne({slug}, {withRelated: 'api_keys'});
+    const key = integration.related('api_keys').first();
+    return {apiKeyId: key.get('id'), apiKeySecret: key.get('secret')};
+};
+
+const createValidAPIToken = (apiKeyId, apiKeySecret) => {
+    // Create a JWT token with the user's personal token
+    return jwt.sign(
+        {},
+        Buffer.from(apiKeySecret, 'hex'),
+        {
+            keyid: apiKeyId,
+            algorithm: 'HS256',
+            expiresIn: '5m',
+            audience: '/admin/',
+            issuer: apiKeyId
+        }
+    );
+};
+
 /**
  * @constructor
  * @param {Object} app  Ghost express app instance
  * @param {Object} options
- * @param {String} options.apiURL
- * @param {String} options.originURL
+ * @param {string} options.apiURL
+ * @param {string} options.originURL
  */
 class AdminAPITestAgent extends TestAgent {
     constructor(app, options) {
@@ -28,6 +57,8 @@ class AdminAPITestAgent extends TestAgent {
     }
 
     async loginAs(email, password, role) {
+        this.resetAuthentication();
+
         if (role) {
             let user = getRoleUserFromFixtures(role);
             email = user.email;
@@ -77,6 +108,67 @@ class AdminAPITestAgent extends TestAgent {
 
     async loginAsContributor() {
         await this.loginAs(null, null, 'contributor');
+    }
+
+    /**
+     * Use
+     * @param {string} apiKeyId
+     * @param {string} apiKeySecret
+     */
+    async useToken(apiKeyId, apiKeySecret) {
+        this.resetAuthentication();
+
+        const token = createValidAPIToken(apiKeyId, apiKeySecret);
+
+        // Set the Authorization header for subsequent requests
+        this.defaults.headers = {
+            ...this.defaults.headers,
+            Authorization: `Ghost ${token}`
+        };
+    }
+
+    /**
+     * Gets a staff token for the specified role and sets it as the Authorization header
+     * @param {string} role - The role to get a token for (owner, admin, editor, etc.)
+     * @returns {Promise<void>}
+     */
+    async useStaffTokenFor(role) {
+        const {apiKeyId, apiKeySecret} = getUserApiKeyForRole(role);
+        return this.useToken(apiKeyId, apiKeySecret);
+    }
+
+    /**
+     * Gets a staff token for the owner role and sets it as the Authorization header
+     * @returns {Promise<void>}
+     */
+    async useStaffTokenForOwner() {
+        await this.useStaffTokenFor('owner');
+    }
+
+    async useStaffTokenForAdmin() {
+        await this.useStaffTokenFor('admin');
+    }
+
+    async useStaffTokenForEditor() {
+        await this.useStaffTokenFor('editor');
+    }
+
+    async useStaffTokenForAuthor() {
+        await this.useStaffTokenFor('author');
+    }
+
+    async useStaffTokenForContributor() {
+        await this.useStaffTokenFor('contributor');
+    }
+
+    async useBackupAdminAPIKey() {
+        const {apiKeyId ,apiKeySecret} = await findIntegrationKey('ghost-backup');
+        return this.useToken(apiKeyId, apiKeySecret);
+    }
+
+    async useZapierAdminAPIKey() {
+        const {apiKeyId ,apiKeySecret} = await findIntegrationKey('zapier');
+        return this.useToken(apiKeyId, apiKeySecret);
     }
 }
 

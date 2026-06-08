@@ -1,7 +1,16 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+const sinon = require('sinon');
+const configUtils = require('../../../../../../utils/config-utils');
 const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
+const postsSchema = require('../../../../../../../core/server/data/schema').tables.posts;
+
+const mobiledocLib = require('../../../../../../../core/server/lib/mobiledoc');
 
 describe('Unit: endpoints/utils/serializers/input/posts', function () {
+    afterEach(function () {
+        sinon.restore();
+    });
+
     describe('browse', function () {
         it('default', function () {
             const apiConfig = {};
@@ -19,7 +28,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.browse(apiConfig, frame);
-            frame.options.filter.should.eql('type:post');
+            assert.equal(frame.options.filter, 'type:post');
         });
 
         it('should not work for non public context', function () {
@@ -34,10 +43,10 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.browse(apiConfig, frame);
-            should.equal(frame.options.filter, '(type:post)+status:[draft,published,scheduled,sent]');
+            assert.equal(frame.options.filter, '(type:post)+status:[draft,published,scheduled,sent]');
         });
 
-        it('combine filters', function () {
+        it('combine status+tag filters', function () {
             const apiConfig = {};
             const frame = {
                 apiType: 'content',
@@ -54,10 +63,10 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.browse(apiConfig, frame);
-            frame.options.filter.should.eql('(status:published+tag:eins)+type:post');
+            assert.equal(frame.options.filter, '(status:published+tag:eins)+type:post');
         });
 
-        it('combine filters', function () {
+        it('only tag filters', function () {
             const apiConfig = {};
             const frame = {
                 apiType: 'content',
@@ -74,23 +83,160 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.browse(apiConfig, frame);
-            frame.options.filter.should.eql('(tag:eins)+type:post');
+            assert.equal(frame.options.filter, '(tag:eins)+type:post');
         });
 
-        it('remove mobiledoc option from formats', function () {
+        it('remove mobiledoc and lexical options from formats', function () {
             const apiConfig = {};
             const frame = {
                 apiType: 'content',
                 options: {
-                    formats: ['html', 'mobiledoc', 'plaintext'],
+                    formats: ['html', 'mobiledoc', 'lexical', 'plaintext'],
                     context: {}
                 }
             };
 
             serializers.input.posts.browse(apiConfig, frame);
-            frame.options.formats.should.not.containEql('mobiledoc');
-            frame.options.formats.should.containEql('html');
-            frame.options.formats.should.containEql('plaintext');
+            assert(!frame.options.formats.includes('mobiledoc'));
+            assert(!frame.options.formats.includes('lexical'));
+            assert(frame.options.formats.includes('html'));
+            assert(frame.options.formats.includes('plaintext'));
+        });
+
+        it('adds default order when no order is specified', function () {
+            const apiConfig = {};
+            const frame = {
+                apiType: 'content',
+                options: {
+                    context: {}
+                }
+            };
+
+            serializers.input.posts.browse(apiConfig, frame);
+            assert.equal(frame.options.order, 'published_at desc, id desc');
+        });
+
+        it('keeps order when it is specified', function () {
+            const apiConfig = {};
+            const frame = {
+                apiType: 'content',
+                options: {
+                    order: 'updated_at desc',
+                    context: {}
+                }
+            };
+
+            serializers.input.posts.browse(apiConfig, frame);
+            assert.equal(frame.options.order, 'updated_at desc');
+        });
+
+        // Regression for the bypass CodeRabbit caught in #27908: when the
+        // caller passes both ?fields=url and ?include=relation, the
+        // defaultRelations early-return on a non-empty withRelated must
+        // not skip the lazyRouting force-load — otherwise the URL still
+        // 404s for tag/author-filtered routes.
+        it('lazyRouting: merges tags+authors into withRelated when caller passes both ?fields=url and ?include=email', async function () {
+            configUtils.set('lazyRouting', true);
+            try {
+                const frame = {
+                    apiType: 'admin',
+                    options: {
+                        context: {user: 1},
+                        columns: ['id', 'url', 'title'],
+                        withRelated: ['email']
+                    }
+                };
+
+                serializers.input.posts.browse({}, frame);
+
+                assert.ok(frame.options.withRelated.includes('email'), 'caller-requested email must be preserved');
+                assert.ok(frame.options.withRelated.includes('tags'), 'tags must be force-loaded for URL');
+                assert.ok(frame.options.withRelated.includes('authors'), 'authors must be force-loaded for URL');
+            } finally {
+                await configUtils.restore();
+            }
+        });
+
+        it('lazyRouting: forces tags+authors on the Content API path', async function () {
+            // Content API uses mapWithRelated rather than defaultRelations;
+            // both branches must invoke the helper.
+            configUtils.set('lazyRouting', true);
+            try {
+                const frame = {
+                    apiType: 'content',
+                    options: {
+                        context: {api_key: {id: 1, type: 'content'}},
+                        columns: ['id', 'url']
+                    }
+                };
+
+                serializers.input.posts.browse({}, frame);
+
+                assert.ok(frame.options.withRelated);
+                assert.ok(frame.options.withRelated.includes('tags'));
+                assert.ok(frame.options.withRelated.includes('authors'));
+            } finally {
+                await configUtils.restore();
+            }
+        });
+
+        describe('Content API', function () {
+            it('selects all columns from the posts schema but mobiledoc and lexical when no columns are specified', function () {
+                const apiConfig = {};
+                const frame = {
+                    apiType: 'content',
+                    options: {
+                        context: {}
+                    }
+                };
+
+                serializers.input.posts.browse(apiConfig, frame);
+                const columns = Object.keys(postsSchema);
+                const parsedSelectRaw = frame.options.selectRaw.split(',').map(column => column.trim());
+                assert.deepEqual(parsedSelectRaw, columns.filter(column => !['mobiledoc', 'lexical','@@UNIQUE_CONSTRAINTS@@','@@INDEXES@@'].includes(column)));
+            });
+
+            it('strips mobiledoc and lexical columns from a specified columns option', function () {
+                const apiConfig = {};
+                const frame = {
+                    apiType: 'content',
+                    options: {
+                        context: {},
+                        columns: ['id', 'mobiledoc', 'lexical', 'visibility']
+                    }
+                };
+
+                serializers.input.posts.browse(apiConfig, frame);
+                assert.deepEqual(frame.options.columns, ['id', 'visibility']);
+            });
+
+            it('forces visibility column if columns are specified', function () {
+                const apiConfig = {};
+                const frame = {
+                    apiType: 'content',
+                    options: {
+                        context: {},
+                        columns: ['id']
+                    }
+                };
+
+                serializers.input.posts.browse(apiConfig, frame);
+                assert.deepEqual(frame.options.columns, ['id', 'visibility']);
+            });
+
+            it('strips mobiledoc and lexical columns from a specified selectRaw option', function () {
+                const apiConfig = {};
+                const frame = {
+                    apiType: 'content',
+                    options: {
+                        context: {},
+                        selectRaw: 'id, mobiledoc, lexical'
+                    }
+                };
+
+                serializers.input.posts.browse(apiConfig, frame);
+                assert.equal(frame.options.selectRaw, 'id');
+            });
         });
     });
 
@@ -104,7 +250,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.read(apiConfig, frame);
-            frame.options.filter.should.eql('type:post');
+            assert.equal(frame.options.filter, 'type:post');
         });
 
         it('with apiType of "content" it forces type:post filter', function () {
@@ -118,7 +264,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.read(apiConfig, frame);
-            frame.options.filter.should.eql('(type:page)+type:post');
+            assert.equal(frame.options.filter, '(type:page)+type:post');
         });
 
         it('with apiType of "admin" it forces type & status false filter', function () {
@@ -137,7 +283,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.read(apiConfig, frame);
-            frame.options.filter.should.eql('(type:post)+status:[draft,published,scheduled,sent]');
+            assert.equal(frame.options.filter, '(type:post)+status:[draft,published,scheduled,sent]');
         });
 
         it('with apiType of "admin" it forces type:post filter & respects custom status filter', function () {
@@ -157,32 +303,33 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.read(apiConfig, frame);
-            frame.options.filter.should.eql('(status:draft)+type:post');
+            assert.equal(frame.options.filter, '(status:draft)+type:post');
         });
 
-        it('remove mobiledoc option from formats', function () {
+        it('remove mobiledoc and lexical options from formats', function () {
             const apiConfig = {};
             const frame = {
                 apiType: 'content',
                 options: {
-                    formats: ['html', 'mobiledoc', 'plaintext'],
+                    formats: ['html', 'mobiledoc', 'lexical', 'plaintext'],
                     context: {}
                 },
                 data: {}
             };
 
             serializers.input.posts.read(apiConfig, frame);
-            frame.options.formats.should.not.containEql('mobiledoc');
-            frame.options.formats.should.containEql('html');
-            frame.options.formats.should.containEql('plaintext');
+            assert(!frame.options.formats.includes('mobiledoc'));
+            assert(!frame.options.formats.includes('lexical'));
+            assert(frame.options.formats.includes('html'));
+            assert(frame.options.formats.includes('plaintext'));
         });
     });
 
     describe('edit', function () {
-        describe('Ensure html to mobiledoc conversion', function () {
+        describe('Ensure html to lexical conversion', function () {
             it('no transformation when no html source option provided', function () {
                 const apiConfig = {};
-                const mobiledoc = '{"version":"0.3.1","atoms":[],"cards":[],"sections":[]}';
+                const lexical = '{"root":{"children":[{"children":[],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}';
                 const frame = {
                     options: {},
                     data: {
@@ -190,7 +337,8 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
                             {
                                 id: 'id1',
                                 html: '<p>convert me</p>',
-                                mobiledoc: mobiledoc
+                                mobiledoc: null,
+                                lexical: lexical
                             }
                         ]
                     }
@@ -199,12 +347,13 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
                 serializers.input.posts.edit(apiConfig, frame);
 
                 let postData = frame.data.posts[0];
-                postData.mobiledoc.should.equal(mobiledoc);
+                assert.equal(postData.lexical, lexical);
+                assert.equal(postData.mobiledoc, null);
             });
 
             it('no transformation when html data is empty', function () {
                 const apiConfig = {};
-                const mobiledoc = '{"version":"0.3.1","atoms":[],"cards":[],"sections":[]}';
+                const lexical = '{"root":{"children":[{"children":[],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}';
                 const frame = {
                     options: {
                         source: 'html'
@@ -214,7 +363,8 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
                             {
                                 id: 'id1',
                                 html: '',
-                                mobiledoc: mobiledoc
+                                mobiledoc: null,
+                                lexical: lexical
                             }
                         ]
                     }
@@ -223,12 +373,14 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
                 serializers.input.posts.edit(apiConfig, frame);
 
                 let postData = frame.data.posts[0];
-                postData.mobiledoc.should.equal(mobiledoc);
+                assert.equal(postData.lexical, lexical);
+                assert.equal(postData.mobiledoc, null);
             });
 
-            it('transforms html when html is present in data and source options', function () {
+            // JSDOM require is sometimes very slow on CI causing random timeouts
+            it('transforms html when html is present in data and source options', {timeout: 10000}, function () {
                 const apiConfig = {};
-                const mobiledoc = '{"version":"0.3.1","atoms":[],"cards":[],"sections":[]}';
+                const lexical = '{"root":{"children":[{"children":[],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}';
                 const frame = {
                     options: {
                         source: 'html'
@@ -238,7 +390,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
                             {
                                 id: 'id1',
                                 html: '<p>this is great feature</p>',
-                                mobiledoc: mobiledoc
+                                lexical: lexical
                             }
                         ]
                     }
@@ -247,11 +399,16 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
                 serializers.input.posts.edit(apiConfig, frame);
 
                 let postData = frame.data.posts[0];
-                postData.mobiledoc.should.not.equal(mobiledoc);
-                postData.mobiledoc.should.equal('{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"this is great feature"]]]]}');
+                assert.notEqual(postData.lexical, lexical);
+                assert.equal(postData.lexical, '{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"this is great feature","type":"extended-text","version":1}],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}');
+                // we convert to both mobiledoc and lexical to avoid changing formats
+                // for existing content when updating with `?source=html,
+                // the unused data is cleared in the Post model when saving
+                assert.equal(postData.mobiledoc, '{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"this is great feature"]]]]}');
             });
 
-            it('preserves html cards in transformed html', function () {
+            // JSDOM require is sometimes very slow on CI causing random timeouts
+            it('preserves html cards in transformed html', {timeout: 10000}, function () {
                 const apiConfig = {};
                 const frame = {
                     options: {
@@ -270,7 +427,32 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
                 serializers.input.posts.edit(apiConfig, frame);
 
                 let postData = frame.data.posts[0];
-                postData.mobiledoc.should.equal('{"version":"0.3.1","atoms":[],"cards":[["html",{"html":"<div class=\\"custom\\">My Custom HTML</div>"}]],"markups":[],"sections":[[1,"p",[[0,[],0,"this is great feature"]]],[10,0],[1,"p",[[0,[],0,"custom html preserved!"]]]]}');
+                assert.equal(postData.lexical, '{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"this is great feature","type":"extended-text","version":1}],"direction":null,"format":"","indent":0,"type":"paragraph","version":1},{"type":"html","version":1,"html":"<div class=\\"custom\\">My Custom HTML</div>","visibility":{"web":{"nonMember":true,"memberSegment":"status:free,status:-free"},"email":{"memberSegment":"status:free,status:-free"}}},{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"custom html preserved!","type":"extended-text","version":1}],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}');
+            });
+
+            // JSDOM require is sometimes very slow on CI causing random timeouts
+            it('throws error when HTML conversion fails', {timeout: 10000}, function () {
+                const frame = {
+                    options: {
+                        source: 'html'
+                    },
+                    data: {
+                        posts: [
+                            {
+                                id: 'id1',
+                                html: '<bananarama>'
+                            }
+                        ]
+                    }
+                };
+
+                sinon.stub(mobiledocLib, 'htmlToMobiledocConverter').get(() => () => {
+                    throw new Error('Some error');
+                });
+
+                assert.throws(() => {
+                    serializers.input.posts.edit({}, frame);
+                }, /Failed to convert HTML to Mobiledoc/);
             });
         });
 
@@ -290,7 +472,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             };
 
             serializers.input.posts.edit(apiConfig, frame);
-            frame.data.posts[0].tags.should.eql([{slug: 'slug1', name: 'hey'}, {slug: 'slug2'}]);
+            assert.deepEqual(frame.data.posts[0].tags, [{slug: 'slug1', name: 'hey'}, {slug: 'slug2'}]);
         });
 
         describe('Ensure relations format', function () {
@@ -312,8 +494,8 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
 
                 serializers.input.posts.edit(apiConfig, frame);
 
-                frame.data.posts[0].authors.should.eql([{id: 'id'}]);
-                frame.data.posts[0].tags.should.eql([{slug: 'slug1', name: 'hey'}, {slug: 'slug2'}]);
+                assert.deepEqual(frame.data.posts[0].authors, [{id: 'id'}]);
+                assert.deepEqual(frame.data.posts[0].tags, [{slug: 'slug1', name: 'hey'}, {slug: 'slug2'}]);
             });
 
             it('authors is array of strings', function () {
@@ -334,8 +516,8 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
 
                 serializers.input.posts.edit(apiConfig, frame);
 
-                frame.data.posts[0].authors.should.eql([{email: 'email1'}, {email: 'email2'}]);
-                frame.data.posts[0].tags.should.eql([{name: 'name1'}, {name: 'name2'}]);
+                assert.deepEqual(frame.data.posts[0].authors, [{email: 'email1'}, {email: 'email2'}]);
+                assert.deepEqual(frame.data.posts[0].tags, [{name: 'name1'}, {name: 'name2'}]);
             });
         });
     });
@@ -348,7 +530,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
 
             serializers.input.posts.copy({}, frame);
 
-            frame.options.formats.should.eql('mobiledoc');
+            assert.equal(frame.options.formats, 'mobiledoc,lexical');
         });
 
         it('adds default relations if no relations are specified', function () {
@@ -358,7 +540,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
 
             serializers.input.posts.copy({}, frame);
 
-            frame.options.withRelated.should.eql(['tags', 'authors', 'authors.roles', 'email', 'tiers', 'newsletter', 'count.clicks', 'post_revisions', 'post_revisions.author']);
+            assert.deepEqual(frame.options.withRelated, ['tags', 'authors', 'authors.roles', 'email', 'tiers', 'newsletter', 'count.clicks']);
         });
     });
 });

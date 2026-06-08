@@ -6,8 +6,10 @@ const messages = {
     memberNotFound: 'Member not found.'
 };
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'member_signin_urls',
+
     read: {
         headers: {
             cacheInvalidate: false
@@ -34,3 +36,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

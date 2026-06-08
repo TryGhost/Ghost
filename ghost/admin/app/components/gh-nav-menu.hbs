@@ -1,7 +1,0 @@
-<nav class="gh-nav {{if this.ui.contextualNavMenu "gh-nav-contextual"}} {{if this.session.user.isContributor "gh-nav-contributor"}}" {{did-insert this.updateFirstRender}} ...attributes>
-    {{#if this.ui.contextualNavMenu}}
-        {{component (concat "gh-nav-menu/" this.ui.contextualNavMenu)}}
-    {{else}}
-        <GhNavMenu::Main @icon={{this.settings.settledIcon}} @firstRender={{this.firstRender}} />
-    {{/if}}
-</nav>

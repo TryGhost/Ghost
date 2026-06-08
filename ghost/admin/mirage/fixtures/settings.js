@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import moment from 'moment-timezone';
 
 let id = 0;
@@ -12,14 +11,12 @@ function setting(group, key, value) {
         key,
         value,
         updated_at: moment.utc().format(),
-        updated_by: 1,
-        created_at: moment.utc().format(),
-        created_by: 1
+        created_at: moment.utc().format()
     };
 }
 
 // These settings represent a default new site setup
-// Real default settings can be found in https://github.com/TryGhost/Ghost/blob/main/core/server/data/schema/default-settings/default-settings.json
+// Real default settings can be found in https://github.com/TryGhost/Ghost/blob/main/ghost/core/core/server/data/schema/default-settings/default-settings.json
 export default [
     // SITE
     setting('site', 'title', 'Test Blog'),
@@ -49,7 +46,7 @@ export default [
     setting('site', 'twitter_description', null),
 
     // THEME
-    setting('theme', 'active_theme', 'Casper'),
+    setting('theme', 'active_theme', 'source'),
 
     // PRIVATE
     setting('private', 'is_private', false),
@@ -75,8 +72,9 @@ export default [
 
     // PORTAL
     setting('portal', 'portal_name', true),
-    setting('portal', 'portal_button', true),
+    setting('portal', 'portal_button', false),
     setting('portal', 'portal_plans', JSON.stringify(['free'])),
+    setting('portal', 'portal_default_plan', 'yearly'),
     setting('portal', 'portal_products', JSON.stringify([])),
     setting('portal', 'portal_button_style', 'icon-and-text'),
     setting('portal', 'portal_button_icon', null),
@@ -91,13 +89,11 @@ export default [
     setting('email', 'email_track_opens', true),
     setting('email', 'email_track_clicks', true),
     setting('email', 'email_verification_required', false),
+    setting('email', 'default_email_address', 'noreply@example.com'),
 
     // ANALYTICS
     setting('email', 'outbound_link_tagging', true),
-
-    // AMP
-    setting('amp', 'amp', false),
-    setting('amp', 'amp_gtag_id', null),
+    setting('email', 'web_analytics', true),
 
     // FIRSTPROMOTER
     setting('firstpromoter', 'firstpromoter', false),
@@ -128,6 +124,6 @@ export default [
     setting('editor', 'editor_default_email_recipients_filter', 'all'),
 
     // DONATIONS
-    setting('donations_suggested_amount', 'donations', 0),
+    setting('donations_suggested_amount', 'donations', 500),
     setting('donations_currency', 'donations', 'USD')
 ];

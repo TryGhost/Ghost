@@ -1,6 +1,6 @@
 // # Post Model
 const _ = require('lodash');
-const uuid = require('uuid');
+const crypto = require('crypto');
 const moment = require('moment');
 const {sequence} = require('@tryghost/promise');
 const tpl = require('@tryghost/tpl');
@@ -18,9 +18,8 @@ const urlUtils = require('../../shared/url-utils');
 const {Tag} = require('./tag');
 const {Newsletter} = require('./newsletter');
 const {BadRequestError} = require('@tryghost/errors');
-const {PostRevisions} = require('@tryghost/post-revisions');
 const {mobiledocToLexical} = require('@tryghost/kg-converters');
-const labs = require('../../shared/labs');
+const {setIsRoles} = require('./role-utils');
 
 const messages = {
     isAlreadyPublished: 'Your post is already published, please reload your page.',
@@ -32,7 +31,8 @@ const messages = {
     invalidMobiledocStructure: 'Invalid mobiledoc structure.',
     invalidMobiledocStructureHelp: 'https://ghost.org/docs/publishing/',
     invalidLexicalStructure: 'Invalid lexical structure.',
-    invalidLexicalStructureHelp: 'https://ghost.org/docs/publishing/'
+    invalidLexicalStructureHelp: 'https://ghost.org/docs/publishing/',
+    emailOnlyWithoutNewsletter: 'Scheduling an email requires a newsletter reference.'
 };
 
 const MOBILEDOC_REVISIONS_COUNT = 10;
@@ -89,7 +89,7 @@ Post = ghostBookshelf.Model.extend({
         }
 
         return {
-            uuid: uuid.v4(),
+            uuid: crypto.randomUUID(),
             status: 'draft',
             featured: false,
             type: 'post',
@@ -367,47 +367,6 @@ Post = ghostBookshelf.Model.extend({
         ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);
     },
 
-    onFetched: async function onFetched(model, response, options) {
-        if (!labs.isSet('collectionsCard')) {
-            return;
-        }
-
-        await this.renderIfNeeded(model, options);
-    },
-
-    onFetchedCollection: async function onFetched(collection, response, options) {
-        if (!labs.isSet('collectionsCard')) {
-            return;
-        }
-
-        for await (const model of collection.models) {
-            await this.renderIfNeeded(model, options);
-        }
-    },
-
-    renderIfNeeded: async function renderIfNeeded(model, options = {}) {
-        // pages can have their html cleared to "queue" a re-render to update dynamic data such
-        // as collection cards. Detect that and re-render here so the page is always up to date
-        if (model.get('lexical') !== null && model.get('html') === null) {
-            const html = await lexicalLib.render(model.get('lexical'));
-            const plaintext = htmlToPlaintext.excerpt(html);
-
-            // set model attributes so they are available immediately in code that uses the returned model
-            model.set('html', html);
-            model.set('plaintext', plaintext);
-
-            // update database manually using knex to avoid hooks being called multiple times
-            const query = ghostBookshelf.knex.raw('UPDATE posts SET html = ?, plaintext = ? WHERE id = ?', [html, plaintext, model.id]);
-            if (options.transacting) {
-                await query.transacting(options.transacting);
-            } else {
-                await query;
-            }
-        }
-
-        return model;
-    },
-
     /**
      * We update the tags after the Post was inserted.
      * We update the tags before the Post was updated, see `onSaving` event.
@@ -508,22 +467,6 @@ Post = ghostBookshelf.Model.extend({
     onDestroyed: async function onDestroyed(model, options) {
         ghostBookshelf.Model.prototype.onDestroyed.apply(this, arguments);
 
-        if (labs.isSet('collectionsCard') && model.previous('type') === 'post' && model.previous('status') === 'published') {
-            // reset all page HTML when a published post is deleted so they can be re-rendered
-            // on next fetch so any collection cards are "dynamically" updated
-            const resetPages = function resetPages(transacting) {
-                return ghostBookshelf.knex.raw('UPDATE posts set html = NULL WHERE type = \'page\' AND lexical IS NOT NULL').transacting(transacting);
-            };
-
-            if (options.transacting) {
-                await resetPages(options.transacting);
-            } else {
-                await ghostBookshelf.knex.transaction(async (transacting) => {
-                    await resetPages(transacting);
-                });
-            }
-        }
-
         if (model.previous('status') === 'published') {
             model.emitChange('unpublished', Object.assign({usePreviousAttribute: true}, options));
         }
@@ -613,6 +556,7 @@ Post = ghostBookshelf.Model.extend({
         // an exception for ?source=html which always sets both when the lexical editor is enabled.
         // That's necessary because at the input serializer layer we don't have access to the
         // actual model to check if this would result in a change of format
+
         if (this.previous('mobiledoc') && this.get('lexical')) {
             this.set('lexical', null);
         } else if (this.get('mobiledoc') && this.get('lexical')) {
@@ -655,6 +599,28 @@ Post = ghostBookshelf.Model.extend({
                         cannotScheduleAPostBeforeInMinutes: config.get('times').cannotScheduleAPostBeforeInMinutes
                     })
                 }));
+            }
+        }
+
+        // CASE: Force a change for scheduled posts within 2 minutes of
+        // publishing. This ensures the scheduler can detect last-minute
+        // touches to the post
+        const isScheduled = newStatus === 'scheduled';
+        const isUpdate = options.method === 'update';
+        const isWithin2Minutes = publishedAt && moment(publishedAt).diff(moment(), 'minutes') <= 2;
+        const isNotImporting = !options.importing;
+        const isNotMigrating = !options.migrating;
+
+        if (isScheduled && isUpdate && isWithin2Minutes && isNotImporting && isNotMigrating) {
+            // Check if no actual changes have been made
+            if (!this.changed || Object.keys(this.changed).length === 0) {
+                // Force a "touch" by setting a dummy property that will be stored in _changed
+                this.set('_touch', true);
+                // Immediately unset it so it doesn't get saved to the database
+                this.unset('_touch');
+                // But ensure the changed object still has it for event detection
+                this.changed = this.changed || {};
+                this.changed._touch = true;
             }
         }
 
@@ -715,7 +681,7 @@ Post = ghostBookshelf.Model.extend({
         }
 
         if (!this.get('mobiledoc') && !this.get('lexical')) {
-            this.set('mobiledoc', JSON.stringify(mobiledocLib.blankDocument));
+            this.set('lexical', JSON.stringify(lexicalLib.blankDocument));
         }
 
         // If we're force re-rendering we want to make sure that all image cards
@@ -736,7 +702,7 @@ Post = ghostBookshelf.Model.extend({
             )
         ) {
             try {
-                this.set('html', mobiledocLib.mobiledocHtmlRenderer.render(JSON.parse(this.get('mobiledoc'))));
+                this.set('html', mobiledocLib.render(JSON.parse(this.get('mobiledoc'))));
             } catch (err) {
                 throw new errors.ValidationError({
                     message: tpl(messages.invalidMobiledocStructure),
@@ -801,7 +767,8 @@ Post = ghostBookshelf.Model.extend({
         if ((newStatus === 'published' || newStatus === 'sent') && this.hasChanged('status')) {
             // unless published_by is set and we're importing, set published_by to contextUser
             if (!(this.get('published_by') && options.importing)) {
-                this.set('published_by', String(this.contextUser(options)));
+                const userId = await this.contextUser(options);
+                this.set('published_by', String(userId));
             }
         } else {
             // In any other case (except import), `published_by` should not be changed
@@ -851,6 +818,14 @@ Post = ghostBookshelf.Model.extend({
         // NOTE: this is a stopgap solution for email-only posts where their status is unchanged after publish
         //       but the usual publis/send newsletter flow continues
         const hasEmailOnlyFlag = _.get(attrs, 'posts_meta.email_only') || model.related('posts_meta').get('email_only');
+
+        // Require newsletter reference for scheduled email-only posts
+        if (hasEmailOnlyFlag && newStatus === 'scheduled' && this.hasChanged('status') && !this.get('newsletter_id') && !options.newsletter) {
+            return Promise.reject(new errors.ValidationError({
+                message: tpl(messages.emailOnlyWithoutNewsletter)
+            }));
+        }
+
         if (hasEmailOnlyFlag && (newStatus === 'published') && this.hasChanged('status')) {
             this.set('status', 'sent');
         } else if (!hasEmailOnlyFlag && (newStatus === 'sent') && this.hasChanged('status')) {
@@ -898,7 +873,7 @@ Post = ghostBookshelf.Model.extend({
             ops.push(function updateRevisions() {
                 return ghostBookshelf.model('MobiledocRevision')
                     .findAll(Object.assign({
-                        filter: `post_id:${model.id}`,
+                        filter: `post_id:'${model.id}'`,
                         columns: ['id']
                     }, _.pick(options, 'transacting')))
                     .then((revisions) => {
@@ -938,21 +913,22 @@ Post = ghostBookshelf.Model.extend({
             });
         }
         if (!model.get('mobiledoc') && !options.importing && !options.migrating) {
+            const {PostRevisions} = require('../lib/post-revisions');
             const postRevisions = new PostRevisions({
                 config: {
                     max_revisions: POST_REVISIONS_COUNT,
                     revision_interval_ms: POST_REVISIONS_INTERVAL_MS
                 }
             });
-            let authorId = this.contextUser(options);
+            let authorId = await this.contextUser(options);
             const authorExists = await ghostBookshelf.model('User').findOne({id: authorId}, {transacting: options.transacting});
             if (!authorExists) {
-                authorId = await ghostBookshelf.model('User').getOwnerUser().get('id');
+                authorId = (await ghostBookshelf.model('User').getOwnerUser()).get('id');
             }
             ops.push(async function updateRevisions() {
                 const revisionModels = await ghostBookshelf.model('PostRevision')
                     .findAll(Object.assign({
-                        filter: `post_id:${model.id}`,
+                        filter: `post_id:'${model.id}'`,
                         columns: ['id', 'lexical', 'created_at', 'author_id', 'title', 'reason', 'post_status', 'created_at_ts', 'feature_image']
                     }, _.pick(options, 'transacting')));
 
@@ -967,6 +943,7 @@ Post = ghostBookshelf.Model.extend({
                     feature_image_alt: model.get('posts_meta')?.feature_image_alt,
                     feature_image_caption: model.get('posts_meta')?.feature_image_caption,
                     title: model.get('title'),
+                    custom_excerpt: model.get('custom_excerpt'),
                     post_status: model.get('status')
                 };
 
@@ -983,12 +960,14 @@ Post = ghostBookshelf.Model.extend({
         }
 
         // CASE: Convert post to lexical on the fly
-        if (labs.isSet('lexicalEditor') && options.convert_to_lexical) {
+        if (options.convert_to_lexical) {
             ops.push(async function convertToLexical() {
                 const mobiledoc = model.get('mobiledoc');
-                const lexical = mobiledocToLexical(mobiledoc);
-                model.set('lexical', lexical);
-                model.set('mobiledoc', null);
+                if (mobiledoc !== null) { // only run conversion when there is a mobiledoc string
+                    const lexical = mobiledocToLexical(mobiledoc);
+                    model.set('lexical', lexical);
+                    model.set('mobiledoc', null);
+                }
             });
         }
 
@@ -996,30 +975,15 @@ Post = ghostBookshelf.Model.extend({
             this.set('tiers', this.get('tiers').map(t => ({
                 id: t.id
             })));
-        }
 
-        if (labs.isSet('collectionsCard') && this.get('type') === 'post' && (newStatus === 'published' || olderStatus === 'published')) {
-            // reset all page HTML when a published post is updated so they can be re-rendered
-            // on next fetch so any collection cards are "dynamically" updated
-            ops.push(async function resetPageHTML() {
-                const query = ghostBookshelf.knex.raw('UPDATE posts set html = NULL WHERE type = ? AND lexical IS NOT NULL', ['page']);
-                if (options.transacting) {
-                    await query.transacting(options.transacting);
-                } else {
-                    await query;
-                }
-            });
+            // Don't associate the free tier with the post
+            const freeTier = await ghostBookshelf.model('Product').findOne({type: 'free'}, {require: false, transacting: options.transacting ?? undefined});
+            if (freeTier) {
+                this.set('tiers', this.get('tiers').filter(t => t.id !== freeTier.id));
+            }
         }
 
         return sequence(ops);
-    },
-
-    created_by: function createdBy() {
-        return this.belongsTo('User', 'created_by');
-    },
-
-    updated_by: function updatedBy() {
-        return this.belongsTo('User', 'updated_by');
     },
 
     published_by: function publishedBy() {
@@ -1235,7 +1199,7 @@ Post = ghostBookshelf.Model.extend({
 
     /**
      * Returns an array of keys permitted in a method's `options` hash, depending on the current method.
-     * @param {String} methodName The name of the method to check valid options for.
+     * @param {string} methodName The name of the method to check valid options for.
      * @return {Array} Keys allowed in the `options` hash of the model's method.
      */
     permittedOptions: function permittedOptions(methodName) {
@@ -1245,7 +1209,7 @@ Post = ghostBookshelf.Model.extend({
         // these are the only options that can be passed to Bookshelf / Knex.
         const validOptions = {
             findOne: ['columns', 'importing', 'withRelated', 'require', 'filter'],
-            findPage: ['status'],
+            findPage: ['status','selectRaw'],
 
             findAll: ['columns', 'filter'],
             destroy: ['destroyAll', 'destroyBy'],
@@ -1275,11 +1239,13 @@ Post = ghostBookshelf.Model.extend({
             options.withRelated = _.union(['authors', 'tags', 'post_revisions', 'post_revisions.author'], options.withRelated || []);
         }
 
-        const META_ATTRIBUTES = _.without(ghostBookshelf.model('PostsMeta').prototype.permittedAttributes(), 'id', 'post_id');
-
         // NOTE: only include post_meta relation when requested in 'columns' or by default
         //       optimization is needed to be able to perform .findAll on large SQLite datasets
-        if (!options.columns || (options.columns && _.intersection(META_ATTRIBUTES, options.columns).length)) {
+        if (!options.columns
+        || (
+            options.columns
+            && _.intersection(_.without(ghostBookshelf.model('PostsMeta').prototype.permittedAttributes(), 'id', 'post_id'), options.columns).length)
+        ) {
             options.withRelated = _.union(['posts_meta'], options.withRelated || []);
         }
 
@@ -1367,6 +1333,14 @@ Post = ghostBookshelf.Model.extend({
         return editPost();
     },
 
+    bulkEdit: async function bulkEdit(ids, tableName, options) {
+        if (tableName === this.prototype.tableName) {
+            return await ghostBookshelf.Model.bulkEdit.call(this, ids, tableName, options);
+        } else {
+            return ghostBookshelf.Model.bulkEdit.call(this, ids, tableName, options);
+        }
+    },
+
     /**
      * ### Add
      * @extends ghostBookshelf.Model.add to handle returning the full object
@@ -1413,12 +1387,13 @@ Post = ghostBookshelf.Model.extend({
         return destroyPost();
     },
 
+    bulkDestroy: async function bulkDestroy(ids, tableName, options) {
+        return ghostBookshelf.Model.bulkDestroy.call(this, ids, tableName, options);
+    },
+
     // NOTE: the `authors` extension is the parent of the post model. It also has a permissible function.
     permissible: async function permissible(postModel, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission) {
-        let isContributor;
-        let isOwner;
-        let isAdmin;
-        let isEditor;
+        let {isContributor, isOwner, isAdmin, isEitherEditor} = setIsRoles(loadedPermissions);
         let isIntegration;
         let isEdit;
         let isAdd;
@@ -1436,10 +1411,6 @@ Post = ghostBookshelf.Model.extend({
             return postModel.get('status') === 'draft';
         }
 
-        isContributor = loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Contributor'});
-        isOwner = loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Owner'});
-        isAdmin = loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Administrator'});
-        isEditor = loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Editor'});
         isIntegration = loadedPermissions.apiKey && _.some(loadedPermissions.apiKey.roles, {name: 'Admin Integration'});
 
         isEdit = (action === 'edit');
@@ -1462,7 +1433,7 @@ Post = ghostBookshelf.Model.extend({
         } else if (isContributor && isDestroy) {
             // If destroying, only allow contributor to destroy their own draft posts
             hasUserPermission = isDraft();
-        } else if (!(isOwner || isAdmin || isEditor || isIntegration)) {
+        } else if (!(isOwner || isAdmin || isEitherEditor || isIntegration)) {
             hasUserPermission = !isChanging('visibility');
         }
 

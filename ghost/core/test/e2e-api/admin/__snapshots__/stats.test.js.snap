@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`Stats API Can fetch MRR history 1: [body] 1`] = `
 Object {
@@ -44,6 +44,7 @@ Object {
     "totals": Object {
       "comped": 0,
       "free": 3,
+      "gift": 0,
       "paid": 5,
     },
   },
@@ -52,6 +53,7 @@ Object {
       "comped": 0,
       "date": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}/,
       "free": 3,
+      "gift": 0,
       "paid": 5,
       "paid_canceled": 0,
       "paid_subscribed": 0,
@@ -64,7 +66,7 @@ exports[`Stats API Can fetch member count history 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "149",
+  "content-length": "167",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -142,6 +144,46 @@ Object {
       "paid_conversions": 0,
       "signups": 1,
       "source": "Twitter",
+    },
+  ],
+}
+`;
+
+exports[`Stats API Posts Member Counts Returns empty results when postIds is not an array 1: [body] 1`] = `
+Object {
+  "stats": Array [
+    Object {},
+  ],
+}
+`;
+
+exports[`Stats API Posts Member Counts Returns empty results when postIds parameter is missing 1: [body] 1`] = `
+Object {
+  "stats": Array [
+    Object {},
+  ],
+}
+`;
+
+exports[`Stats API Posts Visitor Counts Returns empty results when postUuids is not an array 1: [body] 1`] = `
+Object {
+  "stats": Array [
+    Object {
+      "data": Object {
+        "visitor_counts": Object {},
+      },
+    },
+  ],
+}
+`;
+
+exports[`Stats API Posts Visitor Counts Returns empty results when postUuids parameter is missing 1: [body] 1`] = `
+Object {
+  "stats": Array [
+    Object {
+      "data": Object {
+        "visitor_counts": Object {},
+      },
     },
   ],
 }
@@ -445,6 +487,32 @@ Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "content-length": "463",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Stats API Top Posts by Attribution Can fetch top posts ordered by free members 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Stats API Top Referrers for a post Can fetch top referrers for a post 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

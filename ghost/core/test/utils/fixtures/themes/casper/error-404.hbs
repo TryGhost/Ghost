@@ -24,7 +24,7 @@ Keep this template as lightweight as you can!
 
 {{!-- Given that people landing on this page didn't find what they
 were looking for, let's give them some alternative stuff to read. --}}
-<aside class="read-more-wrap">
+<aside class="read-more-wrap outer">
     <div class="read-more inner">
         {{#get "posts" include="authors" limit="3" as |more_posts|}}
             {{#if more_posts}}

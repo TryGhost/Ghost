@@ -1,5 +1,7 @@
+import AuthConfiguration from 'ember-simple-auth/configuration';
 import ESASessionService from 'ember-simple-auth/services/session';
 import RSVP from 'rsvp';
+import windowProxy from 'ghost-admin/utils/window-proxy';
 import {configureScope} from '@sentry/ember';
 import {getOwner} from '@ember/application';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -12,14 +14,15 @@ export default class SessionService extends ESASessionService {
     @service configManager;
     @service('store') dataStore;
     @service feature;
+    @service koenig;
     @service notifications;
     @service router;
     @service frontend;
     @service settings;
     @service ui;
     @service upgradeStatus;
-    @service whatsNew;
     @service membersUtils;
+    @service stateBridge;
     @service themeManagement;
 
     @inject config;
@@ -59,7 +62,9 @@ export default class SessionService extends ESASessionService {
                         resolve({
                             ...event,
                             release: `ghost@${this.config.version}`,
-                            'user.role': this.user.role.name
+                            user: {
+                                role: this.user.role.name
+                            }
                         });
                     });
                 });
@@ -67,7 +72,9 @@ export default class SessionService extends ESASessionService {
         }
 
         this.loadServerNotifications();
-        this.whatsNew.fetchLatest.perform();
+
+        // pre-emptively load editor code in the background to avoid loading state when opening editor
+        this.koenig.fetch();
     }
 
     async handleAuthentication() {
@@ -76,8 +83,21 @@ export default class SessionService extends ESASessionService {
         }
 
         return this.handleAuthenticationTask.perform(() => {
+            this.stateBridge.triggerEmberAuthChange();
+
             if (this.skipAuthSuccessHandler) {
                 this.skipAuthSuccessHandler = false;
+                return;
+            }
+
+            const redirectUrl = window.sessionStorage.getItem('ghost-signin-redirect');
+            window.sessionStorage.removeItem('ghost-signin-redirect');
+            if (redirectUrl && !redirectUrl.startsWith('/signin') && !redirectUrl.startsWith('/signup') && !redirectUrl.startsWith('/setup')) {
+                // Hard navigate rather than router.transitionTo: the catch-all
+                // react-fallback route has no controller-declared queryParams,
+                // so transitionTo strips params like ?verifyEmail=<token> used
+                // by newsletter reply-to confirmation links.
+                windowProxy.replaceLocation(`${AuthConfiguration.rootURL}#${redirectUrl}`);
                 return;
             }
 

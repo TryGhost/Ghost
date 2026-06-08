@@ -10,15 +10,26 @@ const invitations = require('../../services/invitations');
 const dbBackup = require('../../data/db/backup');
 const apiMail = require('./index').mail;
 const apiSettings = require('./index').settings;
-const UsersService = require('../../services/Users');
+const UsersService = require('../../services/users');
 const userService = new UsersService({dbBackup, models, auth, apiMail, apiSettings});
-const {deleteAllSessions} = require('../../services/auth/session');
+const adapterManager = require('../../services/adapter-manager');
+const schedulerAdapter = adapterManager.getAdapter('scheduling');
+
+async function destroyRequestSession(req) {
+    if (!req || !req.session) {
+        return;
+    }
+    await new Promise((resolve, reject) => {
+        req.session.destroy(err => (err ? reject(err) : resolve()));
+    });
+}
 
 const messages = {
     notTheBlogOwner: 'You are not the site owner.'
 };
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'authentication',
 
     setup: {
@@ -83,36 +94,28 @@ module.exports = {
         headers: {
             cacheInvalidate: true
         },
-        permissions: (frame) => {
-            return models.User.findOne({role: 'Owner', status: 'all'})
-                .then((owner) => {
-                    if (owner.id !== frame.options.context.user) {
-                        throw new errors.NoPermissionError({message: tpl(messages.notTheBlogOwner)});
-                    }
-                });
+        permissions: async (frame) => {
+            const owner = await models.User.findOne({role: 'Owner', status: 'all'});
+            if (owner.id !== frame.options.context.user) {
+                throw new errors.NoPermissionError({message: tpl(messages.notTheBlogOwner)});
+            }
         },
         validation: {
             docName: 'setup'
         },
-        query(frame) {
-            return Promise.resolve()
-                .then(() => {
-                    return auth.setup.assertSetupCompleted(true)();
-                })
-                .then(() => {
-                    const setupDetails = {
-                        name: frame.data.setup[0].name,
-                        email: frame.data.setup[0].email,
-                        password: frame.data.setup[0].password,
-                        blogTitle: frame.data.setup[0].blogTitle,
-                        status: 'active'
-                    };
+        async query(frame) {
+            await auth.setup.assertSetupCompleted(true)();
 
-                    return auth.setup.setupUser(setupDetails);
-                })
-                .then((data) => {
-                    return auth.setup.doSettings(data, api.settings);
-                });
+            const setupDetails = {
+                name: frame.data.setup[0].name,
+                email: frame.data.setup[0].email,
+                password: frame.data.setup[0].password,
+                blogTitle: frame.data.setup[0].blogTitle,
+                status: 'active'
+            };
+
+            const data = await auth.setup.setupUser(setupDetails);
+            return auth.setup.doSettings(data, api.settings);
         }
     },
 
@@ -124,8 +127,14 @@ module.exports = {
         async query() {
             const isSetup = await auth.setup.checkIsSetup();
 
+            if (isSetup) {
+                return {
+                    status: true
+                };
+            }
+
             return {
-                status: isSetup,
+                status: false,
                 title: config.title,
                 name: config.user_name,
                 email: config.user_email
@@ -144,17 +153,10 @@ module.exports = {
         options: [
             'email'
         ],
-        query(frame) {
-            return Promise.resolve()
-                .then(() => {
-                    return auth.setup.assertSetupCompleted(true)();
-                })
-                .then(() => {
-                    return auth.passwordreset.generateToken(frame.data.password_reset[0].email, api.settings);
-                })
-                .then((token) => {
-                    return auth.passwordreset.sendResetNotification(token, api.mail);
-                });
+        async query(frame) {
+            await auth.setup.assertSetupCompleted(true)();
+            const token = await auth.passwordreset.generateToken(frame.data.password_reset[0].email, api.settings);
+            return auth.passwordreset.sendResetNotification(token, api.mail);
         }
     },
 
@@ -173,25 +175,30 @@ module.exports = {
         options: [
             'ip'
         ],
-        query(frame) {
-            return Promise.resolve()
-                .then(() => {
-                    return auth.setup.assertSetupCompleted(true)();
-                })
-                .then(() => {
-                    return auth.passwordreset.extractTokenParts(frame);
-                })
-                .then((params) => {
-                    return auth.passwordreset.protectBruteForce(params);
-                })
-                .then(({options, tokenParts}) => {
-                    options = Object.assign(options, {context: {internal: true}});
-                    return auth.passwordreset.doReset(options, tokenParts, api.settings)
-                        .then((params) => {
-                            web.shared.middleware.api.spamPrevention.userLogin().reset(frame.options.ip, `${tokenParts.email}login`);
-                            return params;
-                        });
+        async query(frame) {
+            await auth.setup.assertSetupCompleted(true)();
+            const {options, tokenParts} = await auth.passwordreset.extractTokenParts(frame);
+            const internalOptions = Object.assign(options, {context: {internal: true}});
+
+            const doResetParams = await auth.passwordreset.doReset(internalOptions, tokenParts, api.settings);
+
+            if (!frame.original.session) {
+                throw new errors.InternalServerError({
+                    message: 'Could not initialize an admin session during password reset.'
                 });
+            }
+
+            // Rotate the session_id and mint a fresh verified session so that
+            // any stolen or cloned copy of the pre-reset cookie is rejected
+            // on its next request.
+            await auth.session.sessionService.rotateAndAssignVerifiedUserToSession({
+                req: frame.original.session.req,
+                user: doResetParams.user,
+                ip: frame.options.ip
+            });
+
+            web.shared.middleware.api.spamPrevention.userLogin().reset(frame.options.ip, `${tokenParts.email}login`);
+            return {};
         }
     },
 
@@ -203,14 +210,9 @@ module.exports = {
             docName: 'invitations'
         },
         permissions: false,
-        query(frame) {
-            return Promise.resolve()
-                .then(() => {
-                    return auth.setup.assertSetupCompleted(true)();
-                })
-                .then(() => {
-                    return invitations.accept(frame.data);
-                });
+        async query(frame) {
+            await auth.setup.assertSetupCompleted(true)();
+            return invitations.accept(frame.data);
         }
     },
 
@@ -225,28 +227,35 @@ module.exports = {
             docName: 'invitations'
         },
         permissions: false,
-        query(frame) {
-            return Promise.resolve()
-                .then(() => {
-                    return auth.setup.assertSetupCompleted(true)();
-                })
-                .then(() => {
-                    const email = frame.data.email;
-
-                    return models.Invite.findOne({email: email, status: 'sent'}, frame.options);
-                });
+        async query(frame) {
+            await auth.setup.assertSetupCompleted(true)();
+            const email = frame.data.email;
+            return models.Invite.findOne({email, status: 'sent'}, frame.options);
         }
     },
 
-    resetAllPasswords: {
-        statusCode: 204,
+    reset: {
+        statusCode: 200,
         headers: {
             cacheInvalidate: false
         },
         permissions: true,
         async query(frame) {
-            await userService.resetAllPasswords(frame.options);
-            await deleteAllSessions();
+            const result = await auth.resetAuthentication({
+                schedulerAdapter,
+                userService,
+                options: frame.options
+            });
+
+            // Express-session would otherwise re-save the current request's
+            // session on the response, resurrecting the row deleteAllSessions
+            // just wiped. Destroying the request session prevents the re-save
+            // and emits a Set-Cookie that expires the cookie on the client.
+            await destroyRequestSession(frame.original.session && frame.original.session.req);
+
+            return result;
         }
     }
 };
+
+module.exports = controller;

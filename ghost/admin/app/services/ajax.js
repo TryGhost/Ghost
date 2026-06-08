@@ -1,11 +1,9 @@
+import * as Sentry from '@sentry/ember';
 import AjaxService from 'ember-ajax/services/ajax';
 import classic from 'ember-classic-decorator';
 import config from 'ghost-admin/config/environment';
 import moment from 'moment-timezone';
-import semverCoerce from 'semver/functions/coerce';
-import semverLt from 'semver/functions/lt';
 import {AjaxError, isAjaxError, isForbiddenError} from 'ember-ajax/errors';
-import {captureMessage} from '@sentry/ember';
 import {get} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
 import {isArray as isEmberArray} from '@ember/array';
@@ -21,6 +19,19 @@ function isJSONContentType(header) {
         return false;
     }
     return header.indexOf(JSON_CONTENT_TYPE) === 0;
+}
+
+function getJSONPayload(payload) {
+    // ember-simple-auth prevents ember-ajax parsing response as JSON but
+    // we need a JSON object to test against
+    if (typeof payload === 'string') {
+        try {
+            payload = JSON.parse(payload);
+        } catch (e) {
+            // do nothing
+        }
+    }
+    return payload;
 }
 
 /* Version mismatch error */
@@ -43,7 +54,7 @@ export function isVersionMismatchError(errorOrStatus, payload) {
 
 export class DataImportError extends AjaxError {
     constructor(payload) {
-        super(payload, 'he server encountered an error whilst importing data.');
+        super(payload, 'The server encountered an error whilst importing data.');
     }
 }
 
@@ -178,7 +189,24 @@ export function isEmailError(errorOrStatus, payload) {
     }
 }
 
-/* end: custom error types */
+/* 2FA required error */
+export class TwoFactorTokenRequiredError extends AjaxError {
+    constructor(payload) {
+        payload = getJSONPayload(payload);
+        super(payload, '2nd factor verification is required to sign in.');
+    }
+}
+
+export function isTwoFactorTokenRequiredError(errorOrStatus, payload) {
+    const twoFactorAuthCodes = ['2FA_TOKEN_REQUIRED', '2FA_NEW_DEVICE_DETECTED'];
+
+    if (isAjaxError(errorOrStatus)) {
+        return errorOrStatus instanceof TwoFactorTokenRequiredError || twoFactorAuthCodes.includes(getErrorCode(errorOrStatus));
+    } else {
+        payload = getJSONPayload(payload);
+        return twoFactorAuthCodes.includes(get(payload || {}, 'errors.firstObject.code'));
+    }
+}
 
 export class AcceptedResponse {
     constructor(data) {
@@ -195,6 +223,7 @@ export function isAcceptedResponse(errorOrStatus) {
 
 @classic
 class ajaxService extends AjaxService {
+    @service feature;
     @service session;
     @service upgradeStatus;
 
@@ -207,10 +236,11 @@ class ajaxService extends AjaxService {
     skipSessionDeletion = false;
 
     get headers() {
-        return {
-            'X-Ghost-Version': config.APP.version,
+        const headers = {
             'App-Pragma': 'no-cache'
         };
+
+        return headers;
     }
 
     init() {
@@ -271,7 +301,7 @@ class ajaxService extends AjaxService {
                 success = true;
 
                 if (attempts !== 0 && this.config.sentry_dsn) {
-                    captureMessage('Request took multiple attempts', {extra: getErrorData()});
+                    Sentry.captureMessage('Request took multiple attempts', {extra: getErrorData()});
                 }
 
                 return result;
@@ -289,7 +319,7 @@ class ajaxService extends AjaxService {
                     await timeout(retryPeriods[attempts] || retryPeriods[retryPeriods.length - 1]);
                     attempts += 1;
                 } else if (attempts > 0 && this.config.sentry_dsn) {
-                    captureMessage('Request failed after multiple attempts', {extra: getErrorData()});
+                    Sentry.captureMessage('Request failed after multiple attempts', {extra: getErrorData()});
                     throw error;
                 } else {
                     throw error;
@@ -299,16 +329,19 @@ class ajaxService extends AjaxService {
     }
 
     handleResponse(status, headers, payload, request) {
-        if (headers['content-version']) {
-            const contentVersion = semverCoerce(headers['content-version']);
-            const appVersion = semverCoerce(config.APP.version);
+        // set some context variables for Sentry in case there is an error
+        Sentry.setContext('ajax', {
+            url: request.url,
+            method: request.method,
+            status
+        });
+        Sentry.setTag('ajax_status', status);
+        Sentry.setTag('ajax_url', request.url.slice(0, 200)); // the max length of a tag value is 200 characters
+        Sentry.setTag('ajax_method', request.method);
 
-            if (semverLt(appVersion, contentVersion)) {
-                this.upgradeStatus.refreshRequired = true;
-            }
-        }
-
-        if (this.isVersionMismatchError(status, headers, payload)) {
+        if (this.isTwoFactorTokenRequiredError(status, headers, payload)) {
+            return new TwoFactorTokenRequiredError(payload);
+        } else if (this.isVersionMismatchError(status, headers, payload)) {
             return new VersionMismatchError(payload);
         } else if (this.isServerUnreachableError(status, headers, payload)) {
             return new ServerUnreachableError(payload);
@@ -366,6 +399,10 @@ class ajaxService extends AjaxService {
         }
 
         return super.normalizeErrorResponse(status, headers, payload);
+    }
+
+    isTwoFactorTokenRequiredError(status, headers, payload) {
+        return isTwoFactorTokenRequiredError(status, payload);
     }
 
     isVersionMismatchError(status, headers, payload) {

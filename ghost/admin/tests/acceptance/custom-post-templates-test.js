@@ -14,12 +14,12 @@ describe('Acceptance: Custom Post Templates', function () {
     setupMirage(hooks);
 
     beforeEach(async function () {
-        this.server.loadFixtures('settings');
+        this.server.loadFixtures('settings','configs');
 
         let role = this.server.create('role', {name: 'Administrator'});
         this.server.create('user', {roles: [role]});
 
-        return await authenticateSession();
+        await authenticateSession();
     });
 
     describe('with custom templates', function () {

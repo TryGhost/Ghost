@@ -6,7 +6,7 @@
             <p>All over the world, people have started 3,000,000+ incredible sites with Ghost. Today, we’re starting yours.</p>
         </header>
 
-        <form id="setup" class="gh-flow-form">
+        <form id="setup" method="post" action="javascript:void(0)" class="gh-flow-form">
             <GhFormGroup @errors={{this.errors}} @hasValidated={{this.hasValidated}} @property="blogTitle">
                 <label for="blog-title">Site title</label>
                 <span class="gh-input-icon gh-icon-content">

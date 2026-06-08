@@ -1,0 +1,98 @@
+const TableImporter = require('./table-importer');
+const {faker} = require('@faker-js/faker');
+const {faker: americanFaker} = require('@faker-js/faker/locale/en_US');
+const {blogStartDate: startTime} = require('../utils/blog-info');
+const generateEvents = require('../utils/event-generator');
+const {luck} = require('../utils/random');
+const dateToDatabaseString = require('../utils/database-date');
+const debug = require('@tryghost/debug')('MembersImporter');
+
+class MembersImporter extends TableImporter {
+    static table = 'members';
+    static dependencies = [];
+    defaultQuantity = faker.number.int({
+        min: 7000,
+        max: 8000
+    });
+
+    constructor(knex, transaction) {
+        super(MembersImporter.table, knex, transaction);
+    }
+
+    async import(quantity = this.defaultQuantity) {
+        const generateNow = Date.now();
+
+        this.timestamps = generateEvents({
+            shape: 'ease-in',
+            trend: 'positive',
+            total: quantity,
+            startTime,
+            endTime: new Date()
+        }).sort();
+        debug(`${this.name} generated ${this.timestamps.length} timestamps in ${Date.now() - generateNow}ms`);
+
+        await super.import(quantity);
+    }
+
+    /**
+     * Add open rate data to members table
+     */
+    async finalise() {
+        const emailRecipients = await this.transaction.select('id', 'member_id', 'opened_at').from('email_recipients');
+
+        const memberData = {};
+        for (const emailRecipient of emailRecipients) {
+            if (!(emailRecipient.member_id in memberData)) {
+                memberData[emailRecipient.member_id] = {
+                    emailCount: 1,
+                    openedCount: emailRecipient.opened_at ? 1 : 0
+                };
+            } else {
+                memberData[emailRecipient.member_id].emailCount += 1;
+                if (emailRecipient.opened_at) {
+                    memberData[emailRecipient.member_id].openedCount += 1;
+                }
+            }
+        }
+
+        for (const [memberId, emailInfo] of Object.entries(memberData)) {
+            const openRate = Math.round(100 * (emailInfo.openedCount / emailInfo.emailCount));
+            await this.transaction('members').update({
+                email_count: emailInfo.emailCount,
+                email_opened_count: emailInfo.openedCount,
+                email_open_rate: emailInfo.emailCount >= 5 ? openRate : null
+            }).where({id: memberId});
+        }
+    }
+
+    generate() {
+        const id = this.fastFakeObjectId();
+        // Use name from American locale to reflect an English-speaking audience
+        const name = `${americanFaker.person.firstName()} ${americanFaker.person.lastName()}`;
+        const timestamp = this.timestamps.pop();
+
+        return {
+            id,
+            uuid: faker.string.uuid(),
+            transient_id: faker.string.uuid(),
+            email: `${name.replace(' ', '.').replace(/[^a-zA-Z0-9]/g, '').toLowerCase()}${faker.number.int({min: 0, max: 999999})}@example.com`,
+            status: luck(5) ? 'comped' : luck(15) ? 'paid' : 'free',
+            name: name,
+            expertise: luck(30) ? faker.person.jobTitle() : undefined,
+            geolocation: JSON.stringify({
+                country: faker.location.country(),
+                country_code: faker.location.countryCode('alpha-2'),
+                region: faker.location.state()
+            }),
+            email_count: 0, // Depends on number of emails sent since created_at, the newsletter they're a part of and subscription status
+            email_opened_count: 0,
+            email_open_rate: null,
+            // 40% of users logged in within a week, 60% sometime since registering
+            last_seen_at: luck(40) ? dateToDatabaseString(faker.date.recent({days: 7})) : dateToDatabaseString(faker.date.between({from: timestamp, to: new Date()})),
+            created_at: dateToDatabaseString(timestamp),
+            updated_at: dateToDatabaseString(timestamp)
+        };
+    }
+}
+
+module.exports = MembersImporter;

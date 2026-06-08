@@ -5,6 +5,9 @@ const shared = require('../shared');
 
 const bodyParser = require('body-parser');
 
+/**
+ * @returns {import('express').Router}
+ */
 module.exports = function apiRoutes() {
     const router = express.Router('webmentions');
 

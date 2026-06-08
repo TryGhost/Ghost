@@ -7,7 +7,8 @@ const messages = {
     postNotFound: 'Post not found.'
 };
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'email_post',
 
     read: {
@@ -34,7 +35,12 @@ module.exports = {
             }
         },
         async query(frame) {
-            const model = await models.Post.findOne(Object.assign(frame.data, {status: 'sent'}), frame.options);
+            const callerIncludes = Array.isArray(frame.options.withRelated) ? frame.options.withRelated : [];
+            const options = {
+                ...frame.options,
+                withRelated: [...new Set([...callerIncludes, 'tags', 'authors'])]
+            };
+            const model = await models.Post.findOne(Object.assign(frame.data, {status: 'sent'}), options);
 
             if (!model) {
                 throw new errors.NotFoundError({
@@ -46,3 +52,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

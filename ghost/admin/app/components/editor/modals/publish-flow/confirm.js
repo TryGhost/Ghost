@@ -13,6 +13,8 @@ function isString(str) {
 
 export default class PublishFlowOptions extends Component {
     @service settings;
+    @service feature;
+    @service router;
 
     @tracked errorMessage;
 
@@ -91,6 +93,7 @@ export default class PublishFlowOptions extends Component {
 
         try {
             yield this.args.saveTask.perform();
+            this.args.setCompleted();
         } catch (e) {
             if (e === undefined && this.args.publishOptions.post.errors.length !== 0) {
                 // validation error

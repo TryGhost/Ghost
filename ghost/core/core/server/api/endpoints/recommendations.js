@@ -1,6 +1,7 @@
 const recommendations = require('../../services/recommendations');
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'recommendations',
 
     browse: {
@@ -11,7 +12,8 @@ module.exports = {
             'limit',
             'page',
             'include',
-            'filter'
+            'filter',
+            'order'
         ],
         permissions: true,
         validation: {},
@@ -44,6 +46,24 @@ module.exports = {
         permissions: true,
         async query(frame) {
             return await recommendations.controller.add(frame);
+        }
+    },
+
+    /**
+     * Fetch metadata for a recommendation URL
+     */
+    check: {
+        headers: {
+            cacheInvalidate: true
+        },
+        options: [],
+        validation: {},
+        permissions: {
+            // Everyone who has add permissions, can 'check'
+            method: 'add'
+        },
+        async query(frame) {
+            return await recommendations.controller.check(frame);
         }
     },
 
@@ -88,3 +108,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

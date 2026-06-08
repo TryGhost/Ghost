@@ -37,7 +37,7 @@ describe('Integration: Component: gh-unsplash', function () {
 
     describe('closing', function () {
         it('triggers close action');
-        it('can be triggerd by escape key');
+        it('can be triggered by escape key');
         it('cannot be triggered by escape key when zoomed');
     });
 });

@@ -1,33 +1,29 @@
 const models = require('../../models');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const {mapQuery} = require('@tryghost/mongo-utils');
 const postsPublicService = require('../../services/posts-public');
-const getPostServiceInstance = require('../../services/posts/posts-service');
+const getPostServiceInstance = require('../../services/posts/posts-service-instance');
 const postsService = getPostServiceInstance();
+const {rejectContentApiRestrictedFieldsTransformer} = require('./utils/api-filter-utils');
 
-const allowedIncludes = ['tags', 'authors', 'tiers', 'sentiment'];
+const ALLOWED_INCLUDES = ['tags', 'authors', 'tiers', 'sentiment'];
 
 const messages = {
     postNotFound: 'Post not found.'
 };
 
-const rejectPrivateFieldsTransformer = input => mapQuery(input, function (value, key) {
-    const lowerCaseKey = key.toLowerCase();
-    if (lowerCaseKey.startsWith('authors.password') || lowerCaseKey.startsWith('authors.email')) {
-        return;
-    }
-
-    return {
-        [key]: value
-    };
-});
-
+/**
+ *
+ * @param {import('@tryghost/api-framework').Frame} frame
+ * @param {object} options
+ * @returns {object}
+ */
 function generateOptionsData(frame, options) {
     return options.reduce((memo, option) => {
         let value = frame.options?.[option];
-        if (['include', 'fields', 'formats'].includes(option)) {
-            value = value?.split(',').sort();
+
+        if (['include', 'fields', 'formats'].includes(option) && typeof value === 'string') {
+            value = value.split(',').sort();
         }
 
         if (option === 'page') {
@@ -51,7 +47,9 @@ function generateAuthData(frame) {
         };
     }
 }
-module.exports = {
+
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'posts',
 
     browse: {
@@ -72,6 +70,7 @@ module.exports = {
                     'absolute_urls',
                     'collection'
                 ]),
+                skipPagination: frame.options?.skipPagination === true,
                 auth: generateAuthData(frame),
                 method: 'browse'
             };
@@ -86,12 +85,13 @@ module.exports = {
             'page',
             'debug',
             'absolute_urls',
-            'collection'
+            'collection',
+            'skipPagination'
         ],
         validation: {
             options: {
                 include: {
-                    values: allowedIncludes
+                    values: ALLOWED_INCLUDES
                 },
                 formats: {
                     values: models.Post.allowedFormats
@@ -102,7 +102,7 @@ module.exports = {
         query(frame) {
             const options = {
                 ...frame.options,
-                mongoTransformer: rejectPrivateFieldsTransformer
+                mongoTransformer: rejectContentApiRestrictedFieldsTransformer
             };
             return postsService.browsePosts(options);
         }
@@ -145,7 +145,7 @@ module.exports = {
         validation: {
             options: {
                 include: {
-                    values: allowedIncludes
+                    values: ALLOWED_INCLUDES
                 },
                 formats: {
                     values: models.Post.allowedFormats
@@ -153,21 +153,21 @@ module.exports = {
             }
         },
         permissions: true,
-        query(frame) {
+        async query(frame) {
             const options = {
                 ...frame.options,
-                mongoTransformer: rejectPrivateFieldsTransformer
+                mongoTransformer: rejectContentApiRestrictedFieldsTransformer
             };
-            return models.Post.findOne(frame.data, options)
-                .then((model) => {
-                    if (!model) {
-                        throw new errors.NotFoundError({
-                            message: tpl(messages.postNotFound)
-                        });
-                    }
-
-                    return model;
+            const model = await models.Post.findOne(frame.data, options);
+            if (!model) {
+                throw new errors.NotFoundError({
+                    message: tpl(messages.postNotFound)
                 });
+            }
+
+            return model;
         }
     }
 };
+
+module.exports = controller;

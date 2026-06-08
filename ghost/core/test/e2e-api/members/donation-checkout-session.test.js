@@ -1,7 +1,7 @@
 const {agentProvider, mockManager, fixtureManager} = require('../../utils/e2e-framework');
 const {stripeMocker} = require('../../utils/e2e-framework-mock-manager');
 const models = require('../../../core/server/models');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const urlService = require('../../../core/server/services/url');
 const DomainEvents = require('@tryghost/domain-events');
 
@@ -58,21 +58,29 @@ describe('Create Stripe Checkout Session for Donations', function () {
             .expectStatus(200)
             .matchBodySnapshot();
 
-        // Send a webhook of a paid invoice for this session
+        // Send a webhook of a completed checkout session for this donation
         await stripeMocker.sendWebhook({
-            type: 'invoice.payment_succeeded',
+            type: 'checkout.session.completed',
             data: {
                 object: {
-                    type: 'invoice',
-                    paid: true,
-                    amount_paid: 1200,
+                    mode: 'payment',
+                    amount_total: 1200,
                     currency: 'usd',
                     customer: (stripeMocker.checkoutSessions[0].customer),
-                    customer_name: 'Paid Test',
-                    customer_email: 'exampledonation@example.com',
+                    customer_details: {
+                        name: 'Paid Test',
+                        email: 'exampledonation@example.com'
+                    },
                     metadata: {
-                        ...(stripeMocker.checkoutSessions[0].invoice_creation?.invoice_data?.metadata ?? {})
-                    }
+                        ...(stripeMocker.checkoutSessions[0].metadata ?? {}),
+                        ghost_donation: true
+                    },
+                    custom_fields: [{
+                        key: 'donation_message',
+                        text: {
+                            value: 'You are the best! Have a lovely day!'
+                        }
+                    }]
                 }
             }
         });
@@ -87,11 +95,13 @@ describe('Create Stripe Checkout Session for Donations', function () {
         const lastDonation = await models.DonationPaymentEvent.findOne({
             email: 'exampledonation@example.com'
         }, {require: true});
+
         assert.equal(lastDonation.get('amount'), 1200);
         assert.equal(lastDonation.get('currency'), 'usd');
         assert.equal(lastDonation.get('email'), 'exampledonation@example.com');
         assert.equal(lastDonation.get('name'), 'Paid Test');
         assert.equal(lastDonation.get('member_id'), null);
+        assert.equal(lastDonation.get('donation_message'), 'You are the best! Have a lovely day!');
 
         // Check referrer
         assert.equal(lastDonation.get('referrer_url'), 'example.com');
@@ -104,6 +114,86 @@ describe('Create Stripe Checkout Session for Donations', function () {
         assert.equal(lastDonation.get('attribution_url'), url);
     });
 
+    it('Strips reserved gift metadata from donation checkout sessions', async function () {
+        const post = await getPost(fixtureManager.get('posts', 0).id);
+        const url = urlService.getUrlByResourceId(post.id, {absolute: false});
+        const paidTier = await models.Product.findOne({type: 'paid'}, {require: true});
+        const attackerToken = 'poc-reserved-donation-metadata';
+        const email = 'reserved-metadata-donation@example.com';
+
+        await membersAgent.post('/api/create-stripe-checkout-session/')
+            .body({
+                customerEmail: email,
+                type: 'donation',
+                successUrl: 'https://example.com/?type=success',
+                cancelUrl: 'https://example.com/?type=cancel',
+                metadata: {
+                    ghost_donation: '',
+                    ghost_gift: 'true',
+                    ghostSignupContext: 'needs_magic_link',
+                    gift_token: attackerToken,
+                    tier_id: paidTier.id,
+                    cadence: 'year',
+                    duration: '10',
+                    urlHistory: [
+                        {
+                            path: url,
+                            time: Date.now(),
+                            referrerMedium: null,
+                            referrerSource: 'ghost-explore',
+                            referrerUrl: 'https://example.com/blog/'
+                        }
+                    ]
+                }
+            })
+            .expectStatus(200);
+
+        const checkoutSession = stripeMocker.checkoutSessions[stripeMocker.checkoutSessions.length - 1];
+
+        assert.equal(checkoutSession.metadata.ghost_donation, true);
+        assert.equal(checkoutSession.metadata.ghost_gift, undefined);
+        assert.equal(checkoutSession.metadata.ghostSignupContext, undefined);
+        assert.equal(checkoutSession.metadata.gift_token, undefined);
+        assert.equal(checkoutSession.metadata.tier_id, undefined);
+        assert.equal(checkoutSession.metadata.cadence, undefined);
+        assert.equal(checkoutSession.metadata.duration, undefined);
+
+        await stripeMocker.sendWebhook({
+            type: 'checkout.session.completed',
+            data: {
+                object: {
+                    id: checkoutSession.id,
+                    mode: 'payment',
+                    amount_total: 100,
+                    currency: 'usd',
+                    customer: checkoutSession.customer,
+                    customer_details: {
+                        name: 'Reserved Metadata Donor',
+                        email
+                    },
+                    metadata: checkoutSession.metadata,
+                    payment_intent: 'pi_reserved_donation_metadata',
+                    custom_fields: [{
+                        key: 'donation_message',
+                        text: {
+                            value: 'Reserved metadata should not create a gift'
+                        }
+                    }]
+                }
+            }
+        });
+
+        const donation = await models.DonationPaymentEvent.findOne({
+            email
+        }, {require: true});
+        const gift = await models.Gift.findOne({token: attackerToken});
+
+        assert.equal(donation.get('amount'), 100);
+        assert.equal(donation.get('currency'), 'usd');
+        assert.equal(donation.get('donation_message'), 'Reserved metadata should not create a gift');
+        assert.equal(gift, null);
+    });
+
     it('Can create a member checkout session for a donation', async function () {
         // Fake a visit to a post
         const post = await getPost(fixtureManager.get('posts', 0).id);
@@ -113,7 +203,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
 
         const membersService = require('../../../core/server/services/members');
         const member = await membersService.api.members.create({email, name: 'Member Test'});
-        const token = await membersService.api.getMemberIdentityToken(email);
+        const token = await membersService.api.getMemberIdentityToken(member.get('transient_id'));
 
         await DomainEvents.allSettled();
 
@@ -125,6 +215,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
 
         await membersAgent.post('/api/create-stripe-checkout-session/')
             .body({
+                mode: 'payment',
                 customerEmail: email,
                 identity: token,
                 type: 'donation',
@@ -146,21 +237,29 @@ describe('Create Stripe Checkout Session for Donations', function () {
             .expectStatus(200)
             .matchBodySnapshot();
 
-        // Send a webhook of a paid invoice for this session
+        // Send a webhook of a completed checkout session for this donation
         await stripeMocker.sendWebhook({
-            type: 'invoice.payment_succeeded',
+            type: 'checkout.session.completed',
             data: {
                 object: {
-                    type: 'invoice',
-                    paid: true,
-                    amount_paid: 1220,
+                    mode: 'payment',
+                    amount_total: 1220,
                     currency: 'eur',
                     customer: (stripeMocker.checkoutSessions[0].customer),
-                    customer_name: 'Member Test',
-                    customer_email: email,
+                    customer_details: {
+                        name: 'Member Test',
+                        email: email
+                    },
                     metadata: {
-                        ...(stripeMocker.checkoutSessions[0].invoice_creation?.invoice_data?.metadata ?? {})
-                    }
+                        ...(stripeMocker.checkoutSessions[0].metadata ?? {}),
+                        ghost_donation: true
+                    },
+                    custom_fields: [{
+                        key: 'donation_message',
+                        text: {
+                            value: 'You are the best! Have a lovely day!'
+                        }
+                    }]
                 }
             }
         });
@@ -180,6 +279,7 @@ describe('Create Stripe Checkout Session for Donations', function () {
         assert.equal(lastDonation.get('email'), email);
         assert.equal(lastDonation.get('name'), 'Member Test');
         assert.equal(lastDonation.get('member_id'), member.id);
+        assert.equal(lastDonation.get('donation_message'), 'You are the best! Have a lovely day!');
 
         // Check referrer
         assert.equal(lastDonation.get('referrer_url'), 'example.com');
@@ -190,5 +290,245 @@ describe('Create Stripe Checkout Session for Donations', function () {
         assert.equal(lastDonation.get('attribution_id'), post.id);
         assert.equal(lastDonation.get('attribution_type'), 'post');
         assert.equal(lastDonation.get('attribution_url'), url);
+    });
+
+    it('check if donation message is in email', async function () {
+        const post = await getPost(fixtureManager.get('posts', 0).id);
+        const url = urlService.getUrlByResourceId(post.id, {absolute: false});
+
+        await membersAgent.post('/api/create-stripe-checkout-session/')
+            .body({
+                mode: 'payment',
+                type: 'donation',
+                customerEmail: 'paid@test.com',
+                successUrl: 'https://example.com/?type=success',
+                cancelUrl: 'https://example.com/?type=cancel',
+                metadata: {
+                    urlHistory: [
+                        {
+                            path: url,
+                            time: Date.now(),
+                            referrerMedium: null,
+                            referrerSource: 'ghost-explore',
+                            referrerUrl: 'https://example.com/blog/'
+                        }
+                    ],
+                    ghost_donation: true
+                },
+                custom_fields: [{
+                    key: 'donation_message',
+                    label: {
+                        type: 'custom',
+                        custom: 'Add a personal note'
+                    },
+                    type: 'text',
+                    optional: true
+                }]
+            })
+            .expectStatus(200)
+            .matchBodySnapshot();
+
+        // Send a webhook of a completed checkout session for this donation
+        await stripeMocker.sendWebhook({
+            type: 'checkout.session.completed',
+            data: {
+                object: {
+                    mode: 'payment',
+                    amount_total: 1200,
+                    currency: 'usd',
+                    customer: (stripeMocker.checkoutSessions[0].customer),
+                    customer_details: {
+                        name: 'Paid Test',
+                        email: 'exampledonation@example.com'
+                    },
+                    metadata: {
+                        ...(stripeMocker.checkoutSessions[0].metadata ?? {}),
+                        ghost_donation: true
+                    },
+                    custom_fields: [{
+                        key: 'donation_message',
+                        text: {
+                            value: 'You are the best! Have a lovely day!'
+                        }
+                    }]
+                }
+            }
+        });
+
+        // check if donation message is in email
+        mockManager.assert.sentEmail({
+            subject: '💰 One-time payment received: $12.00 from Paid Test',
+            to: 'jbloggs@example.com',
+            text: /You are the best! Have a lovely day!/
+        });
+    });
+
+    // We had a bug where the stripe_prices.nickname column was too short for the site title
+    // Stripe is also limited to 250 chars so we need to truncate the nickname
+    it('can create a checkout session for a site with a long title', async function () {
+        // Ensure site title is longer than 250 characters
+        mockManager.mockSetting('title', 'a'.repeat(251));
+
+        // clear out existing prices to guarantee we're creating a new one
+        await models.StripePrice.where('type', 'donation').destroy().catch((e) => {
+            if (e.message !== 'No Rows Deleted') {
+                throw e;
+            }
+        });
+
+        // Fake a visit to a post
+        const post = await getPost(fixtureManager.get('posts', 0).id);
+        const url = urlService.getUrlByResourceId(post.id, {absolute: false});
+
+        await membersAgent.post('/api/create-stripe-checkout-session/')
+            .body({
+                customerEmail: 'paid@test.com',
+                type: 'donation',
+                successUrl: 'https://example.com/?type=success',
+                cancelUrl: 'https://example.com/?type=cancel',
+                metadata: {
+                    test: 'hello',
+                    urlHistory: [
+                        {
+                            path: url,
+                            time: Date.now(),
+                            referrerMedium: null,
+                            referrerSource: 'ghost-explore',
+                            referrerUrl: 'https://example.com/blog/'
+                        }
+                    ]
+                }
+            })
+            .expectStatus(200)
+            .matchBodySnapshot();
+
+        const latestStripePrice = await models.StripePrice
+            .where('type', 'donation')
+            .orderBy('created_at', 'DESC')
+            .fetch({require: true});
+
+        assert.equal(latestStripePrice.get('nickname').length, 250);
+    });
+    it('Can create a checkout session with a personal note included', async function () {
+        const post = await getPost(fixtureManager.get('posts', 0).id);
+        const url = urlService.getUrlByResourceId(post.id, {absolute: false});
+
+        await membersAgent.post('/api/create-stripe-checkout-session/')
+            .body({
+                customerEmail: 'noob@test.com',
+                type: 'donation',
+                successUrl: 'https://example.com/?type=success',
+                cancelUrl: 'https://example.com/?type=cancel',
+                metadata: {
+                    test: 'hello',
+                    urlHistory: [
+                        {
+                            path: url,
+                            time: Date.now(),
+                            referrerMedium: null,
+                            referrerSource: 'ghost-explore',
+                            referrerUrl: 'https://example.com/blog/'
+                        }
+                    ]
+                },
+                personalNote: 'Please leave a note, gracias!'
+            })
+            .expectStatus(200)
+            .matchBodySnapshot();
+    });
+
+    it('Can create a donation checkout session with UTM parameters', async function () {
+        const post = await getPost(fixtureManager.get('posts', 0).id);
+        const url = urlService.getUrlByResourceId(post.id, {absolute: false});
+
+        await membersAgent.post('/api/create-stripe-checkout-session/')
+            .body({
+                customerEmail: 'utm-donation@test.com',
+                type: 'donation',
+                successUrl: 'https://example.com/?type=success',
+                cancelUrl: 'https://example.com/?type=cancel',
+                metadata: {
+                    test: 'utm_params',
+                    urlHistory: [
+                        {
+                            path: url,
+                            time: Date.now(),
+                            referrerMedium: null,
+                            referrerSource: 'google',
+                            referrerUrl: 'https://google.com',
+                            utmSource: 'weekly_newsletter',
+                            utmMedium: 'email',
+                            utmCampaign: 'donation_drive_2024',
+                            utmTerm: 'support_ghost',
+                            utmContent: 'footer_cta'
+                        }
+                    ]
+                }
+            })
+            .expectStatus(200)
+            .matchBodySnapshot();
+
+        // Verify that the Stripe mocker captured the UTM parameters in metadata
+        const checkoutSession = stripeMocker.checkoutSessions[stripeMocker.checkoutSessions.length - 1];
+        assert.equal(checkoutSession.metadata.utm_source, 'weekly_newsletter');
+        assert.equal(checkoutSession.metadata.utm_medium, 'email');
+        assert.equal(checkoutSession.metadata.utm_campaign, 'donation_drive_2024');
+        assert.equal(checkoutSession.metadata.utm_term, 'support_ghost');
+        assert.equal(checkoutSession.metadata.utm_content, 'footer_cta');
+
+        // Send a webhook to complete the donation and verify UTM storage
+        await stripeMocker.sendWebhook({
+            type: 'checkout.session.completed',
+            data: {
+                object: {
+                    mode: 'payment',
+                    amount_total: 2500,
+                    currency: 'usd',
+                    customer: checkoutSession.customer,
+                    customer_details: {
+                        name: 'UTM Donor',
+                        email: 'utm-donation@test.com'
+                    },
+                    metadata: {
+                        ...checkoutSession.metadata,
+                        ghost_donation: true
+                    },
+                    custom_fields: [{
+                        key: 'donation_message',
+                        text: {
+                            value: 'Thanks for tracking my UTMs!'
+                        }
+                    }]
+                }
+            }
+        });
+
+        // Verify UTM parameters are stored in DonationPaymentEvent
+        const donation = await models.DonationPaymentEvent.findOne({
+            email: 'utm-donation@test.com'
+        }, {require: true});
+
+        assert.equal(donation.get('amount'), 2500);
+        assert.equal(donation.get('currency'), 'usd');
+        assert.equal(donation.get('email'), 'utm-donation@test.com');
+        assert.equal(donation.get('name'), 'UTM Donor');
+        assert.equal(donation.get('donation_message'), 'Thanks for tracking my UTMs!');
+
+        // Check UTM parameters
+        assert.equal(donation.get('utm_source'), 'weekly_newsletter');
+        assert.equal(donation.get('utm_medium'), 'email');
+        assert.equal(donation.get('utm_campaign'), 'donation_drive_2024');
+        assert.equal(donation.get('utm_term'), 'support_ghost');
+        assert.equal(donation.get('utm_content'), 'footer_cta');
+
+        // Check referrer parameters
+        assert.equal(donation.get('referrer_source'), 'Google');
+        assert.equal(donation.get('referrer_medium'), 'unknown');
+        assert.equal(donation.get('referrer_url'), 'google.com');
+
+        // Check attribution
+        assert.equal(donation.get('attribution_id'), post.id);
+        assert.equal(donation.get('attribution_type'), 'post');
+        assert.equal(donation.get('attribution_url'), url);
     });
 });

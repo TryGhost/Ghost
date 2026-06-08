@@ -1,6 +1,7 @@
 /* eslint no-invalid-this:0 */
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const errors = require('@tryghost/errors');
-const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../utils');
 const knex = require('../../../../core/server/data/db').knex;
@@ -12,8 +13,7 @@ describe('Unit: models/post', function () {
     const mockDb = require('mock-knex');
     let tracker;
 
-    before(function () {
-        models.init();
+    beforeAll(function () {
         mockDb.mock(knex);
         tracker = mockDb.getTracker();
     });
@@ -22,7 +22,7 @@ describe('Unit: models/post', function () {
         sinon.restore();
     });
 
-    after(function () {
+    afterAll(function () {
         mockDb.unmock(knex);
     });
 
@@ -41,9 +41,9 @@ describe('Unit: models/post', function () {
                 limit: 3,
                 withRelated: ['tags']
             }).then(() => {
-                queries.length.should.eql(2);
-                queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` where ((`posts`.`id` != ? and `posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` where `tags`.`slug` in (?, ?))) and (`posts`.`type` = ? and `posts`.`status` = ?))');
-                queries[0].bindings.should.eql([
+                assert.equal(queries.length, 2);
+                assert.equal(queries[0].sql, 'select count(distinct posts.id) as aggregate from `posts` where ((`posts`.`id` != ? and `posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` where `tags`.`slug` in (?, ?))) and (`posts`.`type` = ? and `posts`.`status` = ?))');
+                assert.deepEqual(queries[0].bindings, [
                     testUtils.filterData.data.posts[3].id,
                     'photo',
                     'video',
@@ -51,8 +51,8 @@ describe('Unit: models/post', function () {
                     'published'
                 ]);
 
-                queries[1].sql.should.eql('select `posts`.* from `posts` where ((`posts`.`id` != ? and `posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` where `tags`.`slug` in (?, ?))) and (`posts`.`type` = ? and `posts`.`status` = ?)) order by (SELECT count(*) FROM posts_tags WHERE post_id = posts.id) DESC, CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
-                queries[1].bindings.should.eql([
+                assert.equal(queries[1].sql, 'select `posts`.* from `posts` where ((`posts`.`id` != ? and `posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` where `tags`.`slug` in (?, ?))) and (`posts`.`type` = ? and `posts`.`status` = ?)) order by (SELECT count(*) FROM posts_tags WHERE post_id = posts.id) DESC, CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                assert.deepEqual(queries[1].bindings, [
                     testUtils.filterData.data.posts[3].id,
                     'photo',
                     'video',
@@ -76,9 +76,9 @@ describe('Unit: models/post', function () {
                 filter: 'authors:[leslie,pat]+(tag:hash-audio,feature_image:-null)',
                 withRelated: ['authors', 'tags']
             }).then(() => {
-                queries.length.should.eql(2);
-                queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` where (((`posts`.`feature_image` is not null or `posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` where `tags`.`slug` = ?)) and `posts`.`id` in (select `posts_authors`.`post_id` from `posts_authors` inner join `users` as `authors` on `authors`.`id` = `posts_authors`.`author_id` where `authors`.`slug` in (?, ?))) and (`posts`.`type` = ? and `posts`.`status` = ?))');
-                queries[0].bindings.should.eql([
+                assert.equal(queries.length, 2);
+                assert.equal(queries[0].sql, 'select count(distinct posts.id) as aggregate from `posts` where (((`posts`.`feature_image` is not null or `posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` where `tags`.`slug` = ?)) and `posts`.`id` in (select `posts_authors`.`post_id` from `posts_authors` inner join `users` as `authors` on `authors`.`id` = `posts_authors`.`author_id` where `authors`.`slug` in (?, ?))) and (`posts`.`type` = ? and `posts`.`status` = ?))');
+                assert.deepEqual(queries[0].bindings, [
                     'hash-audio',
                     'leslie',
                     'pat',
@@ -86,8 +86,8 @@ describe('Unit: models/post', function () {
                     'published'
                 ]);
 
-                queries[1].sql.should.eql('select `posts`.* from `posts` where (((`posts`.`feature_image` is not null or `posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` where `tags`.`slug` = ?)) and `posts`.`id` in (select `posts_authors`.`post_id` from `posts_authors` inner join `users` as `authors` on `authors`.`id` = `posts_authors`.`author_id` where `authors`.`slug` in (?, ?))) and (`posts`.`type` = ? and `posts`.`status` = ?)) order by (SELECT count(*) FROM posts_authors WHERE post_id = posts.id) DESC, CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
-                queries[1].bindings.should.eql([
+                assert.equal(queries[1].sql, 'select `posts`.* from `posts` where (((`posts`.`feature_image` is not null or `posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` where `tags`.`slug` = ?)) and `posts`.`id` in (select `posts_authors`.`post_id` from `posts_authors` inner join `users` as `authors` on `authors`.`id` = `posts_authors`.`author_id` where `authors`.`slug` in (?, ?))) and (`posts`.`type` = ? and `posts`.`status` = ?)) order by (SELECT count(*) FROM posts_authors WHERE post_id = posts.id) DESC, CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                assert.deepEqual(queries[1].bindings, [
                     'hash-audio',
                     'leslie',
                     'pat',
@@ -112,21 +112,76 @@ describe('Unit: models/post', function () {
                 limit: 5,
                 withRelated: ['tags']
             }).then(() => {
-                queries.length.should.eql(2);
-                queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` where (`posts`.`published_at` > ? and (`posts`.`type` = ? and `posts`.`status` = ?))');
-                queries[0].bindings.should.eql([
+                assert.equal(queries.length, 2);
+                assert.equal(queries[0].sql, 'select count(distinct posts.id) as aggregate from `posts` where (`posts`.`published_at` > ? and (`posts`.`type` = ? and `posts`.`status` = ?))');
+                assert.deepEqual(queries[0].bindings, [
                     '2015-07-20',
                     'post',
                     'published'
                 ]);
 
-                queries[1].sql.should.eql('select `posts`.* from `posts` where (`posts`.`published_at` > ? and (`posts`.`type` = ? and `posts`.`status` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
-                queries[1].bindings.should.eql([
+                assert.equal(queries[1].sql, 'select `posts`.* from `posts` where (`posts`.`published_at` > ? and (`posts`.`type` = ? and `posts`.`status` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                assert.deepEqual(queries[1].bindings, [
                     '2015-07-20',
                     'post',
                     'published',
                     5
                 ]);
+            });
+        });
+
+        it('can fetch a limited page without a pagination count', function () {
+            const queries = [];
+            tracker.install();
+
+            tracker.on('query', (query) => {
+                queries.push(query);
+                query.response([]);
+            });
+
+            return models.Post.findPage({
+                filter: 'published_at:>\'2015-07-20\'',
+                limit: 1,
+                skipPagination: true,
+                withRelated: ['tags']
+            }).then((result) => {
+                assert.equal(queries.length, 1);
+                assert.equal(queries[0].sql, 'select `posts`.* from `posts` where (`posts`.`published_at` > ? and (`posts`.`type` = ? and `posts`.`status` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                assert.deepEqual(queries[0].bindings, [
+                    '2015-07-20',
+                    'post',
+                    'published',
+                    1
+                ]);
+                assert.deepEqual(result.meta, {});
+            });
+        });
+
+        it('clamps pagination inputs when fetching a limited page without a pagination count', function () {
+            const queries = [];
+            tracker.install();
+
+            tracker.on('query', (query) => {
+                queries.push(query);
+                query.response([]);
+            });
+
+            return models.Post.findPage({
+                filter: 'published_at:>\'2015-07-20\'',
+                limit: -5,
+                page: -2,
+                skipPagination: true,
+                withRelated: ['tags']
+            }).then((result) => {
+                assert.equal(queries.length, 1);
+                assert.equal(queries[0].sql, 'select `posts`.* from `posts` where (`posts`.`published_at` > ? and (`posts`.`type` = ? and `posts`.`status` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                assert.deepEqual(queries[0].bindings, [
+                    '2015-07-20',
+                    'post',
+                    'published',
+                    1
+                ]);
+                assert.deepEqual(result.meta, {});
             });
         });
 
@@ -144,17 +199,17 @@ describe('Unit: models/post', function () {
                     filter: 'primary_tag:photo',
                     withRelated: ['tags']
                 }).then(() => {
-                    queries.length.should.eql(2);
-                    queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` where ((`posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` and `posts_tags`.`sort_order` = 0 where `tags`.`slug` = ? and `tags`.`visibility` = ?)) and (`posts`.`type` = ? and `posts`.`status` = ?))');
-                    queries[0].bindings.should.eql([
+                    assert.equal(queries.length, 2);
+                    assert.equal(queries[0].sql, 'select count(distinct posts.id) as aggregate from `posts` where ((`posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` and `posts_tags`.`sort_order` = 0 where `tags`.`slug` = ? and `tags`.`visibility` = ?)) and (`posts`.`type` = ? and `posts`.`status` = ?))');
+                    assert.deepEqual(queries[0].bindings, [
                         'photo',
                         'public',
                         'post',
                         'published'
                     ]);
 
-                    queries[1].sql.should.eql('select `posts`.* from `posts` where ((`posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` and `posts_tags`.`sort_order` = 0 where `tags`.`slug` = ? and `tags`.`visibility` = ?)) and (`posts`.`type` = ? and `posts`.`status` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
-                    queries[1].bindings.should.eql([
+                    assert.equal(queries[1].sql, 'select `posts`.* from `posts` where ((`posts`.`id` in (select `posts_tags`.`post_id` from `posts_tags` inner join `tags` on `tags`.`id` = `posts_tags`.`tag_id` and `posts_tags`.`sort_order` = 0 where `tags`.`slug` = ? and `tags`.`visibility` = ?)) and (`posts`.`type` = ? and `posts`.`status` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                    assert.deepEqual(queries[1].bindings, [
                         'photo',
                         'public',
                         'post',
@@ -177,17 +232,17 @@ describe('Unit: models/post', function () {
                     filter: 'primary_author:leslie',
                     withRelated: ['authors']
                 }).then(() => {
-                    queries.length.should.eql(2);
-                    queries[0].sql.should.eql('select count(distinct posts.id) as aggregate from `posts` where ((`posts`.`id` in (select `posts_authors`.`post_id` from `posts_authors` inner join `users` as `authors` on `authors`.`id` = `posts_authors`.`author_id` and `posts_authors`.`sort_order` = 0 where `authors`.`slug` = ? and `authors`.`visibility` = ?)) and (`posts`.`type` = ? and `posts`.`status` = ?))');
-                    queries[0].bindings.should.eql([
+                    assert.equal(queries.length, 2);
+                    assert.equal(queries[0].sql, 'select count(distinct posts.id) as aggregate from `posts` where ((`posts`.`id` in (select `posts_authors`.`post_id` from `posts_authors` inner join `users` as `authors` on `authors`.`id` = `posts_authors`.`author_id` and `posts_authors`.`sort_order` = 0 where `authors`.`slug` = ? and `authors`.`visibility` = ?)) and (`posts`.`type` = ? and `posts`.`status` = ?))');
+                    assert.deepEqual(queries[0].bindings, [
                         'leslie',
                         'public',
                         'post',
                         'published'
                     ]);
 
-                    queries[1].sql.should.eql('select `posts`.* from `posts` where ((`posts`.`id` in (select `posts_authors`.`post_id` from `posts_authors` inner join `users` as `authors` on `authors`.`id` = `posts_authors`.`author_id` and `posts_authors`.`sort_order` = 0 where `authors`.`slug` = ? and `authors`.`visibility` = ?)) and (`posts`.`type` = ? and `posts`.`status` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
-                    queries[1].bindings.should.eql([
+                    assert.equal(queries[1].sql, 'select `posts`.* from `posts` where ((`posts`.`id` in (select `posts_authors`.`post_id` from `posts_authors` inner join `users` as `authors` on `authors`.`id` = `posts_authors`.`author_id` and `posts_authors`.`sort_order` = 0 where `authors`.`slug` = ? and `authors`.`visibility` = ?)) and (`posts`.`type` = ? and `posts`.`status` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
+                    assert.deepEqual(queries[1].bindings, [
                         'leslie',
                         'public',
                         'post',
@@ -220,10 +275,10 @@ describe('Unit: models/post', function () {
                         }]
                     }
                 }).then(() => {
-                    queries.length.should.eql(1);
+                    assert.equal(queries.length, 1);
 
-                    queries[0].sql.should.eql('select `posts`.* from `posts` where ((`posts`.`status` in (?, ?) and `posts`.`status` = ?) and (`posts`.`type` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC');
-                    queries[0].bindings.should.eql([
+                    assert.equal(queries[0].sql, 'select `posts`.* from `posts` where ((`posts`.`status` in (?, ?) and `posts`.`status` = ?) and (`posts`.`type` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC');
+                    assert.deepEqual(queries[0].bindings, [
                         'published',
                         'draft',
                         'published',
@@ -247,8 +302,8 @@ describe('Unit: models/post', function () {
 
             const json = toJSON(post, {formats: ['mobiledoc']});
 
-            should.not.exist(json.mobiledoc_revisions);
-            should.exist(json.mobiledoc);
+            assert.equal(json.mobiledoc_revisions, undefined);
+            assertExists(json.mobiledoc);
         });
 
         it('ensure post revisions are exposed', function () {
@@ -259,8 +314,8 @@ describe('Unit: models/post', function () {
 
             const json = toJSON(post, {formats: ['lexical']});
 
-            should.exist(json.post_revisions);
-            should.exist(json.lexical);
+            assertExists(json.post_revisions);
+            assertExists(json.lexical);
         });
     });
 
@@ -273,7 +328,7 @@ describe('Unit: models/post', function () {
             };
 
             const filter = new models.Post().extraFilters(options);
-            filter.should.eql('status:published');
+            assert.equal(filter, 'status:published');
         });
     });
 
@@ -291,7 +346,7 @@ describe('Unit: models/post', function () {
 
             const filter = enforcedFilters({}, options);
 
-            filter.should.equal('status:published');
+            assert.equal(filter, 'status:published');
         });
 
         it('returns no status filter for non public context', function () {
@@ -303,7 +358,7 @@ describe('Unit: models/post', function () {
 
             const filter = enforcedFilters({}, options);
 
-            should(filter).equal(null);
+            assert.equal(filter, null);
         });
     });
 
@@ -321,7 +376,7 @@ describe('Unit: models/post', function () {
 
             const filter = defaultFilters({}, options);
 
-            should(filter).equal(null);
+            assert.equal(filter, null);
         });
 
         it('returns type:post filter for public context', function () {
@@ -333,7 +388,7 @@ describe('Unit: models/post', function () {
 
             const filter = defaultFilters({}, options);
 
-            filter.should.equal('type:post');
+            assert.equal(filter, 'type:post');
         });
 
         it('returns type:post+status:published filter for non public context', function () {
@@ -343,7 +398,7 @@ describe('Unit: models/post', function () {
 
             const filter = defaultFilters({}, options);
 
-            filter.should.equal('type:post+status:published');
+            assert.equal(filter, 'type:post+status:published');
         });
     });
 
@@ -355,10 +410,6 @@ describe('Unit: models/post', function () {
 });
 
 describe('Unit: models/post: uses database (@TODO: fix me)', function () {
-    before(function () {
-        models.init();
-    });
-
     beforeEach(function () {
         sinon.stub(security.password, 'hash').resolves('$2a$10$we16f8rpbrFZ34xWj0/ZC.LTPUux8ler7bcdTs5qIleN6srRHhilG');
         sinon.stub(urlService, 'getUrlByResourceId');
@@ -368,14 +419,14 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
         sinon.restore();
     });
 
-    after(function () {
+    afterAll(function () {
         sinon.restore();
     });
 
     describe('Permissible', function () {
         describe('As Contributor', function () {
             describe('Editing', function () {
-                it('rejects if changing status', function (done) {
+                it('rejects if changing status', async function () {
                     const mockPostObj = {
                         get: sinon.stub(),
                         related: sinon.stub()
@@ -386,26 +437,24 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     mockPostObj.get.withArgs('status').returns('draft');
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
 
-                    models.Post.permissible(
-                        mockPostObj,
-                        'edit',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.contributor,
-                        false,
-                        false,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.called).be.false();
-                        should(mockPostObj.related.calledOnce).be.true();
-                        done();
-                    });
+                    await assert.rejects(
+                        async () => {
+                            await models.Post.permissible(
+                                mockPostObj,
+                                'edit',
+                                context,
+                                unsafeAttrs,
+                                testUtils.permissions.contributor,
+                                true,
+                                true,
+                                false
+                            );
+                        },
+                        errors.NoPermissionError
+                    );
                 });
 
-                it('rejects if changing visibility', function (done) {
+                it('rejects if changing visibility', async function () {
                     const mockPostObj = {
                         get: sinon.stub(),
                         related: sinon.stub()
@@ -416,26 +465,22 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     mockPostObj.get.withArgs('visibility').returns('paid');
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
 
-                    models.Post.permissible(
-                        mockPostObj,
-                        'edit',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.contributor,
-                        false,
-                        false,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.called).be.false();
-                        should(mockPostObj.related.calledOnce).be.true();
-                        done();
-                    });
+                    await assert.rejects(
+                        models.Post.permissible(
+                            mockPostObj,
+                            'edit',
+                            context,
+                            unsafeAttrs,
+                            testUtils.permissions.contributor,
+                            true,
+                            true,
+                            false
+                        ),
+                        errors.NoPermissionError
+                    );
                 });
 
-                it('rejects if changing authors.0', function (done) {
+                it('rejects if changing authors.0', async function () {
                     const mockPostObj = {
                         get: sinon.stub(),
                         related: sinon.stub()
@@ -445,26 +490,24 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
 
-                    models.Post.permissible(
-                        mockPostObj,
-                        'edit',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.contributor,
-                        false,
-                        true,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.called).be.false();
-                        should(mockPostObj.related.calledTwice).be.false();
-                        done();
-                    });
+                    await assert.rejects(
+                        models.Post.permissible(
+                            mockPostObj,
+                            'edit',
+                            context,
+                            unsafeAttrs,
+                            testUtils.permissions.contributor,
+                            true,
+                            true,
+                            false
+                        ),
+                        errors.NoPermissionError
+                    );
+                    sinon.assert.notCalled(mockPostObj.get);
+                    assert.equal(mockPostObj.related.calledTwice, false);
                 });
 
-                it('ignores if changes authors.1', function (done) {
+                it('ignores if changes authors.1', async function () {
                     const mockPostObj = {
                         get: sinon.stub(),
                         related: sinon.stub()
@@ -475,25 +518,23 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
                     mockPostObj.get.withArgs('status').returns('draft');
 
-                    models.Post.permissible(
+                    const result = await models.Post.permissible(
                         mockPostObj,
                         'edit',
                         context,
                         unsafeAttrs,
                         testUtils.permissions.contributor,
-                        false,
                         true,
-                        true
-                    ).then((result) => {
-                        should.exist(result);
-                        should(result.excludedAttrs).deepEqual(['authors', 'tags']);
-                        should(mockPostObj.get.callCount).eql(2);
-                        should(mockPostObj.related.callCount).eql(2);
-                        done();
-                    }).catch(done);
+                        true,
+                        false
+                    );
+                    assertExists(result);
+                    assert.deepEqual(result.excludedAttrs, ['authors', 'tags']);
+                    sinon.assert.calledTwice(mockPostObj.get);
+                    sinon.assert.calledTwice(mockPostObj.related);
                 });
 
-                it('rejects if post is not draft', function (done) {
+                it('rejects if post is not draft', async function () {
                     const mockPostObj = {
                         get: sinon.stub(),
                         related: sinon.stub()
@@ -504,26 +545,24 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     mockPostObj.get.withArgs('status').returns('published');
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
 
-                    models.Post.permissible(
-                        mockPostObj,
-                        'edit',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.contributor,
-                        false,
-                        true,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.callCount).eql(2);
-                        should(mockPostObj.related.callCount).eql(1);
-                        done();
-                    });
+                    await assert.rejects(
+                        models.Post.permissible(
+                            mockPostObj,
+                            'edit',
+                            context,
+                            unsafeAttrs,
+                            testUtils.permissions.contributor,
+                            true,
+                            true,
+                            false
+                        ),
+                        errors.NoPermissionError
+                    );
+                    sinon.assert.calledTwice(mockPostObj.get);
+                    sinon.assert.calledOnce(mockPostObj.related);
                 });
 
-                it('rejects if contributor is not author of post', function (done) {
+                it('rejects if contributor is not author of post', async function () {
                     const mockPostObj = {
                         get: sinon.stub(),
                         related: sinon.stub()
@@ -533,22 +572,20 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
 
-                    models.Post.permissible(
-                        mockPostObj,
-                        'edit',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.contributor,
-                        false,
-                        true,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.related.callCount).eql(1);
-                        done();
-                    });
+                    await assert.rejects(
+                        models.Post.permissible(
+                            mockPostObj,
+                            'edit',
+                            context,
+                            unsafeAttrs,
+                            testUtils.permissions.contributor,
+                            true,
+                            true,
+                            false
+                        ),
+                        errors.NoPermissionError
+                    );
+                    sinon.assert.calledOnce(mockPostObj.related);
                 });
 
                 it('resolves if none of the above cases are true', function () {
@@ -568,121 +605,113 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         context,
                         unsafeAttrs,
                         testUtils.permissions.contributor,
-                        false,
                         true,
-                        true
+                        true,
+                        false
                     ).then((result) => {
-                        should.exist(result);
-                        should(result.excludedAttrs).deepEqual(['authors', 'tags']);
-                        should(mockPostObj.get.callCount).eql(2);
-                        should(mockPostObj.related.callCount).eql(1);
+                        assertExists(result);
+                        assert.deepEqual(result.excludedAttrs, ['authors', 'tags']);
+                        sinon.assert.calledTwice(mockPostObj.get);
+                        sinon.assert.calledOnce(mockPostObj.related);
                     });
                 });
             });
 
             describe('Adding', function () {
-                it('rejects if "published" status', function (done) {
+                it('rejects if "published" status', async function () {
                     const mockPostObj = {
                         get: sinon.stub()
                     };
                     const context = {user: 1};
                     const unsafeAttrs = {status: 'published', authors: [{id: 1}]};
 
-                    models.Post.permissible(
-                        mockPostObj,
-                        'add',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.contributor,
-                        false,
-                        true,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.called).be.false();
-                        done();
-                    });
+                    await assert.rejects(
+                        models.Post.permissible(
+                            mockPostObj,
+                            'add',
+                            context,
+                            unsafeAttrs,
+                            testUtils.permissions.contributor,
+                            true,
+                            true,
+                            true
+                        ),
+                        errors.NoPermissionError
+                    );
+                    sinon.assert.notCalled(mockPostObj.get);
                 });
 
-                it('rejects if different author id', function (done) {
+                it('rejects if different author id', async function () {
                     const mockPostObj = {
                         get: sinon.stub()
                     };
                     const context = {user: 1};
                     const unsafeAttrs = {status: 'draft', authors: [{id: 2}]};
 
-                    models.Post.permissible(
-                        mockPostObj,
-                        'add',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.contributor,
-                        false,
-                        true,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.called).be.false();
-                        done();
-                    });
+                    await assert.rejects(
+                        models.Post.permissible(
+                            mockPostObj,
+                            'add',
+                            context,
+                            unsafeAttrs,
+                            testUtils.permissions.contributor,
+                            true,
+                            true,
+                            true
+                        ),
+                        errors.NoPermissionError
+                    );
+                    sinon.assert.notCalled(mockPostObj.get);
                 });
 
-                it('rejects if different logged in user and `authors.0`', function (done) {
+                it('rejects if different logged in user and `authors.0`', async function () {
                     const mockPostObj = {
                         get: sinon.stub()
                     };
                     const context = {user: 1};
                     const unsafeAttrs = {status: 'draft', authors: [{id: 2}]};
 
-                    models.Post.permissible(
-                        mockPostObj,
-                        'add',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.contributor,
-                        false,
-                        true,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.called).be.false();
-                        done();
-                    });
+                    await assert.rejects(
+                        models.Post.permissible(
+                            mockPostObj,
+                            'add',
+                            context,
+                            unsafeAttrs,
+                            testUtils.permissions.contributor,
+                            true,
+                            true,
+                            true
+                        ),
+                        errors.NoPermissionError
+                    );
+                    sinon.assert.notCalled(mockPostObj.get);
                 });
 
-                it('resolves if same logged in user and `authors.0`', function (done) {
+                it('resolves if same logged in user and `authors.0`', async function () {
                     const mockPostObj = {
                         get: sinon.stub()
                     };
                     const context = {user: 1};
                     const unsafeAttrs = {status: 'draft', authors: [{id: 1}]};
 
-                    models.Post.permissible(
+                    const result = await models.Post.permissible(
                         mockPostObj,
                         'add',
                         context,
                         unsafeAttrs,
                         testUtils.permissions.contributor,
-                        false,
+                        true,
                         true,
                         true
-                    ).then((result) => {
-                        should.exist(result);
-                        should(result.excludedAttrs).deepEqual(['authors', 'tags']);
-                        should(mockPostObj.get.called).be.false();
-                        done();
-                    }).catch(done);
+                    );
+                    assertExists(result);
+                    assert.deepEqual(result.excludedAttrs, ['authors', 'tags']);
+                    sinon.assert.notCalled(mockPostObj.get);
                 });
             });
 
             describe('Destroying', function () {
-                it('rejects if destroying another author\'s post', function (done) {
+                it('rejects if destroying another author\'s post', async function () {
                     const mockPostObj = {
                         get: sinon.stub(),
                         related: sinon.stub()
@@ -691,26 +720,24 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
 
-                    models.Post.permissible(
-                        mockPostObj,
-                        'destroy',
-                        context,
-                        {},
-                        testUtils.permissions.contributor,
-                        false,
-                        true,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.calledOnce).be.true();
-                        should(mockPostObj.related.calledOnce).be.true();
-                        done();
-                    });
+                    await assert.rejects(
+                        models.Post.permissible(
+                            mockPostObj,
+                            'destroy',
+                            context,
+                            {},
+                            testUtils.permissions.contributor,
+                            true,
+                            true,
+                            true
+                        ),
+                        errors.NoPermissionError
+                    );
+                    sinon.assert.calledOnce(mockPostObj.get);
+                    sinon.assert.calledOnce(mockPostObj.related);
                 });
 
-                it('rejects if destroying a published post', function (done) {
+                it('rejects if destroying a published post', async function () {
                     const mockPostObj = {
                         get: sinon.stub(),
                         related: sinon.stub()
@@ -720,23 +747,21 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
                     mockPostObj.get.withArgs('status').returns('published');
 
-                    models.Post.permissible(
-                        mockPostObj,
-                        'destroy',
-                        context,
-                        {},
-                        testUtils.permissions.contributor,
-                        false,
-                        true,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.calledOnce).be.true();
-                        should(mockPostObj.related.calledOnce).be.true();
-                        done();
-                    });
+                    await assert.rejects(
+                        models.Post.permissible(
+                            mockPostObj,
+                            'destroy',
+                            context,
+                            {},
+                            testUtils.permissions.contributor,
+                            true,
+                            true,
+                            true
+                        ),
+                        errors.NoPermissionError
+                    );
+                    sinon.assert.calledOnce(mockPostObj.get);
+                    sinon.assert.calledOnce(mockPostObj.related);
                 });
 
                 it('resolves if none of the above cases are true', function () {
@@ -755,14 +780,14 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         context,
                         {},
                         testUtils.permissions.contributor,
-                        false,
+                        true,
                         true,
                         true
                     ).then((result) => {
-                        should.exist(result);
-                        should(result.excludedAttrs).deepEqual(['authors', 'tags']);
-                        should(mockPostObj.get.calledOnce).be.true();
-                        should(mockPostObj.related.calledOnce).be.true();
+                        assertExists(result);
+                        assert.deepEqual(result.excludedAttrs, ['authors', 'tags']);
+                        sinon.assert.calledOnce(mockPostObj.get);
+                        sinon.assert.calledOnce(mockPostObj.related);
                     });
                 });
             });
@@ -770,7 +795,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
         describe('As Author', function () {
             describe('Editing', function () {
-                it('rejects if editing another\'s post', function (done) {
+                it('rejects if editing another\'s post', async function () {
                     const mockPostObj = {
                         get: sinon.stub(),
                         related: sinon.stub()
@@ -780,26 +805,24 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 2}]});
 
-                    models.Post.permissible(
-                        mockPostObj,
-                        'edit',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.author,
-                        false,
-                        true,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.called).be.false();
-                        should(mockPostObj.related.calledOnce).be.true();
-                        done();
-                    });
+                    await assert.rejects(
+                        models.Post.permissible(
+                            mockPostObj,
+                            'edit',
+                            context,
+                            unsafeAttrs,
+                            testUtils.permissions.author,
+                            false,
+                            true,
+                            true
+                        ),
+                        errors.NoPermissionError
+                    );
+                    sinon.assert.notCalled(mockPostObj.get);
+                    sinon.assert.calledOnce(mockPostObj.related);
                 });
 
-                it('rejects if changing visibility', function (done) {
+                it('rejects if changing visibility', async function () {
                     const mockPostObj = {
                         get: sinon.stub(),
                         related: sinon.stub()
@@ -810,26 +833,24 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     mockPostObj.get.withArgs('visibility').returns('paid');
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
 
-                    models.Post.permissible(
-                        mockPostObj,
-                        'edit',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.author,
-                        false,
-                        false,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.called).be.false();
-                        should(mockPostObj.related.calledOnce).be.true();
-                        done();
-                    });
+                    await assert.rejects(
+                        models.Post.permissible(
+                            mockPostObj,
+                            'edit',
+                            context,
+                            unsafeAttrs,
+                            testUtils.permissions.author,
+                            false,
+                            false,
+                            true
+                        ),
+                        errors.NoPermissionError
+                    );
+                    sinon.assert.notCalled(mockPostObj.get);
+                    sinon.assert.calledOnce(mockPostObj.related);
                 });
 
-                it('rejects if editing another\'s post (using `authors`)', function (done) {
+                it('rejects if editing another\'s post (using `authors`)', async function () {
                     const mockPostObj = {
                         get: sinon.stub(),
                         related: sinon.stub()
@@ -839,26 +860,24 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
 
-                    models.Post.permissible(
-                        mockPostObj,
-                        'edit',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.author,
-                        false,
-                        true,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.called).be.false();
-                        should(mockPostObj.related.calledTwice).be.true();
-                        done();
-                    });
+                    await assert.rejects(
+                        models.Post.permissible(
+                            mockPostObj,
+                            'edit',
+                            context,
+                            unsafeAttrs,
+                            testUtils.permissions.author,
+                            false,
+                            true,
+                            true
+                        ),
+                        errors.NoPermissionError
+                    );
+                    sinon.assert.notCalled(mockPostObj.get);
+                    sinon.assert.calledTwice(mockPostObj.related);
                 });
 
-                it('rejects if changing authors', function (done) {
+                it('rejects if changing authors', async function () {
                     const mockPostObj = {
                         get: sinon.stub(),
                         related: sinon.stub()
@@ -868,77 +887,21 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
 
-                    models.Post.permissible(
-                        mockPostObj,
-                        'edit',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.author,
-                        false,
-                        true,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.called).be.false();
-                        should(mockPostObj.related.calledTwice).be.true();
-                        done();
-                    });
-                });
-
-                it('rejects if changing authors', function (done) {
-                    const mockPostObj = {
-                        related: sinon.stub()
-                    };
-                    const context = {user: 1};
-                    const unsafeAttrs = {authors: [{id: 2}]};
-
-                    mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
-
-                    models.Post.permissible(
-                        mockPostObj,
-                        'edit',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.author,
-                        false,
-                        true,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.related.calledTwice).be.true();
-                        done();
-                    });
-                });
-
-                it('rejects if changing authors', function (done) {
-                    const mockPostObj = {
-                        related: sinon.stub()
-                    };
-                    const context = {user: 1};
-                    const unsafeAttrs = {authors: [{id: 2}]};
-
-                    mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
-
-                    models.Post.permissible(
-                        mockPostObj,
-                        'edit',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.author,
-                        false,
-                        true,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        mockPostObj.related.callCount.should.eql(2);
-                        done();
-                    });
+                    await assert.rejects(
+                        models.Post.permissible(
+                            mockPostObj,
+                            'edit',
+                            context,
+                            unsafeAttrs,
+                            testUtils.permissions.author,
+                            false,
+                            true,
+                            true
+                        ),
+                        errors.NoPermissionError
+                    );
+                    sinon.assert.notCalled(mockPostObj.get);
+                    sinon.assert.calledTwice(mockPostObj.related);
                 });
 
                 it('resolves if none of the above cases are true', function () {
@@ -960,38 +923,36 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                         true,
                         true
                     ).then(() => {
-                        should(mockPostObj.related.calledOnce).be.true();
+                        sinon.assert.calledOnce(mockPostObj.related);
                     });
                 });
             });
 
             describe('Adding', function () {
-                it('rejects if different author id', function (done) {
+                it('rejects if different author id', async function () {
                     const mockPostObj = {
                         get: sinon.stub()
                     };
                     const context = {user: 1};
                     const unsafeAttrs = {authors: [{id: 2}]};
 
-                    models.Post.permissible(
-                        mockPostObj,
-                        'add',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.author,
-                        false,
-                        true,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.called).be.false();
-                        done();
-                    });
+                    await assert.rejects(
+                        models.Post.permissible(
+                            mockPostObj,
+                            'add',
+                            context,
+                            unsafeAttrs,
+                            testUtils.permissions.author,
+                            false,
+                            true,
+                            true
+                        ),
+                        errors.NoPermissionError
+                    );
+                    sinon.assert.notCalled(mockPostObj.get);
                 });
 
-                it('rejects if different authors', function (done) {
+                it('rejects if different authors', async function () {
                     const mockPostObj = {
                         get: sinon.stub(),
                         related: sinon.stub()
@@ -1001,28 +962,26 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
                     mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
 
-                    models.Post.permissible(
-                        mockPostObj,
-                        'add',
-                        context,
-                        unsafeAttrs,
-                        testUtils.permissions.author,
-                        false,
-                        true,
-                        true
-                    ).then(() => {
-                        done(new Error('Permissible function should have rejected.'));
-                    }).catch((error) => {
-                        error.should.be.an.instanceof(errors.NoPermissionError);
-                        should(mockPostObj.get.called).be.false();
-                        done();
-                    });
+                    await assert.rejects(
+                        models.Post.permissible(
+                            mockPostObj,
+                            'add',
+                            context,
+                            unsafeAttrs,
+                            testUtils.permissions.author,
+                            false,
+                            true,
+                            true
+                        ),
+                        errors.NoPermissionError
+                    );
+                    sinon.assert.notCalled(mockPostObj.get);
                 });
             });
         });
 
         describe('Everyone Else', function () {
-            it('rejects if hasUserPermissions is false and not current owner', function (done) {
+            it('rejects if hasUserPermissions is false and not current owner', async function () {
                 const mockPostObj = {
                     get: sinon.stub(),
                     related: sinon.stub()
@@ -1032,23 +991,21 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
 
                 mockPostObj.related.withArgs('authors').returns({models: [{id: 2}]});
 
-                models.Post.permissible(
-                    mockPostObj,
-                    'edit',
-                    context,
-                    unsafeAttrs,
-                    testUtils.permissions.editor,
-                    false,
-                    true,
-                    true
-                ).then(() => {
-                    done(new Error('Permissible function should have rejected.'));
-                }).catch((error) => {
-                    error.should.be.an.instanceof(errors.NoPermissionError);
-                    should(mockPostObj.get.called).be.false();
-                    should(mockPostObj.related.calledOnce).be.true();
-                    done();
-                });
+                await assert.rejects(
+                    models.Post.permissible(
+                        mockPostObj,
+                        'edit',
+                        context,
+                        unsafeAttrs,
+                        testUtils.permissions.editor,
+                        false,
+                        true,
+                        true
+                    ),
+                    errors.NoPermissionError
+                );
+                sinon.assert.notCalled(mockPostObj.get);
+                sinon.assert.calledOnce(mockPostObj.related);
             });
 
             it('resolves if hasUserPermission is true', function () {
@@ -1068,11 +1025,11 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     true,
                     true
                 ).then(() => {
-                    should(mockPostObj.get.called).be.false();
+                    sinon.assert.notCalled(mockPostObj.get);
                 });
             });
 
-            it('resolves if changing visibility as owner', function (done) {
+            it('resolves if changing visibility as owner', async function () {
                 const mockPostObj = {
                     get: sinon.stub(),
                     related: sinon.stub()
@@ -1083,7 +1040,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                 mockPostObj.get.withArgs('visibility').returns('paid');
                 mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
 
-                models.Post.permissible(
+                await models.Post.permissible(
                     mockPostObj,
                     'edit',
                     context,
@@ -1092,16 +1049,12 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     false,
                     true,
                     true
-                ).then(() => {
-                    should(mockPostObj.get.called).be.false();
-                    should(mockPostObj.related.calledOnce).be.true();
-                    done();
-                }).catch(() => {
-                    done(new Error('Permissible function should have passed for owner.'));
-                });
+                );
+                sinon.assert.notCalled(mockPostObj.get);
+                sinon.assert.calledOnce(mockPostObj.related);
             });
 
-            it('resolves if changing visibility as administrator', function (done) {
+            it('resolves if changing visibility as administrator', async function () {
                 const mockPostObj = {
                     get: sinon.stub(),
                     related: sinon.stub()
@@ -1112,7 +1065,7 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                 mockPostObj.get.withArgs('visibility').returns('paid');
                 mockPostObj.related.withArgs('authors').returns({models: [{id: 1}]});
 
-                models.Post.permissible(
+                await models.Post.permissible(
                     mockPostObj,
                     'edit',
                     context,
@@ -1121,13 +1074,9 @@ describe('Unit: models/post: uses database (@TODO: fix me)', function () {
                     false,
                     true,
                     true
-                ).then(() => {
-                    should(mockPostObj.get.called).be.false();
-                    should(mockPostObj.related.calledOnce).be.true();
-                    done();
-                }).catch(() => {
-                    done(new Error('Permissible function should have passed for administrator.'));
-                });
+                );
+                sinon.assert.notCalled(mockPostObj.get);
+                sinon.assert.calledOnce(mockPostObj.related);
             });
         });
     });

@@ -29,6 +29,27 @@
     background: var(--whitegrey-l2);
 }
 
+.user-list-item-figure {
+    position: relative;
+    display: block;
+    width: 36px;
+    height: 36px;
+    margin-right: 12px;
+    margin-left: 3px;
+    background-position: center center;
+    background-size: cover;
+    border-radius: 100%;
+}
+
+.user-list-item-figure img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+}
+
 .gh-post-history .user-list-item-figure {
     width: 2.8rem;
     height: 2.8rem;
@@ -136,11 +157,11 @@
     align-items: center;
     height: 80px;
     margin-bottom: -24px;
-    padding: var(--main-layout-area-padding);
+    padding: 32px;
     background: var(--white);
 }
 
-.gh-post-history-footer .for-switch.x-small {
+.gh-post-history-footer .for-switch.xs {
     width: 100%;
 }
 
@@ -153,7 +174,7 @@
     font-weight: 500;
 }
 
-.gh-post-history-footer .for-switch.x-small label {
+.gh-post-history-footer .for-switch.xs label {
     width: inherit !important;
     height: inherit !important;
 }
@@ -175,6 +196,23 @@
     color: var(--black);
 }
 
+.gh-post-history .gh-editor-excerpt {
+    max-width: 740px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.gh-post-history .gh-editor-title-divider {
+    width: 100%;
+    max-width: 740px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 .gh-post-history-hidden-lexical {
     display: none;
+}
+
+.gh-post-history .gh-editor-feature-image p {
+    margin: 0 0 1.2rem;
 }

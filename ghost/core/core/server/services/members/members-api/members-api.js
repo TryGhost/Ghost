@@ -1,0 +1,485 @@
+const {Router} = require('express');
+const body = require('body-parser');
+const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
+
+const PaymentsService = require('./services/payments-service');
+const TokenService = require('./services/token-service');
+const GeolocationService = require('./services/geolocation-service');
+const MemberBREADService = require('./services/member-bread-service');
+const MemberRepository = require('./repositories/member-repository');
+const NextPaymentCalculator = require('./services/next-payment-calculator');
+
+const EventRepository = require('./repositories/event-repository');
+const ProductRepository = require('./repositories/product-repository');
+const RouterController = require('./controllers/router-controller');
+const MemberController = require('./controllers/member-controller');
+const WellKnownController = require('./controllers/well-known-controller');
+
+const {EmailSuppressedEvent} = require('../../email-suppression-list/email-suppression-list');
+const MagicLink = require('../../lib/magic-link/magic-link');
+const DomainEvents = require('@tryghost/domain-events');
+const automationsApi = require('../../automations/automations-api');
+
+module.exports = function MembersAPI({
+    tokenConfig: {
+        issuer,
+        privateKey,
+        publicKey
+    },
+    auth: {
+        allowSelfSignup = () => true,
+        getSigninURL,
+        tokenProvider
+    },
+    mail: {
+        transporter,
+        getText,
+        getHTML,
+        getSubject
+    },
+    models: {
+        DonationPaymentEvent,
+        EmailRecipient,
+        StripeCustomer,
+        StripeCustomerSubscription,
+        Member,
+        MemberNewsletter,
+        MemberCancelEvent,
+        MemberSubscribeEvent,
+        MemberLoginEvent,
+        MemberPaidSubscriptionEvent,
+        MemberPaymentEvent,
+        MemberStatusEvent,
+        MemberProductEvent,
+        MemberEmailChangeEvent,
+        MemberCreatedEvent,
+        SubscriptionCreatedEvent,
+        MemberLinkClickEvent,
+        EmailSpamComplaintEvent,
+        Offer,
+        OfferRedemption,
+        StripeProduct,
+        StripePrice,
+        Product,
+        Settings,
+        Comment,
+        MemberFeedback,
+        Outbox,
+        Automation,
+        WelcomeEmailAutomationRun,
+        AutomatedEmailRecipient,
+        Gift
+    },
+    tiersService,
+    stripeAPIService,
+    offersAPI,
+    labsService,
+    newslettersService,
+    memberAttributionService,
+    emailSuppressionList,
+    settingsCache,
+    sentry,
+    settingsHelpers,
+    urlUtils,
+    commentsService,
+    emailAddressService,
+    giftService
+}) {
+    const tokenService = new TokenService({
+        privateKey,
+        publicKey,
+        issuer
+    });
+
+    const productRepository = new ProductRepository({
+        Product,
+        Settings,
+        StripeProduct,
+        StripePrice,
+        stripeAPIService
+    });
+
+    const memberRepository = new MemberRepository({
+        stripeAPIService,
+        tokenService,
+        newslettersService,
+        productRepository,
+        automationsApi,
+        Automation,
+        WelcomeEmailAutomationRun,
+        Member,
+        MemberNewsletter,
+        MemberCancelEvent,
+        MemberSubscribeEventModel: MemberSubscribeEvent,
+        MemberPaidSubscriptionEvent,
+        MemberEmailChangeEvent,
+        MemberStatusEvent,
+        MemberProductEvent,
+        OfferRedemption,
+        StripeCustomer,
+        StripeCustomerSubscription,
+        Outbox,
+        offersAPI
+    });
+
+    const eventRepository = new EventRepository({
+        DonationPaymentEvent,
+        EmailRecipient,
+        MemberSubscribeEvent,
+        MemberPaidSubscriptionEvent,
+        MemberPaymentEvent,
+        MemberStatusEvent,
+        MemberLoginEvent,
+        MemberCreatedEvent,
+        SubscriptionCreatedEvent,
+        MemberLinkClickEvent,
+        MemberFeedback,
+        EmailSpamComplaintEvent,
+        Comment,
+        labsService,
+        memberAttributionService,
+        MemberEmailChangeEvent,
+        AutomatedEmailRecipient,
+        Gift
+    });
+
+    const nextPaymentCalculator = new NextPaymentCalculator();
+
+    const memberBREADService = new MemberBREADService({
+        offersAPI,
+        memberRepository,
+        emailService: {
+            async sendEmailWithMagicLink({email, requestedType}) {
+                return sendEmailWithMagicLink({
+                    email,
+                    requestedType,
+                    options: {
+                        forceEmailType: true
+                    }
+                });
+            }
+        },
+        labsService,
+        stripeService: stripeAPIService,
+        memberAttributionService,
+        emailSuppressionList,
+        settingsHelpers,
+        nextPaymentCalculator,
+        commentsService,
+        giftService
+    });
+
+    const geolocationService = new GeolocationService();
+
+    const magicLinkService = new MagicLink({
+        transporter,
+        tokenProvider,
+        getSigninURL,
+        getText,
+        getHTML,
+        getSubject,
+        sentry,
+        labsService
+    });
+
+    const paymentsService = new PaymentsService({
+        StripeProduct,
+        StripePrice,
+        StripeCustomer,
+        Offer,
+        offersAPI,
+        stripeAPIService,
+        settingsCache,
+        giftService
+    });
+
+    const memberController = new MemberController({
+        memberRepository,
+        productRepository,
+        paymentsService,
+        tiersService,
+        StripePrice,
+        tokenService,
+        sendEmailWithMagicLink,
+        settingsCache
+    });
+
+    const routerController = new RouterController({
+        offersAPI,
+        paymentsService,
+        tiersService,
+        memberRepository,
+        StripePrice,
+        allowSelfSignup,
+        magicLinkService,
+        stripeAPIService,
+        tokenService,
+        sendEmailWithMagicLink,
+        memberAttributionService,
+        labsService,
+        newslettersService,
+        settingsCache,
+        settingsHelpers,
+        sentry,
+        urlUtils,
+        emailAddressService,
+        giftService
+    });
+
+    const wellKnownController = new WellKnownController({
+        tokenService
+    });
+
+    const users = memberRepository;
+
+    async function sendEmailWithMagicLink({email, requestedType, tokenData, options = {forceEmailType: false}, referrer = null, includeOTC = false}) {
+        let type = requestedType;
+        if (!options.forceEmailType) {
+            const member = await users.get({email});
+            if (member) {
+                type = 'signin';
+            } else if (type !== 'subscribe') {
+                type = 'signup';
+            }
+        }
+        return magicLinkService.sendMagicLink({email, type, tokenData: Object.assign({email, type}, tokenData), referrer, includeOTC});
+    }
+
+    /**
+     *
+     * @param {string} email
+     * @param {'signin'|'signup'} type When you specify 'signin' this will prevent the creation of a new member if no member is found with the provided email
+     * @param {*} [tokenData] Optional token data to add to the token
+     * @returns
+     */
+    function getMagicLink(email, type, tokenData = {}) {
+        return magicLinkService.getMagicLink({
+            tokenData: {email, ...tokenData},
+            type
+        });
+    }
+
+    async function getTokenDataFromMagicLinkToken(token, otcVerification) {
+        return await magicLinkService.getDataFromToken(token, otcVerification);
+    }
+
+    async function getMemberDataFromMagicLinkToken(token, otcVerification) {
+        const {email, labels = [], name = '', oldEmail, newsletters, attribution, reqIp, type, giftToken} = await getTokenDataFromMagicLinkToken(token, otcVerification);
+        if (!email) {
+            return null;
+        }
+
+        let member = oldEmail ? await getMemberIdentityData(oldEmail) : await getMemberIdentityData(email);
+
+        if (member) {
+            if (oldEmail && (!type || type === 'updateEmail')) {
+                // user exists but wants to change their email address
+                await users.update({email}, {id: member.id});
+                await MemberLoginEvent.add({member_id: member.id});
+                return getMemberIdentityData(email);
+            }
+
+            if (giftToken) {
+                await giftService.service.redeem(giftToken, member.id);
+            }
+
+            await MemberLoginEvent.add({member_id: member.id});
+            return getMemberIdentityData(member.email);
+        }
+
+        // Note: old tokens can still have a missing type (we can remove this after a couple of weeks)
+        if (type && !['signup', 'subscribe'].includes(type)) {
+            // Don't allow sign up
+            // Note that we use the type from inside the magic token so this behaviour can't be changed
+            return null;
+        }
+
+        let geolocation;
+        if (reqIp) {
+            try {
+                geolocation = JSON.stringify(await geolocationService.getGeolocationFromIP(reqIp));
+            } catch (err) {
+                logging.warn(err);
+                // no-op, we don't want to stop anything working due to
+                // geolocation lookup failing
+            }
+        }
+
+        let newMember;
+
+        if (giftToken) {
+            newMember = await Member.transaction(async (transacting) => {
+                const created = await users.create(
+                    {name, email, labels, newsletters, attribution, geolocation, status: 'gift'},
+                    {transacting}
+                );
+                await giftService.service.redeem(giftToken, created.id, {transacting, newMember: true});
+                return created;
+            });
+        } else {
+            newMember = await users.create({name, email, labels, newsletters, attribution, geolocation});
+        }
+
+        await MemberLoginEvent.add({member_id: newMember.id});
+        return getMemberIdentityData(email);
+    }
+
+    async function getMemberIdentityData(email) {
+        return memberBREADService.read({email});
+    }
+
+    async function getMemberIdentityDataFromTransientId(transientId) {
+        return memberBREADService.read({transient_id: transientId});
+    }
+
+    async function cycleTransientId(memberId) {
+        await users.cycleTransientId({id: memberId});
+    }
+
+    async function getMemberIdentityToken(transientId) {
+        const member = await getMemberIdentityDataFromTransientId(transientId);
+        if (!member) {
+            return null;
+        }
+        return tokenService.encodeIdentityToken({sub: member.email});
+    }
+
+    async function getMemberEntitlementToken(transientId) {
+        const member = await getMemberIdentityDataFromTransientId(transientId);
+        if (!member) {
+            return null;
+        }
+
+        const activeTierIds = [...new Set((member.subscriptions || [])
+            .filter(sub => users.isActiveSubscriptionStatus(sub.status))
+            .map(sub => sub?.tier?.id)
+            .filter(Boolean))];
+
+        return tokenService.encodeEntitlementToken({
+            sub: member.email,
+            memberUuid: member.uuid,
+            paid: member.status !== 'free',
+            activeTierIds
+        });
+    }
+
+    async function setMemberGeolocationFromIp(email, ip) {
+        if (!email || !ip) {
+            throw new errors.IncorrectUsageError({
+                message: 'setMemberGeolocationFromIp() expects email and ip arguments to be present'
+            });
+        }
+
+        // toJSON() is needed here otherwise users.update() will pick methods off
+        // the model object rather than data and fail to edit correctly
+        const member = (await users.get({email})).toJSON();
+
+        if (!member) {
+            throw new errors.NotFoundError({
+                message: `Member with email address ${email} does not exist`
+            });
+        }
+
+        // max request time is 500ms so shouldn't slow requests down too much
+        let geolocation = JSON.stringify(await geolocationService.getGeolocationFromIP(ip));
+        if (geolocation) {
+            await users.update({geolocation}, {id: member.id});
+        }
+
+        return getMemberIdentityData(email);
+    }
+
+    const forwardError = fn => async function forwardErrorMw(req, res, next) {
+        try {
+            await fn(req, res, next);
+        } catch (err) {
+            next(err);
+        }
+    };
+
+    const middleware = {
+        sendMagicLink: Router().use(
+            body.json(),
+            forwardError((req, res) => routerController.sendMagicLink(req, res))
+        ),
+        verifyOTC: Router().use(
+            body.json(),
+            forwardError((req, res) => routerController.verifyOTC(req, res))
+        ),
+        createCheckoutSession: Router().use(
+            body.json(),
+            forwardError((req, res) => routerController.createCheckoutSession(req, res))
+        ),
+        createCheckoutSetupSession: Router().use(
+            body.json(),
+            forwardError((req, res) => routerController.createCheckoutSetupSession(req, res))
+        ),
+        createBillingPortalSession: Router().use(
+            body.json(),
+            forwardError((req, res) => routerController.createBillingPortalSession(req, res))
+        ),
+        updateEmailAddress: Router().use(
+            body.json(),
+            forwardError((req, res) => memberController.updateEmailAddress(req, res))
+        ),
+        updateSubscription: Router({mergeParams: true}).use(
+            body.json(),
+            forwardError((req, res) => memberController.updateSubscription(req, res))
+        ),
+        applyOfferToSubscription: Router({mergeParams: true}).use(
+            body.json(),
+            forwardError((req, res) => memberController.applyOfferToSubscription(req, res))
+        ),
+        getMemberOffers: Router().use(
+            body.json(),
+            forwardError((req, res) => routerController.getMemberOffers(req, res))
+        ),
+        wellKnown: Router()
+            .get('/jwks.json',
+                (req, res) => wellKnownController.getPublicKeys(req, res)
+            )
+    };
+
+    const getPublicConfig = function () {
+        return Promise.resolve({
+            publicKey,
+            issuer
+        });
+    };
+
+    const bus = new (require('events').EventEmitter)();
+
+    bus.emit('ready');
+
+    DomainEvents.subscribe(EmailSuppressedEvent, async function (event) {
+        const member = await memberRepository.get({email: event.data.emailAddress});
+        if (!member) {
+            return;
+        }
+        await memberRepository.update({email_disabled: true}, {id: member.id});
+    });
+
+    return {
+        middleware,
+        getMemberDataFromMagicLinkToken,
+        getMemberIdentityToken,
+        getMemberEntitlementToken,
+        getMemberIdentityDataFromTransientId,
+        getMemberIdentityData,
+        cycleTransientId,
+        setMemberGeolocationFromIp,
+        getPublicConfig,
+        bus,
+        sendEmailWithMagicLink,
+        getMagicLink,
+        members: users,
+        memberBREADService,
+        events: eventRepository,
+        productRepository,
+
+        // Test helpers
+        getTokenDataFromMagicLinkToken,
+        paymentsService
+    };
+};

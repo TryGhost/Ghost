@@ -1,0 +1,154 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>👍 New recommendation</title>
+    {{> styles}}
+  </head>
+  <body style="background-color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.5em; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%;">
+
+    <table border="0" cellpadding="0" cellspacing="0" class="body" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;">
+      <tr>
+        <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;">&nbsp;</td>
+        <td class="container" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; display: block; Margin: 0 auto; padding: 10px; width: 540px;">
+          <div class="content" style="box-sizing: border-box; display: block; Margin: 0 auto; max-width: 600px; padding: 30px 20px;">
+
+            <!-- START CENTERED CONTAINER -->
+            <table class="main" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background: #ffffff; border-radius: 8px;">
+
+              <!-- START MAIN CONTENT AREA -->
+              <tr>
+                <td class="wrapper" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; box-sizing: border-box;">
+                  <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;">
+                    {{#if siteIconUrl}}
+                      <tr>
+                        <td align="center" style="padding-bottom: 56px; text-align: center;"><a href="{{siteUrl}}"><img src="{{siteIconUrl}}" alt="{{siteTitle}}" border="0" width="48" height="48"></a></td>
+                      </tr>
+                    {{/if}}
+                    <tr>
+                      <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;">
+                        {{#if recommendation.recommendingBack}}
+                          <h1 style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 26px; color: #15171A; font-weight: bold; line-height: 28px; margin: 0; padding-bottom: 24px;">A site is now recommending you&nbsp;back</h1>
+                        {{else}}
+                          <h1 style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 26px; color: #15171A; font-weight: bold; line-height: 28px; margin: 0; padding-bottom: 12px;">A site is now recommending you to their&nbsp;audience</h1>
+                          <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; color: #15171A; font-weight: normal; margin: 0; line-height: 1.3em; padding-bottom: 32px;">Every time someone new signs up on their site, they’ll see an option to check out {{siteTitle}} as well.</p>
+                        {{/if}}
+
+                        <!--[if !mso !vml]-->
+                        <figure style="margin:0 0 1.5em;padding:0;width:100%;background:#F4F5F6;border-radius:8px;">
+                          <a style="display:flex;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,Cantarell,'Open Sans','Helvetica Neue',sans-serif;background:#F4F5F6;border-radius:8px;color:#15171A;text-decoration:none" href="{{recommendation.url}}">
+                            <div style="display:inline-block; width:100%; padding:20px">
+                              <div style="color:#15171A;font-size:13px;font-weight:400">
+                                {{#if recommendation.favicon}}<img style="border:none;max-width:100%;margin-right:8px;margin-bottom:8px;width:20px;height:20px" src="{{recommendation.favicon}}" alt="">{{/if}}
+                                <div style="color:#15171A;font-size:15px;line-height:1.3em;font-weight:700">{{recommendation.title}}</div>
+                              </div>
+                              {{#if recommendation.excerpt}}
+                                <div class="kg-bookmark-description" style="display:-webkit-box;overflow-y:hidden;margin-top:6px;max-height:40px;color:#7C8B9A;font-size:13px;line-height:1.35em;font-weight:400;-webkit-line-clamp: 2; -webkit-box-orient: vertical;">{{recommendation.excerpt}}</div>
+                              {{/if}}
+                            </div>
+                            {{#if recommendation.featuredImage}}
+                              <div style="min-width: 140px; max-width: 180px; background-repeat: no-repeat; background-size: cover; background-position: center; border-radius: 0 8px 8px 0;background-image: url('{{recommendation.featuredImage}}')" class="new-mention-thumbnail">
+                                <img src="{{recommendation.featuredImage}}" style="border: none; -ms-interpolation-mode: bicubic; max-width: 100%; display: none;"/>
+                              </div>
+                            {{/if}}
+                          </a>
+                        </figure>
+                        <!--[endif]-->
+
+                        <!--[if vml]>
+                        <table style="border-collapse: collapse; border-spacing: 0; margin: 0; padding: 0; width: 100%; border: 1px solid #F4F5F6; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif; background-color:#F4F5F6;" class="recommendation-card--outlook">
+                            <tr>
+                                <td width="100%" style="padding: 20px;background-color:#F4F5F6;">
+                                    <table style="margin: 0; padding: 0; border-collapse: collapse; border-spacing: 0;">
+                                        <tr>
+                                            <td>
+                                              <table style="margin: 0; padding: 0; border-collapse: collapse; border-spacing: 0;">
+                                                  {{#if recommendation.favicon}}
+                                                    <tr>
+                                                        <td valign="middle" style="padding-bottom: 8px; font-size: 0; line-height: 1.5em">
+                                                            <a href="{{recommendation.url}}" style="color: #15171A; text-decoration: none;"><img src="{{recommendation.favicon}}" width="20" height="20" alt=" "></a>
+                                                        </td>
+                                                    </tr>
+                                                  {{/if}}
+                                                  <tr>
+                                                      <td><a style="color: #15171A; font-size: 15px; line-height: 1.5em; font-weight: 700; text-decoration: none;" href="{{recommendation.url}}">{{recommendation.title}}</a></td>
+                                                  </tr>
+                                              </table>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                          {{#if recommendation.excerpt}}
+                                            <td style="padding-top: 12px;"><div><a href="{{recommendation.url}}" style="color: #7C8B9A; font-size: 13px; line-height: 1.5em; font-weight: 400;text-decoration: none;">{{recommendation.excerpt}}</a></div></td>
+                                          {{/if}}
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                        <![endif]-->
+
+                        <table border="0" cellpadding="0" cellspacing="0" class="btn btn-primary" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; box-sizing: border-box;">
+                          <tbody>
+                            <tr>
+                              <td align="left" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top; padding-top: 24px; padding-bottom: 12px;">
+                                <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;">
+                                  <tbody>
+                                    <tr>
+                                      <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; border-radius: 8px; text-align: center;"> 
+                                        {{#if recommendation.recommendingBack}}     
+                                          <a href="{{siteUrl}}ghost/#/settings/recommendations" target="_blank" style="border:solid 1px {{accentColor}};border-radius:8px;box-sizing:border-box;display:inline-block;font-size:15px;font-weight:normal;margin:0;padding:10px 20px;text-decoration:none;background-color:{{accentColor}};border-color:{{accentColor}};color:#ffffff">View recommendations</a>
+                                        {{else}}
+                                          <a href="{{siteUrl}}ghost/#/settings/recommendations/add?url={{ encodeURIComponent recommendation.url }}" target="_blank" style="border:solid 1px {{accentColor}};border-radius:8px;box-sizing:border-box;display:inline-block;font-size:15px;font-weight:normal;margin:0;padding:10px 20px;text-decoration:none;background-color:{{accentColor}};border-color:{{accentColor}};color:#ffffff">Recommend back</a>
+                                        {{/if}}
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+
+                        <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;">
+                          <tbody>
+                            <tr>
+                              <td align="left" style="padding-top: 24px;">
+                                <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; color: #7c8b9a; font-weight: normal; margin: 0; line-height: 25px;">Or copy and paste this URL into your browser:</p>
+                                <p class="text-link" style="word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; line-height: 25px; margin:0; color: #7c8b9a; font-weight: normal;">{{siteUrl}}ghost/#/settings/recommendations</p>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+
+                    <!-- START FOOTER -->
+                    <tr>
+                      <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 12px; vertical-align: top; padding-top: 56px;">
+                        <p class="small" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; line-height: 18px; font-size: 12px; color: #7C8B9A; font-weight: normal; margin: 0;">This message was sent from <a class="small" href="{{siteUrl}}" style="text-decoration: underline; color: #7C8B9A; font-size: 12px;">{{siteDomain}}</a> to <a class="small" href="mailto:{{toEmail}}" style="text-decoration: underline; color: #7C8B9A; font-size: 12px;">{{toEmail}}</a></p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 12px; vertical-align: top;">
+                        <p class="small" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; line-height: 18px; font-size: 12px; color: #7C8B9A; font-weight: normal; margin: 0;">Don’t want to receive these emails? Manage your preferences <a class="small" href="{{staffUrl}}" style="text-decoration: underline; color: #7C8B9A; font-size: 12px;">here</a>.</p>
+                      </td>
+                    </tr>
+
+                    <!-- END FOOTER -->
+                  </table>
+                </td>
+              </tr>
+
+            <!-- END MAIN CONTENT AREA -->
+            </table>
+
+
+          <!-- END CENTERED CONTAINER -->
+          </div>
+        </td>
+        <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;">&nbsp;</td>
+      </tr>
+    </table>
+  </body>
+</html>

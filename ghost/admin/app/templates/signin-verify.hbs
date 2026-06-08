@@ -1,0 +1,70 @@
+<div class="gh-flow">
+    <div class="gh-flow-content-wrap">
+        <section class="gh-flow-content">
+            <form id="login" method="post" action="javascript:void(0)" class="gh-signin" novalidate="novalidate" {{on "submit" (perform this.verifyTokenTask)}}>
+                <header>
+                    <div class="gh-site-icon" style={{site-icon-style}}></div>
+                    <h1>{{#if this.twoFactorRequired}}2FA confirmation{{else}}Verify it's really you{{/if}}</h1>
+                </header>
+
+
+                {{#if this.twoFactorRequired}}
+                    <p>Enter the sign-in verification code sent to your email.</p>
+                {{else}}
+                    <p>It looks like you're signing in from a new device. A 6-digit sign-in verification code has been sent to your email to keep your account safe.</p>
+                {{/if}}
+
+                <GhFormGroup @errors={{this.verifyData.errors}} @hasValidated={{this.verifyData.hasValidated}} @property="token">
+                    <label for="token">Verification code</label>
+
+                    <span class="gh-input-icon forgotten-wrap">
+                        <input
+                            id="token"
+                            name="token"
+                            type="text"
+                            inputmode="numeric"
+                            pattern="[0-9]*"
+                            placeholder="• • • • • •"
+                            autocomplete="one-time-code"
+                            class="gh-input email"
+                            value={{this.token}}
+                            data-test-input="token"
+                            data-1p-ignore
+                            {{on "input" this.handleTokenInput}}
+                        />
+
+                        <GhTaskButton
+                            @task={{this.resendTokenTask}}
+                            @class="forgotten-link gh-btn gh-btn-link gh-btn-icon"
+                            @type="button"
+                            @successClass=""
+                            @failureClass=""
+                            @disabled={{or this.resendTokenTask.isRunning this.delayResendAvailabilityTask.isRunning}}
+                            data-test-button="resend-token"
+                            as |task|
+                        >
+                            {{#if this.delayResendAvailabilityTask.isRunning}}
+                                <span>Sent</span>
+                            {{else}}
+                                <span>{{#if task.isRunning}}{{svg-jar "spinner" class="gh-spinner"}}&nbsp;Sending{{else}}Resend{{/if}}</span>
+                            {{/if}}
+                        </GhTaskButton>
+                    </span>
+                </GhFormGroup>
+
+                <GhTaskButton
+                    @buttonText="Verify &rarr;"
+                    @task={{this.verifyTokenTask}}
+                    @showSuccess={{false}}
+                    @class="login gh-btn gh-btn-login gh-btn-block gh-btn-icon"
+                    @type="submit"
+                    @useAccentColor={{true}}
+                    data-test-button="verify" />
+            </form>
+
+            {{#let (or this.flowErrors this.verifyData.validationMessage) as |error|}}
+                <p class="{{if error "main-error" "main-notification"}}" data-test-flow-notification>{{error}}&nbsp;</p>
+            {{/let}}
+        </section>
+    </div>
+</div>

@@ -1,0 +1,81 @@
+<section class="gh-header is-{{#match headerStyle "Magazine"}}magazine{{else match headerStyle "Highlight"}}highlight{{else}}classic{{/match}}{{#if @custom.background_image}}{{#if @site.cover_image}} has-image{{/if}}{{/if}} gh-outer">
+        
+    {{!-- Background image --}}
+    {{#if @custom.background_image}}
+        {{#match headerStyle "!=" "Magazine"}}
+        {{#match headerStyle "!=" "Highlight"}}
+            {{#if @site.cover_image}}
+                <img class="gh-header-image" src="{{@site.cover_image}}" alt="{{@site.title}}">
+            {{/if}}
+        {{/match}}
+        {{/match}}
+    {{/if}}
+
+    <div class="gh-header-inner gh-inner">
+
+        {{!-- Highlight layout --}}
+        {{#match headerStyle "Highlight"}}
+            <div class="gh-header-left">
+                {{#foreach posts limit="1"}}
+                    {{> "post-card" imageSizes="(max-width: 767px) calc(100vw - max(8vmin, 40px)), 640px"}}
+                {{/foreach}}
+            </div>
+            <div class="gh-header-middle">
+                {{#foreach posts from="2" limit="3"}}
+                    {{> "post-card"}}
+                {{/foreach}}
+            </div>
+            <div class="gh-header-right">
+                {{#if @custom.show_featured_posts}}
+                    {{> "components/featured" showFeatured=@custom.show_featured_posts limit=6}}
+                {{else}}
+                    <div class="gh-featured-feed">
+                        {{#foreach posts from="5" limit="6"}}
+                            {{> "post-card" imageSizes="80px"}}
+                        {{/foreach}}
+                    </div>
+                {{/if}}
+            </div>
+        {{/match}}
+
+        {{!-- Magazine layout --}}
+        {{#match headerStyle "Magazine"}}
+            {{#foreach posts limit="7"}}
+                {{#match @number 2}}
+                    <div class="gh-header-left">
+                {{/match}}
+                {{#match @number 5}}
+                    <div class="gh-header-right">
+                {{/match}}
+                {{#if @first}}
+                    {{> "post-card" imageSizes="640px"}}
+                {{else}}
+                    {{> "post-card"}}
+                {{/if}}
+                {{#match @number 4}}
+                    </div>
+                {{/match}}
+                {{#match @number 7}}
+                    </div>
+                {{/match}}
+            {{/foreach}}
+        {{/match}}
+
+        {{!-- Landing layout --}}
+        {{#match headerStyle "Landing"}}
+            <h1 class="gh-header-title is-title">{{#if @custom.header_text}}{{@custom.header_text}}{{else}}{{@site.description}}{{/if}}</h1>
+            {{> "email-subscription"}}
+        {{/match}}
+
+        {{!-- Search layout --}}
+        {{#match headerStyle "Search"}}
+            <h1 class="gh-header-title is-title">{{#if @custom.header_text}}{{@custom.header_text}}{{else}}{{@site.description}}{{/if}}</h1>
+            <form class="gh-form">
+                {{> "icons/search"}}
+                <button class="gh-form-input" data-ghost-search>Search posts, tags and authors</button>
+            </form>
+        {{/match}}
+
+    </div>
+
+</section>

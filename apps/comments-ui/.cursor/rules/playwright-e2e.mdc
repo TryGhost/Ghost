@@ -1,0 +1,11 @@
+---
+description: Playwright E2E testing configuration for AI agents
+globs:
+alwaysApply: true
+---
+
+When running Playwright e2e tests as an AI agent, use the list reporter for better parsing:
+
+Set PLAYWRIGHT_REPORTER=list environment variable before running tests.
+
+Example: `PLAYWRIGHT_REPORTER=list yarn test:e2e`

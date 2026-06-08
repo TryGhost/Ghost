@@ -1,6 +1,8 @@
 const storage = require('../../adapters/storage');
+const {getStorageContentType} = require('../../services/files/file-type-utils');
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'files',
     upload: {
         statusCode: 201,
@@ -11,7 +13,8 @@ module.exports = {
         async query(frame) {
             const filePath = await storage.getStorage('files').save({
                 name: frame.file.originalname,
-                path: frame.file.path
+                path: frame.file.path,
+                type: getStorageContentType(frame.file.originalname)
             });
 
             return {
@@ -20,3 +23,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

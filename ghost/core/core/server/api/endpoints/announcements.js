@@ -1,6 +1,7 @@
 const announcementBarSettings = require('../../services/announcement-bar-service');
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'announcement',
 
     browse: {
@@ -13,3 +14,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

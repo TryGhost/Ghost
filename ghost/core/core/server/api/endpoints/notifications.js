@@ -3,7 +3,8 @@ const settingsService = require('../../services/settings/settings-service');
 const settingsBREADService = settingsService.getSettingsBREADServiceInstance();
 const internalContext = {context: {internal: true}};
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'notifications',
 
     browse: {
@@ -38,13 +39,12 @@ module.exports = {
             });
 
             if (notificationsToAdd.length){
-                return await settingsBREADService.edit([{
+                await settingsBREADService.edit([{
                     key: 'notifications',
                     // @NOTE: We always need to store all notifications!
                     value: allNotifications.concat(notificationsToAdd)
-                }], internalContext).then(() => {
-                    return notificationsToAdd;
-                });
+                }], internalContext);
+                return notificationsToAdd;
             }
         }
     },
@@ -101,3 +101,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

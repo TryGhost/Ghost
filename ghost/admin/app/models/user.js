@@ -1,19 +1,27 @@
-/* eslint-disable camelcase */
 import BaseModel from './base';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
-import config from 'ghost-admin/config/environment';
 import {attr, hasMany} from '@ember-data/model';
 import {computed} from '@ember/object';
 import {equal, or} from '@ember/object/computed';
 import {inject} from 'ghost-admin/decorators/inject';
+import {prefixAssetUrl} from 'ghost-admin/utils/asset-base';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default BaseModel.extend(ValidationEngine, {
+    ajax: service(),
+    ghostPaths: service(),
+    notifications: service(),
+    search: service(),
+    session: service(),
+
+    config: inject(),
+
     validationType: 'user',
 
     name: attr('string'),
     slug: attr('string'),
+    url: attr('string'),
     email: attr('string'),
     profileImage: attr('string'),
     coverImage: attr('string'),
@@ -26,9 +34,7 @@ export default BaseModel.extend(ValidationEngine, {
     metaDescription: attr('string'),
     lastLoginUTC: attr('moment-utc'),
     createdAtUTC: attr('moment-utc'),
-    createdBy: attr('number'),
     updatedAtUTC: attr('moment-utc'),
-    updatedBy: attr('number'),
     roles: hasMany('role', {
         embedded: 'always',
         async: false
@@ -44,12 +50,6 @@ export default BaseModel.extend(ValidationEngine, {
     mentionNotifications: attr(),
     milestoneNotifications: attr(),
     donationNotifications: attr(),
-    ghostPaths: service(),
-    ajax: service(),
-    session: service(),
-    notifications: service(),
-
-    config: inject(),
 
     // TODO: Once client-side permissions are in place,
     // remove the hard role check.
@@ -58,10 +58,18 @@ export default BaseModel.extend(ValidationEngine, {
     isEditor: equal('role.name', 'Editor'),
     isAdminOnly: equal('role.name', 'Administrator'),
     isOwnerOnly: equal('role.name', 'Owner'),
+    isSuperEditor: equal('role.name', 'Super Editor'),
+    isEitherEditor: or('isEditor', 'isSuperEditor'),
 
     // These are used in enough places that it's useful to throw them here
     isAdmin: or('isOwnerOnly', 'isAdminOnly'),
     isAuthorOrContributor: or('isAuthor', 'isContributor'),
+
+    // adding some permisions-like properties, to facilitate future
+    // switch to using the permissions system instead of role-based
+    // hard-coded permissions
+    canManageMembers: or('isAdmin', 'isSuperEditor'),
+    canManageComments: or('isAdmin', 'isSuperEditor'),
 
     isLoggedIn: computed('id', 'session.user.id', function () {
         return this.id === this.get('session.user.id');
@@ -88,17 +96,17 @@ export default BaseModel.extend(ValidationEngine, {
         }
     }),
 
-    profileImageUrl: computed('ghostPaths.assetRoot', 'profileImage', function () {
+    profileImageUrl: computed('profileImage', function () {
         // keep path separate so asset rewriting correctly picks it up
         let defaultImage = '/img/user-image.png';
-        let defaultPath = (config.cdnUrl ? '' : this.ghostPaths.assetRoot.replace(/\/$/, '')) + defaultImage;
+        let defaultPath = prefixAssetUrl(`assets${defaultImage}`);
         return this.profileImage || defaultPath;
     }),
 
-    coverImageUrl: computed('ghostPaths.assetRoot', 'coverImage', function () {
+    coverImageUrl: computed('coverImage', function () {
         // keep path separate so asset rewriting correctly picks it up
         let defaultImage = '/img/user-cover.png';
-        let defaultPath = (config.cdnUrl ? '' : this.ghostPaths.assetRoot.replace(/\/$/, '')) + defaultImage;
+        let defaultPath = prefixAssetUrl(`assets${defaultImage}`);
         return this.coverImage || defaultPath;
     }),
 
@@ -141,5 +149,21 @@ export default BaseModel.extend(ValidationEngine, {
         } catch (error) {
             this.notifications.showAPIError(error, {key: 'user.change-password'});
         }
-    }).drop()
+    }).drop(),
+
+    save() {
+        const nameChanged = !!this.changedAttributes().name;
+
+        const {url} = this;
+
+        return this._super(...arguments).then((savedModel) => {
+            const urlChanged = url !== savedModel.url;
+
+            if (nameChanged || urlChanged || this.isDeleted) {
+                this.search.expireContent();
+            }
+
+            return savedModel;
+        });
+    }
 });

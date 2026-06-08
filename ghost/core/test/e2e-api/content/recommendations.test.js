@@ -1,8 +1,8 @@
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const recommendationsService = require('../../../core/server/services/recommendations');
-const {Recommendation} = require('@tryghost/recommendations');
+const {Recommendation} = require('../../../core/server/services/recommendations/service');
 const {anyObjectId, anyISODateTime} = matchers;
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 
 describe('Recommendations Content API', function () {
     let agent;
@@ -22,7 +22,7 @@ describe('Recommendations Content API', function () {
         for (let i = 0; i < 7; i++) {
             const recommendation = Recommendation.create({
                 title: `Recommendation ${i}`,
-                reason: `Reason ${i}`,
+                description: `Description ${i}`,
                 url: new URL(`https://recommendation${i}.com`),
                 favicon: null,
                 featuredImage: null,

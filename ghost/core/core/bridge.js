@@ -16,14 +16,12 @@ const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const themeEngine = require('./frontend/services/theme-engine');
 const appService = require('./frontend/services/apps');
-const cardAssetService = require('./frontend/services/card-assets');
-const commentCountsAssetService = require('./frontend/services/comment-counts-assets');
-const adminAuthAssetService = require('./frontend/services/admin-auth-assets');
-const memberAttributionAssetService = require('./frontend/services/member-attribution-assets');
+const {adminAuthAssets, cardAssets} = require('./frontend/services/assets-minification');
 const routerManager = require('./frontend/services/routing').routerManager;
 const settingsCache = require('./shared/settings-cache');
 const urlService = require('./server/services/url');
 const routeSettings = require('./server/services/route-settings');
+const labs = require('./shared/labs');
 
 // Listen to settings.locale.edited, similar to the member service and models/base/listeners
 const events = require('./server/lib/common/events');
@@ -33,13 +31,32 @@ const messages = {
 };
 
 class Bridge {
+    constructor() {
+        // Track the previous state of the themeTranslation flag
+        this.previousThemeTranslationState = labs.isSet('themeTranslation');
+    }
+
     init() {
         /**
          * When locale changes, we reload theme translations
          */
         events.on('settings.locale.edited', (model) => {
-            debug('Active theme init18n');
+            debug('locale changed, updating i18n to', model.get('value'));
             this.getActiveTheme().initI18n({locale: model.get('value')});
+        });
+        
+        events.on('settings.labs.edited', () => {
+            const currentThemeTranslationState = labs.isSet('themeTranslation');
+            
+            if (currentThemeTranslationState !== this.previousThemeTranslationState) {
+                debug('themeTranslation flag changed from %s to %s', 
+                    this.previousThemeTranslationState, currentThemeTranslationState);
+                const locale = settingsCache.get('locale');
+                this.getActiveTheme().initI18n({locale});
+                
+                // Update the tracked state
+                this.previousThemeTranslationState = currentThemeTranslationState;
+            } 
         });
 
         // NOTE: eventually this event should somehow be listened on and handled by the URL Service
@@ -54,6 +71,10 @@ class Bridge {
         return themeEngine.getActive();
     }
 
+    ensureAdminAuthAssetsMiddleware() {
+        return adminAuthAssets.serveMiddleware();
+    }
+
     async activateTheme(loadedTheme, checkedTheme) {
         let settings = {
             locale: settingsCache.get('locale')
@@ -63,15 +84,14 @@ class Bridge {
         try {
             themeEngine.setActive(settings, loadedTheme, checkedTheme);
 
+            logging.info('Invalidating assets for regeneration');
+
             const cardAssetConfig = this.getCardAssetConfig();
             debug('reload card assets config', cardAssetConfig);
-            await cardAssetService.load(cardAssetConfig);
+            cardAssets.invalidate(cardAssetConfig);
 
-            // TODO: is this in the right place?
             // rebuild asset files
-            await commentCountsAssetService.load();
-            await adminAuthAssetService.load();
-            await memberAttributionAssetService.load();
+            adminAuthAssets.invalidate();
         } catch (err) {
             logging.error(new errors.InternalServerError({
                 message: tpl(messages.activateFailed, {theme: loadedTheme.name}),
@@ -94,7 +114,7 @@ class Bridge {
 
         const routerConfig = {
             routeSettings: await routeSettings.loadRouteSettings(),
-            urlService
+            urlService: urlService.facade
         };
 
         await siteApp.reload(routerConfig);

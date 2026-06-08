@@ -59,6 +59,15 @@
         "members_stripe_webhook_secret": {
             "defaultValue": null,
             "type": "string"
+        },
+        "members_otc_secret": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "site_uuid": {
+            "defaultValue": null,
+            "type": "string",
+            "flags": "PUBLIC,RO"
         }
     },
     "site": {
@@ -80,6 +89,14 @@
                 }
             },
             "flags": "PUBLIC",
+            "type": "string"
+        },
+        "heading_font": {
+            "defaultValue": "",
+            "type": "string"
+        },
+        "body_font": {
+            "defaultValue": "",
             "type": "string"
         },
         "logo": {
@@ -133,6 +150,41 @@
             "defaultValue": "@ghost",
             "type": "string"
         },
+        "threads": {
+            "defaultValue": null,
+            "flags": "PUBLIC",
+            "type": "string"
+        },
+        "bluesky": {
+            "defaultValue": null,
+            "flags": "PUBLIC",
+            "type": "string"
+        },
+        "mastodon": {
+            "defaultValue": null,
+            "flags": "PUBLIC",
+            "type": "string"
+        },
+        "tiktok": {
+            "defaultValue": null,
+            "flags": "PUBLIC",
+            "type": "string"
+        },
+        "youtube": {
+            "defaultValue": null,
+            "flags": "PUBLIC",
+            "type": "string"
+        },
+        "instagram": {
+            "defaultValue": null,
+            "flags": "PUBLIC",
+            "type": "string"
+        },
+        "linkedin": {
+            "defaultValue": null,
+            "flags": "PUBLIC",
+            "type": "string"
+        },
         "navigation": {
             "defaultValue": "[{\"label\":\"Home\",\"url\":\"/\"},{\"label\":\"About\",\"url\":\"/about/\"}]",
             "type": "array"
@@ -140,6 +192,11 @@
         "secondary_navigation": {
             "defaultValue": "[{\"label\":\"Sign up\",\"url\":\"#/portal/\"}]",
             "type": "array"
+        },
+        "llms_enabled": {
+            "defaultValue": "true",
+            "validations": {},
+            "type": "boolean"
         },
         "meta_title": {
             "defaultValue": null,
@@ -216,7 +273,7 @@
     },
     "theme": {
         "active_theme": {
-            "defaultValue": "casper",
+            "defaultValue": "source",
             "flags": "RO",
             "type": "string"
         }
@@ -251,13 +308,17 @@
             "defaultValue": "all",
             "validations": {
                 "isEmpty": false,
-                "isIn": [["all", "invite", "none"]]
+                "isIn": [["all", "paid", "invite", "none"]]
             },
             "type": "string"
         },
         "members_support_address": {
             "defaultValue": "noreply",
             "flags": "PUBLIC,RO",
+            "type": "string"
+        },
+        "stripe_billing_portal_configuration_id": {
+            "defaultValue": null,
             "type": "string"
         },
         "stripe_secret_key": {
@@ -307,6 +368,10 @@
                 "isIn": [["true", "false"]]
             },
             "type": "boolean"
+        },
+        "blocked_email_domains": {
+            "defaultValue": "[]",
+            "type": "array"
         }
     },
     "portal": {
@@ -319,7 +384,7 @@
             "type": "boolean"
         },
         "portal_button": {
-            "defaultValue": "true",
+            "defaultValue": "false",
             "validations": {
                 "isEmpty": false,
                 "isIn": [["true", "false"]]
@@ -329,6 +394,14 @@
         "portal_plans": {
             "defaultValue": "[\"free\"]",
             "type": "array"
+        },
+        "portal_default_plan": {
+            "defaultValue": "yearly",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["yearly", "monthly"]]
+            },
+            "type": "string"
         },
         "portal_products": {
             "defaultValue": "[]",
@@ -402,19 +475,6 @@
             "flags": "RO"
         }
     },
-    "amp": {
-        "amp": {
-            "defaultValue": "false",
-            "validations": {
-                "isIn": [["true", "false"]]
-            },
-            "type": "boolean"
-        },
-        "amp_gtag_id": {
-            "defaultValue": null,
-            "type": "string"
-        }
-    },
     "firstpromoter": {
         "firstpromoter": {
             "defaultValue": "false",
@@ -457,6 +517,43 @@
                 "isIn": [["true", "false"]]
             },
             "type": "boolean"
+        }
+    },
+    "transistor": {
+        "transistor": {
+            "defaultValue": "false",
+            "validations": {
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
+        },
+        "transistor_portal_enabled": {
+            "defaultValue": "true",
+            "validations": {
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean",
+            "flags": "PUBLIC"
+        },
+        "transistor_portal_heading": {
+            "defaultValue": "Podcasts",
+            "type": "string",
+            "flags": "PUBLIC"
+        },
+        "transistor_portal_description": {
+            "defaultValue": "Access your private podcast feed",
+            "type": "string",
+            "flags": "PUBLIC"
+        },
+        "transistor_portal_button_text": {
+            "defaultValue": "View",
+            "type": "string",
+            "flags": "PUBLIC"
+        },
+        "transistor_portal_url_template": {
+            "defaultValue": "https://partner.transistor.fm/ghost/{memberUuid}",
+            "type": "string",
+            "flags": "PUBLIC"
         }
     },
     "views": {
@@ -507,7 +604,7 @@
     "comments": {
         "comments_enabled": {
             "type": "string",
-            "defaultValue": "off",
+            "defaultValue": "all",
             "validations": {
                 "isEmpty": false,
                 "isIn": [[
@@ -520,6 +617,14 @@
     },
     "analytics": {
         "outbound_link_tagging": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
+        },
+        "web_analytics": {
             "defaultValue": "true",
             "validations": {
                 "isEmpty": false,
@@ -559,7 +664,7 @@
             "type": "string"
         },
         "donations_suggested_amount": {
-            "defaultValue": 0,
+            "defaultValue": 500,
             "validations": {
                 "isEmpty": false
             },
@@ -574,6 +679,50 @@
                 "isIn": [["true", "false"]]
             },
             "type": "boolean"
+        }
+    },
+    "security": {
+        "require_email_mfa": {
+            "defaultValue": false,
+            "type": "boolean"
+        }
+    },
+    "social_web": {
+        "social_web": {
+            "defaultValue": "true",
+            "validations": {
+                "isIn": [
+                    [
+                        "true",
+                        "false"
+                    ]
+                ]
+            },
+            "type": "boolean"
+        }
+    },
+    "explore": {
+        "explore_ping": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
+        },
+        "explore_ping_growth": {
+            "defaultValue": "false",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
+        }
+    },
+    "indexnow": {
+        "indexnow_api_key": {
+            "defaultValue": null,
+            "type": "string"
         }
     }
 }

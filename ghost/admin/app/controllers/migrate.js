@@ -12,6 +12,6 @@ export default class MigrateController extends Controller {
 
     @action
     closeMigrate() {
-        this.router.transitionTo('/settings/labs');
+        this.router.transitionTo('/settings/migration');
     }
 }

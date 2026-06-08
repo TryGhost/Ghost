@@ -12,6 +12,7 @@
                     placeholder={{this.dateFormat}}
                     value={{readonly this.dateValue}}
                     disabled={{this.disabled}}
+                    aria-label="Date Picker"
                     {{on "input" (fn this.onDateInput dp)}}
                     {{on "blur" this.onDateBlur}}
                     {{on "keydown" (fn this.onDateKeydown dp)}}
@@ -30,6 +31,7 @@
             type="text"
             value={{this._time}}
             disabled={{this.disabled}}
+            aria-label="Time Picker"
             {{on "change" this.updateTimeValue}}
             {{on "blur" (fn this.setTimeInternal this._time)}}
             {{did-insert this.registerTimeInput}}
@@ -37,7 +39,7 @@
         >
         <small class="gh-date-time-picker-timezone" data-test-date-time-picker-timezone>{{this.timezone}}</small>
     </div>
-    {{#if this.hasError}}
-        <div class="gh-date-time-picker-error" data-test-date-time-picker-error>{{this.dateError}}{{this.timeError}}</div>
-    {{/if}}
 </div>
+{{#if this.hasError}}
+    <div class="gh-date-time-picker-error" data-test-date-time-picker-error>{{this.dateError}}{{this.timeError}}</div>
+{{/if}}

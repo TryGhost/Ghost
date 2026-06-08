@@ -1,38 +1,59 @@
 {
-    "tasksRunnerOptions": {
-        "default": {
-            "runner": "nx/tasks-runners/default",
-            "options": {
-                "cacheableOperations": [
-                    "build",
-                    "build:ts",
-                    "lint",
-                    "test",
-                    "test:unit"
-                ],
-                "cacheDirectory": ".nxcache"
-            }
-        }
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "namedInputs": {
+    "default": [
+      "{projectRoot}/**/*",
+      "sharedGlobals"
+    ],
+    "sharedGlobals": [
+      "{workspaceRoot}/.npmrc",
+      "{workspaceRoot}/ghost/tsconfig.json",
+      "{workspaceRoot}/package.json",
+      "{workspaceRoot}/pnpm-workspace.yaml",
+      "{workspaceRoot}/pnpm-lock.yaml"
+    ]
+  },
+  "parallel": 4,
+  "useDaemonProcess": false,
+  "targetDefaults": {
+    "build": {
+      "dependsOn": [
+        "^build"
+      ],
+      "inputs": [
+        {
+          "env": "GHOST_CDN_URL"
+        },
+        "default",
+        "^default"
+      ],
+      "outputs": [
+        "{projectRoot}/dist",
+        "{projectRoot}/es",
+        "{projectRoot}/types",
+        "{projectRoot}/umd"
+      ],
+      "cache": true
     },
-    "namedInputs": {
-        "default": [
-            "{projectRoot}/**/*",
-            "{workspaceRoot}/ghost/tsconfig.json"
-        ]
+    "lint": {
+      "cache": true
     },
-    "targetDefaults": {
-        "build:ts": {
-            "dependsOn": [
-                "^build:ts"
-            ],
-            "inputs": [
-                "default",
-                "^default"
-            ],
-            "outputs": [
-                "{projectRoot}/build"
-            ]
-        }
+    "test": {
+      "cache": true
     },
-    "$schema": "./node_modules/nx/schemas/nx-schema.json"
+    "test:unit": {
+      "cache": true,
+      "dependsOn": [
+        "build"
+      ]
+    },
+    "dev": {
+      "dependsOn": [
+        "^dev"
+      ],
+      "continuous": true
+    }
+  },
+  "cacheDirectory": ".nxcache",
+  "analytics": false
 }

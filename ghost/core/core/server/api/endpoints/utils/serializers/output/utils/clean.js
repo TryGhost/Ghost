@@ -39,6 +39,7 @@ const author = (attrs, frame) => {
         delete attrs.recommendation_notifications;
         delete attrs.milestone_notifications;
         delete attrs.donation_notifications;
+        delete attrs.gift_subscription_notifications;
 
         // @NOTE: used for night shift
         delete attrs.accessibility;
@@ -82,7 +83,9 @@ const post = (attrs, frame) => {
     const fields = frame && frame.original && frame.original.query && frame.original.query.fields || null;
 
     if (localUtils.isContentAPI(frame)) {
-        delete attrs.status;
+        if (!localUtils.isPreview(frame)) {
+            delete attrs.status;
+        }
         delete attrs.email_only;
         delete attrs.newsletter;
         delete attrs.email_segment;

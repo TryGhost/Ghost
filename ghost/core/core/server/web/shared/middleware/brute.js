@@ -51,6 +51,28 @@ module.exports = {
         })(req, res, next);
     },
     /**
+     * block per IP
+    */
+    sendVerificationCode(req, res, next) {
+        return spamPrevention.sendVerificationCode().getMiddleware({
+            ignoreIP: false,
+            key(_req, _res, _next) {
+                return _next('send_verification_code');
+            }
+        })(req, res, next);
+    },
+    /**
+     * block per IP
+     */
+    userVerification(req, res, next) {
+        return spamPrevention.userVerification().getMiddleware({
+            ignoreIP: false,
+            key(_req, _res, _next) {
+                return _next('user_verification');
+            }
+        })(req, res, next);
+    },
+    /**
      * block per ip
      */
     privateBlog(req, res, next) {
@@ -107,6 +129,29 @@ module.exports = {
     },
 
     /**
+     * Block too many OTC verification attempts from same IP (blocks user enumeration)
+     */
+    otcVerificationEnumeration(req, res, next) {
+        return spamPrevention.otcVerificationEnumeration().prevent(req, res, next);
+    },
+
+    /**
+     * Block too many attempts for the same otcRef
+     */
+    otcVerification(req, res, next) {
+        return spamPrevention.otcVerification().getMiddleware({
+            // ignoring IP here blocks rotating ip attacks, only one IP should receive an otcRef so it shouldn't cause false positives
+            ignoreIP: true,
+            key(_req, _res, _next) {
+                if (_req.body.otcRef) {
+                    return _next(`${_req.body.otcRef}otc_verification`);
+                }
+                return _next();
+            }
+        })(req, res, next);
+    },
+
+    /**
      * Blocks webmention spam
      */
 
@@ -125,7 +170,7 @@ module.exports = {
 
     previewEmailLimiter(req, res, next) {
         return spamPrevention.emailPreviewBlock().getMiddleware({
-            ignoreIP: false,
+            ignoreIP: true,
             key(_req, _res, _next) {
                 return _next('preview_email_blocked');
             }

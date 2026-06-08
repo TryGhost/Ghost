@@ -1,15 +1,15 @@
 const _ = require('lodash');
 const security = require('@tryghost/security');
-const constants = require('@tryghost/constants');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
+const moment = require('moment');
+
 const models = require('../../models');
 const urlUtils = require('../../../shared/url-utils');
 const mail = require('../mail');
 
 const messages = {
     userNotFound: 'User not found.',
-    tokenLocked: 'Token locked',
     resetPassword: 'Reset Password',
     expired: {
         message: 'Cannot reset password.',
@@ -28,8 +28,6 @@ const messages = {
     }
 };
 
-const tokenSecurity = {};
-
 function generateToken(email, settingsAPI, transaction) {
     const options = {context: {internal: true}, transacting: transaction};
     let dbHash;
@@ -47,7 +45,7 @@ function generateToken(email, settingsAPI, transaction) {
             }
 
             token = security.tokens.resetToken.generateHash({
-                expires: Date.now() + constants.ONE_DAY_MS,
+                expires: moment().add(1, 'days').valueOf(),
                 email: email,
                 dbHash: dbHash,
                 password: user.get('password')
@@ -72,18 +70,6 @@ function extractTokenParts(options) {
             message: tpl(messages.corruptedToken.message),
             context: tpl(messages.corruptedToken.context),
             help: tpl(messages.corruptedToken.help)
-        }));
-    }
-
-    return Promise.resolve({options, tokenParts});
-}
-
-// @TODO: use brute force middleware (see https://github.com/TryGhost/Ghost/pull/7579)
-function protectBruteForce({options, tokenParts}) {
-    if (tokenSecurity[`${tokenParts.email}+${tokenParts.expires}`] &&
-        tokenSecurity[`${tokenParts.email}+${tokenParts.expires}`].count >= 10) {
-        return Promise.reject(new errors.NoPermissionError({
-            message: tpl(messages.tokenLocked)
         }));
     }
 
@@ -143,6 +129,8 @@ function doReset(options, tokenParts, settingsAPI) {
         .then((updatedUser) => {
             updatedUser.set('status', 'active');
             return updatedUser.save(options);
+        }).then((savedUser) => {
+            return {user: savedUser};
         })
         .catch((err) => {
             if (errors.utils.isGhostError(err)) {
@@ -184,7 +172,6 @@ async function sendResetNotification(data, mailAPI) {
 module.exports = {
     generateToken,
     extractTokenParts,
-    protectBruteForce,
     doReset,
     sendResetNotification
 };

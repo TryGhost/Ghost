@@ -17,7 +17,7 @@ module.exports = function (Bookshelf) {
     Bookshelf.Model = Bookshelf.Model.extend({
         // Ghost option handling - get permitted attributes from server/data/schema.js, where the DB schema is defined
         permittedAttributes: function permittedAttributes() {
-            return _.keys(schema.tables[this.tableName])
+            return Object.keys(schema.tables[this.tableName] || {})
                 .filter(key => key.indexOf('@@') === -1);
         }
     }, {
@@ -35,21 +35,21 @@ module.exports = function (Bookshelf) {
 
             switch (methodName) {
             case 'toJSON':
-                return baseOptions.concat('shallow', 'columns', 'previous');
+                return [...baseOptions, 'shallow', 'columns', 'previous'];
             case 'destroy':
-                return baseOptions.concat(extraOptions, ['id', 'destroyBy', 'require']);
+                return [...baseOptions, ...extraOptions, 'id', 'destroyBy', 'require'];
             case 'add':
-                return baseOptions.concat(extraOptions, ['autoRefresh']);
+                return [...baseOptions, ...extraOptions, 'autoRefresh'];
             case 'edit':
-                return baseOptions.concat(extraOptions, ['id', 'require', 'autoRefresh']);
+                return [...baseOptions, ...extraOptions, 'id', 'require', 'autoRefresh'];
             case 'findOne':
-                return baseOptions.concat(extraOptions, ['columns', 'require', 'mongoTransformer']);
+                return [...baseOptions, ...extraOptions, 'columns', 'require', 'mongoTransformer'];
             case 'findAll':
-                return baseOptions.concat(extraOptions, ['filter', 'columns', 'mongoTransformer']);
+                return [...baseOptions, ...extraOptions, 'filter', 'columns', 'mongoTransformer'];
             case 'findPage':
-                return baseOptions.concat(extraOptions, ['filter', 'order', 'autoOrder', 'page', 'limit', 'columns', 'mongoTransformer']);
+                return [...baseOptions, ...extraOptions, 'filter', 'order', 'autoOrder', 'page', 'limit', 'columns', 'mongoTransformer', 'skipPagination'];
             default:
-                return baseOptions.concat(extraOptions);
+                return [...baseOptions, ...extraOptions];
             }
         },
 
@@ -149,7 +149,7 @@ module.exports = function (Bookshelf) {
         /**
          * Filters potentially unsafe `options` in a model method's arguments, so you can pass them to Bookshelf / Knex.
          * @param {Object} unfilteredOptions Represents options to filter in order to be passed to the Bookshelf query.
-         * @param {String} methodName The name of the method to check valid options for.
+         * @param {string} methodName The name of the method to check valid options for.
          * @return {Object} The filtered results of `options`.
          */
         filterOptions: function filterOptions(unfilteredOptions, methodName, filterConfig) {
@@ -164,11 +164,10 @@ module.exports = function (Bookshelf) {
 
             let options = _.cloneDeep(unfilteredOptions);
             const extraAllowedProperties = filterConfig.extraAllowedProperties || [];
-            let permittedOptions;
-
-            permittedOptions = this.permittedOptions(methodName, options);
-            permittedOptions = _.union(permittedOptions, extraAllowedProperties);
-            options = _.pick(options, permittedOptions);
+            const permittedOptions = new Set([...this.permittedOptions(methodName, options), ...extraAllowedProperties]);
+            options = Object.fromEntries(
+                Object.entries(options).filter(([key]) => permittedOptions.has(key))
+            );
 
             if (this.defaultRelations) {
                 options = this.defaultRelations(methodName, options);

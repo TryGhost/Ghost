@@ -6,8 +6,6 @@ export default Factory.extend({
     email(i) { return `invited-user-${i}@example.com`; },
     expires() { return moment.utc().add(1, 'day').valueOf(); },
     createdAt() { return moment.utc().format(); },
-    createdBy() { return 1; },
     updatedAt() { return moment.utc().format(); },
-    updatedBy() { return 1; },
     status() { return 'sent'; }
 });

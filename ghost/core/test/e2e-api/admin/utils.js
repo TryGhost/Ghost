@@ -40,8 +40,8 @@ const expectedProperties = {
         'stripeDirect',
         'emailAnalytics',
         'tenor',
+        'klipy',
         'mailgunIsConfigured',
-        'editor',
         'signupForm'
     ],
 
@@ -51,6 +51,7 @@ const expectedProperties = {
         'title',
         'slug',
         'mobiledoc',
+        'lexical',
         'comment_id',
         'feature_image',
         'feature_image_alt',
@@ -88,7 +89,6 @@ const expectedProperties = {
         'tiers',
         'newsletter',
         'count',
-        'post_revisions',
         'reading_time'
     ],
 
@@ -98,6 +98,7 @@ const expectedProperties = {
         'title',
         'slug',
         'mobiledoc',
+        'lexical',
         'comment_id',
         'feature_image',
         'feature_image_alt',
@@ -130,7 +131,6 @@ const expectedProperties = {
         'frontmatter',
         'tiers',
         'count',
-        'post_revisions',
         'show_title_and_feature_image'
     ],
 
@@ -203,8 +203,6 @@ _.each(expectedProperties, (value, key) => {
      */
     expectedProperties[key] = value
         .without(
-            'created_by',
-            'updated_by',
             'published_by'
         )
         .value();
@@ -226,13 +224,14 @@ module.exports = {
         return testUtils.API.doAuth(`${API_URL}session/`, ...args);
     },
 
-    getValidAdminToken(audience, keyid = 0) {
+    getValidAdminToken(audience, keyid = 0, opts = {}) {
         const jwt = require('jsonwebtoken');
         const JWT_OPTIONS = {
             keyid: testUtils.DataGenerator.Content.api_keys[keyid].id,
             algorithm: 'HS256',
             expiresIn: '5m',
-            audience: audience
+            audience: audience,
+            ...opts
         };
 
         return jwt.sign(

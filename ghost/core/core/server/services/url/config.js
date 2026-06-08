@@ -3,6 +3,7 @@
  * They contain minimum filters for public accessibility of resources.
  */
 
+// TODO: switch exclude lists to include lists to make this more explicit
 module.exports = [
     {
         type: 'posts',
@@ -18,7 +19,6 @@ module.exports = [
                 // @TODO: https://github.com/TryGhost/Ghost/issues/10335
                 // 'page',
                 'status',
-                'amp',
                 'codeinjection_head',
                 'codeinjection_foot',
                 'meta_title',
@@ -32,6 +32,10 @@ module.exports = [
                 'twitter_description',
                 'custom_template',
                 'locale',
+                'newsletter_id',
+                'show_title_and_feature_image',
+                'email_recipient_filter',
+                'comment_id',
                 'tiers'
             ],
             withRelated: ['tags', 'authors'],
@@ -63,7 +67,6 @@ module.exports = [
                 // @TODO: https://github.com/TryGhost/Ghost/issues/10335
                 // 'page',
                 // 'status',
-                'amp',
                 'codeinjection_head',
                 'codeinjection_foot',
                 'meta_title',
@@ -81,6 +84,10 @@ module.exports = [
                 'authors',
                 'primary_tag',
                 'primary_author',
+                'newsletter_id',
+                'show_title_and_feature_image',
+                'email_recipient_filter',
+                'comment_id',
                 'tiers'
             ],
             filter: 'status:published+type:page'

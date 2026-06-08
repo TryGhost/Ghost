@@ -1,7 +1,7 @@
 const path = require('path');
 const urlUtils = require('../../../shared/url-utils');
 const settingsCache = require('../../../shared/settings-cache');
-const EmailContentGenerator = require('@tryghost/email-content-generator');
+const EmailContentGenerator = require('../lib/email-content-generator');
 
 const emailContentGenerator = new EmailContentGenerator({
     getSiteUrl: () => urlUtils.urlFor('home', true),
@@ -9,7 +9,7 @@ const emailContentGenerator = new EmailContentGenerator({
     templatesDir: path.resolve(__dirname, '..', 'mail', 'templates')
 });
 
-exports.GhostMailer = require('./GhostMailer');
+exports.GhostMailer = require('./ghost-mailer');
 exports.utils = {
     generateContent: emailContentGenerator.getContent.bind(emailContentGenerator)
 };

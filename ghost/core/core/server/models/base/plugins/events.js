@@ -7,6 +7,10 @@ const schema = require('../../../data/schema');
 // This wires up our model event system
 const events = require('../../../lib/common/events');
 
+// Run tests or development with NUMERIC_IDS=1 to enable numeric object IDs
+let forceNumericObjectIds = process.env.NODE_ENV !== 'production' && !!process.env.NUMERIC_IDS;
+let numberGenerator = 0;
+
 module.exports = function (Bookshelf) {
     Bookshelf.Model = Bookshelf.Model.extend({
         initializeEvents: function () {
@@ -39,7 +43,7 @@ module.exports = function (Bookshelf) {
          * no auto increment
          */
         setId: function setId() {
-            this.set('id', ObjectId().toHexString());
+            this.set('id', Bookshelf.Model.generateId());
         },
 
         /**
@@ -134,26 +138,12 @@ module.exports = function (Bookshelf) {
 
         /**
          * Adding resources implies setting these properties on the server side
-         * - set `created_by` based on the context
-         * - set `updated_by` based on the context
          * - the bookshelf `timestamps` plugin sets `created_at` and `updated_at`
          *   - if plugin is disabled (e.g. import) we have a fallback condition
          *
          * Exceptions: internal context or importing
          */
         onCreating: function onCreating(model, attr, options) {
-            if (Object.prototype.hasOwnProperty.call(schema.tables[this.tableName], 'created_by')) {
-                if (!options.importing || (options.importing && !this.get('created_by'))) {
-                    this.set('created_by', String(this.contextUser(options)));
-                }
-            }
-
-            if (Object.prototype.hasOwnProperty.call(schema.tables[this.tableName], 'updated_by')) {
-                if (!options.importing) {
-                    this.set('updated_by', String(this.contextUser(options)));
-                }
-            }
-
             if (Object.prototype.hasOwnProperty.call(schema.tables[this.tableName], 'created_at')) {
                 if (!model.get('created_at')) {
                     model.set('created_at', new Date());
@@ -195,9 +185,7 @@ module.exports = function (Bookshelf) {
 
         /**
          * Changing resources implies setting these properties on the server side
-         * - set `updated_by` based on the context
          * - ensure `created_at` never changes
-         * - ensure `created_by` never changes
          * - the bookshelf `timestamps` plugin sets `updated_at` automatically
          *
          * Exceptions:
@@ -212,22 +200,10 @@ module.exports = function (Bookshelf) {
                 model.changed = _.omit(model.changed, this.relationships);
             }
 
-            if (Object.prototype.hasOwnProperty.call(schema.tables[this.tableName], 'updated_by')) {
-                if (!options.importing && !options.migrating) {
-                    this.set('updated_by', String(this.contextUser(options)));
-                }
-            }
-
             if (options && options.context && !options.context.internal && !options.importing) {
                 if (Object.prototype.hasOwnProperty.call(schema.tables[this.tableName], 'created_at')) {
                     if (model.hasDateChanged('created_at', {beforeWrite: true})) {
                         model.set('created_at', this.previous('created_at'));
-                    }
-                }
-
-                if (Object.prototype.hasOwnProperty.call(schema.tables[this.tableName], 'created_by')) {
-                    if (model.hasChanged('created_by')) {
-                        model.set('created_by', String(this.previous('created_by')));
                     }
                 }
             }
@@ -267,6 +243,21 @@ module.exports = function (Bookshelf) {
             Object.assign(model._changed, _.cloneDeep(model.changed));
 
             this.addAction(model, 'deleted', options);
+        }
+    }, {
+        generateId: function generateId() {
+            if (forceNumericObjectIds) {
+                numberGenerator = numberGenerator + 1;
+                const counter = numberGenerator.toString();
+
+                // 77777777 here are to make sure generated ids's are larger than naturally generated ones
+                const base = '777777770000000000000000';
+                const id = base.substring(0, base.length - counter.length) + counter;
+
+                //// This always generates a valid object ID that is fully numeric
+                return id;
+            }
+            return ObjectId().toHexString();
         }
     });
 };

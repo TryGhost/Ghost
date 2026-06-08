@@ -4,9 +4,24 @@ import {dasherize} from '@ember/string';
 import {isBlank} from '@ember/utils';
 
 export default function mockAuthentication(server) {
-    server.post('/session', function () {
-        // Password sign-in
+    // Password sign-in
+    server.post('/session', function (schema, request) {
+        const data = JSON.parse(request.requestBody);
+        if (!data.username || !data.password) {
+            return new Response(401);
+        }
+
         return new Response(201);
+    });
+
+    // 2fa code verification
+    server.put('/session/verify', function () {
+        return new Response(201);
+    });
+
+    // 2fa code re-send
+    server.post('/session/verify', function () {
+        return new Response(200, {}, 'OK');
     });
 
     server.post('/authentication/password_reset', function (schema, request) {
@@ -45,13 +60,13 @@ export default function mockAuthentication(server) {
 
     /* Setup ---------------------------------------------------------------- */
 
-    server.post('/authentication/setup', function ({roles, users}, request) {
-        let attrs = JSON.parse(request.requestBody).setup;
-        let role = roles.findBy({name: 'Owner'});
+    server.post('/authentication/setup', function (schema, request) {
+        let [attrs] = JSON.parse(request.requestBody).setup;
+        let role = schema.roles.findBy({name: 'Owner'});
 
         // create owner role unless already exists
         if (!role) {
-            role = roles.create({name: 'Owner'});
+            role = schema.roles.create({name: 'Owner'});
         }
         attrs.roles = [role];
 
@@ -59,8 +74,7 @@ export default function mockAuthentication(server) {
             attrs.slug = dasherize(attrs.email.split('@')[0]);
         }
 
-        // NOTE: server does not use the user factory to fill in blank fields
-        return users.create(attrs);
+        return schema.create('user', attrs);
     });
 
     server.get('/authentication/setup/', function () {

@@ -1,12 +1,13 @@
-import React, {ReactNode} from 'react';
+import React, {type ReactNode} from 'react';
 import {createPortal} from 'react-dom';
 
 interface PortalProps {
   children: ReactNode;
   to?: Element;
+  classNames?: string;
 }
 
-const Portal: React.FC<PortalProps> = ({children, to}) => {
+const Portal: React.FC<PortalProps> = ({children, to, classNames}) => {
     const container: Element = to || document.body;
 
     if (!container) {
@@ -18,7 +19,7 @@ const Portal: React.FC<PortalProps> = ({children, to}) => {
     };
 
     return createPortal(
-        <div className='admin-x-settings' onMouseDown={cancelEvents}>
+        <div className={classNames} onMouseDown={cancelEvents}>
             <div>
                 {children}
             </div>

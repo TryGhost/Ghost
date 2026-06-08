@@ -56,14 +56,31 @@ function ping(post) {
 
     // If this is a post, we want to send the link of the post
     if (hasPostProperties(post)) {
-        message = urlService.getUrlByResourceId(post.id, {absolute: true});
+        message = urlService.facade.getUrlForResource({...post, type: 'posts'}, {absolute: true});
         title = post.title ? post.title : null;
         author = post.authors ? post.authors[0] : null;
 
         if (post.custom_excerpt) {
             description = post.custom_excerpt;
         } else if (post.html) {
-            description = `${post.html.replace(/<[^>]+>/g, '').split('.').slice(0, 3).join('.')}.`;
+            const membersContentIdx = post.html.indexOf('<!--members-only-->');
+            const substringEnd = membersContentIdx > -1 ? membersContentIdx : post.html.length;
+
+            description = `${
+                post.html
+                    // Remove members-only content
+                    .substring(0, substringEnd)
+                    // Strip out HTML
+                    .replace(/<[^>]+>/g, '')
+                    // Split into sentences
+                    .split('.')
+                    // Remove empty strings
+                    .filter(sentence => sentence.trim() !== '')
+                    // Get the first three sentences
+                    .slice(0, 3)
+                    // Join 'em back together
+                    .join('.')
+            }.`;
         } else {
             description = null;
         }
@@ -80,8 +97,8 @@ function ping(post) {
         }
 
         // Don't ping for the default posts.
-        // This also handles the case where during ghost's first run
-        // models.init() inserts this post but permissions.init() hasn't
+        // This also handles the case where during Ghost's first run
+        // model loading inserts this post but permissions.init() hasn't
         // (can't) run yet.
         if (defaultPostSlugs.indexOf(post.slug) > -1) {
             return;
@@ -93,7 +110,7 @@ function ping(post) {
                 // if it is a post or a test message to check webhook working.
                 text: `Notification from *${blogTitle}* :ghost:`,
                 unfurl_links: true,
-                icon_url: blogIcon.getIconUrl(true),
+                icon_url: blogIcon.getIconUrl({absolute: true}),
                 username: slackSettings.username,
                 // We don't want to send attachment if it is a test notification.
                 attachments: [
@@ -119,12 +136,12 @@ function ping(post) {
                         fields: [
                             {
                                 title: 'Author',
-                                value: author ? `<${urlService.getUrlByResourceId(author.id, {absolute: true})} | ${author.name}>` : null,
+                                value: author ? `<${urlService.facade.getUrlForResource({...author, type: 'authors'}, {absolute: true})} | ${author.name}>` : null,
                                 short: true
                             }
                         ],
                         footer: blogTitle,
-                        footer_icon: blogIcon.getIconUrl(true),
+                        footer_icon: blogIcon.getIconUrl({absolute: true}),
                         ts: moment().unix()
                     }
                 ]
@@ -133,7 +150,7 @@ function ping(post) {
             slackData = {
                 text: message,
                 unfurl_links: true,
-                icon_url: blogIcon.getIconUrl(true),
+                icon_url: blogIcon.getIconUrl({absolute: true}),
                 username: slackSettings.username
             };
         }
@@ -160,7 +177,10 @@ function slackListener(model, options) {
         return;
     }
 
-    ping(model.toJSON());
+    ping({
+        ...model.toJSON(),
+        authors: model.related('authors').toJSON()
+    });
 }
 
 function slackTestPing() {

@@ -4,7 +4,7 @@ const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 
 const {createTransactionalMigration, combineTransactionalMigrations} = require('./migrations');
-const {MIGRATION_USER} = require('./constants');
+const MIGRATION_USER = 1;
 
 const messages = {
     permissionRoleActionError: 'Cannot {action} permission({permission}) with role({role}) - {resource} does not exist'
@@ -30,16 +30,24 @@ async function addPermissionHelper(connection, config) {
 
     const date = connection.raw('CURRENT_TIMESTAMP');
 
-    await connection('permissions').insert({
+    const data = {
         id: ObjectId().toHexString(),
         name: config.name,
         action_type: config.action,
         object_type: config.object,
         created_at: date,
-        created_by: MIGRATION_USER,
-        updated_at: date,
-        updated_by: MIGRATION_USER
-    });
+        updated_at: date
+    };
+
+    if (await connection.schema.hasColumn('permissions', 'created_by')) {
+        data.created_by = MIGRATION_USER;
+    }
+
+    if (await connection.schema.hasColumn('permissions', 'updated_by')) {
+        data.updated_by = MIGRATION_USER;
+    }
+
+    await connection('permissions').insert(data);
 }
 
 /**

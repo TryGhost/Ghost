@@ -7,18 +7,14 @@
     <div class="modal-body mb9">
         <p>
             <GhFormGroup @errors={{this.errors}} @hasValidated={{this.hasValidated}} @property="tags">
-                <GhTokenInput
-                    @extra={{hash
-                        tokenComponent=(component "gh-token-input/tag-token")
-                    }}
+                <GhTagsTokenInput
+                    @allowCreation={{true}}
+                    @selected={{this.selectedTags}}
                     @onChange={{this.handleChange}}
                     @onCreate={{this.handleCreate}}
-                    @options={{this.availableTags}}
                     @renderInPlace={{true}}
-                    @selected={{this.selectedTags}}
-                    @showCreateWhen={{this.shouldAllowCreate}}
                     @triggerId={{this.triggerId}}
-                    @placeholder="Select tags or start typing"
+                    @placeholder="Select or enter tags..."
                 />
                 <GhErrorMessage @errors={{this.errors}} @property="tags" />
             </GhFormGroup>

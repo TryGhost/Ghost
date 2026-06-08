@@ -1,3 +1,5 @@
+// Use the shared frontend Handlebars runtime so SafeString instanceof checks
+// keep working even when multiple handlebars copies are installed.
 const {SafeString} = require('../services/handlebars');
 
 const logging = require('@tryghost/logging');
@@ -56,6 +58,15 @@ const handleMatch = (data, operator, value) => {
         break;
     case '<=':
         result = data <= value;
+        break;
+    case '~':
+        result = _.isString(data) && _.isString(value) && data.includes(value);
+        break;
+    case '~^':
+        result = _.isString(data) && _.isString(value) && data.startsWith(value);
+        break;
+    case '~$':
+        result = _.isString(data) && _.isString(value) && data.endsWith(value);
         break;
     default:
         result = data === value;

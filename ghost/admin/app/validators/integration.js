@@ -10,7 +10,7 @@ export default BaseValidator.create({
             model.errors.add('name', 'Please enter a name');
             model.hasValidated.pushObject('name');
             this.invalidate();
-        } else if (!validator.isLength(model.name, 0, 191)) {
+        } else if (!validator.isLength(model.name, {max: 191})) {
             model.errors.add('name', 'Name is too long, max 191 chars');
             model.hasValidated.pushObject('name');
             this.invalidate();

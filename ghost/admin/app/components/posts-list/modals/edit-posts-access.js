@@ -1,15 +1,26 @@
 import Component from '@glimmer/component';
+import EmberObject from '@ember/object';
+import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
+const PostValidatorProxy = EmberObject.extend(ValidationEngine, {
+    validationType: 'post',
+    isNew: false, // required for our visibility and tiers validations to work
+
+    visibility: tracked(),
+    tiers: tracked()
+});
+
 export default class EditPostsAccessModal extends Component {
     @service store;
     @service settings;
 
-    // We createa new post model to use the same validations as the post model
-    @tracked post = this.store.createRecord('post', {});
+    // We use a simulated post model to use the same validations as the post model without
+    // putting any dummy records in the store and needing to force an "isNew: false" state
+    @tracked post = PostValidatorProxy.create();
 
     get selectionList() {
         return this.args.data.selectionList;
@@ -18,29 +29,27 @@ export default class EditPostsAccessModal extends Component {
     @action
     setup() {
         if (this.selectionList.first && this.selectionList.isSingle) {
-            this.post.set('visibility', this.selectionList.first.visibility);
-            this.post.set('tiers', this.selectionList.first.tiers);
+            this.post.visibility = this.selectionList.first.visibility;
+            this.post.tiers = this.selectionList.first.tiers || [];
         } else {
             // Use default
-            this.post.set('visibility', this.settings.defaultContentVisibility);
-            this.post.set('tiers', this.settings.defaultContentVisibilityTiers.map((tier) => {
+            this.post.visibility = this.settings.defaultContentVisibility;
+            this.post.tiers = this.settings.defaultContentVisibilityTiers.map((tier) => {
                 return {
                     id: tier
                 };
-            }));
+            });
         }
     }
 
     async validate() {
-        // Mark as not new
-        this.post.set('currentState.parentState.isNew', false);
         await this.post.validate({property: 'visibility'});
         await this.post.validate({property: 'tiers'});
     }
 
     @action
     async setVisibility(segment) {
-        this.post.set('tiers', segment);
+        this.post.tiers = segment;
         try {
             await this.validate();
         } catch (e) {

@@ -10,6 +10,7 @@
             @triggerClass="gh-contentfilter-menu-trigger"
             @dropdownClass="gh-contentfilter-menu-dropdown"
             @matchTriggerWidth={{false}}
+            aria-label="Type filter"
             as |type|
         >
             {{#if type.name}}{{type.name}}{{else}}<span class="red">Unknown type</span>{{/if}}
@@ -27,6 +28,7 @@
                 @triggerClass="gh-contentfilter-menu-trigger"
                 @dropdownClass="gh-contentfilter-menu-dropdown"
                 @matchTriggerWidth={{false}}
+                aria-label="Visibility filter"
                 as |visibility|
             >
                 {{#if visibility.name}}{{visibility.name}}{{else}}<span class="red">Unknown visibility</span>{{/if}}
@@ -46,6 +48,7 @@
                 @dropdownClass="gh-contentfilter-menu-dropdown"
                 @searchPlaceholder="Search authors"
                 @matchTriggerWidth={{false}}
+                aria-label="Author filter"
                 as |author|
             >
                 {{#if author.name}}{{author.name}}{{else}}<span class="red">Unknown author</span>{{/if}}
@@ -58,6 +61,9 @@
             <PowerSelect
                 @selected={{@selectedTag}}
                 @options={{@availableTags}}
+                @onOpen={{@loadInitialTags}}
+                @searchEnabled={{true}}
+                @search={{perform @searchTagsTask}}
                 @searchField="name"
                 @onChange={{@onTagChange}}
                 @triggerComponent={{component "gh-power-select/trigger"}}
@@ -65,7 +71,9 @@
                 @dropdownClass="gh-contentfilter-menu-dropdown"
                 @searchPlaceholder="Search tags"
                 @matchTriggerWidth={{false}}
-                @optionsComponent={{component "power-select-vertical-collection-options"}}
+                @optionsComponent={{component "power-select-vertical-collection-options" lastReached=this.onLastReached}}
+                @registerAPI={{this.registerTagsPowerSelect}}
+                aria-label="Tag filter"
                 as |tag|
             >
                 {{#if tag.name}}{{tag.name}}{{else}}<span class="red">Unknown tag</span>{{/if}}
@@ -83,6 +91,7 @@
             @triggerClass="gh-contentfilter-menu-trigger"
             @dropdownClass="gh-contentfilter-menu-dropdown"
             @matchTriggerWidth={{false}}
+            aria-label="Sort filter"
             as |order|
         >
             {{#if order.name}}{{order.name}}{{else}}<span class="red">Unknown</span>{{/if}}

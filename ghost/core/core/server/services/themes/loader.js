@@ -1,6 +1,6 @@
 const debug = require('@tryghost/debug')('themes');
-const packageJSON = require('@tryghost/package-json');
 
+const packageJSON = require('../../lib/package-json');
 const config = require('../../../shared/config');
 const themeList = require('./list');
 

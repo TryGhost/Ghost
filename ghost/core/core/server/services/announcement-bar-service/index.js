@@ -1,5 +1,5 @@
 const settingsCache = require('../../../shared/settings-cache');
-const AnnouncementBarSettings = require('@tryghost/announcement-bar-settings');
+const AnnouncementBarSettings = require('./announcement-bar-settings');
 
 const announcementBarService = new AnnouncementBarSettings({
     getAnnouncementSettings: () => ({

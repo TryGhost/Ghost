@@ -1,0 +1,49 @@
+TOKEN "axis" READ
+
+NODE mv_hits_0
+SQL >
+    %
+    SELECT
+        site_uuid,
+        session_id,
+        count() as pageviews,
+        min(timestamp) as first_pageview,
+        max(timestamp) as last_pageview,
+        argMin(source, timestamp) as source,
+        argMin(device, timestamp) as device,
+        argMin(utm_source, timestamp) as utm_source,
+        argMin(utm_medium, timestamp) as utm_medium,
+        argMin(utm_campaign, timestamp) as utm_campaign,
+        argMin(utm_term, timestamp) as utm_term,
+        argMin(utm_content, timestamp) as utm_content
+    FROM _mv_hits
+    WHERE site_uuid = {{ String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True) }}
+        {% if defined(date_from) %}
+            AND timestamp >= toDateTime({{ Date(date_from) }}, {{ String(timezone, 'Etc/UTC', description="Site timezone", required=False) }})
+        {% end %}
+        {% if defined(date_to) %}
+            AND timestamp < toDateTime({{ Date(date_to) }}, {{ String(timezone, 'Etc/UTC', description="Site timezone", required=False) }}) + interval 1 day
+        {% end %}
+    GROUP BY site_uuid, session_id
+
+
+
+NODE data
+SQL >
+
+    SELECT
+        site_uuid,
+        session_id,
+        pageviews,
+        first_pageview,
+        last_pageview,
+        last_pageview - first_pageview AS duration,
+        pageviews = 1 AS is_bounce,
+        source,
+        device,
+        utm_source,
+        utm_medium,
+        utm_campaign,
+        utm_term,
+        utm_content
+    FROM mv_hits_0

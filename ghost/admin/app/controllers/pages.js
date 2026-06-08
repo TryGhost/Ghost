@@ -38,6 +38,6 @@ export default class PagesController extends PostsController {
 
     @action
     openEditor(page) {
-        this.router.transitionTo('editor.edit', 'page', page.get('id'));
+        this.router.transitionTo('lexical-editor.edit', 'page', page.get('id'));
     }
 }

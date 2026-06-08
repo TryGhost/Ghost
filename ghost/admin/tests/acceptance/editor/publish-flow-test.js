@@ -1,6 +1,7 @@
 import loginAsRole from '../../helpers/login-as-role';
 import moment from 'moment-timezone';
-import {blur, click, fillIn, find, findAll} from '@ember/test-helpers';
+import {blur, click, fillIn, find, findAll, waitFor} from '@ember/test-helpers';
+import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../../helpers/mock-analytics-apps';
 import {clickTrigger, removeMultipleOption, selectChoose} from 'ember-power-select/test-support/helpers';
 import {disableMailgun, enableMailgun} from '../../helpers/mailgun';
 import {disableMembers, enableMembers} from '../../helpers/members';
@@ -16,7 +17,12 @@ describe('Acceptance: Publish flow', function () {
     setupMirage(hooks);
 
     beforeEach(function () {
+        mockAnalyticsApps();
         this.server.loadFixtures();
+    });
+
+    afterEach(function () {
+        cleanupMockAnalyticsApps();
     });
 
     it('has minimal features for contributors', async function () {
@@ -49,6 +55,18 @@ describe('Acceptance: Publish flow', function () {
 
         expect(find('.gh-alert'), 'validation shown in alert').to.exist;
         expect(find('[data-test-modal="publish-flow"]'), 'publish flow modal').to.not.exist;
+    });
+
+    it('populates search index when opening', async function () {
+        await loginAsRole('Administrator', this.server);
+
+        const search = this.owner.lookup('service:search');
+        expect(search.isContentStale).to.be.true;
+
+        const post = this.server.create('post', {status: 'draft'});
+        await visit(`/editor/post/${post.id}`);
+
+        expect(search.isContentStale).to.be.false;
     });
 
     it('handles timezones correctly when scheduling');
@@ -93,18 +111,20 @@ describe('Acceptance: Publish flow', function () {
         expect(find('[data-test-publish-flow="confirm"]'), 'confirm step').to.exist;
 
         expect(find('[data-test-text="confirm-details"]'), 'confirmation text')
-            .to.have.rendered.text('Your post will be published on your site.');
+            .to.have.rendered.trimmed.text('Your post will be published on your site.');
 
         expect(find('[data-test-button="confirm-publish"]'), 'publish button text')
-            .to.have.rendered.text('Publish post, right now');
+            .to.have.rendered.trimmed.text('Publish post, right now');
 
         await click('[data-test-button="confirm-publish"]');
 
         expect(post.status, 'post status after publish').to.equal('published');
 
         expect(find('[data-test-publish-flow="complete"]'), 'complete step').to.exist;
-        expect(find('[data-test-complete-title]'), 'complete title').to.have.rendered.text('Boom. It’s out there. That’s 1 post published, keep going!');
+        expect(find('[data-test-complete-title]'), 'complete title').to.have.rendered.trimmed.text('Boom! It\'s out there.\nThat\'s 1 post published.');
         expect(find('[data-test-complete-bookmark]'), 'bookmark card').to.exist;
+
+        await visit(`/editor/post/${post.id}`);
 
         // "revert to draft" only shown for scheduled posts
         expect(find('[data-test-button="revert-to-draft"]'), 'revert-to-draft button').to.not.exist;
@@ -113,7 +133,7 @@ describe('Acceptance: Publish flow', function () {
         expect(find('[data-test-button="publish-flow-preview"]'), 'preview button on complete step').to.not.exist;
         expect(find('[data-test-button="publish-flow-publish"]'), 'publish button on complete step').to.not.exist;
 
-        await click('[data-test-button="back-to-editor"]');
+        await click('[data-test-button="close-publish-flow"]');
 
         expect(find('[data-test-button="publish-flow"]'), 'publish button after publishing').to.not.exist;
         expect(find('[data-test-button="update-flow"]'), 'update button after publishing').to.exist;
@@ -121,7 +141,7 @@ describe('Acceptance: Publish flow', function () {
         await click('[data-test-button="update-flow"]');
 
         expect(find('[data-test-modal="update-flow"]'), 'update flow modal').to.exist;
-        expect(find('[data-test-update-flow-title]')).to.have.rendered.text('This post has been published');
+        expect(find('[data-test-update-flow-title]')).to.have.rendered.trimmed.text('This post has been published');
         expect(find('[data-test-update-flow-confirmation]')).to.contain.rendered.text('Your post was published on your site');
         const savedPublishAt = moment(post.publishedAt).utc();
         expect(find('[data-test-update-flow-confirmation]')).to.contain.rendered.text(`on ${savedPublishAt.format('D MMM YYYY')} at ${savedPublishAt.format('HH:mm')}`);
@@ -245,14 +265,14 @@ describe('Acceptance: Publish flow', function () {
             expect(find('[data-test-text="confirm-details"]')).to.contain.rendered
                 .text('will be published on your site, and delivered to all 7 subscribers.');
 
-            expect(find('[data-test-button="confirm-publish"]')).to.have.rendered
+            expect(find('[data-test-button="confirm-publish"]')).to.have.rendered.trimmed
                 .text('Publish & send, right now');
 
             await click('[data-test-button="confirm-publish"]');
 
             // complete text has right count
             expect(find('[data-test-complete-title]')).to.contain.rendered
-                .text('That’s 1 post published');
+                .text('Boom! It\'s out there.\nThat\'s 1 post published.');
         });
 
         it('can publish+send with multiple newsletters', async function () {
@@ -301,7 +321,7 @@ describe('Acceptance: Publish flow', function () {
             expect(find('[data-test-text="confirm-details"]')).to.contain.rendered
                 .text('will be published on your site, and delivered to all 1 subscriber of Second newsletter.');
 
-            expect(find('[data-test-button="confirm-publish"]')).to.have.rendered
+            expect(find('[data-test-button="confirm-publish"]')).to.have.rendered.trimmed
                 .text('Publish & send, right now');
 
             await click('[data-test-button="confirm-publish"]');
@@ -316,42 +336,44 @@ describe('Acceptance: Publish flow', function () {
             await visit(`/editor/post/${post.id}`);
             await click('[data-test-button="publish-flow"]');
 
-            expect(find('[data-test-setting="publish-at"] [data-test-setting-title]')).to.have.rendered
+            expect(find('[data-test-setting="publish-at"] [data-test-setting-title]')).to.have.rendered.trimmed
                 .text('Right now');
 
             const siteTz = this.server.db.settings.findBy({key: 'timezone'}).value;
-            const plus10 = moment().tz(siteTz).add(10, 'minutes').set({});
+            const plus10 = moment().tz(siteTz).add(10, 'minutes').startOf('minute');
 
             await click('[data-test-setting="publish-at"] [data-test-setting-title]');
             await click('[data-test-radio="schedule"]');
 
             // date + time inputs are shown, defaults to now+5 mins
+            await waitFor('[data-test-setting="publish-at"] [data-test-date-time-picker-datepicker]');
             expect(find('[data-test-setting="publish-at"] [data-test-date-time-picker-datepicker]'), 'datepicker').to.exist;
             expect(find('[data-test-setting="publish-at"] [data-test-date-time-picker-date-input]'), 'initial datepicker value')
                 .to.have.value(plus10.format('YYYY-MM-DD'));
 
+            await waitFor('[data-test-setting="publish-at"] [data-test-date-time-picker-time-input]');
             expect(find('[data-test-setting="publish-at"] [data-test-date-time-picker-time-input]'), 'time input').to.exist;
             expect(find('[data-test-setting="publish-at"] [data-test-date-time-picker-time-input]'), 'initial time input value')
                 .to.have.value(plus10.format('HH:mm'));
 
             // can set a new date and time
-            const newDate = moment().tz(siteTz).add(4, 'days').add(5, 'hours').set('second', 0);
+            const newDate = moment().tz(siteTz).add(4, 'days').add(5, 'hours').startOf('minute');
             await fillIn('[data-test-setting="publish-at"] [data-test-date-time-picker-date-input]', newDate.format('YYYY-MM-DD'));
             await blur('[data-test-setting="publish-at"] [data-test-date-time-picker-date-input]');
             await fillIn('[data-test-setting="publish-at"] [data-test-date-time-picker-time-input]', newDate.format('HH:mm'));
             await blur('[data-test-setting="publish-at"] [data-test-date-time-picker-time-input]');
             expect(find('[data-test-setting="publish-at"] [data-test-date-time-picker-time-input]')).to.have.value(newDate.format('HH:mm'));
 
-            expect(find('[data-test-setting="publish-at"] [data-test-setting-title]'), 'publish-at title after change').to.have.rendered
+            expect(find('[data-test-setting="publish-at"] [data-test-setting-title]'), 'publish-at title after change').to.have.rendered.trimmed
                 .text('In 4 days');
 
             await click('[data-test-button="continue"]');
 
             // has correct confirm text
-            expect(find('[data-test-text="confirm-details"]')).to.have.rendered
+            expect(find('[data-test-text="confirm-details"]')).to.have.rendered.trimmed
                 .text(`On ${newDate.format('D MMM YYYY')} at ${newDate.format('HH:mm')} your post will be published on your site, and delivered to all 7 subscribers.`);
 
-            expect(find('[data-test-button="confirm-publish"]')).to.have.rendered
+            expect(find('[data-test-button="confirm-publish"]')).to.have.rendered.trimmed
                 .text(`Publish & send, on ${newDate.format('MMMM Do')}`);
 
             await click('[data-test-button="confirm-publish"]');
@@ -371,16 +393,16 @@ describe('Acceptance: Publish flow', function () {
             await click('[data-test-setting="publish-type"] [data-test-setting-title]');
             await click('[data-test-publish-type="send"]');
 
-            expect(find('[data-test-setting="publish-type"] [data-test-setting-title]')).to.have.rendered
+            expect(find('[data-test-setting="publish-type"] [data-test-setting-title]')).to.have.rendered.trimmed
                 .text('Email');
 
             await click('[data-test-button="continue"]');
 
             // has correct confirm text
-            expect(find('[data-test-text="confirm-details"]')).to.have.rendered
+            expect(find('[data-test-text="confirm-details"]')).to.have.rendered.trimmed
                 .text(`Your post will be delivered to all 7 subscribers, and will not be published on your site.`);
 
-            expect(find('[data-test-button="confirm-publish"]')).to.have.rendered
+            expect(find('[data-test-button="confirm-publish"]')).to.have.rendered.trimmed
                 .text(`Send email, right now`);
 
             await click('[data-test-button="confirm-publish"]');
@@ -397,7 +419,7 @@ describe('Acceptance: Publish flow', function () {
             await click('[data-test-setting="publish-type"] [data-test-setting-title]');
             await click('[data-test-publish-type="send"]');
 
-            expect(find('[data-test-setting="publish-type"] [data-test-setting-title]')).to.have.rendered
+            expect(find('[data-test-setting="publish-type"] [data-test-setting-title]')).to.have.rendered.trimmed
                 .text('Email');
 
             await click('[data-test-setting="publish-at"] [data-test-setting-title]');
@@ -411,16 +433,16 @@ describe('Acceptance: Publish flow', function () {
             await blur('[data-test-setting="publish-at"] [data-test-date-time-picker-time-input]');
             expect(find('[data-test-setting="publish-at"] [data-test-date-time-picker-time-input]')).to.have.value(newDate.format('HH:mm'));
 
-            expect(find('[data-test-setting="publish-at"] [data-test-setting-title]'), 'publish-at title after change').to.have.rendered
+            expect(find('[data-test-setting="publish-at"] [data-test-setting-title]'), 'publish-at title after change').to.have.rendered.trimmed
                 .text('In 4 days');
 
             await click('[data-test-button="continue"]');
 
             // has correct confirm text
-            expect(find('[data-test-text="confirm-details"]')).to.have.rendered
+            expect(find('[data-test-text="confirm-details"]')).to.have.rendered.trimmed
                 .text(`On ${newDate.format('D MMM YYYY')} at ${newDate.format('HH:mm')} your post will be delivered to all 7 subscribers, and will not be published on your site.`);
 
-            expect(find('[data-test-button="confirm-publish"]')).to.have.rendered
+            expect(find('[data-test-button="confirm-publish"]')).to.have.rendered.trimmed
                 .text(`Send email, on ${newDate.format('MMMM Do')}`);
 
             await click('[data-test-button="confirm-publish"]');
@@ -430,40 +452,6 @@ describe('Acceptance: Publish flow', function () {
 
         it('can publish');
         it('can schedule publish');
-
-        it('respects default recipient settings - usually nobody', async function () {
-            // switch to "usually nobody" setting
-            // - doing it this way so we're not testing potentially stale mocked setting keys/values
-            await loginAsRole('Administrator', this.server);
-            await visit('/settings/newsletters');
-            await click('[data-test-toggle-membersemail]');
-            await selectChoose('[data-test-select="default-recipients"]', 'Usually nobody');
-            await click('[data-test-button="save-members-settings"]');
-
-            const post = this.server.create('post', {status: 'draft'});
-            await visit(`/editor/post/${post.id}`);
-            await click('[data-test-button="publish-flow"]');
-
-            expect(
-                find('[data-test-setting="publish-type"] [data-test-setting-title]'), 'publish type title'
-            ).to.have.trimmed.rendered.text('Publish');
-
-            expect(
-                find('[data-test-setting="email-recipients"] [data-test-setting-title]'), 'recipients title'
-            ).to.have.trimmed.rendered.text('Not sent as newsletter');
-
-            await click('[data-test-setting="publish-type"] [data-test-setting-title]');
-
-            // email-related options are enabled
-            expect(find('[data-test-publish-type="publish+send"]')).to.not.have.attribute('disabled');
-            expect(find('[data-test-publish-type="send"]')).to.not.have.attribute('disabled');
-
-            await click('[data-test-publish-type="publish+send"]');
-
-            expect(
-                find('[data-test-setting="email-recipients"] [data-test-setting-title]'), 'recipients title'
-            ).to.have.trimmed.rendered.text('All 7 subscribers');
-        });
 
         it('handles Mailgun not being set up', async function () {
             disableMailgun(this.server);
@@ -645,5 +633,37 @@ describe('Acceptance: Publish flow', function () {
 
         it('handles server error when confirming');
         it('handles email sending error');
+
+        it('defaults to publish-only when default recipients is "Usually nobody"', async function () {
+            // Set default recipients to "Usually nobody" (filter with null filter)
+            this.server.db.settings.update({key: 'editor_default_email_recipients'}, {value: 'filter'});
+            this.server.db.settings.update({key: 'editor_default_email_recipients_filter'}, {value: null});
+
+            await loginAsRole('Administrator', this.server);
+            const post = this.server.create('post', {status: 'draft'});
+            await visit(`/editor/post/${post.id}`);
+            await click('[data-test-button="publish-flow"]');
+
+            // defaults to "Publish" (not "Publish and email")
+            expect(
+                find('[data-test-setting="publish-type"] [data-test-setting-title]'), 'publish type title'
+            ).to.have.trimmed.rendered.text('Publish');
+
+            // shows "Not sent as newsletter"
+            expect(
+                find('[data-test-setting="email-recipients"] [data-test-setting-title]'), 'email recipients title'
+            ).to.have.trimmed.rendered.text('Not sent as newsletter');
+
+            // email options are still available when switching
+            await click('[data-test-setting="publish-type"] [data-test-setting-title]');
+            expect(find('[data-test-publish-type="publish+send"]')).to.not.have.attribute('disabled');
+            expect(find('[data-test-publish-type="send"]')).to.not.have.attribute('disabled');
+
+            // switching to publish+send shows subscriber count
+            await click('[data-test-publish-type="publish+send"] + label');
+            expect(
+                find('[data-test-setting="email-recipients"] [data-test-setting-title]').textContent
+            ).to.match(/\d+\s*subscriber/);
+        });
     });
 });

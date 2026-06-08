@@ -7,38 +7,33 @@
                         Posts
                     </LinkTo>
                     {{svg-jar "arrow-right-small"}}
-                    <LinkTo @route="posts.analytics" @models={{this.fromAnalytics}}>
+                    <a href="#/posts/analytics/{{this.postAnalytics}}">
                         Analytics
-                    </LinkTo>
+                    </a>
 
                     {{#unless this.directlyFromAnalytics}}
                         {{svg-jar "arrow-right-small"}}
-                        <LinkTo @route="members" data-test-link="members-back" @query={{hash postAnalytics=this.postAnalytics}}>
+                        <a href={{this.membersListUrl}} data-test-link="members-back">
                             Members
-                        </LinkTo>
+                        </a>
                     {{/unless}}
 
-                    {{svg-jar "arrow-right-small"}} {{if this.member.isNew "New member" "Edit member"}}
+                    {{svg-jar "arrow-right-small"}}
+                    <span data-test-screen-title>{{this.memberTitle}}</span>
                 </div>
             {{else}}
                 <div class="gh-canvas-breadcrumb">
-                    <LinkTo @route="members" data-test-link="members-back">
+                    <a href={{this.membersListUrl}} data-test-link="members-back">
                         Members
-                    </LinkTo>
-                    {{svg-jar "arrow-right-small"}} {{if this.member.isNew "New member" "Edit member"}}
+                    </a>
+                    {{svg-jar "arrow-right-small"}}
+                    <span data-test-screen-title>{{this.memberTitle}}</span>
                 </div>
             {{/if}}
-            <h2 class="gh-canvas-title" data-test-screen-title>
-                {{#if this.member.isNew}}
-                    New<span class="gh-canvas-title-hide-for-mobile">&nbsp;member</span>
-                {{else}}
-                    {{or this.member.name this.member.email}}
-                {{/if}}
-            </h2>
         </div>
 
         <section class="view-actions">
-            {{#if this.session.user.isAdmin}}
+            {{#if this.session.user.canManageMembers}}
                 {{#unless this.member.isNew}}
                     <span class="dropdown">
                         <GhDropdownButton
@@ -46,6 +41,7 @@
                             @classNames="gh-btn gh-btn-icon icon-only gh-btn-action-icon"
                             @title="Members Actions"
                             data-test-button="member-actions"
+                            data-testid="member-actions"
                         >
                             <span>
                                 {{svg-jar "settings"}}
@@ -66,6 +62,37 @@
                                 >
                                     <span>Impersonate</span>
                                 </button>
+                            </li>
+                            <li>
+                                <button
+                                    type="button"
+                                    class="mr2"
+                                    {{on "click" this.confirmLogoutMember}}
+                                    data-test-button="logout-member"
+                                >
+                                    <span>Sign out of all devices</span>
+                                </button>
+                            </li>
+                            <li>
+                                {{#if (not-eq this.member.canComment false)}}
+                                    <button
+                                        type="button"
+                                        class="mr2"
+                                        {{on "click" this.confirmDisableCommenting}}
+                                        data-test-button="disable-commenting"
+                                    >
+                                        <span>Disable commenting</span>
+                                    </button>
+                                {{else}}
+                                    <button
+                                        type="button"
+                                        class="mr2"
+                                        {{on "click" this.confirmEnableCommenting}}
+                                        data-test-button="enable-commenting"
+                                    >
+                                        <span>Enable commenting</span>
+                                    </button>
+                                {{/if}}
                             </li>
                             <li>
                                 <button
@@ -95,7 +122,8 @@
                 @onLabelEdit={{this.editLabel}}
                 @saveMember={{this.save}}
                 @isSaveRunning={{this.saveTask.isRunning}}
-                @isLoading={{this.isLoading}} />
+                @isLoading={{this.isLoading}}
+                @onEnableCommenting={{this.confirmEnableCommenting}} />
         </form>
     </div>
 </section>

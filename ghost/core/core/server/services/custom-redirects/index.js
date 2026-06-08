@@ -1,35 +1,37 @@
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');
+const adapterManager = require('../adapter-manager');
 
-const DynamicRedirectManager = require('@tryghost/express-dynamic-redirects');
-const CustomRedirectsAPI = require('./CustomRedirectsAPI');
+const DynamicRedirectManager = require('../lib/dynamic-redirect-manager');
+const {RedirectsService} = require('./redirects-service');
 const validation = require('./validation');
-const {getBackupRedirectsFilePath} = require('./utils');
 
-let customRedirectsAPI;
+let redirectsService;
 let redirectManager;
+
+const makeRedirectManager = () => new DynamicRedirectManager({
+    permanentMaxAge: config.get('caching:customRedirects:maxAge'),
+    getSubdirectoryURL: pathname => urlUtils.urlJoin(urlUtils.getSubdir(), pathname)
+});
 
 module.exports = {
     init() {
-        redirectManager = new DynamicRedirectManager({
-            permanentMaxAge: config.get('caching:customRedirects:maxAge'),
-            getSubdirectoryURL: (pathname) => {
-                return urlUtils.urlJoin(urlUtils.getSubdir(), pathname);
-            }
-        });
+        redirectManager = makeRedirectManager();
 
-        customRedirectsAPI = new CustomRedirectsAPI({
-            basePath: config.getContentPath('data'),
+        const store = adapterManager.getAdapter('redirects');
+
+        redirectsService = new RedirectsService({
+            store,
             redirectManager,
-            getBackupFilePath: getBackupRedirectsFilePath,
-            validate: validation.validate.bind(validation)
+            validate: validation.validate.bind(validation),
+            createDryRunManager: makeRedirectManager
         });
 
-        return customRedirectsAPI.init();
+        return redirectsService.init();
     },
 
     get api() {
-        return customRedirectsAPI;
+        return redirectsService;
     },
 
     get middleware() {

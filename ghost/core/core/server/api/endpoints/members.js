@@ -2,15 +2,18 @@
 // as it is a getter and may change during runtime.
 const moment = require('moment-timezone');
 const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 const models = require('../../models');
 const membersService = require('../../services/members');
 
 const settingsCache = require('../../../shared/settings-cache');
 const tpl = require('@tryghost/tpl');
 const _ = require('lodash');
+const {getCSVExportFileName} = require('./utils/csv-export-filename');
 
 const messages = {
     memberNotFound: 'Member not found.',
+    notSendingWelcomeEmail: 'Email verification required, welcome email is disabled',
     memberAlreadyExists: {
         message: 'Member already exists',
         context: 'Attempting to {action} member with existing email address.'
@@ -22,14 +25,15 @@ const messages = {
     },
     stripeCustomerNotFound: {
         context: 'Missing Stripe customer.',
-        help: 'Make sure you’re connected to the correct Stripe Account.'
+        help: 'Make sure you\'re connected to the correct Stripe Account.'
     },
     resourceNotFound: '{resource} not found.'
 };
 
 const allowedIncludes = ['email_recipients', 'products', 'tiers'];
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'members',
 
     browse: {
@@ -114,6 +118,10 @@ module.exports = {
         },
         permissions: true,
         async query(frame) {
+            if (await membersService.verificationTrigger.checkVerificationRequired()) {
+                logging.warn(tpl(messages.notSendingWelcomeEmail));
+                frame.options.send_email = false;
+            }
             const member = await membersService.api.memberBREADService.add(frame.data.members[0], frame.options);
 
             return member;
@@ -138,6 +146,31 @@ module.exports = {
         permissions: true,
         async query(frame) {
             const member = await membersService.api.memberBREADService.edit(frame.data.members[0], frame.options);
+
+            return member;
+        }
+    },
+
+    logout: {
+        statusCode: 204,
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'id'
+        ],
+        validation: {
+            options: {
+                id: {
+                    required: true
+                }
+            }
+        },
+        permissions: {
+            method: 'edit'
+        },
+        async query(frame) {
+            const member = await membersService.api.memberBREADService.logout(frame.options);
 
             return member;
         }
@@ -345,14 +378,15 @@ module.exports = {
             disposition: {
                 type: 'csv',
                 value() {
-                    const datetime = (new Date()).toJSON().substring(0, 10);
-                    return `members.${datetime}.csv`;
+                    return getCSVExportFileName('members');
                 }
             },
+            contentType: 'text/csv',
             cacheInvalidate: false
         },
         response: {
-            format: 'plain'
+            format: 'plain',
+            stream: true
         },
         permissions: {
             method: 'browse'
@@ -360,7 +394,8 @@ module.exports = {
         validation: {},
         async query(frame) {
             return {
-                data: await membersService.export(frame.options)
+                data: await membersService.export(frame.options),
+                filename: getCSVExportFileName('members')
             };
         }
     },
@@ -394,7 +429,7 @@ module.exports = {
             if (frame.user) {
                 email = frame.user.get('email');
             } else {
-                email = await models.User.getOwnerUser().get('email');
+                email = (await models.User.getOwnerUser()).get('email');
             }
 
             return membersService.processImport({
@@ -419,16 +454,17 @@ module.exports = {
         },
         async query() {
             const memberStats = await membersService.api.events.getStatuses();
-            let totalMembers = _.last(memberStats) ? (_.last(memberStats).paid + _.last(memberStats).free + _.last(memberStats).comped) : 0;
+            const last = _.last(memberStats);
+            let totalMembers = last ? (last.paid + last.free + last.comped + last.gift) : 0;
 
             return {
                 resource: 'members',
                 total: totalMembers,
                 data: memberStats.map((d) => {
-                    const {paid, free, comped} = d;
+                    const {paid, free, comped, gift} = d;
                     return {
                         date: moment(d.date).format('YYYY-MM-DD'),
-                        paid, free, comped
+                        paid, free, comped, gift
                     };
                 })
             };
@@ -476,5 +512,53 @@ module.exports = {
         async query(frame) {
             return await membersService.api.events.getEventTimeline(frame.options);
         }
+    },
+
+    deleteEmailSuppression: {
+        statusCode: 204,
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'id'
+        ],
+        validation: {
+            options: {
+                id: {
+                    required: true
+                }
+            }
+        },
+        permissions: {
+            method: 'edit'
+        },
+        async query(frame) {
+            const emailSuppressionList = require('../../services/email-suppression-list');
+
+            // Get the member first to retrieve their email
+            const member = await membersService.api.memberBREADService.read({id: frame.options.id}, {});
+
+            if (!member) {
+                throw new errors.NotFoundError({
+                    message: tpl(messages.memberNotFound)
+                });
+            }
+
+            // Remove the email from the suppression list
+            const didRemoveSuppression = await emailSuppressionList.removeEmail(member.email);
+
+            if (!didRemoveSuppression) {
+                throw new errors.InternalServerError({
+                    message: 'Failed to remove email suppression.'
+                });
+            }
+
+            // Update the member to re-enable email
+            await membersService.api.memberBREADService.edit({email_disabled: false}, {id: frame.options.id});
+
+            return null;
+        }
     }
 };
+
+module.exports = controller;

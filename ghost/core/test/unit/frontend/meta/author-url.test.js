@@ -1,12 +1,16 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const sinon = require('sinon');
 const ObjectId = require('bson-objectid').default;
 const urlService = require('../../../../core/server/services/url');
 const getAuthorUrl = require('../../../../core/frontend/meta/author-url');
 
 describe('getAuthorUrl', function () {
+    /** @type {import('sinon').SinonStub} */
+    let urlServiceGetUrlForResourceStub;
+
     beforeEach(function () {
-        sinon.stub(urlService, 'getUrlByResourceId');
+        urlServiceGetUrlForResourceStub = sinon.stub(urlService.facade, 'getUrlForResource');
     });
 
     afterEach(function () {
@@ -21,10 +25,10 @@ describe('getAuthorUrl', function () {
             }
         };
 
-        urlService.getUrlByResourceId.withArgs(post.primary_author.id, {absolute: undefined, withSubdirectory: true})
+        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: post.primary_author.id, type: 'authors'}), {absolute: undefined, withSubdirectory: true})
             .returns('author url');
 
-        should.exist(getAuthorUrl({
+        assertExists(getAuthorUrl({
             context: ['post'],
             post: post
         }));
@@ -38,30 +42,13 @@ describe('getAuthorUrl', function () {
             }
         };
 
-        urlService.getUrlByResourceId.withArgs(post.primary_author.id, {absolute: true, withSubdirectory: true})
+        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: post.primary_author.id, type: 'authors'}), {absolute: true, withSubdirectory: true})
             .returns('absolute author url');
 
-        should.exist(getAuthorUrl({
+        assertExists(getAuthorUrl({
             context: ['post'],
             post: post
         }, true));
-    });
-
-    it('should return author url for AMP if context contains primary author', function () {
-        const post = {
-            primary_author: {
-                id: ObjectId().toHexString(),
-                slug: 'test-author'
-            }
-        };
-
-        urlService.getUrlByResourceId.withArgs(post.primary_author.id, {absolute: undefined, withSubdirectory: true})
-            .returns('author url');
-
-        should.exist(getAuthorUrl({
-            context: ['amp', 'post'],
-            post: post
-        }));
     });
 
     it('should return author url if data contains author', function () {
@@ -70,15 +57,15 @@ describe('getAuthorUrl', function () {
             slug: 'test-author'
         };
 
-        urlService.getUrlByResourceId.withArgs(author.id, {absolute: undefined, withSubdirectory: true})
+        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: author.id, type: 'authors'}), {absolute: undefined, withSubdirectory: true})
             .returns('author url');
 
-        should.exist(getAuthorUrl({
+        assertExists(getAuthorUrl({
             author: author
         }));
     });
 
     it('should return null if no author on data or context', function () {
-        should.not.exist(getAuthorUrl({}, true));
+        assert.equal(getAuthorUrl({}, true), null);
     });
 });

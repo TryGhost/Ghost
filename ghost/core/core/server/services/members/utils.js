@@ -1,6 +1,12 @@
 function formatNewsletterResponse(newsletters) {
-    return newsletters.map(({id, name, description, sort_order: sortOrder}) => {
-        return {id, name, description, sort_order: sortOrder};
+    return newsletters.map(({id, uuid, name, description, sort_order: sortOrder}) => {
+        return {
+            id,
+            uuid,
+            name,
+            description,
+            sort_order: sortOrder
+        };
     });
 }
 
@@ -16,11 +22,15 @@ module.exports.formattedMemberResponse = function formattedMemberResponse(member
         firstname: member.name && member.name.split(' ')[0],
         expertise: member.expertise,
         avatar_image: member.avatar_image,
+        unsubscribe_url: member.unsubscribe_url,
         subscribed: !!member.subscribed,
         subscriptions: member.subscriptions || [],
+        status: member.status,
         paid: member.status !== 'free',
         created_at: member.created_at,
-        enable_comment_notifications: member.enable_comment_notifications
+        enable_comment_notifications: member.enable_comment_notifications,
+        can_comment: member.can_comment,
+        commenting: member.commenting
     };
     if (member.newsletters) {
         data.newsletters = formatNewsletterResponse(member.newsletters);

@@ -3,17 +3,69 @@ import windowProxy from 'ghost-admin/utils/window-proxy';
 import {Response} from 'miragejs';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
-import {currentRouteName, currentURL, fillIn, findAll, triggerKeyEvent, visit, waitFor} from '@ember/test-helpers';
+import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
+import {click, currentRouteName, currentURL, fillIn, find, findAll, triggerKeyEvent, waitFor, waitUntil} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {run} from '@ember/runloop';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
+import {visit} from '../helpers/visit';
 
+function setupVerificationRequired(server, responseCode = 403) {
+    server.post('/session', function () {
+        return new Response(responseCode, {}, {
+            errors: [{
+                code: '2FA_TOKEN_REQUIRED'
+            }]
+        });
+    });
+}
+
+function setupVerificationSuccess(server) {
+    server.put('/session/verify', function () {
+        return new Response(201);
+    });
+}
+
+function setupVerificationFailed(server) {
+    server.put('/session/verify', function () {
+        return new Response(401, {}, null);
+    });
+}
+
+function setupResendSuccess(server, {timing = 0}) {
+    // API returns 'OK' in API response - this is important as it will cause
+    // errors to be thrown if we try to parse it as JSON
+    server.post('/session/verify', function () {
+        return new Response(200, {}, 'OK');
+    }, {timing});
+}
+
+function setupResendFailure(server, {responseCode = 400, timing = 0, message} = {}) {
+    server.post('/session/verify', function () {
+        if (message) {
+            return new Response(responseCode, {}, {
+                errors: [{
+                    message
+                }]
+            });
+        }
+
+        return new Response(responseCode);
+    }, {timing});
+}
 describe('Acceptance: Authentication', function () {
-    let originalReplaceLocation;
-
     let hooks = setupApplicationTest();
     setupMirage(hooks);
+
+    beforeEach(async function () {
+        mockAnalyticsApps();
+        this.server.loadFixtures('configs');
+    });
+
+    afterEach(function () {
+        cleanupMockAnalyticsApps();
+    });
 
     describe('setup redirect', function () {
         beforeEach(function () {
@@ -24,32 +76,62 @@ describe('Acceptance: Authentication', function () {
             });
         });
         it('redirects to setup when setup isn\'t complete', async function () {
-            await visit('settings/labs');
+            await visit('/pages');
             expect(currentURL()).to.equal('/setup');
         });
     });
 
     describe('general page', function () {
-        let newLocation;
+        const verifyButton = '[data-test-button="verify"]';
+        const resendButton = '[data-test-button="resend-token"]';
+        const codeInput = '[data-test-input="token"]';
+
+        async function completeSignIn() {
+            await invalidateSession();
+            await visit('/signin');
+            await fillIn('[data-test-input="email"]', 'my@email.com');
+            await fillIn('[data-test-input="password"]', 'password');
+            await click('[data-test-button="sign-in"]');
+        }
+
+        async function completeVerification() {
+            await fillIn(codeInput, 123456);
+            await click(verifyButton);
+        }
+
+        function testMainErrorMessage(expectedMessage) {
+            expect(find('[data-test-flow-notification]')).to.have.trimmed.text(expectedMessage);
+        }
+
+        function testTokenInputHasErrorState(expectHasError = true) {
+            if (expectHasError) {
+                expect(find(codeInput).closest('.form-group')).to.have.class('error');
+            } else {
+                expect(find(codeInput).closest('.form-group')).not.to.have.class('error');
+            }
+        }
+
+        function testButtonHasErrorState(expectHasError = true) {
+            if (expectHasError) {
+                expect(find(verifyButton)).to.have.class('gh-btn-red');
+            } else {
+                expect(find(verifyButton)).not.to.have.class('gh-btn-red');
+            }
+        }
 
         beforeEach(function () {
-            originalReplaceLocation = windowProxy.replaceLocation;
-            windowProxy.replaceLocation = function (url) {
-                url = url.replace(/^\/ghost\//, '/');
-                newLocation = url;
-            };
-            newLocation = undefined;
+            sinon.stub(windowProxy, 'replaceLocation');
+            sinon.stub(windowProxy, 'changeLocation');
 
             let role = this.server.create('role', {name: 'Administrator'});
             this.server.create('user', {roles: [role], slug: 'test-user'});
         });
 
         afterEach(function () {
-            windowProxy.replaceLocation = originalReplaceLocation;
+            sinon.restore();
         });
 
-        it('invalidates session on 401 API response', async function () {
-            // return a 401 when attempting to retrieve users
+        it('redirects via replaceLocation on 401 API response for current user on app load', async function () {
             this.server.get('/users/me', () => new Response(401, {}, {
                 errors: [
                     {message: 'Access denied.', type: 'UnauthorizedError'}
@@ -57,20 +139,12 @@ describe('Acceptance: Authentication', function () {
             }));
 
             await authenticateSession();
-            await visit('/settings/staff');
+            await visit('/pages');
 
-            // running `visit(url)` inside windowProxy.replaceLocation breaks
-            // the async behaviour so we need to run `visit` here to simulate
-            // the browser visiting the new page
-            if (newLocation) {
-                await visit(newLocation);
-            }
-
-            expect(currentURL(), 'url after 401').to.equal('/signin');
+            expect(windowProxy.replaceLocation.calledOnce, 'replaceLocation called').to.be.true;
         });
 
-        it('invalidates session on 403 API response', async function () {
-            // return a 401 when attempting to retrieve users
+        it('redirects via replaceLocation on 403 API response for current user on app load', async function () {
             this.server.get('/users/me', () => new Response(403, {}, {
                 errors: [
                     {message: 'Authorization failed', type: 'NoPermissionError'}
@@ -78,21 +152,30 @@ describe('Acceptance: Authentication', function () {
             }));
 
             await authenticateSession();
-            await visit('/settings/staff');
+            await visit('/pages');
 
-            // running `visit(url)` inside windowProxy.replaceLocation breaks
-            // the async behaviour so we need to run `visit` here to simulate
-            // the browser visiting the new page
-            if (newLocation) {
-                await visit(newLocation);
-            }
+            expect(windowProxy.replaceLocation.calledOnce, 'replaceLocation called').to.be.true;
+        });
 
-            expect(currentURL(), 'url after 403').to.equal('/signin');
+        // NOTE: The navigation needs to use standard route hooks for loading, if it
+        // triggers fetches in a task or similar then it will error and fail the test
+        // because we can't catch it before it hits global.onerror despite behaving
+        // correctly in the app.
+        it('replaces location with root URL on 403 API response when navigating whilst "authenticated"', async function () {
+            this.server.get(`/pages/`, () => new Response(403, {}, {
+                errors: [
+                    {message: 'Authorization failed', type: 'NoPermissionError'}
+                ]
+            }));
+
+            await authenticateSession();
+            await visit('/pages');
+
+            expect(windowProxy.replaceLocation.calledWith('/ghost/'), 'replaceLocation called with /ghost/').to.be.true;
         });
 
         it('doesn\'t show navigation menu on invalid url when not authenticated', async function () {
             await invalidateSession();
-
             await visit('/');
 
             expect(currentURL(), 'current url').to.equal('/signin');
@@ -100,18 +183,140 @@ describe('Acceptance: Authentication', function () {
 
             await visit('/signin/invalidurl/');
 
-            expect(currentURL(), 'url after invalid url').to.equal('/signin/invalidurl/');
-            expect(currentRouteName(), 'path after invalid url').to.equal('error404');
+            expect(currentURL(), 'url after invalid url').to.equal('/signin');
+            expect(currentRouteName(), 'path after invalid url').to.equal('signin');
             expect(findAll('nav.gh-nav').length, 'nav menu presence').to.equal(0);
         });
 
-        it('shows nav menu on invalid url when authenticated', async function () {
-            await authenticateSession();
-            await visit('/signin/invalidurl/');
+        it('has 2fa code happy path', async function () {
+            setupVerificationRequired(this.server);
+            setupVerificationSuccess(this.server);
 
-            expect(currentURL(), 'url after invalid url').to.equal('/signin/invalidurl/');
-            expect(currentRouteName(), 'path after invalid url').to.equal('error404');
-            expect(findAll('nav.gh-nav').length, 'nav menu presence').to.equal(1);
+            await completeSignIn();
+            expect(currentURL(), 'url after email+password submit').to.equal('/signin/verify');
+            await completeVerification();
+            expect(currentURL()).to.equal('/analytics');
+        });
+
+        it('handles 2fa code verification failure', async function () {
+            setupVerificationRequired(this.server);
+            setupVerificationFailed(this.server);
+
+            await completeSignIn();
+            await completeVerification();
+
+            testMainErrorMessage('Your verification code is incorrect.');
+        });
+
+        it('handles known 2fa code verification error', async function () {
+            setupVerificationRequired(this.server);
+            this.server.put('/session/verify', function () {
+                return new Response(422, {}, {
+                    errors: [{
+                        message: 'Could not find session. Please try to signin again.'
+                    }]
+                });
+            });
+
+            await completeSignIn();
+            await completeVerification();
+
+            testMainErrorMessage('Could not find session. Please try to signin again.');
+        });
+
+        it('handles unknown 2fa code verification error', async function () {
+            setupVerificationRequired(this.server);
+            this.server.put('/session/verify', function () {
+                return new Response(400);
+            });
+
+            await completeSignIn();
+            await completeVerification();
+
+            testMainErrorMessage('There was a problem verifying the code. Please try again.');
+        });
+
+        it('handles 2fa-required on a 2xx response from signin', async function () {
+            setupVerificationRequired(this.server, 200);
+            await completeSignIn();
+
+            expect(currentURL(), 'url after email+password submit').to.equal('/signin/verify');
+        });
+
+        it('handles non-2fa 403 response on signin', async function () {
+            this.server.post('/session', function () {
+                return new Response(403, {}, {
+                    errors: [{message: 'Insufficient permissions'}]
+                });
+            });
+
+            await completeSignIn();
+
+            expect(currentURL(), 'url after email+password submit').to.equal('/signin');
+            testMainErrorMessage('Insufficient permissions');
+        });
+
+        it('has client-side validation of verification code', async function () {
+            setupVerificationRequired(this.server);
+            await completeSignIn();
+
+            // no error state when starting flow
+            testTokenInputHasErrorState(false);
+            testButtonHasErrorState(false);
+            testMainErrorMessage('');
+
+            // client-side validation of token presence
+            await click(verifyButton);
+            testTokenInputHasErrorState();
+            testMainErrorMessage('Verification code is required');
+
+            // resets validation state when typing
+            await fillIn(codeInput, '1234');
+            testTokenInputHasErrorState(false);
+            testButtonHasErrorState(false);
+            testMainErrorMessage('');
+
+            // client-side validation of token format
+            await click(verifyButton);
+            testTokenInputHasErrorState();
+            testButtonHasErrorState();
+            testMainErrorMessage('Verification code must be 6 numbers');
+
+            // can correctly submit after failed attempts
+            await fillIn(codeInput, '123456');
+            await click(verifyButton);
+            expect(currentURL()).to.equal('/analytics');
+        });
+
+        it('can resend verification code', async function () {
+            setupVerificationRequired(this.server);
+            setupResendSuccess(this.server, {timing: 100});
+            await completeSignIn();
+
+            // no await so we can test for intermediary state
+            click(resendButton);
+
+            // await this.pauseTest();
+            await waitFor(`${resendButton}[disabled]`, {timeout: 10});
+            await waitUntil(() => find(resendButton).textContent.includes('Sending'), {timeout: 30, timeoutMessage: 'Check for "Sending" timed out'});
+            await waitUntil(() => find(resendButton).textContent.includes('Sent'), {timeout: 150, timeoutMessage: 'Check for "Sent" timed out'});
+            await waitFor(`${resendButton}:not([disabled])`, {timeout: 200});
+            expect(find(resendButton)).to.have.trimmed.text('Resend');
+        });
+
+        it('handles resend error', async function () {
+            setupVerificationRequired(this.server);
+            await completeSignIn();
+
+            // default error message
+            setupResendFailure(this.server);
+            await click(resendButton);
+            testMainErrorMessage('There was a problem resending the verification token.');
+
+            // server-provided error message
+            setupResendFailure(this.server, {message: 'Testing error.'});
+            await click(resendButton);
+            testMainErrorMessage('Testing error.');
         });
     });
 
@@ -152,7 +357,7 @@ describe('Acceptance: Authentication', function () {
 
             // create the post
             await fillIn('.gh-editor-title', 'Test Post');
-            await fillIn('.__mobiledoc-editor', 'Test post body');
+            // await fillIn('.kg-prose', 'Test post body'); // TODO: We don't currently have an editorInstance when loading Lexical as the editor.. need to look in to this
             await triggerKeyEvent('.gh-editor-title', 'keydown', 83, {
                 metaKey: ctrlOrCmd === 'command',
                 ctrlKey: ctrlOrCmd === 'ctrl'
@@ -165,7 +370,7 @@ describe('Acceptance: Authentication', function () {
 
             // update the post
             testOn = 'edit';
-            await fillIn('.__mobiledoc-editor', 'Edited post body');
+            await fillIn('.gh-editor-title', 'Test Post Updated');
             triggerKeyEvent('.gh-editor-title', 'keydown', 83, {
                 metaKey: ctrlOrCmd === 'command',
                 ctrlKey: ctrlOrCmd === 'ctrl'

@@ -3,6 +3,7 @@ import EmailFailedError from 'ghost-admin/errors/email-failed-error';
 import PreviewModal from './modals/preview';
 import PublishFlowModal from './modals/publish-flow';
 import PublishOptionsResource from 'ghost-admin/helpers/publish-options';
+import TkReminderModal from './modals/tk-reminder';
 import UpdateFlowModal from './modals/update-flow';
 import envConfig from 'ghost-admin/config/environment';
 import {action} from '@ember/object';
@@ -27,7 +28,9 @@ export default class PublishManagement extends Component {
     // ensure we get a new PublishOptions instance when @post is replaced
     @use publishOptions = new PublishOptionsResource(() => [this.args.post]);
 
-    @tracked previewTab = 'browser';
+    @tracked previewFormat = 'browser';
+    @tracked previewSize = 'desktop';
+    @tracked previewAsSegment = 'free';
 
     publishFlowModal = null;
     updateFlowModal = null;
@@ -45,7 +48,17 @@ export default class PublishManagement extends Component {
 
         const isValid = await this._validatePost();
 
-        if (isValid && !this.publishFlowModal || this.publishFlowModal?.isClosing) {
+        if (this.args.tkCount > 0) {
+            const ignoreTks = await this.modals.open(TkReminderModal, {
+                tkCount: this.args.tkCount
+            });
+
+            if (ignoreTks !== true) {
+                return;
+            }
+        }
+
+        if (isValid && (!this.publishFlowModal || this.publishFlowModal?.isClosing)) {
             this.publishOptions.resetPastScheduledAt();
 
             this.publishFlowModal = this.modals.open(PublishFlowModal, {
@@ -72,7 +85,7 @@ export default class PublishManagement extends Component {
 
         const isValid = await this._validatePost();
 
-        if (isValid && !this.updateFlowModal || this.updateFlowModal.isClosing) {
+        if (isValid && (!this.updateFlowModal || this.updateFlowModal.isClosing)) {
             this.updateFlowModal = this.modals.open(UpdateFlowModal, {
                 publishOptions: this.publishOptions,
                 saveTask: this.publishTask
@@ -88,10 +101,12 @@ export default class PublishManagement extends Component {
     }
 
     @action
-    openPreview(event, {skipAnimation} = {}) {
+    async openPreview(event, {skipAnimation} = {}) {
         event?.preventDefault();
 
-        if (!this.previewModal || this.previewModal.isClosing) {
+        const isValid = await this._validatePost();
+
+        if (isValid && (!this.previewModal || this.previewModal.isClosing)) {
             // open publish flow modal underneath to offer quick switching
             // without restarting the flow or causing flicker
 
@@ -99,10 +114,13 @@ export default class PublishManagement extends Component {
                 publishOptions: this.publishOptions,
                 hasDirtyAttributes: this.args.hasUnsavedChanges,
                 saveTask: this.saveTask,
-                savePostTask: this.args.savePostTask,
                 togglePreviewPublish: this.togglePreviewPublish,
-                currentTab: this.previewTab,
-                changeTab: this.changePreviewTab,
+                initialPreviewFormat: this.previewFormat,
+                changePreviewFormat: this.changePreviewFormat,
+                initialPreviewSize: this.previewSize,
+                changePreviewSize: this.changePreviewSize,
+                initialPreviewAsSegment: this.previewAsSegment,
+                changePreviewAsSegment: this.changePreviewAsSegment,
                 skipAnimation
             });
         }
@@ -111,6 +129,9 @@ export default class PublishManagement extends Component {
     // triggered by ctrl/cmd+p
     @action
     togglePreview(event) {
+        if (event?.defaultPrevented) {
+            return;
+        }
         event?.preventDefault();
 
         if (!this.previewModal || this.previewModal.isClosing) {
@@ -125,8 +146,18 @@ export default class PublishManagement extends Component {
     }
 
     @action
-    changePreviewTab(tab) {
-        this.previewTab = tab;
+    changePreviewFormat(format) {
+        this.previewFormat = format;
+    }
+
+    @action
+    changePreviewSize(size) {
+        this.previewSize = size;
+    }
+
+    @action
+    changePreviewAsSegment(segment) {
+        this.previewAsSegment = segment;
     }
 
     @action
@@ -169,7 +200,7 @@ export default class PublishManagement extends Component {
         const willEmailImmediately = this.publishOptions.willEmailImmediately;
 
         // clean up blank editor cards
-        // apply cloned mobiledoc
+        // apply cloned lexical
         // apply scratch values
         // generate slug if needed (should never happen - publish flow can't be opened on new posts)
         yield this.args.beforePublish();
@@ -239,7 +270,7 @@ export default class PublishManagement extends Component {
             yield this.publishTask.perform({taskName: 'revertToDraftTask'});
 
             const postType = capitalize(this.args.post.displayName);
-            this.notifications.showNotification(`${postType} successfully reverted to a draft.`, {type: 'success'});
+            this.notifications.showNotification(`${postType} reverted to a draft.`, {type: 'success'});
 
             return true;
         } catch (e) {

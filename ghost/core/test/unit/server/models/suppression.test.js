@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const Suppression = require('../../../../core/server/models/suppression');
 
 describe('Suppression', function () {

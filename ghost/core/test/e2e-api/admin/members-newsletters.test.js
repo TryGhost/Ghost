@@ -1,5 +1,7 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyArray} = matchers;
+const settingsHelpers = require('../../../core/server/services/settings-helpers');
+const sinon = require('sinon');
 
 const memberMatcherShallowIncludesForNewsletters = {
     id: anyObjectId,
@@ -18,6 +20,10 @@ describe('Members API - With Newsletters', function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('newsletters', 'members:newsletters');
         await agent.loginAsOwner();
+    });
+
+    beforeEach(function () {
+        sinon.stub(settingsHelpers, 'createUnsubscribeUrl').returns('http://domain.com/unsubscribe/?uuid=memberuuid&key=abc123dontstealme');
     });
 
     afterEach(function () {
@@ -58,6 +64,10 @@ describe('Members API - With Newsletters - compat mode', function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('newsletters', 'members:newsletters');
         await agent.loginAsOwner();
+    });
+
+    beforeEach(function () {
+        sinon.stub(settingsHelpers, 'createUnsubscribeUrl').returns('http://domain.com/unsubscribe/?uuid=memberuuid&key=abc123dontstealme');
     });
 
     afterEach(function () {

@@ -104,7 +104,7 @@
 
 .kg-content-wide .kg-header-card-content .kg-header-card-image {
     height: 100%;
-    padding: 8rem 0;
+    padding: 5.6em 0;
     object-fit: contain;
 }
 
@@ -112,22 +112,22 @@
 
 .kg-header-card h2.kg-header-card-heading {
     margin: 0;
-    font-size: clamp(2.4rem, 4vw, 3.6rem);
+    font-size: clamp(1.7em, 4vw, 2.5em);
     font-weight: 700;
-    line-height: 1em;
+    line-height: 1.05em;
     letter-spacing: -0.01em;
 }
 
 .kg-header-card.kg-width-wide h2.kg-header-card-heading {
-    font-size: clamp(2.4rem, 5vw, 4.8rem);
+    font-size: clamp(1.7em, 5vw, 3.3em);
 }
 
 .kg-header-card.kg-width-full h2.kg-header-card-heading {
-    font-size: clamp(2.8rem, 5.6vw, 6rem);
+    font-size: clamp(1.9em, 5.6vw, 4.2em);
 }
 
 .kg-header-card.kg-width-full.kg-layout-split h2.kg-header-card-heading {
-    font-size: clamp(2.8rem, 4vw, 4.8rem);
+    font-size: clamp(1.9em, 4vw, 3.3em);
 }
 
 /* Subheading */
@@ -139,7 +139,7 @@
 .kg-header-card .kg-header-card-subheading {
     max-width: 40em;
     margin: 0;
-    font-size: clamp(1.05em, 2vw, 2rem);
+    font-size: clamp(1.05em, 2vw, 1.4em);
     font-weight: 500;
     line-height: 1.2em;
 }
@@ -153,23 +153,24 @@
 }
 
 .kg-header-card.kg-width-wide .kg-header-card-subheading {
-    font-size: clamp(1.05em, 2vw, 2.2rem);
+    font-size: clamp(1.05em, 2vw, 1.55em);
 }
 
 .kg-header-card.kg-width-full .kg-header-card-subheading:not(.kg-layout-split .kg-header-card-subheading) {
     max-width: min(65vmax, 1200px);
-    font-size: clamp(1.05em, 2vw, 2.4rem);
+    font-size: clamp(1.05em, 2vw, 1.7em);
 }
 
 .kg-header-card.kg-width-full.kg-layout-split .kg-header-card-subheading {
-    font-size: clamp(1.05em, 2vw, 2.2rem);
+    font-size: clamp(1.05em, 2vw, 1.55em);
 }
 
 .kg-header-card.kg-v2 .kg-header-card-button {
     display: flex;
     position: relative;
     align-items: center;
-    height: 4.6rem;
+    height: 2.9em;
+    min-height: 46px;
     padding: 0 1.2em;
     outline: none;
     border: none;
@@ -243,15 +244,15 @@
     }
 
     .kg-content-wide .kg-header-card-content .kg-header-card-image {
-        padding: 2.4rem 0 0;
+        padding: 1.7em 0 0;
     }
 
     .kg-content-wide.kg-swapped .kg-header-card-content .kg-header-card-image {
-        padding: 0 0 2.4rem;
+        padding: 0 0 1.7em;
     }
 
     .kg-header-card.kg-v2 .kg-header-card-button {
-        height: 4.2rem;
+        height: 2.9em;
     }
 
     .kg-header-card.kg-v2.kg-width-wide .kg-header-card-button,

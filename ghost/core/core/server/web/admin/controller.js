@@ -5,7 +5,6 @@ const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 const config = require('../../../shared/config');
-const updateCheck = require('../../update-check');
 
 const messages = {
     templateError: {
@@ -18,16 +17,11 @@ const messages = {
 /**
  * @description Admin controller to handle /ghost/ requests.
  *
- * Every request to the admin panel will re-trigger the update check service.
- *
- * @param req
- * @param res
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
  */
 module.exports = function adminController(req, res) {
     debug('index called');
-
-    // CASE: trigger update check unit and let it run in background, don't block the admin rendering
-    updateCheck();
 
     const templatePath = path.resolve(config.get('paths').adminAssets, 'index.html');
     const headers = {};
@@ -46,17 +40,16 @@ module.exports = function adminController(req, res) {
             headers['X-Frame-Options'] = 'sameorigin';
         }
 
-        res.sendFile(templatePath, {headers});
-    } catch (error) {
-        if (error.code === 'ENOENT') {
+        res.sendFile(templatePath, {headers, lastModified: false});
+    } catch (err) {
+        if (err.code === 'ENOENT') {
             throw new errors.IncorrectUsageError({
                 message: tpl(messages.templateError.message, {templatePath}),
                 context: tpl(messages.templateError.context),
                 help: tpl(messages.templateError.help, {link: 'https://ghost.org/docs/install/source/'}),
-                error: error
+                err
             });
-        } else {
-            throw error;
         }
+        throw err;
     }
 };

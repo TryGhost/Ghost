@@ -1,8 +1,7 @@
-const models = require('../../models');
+const postScheduling = require('../../services/posts/post-scheduling');
 
-const postSchedulingService = require('../../services/posts/post-scheduling-service')();
-
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'schedules',
     publish: {
         headers: {
@@ -39,44 +38,20 @@ module.exports = {
                 }
             };
 
-            const {scheduledResource, preScheduledResource} = await postSchedulingService.publish(resourceType, frame.options.id, frame.data.force, options);
-            const cacheInvalidate = postSchedulingService.handleCacheInvalidation(scheduledResource, preScheduledResource);
-            this.headers.cacheInvalidate = cacheInvalidate;
+            const {scheduledResource, preScheduledResource} = await postScheduling.publish(resourceType, frame.options.id, frame.data.force, options);
+            const cacheInvalidation = postScheduling.handleCacheInvalidation(scheduledResource, preScheduledResource);
+
+            if (cacheInvalidation === true) {
+                frame.setHeader('X-Cache-Invalidate', '/*');
+            } else if (cacheInvalidation.value) {
+                frame.setHeader('X-Cache-Invalidate', cacheInvalidation.value);
+            }
 
             const response = {};
             response[resourceType] = [scheduledResource];
             return response;
         }
-    },
-
-    getScheduled: {
-        // NOTE: this method is for internal use only by DefaultScheduler
-        //       it is not exposed anywhere!
-        headers: {
-            cacheInvalidate: false
-        },
-        permissions: false,
-        validation: {
-            options: {
-                resource: {
-                    required: true,
-                    values: ['posts', 'pages']
-                }
-            }
-        },
-        query(frame) {
-            const resourceModel = 'Post';
-            const resourceType = (frame.options.resource === 'post') ? 'post' : 'page';
-            const cleanOptions = {};
-            cleanOptions.filter = `status:scheduled+type:${resourceType}`;
-            cleanOptions.columns = ['id', 'published_at', 'created_at', 'type'];
-
-            return models[resourceModel].findAll(cleanOptions)
-                .then((result) => {
-                    let response = {};
-                    response[resourceType] = result;
-                    return response;
-                });
-        }
     }
 };
+
+module.exports = controller;

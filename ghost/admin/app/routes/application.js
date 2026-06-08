@@ -1,12 +1,14 @@
+import * as Sentry from '@sentry/ember';
+import * as jsxRuntime from 'react/jsx-runtime';
 import AuthConfiguration from 'ember-simple-auth/configuration';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Route from '@ember/routing/route';
+import SearchModal from '../components/modals/search';
 import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import windowProxy from 'ghost-admin/utils/window-proxy';
-import {InitSentryForEmber} from '@sentry/ember';
-import {importSettings} from '../components/admin-x/settings';
+import {getSentryConfig} from '../utils/sentry';
 import {inject} from 'ghost-admin/decorators/inject';
 import {
     isAjaxError,
@@ -18,6 +20,7 @@ import {
     isMaintenanceError,
     isVersionMismatchError
 } from 'ghost-admin/services/ajax';
+import {later} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
 function K() {
@@ -28,24 +31,29 @@ let shortcuts = {};
 
 shortcuts.esc = {action: 'closeMenus', scope: 'default'};
 shortcuts[`${ctrlOrCmd}+s`] = {action: 'save', scope: 'all'};
+shortcuts[`${ctrlOrCmd}+k`] = {action: 'openSearchModal'};
+shortcuts[`${ctrlOrCmd}+,`] = {action: 'openSettings'};
 
 // make globals available for any pulled in UMD components
 // - avoids external components needing to bundle React and running into multiple version errors
 window.React = React;
+window.React.jsx = jsxRuntime.jsx;
+window.React.jsxs = jsxRuntime.jsxs;
+window.React.Fragment = jsxRuntime.Fragment;
 window.ReactDOM = ReactDOM;
 
 export default Route.extend(ShortcutsRoute, {
     ajax: service(),
     configManager: service(),
-    feature: service(),
     ghostPaths: service(),
     notifications: service(),
     router: service(),
     session: service(),
     settings: service(),
+    stateBridge: service(),
     ui: service(),
-    whatsNew: service(),
     billing: service(),
+    modals: service(),
 
     shortcuts,
 
@@ -63,8 +71,16 @@ export default Route.extend(ShortcutsRoute, {
 
     config: inject(),
 
-    async beforeModel() {
+    async beforeModel(transition) {
         await this.session.setup();
+
+        // Intercept home route when unauthenticated to prevent decorator binding issues
+        // Check AFTER session setup to ensure isAuthenticated is accurate
+        if (transition.to?.name === 'home' && !this.session.isAuthenticated) {
+            transition.abort();
+            return this.transitionTo('signin');
+        }
+
         return this.prepareApp();
     },
 
@@ -86,6 +102,11 @@ export default Route.extend(ShortcutsRoute, {
         didTransition() {
             this.session.appLoadTransition = null;
             this.send('closeMenus');
+
+            // Need a tiny delay here to allow the router to update to the current route
+            later(() => {
+                Sentry.setTag('route', this.router.currentRouteName);
+            }, 2);
         },
 
         authorizationFailed() {
@@ -96,30 +117,20 @@ export default Route.extend(ShortcutsRoute, {
         save: K,
 
         error(error, transition) {
-            // unauthoirized errors are already handled in the ajax service
+            // unauthorized errors are already handled in the ajax service
             if (isUnauthorizedError(error)) {
                 return false;
             }
 
             if (isNotFoundError(error)) {
                 if (transition) {
-                    transition.abort();
+                    // Let Ember render the error substate (error.hbs) in place
+                    // so the URL stays at the attempted destination
+                    return true;
                 }
 
-                let routeInfo = transition.to;
-                let router = this.router;
-                let params = [];
-
-                for (let key of Object.keys(routeInfo.params)) {
-                    params.push(routeInfo.params[key]);
-                }
-
-                let url = router.urlFor(routeInfo.name, ...params)
-                    .replace(/^#\//, '')
-                    .replace(/^\//, '')
-                    .replace(/^ghost\//, '');
-
-                return this.replaceWith('error404', url);
+                // when there's no transition we fall through to our generic error handler
+                // for network errors that will hit the isAjaxError branch below
             }
 
             if (isVersionMismatchError(error)) {
@@ -156,6 +167,26 @@ export default Route.extend(ShortcutsRoute, {
 
             // fallback to 500 error page
             return true;
+        },
+
+        openSearchModal() {
+            // Don't open the search modal if the sidebar is hidden
+            // e.g. in the editor or settings screens
+            if (this.ui.isFullScreen) {
+                return;
+            }
+
+            return this.modals.open(SearchModal);
+        },
+
+        openSettings() {
+            // Don't open the settings screen if the sidebar is hidden
+            // e.g. in the editor or settings screens
+            if (this.ui.isFullScreen) {
+                return;
+            }
+
+            this.router.transitionTo('/settings');
         }
     },
 
@@ -169,20 +200,8 @@ export default Route.extend(ShortcutsRoute, {
         // init Sentry here rather than app.js so that we can use API-supplied
         // sentry_dsn and sentry_env rather than building it into release assets
         if (this.config.sentry_dsn) {
-            InitSentryForEmber({
-                dsn: this.config.sentry_dsn,
-                environment: this.config.sentry_env,
-                release: `ghost@${this.config.version}`,
-                beforeSend(event) {
-                    event.tags = event.tags || {};
-                    event.tags.shown_to_user = event.tags.shown_to_user || false;
-                    event.tags.grammarly = !!document.querySelector('[data-gr-ext-installed]');
-                    return event;
-                },
-                // TransitionAborted errors surface from normal application behaviour
-                // - https://github.com/emberjs/ember.js/issues/12505
-                ignoreErrors: [/^TransitionAborted$/]
-            });
+            const sentryConfig = getSentryConfig(this.config.sentry_dsn, this.config.sentry_env, this.config.version);
+            Sentry.init(sentryConfig);
         }
 
         if (this.session.isAuthenticated) {
@@ -200,8 +219,11 @@ export default Route.extend(ShortcutsRoute, {
             this.billing.openBillingWindow(this.router.currentURL, '/pro');
         }
 
-        // Preload settings to avoid a delay when opening
-        setTimeout(importSettings, 1000);
+        // Notify React of the initial subscription state
+        // React uses this to derive forceUpgrade state (config.forceUpgrade && subscription.status !== 'active')
+        this.stateBridge.triggerSubscriptionChange({
+            subscription: this.billing.subscription
+        });
     }
 
 });

@@ -1,31 +1,30 @@
 <div class="flex flex-column h-100 items-center overflow-auto" data-test-modal="publish-flow">
     <header class="gh-publish-header">
-        <button class="gh-btn-editor gh-publish-back-button" title="Close" type="button" {{on "click" @close}} data-test-button="close-publish-flow">
-            <span>{{svg-jar "arrow-left"}} Editor</span>
-        </button>
+        <h2>Publish</h2>
 
-        {{#if (and (not this.emailErrorMessage) (not this.isComplete))}}
-            <div class="flex items-center pe-auto h-100">
+        {{#unless this.isComplete}}
+            <div class="gh-btn-group-right">
                 <button
                     type="button"
                     class="gh-btn gh-btn-editor gh-editor-preview-trigger"
-                    {{on "click" @data.togglePreviewPublish}}
-                    data-test-button="publish-flow-preview"
-                >
-                    <span>Preview</span>
-                </button>
-                <button
-                    type="button"
-                    class="gh-btn gh-btn-editor darkgrey gh-publish-trigger active"
                     title="Close"
                     {{on "click" @close}}
                     data-test-button="publish-flow-publish"
                 >
-                    <span>Publish</span>
+                    <span>Close</span>
                 </button>
-                <div class="settings-menu-toggle-spacer"></div>
+                {{#unless this.emailErrorMessage}}
+                    <button
+                        type="button"
+                        class="gh-btn"
+                        {{on "click" @data.togglePreviewPublish}}
+                        data-test-button="publish-flow-preview"
+                    >
+                        <span>Preview</span>
+                    </button>
+                {{/unless}}
             </div>
-        {{/if}}
+        {{/unless}}
     </header>
 
     <div class="gh-publish-settings-container {{unless @data.skipAnimation "fade-in"}}">
@@ -41,14 +40,8 @@
                 @publishOptions={{@data.publishOptions}}
                 @recipientType={{this.recipientType}}
                 @saveTask={{this.saveTask}}
+                @setCompleted={{this.setCompleted}}
                 @cancel={{this.toggleConfirm}}
-                @close={{@close}}
-            />
-        {{else if this.isComplete}}
-            <Editor::Modals::PublishFlow::Complete
-                @publishOptions={{@data.publishOptions}}
-                @recipientType={{this.recipientType}}
-                @postCount={{this.postCount}}
                 @close={{@close}}
             />
         {{else}}

@@ -1,11 +1,8 @@
 {
   "name": "@tryghost/sodo-search",
-  "version": "1.1.1",
+  "version": "1.8.22",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/TryGhost/Ghost.git"
-  },
+  "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
   "files": [
     "umd/",
@@ -17,25 +14,23 @@
     "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
-    "@tryghost/content-api": "1.11.7",
-    "flexsearch": "0.7.21",
-    "react": "17.0.2",
-    "react-dom": "17.0.2"
+    "@tryghost/debug": "catalog:",
+    "@tryghost/i18n": "workspace:*",
+    "flexsearch": "0.8.212",
+    "react": "catalog:react17",
+    "react-dom": "catalog:react17"
   },
   "scripts": {
-    "dev": "concurrently \"vite preview -l silent\" \"yarn build:watch\" \"yarn tailwind\"",
-    "build": "vite build && yarn tailwind:base",
+    "dev": "concurrently --kill-others --names preview,build,tailwind \"vite preview -l silent\" \"pnpm build:watch\" \"pnpm tailwind\"",
+    "build": "vite build && pnpm tailwind:base",
     "build:watch": "vite build --watch",
-    "tailwind": "yarn tailwind:base --watch ",
-    "tailwind:base": "npx tailwindcss -i ./src/index.css -o ./umd/main.css --minify",
+    "tailwind": "pnpm tailwind:base --watch ",
+    "tailwind:base": "tailwindcss -i ./src/index.css -o ./umd/main.css --minify",
     "test": "vitest run",
-    "test:ci": "yarn test --coverage",
-    "test:unit": "yarn test:ci",
     "lint": "eslint src --ext .js --cache",
-    "preship": "yarn lint",
-    "ship": "STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then yarn version; fi",
-    "postship": "git push ${GHOST_UPSTREAM:-origin} --follow-tags && npm publish",
-    "prepublishOnly": "yarn build"
+    "preship": "pnpm lint",
+    "ship": "node ../../.github/scripts/release-apps.js",
+    "prepublishOnly": "pnpm build"
   },
   "eslintConfig": {
     "env": {
@@ -54,7 +49,23 @@
       "ghost"
     ],
     "rules": {
-      "react/prop-types": "off"
+      "react/prop-types": "off",
+      "ghost/filenames/match-regex": [
+        "error",
+        "^[a-z0-9.-]+$",
+        false
+      ],
+      "ghost/sort-imports-es6-autofix/sort-imports-es6": [
+        "error",
+        {
+          "memberSyntaxSortOrder": [
+            "none",
+            "all",
+            "single",
+            "multiple"
+          ]
+        }
+      ]
     },
     "settings": {
       "react": {
@@ -82,12 +93,23 @@
     ]
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "5.16.5",
-    "@testing-library/react": "12.1.5",
-    "@vitejs/plugin-react": "4.0.4",
-    "nock": "13.3.3",
-    "vite": "4.4.9",
-    "vite-plugin-svgr": "3.3.0",
-    "vitest": "0.34.3"
+    "@testing-library/jest-dom": "catalog:",
+    "@testing-library/react": "catalog:react17",
+    "@vitejs/plugin-react": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "concurrently": "catalog:",
+    "cross-fetch": "catalog:",
+    "eslint": "catalog:",
+    "jsdom": "catalog:",
+    "nock": "13.5.6",
+    "tailwindcss": "catalog:tailwind3",
+    "vite": "catalog:",
+    "vite-plugin-svgr": "catalog:",
+    "vitest": "catalog:"
+  },
+  "nx": {
+    "tags": [
+      "i18n"
+    ]
   }
 }

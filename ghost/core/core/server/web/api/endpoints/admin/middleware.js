@@ -5,20 +5,48 @@ const shared = require('../../../shared');
 const apiMw = require('../../middleware');
 
 const messages = {
-    notImplemented: 'The server does not support the functionality required to fulfill the request.'
+    apiTokenBlocked: 'API tokens do not have permission to access this endpoint',
+    staffTokenBlocked: 'Staff tokens are not allowed to access this endpoint'
 };
 
-const notImplemented = function notImplemented(req, res, next) {
-    // CASE: user is logged in, allow
+/**
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ * @param {import('express').NextFunction} next
+ */
+const tokenPermissionCheck = function tokenPermissionCheck(req, res, next) {
+    // CASE: user is logged in with user auth, skip to permission system
     if (!req.api_key) {
         return next();
     }
 
+    // CASE: user is requesting with staff token, check blocklist, else skip to permission system
+    // Staff tokens have a user_id associated with them, integration tokens don't
+    if (req.api_key?.get('user_id')) {
+        // Express matches routes case-insensitively but req.path preserves the
+        // original case. Normalise before comparing so a mixed-case URL can't
+        // slip past the blocklist while still routing to the lowercase handler.
+        // Match both with and without trailing slash since Express routes accept both
+        const path = req.path.toLowerCase();
+        const isDeleteAllContent = req.method === 'DELETE' && (path === '/db/' || path === '/db');
+        const isTransferOwnership = req.method === 'PUT' && (path === '/users/owner/' || path === '/users/owner');
+        const isResetAuthentication = req.method === 'POST' && (path === '/authentication/reset/' || path === '/authentication/reset');
+
+        if (isDeleteAllContent || isTransferOwnership || isResetAuthentication) {
+            return next(new errors.NoPermissionError({
+                message: tpl(messages.staffTokenBlocked)
+            }));
+        }
+
+        return next();
+    }
+
+    // CASE: god mode is enabled & we're in development, skip to permission system
     if (req.query.god_mode && process.env.NODE_ENV === 'development') {
         return next();
     }
 
-    // @NOTE: integrations & staff tokens have limited access to the API
+    // CASE: we're using an integration token, check allowlist for permitted endpoints
     const allowlisted = {
         site: ['GET'],
         posts: ['GET', 'PUT', 'DELETE', 'POST'],
@@ -36,17 +64,21 @@ const notImplemented = function notImplemented(req, res, next) {
         tiers: ['GET', 'PUT', 'POST'],
         offers: ['GET', 'PUT', 'POST'],
         newsletters: ['GET', 'PUT', 'POST'],
+        automations: ['PUT'],
         config: ['GET'],
         explore: ['GET'],
         schedules: ['PUT'],
+        gifts: ['PUT'],
         files: ['POST'],
         media: ['POST'],
-        db: ['POST'],
+        db: ['GET', 'POST'],
         settings: ['GET'],
-        oembed: ['GET']
+        comments: ['GET', 'POST', 'PUT'],
+        oembed: ['GET'],
+        'search-index': ['GET']
     };
 
-    const match = req.url.match(/^\/(\w+)\/?/);
+    const match = req.url.match(/^\/([^/?]+)\/?/);
 
     if (match) {
         const entity = match[1];
@@ -56,15 +88,18 @@ const notImplemented = function notImplemented(req, res, next) {
         }
     }
 
-    next(new errors.InternalServerError({
-        errorType: 'NotImplementedError',
-        message: tpl(messages.notImplemented),
-        statusCode: '501'
+    next(new errors.NoPermissionError({
+        message: tpl(messages.apiTokenBlocked),
+        statusCode: 403
     }));
 };
 
+/** @typedef {import('express').RequestHandler} RequestHandler */
+
 /**
  * Authentication for private endpoints
+ *
+ * @type {RequestHandler[]}
  */
 module.exports.authAdminApi = [
     auth.authenticate.authenticateAdminApi,
@@ -73,12 +108,14 @@ module.exports.authAdminApi = [
     apiMw.cors,
     shared.middleware.urlRedirects.adminSSLAndHostRedirect,
     shared.middleware.prettyUrls,
-    notImplemented
+    tokenPermissionCheck
 ];
 
 /**
  * Authentication for private endpoints with token in URL
  * Ex.: For scheduler publish endpoint
+ *
+ * @type {RequestHandler[]}
  */
 module.exports.authAdminApiWithUrl = [
     auth.authenticate.authenticateAdminApiWithUrl,
@@ -87,15 +124,17 @@ module.exports.authAdminApiWithUrl = [
     apiMw.cors,
     shared.middleware.urlRedirects.adminSSLAndHostRedirect,
     shared.middleware.prettyUrls,
-    notImplemented
+    tokenPermissionCheck
 ];
 
 /**
  * Middleware for public admin endpoints
+ *
+ * @type {RequestHandler[]}
  */
 module.exports.publicAdminApi = [
     apiMw.cors,
     shared.middleware.urlRedirects.adminSSLAndHostRedirect,
     shared.middleware.prettyUrls,
-    notImplemented
+    tokenPermissionCheck
 ];

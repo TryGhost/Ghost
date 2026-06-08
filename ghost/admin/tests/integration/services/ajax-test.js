@@ -1,17 +1,18 @@
 import Pretender from 'pretender';
-import config from 'ghost-admin/config/environment';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
+import {
+    getErrorCode,
+    isMaintenanceError,
+    isRequestEntityTooLargeError,
+    isTwoFactorTokenRequiredError,
+    isUnsupportedMediaTypeError,
+    isVersionMismatchError
+} from 'ghost-admin/services/ajax';
 import {
     isAjaxError,
     isUnauthorizedError
 } from 'ember-ajax/errors';
-import {
-    isMaintenanceError,
-    isRequestEntityTooLargeError,
-    isUnsupportedMediaTypeError,
-    isVersionMismatchError
-} from 'ghost-admin/services/ajax';
 import {setupTest} from 'ember-mocha';
 
 function stubAjaxEndpoint(server, response = {}, code = 200) {
@@ -35,19 +36,6 @@ describe('Integration: Service: ajax', function () {
 
     afterEach(function () {
         server.shutdown();
-    });
-
-    it('adds Ghost version header to requests', function (done) {
-        let {version} = config.APP;
-        let ajax = this.owner.lookup('service:ajax');
-
-        stubAjaxEndpoint(server, {});
-
-        ajax.request('/test/').then(() => {
-            let [request] = server.handledRequests;
-            expect(request.requestHeaders['X-Ghost-Version']).to.equal(version);
-            done();
-        });
     });
 
     it('correctly parses single message response text', function (done) {
@@ -181,6 +169,76 @@ describe('Integration: Service: ajax', function () {
             expect(false).to.be.true;
         }).catch((error) => {
             expect(isMaintenanceError(error)).to.be.true;
+            done();
+        });
+    });
+
+    it('handles error checking for TwoFactorTokenRequiredError on 2FA Token Required 403 errors', function (done) {
+        stubAjaxEndpoint(server, {
+            errors: [{
+                code: '2FA_TOKEN_REQUIRED'
+            }]
+        }, 403);
+
+        let ajax = this.owner.lookup('service:ajax');
+
+        ajax.request('/test/').then(() => {
+            expect(false).to.be.true;
+        }).catch((error) => {
+            expect(isTwoFactorTokenRequiredError(error)).to.be.true;
+            expect(getErrorCode(error)).to.equal('2FA_TOKEN_REQUIRED');
+            done();
+        });
+    });
+
+    it('handles error checking for TwoFactorTokenRequiredError on 2FA New Device Detected 403 errors', function (done) {
+        stubAjaxEndpoint(server, {
+            errors: [{
+                code: '2FA_NEW_DEVICE_DETECTED'
+            }]
+        }, 403);
+
+        let ajax = this.owner.lookup('service:ajax');
+
+        ajax.request('/test/').then(() => {
+            expect(false).to.be.true;
+        }).catch((error) => {
+            expect(isTwoFactorTokenRequiredError(error)).to.be.true;
+            expect(getErrorCode(error)).to.equal('2FA_NEW_DEVICE_DETECTED');
+            done();
+        });
+    });
+
+    it('handles error checking for TwoFactorTokenRequiredError on a 403 error with no code', function (done) {
+        stubAjaxEndpoint(server, {
+            errors: [{
+                message: 'Not authorised'
+            }]
+        }, 403);
+
+        let ajax = this.owner.lookup('service:ajax');
+
+        ajax.request('/test/').then(() => {
+            expect(false).to.be.true;
+        }).catch((error) => {
+            expect(isTwoFactorTokenRequiredError(error)).to.be.false;
+            done();
+        });
+    });
+
+    it('handles error checking for TwoFactorTokenRequiredError on a 403 error with wrong code', function (done) {
+        stubAjaxEndpoint(server, {
+            errors: [{
+                code: 'WRONG_CODE'
+            }]
+        }, 403);
+
+        let ajax = this.owner.lookup('service:ajax');
+
+        ajax.request('/test/').then(() => {
+            expect(false).to.be.true;
+        }).catch((error) => {
+            expect(isTwoFactorTokenRequiredError(error)).to.be.false;
             done();
         });
     });

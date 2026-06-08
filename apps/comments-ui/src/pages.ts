@@ -1,13 +1,17 @@
-import AddDetailsPopup from './components/popups/AddDetailsPopup';
+import AddDetailsPopup from './components/popups/add-details-popup';
+import CTAPopup from './components/popups/cta-popup';
+import DeletePopup from './components/popups/delete-popup';
 import React from 'react';
-import ReportPopup from './components/popups/ReportPopup';
+import ReportPopup from './components/popups/report-popup';
 
 /** List of all available pages in Comments-UI, mapped to their UI component
  * Any new page added to comments-ui needs to be mapped here
 */
 export const Pages = {
     addDetailsPopup: AddDetailsPopup,
-    reportPopup: ReportPopup
+    reportPopup: ReportPopup,
+    ctaPopup: CTAPopup,
+    deletePopup: DeletePopup
 };
 export type PageName = keyof typeof Pages;
 

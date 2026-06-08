@@ -16,7 +16,7 @@ export default defineConfig({
     /* Hardcode to use all cores in CI */
     workers: process.env.CI ? '100%' : undefined,
     /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-    reporter: 'html',
+    reporter: process.env.PLAYWRIGHT_REPORTER ?? 'html',
     timeout: process.env.PLAYWRIGHT_SLOWMO ? 100000 : 20000,
     expect: {
         timeout: process.env.PLAYWRIGHT_SLOWMO ? 100000 : 5000
@@ -26,12 +26,14 @@ export default defineConfig({
     use: {
         /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
         trace: 'on-first-retry',
+        screenshot: 'only-on-failure',
         launchOptions: {
             slowMo: parseInt(process.env.PLAYWRIGHT_SLOWMO ?? '') || 0,
             // force GPU hardware acceleration
             // (even in headless mode)
             args: ['--use-gl=egl']
-        }
+        },
+        permissions: ['local-network-access']
     },
 
     /* Configure projects for major browsers */
@@ -54,7 +56,7 @@ export default defineConfig({
 
     /* Run local dev server before starting the tests */
     webServer: {
-        command: `yarn dev:test`,
+        command: `pnpm dev:test`,
         url: `http://localhost:${E2E_PORT}/comments-ui.min.js`,
         reuseExistingServer: !process.env.CI,
         timeout: 20000

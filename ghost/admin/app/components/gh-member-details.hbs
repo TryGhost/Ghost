@@ -50,6 +50,15 @@
                         <span>Not seen yet</span>
                     {{/if}}
                 </p>
+                {{#if (eq @member.canComment false)}}
+                    <p class="gh-member-commenting-disabled">
+                        {{svg-jar "comment-disabled"}}
+                        Comments disabled
+                        <span class="gh-member-details-enable-link">
+                            &nbsp;&mdash;&nbsp;<button type="button" {{on "click" @onEnableCommenting}}>Enable</button>
+                        </span>
+                    </p>
+                {{/if}}
             </div>
             <div class="gh-member-details-attribution">
                 <h4 class="gh-main-section-header small bn">Signup info</h4>
@@ -79,9 +88,9 @@
                         <div class="gh-members-no-stats">
                             <p>
                                 {{#if @member.name}}
-                                    We'll show {{first-name @member.name}}'s email stats here once they receive their first newsletter.
+                                    We’ll show {{first-name @member.name}}’s email stats here once they receive their first newsletter.
                                 {{else}}
-                                    We'll show this member's email stats here once they receive their first newsletter.
+                                    We’ll show this member’s email stats here once they receive their first newsletter.
                                 {{/if}}
                             </p>
                         </div>

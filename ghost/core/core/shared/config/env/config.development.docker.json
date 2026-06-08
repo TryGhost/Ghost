@@ -1,0 +1,28 @@
+{
+    "database": {
+        "client": "mysql",
+        "connection": {
+            "host": "mysql",
+            "user": "root",
+            "password": "root",
+            "database": "ghost"
+        }
+    },
+    "mail": {
+        "from": "test@example.com",
+        "transport": "SMTP",
+        "options": {
+            "host": "mailpit",
+            "port": 1025
+        }
+    },
+    "adapters": {
+        "Redis": {
+            "host": "redis",
+            "port": 6379
+        }
+    },
+    "server": {
+        "host": "0.0.0.0"
+    }
+}

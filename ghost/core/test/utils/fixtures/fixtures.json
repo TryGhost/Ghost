@@ -51,6 +51,15 @@
             ]
         },
         {
+            "name": "EmailDesignSetting",
+            "entries": [
+                {
+                    "id": "680000000000000000000001",
+                    "slug": "default-automated-email"
+                }
+            ]
+        },
+        {
             "name": "Tag",
             "entries": [
                 {
@@ -106,6 +115,10 @@
                 {
                     "name": "Scheduler Integration",
                     "description": "Internal Scheduler Client"
+                },
+                {
+                    "name": "Super Editor",
+                    "description": "Super Editor"
                 }
             ]
         },
@@ -473,6 +486,31 @@
                     "object_type": "email_preview"
                 },
                 {
+                    "name": "Browse email design settings",
+                    "action_type": "browse",
+                    "object_type": "email_design_setting"
+                },
+                {
+                    "name": "Read email design settings",
+                    "action_type": "read",
+                    "object_type": "email_design_setting"
+                },
+                {
+                    "name": "Edit email design settings",
+                    "action_type": "edit",
+                    "object_type": "email_design_setting"
+                },
+                {
+                    "name": "Add email design settings",
+                    "action_type": "add",
+                    "object_type": "email_design_setting"
+                },
+                {
+                    "name": "Delete email design settings",
+                    "action_type": "destroy",
+                    "object_type": "email_design_setting"
+                },
+                {
                     "name": "Browse emails",
                     "action_type": "browse",
                     "object_type": "email"
@@ -511,6 +549,31 @@
                     "name": "Delete labels",
                     "action_type": "destroy",
                     "object_type": "label"
+                },
+                {
+                    "name": "Browse automated emails",
+                    "action_type": "browse",
+                    "object_type": "automated_email"
+                },
+                {
+                    "name": "Read automated emails",
+                    "action_type": "read",
+                    "object_type": "automated_email"
+                },
+                {
+                    "name": "Edit automated emails",
+                    "action_type": "edit",
+                    "object_type": "automated_email"
+                },
+                {
+                    "name": "Add automated emails",
+                    "action_type": "add",
+                    "object_type": "automated_email"
+                },
+                {
+                    "name": "Delete automated emails",
+                    "action_type": "destroy",
+                    "object_type": "automated_email"
                 },
                 {
                     "name": "Read member signin urls",
@@ -573,8 +636,8 @@
                     "object_type": "offer"
                 },
                 {
-                    "name": "Reset all passwords",
-                    "action_type": "resetAllPasswords",
+                    "name": "Reset authentication",
+                    "action_type": "reset",
                     "object_type": "authentication"
                 },
                 {
@@ -711,6 +774,31 @@
                     "name": "Delete recommendations",
                     "action_type": "destroy",
                     "object_type": "recommendation"
+                },
+                {
+                    "name": "Browse automations",
+                    "action_type": "browse",
+                    "object_type": "automation"
+                },
+                {
+                    "name": "Read automations",
+                    "action_type": "read",
+                    "object_type": "automation"
+                },
+                {
+                    "name": "Edit automations",
+                    "action_type": "edit",
+                    "object_type": "automation"
+                },
+                {
+                    "name": "Poll automations",
+                    "action_type": "poll",
+                    "object_type": "automation"
+                },
+                {
+                    "name": "Flush gift reminders",
+                    "action_type": "flushReminders",
+                    "object_type": "gift"
                 }
             ]
         },
@@ -718,7 +806,7 @@
             "name": "User",
             "entries": [
                 {
-                    "id": 1,
+                    "id": "5951f5fc0000000000000000",
                     "name": "Ghost",
                     "email": "ghost@example.com",
                     "free_member_signup_notification": true,
@@ -767,7 +855,6 @@
                     "status": "published",
                     "visibility": "public",
                     "custom_excerpt": "Work with all your favorite apps and tools or create your own custom integrations using the Ghost API.",
-                    "created_by": "5951f5fca366002ebd5dbef7",
                     "published_by": "5951f5fca366002ebd5dbef7",
                     "authors": [{
                         "id": "5951f5fca366002ebd5dbef7"
@@ -784,7 +871,6 @@
                     "status": "published",
                     "visibility": "public",
                     "custom_excerpt": "A guide to collaborating with other staff users to publish, and some resources to help you with the next steps of growing your business",
-                    "created_by": "5951f5fca366002ebd5dbef7",
                     "published_by": "5951f5fca366002ebd5dbef7",
                     "authors": [{
                         "id": "5951f5fca366002ebd5dbef7"
@@ -800,7 +886,6 @@
                     "type": "post",
                     "status": "published",
                     "visibility": "paid",
-                    "created_by": "5951f5fca366002ebd5dbef7",
                     "published_by": "5951f5fca366002ebd5dbef7",
                     "authors": [{
                         "id": "5951f5fca366002ebd5dbef7"
@@ -817,7 +902,6 @@
                     "status": "published",
                     "visibility": "public",
                     "custom_excerpt": "How Ghost allows you to turn anonymous readers into an audience of active subscribers, so you know what's working and what isn't.",
-                    "created_by": "5951f5fca366002ebd5dbef7",
                     "published_by": "5951f5fca366002ebd5dbef7",
                     "authors": [{
                         "id": "5951f5fca366002ebd5dbef7"
@@ -834,7 +918,6 @@
                     "status": "published",
                     "visibility": "public",
                     "custom_excerpt": "A full overview of all the features built into the Ghost editor, including powerful workflow automations to speed up your creative process.",
-                    "created_by": "5951f5fca366002ebd5dbef7",
                     "published_by": "5951f5fca366002ebd5dbef7",
                     "authors": [{
                         "id": "5951f5fca366002ebd5dbef7"
@@ -851,7 +934,6 @@
                     "status": "published",
                     "visibility": "public",
                     "custom_excerpt": "How to tweak a few settings in Ghost to transform your site from a generic template to a custom brand with style and personality.",
-                    "created_by": "5951f5fca366002ebd5dbef7",
                     "published_by": "5951f5fca366002ebd5dbef7",
                     "authors": [{
                         "id": "5951f5fca366002ebd5dbef7"
@@ -868,7 +950,6 @@
                     "status": "published",
                     "visibility": "public",
                     "custom_excerpt": "We've crammed the most important information to help you get started with Ghost into this one post. It's your cheat-sheet to get started, and your shortcut to advanced features.",
-                    "created_by": "5951f5fca366002ebd5dbef7",
                     "published_by": "5951f5fca366002ebd5dbef7",
                     "authors": [{
                         "id": "5951f5fca366002ebd5dbef7"
@@ -885,7 +966,6 @@
                     "status": "published",
                     "visibility": "public",
                     "custom_excerpt": null,
-                    "created_by": "5951f5fca366002ebd5dbef7",
                     "published_by": "5951f5fca366002ebd5dbef7",
                     "authors": [{
                         "id": "5951f5fca366002ebd5dbef7"
@@ -901,7 +981,6 @@
                     "type": "page",
                     "status": "published",
                     "visibility": "public",
-                    "created_by": "5951f5fca366002ebd5dbef7",
                     "published_by": "5951f5fca366002ebd5dbef7",
                     "authors": [{
                         "id": "5951f5fca366002ebd5dbef7"
@@ -917,7 +996,6 @@
                     "type": "page",
                     "status": "published",
                     "visibility": "public",
-                    "created_by": "5951f5fca366002ebd5dbef7",
                     "published_by": "5951f5fca366002ebd5dbef7",
                     "authors": [{
                         "id": "5951f5fca366002ebd5dbef7"
@@ -933,7 +1011,6 @@
                     "type": "page",
                     "status": "published",
                     "visibility": "public",
-                    "created_by": "5951f5fca366002ebd5dbef7",
                     "published_by": "5951f5fca366002ebd5dbef7",
                     "authors": [{
                         "id": "5951f5fca366002ebd5dbef7"
@@ -1026,13 +1103,15 @@
                     "member": "all",
                     "product": "all",
                     "label": "all",
+                    "automated_email": "all",
+                    "email_design_setting": "all",
                     "email_preview": "all",
                     "email": "all",
                     "member_signin_url": "read",
                     "snippet": "all",
                     "custom_theme_setting": "all",
                     "offer": "all",
-                    "authentication": "resetAllPasswords",
+                    "authentication": "reset",
                     "members_stripe_connect": "auth",
                     "newsletter": "all",
                     "explore": "read",
@@ -1040,13 +1119,18 @@
                     "link": "all",
                     "mention": "browse",
                     "collection": "all",
-                    "recommendation": "all"
+                    "recommendation": "all",
+                    "automation": ["browse", "read", "edit"],
+                    "identity": "read"
                 },
                 "DB Backup Integration": {
-                    "db": "all"
+                    "db": "all",
+                    "member": "browse"
                 },
                 "Scheduler Integration": {
-                    "post": "publish"
+                    "post": "publish",
+                    "automation": "poll",
+                    "gift": "flushReminders"
                 },
                 "Ghost Explore Integration": {
                     "explore": "read"
@@ -1071,7 +1155,10 @@
                     "webhook": "all",
                     "action": "all",
                     "member": "all",
+                    "member_signin_url": "read",
                     "label": "all",
+                    "automated_email": "all",
+                    "email_design_setting": "all",
                     "email_preview": "all",
                     "email": "all",
                     "snippet": "all",
@@ -1083,7 +1170,8 @@
                     "link": "all",
                     "mention": "browse",
                     "collection": "all",
-                    "recommendation": "all"
+                    "recommendation": "all",
+                    "automation": ["browse", "read", "edit"]
                 },
                 "Editor": {
                     "notification": "all",
@@ -1105,7 +1193,7 @@
                     "recommendation": ["browse", "read"]
                 },
                 "Author": {
-                    "post": ["browse", "read", "add"],
+                    "post": ["browse", "read", "edit", "add", "destroy"],
                     "setting": ["browse", "read"],
                     "slug": "all",
                     "tag": ["browse", "read", "add"],
@@ -1121,8 +1209,31 @@
                     "collection": ["browse", "read", "add"],
                     "recommendation": ["browse", "read"]
                 },
+                "Super Editor": {
+                    "notification": "all",
+                    "post": "all",
+                    "setting": ["browse", "read"],
+                    "slug": "all",
+                    "tag": "all",
+                    "user": "all",
+                    "role": "all",
+                    "invite": "all",
+                    "theme": ["browse", "readActive"],
+                    "email_preview": "all",
+                    "email": "all",
+                    "snippet": "all",
+                    "label": ["browse", "read", "edit", "add", "destroy"],
+                    "product": ["browse", "read"],
+                    "newsletter": ["browse", "read"],
+                    "collection": "all",
+                    "recommendation": ["browse", "read"],
+                    "member": ["browse", "read", "add", "edit", "destroy"],
+                    "member_signin_url": "read",
+                    "offer": ["browse", "read"],
+                    "comment": "all"
+                },
                 "Contributor": {
-                    "post": ["browse", "read", "add"],
+                    "post": ["browse", "read", "edit", "add", "destroy"],
                     "setting": ["browse", "read"],
                     "slug": "all",
                     "tag": ["browse", "read"],
@@ -1190,7 +1301,7 @@
                 "match": "name"
             },
             "entries": {
-                "1": ["Owner"]
+                "5951f5fc0000000000000000": ["Owner"]
             }
         }
     ]

@@ -1,4 +1,16 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Create Stripe Checkout Session for Donations Can create a checkout session with a personal note included 1: [body] 1`] = `
+Object {
+  "url": "https://checkout.stripe.com/c/pay/fake-data",
+}
+`;
+
+exports[`Create Stripe Checkout Session for Donations Can create a donation checkout session with UTM parameters 1: [body] 1`] = `
+Object {
+  "url": "https://checkout.stripe.com/c/pay/fake-data",
+}
+`;
 
 exports[`Create Stripe Checkout Session for Donations Can create a member checkout session for a donation 1: [body] 1`] = `
 Object {
@@ -7,6 +19,18 @@ Object {
 `;
 
 exports[`Create Stripe Checkout Session for Donations Can create an anonymous checkout session for a donation 1: [body] 1`] = `
+Object {
+  "url": "https://checkout.stripe.com/c/pay/fake-data",
+}
+`;
+
+exports[`Create Stripe Checkout Session for Donations can create a checkout session for a site with a long title 1: [body] 1`] = `
+Object {
+  "url": "https://checkout.stripe.com/c/pay/fake-data",
+}
+`;
+
+exports[`Create Stripe Checkout Session for Donations check if donation message is in email 1: [body] 1`] = `
 Object {
   "url": "https://checkout.stripe.com/c/pay/fake-data",
 }

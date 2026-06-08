@@ -19,14 +19,14 @@ module.exports = function previewController(req, res, next) {
     const params = {
         uuid: req.params.uuid,
         status: 'all',
-        include: 'authors,tags,tiers'
+        include: 'authors,tags,tiers',
+        member_status: req.query?.member_status
     };
 
     return api[res.routerOptions.query.controller]
         .read(params)
         .then(function then(result) {
             const post = result[res.routerOptions.query.resource][0];
-
             if (!post) {
                 return next();
             }
@@ -49,11 +49,26 @@ module.exports = function previewController(req, res, next) {
                 return next();
             }
 
+            // published content should only resolve to /:slug - /p/:uuid is for drafts only in lieu of an actual preview api
             if (post.status === 'published') {
-                return urlUtils.redirect301(res, routerManager.getUrlByResourceId(post.id, {withSubdirectory: true}));
+                // The preview controller serves either posts or pages
+                // depending on the routerOptions; query.resource is the
+                // routing-level type ('posts' / 'pages'). The post object
+                // has its DB `type` column stripped by the serializer, so
+                // we tag the resource explicitly here.
+                const type = res.routerOptions.query.resource;
+                return urlUtils.redirect301(res, routerManager.getUrlForResource({...post, type}, {withSubdirectory: true}));
             }
 
-            post.access = !!post.html;
+            // once an email-only post has been sent it shouldn't be available via /p/ to avoid leaking members-only content
+            if (post.status === 'sent') {
+                return urlUtils.redirect301(res, urlUtils.urlJoin('/email', post.uuid, '/'));
+            }
+
+            // Preserve the old behavior of assuming the user has access to the post if member_status is not provided
+            if (!req.query?.member_status) {
+                post.access = !!post.html;
+            }
 
             return renderer.renderEntry(req, res)(post);
         })

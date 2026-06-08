@@ -33,7 +33,10 @@ const GENERIC_ERROR_NAMES = [
     'ReferenceError',
     'SyntaxError',
     'TypeError',
-    'URIError'
+    'URIError',
+    // ember-ajax errors - https://github.com/ember-cli/ember-ajax/blob/master/addon/errors.ts
+    'AjaxError',
+    'ServerError'
 ];
 
 export const GENERIC_ERROR_MESSAGE = 'An unexpected error occurred, please try again.';
@@ -176,7 +179,10 @@ export default class NotificationsService extends Service {
 
         let msg = options.defaultErrorText || GENERIC_ERROR_MESSAGE;
 
-        if (resp?.name && GENERIC_ERROR_NAMES.includes(resp.name)) {
+        if (
+            resp?.name && GENERIC_ERROR_NAMES.includes(resp.name) ||
+            resp?.constructor && GENERIC_ERROR_NAMES.includes(resp.constructor.name)
+        ) {
             msg = GENERIC_ERROR_MESSAGE;
         } else if (resp instanceof String) {
             msg = resp;

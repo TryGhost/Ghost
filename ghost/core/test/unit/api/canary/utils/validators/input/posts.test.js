@@ -1,17 +1,13 @@
 const _ = require('lodash');
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const validators = require('../../../../../../../core/server/api/endpoints/utils/validators');
 const models = require('../../../../../../../core/server/models');
 
 describe('Unit: endpoints/utils/validators/input/posts', function () {
-    before(function () {
-        models.init();
-    });
-
     beforeEach(function () {
-        const memberFindPageStub = sinon.stub(models.Member, 'findPage').returns(Promise.reject());
-        memberFindPageStub.withArgs({filter: 'label:vip', limit: 1}).returns(Promise.resolve());
+        const memberFindPageStub = sinon.stub(models.Member, 'findPage').rejects();
+        memberFindPageStub.withArgs({filter: 'label:vip', limit: 1}).resolves();
     });
 
     afterEach(function () {
@@ -34,7 +30,7 @@ describe('Unit: endpoints/utils/validators/input/posts', function () {
                 return validators.input.posts.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        err.errorType.should.equal('ValidationError');
+                        assert.equal(err.errorType, 'ValidationError');
                     });
             });
 
@@ -49,7 +45,7 @@ describe('Unit: endpoints/utils/validators/input/posts', function () {
                 return validators.input.posts.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        err.errorType.should.equal('ValidationError');
+                        assert.equal(err.errorType, 'ValidationError');
                     });
             });
 
@@ -64,7 +60,7 @@ describe('Unit: endpoints/utils/validators/input/posts', function () {
                 return validators.input.posts.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        err.errorType.should.equal('ValidationError');
+                        assert.equal(err.errorType, 'ValidationError');
                     });
             });
 
@@ -80,7 +76,7 @@ describe('Unit: endpoints/utils/validators/input/posts', function () {
                 return validators.input.posts.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        err.errorType.should.equal('ValidationError');
+                        assert.equal(err.errorType, 'ValidationError');
                     });
             });
 
@@ -97,7 +93,7 @@ describe('Unit: endpoints/utils/validators/input/posts', function () {
                 return validators.input.posts.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        err.errorType.should.equal('ValidationError');
+                        assert.equal(err.errorType, 'ValidationError');
                     });
             });
 
@@ -124,8 +120,6 @@ describe('Unit: endpoints/utils/validators/input/posts', function () {
                             authors: [{id: 'correct'}],
                             id: 'strip me',
                             created_at: 'strip me',
-                            created_by: 'strip me',
-                            updated_by: 'strip me',
                             published_by: 'strip me'
                         }]
                     }
@@ -133,13 +127,11 @@ describe('Unit: endpoints/utils/validators/input/posts', function () {
 
                 let result = validators.input.posts.add(apiConfig, frame);
 
-                should.exist(frame.data.posts[0].title);
-                should.exist(frame.data.posts[0].authors);
-                should.not.exist(frame.data.posts[0].id);
-                should.not.exist(frame.data.posts[0].created_at);
-                should.not.exist(frame.data.posts[0].created_by);
-                should.not.exist(frame.data.posts[0].updated_by);
-                should.not.exist(frame.data.posts[0].published_by);
+                assert(frame.data.posts[0].title);
+                assert(frame.data.posts[0].authors);
+                assert.equal(frame.data.posts[0].id, undefined);
+                assert.equal(frame.data.posts[0].created_at, undefined);
+                assert.equal(frame.data.posts[0].published_by, undefined);
 
                 return result;
             });
@@ -181,7 +173,7 @@ describe('Unit: endpoints/utils/validators/input/posts', function () {
                         return validators.input.posts.add(apiConfig, frame)
                             .then(Promise.reject)
                             .catch((err) => {
-                                err.errorType.should.equal('ValidationError');
+                                assert.equal(err.errorType, 'ValidationError');
                             });
                     });
 
@@ -223,7 +215,7 @@ describe('Unit: endpoints/utils/validators/input/posts', function () {
                 return validators.input.posts.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        err.errorType.should.equal('ValidationError');
+                        assert.equal(err.errorType, 'ValidationError');
                     });
             });
 
@@ -245,7 +237,7 @@ describe('Unit: endpoints/utils/validators/input/posts', function () {
                 return validators.input.posts.add(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        err.errorType.should.equal('ValidationError');
+                        assert.equal(err.errorType, 'ValidationError');
                     });
             });
 
@@ -286,7 +278,7 @@ describe('Unit: endpoints/utils/validators/input/posts', function () {
                 return validators.input.posts.edit(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        err.errorType.should.equal('ValidationError');
+                        assert.equal(err.errorType, 'ValidationError');
                     });
             });
 
@@ -301,7 +293,7 @@ describe('Unit: endpoints/utils/validators/input/posts', function () {
                 return validators.input.posts.edit(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        err.errorType.should.equal('ValidationError');
+                        assert.equal(err.errorType, 'ValidationError');
                     });
             });
 
@@ -317,7 +309,7 @@ describe('Unit: endpoints/utils/validators/input/posts', function () {
                 return validators.input.posts.edit(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        err.errorType.should.equal('ValidationError');
+                        assert.equal(err.errorType, 'ValidationError');
                     });
             });
 
@@ -353,7 +345,7 @@ describe('Unit: endpoints/utils/validators/input/posts', function () {
                 return validators.input.posts.edit(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        err.errorType.should.equal('ValidationError');
+                        assert.equal(err.errorType, 'ValidationError');
                     });
             });
 
@@ -375,7 +367,7 @@ describe('Unit: endpoints/utils/validators/input/posts', function () {
                 return validators.input.posts.edit(apiConfig, frame)
                     .then(Promise.reject)
                     .catch((err) => {
-                        err.errorType.should.equal('ValidationError');
+                        assert.equal(err.errorType, 'ValidationError');
                     });
             });
 

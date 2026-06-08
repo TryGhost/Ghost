@@ -1,6 +1,10 @@
 const urlUtils = require('../../../shared/url-utils');
 const urlService = require('../../services/url');
-const FeedbackRepository = require('./FeedbackRepository');
+
+const AudienceFeedbackService = require('./audience-feedback-service');
+const AudienceFeedbackController = require('./audience-feedback-controller');
+const Feedback = require('./feedback');
+const FeedbackRepository = require('./feedback-repository');
 
 class AudienceFeedbackServiceWrapper {
     async init() {
@@ -11,8 +15,6 @@ class AudienceFeedbackServiceWrapper {
 
         // Wire up all the dependencies
         const models = require('../../models');
-
-        const {AudienceFeedbackService, AudienceFeedbackController, Feedback} = require('@tryghost/audience-feedback');
 
         this.repository = new FeedbackRepository({
             Member: models.Member,

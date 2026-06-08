@@ -19,9 +19,13 @@ module.exports = {
             'emailAnalytics',
             'hostSettings',
             'tenor',
-            'editor',
+            'klipy',
             'pintura',
-            'signupForm'
+            'signupForm',
+            'stats',
+            'security',
+            'exploreTestimonialsUrl',
+            'featurebase'
         ];
 
         frame.response = {

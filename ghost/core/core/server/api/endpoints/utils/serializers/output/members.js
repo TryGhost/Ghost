@@ -3,7 +3,9 @@ const _ = require('lodash');
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output:members');
 const {unparse} = require('@tryghost/members-csv');
 const mappers = require('./mappers');
-
+const {Transform} = require('stream');
+const papaparse = require('papaparse');
+const {createCSVStreamResponse} = require('./stream-csv-response');
 module.exports = {
     browse: createSerializer('browse', paginatedMembers),
     read: createSerializer('read', singleMember),
@@ -23,12 +25,75 @@ module.exports = {
     activityFeed: createSerializer('activityFeed', activityFeed)
 };
 
+// Columns to export in CSV
+const CSV_HEADERS = [
+    'id',
+    'email',
+    'name',
+    'note',
+    'subscribed_to_emails',
+    'complimentary_plan',
+    'stripe_customer_id',
+    'created_at',
+    'deleted_at',
+    'labels',
+    'tiers',
+    'gift_id'
+];
+
+/**
+ * Formats a single member for CSV export
+ * @param {Object} member - Member object
+ * @returns {Object} Formatted member
+ */
+function formatMemberForCSV(member) {
+    let labels = '';
+    if (Array.isArray(member.labels)) {
+        labels = member.labels.map((l) => {
+            return typeof l === 'string' ? l : l.name;
+        }).join(',');
+    }
+
+    let tiers = '';
+    if (Array.isArray(member.tiers)) {
+        tiers = member.tiers.map((tier) => {
+            return tier.name;
+        }).join(',');
+    }
+
+    // Convert boolean 'false' to empty string for tests to pass
+    // Only comped = true should result in 'true', otherwise empty string
+    const complimentaryPlan = member.comped === true ? 'true' : '';
+
+    // Gift members carry the gift id so an exported CSV can be re-imported and reassigned
+    // back to a (possibly new) member record via the gifts table
+    const giftId = member.gift_id || '';
+
+    // Convert subscribed boolean to string representation
+    const subscribedToEmails = member.subscribed === true ? 'true' : 'false';
+
+    return {
+        id: member.id,
+        email: member.email,
+        name: member.name,
+        note: member.note,
+        subscribed_to_emails: subscribedToEmails,
+        complimentary_plan: complimentaryPlan,
+        stripe_customer_id: member.stripe_customer_id,
+        created_at: member.created_at,
+        deleted_at: member.deleted_at || null,
+        labels: labels,
+        tiers: tiers,
+        gift_id: giftId
+    };
+}
+
 /**
  * @template PageMeta
  *
  * @param {{data: import('bookshelf').Model[], meta: PageMeta}} page
  * @param {APIConfig} _apiConfig
- * @param {Frame} frame
+ * @param {import('@tryghost/api-framework').Frame} frame
  *
  * @returns {{members: SerializedMember[], meta: PageMeta}}
  */
@@ -42,7 +107,7 @@ function paginatedMembers(page, _apiConfig, frame) {
 /**
  * @param {import('bookshelf').Model} model
  * @param {APIConfig} _apiConfig
- * @param {Frame} frame
+ * @param {import('@tryghost/api-framework').Frame} frame
  *
  * @returns {{members: SerializedMember[]}}
  */
@@ -55,7 +120,7 @@ function singleMember(model, _apiConfig, frame) {
 /**
  * @param {object} bulkActionResult
  * @param {APIConfig} _apiConfig
- * @param {Frame} frame
+ * @param {import('@tryghost/api-framework').Frame} frame
  *
  * @returns {{bulk: SerializedBulkAction}}
  */
@@ -84,54 +149,6 @@ function activityFeed(data, _apiConfig, frame) {
         events: data.events.map(e => mappers.activityFeedEvents(e, frame)),
         meta: data.meta
     };
-}
-
-/**
- * @template PageMeta
- *
- * @param {{data: any[]}} data
- *
- * @returns {string} - A CSV string
- */
-function exportCSV(data) {
-    debug('exportCSV');
-    return unparse(data.data);
-}
-
-function serializeAttribution(attribution) {
-    if (!attribution) {
-        return attribution;
-    }
-
-    return {
-        id: attribution?.id,
-        type: attribution?.type,
-        url: attribution?.url,
-        title: attribution?.title,
-        referrer_source: attribution?.referrerSource,
-        referrer_medium: attribution?.referrerMedium,
-        referrer_url: attribution.referrerUrl
-    };
-}
-
-function serializeNewsletter(newsletter) {
-    const newsletterFields = [
-        'id',
-        'name',
-        'description',
-        'status'
-    ];
-
-    return _.pick(newsletter, newsletterFields);
-}
-
-function serializeNewsletters(newsletters) {
-    return newsletters
-        .filter(newsletter => newsletter.status === 'active')
-        .sort((a, b) => {
-            return a.sort_order - b.sort_order;
-        })
-        .map(newsletter => serializeNewsletter(newsletter));
 }
 
 /**
@@ -167,7 +184,10 @@ function serializeMember(member, options) {
         email_recipients: json.email_recipients,
         status: json.status,
         last_seen_at: json.last_seen_at,
-        attribution: serializeAttribution(json.attribution)
+        attribution: serializeAttribution(json.attribution),
+        unsubscribe_url: json.unsubscribe_url,
+        can_comment: json.can_comment,
+        commenting: json.commenting
     };
 
     if (json.products) {
@@ -219,9 +239,9 @@ function passthrough(data) {
  * @template Data
  * @template Response
  * @param {string} debugString
- * @param {(data: Data, apiConfig: APIConfig, frame: Frame) => Response} serialize - A function to serialize the data into an object suitable for API response
+ * @param {(data: Data, apiConfig: APIConfig, frame: import('@tryghost/api-framework').Frame) => Response} serialize
  *
- * @returns {(data: Data, apiConfig: APIConfig, frame: Frame) => void}
+ * @returns {(data: Data, apiConfig: APIConfig, frame: import('@tryghost/api-framework').Frame) => void}
  */
 function createSerializer(debugString, serialize) {
     return function serializer(data, apiConfig, frame) {
@@ -251,7 +271,9 @@ function createSerializer(debugString, serialize) {
  * @prop {number} email_opened_count
  * @prop {number} email_open_rate
  * @prop {null|SerializedEmailRecipient[]} email_recipients
- * @prop {'free'|'paid'} status
+ * @prop {'free'|'paid'|'comped'|'gift'} status
+ * @prop {boolean} can_comment
+ * @prop {null|{disabled: boolean, disabled_reason: string, disabled_until: string|null}} commenting
  */
 
 /**
@@ -330,9 +352,7 @@ function createSerializer(debugString, serialize) {
  * @prop {string} plaintext
  * @prop {boolean} track_opens
  * @prop {string} created_at
- * @prop {string} created_by
  * @prop {string} updated_at
- * @prop {string} updated_by
  */
 
 /**
@@ -356,7 +376,115 @@ function createSerializer(debugString, serialize) {
  * @prop {string} method
  */
 
+function serializeAttribution(attribution) {
+    if (!attribution) {
+        return attribution;
+    }
+
+    return {
+        id: attribution?.id,
+        type: attribution?.type,
+        url: attribution?.url,
+        title: attribution?.title,
+        referrer_source: attribution?.referrerSource,
+        referrer_medium: attribution?.referrerMedium,
+        referrer_url: attribution.referrerUrl
+    };
+}
+
+function serializeNewsletter(newsletter) {
+    const newsletterFields = [
+        'id',
+        'name',
+        'description',
+        'status'
+    ];
+
+    return _.pick(newsletter, newsletterFields);
+}
+
+function serializeNewsletters(newsletters) {
+    return newsletters
+        .filter(newsletter => newsletter.status === 'active')
+        .sort((a, b) => {
+            return a.sort_order - b.sort_order;
+        })
+        .map(newsletter => serializeNewsletter(newsletter));
+}
+
 /**
- * @typedef {Object<string, any>} Frame
- * @prop {Object} options
+ * Create a CSV Transform stream
+ * @returns {Transform} Transform stream that converts objects to CSV
  */
+function createCSVTransform() {
+    let isFirstChunk = true;
+    
+    return new Transform({
+        objectMode: true,
+        transform(member, encoding, callback) {
+            try {
+                // Format the member data for CSV
+                const formattedMember = formatMemberForCSV(member);
+                
+                // For first chunk, include the headers
+                if (isFirstChunk) {
+                    const csv = papaparse.unparse({
+                        fields: CSV_HEADERS,
+                        data: [formattedMember]
+                    }, {
+                        header: true,
+                        escapeFormulae: true,
+                        newline: '\r\n' // Explicitly set Windows-style line endings for compatibility
+                    });
+                    isFirstChunk = false;
+                    callback(null, csv);
+                } else {
+                    // For subsequent chunks, don't include headers, just the data
+                    const csv = papaparse.unparse({
+                        fields: CSV_HEADERS,
+                        data: [formattedMember]
+                    }, {
+                        header: false,
+                        escapeFormulae: true,
+                        newline: '\r\n' // Explicitly set Windows-style line endings for compatibility
+                    });
+                    
+                    // Make sure each row starts with a newline to ensure separation between rows
+                    // Ensure consistent line endings by using explicit CR+LF sequence
+                    callback(null, '\r\n' + csv.replace(/^\r?\n+/, ''));
+                }
+            } catch (err) {
+                callback(err);
+            }
+        }
+    });
+}
+
+/**
+ * @template PageMeta
+ *
+ * @param {{data: any[]|Object, filename?: string}} data
+ *
+ * @returns {string|Function} - A CSV string or response handler function
+ */
+function exportCSV(data) {
+    debug('exportCSV');
+
+    // Check if data.data is a stream (has the pipe method)
+    if (data.data && typeof data.data.pipe === 'function') {
+        debug('CSV stream response');
+
+        // Fall back to the legacy filename if the endpoint didn't provide one
+        const datetime = (new Date()).toJSON().substring(0, 10);
+        const filename = data.filename || `members.${datetime}.csv`;
+
+        return createCSVStreamResponse({
+            source: data.data,
+            transform: createCSVTransform(),
+            filename
+        });
+    }
+
+    // Otherwise use the unparse function for array data
+    return unparse(data.data);
+}

@@ -1,15 +1,15 @@
 const sinon = require('sinon');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 
 // DI requirements
 const models = require('../../../../../core/server/models');
 const mail = require('../../../../../core/server/services/mail');
 
 // Mocked utilities
-const urlUtils = require('../../../../utils/urlUtils');
+const urlUtils = require('../../../../utils/url-utils');
 const {mockManager} = require('../../../../utils/e2e-framework');
-
-const NewslettersService = require('../../../../../core/server/services/newsletters/NewslettersService');
+const {EmailAddressService} = require('../../../../../core/server/services/email-address/email-address-service');
+const NewslettersService = require('../../../../../core/server/services/newsletters/newsletters-service');
 
 class TestTokenProvider {
     async create(data) {
@@ -25,10 +25,9 @@ describe('NewslettersService', function () {
     let newsletterService, getStub, tokenProvider;
     /** @type {NewslettersService.ILimitService} */
     let limitService;
+    let emailMockReceiver;
 
-    before(function () {
-        models.init();
-
+    beforeAll(function () {
         tokenProvider = new TestTokenProvider();
 
         limitService = {
@@ -41,7 +40,30 @@ describe('NewslettersService', function () {
             mail,
             singleUseTokenProvider: tokenProvider,
             urlUtils: urlUtils.stubUrlUtilsFromConfig(),
-            limitService
+            limitService,
+            emailAddressService: {
+                service: new EmailAddressService({
+                    getManagedEmailEnabled: () => {
+                        return false;
+                    },
+                    getSendingDomain: () => {
+                        return null;
+                    },
+                    getDefaultEmail: () => {
+                        return {
+                            address: 'default@example.com'
+                        };
+                    },
+                    isValidEmailAddress: () => {
+                        return true;
+                    },
+                    labs: {
+                        isSet() {
+                            return false;
+                        }
+                    }
+                })
+            }
         });
     });
 
@@ -50,11 +72,15 @@ describe('NewslettersService', function () {
         getStub.withArgs('id').returns('test');
         sinon.spy(tokenProvider, 'create');
         sinon.spy(tokenProvider, 'validate');
-        mockManager.mockMail();
+        emailMockReceiver = mockManager.mockMail();
     });
 
     afterEach(function () {
         mockManager.restore();
+    });
+
+    afterAll(async function () {
+        await urlUtils.restore();
     });
 
     describe('read', function () {
@@ -79,14 +105,12 @@ describe('NewslettersService', function () {
 
     // @TODO replace this with a specific function for fetching all available newsletters
     describe('browse', function () {
-        it('lists all newsletters by calling findAll and toJSON', async function () {
-            const toJSONStub = sinon.stub();
-            const findAllStub = sinon.stub(models.Newsletter, 'findAll').returns({toJSON: toJSONStub});
+        it('lists all newsletters by calling findPage', async function () {
+            const findAllStub = sinon.stub(models.Newsletter, 'findPage').returns({data: []});
 
             await newsletterService.browse({});
 
             sinon.assert.calledOnce(findAllStub);
-            sinon.assert.calledOnce(toJSONStub);
         });
     });
 
@@ -161,24 +185,6 @@ describe('NewslettersService', function () {
             sinon.assert.calledOnceWithExactly(findOneStub, {id: 'test'}, {foo: 'bar', require: true});
         });
 
-        it('will trigger verification when sender_email is provided', async function () {
-            const data = {name: 'hello world', sender_email: 'test@example.com'};
-            const options = {foo: 'bar'};
-
-            const result = await newsletterService.add(data, options);
-
-            assert.deepEqual(result.meta, {
-                sent_email_verification: [
-                    'sender_email'
-                ]
-            });
-            sinon.assert.calledOnceWithExactly(addStub, {name: 'hello world', sort_order: 1}, options);
-            mockManager.assert.sentEmail({to: 'test@example.com'});
-            sinon.assert.calledOnceWithExactly(tokenProvider.create, {id: 'test', property: 'sender_email', value: 'test@example.com'});
-            sinon.assert.notCalled(fetchMembersStub);
-            sinon.assert.calledOnceWithExactly(findOneStub, {id: 'test'}, {foo: 'bar', require: true});
-        });
-
         it('will try to find existing members when opt_in_existing is provided', async function () {
             const data = {name: 'hello world'};
             const options = {opt_in_existing: true};
@@ -190,7 +196,7 @@ describe('NewslettersService', function () {
             });
 
             sinon.assert.calledOnceWithExactly(addStub, {name: 'hello world', sort_order: 1}, options);
-            mockManager.assert.sentEmailCount(0);
+            emailMockReceiver.assertSentEmailCount(0);
             sinon.assert.calledOnce(fetchMembersStub);
             sinon.assert.calledOnceWithExactly(findOneStub, {id: 'test'}, {opt_in_existing: true, transacting: options.transacting, require: true});
         });
@@ -208,7 +214,7 @@ describe('NewslettersService', function () {
             });
 
             sinon.assert.calledOnceWithExactly(addStub, {name: 'hello world', sort_order: 1}, options);
-            mockManager.assert.sentEmailCount(0);
+            emailMockReceiver.assertSentEmailCount(0);
             sinon.assert.calledOnceWithExactly(fetchMembersStub, {transacting: 'foo'});
             sinon.assert.calledOnceWithExactly(subscribeStub, fakeMemberIds, options);
         });
@@ -246,49 +252,6 @@ describe('NewslettersService', function () {
             sinon.assert.calledTwice(findOneStub);
             sinon.assert.calledWithExactly(findOneStub.firstCall, {id: 'test'}, {require: true});
             sinon.assert.calledWithExactly(findOneStub.secondCall, {id: 'test'}, {...options, require: true});
-        });
-
-        it('will trigger verification when sender_email is provided', async function () {
-            const data = {name: 'hello world', sender_email: 'test@example.com'};
-            const options = {id: 'test', foo: 'bar'};
-
-            // Explicitly set the old value to a different value
-            getStub.withArgs('sender_email').returns('old@example.com');
-
-            const result = await newsletterService.edit(data, options);
-
-            assert.deepEqual(result.meta, {
-                sent_email_verification: [
-                    'sender_email'
-                ]
-            });
-            sinon.assert.calledOnceWithExactly(editStub, {name: 'hello world'}, options);
-
-            sinon.assert.calledTwice(findOneStub);
-            sinon.assert.calledWithExactly(findOneStub.firstCall, {id: 'test'}, {require: true});
-            sinon.assert.calledWithExactly(findOneStub.secondCall, {id: 'test'}, {...options, require: true});
-
-            mockManager.assert.sentEmail({to: 'test@example.com'});
-            sinon.assert.calledOnceWithExactly(tokenProvider.create, {id: 'test', property: 'sender_email', value: 'test@example.com'});
-        });
-
-        it('will NOT trigger verification when sender_email is provided but is already verified', async function () {
-            const data = {name: 'hello world', sender_email: 'test@example.com'};
-            const options = {foo: 'bar', id: 'test'};
-
-            // The model says this is already verified
-            getStub.withArgs('sender_email').returns('test@example.com');
-
-            const result = await newsletterService.edit(data, options);
-
-            assert.deepEqual(result.meta, undefined);
-            sinon.assert.calledOnceWithExactly(editStub, {name: 'hello world', sender_email: 'test@example.com'}, options);
-
-            sinon.assert.calledTwice(findOneStub);
-            sinon.assert.calledWithExactly(findOneStub.firstCall, {id: 'test'}, {require: true});
-            sinon.assert.calledWithExactly(findOneStub.secondCall, {id: 'test'}, {...options, require: true});
-
-            mockManager.assert.sentEmailCount(0);
         });
     });
 

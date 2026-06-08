@@ -28,7 +28,8 @@ module.exports = {
     ],
     rules: {
         'ghost/filenames/match-exported-class': ['off'],
-        'ghost/filenames/match-regex': ['off'],
+        // Enforce kebab-case (lowercase with hyphens) for all filenames
+        'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false],
         'no-shadow': ['error'],
 
         // TODO: migrate away from accessing controller in routes
@@ -51,5 +52,19 @@ module.exports = {
 
         'react/jsx-uses-react': 'error',
         'react/jsx-uses-vars': 'error'
-    }
+    },
+    overrides: [{
+        files: 'tests/**/*.js',
+        env: {
+            embertest: true,
+            mocha: true
+        },
+        extends: [
+            'plugin:ghost/test'
+        ],
+        rules: {
+            'ghost/ember/no-invalid-debug-function-arguments': 'off',
+            'ghost/mocha/no-setup-in-describe': 'off'
+        }
+    }]
 };

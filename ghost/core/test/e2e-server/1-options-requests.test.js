@@ -1,5 +1,5 @@
-const assert = require('assert/strict');
-const {agentProvider, matchers} = require('../utils/e2e-framework');
+const assert = require('node:assert/strict');
+const {agentProvider, matchers, cacheRules} = require('../utils/e2e-framework');
 const {anyContentVersion} = matchers;
 const config = require('../../core/shared/config');
 
@@ -98,7 +98,7 @@ describe('OPTIONS requests', function () {
                 .options('/')
                 .expect(204);
 
-            assert.equal(res.headers['access-control-allow-origin'], 'http://127.0.0.1:2369');
+            assert.equal(res.headers['access-control-allow-origin'], config.get('url'));
             assert.equal(res.headers['access-control-allow-credentials'], 'true');
             assert.equal(res.headers['access-control-allow-methods'], 'GET,HEAD,PUT,PATCH,POST,DELETE');
             assert.equal(res.headers['access-control-max-age'], '86400');
@@ -114,7 +114,7 @@ describe('OPTIONS requests', function () {
                 .set('origin', null)
                 .expect(200);
 
-            assert.equal(res.headers['cache-control'], 'public, max-age=0');
+            assert.equal(res.headers['cache-control'], cacheRules.public);
             assert.equal(res.headers.vary, 'Origin, Accept-Encoding');
             assert.equal(res.headers.allow, 'POST,GET,HEAD');
         });
@@ -125,7 +125,7 @@ describe('OPTIONS requests', function () {
                 .set('origin', 'https://otherdomain.tld/')
                 .expect(200);
 
-            assert.equal(res.headers['cache-control'], 'public, max-age=0');
+            assert.equal(res.headers['cache-control'], cacheRules.public);
             assert.equal(res.headers.vary, 'Origin, Accept-Encoding');
             assert.equal(res.headers.allow, 'POST,GET,HEAD');
         });

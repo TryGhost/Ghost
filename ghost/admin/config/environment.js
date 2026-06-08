@@ -5,7 +5,7 @@ module.exports = function (environment) {
     let ENV = {
         modulePrefix: 'ghost-admin',
         environment,
-        cdnUrl: process.env.GHOST_CDN_URL || '',
+        editorUrl: process.env.EDITOR_URL || '',
         rootURL: '',
         locationType: 'trailing-hash',
         EmberENV: {
@@ -34,10 +34,6 @@ module.exports = function (environment) {
 
         'ember-simple-auth': { },
 
-        'ember-websockets': {
-            socketIO: true
-        },
-
         '@sentry/ember': {
             disablePerformance: true,
             sentry: {}
@@ -53,7 +49,8 @@ module.exports = function (environment) {
 
         // Enable mirage here in order to mock API endpoints during development
         ENV['ember-cli-mirage'] = {
-            enabled: false
+            enabled: false,
+            excludeFilesFromBuild: process.env.EMBER_INCLUDE_TESTS !== 'true'
         };
     }
 
@@ -69,10 +66,17 @@ module.exports = function (environment) {
         ENV.APP.rootElement = '#ember-testing';
         ENV.APP.autoboot = false;
 
-        // Withuot manually setting this, pretender won't track requests
+        // Without manually setting this, pretender won't track requests
         ENV['ember-cli-mirage'] = {
             trackRequests: true
         };
+
+        // We copy the dynamically loaded editor file into the ghost assets
+        // directory in the dev/test env so that tests can load it. We need to
+        // set the config appropriately here so that the fetchKoenigLexical
+        // utility creates the right URL
+        ENV.editorFilename = 'koenig-lexical.umd.js';
+        ENV.editorHash = 'test';
     }
 
     return ENV;

@@ -12,6 +12,8 @@ const shared = require('../../../shared');
 
 /**
  * Authentication for public endpoints
+ *
+ * @type {import('express').RequestHandler[]}
  */
 module.exports.authenticatePublic = [
     shared.middleware.brute.contentApiKey,

@@ -1,7 +1,7 @@
 const DomainEvents = require('@tryghost/domain-events');
 const logging = require('@tryghost/logging');
 const models = require('../../models');
-const BookshelfMilestoneRepository = require('./BookshelfMilestoneRepository');
+const BookshelfMilestoneRepository = require('./bookshelf-milestone-repository');
 
 const JOB_TIMEOUT = 1000 * 60 * 60 * 24 * (Math.floor(Math.random() * 4)); // 0 - 4 days;
 
@@ -23,7 +23,7 @@ const getStripeLiveEnabled = () => {
 };
 
 module.exports = {
-    /** @type {import('@tryghost/milestones/lib/MilestonesService')} */
+    /** @type {import('./milestones-service')} */
     api: null,
 
     /**
@@ -32,9 +32,9 @@ module.exports = {
     async init() {
         if (!this.api) {
             const db = require('../../data/db');
-            const MilestoneQueries = require('./MilestoneQueries');
+            const MilestoneQueries = require('./milestone-queries');
 
-            const {MilestonesService} = require('@tryghost/milestones');
+            const MilestonesService = require('./milestones-service');
             const config = require('../../../shared/config');
             const milestonesConfig = config.get('milestones');
 

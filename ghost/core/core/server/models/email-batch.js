@@ -5,7 +5,8 @@ const EmailBatch = ghostBookshelf.Model.extend({
 
     defaults() {
         return {
-            status: 'pending'
+            status: 'pending',
+            fallback_sending_domain: false
         };
     },
 

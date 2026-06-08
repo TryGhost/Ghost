@@ -1,4 +1,6 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
+const _ = require('lodash');
 const sinon = require('sinon');
 const rewire = require('rewire');
 const getImageDimensions = rewire('../../../../core/frontend/meta/image-dimensions');
@@ -14,7 +16,7 @@ describe('getImageDimensions', function () {
         sinon.restore();
     });
 
-    it('should return dimension for images', function (done) {
+    it('should return dimension for images', async function () {
         const metaData = {
             coverImage: {
                 url: 'http://mysite.com/content/image/mypostcoverimage.jpg'
@@ -42,33 +44,31 @@ describe('getImageDimensions', function () {
             getCachedImageSizeFromUrl: sizeOfStub
         });
 
-        getImageDimensions(metaData).then(function (result) {
-            should.exist(result);
-            sizeOfStub.calledWith(metaData.coverImage.url).should.be.true();
-            sizeOfStub.calledWith(metaData.authorImage.url).should.be.true();
-            sizeOfStub.calledWith(metaData.ogImage.url).should.be.true();
-            sizeOfStub.calledWith(metaData.site.logo.url).should.be.true();
-            result.coverImage.should.have.property('dimensions');
-            result.coverImage.should.have.property('url');
-            result.coverImage.dimensions.should.have.property('width', 50);
-            result.coverImage.dimensions.should.have.property('height', 50);
-            result.authorImage.should.have.property('dimensions');
-            result.authorImage.should.have.property('url');
-            result.authorImage.dimensions.should.have.property('width', 50);
-            result.authorImage.dimensions.should.have.property('height', 50);
-            result.ogImage.should.have.property('dimensions');
-            result.ogImage.should.have.property('url');
-            result.ogImage.dimensions.should.have.property('width', 50);
-            result.ogImage.dimensions.should.have.property('height', 50);
-            result.site.logo.should.have.property('dimensions');
-            result.site.logo.should.have.property('url');
-            result.site.logo.dimensions.should.have.property('width', 50);
-            result.site.logo.dimensions.should.have.property('height', 50);
-            done();
-        }).catch(done);
+        const result = await getImageDimensions(metaData);
+        assertExists(result);
+        sinon.assert.calledWith(sizeOfStub, metaData.coverImage.url);
+        sinon.assert.calledWith(sizeOfStub, metaData.authorImage.url);
+        sinon.assert.calledWith(sizeOfStub, metaData.ogImage.url);
+        sinon.assert.calledWith(sizeOfStub, metaData.site.logo.url);
+        assert('dimensions' in result.coverImage);
+        assert('url' in result.coverImage);
+        assert.equal(result.coverImage.dimensions.width, 50);
+        assert.equal(result.coverImage.dimensions.height, 50);
+        assert('dimensions' in result.authorImage);
+        assert('url' in result.authorImage);
+        assert.equal(result.authorImage.dimensions.width, 50);
+        assert.equal(result.authorImage.dimensions.height, 50);
+        assert('dimensions' in result.ogImage);
+        assert('url' in result.ogImage);
+        assert.equal(result.ogImage.dimensions.width, 50);
+        assert.equal(result.ogImage.dimensions.height, 50);
+        assert('dimensions' in result.site.logo);
+        assert('url' in result.site.logo);
+        assert.equal(result.site.logo.dimensions.width, 50);
+        assert.equal(result.site.logo.dimensions.height, 50);
     });
 
-    it('should return metaData if url is undefined or null', function (done) {
+    it('should return metaData if url is undefined or null', async function () {
         const metaData = {
             coverImage: {
                 url: undefined
@@ -95,25 +95,23 @@ describe('getImageDimensions', function () {
             getCachedImageSizeFromUrl: sizeOfStub
         });
 
-        getImageDimensions(metaData).then(function (result) {
-            should.exist(result);
-            sizeOfStub.calledWith(metaData.coverImage.url).should.be.true();
-            sizeOfStub.calledWith(metaData.authorImage.url).should.be.true();
-            sizeOfStub.calledWith(metaData.ogImage.url).should.be.true();
-            sizeOfStub.calledWith(metaData.site.logo.url).should.be.true();
-            result.coverImage.should.not.have.property('dimensions');
-            result.coverImage.should.have.property('url');
-            result.authorImage.should.not.have.property('dimensions');
-            result.authorImage.should.have.property('url');
-            result.ogImage.should.not.have.property('dimensions');
-            result.ogImage.should.have.property('url');
-            result.site.logo.should.not.have.property('dimensions');
-            result.site.logo.should.have.property('url');
-            done();
-        }).catch(done);
+        const result = await getImageDimensions(metaData);
+        assertExists(result);
+        sinon.assert.calledWith(sizeOfStub, metaData.coverImage.url);
+        sinon.assert.calledWith(sizeOfStub, metaData.authorImage.url);
+        sinon.assert.calledWith(sizeOfStub, metaData.ogImage.url);
+        sinon.assert.calledWith(sizeOfStub, metaData.site.logo.url);
+        assert(!('dimensions' in result.coverImage));
+        assert('url' in result.coverImage);
+        assert(!('dimensions' in result.authorImage));
+        assert('url' in result.authorImage);
+        assert(!('dimensions' in result.ogImage));
+        assert('url' in result.ogImage);
+        assert(!('dimensions' in result.site.logo));
+        assert('url' in result.site.logo);
     });
 
-    it('should fake image dimension for publisher.logo if file is too big and square', function (done) {
+    it('should fake image dimension for publisher.logo if file is too big and square', async function () {
         const metaData = {
             coverImage: {
                 url: 'http://mysite.com/content/image/mypostcoverimage.jpg'
@@ -141,33 +139,31 @@ describe('getImageDimensions', function () {
             getCachedImageSizeFromUrl: sizeOfStub
         });
 
-        getImageDimensions(metaData).then(function (result) {
-            should.exist(result);
-            sizeOfStub.calledWith(metaData.coverImage.url).should.be.true();
-            sizeOfStub.calledWith(metaData.authorImage.url).should.be.true();
-            sizeOfStub.calledWith(metaData.ogImage.url).should.be.true();
-            sizeOfStub.calledWith(metaData.site.logo.url).should.be.true();
-            result.coverImage.should.have.property('url');
-            result.coverImage.should.have.property('dimensions');
-            result.coverImage.dimensions.should.have.property('height', 480);
-            result.coverImage.dimensions.should.have.property('width', 480);
-            result.site.logo.should.have.property('url');
-            result.site.logo.should.have.property('dimensions');
-            result.site.logo.dimensions.should.have.property('height', 60);
-            result.site.logo.dimensions.should.have.property('width', 60);
-            result.authorImage.should.have.property('url');
-            result.authorImage.should.have.property('dimensions');
-            result.authorImage.dimensions.should.have.property('height', 480);
-            result.authorImage.dimensions.should.have.property('width', 480);
-            result.ogImage.should.have.property('url');
-            result.ogImage.should.have.property('dimensions');
-            result.ogImage.dimensions.should.have.property('height', 480);
-            result.ogImage.dimensions.should.have.property('width', 480);
-            done();
-        }).catch(done);
+        const result = await getImageDimensions(metaData);
+        assertExists(result);
+        sinon.assert.calledWith(sizeOfStub, metaData.coverImage.url);
+        sinon.assert.calledWith(sizeOfStub, metaData.authorImage.url);
+        sinon.assert.calledWith(sizeOfStub, metaData.ogImage.url);
+        sinon.assert.calledWith(sizeOfStub, metaData.site.logo.url);
+        assert('url' in result.coverImage);
+        assert('dimensions' in result.coverImage);
+        assert.equal(result.coverImage.dimensions.height, 480);
+        assert.equal(result.coverImage.dimensions.width, 480);
+        assert('url' in result.site.logo);
+        assert('dimensions' in result.site.logo);
+        assert.equal(result.site.logo.dimensions.height, 60);
+        assert.equal(result.site.logo.dimensions.width, 60);
+        assert('url' in result.authorImage);
+        assert('dimensions' in result.authorImage);
+        assert.equal(result.authorImage.dimensions.height, 480);
+        assert.equal(result.authorImage.dimensions.width, 480);
+        assert('url' in result.ogImage);
+        assert('dimensions' in result.ogImage);
+        assert.equal(result.ogImage.dimensions.height, 480);
+        assert.equal(result.ogImage.dimensions.width, 480);
     });
 
-    it('should not fake dimension for publisher.logo if a logo is too big but not square', function (done) {
+    it('should not fake dimension for publisher.logo if a logo is too big but not square', async function () {
         const metaData = {
             coverImage: {
                 url: 'http://mysite.com/content/image/mypostcoverimage.jpg'
@@ -195,27 +191,170 @@ describe('getImageDimensions', function () {
             getCachedImageSizeFromUrl: sizeOfStub
         });
 
-        getImageDimensions(metaData).then(function (result) {
-            should.exist(result);
-            sizeOfStub.calledWith(metaData.coverImage.url).should.be.true();
-            sizeOfStub.calledWith(metaData.authorImage.url).should.be.true();
-            sizeOfStub.calledWith(metaData.ogImage.url).should.be.true();
-            sizeOfStub.calledWith(metaData.site.logo.url).should.be.true();
-            result.coverImage.should.have.property('dimensions');
-            result.coverImage.should.have.property('url');
-            result.coverImage.dimensions.should.have.property('height', 480);
-            result.coverImage.dimensions.should.have.property('width', 80);
-            result.authorImage.should.have.property('dimensions');
-            result.authorImage.should.have.property('url');
-            result.authorImage.dimensions.should.have.property('height', 480);
-            result.authorImage.dimensions.should.have.property('width', 80);
-            result.ogImage.should.have.property('dimensions');
-            result.ogImage.should.have.property('url');
-            result.ogImage.dimensions.should.have.property('height', 480);
-            result.ogImage.dimensions.should.have.property('width', 80);
-            result.site.logo.should.have.property('url');
-            result.site.logo.should.not.have.property('dimensions');
-            done();
-        }).catch(done);
+        const result = await getImageDimensions(metaData);
+        assertExists(result);
+        sinon.assert.calledWith(sizeOfStub, metaData.coverImage.url);
+        sinon.assert.calledWith(sizeOfStub, metaData.authorImage.url);
+        sinon.assert.calledWith(sizeOfStub, metaData.ogImage.url);
+        sinon.assert.calledWith(sizeOfStub, metaData.site.logo.url);
+        assert('dimensions' in result.coverImage);
+        assert('url' in result.coverImage);
+        assert.equal(result.coverImage.dimensions.height, 480);
+        assert.equal(result.coverImage.dimensions.width, 80);
+        assert('dimensions' in result.authorImage);
+        assert('url' in result.authorImage);
+        assert.equal(result.authorImage.dimensions.height, 480);
+        assert.equal(result.authorImage.dimensions.width, 80);
+        assert('dimensions' in result.ogImage);
+        assert('url' in result.ogImage);
+        assert.equal(result.ogImage.dimensions.height, 480);
+        assert.equal(result.ogImage.dimensions.width, 80);
+        assert('url' in result.site.logo);
+        assert(!('dimensions' in result.site.logo));
+    });
+
+    it('should adjust image sizes to a max width', async function () {
+        const originalMetaData = {
+            coverImage: {
+                url: 'http://mysite.com/content/images/mypostcoverimage.jpg'
+            },
+            authorImage: {
+                url: 'http://mysite.com/content/images/me.jpg'
+            },
+            ogImage: {
+                url: 'http://mysite.com/content/images/super-facebook-image.jpg'
+            },
+            twitterImage: 'http://mysite.com/content/images/super-twitter-image.jpg',
+            site: {
+                logo: {
+                    url: 'http://mysite.com/content/images/logo.jpg'
+                }
+            }
+        };
+
+        // getImageDimensions modifies metaData so we clone so we can compare
+        // against the original
+        const metaData = _.cloneDeep(originalMetaData);
+
+        // callsFake rather than returns otherwise the object is passed by
+        // reference and assigned to each image meaning it gets modified when
+        // the first image is resized and later images no longer look oversized
+        sizeOfStub.callsFake(() => ({
+            width: 2000,
+            height: 1200,
+            type: 'jpg'
+        }));
+
+        getImageDimensions.__set__('imageSizeCache', {
+            getCachedImageSizeFromUrl: sizeOfStub
+        });
+
+        const result = await getImageDimensions(metaData);
+        assertExists(result);
+        sinon.assert.calledWith(sizeOfStub, originalMetaData.coverImage.url);
+        sinon.assert.calledWith(sizeOfStub, originalMetaData.authorImage.url);
+        sinon.assert.calledWith(sizeOfStub, originalMetaData.ogImage.url);
+        sinon.assert.calledWith(sizeOfStub, originalMetaData.twitterImage);
+        sinon.assert.calledWith(sizeOfStub, originalMetaData.site.logo.url);
+        assert('url' in result.coverImage);
+        assert.equal(result.coverImage.url, 'http://mysite.com/content/images/size/w1200/mypostcoverimage.jpg');
+        assert('dimensions' in result.coverImage);
+        assert.equal(result.coverImage.dimensions.width, 1200);
+        assert.equal(result.coverImage.dimensions.height, 720);
+        assert('url' in result.authorImage);
+        assert.equal(result.authorImage.url, 'http://mysite.com/content/images/size/w1200/me.jpg');
+        assert('dimensions' in result.authorImage);
+        assert.equal(result.authorImage.dimensions.width, 1200);
+        assert.equal(result.authorImage.dimensions.height, 720);
+        assert('url' in result.ogImage);
+        assert.equal(result.ogImage.url, 'http://mysite.com/content/images/size/w1200/super-facebook-image.jpg');
+        assert('dimensions' in result.ogImage);
+        assert.equal(result.ogImage.dimensions.width, 1200);
+        assert.equal(result.ogImage.dimensions.height, 720);
+        assert.equal(result.twitterImage, 'http://mysite.com/content/images/size/w1200/super-twitter-image.jpg');
+    });
+
+    it('does not append image size prefix to external images', async function () {
+        const originalMetaData = {
+            coverImage: {
+                url: 'http://anothersite.com/some/storage/mypostcoverimage.jpg'
+            },
+            authorImage: {
+                url: 'http://anothersite.com/some/storage/me.jpg'
+            },
+            ogImage: {
+                url: 'http://anothersite.com/some/storage/super-facebook-image.jpg'
+            },
+            twitterImage: 'http://anothersite.com/some/storage/super-twitter-image.jpg',
+            site: {
+                logo: {
+                    url: 'http://anothersite.com/some/storage/logo.jpg'
+                }
+            }
+        };
+
+        const metaData = _.cloneDeep(originalMetaData);
+
+        sizeOfStub.callsFake(() => ({
+            width: 2000,
+            height: 1200,
+            type: 'jpg'
+        }));
+
+        getImageDimensions.__set__('imageSizeCache', {
+            getCachedImageSizeFromUrl: sizeOfStub
+        });
+
+        const result = await getImageDimensions(metaData);
+        assertExists(result);
+        assert('url' in result.coverImage);
+        assert.equal(result.coverImage.url, 'http://anothersite.com/some/storage/mypostcoverimage.jpg');
+        assert('url' in result.authorImage);
+        assert.equal(result.authorImage.url, 'http://anothersite.com/some/storage/me.jpg');
+        assert('url' in result.ogImage);
+        assert.equal(result.ogImage.url, 'http://anothersite.com/some/storage/super-facebook-image.jpg');
+        assert('url' in result.site.logo);
+        assert.equal(result.site.logo.url, 'http://anothersite.com/some/storage/logo.jpg');
+    });
+
+    it('appends image size prefix to CDN-hosted content images', async function () {
+        const originalMetaData = {
+            coverImage: {
+                url: 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/cover.jpg'
+            },
+            authorImage: {
+                url: 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/author.jpg'
+            },
+            ogImage: {
+                url: 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/og.jpg'
+            },
+            twitterImage: 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/twitter.jpg',
+            site: {
+                logo: {
+                    url: 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/logo.jpg'
+                }
+            }
+        };
+
+        const metaData = _.cloneDeep(originalMetaData);
+
+        sizeOfStub.callsFake(() => ({
+            width: 2000,
+            height: 1200,
+            type: 'jpg'
+        }));
+
+        getImageDimensions.__set__('imageSizeCache', {
+            getCachedImageSizeFromUrl: sizeOfStub
+        });
+
+        const result = await getImageDimensions(metaData);
+        assertExists(result);
+        assert.equal(result.coverImage.url, 'https://storage.ghost.is/c/6f/a3/site/content/images/size/w1200/2026/02/cover.jpg');
+        assert.equal(result.authorImage.url, 'https://storage.ghost.is/c/6f/a3/site/content/images/size/w1200/2026/02/author.jpg');
+        assert.equal(result.ogImage.url, 'https://storage.ghost.is/c/6f/a3/site/content/images/size/w1200/2026/02/og.jpg');
+        assert.equal(result.twitterImage, 'https://storage.ghost.is/c/6f/a3/site/content/images/size/w1200/2026/02/twitter.jpg');
+        // logo dimensions are computed but logo URL is not resized in this path
+        assert.equal(result.site.logo.url, originalMetaData.site.logo.url);
     });
 });

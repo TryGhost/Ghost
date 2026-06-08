@@ -136,6 +136,10 @@
     padding-bottom: 12px;
 }
 
+.gh-members-activity .gh-list-scrolling tbody tr:hover > .gh-list-data {
+    background: var(--whitegrey-l2);
+}
+
 .gh-members-activity .gh-list h3 {
     margin-bottom: 4px;
 }
@@ -160,7 +164,7 @@
 .gh-members-activity-description {
     display: block;
     font-weight: 500;
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     letter-spacing: 0;
     color: var(--middarkgrey);
     text-overflow: ellipsis;
@@ -316,13 +320,19 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    font-size: 13px;
+    border-radius: calc(var(--border-radius) - 2px);
+}
+
+.gh-member-activity-actions-menu-item:hover {
+    background: color-mod(var(--whitegrey) a(60%) s(-12%));
 }
 
 .gh-member-activity-actions-menu--suppression {
     min-width: 260px;
 }
 .gh-member-activity-actions-menu--suppression.gh-member-activity-actions-menu {
-    padding: 1rem 0;
+    padding: 4px 0;
 }
 
 .gh-member-activity-actions-menu--suppression.gh-member-activity-actions-menu .ember-power-select-option:first-child {
@@ -332,13 +342,13 @@
     padding-bottom: 0;
 }
 
-.gh-member-activity-actions-menu--suppression.gh-member-activity-actions-menu .for-switch.x-small label {
+.gh-member-activity-actions-menu--suppression.gh-member-activity-actions-menu .for-switch.xs label {
     width: 34px !important;
     height: 20px !important;
     padding: 0;
 }
 
-.gh-member-activity-actions-menu--suppression.gh-member-activity-actions-menu .for-switch.x-small {
+.gh-member-activity-actions-menu--suppression.gh-member-activity-actions-menu .for-switch.xs {
     display: flex;
     align-items: center;
 }
@@ -355,7 +365,9 @@
 }
 
 .gh-member-activity-actions-menu--suppression.gh-member-activity-actions-menu .ember-power-select-option {
-    padding: 0.3rem 1.6rem;
+    padding: 0 1.0rem;
+    min-height: 32px;
+    height: 32px;
 }
 
 .gh-member-activity-actions-menu--suppression.gh-member-activity-actions-menu .ember-power-select-option label {
@@ -365,8 +377,9 @@
 
 .gh-member-activity-actions-menu--suppression .gh-member-activity-actions-menu-divider {
     height: 1px;
-    margin: 1rem 0;
+    margin: 1rem -4px;
     background: var(--lightgrey-l1);
+    padding: 0;
 }
 
 /* End of styles for dropdown for suppressionList feature */
@@ -380,6 +393,7 @@
 
 .gh-member-activity-actions-menu .ember-power-select-options[role=listbox] {
     max-height: 60vh;
+    padding: 0 4px;
 }
 
 .gh-member-activity-actions-menu .ember-power-select-option {
@@ -480,6 +494,10 @@
 .gh-member-filter-search-dropdown li span {
     font-weight: 400;
     color: var(--middarkgrey);
+}
+
+.gh-members-activity .gh-canvas-header .view-actions > .ember-basic-dropdown-content-wormhole-origin {
+    position: absolute;
 }
 
 @media (max-width: 800px) {

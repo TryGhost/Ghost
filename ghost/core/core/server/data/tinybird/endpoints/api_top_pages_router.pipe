@@ -1,0 +1,28 @@
+# api_top_pages_router - Smart router that delegates to optimal top pages implementation
+#
+# ROUTING LOGIC:
+#   - If session-level or location filters are present (device, location, source, utm_*),
+#     use api_top_pages which joins with filtered_sessions to support these filters
+#   - Otherwise, use api_top_pages_v3 which uses the daily materialized view
+#     for 3-4x faster queries
+#
+# Query parameters cascade automatically to the underlying pipe.
+
+TOKEN "stats_page" READ
+TOKEN "axis" READ
+
+NODE router
+DESCRIPTION >
+    Routes to the appropriate implementation based on filter parameters.
+    Session-level filters (device, location, source, utm_*) require the original pipe.
+    Simple queries use the faster v3 materialized view.
+
+SQL >
+    %
+    {% if defined(device) or defined(location) or defined(source) or defined(utm_source) or defined(utm_medium) or defined(utm_campaign) or defined(utm_term) or defined(utm_content) %}
+        SELECT * FROM api_top_pages
+    {% else %}
+        SELECT * FROM api_top_pages_v3
+    {% end %}
+
+TYPE ENDPOINT

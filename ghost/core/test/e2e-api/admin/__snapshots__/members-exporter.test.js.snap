@@ -1,15 +1,13 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`Members API — exportCSV Can export a member without tiers 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
   "content-disposition": Any<String>,
-  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -17,13 +15,11 @@ Object {
 exports[`Members API — exportCSV Can export a member without tiers 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
   "content-disposition": Any<String>,
-  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -31,13 +27,11 @@ Object {
 exports[`Members API — exportCSV Can export a member without tiers 3: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
   "content-disposition": Any<String>,
-  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -45,13 +39,11 @@ Object {
 exports[`Members API — exportCSV Can export comped 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
   "content-disposition": Any<String>,
-  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -59,13 +51,11 @@ Object {
 exports[`Members API — exportCSV Can export comped 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
   "content-disposition": Any<String>,
-  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -73,13 +63,11 @@ Object {
 exports[`Members API — exportCSV Can export comped 3: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
   "content-disposition": Any<String>,
-  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -87,13 +75,11 @@ Object {
 exports[`Members API — exportCSV Can export comped 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
   "content-disposition": Any<String>,
-  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -101,13 +87,11 @@ Object {
 exports[`Members API — exportCSV Can export customer id 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
   "content-disposition": Any<String>,
-  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -115,13 +99,11 @@ Object {
 exports[`Members API — exportCSV Can export customer id 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
   "content-disposition": Any<String>,
-  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -129,13 +111,11 @@ Object {
 exports[`Members API — exportCSV Can export customer id 3: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
   "content-disposition": Any<String>,
-  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -143,13 +123,59 @@ Object {
 exports[`Members API — exportCSV Can export customer id 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
   "content-disposition": Any<String>,
-  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API — exportCSV Can export gift_id for gift members 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
+  "content-disposition": Any<String>,
+  "content-type": "text/csv; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "vary": "Accept-Version, Origin",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API — exportCSV Can export gift_id for gift members 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
+  "content-disposition": Any<String>,
+  "content-type": "text/csv; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "vary": "Accept-Version, Origin",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API — exportCSV Can export gift_id for gift members 3: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
+  "content-disposition": Any<String>,
+  "content-type": "text/csv; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "vary": "Accept-Version, Origin",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API — exportCSV Can export gift_id for gift members 4: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
+  "content-disposition": Any<String>,
+  "content-type": "text/csv; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -157,13 +183,11 @@ Object {
 exports[`Members API — exportCSV Can export labels 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
   "content-disposition": Any<String>,
-  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -171,13 +195,11 @@ Object {
 exports[`Members API — exportCSV Can export labels 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
   "content-disposition": Any<String>,
-  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -185,13 +207,11 @@ Object {
 exports[`Members API — exportCSV Can export labels 3: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
   "content-disposition": Any<String>,
-  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -199,13 +219,11 @@ Object {
 exports[`Members API — exportCSV Can export labels 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
   "content-disposition": Any<String>,
-  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -213,13 +231,11 @@ Object {
 exports[`Members API — exportCSV Can export newsletters 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
   "content-disposition": Any<String>,
-  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -227,13 +243,11 @@ Object {
 exports[`Members API — exportCSV Can export newsletters 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
   "content-disposition": Any<String>,
-  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -241,13 +255,11 @@ Object {
 exports[`Members API — exportCSV Can export newsletters 3: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
   "content-disposition": Any<String>,
-  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -255,13 +267,11 @@ Object {
 exports[`Members API — exportCSV Can export tiers 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
   "content-disposition": Any<String>,
-  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -269,13 +279,11 @@ Object {
 exports[`Members API — exportCSV Can export tiers 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
   "content-disposition": Any<String>,
-  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -283,13 +291,11 @@ Object {
 exports[`Members API — exportCSV Can export tiers 3: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
   "content-disposition": Any<String>,
-  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -297,13 +303,59 @@ Object {
 exports[`Members API — exportCSV Can export tiers 4: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
   "content-disposition": Any<String>,
-  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API — exportCSV Does not export gift_id for members whose gift is consumed 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
+  "content-disposition": Any<String>,
+  "content-type": "text/csv; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "vary": "Accept-Version, Origin",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API — exportCSV Does not export gift_id for members whose gift is consumed 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
+  "content-disposition": Any<String>,
+  "content-type": "text/csv; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "vary": "Accept-Version, Origin",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API — exportCSV Does not export gift_id for members whose gift is consumed 3: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
+  "content-disposition": Any<String>,
+  "content-type": "text/csv; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "vary": "Accept-Version, Origin",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Members API — exportCSV Does not export gift_id for members whose gift is consumed 4: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
+  "content-disposition": Any<String>,
+  "content-type": "text/csv; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;

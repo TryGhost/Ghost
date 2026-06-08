@@ -1,12 +1,11 @@
 const util = require('util');
 const session = require('express-session');
-const constants = require('@tryghost/constants');
 const config = require('../../../../shared/config');
 const settingsCache = require('../../../../shared/settings-cache');
 const models = require('../../../models');
 const urlUtils = require('../../../../shared/url-utils');
 
-const SessionStore = require('./SessionStore');
+const SessionStore = require('./session-store');
 const sessionStore = new SessionStore(models.Session);
 
 let unoExpressSessionMiddleware;
@@ -20,7 +19,7 @@ function getExpressSessionMiddleware() {
             saveUninitialized: false,
             name: 'ghost-admin-api-session',
             cookie: {
-                maxAge: constants.SIX_MONTH_MS,
+                maxAge: 6 * 30 * 24 * 60 * 60 * 1000, // 6 months in ms
                 httpOnly: true,
                 path: urlUtils.getSubdir() + '/ghost',
                 sameSite: urlUtils.isSSL(config.get('url')) ? 'none' : 'lax',

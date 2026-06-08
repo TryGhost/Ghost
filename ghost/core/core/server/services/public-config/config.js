@@ -1,12 +1,13 @@
 const {isPlainObject} = require('lodash');
 const config = require('../../../shared/config');
+const settingsCache = require('../../../shared/settings-cache');
 const labs = require('../../../shared/labs');
 const databaseInfo = require('../../data/db/info');
 const ghostVersion = require('@tryghost/version');
 
 module.exports = function getConfigProperties() {
     const configProperties = {
-        version: ghostVersion.original,
+        version: process.env.GHOST_BUILD_VERSION || ghostVersion.original,
         environment: config.get('env'),
         database: databaseInfo.getEngine(),
         mail: isPlainObject(config.get('mail')) ? config.get('mail').transport : '',
@@ -16,18 +17,34 @@ module.exports = function getConfigProperties() {
         enableDeveloperExperiments: config.get('enableDeveloperExperiments') || false,
         stripeDirect: config.get('stripeDirect'),
         mailgunIsConfigured: !!(config.get('bulkEmail') && config.get('bulkEmail').mailgun),
-        emailAnalytics: config.get('emailAnalytics'),
+        emailAnalytics: config.get('emailAnalytics:enabled'),
         hostSettings: config.get('hostSettings'),
         tenor: config.get('tenor'),
-        editor: config.get('editor'),
+        klipy: config.get('klipy'),
         pintura: config.get('pintura'),
-        adminX: config.get('adminX'),
-        signupForm: config.get('signupForm')
+        signupForm: config.get('signupForm'),
+        security: config.get('security')
     };
 
-    const billingUrl = config.get('hostSettings:billing:enabled') ? config.get('hostSettings:billing:url') : '';
-    if (billingUrl) {
-        configProperties.billingUrl = billingUrl;
+    if (config.get('explore') && config.get('explore:testimonials_url')) {
+        configProperties.exploreTestimonialsUrl = config.get('explore:testimonials_url');
+    }
+
+    if (config.get('tinybird') && config.get('tinybird:stats')) {
+        const statsConfig = config.get('tinybird:stats');
+        const siteUuid = statsConfig.id || settingsCache.get('site_uuid');
+        configProperties.stats = {
+            ...statsConfig,
+            id: siteUuid
+        };
+    }
+
+    if (labs.isSet('featurebaseFeedback') && config.get('featurebase')) {
+        // Expose only the public featurebase config properties
+        configProperties.featurebase = {
+            enabled: config.get('featurebase:enabled'),
+            organization: config.get('featurebase:organization')
+        };
     }
 
     return configProperties;

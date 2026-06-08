@@ -1,11 +1,11 @@
-name: 'Label Issues'
+name: 'Label Issues & PRs'
 
 on:
   workflow_dispatch:
   issues:
     types: [opened, closed, labeled]
   pull_request_target:
-    types: [closed, labeled]
+    types: [opened, closed, labeled]
   schedule:
     - cron:  '0 * * * *'
 
@@ -18,4 +18,4 @@ jobs:
     runs-on: ubuntu-latest
     if: github.repository_owner == 'TryGhost'
     steps:
-      - uses: tryghost/actions/actions/label-actions@main
+      - uses: tryghost/actions/actions/label-actions@128d496a57fb11e44e97d690f0d5381c58e52489 # main

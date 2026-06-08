@@ -1,4 +1,5 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists, assertObjectMatches} = require('../../utils/assertions');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
 const models = require('../../../core/server/models/index');
@@ -28,17 +29,16 @@ function buildMember(status, products = []) {
 }
 
 function testPosts(posts, map) {
-    posts.should.be.an.Array();
-    posts.length.should.eql(DEFAULT_POST_FIXTURE_COUNT + Object.keys(map).length);
+    assert(Array.isArray(posts));
+    assert.equal(posts.length, DEFAULT_POST_FIXTURE_COUNT + Object.keys(map).length);
 
     // Free post
     for (const postID in map) {
         const expectData = map[postID];
 
         const post = posts.find(p => p.id === postID);
-        should.exist(post);
-
-        post.should.match(expectData);
+        assertExists(post);
+        assertObjectMatches(post, expectData);
     }
 }
 
@@ -86,16 +86,249 @@ describe('e2e {{#get}} helper', function () {
 
     // Assert fixtures are correct
     it('has valid fixtures', function () {
-        publicPost.visibility.should.eql('public');
-        membersPost.visibility.should.eql('members');
-        paidPost.visibility.should.eql('paid');
-        basicTierPost.visibility.should.eql('tiers');
+        assert.equal(publicPost.visibility, 'public');
+        assert.equal(membersPost.visibility, 'members');
+        assert.equal(paidPost.visibility, 'paid');
+        assert.equal(basicTierPost.visibility, 'tiers');
     });
 
     beforeEach(function () {
         fn = sinon.spy();
         inverse = sinon.spy();
         locals = {root: {_locals: {}}};
+    });
+
+    describe('Filter optimisation', function () {
+        it('Does not do filter optimisation on OR queries', async function () {
+            await get.call({}, 'posts', {
+                hash: {
+                    filter: `tag:-hash-hidden,id:-${publicPost.id}`,
+                    limit: '5'
+                },
+                data: {},
+                locals,
+                fn,
+                inverse
+            });
+            assert.notEqual(fn.firstCall.args[0].meta.cacheabilityOptimisation, true);
+        });
+        it('Does not do filter optimisation on nested id queries', async function () {
+            await get.call({}, 'posts', {
+                hash: {
+                    filter: `tag:-hash-hidden+(id:-${publicPost.id},id:-${membersPost.id})`,
+                    limit: '5'
+                },
+                data: {},
+                locals,
+                fn,
+                inverse
+            });
+            assert.notEqual(fn.firstCall.args[0].meta.cacheabilityOptimisation, true);
+        });
+        it('Does not do filter optimisation on multiple negated id queries', async function () {
+            await get.call({}, 'posts', {
+                hash: {
+                    filter: `id:-${publicPost.id}+id:-${membersPost.id}`,
+                    limit: '5'
+                },
+                data: {},
+                locals,
+                fn,
+                inverse
+            });
+            assert.notEqual(fn.firstCall.args[0].meta.cacheabilityOptimisation, true);
+        });
+        it('Returns the correct posts with limit as a string', async function () {
+            await get.call({}, 'posts', {
+                hash: {
+                    limit: '5'
+                },
+                data: {},
+                locals,
+                fn,
+                inverse
+            });
+            const firstPostUsually = fn.firstCall.args[0].posts[0];
+            const firstLimit = fn.firstCall.args[0].meta.pagination.limit;
+            assert.equal(firstLimit, 5);
+            await get.call({}, 'posts', {
+                hash: {
+                    filter: `id:-${firstPostUsually.id}`,
+                    limit: '5'
+                },
+                data: {},
+                locals,
+                fn,
+                inverse
+            });
+            assert.equal(fn.secondCall.args[0].meta.cacheabilityOptimisation, true);
+            const foundFilteredPost = fn.secondCall.args[0].posts.find(post => post.id === firstPostUsually.id);
+            assert.equal(foundFilteredPost, undefined);
+        });
+        it('Returns the correct posts with default limit', async function () {
+            await get.call({}, 'posts', {
+                hash: {},
+                data: {},
+                locals,
+                fn,
+                inverse
+            });
+            const firstPostUsually = fn.firstCall.args[0].posts[0];
+            const defaultLimit = fn.firstCall.args[0].meta.pagination.limit;
+            await get.call({}, 'posts', {
+                hash: {
+                    filter: `id:-${firstPostUsually.id}`
+                },
+                data: {},
+                locals,
+                fn,
+                inverse
+            });
+            assert.equal(fn.secondCall.args[0].meta.pagination.limit, defaultLimit);
+            assert.equal(fn.secondCall.args[0].meta.cacheabilityOptimisation, true);
+            const foundFilteredPost = fn.secondCall.args[0].posts.find(post => post.id === firstPostUsually.id);
+            assert.equal(foundFilteredPost, undefined);
+        });
+        it('Returns the correct posts with a limit all', async function () {
+            await get.call({}, 'posts', {
+                hash: {
+                    limit: 'all'
+                },
+                data: {},
+                locals,
+                fn,
+                inverse
+            });
+            const firstPostUsually = fn.firstCall.args[0].posts[0];
+            const initialCount = fn.firstCall.args[0].posts.length;
+            await get.call({}, 'posts', {
+                hash: {
+                    filter: `id:-${firstPostUsually.id}`,
+                    limit: 'all'
+                },
+                data: {},
+                locals,
+                fn,
+                inverse
+            });
+            assert.equal(fn.secondCall.args[0].posts.length, initialCount - 1);
+            // 'all' is capped to 100 since 6.x
+            assert.equal(fn.secondCall.args[0].meta.pagination.limit, 100);
+            assert.equal(fn.secondCall.args[0].meta.cacheabilityOptimisation, true);
+            const foundFilteredPost = fn.secondCall.args[0].posts.find(post => post.id === firstPostUsually.id);
+            assert.equal(foundFilteredPost, undefined);
+        });
+        it('Returns the correct posts with a solo negative filter', async function () {
+            await get.call({}, 'posts', {
+                hash: {
+                    limit: 1
+                },
+                data: {},
+                locals,
+                fn,
+                inverse
+            });
+            const firstPostUsually = fn.firstCall.args[0].posts[0];
+            await get.call({}, 'posts', {
+                hash: {
+                    filter: `id:-${firstPostUsually.id}`,
+                    limit: 5
+                },
+                data: {},
+                locals,
+                fn,
+                inverse
+            });
+            assert.equal(fn.secondCall.args[0].posts.length, 5);
+            assert.equal(fn.secondCall.args[0].meta.pagination.limit, 5);
+            assert.equal(fn.secondCall.args[0].meta.cacheabilityOptimisation, true);
+            const foundFilteredPost = fn.secondCall.args[0].posts.find(post => post.id === firstPostUsually.id);
+            assert.equal(foundFilteredPost, undefined);
+        });
+        it('Returns the correct posts with a sandwiched negative filter', async function () {
+            await get.call({}, 'posts', {
+                hash: {
+                    filter: `tag:-hash-hidden+visibility:public`,
+                    limit: 1
+                },
+                data: {},
+                locals,
+                fn,
+                inverse
+            });
+            const firstPostUsually = fn.firstCall.args[0].posts[0];
+            await get.call({}, 'posts', {
+                hash: {
+                    filter: `visibility:public+id:-${firstPostUsually.id}+tag:-hash-hidden`,
+                    limit: 5
+                },
+                data: {},
+                locals,
+                fn,
+                inverse
+            });
+            assert.equal(fn.secondCall.args[0].posts.length, 5);
+            assert.equal(fn.secondCall.args[0].meta.pagination.limit, 5);
+            assert.equal(fn.secondCall.args[0].meta.cacheabilityOptimisation, true);
+            const foundFilteredPost = fn.secondCall.args[0].posts.find(post => post.id === firstPostUsually.id);
+            assert.equal(foundFilteredPost, undefined);
+        });
+        it('Returns the correct posts with a prefix negative filter', async function () {
+            await get.call({}, 'posts', {
+                hash: {
+                    filter: `tag:-hash-hidden`,
+                    limit: 1
+                },
+                data: {},
+                locals,
+                fn,
+                inverse
+            });
+            const firstPostUsually = fn.firstCall.args[0].posts[0];
+            await get.call({}, 'posts', {
+                hash: {
+                    filter: `id:-${firstPostUsually.id}+tag:-hash-hidden`,
+                    limit: 5
+                },
+                data: {},
+                locals,
+                fn,
+                inverse
+            });
+            assert.equal(fn.secondCall.args[0].posts.length, 5);
+            assert.equal(fn.secondCall.args[0].meta.pagination.limit, 5);
+            assert.equal(fn.secondCall.args[0].meta.cacheabilityOptimisation, true);
+            const foundFilteredPost = fn.secondCall.args[0].posts.find(post => post.id === firstPostUsually.id);
+            assert.equal(foundFilteredPost, undefined);
+        });
+        it('Returns the correct posts with a suffix negative filter', async function () {
+            await get.call({}, 'posts', {
+                hash: {
+                    filter: `tag:-hash-hidden`,
+                    limit: 1
+                },
+                data: {},
+                locals,
+                fn,
+                inverse
+            });
+            const firstPostUsually = fn.firstCall.args[0].posts[0];
+            await get.call({}, 'posts', {
+                hash: {
+                    filter: `tag:-hash-hidden+id:-${firstPostUsually.id}`,
+                    limit: 5
+                },
+                data: {},
+                locals,
+                fn,
+                inverse
+            });
+            assert.equal(fn.secondCall.args[0].posts.length, 5);
+            assert.equal(fn.secondCall.args[0].meta.pagination.limit, 5);
+            assert.equal(fn.secondCall.args[0].meta.cacheabilityOptimisation, true);
+            const foundFilteredPost = fn.secondCall.args[0].posts.find(post => post.id === firstPostUsually.id);
+            assert.equal(foundFilteredPost, undefined);
+        });
     });
 
     describe('{{access}} property', function () {

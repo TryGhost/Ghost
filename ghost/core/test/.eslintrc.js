@@ -4,12 +4,28 @@ module.exports = {
         node: true,
         mocha: true
     },
+    globals: {
+        // Vitest globals used by files that have migrated off mocha
+        // (vitest.config.ts has globals: true). Mocha env covers
+        // before/after/etc; these are the vitest-only names.
+        beforeAll: 'readonly',
+        afterAll: 'readonly'
+    },
     plugins: [
         'ghost'
     ],
     extends: [
         'eslint:recommended',
         'plugin:ghost/test'
+    ],
+    overrides: [
+        {
+            files: ['**/*.ts'],
+            parser: '@typescript-eslint/parser',
+            extends: [
+                'plugin:ghost/test'
+            ]
+        }
     ],
     rules: {
         // TODO: remove this rule once it's turned into "error" in the base plugin
@@ -23,16 +39,16 @@ module.exports = {
         'no-unused-vars': [
             'error',
             {
-                varsIgnorePattern: '^should$'
+                varsIgnorePattern: '^should$',
+                argsIgnorePattern: '^_'
             }
         ],
         'no-useless-escape': 'off',
 
         'ghost/mocha/no-skipped-tests': 'error',
+        'ghost/filenames/match-regex': ['error', '^[a-z0-9-.]+$', null, true],
 
         // TODO: remove these custom rules and fix problems in test files
-        'ghost/mocha/max-top-level-suites': 'off',
-        'ghost/mocha/no-identical-title': 'off',
         'ghost/mocha/no-setup-in-describe': 'off',
         'ghost/mocha/no-sibling-hooks': 'off'
     }

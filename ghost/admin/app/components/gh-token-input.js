@@ -139,6 +139,10 @@ export default class GhTokenInput extends Component {
         let suggestion = selection.find(option => option.__isSuggestion__);
 
         if (suggestion) {
+            // abort creating if we're still searching otherwise we could create duplicates
+            if (this.searchAndSuggestTask.isRunning) {
+                return;
+            }
             this.args.onCreate(suggestion.__value__, select);
         } else {
             this.args.onChange(selection, select);
@@ -161,10 +165,6 @@ export default class GhTokenInput extends Component {
         let searchAction = this.args.search;
         if (searchAction) {
             let results = yield searchAction(term, select);
-
-            if (results.toArray) {
-                results = results.toArray();
-            }
 
             this._addCreateOption(term, results);
             return results;

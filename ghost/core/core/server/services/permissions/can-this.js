@@ -5,6 +5,7 @@ const tpl = require('@tryghost/tpl');
 const providers = require('./providers');
 const parseContext = require('./parse-context');
 const actionsMap = require('./actions-map-cache');
+const {setIsRoles} = require('../../models/role-utils');
 
 const messages = {
     noPermissionToAction: 'You do not have permission to perform this action',
@@ -52,57 +53,44 @@ class CanThisResult {
                     // Iterate through the user permissions looking for an affirmation
                     const userPermissions = loadedPermissions.user ? loadedPermissions.user.permissions : null;
                     const apiKeyPermissions = loadedPermissions.apiKey ? loadedPermissions.apiKey.permissions : null;
-                    const memberPermissions = loadedPermissions.member ? loadedPermissions.member.permissions : null;
 
                     let hasUserPermission;
                     let hasApiKeyPermission;
-                    let hasMemberPermission = false;
 
                     const checkPermission = function (perm) {
-                        let permObjId;
-
                         // Look for a matching action type and object type first
                         if (perm.get('action_type') !== actType || perm.get('object_type') !== objType) {
                             return false;
                         }
 
-                        // Grab the object id (if specified, could be null)
-                        permObjId = perm.get('object_id');
-
-                        // If we didn't specify a model (any thing)
-                        // or the permission didn't have an id scope set
-                        // then the "thing" has permission
-                        if (!modelId || !permObjId) {
-                            return true;
-                        }
-
-                        // Otherwise, check if the id's match
-                        // TODO: String vs Int comparison possibility here?
-                        return modelId === permObjId;
+                        return true;
                     };
-
-                    if (loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Owner'})) {
+                    const {isOwner} = setIsRoles(loadedPermissions);
+                    if (isOwner) {
                         hasUserPermission = true;
                     } else if (!_.isEmpty(userPermissions)) {
                         hasUserPermission = _.some(userPermissions, checkPermission);
                     }
 
-                    if (loadedPermissions.member) {
-                        hasMemberPermission = _.some(memberPermissions, checkPermission);
-                    }
-
                     // Check api key permissions if they were passed
                     hasApiKeyPermission = true;
                     if (!_.isNull(apiKeyPermissions)) {
-                        // api key request have no user, but we want the user permissions checks to pass
-                        hasUserPermission = true;
-                        hasApiKeyPermission = _.some(apiKeyPermissions, checkPermission);
+                        if (loadedPermissions.user) {
+                            // Staff API key scenario: both user and API key present
+                            // Use USER permissions and ignore API key permissions
+                            hasApiKeyPermission = true; // Allow API key check to pass
+                        } else {
+                            // Traditional API key scenario: API key only, no user
+                            // Use API key permissions as before
+                            hasUserPermission = true;
+                            hasApiKeyPermission = _.some(apiKeyPermissions, checkPermission);
+                        }
                     }
 
                     // Offer a chance for the TargetModel to override the results
                     if (TargetModel && _.isFunction(TargetModel.permissible)) {
                         return TargetModel.permissible(
-                            modelId, actType, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission, hasMemberPermission
+                            modelId, actType, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission
                         );
                     }
 
@@ -122,7 +110,6 @@ class CanThisResult {
         const self = this;
         let userPermissionLoad;
         let apiKeyPermissionLoad;
-        let memberPermissionLoad;
         let permissionsLoad;
 
         // Get context.user, context.api_key and context.app
@@ -148,16 +135,11 @@ class CanThisResult {
             apiKeyPermissionLoad = Promise.resolve(null);
         }
 
-        if (context.member) {
-            memberPermissionLoad = providers.member(context.member.id);
-        }
-
-        // Wait for both user and app permissions to load
-        permissionsLoad = Promise.all([userPermissionLoad, apiKeyPermissionLoad, memberPermissionLoad]).then(function (result) {
+        // Wait for both user and api key permissions to load
+        permissionsLoad = Promise.all([userPermissionLoad, apiKeyPermissionLoad]).then(function (result) {
             return {
                 user: result[0],
-                apiKey: result[1],
-                member: result[2]
+                apiKey: result[1]
             };
         });
 

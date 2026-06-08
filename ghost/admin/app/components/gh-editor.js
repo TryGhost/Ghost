@@ -11,7 +11,6 @@ import {inject as service} from '@ember/service';
 @classic
 @classNameBindings(
     'isDraggedOver:-drag-over',
-    'isFullScreen:gh-editor-fullscreen',
     'isPreview:gh-editor-preview'
 )
 export default class GhEditor extends Component {
@@ -25,8 +24,6 @@ export default class GhEditor extends Component {
     imageExtensions = IMAGE_EXTENSIONS;
     imageMimeTypes = IMAGE_MIME_TYPES;
     isDraggedOver = false;
-    isFullScreen = false;
-    isSplitScreen = false;
     uploadedImageUrls = null;
 
     // Private
@@ -34,22 +31,6 @@ export default class GhEditor extends Component {
 
     _onResizeHandler = null;
     _viewActionsWidth = 190;
-
-    @action
-    toggleFullScreen(isFullScreen) {
-        this.set('isFullScreen', isFullScreen);
-        this.ui.set('isFullScreen', isFullScreen);
-    }
-
-    @action
-    togglePreview(isPreview) {
-        this.set('isPreview', isPreview);
-    }
-
-    @action
-    toggleSplitScreen(isSplitScreen) {
-        this.set('isSplitScreen', isSplitScreen);
-    }
 
     @action
     uploadImages(fileList, resetInput) {

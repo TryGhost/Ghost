@@ -6,9 +6,10 @@
 
 .settings-menu-toggle {
     position: absolute;
-    top: 30px;
+    top: 24px;
     right: 24px;
     z-index: 9999;
+    height: 34px;
     margin-right: 0 !important;
 }
 
@@ -18,13 +19,13 @@
 
 @media (min-width: 500px) and (max-width: 1024px) {
     .settings-menu-toggle {
-        top: 16px;
+        top: 12px;
     }
 }
 
 @media (max-width: 500px) {
     .settings-menu-toggle {
-        top: 15px;
+        top: 11px;
         right: 20px;
     }
 }
@@ -45,11 +46,20 @@
 
 .settings-menu-container {
     z-index: 999;
-    height: 100vh;
+    height: 100%;
     min-width: 420px;
-    overflow-x: visible;
-    overflow-y: auto;
+    overflow: hidden;
     border-left: 1px solid var(--whitegrey-d1);
+    display: flex;
+    flex-direction: column;
+}
+
+.settings-menu-container #entry-controls {
+    flex: 1;
+    min-height: 0;
+    position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
 .settings-menu-container-wide {
@@ -70,13 +80,20 @@
     }
 }
 
+@media (max-width: 500px) {
+    .settings-menu-container {
+        width: 100vw;
+        min-width: 100vw;
+    }
+}
+
 .settings-menu-container .settings-menu-pane {
     position: absolute;
     top: 0;
     right: 0;
     bottom: 0;
     width: 100%;
-    max-width: 420px;
+    max-width: 419px;
     overflow: auto;
     background-color: var(--white);
     opacity: 1;
@@ -93,40 +110,48 @@
     top: auto;
     right: auto;
     bottom: auto;
-    height: 100vh;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+@media (max-width: 500px) {
+    .settings-menu-container .settings-menu-pane {
+        width: 100vw;
+        min-width: 100vw;
+    }
 }
 
 /* Header
 /* ---------------------------------------------------------- */
 
 .settings-menu-header {
-    position: fixed;
+    position: sticky;
+    top: 0;
     display: flex;
+    height: 82px; /* 34px + 24px + 24px */
+    min-height: 82px;
     width: 100%;
-    max-width: 364px;
-    padding: 36px 24px 24px;
+    padding: 24px;
     justify-content: space-between;
     align-items: center;
     z-index: 3;
     background: var(--white);
+    flex-shrink: 0;
 }
 
-@media (min-width: 500px) and (max-width: 1024px) {
+@media (max-width: 1024px) {
     .settings-menu-header {
-        padding-top: 17px;
-    }
-}
-
-@media (max-width: 500px) {
-    .settings-menu-header {
-        padding-top: 19px;
+        padding-top: 15px;
     }
 }
 
 .settings-menu-header h4 {
     margin: 0;
-    font-size: 1.75rem;
-    line-height: 1.375;
+    font-size: 1.5rem;
+    line-height: 1.175;
     font-weight: 600;
 }
 
@@ -172,14 +197,6 @@
 /* Content
 /* ---------------------------------------------------------- */
 
-.settings-menu-container:not(.ember-power-select-multiple-trigger):not(.tag-settings) input:not([disabled]),
-.settings-menu-container:not(.tag-settings) .gh-input:not([disabled]),
-.settings-menu-pane .gh-date-time-picker-date,
-.settings-menu-pane .gh-date-time-picker-time {
-    background: var(--white);
-    border: var(--input-border);
-}
-
 .settings-menu-container .ember-power-select-multiple-trigger input,
 .settings-menu-pane .gh-date-time-picker-date input,
 .settings-menu-pane .gh-date-time-picker-time input {
@@ -187,7 +204,10 @@
 }
 
 .settings-menu-content {
-    padding: 92px 0 0;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 0;
 }
 
 .gh-post-settings {
@@ -196,7 +216,7 @@
 
 @media (max-width: 1024px) {
     .settings-menu-content {
-        padding-top: 72px;
+        padding-top: 0;
     }
 }
 
@@ -247,12 +267,6 @@
 
 .settings-menu-content textarea {
     height: 108px;
-}
-
-.settings-menu-content textarea.gh-input {
-    font-size: 1.5rem;
-    line-height: 1.4em;
-    letter-spacing: 0;
 }
 
 .settings-menu-content .gh-cm-editor-textarea {
@@ -312,7 +326,7 @@ li.nav-list-item .switch {
     padding: 2rem 2.4rem;
 }
 
-li.nav-list-item .for-switch.x-small label {
+li.nav-list-item .for-switch.xs label {
     width: initial;
     height: initial !important;
 }
@@ -428,41 +442,62 @@ li.nav-list-item .for-switch.x-small label {
     margin-left: 4px;
 }
 
-
-/* Background
-/* ---------------------------------------------------------- */
-@keyframes coverFadeIn {
-    0% {
-        opacity: 0;
-    }
-    100% {
-        opacity: 1;
-    }
+.settings-menu-content.keyboard-shortcuts .form-group {
+    margin-bottom: 3em;
 }
 
-.mobile-menu-expanded .content-cover {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    z-index: 900;
-    opacity: 0;
-    transition: transform 0.4s cubic-bezier(0.1, 0.7, 0.1, 1);
-    background: rgba(0,0,0,0.02);
-    /* Not off the screen, to give a parallax effect */
-    animation: coverFadeIn 0.3s ease 0.1s 1 forwards;
+.settings-menu-content.keyboard-shortcuts label {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--whitegrey-d1);
+    font-size: 1.2rem;
+    font-weight: 600;
+    text-transform: uppercase;
 }
 
-.mobile-menu-expanded .content-cover {
-    transform: translate3d(205px, 0px, 0px);
+.settings-menu-content .gh-shortcut {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--whitegrey-d1);
 }
 
+.settings-menu-content .gh-shortcut .link {
+    color: var(--accent-color);
+}
 
-/* Badges
-/* ---------------------------------------------------------- */
-.gh-setting-title .gh-badge {
-    font-size: 13px;
+.settings-menu-content .gh-shortcut .code {
+    font-family: Consolas,Liberation Mono,Menlo,Courier,monospace;
+    font-size: .95em;
+}
+
+.gh-shortcut .gh-keys {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+}
+
+.gh-shortcut .gh-key {
+    min-width: 28px;
+    height: 28px;
+    background: var(--whitegrey);
+    border-radius: var(--border-radius);
+    padding: 0 6px;
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: 500;
+    line-height: 28px;
+    cursor: default;
+}
+
+.gh-shortcut .gh-key.mono {
+    font-family: Consolas,Liberation Mono,Menlo,Courier,monospace;
+    font-size: 1.25rem;
+}
+
+.gh-shortcut .gh-key.mono.clear {
+    background: transparent;
 }
 
 /* Email
@@ -477,4 +512,75 @@ li.nav-list-item .for-switch.x-small label {
 .settings-menu-email .disabled button,
 .settings-menu-email .disabled input {
     opacity: 0.5;
+}
+
+/* Form controls
+/* ---------------------------------------------------------- */
+.settings-menu-container select,
+.settings-menu-container .gh-date-time-picker-date,
+.settings-menu-container .gh-date-time-picker-time {
+    min-height: 38px;
+    padding: 4px 12px;
+    font-size: 1.3rem;
+    color: var(--black);
+    border: 1px solid var(--whitegrey);
+    border-radius: 8px;
+    transition-property: color, background-color,border-color, text-decoration-color, fill, stroke;
+    transition-timing-function: cubic-bezier(.4,0,.2,1);
+    transition-duration: .15s;
+}
+
+.settings-menu-container .ember-basic-dropdown-trigger[aria-expanded=true] .gh-date-time-picker-date,
+.settings-menu-container .gh-date-time-picker-time:focus-within {
+    background-color: var(--white);
+    border: 1px solid var(--green);
+    box-shadow: 0 0 0 2px rgba(48,207,67,.25);
+    outline: none;
+}
+
+.settings-menu-container textarea.gh-input {
+    padding-block: 8px;
+}
+
+.settings-menu-container .gh-date-time-picker input {
+    font-size: 1.3rem;
+    color: var(--black);
+}
+
+.settings-menu-container .gh-input-icon .gh-input {
+    padding-left: 32px;
+}
+
+.settings-menu-container .ember-power-select-trigger[aria-expanded=true] {
+    border-color: transparent;
+}
+
+.settings-menu-container .ember-power-select-multiple-trigger {
+    padding: 5px 8px;
+    border-radius: 8px !important;
+}
+
+.settings-menu-container .ember-power-select-multiple-trigger:has(.ember-power-select-multiple-option) {
+    padding-left: 2px !important;
+}
+
+.settings-menu-container .ember-power-select-multiple-option {
+    height: 24px;
+}
+
+.settings-menu-container .ember-power-select-status-icon {
+    border-color: var(--black);
+}
+
+.settings-menu-container .gh-date-time-picker-timezone {
+    font-size: 1.2rem;
+    margin-left: 0;
+}
+
+.settings-menu-container .ember-power-select-dropdown {
+    border: 0 !important;
+    border-radius: 8px;
+    --tw-shadow: 0 0 7px rgba(0, 0, 0, .08), 0 2.1px 2.2px -5px rgba(0, 0, 0, .011), 0 5.1px 5.3px -5px rgba(0, 0, 0, .016), 0 9.5px 10px -5px rgba(0, 0, 0, .02), 0 17px 17.9px -5px rgba(0, 0, 0, .024), 0 31.8px 33.4px -5px rgba(0, 0, 0, .029), 0 76px 80px -5px rgba(0, 0, 0, .04);
+    --tw-shadow-colored: 0 0 7px var(--tw-shadow-color), 0 2.1px 2.2px -5px var(--tw-shadow-color), 0 5.1px 5.3px -5px var(--tw-shadow-color), 0 9.5px 10px -5px var(--tw-shadow-color), 0 17px 17.9px -5px var(--tw-shadow-color), 0 31.8px 33.4px -5px var(--tw-shadow-color), 0 76px 80px -5px var(--tw-shadow-color);
+    box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000),var(--tw-ring-shadow, 0 0 #0000),var(--tw-shadow);
 }

@@ -1,9 +1,10 @@
 const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
 const {nullable, anyContentVersion, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyString} = matchers;
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const jobManager = require('../../../core/server/services/jobs/job-service');
 const models = require('../../../core/server/models');
+const settingsHelpers = require('../../../core/server/services/settings-helpers');
 
 const matchEmail = {
     id: anyObjectId,
@@ -43,6 +44,7 @@ describe('Emails API', function () {
     beforeEach(function () {
         mockManager.mockEvents();
         mockManager.mockMailgun();
+        sinon.stub(settingsHelpers, 'getMembersValidationKey').returns('test-validation-key');
     });
 
     afterEach(function () {

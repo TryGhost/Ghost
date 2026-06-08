@@ -1,8 +1,10 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
 
 const api = require('../../../../../core/frontend/services/proxy').api;
 const data = require('../../../../../core/frontend/services/data');
+const matchPermalinkParams = require('../../../../../core/frontend/services/data/match-permalink-params');
 const testUtils = require('../../../../utils');
 
 describe('Unit - frontend/data/entry-lookup', function () {
@@ -54,11 +56,11 @@ describe('Unit - frontend/data/entry-lookup', function () {
             const testUrl = 'http://127.0.0.1:2369' + pages[0].url;
 
             return data.entryLookup(testUrl, routerOptions, locals).then(function (lookup) {
-                postsReadStub.called.should.be.false();
-                pagesReadStub.calledOnce.should.be.true();
-                should.exist(lookup.entry);
-                lookup.entry.should.have.property('url', pages[0].url);
-                lookup.isEditURL.should.be.false();
+                sinon.assert.notCalled(postsReadStub);
+                sinon.assert.calledOnce(pagesReadStub);
+                assertExists(lookup.entry);
+                assert.equal(lookup.entry.url, pages[0].url);
+                assert.equal(lookup.isEditURL, false);
             });
         });
     });
@@ -105,11 +107,11 @@ describe('Unit - frontend/data/entry-lookup', function () {
             const testUrl = 'http://127.0.0.1:2369' + posts[0].url;
 
             return data.entryLookup(testUrl, routerOptions, locals).then(function (lookup) {
-                postsReadStub.calledOnce.should.be.true();
-                pagesReadStub.called.should.be.false();
-                should.exist(lookup.entry);
-                lookup.entry.should.have.property('url', posts[0].url);
-                lookup.isEditURL.should.be.false();
+                sinon.assert.calledOnce(postsReadStub);
+                sinon.assert.notCalled(pagesReadStub);
+                assertExists(lookup.entry);
+                assert.equal(lookup.entry.url, posts[0].url);
+                assert.equal(lookup.isEditURL, false);
             });
         });
 
@@ -117,11 +119,110 @@ describe('Unit - frontend/data/entry-lookup', function () {
             const testUrl = `http://127.0.0.1:2369${posts[0].url}edit/`;
 
             return data.entryLookup(testUrl, routerOptions, locals).then(function (lookup) {
-                postsReadStub.calledOnce.should.be.true();
-                pagesReadStub.called.should.be.false();
-                should.exist(lookup.entry);
-                lookup.entry.should.have.property('url', posts[0].url);
-                lookup.isEditURL.should.be.true();
+                sinon.assert.calledOnce(postsReadStub);
+                sinon.assert.notCalled(pagesReadStub);
+                assertExists(lookup.entry);
+                assert.equal(lookup.entry.url, posts[0].url);
+                assert.equal(lookup.isEditURL, true);
+            });
+        });
+
+        it('matches hyphen-separated date permalinks with hyphenated slugs', function () {
+            const datedRouterOptions = {
+                permalinks: '/articles/:year-:month-:day-:slug/:options(edit)?/',
+                query: {controller: 'posts', resource: 'posts'}
+            };
+
+            postsReadStub.resolves({
+                posts: [
+                    testUtils.DataGenerator.forKnex.createPost({
+                        url: '/articles/2026-05-22-sample-hyphenated-post-title/',
+                        slug: 'sample-hyphenated-post-title'
+                    })
+                ]
+            });
+
+            return data.entryLookup('http://127.0.0.1:2369/articles/2026-05-22-sample-hyphenated-post-title/', datedRouterOptions, locals).then(function (lookup) {
+                sinon.assert.calledOnce(postsReadStub);
+                assert.equal(postsReadStub.firstCall.args[0].slug, 'sample-hyphenated-post-title');
+                assertExists(lookup.entry);
+                assert.equal(lookup.isEditURL, false);
+            });
+        });
+
+        it('matches edit URLs for hyphen-separated date permalinks with hyphenated slugs', function () {
+            const datedRouterOptions = {
+                permalinks: '/articles/:year-:month-:day-:slug/:options(edit)?/',
+                query: {controller: 'posts', resource: 'posts'}
+            };
+
+            postsReadStub.resolves({
+                posts: [
+                    testUtils.DataGenerator.forKnex.createPost({
+                        url: '/articles/2026-05-22-sample-hyphenated-post-title/',
+                        slug: 'sample-hyphenated-post-title'
+                    })
+                ]
+            });
+
+            return data.entryLookup('http://127.0.0.1:2369/articles/2026-05-22-sample-hyphenated-post-title/edit/', datedRouterOptions, locals).then(function (lookup) {
+                sinon.assert.calledOnce(postsReadStub);
+                assert.equal(postsReadStub.firstCall.args[0].slug, 'sample-hyphenated-post-title');
+                assertExists(lookup.entry);
+                assert.equal(lookup.isEditURL, true);
+                assert.equal(lookup.isUnknownOption, false);
+            });
+        });
+
+        it('matches generic hyphen-separated params with hyphenated slugs', function () {
+            const sectionRouterOptions = {
+                permalinks: '/articles/:section-:slug/:options(edit)?/',
+                query: {controller: 'posts', resource: 'posts'}
+            };
+
+            postsReadStub.resolves({
+                posts: [
+                    testUtils.DataGenerator.forKnex.createPost({
+                        url: '/articles/news-sample-hyphenated-post-title/',
+                        slug: 'sample-hyphenated-post-title'
+                    })
+                ]
+            });
+
+            return data.entryLookup('http://127.0.0.1:2369/articles/news-sample-hyphenated-post-title/', sectionRouterOptions, locals).then(function (lookup) {
+                sinon.assert.calledOnce(postsReadStub);
+                assert.equal(postsReadStub.firstCall.args[0].slug, 'sample-hyphenated-post-title');
+                assertExists(lookup.entry);
+                assert.equal(lookup.isEditURL, false);
+            });
+        });
+    });
+
+    describe('permalink param matching', function () {
+        it('extracts date params and full slug from hyphen-separated date permalinks', function () {
+            const params = matchPermalinkParams(
+                '/articles/:year-:month-:day-:slug/:options(edit)?/',
+                '/articles/2026-05-22-sample-hyphenated-post-title/'
+            );
+
+            assert.deepEqual(params, {
+                year: '2026',
+                month: '05',
+                day: '22',
+                slug: 'sample-hyphenated-post-title'
+            });
+        });
+
+        it('extracts generic params and full slug from hyphen-separated permalinks', function () {
+            const params = matchPermalinkParams(
+                '/articles/:section-:slug/:options(edit)?/',
+                '/articles/news-sample-hyphenated-post-title/edit/'
+            );
+
+            assert.deepEqual(params, {
+                section: 'news',
+                slug: 'sample-hyphenated-post-title',
+                options: 'edit'
             });
         });
     });

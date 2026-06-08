@@ -1,7 +1,7 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const {mapQuery} = require('@tryghost/mongo-utils');
 const models = require('../../models');
+const {rejectContentApiRestrictedFieldsTransformer} = require('./utils/api-filter-utils');
 
 const ALLOWED_INCLUDES = ['tags', 'authors', 'tiers'];
 
@@ -9,18 +9,8 @@ const messages = {
     pageNotFound: 'Page not found.'
 };
 
-const rejectPrivateFieldsTransformer = input => mapQuery(input, function (value, key) {
-    let lowerCaseKey = key.toLowerCase();
-    if (lowerCaseKey.startsWith('authors.password') || lowerCaseKey.startsWith('authors.email')) {
-        return;
-    }
-
-    return {
-        [key]: value
-    };
-});
-
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'pages',
 
     browse: {
@@ -52,7 +42,7 @@ module.exports = {
         query(frame) {
             const options = {
                 ...frame.options,
-                mongoTransformer: rejectPrivateFieldsTransformer
+                mongoTransformer: rejectContentApiRestrictedFieldsTransformer
             };
             return models.Post.findPage(options);
         }
@@ -85,21 +75,21 @@ module.exports = {
             }
         },
         permissions: true,
-        query(frame) {
+        async query(frame) {
             const options = {
                 ...frame.options,
-                mongoTransformer: rejectPrivateFieldsTransformer
+                mongoTransformer: rejectContentApiRestrictedFieldsTransformer
             };
-            return models.Post.findOne(frame.data, options)
-                .then((model) => {
-                    if (!model) {
-                        throw new errors.NotFoundError({
-                            message: tpl(messages.pageNotFound)
-                        });
-                    }
-
-                    return model;
+            const model = await models.Post.findOne(frame.data, options);
+            if (!model) {
+                throw new errors.NotFoundError({
+                    message: tpl(messages.pageNotFound)
                 });
+            }
+
+            return model;
         }
     }
 };
+
+module.exports = controller;

@@ -1,8 +1,6 @@
-const _ = require('lodash');
-const {mobiledocToLexical} = require('@tryghost/kg-converters');
 const models = require('../../../core/server/models');
 const {agentProvider, fixtureManager, mockManager, matchers} = require('../../utils/e2e-framework');
-const {anyArray, anyBoolean, anyContentVersion, anyEtag, anyLocationFor, anyObject, anyObjectId, anyISODateTime, anyString, anyUuid} = matchers;
+const {anyArray, anyBoolean, anyContentVersion, anyEtag, anyLocationFor, anyObject, anyObjectId, anyISODateTime, anyString, anyUuid, stringMatching} = matchers;
 
 const tierSnapshot = {
     id: anyObjectId,
@@ -23,7 +21,6 @@ const matchPageShallowIncludes = {
     created_at: anyISODateTime,
     updated_at: anyISODateTime,
     published_at: anyISODateTime,
-    post_revisions: anyArray,
     show_title_and_feature_image: anyBoolean
 };
 
@@ -31,7 +28,6 @@ describe('Pages API', function () {
     let agent;
 
     before(async function () {
-        mockManager.mockLabsEnabled('collectionsCard');
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('posts');
         await agent.loginAsOwner();
@@ -41,70 +37,8 @@ describe('Pages API', function () {
         mockManager.restore();
     });
 
-    describe('Read', function () {
-        it('Re-renders html when null', async function () {
-            // "queue" an existing page for re-render as happens when a published page is updated/destroyed
-            const page = await models.Post.findOne({slug: 'static-page-test'});
-            // NOTE: re-rendering only occurs for lexical pages
-            const lexical = mobiledocToLexical(page.get('mobiledoc'));
-            await models.Base.knex.raw('UPDATE posts set html=NULL, mobiledoc=NULL, lexical=? WHERE id=?', [lexical, page.id]);
-
-            await agent
-                .get(`/pages/${page.id}/?formats=mobiledoc,lexical,html`)
-                .expectStatus(200)
-                .matchBodySnapshot({
-                    pages: [Object.assign({}, matchPageShallowIncludes)]
-                });
-        });
-    });
-
-    describe('Browse', function () {
-        it('Re-renders html when null', async function () {
-            // convert inserted pages to lexical and set html=null so we can test re-render
-            const pages = await models.Post.where('type', 'page').fetchAll();
-            for (const page of pages) {
-                if (!page.get('mobiledoc')) {
-                    continue;
-                }
-                const lexical = mobiledocToLexical(page.get('mobiledoc'));
-                await models.Base.knex.raw('UPDATE posts set html=NULL, mobiledoc=NULL, lexical=? WHERE id=?', [lexical, page.id]);
-            }
-
-            await agent
-                .get('/pages/?formats=mobiledoc,lexical,html')
-                .expectStatus(200)
-                .matchBodySnapshot({
-                    pages: Array(pages.length).fill(Object.assign({}, matchPageShallowIncludes))
-                });
-        });
-    });
-
     describe('Create', function () {
         it('Can create a page with html', async function () {
-            mockManager.mockLabsDisabled('lexicalEditor');
-
-            const page = {
-                title: 'HTML test',
-                html: '<p>Testing page creation with html</p>'
-            };
-
-            await agent
-                .post('/pages/?source=html&formats=mobiledoc,lexical,html')
-                .body({pages: [page]})
-                .expectStatus(201)
-                .matchBodySnapshot({
-                    pages: [Object.assign({}, matchPageShallowIncludes, {published_at: null})]
-                })
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag,
-                    location: anyLocationFor('pages')
-                });
-        });
-
-        it('Can create a page with html (labs.lexicalEditor)', async function () {
-            mockManager.mockLabsEnabled('lexicalEditor');
-
             const page = {
                 title: 'HTML test',
                 html: '<p>Testing page creation with html</p>'
@@ -162,160 +96,64 @@ describe('Pages API', function () {
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
                     etag: anyEtag,
-                    'x-cache-invalidate': anyString
+                    'x-cache-invalidate': stringMatching(/^\/p\/[a-z0-9-]+\/, \/p\/[a-z0-9-]+\/\?member_status=anonymous, \/p\/[a-z0-9-]+\/\?member_status=free, \/p\/[a-z0-9-]+\/\?member_status=paid$/)
                 });
         });
 
-        it('Works with latest collection card', async function () {
-            const initialLexical = {
-                root: {
-                    children: [
-                        {
-                            type: 'collection',
-                            version: 1,
-                            collection: 'latest',
-                            postCount: 3,
-                            layout: 'grid',
-                            columns: 3,
-                            header: 'Latest'
-                        }
-                    ],
-                    direction: null,
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            };
+        describe('Access', function () {
+            describe('Visibility is set to tiers', function () {
+                it('Saves only paid tiers', async function () {
+                    const page = {
+                        title: 'Test Page',
+                        status: 'draft'
+                    };
 
-            const updatedLexical = _.cloneDeep(initialLexical);
-            updatedLexical.root.children.push({
-                children: [
-                    {
-                        detail: 0,
-                        format: 0,
-                        mode: 'normal',
-                        style: '',
-                        text: 'Testing',
-                        type: 'text',
-                        version: 1
-                    }
-                ],
-                direction: 'ltr',
-                format: '',
-                indent: 0,
-                type: 'paragraph',
-                version: 1
-            });
+                    // @ts-ignore
+                    const products = await models.Product.findAll();
 
-            const page = {
-                title: 'Latest Collection Card Test',
-                status: 'draft',
-                lexical: JSON.stringify(initialLexical)
-            };
+                    const freeTier = products.models[0];
+                    const paidTier = products.models[1];
 
-            const {body: createBody} = await agent
-                .post('/pages/?formats=mobiledoc,lexical,html', {
-                    headers: {
-                        'content-type': 'application/json'
-                    }
-                })
-                .body({pages: [page]})
-                .expectStatus(201);
+                    const {body: pageBody} = await agent
+                        .post('/pages/', {
+                            headers: {
+                                'content-type': 'application/json'
+                            }
+                        })
+                        .body({pages: [page]})
+                        .expectStatus(201);
 
-            const [createResponse] = createBody.pages;
+                    const [pageResponse] = pageBody.pages;
 
-            await agent
-                .put(`/pages/${createResponse.id}/?formats=mobiledoc,lexical,html`)
-                .body({
-                    pages: [{
-                        id: createResponse.id,
-                        lexical: JSON.stringify(updatedLexical),
-                        updated_at: createResponse.updated_at // satisfy collision detection
-                    }]
-                })
-                .expectStatus(200)
-                .matchBodySnapshot({
-                    pages: [Object.assign({}, matchPageShallowIncludes, {
-                        published_at: null
-                    })]
+                    await agent
+                        .put(`/pages/${pageResponse.id}`)
+                        .body({
+                            pages: [{
+                                id: pageResponse.id,
+                                updated_at: pageResponse.updated_at,
+                                visibility: 'tiers',
+                                tiers: [
+                                    {id: freeTier.id},
+                                    {id: paidTier.id}
+                                ]
+                            }]
+                        })
+                        .expectStatus(200)
+                        .matchHeaderSnapshot({
+                            'content-version': anyContentVersion,
+                            etag: anyEtag,
+                            'x-cache-invalidate': stringMatching(/^\/p\/[a-z0-9-]+\/, \/p\/[a-z0-9-]+\/\?member_status=anonymous, \/p\/[a-z0-9-]+\/\?member_status=free, \/p\/[a-z0-9-]+\/\?member_status=paid$/)
+                        })
+                        .matchBodySnapshot({
+                            pages: [Object.assign({}, matchPageShallowIncludes, {
+                                published_at: null,
+                                tiers: [
+                                    {type: paidTier.get('type'), ...tierSnapshot}
+                                ]
+                            })]
+                        });
                 });
-        });
-
-        it('Works with featured collection card', async function () {
-            const initialLexical = {
-                root: {
-                    children: [
-                        {
-                            type: 'collection',
-                            version: 1,
-                            collection: 'featured',
-                            postCount: 3,
-                            layout: 'grid',
-                            columns: 3,
-                            header: 'Featured'
-                        }
-                    ],
-                    direction: null,
-                    format: '',
-                    indent: 0,
-                    type: 'root',
-                    version: 1
-                }
-            };
-
-            const updatedLexical = _.cloneDeep(initialLexical);
-            updatedLexical.root.children.push({
-                children: [
-                    {
-                        detail: 0,
-                        format: 0,
-                        mode: 'normal',
-                        style: '',
-                        text: 'Testing',
-                        type: 'text',
-                        version: 1
-                    }
-                ],
-                direction: 'ltr',
-                format: '',
-                indent: 0,
-                type: 'paragraph',
-                version: 1
             });
-
-            const page = {
-                title: 'Latest Collection Card Test',
-                status: 'draft',
-                lexical: JSON.stringify(initialLexical)
-            };
-
-            const {body: createBody} = await agent
-                .post('/pages/?formats=mobiledoc,lexical,html', {
-                    headers: {
-                        'content-type': 'application/json'
-                    }
-                })
-                .body({pages: [page]})
-                .expectStatus(201);
-
-            const [createResponse] = createBody.pages;
-
-            await agent
-                .put(`/pages/${createResponse.id}/?formats=mobiledoc,lexical,html`)
-                .body({
-                    pages: [{
-                        id: createResponse.id,
-                        lexical: JSON.stringify(updatedLexical),
-                        updated_at: createResponse.updated_at // satisfy collision detection
-                    }]
-                })
-                .expectStatus(200)
-                .matchBodySnapshot({
-                    pages: [Object.assign({}, matchPageShallowIncludes, {
-                        published_at: null
-                    })]
-                });
         });
     });
 
@@ -415,12 +253,27 @@ describe('Pages API', function () {
 
             const [pageResponse] = pageBody.pages;
 
-            await agent
+            const convertedResponse = await agent
                 .put(`/pages/${pageResponse.id}/?formats=mobiledoc,lexical,html&convert_to_lexical=true`)
                 .body({pages: [Object.assign({}, pageResponse)]})
                 .expectStatus(200)
                 .matchBodySnapshot({
                     pages: [Object.assign({}, matchPageShallowIncludes, {lexical: expectedLexical, mobiledoc: null})]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+
+            // rerunning the conversion against a converted post should not change it
+            const convertedPage = convertedResponse.body.pages[0];
+            const expectedConvertedLexical = convertedPage.lexical;
+            await agent
+                .put(`/pages/${pageResponse.id}/?formats=mobiledoc,lexical,html&convert_to_lexical=true`)
+                .body({pages: [Object.assign({}, convertedPage)]})
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    pages: [Object.assign({}, matchPageShallowIncludes, {lexical: expectedConvertedLexical, mobiledoc: null})]
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,

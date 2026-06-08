@@ -1,4 +1,5 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../../../utils/assertions');
 const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
 
 describe('Unit: endpoints/utils/serializers/output/all', function () {
@@ -8,7 +9,7 @@ describe('Unit: endpoints/utils/serializers/output/all', function () {
             let response = {
                 posts: [
                     {
-                        created_by: 'xxx',
+                        published_by: 'xxx',
                         title: 'xxx'
                     }
                 ]
@@ -18,14 +19,13 @@ describe('Unit: endpoints/utils/serializers/output/all', function () {
                 response: response
             });
 
-            should.not.exist(response.posts[0].created_by);
-            should.exist(response.posts[0].title);
+            assert.equal(response.posts[0].published_by, undefined);
+            assertExists(response.posts[0].title);
 
             response = {
                 post:
                     {
-                        created_by: 'xxx',
-                        updated_by: 'yyy',
+                        published_by: 'xxx',
                         title: 'xxx'
                     }
             };
@@ -34,17 +34,15 @@ describe('Unit: endpoints/utils/serializers/output/all', function () {
                 response: response
             });
 
-            should.not.exist(response.post.created_by);
-            should.not.exist(response.post.updated_by);
-            should.exist(response.post.title);
+            assert.equal(response.post.published_by, undefined);
+            assertExists(response.post.title);
 
             response = {
                 pages: [
                     {
-                        created_by: 'xxx',
+                        published_by: 'xxx',
                         authors: [
                             {
-                                updated_by: 'yyy',
                                 slug: 'ghost'
                             }
                         ]
@@ -59,11 +57,10 @@ describe('Unit: endpoints/utils/serializers/output/all', function () {
                 response: response
             });
 
-            should.not.exist(response.pages[0].created_by);
-            should.not.exist(response.pages[1].published_by);
-            should.exist(response.pages[0].authors);
-            should.exist(response.pages[0].authors[0].slug);
-            should.not.exist(response.pages[0].authors[0].updated_by);
+            assert.equal(response.pages[0].published_by, undefined);
+            assert.equal(response.pages[1].published_by, undefined);
+            assertExists(response.pages[0].authors);
+            assertExists(response.pages[0].authors[0].slug);
         });
     });
 });

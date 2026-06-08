@@ -1,0 +1,96 @@
+{
+    "name": "@tryghost/posts",
+    "version": "0.0.0",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/TryGhost/Ghost/tree/main/apps/posts"
+    },
+    "author": "Ghost Foundation",
+    "files": [
+        "LICENSE",
+        "README.md",
+        "dist/"
+    ],
+    "main": "./dist/posts.umd.cjs",
+    "module": "./dist/posts.js",
+    "exports": {
+        ".": {
+            "import": "./dist/posts.js",
+            "require": "./dist/posts.umd.cjs"
+        },
+        "./api": "./src/api.ts",
+        "./members": "./src/views/members/members.tsx"
+    },
+    "private": true,
+    "scripts": {
+        "dev": "vite build --watch",
+        "dev:start": "vite",
+        "build": "tsc && vite build",
+        "test:unit": "vitest run",
+        "lint": "pnpm run lint:code && pnpm run lint:test",
+        "lint:code": "eslint --ext .js,.ts,.cjs,.tsx --cache src",
+        "lint:code:fix": "eslint --ext .js,.ts,.cjs,.tsx --cache --fix src",
+        "lint:test": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx --cache test",
+        "lint:fix": "eslint --ext .js,.ts,.cjs,.tsx --cache src --fix",
+        "preview": "vite preview",
+        "test": "pnpm test:unit --coverage"
+    },
+    "devDependencies": {
+        "@playwright/test": "catalog:",
+        "@tanstack/react-query": "catalog:",
+        "@tanstack/react-virtual": "3.13.25",
+        "@testing-library/jest-dom": "catalog:",
+        "@testing-library/react": "catalog:",
+        "@types/jest": "catalog:",
+        "@types/papaparse": "5.5.2",
+        "@types/react": "catalog:",
+        "@types/validator": "catalog:",
+        "@vitest/coverage-v8": "catalog:",
+        "eslint": "catalog:",
+        "eslint-plugin-react-hooks": "catalog:",
+        "eslint-plugin-react-refresh": "catalog:",
+        "eslint-plugin-tailwindcss": "catalog:",
+        "jsdom": "catalog:",
+        "msw": "catalog:",
+        "tailwindcss": "catalog:",
+        "vite": "catalog:",
+        "vitest": "catalog:"
+    },
+    "dependencies": {
+        "@ebay/nice-modal-react": "catalog:",
+        "@tryghost/color-utils": "catalog:",
+        "@tryghost/admin-x-framework": "workspace:*",
+        "@tryghost/koenig-lexical": "catalog:",
+        "@tryghost/nql-lang": "catalog:",
+        "@tryghost/shade": "workspace:*",
+        "@xyflow/react": "12.10.2",
+        "dequal": "catalog:",
+        "i18n-iso-countries": "7.14.0",
+        "lucide-react": "catalog:",
+        "moment-timezone": "0.5.45",
+        "papaparse": "5.5.3",
+        "react": "catalog:",
+        "react-dom": "catalog:",
+        "react-router": "catalog:",
+        "sonner": "catalog:",
+        "temporal-polyfill": "0.3.2",
+        "use-debounce": "10.1.1",
+        "validator": "catalog:",
+        "zod": "catalog:"
+    },
+    "nx": {
+        "targets": {
+            "dev": {
+                "dependsOn": [
+                    "^build"
+                ]
+            },
+            "test:unit": {
+                "dependsOn": [
+                    "^build"
+                ]
+            }
+        }
+    }
+}

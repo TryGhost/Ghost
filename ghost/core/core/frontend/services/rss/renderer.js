@@ -6,10 +6,7 @@ module.exports.render = function render(res, baseUrl, data) {
     const rssData = _.merge({}, res.locals, data);
 
     // Fetch RSS from the cache
-    return rssCache
-        .getXML(baseUrl, rssData)
-        .then(function then(feedXml) {
-            res.set('Content-Type', 'text/xml; charset=UTF-8');
-            res.send(feedXml);
-        });
+    const feedXml = rssCache.getXML(baseUrl, rssData);
+    res.set('Content-Type', 'application/rss+xml; charset=UTF-8');
+    res.send(feedXml);
 };

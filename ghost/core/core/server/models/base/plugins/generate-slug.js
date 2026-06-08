@@ -12,7 +12,7 @@ module.exports = function (Bookshelf) {
          * ### Generate Slug
          * Create a string to act as the permalink for an object.
          * @param {Bookshelf['Model']} Model Model type to generate a slug for
-         * @param {String} base The string for which to generate a slug, usually a title or name
+         * @param {string} base The string for which to generate a slug, usually a title or name
          * @param {GenerateSlugOptions} [options] Options to pass to findOne
          * @return {Promise<String>} Resolves to a unique slug string
          */
@@ -37,6 +37,12 @@ module.exports = function (Bookshelf) {
 
                     if (!found) {
                         return slugToFind;
+                    }
+
+                    if (options.modelId) {
+                        if (found.id === options.modelId) {
+                            return slugToFind;
+                        }
                     }
 
                     slugTryCount += 1;

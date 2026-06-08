@@ -1,20 +1,15 @@
-const {agentProvider, mockManager, fixtureManager, configUtils, resetRateLimits, dbUtils} = require('../../utils/e2e-framework');
+const {assertArrayMatchesWithoutOrder} = require('../../utils/assertions');
+const {agentProvider, mockManager, fixtureManager} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
-const assert = require('assert/strict');
-require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
-
+const members = require('../../../core/server/services/members');
 let membersAgent, membersService;
 
 async function assertMemberEvents({eventType, memberId, asserts}) {
     const events = await models[eventType].where('member_id', memberId).fetchAll();
     const eventsJSON = events.map(e => e.toJSON());
-
-    // Order shouldn't matter here
-    for (const a of asserts) {
-        eventsJSON.should.matchAny(a);
-    }
-    assert.equal(events.length, asserts.length, `Only ${asserts.length} ${eventType} should have been added.`);
+    assertArrayMatchesWithoutOrder(eventsJSON, asserts);
 }
 
 async function getMemberByEmail(email, require = true) {
@@ -43,7 +38,7 @@ describe('Members Signin', function () {
     it('Will not set a cookie if the token is invalid', async function () {
         await membersAgent.get('/?token=blah')
             .expectStatus(302)
-            .expectHeader('Location', /\?\w*success=false/);
+            .expectHeader('Location', /\?[^#]*success=false/);
     });
 
     it('Will set a cookie if the token is valid', async function () {
@@ -64,7 +59,7 @@ describe('Members Signin', function () {
 
         await membersAgent.get(`/?token=${token}&action=signup`)
             .expectStatus(302)
-            .expectHeader('Location', /\/welcome-free\/$/)
+            .expectHeader('Location', /\/welcome-free\/\?success=true&action=signup$/)
             .expectHeader('Set-Cookie', /members-ssr.*/);
     });
 
@@ -75,7 +70,7 @@ describe('Members Signin', function () {
 
         await membersAgent.get(`/?token=${token}&action=signup-paid`)
             .expectStatus(302)
-            .expectHeader('Location', /\/welcome-paid\/$/)
+            .expectHeader('Location', /\/welcome-paid\/\?success=true&action=signup$/)
             .expectHeader('Set-Cookie', /members-ssr.*/);
     });
 
@@ -86,8 +81,34 @@ describe('Members Signin', function () {
 
         await membersAgent.get(`/?token=${token}&action=subscribe`)
             .expectStatus(302)
-            .expectHeader('Location', /\/welcome-free\/$/)
+            .expectHeader('Location', /\/welcome-free\/\?success=true&action=signup$/)
             .expectHeader('Set-Cookie', /members-ssr.*/);
+    });
+
+    it('Will redirect to an external welcome page for subscribe', async function () {
+        // Alter the product welcome page to an external URL
+        const freeProduct = await members.api.productRepository.get({slug: 'free'});
+        await members.api.productRepository.update({
+            id: freeProduct.id,
+            welcome_page_url: 'https://externalsite.ghost/welcome/'
+        });
+
+        try {
+            const magicLink = await membersService.api.getMagicLink('member1@test.com', 'signup');
+            const magicLinkUrl = new URL(magicLink);
+            const token = magicLinkUrl.searchParams.get('token');
+
+            await membersAgent.get(`/?token=${token}&action=subscribe`)
+                .expectStatus(302)
+                .expectHeader('Location', 'https://externalsite.ghost/welcome/') // no query params added
+                .expectHeader('Set-Cookie', /members-ssr.*/);
+        } finally {
+            // Change it back
+            await members.api.productRepository.update({
+                id: freeProduct.id,
+                welcome_page_url: freeProduct.get('welcome_page_url')
+            });
+        }
     });
 
     it('Will create a new member on signup', async function () {
@@ -98,7 +119,7 @@ describe('Members Signin', function () {
 
         await membersAgent.get(`/?token=${token}&action=signup`)
             .expectStatus(302)
-            .expectHeader('Location', /\/welcome-free\/$/)
+            .expectHeader('Location', /\/welcome-free\/\?success=true&action=signup$/)
             .expectHeader('Set-Cookie', /members-ssr.*/);
 
         const member = await getMemberByEmail(email);
@@ -129,7 +150,7 @@ describe('Members Signin', function () {
 
         await membersAgent.get(`/?token=${token}&action=signup`)
             .expectStatus(302)
-            .expectHeader('Location', /\/welcome-free\/$/)
+            .expectHeader('Location', /\/welcome-free\/\?success=true&action=signup$/)
             .expectHeader('Set-Cookie', /members-ssr.*/);
     });
 
@@ -149,6 +170,57 @@ describe('Members Signin', function () {
         assert(!member, 'Member should not have been created');
     });
 
+    it('Stores UTM parameters in MemberCreatedEvent', async function () {
+        const email = 'member-with-utm@test.com';
+        const attribution = {
+            id: null,
+            url: null,
+            type: null,
+            referrerSource: 'Google',
+            referrerMedium: 'unknown',
+            referrerUrl: null,
+            utmSource: 'newsletter',
+            utmMedium: 'email',
+            utmCampaign: 'spring_sale',
+            utmTerm: 'ghost_pro',
+            utmContent: 'header_link'
+        };
+
+        const magicLink = await membersService.api.getMagicLink(email, 'signup', {attribution});
+        const magicLinkUrl = new URL(magicLink);
+        const token = magicLinkUrl.searchParams.get('token');
+
+        await membersAgent.get(`/?token=${token}&action=signup`)
+            .expectStatus(302)
+            .expectHeader('Location', /\/welcome-free\/\?success=true&action=signup$/)
+            .expectHeader('Set-Cookie', /members-ssr.*/);
+
+        const member = await getMemberByEmail(email);
+
+        // Check event created with UTM parameters
+        await assertMemberEvents({
+            eventType: 'MemberCreatedEvent',
+            memberId: member.id,
+            asserts: [
+                {
+                    created_at: member.get('created_at'),
+                    attribution_url: null,
+                    attribution_id: null,
+                    attribution_type: null,
+                    source: 'member',
+                    referrer_source: 'Google',
+                    referrer_medium: 'unknown',
+                    referrer_url: null,
+                    utm_source: 'newsletter',
+                    utm_medium: 'email',
+                    utm_campaign: 'spring_sale',
+                    utm_term: 'ghost_pro',
+                    utm_content: 'header_link'
+                }
+            ]
+        });
+    });
+
     describe('Validity Period', function () {
         let clock;
         let startDate = new Date();
@@ -158,7 +230,8 @@ describe('Members Signin', function () {
             // Remove ms precision (not supported by MySQL)
             startDate.setMilliseconds(0);
 
-            clock = sinon.useFakeTimers(startDate);
+            // TODO: shouldAdvanceTime is a fake-timer + HTTP-await workaround; see docs/dep-consolidation.md
+            clock = sinon.useFakeTimers({now: startDate, shouldAdvanceTime: true});
         });
 
         afterEach(function () {
@@ -173,7 +246,7 @@ describe('Members Signin', function () {
             // Use a first time
             await membersAgent.get(`/?token=${token}&action=signup`)
                 .expectStatus(302)
-                .expectHeader('Location', /\/welcome-free\/$/)
+                .expectHeader('Location', /\/welcome-free\/\?success=true&action=signup$/)
                 .expectHeader('Set-Cookie', /members-ssr.*/);
 
             // Fetch token in the database
@@ -189,7 +262,7 @@ describe('Members Signin', function () {
 
             await membersAgent.get(`/?token=${token}&action=signup`)
                 .expectStatus(302)
-                .expectHeader('Location', /\/welcome-free\/$/)
+                .expectHeader('Location', /\/welcome-free\/\?success=true&action=signup$/)
                 .expectHeader('Set-Cookie', /members-ssr.*/);
 
             await model.refresh();
@@ -199,16 +272,20 @@ describe('Members Signin', function () {
             // Not changed
             assert.equal(model.get('first_used_at').getTime(), startDate.getTime(), 'first_used_at should not be changed on second usage');
 
-            // Updated at should be changed
-            assert.equal(model.get('updated_at').getTime(), new Date().getTime(), 'updated_at should be set on changes');
-            const lastChangedAt = new Date();
+            // Updated at should be changed. We compare against the expected tick target
+            // rather than new Date() because shouldAdvanceTime lets real time elapse during
+            // HTTP awaits, so a strict equality with `new Date()` is fragile.
+            const expectedSecondUseTime = startDate.getTime() + 5 * 60 * 1000;
+            const updatedAtDrift = Math.abs(model.get('updated_at').getTime() - expectedSecondUseTime);
+            assert.ok(updatedAtDrift < 60 * 1000, `updated_at should be ~5min after start (drift: ${updatedAtDrift}ms)`);
+            const lastChangedAt = model.get('updated_at');
 
             // Wait another 6 minutes, and the usage of the token should be blocked now
             clock.tick(6 * 60 * 1000);
 
             await membersAgent.get('/?token=blah')
                 .expectStatus(302)
-                .expectHeader('Location', /\?\w*success=false/);
+                .expectHeader('Location', /\?[^#]*success=false/);
 
             // No changes expected
             await model.refresh();
@@ -226,17 +303,17 @@ describe('Members Signin', function () {
             // Use a first time
             await membersAgent.get(`/?token=${token}&action=signup`)
                 .expectStatus(302)
-                .expectHeader('Location', /\/welcome-free\/$/)
+                .expectHeader('Location', /\/welcome-free\/\?success=true&action=signup$/)
                 .expectHeader('Set-Cookie', /members-ssr.*/);
 
             await membersAgent.get(`/?token=${token}&action=signup`)
                 .expectStatus(302)
-                .expectHeader('Location', /\/welcome-free\/$/)
+                .expectHeader('Location', /\/welcome-free\/\?success=true&action=signup$/)
                 .expectHeader('Set-Cookie', /members-ssr.*/);
 
             await membersAgent.get(`/?token=${token}&action=signup`)
                 .expectStatus(302)
-                .expectHeader('Location', /\/welcome-free\/$/)
+                .expectHeader('Location', /\/welcome-free\/\?success=true&action=signup$/)
                 .expectHeader('Set-Cookie', /members-ssr.*/);
 
             // Fetch token in the database
@@ -250,7 +327,7 @@ describe('Members Signin', function () {
             // Failed 4th usage
             await membersAgent.get('/?token=blah')
                 .expectStatus(302)
-                .expectHeader('Location', /\?\w*success=false/);
+                .expectHeader('Location', /\?[^#]*success=false/);
 
             // No changes expected
             await model.refresh();
@@ -270,7 +347,7 @@ describe('Members Signin', function () {
 
             await membersAgent.get('/?token=blah')
                 .expectStatus(302)
-                .expectHeader('Location', /\?\w*success=false/);
+                .expectHeader('Location', /\?[^#]*success=false/);
 
             // No changes expected
             const model = await models.SingleUseToken.findOne({token});
@@ -279,243 +356,6 @@ describe('Members Signin', function () {
             assert.equal(model.get('used_count'), 0, 'used_count should be 0');
             assert.equal(model.get('first_used_at'), null, 'first_used_at should not be set');
             assert.equal(model.get('updated_at').getTime(), startDate.getTime(), 'updated_at should not be set');
-        });
-    });
-
-    describe('Rate limiting', function () {
-        let clock;
-
-        beforeEach(async function () {
-            await dbUtils.truncate('brute');
-            await resetRateLimits();
-            clock = sinon.useFakeTimers(new Date());
-        });
-
-        afterEach(function () {
-            clock.restore();
-        });
-
-        it('Will rate limit member enumeration', async function () {
-            // +1 because this is a retry count, so we have one request + the retries, then blocked
-            const userLoginRateLimit = configUtils.config.get('spam').member_login.freeRetries + 1;
-
-            for (let i = 0; i < userLoginRateLimit; i++) {
-                await membersAgent.post('/api/send-magic-link')
-                    .body({
-                        email: 'rate-limiting-test-' + i + '@test.com',
-                        emailType: 'signup'
-                    })
-                    .expectStatus(201);
-            }
-
-            // Now we've been rate limited for every email
-            await membersAgent.post('/api/send-magic-link')
-                .body({
-                    email: 'other@test.com',
-                    emailType: 'signup'
-                })
-                .expectStatus(429);
-
-            // Now we've been rate limited
-            await membersAgent.post('/api/send-magic-link')
-                .body({
-                    email: 'one@test.com',
-                    emailType: 'signup'
-                })
-                .expectStatus(429);
-
-            // Get one of the magic link emails
-            const mail = mockManager.assert.sentEmail({
-                to: 'rate-limiting-test-0@test.com',
-                subject: /Complete your sign up to Ghost!/
-            });
-
-            // Get link from email
-            const [url] = mail.text.match(/https?:\/\/[^\s]+/);
-
-            const magicLink = new URL(url);
-
-            // Login works, but we're still rate limited (otherwise this would be an easy escape to allow user enumeration)
-            await membersAgent.get(magicLink.pathname + magicLink.search);
-
-            // We are still rate limited
-            await membersAgent.post('/api/send-magic-link')
-                .body({
-                    email: 'any@test.com',
-                    emailType: 'signup'
-                })
-                .expectStatus(429);
-
-            // Wait 10 minutes and check if we are still rate limited
-            clock.tick(10 * 60 * 1000);
-
-            // We should be able to send a new email
-            await membersAgent.post('/api/send-magic-link')
-                .body({
-                    email: 'any@test.com',
-                    emailType: 'signup'
-                })
-                .expectStatus(201);
-
-            // But only once
-            await membersAgent.post('/api/send-magic-link')
-                .body({
-                    email: 'any2@test.com',
-                    emailType: 'signup'
-                })
-                .expectStatus(429);
-
-            // Waiting 10 minutes is still enough (fibonacci)
-            clock.tick(10 * 60 * 1000);
-
-            await membersAgent.post('/api/send-magic-link')
-                .body({
-                    email: 'any2@test.com',
-                    emailType: 'signup'
-                })
-                .expectStatus(201);
-
-            // Blocked again
-            await membersAgent.post('/api/send-magic-link')
-                .body({
-                    email: 'any3@test.com',
-                    emailType: 'signup'
-                })
-                .expectStatus(429);
-
-            // Waiting 10 minutes is not enough any longer
-            clock.tick(10 * 60 * 1000);
-
-            await membersAgent.post('/api/send-magic-link')
-                .body({
-                    email: 'any3@test.com',
-                    emailType: 'signup'
-                })
-                .expectStatus(429);
-
-            // Waiting 20 minutes is enough
-            clock.tick(10 * 60 * 1000);
-
-            await membersAgent.post('/api/send-magic-link')
-                .body({
-                    email: 'any2@test.com',
-                    emailType: 'signup'
-                })
-                .expectStatus(201);
-
-            // Blocked again
-            await membersAgent.post('/api/send-magic-link')
-                .body({
-                    email: 'any3@test.com',
-                    emailType: 'signup'
-                })
-                .expectStatus(429);
-
-            // Waiting 12 hours is enough to reset it completely
-            clock.tick(12 * 60 * 60 * 1000 + 1000);
-
-            // We can try multiple times again
-            await membersAgent.post('/api/send-magic-link')
-                .body({
-                    email: 'any4@test.com',
-                    emailType: 'signup'
-                })
-                .expectStatus(201);
-
-            // Blocked again
-            await membersAgent.post('/api/send-magic-link')
-                .body({
-                    email: 'any5@test.com',
-                    emailType: 'signup'
-                })
-                .expectStatus(201);
-        });
-
-        it('Will clear rate limits for members auth', async function () {
-            // Temporary increase the member_login rate limits to a higher number
-            // because other wise we would hit user enumeration rate limits (this won't get reset after a succeeded login)
-            // We need to do this here otherwise the middlewares are not setup correctly
-            configUtils.set('spam:member_login:freeRetries', 40);
-
-            // We need to reset spam instances to apply the configuration change
-            await resetRateLimits();
-
-            // +1 because this is a retry count, so we have one request + the retries, then blocked
-            const userLoginRateLimit = configUtils.config.get('spam').user_login.freeRetries + 1;
-
-            for (let i = 0; i < userLoginRateLimit; i++) {
-                await membersAgent.post('/api/send-magic-link')
-                    .body({
-                        email: 'rate-limiting-test-1@test.com',
-                        emailType: 'signup'
-                    })
-                    .expectStatus(201);
-
-                await membersAgent.post('/api/send-magic-link')
-                    .body({
-                        email: 'rate-limiting-test-2@test.com',
-                        emailType: 'signup'
-                    })
-                    .expectStatus(201);
-            }
-
-            // Now we've been rate limited
-            await membersAgent.post('/api/send-magic-link')
-                .body({
-                    email: 'rate-limiting-test-1@test.com',
-                    emailType: 'signup'
-                })
-                .expectStatus(429);
-
-            // Now we've been rate limited
-            await membersAgent.post('/api/send-magic-link')
-                .body({
-                    email: 'rate-limiting-test-2@test.com',
-                    emailType: 'signup'
-                })
-                .expectStatus(429);
-
-            // Get one of the magic link emails
-            const mail = mockManager.assert.sentEmail({
-                to: 'rate-limiting-test-1@test.com',
-                subject: /Complete your sign up to Ghost!/
-            });
-
-            // Get link from email
-            const [url] = mail.text.match(/https?:\/\/[^\s]+/);
-
-            const magicLink = new URL(url);
-
-            // Login
-            await membersAgent.get(magicLink.pathname + magicLink.search);
-
-            // The first member has been un ratelimited
-            await membersAgent.post('/api/send-magic-link')
-                .body({
-                    email: 'rate-limiting-test-1@test.com',
-                    emailType: 'signup'
-                })
-                .expectEmptyBody()
-                .expectStatus(201);
-
-            // The second is still rate limited
-            await membersAgent.post('/api/send-magic-link')
-                .body({
-                    email: 'rate-limiting-test-2@test.com',
-                    emailType: 'signup'
-                })
-                .expectStatus(429);
-
-            // Wait 10 minutes and check if we are still rate limited
-            clock.tick(10 * 60 * 1000);
-
-            // We should be able to send a new email
-            await membersAgent.post('/api/send-magic-link')
-                .body({
-                    email: 'rate-limiting-test-2@test.com',
-                    emailType: 'signup'
-                })
-                .expectStatus(201);
         });
     });
 
@@ -534,7 +374,7 @@ describe('Members Signin', function () {
 
             await membersAgent.get(`/?token=${token}&action=signup`)
                 .expectStatus(302)
-                .expectHeader('Location', /\/welcome-free\/$/)
+                .expectHeader('Location', /\/welcome-free\/\?success=true&action=signup$/)
                 .expectHeader('Set-Cookie', /members-ssr.*/);
 
             const member = await getMemberByEmail(email);

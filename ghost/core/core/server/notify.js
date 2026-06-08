@@ -51,7 +51,7 @@ async function notify(type, error = null) {
     // CASE: use bootstrap socket to communicate with CLI for systemd
     let socketAddress = config.get('bootstrap-socket');
     if (socketAddress) {
-        const bootstrapSocket = require('@tryghost/bootstrap-socket');
+        const bootstrapSocket = require('./lib/bootstrap-socket');
         return bootstrapSocket.connectAndSend(socketAddress, message);
     }
 

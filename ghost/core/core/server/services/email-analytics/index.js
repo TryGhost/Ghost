@@ -1,3 +1,3 @@
-const EmailAnalyticsServiceWrapper = require('./EmailAnalyticsServiceWrapper');
+const EmailAnalyticsServiceWrapper = require('./email-analytics-service-wrapper');
 
 module.exports = new EmailAnalyticsServiceWrapper();
