@@ -3,6 +3,7 @@ const sinon = require('sinon');
 const _ = require('lodash');
 const nock = require('nock');
 const rewire = require('rewire');
+const errors = require('@tryghost/errors');
 const testUtils = require('../../../utils');
 const indexnow = rewire('../../../../core/server/services/indexnow');
 const events = require('../../../../core/server/lib/common/events');
@@ -434,6 +435,81 @@ describe('IndexNow', function () {
             sinon.assert.calledOnce(loggingStub);
             assert.equal(loggingStub.args[0][0].event.name, 'indexnow.ping_failed');
             assert.equal(loggingStub.args[0][0].http.response.status_code, 204);
+        });
+    });
+
+    describe('ping() error classification (got HTTPError shape)', function () {
+        const ping = indexnow.__get__('ping');
+        let resetIndexNow;
+
+        beforeEach(function () {
+            sinon.stub(urlService.facade, 'getUrlForResource').returns('https://example.com/my-post/');
+            loggingStub = sinon.stub(logging, 'warn');
+        });
+
+        afterEach(function () {
+            if (resetIndexNow) {
+                resetIndexNow();
+                resetIndexNow = null;
+            }
+        });
+
+        function makeHttpError(statusCode) {
+            const err = new Error(`Response code ${statusCode}`);
+            err.name = 'HTTPError';
+            err.code = 'ERR_NON_2XX_3XX_RESPONSE';
+            err.response = {statusCode};
+            return err;
+        }
+
+        async function pingWithHttpError(statusCode) {
+            resetIndexNow = indexnow.__set__('request', sinon.stub().rejects(makeHttpError(statusCode)));
+            const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+            await ping(testPost);
+        }
+
+        it('classifies a 429 (status on err.response.statusCode) as rate_limited', async function () {
+            await pingWithHttpError(429);
+
+            sinon.assert.calledOnce(loggingStub);
+            assert.equal(loggingStub.args[0][0].event.name, 'indexnow.rate_limited');
+            assert.equal(loggingStub.args[0][0].http.response.status_code, 429);
+        });
+
+        it('classifies a 422 (status on err.response.statusCode) as key_validation_failed', async function () {
+            await pingWithHttpError(422);
+
+            sinon.assert.calledOnce(loggingStub);
+            assert.equal(loggingStub.args[0][0].event.name, 'indexnow.key_validation_failed');
+            assert.equal(loggingStub.args[0][0].http.response.status_code, 422);
+        });
+
+        it('classifies a 403 (key not valid) as key_validation_failed', async function () {
+            await pingWithHttpError(403);
+
+            sinon.assert.calledOnce(loggingStub);
+            assert.equal(loggingStub.args[0][0].event.name, 'indexnow.key_validation_failed');
+            assert.equal(loggingStub.args[0][0].http.response.status_code, 403);
+        });
+
+        it('classifies other 5xx errors (status on err.response.statusCode) as ping_failed', async function () {
+            await pingWithHttpError(503);
+
+            sinon.assert.calledOnce(loggingStub);
+            assert.equal(loggingStub.args[0][0].event.name, 'indexnow.ping_failed');
+            assert.equal(loggingStub.args[0][0].http.response.status_code, 503);
+        });
+
+        it('still classifies a GhostError carrying err.statusCode (manual throw) correctly', async function () {
+            const err = new errors.TooManyRequestsError({message: 'manual', statusCode: 429});
+            resetIndexNow = indexnow.__set__('request', sinon.stub().rejects(err));
+            const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+
+            await ping(testPost);
+
+            sinon.assert.calledOnce(loggingStub);
+            assert.equal(loggingStub.args[0][0].event.name, 'indexnow.rate_limited');
+            assert.equal(loggingStub.args[0][0].http.response.status_code, 429);
         });
     });
 
