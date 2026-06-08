@@ -6,7 +6,7 @@ import ErrorBoundary from '../error-boundary';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type FetchKoenigLexical = () => Promise<any>
 
-export type NodeType = 'DEFAULT_NODES' | 'BASIC_NODES' | 'MINIMAL_NODES' | 'EMAIL_NODES';
+export type NodeType = 'DEFAULT_NODES' | 'BASIC_NODES' | 'MINIMAL_NODES' | 'EMAIL_NODES' | 'EMAIL_EDITOR_NODES';
 
 export interface KoenigEditorBaseProps {
     onBlur?: () => void
@@ -17,6 +17,13 @@ export interface KoenigEditorBaseProps {
     singleParagraph?: boolean
     className?: string
     inheritFontStyles?: boolean
+    loadingFallback?: React.ReactNode
+    fileUploader?: {
+        useFileUpload: unknown
+        fileTypes: unknown
+    }
+    cardConfig?: unknown
+    registerAPI?: (API: KoenigInstance | null) => void
 }
 
 declare global {
@@ -26,10 +33,18 @@ declare global {
     }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type KoenigInstance = { [key: string]: any };
+export type KoenigInstance = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any
+    editorInstance: {
+        getRootElement: () => HTMLElement | null
+    }
+    focusEditor: (options?: {position?: 'top' | 'bottom'}) => void
+    insertParagraphAtBottom: () => void
+    lastNodeIsDecorator: () => boolean
+};
 
-const loadKoenig = function (fetchKoenigLexical: FetchKoenigLexical) {
+export const loadKoenig = function (fetchKoenigLexical: FetchKoenigLexical) {
     let status = 'pending';
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let response: any;
@@ -82,7 +97,10 @@ export const KoenigWrapper: React.FC<KoenigWrapperProps> = ({
     singleParagraph = false,
     children,
     initialEditorState,
-    onChange
+    onChange,
+    fileUploader,
+    cardConfig,
+    registerAPI
 }) => {
     const onError = useCallback((error: unknown) => {
         try {
@@ -125,14 +143,17 @@ export const KoenigWrapper: React.FC<KoenigWrapperProps> = ({
         DEFAULT_NODES: koenig.DEFAULT_TRANSFORMERS,
         BASIC_NODES: koenig.BASIC_TRANSFORMERS,
         MINIMAL_NODES: koenig.MINIMAL_TRANSFORMERS,
-        EMAIL_NODES: koenig.EMAIL_TRANSFORMERS
+        EMAIL_NODES: koenig.EMAIL_TRANSFORMERS,
+        EMAIL_EDITOR_NODES: koenig.EMAIL_TRANSFORMERS
     };
 
     const defaultNodes = nodes || 'DEFAULT_NODES';
 
     return (
         <koenig.KoenigComposer
+            cardConfig={cardConfig}
             darkMode={darkMode}
+            fileUploader={fileUploader}
             initialEditorState={initialEditorState}
             nodes={koenig[defaultNodes]}
             onError={onError}
@@ -143,6 +164,7 @@ export const KoenigWrapper: React.FC<KoenigWrapperProps> = ({
                 markdownTransformers={transformers[defaultNodes]}
                 placeholderClassName='koenig-lexical-editor-input-placeholder line-clamp-1'
                 placeholderText={placeholder}
+                registerAPI={registerAPI}
                 singleParagraph={singleParagraph}
                 onBlur={handleBlur}
                 onChange={onChange}
@@ -167,17 +189,18 @@ const KoenigEditorBase: React.FC<KoenigEditorBaseInternalProps> = ({
     initialEditorState,
     onChange,
     inheritFontStyles = true,
+    loadingFallback,
     ...props
 }) => {
     const {fetchKoenigLexical, darkMode} = useDesignSystem();
     const editorResource = useMemo(() => loadKoenig(fetchKoenigLexical), [fetchKoenigLexical]);
-    const inheritClasses = inheritFontStyles ? '[&_*]:!font-inherit [&_*]:!text-inherit' : '';
+    const inheritClasses = inheritFontStyles ? '[&_*]:font-inherit! [&_*]:[font-size:inherit]!' : '';
 
     return (
         <div className={className || 'w-full'}>
             <div className={`koenig-react-editor w-full ${inheritClasses}`}>
                 <ErrorBoundary name='editor'>
-                    <Suspense fallback={<p className="koenig-react-editor-loading">Loading editor...</p>}>
+                    <Suspense fallback={loadingFallback || <p className="koenig-react-editor-loading">Loading editor...</p>}>
                         <KoenigWrapper
                             {...props}
                             darkMode={darkMode}

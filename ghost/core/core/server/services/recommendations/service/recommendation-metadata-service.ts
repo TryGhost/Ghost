@@ -17,7 +17,7 @@ type OembedMetadata<Type extends string> = {
 }
 
 type OEmbedService = {
-    fetchOembedDataFromUrl<Type extends string>(url: string, type: Type, options?: {timeout?: number}): Promise<OembedMetadata<Type>>
+    fetchOembedDataFromUrl<Type extends string>(url: string, type: Type, options?: {timeout?: number | {request: number}}): Promise<OembedMetadata<Type>>
 }
 
 type ExternalRequest = {
@@ -41,21 +41,26 @@ export class RecommendationMetadataService {
         this.#externalRequest = dependencies.externalRequest;
     }
 
-    async #fetchJSON(url: URL, options?: {timeout?: number}) {
+    async #fetchJSON(url: URL, options?: {timeout?: number | {request: number}}) {
         // Even though we have throwHttpErrors: false, we still need to catch DNS errors
         // that can arise from externalRequest, otherwise we'll return a HTTP 500 to the user
         try {
+            const timeout = typeof options?.timeout === 'number' ? {request: options.timeout} : options?.timeout;
+
             // default content type is application/x-www-form-encoded which is what we need for the webmentions spec
             const response = await this.#externalRequest.get(url.toString(), {
                 throwHttpErrors: false,
                 maxRedirects: 10,
                 followRedirect: true,
-                timeout: 15000,
+                timeout: {
+                    request: 15000
+                },
                 retry: {
                     // Only retry on network issues, or specific HTTP status codes
                     limit: 3
                 },
-                ...options
+                ...options,
+                ...(timeout ? {timeout} : {})
             });
 
             if (response.statusCode >= 200 && response.statusCode < 300) {
@@ -81,7 +86,7 @@ export class RecommendationMetadataService {
         }
     }
 
-    async fetch(url: URL, options: {timeout: number} = {timeout: 5000}): Promise<RecommendationMetadata> {
+    async fetch(url: URL, options: {timeout: number | {request: number}} = {timeout: {request: 5000}}): Promise<RecommendationMetadata> {
         // Make sure url path ends with a slash (urls should be resolved relative to the path)
         if (!url.pathname.endsWith('/')) {
             url.pathname += '/';

@@ -18,6 +18,21 @@ export const getPeriodText = (range: number): string => {
     return '';
 };
 
+/**
+ * Truncates leading empty data points from the beginning of a dataset,
+ * keeping one zero entry before the first real data for a smooth chart transition.
+ * Ultimately, we should fix the API to return only what we want to see.
+ * https://linear.app/ghost/issue/NY-1035/
+ */
+export function truncateLeadingEmptyData<T extends {value?: number}>(data: T[]): T[] {
+    const firstNonEmptyIndex = data.findIndex(item => Number(item.value) > 0);
+    if (firstNonEmptyIndex > 1) {
+        // Keep one zero entry before the first real data
+        return data.slice(firstNonEmptyIndex - 1);
+    }
+    return data;
+}
+
 type AggregationType = 'sum' | 'avg' | 'exact';
 
 type AggregationStrategy = 'none' | 'weekly' | 'monthly' | 'monthly-exact';

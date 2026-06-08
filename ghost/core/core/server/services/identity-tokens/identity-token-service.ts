@@ -1,11 +1,19 @@
 import {sign} from 'jsonwebtoken';
 
 export class IdentityTokenService {
+    private privateKey: string;
+    private issuer: string;
+    private keyId: string;
+
     constructor(
-        private privateKey: string,
-        private issuer: string,
-        private keyId: string
-    ) {}
+        privateKey: string,
+        issuer: string,
+        keyId: string
+    ) {
+        this.privateKey = privateKey;
+        this.issuer = issuer;
+        this.keyId = keyId;
+    }
 
     async getTokenForUser(email: string, role?: string) {
         const claims: Record<string, string> = {

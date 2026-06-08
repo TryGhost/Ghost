@@ -1,21 +1,14 @@
-// Switch these lines once there are useful utils
-// const testUtils = require('./utils');
-const should = require('should');
+const assert = require('node:assert/strict');
 const SettingsPathManager = require('../../../../../core/server/services/route-settings/settings-path-manager');
 
 describe('Settings Path Manager', function () {
     it('throws when paths parameter is not provided', function () {
-        try {
-            const settingsPathManager = new SettingsPathManager({
+        assert.throws(() => {
+            new SettingsPathManager({
                 paths: [],
                 type: 'routes'
             });
-
-            should.fail(settingsPathManager, 'Should have errored');
-        } catch (err) {
-            should.exist(err);
-            err.message.should.match(/paths values/g);
-        }
+        }, /paths values/g);
     });
 
     describe('getDefaultFilePath', function () {
@@ -27,7 +20,7 @@ describe('Settings Path Manager', function () {
 
             const path = settingsPathManager.getDefaultFilePath();
 
-            path.should.equal('/content/settings/routes.yaml');
+            assert.equal(path, '/content/settings/routes.yaml');
         });
 
         it('returns default file path based on redirects configuration', function (){
@@ -38,7 +31,7 @@ describe('Settings Path Manager', function () {
 
             const path = settingsPathManager.getDefaultFilePath();
 
-            path.should.equal('/content/data/redirects.yaml');
+            assert.equal(path, '/content/data/redirects.yaml');
         });
 
         it('returns default file path based on redirects configuration with json extension', function (){
@@ -50,7 +43,7 @@ describe('Settings Path Manager', function () {
 
             const path = settingsPathManager.getDefaultFilePath();
 
-            path.should.equal('/content/data/redirects.json');
+            assert.equal(path, '/content/data/redirects.json');
         });
     });
 
@@ -64,7 +57,7 @@ describe('Settings Path Manager', function () {
 
             const path = settingsPathManager.getBackupFilePath();
 
-            path.should.match(/\/content\/data\/routes-\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}.yaml/);
+            assert.match(path, /\/content\/data\/routes-\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}.yaml/);
         });
     });
 });

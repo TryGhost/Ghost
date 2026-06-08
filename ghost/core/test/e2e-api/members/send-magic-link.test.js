@@ -1,6 +1,7 @@
 const {agentProvider, mockManager, fixtureManager, matchers, configUtils, resetRateLimits, dbUtils} = require('../../utils/e2e-framework');
 const sinon = require('sinon');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
+const cheerio = require('cheerio');
 const {assertMatchSnapshot} = require('../../utils/assertions');
 const settingsCache = require('../../../core/shared/settings-cache');
 const settingsService = require('../../../core/server/services/settings');
@@ -43,56 +44,30 @@ describe('sendMagicLink', function () {
             .expectStatus(400);
     });
 
-    it('Sends signup email when logging in to email that does not exist (prevents enumeration)', async function () {
+    it('Returns 201 when logging in with a email that does not exist', async function () {
         const email = 'this-member-does-not-exist@test.com';
         await membersAgent.post('/api/send-magic-link')
             .body({
                 email,
                 emailType: 'signin'
             })
-            .expectEmptyBody()
             .expectStatus(201);
 
-        // Check that a signup email is sent instead of throwing an error
-        const mail = mockManager.assert.sentEmail({
-            to: email,
-            subject: /Complete your sign up to Ghost/
-        });
-
-        // Verify the email contains the signup link
-        assert.ok(mail.text.includes('complete the signup process'));
-
-        // Verify the magic link works for signup
-        const [url] = mail.text.match(/https?:\/\/[^\s]+/);
-        const parsed = new URL(url);
-        const token = parsed.searchParams.get('token');
-
-        // Get data from token
-        const data = await membersService.api.getTokenDataFromMagicLinkToken(token);
-        assert.equal(data.email, email);
-        assert.equal(data.type, 'signup');
-
-        // Verify we can create a member from this token
-        const member = await membersService.api.getMemberDataFromMagicLinkToken(token);
-        assert.equal(member.email, email);
+        mockManager.assert.sentEmailCount(0);
     });
 
-    it('Does not send email when logging in to email that does not exist on invite-only site', async function () {
+    it('Returns 201 when logging in with a email that does not exist (invite only)', async function () {
         settingsCache.set('members_signup_access', {value: 'invite'});
 
-        const email = 'this-member-does-not-exist-invite@test.com';
+        const email = 'this-member-does-not-exist@test.com';
         await membersAgent.post('/api/send-magic-link')
             .body({
                 email,
                 emailType: 'signin'
             })
-            .expectEmptyBody()
             .expectStatus(201);
 
-        // No email should be sent for non-existent members on invite-only sites
-        assert.throws(() => {
-            mockManager.assert.sentEmail({to: email});
-        }, /Expected at least 1 emails sent/);
+        mockManager.assert.sentEmailCount(0);
     });
 
     it('Throws an error when trying to sign up on an invite-only site', async function () {
@@ -174,7 +149,7 @@ describe('sendMagicLink', function () {
         assert.equal(data.attribution.type, null);
     });
 
-    it('Creates a valid magic link with sniper links for Gmail', async function () {
+    it('Creates a valid magic link with inbox links for Gmail', async function () {
         const email = 'test@gmail.com';
         const res = await membersAgent.post('/api/send-magic-link')
             .body({
@@ -183,8 +158,8 @@ describe('sendMagicLink', function () {
             })
             .expectStatus(201);
 
-        assert(res.body.sniperLinks.desktop.startsWith('https://mail.google.com/'));
-        assert(res.body.sniperLinks.android.startsWith('intent:'));
+        assert(res.body.inboxLinks.desktop.startsWith('https://mail.google.com/'));
+        assert(res.body.inboxLinks.android.startsWith('intent:'));
     });
 
     it('Creates a valid magic link from custom signup with redirection', async function () {
@@ -455,26 +430,6 @@ describe('sendMagicLink', function () {
                         assert.match(body.otc_ref, /^[a-f0-9-]{36}$/);
                     });
             });
-
-            it('silently rejects signin for non-existent member with blocked domain (prevents enumeration)', async function () {
-                settingsCache.set('all_blocked_email_domains', {value: ['blocked-domain-setting.com']});
-
-                const email = 'nonexistent@blocked-domain-setting.com';
-
-                await membersAgent.post('/api/send-magic-link')
-                    .body({
-                        email,
-                        emailType: 'signin'
-                    })
-                    .expectEmptyBody()
-                    .expectStatus(201);
-
-                // Verify no email was sent (prevents enumeration)
-                // sentEmail will throw if no email was sent
-                assert.throws(() => {
-                    mockManager.assert.sentEmail({to: email});
-                }, /Expected at least 1 emails sent/);
-            });
         });
 
         it('blocks changing email to a blocked domain', async function () {
@@ -525,27 +480,14 @@ describe('sendMagicLink', function () {
                 })
                 .expectStatus(201);
 
-            mockManager.mockMail(); // Reset mail mock to clear previous emails
-
             const unicodeEmail = 'user@exаmple.com'; // Using Cyrillic 'а'
 
-            // Since member doesn't exist, this should now succeed but send signin-not-found email
-            // The punycode-normalized email is different from the ASCII email, so no member is found
             await membersAgent.post('/api/send-magic-link')
                 .body({
                     email: unicodeEmail,
                     emailType: 'signin'
                 })
-                .expectEmptyBody()
                 .expectStatus(201);
-
-            // Verify a signup email was sent (not a signin email, since member doesn't exist)
-            const mail = mockManager.assert.sentEmail({
-                to: 'user@xn--exmple-4nf.com', // Punycode version of the Cyrillic domain
-                subject: /Complete your sign up/
-            });
-
-            assert.ok(mail);
         });
 
         it('should normalize unicode domains for signup', async function () {
@@ -572,7 +514,8 @@ describe('sendMagicLink', function () {
         beforeEach(async function () {
             await dbUtils.truncate('brute');
             await resetRateLimits();
-            clock = sinon.useFakeTimers(new Date());
+            // TODO: shouldAdvanceTime is a fake-timer + HTTP-await workaround; see docs/dep-consolidation.md
+            clock = sinon.useFakeTimers({now: new Date(), shouldAdvanceTime: true});
         });
 
         afterEach(function () {
@@ -826,14 +769,26 @@ describe('sendMagicLink', function () {
         function assertNoOTCInEmailContent(mail) {
             const otcRegex = /\d{6}|\scode\s|\sotc\s/i;
 
+            // \d{6} would otherwise match digits inside the magic-link token.
+            const stripUrls = string => string.replace(/https?:\/\/\S+/g, ' ');
+
             const subjectMatch = mail.subject.match(otcRegex);
             assert(!subjectMatch, `Email subject should not contain OTC. Found: "${subjectMatch?.[0]}" in subject: "${mail.subject}"`);
 
-            const htmlMatch = mail.html.match(otcRegex);
-            assert(!htmlMatch, `Email HTML should not contain OTC. Found: "${htmlMatch?.[0]}" near: "${mail.html.substring(mail.html.search(otcRegex) - 50, mail.html.search(otcRegex) + 100)}"`);
+            const text = stripUrls(mail.text);
+            const textMatch = text.match(otcRegex);
+            assert(!textMatch, `Email text should not contain OTC. Found: "${textMatch?.[0]}" near: "${text.substring(text.search(otcRegex) - 50, text.search(otcRegex) + 100)}"`);
 
-            const textMatch = mail.text.match(otcRegex);
-            assert(!textMatch, `Email text should not contain OTC. Found: "${textMatch?.[0]}" near: "${mail.text.substring(mail.text.search(otcRegex) - 50, mail.text.search(otcRegex) + 100)}"`);
+            // Per text node — cheerio's .text() concatenates without
+            // separators, so URLs could otherwise merge with adjacent digits.
+            const $ = cheerio.load(mail.html);
+            const htmlText = $('*').contents()
+                .toArray()
+                .filter(n => n.type === 'text')
+                .map(n => stripUrls(n.data))
+                .join(' ');
+            const htmlMatch = htmlText.match(otcRegex);
+            assert(!htmlMatch, `Email HTML should not contain OTC. Found: "${htmlMatch?.[0]}" near: "${htmlText.substring(htmlText.search(otcRegex) - 50, htmlText.search(otcRegex) + 100)}"`);
         }
 
         beforeEach(async function () {
@@ -949,21 +904,15 @@ describe('sendMagicLink', function () {
             }
         });
 
-        it('Should handle OTC parameter with non-existent member email (sends signup email without OTC)', async function () {
-            // For non-existent members, we send a signup email
-            // These emails don't include OTC since the user doesn't have an account yet
-            const response = await sendMagicLinkRequest('nonexistent-otc@test.com', 'signin', true)
+        it('Should handle OTC parameter with non-existent member email', async function () {
+            const response = await sendMagicLinkRequest('nonexistent@test.com', 'signin', true)
                 .expectStatus(201);
 
-            // Should not return otc_ref since the email sent is signup (not signin)
-            assert(!response.body.otc_ref, 'Should not return otc_ref for non-existent member');
-
-            // Verify signup email was sent
-            const mail = mockManager.assert.sentEmail({
-                to: 'nonexistent-otc@test.com',
-                subject: /Complete your sign up/
-            });
-            assert.ok(mail);
+            // Should return otc_ref even for non-existent members so the
+            // response is indistinguishable from an existing member signin
+            assert.equal(typeof response.body.otc_ref, 'string', 'Response should contain otc_ref');
+            assert.match(response.body.otc_ref, /^[a-f0-9-]{36}$/, 'otc_ref should be a valid UUID');
+            mockManager.assert.sentEmailCount(0);
         });
 
         async function sendAndVerifyOTC(email, emailType = 'signin', options = {}) {

@@ -1,5 +1,5 @@
 import {InfiniteData} from '@tanstack/react-query';
-import {Meta, createInfiniteQuery, createMutation} from '../utils/api/hooks';
+import {Meta, createInfiniteQuery, createMutation, createQueryWithId} from '../utils/api/hooks';
 import {insertToQueryCache, updateQueryCache} from '../utils/api/update-queries';
 
 export type Newsletter = {
@@ -30,6 +30,7 @@ export type Newsletter = {
     show_header_name: boolean;
     show_post_title_section: boolean;
     show_comment_cta: boolean;
+    show_share_button: boolean;
     show_subscription_details: boolean;
     show_latest_posts: boolean;
     background_color: string;
@@ -79,6 +80,11 @@ export const useBrowseNewsletters = createInfiniteQuery<NewslettersResponseType 
             isEnd: meta ? meta.pagination.pages === meta.pagination.page : true
         };
     }
+});
+
+export const getNewsletter = createQueryWithId<NewslettersResponseType>({
+    dataType,
+    path: id => `/newsletters/${id}/`
 });
 
 export const useAddNewsletter = createMutation<NewslettersResponseType, Partial<Newsletter> & {opt_in_existing: boolean}>({

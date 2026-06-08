@@ -1,5 +1,6 @@
 const sinon = require('sinon');
-const assert = require('assert/strict');
+const deferred = require('../../../../utils/deferred');
+const assert = require('node:assert/strict');
 
 const mwVersionRewrites = require('../../../../../core/server/services/api-version-compatibility/mw-version-rewrites');
 const configUtils = require('../../../../utils/config-utils');
@@ -38,7 +39,8 @@ describe('MW Version Rewrites', function () {
         });
     }
 
-    it('does nothing for standard admin urls', function (done) {
+    it('does nothing for standard admin urls', function () {
+        const {promise, done} = deferred();
         req.url = '/admin/';
 
         mwVersionRewrites(req, res, (err) => {
@@ -46,9 +48,11 @@ describe('MW Version Rewrites', function () {
             sinon.assert.notCalled(res.header);
             done(err);
         });
+        return promise;
     });
 
-    it('does nothing for standard content urls', function (done) {
+    it('does nothing for standard content urls', function () {
+        const {promise, done} = deferred();
         req.url = '/content/';
 
         mwVersionRewrites(req, res, (err) => {
@@ -56,53 +60,70 @@ describe('MW Version Rewrites', function () {
             sinon.assert.notCalled(res.header);
             done(err);
         });
+        return promise;
     });
 
-    it('rewrites a legacy v2 admin url', function (done) {
+    it('rewrites a legacy v2 admin url', function () {
+        const {promise, done} = deferred();
         req.url = '/v2/admin/session/';
 
         assertVersionRewrittenWithHeaders('v2', '/admin/session/', done);
+        return promise;
     });
 
-    it('rewrites a legacy v2 content url', function (done) {
+    it('rewrites a legacy v2 content url', function () {
+        const {promise, done} = deferred();
         req.url = '/v2/content/posts/?key=xxx';
 
         assertVersionRewrittenWithHeaders('v2', '/content/posts/?key=xxx', done);
+        return promise;
     });
 
-    it('rewrites a legacy v3 admin url', function (done) {
+    it('rewrites a legacy v3 admin url', function () {
+        const {promise, done} = deferred();
         req.url = '/v3/admin/session/';
 
         assertVersionRewrittenWithHeaders('v3', '/admin/session/', done);
+        return promise;
     });
 
-    it('rewrites a legacy v3 content url', function (done) {
+    it('rewrites a legacy v3 content url', function () {
+        const {promise, done} = deferred();
         req.url = '/v3/content/posts/?key=xxx';
 
         assertVersionRewrittenWithHeaders('v3', '/content/posts/?key=xxx', done);
+        return promise;
     });
 
-    it('rewrites a legacy v4 admin url', function (done) {
+    it('rewrites a legacy v4 admin url', function () {
+        const {promise, done} = deferred();
         req.url = '/v4/admin/session/';
 
         assertVersionRewrittenWithHeaders('v4', '/admin/session/', done);
+        return promise;
     });
 
-    it('rewrites a legacy v4 content url', function (done) {
+    it('rewrites a legacy v4 content url', function () {
+        const {promise, done} = deferred();
         req.url = '/v4/content/posts/?key=xxx';
 
         assertVersionRewrittenWithHeaders('v4', '/content/posts/?key=xxx', done);
+        return promise;
     });
 
-    it('rewrites a legacy canary admin url as if it were v4', function (done) {
+    it('rewrites a legacy canary admin url as if it were v4', function () {
+        const {promise, done} = deferred();
         req.url = '/canary/admin/session/';
 
         assertVersionRewrittenWithHeaders('v4', '/admin/session/', done);
+        return promise;
     });
 
-    it('rewrites a legacy canary content url as if it were v4', function (done) {
+    it('rewrites a legacy canary content url as if it were v4', function () {
+        const {promise, done} = deferred();
         req.url = '/canary/content/posts/?key=xxx';
 
         assertVersionRewrittenWithHeaders('v4', '/content/posts/?key=xxx', done);
+        return promise;
     });
 });

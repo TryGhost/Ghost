@@ -1,4 +1,5 @@
 /* eslint-disable ghost/mocha/no-setup-in-describe */
+import React from 'react';
 import assert from 'assert/strict';
 import {describe, it, vi} from 'vitest';
 import {fireEvent, screen} from '@testing-library/react';
@@ -22,14 +23,14 @@ describe('Banner Component', () => {
         const banner = screen.getByRole('status');
 
         assert.ok(banner, 'Banner should be rendered with default role');
-        assert.ok(banner.className.includes('bg-background'), 'Should have default variant class');
+        assert.ok(banner.className.includes('bg-surface-panel'), 'Should have default variant class');
     });
 
     it.each([
-        {variant: 'info' as const, expectedClass: 'bg-blue-50'},
-        {variant: 'success' as const, expectedClass: 'bg-green-50'},
-        {variant: 'warning' as const, expectedClass: 'bg-yellow-50'},
-        {variant: 'destructive' as const, expectedClass: 'bg-red-50'}
+        {variant: 'info' as const, expectedClass: 'bg-state-info/10'},
+        {variant: 'success' as const, expectedClass: 'bg-state-success/10'},
+        {variant: 'warning' as const, expectedClass: 'bg-state-warning/10'},
+        {variant: 'destructive' as const, expectedClass: 'bg-surface-panel'}
     ])('applies $variant variant correctly', ({variant, expectedClass}) => {
         render(<Banner variant={variant}>Content</Banner>);
         const banner = screen.getByRole('status');
@@ -41,7 +42,7 @@ describe('Banner Component', () => {
         render(<Banner variant="gradient">Content</Banner>);
         const banner = screen.getByRole('status');
 
-        assert.ok(banner.className.includes('bg-white'), 'Should have gradient variant class');
+        assert.ok(banner.className.includes('bg-surface-elevated'), 'Should have gradient variant class');
         assert.ok(banner.className.includes('cursor-pointer'), 'Gradient variant should be clickable');
     });
 
@@ -74,9 +75,9 @@ describe('Banner Component', () => {
     it('allows overriding ARIA attributes via standard props', () => {
         render(
             <Banner
-                role="region"
-                aria-live="assertive"
                 aria-label="Test banner"
+                aria-live="assertive"
+                role="region"
             >
                 Content
             </Banner>
@@ -167,14 +168,14 @@ describe('Banner Component', () => {
     });
 
     it('forwards ref correctly', () => {
-        const ref = {current: null};
-        render(<Banner ref={ref as any}>Content</Banner>);
+        const ref = React.createRef<HTMLDivElement>();
+        render(<Banner ref={ref}>Content</Banner>);
 
         assert.ok(ref.current, 'Ref should be forwarded');
     });
 
     it('renders with region role when specified', () => {
-        render(<Banner role="region" aria-label="Important region">Content</Banner>);
+        render(<Banner aria-label="Important region" role="region">Content</Banner>);
         const banner = screen.getByRole('region');
 
         assert.ok(banner, 'Banner should render with region role');

@@ -113,12 +113,12 @@ describe('Service', function () {
                 }
             });
 
-            assert.equal(model.findAll.callCount, 2);
+            sinon.assert.calledTwice(model.findAll);
             assert.deepEqual(model.findAll.getCall(0).firstArg, {filter: `theme:'test'`});
             assert.deepEqual(model.findAll.getCall(1).firstArg, {filter: `theme:'test'`});
 
             // destroys records that no longer exist in theme
-            assert.equal(model.destroy.callCount, 1);
+            sinon.assert.calledOnce(model.destroy);
             assert.deepEqual(model.destroy.getCall(0).firstArg, {id: 1});
 
             // internal cache is correct
@@ -156,10 +156,10 @@ describe('Service', function () {
             });
 
             // destroys and recreates record
-            assert.equal(model.destroy.callCount, 1);
+            sinon.assert.calledOnce(model.destroy);
             assert.deepEqual(model.destroy.getCall(0).firstArg, {id: 2});
 
-            assert.equal(model.add.callCount, 1);
+            sinon.assert.calledOnce(model.add);
             assert.deepEqual(model.add.getCall(0).firstArg, {
                 theme: 'test',
                 key: 'two',
@@ -210,7 +210,7 @@ describe('Service', function () {
             });
 
             // updates known setting to match new default
-            assert.equal(model.edit.callCount, 1);
+            sinon.assert.calledOnce(model.edit);
             assert.deepEqual(model.edit.getCall(0).firstArg, {value: 'two'});
             assert.deepEqual(model.edit.getCall(0).lastArg, {id: 2, method: 'update'});
         });
@@ -241,7 +241,7 @@ describe('Service', function () {
             });
 
             // new setting is created
-            assert.equal(model.add.callCount, 1);
+            sinon.assert.calledOnce(model.add);
             assert.deepEqual(model.add.getCall(0).firstArg, {
                 theme: 'test',
                 key: 'three',
@@ -317,14 +317,14 @@ describe('Service', function () {
             });
 
             // looks for existing settings, then re-fetches after sync. Twice for each activation
-            assert.equal(model.findAll.callCount, 4);
+            sinon.assert.callCount(model.findAll, 4);
             assert.deepEqual(model.findAll.getCall(0).firstArg, {filter: `theme:'test'`});
             assert.deepEqual(model.findAll.getCall(1).firstArg, {filter: `theme:'test'`});
             assert.deepEqual(model.findAll.getCall(2).firstArg, {filter: `theme:'new'`});
             assert.deepEqual(model.findAll.getCall(3).firstArg, {filter: `theme:'new'`});
 
             // adds new settings
-            assert.equal(model.add.callCount, 2);
+            sinon.assert.calledTwice(model.add);
 
             assert.deepEqual(model.add.firstCall.firstArg, {
                 theme: 'new',
@@ -367,7 +367,7 @@ describe('Service', function () {
         it('exits early if both repository and theme have no settings', async function () {
             await service.activateTheme('no-custom', {name: 'no-custom'});
 
-            assert.equal(model.findAll.callCount, 1);
+            sinon.assert.calledOnce(model.findAll);
         });
 
         it('generates a valid filter string for theme names with dots', async function () {
@@ -384,7 +384,7 @@ describe('Service', function () {
                 }
             });
 
-            assert.equal(model.findAll.callCount, 2);
+            sinon.assert.calledTwice(model.findAll);
 
             assert(model.findAll.getCall(0).firstArg.filter);
             assert.doesNotThrow(() => nql.parse(model.findAll.getCall(0).firstArg.filter));
@@ -443,8 +443,8 @@ describe('Service', function () {
             });
 
             // model methods are only called enough times for one .activate call despite being called twice
-            assert.equal(model.findAll.callCount, 2);
-            assert.equal(model.add.callCount, 1);
+            sinon.assert.calledTwice(model.findAll);
+            sinon.assert.calledOnce(model.add);
 
             // internal cache is correct
             assert.deepEqual(service.listSettings(), [{

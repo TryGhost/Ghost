@@ -1,6 +1,3 @@
-const glob = require('glob');
-const path = require('path');
-
 const handlebars = require('./handlebars');
 
 // Internal Cache
@@ -18,20 +15,10 @@ const registerHelper = (name, helperFn) => {
     } else {
         handlebars.registerThemeHelper(name, helperFn);
     }
-};
 
-const registerDir = (helperPath) => {
-    let helperFiles = glob.sync('!(index).js', {cwd: helperPath});
-    helperFiles.forEach((helper) => {
-        const name = helper.replace(/.js$/, '');
-        const fn = require(path.join(helperPath, helper));
-
-        registerHelper(name, fn);
-
-        if (fn.alias) {
-            registerHelper(fn.alias, fn);
-        }
-    });
+    if (helperFn.alias) {
+        registerHelper(helperFn.alias, helperFn);
+    }
 };
 
 const registerAlias = (alias, name) => {
@@ -40,6 +27,5 @@ const registerAlias = (alias, name) => {
 
 module.exports = {
     registerAlias,
-    registerHelper,
-    registerDir
+    registerHelper
 };

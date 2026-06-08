@@ -5,7 +5,8 @@ import Recommendations from './recommendations';
 import Search from '@src/components/modals/search';
 import SearchInput from '../header/search-input';
 import SidebarMenuLink from './sidebar-menu-link';
-import {Button, Dialog, DialogContent, DialogTrigger, LucideIcon} from '@tryghost/shade';
+import {Button, Dialog, DialogContent, DialogTrigger} from '@tryghost/shade/components';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {useAppBasePath} from '@src/hooks/use-app-base-path';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
 import {useFeatureFlags} from '@src/lib/feature-flags';
@@ -44,12 +45,12 @@ const Sidebar: React.FC<SidebarProps> = ({isMobileSidebarOpen}) => {
     }, [notificationsCount, resetNotificationsCount]);
 
     return (
-        <div className={`sticky top-0 flex min-h-screen w-[320px] flex-col border-l border-gray-200 pr-8 transition-transform duration-300 ease-in-out max-lg:fixed max-lg:inset-y-0 max-lg:right-0 max-lg:z-50 max-lg:border-0 max-lg:bg-white max-lg:shadow-xl max-md:bottom-[72px] max-md:min-h-[auto] max-md:overflow-y-scroll dark:border-gray-950 max-lg:dark:bg-black ${
+        <div className={`sticky top-0 flex min-h-screen w-[320px] flex-col border-l border-gray-200 pr-6 transition-transform duration-300 ease-in-out max-lg:fixed max-lg:inset-y-0 max-lg:right-0 max-lg:z-50 max-lg:border-0 max-lg:bg-white max-lg:shadow-xl max-md:bottom-[72px] max-md:min-h-[auto] max-md:overflow-y-scroll dark:border-gray-950 max-lg:dark:bg-black ${
             isMobileSidebarOpen ? 'max-lg:translate-x-0' : 'max-lg:translate-x-full'
         }`}>
             <div className='flex grow flex-col justify-between'>
-                <div className='isolate flex w-full flex-col items-start gap-6 pl-6 pt-6'>
-                    <div className='flex h-[52px] w-full items-center'>
+                <div className='isolate flex w-full flex-col items-start gap-6 pt-5 pl-6'>
+                    <div className='flex w-full items-center'>
                         <Dialog open={isSearchOpen} onOpenChange={setIsSearchOpen}>
                             <DialogTrigger className='mt-0.5 w-full'>
                                 <SearchInput />
@@ -78,7 +79,7 @@ const Sidebar: React.FC<SidebarProps> = ({isMobileSidebarOpen}) => {
                         </SidebarMenuLink>
                         {showExternalExplore ? (
                             <Button
-                                className='inline-flex w-full items-center gap-2 rounded-sm px-3 py-2.5 text-left text-md font-medium text-gray-800 transition-colors hover:bg-gray-100 dark:text-gray-500 dark:hover:bg-gray-925/70'
+                                className='inline-flex w-full items-center gap-2 rounded-sm px-3 py-2.5 text-left font-medium text-gray-800 transition-colors hover:bg-gray-100 dark:text-gray-500 dark:hover:bg-gray-950/70'
                                 variant='ghost'
                                 asChild
                             >
@@ -104,7 +105,7 @@ const Sidebar: React.FC<SidebarProps> = ({isMobileSidebarOpen}) => {
                         </SidebarMenuLink>
                     </div>
                     <NewNoteModal>
-                        <Button className='h-9 rounded-full bg-purple-500 px-3 text-md text-white hover:bg-purple-600 dark:hover:bg-purple-600'>
+                        <Button className='h-9 rounded-full bg-purple-500 px-3 text-white hover:bg-purple-600 dark:hover:bg-purple-600'>
                             <LucideIcon.FilePen />
                             New note
                         </Button>
@@ -117,7 +118,7 @@ const Sidebar: React.FC<SidebarProps> = ({isMobileSidebarOpen}) => {
                             return (
                                 <div key={flag} className="flex items-center justify-between gap-1 pl-3 opacity-50">
                                     <span className="font-mono text-xs">{flag}</span>
-                                    <span className='text-green-800 inline-flex items-center rounded bg-green-100 px-1 py-0.5 text-xs font-medium'>
+                                    <span className='inline-flex items-center rounded bg-green-100 px-1 py-0.5 text-xs font-medium text-green-800'>
                                             ON
                                     </span>
                                 </div>

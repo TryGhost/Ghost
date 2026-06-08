@@ -205,7 +205,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
         }
 
         const containerClasses = clsx(
-            'min-w-100 absolute inset-y-0 left-0 right-[400px] flex w-full grow flex-col overflow-y-auto',
+            'absolute inset-y-0 right-[400px] left-0 flex w-full min-w-100 grow flex-col overflow-y-auto',
             previewBgClass
         );
 
@@ -213,7 +213,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
         if (siteLink) {
             viewSiteButton = (
                 <div className='ml-3 border-l border-grey-400 dark:border-grey-800'>
-                    <a className='ml-3 flex items-center gap-1 text-sm' href={siteLink} rel="noopener noreferrer" target="_blank">View site <Icon name='arrow-top-right' size='xs' /></a>
+                    <a className='ml-3 flex items-center gap-1' href={siteLink} rel="noopener noreferrer" target="_blank">View site <Icon name='arrow-top-right' size='xs' /></a>
                 </div>
             );
         }
@@ -229,7 +229,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                         {viewSiteButton}
                     </div>}
                 </header>}
-                <div className='flex grow items-center justify-center text-sm text-grey-400'>
+                <div className='flex grow items-center justify-center text-grey-400'>
                     {preview}
                 </div>
             </div>
@@ -287,7 +287,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                                 {sidebarButtons ? sidebarButtons : <ButtonGroup buttons={buttons} /> }
                             </div>
                         )}
-                        <div className={`${!sidebarHeader ? 'absolute inset-x-0 bottom-0 top-[80px] grow' : ''} ${sidebarPadding && 'p-7 pt-0'} flex flex-col justify-between overflow-y-auto ${sidebarContentClasses && sidebarContentClasses}`}>
+                        <div className={`${!sidebarHeader ? 'absolute inset-x-0 top-[80px] bottom-0 grow' : ''} ${sidebarPadding && 'p-7 pt-0'} flex flex-col justify-between overflow-y-auto ${sidebarContentClasses && sidebarContentClasses}`}>
                             {sidebar}
                         </div>
                     </div>

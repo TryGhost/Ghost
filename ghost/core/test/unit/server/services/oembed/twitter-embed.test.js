@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const logging = require('@tryghost/logging');
 const sinon = require('sinon');
 const TwitterOEmbedProvider = require('../../../../../core/server/services/oembed/twitter-oembed-provider');
@@ -8,7 +8,7 @@ const {mockManager} = require('../../../../utils/e2e-framework');
 const {HTTPError} = require('got');
 
 describe('TwitterOEmbedProvider', function () {
-    before(async function () {
+    beforeAll(async function () {
         nock.disableNetConnect();
     });
 

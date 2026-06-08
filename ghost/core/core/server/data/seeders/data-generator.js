@@ -2,7 +2,7 @@ const path = require('path');
 const fs = require('fs/promises');
 const JsonImporter = require('./utils/json-importer');
 const {getProcessRoot} = require('@tryghost/root-utils');
-const topologicalSort = require('./utils/topological-sort');
+const {topologicalSort} = require('./utils/topological-sort');
 const {faker} = require('@faker-js/faker');
 const {faker: americanFaker} = require('@faker-js/faker/locale/en_US');
 const crypto = require('crypto');
@@ -246,7 +246,7 @@ class DataGenerator {
             crypto.randomBytes = (size) => {
                 const buffer = Buffer.alloc(size);
                 for (let i = 0; i < size; i++) {
-                    buffer[i] = Math.floor(faker.datatype.number({min: 0, max: 255}));
+                    buffer[i] = Math.floor(faker.number.int({min: 0, max: 255}));
                 }
                 return buffer;
             };

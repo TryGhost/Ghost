@@ -1,7 +1,7 @@
 const DomainEvents = require('@tryghost/domain-events');
 const Mention = require('../../../core/server/services/mentions/mention');
 const mentionsService = require('../../../core/server/services/mentions');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
 const configUtils = require('../../utils/config-utils');
 const {mockSetting} = require('../../utils/e2e-framework-mock-manager');

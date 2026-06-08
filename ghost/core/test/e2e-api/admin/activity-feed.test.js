@@ -1,7 +1,7 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyEtag, anyErrorId, anyObjectId, anyContentLength, anyContentVersion, anyUuid, anyISODate, anyString, anyObject, anyNumber} = matchers;
 
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const moment = require('moment');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
@@ -453,7 +453,8 @@ describe('Activity Feed API', function () {
             .expectStatus(200)
             .matchHeaderSnapshot({
                 etag: anyEtag,
-                'content-version': anyContentVersion
+                'content-version': anyContentVersion,
+                'content-length': anyContentLength // Depending on random conditions (ID generation) the order of events can change
             })
             .matchBodySnapshot({
                 events: new Array(15).fill({

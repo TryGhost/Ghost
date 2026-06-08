@@ -1,5 +1,7 @@
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const testUtils = require('../../../../../utils');
+const deferred = require('../../../../../utils/deferred');
 const security = require('@tryghost/security');
 const settingsCache = require('../../../../../../core/shared/settings-cache');
 const controllers = require('../../../../../../core/frontend/services/routing/controllers');
@@ -59,19 +61,21 @@ describe('Unit - services/routing/controllers/rss', function () {
         sinon.restore();
     });
 
-    it('should fetch data and attempt to send XML', function (done) {
+    it('should fetch data and attempt to send XML', function () {
+        const {promise, done} = deferred();
         fetchDataStub.withArgs({page: 1, slug: undefined}).resolves({
             posts: posts
         });
 
         rssServiceRenderStub.callsFake(function (_res, baseUrl, data) {
-            baseUrl.should.eql('/rss/');
-            data.posts.should.eql(posts);
-            data.title.should.eql('Ghost');
-            data.description.should.eql('Ghost is cool!');
+            assert.equal(baseUrl, '/rss/');
+            assert.equal(data.posts, posts);
+            assert.equal(data.title, 'Ghost');
+            assert.equal(data.description, 'Ghost is cool!');
             done();
         });
 
         controllers.rss(req, res, failTest(done));
+        return promise;
     });
 });

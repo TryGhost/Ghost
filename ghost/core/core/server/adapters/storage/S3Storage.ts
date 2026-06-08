@@ -307,17 +307,26 @@ export default class S3Storage extends StorageBase {
             });
         }
 
-        return relativePath.slice(this.storagePath.length + 1);
+        const result = relativePath.slice(this.storagePath.length + 1);
+
+        const normalized = path.posix.normalize(result);
+        if (normalized.startsWith('..')) {
+            throw new errors.IncorrectUsageError({
+                message: tpl(messages.invalidUrlParameter, {url})
+            });
+        }
+
+        return normalized;
     }
 
-    async exists(fileName: string, targetDir: string): Promise<boolean> {
+    async exists(fileName: string, targetDir?: string): Promise<boolean> {
         if (!fileName?.trim()) {
             throw new errors.IncorrectUsageError({
                 message: tpl(messages.emptyFileName, {method: 'exists'})
             });
         }
 
-        const relativePath = path.posix.join(targetDir, fileName);
+        const relativePath = targetDir ? path.posix.join(targetDir, fileName) : fileName;
         const key = this.buildKey(relativePath);
 
         try {
@@ -348,14 +357,14 @@ export default class S3Storage extends StorageBase {
         };
     }
 
-    async delete(fileName: string, targetDir: string): Promise<void> {
+    async delete(fileName: string, targetDir?: string): Promise<void> {
         if (!fileName?.trim()) {
             throw new errors.IncorrectUsageError({
                 message: tpl(messages.emptyFileName, {method: 'delete'})
             });
         }
 
-        const relativePath = path.posix.join(targetDir, fileName);
+        const relativePath = targetDir ? path.posix.join(targetDir, fileName) : fileName;
         const key = this.buildKey(relativePath);
 
         try {
@@ -386,13 +395,55 @@ export default class S3Storage extends StorageBase {
             });
         }
 
-        const pathWithStorage = path.posix.join(this.storagePath, relativePath);
+        const pathWithStorage = path.posix.join(this.storagePath, this.toCanonicalRelativePath(relativePath));
+
+        if (!pathWithStorage.startsWith(this.storagePath + '/') && pathWithStorage !== this.storagePath) {
+            throw new errors.IncorrectUsageError({
+                message: tpl(messages.invalidUrlParameter, {url: relativePath})
+            });
+        }
 
         if (!this.tenantPrefix) {
             return pathWithStorage;
         }
 
         return `${this.tenantPrefix}/${pathWithStorage}`;
+    }
+
+    private toCanonicalRelativePath(input: string): string {
+        return this.fromAbsoluteFilesystemPath(input)
+            ?? this.fromStoragePathPrefixed(input)
+            ?? this.fromLeadingSlashPath(input)
+            ?? input;
+    }
+
+    private fromAbsoluteFilesystemPath(input: string): string | null {
+        if (!path.posix.isAbsolute(input)) {
+            return null;
+        }
+        const marker = `/${this.storagePath}/`;
+        const idx = input.lastIndexOf(marker);
+        if (idx !== -1) {
+            return input.slice(idx + marker.length);
+        }
+        if (input.endsWith(`/${this.storagePath}`)) {
+            return '';
+        }
+        return null;
+    }
+
+    private fromStoragePathPrefixed(input: string): string | null {
+        if (input === this.storagePath || input.startsWith(`${this.storagePath}/`)) {
+            return path.posix.relative(this.storagePath, input);
+        }
+        return null;
+    }
+
+    private fromLeadingSlashPath(input: string): string | null {
+        if (!path.posix.isAbsolute(input)) {
+            return null;
+        }
+        return input.replace(/^\/+/, '');
     }
 
     private isNotFound(error: unknown): boolean {

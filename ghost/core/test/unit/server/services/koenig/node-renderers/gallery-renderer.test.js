@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {callRenderer, html, assertPrettifiesTo} = require('../test-utils');
 
 describe('services/koenig/node-renderers/gallery-renderer', function () {
@@ -169,6 +169,45 @@ describe('services/koenig/node-renderers/gallery-renderer', function () {
         it('renders nothing with empty images array', function () {
             const result = renderForWeb(getTestData({images: []}));
             assert.equal(result.html, '');
+        });
+
+        it('generates srcset for CDN gallery images when imageBaseUrl is configured', function () {
+            const cdnUrl = 'https://cdn.example.com/c/uuid';
+            const result = renderForWeb(getTestData({
+                images: [
+                    {
+                        row: 0,
+                        fileName: 'NatGeo01.jpg',
+                        src: `${cdnUrl}/content/images/2018/08/NatGeo01-9.jpg`,
+                        width: 3200,
+                        height: 1600
+                    }
+                ],
+                caption: ''
+            }), {imageBaseUrl: cdnUrl});
+
+            assert.ok(result.html);
+            assert.ok(result.html.includes(`${cdnUrl}/content/images/size/w600/2018/08/NatGeo01-9.jpg`));
+            assert.ok(result.html.includes('srcset'));
+        });
+
+        it('does not generate srcset for CDN gallery images when imageBaseUrl is not configured', function () {
+            const cdnUrl = 'https://cdn.example.com/c/uuid';
+            const result = renderForWeb(getTestData({
+                images: [
+                    {
+                        row: 0,
+                        fileName: 'NatGeo01.jpg',
+                        src: `${cdnUrl}/content/images/2018/08/NatGeo01-9.jpg`,
+                        width: 3200,
+                        height: 1600
+                    }
+                ],
+                caption: ''
+            }));
+
+            assert.ok(result.html);
+            assert.ok(!result.html.includes('srcset'));
         });
     });
 

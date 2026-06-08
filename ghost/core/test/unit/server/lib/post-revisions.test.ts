@@ -344,7 +344,7 @@ describe('PostRevisions', function () {
 
             await postRevisions.removeAuthorFromRevisions(authorId, options);
 
-            assert.equal(modelStub.bulkEdit.calledOnce, true);
+            sinon.assert.calledOnce(modelStub.bulkEdit);
 
             const bulkEditArgs = modelStub.bulkEdit.getCall(0).args;
 
@@ -376,7 +376,7 @@ describe('PostRevisions', function () {
                 transacting: {}
             });
 
-            assert.equal(modelStub.bulkEdit.calledOnce, false);
+            sinon.assert.notCalled(modelStub.bulkEdit);
         });
     });
 });

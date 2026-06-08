@@ -1,5 +1,5 @@
+import CloseIcon from '../../images/icons/close.svg?react';
 import React from 'react';
-import {ReactComponent as CloseIcon} from '../../images/icons/close.svg';
 
 type Props = {
     close: () => void;

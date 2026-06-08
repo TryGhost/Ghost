@@ -13,6 +13,14 @@ export function objectId() {
     }).toLowerCase();
 }
 
+export function generateUuid() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        const r = Math.random() * 16 | 0;
+        const v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
 export function getSiteData({
     title = 'The Blueprint',
     description = 'Thoughts, stories and ideas.',
@@ -31,7 +39,7 @@ export function getSiteData({
     membersSignupAccess: members_signup_access = 'all',
     freePriceName: free_price_name = 'Free',
     freePriceDescription: free_price_description = 'Free preview',
-    isStripeConfigured: is_stripe_configured = true,
+    paidMembersEnabled: paid_members_enabled = true,
     portalButton: portal_button = true,
     portalName: portal_name = true,
     portalButtonIcon: portal_button_icon = 'icon-1',
@@ -58,7 +66,7 @@ export function getSiteData({
         members_signup_access,
         free_price_name,
         free_price_description,
-        is_stripe_configured,
+        paid_members_enabled,
         portal_button,
         portal_name,
         portal_plans,
@@ -89,7 +97,8 @@ export function getOfferData({
     currency = null,
     status = 'active',
     tierId = '',
-    tierName = 'Basic'
+    tierName = 'Basic',
+    redemptionType = 'signup'
 } = {}) {
     return {
         id: `offer_${objectId()}`,
@@ -108,7 +117,8 @@ export function getOfferData({
         tier: {
             id: `${tierId}`,
             name: tierName
-        }
+        },
+        redemption_type: redemptionType
     };
 }
 
@@ -133,6 +143,7 @@ export function getDiscountData({
     start = '2025-01-01T00:00:00.000Z',
     end = null,
     duration = 'forever',
+    durationInMonths = null,
     type = 'percent',
     amount = 20
 } = {}) {
@@ -141,6 +152,7 @@ export function getDiscountData({
         start,
         end,
         duration,
+        ...(duration === 'repeating' ? {duration_in_months: durationInMonths ?? 1} : {}),
         type,
         amount
     };
@@ -152,6 +164,7 @@ export function getMemberData({
     firstname = 'Jamie',
     subscriptions = [],
     paid = false,
+    status,
     avatarImage: avatar_image = '',
     subscribed = true,
     email_suppression = {
@@ -160,8 +173,8 @@ export function getMemberData({
     },
     newsletters = []
 } = {}) {
-    return {
-        uuid: `member_${objectId()}`,
+    const member = {
+        uuid: generateUuid(),
         email,
         name,
         firstname,
@@ -172,6 +185,16 @@ export function getMemberData({
         email_suppression,
         newsletters
     };
+
+    if (status !== undefined) {
+        member.status = status;
+    } else if (paid) {
+        member.status = 'paid';
+    } else {
+        member.status = 'free';
+    }
+
+    return member;
 }
 
 export function getNewsletterData({
@@ -448,18 +471,23 @@ export const offer = getOfferData({
 });
 
 export const member = {
-    free: getMemberData(),
+    free: getMemberData({
+        status: 'free'
+    }),
     paid: getMemberData({
+        status: 'paid',
         paid: true,
         subscriptions: [
             getSubscriptionData()
         ]
     }),
     complimentary: getMemberData({
+        status: 'comped',
         paid: true,
         subscriptions: []
     }),
     complimentaryWithSubscription: getMemberData({
+        status: 'comped',
         paid: true,
         subscriptions: [
             getSubscriptionData({
@@ -468,6 +496,7 @@ export const member = {
         ]
     }),
     preview: getMemberData({
+        status: 'paid',
         paid: true,
         subscriptions: [
             getSubscriptionData({

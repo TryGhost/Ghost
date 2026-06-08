@@ -20,6 +20,15 @@ export class HomePage extends PublicPage {
         await this.portalRoot.waitFor({state: 'attached'});
     }
 
+    async openPortal(): Promise<void> {
+        await this.openPortalViaSubscribeButton();
+    }
+
+    async openAccountPortal(): Promise<void> {
+        await this.accountButton.waitFor({state: 'visible'});
+        await this.portal.clickLinkAndWaitForPopup(this.accountButton);
+    }
+
     async gotoWithQueryParams(params: Record<string, string>): Promise<void> {
         const queryString = new URLSearchParams(params).toString();
         const url = `/?${queryString}`;

@@ -5,6 +5,9 @@ import {
     kebabToPascalCase,
     formatQueryDate,
     formatDisplayDate,
+    formatDisplayTime,
+    getRangeDates,
+    getRangeForStartDate,
     formatNumber,
     formatDuration,
     formatPercentage,
@@ -124,6 +127,41 @@ describe('utils', function () {
         });
     });
 
+    describe('getRangeForStartDate function', function () {
+        const currentTime = new Date('2026-05-28T09:00:00-04:00');
+        const publishedAt = '2026-05-26T12:00:00-04:00';
+
+        afterEach(function () {
+            vi.useRealTimers();
+        });
+
+        it('counts calendar days inclusively before the publish time-of-day has passed', function () {
+            vi.useFakeTimers();
+            vi.setSystemTime(currentTime);
+
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const expectedRange = moment(currentTime).tz(timezone).startOf('day')
+                .diff(moment(publishedAt).tz(timezone).startOf('day'), 'days') + 1;
+
+            const range = getRangeForStartDate(publishedAt);
+
+            assert.equal(range, expectedRange);
+        });
+
+        it('produces a date range that includes the publish calendar day', function () {
+            vi.useFakeTimers();
+            vi.setSystemTime(currentTime);
+
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const expectedStartDate = moment(publishedAt).tz(timezone).startOf('day');
+
+            const range = getRangeForStartDate(publishedAt);
+            const {startDate} = getRangeDates(range);
+
+            assert.equal(formatQueryDate(startDate), formatQueryDate(expectedStartDate));
+        });
+    });
+
     describe('formatDisplayDate function', function () {
         it('returns an empty string if the date string is an empty string', function () {
             const formatted = formatDisplayDate('');
@@ -176,6 +214,23 @@ describe('utils', function () {
             // July 31, 2023 at midnight UTC - should show July 31 without timezone conversion
             const formatted = formatDisplayDate('2023-07-31T00:00:00Z');
             assert.equal(formatted, '31 Jul 2023');
+        });
+    });
+
+    describe('formatDisplayTime function', function () {
+        it('formats time in the provided timezone', function () {
+            const formatted = formatDisplayTime('2020-04-20T18:09:12.345Z', 'Africa/Lagos');
+            assert.equal(formatted, '7:09pm');
+        });
+
+        it('handles timezones with negative offsets', function () {
+            const formatted = formatDisplayTime('2020-04-20T18:09:12.345Z', 'America/New_York');
+            assert.equal(formatted, '2:09pm');
+        });
+
+        it('handles times that cross a date boundary', function () {
+            const formatted = formatDisplayTime('2020-04-20T00:30:00.000Z', 'America/Los_Angeles');
+            assert.equal(formatted, '5:30pm');
         });
     });
 

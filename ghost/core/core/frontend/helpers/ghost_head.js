@@ -75,10 +75,7 @@ function getMembersHelper(data, frontendKey, excludeList) {
         membersHelper += (`<style id="gh-members-styles">${templateStyles}</style>`);
     }
     if (settingsCache.get('paid_members_enabled')) {
-        // disable fraud detection for e2e tests to reduce waiting time
-        const isFraudSignalsEnabled = process.env.NODE_ENV === 'testing-browser' ? '?advancedFraudSignals=false' : '';
-
-        membersHelper += `<script async src="https://js.stripe.com/v3/${isFraudSignalsEnabled}"></script>`;
+        membersHelper += `<script async src="https://js.stripe.com/v3/"></script>`;
     }
     return membersHelper;
 }
@@ -137,6 +134,42 @@ function getAnnouncementBarHelper(data) {
     let helper = `<script defer src="${scriptUrl}" ${dataAttrs} crossorigin="anonymous"></script>`;
 
     return helper;
+}
+
+function getAdminToolbarHelper(dataRoot, siteTitle, excludeList) {
+    if (!dataRoot._locals?.staffFrontendToolsEnabled || excludeList.has('admin_toolbar')) {
+        return '';
+    }
+
+    const {scriptUrl} = getFrontendAppConfig('adminToolbar');
+    const context = dataRoot._locals?.context || dataRoot.context || [];
+    const entry = dataRoot.post || dataRoot.page;
+    const resourceId = entry?.id;
+    const resourceSlug = context.includes('tag') ? dataRoot.tag?.slug : '';
+    const isHome = context.includes('home');
+    let resourceType = '';
+
+    if (resourceId) {
+        resourceType = context.includes('page') || entry.type === 'page' ? 'page' : 'post';
+    } else if (resourceSlug) {
+        resourceType = 'tag';
+    }
+
+    const attrs = {
+        'ghost-admin-toolbar': escapeExpression(urlUtils.urlFor('admin', true)),
+        'site-title': escapeExpression(siteTitle || settingsCache.get('title') || 'Ghost'),
+        'resource-type': resourceType || undefined,
+        'resource-id': resourceId ? escapeExpression(resourceId) : undefined,
+        'resource-slug': resourceSlug ? escapeExpression(resourceSlug) : undefined,
+        'page-context': isHome ? 'home' : undefined,
+        'site-analytics-enabled': isHome && settingsCache.get('web_analytics_enabled') === true ? 'true' : undefined,
+        'activitypub-enabled': isHome && settingsCache.get('social_web_enabled') === true ? 'true' : undefined,
+        'members-enabled': isHome && settingsCache.get('members_enabled') === true ? 'true' : undefined,
+        'comments-enabled': resourceType === 'post' && settingsCache.get('comments_enabled') === 'off' ? 'false' : undefined
+    };
+    const dataAttrs = getDataAttributes(attrs);
+
+    return `<script defer src="${scriptUrl}" ${dataAttrs} crossorigin="anonymous"></script>`;
 }
 
 function getWebmentionDiscoveryLink() {
@@ -308,6 +341,10 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
         }
         if (!excludeList.has('announcement')) {
             head.push(getAnnouncementBarHelper(options.data));
+        }
+        const adminToolbarHelper = getAdminToolbarHelper(dataRoot, meta.site.title, excludeList);
+        if (adminToolbarHelper) {
+            head.push(adminToolbarHelper);
         }
         try {
             head.push(getWebmentionDiscoveryLink());

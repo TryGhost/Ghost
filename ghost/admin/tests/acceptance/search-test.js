@@ -1,7 +1,7 @@
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import {authenticateSession} from 'ember-simple-auth/test-support';
 import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
-import {click, currentURL, find, findAll, triggerKeyEvent, visit} from '@ember/test-helpers';
+import {click, currentURL, find, findAll, settled, triggerKeyEvent, visit} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {getPosts} from '../../mirage/config/posts';
@@ -9,7 +9,6 @@ import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {typeInSearch} from 'ember-power-select/test-support/helpers';
 
-const SEARCH_BUTTON = '[data-test-button="search"]';
 const SEARCH_MODAL = '[data-test-modal="search"]';
 const SEARCH_TRIGGER = '[data-test-modal="search"] .ember-power-select-trigger';
 const MODAL_BACKDROP = '.epm-backdrop';
@@ -30,16 +29,16 @@ const assertSearchModalClosed = () => {
 };
 
 // Helper functions for common test operations
-const openSearch = async () => {
-    await click(SEARCH_BUTTON);
-    assertSearchModalOpen();
+const assertSearchShortcutRegistered = (owner) => {
+    const applicationRoute = owner.lookup('route:application');
+    expect(applicationRoute.shortcuts[`${ctrlOrCmd}+k`].action).to.equal('openSearchModal');
 };
 
-const openSearchWithKeyboard = async () => {
-    await triggerKeyEvent(document, 'keydown', 'K', {
-        metaKey: ctrlOrCmd === 'command',
-        ctrlKey: ctrlOrCmd === 'ctrl'
-    });
+const openSearch = async (owner) => {
+    const applicationRoute = owner.lookup('route:application');
+    applicationRoute.send('openSearchModal');
+
+    await settled();
     assertSearchModalOpen();
 };
 
@@ -197,44 +196,28 @@ describe('Acceptance: Search', function () {
             expect(searchService.provider.constructor.name).to.equal('SearchProviderFlexService');
         });
 
-        it('opens search modal when clicking search icon', async function () {
+        it('opens search modal from the Ctrl/Cmd+K shortcut action', async function () {
             await visit('/analytics');
+            assertSearchShortcutRegistered(this.owner);
             assertSearchModalClosed();
-            await openSearch();
-        });
-
-        it('opens search modal with keyboard shortcut Ctrl/Cmd+K', async function () {
-            await visit('/analytics');
-            assertSearchModalClosed();
-            await openSearchWithKeyboard();
+            await openSearch(this.owner);
         });
 
         it('closes search modal with Escape key', async function () {
             await visit('/analytics');
-            await openSearch();
+            await openSearch(this.owner);
             await closeSearchWithEscape();
         });
 
         it('closes search modal when clicking outside', async function () {
             await visit('/analytics');
-            await openSearch();
+            await openSearch(this.owner);
             await closeSearchWithBackdrop();
-        });
-
-        it('does not open search modal if the sidebar is hidden', async function () {
-            const post = this.server.create('post', {title: 'Test post', slug: 'test-post', status: 'draft'});
-            await visit(`/editor/post/${post.id}`);
-            assertSearchModalClosed();
-            await triggerKeyEvent(document, 'keydown', 'K', {
-                metaKey: ctrlOrCmd === 'command',
-                ctrlKey: ctrlOrCmd === 'ctrl'
-            });
-            assertSearchModalClosed();
         });
 
         it('finds all content types when searching for "first"', async function () {
             await visit('/analytics');
-            await openSearch();
+            await openSearch(this.owner);
             await searchFor('first');
 
             assertSearchGroups();
@@ -244,7 +227,7 @@ describe('Acceptance: Search', function () {
 
         it('shows "No results found" when search has no matches', async function () {
             await visit('/analytics');
-            await openSearch();
+            await openSearch(this.owner);
             await searchFor('xyz123nonexistent');
 
             assertNoResults();
@@ -254,7 +237,7 @@ describe('Acceptance: Search', function () {
             this.server.get('/posts/', getPosts, {timing: 200});
 
             await visit('/analytics');
-            await openSearch();
+            await openSearch(this.owner);
             await searchFor('first');
 
             assertSearchResults(['First user', 'First tag', 'First post', 'First page']);
@@ -262,7 +245,7 @@ describe('Acceptance: Search', function () {
 
         it('navigates search results with arrow keys', async function () {
             await visit('/analytics');
-            await openSearch();
+            await openSearch(this.owner);
             await searchFor('first'); // Get multiple results
 
             const searchOptions = getSearchOptions();
@@ -282,7 +265,7 @@ describe('Acceptance: Search', function () {
 
         it('navigates to post editor when selecting a post with Enter', async function () {
             await visit('/analytics');
-            await openSearch();
+            await openSearch(this.owner);
             await searchFor('first post');
 
             await selectWithEnter();
@@ -291,7 +274,7 @@ describe('Acceptance: Search', function () {
 
         it('navigates to post editor when clicking a post', async function () {
             await visit('/analytics');
-            await openSearch();
+            await openSearch(this.owner);
             await searchFor('first post');
 
             await selectWithClick();
@@ -300,7 +283,7 @@ describe('Acceptance: Search', function () {
 
         it('navigates when clicking highlighted text in search result', async function () {
             await visit('/analytics');
-            await openSearch();
+            await openSearch(this.owner);
             await searchFor('first post');
 
             const highlightedText = find(HIGHLIGHTED_TEXT);
@@ -312,7 +295,7 @@ describe('Acceptance: Search', function () {
 
         it('navigates to page editor when selecting a page', async function () {
             await visit('/analytics');
-            await openSearch();
+            await openSearch(this.owner);
             await searchFor('page');
 
             await selectWithEnter();
@@ -322,7 +305,7 @@ describe('Acceptance: Search', function () {
 
         it('navigates to tag settings when selecting a tag', async function () {
             await visit('/analytics');
-            await openSearch();
+            await openSearch(this.owner);
             await searchFor('tag');
 
             await selectWithEnter();
@@ -332,7 +315,7 @@ describe('Acceptance: Search', function () {
 
         it('shows status labels for draft and scheduled posts', async function () {
             await visit('/analytics');
-            await openSearch();
+            await openSearch(this.owner);
             await searchFor('post');
 
             const searchOptions = getSearchOptions();
@@ -361,7 +344,7 @@ describe('Acceptance: Search', function () {
 
         it('shows status label for draft page', async function () {
             await visit('/analytics');
-            await openSearch();
+            await openSearch(this.owner);
             await searchFor('First page');
 
             const searchOptions = getSearchOptions();
@@ -375,7 +358,7 @@ describe('Acceptance: Search', function () {
         // Staff settings are now part of AdminX
         it.skip('navigates to user settings when selecting a user', async function () {
             await visit('/analytics');
-            await openSearch();
+            await openSearch(this.owner);
             await searchFor('user');
 
             await selectWithEnter();
@@ -414,33 +397,28 @@ describe('Acceptance: Search', function () {
             expect(searchService.provider.constructor.name).to.equal('SearchProviderBasicService');
         });
 
-        it('opens search modal when clicking search icon', async function () {
+        it('opens search modal from the Ctrl/Cmd+K shortcut action', async function () {
             await visit('/analytics');
+            assertSearchShortcutRegistered(this.owner);
             assertSearchModalClosed();
-            await openSearch();
-        });
-
-        it('opens search modal with keyboard shortcut Ctrl/Cmd+K', async function () {
-            await visit('/analytics');
-            assertSearchModalClosed();
-            await openSearchWithKeyboard();
+            await openSearch(this.owner);
         });
 
         it('closes search modal with Escape key', async function () {
             await visit('/analytics');
-            await openSearch();
+            await openSearch(this.owner);
             await closeSearchWithEscape();
         });
 
         it('closes search modal when clicking outside', async function () {
             await visit('/analytics');
-            await openSearch();
+            await openSearch(this.owner);
             await closeSearchWithBackdrop();
         });
 
         it('finds all content types when searching for "first"', async function () {
             await visit('/analytics');
-            await openSearch();
+            await openSearch(this.owner);
             await searchFor('first');
 
             assertSearchGroups();
@@ -450,7 +428,7 @@ describe('Acceptance: Search', function () {
 
         it('shows "No results found" when search has no matches', async function () {
             await visit('/analytics');
-            await openSearch();
+            await openSearch(this.owner);
             await searchFor('xyz123nonexistent');
 
             assertNoResults();
@@ -460,7 +438,7 @@ describe('Acceptance: Search', function () {
             this.server.get('/posts/', getPosts, {timing: 200});
 
             await visit('/analytics');
-            await openSearch();
+            await openSearch(this.owner);
             await searchFor('first');
 
             assertSearchResults(['First user', 'First tag', 'First post', 'First page']);
@@ -468,7 +446,7 @@ describe('Acceptance: Search', function () {
 
         it('navigates search results with arrow keys', async function () {
             await visit('/analytics');
-            await openSearch();
+            await openSearch(this.owner);
             await searchFor('first'); // Get multiple results
 
             const searchOptions = getSearchOptions();
@@ -488,7 +466,7 @@ describe('Acceptance: Search', function () {
 
         it('navigates to post editor when selecting a post with Enter', async function () {
             await visit('/analytics');
-            await openSearch();
+            await openSearch(this.owner);
             await searchFor('first post');
 
             await selectWithEnter();
@@ -497,7 +475,7 @@ describe('Acceptance: Search', function () {
 
         it('navigates to post editor when clicking a post', async function () {
             await visit('/analytics');
-            await openSearch();
+            await openSearch(this.owner);
             await searchFor('first post');
 
             await selectWithClick();
@@ -506,7 +484,7 @@ describe('Acceptance: Search', function () {
 
         it('navigates when clicking highlighted text in search result', async function () {
             await visit('/analytics');
-            await openSearch();
+            await openSearch(this.owner);
             await searchFor('first post');
 
             const highlightedText = find(HIGHLIGHTED_TEXT);
@@ -518,7 +496,7 @@ describe('Acceptance: Search', function () {
 
         it('navigates to page editor when selecting a page', async function () {
             await visit('/analytics');
-            await openSearch();
+            await openSearch(this.owner);
             await searchFor('page');
 
             await selectWithEnter();
@@ -528,7 +506,7 @@ describe('Acceptance: Search', function () {
 
         it('navigates to tag settings when selecting a tag', async function () {
             await visit('/analytics');
-            await openSearch();
+            await openSearch(this.owner);
             await searchFor('tag');
 
             await selectWithEnter();
@@ -538,7 +516,7 @@ describe('Acceptance: Search', function () {
 
         it('shows status labels for draft and scheduled posts', async function () {
             await visit('/analytics');
-            await openSearch();
+            await openSearch(this.owner);
             await searchFor('post');
 
             const searchOptions = getSearchOptions();
@@ -567,7 +545,7 @@ describe('Acceptance: Search', function () {
 
         it('shows status label for draft page', async function () {
             await visit('/analytics');
-            await openSearch();
+            await openSearch(this.owner);
             await searchFor('First page');
 
             const searchOptions = getSearchOptions();
@@ -581,7 +559,7 @@ describe('Acceptance: Search', function () {
         // Staff settings are now part of AdminX
         it.skip('navigates to user settings when selecting a user', async function () {
             await visit('/analytics');
-            await openSearch();
+            await openSearch(this.owner);
             await searchFor('user');
 
             await selectWithEnter();

@@ -3,6 +3,64 @@ import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
 
+/**
+ * Builds a query string from transition query params, excluding empty values.
+ * @param {Record<string, unknown>} [queryParams={}] - Query params from route info.
+ * @returns {string} Query string including the leading `?`, or an empty string.
+ */
+function buildQueryString(queryParams = {}) {
+    let searchParams = new URLSearchParams();
+
+    Object.entries(queryParams).forEach(([key, value]) => {
+        if (value === undefined || value === null || value === '') {
+            return;
+        }
+
+        if (Array.isArray(value)) {
+            value.forEach((item) => {
+                searchParams.append(key, `${item}`);
+            });
+            return;
+        }
+
+        searchParams.append(key, `${value}`);
+    });
+
+    let queryString = searchParams.toString();
+    return queryString ? `?${queryString}` : '';
+}
+
+/**
+ * Creates a canonical analytics path to return to from the lexical editor.
+ * @param {object|undefined} transition - Transition that opened the editor.
+ * @param {{id?: string|number}|undefined} model - Current post model fallback.
+ * @returns {string|false} Analytics path when available, otherwise `false`.
+ */
+function buildAnalyticsSourcePath(transition, model) {
+    let fromPath = transition?.from?.params?.path;
+    let queryString = buildQueryString(transition?.from?.queryParams);
+
+    let postMatch = fromPath?.match(/^posts\/analytics\/([^/]+)(?:\/(.+))?$/);
+    if (postMatch) {
+        let postId = postMatch[1] || model?.id;
+        if (!postId) {
+            return false;
+        }
+        let sub = postMatch[2];
+        let basePath = sub ? `/posts/analytics/${postId}/${sub}` : `/posts/analytics/${postId}`;
+        return `${basePath}${queryString}`;
+    }
+
+    let statsMatch = fromPath?.match(/^analytics(?:\/(.+))?$/);
+    if (statsMatch) {
+        let sub = statsMatch[1];
+        let basePath = sub ? `/analytics/${sub}` : '/analytics';
+        return `${basePath}${queryString}`;
+    }
+
+    return false;
+}
+
 export default AuthenticatedRoute.extend({
     feature: service(),
     notifications: service(),
@@ -17,14 +75,11 @@ export default AuthenticatedRoute.extend({
     },
 
     setupController(controller, model, transition) {
-        if (transition.from?.name?.startsWith('posts-x') && transition.to?.name !== 'lexical-editor.new') {
-            // Extract the analytics path from window.location.href to preserve the exact tab
-            let currentUrl = window.location.href;
-            // Convert editor URL back to analytics URL and extract just the hash portion
-            let analyticsUrl = currentUrl.replace('/editor/', '/').replace(/\/edit$/, '');
-            let hashMatch = analyticsUrl.match(/#(.+)/);
-            controller.fromAnalytics = hashMatch ? hashMatch[1] : 'posts-x';
+        if (transition.to?.name === 'lexical-editor.new') {
+            return;
         }
+
+        controller.fromAnalytics = buildAnalyticsSourcePath(transition, model) || false;
     },
 
     resetController(controller) {

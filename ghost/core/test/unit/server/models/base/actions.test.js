@@ -5,10 +5,6 @@ const models = require('../../../../../core/server/models');
 describe('Unit: models/base/plugins/actions', function () {
     let TestModel;
 
-    before(function () {
-        models.init();
-    });
-
     beforeEach(function () {
         // Create a test model that has actions enabled
         TestModel = models.Base.Model.extend({
@@ -258,7 +254,7 @@ describe('Unit: models/base/plugins/actions', function () {
 
                 TestModel.prototype.addAction.call(testModel, testModel, 'edited', options);
 
-                assert.equal(getActionStub.called, false);
+                sinon.assert.notCalled(getActionStub);
             });
         });
 

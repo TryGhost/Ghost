@@ -7,7 +7,7 @@ const ghostVersion = require('@tryghost/version');
 
 module.exports = function getConfigProperties() {
     const configProperties = {
-        version: ghostVersion.original,
+        version: process.env.GHOST_BUILD_VERSION || ghostVersion.original,
         environment: config.get('env'),
         database: databaseInfo.getEngine(),
         mail: isPlainObject(config.get('mail')) ? config.get('mail').transport : '',
@@ -20,6 +20,7 @@ module.exports = function getConfigProperties() {
         emailAnalytics: config.get('emailAnalytics:enabled'),
         hostSettings: config.get('hostSettings'),
         tenor: config.get('tenor'),
+        klipy: config.get('klipy'),
         pintura: config.get('pintura'),
         signupForm: config.get('signupForm'),
         security: config.get('security')

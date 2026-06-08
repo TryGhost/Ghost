@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
 const postsSchema = require('../../../../../../../core/server/data/schema').tables.posts;
 
-const mobiledocLib = require('@tryghost/html-to-mobiledoc');
+const mobiledocLib = require('../../../../../../../core/server/lib/mobiledoc');
 
 describe('Unit: endpoints/utils/serializers/input/pages', function () {
     afterEach(function () {
@@ -246,10 +246,8 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
         assert.deepEqual(frame.data.pages[0].tags, [{slug: 'slug1', name: 'hey'}, {slug: 'slug2'}]);
     });
 
-    it('throws error if HTML conversion fails', function () {
-        // JSDOM require is sometimes very slow on CI causing random timeouts
-        this.timeout(4000);
-
+    // JSDOM require is sometimes very slow on CI causing random timeouts
+    it('throws error if HTML conversion fails', {timeout: 4000}, function () {
         const frame = {
             options: {
                 source: 'html'
@@ -264,7 +262,9 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
             }
         };
 
-        sinon.stub(mobiledocLib, 'toMobiledoc').throws(new Error('Some error'));
+        sinon.stub(mobiledocLib, 'htmlToMobiledocConverter').get(() => () => {
+            throw new Error('Some error');
+        });
 
         assert.throws(() => {
             serializers.input.posts.edit({}, frame);

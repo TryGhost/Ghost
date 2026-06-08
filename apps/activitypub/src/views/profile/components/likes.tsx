@@ -1,6 +1,7 @@
 import FeedItem from '@src/components/feed/feed-item';
 import {Activity} from '@src/api/activitypub';
-import {LoadingIndicator, LucideIcon, NoValueLabel, NoValueLabelIcon, Separator} from '@tryghost/shade';
+import {LoadingIndicator, NoValueLabel, NoValueLabelIcon, Separator} from '@tryghost/shade/components';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {useEffect, useRef} from 'react';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 
@@ -93,7 +94,7 @@ const Likes: React.FC<LikesProps> = ({
                     </li>
                 ))}
                 {isFetchingNextPage && (
-                    <li className='flex flex-col items-center justify-center space-y-4 text-center'>
+                    <li className='flex flex-col items-center justify-center gap-4 text-center'>
                         <LoadingIndicator size='md' />
                     </li>
                 )}

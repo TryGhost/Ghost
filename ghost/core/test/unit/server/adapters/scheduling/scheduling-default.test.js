@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const moment = require('moment');
 const _ = require('lodash');
@@ -13,7 +13,8 @@ describe('Scheduling Default Adapter', function () {
     let clock;
 
     beforeEach(function () {
-        clock = sinon.useFakeTimers();
+        // TODO: shouldAdvanceTime is a fake-timer + async-await workaround; see docs/dep-consolidation.md
+        clock = sinon.useFakeTimers({shouldAdvanceTime: true});
         scope.adapter = new SchedulingDefault();
     });
 
@@ -47,12 +48,12 @@ describe('Scheduling Default Adapter', function () {
             });
 
             // 2 jobs get immediately executed
-            should.not.exist(scope.adapter.allJobs[moment(dates[1]).valueOf()]);
-            should.not.exist(scope.adapter.allJobs[moment(dates[7]).valueOf()]);
-            scope.adapter._execute.calledTwice.should.eql(true);
+            assert.equal(scope.adapter.allJobs[moment(dates[1]).valueOf()], undefined);
+            assert.equal(scope.adapter.allJobs[moment(dates[7]).valueOf()], undefined);
+            sinon.assert.calledTwice(scope.adapter._execute);
 
-            Object.keys(scope.adapter.allJobs).length.should.eql(dates.length - 2);
-            Object.keys(scope.adapter.allJobs).should.eql([
+            assert.equal(Object.keys(scope.adapter.allJobs).length, dates.length - 2);
+            assert.deepEqual(Object.keys(scope.adapter.allJobs), [
                 moment(dates[2]).valueOf().toString(),
                 moment(dates[6]).valueOf().toString(),
                 moment(dates[4]).valueOf().toString(),
@@ -62,7 +63,7 @@ describe('Scheduling Default Adapter', function () {
             ]);
         });
 
-        it('reschedule: default', function (done) {
+        it('reschedule: default', function () {
             sinon.stub(scope.adapter, '_pingUrl');
 
             const time = moment().add(20, 'milliseconds').valueOf();
@@ -96,11 +97,10 @@ describe('Scheduling Default Adapter', function () {
 
             clock.tick(50);
 
-            scope.adapter._pingUrl.calledOnce.should.eql(true);
-            done();
+            sinon.assert.calledOnce(scope.adapter._pingUrl);
         });
 
-        it('reschedule: simulate restart', function (done) {
+        it('reschedule: simulate restart', function () {
             sinon.stub(scope.adapter, '_pingUrl');
 
             const time = moment().add(20, 'milliseconds').valueOf();
@@ -124,11 +124,10 @@ describe('Scheduling Default Adapter', function () {
             });
 
             clock.tick(50);
-            scope.adapter._pingUrl.calledOnce.should.eql(true);
-            done();
+            sinon.assert.calledOnce(scope.adapter._pingUrl);
         });
 
-        it('run', function (done) {
+        it('run', function () {
             // 1000 jobs, but only the number x are under 1 minute
             const timestamps = _.map(_.range(1000), function (i) {
                 return moment().add(i, 'seconds').valueOf();
@@ -136,25 +135,28 @@ describe('Scheduling Default Adapter', function () {
 
             const allJobs = {};
 
-            sinon.stub(scope.adapter, '_execute').callsFake(function (nextJobs) {
-                Object.keys(nextJobs).length.should.eql(121);
-                Object.keys(scope.adapter.allJobs).length.should.eql(1000 - 121);
-                done();
-            });
-
             timestamps.forEach(function (timestamp) {
                 allJobs[timestamp] = [{url: 'xxx'}];
             });
+
+            const executeStub = sinon.stub(scope.adapter, '_execute');
 
             scope.adapter.allJobs = allJobs;
             scope.adapter.runTimeoutInMs = 100;
             scope.adapter.offsetInMinutes = 1;
             scope.adapter.run();
 
-            clock.runAll();
+            // run() reschedules itself every runTimeoutInMs; advancing the
+            // clock by a single interval fires exactly one _execute.
+            clock.tick(100);
+
+            sinon.assert.calledOnce(executeStub);
+            const nextJobs = executeStub.firstCall.args[0];
+            assert.equal(Object.keys(nextJobs).length, 121);
+            assert.equal(Object.keys(scope.adapter.allJobs).length, 1000 - 121);
         });
 
-        it('ensure recursive run works', function (done) {
+        it('ensure recursive run works', function () {
             sinon.spy(scope.adapter, '_execute');
 
             scope.adapter.allJobs = {};
@@ -164,11 +166,10 @@ describe('Scheduling Default Adapter', function () {
 
             clock.tick(200);
 
-            scope.adapter._execute.callCount.should.be.greaterThan(1);
-            done();
+            assert(scope.adapter._execute.callCount > 1);
         });
 
-        it('execute', function (done) {
+        it('execute', function () {
             let pinged = 0;
             const jobs = 3;
 
@@ -189,17 +190,16 @@ describe('Scheduling Default Adapter', function () {
 
             scope.adapter._execute(nextJobs);
 
-            (function retry() {
-                if (pinged !== jobs) {
-                    clock.tick(50);
-                    return retry();
-                }
+            // _execute arms a setTimeout (+ setImmediate) per job; step the
+            // fake clock until every job has pinged.
+            for (let i = 0; i < 200 && pinged !== jobs; i = i + 1) {
+                clock.tick(50);
+            }
 
-                done();
-            })();
+            assert.equal(pinged, jobs);
         });
 
-        it('delete job (unschedule)', function (done) {
+        it('delete job (unschedule)', function () {
             let pinged = 0;
             const jobsToDelete = {};
             const jobsToExecute = {};
@@ -228,37 +228,35 @@ describe('Scheduling Default Adapter', function () {
             // simulate execute is called
             scope.adapter._execute(jobsToExecute);
 
-            (function retry() {
-                if (pinged !== 2) {
-                    clock.tick(50);
-                    return retry();
-                }
+            // 2 of the 4 jobs were unscheduled, so only 2 should ping.
+            for (let i = 0; i < 200 && pinged !== 2; i = i + 1) {
+                clock.tick(50);
+            }
 
-                Object.keys(scope.adapter.deletedJobs).length.should.eql(2);
-                pinged.should.eql(2);
-                done();
-            })();
+            assert.equal(Object.keys(scope.adapter.deletedJobs).length, 2);
+            assert.equal(pinged, 2);
         });
 
         it('delete job (unschedule): time is null', function () {
             scope.adapter._deleteJob({time: null, url: '/test'});
-            Object.keys(scope.adapter.deletedJobs).length.should.eql(0);
+            assert.equal(Object.keys(scope.adapter.deletedJobs).length, 0);
         });
 
         describe('pingUrl', function () {
-            it('pingUrl (PUT)', function (done) {
-                // TODO: remove this once we figure out how to make this work with fake timers
-                sinon.restore();
-                sinon.useFakeTimers({
-                    shouldAdvanceTime: true
-                });
+            // These tests exercise real HTTP via nock. The suite-level fake
+            // clock interferes with got's internal timers, so restore real
+            // timers for the pingUrl tests.
+            beforeEach(function () {
+                clock.restore();
+            });
 
+            it('pingUrl (PUT)', async function () {
                 const ping = nock('http://localhost:1111')
                     .put('/ping')
                     .query({})
                     .reply(200);
 
-                scope.adapter._pingUrl({
+                await scope.adapter._pingUrl({
                     url: 'http://localhost:1111/ping',
                     time: moment().add(1, 'second').valueOf(),
                     extra: {
@@ -266,13 +264,7 @@ describe('Scheduling Default Adapter', function () {
                     }
                 });
 
-                (function retry() {
-                    if (ping.isDone()) {
-                        done();
-                    } else {
-                        setTimeout(retry, 100);
-                    }
-                })();
+                assert.equal(ping.isDone(), true);
             });
 
             it('pingUrl (GET)', async function () {
@@ -289,8 +281,7 @@ describe('Scheduling Default Adapter', function () {
                     }
                 });
 
-                clock.runToLast();
-                ping.isDone().should.be.true();
+                assert.equal(ping.isDone(), true);
             });
 
             it('pingUrl (PUT, and detect publish in the past)', async function () {
@@ -307,8 +298,7 @@ describe('Scheduling Default Adapter', function () {
                     }
                 });
 
-                clock.runToLast();
-                ping.isDone().should.be.true();
+                assert.equal(ping.isDone(), true);
             });
 
             it('pingUrl (GET, and detect publish in the past)', async function () {
@@ -325,26 +315,33 @@ describe('Scheduling Default Adapter', function () {
                     }
                 });
 
-                clock.runToLast();
-                ping.isDone().should.be.true();
+                assert.equal(ping.isDone(), true);
             });
 
-            it('pingUrl, but blog returns 503', function (done) {
-                // TODO: remove this once we figure out how to make this work with fake timers
-                sinon.restore();
-                sinon.useFakeTimers({
-                    shouldAdvanceTime: true
-                });
-
-                scope.adapter.retryTimeoutInMs = 50;
+            it('pingUrl, but blog returns 503', async function () {
+                scope.adapter.retryTimeoutInMs = 20;
 
                 const loggingStub = sinon.stub(logging, 'error');
+                const pingSpy = sinon.spy(scope.adapter, '_pingUrl');
 
                 const ping = nock('http://localhost:1111')
                     .put('/ping').reply(503)
                     .put('/ping').reply(503)
                     .put('/ping', {force: true}).reply(200);
 
+                // Wait for the nth _pingUrl attempt to be made, then for the
+                // promise it returned to settle.
+                const settle = async (callIndex) => {
+                    for (let i = 0; i < 200 && pingSpy.callCount <= callIndex; i = i + 1) {
+                        await new Promise((resolve) => {
+                            setTimeout(resolve, 10);
+                        });
+                    }
+                    await pingSpy.returnValues[callIndex];
+                };
+
+                // Initial attempt + two retries: each 503 schedules a retry
+                // retryTimeoutInMs later, the third attempt succeeds.
                 scope.adapter._pingUrl({
                     url: 'http://localhost:1111/ping',
                     time: moment().valueOf(),
@@ -353,14 +350,13 @@ describe('Scheduling Default Adapter', function () {
                     }
                 });
 
-                (function retry() {
-                    if (ping.isDone()) {
-                        sinon.assert.calledTwice(loggingStub);
-                        return done();
-                    }
+                await settle(0);
+                await settle(1);
+                await settle(2);
 
-                    setTimeout(retry, 50);
-                }());
+                assert.equal(ping.isDone(), true);
+                sinon.assert.calledThrice(pingSpy);
+                sinon.assert.calledTwice(loggingStub);
             });
         });
     });

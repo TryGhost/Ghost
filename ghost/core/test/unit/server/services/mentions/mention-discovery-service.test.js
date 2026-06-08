@@ -1,6 +1,6 @@
 const sinon = require('sinon');
-const dnsPromises = require('dns').promises;
-const assert = require('assert/strict');
+
+const assert = require('node:assert/strict');
 const nock = require('nock');
 
 // non-standard to use externalRequest here, but this is required for the overrides in the library, which we want to test for security reasons in combination with the package
@@ -13,10 +13,6 @@ describe('MentionDiscoveryService', function () {
 
     beforeEach(function () {
         nock.disableNetConnect();
-        // externalRequest does dns lookup; stub to make sure we don't fail with fake domain names
-        sinon.stub(dnsPromises, 'lookup').callsFake(function () {
-            return Promise.resolve({address: '123.123.123.123'});
-        });
     });
 
     afterEach(function () {
@@ -24,7 +20,7 @@ describe('MentionDiscoveryService', function () {
         nock.cleanAll();
     });
 
-    after(function () {
+    afterAll(function () {
         nock.cleanAll();
         nock.enableNetConnect();
     });

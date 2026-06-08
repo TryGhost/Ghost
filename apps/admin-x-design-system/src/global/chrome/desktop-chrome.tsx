@@ -6,8 +6,8 @@ export interface DesktopChromeProps {
 
 const DesktopChrome: React.FC<DesktopChromeProps & React.HTMLAttributes<HTMLDivElement>> = ({children, ...props}) => {
     return (
-        <div className='flex h-full w-full flex-col px-8' {...props}>
-            <div className="h-full w-full overflow-hidden rounded-t-[4px] shadow-sm">
+        <div className='flex size-full flex-col px-8' {...props}>
+            <div className="size-full overflow-hidden rounded-t-[4px] shadow-sm">
                 {children}
             </div>
         </div>

@@ -234,6 +234,14 @@ class CacheManager {
             settings[newKey] = this._doGet(this.publicSettings[newKey]) ?? null;
         }
 
+        // Compute transistor_portal_enabled: only true if main integration AND portal setting are both enabled
+        //  - this is done server-side because we shouldn't expose the transistor integration setting
+        if ('transistor_portal_enabled' in settings) {
+            const transistorEnabled = this._doGet('transistor');
+            const portalEnabled = settings.transistor_portal_enabled;
+            settings.transistor_portal_enabled = Boolean(transistorEnabled) && Boolean(portalEnabled);
+        }
+
         return settings;
     }
 

@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {URLResourceUpdatedEvent} = require('../../../../core/shared/events');
 
 describe('URLResourceUpdatedEvent', function () {

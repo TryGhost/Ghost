@@ -5,9 +5,11 @@ import type {PersistenceAdapter} from '@/data-factory';
  * Knex-based persistence adapter for direct database access
  */
 export class KnexPersistenceAdapter implements PersistenceAdapter {
-    constructor(
-        private db: Knex
-    ) {}
+    private db: Knex;
+
+    constructor(db: Knex) {
+        this.db = db;
+    }
 
     async insert<T>(entityType: string, data: T): Promise<T> {
         // entityType is the table name for Knex

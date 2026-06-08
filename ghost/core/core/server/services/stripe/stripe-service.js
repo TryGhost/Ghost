@@ -8,6 +8,8 @@ const {StripeLiveEnabledEvent, StripeLiveDisabledEvent} = require('./events');
 const SubscriptionEventService = require('./services/webhook/subscription-event-service');
 const InvoiceEventService = require('./services/webhook/invoice-event-service');
 const CheckoutSessionEventService = require('./services/webhook/checkout-session-event-service');
+const ChargeRefundedEventService = require('./services/webhook/charge-refunded-event-service');
+const memberWelcomeEmailService = require('../member-welcome-emails/service');
 
 /**
  * @typedef {object} IStripeServiceConfig
@@ -22,6 +24,7 @@ const CheckoutSessionEventService = require('./services/webhook/checkout-session
  * @prop {boolean} testEnv Whether this is a test environment
  * @prop {string} webhookSecret The Stripe webhook secret
  * @prop {string} webhookHandlerUrl The URL to handle Stripe webhooks
+ * @prop {string[]} webhookCustomerIgnoreList List of customer IDs for customer.subscription.updated webhook bypass
  * @prop {string} siteUrl The site URL for billing portal return URL
  */
 
@@ -35,6 +38,7 @@ module.exports = class StripeService {
      * @param {*} deps.labs
      * @param {*} deps.membersService
      * @param {*} deps.donationService
+     * @param {*} deps.giftService
      * @param {*} deps.staffService
      * @param {import('./webhook-manager').StripeWebhook} deps.StripeWebhook
      * @param {object} deps.settingsCache
@@ -51,6 +55,7 @@ module.exports = class StripeService {
         labs,
         membersService,
         donationService,
+        giftService,
         staffService,
         StripeWebhook,
         settingsCache,
@@ -108,6 +113,9 @@ module.exports = class StripeService {
             get donationRepository(){
                 return donationService.repository;
             },
+            get giftService(){
+                return giftService.service;
+            },
             get staffServiceEmails(){
                 return staffService.api.emails;
             },
@@ -120,6 +128,16 @@ module.exports = class StripeService {
                     },
                     tokenData: {}
                 });
+            },
+            async isPaidWelcomeEmailActive() {
+                memberWelcomeEmailService.init();
+                return memberWelcomeEmailService.api.isMemberWelcomeEmailActive('paid');
+            }
+        });
+
+        const chargeRefundedEventService = new ChargeRefundedEventService({
+            get giftService() {
+                return giftService.service;
             }
         });
 
@@ -127,7 +145,8 @@ module.exports = class StripeService {
             webhookManager,
             subscriptionEventService,
             invoiceEventService,
-            checkoutSessionEventService
+            checkoutSessionEventService,
+            chargeRefundedEventService
         });
 
         this.models = models;
@@ -177,6 +196,10 @@ module.exports = class StripeService {
             checkoutSetupSessionSuccessUrl: config.checkoutSetupSessionSuccessUrl,
             checkoutSetupSessionCancelUrl: config.checkoutSetupSessionCancelUrl,
             testEnv: config.testEnv
+        });
+
+        this.webhookController.configure({
+            webhookCustomerIgnoreList: config.webhookCustomerIgnoreList
         });
 
         await this.webhookManager.configure({

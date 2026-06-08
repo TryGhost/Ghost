@@ -1,5 +1,5 @@
 const PostEmailHandler = require('../../../../../core/server/services/posts/post-email-handler');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 
 describe('PostEmailHandler', function () {

@@ -1,8 +1,9 @@
 import assert from 'assert/strict';
-import got from 'got';
 import nock from 'nock';
 import {RecommendationMetadataService} from '../../../../../../core/server/services/recommendations/service';
 import sinon from 'sinon';
+
+const got = require('got').default;
 
 describe('RecommendationMetadataService', function () {
     let service: RecommendationMetadataService;

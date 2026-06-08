@@ -23,7 +23,8 @@ function emailTemplate(node, document) {
     const title = escapeHtml(node.title);
     const publisher = escapeHtml(node.publisher);
     const author = escapeHtml(node.author);
-    const description = escapeHtml(node.description);
+    // Description is escaped in truncateHtml, keep raw input here to avoid double-escaping entities.
+    const description = node.description || '';
 
     const icon = node.icon;
     const url = node.url;

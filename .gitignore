@@ -9,6 +9,7 @@ yarn-error.log*
 
 # Runtime data
 pids
+.ghost-dev
 *.pid
 *.seed
 *.pid.lock
@@ -59,8 +60,8 @@ typings/
 # Output of 'npm pack'
 *.tgz
 
-# Yarn Integrity file
-.yarn-integrity
+# pnpm store
+.pnpm-store
 
 # dotenv environment variables file
 .env
@@ -72,6 +73,8 @@ typings/
 .vscode/*
 !.vscode/launch.json
 !.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/extensions.json
 
 # OSX
 .DS_Store
@@ -108,7 +111,7 @@ typings/
 /ghost/core/LICENSE
 /ghost/core/PRIVACY.md
 /ghost/core/README.md
-/ghost/core/yarn.lock
+/ghost/core/pnpm-lock.yaml
 
 # Test generated files
 test/functional/*.png
@@ -117,15 +120,16 @@ test/functional/*.png
 /ghost/core/config.*.json
 /ghost/core/config.*.jsonc
 
-# Built asset files
+# Build/deploy outputs
+/ghost/core/package
 /ghost/core/core/built
 /ghost/core/core/frontend/public/ghost.min.css
 /ghost/core/core/frontend/public/comment-counts.min.js
 /ghost/core/core/frontend/public/member-attribution.min.js
 /ghost/core/core/frontend/public/ghost-stats.min.js
+/ghost/core/core/frontend/public/private.min.js
 # Caddyfile - for local development with ssl + caddy
 Caddyfile
-!docker/caddy/Caddyfile
 !docker/dev-gateway/Caddyfile
 
 # Playwright state with cookies it keeps across tests
@@ -180,10 +184,8 @@ tsconfig.tsbuildinfo
 .diff_tmp
 temp*.sql
 
-# Docker Yarn Cache
-.yarncache
-.yarncachecopy
-.yarnhash
+# Docker pnpm Cache
+.pnpmhash
 
 # yalc — for linking local packages in a docker compatible way
 yalc.lock
@@ -196,9 +198,15 @@ yalc.lock
 # direnv environment loader files
 .envrc
 
+# Private Claude Code instructions
+*.local.md
+.claude/settings.local.json
+.mcp.local.json
+
 # e2e test suite
 /e2e/test-results
 /e2e/playwright-report
+/e2e/blob-report
 /e2e/build
 /e2e/playwright
 /e2e/data

@@ -24,6 +24,7 @@ export class EmailAddressService {
     #getDefaultEmail: () => EmailAddress;
     #getFallbackDomain: () => string | null;
     #getFallbackEmail: () => EmailAddress | null;
+    #getMembersSupportAddress: () => string;
     #isValidEmailAddress: (email: string) => boolean;
 
     constructor(dependencies: {
@@ -32,12 +33,14 @@ export class EmailAddressService {
         getFallbackDomain: () => string | null,
         getDefaultEmail: () => EmailAddress,
         getFallbackEmail: () => string | null,
+        getMembersSupportAddress: () => string,
         isValidEmailAddress: (email: string) => boolean
     }) {
         this.#getManagedEmailEnabled = dependencies.getManagedEmailEnabled;
         this.#getSendingDomain = dependencies.getSendingDomain;
         this.#getFallbackDomain = dependencies.getFallbackDomain;
         this.#getDefaultEmail = dependencies.getDefaultEmail;
+        this.#getMembersSupportAddress = dependencies.getMembersSupportAddress;
         this.#getFallbackEmail = () => {
             const fallbackAddress = dependencies.getFallbackEmail();
             if (!fallbackAddress) {
@@ -66,6 +69,16 @@ export class EmailAddressService {
 
     get fallbackEmail(): EmailAddress | null {
         return this.#getFallbackEmail();
+    }
+
+    /**
+     * Get the actual sender address for member emails after DMARC transformation.
+     * On managed platforms, this may differ from the configured support address to ensure DMARC compliance.
+     */
+    getMembersSupportAddress(): string {
+        const configuredAddress = this.#getMembersSupportAddress();
+        const transformed = this.getAddressFromString(configuredAddress);
+        return transformed.from.address;
     }
 
     getAddressFromString(from: string, replyTo?: string): EmailAddresses {

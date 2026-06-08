@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 
 const OfferName = require('../../../../../../../core/server/services/offers/domain/models/offer-name');
 
@@ -10,42 +9,30 @@ describe('OfferName', function () {
 
             try {
                 OfferName.create();
-                should.fail();
+                assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferName.InvalidOfferName,
-                    'expected an InvalidOfferName error'
-                );
+                assert(err instanceof OfferName.InvalidOfferName, 'expected an InvalidOfferName error');
             }
 
             try {
                 OfferName.create(null);
-                should.fail();
+                assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferName.InvalidOfferName,
-                    'expected an InvalidOfferName error'
-                );
+                assert(err instanceof OfferName.InvalidOfferName, 'expected an InvalidOfferName error');
             }
 
             try {
                 OfferName.create(12);
-                should.fail();
+                assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferName.InvalidOfferName,
-                    'expected an InvalidOfferName error'
-                );
+                assert(err instanceof OfferName.InvalidOfferName, 'expected an InvalidOfferName error');
             }
 
             try {
                 OfferName.create({});
-                should.fail();
+                assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferName.InvalidOfferName,
-                    'expected an InvalidOfferName error'
-                );
+                assert(err instanceof OfferName.InvalidOfferName, 'expected an InvalidOfferName error');
             }
         });
 
@@ -62,12 +49,9 @@ describe('OfferName', function () {
 
             try {
                 OfferName.create(tooLong);
-                should.fail();
+                assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferName.InvalidOfferName,
-                    'expected an InvalidOfferName error'
-                );
+                assert(err instanceof OfferName.InvalidOfferName, 'expected an InvalidOfferName error');
             }
         });
 

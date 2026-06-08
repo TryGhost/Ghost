@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const luxon = require('luxon');
 
 require('../../../core/server/overrides');

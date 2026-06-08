@@ -1,6 +1,5 @@
 const express = require('express');
 const sinon = require('sinon');
-const should = require('should');
 const SessionFromToken = require('../../../../../core/server/services/auth/session/session-from-token');
 
 describe('SessionFromToken', function () {
@@ -30,15 +29,15 @@ describe('SessionFromToken', function () {
 
         await handler(req, res, next);
 
-        should.ok(getTokenFromRequest.calledOnceWith(req));
+        sinon.assert.calledOnceWithExactly(getTokenFromRequest, req);
         const token = await getTokenFromRequest.returnValues[0];
 
-        should.ok(getLookupFromToken.calledOnceWith(token));
+        sinon.assert.calledOnceWithExactly(getLookupFromToken, token);
         const email = await getLookupFromToken.returnValues[0];
 
-        should.ok(findUserByLookup.calledOnceWith(email));
+        sinon.assert.calledOnceWithExactly(findUserByLookup, email);
         const foundUser = await findUserByLookup.returnValues[0];
 
-        should.ok(createSession.calledOnceWith(req, res, foundUser));
+        sinon.assert.calledOnceWithExactly(createSession, req, res, foundUser);
     });
 });

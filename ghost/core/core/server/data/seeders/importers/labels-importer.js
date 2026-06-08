@@ -17,7 +17,7 @@ class LabelsImporter extends TableImporter {
     generateName() {
         let name;
         do {
-            name = `${faker.color.human()} ${faker.name.jobType()}`;
+            name = `${faker.color.human()} ${faker.person.jobType()}`;
             name = `${name[0].toUpperCase()}${name.slice(1)}`;
         } while (this.generatedNames.has(name));
         this.generatedNames.add(name);

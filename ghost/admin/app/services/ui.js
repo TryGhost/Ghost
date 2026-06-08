@@ -49,8 +49,6 @@ export default class UiService extends Service {
 
     @tracked _isFullScreen = false;
     @tracked mainClass = '';
-    @tracked showMobileMenu = false;
-
     get isFullScreen() {
         return this._isFullScreen;
     }
@@ -105,17 +103,6 @@ export default class UiService extends Service {
     @action
     closeMenus() {
         this.dropdown.closeDropdowns();
-        this.showMobileMenu = false;
-    }
-
-    @action
-    closeMobileMenu() {
-        this.showMobileMenu = false;
-    }
-
-    @action
-    openMobileMenu() {
-        this.showMobileMenu = true;
     }
 
     @action
@@ -152,47 +139,73 @@ export default class UiService extends Service {
         // when any drag event is occurring we add `data-user-is-dragging` to the
         // body element so that we can have dropzones start listening to pointer
         // events allowing us to have interactive elements "underneath" drop zones
-        this.bodyDragEnterHandler = (event) => {
-            if (!event.dataTransfer) {
-                return;
-            }
+        //
+        // We use a depth counter rather than a boolean because `dragenter`/`dragleave`
+        // fire on each child element a drag crosses. Tracking depth lets us know when
+        // the drag has truly left the document without relying on the unreliable
+        // `screenX/Y === 0` heuristic (which fails when leaving via the title bar,
+        // to another monitor, or in Safari generally).
+        //
+        // We also reset state on `dragend`, `drop`, `window.blur` and
+        // `visibilitychange`. Safari is known to drop `dragend` if the drag source
+        // is removed from the DOM mid-drag (e.g. via autosave re-render). Without
+        // these safety nets the `userIsDragging` attribute could stay set for the
+        // rest of the page lifetime, leaving invisible dropzones blocking clicks
+        // on the buttons beneath them.
+        this.dragDepth = 0;
 
-            document.body.dataset.userIsDragging = true;
-            window.clearTimeout(this.dragTimer);
-        };
-
-        this.bodyDragLeaveHandler = (event) => {
-            // only remove document-level "user is dragging" indicator when leaving the document
-            if (event.screenX !== 0 || event.screenY !== 0) {
-                return;
-            }
-
-            window.clearTimeout(this.dragTimer);
-            this.dragTimer = window.setTimeout(() => {
-                delete document.body.dataset.userIsDragging;
-            }, 50);
-        };
-
-        this.cancelDrag = () => {
+        this.resetDragState = () => {
+            this.dragDepth = 0;
             delete document.body.dataset.userIsDragging;
+        };
+
+        this.bodyDragEnterHandler = () => {
+            this.dragDepth += 1;
+            document.body.dataset.userIsDragging = true;
+        };
+
+        this.bodyDragLeaveHandler = () => {
+            // `Math.max` guards against any enter/leave imbalance so the counter
+            // can't go negative and get stuck above zero on the next enter.
+            this.dragDepth = Math.max(0, this.dragDepth - 1);
+            if (this.dragDepth === 0) {
+                delete document.body.dataset.userIsDragging;
+            }
+        };
+
+        this.windowBlurHandler = () => {
+            // If the user drags out of the window and releases the mouse (common
+            // way to get a stuck state in Safari), we won't see `dragend` or
+            // `drop`. The window losing focus is a reliable signal that any drag
+            // is no longer relevant. We reset unconditionally rather than gating
+            // on `dragDepth` because the whole point of this safety net is to
+            // recover when our depth tracking has drifted out of sync.
+            this.resetDragState();
+        };
+
+        this.visibilityChangeHandler = () => {
+            // Switching tabs is another path that can leave drag state stranded
+            // in Safari, so treat tab hide the same as window blur.
+            if (document.hidden) {
+                this.resetDragState();
+            }
         };
 
         document.body.addEventListener('dragenter', this.bodyDragEnterHandler, {capture: true});
         document.body.addEventListener('dragleave', this.bodyDragLeaveHandler, {capture: true});
-        document.body.addEventListener('dragend', this.cancelDrag, {capture: true});
-        document.body.addEventListener('drop', this.cancelDrag, {capture: true});
+        document.body.addEventListener('dragend', this.resetDragState, {capture: true});
+        document.body.addEventListener('drop', this.resetDragState, {capture: true});
+        window.addEventListener('blur', this.windowBlurHandler);
+        document.addEventListener('visibilitychange', this.visibilityChangeHandler);
     }
 
     @action
     cleanupBodyDragHandlers() {
         document.body.removeEventListener('dragenter', this.bodyDragEnterHandler, {capture: true});
         document.body.removeEventListener('dragleave', this.bodyDragLeaveHandler, {capture: true});
-        document.body.removeEventListener('dragend', this.cancelDrag, {capture: true});
-        document.body.removeEventListener('drop', this.cancelDrag, {capture: true});
-    }
-
-    @action
-    toggleMobileMenu() {
-        this.showMobileMenu = !this.showMobileMenu;
+        document.body.removeEventListener('dragend', this.resetDragState, {capture: true});
+        document.body.removeEventListener('drop', this.resetDragState, {capture: true});
+        window.removeEventListener('blur', this.windowBlurHandler);
+        document.removeEventListener('visibilitychange', this.visibilityChangeHandler);
     }
 }

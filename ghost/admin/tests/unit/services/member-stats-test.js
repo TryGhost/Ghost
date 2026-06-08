@@ -82,4 +82,18 @@ describe('Unit: Service: membersStats', function () {
         expect(keys[keys.length - 1]).to.equal(moment().format('YYYY-MM-DD'));
         expect(values[values.length - 1]).to.equal(14459);
     });
+
+    describe('memberCount getter', function () {
+        it('returns 0 when totalMemberCount has not been fetched', function () {
+            memberStatsService.totalMemberCount = null;
+            expect(memberStatsService.memberCount).to.equal(0);
+        });
+
+        it('sums all member categories', function () {
+            memberStatsService.totalMemberCount = {
+                meta: {totals: {paid: 10, free: 100, comped: 5, gift: 2}}
+            };
+            expect(memberStatsService.memberCount).to.equal(117);
+        });
+    });
 });

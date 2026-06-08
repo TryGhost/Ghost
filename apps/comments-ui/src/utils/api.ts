@@ -170,6 +170,23 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                 return response;
             },
             async replies({commentId, afterReplyId, limit}: {commentId: string; afterReplyId?: string; limit?: number | 'all'}) {
+                if (limit === 'all') {
+                    const all: Comment[] = [];
+                    let cursor: string | undefined = afterReplyId;
+                    let hasMore = true;
+
+                    while (hasMore) {
+                        const data = await this.replies({commentId, afterReplyId: cursor, limit: 100});
+                        all.push(...data.comments);
+                        hasMore = !!data.meta?.pagination?.next && data.comments.length > 0;
+                        if (data.comments.length > 0) {
+                            cursor = data.comments[data.comments.length - 1]?.id;
+                        }
+                    }
+
+                    return {comments: all, meta: {pagination: {next: false}}};
+                }
+
                 const params = new URLSearchParams();
                 params.set('limit', (limit ?? 5).toString());
 
@@ -279,6 +296,42 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
                         return 'Success';
                     } else {
                         throw new Error('Failed to unlike comment');
+                    }
+                });
+            },
+            dislike({comment}: {comment: {id: string}}) {
+                const url = endpointFor({type: 'members', resource: `comments/${comment.id}/dislike`});
+                return makeRequest({
+                    url,
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).then(function (res) {
+                    if (res.ok) {
+                        return 'Success';
+                    } else {
+                        throw new Error('Failed to dislike comment');
+                    }
+                });
+            },
+            undislike({comment}: {comment: {id: string}}) {
+                const body = {
+                    comments: [comment]
+                };
+                const url = endpointFor({type: 'members', resource: `comments/${comment.id}/dislike`});
+                return makeRequest({
+                    url,
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(body)
+                }).then(function (res) {
+                    if (res.ok) {
+                        return 'Success';
+                    } else {
+                        throw new Error('Failed to undislike comment');
                     }
                 });
             },

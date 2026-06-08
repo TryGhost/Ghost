@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 
 const OfferDescription = require('../../../../../../../core/server/services/offers/domain/models/offer-description');
 
@@ -14,22 +13,16 @@ describe('OfferDescription', function () {
 
             try {
                 OfferDescription.create(12);
-                should.fail();
+                assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferDescription.InvalidOfferDescription,
-                    'expected an InvalidOfferDescription error'
-                );
+                assert(err instanceof OfferDescription.InvalidOfferDescription, 'expected an InvalidOfferDescription error');
             }
 
             try {
                 OfferDescription.create({});
-                should.fail();
+                assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferDescription.InvalidOfferDescription,
-                    'expected an InvalidOfferDescription error'
-                );
+                assert(err instanceof OfferDescription.InvalidOfferDescription, 'expected an InvalidOfferDescription error');
             }
         });
 
@@ -46,12 +39,9 @@ describe('OfferDescription', function () {
 
             try {
                 OfferDescription.create(tooLong);
-                should.fail();
+                assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferDescription.InvalidOfferDescription,
-                    'expected an InvalidOfferDescription error'
-                );
+                assert(err instanceof OfferDescription.InvalidOfferDescription, 'expected an InvalidOfferDescription error');
             }
         });
 

@@ -3,8 +3,6 @@ import AjaxService from 'ember-ajax/services/ajax';
 import classic from 'ember-classic-decorator';
 import config from 'ghost-admin/config/environment';
 import moment from 'moment-timezone';
-import semverCoerce from 'semver/functions/coerce';
-import semverLt from 'semver/functions/lt';
 import {AjaxError, isAjaxError, isForbiddenError} from 'ember-ajax/errors';
 import {get} from '@ember/object';
 import {inject} from 'ghost-admin/decorators/inject';
@@ -225,9 +223,9 @@ export function isAcceptedResponse(errorOrStatus) {
 
 @classic
 class ajaxService extends AjaxService {
+    @service feature;
     @service session;
     @service upgradeStatus;
-    @service feature;
 
     @inject config;
 
@@ -241,14 +239,6 @@ class ajaxService extends AjaxService {
         const headers = {
             'App-Pragma': 'no-cache'
         };
-
-        // Omit the version header when running in forward admin to avoid issues
-        // with the server triggering a version mismatch error. We can expect
-        // the admin and backend will be on different versions from time to time
-        // due to different release cadences.
-        if (!this.feature.inAdminForward) {
-            headers['X-Ghost-Version'] = config.APP.version;
-        }
 
         return headers;
     }
@@ -348,15 +338,6 @@ class ajaxService extends AjaxService {
         Sentry.setTag('ajax_status', status);
         Sentry.setTag('ajax_url', request.url.slice(0, 200)); // the max length of a tag value is 200 characters
         Sentry.setTag('ajax_method', request.method);
-
-        if (headers['content-version']) {
-            const contentVersion = semverCoerce(headers['content-version']);
-            const appVersion = semverCoerce(config.APP.version);
-
-            if (semverLt(appVersion, contentVersion) && !this.feature.inAdminForward) {
-                this.upgradeStatus.refreshRequired = true;
-            }
-        }
 
         if (this.isTwoFactorTokenRequiredError(status, headers, payload)) {
             return new TwoFactorTokenRequiredError(payload);

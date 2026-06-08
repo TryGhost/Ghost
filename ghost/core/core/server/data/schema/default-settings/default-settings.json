@@ -150,6 +150,41 @@
             "defaultValue": "@ghost",
             "type": "string"
         },
+        "threads": {
+            "defaultValue": null,
+            "flags": "PUBLIC",
+            "type": "string"
+        },
+        "bluesky": {
+            "defaultValue": null,
+            "flags": "PUBLIC",
+            "type": "string"
+        },
+        "mastodon": {
+            "defaultValue": null,
+            "flags": "PUBLIC",
+            "type": "string"
+        },
+        "tiktok": {
+            "defaultValue": null,
+            "flags": "PUBLIC",
+            "type": "string"
+        },
+        "youtube": {
+            "defaultValue": null,
+            "flags": "PUBLIC",
+            "type": "string"
+        },
+        "instagram": {
+            "defaultValue": null,
+            "flags": "PUBLIC",
+            "type": "string"
+        },
+        "linkedin": {
+            "defaultValue": null,
+            "flags": "PUBLIC",
+            "type": "string"
+        },
         "navigation": {
             "defaultValue": "[{\"label\":\"Home\",\"url\":\"/\"},{\"label\":\"About\",\"url\":\"/about/\"}]",
             "type": "array"
@@ -157,6 +192,11 @@
         "secondary_navigation": {
             "defaultValue": "[{\"label\":\"Sign up\",\"url\":\"#/portal/\"}]",
             "type": "array"
+        },
+        "llms_enabled": {
+            "defaultValue": "true",
+            "validations": {},
+            "type": "boolean"
         },
         "meta_title": {
             "defaultValue": null,
@@ -486,6 +526,34 @@
                 "isIn": [["true", "false"]]
             },
             "type": "boolean"
+        },
+        "transistor_portal_enabled": {
+            "defaultValue": "true",
+            "validations": {
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean",
+            "flags": "PUBLIC"
+        },
+        "transistor_portal_heading": {
+            "defaultValue": "Podcasts",
+            "type": "string",
+            "flags": "PUBLIC"
+        },
+        "transistor_portal_description": {
+            "defaultValue": "Access your private podcast feed",
+            "type": "string",
+            "flags": "PUBLIC"
+        },
+        "transistor_portal_button_text": {
+            "defaultValue": "View",
+            "type": "string",
+            "flags": "PUBLIC"
+        },
+        "transistor_portal_url_template": {
+            "defaultValue": "https://partner.transistor.fm/ghost/{memberUuid}",
+            "type": "string",
+            "flags": "PUBLIC"
         }
     },
     "views": {
@@ -536,7 +604,7 @@
     "comments": {
         "comments_enabled": {
             "type": "string",
-            "defaultValue": "off",
+            "defaultValue": "all",
             "validations": {
                 "isEmpty": false,
                 "isIn": [[

@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const Migrations = require('../../../../../core/server/services/stripe/stripe-migrations');
 
@@ -150,12 +150,9 @@ describe('Migrations', function () {
                 'Stripe product should be updated if name is "Default Product"'
             );
 
-            assert(
-                api.updateProduct.calledWith('prod_123', {
-                    name: 'Site Title'
-                }),
-                'Stripe product should have been updated with the site title as name'
-            );
+            sinon.assert.calledWith(api.updateProduct, 'prod_123', {
+                name: 'Site Title'
+            });
         });
     });
 });

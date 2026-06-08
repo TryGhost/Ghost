@@ -13,7 +13,7 @@ export class SignUpSuccessPage extends PortalPage {
         this.successIcon = this.portalFrame.locator('img').first();
         this.successTitle = this.portalFrame.getByRole('heading', {name: 'Now check your email!'});
         this.successMessage = this.portalFrame.getByText('To complete signup, click the confirmation link in your inbox');
-        this.closeButton = this.portalFrame.getByRole('button', {name: 'Close'});
+        this.closeButton = this.portalFrame.getByTestId('close-popup');
     }
 
     async waitForSignUpSuccess(): Promise<void> {

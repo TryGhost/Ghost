@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 
 const RevueImporter = require('../../../../../../core/server/data/importer/importers/importer-revue');

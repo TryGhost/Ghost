@@ -12,6 +12,10 @@ type Feature = {
 };
 
 const features: Feature[] = [{
+    title: 'Automations',
+    description: 'Enable automations management interface.',
+    flag: 'automations'
+}, {
     title: 'Stripe Automatic Tax (private beta)',
     description: 'Use Stripe Automatic Tax at Stripe Checkout. Needs to be enabled in Stripe',
     flag: 'stripeAutomaticTax'
@@ -23,6 +27,10 @@ const features: Feature[] = [{
     title: 'Import Member Tier',
     description: 'Enables tier to be specified when importing members',
     flag: 'importMemberTier'
+}, {
+    title: 'Admin UI Refresh',
+    description: 'Enable Admin UI refresh (exploration)',
+    flag: 'adminUIRefresh'
 }, {
     title: 'Explore',
     description: 'Enables keeping in touch with the new Explore API',
@@ -36,21 +44,9 @@ const features: Feature[] = [{
     description: 'Enables {uniqueid} variable in emails for unique image URLs to bypass ESP image caching',
     flag: 'emailUniqueid'
 }, {
-    title: 'Welcome Emails',
-    description: 'Enables features related to sending welcome emails to new members',
-    flag: 'welcomeEmails'
-}, {
     title: 'Updated theme translation (beta)',
     description: 'Enable theme translation using i18next instead of the old translation package.',
     flag: 'themeTranslation'
-}, {
-    title: 'Comment Moderation',
-    description: 'Enhanced comment moderation interface with advanced filtering and management. Requires the new admin experience.',
-    flag: 'commentModeration'
-}, {
-    title: 'Comment Permalinks',
-    description: 'Enable direct links to individual comments with automatic scrolling and highlighting',
-    flag: 'commentPermalinks'
 }, {
     title: 'IndexNow',
     description: 'Automatically notify search engines when content is published or updated for faster indexing.',
@@ -60,21 +56,21 @@ const features: Feature[] = [{
     description: 'Display a Feedback menu item in the admin sidebar. Requires the new admin experience.',
     flag: 'featurebaseFeedback'
 }, {
-    title: 'Transistor',
-    description: 'Enable Transistor podcast integration',
-    flag: 'transistor'
+    title: 'Picture Element',
+    description: 'Use the HTML picture element to serve modern image formats (AVIF, WebP) with automatic fallbacks',
+    flag: 'pictureImageFormats'
 }, {
-    title: 'Disable Member Commenting',
-    description: 'Allow staff to disable commenting for individual members',
-    flag: 'disableMemberCommenting'
+    title: 'Smarter Counts',
+    description: 'Use optimized COUNT queries for API pagination when safe',
+    flag: 'smarterCounts'
 }, {
-    title: 'Hide Comments When Disabling',
-    description: 'Show option to hide all previous comments when disabling commenting for a member',
-    flag: 'disableMemberCommentingHideComments'
+    title: 'LLMs.txt',
+    description: 'Serve llms.txt, per-entry markdown exports, and Accept: text/markdown content negotiation for AI and LLM tooling',
+    flag: 'llmsTxt'
 }, {
-    title: 'Sniper Links',
-    description: 'Enable mail app links on signup/signin',
-    flag: 'sniperlinks'
+    title: 'Get helper deduplication',
+    description: 'Deduplicate identical {{#get}} helper queries within a single request to avoid redundant database calls',
+    flag: 'getHelperDeduplication'
 }];
 
 const AlphaFeatures: React.FC = () => {

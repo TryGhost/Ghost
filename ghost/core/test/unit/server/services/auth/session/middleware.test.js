@@ -1,16 +1,12 @@
 const assert = require('node:assert/strict');
+const deferred = require('../../../../../utils/deferred');
 const sessionMiddleware = require('../../../../../../core/server/services/auth').session;
 const SessionMiddlware = require('../../../../../../core/server/services/auth/session/middleware');
 const models = require('../../../../../../core/server/models');
 const sinon = require('sinon');
-const should = require('should');
 const labs = require('../../../../../../core/shared/labs');
 
 describe('Session Service', function () {
-    before(function () {
-        models.init();
-    });
-
     afterEach(function () {
         sinon.restore();
     });
@@ -31,7 +27,8 @@ describe('Session Service', function () {
     };
 
     describe('createSession', function () {
-        it('sets req.session.origin from the Referer header', function (done) {
+        it('sets req.session.origin from the Referer header', function () {
+            const {promise, done} = deferred();
             const req = fakeReq();
             const res = fakeRes();
 
@@ -50,9 +47,11 @@ describe('Session Service', function () {
                 });
 
             sessionMiddleware.createSession(req, res);
+            return promise;
         });
 
-        it('sets req.session.user_id,origin,user_agent,ip and calls sendStatus with 201 if the check succeeds', function (done) {
+        it('sets req.session.user_id,origin,user_agent,ip and calls sendStatus with 201 if the check succeeds', function () {
+            const {promise, done} = deferred();
             const req = fakeReq();
             const res = fakeRes();
 
@@ -74,6 +73,7 @@ describe('Session Service', function () {
                 });
 
             sessionMiddleware.createSession(req, res);
+            return promise;
         });
 
         it('errors with a 403 when signing in while not verified', async function () {
@@ -106,7 +106,7 @@ describe('Session Service', function () {
             });
 
             await middleware.createSession(req, res, next);
-            assert.equal(next.callCount, 1);
+            sinon.assert.calledOnce(next);
             assert.equal(next.args[0][0].statusCode, 403);
             assert.equal(next.args[0][0].code, '2FA_NEW_DEVICE_DETECTED');
         });
@@ -142,14 +142,15 @@ describe('Session Service', function () {
             });
 
             await middleware.createSession(req, res, next);
-            assert.equal(next.callCount, 1);
+            sinon.assert.calledOnce(next);
             assert.equal(next.args[0][0].statusCode, 403);
             assert.equal(next.args[0][0].code, '2FA_TOKEN_REQUIRED');
         });
     });
 
     describe('logout', function () {
-        it('calls next with InternalServerError if removeSessionForUser errors', function (done) {
+        it('calls next with InternalServerError if removeSessionForUser errors', function () {
+            const {promise, done} = deferred();
             const req = fakeReq();
             const res = fakeRes();
             const middleware = SessionMiddlware({
@@ -164,9 +165,11 @@ describe('Session Service', function () {
                 assert.equal(err.errorType, 'InternalServerError');
                 done();
             });
+            return promise;
         });
 
-        it('calls sendStatus with 204 if removeUserForSession does not error', function (done) {
+        it('calls sendStatus with 204 if removeUserForSession does not error', function () {
+            const {promise, done} = deferred();
             const req = fakeReq();
             const res = fakeRes();
             sinon.stub(res, 'sendStatus')
@@ -184,6 +187,7 @@ describe('Session Service', function () {
             });
 
             middleware.logout(req, res);
+            return promise;
         });
     });
 
@@ -204,9 +208,9 @@ describe('Session Service', function () {
 
             await middleware.sendAuthCode(req, res, nextStub);
 
-            assert.equal(sendAuthCodeToUserStub.callCount, 1);
-            assert.equal(nextStub.callCount, 0);
-            assert.equal(sendStatusStub.callCount, 1);
+            sinon.assert.calledOnce(sendAuthCodeToUserStub);
+            sinon.assert.notCalled(nextStub);
+            sinon.assert.calledOnce(sendStatusStub);
             assert.equal(sendStatusStub.args[0][0], 200);
         });
 
@@ -226,9 +230,9 @@ describe('Session Service', function () {
 
             await middleware.sendAuthCode(req, res, nextStub);
 
-            assert.equal(sendAuthCodeToUserStub.callCount, 1);
-            assert.equal(nextStub.callCount, 1);
-            assert.equal(sendStatusStub.callCount, 0);
+            sinon.assert.calledOnce(sendAuthCodeToUserStub);
+            sinon.assert.calledOnce(nextStub);
+            sinon.assert.notCalled(sendStatusStub);
         });
     });
 
@@ -250,9 +254,9 @@ describe('Session Service', function () {
 
             await middleware.verifyAuthCode(req, res, nextStub);
 
-            assert.equal(verifyAuthCodeForUserStub.callCount, 1);
-            assert.equal(nextStub.callCount, 0);
-            assert.equal(sendStatusStub.callCount, 1);
+            sinon.assert.calledOnce(verifyAuthCodeForUserStub);
+            sinon.assert.notCalled(nextStub);
+            sinon.assert.calledOnce(sendStatusStub);
             assert.equal(sendStatusStub.args[0][0], 200);
         });
 
@@ -272,9 +276,9 @@ describe('Session Service', function () {
 
             await middleware.verifyAuthCode(req, res, nextStub);
 
-            assert.equal(verifyAuthCodeForUserStub.callCount, 1);
-            assert.equal(nextStub.callCount, 0);
-            assert.equal(sendStatusStub.callCount, 1);
+            sinon.assert.calledOnce(verifyAuthCodeForUserStub);
+            sinon.assert.notCalled(nextStub);
+            sinon.assert.calledOnce(sendStatusStub);
             assert.equal(sendStatusStub.args[0][0], 401);
         });
 
@@ -294,9 +298,9 @@ describe('Session Service', function () {
 
             await middleware.verifyAuthCode(req, res, nextStub);
 
-            assert.equal(verifyAuthCodeForUserStub.callCount, 1);
-            assert.equal(nextStub.callCount, 1);
-            assert.equal(sendStatusStub.callCount, 0);
+            sinon.assert.calledOnce(verifyAuthCodeForUserStub);
+            sinon.assert.calledOnce(nextStub);
+            sinon.assert.notCalled(sendStatusStub);
         });
     });
 });

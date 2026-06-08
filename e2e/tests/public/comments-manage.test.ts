@@ -2,25 +2,24 @@ import {
     CommentFactory,
     MemberFactory,
     PostFactory,
+    TierFactory,
     createFactories
 } from '@/data-factory';
 import {PostPage} from '@/public-pages';
 import {SettingsService} from '@/helpers/services/settings/settings-service';
-import {TiersService} from '@/helpers/services/tiers/tiers-service';
 import {expect, signInAsMember, test} from '@/helpers/playwright';
 
 test.describe('Ghost Public - Comments - Manage', () => {
     let commentFactory: CommentFactory;
     let postFactory: PostFactory;
     let memberFactory: MemberFactory;
+    let tierFactory: TierFactory;
     let settingsService: SettingsService;
-    let tiersService: TiersService;
 
     test.beforeEach(async ({page}) => {
-        ({postFactory, memberFactory, commentFactory} = createFactories(page.request));
+        ({postFactory, memberFactory, commentFactory, tierFactory} = createFactories(page.request));
 
         settingsService = new SettingsService(page.request);
-        tiersService = new TiersService(page.request);
     });
 
     test.beforeEach(async () => {
@@ -29,7 +28,7 @@ test.describe('Ghost Public - Comments - Manage', () => {
 
     test('no comment management buttons for non comment author', async ({page}) => {
         const post = await postFactory.create({status: 'published'});
-        const paidTier = await tiersService.getFirstPaidTier();
+        const paidTier = await tierFactory.getFirstPaidTier();
         const paidMember = await memberFactory.create({status: 'comped', tiers: [{id: paidTier.id}]});
         const anotherPaidMember = await memberFactory.create({status: 'comped', tiers: [{id: paidTier.id}]});
 
@@ -58,7 +57,7 @@ test.describe('Ghost Public - Comments - Manage', () => {
 
     test('edit comment', async ({page}) => {
         const post = await postFactory.create({status: 'published'});
-        const paidTier = await tiersService.getFirstPaidTier();
+        const paidTier = await tierFactory.getFirstPaidTier();
         const paidMember = await memberFactory.create({status: 'comped', tiers: [{id: paidTier.id}]});
 
         await commentFactory.create({
@@ -81,7 +80,7 @@ test.describe('Ghost Public - Comments - Manage', () => {
 
     test('delete comment', async ({page}) => {
         const post = await postFactory.create({status: 'published'});
-        const paidTier = await tiersService.getFirstPaidTier();
+        const paidTier = await tierFactory.getFirstPaidTier();
         const paidMember = await memberFactory.create({status: 'comped', tiers: [{id: paidTier.id}]});
 
         await commentFactory.create({

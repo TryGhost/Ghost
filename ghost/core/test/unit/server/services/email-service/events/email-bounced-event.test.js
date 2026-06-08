@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const ObjectID = require('bson-objectid').default;
 const EmailBouncedEvent = require('../../../../../../core/server/services/email-service/events/email-bounced-event');
 

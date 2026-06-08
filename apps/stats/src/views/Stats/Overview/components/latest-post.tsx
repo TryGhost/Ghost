@@ -1,7 +1,10 @@
 import React, {useState} from 'react';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, PostShareModal, Skeleton, cn, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, Skeleton} from '@tryghost/shade/components';
+import {LucideIcon, cn, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade/utils';
+import {PostShareModal} from '@tryghost/shade/posts-stats';
 
 import {Post, getPostMetricsToDisplay} from '@tryghost/admin-x-framework';
+import {getPostDestination} from '@src/utils/url-helpers';
 import {useAppContext, useNavigate} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/global-data-provider';
 
@@ -31,7 +34,12 @@ const LatestPost: React.FC<LatestPostProps> = ({
     const [isShareOpen, setIsShareOpen] = useState(false);
     const {site, settings} = useGlobalData();
     const {appSettings} = useAppContext();
-    const {emailTrackClicks: emailTrackClicksEnabled, emailTrackOpens: emailTrackOpensEnabled} = appSettings?.analytics || {};
+    const {
+        emailTrackClicks: emailTrackClicksEnabled,
+        emailTrackOpens: emailTrackOpensEnabled,
+        webAnalytics = false,
+        membersTrackSources = false
+    } = appSettings?.analytics || {};
 
     // Get site title from settings or site data
     const siteTitle = site.title || String(settings.find(setting => setting.key === 'title')?.value || 'Ghost Site');
@@ -41,15 +49,19 @@ const LatestPost: React.FC<LatestPostProps> = ({
 
     // Calculate metrics to show outside of JSX
     const metricsToShow = latestPostStats ? getPostMetricsToDisplay(latestPostStats as Post, {
-        membersTrackSources: appSettings?.analytics.membersTrackSources
+        membersTrackSources
     }) : null;
 
     const metricClassName = 'group mr-2 flex flex-col gap-1.5 hover:cursor-pointer';
 
+    const hasEmailData = Boolean(latestPostStats?.email);
+    const postDestination = getPostDestination({postId: latestPostStats?.id, hasEmailData, analytics: {webAnalytics, membersTrackSources}});
+    const shouldGoToEditor = postDestination.startsWith('/editor/');
+
     return (
         <Card className='group/card bg-gradient-to-tr from-muted/40 to-muted/0 to-50%' data-testid='latest-post'>
             <CardHeader>
-                <CardTitle className='flex items-baseline justify-between font-medium leading-snug text-muted-foreground'>
+                <CardTitle className='flex items-baseline justify-between leading-snug font-medium text-muted-foreground'>
                     Latest post performance
                 </CardTitle>
                 <CardDescription className='hidden'>How your last post did</CardDescription>
@@ -66,7 +78,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                 <Skeleton className='w-1/2' />
                             </div>
                         </div>
-                        <div className='flex flex-col items-stretch gap-2 px-6 text-sm'>
+                        <div className='flex flex-col items-stretch gap-2 px-6'>
                             <div className='grid grid-cols-2 gap-5'>
                                 <div>
                                     <Skeleton className='w-3/4' />
@@ -97,14 +109,14 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                     }}></div>
                             }
                             <div className='flex grow flex-col items-start justify-center self-stretch'>
-                                <div className='text-lg font-semibold leading-tighter tracking-tight hover:cursor-pointer hover:opacity-75' onClick={() => {
+                                <div className='text-md leading-tighter font-semibold tracking-tight hover:cursor-pointer hover:opacity-75' onClick={() => {
                                     if (!isLoading && latestPostStats) {
-                                        navigate(`/posts/analytics/${latestPostStats.id}`, {crossApp: true});
+                                        navigate(postDestination, {crossApp: true});
                                     }
                                 }}>
                                     {latestPostStats.title}
                                 </div>
-                                <div className='mt-0.5 text-sm text-muted-foreground'>
+                                <div className='mt-1 text-muted-foreground'>
                                     {latestPostStats.authors && latestPostStats.authors.length > 0 && (
                                         <div>
                                             By {latestPostStats.authors.map(author => author.name).join(', ')} &ndash; {formatDisplayDate(latestPostStats.published_at, siteTimezone)}
@@ -136,32 +148,41 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                         className={latestPostStats.email_only ? 'w-full' : ''}
                                         variant='outline'
                                         onClick={() => {
-                                            navigate(`/posts/analytics/${latestPostStats.id}`, {crossApp: true});
+                                            navigate(postDestination, {crossApp: true});
                                         }}
                                     >
-                                        <LucideIcon.ChartNoAxesColumn />
-                                        <span className='hidden md:!visible md:!block'>
-                                            {!latestPostStats.email_only ? 'Analytics' : 'Post analytics' }
-                                        </span>
+                                        {shouldGoToEditor ? (
+                                            <>
+                                                <LucideIcon.Pen />
+                                                <span className='hidden md:visible! md:block!'>Edit post</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <LucideIcon.ChartNoAxesColumn />
+                                                <span className='hidden md:visible! md:block!'>
+                                                    {!latestPostStats.email_only ? 'Analytics' : 'Post analytics'}
+                                                </span>
+                                            </>
+                                        )}
                                     </Button>
                                 </div>
                             </div>
                         </div>
 
-                        <div className='-ml-4 flex w-full flex-col items-stretch gap-2 pr-6 text-sm xl:h-full xl:max-w-none'>
+                        <div className='-ml-4 flex w-full flex-col items-stretch gap-2 pr-6 xl:h-full xl:max-w-none'>
                             <div className='grid grid-cols-2 gap-6 pl-10 lg:border-l xl:h-full'>
                                 {/* Web metrics - only for published posts */}
-                                {metricsToShow.showWebMetrics && appSettings?.analytics.webAnalytics &&
+                                {metricsToShow.showWebMetrics && webAnalytics &&
                                     <div className={metricClassName} data-testid='latest-post-visitors' onClick={() => {
                                         navigate(`/posts/analytics/${latestPostStats.id}/web`, {crossApp: true});
                                     }}>
                                         <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
                                             <LucideIcon.Globe size={16} strokeWidth={1.25} />
-                                            <span className='hidden md:!visible md:!block'>
+                                            <span className='hidden md:visible! md:block!'>
                                                 Visitors
                                             </span>
                                         </div>
-                                        <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
+                                        <span className='text-[2.2rem] leading-none font-semibold tracking-tighter'>
                                             {formatNumber(latestPostStats.visitors)}
                                         </span>
                                     </div>
@@ -174,16 +195,16 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                             metricClassName,
 
                                             // Member metric is moved to the 2nd row in the grid if the post is email only or if web analytics is turned off, otherwise leave as is
-                                            (metricsToShow.showEmailMetrics && (!metricsToShow.showWebMetrics || !appSettings?.analytics.webAnalytics)) && 'row-[2/3] col-[1/2]'
+                                            (metricsToShow.showEmailMetrics && (!metricsToShow.showWebMetrics || !webAnalytics)) && 'row-[2/3] col-[1/2]'
                                         )
                                     } data-testid='latest-post-members' onClick={() => {
                                         navigate(`/posts/analytics/${latestPostStats.id}/growth`, {crossApp: true});
                                     }}>
                                         <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
                                             <LucideIcon.UserPlus size={16} strokeWidth={1.25} />
-                                            <span className='hidden md:!visible md:!block'>Members</span>
+                                            <span className='hidden md:visible! md:block!'>Members</span>
                                         </div>
-                                        <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
+                                        <span className='text-[2.2rem] leading-none font-semibold tracking-tighter'>
                                             {latestPostStats.member_delta ?
                                                 <>
                                                     +{formatNumber(latestPostStats.member_delta)}
@@ -203,9 +224,9 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                             }}>
                                                 <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
                                                     <LucideIcon.MailOpen size={16} strokeWidth={1.25} />
-                                                    <span className='hidden whitespace-nowrap md:!visible md:!block'>Opens</span>
+                                                    <span className='hidden whitespace-nowrap md:visible! md:block!'>Opens</span>
                                                 </div>
-                                                <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
+                                                <span className='text-[2.2rem] leading-none font-semibold tracking-tighter'>
                                                     {latestPostStats.email.email_count ?
                                                         formatPercentage((latestPostStats.email.opened_count || 0) / latestPostStats.email.email_count)
                                                         : '0%'
@@ -219,9 +240,9 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                             }}>
                                                 <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
                                                     <LucideIcon.MousePointerClick size={16} strokeWidth={1.25} />
-                                                    <span className='hidden whitespace-nowrap md:!visible md:!block'>Clicks</span>
+                                                    <span className='hidden whitespace-nowrap md:visible! md:block!'>Clicks</span>
                                                 </div>
-                                                <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
+                                                <span className='text-[2.2rem] leading-none font-semibold tracking-tighter'>
                                                     {latestPostStats.email.email_count && latestPostStats.count?.clicks ?
                                                         formatPercentage((latestPostStats.count.clicks || 0) / latestPostStats.email.email_count)
                                                         : '0%'

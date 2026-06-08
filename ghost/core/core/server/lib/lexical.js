@@ -3,6 +3,7 @@ const errors = require('@tryghost/errors');
 const urlUtils = require('../../shared/url-utils');
 const config = require('../../shared/config');
 const labs = require('../../shared/labs');
+const settingsCache = require('../../shared/settings-cache');
 const storage = require('../adapters/storage');
 
 let nodes;
@@ -46,8 +47,8 @@ module.exports = {
                 populateNodes();
             }
 
-            const LexicalHtmlRenderer = require('@tryghost/kg-lexical-html-renderer');
-            lexicalHtmlRenderer = new LexicalHtmlRenderer({nodes});
+            const {LexicalHTMLRenderer} = require('@tryghost/kg-lexical-html-renderer');
+            lexicalHtmlRenderer = new LexicalHTMLRenderer({nodes});
         }
 
         return lexicalHtmlRenderer;
@@ -80,7 +81,9 @@ module.exports = {
         }
 
         const options = Object.assign({
+            siteUuid: settingsCache.get('site_uuid'),
             siteUrl: config.get('url'),
+            imageBaseUrl: config.get('urls:image') || '',
             imageOptimization: config.get('imageOptimization'),
             canTransformImage(storagePath) {
                 const imageTransform = require('@tryghost/image-transform');
@@ -94,7 +97,8 @@ module.exports = {
             feature: {
                 contentVisibility: true, // force on until Koenig has been bumped
                 emailCustomization: true, // force on until Koenig has been bumped
-                emailUniqueid: labs.isSet('emailUniqueid')
+                emailUniqueid: labs.isSet('emailUniqueid'),
+                pictureImageFormats: labs.isSet('pictureImageFormats')
             },
             nodeRenderers: this.customNodeRenderers
         }, userOptions);

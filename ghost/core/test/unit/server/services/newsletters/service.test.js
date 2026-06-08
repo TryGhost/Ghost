@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 
 // DI requirements
 const models = require('../../../../../core/server/models');
@@ -27,9 +27,7 @@ describe('NewslettersService', function () {
     let limitService;
     let emailMockReceiver;
 
-    before(function () {
-        models.init();
-
+    beforeAll(function () {
         tokenProvider = new TestTokenProvider();
 
         limitService = {
@@ -81,7 +79,7 @@ describe('NewslettersService', function () {
         mockManager.restore();
     });
 
-    after(async function () {
+    afterAll(async function () {
         await urlUtils.restore();
     });
 

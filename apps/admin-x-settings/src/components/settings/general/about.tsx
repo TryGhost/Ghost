@@ -6,6 +6,19 @@ import {showDatabaseWarning} from '../../../utils/show-database-warning';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useUpgradeStatus} from '../../providers/settings-app-provider';
 
+const adminBuildVersion = import.meta.env.GHOST_BUILD_VERSION;
+
+function VersionLink({label, version}: {label: string; version: string}) {
+    const link = linkToGitHubReleases(version);
+    return (
+        <div>
+            <strong>{label}:</strong> {link
+                ? <a className='text-green' href={link} rel="noopener noreferrer" target="_blank">{version}</a>
+                : version}
+        </div>
+    );
+}
+
 const AboutModal = NiceModal.create<RoutingModalProps>(({}) => {
     const {updateRoute} = useRouting();
     const globalData = useGlobalData();
@@ -45,7 +58,7 @@ const AboutModal = NiceModal.create<RoutingModalProps>(({}) => {
             topRightContent='close'
             width={540}
         >
-            <div className='flex flex-col gap-4 pb-7 text-sm'>
+            <div className='flex flex-col gap-4 pb-7'>
                 <GhostLogo className="h-auto w-[120px] dark:invert"/>
                 <div className='mt-3 flex flex-col gap-1.5'>
                     {
@@ -56,13 +69,14 @@ const AboutModal = NiceModal.create<RoutingModalProps>(({}) => {
                             </div>
                         )
                     }
-                    {
-                        linkToGitHubReleases(config.version) && (
-                            <div><strong>Version:</strong> <a className='text-green' href={linkToGitHubReleases(config.version)} rel="noopener noreferrer" target="_blank">{config.version}</a></div>
-                        ) || (
-                            <div><strong>Version:</strong> {config.version}</div>
-                        )
-                    }
+                    {adminBuildVersion ? (
+                        <>
+                            <VersionLink label="Server" version={config.version} />
+                            <VersionLink label="Admin" version={adminBuildVersion} />
+                        </>
+                    ) : (
+                        <VersionLink label="Version" version={config.version} />
+                    )}
                     {
                         showSystemInfo() && (
                             <>
@@ -93,7 +107,7 @@ const AboutModal = NiceModal.create<RoutingModalProps>(({}) => {
                     <a className='flex items-center gap-2 hover:text-grey-900 dark:hover:text-grey-400' href="https://ghost.org/docs/contributing/" rel="noopener noreferrer" target="_blank"><Icon name='angle-brackets' size='sm' /> Get involved</a>
                 </div>
                 <Separator />
-                <p className='max-w-[460px] text-xs'>
+                <p className='max-w-[460px] text-sm'>
                     Copyright © 2013 &ndash; {copyrightYear()} Ghost Foundation, released under the <a className='text-green' href="https://github.com/TryGhost/Ghost/blob/main/LICENSE" rel="noopener noreferrer" target="_blank">MIT license</a>. <a className='text-green' href="https://ghost.org/" rel="noopener noreferrer" target="_blank">Ghost</a> is a registered trademark of <a className='text-green' href="https://ghost.org/trademark/" rel="noopener noreferrer" target="_blank">Ghost Foundation Ltd</a>.
                 </p>
             </div>

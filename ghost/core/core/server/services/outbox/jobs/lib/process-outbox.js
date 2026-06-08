@@ -1,6 +1,5 @@
 const logging = require('@tryghost/logging');
 const db = require('../../../../data/db');
-const labs = require('../../../../../shared/labs');
 const MemberCreatedEvent = require('../../../../../shared/events/member-created-event');
 const {OUTBOX_STATUSES} = require('../../../../models/outbox');
 const {MESSAGES, MAX_ENTRIES_PER_JOB, BATCH_SIZE, OUTBOX_LOG_KEY} = require('./constants');
@@ -42,16 +41,16 @@ async function processOutbox() {
     const jobStartMs = Date.now();
     const jobStartISO = new Date(jobStartMs).toISOString().slice(0, 19).replace('T', ' ');
 
-    if (!labs.isSet('welcomeEmails')) {
-        return `${OUTBOX_LOG_KEY} Welcome emails feature is disabled`;
-    }
-
     memberWelcomeEmailService.init();
     try {
         await memberWelcomeEmailService.api.loadMemberWelcomeEmails();
     } catch (err) {
-        const errorMessage = err?.message ?? 'Unknown error';
-        logging.error(`${OUTBOX_LOG_KEY} Service initialization failed: ${errorMessage}`);
+        logging.error({
+            system: {
+                event: 'outbox.init.failed'
+            },
+            err
+        }, `${OUTBOX_LOG_KEY} Service initialization failed.`);
         return `${OUTBOX_LOG_KEY} Job aborted: Service initialization failed`;
     }
 
@@ -75,7 +74,14 @@ async function processOutbox() {
         totalProcessed += processed;
         totalFailed += failed;
 
-        logging.info(`${OUTBOX_LOG_KEY} Batch complete: ${processed} processed, ${failed} failed in ${(batchDurationMs / 1000).toFixed(2)}s (${batchRate} entries/sec)`);
+        logging.info({
+            system: {
+                event: 'outbox.batch.complete',
+                entries_processed: processed,
+                entries_failed: failed,
+                duration_ms: batchDurationMs
+            }
+        }, `${OUTBOX_LOG_KEY} Batch complete: ${processed} processed, ${failed} failed in ${(batchDurationMs / 1000).toFixed(2)}s (${batchRate} entries/sec)`);
     }
 
     const durationMs = Date.now() - jobStartMs;

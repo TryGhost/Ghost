@@ -1,17 +1,7 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {
-    AlertDialog,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-    Button,
-    H4,
-    LucideIcon
-} from '@tryghost/shade';
+import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, Button} from '@tryghost/shade/components';
+import {H4} from '@tryghost/shade/primitives';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {toast} from 'sonner';
 
 type DialogMode = 'idle' | 'dual' | 'userOnly' | 'domainOnly';
@@ -155,7 +145,7 @@ const UnblockDialog: React.FC<UnblockDialogProps> = ({
                 <AlertDialogTitle className='mb-1 flex flex-col gap-1'>
                     Unblock
                 </AlertDialogTitle>
-                <AlertDialogDescription className='!mt-4' asChild>
+                <AlertDialogDescription className='mt-4!' asChild>
                     <div className='flex flex-col rounded-md border'>
                         <div className='flex justify-between gap-6 p-5'>
                             <div className='flex flex-col gap-1'>

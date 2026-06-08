@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const should = require('should');
+const {assertExists} = require('../../../utils/assertions');
 const supertest = require('supertest');
 const config = require('../../../../core/shared/config');
 const testUtils = require('../../../utils');
@@ -26,8 +26,8 @@ describe('Settings API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200)
             .expect((response) => {
-                should.exist(response.headers['x-cache-invalidate']);
-                response.headers['x-cache-invalidate'].should.eql('/*');
+                assertExists(response.headers['x-cache-invalidate']);
+                assert.equal(response.headers['x-cache-invalidate'], '/*');
             });
 
         // Check if not changed (also check internal ones)
@@ -54,7 +54,7 @@ describe('Settings API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200)
             .expect((response) => {
-                should.not.exist(response.headers['x-cache-invalidate']);
+                assert.equal(response.headers['x-cache-invalidate'], undefined);
             });
 
         // Check if not changed (also check internal ones)
@@ -124,8 +124,8 @@ describe('Settings API', function () {
                 .expect(200);
 
             const putBody = body;
-            headers['x-cache-invalidate'].should.eql('/*');
-            should.exist(putBody);
+            assert.equal(headers['x-cache-invalidate'], '/*');
+            assertExists(putBody);
 
             let setting = putBody.settings.find(s => s.key === 'unsplash');
             assert.equal(setting.value, true);
@@ -154,12 +154,12 @@ describe('Settings API', function () {
                 .expect(200);
 
             const putBody = body;
-            headers['x-cache-invalidate'].should.eql('/*');
-            should.exist(putBody);
+            assert.equal(headers['x-cache-invalidate'], '/*');
+            assertExists(putBody);
 
             localUtils.API.checkResponse(putBody, 'settings');
             const setting = putBody.settings.find(s => s.key === 'slack_username');
-            setting.value.should.eql('can edit me');
+            assert.equal(setting.value, 'can edit me');
         });
 
         it('Can edit URLs without internal storage format leaking', async function () {
@@ -186,12 +186,12 @@ describe('Settings API', function () {
                 return acc;
             }, {});
 
-            responseSettings.should.have.property('cover_image', `${config.get('url')}/content/images/cover_image.png`);
-            responseSettings.should.have.property('logo', `${config.get('url')}/content/images/logo.png`);
-            responseSettings.should.have.property('icon', `${config.get('url')}/content/images/size/w256h256/icon.png`);
-            responseSettings.should.have.property('portal_button_icon', `${config.get('url')}/content/images/portal_button_icon.png`);
-            responseSettings.should.have.property('og_image', `${config.get('url')}/content/images/og_image.png`);
-            responseSettings.should.have.property('twitter_image', `${config.get('url')}/content/images/twitter_image.png`);
+            assert.equal(responseSettings.cover_image, `${config.get('url')}/content/images/cover_image.png`);
+            assert.equal(responseSettings.logo, `${config.get('url')}/content/images/logo.png`);
+            assert.equal(responseSettings.icon, `${config.get('url')}/content/images/size/w256h256/icon.png`);
+            assert.equal(responseSettings.portal_button_icon, `${config.get('url')}/content/images/portal_button_icon.png`);
+            assert.equal(responseSettings.og_image, `${config.get('url')}/content/images/og_image.png`);
+            assert.equal(responseSettings.twitter_image, `${config.get('url')}/content/images/twitter_image.png`);
 
             const dbSettingsRows = await db.knex('settings')
                 .select('key', 'value')
@@ -202,12 +202,12 @@ describe('Settings API', function () {
                 return acc;
             }, {});
 
-            dbSettings.should.have.property('cover_image', '__GHOST_URL__/content/images/cover_image.png');
-            dbSettings.should.have.property('logo', '__GHOST_URL__/content/images/logo.png');
-            dbSettings.should.have.property('icon', '__GHOST_URL__/content/images/icon.png');
-            dbSettings.should.have.property('portal_button_icon', '__GHOST_URL__/content/images/portal_button_icon.png');
-            dbSettings.should.have.property('og_image', '__GHOST_URL__/content/images/og_image.png');
-            dbSettings.should.have.property('twitter_image', '__GHOST_URL__/content/images/twitter_image.png');
+            assert.equal(dbSettings.cover_image, '__GHOST_URL__/content/images/cover_image.png');
+            assert.equal(dbSettings.logo, '__GHOST_URL__/content/images/logo.png');
+            assert.equal(dbSettings.icon, '__GHOST_URL__/content/images/icon.png');
+            assert.equal(dbSettings.portal_button_icon, '__GHOST_URL__/content/images/portal_button_icon.png');
+            assert.equal(dbSettings.og_image, '__GHOST_URL__/content/images/og_image.png');
+            assert.equal(dbSettings.twitter_image, '__GHOST_URL__/content/images/twitter_image.png');
         });
 
         it('Can only send array values for keys defined with array type', async function () {
@@ -285,8 +285,8 @@ describe('Settings API', function () {
                 .then(function (res) {
                     let jsonResponse = res.body;
 
-                    should.exist(jsonResponse);
-                    should.exist(jsonResponse.settings);
+                    assertExists(jsonResponse);
+                    assertExists(jsonResponse.settings);
                     jsonResponse.settings = [{key: 'visibility', value: 'public'}];
 
                     return request.put(localUtils.API.getApiQuery('settings/'))
@@ -297,8 +297,8 @@ describe('Settings API', function () {
                         .expect(403)
                         .then(function ({body, headers}) {
                             jsonResponse = body;
-                            should.not.exist(headers['x-cache-invalidate']);
-                            should.exist(jsonResponse.errors);
+                            assert.equal(headers['x-cache-invalidate'], undefined);
+                            assertExists(jsonResponse.errors);
                             testUtils.API.checkResponseValue(jsonResponse.errors[0], [
                                 'message',
                                 'context',
@@ -338,8 +338,8 @@ describe('Settings API', function () {
                 .expect('Cache-Control', testUtils.cacheRules.private)
                 .then(function (res) {
                     let jsonResponse = res.body;
-                    should.exist(jsonResponse);
-                    should.exist(jsonResponse.settings);
+                    assertExists(jsonResponse);
+                    assertExists(jsonResponse.settings);
                     jsonResponse.settings = [{key: 'visibility', value: 'public'}];
 
                     return request.put(localUtils.API.getApiQuery('settings/'))
@@ -350,8 +350,8 @@ describe('Settings API', function () {
                         .expect(403)
                         .then(function ({body, headers}) {
                             jsonResponse = body;
-                            should.not.exist(headers['x-cache-invalidate']);
-                            should.exist(jsonResponse.errors);
+                            assert.equal(headers['x-cache-invalidate'], undefined);
+                            assertExists(jsonResponse.errors);
                             testUtils.API.checkResponseValue(jsonResponse.errors[0], [
                                 'message',
                                 'context',
@@ -391,8 +391,8 @@ describe('Settings API', function () {
             }, testUtils.context.internal);
 
             const setting = jsonResponse.settings.find(s => s.key === 'email_verification_required');
-            should.exist(setting);
-            setting.value.should.eql(true);
+            assertExists(setting);
+            assert.equal(setting.value, true);
         });
     });
 });

@@ -1,15 +1,21 @@
+import {Container} from '@/components/primitives';
 import {cn} from '@/lib/utils';
 import * as React from 'react';
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface PageProps extends React.HTMLAttributes<HTMLDivElement> {}
 
+/**
+ * @deprecated Prefer composing new surfaces with `Container`, `Stack`, and other primitives directly.
+ */
 const Page = React.forwardRef<HTMLDivElement, PageProps>(
     ({className, ...props}, ref) => {
         return (
-            <div
+            <Container
                 ref={ref}
-                className={cn('max-w-page mx-auto w-full min-h-full px-8 flex flex-col', className)}
+                className={cn('min-h-full flex flex-col', className)}
+                paddingX='2xl'
+                size='page'
                 {...props}
             />
         );

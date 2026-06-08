@@ -1,5 +1,5 @@
 import React from 'react';
-import {LucideIcon, cn} from '@tryghost/shade';
+import {LucideIcon, cn} from '@tryghost/shade/utils';
 
 interface FeatureImagePlaceholderProps {
     className?: string;

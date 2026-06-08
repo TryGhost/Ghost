@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const ObjectId = require('bson-objectid').default;
 const {
     agentProvider,
@@ -7,7 +7,7 @@ const {
     dbUtils,
     matchers
 } = require('../../utils/e2e-framework');
-const {anyEtag, anyObjectId, anyISODateTime, anyUuid, anyNumber, anyBoolean, anyString, nullable} = matchers;
+const {anyEtag, anyErrorId, anyObjectId, anyISODateTime, anyUuid, anyNumber, anyBoolean, anyString, nullable} = matchers;
 const models = require('../../../core/server/models');
 const db = require('../../../core/server/data/db');
 const security = require('@tryghost/security');
@@ -23,7 +23,8 @@ const membersCommentMatcher = {
     count: {
         likes: anyNumber
     },
-    liked: anyBoolean
+    liked: anyBoolean,
+    pinned: anyBoolean
 };
 
 let postId;
@@ -40,6 +41,7 @@ const dbFns = {
      * @property {string} [html='This is a comment']
      * @property {string} [status='published']
      * @property {Date} [created_at]
+     * @property {Date} [pinned_at]
      */
     /**
      * @typedef {Object} AddCommentReplyData
@@ -65,6 +67,7 @@ const dbFns = {
             parent_id: data.parent_id,
             html: data.html || '<p>This is a comment</p>',
             created_at: data.created_at,
+            pinned_at: data.pinned_at,
             status: data.status || 'published'
         });
     },
@@ -83,6 +86,7 @@ const dbFns = {
                 post_id: parent.get('post_id'),
                 member_id: reply.member_id,
                 parent_id: parent.get('id'),
+                in_reply_to_id: reply.in_reply_to_id,
                 html: reply.html || '<p>This is a reply</p>',
                 status: reply.status || 'published',
                 created_at: reply.created_at || new Date()
@@ -123,6 +127,12 @@ describe(`Admin Comments API`, function () {
         await dbUtils.truncate('comments');
         await dbUtils.truncate('comment_likes');
         await dbUtils.truncate('comment_reports');
+
+        // mockManager.restore() runs at file-level `after()`, not `afterEach`,
+        // so labs state set by individual tests would otherwise leak across
+        // them. Re-enable commentsPinning at the start of every test so the
+        // disable-case test below cleanly resets without affecting siblings.
+        mockManager.mockLabsEnabled('commentsPinning');
     });
 
     after(function () {
@@ -181,6 +191,152 @@ describe(`Admin Comments API`, function () {
         });
     });
 
+    describe('Pin', function () {
+        it('Can pin and unpin top-level comments', async function () {
+            const commentToPin = await dbFns.addComment({member_id: fixtureManager.get('members', 0).id});
+
+            const pinRes = await adminApi.put(`comments/${commentToPin.id}/`).body({
+                comments: [{
+                    id: commentToPin.id,
+                    pinned: true
+                }]
+            });
+
+            assert.equal(pinRes.headers['x-cache-invalidate'], `/api/members/comments/post/${postId}/`);
+            assert.equal(pinRes.body.comments[0].pinned, true);
+
+            const pinnedComment = await models.Comment.findOne({id: commentToPin.id});
+            assert.ok(pinnedComment.get('pinned_at'));
+            const firstPinnedAt = pinnedComment.get('pinned_at');
+
+            await adminApi.put(`comments/${commentToPin.id}/`).body({
+                comments: [{
+                    id: commentToPin.id,
+                    pinned: true
+                }]
+            });
+
+            const repinnedComment = await models.Comment.findOne({id: commentToPin.id});
+            assert.equal(repinnedComment.get('pinned_at').getTime(), firstPinnedAt.getTime());
+
+            const unpinRes = await adminApi.put(`comments/${commentToPin.id}/`).body({
+                comments: [{
+                    id: commentToPin.id,
+                    pinned: false
+                }]
+            });
+
+            assert.equal(unpinRes.headers['x-cache-invalidate'], `/api/members/comments/post/${postId}/`);
+            assert.equal(unpinRes.body.comments[0].pinned, false);
+
+            const unpinnedComment = await models.Comment.findOne({id: commentToPin.id});
+            assert.equal(unpinnedComment.get('pinned_at'), null);
+        });
+
+        it('Cannot pin replies', async function () {
+            const {replies: [reply]} = await dbFns.addCommentWithReplies({
+                member_id: fixtureManager.get('members', 0).id,
+                replies: [{
+                    member_id: fixtureManager.get('members', 1).id
+                }]
+            });
+
+            await adminApi.put(`comments/${reply.id}/`).body({
+                comments: [{
+                    id: reply.id,
+                    pinned: true
+                }]
+            }).expectStatus(400);
+        });
+
+        it('Can moderate replies when pinned is false', async function () {
+            const {replies: [reply]} = await dbFns.addCommentWithReplies({
+                member_id: fixtureManager.get('members', 0).id,
+                replies: [{
+                    member_id: fixtureManager.get('members', 1).id
+                }]
+            });
+
+            await adminApi.put(`comments/${reply.id}/`).body({
+                comments: [{
+                    id: reply.id,
+                    status: 'hidden',
+                    pinned: false
+                }]
+            }).expectStatus(200);
+
+            const hiddenReply = await models.Comment.findOne({id: reply.id});
+            assert.equal(hiddenReply.get('status'), 'hidden');
+            assert.equal(hiddenReply.get('pinned_at'), null);
+        });
+
+        it('Cannot pin deleted comments', async function () {
+            const deletedComment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                status: 'deleted'
+            });
+
+            await adminApi.put(`comments/${deletedComment.id}/`).body({
+                comments: [{
+                    id: deletedComment.id,
+                    pinned: true
+                }]
+            }).expectStatus(400);
+        });
+
+        it('Cannot pin or unpin with non-boolean values', async function () {
+            const commentToPin = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id
+            });
+
+            await adminApi.put(`comments/${commentToPin.id}/`).body({
+                comments: [{
+                    id: commentToPin.id,
+                    pinned: 'false'
+                }]
+            }).expectStatus(400);
+
+            const unchangedComment = await models.Comment.findOne({id: commentToPin.id});
+            assert.equal(unchangedComment.get('pinned_at'), null);
+        });
+
+        it('Clears pinned state when deleting a pinned comment', async function () {
+            const pinnedComment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                pinned_at: new Date('2025-01-01T00:00:00.000Z')
+            });
+
+            await adminApi.put(`comments/${pinnedComment.id}/`).body({
+                comments: [{
+                    id: pinnedComment.id,
+                    status: 'deleted'
+                }]
+            }).expectStatus(200);
+
+            const deletedComment = await models.Comment.findOne({id: pinnedComment.id});
+            assert.equal(deletedComment.get('status'), 'deleted');
+            assert.equal(deletedComment.get('pinned_at'), null);
+        });
+
+        it('Rejects pin attempts with 405 when commentsPinning labs flag is disabled', async function () {
+            mockManager.mockLabsDisabled('commentsPinning');
+
+            const commentToPin = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id
+            });
+
+            await adminApi.put(`comments/${commentToPin.id}/`).body({
+                comments: [{
+                    id: commentToPin.id,
+                    pinned: true
+                }]
+            }).expectStatus(405);
+
+            const unchangedComment = await models.Comment.findOne({id: commentToPin.id});
+            assert.equal(unchangedComment.get('pinned_at'), null);
+        });
+    });
+
     describe('browse by post', function () {
         it('returns comments', async function () {
             await dbFns.addComment({
@@ -196,6 +352,57 @@ describe(`Admin Comments API`, function () {
             });
             const res = await adminApi.get('/comments/post/' + postId + '/');
             assert.equal(res.body.comments.length, 2);
+        });
+
+        it('orders pinned comments first for front-end staff browsing', async function () {
+            const unpinnedOlder = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: 'Older unpinned',
+                created_at: new Date('2023-01-01T00:00:00.000Z')
+            });
+            const pinnedOlder = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: 'Older pinned',
+                created_at: new Date('2023-02-01T00:00:00.000Z'),
+                pinned_at: new Date('2025-01-01T00:00:00.000Z')
+            });
+            const pinnedNewer = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: 'Newer pinned',
+                created_at: new Date('2023-03-01T00:00:00.000Z'),
+                pinned_at: new Date('2025-02-01T00:00:00.000Z')
+            });
+            const unpinnedNewer = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: 'Newer unpinned',
+                created_at: new Date('2023-04-01T00:00:00.000Z')
+            });
+
+            const res = await adminApi.get('/comments/post/' + postId + '/?order=' + encodeURIComponent('created_at asc')).expectStatus(200);
+
+            assert.deepEqual(res.body.comments.map(comment => comment.id), [
+                pinnedNewer.id,
+                pinnedOlder.id,
+                unpinnedOlder.id,
+                unpinnedNewer.id
+            ]);
+        });
+
+        it('preserves pinned state when fields are requested', async function () {
+            const pinnedComment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: 'Pinned with fields',
+                pinned_at: new Date('2025-01-01T00:00:00.000Z')
+            });
+
+            const res = await adminApi.get('/comments/post/' + postId + '/?fields=id,pinned').expectStatus(200);
+            const [comment] = res.body.comments;
+
+            assert.equal(comment.id, pinnedComment.id);
+            assert.equal(comment.pinned, true);
+            assert.equal(Object.hasOwn(comment, 'parent_id'), false);
+            assert.equal(Object.hasOwn(comment, 'status'), false);
+            assert.equal(Object.hasOwn(comment, 'pinned_at'), false);
         });
 
         it('returns hidden comments (with html)', async function () {
@@ -278,8 +485,9 @@ describe(`Admin Comments API`, function () {
 
             const res = await adminApi.get('/comments/post/' + postId + '/');
             const item = res.body.comments.find(cmt => parent.id === cmt.id);
-            const lastReply = item.replies[item.replies.length - 1];
-            const filter = encodeURIComponent(`id:>'${lastReply.id}'`);
+            // Use the 3rd reply as cursor to simulate "load more after first 3"
+            const thirdReply = item.replies[2];
+            const filter = encodeURIComponent(`id:>'${thirdReply.id}'`);
             const res2 = await adminApi.get(`/comments/${parent.id}/replies?limit=5&filter=${filter}`);
             assert.equal(res2.body.comments.length, 3);
         });
@@ -318,8 +526,10 @@ describe(`Admin Comments API`, function () {
 
             const res = await adminApi.get('/comments/post/' + postId + '/');
             const item = res.body.comments.find(cmt => parent.id === cmt.id);
-            const lastReply = item.replies[item.replies.length - 1];
-            const filter = encodeURIComponent(`id:>'${lastReply.id}'`);
+            // Admin browse returns all non-deleted replies (published + hidden)
+            // Use the 3rd reply as cursor to simulate "load more after first 3"
+            const thirdReply = item.replies[2];
+            const filter = encodeURIComponent(`id:>'${thirdReply.id}'`);
             const res2 = await adminApi.get(`/comments/${parent.id}/replies?limit=5&filter=${filter}`);
             assert.equal(res2.body.comments.length, 3);
         });
@@ -350,8 +560,9 @@ describe(`Admin Comments API`, function () {
 
             const res = await adminApi.get('/comments/post/' + postId + '/');
             const item = res.body.comments.find(cmt => parent.id === cmt.id);
-            const lastReply = item.replies[item.replies.length - 1];
-            const filter = encodeURIComponent(`id:>'${lastReply.id}'`);
+            // Use the 3rd reply as cursor to fetch remaining replies
+            const thirdReply = item.replies[2];
+            const filter = encodeURIComponent(`id:>'${thirdReply.id}'`);
             const res2 = await adminApi.get(`/comments/${parent.id}/replies?limit=5&filter=${filter}`);
             assert.equal(res2.body.comments.length, 1);
             assert.equal(res2.body.comments[0].html, 'Reply 4');
@@ -372,10 +583,32 @@ describe(`Admin Comments API`, function () {
                 }]
             });
 
-            const res = await adminApi.get(`/comments/${parent.get('id')}/`);
-            res.body.comments[0].replies.length.should.eql(3);
-            res.body.comments[0].replies[0].member.should.be.an.Object().with.properties('id', 'uuid', 'name', 'avatar_image');
-            res.body.comments[0].replies[0].should.be.an.Object().with.properties('id', 'html', 'status', 'created_at', 'member', 'count');
+            const replyMatcher = {
+                id: anyObjectId,
+                parent_id: anyObjectId,
+                html: anyString,
+                status: anyString,
+                created_at: anyISODateTime,
+                member: {
+                    id: anyObjectId,
+                    uuid: anyUuid,
+                    name: nullable(anyString),
+                    avatar_image: nullable(anyString)
+                },
+                count: {
+                    likes: anyNumber
+                },
+                pinned: anyBoolean
+            };
+
+            await adminApi.get(`/comments/${parent.get('id')}/`)
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    comments: [{
+                        ...membersCommentMatcher,
+                        replies: [replyMatcher, replyMatcher, replyMatcher]
+                    }]
+                });
         });
 
         it('ensure replies are always ordered from oldest to newest', async function () {
@@ -419,8 +652,9 @@ describe(`Admin Comments API`, function () {
 
             const res = await adminApi.get('/comments/post/' + postId + '/');
             const item = res.body.comments.find(cmt => parent.id === cmt.id);
-            const lastReply = item.replies[item.replies.length - 1];
-            const filter = encodeURIComponent(`id:>'${lastReply.id}'`);
+            // Use the 3rd reply as cursor to simulate "load more after first 3"
+            const thirdReply = item.replies[2];
+            const filter = encodeURIComponent(`id:>'${thirdReply.id}'`);
             const res2 = await adminApi.get(`/comments/${parent.id}/replies?limit=10&filter=${filter}`);
             assert.equal(res2.body.comments.length, 3);
             assert.equal(res2.body.comments[0].html, 'Reply 4');
@@ -480,7 +714,8 @@ describe(`Admin Comments API`, function () {
                 member: {
                     id: anyObjectId,
                     uuid: anyUuid
-                }
+                },
+                pinned: anyBoolean
             };
 
             await adminApi.get('/comments/post/' + postId + '/')
@@ -520,7 +755,8 @@ describe(`Admin Comments API`, function () {
                 member: {
                     id: anyObjectId,
                     uuid: anyUuid
-                }
+                },
+                pinned: anyBoolean
             };
 
             // Admin sees hidden + published, but not deleted
@@ -532,6 +768,178 @@ describe(`Admin Comments API`, function () {
                         replies: [replyMatcher, replyMatcher]
                     }]
                 });
+        });
+
+        it('includes deleted reply tombstones when they have visible descendants', async function () {
+            const root = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: 'Comment 1',
+                status: 'published'
+            });
+
+            const deletedReply = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                parent_id: root.get('id'),
+                html: 'Deleted reply',
+                status: 'deleted'
+            });
+
+            const hiddenReply = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                parent_id: root.get('id'),
+                in_reply_to_id: deletedReply.get('id'),
+                html: 'Hidden reply',
+                status: 'hidden'
+            });
+
+            const res = await adminApi.get('/comments/post/' + postId + '/');
+            const replies = res.body.comments[0].replies;
+
+            assert.deepEqual(replies.map(reply => reply.id), [deletedReply.get('id'), hiddenReply.get('id')]);
+            assert.equal(replies[0].html, null);
+            assert.equal(replies[1].html, 'Hidden reply');
+            assert.equal(replies[1].in_reply_to_id, deletedReply.get('id'));
+        });
+
+        it('includes deleted comments when only a nested descendant is visible', async function () {
+            const root = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: 'Deleted comment',
+                status: 'deleted'
+            });
+
+            const deletedReply = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                parent_id: root.get('id'),
+                html: 'Deleted reply',
+                status: 'deleted'
+            });
+
+            const hiddenReply = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                parent_id: root.get('id'),
+                in_reply_to_id: deletedReply.get('id'),
+                html: 'Hidden reply',
+                status: 'hidden'
+            });
+
+            const res = await adminApi.get('/comments/post/' + postId + '/');
+            const comment = res.body.comments[0];
+
+            assert.equal(res.body.comments.length, 1);
+            assert.equal(comment.id, root.get('id'));
+            assert.equal(comment.html, null);
+            assert.equal(comment.count.replies, 1);
+            assert.equal(comment.count.direct_replies, 0);
+            assert.deepEqual(comment.replies.map(reply => reply.id), [deletedReply.get('id'), hiddenReply.get('id')]);
+            assert.equal(comment.replies[0].html, null);
+            assert.equal(comment.replies[1].html, 'Hidden reply');
+            assert.equal(res.body.meta.pagination.total, 1);
+        });
+
+        it('reply endpoint includes deleted tombstones when they have visible descendants', async function () {
+            const root = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: 'Comment 1',
+                status: 'published'
+            });
+
+            const deletedReply = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                parent_id: root.get('id'),
+                html: 'Deleted reply',
+                status: 'deleted'
+            });
+
+            const hiddenReply = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                parent_id: root.get('id'),
+                in_reply_to_id: deletedReply.get('id'),
+                html: 'Hidden reply',
+                status: 'hidden'
+            });
+
+            const res = await adminApi.get(`/comments/${root.get('id')}/replies/`);
+            const replies = res.body.comments;
+
+            assert.deepEqual(replies.map(reply => reply.id), [deletedReply.get('id'), hiddenReply.get('id')]);
+            assert.equal(replies[0].html, null);
+            assert.equal(replies[1].html, 'Hidden reply');
+            assert.equal(replies[1].in_reply_to_id, deletedReply.get('id'));
+            assert.equal(replies[0].count.direct_replies, 1);
+            assert.equal(res.body.meta.pagination.total, 2);
+        });
+
+        it('reply endpoint paginates deleted tombstones before the visible descendant that makes them displayable', async function () {
+            const root = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: 'Comment 1',
+                status: 'published'
+            });
+
+            const deletedReply = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                parent_id: root.get('id'),
+                html: 'Deleted reply',
+                status: 'deleted'
+            });
+
+            const hiddenReply = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                parent_id: root.get('id'),
+                in_reply_to_id: deletedReply.get('id'),
+                html: 'Hidden reply',
+                status: 'hidden'
+            });
+
+            const firstPage = await adminApi.get(`/comments/${root.get('id')}/replies/?limit=1`);
+            assert.deepEqual(firstPage.body.comments.map(reply => reply.id), [deletedReply.get('id')]);
+            assert.equal(firstPage.body.comments[0].html, null);
+            assert.equal(firstPage.body.meta.pagination.total, 2);
+            assert.equal(firstPage.body.meta.pagination.next, 2);
+
+            const secondPage = await adminApi.get(`/comments/${root.get('id')}/replies/?limit=1&page=2`);
+            assert.deepEqual(secondPage.body.comments.map(reply => reply.id), [hiddenReply.get('id')]);
+            assert.equal(secondPage.body.comments[0].html, 'Hidden reply');
+            assert.equal(secondPage.body.meta.pagination.total, 2);
+            assert.equal(secondPage.body.meta.pagination.next, null);
+        });
+
+        it('reply endpoint excludes deleted leaf replies while keeping visible siblings', async function () {
+            const root = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: 'Comment 1',
+                status: 'published'
+            });
+
+            await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                parent_id: root.get('id'),
+                html: 'Deleted reply',
+                status: 'deleted'
+            });
+
+            const hiddenReply = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                parent_id: root.get('id'),
+                html: 'Hidden reply',
+                status: 'hidden'
+            });
+
+            const publishedReply = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                parent_id: root.get('id'),
+                html: 'Published reply',
+                status: 'published'
+            });
+
+            const res = await adminApi.get(`/comments/${root.get('id')}/replies/`);
+            const replies = res.body.comments;
+
+            assert.deepEqual(replies.map(reply => reply.id), [hiddenReply.get('id'), publishedReply.get('id')]);
+            assert.equal(replies[0].html, 'Hidden reply');
+            assert.equal(replies[1].html, 'Published reply');
+            assert.equal(res.body.meta.pagination.total, 2);
         });
 
         it('includes hidden replies but not deleted replies in count', async function () {
@@ -561,7 +969,8 @@ describe(`Admin Comments API`, function () {
                 member: {
                     id: anyObjectId,
                     uuid: anyUuid
-                }
+                },
+                pinned: anyBoolean
             };
 
             // Admin sees hidden + published (2), but not deleted
@@ -601,6 +1010,77 @@ describe(`Admin Comments API`, function () {
             const comment = res.body.comments[0];
             const reply = comment.replies[1];
             assert.equal(reply.in_reply_to_snippet, 'Reply 1');
+        });
+    });
+
+    describe('Reply counts', function () {
+        it('returns correct count.replies and count.direct_replies for threaded comments', async function () {
+            const member0 = fixtureManager.get('members', 0).id;
+            const member1 = fixtureManager.get('members', 1).id;
+
+            // Root A
+            const rootA = await dbFns.addComment({member_id: member0, html: '<p>Root A</p>'});
+
+            // Reply B to A (direct reply — in_reply_to_id is null)
+            const replyB = await dbFns.addComment({
+                member_id: member1,
+                parent_id: rootA.get('id'),
+                html: '<p>Reply B</p>'
+            });
+
+            // Reply C to B (in_reply_to_id = B)
+            await dbFns.addComment({
+                member_id: member0,
+                parent_id: rootA.get('id'),
+                in_reply_to_id: replyB.get('id'),
+                html: '<p>Reply C to B</p>'
+            });
+
+            // Reply D to B (in_reply_to_id = B)
+            await dbFns.addComment({
+                member_id: member1,
+                parent_id: rootA.get('id'),
+                in_reply_to_id: replyB.get('id'),
+                html: '<p>Reply D to B</p>'
+            });
+
+            // Fetch root via admin API
+            const res = await adminApi.get(`/comments/post/${postId}/`);
+            const rootComment = res.body.comments[0];
+
+            // count.replies = 3 (B, C, D all have parent_id=A)
+            // count.direct_replies = 1 (only B is direct: parent_id=A AND in_reply_to_id IS NULL)
+            assert.equal(rootComment.count.replies, 3);
+            assert.equal(rootComment.count.direct_replies, 1);
+
+            // Child B (embedded in root's replies) should have count.direct_replies = 2
+            const childB = rootComment.replies.find(r => r.id === replyB.get('id'));
+            assert.equal(childB.count.direct_replies, 2);
+        });
+
+        it('admin count.replies includes hidden but not deleted', async function () {
+            const member0 = fixtureManager.get('members', 0).id;
+
+            const root = await dbFns.addComment({member_id: member0, html: '<p>Root</p>'});
+
+            // 1 hidden, 1 deleted, 1 published — all direct replies
+            await dbFns.addComment({
+                member_id: member0, parent_id: root.get('id'), html: '<p>Hidden</p>', status: 'hidden'
+            });
+            await dbFns.addComment({
+                member_id: member0, parent_id: root.get('id'), html: '<p>Deleted</p>', status: 'deleted'
+            });
+            await dbFns.addComment({
+                member_id: member0, parent_id: root.get('id'), html: '<p>Published</p>', status: 'published'
+            });
+
+            const res = await adminApi.get(`/comments/post/${postId}/`);
+            const rootComment = res.body.comments[0];
+
+            // Admin sees hidden + published = 2, not deleted
+            // count.replies = 2 (all are direct, so same as direct_replies)
+            assert.equal(rootComment.count.replies, 2);
+            assert.equal(rootComment.count.direct_replies, 2);
         });
     });
 
@@ -700,12 +1180,12 @@ describe(`Admin Comments API`, function () {
         it('can get comment liked status by impersonating member via admin browse route', async function () {
             // Like the comment
             const res = await adminApi.get(`/comments/post/${post.id}/?impersonate_member_uuid=${fixtureManager.get('members', 1).uuid}`);
-            res.body.comments[0].liked.should.eql(true);
+            assert.equal(res.body.comments[0].liked, true);
         });
 
         it('can get comment liked status by impersonating member via admin get by comment id read route', async function () {
             const res = await adminApi.get(`/comments/${comment.get('id')}/?impersonate_member_uuid=${fixtureManager.get('members', 1).uuid}`);
-            res.body.comments[0].liked.should.eql(true);
+            assert.equal(res.body.comments[0].liked, true);
         });
 
         it('can get comment liked status by impersonating member via admin get by comment replies route', async function () {
@@ -722,7 +1202,7 @@ describe(`Admin Comments API`, function () {
                 .expectEmptyBody();
 
             const res = await adminApi.get(`/comments/${parent.get('id')}/replies/?impersonate_member_uuid=${fixtureManager.get('members', 1).uuid}`);
-            res.body.comments[0].liked.should.eql(true);
+            assert.equal(res.body.comments[0].liked, true);
         });
     });
 
@@ -751,15 +1231,15 @@ describe(`Admin Comments API`, function () {
                 .expectStatus(201);
 
             // Validate response structure
-            response.body.should.have.property('comments');
-            response.body.comments.should.be.an.Array().with.lengthOf(1);
-            
+            assert.ok(Array.isArray(response.body.comments));
+            assert.equal(response.body.comments.length, 1);
+
             const comment = response.body.comments[0];
-            comment.should.have.property('id').which.is.a.String();
-            comment.should.have.property('html', '<p>This is a test comment via Admin API</p>');
-            comment.should.have.property('status', 'published');
-            comment.should.have.property('member');
-            comment.member.should.have.property('id', memberId);
+            assert.equal(typeof comment.id, 'string');
+            assert.equal(comment.html, '<p>This is a test comment via Admin API</p>');
+            assert.equal(comment.status, 'published');
+            assert.ok(comment.member);
+            assert.equal(comment.member.id, memberId);
         });
 
         it('Can add a comment with custom created_at timestamp', async function () {
@@ -781,16 +1261,16 @@ describe(`Admin Comments API`, function () {
                 .expectStatus(201);
 
             // Validate response structure
-            response.body.should.have.property('comments');
-            response.body.comments.should.be.an.Array().with.lengthOf(1);
-            
+            assert.ok(Array.isArray(response.body.comments));
+            assert.equal(response.body.comments.length, 1);
+
             const comment = response.body.comments[0];
-            comment.should.have.property('id').which.is.a.String();
-            comment.should.have.property('html', '<p>This comment was created at a specific time</p>');
-            comment.should.have.property('status', 'published');
-            comment.should.have.property('created_at', customTimestamp);
-            comment.should.have.property('member');
-            comment.member.should.have.property('id', memberId);
+            assert.equal(typeof comment.id, 'string');
+            assert.equal(comment.html, '<p>This comment was created at a specific time</p>');
+            assert.equal(comment.status, 'published');
+            assert.equal(comment.created_at, customTimestamp);
+            assert.ok(comment.member);
+            assert.equal(comment.member.id, memberId);
         });
 
         it('Can add a reply to an existing comment via Admin API', async function () {
@@ -814,15 +1294,15 @@ describe(`Admin Comments API`, function () {
                 .expectStatus(201);
 
             // Validate response structure
-            response.body.should.have.property('comments');
-            response.body.comments.should.be.an.Array().with.lengthOf(1);
-            
+            assert.ok(Array.isArray(response.body.comments));
+            assert.equal(response.body.comments.length, 1);
+
             const reply = response.body.comments[0];
-            reply.should.have.property('id').which.is.a.String();
-            reply.should.have.property('html', '<p>This is a reply via Admin API</p>');
-            reply.should.have.property('status', 'published');
-            reply.should.have.property('member');
-            reply.member.should.have.property('id', memberId);
+            assert.equal(typeof reply.id, 'string');
+            assert.equal(reply.html, '<p>This is a reply via Admin API</p>');
+            assert.equal(reply.status, 'published');
+            assert.ok(reply.member);
+            assert.equal(reply.member.id, memberId);
         });
 
         it('Can add a reply with custom created_at timestamp', async function () {
@@ -848,16 +1328,16 @@ describe(`Admin Comments API`, function () {
                 .expectStatus(201);
 
             // Validate response structure
-            response.body.should.have.property('comments');
-            response.body.comments.should.be.an.Array().with.lengthOf(1);
-            
+            assert.ok(Array.isArray(response.body.comments));
+            assert.equal(response.body.comments.length, 1);
+
             const reply = response.body.comments[0];
-            reply.should.have.property('id').which.is.a.String();
-            reply.should.have.property('html', '<p>This is a timestamped reply via Admin API</p>');
-            reply.should.have.property('status', 'published');
-            reply.should.have.property('created_at', customTimestamp);
-            reply.should.have.property('member');
-            reply.member.should.have.property('id', memberId);
+            assert.equal(typeof reply.id, 'string');
+            assert.equal(reply.html, '<p>This is a timestamped reply via Admin API</p>');
+            assert.equal(reply.status, 'published');
+            assert.equal(reply.created_at, customTimestamp);
+            assert.ok(reply.member);
+            assert.equal(reply.member.id, memberId);
         });
 
         it('Returns validation error for missing required fields', async function () {
@@ -902,17 +1382,17 @@ describe(`Admin Comments API`, function () {
                 .expectStatus(201);
 
             // Should succeed but use current timestamp instead of invalid date
-            response.body.should.have.property('comments');
-            response.body.comments.should.be.an.Array().with.lengthOf(1);
-            
+            assert.ok(Array.isArray(response.body.comments));
+            assert.equal(response.body.comments.length, 1);
+
             const comment = response.body.comments[0];
-            comment.should.have.property('created_at');
+            assert.ok(comment.created_at);
             // The created_at should be a valid recent timestamp, not the invalid input
             const createdAt = new Date(comment.created_at);
             const now = new Date();
             const timeDiff = Math.abs(now.getTime() - createdAt.getTime());
             // Should be created within the last few seconds
-            timeDiff.should.be.lessThan(10000);
+            assert.ok(timeDiff < 10000, `Expected timeDiff (${timeDiff}) to be less than 10000`);
         });
 
         it('Handles future dates by using current timestamp', async function () {
@@ -934,18 +1414,18 @@ describe(`Admin Comments API`, function () {
                 .expectStatus(201);
 
             // Should succeed but use current timestamp instead of future date
-            response.body.should.have.property('comments');
-            response.body.comments.should.be.an.Array().with.lengthOf(1);
-            
+            assert.ok(Array.isArray(response.body.comments));
+            assert.equal(response.body.comments.length, 1);
+
             const comment = response.body.comments[0];
-            comment.should.have.property('created_at');
+            assert.ok(comment.created_at);
             // The created_at should not be the future date
             const createdAt = new Date(comment.created_at);
             const now = new Date();
-            createdAt.should.not.eql(futureDate);
+            assert.notDeepEqual(createdAt, futureDate);
             // Should be created recently (within the last few seconds)
             const timeDiff = Math.abs(now.getTime() - createdAt.getTime());
-            timeDiff.should.be.lessThan(10000);
+            assert.ok(timeDiff < 10000, `Expected timeDiff (${timeDiff}) to be less than 10000`);
         });
 
         it('Handles non-string/non-Date created_at values gracefully', async function () {
@@ -965,16 +1445,16 @@ describe(`Admin Comments API`, function () {
                 .expectStatus(201);
 
             // Should succeed but use current timestamp instead of invalid type
-            response.body.should.have.property('comments');
-            response.body.comments.should.be.an.Array().with.lengthOf(1);
-            
+            assert.ok(Array.isArray(response.body.comments));
+            assert.equal(response.body.comments.length, 1);
+
             const comment = response.body.comments[0];
-            comment.should.have.property('created_at');
+            assert.ok(comment.created_at);
             // The created_at should be a valid recent timestamp
             const createdAt = new Date(comment.created_at);
             const now = new Date();
             const timeDiff = Math.abs(now.getTime() - createdAt.getTime());
-            timeDiff.should.be.lessThan(10000);
+            assert.ok(timeDiff < 10000, `Expected timeDiff (${timeDiff}) to be less than 10000`);
         });
 
         it('Works correctly with valid Date object as created_at', async function () {
@@ -994,11 +1474,11 @@ describe(`Admin Comments API`, function () {
                 .body({comments: [commentData]})
                 .expectStatus(201);
 
-            response.body.should.have.property('comments');
-            response.body.comments.should.be.an.Array().with.lengthOf(1);
-            
+            assert.ok(Array.isArray(response.body.comments));
+            assert.equal(response.body.comments.length, 1);
+
             const comment = response.body.comments[0];
-            comment.should.have.property('created_at', validDate.toISOString());
+            assert.equal(comment.created_at, validDate.toISOString());
         });
 
         it('Can set in_reply_to_id when creating a reply to a specific reply', async function () {
@@ -1030,17 +1510,17 @@ describe(`Admin Comments API`, function () {
                 .expectStatus(201);
 
             // Validate response structure
-            response.body.should.have.property('comments');
-            response.body.comments.should.be.an.Array().with.lengthOf(1);
-            
+            assert.ok(Array.isArray(response.body.comments));
+            assert.equal(response.body.comments.length, 1);
+
             const reply = response.body.comments[0];
-            reply.should.have.property('id').which.is.a.String();
-            reply.should.have.property('html', '<p>This is a reply to the first reply via Admin API</p>');
-            reply.should.have.property('status', 'published');
-            reply.should.have.property('in_reply_to_id', firstReply.id);
-            reply.should.have.property('in_reply_to_snippet', 'This is the first reply to the parent');
-            reply.should.have.property('member');
-            reply.member.should.have.property('id', memberId);
+            assert.equal(typeof reply.id, 'string');
+            assert.equal(reply.html, '<p>This is a reply to the first reply via Admin API</p>');
+            assert.equal(reply.status, 'published');
+            assert.equal(reply.in_reply_to_id, firstReply.id);
+            assert.equal(reply.in_reply_to_snippet, 'This is the first reply to the parent');
+            assert.ok(reply.member);
+            assert.equal(reply.member.id, memberId);
         });
 
         it('Ignores in_reply_to_id when no parent_id is specified', async function () {
@@ -1067,18 +1547,18 @@ describe(`Admin Comments API`, function () {
                 .expectStatus(201);
 
             // Validate response structure
-            response.body.should.have.property('comments');
-            response.body.comments.should.be.an.Array().with.lengthOf(1);
-            
+            assert.ok(Array.isArray(response.body.comments));
+            assert.equal(response.body.comments.length, 1);
+
             const comment = response.body.comments[0];
-            comment.should.have.property('id').which.is.a.String();
-            comment.should.have.property('html', '<p>This is a top-level comment that incorrectly references another comment</p>');
-            comment.should.have.property('status', 'published');
+            assert.equal(typeof comment.id, 'string');
+            assert.equal(comment.html, '<p>This is a top-level comment that incorrectly references another comment</p>');
+            assert.equal(comment.status, 'published');
             // For top-level comments, in_reply_to_id should be null
-            comment.should.have.property('in_reply_to_id', null);
-            comment.should.have.property('in_reply_to_snippet', null);
-            comment.should.have.property('member');
-            comment.member.should.have.property('id', memberId);
+            assert.equal(comment.in_reply_to_id, null);
+            assert.equal(comment.in_reply_to_snippet, null);
+            assert.ok(comment.member);
+            assert.equal(comment.member.id, memberId);
         });
 
         it('Ignores in_reply_to_id when referenced comment has different parent', async function () {
@@ -1116,18 +1596,18 @@ describe(`Admin Comments API`, function () {
                 .expectStatus(201);
 
             // Validate response structure
-            response.body.should.have.property('comments');
-            response.body.comments.should.be.an.Array().with.lengthOf(1);
-            
+            assert.ok(Array.isArray(response.body.comments));
+            assert.equal(response.body.comments.length, 1);
+
             const reply = response.body.comments[0];
-            reply.should.have.property('id').which.is.a.String();
-            reply.should.have.property('html', '<p>This reply has mismatched parent and in_reply_to</p>');
-            reply.should.have.property('status', 'published');
-            // in_reply_to should be ignored due to parent mismatch  
-            reply.should.have.property('in_reply_to_id', null);
-            reply.should.have.property('in_reply_to_snippet', null);
-            reply.should.have.property('member');
-            reply.member.should.have.property('id', memberId);
+            assert.equal(typeof reply.id, 'string');
+            assert.equal(reply.html, '<p>This reply has mismatched parent and in_reply_to</p>');
+            assert.equal(reply.status, 'published');
+            // in_reply_to should be ignored due to parent mismatch
+            assert.equal(reply.in_reply_to_id, null);
+            assert.equal(reply.in_reply_to_snippet, null);
+            assert.ok(reply.member);
+            assert.equal(reply.member.id, memberId);
         });
 
         it('Does not send notifications when adding comments via Admin API', async function () {
@@ -1147,13 +1627,13 @@ describe(`Admin Comments API`, function () {
                 .expectStatus(201);
 
             // Validate the comment was created successfully
-            response.body.should.have.property('comments');
-            response.body.comments.should.be.an.Array().with.lengthOf(1);
-            
+            assert.ok(Array.isArray(response.body.comments));
+            assert.equal(response.body.comments.length, 1);
+
             const comment = response.body.comments[0];
-            comment.should.have.property('id').which.is.a.String();
-            comment.should.have.property('html', '<p>This comment should not trigger notifications</p>');
-            comment.should.have.property('status', 'published');
+            assert.equal(typeof comment.id, 'string');
+            assert.equal(comment.html, '<p>This comment should not trigger notifications</p>');
+            assert.equal(comment.status, 'published');
 
             // Verify NO emails were sent (internal context should prevent notifications)
             emailMockReceiver.assertSentEmailCount(0);
@@ -1183,13 +1663,13 @@ describe(`Admin Comments API`, function () {
                 .expectStatus(201);
 
             // Validate the reply was created successfully
-            response.body.should.have.property('comments');
-            response.body.comments.should.be.an.Array().with.lengthOf(1);
-            
+            assert.ok(Array.isArray(response.body.comments));
+            assert.equal(response.body.comments.length, 1);
+
             const reply = response.body.comments[0];
-            reply.should.have.property('id').which.is.a.String();
-            reply.should.have.property('html', '<p>This reply should not trigger notifications</p>');
-            reply.should.have.property('status', 'published');
+            assert.equal(typeof reply.id, 'string');
+            assert.equal(reply.html, '<p>This reply should not trigger notifications</p>');
+            assert.equal(reply.status, 'published');
 
             // Verify NO emails were sent (internal context should prevent notifications)
             emailMockReceiver.assertSentEmailCount(0);
@@ -1197,7 +1677,7 @@ describe(`Admin Comments API`, function () {
     });
 
     describe('Browse All', function () {
-        // Matcher for comments (always includes member, post, and counts for admin)
+        // Matcher for root comments (includes count.replies alias)
         const commentMatcher = {
             id: anyObjectId,
             parent_id: nullable(anyObjectId),
@@ -1215,20 +1695,44 @@ describe(`Admin Comments API`, function () {
             count: {
                 likes: anyNumber,
                 replies: anyNumber,
+                direct_replies: anyNumber,
+                reports: anyNumber
+            },
+            pinned: anyBoolean
+        };
+        // Matcher for child comments (no count.replies — alias is root-only)
+        const childCommentMatcher = {
+            ...commentMatcher,
+            count: {
+                likes: anyNumber,
+                direct_replies: anyNumber,
                 reports: anyNumber
             }
+        };
+        const parentMatcher = {
+            id: anyObjectId,
+            parent_id: nullable(anyObjectId),
+            in_reply_to_id: nullable(anyObjectId),
+            edited_at: nullable(anyISODateTime),
+            created_at: anyISODateTime
+        };
+        const commentMatcherWithParent = {
+            ...childCommentMatcher,
+            parent: parentMatcher
         };
 
         it('Can browse all comments across posts', async function () {
             await dbFns.addComment({
                 post_id: fixtureManager.get('posts', 0).id,
                 member_id: fixtureManager.get('members', 0).id,
-                html: '<p>Comment on post 1</p>'
+                html: '<p>Comment on post 1</p>',
+                created_at: new Date('2025-01-01T00:00:00.000Z')
             });
             await dbFns.addComment({
                 post_id: fixtureManager.get('posts', 1).id,
                 member_id: fixtureManager.get('members', 0).id,
-                html: '<p>Comment on post 2</p>'
+                html: '<p>Comment on post 2</p>',
+                created_at: new Date('2024-01-01T00:00:00.000Z')
             });
 
             await adminApi.get('/comments/')
@@ -1242,14 +1746,20 @@ describe(`Admin Comments API`, function () {
             await dbFns.addCommentWithReplies({
                 member_id: fixtureManager.get('members', 0).id,
                 html: '<p>Parent</p>',
-                replies: [{member_id: fixtureManager.get('members', 1).id, html: '<p>Reply</p>'}]
+                created_at: new Date('2025-01-01T00:00:00.000Z'),
+                replies: [{
+                    member_id: fixtureManager.get('members', 1).id,
+                    html: '<p>Reply</p>',
+                    created_at: new Date('2025-01-01T00:00:01.000Z')
+                }]
             });
 
-            // Both parent and reply appear as separate items in flat list
+            // Both parent and reply appear as separate items in flat list,
+            // reply first because default order is `created_at desc`.
             await adminApi.get('/comments/')
                 .expectStatus(200)
                 .matchBodySnapshot({
-                    comments: [commentMatcher, commentMatcher]
+                    comments: [commentMatcherWithParent, commentMatcher]
                 });
         });
 
@@ -1318,7 +1828,7 @@ describe(`Admin Comments API`, function () {
             await adminApi.get('/comments/')
                 .expectStatus(200)
                 .matchBodySnapshot({
-                    comments: [commentMatcher]
+                    comments: [commentMatcherWithParent]
                 });
         });
 
@@ -1373,6 +1883,46 @@ describe(`Admin Comments API`, function () {
                 .matchBodySnapshot({
                     comments: [commentMatcher, commentMatcher]
                 });
+        });
+
+        it('Keeps requested ordering for pinned comments', async function () {
+            const unpinnedOlder = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Older unpinned</p>',
+                created_at: new Date('2023-01-01T00:00:00.000Z')
+            });
+            const pinnedOlder = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Older pinned</p>',
+                created_at: new Date('2023-02-01T00:00:00.000Z'),
+                pinned_at: new Date('2025-01-01T00:00:00.000Z')
+            });
+            const pinnedNewer = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Newer pinned</p>',
+                created_at: new Date('2023-03-01T00:00:00.000Z'),
+                pinned_at: new Date('2025-02-01T00:00:00.000Z')
+            });
+            const unpinnedNewer = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Newer unpinned</p>',
+                created_at: new Date('2023-04-01T00:00:00.000Z')
+            });
+
+            const res = await adminApi.get('/comments/?order=' + encodeURIComponent('created_at asc')).expectStatus(200);
+
+            assert.deepEqual(res.body.comments.map(comment => comment.id), [
+                unpinnedOlder.id,
+                pinnedOlder.id,
+                pinnedNewer.id,
+                unpinnedNewer.id
+            ]);
+            assert.deepEqual(res.body.comments.map(comment => comment.pinned), [
+                false,
+                true,
+                true,
+                false
+            ]);
         });
 
         it('Can order by created_at asc', async function () {
@@ -1536,6 +2086,262 @@ describe(`Admin Comments API`, function () {
         });
     });
 
+    describe('Comment Reports', function () {
+        const reportMatcher = {
+            id: anyObjectId,
+            comment_id: anyObjectId,
+            member_id: anyObjectId,
+            created_at: anyISODateTime,
+            updated_at: anyISODateTime,
+            member: {
+                id: anyObjectId,
+                uuid: anyUuid,
+                created_at: anyISODateTime,
+                updated_at: anyISODateTime,
+                transient_id: anyString,
+                last_seen_at: nullable(anyISODateTime),
+                last_commented_at: nullable(anyISODateTime)
+            }
+        };
+
+        it('Can browse reporters for a comment', async function () {
+            const comment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Reported comment</p>'
+            });
+
+            // Add reports from different members with explicit timestamps to ensure deterministic ordering
+            await models.CommentReport.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 1).id,
+                created_at: new Date('2023-06-01')
+            });
+            await models.CommentReport.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 2).id,
+                created_at: new Date('2023-01-01')
+            });
+
+            await adminApi.get(`/comments/${comment.id}/reports/`)
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    comment_reports: [reportMatcher, reportMatcher]
+                });
+        });
+
+        it('Returns empty list for comment with no reports', async function () {
+            const comment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Unreported comment</p>'
+            });
+
+            await adminApi.get(`/comments/${comment.id}/reports/`)
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    comment_reports: []
+                });
+        });
+
+        it('Supports pagination', async function () {
+            const comment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Highly reported comment</p>'
+            });
+
+            // Add reports from multiple members
+            await models.CommentReport.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 1).id
+            });
+            await models.CommentReport.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 2).id
+            });
+            await models.CommentReport.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 3).id
+            });
+
+            const res = await adminApi.get(`/comments/${comment.id}/reports/?limit=2`);
+            assert.equal(res.body.comment_reports.length, 2);
+            assert.equal(res.body.meta.pagination.total, 3);
+            assert.equal(res.body.meta.pagination.pages, 2);
+        });
+
+        it('Orders reports by created_at desc', async function () {
+            const comment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Reported comment</p>'
+            });
+
+            // Add reports at different times
+            const olderReport = await models.CommentReport.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 1).id
+            });
+            await db.knex('comment_reports')
+                .where('id', olderReport.id)
+                .update({created_at: new Date('2023-01-01')});
+
+            const newerReport = await models.CommentReport.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 2).id
+            });
+            await db.knex('comment_reports')
+                .where('id', newerReport.id)
+                .update({created_at: new Date('2023-06-01')});
+
+            const res = await adminApi.get(`/comments/${comment.id}/reports/`);
+            assert.equal(res.body.comment_reports.length, 2);
+            // Newer report should be first
+            assert.equal(res.body.comment_reports[0].member_id, fixtureManager.get('members', 2).id);
+            assert.equal(res.body.comment_reports[1].member_id, fixtureManager.get('members', 1).id);
+        });
+
+        it('Returns 404 for non-existent comment', async function () {
+            const fakeCommentId = '507f1f77bcf86cd799439011';
+
+            await adminApi.get(`/comments/${fakeCommentId}/reports/`)
+                .expectStatus(404)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                });
+        });
+    });
+
+    describe('Comment Likes', function () {
+        const likeMatcher = {
+            id: anyObjectId,
+            comment_id: anyObjectId,
+            member_id: anyObjectId,
+            created_at: anyISODateTime,
+            updated_at: anyISODateTime,
+            member: {
+                id: anyObjectId,
+                uuid: anyUuid,
+                created_at: anyISODateTime,
+                updated_at: anyISODateTime,
+                transient_id: anyString,
+                last_seen_at: nullable(anyISODateTime),
+                last_commented_at: nullable(anyISODateTime)
+            }
+        };
+
+        it('Can browse comment likes', async function () {
+            const comment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Liked comment</p>'
+            });
+
+            // Add likes from different members with explicit timestamps to ensure deterministic ordering
+            await models.CommentLike.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 1).id,
+                created_at: new Date('2023-06-01')
+            });
+            await models.CommentLike.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 2).id,
+                created_at: new Date('2023-01-01')
+            });
+            await models.CommentLike.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 3).id,
+                score: -1,
+                created_at: new Date('2023-12-01')
+            });
+
+            await adminApi.get(`/comments/${comment.id}/likes/`)
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    comment_likes: [likeMatcher, likeMatcher]
+                });
+        });
+
+        it('Returns empty list for comment with no likes', async function () {
+            const comment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Unliked comment</p>'
+            });
+
+            await adminApi.get(`/comments/${comment.id}/likes/`)
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    comment_likes: []
+                });
+        });
+
+        it('Supports pagination', async function () {
+            const comment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Popular comment</p>'
+            });
+
+            // Add likes from multiple members
+            await models.CommentLike.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 1).id
+            });
+            await models.CommentLike.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 2).id
+            });
+            await models.CommentLike.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 3).id
+            });
+
+            const res = await adminApi.get(`/comments/${comment.id}/likes/?limit=2`);
+            assert.equal(res.body.comment_likes.length, 2);
+            assert.equal(res.body.meta.pagination.total, 3);
+            assert.equal(res.body.meta.pagination.pages, 2);
+        });
+
+        it('Orders likes by created_at desc', async function () {
+            const comment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Liked comment</p>'
+            });
+
+            // Add likes at different times
+            const olderLike = await models.CommentLike.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 1).id
+            });
+            await db.knex('comment_likes')
+                .where('id', olderLike.id)
+                .update({created_at: new Date('2023-01-01')});
+
+            const newerLike = await models.CommentLike.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 2).id
+            });
+            await db.knex('comment_likes')
+                .where('id', newerLike.id)
+                .update({created_at: new Date('2023-06-01')});
+
+            const res = await adminApi.get(`/comments/${comment.id}/likes/`);
+            assert.equal(res.body.comment_likes.length, 2);
+            // Newer like should be first
+            assert.equal(res.body.comment_likes[0].member_id, fixtureManager.get('members', 2).id);
+            assert.equal(res.body.comment_likes[1].member_id, fixtureManager.get('members', 1).id);
+        });
+
+        it('Returns 404 for non-existent comment', async function () {
+            const fakeCommentId = '507f1f77bcf86cd799439011';
+
+            await adminApi.get(`/comments/${fakeCommentId}/likes/`)
+                .expectStatus(404)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                });
+        });
+    });
+
     describe('API Key Permissions', function () {
         let restrictedApiKeyId;
         let restrictedApiKeySecret;
@@ -1618,6 +2424,57 @@ describe(`Admin Comments API`, function () {
                     errors: [{
                         id: anyUuid
                     }]
+                });
+        });
+    });
+
+    describe('Comment Dislikes', function () {
+        const dislikeMatcher = {
+            id: anyObjectId,
+            comment_id: anyObjectId,
+            member_id: anyObjectId,
+            created_at: anyISODateTime,
+            updated_at: anyISODateTime,
+            member: {
+                id: anyObjectId,
+                uuid: anyUuid,
+                created_at: anyISODateTime,
+                updated_at: anyISODateTime,
+                transient_id: anyString,
+                last_seen_at: nullable(anyISODateTime),
+                last_commented_at: nullable(anyISODateTime)
+            }
+        };
+
+        it('Can browse comment dislikes', async function () {
+            const comment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Disliked comment</p>'
+            });
+
+            await models.CommentLike.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 1).id,
+                score: -1,
+                created_at: new Date('2023-06-01')
+            });
+            await models.CommentLike.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 2).id,
+                score: -1,
+                created_at: new Date('2023-01-01')
+            });
+            await models.CommentLike.add({
+                comment_id: comment.id,
+                member_id: fixtureManager.get('members', 3).id,
+                score: 1,
+                created_at: new Date('2023-12-01')
+            });
+
+            await adminApi.get(`/comments/${comment.id}/dislikes/`)
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    comment_dislikes: [dislikeMatcher, dislikeMatcher]
                 });
         });
     });

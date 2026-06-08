@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const should = require('should');
+const {assertExists} = require('../../../../utils/assertions');
 const fs = require('fs-extra');
 const StorageBase = require('ghost-storage-base');
 const configUtils = require('../../../../utils/config-utils');
@@ -10,7 +10,7 @@ const storagePath = configUtils.config.getContentPath('adapters') + 'storage/';
 describe('storage: index_spec', function () {
     const scope = {adapter: null};
 
-    before(function () {
+    beforeAll(function () {
         if (!fs.existsSync(storagePath)) {
             fs.mkdirSync(storagePath);
         }
@@ -27,8 +27,8 @@ describe('storage: index_spec', function () {
 
     it('default image storage is local file storage', function () {
         const chosenStorage = storage.getStorage();
-        (chosenStorage instanceof StorageBase).should.eql(true);
-        (chosenStorage instanceof LocalStorageBase).should.eql(true);
+        assert.equal((chosenStorage instanceof StorageBase), true);
+        assert.equal((chosenStorage instanceof LocalStorageBase), true);
     });
 
     it('custom adapter', function () {
@@ -56,10 +56,10 @@ describe('storage: index_spec', function () {
 
         fs.writeFileSync(scope.adapter, jsFile);
 
-        configUtils.config.get('storage:active').should.eql('custom-adapter');
+        assert.equal(configUtils.config.get('storage:active'), 'custom-adapter');
         chosenStorage = storage.getStorage();
-        (chosenStorage instanceof LocalStorageBase).should.eql(false);
-        (chosenStorage instanceof StorageBase).should.eql(true);
+        assert.equal((chosenStorage instanceof LocalStorageBase), false);
+        assert.equal((chosenStorage instanceof StorageBase), true);
     });
 
     it('create bad adapter: exists fn is missing', function () {
@@ -68,11 +68,9 @@ describe('storage: index_spec', function () {
         configUtils.set({
             storage: {
                 active: 'broken-storage'
-            },
-            paths: {
-                storage: __dirname + '/broken-storage.js'
             }
         });
+        configUtils.set('paths:storage', __dirname + '/broken-storage.js');
 
         const jsFile = '' +
             '\'use strict\';' +
@@ -90,7 +88,7 @@ describe('storage: index_spec', function () {
         try {
             storage.getStorage();
         } catch (err) {
-            should.exist(err);
+            assertExists(err);
             assert.equal(err.errorType, 'IncorrectUsageError');
         }
     });

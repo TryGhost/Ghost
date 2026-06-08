@@ -5,7 +5,7 @@ const StatsLayout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children})
     return (
         <MainLayout>
             <div className='grid w-full grow'>
-                <div className='flex h-full flex-col px-8'>
+                <div className='flex h-full flex-col px-6'>
                     {children}
                 </div>
             </div>

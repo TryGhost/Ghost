@@ -1,4 +1,3 @@
-const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
 
@@ -6,7 +5,7 @@ const {registerHelper, shouldCompileToExpected} = require('./utils/handlebars');
 const {SafeString} = require('express-hbs');
 
 describe('Match helper', function () {
-    before(function () {
+    beforeAll(function () {
         registerHelper('match');
         registerHelper('title');
     });

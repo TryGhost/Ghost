@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 
 const OfferCode = require('../../../../../../../core/server/services/offers/domain/models/offer-code');
 
@@ -10,22 +9,16 @@ describe('OfferCode', function () {
 
             try {
                 OfferCode.create();
-                should.fail();
+                assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferCode.InvalidOfferCode,
-                    'expected an InvalidOfferCode error'
-                );
+                assert(err instanceof OfferCode.InvalidOfferCode, 'expected an InvalidOfferCode error');
             }
 
             try {
                 OfferCode.create(1234);
-                should.fail();
+                assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferCode.InvalidOfferCode,
-                    'expected an InvalidOfferCode error'
-                );
+                assert(err instanceof OfferCode.InvalidOfferCode, 'expected an InvalidOfferCode error');
             }
 
             const code = OfferCode.create('Hello, world');
@@ -46,12 +39,9 @@ describe('OfferCode', function () {
 
             try {
                 OfferCode.create(tooLong);
-                should.fail();
+                assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferCode.InvalidOfferCode,
-                    'expected an InvalidOfferCode error'
-                );
+                assert(err instanceof OfferCode.InvalidOfferCode, 'expected an InvalidOfferCode error');
             }
         });
     });

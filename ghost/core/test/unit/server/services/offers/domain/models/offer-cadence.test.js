@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 
 const OfferCadence = require('../../../../../../../core/server/services/offers/domain/models/offer-cadence');
 
@@ -10,32 +10,23 @@ describe('OfferCadence', function () {
 
             try {
                 OfferCadence.create();
-                should.fail();
+                assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferCadence.InvalidOfferCadence,
-                    'expected an InvalidOfferCadence error'
-                );
+                assert(err instanceof OfferCadence.InvalidOfferCadence, 'expected an InvalidOfferCadence error');
             }
 
             try {
                 OfferCadence.create(12);
-                should.fail();
+                assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferCadence.InvalidOfferCadence,
-                    'expected an InvalidOfferCadence error'
-                );
+                assert(err instanceof OfferCadence.InvalidOfferCadence, 'expected an InvalidOfferCadence error');
             }
 
             try {
                 OfferCadence.create('daily');
-                should.fail();
+                assert.fail();
             } catch (err) {
-                should.ok(
-                    err instanceof OfferCadence.InvalidOfferCadence,
-                    'expected an InvalidOfferCadence error'
-                );
+                assert(err instanceof OfferCadence.InvalidOfferCadence, 'expected an InvalidOfferCadence error');
             }
         });
     });
@@ -43,6 +34,6 @@ describe('OfferCadence', function () {
     it('Exposes a string on the value property', function () {
         const cadence = OfferCadence.create('month');
 
-        should.ok(typeof cadence.value === 'string');
+        assert(typeof cadence.value === 'string');
     });
 });

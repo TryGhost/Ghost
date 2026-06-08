@@ -1,3 +1,5 @@
+const logging = require('@tryghost/logging');
+
 const CONFIGURATION_ID_SETTING = 'stripe_billing_portal_configuration_id';
 
 const DEFAULT_FEATURES = {
@@ -8,7 +10,7 @@ const DEFAULT_FEATURES = {
         enabled: true
     },
     subscription_cancel: {
-        enabled: true
+        enabled: false
     }
 };
 
@@ -91,7 +93,13 @@ class BillingPortalManager {
                 const configuration = await this.api.createBillingPortalConfiguration(this.getConfigurationOptions());
                 return configuration.id;
             }
-            throw err;
+
+            logging.error('Failed to update the billing portal configuration', {
+                err
+            });
+
+            // Couldn't modify configuration, means it's likely the default config
+            return id;
         }
     }
 
@@ -109,7 +117,7 @@ class BillingPortalManager {
         } else {
             return {
                 business_profile: {
-                    headline: `Manage your ${this.settingsCache.get('title')} subscription`
+                    headline: `Subscription & payment details`
                 },
                 features: DEFAULT_FEATURES,
                 default_return_url: this.siteUrl

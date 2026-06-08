@@ -1,3 +1,29 @@
+import DOMPurify from 'dompurify';
+
+const SAFE_URL_PROTOCOLS = ['http:', 'https:', 'mailto:'];
+
+export function isSafeUrl(url: string): boolean {
+    try {
+        const parsed = new URL(url);
+        return SAFE_URL_PROTOCOLS.includes(parsed.protocol);
+    } catch {
+        return false;
+    }
+}
+
+export function escapeHtml(str: string): string {
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#x27;');
+}
+
+export function sanitizeHtml(html: string): string {
+    return DOMPurify.sanitize(html);
+}
+
 export function stripHtml(html: string, exclude: string[] = []): string {
     // If no exclusions, use the original logic
     if (exclude.length === 0) {
@@ -108,6 +134,27 @@ export const openLinksInNewTab = (content: string) => {
         }
         links[i].setAttribute('target', '_blank');
         links[i].setAttribute('rel', 'noopener noreferrer');
+    }
+
+    return div.innerHTML;
+};
+
+export const enforceVideoCardInlinePlayback = (content: string) => {
+    const div = document.createElement('div');
+    div.innerHTML = content;
+
+    const videos = div.querySelectorAll('.kg-video-card video');
+
+    for (let i = 0; i < videos.length; i++) {
+        const video = videos[i] as HTMLVideoElement;
+        video.setAttribute('playsinline', '');
+        video.setAttribute('webkit-playsinline', '');
+        video.setAttribute('x5-playsinline', '');
+
+        if (video.hasAttribute('autoplay')) {
+            video.setAttribute('muted', '');
+            video.muted = true;
+        }
     }
 
     return div.innerHTML;

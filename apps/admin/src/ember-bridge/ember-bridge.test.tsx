@@ -4,6 +4,7 @@ import { describe, expect, beforeEach, afterEach, vi, test as baseTest } from "v
 import { queryClientFixtures, type TestWrapperComponent } from "@test-utils/fixtures/query-client";
 import type { QueryClient } from "@tanstack/react-query";
 import type { StateBridge, StateBridgeEventMap } from "./ember-bridge";
+import { getMemberCountQueryKey } from "@tryghost/admin-x-framework/api/members";
 
 const queryTest = baseTest.extend<{
     queryClient: QueryClient;
@@ -114,6 +115,41 @@ describe('useEmberDataSync', () => {
         unmount();
     });
 
+    queryTest('invalidates the sidebar member count query for Ember member changes', async ({ queryClient, wrapper }) => {
+        const mock = createMockStateBridge();
+        window.EmberBridge = { state: mock.stateBridge };
+        const sidebarMemberCountKey = getMemberCountQueryKey();
+        const postsKey = ['PostsResponseType', '/posts'];
+
+        queryClient.setQueryDefaults(sidebarMemberCountKey, {cacheTime: Infinity});
+        queryClient.setQueryDefaults(postsKey, {cacheTime: Infinity});
+        queryClient.setQueryData(sidebarMemberCountKey, {
+            members: [],
+            meta: {pagination: {page: 1, limit: 1, pages: 1, total: 102466, next: null, prev: null}}
+        });
+        queryClient.setQueryData(postsKey, { posts: [] });
+
+        renderHook(() => useEmberDataSync(), { wrapper });
+
+        await waitFor(() => {
+            expect(mock.onSpy).toHaveBeenCalledWith('emberDataChange', expect.any(Function));
+        });
+
+        act(() => {
+            mock.emit('emberDataChange', {
+                operation: 'delete',
+                modelName: 'member',
+                id: 'member-1',
+                data: null,
+            });
+        });
+
+        await waitFor(() => {
+            expect(queryClient.getQueryState(sidebarMemberCountKey)?.isInvalidated).toBe(true);
+            expect(queryClient.getQueryState(postsKey)?.isInvalidated).toBe(false);
+        });
+    });
+
     queryTest('ignores unmapped Ember models', async ({ queryClient, wrapper }) => {
         const mock = createMockStateBridge();
         window.EmberBridge = { state: mock.stateBridge };
@@ -135,6 +171,39 @@ describe('useEmberDataSync', () => {
         });
 
         expect(invalidateSpy).not.toHaveBeenCalled();
+    });
+
+    queryTest('invalidates comment queries for mapped Ember comment events', async ({ queryClient, wrapper }) => {
+        const mock = createMockStateBridge();
+        window.EmberBridge = { state: mock.stateBridge };
+
+        queryClient.setQueryData(['MembersResponseType', '/members'], { members: [] });
+        queryClient.setQueryData(['CommentsResponseType', '/comments'], { comments: [] });
+        queryClient.setQueryData(['PostsResponseType', '/posts'], { posts: [] });
+
+        renderHook(() => useEmberDataSync(), { wrapper });
+
+        await waitFor(() => {
+            expect(mock.onSpy).toHaveBeenCalledWith('emberDataChange', expect.any(Function));
+        });
+
+        act(() => {
+            mock.emit('emberDataChange', {
+                operation: 'update',
+                modelName: 'comment',
+                id: 'member-1',
+                data: null
+            });
+        });
+
+        await waitFor(() => {
+            const queries = queryClient.getQueryCache().getAll();
+            const commentQueries = queries.filter(q => q.queryKey[0] === 'CommentsResponseType');
+            const nonCommentQueries = queries.filter(q => q.queryKey[0] !== 'CommentsResponseType');
+
+            expect(commentQueries.every(q => q.state.isInvalidated)).toBe(true);
+            expect(nonCommentQueries.every(q => !q.state.isInvalidated)).toBe(true);
+        });
     });
 
     queryTest('does not subscribe if unmounted before the bridge becomes available', async ({ wrapper }) => {
@@ -383,4 +452,3 @@ describe('useEmberRouting', () => {
         });
     });
 });
-

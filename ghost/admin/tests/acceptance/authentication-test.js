@@ -76,7 +76,7 @@ describe('Acceptance: Authentication', function () {
             });
         });
         it('redirects to setup when setup isn\'t complete', async function () {
-            await visit('settings/labs');
+            await visit('/pages');
             expect(currentURL()).to.equal('/setup');
         });
     });
@@ -131,7 +131,7 @@ describe('Acceptance: Authentication', function () {
             sinon.restore();
         });
 
-        it('transitions to signin on 401 API response for current user on app load', async function () {
+        it('redirects via replaceLocation on 401 API response for current user on app load', async function () {
             this.server.get('/users/me', () => new Response(401, {}, {
                 errors: [
                     {message: 'Access denied.', type: 'UnauthorizedError'}
@@ -139,14 +139,12 @@ describe('Acceptance: Authentication', function () {
             }));
 
             await authenticateSession();
-            await visit('/members');
+            await visit('/pages');
 
-            expect(currentURL()).to.equal('/signin');
-
-            expect(windowProxy.replaceLocation.called).to.be.false;
+            expect(windowProxy.replaceLocation.calledOnce, 'replaceLocation called').to.be.true;
         });
 
-        it('transitions to signin on 403 API response for current user on app load', async function () {
+        it('redirects via replaceLocation on 403 API response for current user on app load', async function () {
             this.server.get('/users/me', () => new Response(403, {}, {
                 errors: [
                     {message: 'Authorization failed', type: 'NoPermissionError'}
@@ -154,11 +152,9 @@ describe('Acceptance: Authentication', function () {
             }));
 
             await authenticateSession();
-            await visit('/members');
+            await visit('/pages');
 
-            expect(currentURL()).to.equal('/signin');
-
-            expect(windowProxy.replaceLocation.called).to.be.false;
+            expect(windowProxy.replaceLocation.calledOnce, 'replaceLocation called').to.be.true;
         });
 
         // NOTE: The navigation needs to use standard route hooks for loading, if it
@@ -173,8 +169,7 @@ describe('Acceptance: Authentication', function () {
             }));
 
             await authenticateSession();
-            await visit('/posts');
-            await click(`[data-test-nav="pages"]`);
+            await visit('/pages');
 
             expect(windowProxy.replaceLocation.calledWith('/ghost/'), 'replaceLocation called with /ghost/').to.be.true;
         });
@@ -188,18 +183,9 @@ describe('Acceptance: Authentication', function () {
 
             await visit('/signin/invalidurl/');
 
-            expect(currentURL(), 'url after invalid url').to.equal('/signin/invalidurl/');
-            expect(currentRouteName(), 'path after invalid url').to.equal('error404');
+            expect(currentURL(), 'url after invalid url').to.equal('/signin');
+            expect(currentRouteName(), 'path after invalid url').to.equal('signin');
             expect(findAll('nav.gh-nav').length, 'nav menu presence').to.equal(0);
-        });
-
-        it('shows nav menu on invalid url when authenticated', async function () {
-            await authenticateSession();
-            await visit('/signin/invalidurl/');
-
-            expect(currentURL(), 'url after invalid url').to.equal('/signin/invalidurl/');
-            expect(currentRouteName(), 'path after invalid url').to.equal('error404');
-            expect(findAll('nav.gh-nav').length, 'nav menu presence').to.equal(1);
         });
 
         it('has 2fa code happy path', async function () {

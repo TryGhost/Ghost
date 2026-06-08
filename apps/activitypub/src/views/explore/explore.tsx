@@ -5,8 +5,10 @@ import ProfilePreviewHoverCard from '@components/global/profile-preview-hover-ca
 import React, {useEffect} from 'react';
 import TopicFilter, {type Topic} from '@src/components/topic-filter';
 import {type Account, type ExploreAccount} from '@src/api/activitypub';
-import {Button, H4, LoadingIndicator, LucideIcon, Skeleton} from '@tryghost/shade';
-import {openLinksInNewTab, stripHtml} from '@src/utils/content-formatters';
+import {Button, LoadingIndicator, Skeleton} from '@tryghost/shade/components';
+import {H4} from '@tryghost/shade/primitives';
+import {LucideIcon} from '@tryghost/shade/utils';
+import {openLinksInNewTab, sanitizeHtml, stripHtml} from '@src/utils/content-formatters';
 import {useAccountForUser, useExploreProfilesForUserByTopic} from '@hooks/use-activity-pub-queries';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 import {useOnboardingStatus} from '@src/components/layout/onboarding';
@@ -59,7 +61,7 @@ export const ExploreProfile: React.FC<ExploreProfileProps & {
                                     handle: profile.handle
                                 }
                             } onClick={() => onOpenChange?.(false)} />
-                            <div className='-mt-0.5 flex grow flex-col break-anywhere'>
+                            <div className='break-anywhere -mt-0.5 flex grow flex-col'>
                                 <span className='line-clamp-1 font-semibold text-black dark:text-white'>{!isLoading ? profile.name : <Skeleton className='w-full max-w-48' />}</span>
                                 <span className='line-clamp-1 text-md text-gray-700 dark:text-gray-600'>{!isLoading ? profile.handle : <Skeleton className='w-32' />}</span>
                             </div>
@@ -88,8 +90,8 @@ export const ExploreProfile: React.FC<ExploreProfileProps & {
                         :
                         profile.bio &&
                         <div
-                            dangerouslySetInnerHTML={{__html: openLinksInNewTab(stripHtml(profile.bio, ['a', 'br']))}}
-                            className='ap-profile-content pointer-events-none mt-0 line-clamp-2 max-w-[460px] break-anywhere'
+                            dangerouslySetInnerHTML={{__html: sanitizeHtml(openLinksInNewTab(stripHtml(profile.bio, ['a', 'br'])))}}
+                            className='ap-profile-content break-anywhere pointer-events-none mt-0 line-clamp-2 max-w-[460px]'
                         />
                     }
                 </div>
@@ -148,9 +150,9 @@ const Explore: React.FC = () => {
                     </div>
                     <div className='mt-1 flex flex-col gap-[2px]'>
                         <H4 className='text-pretty'>The fastest way to grow your followers, is to follow others!</H4>
-                        <p className='2xl:text-pretty text-balance text-sm text-black/60 dark:text-white/60'>Here are some recommendations to get you started, from Ghost publishers and other great accounts from around the social web.</p>
+                        <p className='text-sm text-balance text-black/60 2xl:text-pretty dark:text-white/60'>Here are some recommendations to get you started, from Ghost publishers and other great accounts from around the social web.</p>
                     </div>
-                    <Button className='absolute right-4 top-[17px] size-6 opacity-40' variant='link' onClick={() => setExplainerClosed(true)}><LucideIcon.X size={20} /></Button>
+                    <Button className='absolute top-[17px] right-4 size-6 opacity-40' variant='link' onClick={() => setExplainerClosed(true)}><LucideIcon.X size={20} /></Button>
                 </div>
             }
             <TopicFilter

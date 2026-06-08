@@ -1,6 +1,7 @@
 import * as React from 'react';
-import {Button, ButtonProps, cn, formatNumber} from '@tryghost/shade';
+import {Button, ButtonProps} from '@tryghost/shade/components';
 import {Link, resetScrollPosition, useLocation, useNavigationStack} from '@tryghost/admin-x-framework';
+import {cn, formatNumber} from '@tryghost/shade/utils';
 
 import {useAppBasePath} from '@src/hooks/use-app-base-path';
 
@@ -25,8 +26,8 @@ const SidebarMenuLink = React.forwardRef<HTMLButtonElement, SidebarButtonProps>(
         );
 
         const linkClass = cn(
-            'justify-start text-md font-medium text-gray-800 dark:hover:bg-gray-925/70 dark:text-gray-500 h-9 [&_svg]:size-[18px]',
-            isActive && 'bg-gray-100 dark:bg-gray-925/70 dark:text-white text-black font-semibold'
+            'justify-start font-medium text-gray-800 dark:hover:bg-gray-950/70 dark:text-gray-500 h-8 [&_svg]:size-[18px]',
+            isActive && 'bg-gray-100 dark:bg-gray-950/70 dark:text-white text-black font-semibold'
         );
 
         const badge = count && count > 0 ? (

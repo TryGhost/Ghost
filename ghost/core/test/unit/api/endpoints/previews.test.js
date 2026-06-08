@@ -1,13 +1,9 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const models = require('../../../../core/server/models');
 const previewsController = require('../../../../core/server/api/endpoints/previews');
 
 describe('Previews controller', function () {
-    before(function () {
-        models.init();
-    });
-
     beforeEach(function () {
         sinon.stub(models.Post, 'findOne').resolves({});
         sinon.stub(models.Product, 'findAll').resolves([{

@@ -47,7 +47,7 @@ class EmailServiceWrapper {
         const audienceFeedback = require('../audience-feedback');
         const storageUtils = require('../../adapters/storage/utils');
         const emailAnalyticsJobs = require('../email-analytics/jobs');
-        const {imageSize} = require('../../lib/image');
+        const {cachedImageSizeFromUrl} = require('../../lib/image');
 
         // capture errors from mailgun client and log them in sentry
         const errorHandler = (error) => {
@@ -79,7 +79,7 @@ class EmailServiceWrapper {
                 mobiledoc: mobiledocLib,
                 lexical: lexicalLib
             },
-            imageSize,
+            imageSize: cachedImageSizeFromUrl,
             urlUtils,
             storageUtils,
             getPostUrl: this.getPostUrl,
@@ -91,7 +91,8 @@ class EmailServiceWrapper {
             emailAddressService: emailAddressService.service,
             labs,
             models: {Post},
-            t: i18n.t
+            t: i18n.t,
+            dir: i18n.dir.bind(i18n)
         });
 
         const sendingService = new SendingService({
@@ -141,7 +142,8 @@ class EmailServiceWrapper {
             membersRepository,
             verificationTrigger: membersService.verificationTrigger,
             emailAnalyticsJobs,
-            domainWarmingService
+            domainWarmingService,
+            config: configService
         });
 
         this.controller = new EmailController(this.service, {

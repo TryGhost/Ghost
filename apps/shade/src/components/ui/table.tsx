@@ -11,7 +11,7 @@ const Table = React.forwardRef<
     <div className="relative w-full">
         <table
             ref={ref}
-            className={cn('w-full caption-bottom text-sm', className)}
+            className={cn('w-full caption-bottom text-base', className)}
             {...props}
         />
     </div>
@@ -73,7 +73,7 @@ const headVariants = cva(
     {
         variants: {
             variant: {
-                default: 'h-10 px-2 text-left text-xs font-medium uppercase tracking-wide text-gray-700 [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
+                default: 'h-(--control-height) px-2 text-left text-sm font-medium tracking-wide text-text-secondary [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
                 cardhead: 'text-base font-normal [&>div]:px-0'
             }
         },
@@ -102,7 +102,7 @@ type TableHeadButtonProps = React.ComponentProps<typeof Button>;
 
 const TableHeadButton: React.FC<TableHeadButtonProps> = ({className, children, ...props}) => {
     const buttonClassName = cn(
-        'text-xs uppercase tracking-wide leading-4 text-right text-gray-700 hover:bg-transparent px-0 [&_svg]:size-4 gap-1',
+        'text-sm uppercase tracking-wide leading-4 text-right text-text-secondary hover:bg-transparent px-0 [&_svg]:size-4 gap-1',
         className
     );
     return (
@@ -134,7 +134,7 @@ const TableCaption = React.forwardRef<
 >(({className, ...props}, ref) => (
     <caption
         ref={ref}
-        className={cn('mt-4 text-sm text-muted-foreground', className)}
+        className={cn('mt-4 text-base text-muted-foreground', className)}
         {...props}
     />
 ));

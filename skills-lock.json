@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "skills": {
+    "Add Admin API Endpoint": {
+      "source": "./.agents",
+      "sourceType": "local",
+      "computedHash": "a7b2f6474e6e7d4ec688ab311ecc46390fe4d0eefe871f3e2d2f01edb1ed9684"
+    },
+    "Create database migration": {
+      "source": "./.agents",
+      "sourceType": "local",
+      "computedHash": "d547f2d90a3cc0bde9a9458847c07c313e7e5afd093c8c1e719dc06c63b38375"
+    },
+    "Format numbers": {
+      "source": "./.agents",
+      "sourceType": "local",
+      "computedHash": "63f72b2d778752aabb9bd4109ef83b80262428964cd9498ad3631760132ceeff"
+    },
+    "add-private-feature-flag": {
+      "source": "./.agents",
+      "sourceType": "local",
+      "computedHash": "ecdbd8c0832ed9be10573d3c7383291ae0b0a6ab84fa496b4a0ed54aac8d176b"
+    },
+    "commit": {
+      "source": "./.agents",
+      "sourceType": "local",
+      "computedHash": "f2f9a52e210a32ad42d4bf5826ce7cec265a2c472de03bee3840a5b295d734d7"
+    }
+  }
+}

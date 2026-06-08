@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const nock = require('nock');
 const ObjectID = require('bson-objectid').default;

@@ -1,7 +1,9 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import moment from 'moment';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, EmptyIndicator, LucideIcon, Recharts, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, formatDisplayDateWithRange, formatNumber, getRangeDates} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, EmptyIndicator, Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
+import {LucideIcon, Recharts, formatNumber} from '@tryghost/shade/utils';
 import {determineAggregationStrategy, getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
+import {formatDisplayDateWithRange, getRangeDates} from '@tryghost/shade/app';
 
 type PaidMembersChangeChartProps = {
     subscriptionData?: {date: string; signups: number; cancellations: number}[];
@@ -314,11 +316,11 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
     const paidChangeChartConfig = {
         new: {
             label: 'New',
-            color: 'hsl(var(--chart-teal))'
+            color: 'var(--chart-teal)'
         },
         cancelled: {
             label: 'Cancelled',
-            color: 'hsl(var(--chart-rose))'
+            color: 'var(--chart-rose)'
         }
     } satisfies ChartConfig;
 
@@ -387,7 +389,7 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
                                         <stop offset="100%" stopColor={'var(--color-cancelled)'} stopOpacity={0.8} />
                                     </linearGradient>
                                 </defs>
-                                <Recharts.CartesianGrid stroke="hsl(var(--border))" vertical={false} />
+                                <Recharts.CartesianGrid stroke="var(--border)" vertical={false} />
                                 <Recharts.XAxis
                                     axisLine={false}
                                     dataKey="date"
@@ -404,7 +406,7 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
                                 />
                                 <ChartTooltip
                                     content={<ChartTooltipContent
-                                        className='!min-w-[120px] px-3 py-2'
+                                        className='min-w-[120px]! px-3 py-2'
                                         formatter={(value, name, payload, index) => {
                                             const rawValue = Number(value);
                                             let displayValue = '0';
@@ -452,7 +454,7 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
                                                                 {paidChangeChartConfig[name as keyof typeof paidChangeChartConfig]?.label || name}
                                                             </span>
                                                         </div>
-                                                        <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
+                                                        <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium text-foreground tabular-nums">
                                                             {displayValue}
                                                         </div>
                                                     </div>
@@ -461,7 +463,7 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
                                                 <span className='text-sm text-muted-foreground'>
                                                     Net change
                                                 </span>
-                                                <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium tabular-nums text-foreground">
+                                                <div className="ml-auto flex items-baseline gap-0.5 font-mono font-medium text-foreground tabular-nums">
                                                     {netChangeFormatted}
                                                 </div>
                                             </div>

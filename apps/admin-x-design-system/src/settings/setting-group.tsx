@@ -76,7 +76,7 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
         onSave?.();
     };
 
-    styles += ' border-grey-250 dark:border-grey-925';
+    styles += ' border-grey-200 dark:border-grey-900 dark:hover:border-grey-800';
 
     // The links visible before editing
     const viewButtons: ButtonProps[] = [];
@@ -161,7 +161,7 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
                 {customHeader ? customHeader :
                     <SettingGroupHeader beta={beta} description={description} title={title!}>
                         {customButtons ? customButtons :
-                            (onEditingChange && <ButtonGroup buttons={isEditing ? editButtons : viewButtons} className={isEditing ? 'mt-[-5px]  ' : '-mr-1 mt-[-5px]'} size='sm' />)
+                            (onEditingChange && <ButtonGroup buttons={isEditing ? editButtons : viewButtons} className={isEditing ? 'mt-[-5px]  ' : 'mt-[-5px] -mr-1'} size='sm' />)
                         }
                     </SettingGroupHeader>
                 }
@@ -175,7 +175,7 @@ const SettingGroup = forwardRef<HTMLDivElement, SettingGroupProps>(function Sett
                 {customHeader ? customHeader :
                     <SettingGroupHeader beta={beta} description={description} title={title!}>
                         {customButtons ? customButtons :
-                            (onEditingChange && <ButtonGroup buttons={isEditing ? editButtons : viewButtons} className={isEditing ? 'mt-[-5px]  ' : '-mr-1 mt-[-5px]'} size='sm' />)
+                            (onEditingChange && <ButtonGroup buttons={isEditing ? editButtons : viewButtons} className={isEditing ? 'mt-[-5px]  ' : 'mt-[-5px] -mr-1'} size='sm' />)
                         }
                     </SettingGroupHeader>
                 }

@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const nock = require('nock');
 const sinon = require('sinon');
 
@@ -904,7 +904,7 @@ describe('MailgunClient', function () {
 
             assert.equal(firstPageMock.isDone(), true);
             assert.equal(secondPageMock.isDone(), true);
-            assert.equal(batchHandler.callCount, 2); // one per page
+            sinon.assert.calledTwice(batchHandler); // one per page
         });
     });
 

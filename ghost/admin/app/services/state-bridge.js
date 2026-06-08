@@ -6,9 +6,14 @@ import {inject} from 'ghost-admin/decorators/inject';
 import {run} from '@ember/runloop';
 
 const emberDataTypeMapping = {
+    AutomatedEmailDesignResponseType: null, // automated email design settings only exist in React admin
     AutomatedEmailsResponseType: null, // automated emails only exist in React admin
+    AutomationsResponseType: null, // automations only exist in React admin
+    CommentsResponseType: null, // comments only exist in React admin
     IntegrationsResponseType: {type: 'integration'},
     InvitesResponseType: {type: 'invite'},
+    LabelsResponseType: null, // labels only exist in React admin
+    MembersResponseType: null, // members only exist in React admin
     OffersResponseType: {type: 'offer'},
     NewslettersResponseType: {type: 'newsletter'},
     RecommendationResponseType: {type: 'recommendation'},
@@ -75,17 +80,23 @@ export default class StateBridgeService extends Service.extend(Evented) {
 
         const {type, singleton} = emberDataTypeMapping[dataType];
 
+        // Clone the response before pushing to the Ember store because
+        // pushPayload mutates the object in place (e.g. renaming keys via
+        // serializer attrs). Without cloning, React code holding a reference
+        // to the same object would see the mutated property names.
+        const clonedResponse = structuredClone(response);
+
         if (singleton) {
             // Special singleton objects like settings don't work with pushPayload, we need to add the ID explicitly
             this.store.push(this.store.serializerFor(type).normalizeSingleResponse(
                 this.store,
                 this.store.modelFor(type),
-                response,
+                clonedResponse,
                 null,
                 'queryRecord'
             ));
         } else {
-            this.store.pushPayload(type, response);
+            this.store.pushPayload(type, clonedResponse);
         }
 
         if (dataType === 'UsersResponseType' && response.users[0]?.id === this.session.user?.id) {
@@ -267,8 +278,8 @@ export default class StateBridgeService extends Service.extend(Evented) {
         
         // Check if current route matches any of the specified routes
         const routeMatches = routes.some((route) => {
-            // Support both exact matches and subpath matches (e.g., "members"
-            // matches "members.index")
+            // Support both exact matches and subpath matches (e.g., "settings"
+            // matches "settings.history")
             return currentRouteName === route || currentRouteName.startsWith(route + '.');
         });
         

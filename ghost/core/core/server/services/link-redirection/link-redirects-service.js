@@ -11,6 +11,14 @@ const LinkRedirect = require('./link-redirect');
  * @prop {(linkRedirect: LinkRedirect) => Promise<void>} save
  */
 
+// Placeholder pattern for member UUID in redirect destinations
+// %%{uuid}%% is substituted with the actual UUID at redirect time
+const MEMBER_UUID_PLACEHOLDER = '%%{uuid}%%';
+
+// UUID pattern (8-4-4-4-12 hex format) for validating member UUIDs
+//   Ghost uses UUID v4; this regex is not that strict
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 class LinkRedirectsService {
     /** @type ILinkRedirectRepository */
     #linkRedirectRepository;
@@ -109,8 +117,36 @@ class LinkRedirectsService {
 
             DomainEvents.dispatch(event);
 
+            // Substitute %%{uuid}%% placeholder if present in the destination URL
+            // This allows tracked links to include dynamic member UUIDs (e.g., for Transistor embeds)
+            // The URL may be stored in different encoded forms depending on placeholder position:
+            //   - Query string: %%{uuid}%% is preserved as-is
+            //   - Path: {/} are encoded to %7B/%7D, producing %%%7Buuid%7D%%
+            //   - Double-encoded: %25%25%7Buuid%7D%25%25
+            // We try decodeURIComponent first (handles double-encoded), then normalize
+            // URL-encoded braces to recover the placeholder from path-encoded forms
+            let redirectUrl = link.to.href;
+            let decodedUrl;
+            try {
+                decodedUrl = decodeURIComponent(redirectUrl);
+            } catch (e) {
+                // decodeURIComponent fails on malformed sequences (e.g. %%%7Buuid%7D%%)
+                // Normalize URL-encoded braces so we can still detect the placeholder
+                decodedUrl = redirectUrl.replace(/%7B/gi, '{').replace(/%7D/gi, '}');
+            }
+            const hasMemberUuidPlaceholder = decodedUrl.includes(MEMBER_UUID_PLACEHOLDER);
+            if (hasMemberUuidPlaceholder) {
+                const memberUuid = url.searchParams.get('m');
+                if (memberUuid && UUID_REGEX.test(memberUuid)) {
+                    redirectUrl = decodedUrl.replaceAll(MEMBER_UUID_PLACEHOLDER, memberUuid);
+                } else {
+                    // Remove placeholder if no valid UUID (includes unsubstituted Mailgun variables)
+                    redirectUrl = decodedUrl.replaceAll(MEMBER_UUID_PLACEHOLDER, '');
+                }
+            }
+
             res.setHeader('X-Robots-Tag', 'noindex, nofollow');
-            return res.redirect(link.to.href);
+            return res.redirect(redirectUrl);
         } catch (e) {
             return next(e);
         }

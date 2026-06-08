@@ -1,10 +1,11 @@
 const MentionSendingService = require('../../../../../core/server/services/mentions/mention-sending-service');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const nock = require('nock');
 // non-standard to use externalRequest here, but this is required for the overrides in the libary, which we want to test for security reasons in combination with the package
 const externalRequest = require('../../../../../core/server/lib/request-external.js');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
+const dnsPromises = require('node:dns').promises;
 const {createModel} = require('./utils/index.js');
 
 // mock up job service
@@ -28,7 +29,7 @@ describe('MentionSendingService', function () {
         sinon.restore();
     });
 
-    after(function () {
+    afterAll(function () {
         nock.cleanAll();
         nock.enableNetConnect();
     });
@@ -208,7 +209,7 @@ describe('MentionSendingService', function () {
                     html: 'same'
                 }
             }));
-            assert(errorLogStub.calledTwice);
+            sinon.assert.calledTwice(errorLogStub);
         });
 
         it('Sends no mentions for posts without html and previous html', async function () {
@@ -226,13 +227,12 @@ describe('MentionSendingService', function () {
                     html: ''
                 }
             }));
-            assert(stub.notCalled);
+            sinon.assert.notCalled(stub);
         });
     });
 
     describe('sendForHTMLResource', function () {
-        it('Sends to all links', async function () {
-            this.retries(1);
+        it('Sends to all links', {retry: 1}, async function () {
             let counter = 0;
             const scope = nock('https://example.org')
                 .persist()
@@ -264,8 +264,7 @@ describe('MentionSendingService', function () {
             assert.equal(counter, 3);
         });
 
-        it('Catches and logs errors', async function () {
-            this.retries(1);
+        it('Catches and logs errors', {retry: 1}, async function () {
             let counter = 0;
             const scope = nock('https://example.org')
                 .persist()
@@ -298,11 +297,10 @@ describe('MentionSendingService', function () {
             `});
             assert.equal(scope.isDone(), true);
             assert.equal(counter, 3);
-            assert(errorLogStub.calledOnce);
+            sinon.assert.calledOnce(errorLogStub);
         });
 
-        it('Sends to deleted links', async function () {
-            this.retries(1);
+        it('Sends to deleted links', {retry: 1}, async function () {
             let counter = 0;
             const scope = nock('https://example.org')
                 .persist()
@@ -404,8 +402,7 @@ describe('MentionSendingService', function () {
     });
 
     describe('send', function () {
-        it('Can handle 202 accepted responses', async function () {
-            this.retries(1);
+        it('Can handle 202 accepted responses', {retry: 1}, async function () {
             const source = new URL('https://example.com/source');
             const target = new URL('https://target.com/target');
             const endpoint = new URL('https://example.org/webmentions-test');
@@ -423,8 +420,7 @@ describe('MentionSendingService', function () {
             assert(scope.isDone());
         });
 
-        it('Can handle 201 created responses', async function () {
-            this.retries(1);
+        it('Can handle 201 created responses', {retry: 1}, async function () {
             const source = new URL('https://example.com/source');
             const target = new URL('https://target.com/target');
             const endpoint = new URL('https://example.org/webmentions-test');
@@ -442,8 +438,7 @@ describe('MentionSendingService', function () {
             assert(scope.isDone());
         });
 
-        it('Can handle 400 responses', async function () {
-            this.retries(1);
+        it('Can handle 400 responses', {retry: 1}, async function () {
             const scope = nock('https://example.org')
                 .persist()
                 .post('/webmentions-test')
@@ -458,8 +453,7 @@ describe('MentionSendingService', function () {
             assert(scope.isDone());
         });
 
-        it('Can handle 500 responses', async function () {
-            this.retries(1);
+        it('Can handle 500 responses', {retry: 1}, async function () {
             const scope = nock('https://example.org')
                 .persist()
                 .post('/webmentions-test')
@@ -474,8 +468,7 @@ describe('MentionSendingService', function () {
             assert(scope.isDone());
         });
 
-        it('Can handle redirect responses', async function () {
-            this.retries(1);
+        it('Can handle redirect responses', {retry: 1}, async function () {
             const scope = nock('https://example.org')
                 .persist()
                 .post('/webmentions-test')
@@ -497,8 +490,7 @@ describe('MentionSendingService', function () {
             assert(scope2.isDone());
         });
 
-        it('Can handle network errors', async function () {
-            this.retries(1);
+        it('Can handle network errors', {retry: 1}, async function () {
             const scope = nock('https://example.org')
                 .persist()
                 .post('/webmentions-test')
@@ -514,15 +506,22 @@ describe('MentionSendingService', function () {
         });
 
         it('Does not send to private IP behind DNS', async function () {
-            this.retries(1);
-            // Test that we don't make a request when a domain resolves to a private IP
-            // domaincontrol.com -> 127.0.0.1
-            const service = new MentionSendingService({externalRequest});
-            await assert.rejects(service.send({
-                source: new URL('https://example.com/source'),
-                target: new URL('https://target.com/target'),
-                endpoint: new URL('http://domaincontrol.com/webmentions')
-            }), /non-permitted private IP/);
+            // Stub DNS to return a private IP for the target domain
+            dnsPromises.lookup.restore?.();
+            const dnsStub = sinon.stub(dnsPromises, 'lookup').callsFake(() => {
+                return Promise.resolve({address: '127.0.0.1', family: 4});
+            });
+
+            try {
+                const service = new MentionSendingService({externalRequest});
+                await assert.rejects(service.send({
+                    source: new URL('https://example.com/source'),
+                    target: new URL('https://target.com/target'),
+                    endpoint: new URL('http://domaincontrol.com/webmentions')
+                }), /non-permitted private IP/);
+            } finally {
+                dnsStub.restore();
+            }
         });
     });
 });

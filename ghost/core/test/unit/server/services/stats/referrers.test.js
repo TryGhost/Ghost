@@ -1,5 +1,5 @@
 const knex = require('knex').default;
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const moment = require('moment-timezone');
 const ReferrersStatsService = require('../../../../../core/server/services/stats/referrers-stats-service');
 const {DateTime} = require('luxon');

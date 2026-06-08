@@ -13,10 +13,10 @@ const indicatorVariants = cva(
         variants: {
             variant: {
                 neutral: 'bg-muted',
-                info: 'bg-blue-500',
-                success: 'bg-green-500',
-                error: 'bg-red-500',
-                warning: 'bg-yellow-500'
+                info: 'bg-state-info',
+                success: 'bg-state-success',
+                error: 'bg-state-danger',
+                warning: 'bg-state-warning'
             },
             state: {
                 idle: '',
@@ -39,22 +39,22 @@ const indicatorVariants = cva(
             {
                 variant: 'info',
                 state: 'inactive',
-                className: 'border-blue-500'
+                className: 'border-state-info'
             },
             {
                 variant: 'success',
                 state: 'inactive',
-                className: 'border-green-500'
+                className: 'border-state-success'
             },
             {
                 variant: 'error',
                 state: 'inactive',
-                className: 'border-red-500'
+                className: 'border-state-danger'
             },
             {
                 variant: 'warning',
                 state: 'inactive',
-                className: 'border-yellow-500'
+                className: 'border-state-warning'
             }
         ],
         defaultVariants: {

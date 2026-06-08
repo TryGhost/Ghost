@@ -10,7 +10,7 @@ const debug = require('@tryghost/debug')('MembersImporter');
 class MembersImporter extends TableImporter {
     static table = 'members';
     static dependencies = [];
-    defaultQuantity = faker.datatype.number({
+    defaultQuantity = faker.number.int({
         min: 7000,
         max: 8000
     });
@@ -68,39 +68,27 @@ class MembersImporter extends TableImporter {
     generate() {
         const id = this.fastFakeObjectId();
         // Use name from American locale to reflect an English-speaking audience
-        const name = `${americanFaker.name.firstName()} ${americanFaker.name.lastName()}`;
+        const name = `${americanFaker.person.firstName()} ${americanFaker.person.lastName()}`;
         const timestamp = this.timestamps.pop();
 
         return {
             id,
-            uuid: faker.datatype.uuid(),
-            transient_id: faker.datatype.uuid(),
-            email: `${name.replace(' ', '.').replace(/[^a-zA-Z0-9]/g, '').toLowerCase()}${faker.datatype.number({min: 0, max: 999999})}@example.com`,
+            uuid: faker.string.uuid(),
+            transient_id: faker.string.uuid(),
+            email: `${name.replace(' ', '.').replace(/[^a-zA-Z0-9]/g, '').toLowerCase()}${faker.number.int({min: 0, max: 999999})}@example.com`,
             status: luck(5) ? 'comped' : luck(15) ? 'paid' : 'free',
             name: name,
-            expertise: luck(30) ? faker.name.jobTitle() : undefined,
+            expertise: luck(30) ? faker.person.jobTitle() : undefined,
             geolocation: JSON.stringify({
-                organization_name: faker.company.name(),
-                region: faker.address.state(),
-                accuracy: 50,
-                asn: parseInt(faker.random.numeric(4)),
-                organization: `${faker.random.alpha({count: 2, casing: 'upper'})}${faker.random.numeric(4)} ${faker.company.name()}`,
-                timezone: faker.address.timeZone(),
-                longitude: faker.address.longitude(),
-                country_code3: faker.address.countryCode('alpha-3'),
-                area_code: '0',
-                ip: faker.internet.ipv4(),
-                city: faker.address.cityName(),
-                country: faker.address.country(),
-                continent_code: 'EU',
-                country_code: faker.address.countryCode('alpha-2'),
-                latitude: faker.address.latitude()
+                country: faker.location.country(),
+                country_code: faker.location.countryCode('alpha-2'),
+                region: faker.location.state()
             }),
             email_count: 0, // Depends on number of emails sent since created_at, the newsletter they're a part of and subscription status
             email_opened_count: 0,
             email_open_rate: null,
             // 40% of users logged in within a week, 60% sometime since registering
-            last_seen_at: luck(40) ? dateToDatabaseString(faker.date.recent(7)) : dateToDatabaseString(faker.date.between(timestamp, new Date())),
+            last_seen_at: luck(40) ? dateToDatabaseString(faker.date.recent({days: 7})) : dateToDatabaseString(faker.date.between({from: timestamp, to: new Date()})),
             created_at: dateToDatabaseString(timestamp),
             updated_at: dateToDatabaseString(timestamp)
         };

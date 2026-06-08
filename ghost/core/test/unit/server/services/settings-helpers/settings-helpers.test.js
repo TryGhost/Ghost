@@ -1,9 +1,8 @@
-const should = require('should');
 const sinon = require('sinon');
 const configUtils = require('../../../../utils/config-utils');
 const SettingsHelpers = require('../../../../../core/server/services/settings-helpers/settings-helpers');
 const crypto = require('crypto');
-const assert = require('assert').strict;
+const assert = require('node:assert/strict');
 
 const mockValidationKey = 'validation_key';
 
@@ -121,7 +120,7 @@ describe('Settings Helpers', function () {
         const memberUuidHash = crypto.createHmac('sha256', mockValidationKey).update(`${memberUuid}`).digest('hex');
         let fakeSettings;
 
-        before(function () {
+        beforeAll(function () {
             fakeSettings = createSettingsMock({setDirect: true, setConnect: true});
         });
 
@@ -160,7 +159,7 @@ describe('Settings Helpers', function () {
             urlFor: sinon.stub().returns('http://domain.com/')
         };
 
-        before(function () {
+        beforeAll(function () {
             fakeSettings = createSettingsMock({setDirect: true, setConnect: true});
         });
 

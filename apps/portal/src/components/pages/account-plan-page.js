@@ -5,9 +5,10 @@ import CloseButton from '../common/close-button';
 import BackButton from '../common/back-button';
 import {MultipleProductsPlansSection} from '../common/plans-section';
 import {getDateString} from '../../utils/date-time';
-import {formatNumber, getAvailablePrices, getCurrencySymbol, getFilteredPrices, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getPriceFromSubscription, getProductFromId, getProductFromPrice, getSubscriptionFromId, getUpdatedOfferPrice, getUpgradeProducts, hasMultipleProductsFeature, isComplimentaryMember, isPaidMember} from '../../utils/helpers';
+import {addMonths, formatNumber, formatPrice, getAvailablePrices, getCurrencySymbol, getFilteredPrices, isArchivedTier, isFreeMonthsOffer, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getOfferOffAmount, getPriceFromSubscription, getProductFromPrice, getSubscriptionFromId, getUpdatedOfferPrice, getUpgradeProducts, hasMultipleProductsFeature, isComplimentaryMember, isGiftMember, isPaidMember} from '../../utils/helpers';
 import Interpolate from '@doist/react-interpolate';
 import {t} from '../../utils/i18n';
+import {translateCadence} from '../../utils/helpers';
 
 export const AccountPlanPageStyles = `
     .account-plan.full-size .gh-portal-main-title {
@@ -39,19 +40,32 @@ export const AccountPlanPageStyles = `
         padding: 6px 12px;
     }
 
+    .gh-portal-retention-offer {
+        margin-top: -24px !important;
+    }
+
+    .gh-portal-retention-offer > p {
+        max-width: 400px;
+        margin-inline: auto;
+    }
+
     .gh-portal-retention-offer-price {
         display: flex;
         align-items: center;
         gap: 6px;
-        margin-top: 20px;
+        margin-top: 16px;
     }
 
     .gh-portal-retention-offer-price .gh-portal-offer-oldprice {
         margin: 4px 0 0;
     }
+
+    .gh-portal-retention-offer .gh-portal-offer-details > .footnote:first-child {
+        margin-top: 12px;
+    }
 `;
 
-function getConfirmationPageTitle({confirmationType}) {
+function getConfirmationPageTitle({confirmationType, pendingOffer}) {
     if (confirmationType === 'changePlan') {
         return t('Confirm subscription');
     } else if (confirmationType === 'cancel') {
@@ -59,15 +73,15 @@ function getConfirmationPageTitle({confirmationType}) {
     } else if (confirmationType === 'subscribe') {
         return t('Subscribe');
     } else if (confirmationType === 'offerRetention') {
-        return 'Before you go';
+        return pendingOffer?.display_title || t('Before you go');
     }
 }
 
-const Header = ({showConfirmation, confirmationType}) => {
+const Header = ({showConfirmation, confirmationType, pendingOffer}) => {
     const {member} = useContext(AppContext);
     let title = isPaidMember({member}) ? t('Change plan') : t('Choose a plan');
     if (showConfirmation) {
-        title = getConfirmationPageTitle({confirmationType});
+        title = getConfirmationPageTitle({confirmationType, pendingOffer});
     }
     return (
         <header className='gh-portal-detail-header'>
@@ -79,6 +93,9 @@ const Header = ({showConfirmation, confirmationType}) => {
 const CancelSubscriptionButton = ({member, onCancelSubscription, action, brandColor}) => {
     const {site} = useContext(AppContext);
     if (!member.paid) {
+        return null;
+    }
+    if (isGiftMember({member})) {
         return null;
     }
     const subscription = getMemberSubscription({member});
@@ -135,7 +152,7 @@ const PlanConfirmationSection = ({plan, type, onConfirm}) => {
         planStartingMessage = t('Starting today');
     }
     const priceString = formatNumber(plan.price);
-    const planStartMessage = `${plan.currency_symbol}${priceString}/${t(plan.interval)} – ${planStartingMessage}`;
+    const planStartMessage = `${plan.currency_symbol}${priceString}/${translateCadence(plan.interval)} – ${planStartingMessage}`;
     const product = getProductFromPrice({site, priceId: plan?.id});
     const priceLabel = hasMultipleProductsFeature({site}) ? product?.name : t('Price');
     if (type === 'changePlan') {
@@ -250,72 +267,105 @@ function PlansOrProductSection({selectedPlan, onPlanSelect, onPlanCheckout, chan
     );
 }
 
-function formatOfferDiscount(offer) {
-    if (offer.type === 'percent') {
-        return `${offer.amount}% off`;
-    } else if (offer.type === 'fixed') {
-        const symbol = offer.currency ? getCurrencySymbol(offer.currency) : '';
-        return `${symbol}${offer.amount / 100} off`;
-    }
-    return '';
-}
-
-function formatOfferDuration(offer) {
-    if (offer.duration === 'once') {
-        return 'your next payment';
-    } else if (offer.duration === 'forever') {
-        return 'forever';
-    } else if (offer.duration === 'repeating' && offer.duration_in_months) {
+function getRetentionOfferLabel(offer, amountOff) {
+    if (isFreeMonthsOffer(offer)) {
         const months = offer.duration_in_months;
         if (months === 1) {
-            return 'for the next month';
+            return t('1 month free');
         }
-        return `for the next ${months} months`;
+        return t('{months} months free', {months});
     }
+
+    return t('{amount} off', {amount: amountOff});
+}
+
+function getRetentionOfferMessage(offer, originalPrice, currency, amountOff, subscription) {
+    if (isFreeMonthsOffer(offer)) {
+        const months = offer.duration_in_months;
+        const nextPaymentDate = addMonths(subscription.current_period_end, months);
+        const nextPaymentDateFormatted = nextPaymentDate ? nextPaymentDate.toLocaleDateString('en-GB', {year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC'}) : null;
+
+        if (nextPaymentDateFormatted) {
+            if (months === 1) {
+                return t('Enjoy a free month on us. You won\'t be charged until {newBillingDate}.', {newBillingDate: nextPaymentDateFormatted});
+            }
+            return t('Enjoy {months} free months on us. You won\'t be charged until {newBillingDate}.', {months, newBillingDate: nextPaymentDateFormatted});
+        }
+
+        if (months === 1) {
+            return t('Enjoy a free month on us.');
+        }
+        return t('Enjoy {months} free months on us.', {months});
+    }
+
+    if (offer.duration === 'forever') {
+        return t('Enjoy {amountOff} off forever.', {amountOff});
+    }
+
+    if (offer.duration === 'once') {
+        return t('Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.', {amountOff, currency, originalPrice, cadence: translateCadence(offer.cadence)});
+    }
+
+    if (offer.duration === 'repeating' && offer.duration_in_months === 1) {
+        return t('Save {amountOff} on your next billing cycle. Then {currency}{originalPrice}/{cadence}.', {amountOff, currency, originalPrice, cadence: translateCadence(offer.cadence)});
+    }
+
+    if (offer.duration === 'repeating' && offer.duration_in_months > 1) {
+        return t('Save {amountOff} on your next {durationInMonths} billing cycles. Then {currency}{originalPrice}/{cadence}.', {amountOff, durationInMonths: offer.duration_in_months, currency, originalPrice, cadence: translateCadence(offer.cadence)});
+    }
+
     return '';
 }
 
-const RetentionOfferSection = ({offer, product, price, onAcceptOffer, onDeclineOffer}) => {
+const RetentionOfferSection = ({subscription, offer, onAcceptOffer, onDeclineOffer}) => {
     const {brandColor, action} = useContext(AppContext);
     const isAcceptingOffer = action === 'applyOffer:running';
 
-    const originalPrice = formatNumber(price.amount / 100);
-    const discountedPrice = formatNumber(getUpdatedOfferPrice({offer, price}));
-    const currencySymbol = getCurrencySymbol(price.currency);
+    const price = getPriceFromSubscription({subscription});
+    const originalAmount = price.amount / 100;
+    const originalPrice = formatPrice(originalAmount);
+    const currency = getCurrencySymbol(price.currency);
+    const updatedAmount = getUpdatedOfferPrice({offer, price});
+    const discountedPrice = formatPrice(updatedAmount);
+    const amountOff = getOfferOffAmount({offer});
 
-    const discountText = formatOfferDiscount(offer);
-    const durationText = formatOfferDuration(offer);
-    const intervalLabel = offer.cadence === 'month' ? 'month' : 'year';
+    const cadenceLabel = offer.cadence === 'month' ? t('Monthly') : t('Yearly');
 
-    let offerMessage = `${discountText} ${durationText}.`;
-
-    if (offer.duration !== 'forever') {
-        offerMessage += ` Renews at ${currencySymbol}${originalPrice}/${intervalLabel}.`;
+    let productCadenceLabel = cadenceLabel;
+    const tier = subscription.tier;
+    if (tier && tier.name) {
+        productCadenceLabel = `${tier.name} - ${cadenceLabel}`;
     }
 
-    // TODO: Add i18n once copy is finalized
+    const displayDescription = offer.display_description || t('We\'d hate to see you leave. How about a special offer to stay?');
+
+    const offerLabel = getRetentionOfferLabel(offer, amountOff);
+    const offerMessage = getRetentionOfferMessage(offer, originalPrice, currency, amountOff, subscription);
+
     return (
         <div className="gh-portal-logged-out-form-container gh-portal-offer gh-portal-retention-offer">
             <p className="gh-portal-text-center">
-                {'We\'d hate to see you go! How about a special offer to stay?'}
+                {displayDescription}
             </p>
 
             <div className="gh-portal-offer-bar">
                 <div className="gh-portal-offer-title">
-                    <h4>{product.name} - {offer.cadence === 'month' ? 'Monthly' : 'Yearly'}</h4>
-                    <h5 className="gh-portal-discount-label">{discountText}</h5>
+                    <h4>{productCadenceLabel}</h4>
+                    <h5 className="gh-portal-discount-label">{offerLabel}</h5>
                 </div>
 
                 <div className="gh-portal-offer-details">
-                    <div className="gh-portal-retention-offer-price">
-                        <div className="gh-portal-product-price">
-                            <span className="currency-sign">{currencySymbol}</span>
-                            <span className="amount">{discountedPrice}</span>
+                    {!isFreeMonthsOffer(offer) && (
+                        <div className="gh-portal-retention-offer-price">
+                            <div className="gh-portal-product-price">
+                                <span className="currency-sign">{currency}</span>
+                                <span className="amount">{discountedPrice}</span>
+                            </div>
+                            <div className="gh-portal-offer-oldprice">
+                                {currency}{originalPrice}
+                            </div>
                         </div>
-                        <div className="gh-portal-offer-oldprice">
-                            {currencySymbol}{originalPrice}
-                        </div>
-                    </div>
+                    )}
                     <p className="footnote">
                         {offerMessage}
                     </p>
@@ -328,11 +378,11 @@ const RetentionOfferSection = ({offer, product, price, onAcceptOffer, onDeclineO
                     disabled={isAcceptingOffer}
                     isPrimary={true}
                     brandColor={brandColor}
-                    label="Accept offer"
+                    label={t('Continue subscription')}
                     style={{
                         width: '100%',
                         height: '40px',
-                        marginTop: '28px'
+                        marginTop: '20px'
                     }}
                 />
             </div>
@@ -344,7 +394,7 @@ const RetentionOfferSection = ({offer, product, price, onAcceptOffer, onDeclineO
                 isDestructive={true}
                 classes={'gh-portal-btn-text'}
                 brandColor={brandColor}
-                label="No thanks, I want to cancel"
+                label={t('No thanks, I want to cancel')}
                 style={{
                     width: '100%',
                     marginTop: '32px',
@@ -353,7 +403,6 @@ const RetentionOfferSection = ({offer, product, price, onAcceptOffer, onDeclineO
             />
         </div>
     );
-    /* eslint-enable i18next/no-literal-string */
 };
 
 // For free members
@@ -394,9 +443,9 @@ const PlansContainer = ({
     pendingOffer, onPlanSelect, onPlanCheckout, onConfirm, onCancelSubscription,
     onAcceptRetentionOffer, onDeclineRetentionOffer
 }) => {
-    const {member, site} = useContext(AppContext);
-    // Plan upgrade flow for free member or complimentary member
-    if (!isPaidMember({member}) || isComplimentaryMember({member})) {
+    const {member} = useContext(AppContext);
+    // Plan upgrade flow for free, complimentary, or gift members.
+    if (!isPaidMember({member}) || isComplimentaryMember({member}) || isGiftMember({member})) {
         return (
             <UpgradePlanSection
                 {...{plans, selectedPlan, onPlanSelect, onPlanCheckout}}
@@ -416,16 +465,13 @@ const PlansContainer = ({
 
     // Retention offer flow - shown before cancellation confirmation
     if (confirmationType === 'offerRetention' && pendingOffer) {
-        const offerProduct = getProductFromId({site, productId: pendingOffer.tier.id});
-        const offerPrice = pendingOffer.cadence === 'month' ? offerProduct?.monthlyPrice : offerProduct?.yearlyPrice;
+        const subscription = getMemberSubscription({member});
 
-        // Skip retention offer if product or price data is invalid
-        if (offerProduct && offerPrice) {
+        if (subscription) {
             return (
                 <RetentionOfferSection
+                    subscription={subscription}
                     offer={pendingOffer}
-                    product={offerProduct}
-                    price={offerPrice}
                     onAcceptOffer={onAcceptRetentionOffer}
                     onDeclineOffer={onDeclineRetentionOffer}
                 />
@@ -450,16 +496,75 @@ export default class AccountPlanPage extends React.Component {
     }
 
     componentDidMount() {
-        const {member} = this.context;
+        const {member, site} = this.context;
         if (!member) {
             this.context.doAction('switchPage', {
                 page: 'signin'
             });
+            return;
         }
+
+        // Gift members on an active tier can only continue on the same tier via AccountHomePage "Continue" button
+        // Redirect them home if they land here via deep link (#/portal/account/plans)
+        if (isGiftMember({member}) && !isArchivedTier({member, site})) {
+            this.context.doAction('switchPage', {
+                page: 'accountHome'
+            });
+            return;
+        }
+
+        this.handleCancelActionFromPageData();
+    }
+
+    componentDidUpdate() {
+        this.handleCancelActionFromPageData();
     }
 
     componentWillUnmount() {
         clearTimeout(this.timeoutId);
+    }
+
+    getRetentionOfferSignature(offer) {
+        if (!offer) {
+            return '';
+        }
+
+        return [
+            offer.id,
+            offer.display_title || '',
+            offer.display_description || '',
+            offer.type || '',
+            offer.cadence || '',
+            offer.amount || 0,
+            offer.duration || '',
+            offer.duration_in_months || 0,
+            offer.currency || '',
+            offer.status || '',
+            offer.tier?.id || ''
+        ].join('|');
+    }
+
+    handleCancelActionFromPageData() {
+        const {member, pageData, offers} = this.context;
+
+        if (!member || pageData?.action !== 'cancel' || !pageData?.subscriptionId) {
+            return;
+        }
+
+        const nextRetentionOffer = (offers || []).find(offer => offer.redemption_type === 'retention') || null;
+        const nextRetentionOfferSignature = this.getRetentionOfferSignature(nextRetentionOffer);
+        const currentRetentionOfferSignature = this.getRetentionOfferSignature(this.state.pendingOffer);
+
+        const shouldRefreshRetentionFlow = this.state.targetSubscriptionId !== pageData.subscriptionId ||
+            this.state.confirmationType !== 'offerRetention' ||
+            nextRetentionOfferSignature !== currentRetentionOfferSignature;
+
+        if (shouldRefreshRetentionFlow) {
+            this.onCancelSubscription({subscriptionId: pageData.subscriptionId});
+        }
+
+        // Clear action so normal navigation doesn't continuously re-trigger
+        pageData.action = null;
     }
 
     getInitialState() {
@@ -518,7 +623,7 @@ export default class AccountPlanPage extends React.Component {
             selectedPlan = priceId;
         }
 
-        if (isPaidMember({member}) && !isComplimentaryMember({member})) {
+        if (isPaidMember({member}) && !isComplimentaryMember({member}) && !isGiftMember({member})) {
             const subscription = getMemberSubscription({member});
             const subscriptionId = subscription ? subscription.id : '';
             if (subscriptionId) {
@@ -534,8 +639,8 @@ export default class AccountPlanPage extends React.Component {
 
         const {member} = this.context;
 
-        // Work as checkboxes for free member plan selection and button for paid members
-        if (!isPaidMember({member}) || isComplimentaryMember({member})) {
+        // Work as checkboxes for free, complimentary, and gift members and as button for paid Stripe members.
+        if (!isPaidMember({member}) || isComplimentaryMember({member}) || isGiftMember({member})) {
             // Hack: React checkbox gets out of sync with dom state with instant update
             this.timeoutId = setTimeout(() => {
                 this.setState(() => {
@@ -561,6 +666,9 @@ export default class AccountPlanPage extends React.Component {
     onCancelSubscription({subscriptionId}) {
         const {member, offers} = this.context;
         const subscription = getSubscriptionFromId({subscriptionId, member});
+        if (!subscription) {
+            return;
+        }
         const subscriptionPlan = getPriceFromSubscription({subscription});
         const retentionOffers = (offers || []).filter(o => o.redemption_type === 'retention');
 
@@ -647,6 +755,7 @@ export default class AccountPlanPage extends React.Component {
                     <Header
                         onBack={e => this.onBack(e)}
                         confirmationType={confirmationType}
+                        pendingOffer={pendingOffer}
                         showConfirmation={showConfirmation}
                     />
                     <PlansContainer

@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const StripeCoupon = require('../../../../../../../core/server/services/offers/domain/models/stripe-coupon');
 
 describe('StripeCoupon', function () {
@@ -11,7 +10,7 @@ describe('StripeCoupon', function () {
                 duration: 'forever'
             });
 
-            should.ok(coupon instanceof StripeCoupon);
+            assert(coupon instanceof StripeCoupon);
             assert.equal(coupon.id, 'coupon_123');
             assert.equal(coupon.percent_off, 20);
             assert.equal(coupon.duration, 'forever');
@@ -26,7 +25,7 @@ describe('StripeCoupon', function () {
                 duration: 'once'
             });
 
-            should.ok(coupon instanceof StripeCoupon);
+            assert(coupon instanceof StripeCoupon);
             assert.equal(coupon.id, 'coupon_456');
             assert.equal(coupon.amount_off, 500);
             assert.equal(coupon.currency, 'usd');
@@ -42,33 +41,33 @@ describe('StripeCoupon', function () {
                 duration_in_months: 3
             });
 
-            should.ok(coupon instanceof StripeCoupon);
+            assert(coupon instanceof StripeCoupon);
             assert.equal(coupon.duration, 'repeating');
             assert.equal(coupon.duration_in_months, 3);
         });
 
         it('Throws if coupon is null or undefined', function () {
-            should.throws(() => {
+            assert.throws(() => {
                 StripeCoupon.create(null);
             }, /Stripe coupon is required/);
 
-            should.throws(() => {
+            assert.throws(() => {
                 StripeCoupon.create(undefined);
             }, /Stripe coupon is required/);
         });
 
         it('Throws if coupon is not an object', function () {
-            should.throws(() => {
+            assert.throws(() => {
                 StripeCoupon.create('not-an-object');
             }, /Stripe coupon is required/);
 
-            should.throws(() => {
+            assert.throws(() => {
                 StripeCoupon.create(123);
             }, /Stripe coupon is required/);
         });
 
         it('Throws if id is missing', function () {
-            should.throws(() => {
+            assert.throws(() => {
                 StripeCoupon.create({
                     percent_off: 20,
                     duration: 'forever'
@@ -77,7 +76,7 @@ describe('StripeCoupon', function () {
         });
 
         it('Throws if id is not a string', function () {
-            should.throws(() => {
+            assert.throws(() => {
                 StripeCoupon.create({
                     id: 123,
                     percent_off: 20,
@@ -87,7 +86,7 @@ describe('StripeCoupon', function () {
         });
 
         it('Throws if both percent_off and amount_off are set', function () {
-            should.throws(() => {
+            assert.throws(() => {
                 StripeCoupon.create({
                     id: 'coupon_123',
                     percent_off: 20,
@@ -98,7 +97,7 @@ describe('StripeCoupon', function () {
         });
 
         it('Throws if neither percent_off nor amount_off is set', function () {
-            should.throws(() => {
+            assert.throws(() => {
                 StripeCoupon.create({
                     id: 'coupon_123',
                     duration: 'forever'
@@ -107,7 +106,7 @@ describe('StripeCoupon', function () {
         });
 
         it('Throws if percent_off is not a number', function () {
-            should.throws(() => {
+            assert.throws(() => {
                 StripeCoupon.create({
                     id: 'coupon_123',
                     percent_off: '20',
@@ -117,7 +116,7 @@ describe('StripeCoupon', function () {
         });
 
         it('Throws if amount_off is not a number', function () {
-            should.throws(() => {
+            assert.throws(() => {
                 StripeCoupon.create({
                     id: 'coupon_123',
                     amount_off: '500',
@@ -128,7 +127,7 @@ describe('StripeCoupon', function () {
         });
 
         it('Throws if amount_off is set without currency', function () {
-            should.throws(() => {
+            assert.throws(() => {
                 StripeCoupon.create({
                     id: 'coupon_123',
                     amount_off: 500,
@@ -138,7 +137,7 @@ describe('StripeCoupon', function () {
         });
 
         it('Throws if amount_off is set with non-string currency', function () {
-            should.throws(() => {
+            assert.throws(() => {
                 StripeCoupon.create({
                     id: 'coupon_123',
                     amount_off: 500,
@@ -149,7 +148,7 @@ describe('StripeCoupon', function () {
         });
 
         it('Throws if duration is missing', function () {
-            should.throws(() => {
+            assert.throws(() => {
                 StripeCoupon.create({
                     id: 'coupon_123',
                     percent_off: 20
@@ -158,7 +157,7 @@ describe('StripeCoupon', function () {
         });
 
         it('Throws if duration is not a string', function () {
-            should.throws(() => {
+            assert.throws(() => {
                 StripeCoupon.create({
                     id: 'coupon_123',
                     percent_off: 20,
@@ -168,7 +167,7 @@ describe('StripeCoupon', function () {
         });
 
         it('Throws if duration_in_months is not a number', function () {
-            should.throws(() => {
+            assert.throws(() => {
                 StripeCoupon.create({
                     id: 'coupon_123',
                     percent_off: 20,

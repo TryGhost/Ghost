@@ -1,7 +1,9 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const getBlogLogo = require('../../../../core/frontend/meta/blog-logo');
 const sinon = require('sinon');
 const settingsCache = require('../../../../core/shared/settings-cache');
+const config = require('../../../../core/shared/config');
 
 describe('getBlogLogo', function () {
     afterEach(function () {
@@ -19,8 +21,8 @@ describe('getBlogLogo', function () {
         });
 
         blogLogo = getBlogLogo();
-        should.exist(blogLogo);
-        blogLogo.should.have.property('url', 'http://127.0.0.1:2369/content/images/logo.png');
+        assertExists(blogLogo);
+        assert.equal(blogLogo.url, `${config.get('url')}/content/images/logo.png`);
     });
 
     it('should return custom uploaded png icon if no logo given', function () {
@@ -34,7 +36,7 @@ describe('getBlogLogo', function () {
         });
 
         blogLogo = getBlogLogo();
-        should.exist(blogLogo);
-        blogLogo.should.have.property('url', 'http://127.0.0.1:2369/content/images/size/w256h256/favicon.png');
+        assertExists(blogLogo);
+        assert.equal(blogLogo.url, `${config.get('url')}/content/images/size/w256h256/favicon.png`);
     });
 });

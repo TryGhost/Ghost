@@ -1,14 +1,9 @@
 const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
-const should = require('should');
 const sinon = require('sinon');
 const models = require('../../../../../core/server/models');
 
 describe('Models: crud', function () {
-    before(function () {
-        models.init();
-    });
-
     afterEach(function () {
         sinon.restore();
     });
@@ -222,7 +217,7 @@ describe('Models: crud', function () {
             return models.Base.Model.edit(data, unfilteredOptions).then(() => {
                 throw new Error('That should not happen');
             }).catch((err) => {
-                (err instanceof errors.NotFoundError).should.be.true();
+                assert.equal((err instanceof errors.NotFoundError), true);
             });
         });
     });

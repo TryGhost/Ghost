@@ -17,8 +17,8 @@ export default Mixin.create({
     /**
     * Counts repeated characters if a string. When 50% or more characters are the same,
     * we return false and therefore invalidate the string.
-    * @param {String} stringToTest The password string to check.
-    * @return {Boolean}
+    * @param {string} stringToTest The password string to check.
+    * @return {boolean}
     */
     _characterOccurance(stringToTest) {
         let chars = {};
@@ -81,27 +81,27 @@ export default Mixin.create({
 
         // password must not match with users' email
         if (password.toLowerCase() === model.email.toLowerCase()) {
-            model.errors.add(errorTarget, 'Sorry, you cannot use an insecure password.');
+            model.errors.add(errorTarget, 'Sorry, you cannot use the email as your password.');
             this.invalidate();
         }
 
         // password must not contain the words 'ghost', 'password', or 'passw0rd'
         DISALLOWED_PASSWORDS.forEach((disallowedPassword) => {
             if (password.toLowerCase().indexOf(disallowedPassword) >= 0) {
-                model.errors.add(errorTarget, 'Sorry, you cannot use an insecure password.');
+                model.errors.add(errorTarget, 'Sorry, you cannot use a password including common phrases.');
                 this.invalidate();
             }
         });
 
         // password must not match with blog title
         if (password.toLowerCase() === blogTitle) {
-            model.errors.add(errorTarget, 'Sorry, you cannot use an insecure password.');
+            model.errors.add(errorTarget, 'Sorry, you cannot use the blog title as your password.');
             this.invalidate();
         }
 
         // password must not match with blog URL (without protocol, with or without trailing slash)
         if (password.toLowerCase() === blogUrl || password.toLowerCase() === blogUrlWithSlash) {
-            model.errors.add(errorTarget, 'Sorry, you cannot use an insecure password.');
+            model.errors.add(errorTarget, 'Sorry, you cannot use the blog URL as your password.');
             this.invalidate();
         }
 

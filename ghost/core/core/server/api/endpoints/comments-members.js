@@ -1,5 +1,15 @@
 const commentsService = require('../../services/comments');
-const ALLOWED_INCLUDES = ['member', 'replies', 'replies.member', 'replies.count.likes', 'replies.liked', 'count.replies', 'count.likes', 'liked', 'post', 'parent'];
+const ALLOWED_INCLUDES = ['member', 'replies', 'replies.member', 'replies.count.likes', 'replies.liked', 'replies.disliked', 'count.replies', 'count.direct_replies', 'count.likes', 'liked', 'disliked', 'post', 'parent'];
+
+function withDislikesCapability(response) {
+    response.meta = response.meta || {};
+    response.meta.capabilities = {
+        ...response.meta.capabilities,
+        dislikes: true
+    };
+
+    return response;
+}
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -25,8 +35,9 @@ const controller = {
             }
         },
         permissions: false,
-        query(frame) {
-            return commentsService.controller.browse(frame);
+        async query(frame) {
+            const response = await commentsService.controller.browse(frame);
+            return withDislikesCapability(response);
         }
     },
 
@@ -60,7 +71,8 @@ const controller = {
             cacheInvalidate: false
         },
         options: [
-            'include'
+            'include',
+            'fields'
         ],
         data: [
             'id',
@@ -186,6 +198,37 @@ const controller = {
         permissions: false,
         async query(frame) {
             return await commentsService.controller.unlike(frame);
+        }
+    },
+
+    dislike: {
+        statusCode: 204,
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'id'
+        ],
+        validation: {
+        },
+        permissions: false,
+        async query(frame) {
+            return await commentsService.controller.dislike(frame);
+        }
+    },
+
+    undislike: {
+        statusCode: 204,
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'id'
+        ],
+        validation: {},
+        permissions: false,
+        async query(frame) {
+            return await commentsService.controller.undislike(frame);
         }
     },
 

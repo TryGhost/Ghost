@@ -1,4 +1,5 @@
 const dns = require('node:dns/promises');
+const crypto = require('node:crypto');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const sanitizeHtml = require('sanitize-html');
@@ -6,7 +7,10 @@ const {BadRequestError, NoPermissionError, UnauthorizedError, DisabledFeatureErr
 const errors = require('@tryghost/errors');
 const {isEmail} = require('@tryghost/validator');
 const normalizeEmail = require('../utils/normalize-email');
-const {getSniperLinks} = require('../../../../lib/get-sniper-links');
+const hasActiveOffer = require('../utils/has-active-offer');
+const {getInboxLinks} = require('../../../../lib/get-inbox-links');
+const {SIGNUP_CONTEXTS} = require('../../../lib/member-signup-contexts');
+/** @typedef {import('../../../lib/member-signup-contexts').SignupContext} SignupContext */
 
 const messages = {
     emailRequired: 'Email is required.',
@@ -22,15 +26,15 @@ const messages = {
     unableToCheckout: 'Unable to initiate checkout session',
     inviteOnly: 'This site is invite-only, contact the owner for access.',
     paidOnly: 'This site only accepts paid members.',
-    memberNotFound: 'No member exists with this email address.',
-    memberNotFoundSignUp: 'No member exists with this email address. Please sign up first.',
+    memberNotFound: 'No member exists with this e-mail address.',
     invalidType: 'Invalid checkout type.',
     notConfigured: 'This site is not accepting payments at the moment.',
     invalidNewsletters: 'Cannot subscribe to invalid newsletters {newsletters}',
     archivedNewsletters: 'Cannot subscribe to archived newsletters {newsletters}',
     otcNotSupported: 'OTC verification not supported.',
     invalidCode: 'Invalid verification code.',
-    failedToVerifyCode: 'Failed to verify code, please try again.'
+    failedToVerifyCode: 'Failed to verify code, please try again.',
+    signInRequired: 'You must be signed in to continue.'
 };
 
 // helper utility for logic shared between sendMagicLink and verifyOTC
@@ -52,8 +56,75 @@ function extractRefererOrRedirect(req) {
     return req.get('referer') || null;
 }
 
+function extractGiftToken(input) {
+    if (!input || typeof input !== 'string' || input.length === 0) {
+        return null;
+    }
+
+    return input.trim();
+}
+
+const RESERVED_CHECKOUT_METADATA_KEYS = new Set([
+    'ghost_donation',
+    'ghost_gift',
+    'ghostSignupContext',
+    'gift_token',
+    'tier_id',
+    'cadence',
+    'duration'
+]);
+
+function removeReservedCheckoutMetadata(metadata) {
+    if (!metadata || typeof metadata !== 'object') {
+        return;
+    }
+
+    for (const key of RESERVED_CHECKOUT_METADATA_KEYS) {
+        delete metadata[key];
+    }
+}
+
+/**
+ * Validate that a candidate return URL (e.g. Stripe Checkout success/cancel URL) points back
+ * to the configured Ghost site. Returns `undefined` when the candidate is missing, malformed,
+ * on a different origin, or outside of the site's subpath (for subpath installs) — leaving
+ * the downstream Stripe service to fall back to its configured default URL.
+ *
+ * This prevents the public checkout endpoints being abused as open-redirect surfaces.
+ *
+ * @param {string | undefined} candidate - URL provided in the request body
+ * @param {string} siteUrl - The site URL returned by urlUtils.getSiteUrl()
+ * @returns {string | undefined} The candidate URL if same-origin, otherwise undefined
+ */
+function sanitizeReturnUrl(candidate, siteUrl) {
+    if (typeof candidate !== 'string' || candidate.length === 0) {
+        return undefined;
+    }
+
+    let site;
+    let url;
+
+    try {
+        site = new URL(siteUrl);
+        url = new URL(candidate);
+    } catch {
+        return undefined;
+    }
+
+    if (url.origin !== site.origin) {
+        return undefined;
+    }
+
+    // Normalize site/candidate paths to trailing-slash form so that /blog and /blog/
+    // are treated equivalently when the site is configured at a subpath.
+    const sitePath = site.pathname.endsWith('/') ? site.pathname : `${site.pathname}/`;
+    const urlPath = url.pathname.endsWith('/') ? url.pathname : `${url.pathname}/`;
+
+    return urlPath.startsWith(sitePath) ? url.href : undefined;
+}
+
 module.exports = class RouterController {
-    #sniperLinksDnsResolver = new dns.Resolver({maxTimeout: 1000});
+    #inboxLinksDnsResolver = new dns.Resolver({maxTimeout: 1000});
 
     /**
      * RouterController
@@ -65,8 +136,8 @@ module.exports = class RouterController {
      * @param {any} deps.StripePrice
      * @param {() => boolean} deps.allowSelfSignup
      * @param {any} deps.magicLinkService
-     * @param {import('@tryghost/members-stripe-service')} deps.stripeAPIService
-     * @param {import('@tryghost/member-attribution')} deps.memberAttributionService
+     * @param {import('../../../stripe/stripe-api')} deps.stripeAPIService
+     * @param {import('../../../member-attribution')} deps.memberAttributionService
      * @param {any} deps.tokenService
      * @param {any} deps.sendEmailWithMagicLink
      * @param {{isSet(name: string): boolean}} deps.labsService
@@ -75,6 +146,7 @@ module.exports = class RouterController {
      * @param {any} deps.settingsCache
      * @param {any} deps.settingsHelpers
      * @param {any} deps.urlUtils
+     * @param {any} deps.emailAddressService
      */
     constructor({
         offersAPI,
@@ -93,7 +165,9 @@ module.exports = class RouterController {
         sentry,
         settingsCache,
         settingsHelpers,
-        urlUtils
+        urlUtils,
+        emailAddressService,
+        giftService
     }) {
         this._offersAPI = offersAPI;
         this._paymentsService = paymentsService;
@@ -112,6 +186,8 @@ module.exports = class RouterController {
         this._settingsCache = settingsCache;
         this._settingsHelpers = settingsHelpers;
         this._urlUtils = urlUtils;
+        this._emailAddressService = emailAddressService;
+        this._giftService = giftService;
     }
 
     async ensureStripe(_req, res, next) {
@@ -184,9 +260,10 @@ module.exports = class RouterController {
             customer = await this._stripeAPIService.getCustomer(subscription.get('customer_id'));
         }
 
+        const siteUrl = this._urlUtils.getSiteUrl();
         const session = await this._stripeAPIService.createCheckoutSetupSession(customer, {
-            successUrl: req.body.successUrl,
-            cancelUrl: req.body.cancelUrl,
+            successUrl: sanitizeReturnUrl(req.body.successUrl, siteUrl),
+            cancelUrl: sanitizeReturnUrl(req.body.cancelUrl, siteUrl),
             subscription_id: req.body.subscription_id,
             currency
         });
@@ -249,8 +326,9 @@ module.exports = class RouterController {
 
         const configurationId = this._settingsCache.get('stripe_billing_portal_configuration_id');
 
+        const siteUrl = this._urlUtils.getSiteUrl();
         const session = await this._stripeAPIService.createBillingPortalSession(customer, {
-            returnUrl: req.body.returnUrl,
+            returnUrl: sanitizeReturnUrl(req.body.returnUrl, siteUrl),
             ...(configurationId && {configurationId})
         });
         const sessionInfo = {
@@ -389,6 +467,12 @@ module.exports = class RouterController {
                 });
             }
 
+            if (!offer.tier) {
+                throw new BadRequestError({
+                    message: 'Offer does not have a tier'
+                });
+            }
+
             tier = await this._tiersService.api.read(offer.tier.id);
             cadence = offer.cadence;
         } else if (tierId) {
@@ -434,6 +518,7 @@ module.exports = class RouterController {
      * @param {string} options.cancelUrl URL to redirect to after cancelled checkout
      * @param {string} [options.email] Email address of the customer
      * @param {object} [options.member] Currently authenticated member OR member associated with the email address
+     * @param {object} [options.gift] Active gift subscription for the member
      * @param {boolean} options.isAuthenticated
      * @param {object} options.metadata Metadata to be passed to Stripe
      * @returns
@@ -466,6 +551,8 @@ module.exports = class RouterController {
         }
 
         const member = options.member;
+        /** @type {SignupContext} */
+        let ghostSignupContext = (options.isAuthenticated && member) ? SIGNUP_CONTEXTS.ALREADY_AUTHENTICATED : SIGNUP_CONTEXTS.NEEDS_MAGIC_LINK_EMAIL;
 
         if (!member && options.email) {
             // Create a signup link if there is no member with this email address
@@ -482,6 +569,7 @@ module.exports = class RouterController {
                 // Redirect to the original success url after sign up
                 referrer: options.successUrl
             });
+            ghostSignupContext = SIGNUP_CONTEXTS.HAS_PRECHECKOUT_MAGIC_LINK;
         }
 
         if (member) {
@@ -505,6 +593,9 @@ module.exports = class RouterController {
                 });
             }
         }
+
+        // Set by server to distinguish between checkout flows in Stripe webhooks.
+        options.metadata.ghostSignupContext = ghostSignupContext;
 
         try {
             const paymentLink = await this._paymentsService.getPaymentLink(options);
@@ -560,7 +651,7 @@ module.exports = class RouterController {
      * @returns
      */
     async _createDonationCheckoutSession(options) {
-        if (!this._paymentsService.stripeAPIService.configured) {
+        if (!this._settingsHelpers.areDonationsEnabled()) {
             throw new DisabledFeatureError({
                 message: tpl(messages.notConfigured)
             });
@@ -580,6 +671,39 @@ module.exports = class RouterController {
         }
     }
 
+    /**
+     * @param {object} options
+     * @param {object} options.tier
+     * @param {'month'|'year'} options.cadence
+     * @param {string} options.email
+     * @param {string} options.successUrl
+     * @param {string} options.cancelUrl
+     * @param {object} options.metadata
+     * @param {object} [options.member]
+     * @param {boolean} options.isAuthenticated
+     * @returns
+     */
+    async _createGiftCheckoutSession(options) {
+        if (!this._settingsHelpers.arePaidMembersEnabled()) {
+            throw new DisabledFeatureError({
+                message: tpl(messages.notConfigured)
+            });
+        }
+
+        try {
+            const paymentLink = await this._paymentsService.getGiftPaymentLink(options);
+
+            return {url: paymentLink};
+        } catch (err) {
+            logging.error(err);
+            this._sentry?.captureException?.(err);
+            throw new BadRequestError({
+                err,
+                message: tpl(messages.unableToCheckout)
+            });
+        }
+    }
+
     async createCheckoutSession(req, res) {
         const type = req.body.type ?? 'subscription';
         const metadata = req.body.metadata ?? {};
@@ -587,7 +711,7 @@ module.exports = class RouterController {
         const membersEnabled = true;
 
         // Check this checkout type is supported
-        if (typeof type !== 'string' || !['subscription', 'donation'].includes(type)) {
+        if (typeof type !== 'string' || !['subscription', 'donation', 'gift'].includes(type)) {
             throw new BadRequestError({
                 message: tpl(messages.invalidType)
             });
@@ -630,10 +754,16 @@ module.exports = class RouterController {
             metadata.newsletters = JSON.stringify(await this._validateNewsletters(JSON.parse(metadata.newsletters)));
         }
 
+        removeReservedCheckoutMetadata(metadata);
+
+        const siteUrl = this._urlUtils.getSiteUrl();
+        const successUrl = sanitizeReturnUrl(req.body.successUrl, siteUrl);
+        const cancelUrl = sanitizeReturnUrl(req.body.cancelUrl, siteUrl);
+
         // Build options
         const options = {
-            successUrl: req.body.successUrl,
-            cancelUrl: req.body.cancelUrl,
+            successUrl,
+            cancelUrl,
             email: req.body.customerEmail,
             member,
             metadata,
@@ -648,22 +778,79 @@ module.exports = class RouterController {
                 });
             }
 
-            // Get selected tier, offer and cadence
-            const data = await this._getSubscriptionCheckoutData(req.body);
+            let tier;
+            let cadence;
+            let offer;
+            let gift;
+
+            if (req.body.continueFromGift) {
+                if (!isAuthenticated || !member) {
+                    throw new UnauthorizedError({
+                        message: tpl(messages.signInRequired)
+                    });
+                }
+                if (member.get('status') !== 'gift') {
+                    throw new BadRequestError({
+                        message: tpl(messages.badRequest),
+                        context: 'Member does not have an active gift subscription'
+                    });
+                }
+
+                gift = await this._giftService.service.getActiveByMember(member.id);
+                if (!gift) {
+                    throw new BadRequestError({
+                        message: tpl(messages.badRequest),
+                        context: 'No active gift subscription found for member'
+                    });
+                }
+
+                ({tier, cadence} = await this._getSubscriptionCheckoutData({
+                    tierId: gift.tierId,
+                    cadence: gift.cadence
+                }));
+            } else {
+                ({tier, cadence, offer} = await this._getSubscriptionCheckoutData(req.body));
+            }
 
             // Check the checkout session
             response = await this._createSubscriptionCheckoutSession({
                 ...options,
-                ...data
+                tier,
+                cadence,
+                offer,
+                gift
             });
 
             // Add welcome_page_url to the response if available and member is authenticated
-            if (isAuthenticated && data.tier && data.tier.welcomePageURL) {
-                response.welcomePageUrl = data.tier.welcomePageURL;
+            if (isAuthenticated && tier && tier.welcomePageURL) {
+                response.welcomePageUrl = tier.welcomePageURL;
             }
         } else if (type === 'donation') {
             options.personalNote = parsePersonalNote(req.body.personalNote);
             response = await this._createDonationCheckoutSession(options);
+        } else if (type === 'gift') {
+            if (!membersEnabled) {
+                throw new BadRequestError({
+                    message: tpl(messages.badRequest)
+                });
+            }
+
+            if (req.body.offerId) {
+                throw new BadRequestError({
+                    message: tpl(messages.badRequest),
+                    context: 'Offers cannot be applied to gift subscriptions'
+                });
+            }
+
+            const data = await this._getSubscriptionCheckoutData(req.body);
+
+            response = await this._createGiftCheckoutSession({
+                ...options,
+                ...data,
+                duration: 1, // gifts are currently 1 month or 1 year only
+                successUrl: siteUrl,
+                cancelUrl: options.cancelUrl || siteUrl
+            });
         }
 
         res.writeHead(200, {
@@ -678,6 +865,7 @@ module.exports = class RouterController {
         let {emailType} = req.body;
 
         const referrer = extractRefererOrRedirect(req);
+        const giftToken = extractGiftToken(req.body.giftToken);
 
         if (!email) {
             throw new errors.BadRequestError({
@@ -719,28 +907,28 @@ module.exports = class RouterController {
         }
 
         try {
-            /** @type {{sniperLinks?: {desktop: string; android: string; provider: string}; otc_ref?: string}} */
+            /** @type {{inboxLinks?: {desktop: string; android: string; provider: string}; otc_ref?: string}} */
             const resBody = {};
 
             if (emailType === 'signup' || emailType === 'subscribe') {
-                await this._handleSignup(req, normalizedEmail, referrer);
+                await this._handleSignup(req, normalizedEmail, referrer, giftToken);
             } else {
-                const signIn = await this._handleSignin(req, normalizedEmail, referrer);
+                const signIn = await this._handleSignin(req, normalizedEmail, referrer, giftToken);
                 if (signIn.otcRef) {
                     resBody.otc_ref = signIn.otcRef;
                 }
             }
 
-            const sniperLinks = await getSniperLinks({
+            const inboxLinks = await getInboxLinks({
                 recipient: normalizedEmail,
-                sender: this._settingsHelpers.getMembersSupportAddress(),
-                dnsResolver: this.#sniperLinksDnsResolver
+                sender: this._emailAddressService.getMembersSupportAddress(),
+                dnsResolver: this.#inboxLinksDnsResolver
             });
-            if (sniperLinks) {
-                resBody.sniperLinks = sniperLinks;
-                logging.info(`[Sniperlinks] Found sniper links for provider ${sniperLinks.provider}`);
+            if (inboxLinks) {
+                resBody.inboxLinks = inboxLinks;
+                logging.info(`[Inbox links] Found inbox links for provider ${inboxLinks.provider}`);
             } else {
-                logging.info('[Sniperlinks] Found no sniper links');
+                logging.info('[Inbox links] Found no inbox links');
             }
 
             res.writeHead(201, {'Content-Type': 'application/json'});
@@ -781,7 +969,7 @@ module.exports = class RouterController {
         if (!tokenValue) {
             throw new errors.BadRequestError({
                 message: tpl(messages.invalidCode),
-                code: 'INVALID_OTC_REF'
+                code: 'INVALID_OTC'
             });
         }
 
@@ -823,7 +1011,7 @@ module.exports = class RouterController {
         return `${timestamp}:${hash}`;
     }
 
-    async _handleSignup(req, normalizedEmail, referrer = null) {
+    async _handleSignup(req, normalizedEmail, referrer = null, giftToken = null) {
         if (!this._allowSelfSignup()) {
             if (this._settingsCache.get('members_signup_access') === 'paid') {
                 throw new errors.BadRequestError({
@@ -851,13 +1039,14 @@ module.exports = class RouterController {
             name: req.body.name,
             reqIp: req.ip ?? undefined,
             newsletters: await this._validateNewsletters(req.body?.newsletters ?? []),
-            attribution: await this._memberAttributionService.getAttribution(req.body.urlHistory)
+            attribution: await this._memberAttributionService.getAttribution(req.body.urlHistory),
+            ...(giftToken ? {giftToken} : {})
         };
 
         return await this._sendEmailWithMagicLink({email: normalizedEmail, tokenData, requestedType: emailType, referrer});
     }
 
-    async _handleSignin(req, normalizedEmail, referrer = null) {
+    async _handleSignin(req, normalizedEmail, referrer = null, giftToken = null) {
         const {emailType, includeOTC: reqIncludeOTC} = req.body;
 
         let includeOTC = false;
@@ -869,36 +1058,17 @@ module.exports = class RouterController {
         const member = await this._memberRepository.get({email: normalizedEmail});
 
         if (!member) {
-            // Member doesn't exist - to prevent enumeration, we don't reveal this
-            // If self-signup is allowed, send a signup email so they can create an account
-            // If self-signup is disabled (invite-only), silently return to prevent enumeration
-            if (this._allowSelfSignup()) {
-                const blockedEmailDomains = this._settingsCache.get('all_blocked_email_domains');
-                const emailDomain = normalizedEmail.split('@')[1]?.toLowerCase();
-                if (emailDomain && blockedEmailDomains.includes(emailDomain)) {
-                    // To prevent enumeration, we don't reveal this
-                    return {};
-                }
-
-                const tokenData = {
-                    reqIp: req.ip ?? undefined,
-                    attribution: await this._memberAttributionService.getAttribution(req.body.urlHistory)
-                };
-                // Send a signup email - this allows them to create an account
-                return await this._sendEmailWithMagicLink({
-                    email: normalizedEmail,
-                    tokenData,
-                    requestedType: 'signup',
-                    referrer
-                });
-            }
-
-            // Self-signup disabled (invite-only): silently return empty response
-            // to prevent member enumeration
-            return {};
+            // Return a fake otcRef when OTC was requested so the response
+            // shape is identical regardless of whether a member exists
+            return includeOTC ? {otcRef: crypto.randomUUID()} : {};
         }
 
-        const tokenData = {};
+        const {name} = req.body;
+
+        const tokenData = {
+            ...(name ? {name} : {}),
+            ...(giftToken ? {giftToken} : {})
+        };
         return await this._sendEmailWithMagicLink({email: normalizedEmail, tokenData, requestedType: emailType, referrer, includeOTC});
     }
 
@@ -963,6 +1133,10 @@ module.exports = class RouterController {
             return res.end(JSON.stringify({offers}));
         }
 
+        function sendNoOffersAvailable() {
+            return sendOffersResponse([]);
+        }
+
         if (!identity) {
             res.writeHead(401);
             return res.end('Unauthorized');
@@ -1012,45 +1186,44 @@ module.exports = class RouterController {
 
         // No active subscription - return empty offers
         if (activeSubscriptions.length === 0) {
-            return sendOffersResponse();
+            return sendNoOffersAvailable();
         }
 
         // Multiple active subscriptions - edge case, return empty offers to avoid ambiguity
         if (activeSubscriptions.length > 1) {
-            return sendOffersResponse();
+            return sendNoOffersAvailable();
         }
 
         const activeSubscription = activeSubscriptions[0];
 
-        // If subscription already has an offer applied (e.g. signup offer), don't show retention offers
-        if (activeSubscription.get('offer_id')) {
-            return sendOffersResponse();
+        // If subscription is already set to cancel, don't show retention offers
+        if (activeSubscription.get('cancel_at_period_end')) {
+            return sendNoOffersAvailable();
         }
 
-        // If subscription is in a trial period (either offer-based or tier-based), don't show retention offers
-        const trialEndAt = activeSubscription.get('trial_end_at');
-        if (trialEndAt && trialEndAt > new Date()) {
-            return sendOffersResponse();
+        // If subscription has an active offer, don't show retention offers
+        if (await hasActiveOffer(activeSubscription, this._offersAPI)) {
+            return sendNoOffersAvailable();
         }
 
         // Get tier and cadence from the subscription
         const stripePrice = activeSubscription.related('stripePrice');
         if (!stripePrice || !stripePrice.id) {
-            return sendOffersResponse();
+            return sendNoOffersAvailable();
         }
 
         const stripeProduct = stripePrice.related('stripeProduct');
 
         // If the stripe product is not found, return empty offers
         if (!stripeProduct || !stripeProduct.id) {
-            return sendOffersResponse();
+            return sendNoOffersAvailable();
         }
 
         const product = stripeProduct.related('product');
 
         // If the product is not found, return empty offers
         if (!product || !product.id) {
-            return sendOffersResponse();
+            return sendNoOffersAvailable();
         }
 
         const tierId = product.id;

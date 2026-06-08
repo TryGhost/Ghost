@@ -1,7 +1,7 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {ReactComponent as LoaderIcon} from '../../images/icons/loader.svg';
-import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
-import {getCurrencySymbol, getPriceString, getStripeAmount, getMemberActivePrice, getProductFromPrice, getFreeTierTitle, getFreeTierDescription, getFreeProduct, getFreeProductBenefits, getSupportAddress, formatNumber, isCookiesDisabled, hasOnlyFreeProduct, isMemberActivePrice, hasFreeTrialTier, isComplimentaryMember} from '../../utils/helpers';
+import LoaderIcon from '../../images/icons/loader.svg?react';
+import CheckmarkIcon from '../../images/icons/checkmark.svg?react';
+import {getCurrencySymbol, getPriceString, getStripeAmount, getMemberActivePrice, getProductFromPrice, getFreeTierTitle, getFreeTierDescription, getFreeProduct, getFreeProductBenefits, getSupportAddress, formatNumber, isCookiesDisabled, hasOnlyFreeProduct, isMemberActivePrice, hasFreeTrialTier, isComplimentaryMember, getActiveInterval} from '../../utils/helpers';
 import AppContext from '../../app-context';
 import calculateDiscount from '../../utils/discount';
 import Interpolate from '@doist/react-interpolate';
@@ -546,7 +546,7 @@ function ProductBenefits({product}) {
         const key = benefit?.id || `benefit-${idx}`;
         return (
             <div className="gh-portal-product-benefit" key={key}>
-                <CheckmarkIcon className='gh-portal-benefit-checkmark' alt=''/>
+                <CheckmarkIcon className='gh-portal-benefit-checkmark' aria-hidden='true' />
                 <div className="gh-portal-benefit-title">{benefit.name}</div>
             </div>
         );
@@ -917,30 +917,6 @@ function getSelectedPrice({products, selectedProduct, selectedInterval}) {
         selectedPrice = selectedInterval === 'month' ? product?.monthlyPrice : product?.yearlyPrice;
     }
     return selectedPrice;
-}
-
-function getActiveInterval({portalPlans, portalDefaultPlan, selectedInterval}) {
-    if (selectedInterval === 'month' && portalPlans.includes('monthly')) {
-        return 'month';
-    }
-
-    if (selectedInterval === 'year' && portalPlans.includes('yearly')) {
-        return 'year';
-    }
-
-    if (portalDefaultPlan) {
-        if (portalDefaultPlan === 'monthly' && portalPlans.includes('monthly')) {
-            return 'month';
-        }
-    }
-
-    if (portalPlans.includes('yearly')) {
-        return 'year';
-    }
-
-    if (portalPlans.includes('monthly')) {
-        return 'month';
-    }
 }
 
 function ProductsSection({onPlanSelect, products, type = null, handleChooseSignup, errors}) {

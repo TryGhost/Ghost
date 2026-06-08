@@ -110,6 +110,12 @@ const forPost = (attrs, frame) => {
         _updateTextAttrs(attrs);
     }
 
+    // Replace member UUID placeholder for Transistor embeds (URL-encoded {uuid})
+    const member = frame.original.context.member;
+    if (member && member.uuid && attrs.html) {
+        attrs.html = attrs.html.replace(/%7Buuid%7D/gi, member.uuid);
+    }
+
     if (!Object.prototype.hasOwnProperty.call(frame.options, 'columns') || (frame.options.columns.includes('access'))) {
         attrs.access = memberHasAccess;
     }

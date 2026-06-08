@@ -102,6 +102,39 @@ export type AccountFollowsType = 'following' | 'followers';
 
 type GetAccountResponse = Account
 
+export interface AccountAlias {
+    apId: string;
+}
+
+export interface AccountAliasesResponse {
+    destination: {
+        handle: string;
+        apId: string;
+    };
+    aliases: AccountAlias[];
+}
+
+function emptyAccountAliasesResponse(): AccountAliasesResponse {
+    return {
+        destination: {
+            handle: '',
+            apId: ''
+        },
+        aliases: []
+    };
+}
+
+function parseAccountAliasesResponse(json: object | null): AccountAliasesResponse {
+    if (json === null || !('destination' in json)) {
+        return emptyAccountAliasesResponse();
+    }
+
+    return {
+        destination: json.destination as AccountAliasesResponse['destination'],
+        aliases: 'aliases' in json && Array.isArray(json.aliases) ? json.aliases as AccountAlias[] : []
+    };
+}
+
 export type FollowAccount = Pick<Account, 'id' | 'name' | 'handle' | 'avatarUrl' | 'blockedByMe' | 'domainBlockedByMe'> & {isFollowing: true};
 
 export interface GetAccountFollowsResponse {
@@ -167,11 +200,13 @@ export interface GetBlockedDomainsResponse {
     next: string | null;
 }
 
-export enum PostType {
-    Note = 0,
-    Article = 1,
-    Tombstone = 2
-}
+export const PostType = {
+    Note: 0,
+    Article: 1,
+    Tombstone: 2
+} as const;
+
+export type PostType = (typeof PostType)[keyof typeof PostType];
 
 export interface Post {
     id: string;
@@ -242,12 +277,22 @@ export const isApiError = (error: unknown): error is ApiError => {
 };
 
 export class ActivityPubAPI {
+    private readonly apiUrl: URL;
+    private readonly authApiUrl: URL;
+    private readonly handle: string;
+    private readonly fetch: (resource: URL, init?: RequestInit) => Promise<Response>;
+
     constructor(
-        private readonly apiUrl: URL,
-        private readonly authApiUrl: URL,
-        private readonly handle: string,
-        private readonly fetch: (resource: URL, init?: RequestInit) => Promise<Response> = window.fetch.bind(window)
-    ) {}
+        apiUrl: URL,
+        authApiUrl: URL,
+        handle: string,
+        fetch: (resource: URL, init?: RequestInit) => Promise<Response> = window.fetch.bind(window)
+    ) {
+        this.apiUrl = apiUrl;
+        this.authApiUrl = authApiUrl;
+        this.handle = handle;
+        this.fetch = fetch;
+    }
 
     private async getToken(): Promise<string | null> {
         try {
@@ -470,6 +515,27 @@ export class ActivityPubAPI {
             accounts,
             next: nextPage
         };
+    }
+
+    async getAccountAliases(): Promise<AccountAliasesResponse> {
+        const url = new URL('.ghost/activitypub/v1/aliases', this.apiUrl);
+        const json = await this.fetchJSON(url);
+
+        return parseAccountAliasesResponse(json);
+    }
+
+    async addAccountAlias(sourceHandle: string): Promise<AccountAliasesResponse> {
+        const url = new URL('.ghost/activitypub/v1/aliases', this.apiUrl);
+        const json = await this.fetchJSON(url, 'POST', {sourceHandle});
+
+        return parseAccountAliasesResponse(json);
+    }
+
+    async removeAccountAlias(actorUri: string): Promise<AccountAliasesResponse> {
+        const url = new URL('.ghost/activitypub/v1/aliases', this.apiUrl);
+        const json = await this.fetchJSON(url, 'DELETE', {actorUri});
+
+        return parseAccountAliasesResponse(json);
     }
 
     async getFeed(next?: string): Promise<PaginatedPostsResponse> {

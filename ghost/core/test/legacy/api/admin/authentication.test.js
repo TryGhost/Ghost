@@ -1,5 +1,5 @@
 const nock = require('nock');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../../../utils/e2e-framework');
 const {anyContentVersion, anyEtag, anyISODateTime, anyErrorId, stringMatching} = matchers;
 
@@ -135,6 +135,38 @@ describe('Authentication API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 });
+        });
+
+        it('only returns status when setup is complete', async function () {
+            const {body} = await agent
+                .get('authentication/setup')
+                .expectStatus(200);
+
+            const [setup] = body.setup;
+            assert.equal(setup.status, true, 'Setup should be complete');
+            assert.equal(setup.email, undefined, 'Email should not be returned after setup is complete');
+            assert.equal(setup.name, undefined, 'Name should not be returned after setup is complete');
+            assert.equal(setup.title, undefined, 'Title should not be returned after setup is complete');
+        });
+
+        it('only returns status when setup is complete even with config values set', async function () {
+            const configUtils = require('../../../utils/config-utils');
+
+            configUtils.set('user_email', 'owner@example.com');
+            configUtils.set('user_name', 'Owner Name');
+
+            try {
+                const {body} = await agent
+                    .get('authentication/setup')
+                    .expectStatus(200);
+
+                const [setup] = body.setup;
+                assert.equal(setup.status, true, 'Setup should be complete');
+                assert.equal(setup.email, undefined, 'Email should not be returned after setup is complete');
+                assert.equal(setup.name, undefined, 'Name should not be returned after setup is complete');
+            } finally {
+                await configUtils.restore();
+            }
         });
 
         it('complete setup again', function () {
@@ -390,12 +422,15 @@ describe('Authentication API', function () {
                 .expectStatus(200)
                 .matchBodySnapshot({
                     password_reset: [{
-                        emailVerificationToken: stringMatching(/^[0-9]{6}$/)
+                        message: 'Password updated'
                     }]
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
-                    etag: anyEtag
+                    etag: anyEtag,
+                    'set-cookie': [
+                        stringMatching(/^ghost-admin-api-session=/)
+                    ]
                 });
         });
 
@@ -503,10 +538,10 @@ describe('Authentication API', function () {
         });
     });
 
-    describe('Reset all passwords', function () {
+    describe('Reset authentication', function () {
         before(async function () {
             agent = await agentProvider.getAdminAPIAgent();
-            await fixtureManager.init('invites');
+            await fixtureManager.init('invites', 'integrations', 'api_keys');
             await agent.loginAsOwner();
         });
 
@@ -518,38 +553,63 @@ describe('Authentication API', function () {
             mockManager.restore();
         });
 
-        it('reset all passwords returns 204', async function () {
-            await agent.post('authentication/global_password_reset')
+        it('rotates every api key, locks every user, kills every session, and sends no proactive emails', async function () {
+            const apiKeysBefore = (await models.ApiKey.findAll({})).toJSON().reduce((acc, key) => {
+                acc[key.id] = key.secret;
+                return acc;
+            }, {});
+            const totalKeys = Object.keys(apiKeysBefore).length;
+            assert.ok(totalKeys > 0, 'fixture should contain at least one API key');
+
+            const {body} = await agent.post('authentication/reset')
                 .header('Accept', 'application/json')
                 .body({})
-                .expectStatus(204)
-                .expectEmptyBody()
+                .expectStatus(200)
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 });
 
-            // Check side effects
-            // All users locked
+            assert.equal(body.security_action[0].action, 'reset_authentication');
+            assert.equal(body.security_action[0].api_keys_rotated, totalKeys);
+            assert.ok(body.security_action[0].users_locked >= 1);
+
+            // Every API key secret was refreshed
+            const apiKeysAfter = (await models.ApiKey.findAll({})).toJSON();
+            for (const key of apiKeysAfter) {
+                assert.notEqual(key.secret, apiKeysBefore[key.id], `Secret for key ${key.id} should have changed`);
+            }
+
+            // Every user is locked
             const users = await models.User.fetchAll();
             for (const user of users) {
                 assert.equal(user.get('status'), 'locked', `Status should be locked for user ${user.get('email')}`);
             }
 
-            // No session left
+            // Every session is gone
             const sessions = await models.Session.fetchAll();
             assert.equal(sessions.length, 0, 'There should be no sessions left in the DB');
 
-            emailMockReceiver.assertSentEmailCount(2);
+            // Audit entry recorded. The `context` column is stored as a JSON
+            // string; the Action model doesn't auto-parse it on read.
+            const auditRows = await models.Action.findAll({
+                filter: 'resource_type:security_action+event:edited'
+            });
+            assert.ok(
+                auditRows.some((row) => {
+                    const raw = row.get('context');
+                    if (!raw) {
+                        return false;
+                    }
+                    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+                    return parsed.action_name === 'reset_authentication';
+                }),
+                'expected an audit entry with action_name=reset_authentication'
+            );
 
-            mockManager.assert.sentEmail({
-                subject: 'Reset Password',
-                to: 'jbloggs@example.com'
-            });
-            mockManager.assert.sentEmail({
-                subject: 'Reset Password',
-                to: 'ghost-author@example.com'
-            });
+            // No proactive emails — the reset email is sent by the session
+            // endpoint when a locked user next attempts to sign in.
+            emailMockReceiver.assertSentEmailCount(0);
         });
     });
 });

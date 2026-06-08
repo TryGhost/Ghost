@@ -1,6 +1,6 @@
+const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
 const _ = require('lodash');
-const url = require('url');
 const moment = require('moment');
 const DataGenerator = require('./fixtures/data-generator');
 const config = require('../../core/shared/config');
@@ -14,11 +14,11 @@ function getURL() {
 }
 
 function getSigninURL() {
-    return url.resolve(protocol + host + ':' + port, 'ghost/signin/');
+    return new URL('ghost/signin/', protocol + host + ':' + port).toString();
 }
 
 function getAdminURL() {
-    return url.resolve(protocol + host + ':' + port, 'ghost/');
+    return new URL('ghost/', protocol + host + ':' + port).toString();
 }
 
 function isISO8601(date) {
@@ -32,14 +32,14 @@ function checkResponseValue(jsonResponse, expectedProperties) {
     const unexpected = _.difference(providedProperties, expectedProperties);
 
     _.each(missing, function (prop) {
-        jsonResponse.should.have.property(prop);
+        assert(prop in jsonResponse);
     });
 
     _.each(unexpected, function (prop) {
-        jsonResponse.should.not.have.property(prop);
+        assert(!(prop in jsonResponse));
     });
 
-    providedProperties.length.should.eql(expectedProperties.length, 'provided properties length does not match expected properties length');
+    assert.equal(providedProperties.length, expectedProperties.length, 'provided properties length does not match expected properties length');
 }
 
 // @TODO: support options pattern only, it's annoying to call checkResponse(null, null, null, something)

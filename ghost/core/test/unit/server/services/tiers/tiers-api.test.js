@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 
 const TiersAPI = require('../../../../../core/server/services/tiers/tiers-api');
 const InMemoryTierRepository = require('../../../../../core/server/services/tiers/in-memory-tier-repository');
@@ -10,7 +10,7 @@ describe('TiersAPI', function () {
     /** @type {TiersAPI} */
     let api;
 
-    before(function () {
+    beforeAll(function () {
         repository = new InMemoryTierRepository();
         api = new TiersAPI({
             repository,

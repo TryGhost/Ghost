@@ -11,13 +11,14 @@ const databaseInfo = require('../../data/db/info');
 const request = require('@tryghost/request');
 const ghostVersion = require('@tryghost/version');
 const UpdateCheckService = require('./update-check-service');
+const {NotificationEmailService} = require('../notifications/notification-email');
 
 /**
  * Initializes and triggers update check
  * @param {Object} [options]
- * @param {Boolean} [options.rethrowErrors] - if true, errors will be thrown instead of logged
- * @param {Boolean} [options.forceUpdate] - if true, the update check will be triggered regardless of the environment or scheudle, defaults to config if no value provided
- * @param {String} [options.updateCheckUrl] - the url to check for updates against, defaults to config if no value provided
+ * @param {boolean} [options.rethrowErrors] - if true, errors will be thrown instead of logged
+ * @param {boolean} [options.forceUpdate] - if true, the update check will be triggered regardless of the environment or scheudle, defaults to config if no value provided
+ * @param {string} [options.updateCheckUrl] - the url to check for updates against, defaults to config if no value provided
  * @returns {Promise<any>}
  */
 module.exports = async ({
@@ -34,8 +35,14 @@ module.exports = async ({
         }
     }
 
-    const {GhostMailer} = require('../mail');
-    const ghostMailer = new GhostMailer();
+    const mailService = require('../mail');
+    const ghostMailer = new mailService.GhostMailer();
+
+    const notificationEmailService = new NotificationEmailService({
+        mailer: ghostMailer,
+        generateEmailContent: mailService.utils.generateContent,
+        getSiteUrl: () => urlUtils.urlFor('home', true)
+    });
 
     const updateChecker = new UpdateCheckService({
         api: {
@@ -66,7 +73,7 @@ module.exports = async ({
             rethrowErrors
         },
         request,
-        sendEmail: ghostMailer.send.bind(ghostMailer)
+        notificationEmailService
     });
 
     await updateChecker.check();
@@ -82,5 +89,12 @@ module.exports.scheduleRecurringJobs = () => {
         at: `${s} ${m} ${h} * * *`, // Every day
         job: require('path').resolve(__dirname, 'run-update-check.js'),
         name: 'update-check'
+    });
+};
+
+module.exports.scheduleBootJob = () => {
+    jobsService.addJob({
+        job: require('path').resolve(__dirname, 'run-update-check.js'),
+        name: 'update-check-boot'
     });
 };

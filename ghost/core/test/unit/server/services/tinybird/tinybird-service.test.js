@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const TinybirdService = require('../../../../../core/server/services/tinybird/tinybird-service');
 const jwt = require('jsonwebtoken');
 const sinon = require('sinon');

@@ -1,4 +1,5 @@
 import Access from './access';
+import GiftSubscriptions from './gift-subscriptions';
 import MemberEmails from './member-emails';
 import Portal from './portal';
 import React from 'react';
@@ -11,26 +12,36 @@ import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/
 import {useGlobalData} from '../../providers/global-data-provider';
 
 export const searchKeywords = {
-    access: ['membership', 'default', 'access', 'subscription', 'post', 'membership', 'comments', 'commenting', 'signup', 'sign up', 'spam', 'filters', 'prevention', 'prevent', 'block', 'domains', 'email'],
+    access: ['membership', 'default', 'access', 'subscription', 'post', 'membership', 'comments', 'commenting', 'signup', 'sign up', 'spam', 'filters', 'prevention', 'prevent', 'block', 'domains', 'email', 'password protection', 'lock site', 'private site', 'private site mode', 'make this site private'],
     tiers: ['membership', 'tiers', 'payment', 'paid', 'stripe'],
     portal: ['membership', 'portal', 'signup', 'sign up', 'signin', 'sign in', 'login', 'account', 'membership', 'support', 'email', 'address', 'support email address', 'support address'],
-    memberEmails: ['membership', 'signup', 'welcome email', 'email', 'new user', 'new member', 'account'],
+    giftSubscriptions: ['membership', 'gift', 'gifts', 'gift subscriptions', 'present', 'share', 'shareable link'],
+    memberEmails: ['membership', 'signup', 'welcome email', 'welcome emails', 'email', 'new user', 'new member', 'account'],
     tips: ['growth', 'tips', 'donations', 'one time', 'payment']
 };
 
 const MembershipSettings: React.FC = () => {
     const {config, settings} = useGlobalData();
-    const [hasTipsAndDonations] = getSettingValues(settings, ['donations_enabled']) as [boolean];
+    const [hasTipsAndDonations, paidMembersEnabled] = getSettingValues(settings, ['donations_enabled', 'paid_members_enabled']) as [boolean, boolean];
     const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
-    const hasWelcomeEmails = useFeatureFlag('welcomeEmails');
+    const hasAutomations = useFeatureFlag('automations');
+    const visibleSearchKeywords = [
+        searchKeywords.access,
+        searchKeywords.tiers,
+        searchKeywords.portal,
+        ...(paidMembersEnabled ? [searchKeywords.giftSubscriptions] : []),
+        ...(hasAutomations ? [] : [searchKeywords.memberEmails]),
+        searchKeywords.tips
+    ].flat();
 
     return (
-        <SearchableSection keywords={Object.values(searchKeywords).flat()} title='Membership'>
+        <SearchableSection keywords={visibleSearchKeywords} title='Membership'>
             <Access keywords={searchKeywords.access} />
             <SpamFilters keywords={searchKeywords.access} />
             <Tiers keywords={searchKeywords.tiers} />
             <Portal keywords={searchKeywords.portal} />
-            {hasWelcomeEmails && <MemberEmails keywords={searchKeywords.memberEmails} />}
+            {paidMembersEnabled && <GiftSubscriptions keywords={searchKeywords.giftSubscriptions} />}
+            {!hasAutomations && <MemberEmails keywords={searchKeywords.memberEmails} />}
             {hasTipsAndDonations && hasStripeEnabled && <TipsAndDonations keywords={searchKeywords.tips} />}
         </SearchableSection>
     );

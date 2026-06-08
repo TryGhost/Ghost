@@ -20,17 +20,17 @@ class EmailBatchesImporter extends TableImporter {
     }
 
     generate() {
-        const emailSentDate = new Date(this.model.created_at);
-        const latestUpdatedDate = new Date(this.model.created_at);
+        const emailSentDate = dateToDatabaseString.parse(this.model.created_at);
+        const latestUpdatedDate = dateToDatabaseString.parse(this.model.created_at);
         latestUpdatedDate.setHours(latestUpdatedDate.getHours() + 1);
 
         return {
             id: this.fastFakeObjectId(),
             email_id: this.model.id,
-            provider_id: `${new Date().toISOString().split('.')[0].replace(/[^0-9]/g, '')}.${faker.datatype.hexadecimal({length: 16, prefix: '', case: 'lower'})}@m.example.com`,
+            provider_id: `${new Date().toISOString().split('.')[0].replace(/[^0-9]/g, '')}.${faker.string.hexadecimal({length: 16, prefix: '', casing: 'lower'})}@m.example.com`,
             status: 'submitted', // TODO: introduce failures
             created_at: this.model.created_at,
-            updated_at: dateToDatabaseString(faker.date.between(emailSentDate, latestUpdatedDate))
+            updated_at: dateToDatabaseString(dateToDatabaseString.randomBetween(emailSentDate, latestUpdatedDate))
         };
     }
 }

@@ -1,9 +1,10 @@
 const {agentProvider, fixtureManager, matchers, configUtils} = require('../../utils/e2e-framework');
+const {mockMail, restore} = require('../../utils/e2e-framework-mock-manager');
 const models = require('../../../core/server/models');
 const security = require('@tryghost/security');
 const settingsCache = require('../../../core/shared/settings-cache');
 const moment = require('moment');
-const {anyErrorId, stringMatching} = matchers;
+const {anyErrorId} = matchers;
 
 describe('Authentication API', function () {
     let agent;
@@ -28,7 +29,16 @@ describe('Authentication API', function () {
     });
 
     describe('resetPassword', function () {
-        it('returns emailVerificationToken that can be used to bypass 2FA on login', async function () {
+        beforeEach(function () {
+            mockMail();
+        });
+
+        afterEach(function () {
+            configUtils.set('security:staffDeviceVerification', false);
+            restore();
+        });
+
+        it('creates a verified session after password reset', async function () {
             // Enable 2FA for this test
             configUtils.set('security:staffDeviceVerification', true);
 
@@ -46,8 +56,11 @@ describe('Authentication API', function () {
             });
             const encodedToken = security.url.encodeBase64(resetToken);
 
-            // Reset the password and capture the emailVerificationToken
-            const resetResponse = await agent
+            // Reset should start from an unauthenticated session.
+            agent.clearCookies();
+
+            // Reset the password and verify response mode
+            await agent
                 .put('authentication/password_reset')
                 .body({
                     password_reset: [{
@@ -59,35 +72,14 @@ describe('Authentication API', function () {
                 .expectStatus(200)
                 .matchBodySnapshot({
                     password_reset: [{
-                        message: 'Password updated',
-                        emailVerificationToken: stringMatching(/^[0-9]{6}$/)
+                        message: 'Password updated'
                     }]
                 });
-
-            const emailVerificationToken = resetResponse.body.password_reset[0].emailVerificationToken;
-
-            // Clear cookies to simulate a fresh login attempt
-            agent.clearCookies();
-
-            // Now login with the emailVerificationToken - should bypass 2FA
-            await agent
-                .post('session/')
-                .body({
-                    grant_type: 'password',
-                    username: ownerUser.email,
-                    password: newPassword,
-                    token: emailVerificationToken
-                })
-                .expectStatus(201)
-                .expectEmptyBody();
 
             // Verify we can access protected resources (session is verified)
             await agent
                 .get('/users/me/')
                 .expectStatus(200);
-
-            // Cleanup: reset the password back to original and disable 2FA
-            configUtils.set('security:staffDeviceVerification', false);
         });
     });
 });

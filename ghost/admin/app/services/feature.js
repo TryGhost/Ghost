@@ -60,18 +60,14 @@ export default class FeatureService extends Service {
     @feature('referralInviteDismissed', {user: true}) referralInviteDismissed;
 
     // labs flags
-    @feature('audienceFeedback') audienceFeedback;
-    @feature('welcomeEmails') welcomeEmails;
-    @feature('webmentions') webmentions;
     @feature('stripeAutomaticTax') stripeAutomaticTax;
     @feature('emailCustomization') emailCustomization;
-    @feature('announcementBar') announcementBar;
     @feature('importMemberTier') importMemberTier;
+    @feature('adminUIRefresh') adminUIRefresh;
     @feature('lexicalIndicators') lexicalIndicators;
     @feature('editorExcerpt') editorExcerpt;
-    @feature('transistor') transistor;
     @feature('tagsX') tagsX;
-
+    @feature('commentModeration') commentModeration;
     _user = null;
 
     @computed('settings.labs')
@@ -94,13 +90,6 @@ export default class FeatureService extends Service {
         } catch (e) {
             return {};
         }
-    }
-
-    get inAdminForward() {
-        // Detect if Ember is running inside the React admin shell
-        // In React shell: Ember renders to #ember-app
-        // Standalone: Ember renders to body (no #ember-app element)
-        return document.querySelector('#ember-app') !== null;
     }
 
     fetch() {

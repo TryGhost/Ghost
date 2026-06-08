@@ -88,6 +88,14 @@ class CollectionRouter extends ParentRouter {
         // REGISTER: permalinks e.g. /:slug/, /podcast/:slug
         this.mountRoute(this.permalinks.getValue({withUrlOptions: true}), controllers.entry);
 
+        // REGISTER: .md variant for llms.txt markdown export
+        const mdPermalink = this.permalinks.value.replace(/\/$/, '.md');
+        this.mountRoute(mdPermalink, (req, res, next) => {
+            res.routerOptions.permalinks = mdPermalink;
+            res.routerOptions.isMarkdownRequest = true;
+            return controllers.entry(req, res, next);
+        });
+
         this.routerCreated(this);
     }
 
@@ -135,7 +143,7 @@ class CollectionRouter extends ParentRouter {
     /**
      * @description Get index route e.g. /, /blog/
      * @param {Object} options
-     * @returns {String}
+     * @returns {string}
      */
     getRoute(options) {
         options = options || {};
@@ -146,7 +154,7 @@ class CollectionRouter extends ParentRouter {
     /**
      * @description Generate rss url.
      * @param {Object} options
-     * @returns {String}
+     * @returns {string}
      */
     getRssUrl(options) {
         if (!this.rss) {

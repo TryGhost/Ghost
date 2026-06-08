@@ -15,7 +15,6 @@ declare global {
 }
 
 const SDK_URL = 'https://do.featurebase.app/js/sdk.js';
-const DEFAULT_BOARD = 'Feature Request';
 
 let featurebaseSDKPromise: Promise<void> | null = null;
 function loadFeaturebaseSDK(): Promise<void> {
@@ -88,7 +87,6 @@ export function useFeaturebase(): Featurebase {
             window.Featurebase?.('initialize_feedback_widget', {
                 organization,
                 theme,
-                defaultBoard: DEFAULT_BOARD,
                 featurebaseJwt: token
             }, (err) => {
                 if (err) {

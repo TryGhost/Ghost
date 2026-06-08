@@ -1,9 +1,19 @@
 /**
  * @typedef {Object} UrlService
- * @prop {(resourceId: string, options) => Object} getResource
- *  @prop {(resourceId: string, options) => string} getUrlByResourceId
- *
+ * @prop {{
+ *   getUrlForResource: (resource: Object, options: Object) => string,
+ *   resolveUrl: (path: string) => Promise<Object | null>
+ * }} facade
  */
+
+const {toPlain} = require('../../lib/common/to-plain');
+
+const TYPE_TO_RESOURCE = {
+    post: 'posts',
+    page: 'pages',
+    tag: 'tags',
+    author: 'authors'
+};
 
 /**
  * Translate a url into, (id+type), or a resource, and vice versa
@@ -64,7 +74,7 @@ class UrlTranslator {
                 return {
                     type: item.type,
                     id: item.id,
-                    url: this.getUrlByResourceId(item.id, {absolute: false})
+                    url: this.getResourceUrl(item.id, item.type, resource, {absolute: false})
                 };
             }
 
@@ -80,7 +90,7 @@ class UrlTranslator {
         return {
             type: 'url',
             id: null,
-            ...this.getTypeAndIdFromPath(path),
+            ...(await this.getTypeAndIdFromPath(path)),
             url: path
         };
     }
@@ -89,50 +99,80 @@ class UrlTranslator {
      * Get the resource type and ID from a path that was visited on the site
      * @param {string} path (excluding subdirectory)
      */
-    getTypeAndIdFromPath(path) {
-        const resource = this.urlService.getResource(path);
+    async getTypeAndIdFromPath(path) {
+        // resolveUrl may reject during route rebuilds (URL service not yet
+        // ready). Member attribution is best-effort: a failed lookup should
+        // fall back to the URL-typed result (handled by the caller), not
+        // surface as an error.
+        let resource;
+        try {
+            resource = await this.urlService.facade.resolveUrl(path);
+        } catch (err) {
+            return;
+        }
         if (!resource) {
             return;
         }
 
-        if (resource.config.type === 'posts') {
+        if (resource.type === 'posts') {
             return {
                 type: 'post',
-                id: resource.data.id
+                id: resource.id
             };
         }
 
-        if (resource.config.type === 'pages') {
+        if (resource.type === 'pages') {
             return {
                 type: 'page',
-                id: resource.data.id
+                id: resource.id
             };
         }
 
-        if (resource.config.type === 'tags') {
+        if (resource.type === 'tags') {
             return {
                 type: 'tag',
-                id: resource.data.id
+                id: resource.id
             };
         }
 
-        if (resource.config.type === 'authors') {
+        if (resource.type === 'authors') {
             return {
                 type: 'author',
-                id: resource.data.id
+                id: resource.id
             };
         }
     }
 
-    getUrlByResourceId(id, options = {absolute: true}) {
-        return this.urlService.getUrlByResourceId(id, options);
+    /**
+     * Get the URL for a resource, handling email-only posts which have no
+     * public URL (the URL service returns /404/ for them).
+     */
+    getResourceUrl(id, type, model, {absolute = true} = {}) {
+        const isEmailOnly = type === 'post' && model.get('status') === 'sent';
+        if (isEmailOnly) {
+            const emailPath = `/email/${model.get('uuid')}/`;
+            return absolute ? this.relativeToAbsolute(emailPath) : emailPath;
+        }
+        // Lazy URL service evaluates permalink templates against resource fields
+        // (slug, published_at, primary_tag, ...). Caller already loaded the model,
+        // so spread its plain data so those fields reach the facade.
+        const data = toPlain(model);
+        const resource = {...data, id, type: TYPE_TO_RESOURCE[type]};
+        return this.urlService.facade.getUrlForResource(resource, {absolute});
     }
 
     async getResourceById(id, type) {
         switch (type) {
         case 'post':
         case 'page': {
-            const post = await this.models.Post.findOne({id}, {require: false});
+            // withRelated: tags+authors so the lazy URL service can evaluate
+            // `:primary_tag` / `:primary_author` permalink templates against
+            // the resource. Mirrors services/url/config.js's posts config.
+            const post = await this.models.Post.findOne({id}, {
+                require: false,
+                filter: 'type:[post,page]+status:[published,sent]',
+                withRelated: ['tags', 'authors']
+            });
             if (!post) {
                 return null;
             }

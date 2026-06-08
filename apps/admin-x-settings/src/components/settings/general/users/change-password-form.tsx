@@ -253,7 +253,7 @@ const ChangePasswordForm: React.FC<{user: User}> = ({user}) => {
     const initialView = (
         <div className='relative flex flex-col'>
             <TextField containerClassName='grow' disabled={true} title='Password' type='password' value='••••••••••••' />
-            <Button className='absolute right-0 top-0' color='green' data-testid='change-password-button' label='Change' link={true} onClick={showPasswordInputs} />
+            <Button className='absolute top-0 right-0' color='green' data-testid='change-password-button' label='Change' link={true} onClick={showPasswordInputs} />
         </div>
     );
 

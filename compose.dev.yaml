@@ -2,7 +2,7 @@ name: ghost-dev
 
 services:
   mysql:
-    image: mysql:8.4.5
+    image: mysql:8.4.9@sha256:c36050afdca850f23cef85703f84c7531a5ae155a11b5ee1c60acb09937c4084
     container_name: ghost-dev-mysql
     command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT
     ports:
@@ -22,7 +22,7 @@ services:
       start_period: 10s
 
   redis:
-    image: redis:7.0
+    image: redis:7.0@sha256:352c1fdadc91926edda08f45aeb3f27f37194c2f14101229c0523a11195c96e3
     container_name: ghost-dev-redis
     ports:
       - "6379:6379"
@@ -39,7 +39,7 @@ services:
       retries: 120
 
   mailpit:
-    image: axllent/mailpit
+    image: axllent/mailpit@sha256:3bd7c2f2696deb35a4780d152b404dceec99cb041b942c0877b3b22384714f85
     container_name: ghost-dev-mailpit
     ports:
       - "1025:1025"  # SMTP server
@@ -58,9 +58,15 @@ services:
       dockerfile: docker/ghost-dev/Dockerfile
     container_name: ghost-dev
     working_dir: /home/ghost/ghost/core
-    command: ["yarn", "dev"]
+    command: ["pnpm", "dev"]
     volumes:
       - ./ghost:/home/ghost/ghost
+      # ghost/admin has workspace:* deps on apps/* (e.g. @tryghost/admin-x-framework).
+      # The dev Dockerfile only stages ghost/{core,i18n,parse-email-address}
+      # package.jsons at build time; mounting apps/ here makes the workspace
+      # graph complete at runtime. pnpm 10 tolerated the missing packages;
+      # pnpm 11 strict-validates and fails without this mount.
+      - ./apps:/home/ghost/apps
       # Mount specific content subdirectories to preserve themes/adapters from source
       - ghost-dev-data:/home/ghost/ghost/core/content/data
       - ghost-dev-images:/home/ghost/ghost/core/content/images
@@ -85,14 +91,6 @@ services:
       # Redis cache (optional)
       adapters__cache__Redis__host: redis
       adapters__cache__Redis__port: 6379
-      # Public app assets - proxied through Caddy gateway to host dev servers
-      # Using /ghost/assets/* paths
-      portal__url: /ghost/assets/portal/portal.min.js
-      comments__url: /ghost/assets/comments-ui/comments-ui.min.js
-      sodoSearch__url: /ghost/assets/sodo-search/sodo-search.min.js
-      sodoSearch__styles: /ghost/assets/sodo-search/main.css
-      signupForm__url: /ghost/assets/signup-form/signup-form.min.js
-      announcementBar__url: /ghost/assets/announcement-bar/announcement-bar.min.js
     depends_on:
       mysql:
         condition: service_healthy
@@ -129,7 +127,7 @@ services:
         condition: service_healthy
 
   stripe:
-    image: stripe/stripe-cli:latest
+    image: stripe/stripe-cli:latest@sha256:91f8f262453f9ab3690bd4aaa3ba27e6902b5b8fb62a635bad20246e414fbadc
     container_name: ghost-dev-stripe
     entrypoint: ["/entrypoint.sh"]
     profiles: ["stripe"]

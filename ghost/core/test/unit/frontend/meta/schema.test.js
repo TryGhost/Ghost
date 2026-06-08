@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const should = require('should');
+const {assertExists} = require('../../../utils/assertions');
 const {getSchema, SOCIAL_PLATFORMS} = require('../../../../core/frontend/meta/schema');
 const socialUrls = require('@tryghost/social-urls');
 
@@ -40,7 +40,7 @@ const BASE_METADATA = {
 };
 
 describe('getSchema', function () {
-    it('should return post schema if context starts with post', function (done) {
+    it('should return post schema if context starts with post', function () {
         const metadata = {
             site: {
                 title: 'Site Title',
@@ -138,10 +138,9 @@ describe('getSchema', function () {
             },
             url: 'http://mysite.com/post/my-post-slug/'
         });
-        done();
     });
 
-    it('should return page schema if context starts with page', function (done) {
+    it('should return page schema if context starts with page', function () {
         const metadata = {
             site: {
                 title: 'Site Title',
@@ -239,10 +238,9 @@ describe('getSchema', function () {
             },
             url: 'http://mysite.com/post/my-page-slug/'
         });
-        done();
     });
 
-    it('should return post schema removing null or undefined values', function (done) {
+    it('should return post schema removing null or undefined values', function () {
         const metadata = {
             site: {
                 title: 'Site Title'
@@ -298,10 +296,9 @@ describe('getSchema', function () {
             },
             url: 'http://mysite.com/post/my-post-slug/'
         });
-        done();
     });
 
-    it('should return image url instead of ImageObjects if no dimensions supplied', function (done) {
+    it('should return image url instead of ImageObjects if no dimensions supplied', function () {
         const metadata = {
             site: {
                 title: 'Site Title',
@@ -383,7 +380,6 @@ describe('getSchema', function () {
             },
             url: 'http://mysite.com/post/my-post-slug/'
         });
-        done();
     });
 
     it('should return home schema if context starts with home', function () {
@@ -734,7 +730,7 @@ describe('getSchema', function () {
 
         const schema = getSchema(metadata, data);
 
-        should.not.exist(schema.contributor);
+        assert.equal(schema.contributor, undefined);
     });
 
     it('should include contributors when post has multiple authors', function () {
@@ -771,7 +767,7 @@ describe('getSchema', function () {
 
         const schema = getSchema(metadata, data);
 
-        should.exist(schema.contributor);
+        assertExists(schema.contributor);
         assert.deepEqual(schema.contributor, [
             {
                 '@type': 'Person',
@@ -826,7 +822,7 @@ describe('getSchema', function () {
 
         const schema = getSchema(metadata, data);
 
-        should.exist(schema.contributor);
+        assertExists(schema.contributor);
         assert.equal(schema.contributor.length, 2);
         assert.deepEqual(schema.contributor[0], {
             '@type': 'Person',
@@ -876,7 +872,7 @@ describe('getSchema', function () {
 
         const schema = getSchema(metadata, data);
 
-        should.exist(schema.contributor);
+        assertExists(schema.contributor);
         assert.deepEqual(schema.contributor[0].sameAs, expectedSameAs);
     });
 
@@ -911,7 +907,7 @@ describe('getSchema', function () {
 
         const schema = getSchema(metadata, data);
 
-        should.exist(schema.contributor);
+        assertExists(schema.contributor);
         assert.deepEqual(schema.contributor[0], {
             '@type': 'Person',
             name: 'Co-Author',
@@ -952,7 +948,7 @@ describe('getSchema', function () {
 
         const schema = getSchema(metadata, data);
 
-        should.exist(schema.contributor);
+        assertExists(schema.contributor);
         assert.deepEqual(schema.contributor[0], {
             '@type': 'Person',
             name: 'Co-Author',
@@ -990,7 +986,7 @@ describe('getSchema', function () {
 
         const schema = getSchema(metadata, data);
 
-        should.exist(schema.contributor);
+        assertExists(schema.contributor);
         assert.deepEqual(schema.contributor[0].sameAs, [
             'http://coauthorsite.com/?user&#x3D;name&amp;param&#x3D;&lt;script&gt;alert(&quot;test&quot;)&lt;/script&gt;',
             'https://www.facebook.com/user&#x3D;name&#x3D;'

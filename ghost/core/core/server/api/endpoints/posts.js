@@ -1,5 +1,6 @@
 const urlUtils = require('../../../shared/url-utils');
 const models = require('../../models');
+const {getCSVExportFileName} = require('./utils/csv-export-filename');
 const getPostServiceInstance = require('../../services/posts/posts-service-instance');
 const allowedIncludes = [
     'tags',
@@ -91,14 +92,14 @@ const controller = {
             disposition: {
                 type: 'csv',
                 value() {
-                    const datetime = (new Date()).toJSON().substring(0, 10);
-                    return `post-analytics.${datetime}.csv`;
+                    return getCSVExportFileName('analytics');
                 }
             },
             cacheInvalidate: false
         },
         response: {
-            format: 'plain'
+            format: 'plain',
+            stream: true
         },
         permissions: {
             method: 'browse'
@@ -106,7 +107,8 @@ const controller = {
         validation: {},
         async query(frame) {
             return {
-                data: await postsService.export(frame)
+                data: await postsService.export(frame),
+                filename: getCSVExportFileName('analytics')
             };
         }
     },

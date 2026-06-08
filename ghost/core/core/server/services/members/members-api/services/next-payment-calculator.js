@@ -1,3 +1,5 @@
+const getDiscountWindow = require('../utils/get-discount-window');
+
 /**
  * @typedef {import('../../../../services/offers/application/offer-mapper').OfferDTO} OfferDTO
  */
@@ -5,9 +7,10 @@
 /**
  * @typedef {object} SubscriptionDiscount
  * @prop {string} offer_id
- * @prop {string} start
- * @prop {string|null} end
+ * @prop {string} start - ISO string for active discounts
+ * @prop {string|null} end - ISO string for active once/repeating discounts, null for forever discounts
  * @prop {'once'|'repeating'|'forever'} duration
+ * @prop {number|null} duration_in_months - Duration in months for repeating discounts, null for other types of discounts
  * @prop {'percent'|'fixed'} type
  * @prop {number} amount
  */
@@ -47,41 +50,35 @@ class NextPaymentCalculator {
         const interval = subscription.plan.interval;
         const currency = subscription.plan.currency;
         const offer = subscription.offer || null;
+        const defaultNextPayment = {
+            original_amount: originalAmount,
+            amount: originalAmount,
+            interval,
+            currency,
+            discount: null
+        };
 
         if (!offer || offer.type === 'trial') {
-            return {
-                original_amount: originalAmount,
-                amount: originalAmount,
-                interval,
-                currency,
-                discount: null
-            };
+            return defaultNextPayment;
         }
 
         const activeDiscount = this._getActiveDiscount(subscription, offer);
 
         if (!activeDiscount) {
-            return {
-                original_amount: originalAmount,
-                amount: originalAmount,
-                interval,
-                currency,
-                discount: null
-            };
+            return defaultNextPayment;
         }
 
         const discountedAmount = this._calculateDiscountedAmount(originalAmount, offer);
 
         return {
-            original_amount: originalAmount,
+            ...defaultNextPayment,
             amount: discountedAmount,
-            interval,
-            currency,
             discount: {
                 offer_id: offer.id,
                 start: activeDiscount.start ? new Date(activeDiscount.start).toISOString() : null,
                 end: activeDiscount.end ? new Date(activeDiscount.end).toISOString() : null,
                 duration: offer.duration,
+                duration_in_months: offer.duration_in_months,
                 type: offer.type,
                 amount: offer.amount
             }
@@ -106,41 +103,7 @@ class NextPaymentCalculator {
      * @returns {ActiveDiscount|null}
      */
     _getActiveDiscount(subscription, offer) {
-        if (subscription.discount_start) {
-            return {
-                start: subscription.discount_start,
-                end: subscription.discount_end
-            };
-        }
-
-        // Backportability for signup offers without discount_start / discount_end
-        if (offer.redemption_type !== 'signup') {
-            return null;
-        }
-
-        // Signup offers with once have already been applied to first payment
-        if (offer.duration === 'once') {
-            return null;
-        }
-
-        // Signup offer with forever don't expire
-        if (offer.duration === 'forever') {
-            return {start: subscription.start_date, end: null};
-        }
-
-        // Signup repeating offer expire after start_date + duration_in_months
-        if (offer.duration === 'repeating' && offer.duration_in_months > 0) {
-            const end = new Date(subscription.start_date);
-            end.setUTCMonth(end.getUTCMonth() + offer.duration_in_months);
-
-            if (new Date() >= end) {
-                return null;
-            }
-
-            return {start: subscription.start_date, end};
-        }
-
-        return null;
+        return getDiscountWindow(subscription, offer);
     }
 
     /**
@@ -152,7 +115,7 @@ class NextPaymentCalculator {
     _calculateDiscountedAmount(originalAmount, offer) {
         if (offer.type === 'percent') {
             const discount = Math.round(originalAmount * (offer.amount / 100));
-            return Math.max(0, originalAmount - discount);
+            return originalAmount - discount;
         }
 
         if (offer.type === 'fixed') {

@@ -43,20 +43,29 @@
     min-width: 80px;
 }
 
-.gh-email-debug-settingstab-icon {
+.gh-email-debug-overviewtab-icon {
     width: 20px;
     height: 20px;
     margin-bottom: 11px;
     margin-top: 2px;
 }
 
-.gh-email-debug-settingstab-icon svg path,
-.gh-email-debug-settingstab-icon svg circle {
+.gh-email-debug-overviewtab-icon svg {
+    overflow: visible;
+}
+
+.gh-email-debug-overviewtab-icon svg path,
+.gh-email-debug-overviewtab-icon svg circle {
     stroke-width: 2;
 }
 
+
 .gh-email-debug .gh-list {
     border-bottom: none;
+}
+
+.gh-email-debug-permanent-failures {
+    table-layout: fixed;
 }
 
 .gh-email-debug .gh-list thead,
@@ -81,6 +90,18 @@
     display: flex;
     flex-wrap: nowrap;
     align-items: center;
+    min-width: 0;
+}
+
+.gh-email-debug-member > div {
+    min-width: 0;
+}
+
+.gh-email-debug-member .gh-members-list-name,
+.gh-email-debug-member .gh-members-list-email {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .gh-email-debug-failure {
@@ -346,4 +367,90 @@
     margin-top: 3px;
     margin-left: 8px;
     background: var(--whitegrey);
+}
+
+@media (max-width: 1500px) {
+    .post-header .gh-canvas-header-content {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, max-content) auto;
+        grid-template-areas: "title filters primary";
+        align-items: center;
+        gap: 12px;
+        min-height: auto !important;
+    }
+
+    .post-header .gh-canvas-title-container {
+        grid-area: title;
+        min-width: 0;
+    }
+
+    .post-header .gh-canvas-breadcrumb,
+    .post-header .gh-canvas-title {
+        min-width: 0;
+        max-width: 100%;
+        overflow: hidden;
+    }
+
+    .post-header .gh-canvas-breadcrumb {
+        display: flex !important;
+    }
+
+    .post-header .gh-canvas-breadcrumb a,
+    .post-header .gh-canvas-breadcrumb span,
+    .post-header .gh-canvas-title a {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .post-header .gh-canvas-breadcrumb a,
+    .post-header .gh-canvas-breadcrumb svg {
+        flex: 0 0 auto;
+    }
+
+    .post-header .gh-canvas-breadcrumb span {
+        min-width: 0;
+    }
+
+    .post-header .view-actions {
+        display: contents;
+        position: static !important;
+        width: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    .post-header .view-actions-top-row {
+        grid-area: primary;
+        justify-self: end;
+    }
+
+    .post-header .view-actions-bottom-row {
+        grid-area: filters;
+        justify-content: flex-end;
+        min-width: 0;
+        max-width: 100% !important;
+        padding: 0;
+        overflow-x: auto;
+        overflow-y: visible;
+    }
+
+    .post-header .view-actions::before {
+        display: none !important;
+    }
+}
+
+@media (max-width: 1300px) {
+    .post-header .gh-canvas-header-content {
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas:
+            "title primary"
+            "filters filters";
+    }
+}
+
+@media (max-width: 800px) {
+    .post-header .view-actions-bottom-row {
+        justify-content: flex-start;
+    }
 }

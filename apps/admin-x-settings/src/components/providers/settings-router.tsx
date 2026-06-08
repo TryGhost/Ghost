@@ -7,6 +7,7 @@ export const modalPaths: {[key: string]: ModalName} = {
     'design/change-theme': 'DesignAndThemeModal',
     'design/edit': 'DesignAndThemeModal',
     'theme/install': 'DesignAndThemeModal', // this is a special route, because it can install a theme directly from the Ghost Marketplace
+    'theme/edit/:name': 'DesignAndThemeModal',
     'navigation/edit': 'NavigationModal',
     'staff/invite': 'InviteUserModal',
     'staff/:slug/social-links': 'UserDetailModal',
@@ -21,6 +22,7 @@ export const modalPaths: {[key: string]: ModalName} = {
     'newsletters/:id': 'NewsletterDetailModal',
     'history/view': 'HistoryModal',
     'history/view/:user': 'HistoryModal',
+    'integrations/contentapi': 'ContentApiModal',
     'integrations/zapier': 'ZapierModal',
     'integrations/transistor': 'TransistorModal',
     'integrations/slack': 'SlackModal',
@@ -35,6 +37,7 @@ export const modalPaths: {[key: string]: ModalName} = {
     'embed-signup-form/show': 'EmbedSignupFormModal',
     'offers/edit': 'OffersContainerModal',
     'offers/edit/:id': 'OffersContainerModal',
+    'offers/edit/retention/:id': 'OffersContainerModal',
     'offers/new': 'OffersContainerModal',
     'explore/testimonial': 'TestimonialsModal',
     about: 'AboutModal'
@@ -44,7 +47,7 @@ export const loadModals = () => import('./routing/modals');
 
 const SettingsRouter: React.FC = () => {
     const {updateNavigatedSection, scrollToSection} = useScrollSectionContext();
-    const {route} = useRouting();
+    const {route, updateRoute} = useRouting();
     // get current route
     useRouteChangeCallback((newPath, oldPath) => {
         if (newPath === oldPath) {
@@ -53,10 +56,16 @@ const SettingsRouter: React.FC = () => {
     }, [scrollToSection]);
 
     useEffect(() => {
-        if (route !== undefined) {
-            updateNavigatedSection(route.split('/')[0]);
+        if (route === undefined) {
+            return;
         }
-    }, [route, updateNavigatedSection]);
+        // The lock-site setting was merged into the Access section
+        if (route.split('/')[0] === 'locksite') {
+            updateRoute('members');
+            return;
+        }
+        updateNavigatedSection(route.split('/')[0]);
+    }, [route, updateNavigatedSection, updateRoute]);
 
     return null;
 };

@@ -1,4 +1,5 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../../../utils/assertions');
 const sinon = require('sinon');
 const testUtils = require('../../../../../../utils');
 const dateUtil = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/date');
@@ -65,20 +66,20 @@ describe('Unit: utils/serializers/output/mappers', function () {
 
             await mappers.posts(post, frame);
 
-            dateUtil.forPost.callCount.should.equal(1);
+            sinon.assert.calledOnce(dateUtil.forPost);
 
-            extraAttrsUtils.forPost.callCount.should.equal(1);
+            sinon.assert.calledOnce(extraAttrsUtils.forPost);
 
-            cleanUtil.post.callCount.should.eql(1);
-            cleanUtil.tag.callCount.should.eql(1);
-            cleanUtil.author.callCount.should.eql(1);
+            sinon.assert.calledOnce(cleanUtil.post);
+            sinon.assert.calledOnce(cleanUtil.tag);
+            sinon.assert.calledOnce(cleanUtil.author);
 
-            urlUtil.forPost.callCount.should.equal(1);
-            urlUtil.forTag.callCount.should.equal(1);
-            urlUtil.forUser.callCount.should.equal(1);
+            sinon.assert.calledOnce(urlUtil.forPost);
+            sinon.assert.calledOnce(urlUtil.forTag);
+            sinon.assert.calledOnce(urlUtil.forUser);
 
-            urlUtil.forTag.getCall(0).args.should.eql(['id3', {id: 'id3', feature_image: 'value'}, frame.options]);
-            urlUtil.forUser.getCall(0).args.should.eql(['id4', {name: 'Ghosty', id: 'id4'}, frame.options]);
+            assert.deepEqual(urlUtil.forTag.getCall(0).args, ['id3', {id: 'id3', feature_image: 'value'}, frame.options]);
+            assert.deepEqual(urlUtil.forUser.getCall(0).args, ['id4', {name: 'Ghosty', id: 'id4'}, frame.options]);
         });
     });
 
@@ -102,9 +103,9 @@ describe('Unit: utils/serializers/output/mappers', function () {
 
             mappers.users(user, frame);
 
-            urlUtil.forUser.callCount.should.equal(1);
-            urlUtil.forUser.getCall(0).args.should.eql(['id1', user, frame.options]);
-            cleanUtil.author.callCount.should.equal(1);
+            sinon.assert.calledOnce(urlUtil.forUser);
+            assert.deepEqual(urlUtil.forUser.getCall(0).args, ['id1', user, frame.options]);
+            sinon.assert.calledOnce(cleanUtil.author);
         });
     });
 
@@ -128,9 +129,9 @@ describe('Unit: utils/serializers/output/mappers', function () {
 
             mappers.tags(tag, frame);
 
-            urlUtil.forTag.callCount.should.equal(1);
-            urlUtil.forTag.getCall(0).args.should.eql(['id3', tag, frame.options]);
-            cleanUtil.tag.callCount.should.equal(1);
+            sinon.assert.calledOnce(urlUtil.forTag);
+            assert.deepEqual(urlUtil.forTag.getCall(0).args, ['id3', tag, frame.options]);
+            sinon.assert.calledOnce(cleanUtil.tag);
         });
     });
 
@@ -145,17 +146,17 @@ describe('Unit: utils/serializers/output/mappers', function () {
 
             const mapped = mappers.integrations(integration, frame);
 
-            should.exist(mapped.api_keys);
+            assertExists(mapped.api_keys);
 
             mapped.api_keys.forEach((key) => {
                 if (key.type === 'admin') {
                     const [id, secret] = key.secret.split(':');
-                    should.exist(id);
-                    should.exist(secret);
+                    assertExists(id);
+                    assertExists(secret);
                 } else {
                     const [id, secret] = key.secret.split(':');
-                    should.exist(id);
-                    should.not.exist(secret);
+                    assertExists(id);
+                    assert.equal(secret, undefined);
                 }
             });
         });
@@ -174,7 +175,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
 
             const mapped = mappers.snippets(snippet, frame);
 
-            mapped.should.eql({
+            assert.deepEqual(mapped, {
                 id: snippet.id,
                 name: snippet.name,
                 mobiledoc: snippet.mobiledoc,
@@ -198,7 +199,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
 
             const mapped = mappers.newsletters(newsletter, frame);
 
-            mapped.should.eql({
+            assert.deepEqual(mapped, {
                 id: newsletter.id,
                 uuid: newsletter.uuid,
                 name: newsletter.name,
@@ -224,7 +225,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
             }));
 
             const mapped = mappers.newsletters(newsletter, frame);
-            mapped.should.eql(newsletter.toJSON());
+            assert.deepEqual(mapped, newsletter.toJSON());
         });
     });
 
@@ -250,7 +251,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
             });
 
             const mapped = mappers.emailBatches(model, frame);
-            mapped.should.eql({
+            assert.deepEqual(mapped, {
                 id: 'id1',
                 provider_id: 'provider_id1',
                 status: 'status1',
@@ -303,7 +304,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
             });
 
             const mapped = mappers.emailFailures(model, frame);
-            mapped.should.eql({
+            assert.deepEqual(mapped, {
                 id: 'id1',
                 code: 'code1',
                 enhanced_code: 'enhanced_code1',
@@ -347,7 +348,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
             });
 
             const mapped = mappers.emailFailures(model, frame);
-            mapped.should.eql({
+            assert.deepEqual(mapped, {
                 id: 'id1',
                 code: 'code1',
                 enhanced_code: 'enhanced_code1',
@@ -400,6 +401,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
                     },
                     count: {
                         replies: 12,
+                        direct_replies: 5,
                         likes: 13,
                         foo: 1
                     }
@@ -407,7 +409,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
             };
 
             const mapped = mappers.activityFeedEvents(model, frame);
-            mapped.should.eql({
+            assert.deepEqual(mapped, {
                 foo: 'bar',
                 type: 'comment_event',
                 data: {
@@ -419,6 +421,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
                     html: 'html1',
                     created_at: 'created_at1',
                     edited_at: 'edited_at1',
+                    pinned: false,
                     member: {
                         id: 'id1',
                         uuid: 'uuid1',
@@ -440,6 +443,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
                     },
                     count: {
                         replies: 12,
+                        direct_replies: 5,
                         likes: 13
                     }
                 }
@@ -479,7 +483,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
             };
 
             const mapped = mappers.activityFeedEvents(model, frame);
-            mapped.should.eql({
+            assert.deepEqual(mapped, {
                 foo: 'bar',
                 type: 'click_event',
                 data: {
@@ -531,7 +535,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
             };
 
             const mapped = mappers.activityFeedEvents(model, frame);
-            mapped.should.eql({
+            assert.deepEqual(mapped, {
                 foo: 'bar',
                 type: 'aggregated_click_event',
                 data: {
@@ -580,7 +584,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
             };
 
             const mapped = mappers.activityFeedEvents(model, frame);
-            mapped.should.eql({
+            assert.deepEqual(mapped, {
                 foo: 'bar',
                 type: 'feedback_event',
                 data: {
@@ -604,7 +608,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
             });
 
             const mapped2 = mappers.activityFeedEvents({...model, data: {...model.data, member: undefined, post: undefined}}, frame);
-            mapped2.should.eql({
+            assert.deepEqual(mapped2, {
                 foo: 'bar',
                 type: 'feedback_event',
                 data: {
@@ -641,7 +645,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
                     }
                 },
                 in_reply_to_id: 'comment2',
-                inReplyTo: {
+                in_reply_to: {
                     id: 'comment2',
                     parent_id: 'comment1',
                     html: '<p>comment 2</p>',
@@ -652,7 +656,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
 
             const mapped = mappers.comments(model, frame);
 
-            mapped.should.eql({
+            assert.deepEqual(mapped, {
                 id: 'comment3',
                 html: '<p>comment 3</p>',
                 member: {
@@ -677,10 +681,12 @@ describe('Unit: utils/serializers/output/mappers', function () {
                         }
                     },
                     in_reply_to_id: null,
-                    in_reply_to_snippet: null
+                    in_reply_to_snippet: null,
+                    pinned: false
                 },
                 in_reply_to_id: 'comment2',
-                in_reply_to_snippet: 'comment 2'
+                in_reply_to_snippet: 'comment 2',
+                pinned: false
             });
         });
 
@@ -690,7 +696,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
             const frame = {};
 
             const model = {
-                inReplyTo: {
+                in_reply_to: {
                     html: '<p>First paragraph <a href="https://example.com">with link</a>,<br> and new line.</p><p>Second paragraph</p>',
                     status: 'published'
                 }
@@ -698,11 +704,12 @@ describe('Unit: utils/serializers/output/mappers', function () {
 
             const mapped = mappers.comments(model, frame);
 
-            converterSpy.calledOnce.should.eql(true, 'htmlToPlaintext.commentSnippet was not called');
+            assert.equal(converterSpy.calledOnce, true, 'htmlToPlaintext.commentSnippet was not called');
 
-            mapped.should.eql({
+            assert.deepEqual(mapped, {
                 in_reply_to_snippet: 'First paragraph with link, and new line. Second paragraph',
-                member: null
+                member: null,
+                pinned: false
             });
         });
 
@@ -712,17 +719,18 @@ describe('Unit: utils/serializers/output/mappers', function () {
             const model = {
                 id: 'comment1',
                 html: '<p>comment 1</p>',
-                inReplyTo: undefined
+                in_reply_to: undefined
             };
 
             const mapped = mappers.comments(model, frame);
 
-            mapped.should.eql({
+            assert.deepEqual(mapped, {
                 id: 'comment1',
                 html: '<p>comment 1</p>',
                 member: null,
                 in_reply_to_id: null,
-                in_reply_to_snippet: null
+                in_reply_to_snippet: null,
+                pinned: false
             });
         });
     });

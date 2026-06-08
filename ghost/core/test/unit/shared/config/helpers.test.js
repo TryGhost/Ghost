@@ -1,4 +1,4 @@
-require('should');
+const assert = require('node:assert/strict');
 const configUtils = require('../../../utils/config-utils');
 
 describe('vhost utils', function () {
@@ -13,8 +13,8 @@ describe('vhost utils', function () {
     // url = 'https://ghost.blog'
     describe('without separate admin url', function () {
         it('uses the default arg for both backend and frontend', function () {
-            configUtils.config.getBackendMountPath().should.eql(/.*/);
-            configUtils.config.getFrontendMountPath().should.eql(/.*/);
+            assert.deepEqual(configUtils.config.getBackendMountPath(), /.*/);
+            assert.deepEqual(configUtils.config.getFrontendMountPath(), /.*/);
         });
     });
 
@@ -26,16 +26,16 @@ describe('vhost utils', function () {
         });
 
         it('should use admin url and inverse as args', function () {
-            configUtils.config.getBackendMountPath().should.eql('admin.ghost.blog');
-            configUtils.config.getFrontendMountPath().should.eql(/^(?!admin\.ghost\.blog).*/);
+            assert.equal(configUtils.config.getBackendMountPath(), 'admin.ghost.blog');
+            assert.deepEqual(configUtils.config.getFrontendMountPath(), /^(?!admin\.ghost\.blog).*/);
         });
 
         it('should have regex that excludes admin traffic on front-end', function () {
             const frontendRegex = configUtils.config.getFrontendMountPath();
 
-            frontendRegex.test('localhost').should.be.true();
-            frontendRegex.test('ghost.blog').should.be.true();
-            frontendRegex.test('admin.ghost.blog').should.be.false();
+            assert.equal(frontendRegex.test('localhost'), true);
+            assert.equal(frontendRegex.test('ghost.blog'), true);
+            assert.equal(frontendRegex.test('admin.ghost.blog'), false);
         });
     });
 
@@ -47,8 +47,8 @@ describe('vhost utils', function () {
         });
 
         it('should mount and assign correct routes', function () {
-            configUtils.config.getBackendMountPath().should.eql(/.*/);
-            configUtils.config.getFrontendMountPath().should.eql(/.*/);
+            assert.deepEqual(configUtils.config.getBackendMountPath(), /.*/);
+            assert.deepEqual(configUtils.config.getFrontendMountPath(), /.*/);
         });
     });
 });

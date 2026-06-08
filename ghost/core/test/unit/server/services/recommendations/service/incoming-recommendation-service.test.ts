@@ -51,11 +51,11 @@ describe('IncomingRecommendationService', function () {
                 process.env.NODE_ENV = 'nottesting';
                 await service.init();
                 clock.tick(1000 * 60 * 60 * 24);
-                assert(refreshMentions.calledOnce);
-                assert(refreshMentions.calledWith({
+                sinon.assert.calledOnce(refreshMentions);
+                sinon.assert.calledWith(refreshMentions, {
                     filter: `source:~$'/.well-known/recommendations.json'+deleted:[true,false]`,
                     limit: 100
-                }));
+                });
             } finally {
                 process.env.NODE_ENV = saved;
             }
@@ -70,7 +70,7 @@ describe('IncomingRecommendationService', function () {
                 refreshMentions.rejects(new Error('test'));
                 await service.init();
                 clock.tick(1000 * 60 * 60 * 24);
-                assert(refreshMentions.calledOnce);
+                sinon.assert.calledOnce(refreshMentions);
             } finally {
                 process.env.NODE_ENV = saved;
             }
@@ -89,7 +89,7 @@ describe('IncomingRecommendationService', function () {
                 sourceFavicon: new URL('https://example.com/favicon.ico'),
                 sourceFeaturedImage: new URL('https://example.com/featured.png')
             });
-            assert(send.calledOnce);
+            sinon.assert.calledOnce(send);
         });
 
         it('ignores when mention not convertable to incoming recommendation', async function () {
@@ -104,7 +104,7 @@ describe('IncomingRecommendationService', function () {
                 sourceFavicon: new URL('https://example.com/favicon.ico'),
                 sourceFeaturedImage: new URL('https://example.com/featured.png')
             });
-            assert(!send.calledOnce);
+            sinon.assert.notCalled(send);
         });
     });
 
