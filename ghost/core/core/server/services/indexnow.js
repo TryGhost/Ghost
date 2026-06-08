@@ -138,9 +138,11 @@ async function ping(post) {
         }, `${INDEXNOW_LOG_KEY} Successfully pinged ${url}`);
     } catch (err) {
         // Log errors but don't throw - IndexNow failures shouldn't disrupt publishing
+        const statusCode = err.statusCode ?? err.response?.statusCode ?? null;
+
         let eventName;
         let error;
-        if (err.statusCode === 429) {
+        if (statusCode === 429) {
             // Rate limited by IndexNow - we have no retry/backoff, so the ping is dropped
             eventName = 'indexnow.rate_limited';
             error = new errors.TooManyRequestsError({
@@ -149,8 +151,7 @@ async function ping(post) {
                 context: tpl(messages.requestFailedError, {service: 'IndexNow'}),
                 help: tpl(messages.requestFailedHelp, {url: 'https://ghost.org/docs/'})
             });
-        } else if (err.statusCode === 422) {
-            // 422 means the URL is invalid or key doesn't match
+        } else if (statusCode === 422 || statusCode === 403) {
             eventName = 'indexnow.key_validation_failed';
             error = new errors.ValidationError({
                 err,
@@ -171,7 +172,7 @@ async function ping(post) {
         logging.warn({
             event: {name: eventName},
             post: {id: post.id, slug: post.slug, url},
-            http: {response: {status_code: err.statusCode ?? null}},
+            http: {response: {status_code: statusCode}},
             err: error
         }, `${INDEXNOW_LOG_KEY} ${error.message}`);
     }
