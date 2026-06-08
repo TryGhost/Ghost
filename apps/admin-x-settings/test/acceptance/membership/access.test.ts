@@ -154,7 +154,7 @@ test.describe('Access settings', async () => {
         await expect(accessCode).toHaveValue('fake-456');
     });
 
-    test('Does not clip the Access card in pre-launch mode so dropdowns are not cut off', async ({page}) => {
+    test('Does not clip dropdown options off the Access card in pre-launch mode', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,
             browseConfig: createConfigWithLimits({
@@ -171,9 +171,20 @@ test.describe('Access settings', async () => {
 
         await expect(section.getByText('Pre-launch mode')).toBeVisible();
 
-        const overflowY = await section.evaluate(el => getComputedStyle(el).overflowY);
-        expect(overflowY).not.toBe('hidden');
-        expect(overflowY).not.toBe('clip');
+        await section.getByTestId('commenting-select').click();
+
+        const lastOption = page.locator('[data-testid="select-option"]', {hasText: 'Nobody'});
+        await expect(lastOption).toBeVisible();
+
+        const box = await lastOption.boundingBox();
+        expect(box).not.toBeNull();
+
+        const optionIsActuallyPainted = await page.evaluate(({x, y, width, height}) => {
+            const el = document.elementFromPoint(x + width / 2, y + height / 2);
+            return Boolean(el?.closest('[data-testid="select-option"]'));
+        }, box!);
+
+        expect(optionIsActuallyPainted).toBe(true);
     });
 
     test('Disables other sections when signup is disabled', async ({page}) => {
