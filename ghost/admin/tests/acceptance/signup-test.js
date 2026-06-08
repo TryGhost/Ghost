@@ -159,7 +159,7 @@ describe('Acceptance: Signup', function () {
         expect(
             find('[data-test-input="password"]').closest('.form-group').querySelector('.response').textContent,
             'password field error text'
-        ).to.have.string('you cannot use an insecure password');
+        ).to.have.string('you cannot use a password including common phrases');
 
         // password must not have repeating characters
         await fillIn('[data-test-input="password"]', '2222222222');
