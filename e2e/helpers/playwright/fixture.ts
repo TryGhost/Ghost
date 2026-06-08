@@ -1,10 +1,11 @@
 import baseDebug from '@tryghost/debug';
 import {AnalyticsOverviewPage} from '@/helpers/pages';
-import {Browser, BrowserContext, Page, TestInfo, test as base} from '@playwright/test';
+import {Browser, BrowserContext, Page, Request, TestInfo, test as base} from '@playwright/test';
+import {EGRESS_ENFORCE, EGRESS_MONITOR_ENABLED} from '@/helpers/environment/constants';
 import {EmailClient, MailPit} from '@/helpers/services/email/mail-pit';
 import {FakeMailgunServer, MailgunTestService} from '@/helpers/services/mailgun';
 import {FakeStripeServer, StripeTestService, WebhookClient} from '@/helpers/services/stripe';
-import {GhostInstance, getEnvironmentManager} from '@/helpers/environment';
+import {GhostInstance, getEnvironmentManager, isAllowedHost} from '@/helpers/environment';
 import {SettingsService} from '@/helpers/services/settings/settings-service';
 import {faker} from '@faker-js/faker';
 import {loginToGetAuthenticatedSession} from '@/helpers/playwright/flows/sign-in';
@@ -52,15 +53,22 @@ interface TestEnvironmentContext {
 
 interface InternalFixtures {
     _testEnvironmentContext: TestEnvironmentContext;
+    _egressCheck: void;
 }
 
 interface WorkerFixtures {
     _cleanupPerFileInstance: void;
+    _egressSummary: void;
 }
 
 let cachedPerFileInstance: PerFileInstanceCache | null = null;
 let cachedPerFileGhostAccountOwner: User | null = null;
 let cachedPerFileAuthenticatedSession: PerFileAuthenticatedSessionCache | null = null;
+
+// External hosts requested by the browser, accumulated across a worker so the
+// worker teardown can print them (the server-side equivalent comes from the DNS
+// sidecar). Worker-scoped, like the caches above.
+const workerBrowserEgressHosts = new Set<string>();
 
 export interface User {
     name: string;
@@ -129,6 +137,39 @@ function getResolvedIsolation(testInfo: TestInfo, isolation?: 'per-test'): Resol
     }
 
     return 'per-file';
+}
+
+/**
+ * Attach unexpected external egress to the test report, and — when
+ * E2E_EGRESS_ENFORCE=1 — fail the test. Shared by the server-side DNS monitor
+ * (_egressCheck) and the browser-side request listener (page fixture).
+ */
+async function reportUnexpectedEgress(
+    testInfo: TestInfo,
+    source: 'server' | 'browser',
+    hosts: string[],
+    detail: unknown
+): Promise<void> {
+    const uniqueHosts = [...new Set(hosts)];
+    if (uniqueHosts.length === 0) {
+        return;
+    }
+
+    await testInfo.attach(`external-egress-${source}`, {
+        body: JSON.stringify(detail, null, 2),
+        contentType: 'application/json'
+    });
+
+    const where = source === 'server' ? 'the Ghost container' : 'the browser';
+    const summary = `Unexpected external egress from ${where}: ${uniqueHosts.join(', ')}`;
+    if (EGRESS_ENFORCE) {
+        throw new Error(
+            `${summary}\n\n` +
+            `Host(s) not on the egress allowlist were contacted during this test.\n` +
+            `If this is expected, add them to EGRESS_ALLOWLIST in helpers/environment/constants.ts.`
+        );
+    }
+    testInfo.annotations.push({type: 'warning', description: summary});
 }
 
 async function setupNewAuthenticatedPage(browser: Browser, baseURL: string, ghostAccountOwner: User) {
@@ -204,6 +245,65 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
         scope: 'worker',
         auto: true
     }],
+
+    // At the end of each worker, print the full set of external hosts the Ghost
+    // container resolved (the server-side DNS sidecar sees everything, including
+    // boot-time lookups that no single test can be blamed for). This is what you
+    // read out of CI logs to build up EGRESS_ALLOWLIST.
+    _egressSummary: [async ({}, use, workerInfo) => {
+        await use();
+
+        const print = (label: string, hosts: string[]) => {
+            if (hosts.length === 0) {
+                return;
+            }
+            // eslint-disable-next-line no-console
+            console.log(
+                `\n[egress] external hosts ${label} (worker ${workerInfo.workerIndex}):\n` +
+                hosts.map(host => `  - ${host}`).join('\n') + '\n'
+            );
+        };
+
+        try {
+            const monitor = (await getEnvironmentManager()).getEgressMonitor();
+            if (monitor) {
+                const queries = await monitor.readQueries();
+                const serverHosts = [...new Set(queries.map(query => query.name))]
+                    .filter(host => !isAllowedHost(host))
+                    .sort();
+                print('resolved by Ghost', serverHosts);
+            }
+            print('requested by the browser', [...workerBrowserEgressHosts].sort());
+        } catch {
+            // Best-effort reporting; never fail teardown over it.
+        }
+    }, {
+        scope: 'worker',
+        auto: true
+    }],
+
+    // Records the external hosts the Ghost container resolves during each test
+    // (via the DNS egress monitor sidecar). Attaches anything off the allowlist to
+    // the test report, and — when E2E_EGRESS_ENFORCE=1 — fails the test on it.
+    // Depends on _testEnvironmentContext so the Ghost environment (and monitor) is
+    // already up when we read the starting cursor.
+    _egressCheck: [async ({_testEnvironmentContext}, use, testInfo: TestInfo) => {
+        void _testEnvironmentContext;
+        const environmentManager = await getEnvironmentManager();
+        const monitor = environmentManager.getEgressMonitor();
+
+        if (!monitor) {
+            await use();
+            return;
+        }
+
+        const startCursor = await monitor.cursor();
+
+        await use();
+
+        const unexpected = await monitor.unexpectedSince(startCursor);
+        await reportUnexpectedEgress(testInfo, 'server', unexpected.map(query => query.name), unexpected);
+    }, {auto: true}],
 
     _testEnvironmentContext: async ({config, isolation, labs, stripeEnabled, stripeServer, mailgunEnabled, mailgunServer}, use, testInfo: TestInfo) => {
         const environmentManager = await getEnvironmentManager();
@@ -485,10 +585,33 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
     },
 
     // Extract the page from pageWithAuthenticatedUser and apply labs/stripe settings
-    page: async ({pageWithAuthenticatedUser, labs, _testEnvironmentContext}, use) => {
+    page: async ({pageWithAuthenticatedUser, labs, _testEnvironmentContext}, use, testInfo: TestInfo) => {
         _testEnvironmentContext.markResetEnvironmentBlocker('page');
 
         const page = pageWithAuthenticatedUser.page;
+
+        // Browser-side egress monitoring (complements the server-side DNS monitor):
+        // the Ghost container's resolver can't see requests the browser makes itself
+        // (changelog.json, embeds, avatar services, …), so we watch them here.
+        const browserEgress = new Map<string, {url: string; method: string}>();
+        const onRequest = (request: Request) => {
+            let host: string;
+            try {
+                const url = new URL(request.url());
+                if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+                    return;
+                }
+                host = url.hostname;
+            } catch {
+                return;
+            }
+            if (!isAllowedHost(host)) {
+                browserEgress.set(host, {url: request.url(), method: request.method()});
+            }
+        };
+        if (EGRESS_MONITOR_ENABLED) {
+            page.on('request', onRequest);
+        }
 
         const labsFlagsSpecified = labs && Object.keys(labs).length > 0;
         if (labsFlagsSpecified) {
@@ -504,6 +627,19 @@ export const test = base.extend<GhostInstanceFixture & InternalFixtures, WorkerF
         }
 
         await use(page);
+
+        if (EGRESS_MONITOR_ENABLED) {
+            page.off('request', onRequest);
+            for (const host of browserEgress.keys()) {
+                workerBrowserEgressHosts.add(host);
+            }
+            await reportUnexpectedEgress(
+                testInfo,
+                'browser',
+                [...browserEgress.keys()],
+                [...browserEgress.values()]
+            );
+        }
     }
 });
 

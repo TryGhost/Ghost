@@ -99,3 +99,41 @@ export const TEST_ENVIRONMENT = {
         port: 2368
     }
 } as const;
+
+/**
+ * Egress monitoring — see service-managers/egress-monitor.ts.
+ *
+ * A CoreDNS sidecar records every EXTERNAL host the Ghost container resolves, so
+ * outbound HTTP(S) calls are visible (and optionally enforced) in tests that
+ * otherwise run with unrestricted network access.
+ */
+
+// Dedicated DNS image for the sidecar — pinned by digest, pulled at runtime
+// (through the CI registry mirror). Deliberately NOT the Ghost application image.
+export const EGRESS_DNS_IMAGE = 'coredns/coredns:1.12.0@sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97';
+
+// CoreDNS config, bind-mounted into the sidecar at /Corefile.
+export const EGRESS_COREFILE_PATH = path.resolve(__dirname, 'Corefile');
+
+// Master switch for ALL egress monitoring — the DNS sidecar (server-side) and
+// the Playwright request listener (browser-side). On by default; set to '0' to
+// disable both.
+export const EGRESS_MONITOR_ENABLED = process.env.E2E_EGRESS_MONITOR !== '0';
+
+// Fail a test when it triggers egress to a host that is not on EGRESS_ALLOWLIST.
+// On by default so unexpected outbound requests (e.g. a new integration, or a
+// service that should be mocked) surface as a test failure. Set
+// E2E_EGRESS_ENFORCE=0 to record-only, e.g. while expanding the allowlist.
+export const EGRESS_ENFORCE = process.env.E2E_EGRESS_ENFORCE !== '0';
+
+/**
+ * Hosts the suite is allowed to reach. Only the local test infrastructure for now
+ * — every real external host the app contacts is intentionally left out so it
+ * surfaces as a failure; the allowlist is built up from there. An entry matches
+ * itself and any subdomain; reverse-DNS (*.arpa) lookups are ignored.
+ */
+export const EGRESS_ALLOWLIST: readonly string[] = [
+    'host.docker.internal',
+    'localhost',
+    '127.0.0.1'
+];
