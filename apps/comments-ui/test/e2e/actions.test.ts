@@ -567,14 +567,21 @@ test.describe('Actions', async () => {
         const replyButton = parentComment.getByTestId('reply-button');
         await replyButton.click();
 
-        // Wait for reply form to appear
+        const detailsFrame = page.frameLocator('iframe[title="addDetailsPopup"]');
+        await expect(detailsFrame.getByTestId('profile-modal')).toBeVisible();
+        await expect(frame.getByTestId('reply-form')).toHaveCount(0);
+
+        await detailsFrame.getByTestId('name-input').fill('Replying Member');
+        await detailsFrame.getByTestId('save-button').click();
+
+        // Wait for reply form to appear after details are saved
         const replyForm = frame.getByTestId('reply-form');
         await expect(replyForm).toBeVisible();
 
-        // The reply form should NOT show the parent comment author's name
-        // It should either show nothing, "Anonymous", or prompt for a name
-        // but definitely NOT "Named Author"
+        // The reply form should show the logged-in member's saved name,
+        // not the parent comment author's name
         const memberName = replyForm.getByTestId('member-name');
+        await expect(memberName).toHaveText('Replying Member');
         await expect(memberName).not.toHaveText('Named Author');
     });
 

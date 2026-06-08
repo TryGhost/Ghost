@@ -705,6 +705,10 @@ function closeCommentForm({data: id, state}: {data: string, state: EditableAppCo
     return {openCommentForms: state.openCommentForms.filter(f => f.id !== id)};
 };
 
+function closeOtherReplyForms({data: id, state}: {data: string, state: EditableAppContext}) {
+    return {openCommentForms: state.openCommentForms.filter(f => f.type !== 'reply' || f.id === id)};
+}
+
 function setScrollTarget({data: commentId}: {data: string | null}) {
     return {commentIdToScrollTo: commentId};
 }
@@ -718,6 +722,7 @@ export const SyncActions = {
     openPopup,
     closePopup,
     closeCommentForm,
+    closeOtherReplyForms,
     setCommentFormHasUnsavedChanges,
     setScrollTarget,
     setHashCommentId

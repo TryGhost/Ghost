@@ -3,6 +3,7 @@ import LikeButton, {DislikeButton} from './buttons/like-button';
 import LikeCount from './buttons/like-count';
 import MoreButton from './buttons/more-button';
 import PinnedLabel from './pinned-label';
+import QuoteReplyButton from './buttons/quote-reply-button';
 import React, {useCallback} from 'react';
 import Replies, {RepliesProps} from './replies';
 import ReplyButton from './buttons/reply-button';
@@ -12,6 +13,7 @@ import {Avatar, BlankAvatar} from './avatar';
 import {Comment, OpenCommentForm, useAppContext} from '../../app-context';
 import {Transition} from '@headlessui/react';
 import {buildCommentPermalink, findCommentById, formatExplicitTime, getCommentInReplyToSnippet, getMemberNameFromComment} from '../../utils/helpers';
+import {useQuoteSelection} from './hooks/use-quote-selection';
 import {useRelativeTime} from '../../utils/hooks';
 
 type CommentLayoutVariant = 'root' | 'reply';
@@ -111,7 +113,8 @@ type PublishedCommentProps = CommentProps & {
     useThreading: boolean;
 }
 const PublishedComment: React.FC<PublishedCommentProps> = ({children, comment, parent, openEditMode, useThreading, layoutVariant = 'root', isLastSibling = false}) => {
-    const {dispatchAction, openCommentForms, isAdmin, commentIdToHighlight, commentIdFromHash} = useAppContext();
+    const {dispatchAction, openCommentForms, isAdmin, commentIdToHighlight, commentIdFromHash, isMember, hasRequiredTier, isCommentingDisabled, member} = useAppContext();
+    const memberName = member?.name;
     const hasNestedReplies = React.Children.count(children) > 0;
 
     // Determine if the comment should be displayed with reduced opacity
@@ -126,29 +129,64 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({children, comment, p
     // only highlight the reply button for the comment that is being replied to
     const highlightReplyButton = !!(openForm && openForm.id === comment.id);
 
-    const openReplyForm = useCallback(async () => {
-        if (openForm && openForm.id === comment.id) {
-            dispatchAction('closeCommentForm', openForm.id);
-        } else {
-            const inReplyToDetails: Partial<OpenCommentForm> = {};
+    const openReplyFormWithProfile = useCallback(async (quoteHtml?: string) => {
+        const inReplyToDetails: Partial<OpenCommentForm> = {};
 
-            if (parent) {
-                inReplyToDetails.in_reply_to_id = comment.id;
-                inReplyToDetails.in_reply_to_snippet = getCommentInReplyToSnippet(comment);
-            }
-
-            const newForm: OpenCommentForm = {
-                id: comment.id,
-                parent_id: parent?.id,
-                type: 'reply',
-                hasUnsavedChanges: false,
-                ...inReplyToDetails
-            };
-
-            await dispatchAction('openCommentForm', newForm);
+        if (parent) {
+            inReplyToDetails.in_reply_to_id = comment.id;
+            inReplyToDetails.in_reply_to_snippet = getCommentInReplyToSnippet(comment);
         }
-    }, [comment, parent, openForm, dispatchAction]);
 
+        const newForm: OpenCommentForm = {
+            id: comment.id,
+            parent_id: parent?.id,
+            type: 'reply',
+            hasUnsavedChanges: false,
+            pendingQuote: quoteHtml ? {
+                id: `${comment.id}-${Date.now()}`,
+                html: quoteHtml
+            } : undefined,
+            ...inReplyToDetails
+        };
+
+        await dispatchAction('openCommentForm', newForm);
+    }, [comment, parent, dispatchAction]);
+
+    const openReplyForm = useCallback(async (quoteHtml?: string) => {
+        if (!quoteHtml && openForm && openForm.id === comment.id) {
+            dispatchAction('closeCommentForm', openForm.id);
+        } else if (!memberName) {
+            dispatchAction('openPopup', {
+                type: 'addDetailsPopup',
+                expertiseAutofocus: false,
+                callback: function (succeeded: boolean) {
+                    if (!succeeded) {
+                        return;
+                    }
+
+                    // The callback runs before this component receives the updated
+                    // member details, so open the form directly after a successful save.
+                    void openReplyFormWithProfile(quoteHtml);
+                }
+            });
+        } else {
+            await openReplyFormWithProfile(quoteHtml);
+        }
+    }, [comment.id, dispatchAction, memberName, openForm, openReplyFormWithProfile]);
+
+    const quoteInReply = useCallback((quoteHtml: string) => {
+        if (!isMember || !hasRequiredTier) {
+            dispatchAction('openPopup', {
+                type: 'ctaPopup'
+            });
+            return;
+        }
+
+        dispatchAction('closeOtherReplyForms', comment.id);
+        openReplyForm(quoteHtml);
+    }, [comment.id, dispatchAction, hasRequiredTier, isMember, openReplyForm]);
+
+    const canShowReplyAction = !isCommentingDisabled && !(isAdmin && comment.status === 'hidden');
     const hasChildReplies = hasNestedReplies || (comment.replies && comment.replies.length > 0);
     const hasReplies = displayReplyForm || hasChildReplies;
     const avatar = (<Avatar member={comment.member} />);
@@ -178,7 +216,7 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({children, comment, p
                 ) : (
                     <>
                         <CommentHeader className={hiddenClass} comment={comment} useThreading={useThreading} />
-                        <CommentBody className={hiddenClass} html={comment.html} isHighlighted={isHighlighted} />
+                        <CommentBody canQuoteInReply={canShowReplyAction} className={hiddenClass} html={comment.html} isHighlighted={isHighlighted} onQuoteInReply={quoteInReply} />
                         <CommentMenu
                             comment={comment}
                             highlightReplyButton={highlightReplyButton}
@@ -418,11 +456,24 @@ const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = '', u
 
 type CommentBodyProps = {
     html: string;
+    canQuoteInReply: boolean;
     className?: string;
     isHighlighted?: boolean;
+    onQuoteInReply: (quoteHtml: string) => void;
 }
 
-const CommentBody: React.FC<CommentBodyProps> = ({html, className = '', isHighlighted}) => {
+const CommentBody: React.FC<CommentBodyProps> = ({html, canQuoteInReply, className = '', isHighlighted, onQuoteInReply}) => {
+    const {clearQuoteSelection, contentRef, quoteSelection} = useQuoteSelection({disabled: !canQuoteInReply});
+
+    const quoteInReply = React.useCallback(() => {
+        if (!quoteSelection) {
+            return;
+        }
+
+        onQuoteInReply(quoteSelection.html);
+        clearQuoteSelection();
+    }, [clearQuoteSelection, onQuoteInReply, quoteSelection]);
+
     let commentHtml = html;
 
     if (isHighlighted) {
@@ -450,7 +501,10 @@ const CommentBody: React.FC<CommentBodyProps> = ({html, className = '', isHighli
 
     return (
         <div className={`mt mb-2 flex flex-row items-center gap-4 pr-4 ${className}`}>
-            <div dangerouslySetInnerHTML={dangerouslySetInnerHTML} className="gh-comment-content -mx-1 text-pretty rounded-md px-1 font-sans text-md leading-normal text-neutral-900 [overflow-wrap:anywhere] dark:text-white/85 sm:text-lg" data-testid="comment-content"/>
+            <div dangerouslySetInnerHTML={dangerouslySetInnerHTML} ref={contentRef} className="gh-comment-content -mx-1 text-pretty rounded-md px-1 font-sans text-md leading-normal text-neutral-900 [overflow-wrap:anywhere] dark:text-white/85 sm:text-lg" data-testid="comment-content"/>
+            {quoteSelection && (
+                <QuoteReplyButton quoteInReply={quoteInReply} quoteSelection={quoteSelection} />
+            )}
         </div>
     );
 };

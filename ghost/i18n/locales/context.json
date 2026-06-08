@@ -240,6 +240,7 @@
     "Please fill in required fields": "Error message when a required field is missing",
     "Podcasts": "Default heading for the Transistor podcast integration section in Portal",
     "Posts": "Search result header",
+    "Quote in reply": "Floating action shown after selecting text in a comment to start a reply with that selection quoted",
     "Re-enable emails": "A button for members to turn-back-on emails, if they have been previously disabled as a result of delivery failures",
     "Read more replies": "Link at the bottom of a nested comment thread to open a focused view showing replies beyond the maximum displayed depth",
     "Recommendations": "A suggestion by/for another site of interest to users",

@@ -41,6 +41,10 @@ export type OpenCommentForm = {
     parent_id?: string,
     in_reply_to_id?: string,
     in_reply_to_snippet?: string,
+    pendingQuote?: {
+        id: string,
+        html: string
+    },
     type: 'reply' | 'edit',
     hasUnsavedChanges: boolean
 }
